@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
+    "@biomejs/biome": "2.6.3",
     "@nx/js": "23.3.0",
     "@nx/vite": "23.3.0",
     "@playwright/test": "1.64.1",

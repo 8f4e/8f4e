@@ -46,7 +46,7 @@
 		"vite": "7.3.7"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.15",
+		"@biomejs/biome": "2.6.3",
 		"@types/node": "24.13.2",
 		"typescript": "6.0.3",
 		"vitest": "4.1.7"
