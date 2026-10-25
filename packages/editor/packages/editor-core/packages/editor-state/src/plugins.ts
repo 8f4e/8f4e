@@ -1,28 +1,28 @@
-import type { EditorStatePlugin, EditorStatePluginContext, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	EditorMenuRegistry,
+	EditorStatePlugin,
+	EditorStatePluginContext,
+	EventDispatcher,
+	State,
+} from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
+import createMenuItemRegistry from './features/menu/itemRegistry';
 
-export function getEditorStatePluginActions(plugins: readonly EditorStatePlugin[]): ReadonlySet<string> {
+export function validateEditorStatePlugins(plugins: readonly EditorStatePlugin[]): void {
 	const ids = new Set<string>();
-	const actions = new Set<string>();
 	for (const plugin of plugins) {
 		if (!plugin.id.trim() || ids.has(plugin.id)) {
 			throw new Error(`Invalid or duplicate editor state plugin ID: "${plugin.id}"`);
 		}
 		ids.add(plugin.id);
-		for (const action of plugin.actions ?? []) {
-			if (!action.trim() || actions.has(action)) {
-				throw new Error(`Invalid or duplicate editor state plugin action: "${action}"`);
-			}
-			actions.add(action);
-		}
 	}
-	return actions;
 }
 
 export function installEditorStatePlugins(
 	plugins: readonly EditorStatePlugin[],
 	store: StateManager<State>,
-	events: EventDispatcher
+	events: EventDispatcher,
+	menus: EditorMenuRegistry = createMenuItemRegistry()
 ): () => void {
 	const cleanups: Array<() => void> = [];
 	let disposed = false;
@@ -61,6 +61,13 @@ export function installEditorStatePlugins(
 			},
 			off: events.off,
 			dispatch: events.dispatch,
+		},
+		menus: {
+			registerItem: (menu, provider) => {
+				const unregister = menus.registerItem(menu, provider);
+				cleanups.push(unregister);
+				return unregister;
+			},
 		},
 	};
 

@@ -4,12 +4,19 @@ import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils
 import { moduleMenu } from './moduleMenu';
 
 describe('module menu', () => {
-	it.each([true, false])('shows the module execution action only when its plugin is installed: %s', async installed => {
+	it('places contributed items after enable/disable and before the remaining block actions', () => {
 		const codeBlock = createMockCodeBlock({ blockType: 'module', code: ['module test', 'moduleEnd'] });
 		const state = createMockState({ codeBlockRendering: { selectedCodeBlock: codeBlock } });
-		state.pluginActions = new Set(installed ? ['toggleModuleSkipExecutionDirective'] : []);
-		const items = await moduleMenu(state);
-		expect(items.some(item => item.action === 'toggleModuleSkipExecutionDirective')).toBe(installed);
+		const item = { title: 'Custom block action', action: 'customAction' };
+		const items = moduleMenu(state, { items: [item] });
+		expect(items.indexOf(item)).toBe(items.findIndex(item => item.action === 'toggleCodeBlockDisabled') + 1);
+		expect(items.indexOf(item)).toBeLessThan(items.findIndex(item => item.action === 'toggleFavoriteDirective'));
+	});
+
+	it('allows contributed actions in view mode', () => {
+		const state = createMockState({ featureFlags: { editing: false } });
+		const item = { title: 'Read-only custom action', action: 'inspect' };
+		expect(moduleMenu(state, { items: [item] })).toContain(item);
 	});
 
 	it('adds an open action for project-group blocks', async () => {

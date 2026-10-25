@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, MenuGenerator } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, ContextMenuItem, State } from '@8f4e/editor-state-types';
 import { documentBlockInstructionByType } from '@8f4e/language-spec';
 import { isSkipExecutionDirective } from '@8f4e/tokenizer';
 import { getGroupBlocks, getGroupModuleBlocks } from '../../code-blocks/features/group/getGroupBlocks';
@@ -8,8 +8,13 @@ const functionBlockType = documentBlockInstructionByType.function.type;
 const moduleBlockType = documentBlockInstructionByType.module.type;
 const noteBlockType = documentBlockInstructionByType.note.type;
 
-export const moduleMenu: MenuGenerator = state => {
-	const selectedCodeBlock = state.codeBlockRendering.selectedCodeBlock;
+interface ModuleMenuContext {
+	codeBlock?: CodeBlockGraphicData;
+	items?: readonly ContextMenuItem[];
+}
+
+export const moduleMenu = (state: State, context: ModuleMenuContext = {}): ContextMenuItem[] => {
+	const selectedCodeBlock = context.codeBlock ?? state.codeBlockRendering.selectedCodeBlock;
 	const blockType = selectedCodeBlock?.blockType;
 	const isProjectGroup = selectedCodeBlock?.nestedProjectCodeBlocks !== undefined;
 	let blockLabel = 'module';
@@ -22,23 +27,16 @@ export const moduleMenu: MenuGenerator = state => {
 		blockLabel = 'note';
 	}
 
-	const isDisabled = state.codeBlockRendering.selectedCodeBlock?.disabled ?? false;
-
-	// Check if module has #skipExecution directive
-	const hasSkipExecutionDirective =
-		blockType === moduleBlockType &&
-		state.codeBlockRendering.selectedCodeBlock?.code.some((line: string) => isSkipExecutionDirective(line));
+	const isDisabled = selectedCodeBlock?.disabled ?? false;
 
 	// Check if code block has ; @favorite directive
-	const hasFavoriteDirective = state.codeBlockRendering.selectedCodeBlock?.isFavorite ?? false;
-	const hasSliders = (state.codeBlockRendering.selectedCodeBlock?.widgets.sliders.length ?? 0) > 0;
+	const hasFavoriteDirective = selectedCodeBlock?.isFavorite ?? false;
+	const hasSliders = (selectedCodeBlock?.widgets.sliders.length ?? 0) > 0;
 	const hasPianos = (selectedCodeBlock?.widgets.pianoKeyboards.length ?? 0) > 0;
-	const hasMemoryConnections = state.codeBlockRendering.selectedCodeBlock
-		? hasIntermodularMemoryConnections(state.codeBlockRendering.selectedCodeBlock.code)
-		: false;
+	const hasMemoryConnections = selectedCodeBlock ? hasIntermodularMemoryConnections(selectedCodeBlock.code) : false;
 
 	// Check if code block has a group name and compute group skip/nonstick status
-	const groupName = state.codeBlockRendering.selectedCodeBlock?.groupName;
+	const groupName = selectedCodeBlock?.groupName;
 	const hasGroup = !!groupName;
 	let allGroupBlocksSkipped = false;
 	let allGroupBlocksNonstick = false;
@@ -78,31 +76,26 @@ export const moduleMenu: MenuGenerator = state => {
 					{
 						title: `Delete ${blockLabel}`,
 						action: 'deleteCodeBlock',
-						payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+						payload: { codeBlock: selectedCodeBlock },
 						close: true,
 					},
 					{
 						title: isDisabled ? `Enable ${blockLabel}` : `Disable ${blockLabel}`,
 						action: 'toggleCodeBlockDisabled',
-						payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+						payload: { codeBlock: selectedCodeBlock },
 						close: true,
 					},
-					...(blockType === moduleBlockType && state.pluginActions.has('toggleModuleSkipExecutionDirective')
-						? [
-								{
-									title: hasSkipExecutionDirective ? 'Unskip module' : 'Skip module',
-									action: 'toggleModuleSkipExecutionDirective',
-									payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
-									close: true,
-								},
-							]
-						: []),
+				]
+			: []),
+		...(context.items ?? []),
+		...(state.featureFlags.editing
+			? [
 					...(blockType === moduleBlockType && hasGroup
 						? [
 								{
 									title: allGroupBlocksSkipped ? 'Unskip group' : 'Skip group',
 									action: 'toggleGroupSkipExecutionDirective',
-									payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+									payload: { codeBlock: selectedCodeBlock },
 									close: true,
 								},
 							]
@@ -112,26 +105,26 @@ export const moduleMenu: MenuGenerator = state => {
 								{
 									title: 'Align blocks in row',
 									action: 'alignGroupBlocksInRow',
-									payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+									payload: { codeBlock: selectedCodeBlock },
 									close: true,
 								},
 								{
 									title: 'Remove from group',
 									action: 'removeFromGroupDirective',
-									payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+									payload: { codeBlock: selectedCodeBlock },
 									close: true,
 								},
 								{
 									title: `Ungroup "${groupName}"`,
 									action: 'ungroupByName',
-									payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+									payload: { codeBlock: selectedCodeBlock },
 									close: true,
 								},
 								{
 									title: allGroupBlocksNonstick ? 'Make Group Sticky' : 'Make Group Nonstick',
 									action: 'toggleGroupNonstick',
 									payload: {
-										codeBlock: state.codeBlockRendering.selectedCodeBlock,
+										codeBlock: selectedCodeBlock,
 										makeNonstick: !allGroupBlocksNonstick,
 									},
 									close: true,
@@ -139,7 +132,7 @@ export const moduleMenu: MenuGenerator = state => {
 								{
 									title: 'Delete group',
 									action: 'deleteGroup',
-									payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+									payload: { codeBlock: selectedCodeBlock },
 									close: true,
 								},
 							]
@@ -147,20 +140,20 @@ export const moduleMenu: MenuGenerator = state => {
 					{
 						title: hasFavoriteDirective ? 'Unfavorite' : 'Favorite',
 						action: 'toggleFavoriteDirective',
-						payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+						payload: { codeBlock: selectedCodeBlock },
 						close: true,
 					},
 					{
 						title: 'Save slider and piano values to code',
 						action: 'saveSliderValuesToCode',
-						payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+						payload: { codeBlock: selectedCodeBlock },
 						close: true,
 						disabled: !(hasSliders || hasPianos) || !state.callbacks.getWordFromMemory,
 					},
 					{
 						title: 'Remove connections',
 						action: 'removeConnections',
-						payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+						payload: { codeBlock: selectedCodeBlock },
 						close: true,
 						disabled: !hasMemoryConnections,
 					},
@@ -169,7 +162,7 @@ export const moduleMenu: MenuGenerator = state => {
 		{
 			title: `Copy ${blockLabel}`,
 			action: 'copyCodeBlock',
-			payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+			payload: { codeBlock: selectedCodeBlock },
 			close: true,
 			disabled: !state.callbacks.writeClipboardText,
 		},
@@ -178,7 +171,7 @@ export const moduleMenu: MenuGenerator = state => {
 					{
 						title: 'Copy group',
 						action: 'copyGroupBlocks',
-						payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+						payload: { codeBlock: selectedCodeBlock },
 						close: true,
 						disabled: !state.callbacks.writeClipboardText,
 					},
@@ -187,7 +180,7 @@ export const moduleMenu: MenuGenerator = state => {
 		{
 			title: `Log ${blockLabel} info to console`,
 			action: 'consoleLog',
-			payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+			payload: { codeBlock: selectedCodeBlock },
 			close: true,
 		},
 	];

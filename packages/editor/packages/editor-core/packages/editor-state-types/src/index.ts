@@ -342,7 +342,14 @@ export interface Callbacks {
 }
 
 // Options interface for editor initialization (top-level public API)
-export type { EditorStatePlugin, EditorStatePluginContext } from './plugins';
+export type {
+	EditorMenuId,
+	EditorMenuItemContext,
+	EditorMenuItemProvider,
+	EditorMenuRegistry,
+	EditorStatePlugin,
+	EditorStatePluginContext,
+} from './plugins';
 
 export interface Options {
 	/** State plugins installed in declaration order before the editor starts. */
@@ -361,8 +368,6 @@ export interface Options {
 
 // State interface - complete editor state tree (top-level public API)
 export interface State {
-	/** Actions supplied by the state plugins installed in this editor instance. */
-	pluginActions: ReadonlySet<string>;
 	/** Monotonic change signal for compiler inputs; selection and visual metadata do not advance it. */
 	compilerInputRevision: number;
 	compiler: Compiler;

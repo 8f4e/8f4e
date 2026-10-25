@@ -44,21 +44,31 @@ const editor = await initEditor(canvas, {
 });
 ```
 
-A plugin declares a unique `id`, optional `actions` names, and a synchronous `setup({ store, events })` function.
+A plugin declares a unique `id` and a synchronous `setup({ store, events, menus })` function.
 The host installs plugins in array order after core effects, before rendering starts and before the `init` and
 `loadSession` events. Setup runs separately for each editor instance; allocate instance data inside setup.
 Plugins use the existing state manager and event dispatcher APIs. The plugin store omits the editor's `dispose`
 method. This is a trusted extension interface, with the same state access as built-in effects.
 
-State subscriptions and event listeners registered through the supplied context are cleaned up automatically.
+State subscriptions, event listeners, and menu registrations made through the supplied context are cleaned up automatically.
 Setup can return a function to release timers or other resources. Cleanup runs in reverse installation order,
 once, while the store and dispatcher are still available. Failed setup releases subscriptions and previously
-installed plugins before the error is propagated. Duplicate plugin IDs or action names are rejected before setup.
+installed plugins before the error is propagated. Duplicate plugin IDs are rejected before setup.
 
-Declared action names are available through `state.pluginActions`. The existing module menu shows the single-module
-Skip/Unskip action only when `toggleModuleSkipExecutionDirective` is contributed. Menu entries remain owned by
-the editor; action declarations do not automatically create menu items. Group execution toggling remains built in.
-The core installs no state plugins by default; `@8f4e/editor-default` selects the standard plugin set.
+Register a code-block menu item with `menus.registerItem('moduleMenu', provider)`. The provider receives the current
+`{ state, codeBlock }` context whenever that menu is built, including submenu navigation. `codeBlock` is the block
+the menu was opened for; it can differ from the current selection. Return a standard `ContextMenuItem`, or
+`undefined` to hide the item. Its `action` and `payload` use the existing event dispatcher. The plugin owns the label,
+visibility rules, target payload, and handler together.
+
+Contributed items appear in registration order after Enable/Disable and before the remaining block actions.
+Providers choose whether their item appears in view or edit mode. Registration returns an idempotent unregister
+function and is also removed automatically with the plugin. Registrations belong to each editor instance and are
+held outside the state tree.
+
+The execution-toggle plugin registers its own Skip/Unskip menu item. Omitting the plugin removes both the item
+and its handler. Group execution toggling remains built in. The core installs no state plugins by default;
+`@8f4e/editor-default` selects the standard plugin set.
 
 `@8f4e/editor-state` exports `setSkipExecution` for the source transformation shared by the plugin and group toggle,
 and `incrementCompilerInputRevision` for signaling changed compiler inputs after source edits and derived updates.

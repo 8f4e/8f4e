@@ -37,13 +37,14 @@ import editorMode from './features/editor-mode/effect';
 import font from './features/font/effect';
 import globalEditorDirectivesEffect from './features/global-editor-directives/effect';
 import contextMenu from './features/menu/effect';
+import createMenuItemRegistry from './features/menu/itemRegistry';
 import compiler from './features/program-compiler/effect';
 import projectExport from './features/project-export/effect';
 import projectImport from './features/project-import/effect';
 import runtime from './features/runtime/effect';
 import tooltip from './features/tooltip/effect';
 import viewport from './features/viewport/effect';
-import { getEditorStatePluginActions, installEditorStatePlugins } from './plugins';
+import { installEditorStatePlugins, validateEditorStatePlugins } from './plugins';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
 
@@ -59,7 +60,8 @@ export {
 // Function to create default state
 export default function init(events: EventDispatcher, options: Options): StateManager<State> {
 	const plugins = options.plugins ?? [];
-	const pluginActions = getEditorStatePluginActions(plugins);
+	validateEditorStatePlugins(plugins);
+	const menus = createMenuItemRegistry();
 	const initialEditorMode = options.initialEditorMode ?? (options.featureFlags?.editing ? 'edit' : 'view');
 	const featureFlags = validateFeatureFlags({
 		...options.featureFlags,
@@ -76,7 +78,6 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 	// Create base state
 	const baseState = {
 		...createDefaultState(),
-		pluginActions,
 		callbacks: options.callbacks,
 		editorMode: initialEditorMode,
 		featureFlags,
@@ -95,7 +96,7 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 	registerEffect(canvasScreenshot(store, events));
 	registerEffect(dialog(store, events));
 	// Menus must consume pointer events before code blocks and viewport interactions.
-	registerEffect(contextMenu(store, events));
+	registerEffect(contextMenu(store, events, menus));
 	registerEffect(binaryAssetLoadingDialog(store, events));
 
 	registerEffect(runtime(store, events));
@@ -159,7 +160,7 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 		disposeSubscriptions();
 	};
 	try {
-		registerEffect(installEditorStatePlugins(plugins, store, events));
+		registerEffect(installEditorStatePlugins(plugins, store, events, menus));
 	} catch (error) {
 		dispose();
 		throw error;

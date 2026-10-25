@@ -2,8 +2,9 @@ import { createMockEventDispatcher, createMockState } from '@8f4e/editor-state-t
 import type { EditorStatePlugin } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
+import createMenuItemRegistry from './features/menu/itemRegistry';
 import initState from './index';
-import { getEditorStatePluginActions, installEditorStatePlugins } from './plugins';
+import { installEditorStatePlugins } from './plugins';
 
 describe('editor state plugins', () => {
 	it('installs in declaration order and disposes in reverse order once', () => {
@@ -25,7 +26,7 @@ describe('editor state plugins', () => {
 		expect(calls).toEqual(['install first', 'install second', 'dispose second', 'dispose first']);
 	});
 
-	it('scopes store subscriptions and event listeners to plugin installation', () => {
+	it('scopes store subscriptions, event listeners, and menu items to plugin installation', () => {
 		const store = createStateManager(createMockState());
 		const events = createMockEventDispatcher();
 		const on = vi.spyOn(events, 'on');
@@ -33,6 +34,7 @@ describe('editor state plugins', () => {
 		const onChange = vi.fn();
 		const onMatchingValue = vi.fn();
 		const onEvent = vi.fn();
+		const menus = createMenuItemRegistry();
 		const dispose = installEditorStatePlugins(
 			[
 				{
@@ -41,16 +43,19 @@ describe('editor state plugins', () => {
 						context.store.subscribe('compilerInputRevision', onChange);
 						context.store.subscribeToValue('compilerInputRevision', 1, onMatchingValue);
 						context.events.on('plugin-action', onEvent);
+						context.menus.registerItem('moduleMenu', () => ({ title: 'Plugin action', action: 'plugin-action' }));
 					},
 				},
 			],
 			store,
-			events
+			events,
+			menus
 		);
 		store.set('compilerInputRevision', 1);
 		expect(onChange).toHaveBeenCalledOnce();
 		expect(onMatchingValue).toHaveBeenCalledOnce();
 		expect(on).toHaveBeenCalledWith('plugin-action', onEvent);
+		expect(menus.getItems('moduleMenu', { state: store.getState() })).toHaveLength(1);
 		dispose();
 		dispose();
 		store.set('compilerInputRevision', 2);
@@ -58,6 +63,7 @@ describe('editor state plugins', () => {
 		expect(onChange).toHaveBeenCalledOnce();
 		expect(onMatchingValue).toHaveBeenCalledOnce();
 		expect(off).toHaveBeenCalledExactlyOnceWith('plugin-action', onEvent);
+		expect(menus.getItems('moduleMenu', { state: store.getState() })).toEqual([]);
 	});
 
 	it('cleans up earlier plugins and partial subscriptions when setup fails', () => {
@@ -67,6 +73,7 @@ describe('editor state plugins', () => {
 		const cleanup = vi.fn();
 		const onChange = vi.fn();
 		const onEvent = vi.fn();
+		const menus = createMenuItemRegistry();
 		expect(() =>
 			installEditorStatePlugins(
 				[
@@ -76,18 +83,21 @@ describe('editor state plugins', () => {
 						setup: context => {
 							context.store.subscribe('compilerInputRevision', onChange);
 							context.events.on('partial-action', onEvent);
+							context.menus.registerItem('moduleMenu', () => ({ title: 'Partial action' }));
 							throw new Error('Setup failed');
 						},
 					},
 				],
 				store,
-				events
+				events,
+				menus
 			)
 		).toThrow('Setup failed');
 		store.set('compilerInputRevision', 1);
 		expect(onChange).not.toHaveBeenCalled();
 		expect(off).toHaveBeenCalledWith('partial-action', onEvent);
 		expect(cleanup).toHaveBeenCalledOnce();
+		expect(menus.getItems('moduleMenu', { state: store.getState() })).toEqual([]);
 	});
 
 	it('continues disposal when a plugin cleanup throws', () => {
@@ -127,21 +137,33 @@ describe('editor state plugins', () => {
 		expect(setup).not.toHaveBeenCalled();
 	});
 
-	it('rejects conflicting actions and collects action availability per editor', () => {
-		const plugin: EditorStatePlugin = { id: 'test', actions: ['test-action'], setup: () => {} };
-		expect(() => getEditorStatePluginActions([plugin, { ...plugin, id: 'other' }])).toThrow('test-action');
-		const withPlugin = initState(createMockEventDispatcher(), {
-			callbacks: { loadSession: async () => null },
-			runtimeRegistry: {},
-			plugins: [plugin],
-		});
-		const withoutPlugin = initState(createMockEventDispatcher(), {
-			callbacks: { loadSession: async () => null },
-			runtimeRegistry: {},
-		});
-		expect(withPlugin.getState().pluginActions.has('test-action')).toBe(true);
-		expect(withoutPlugin.getState().pluginActions.size).toBe(0);
-		withPlugin.dispose();
-		withoutPlugin.dispose();
+	it('keeps menu registrations independent across editor instances', () => {
+		const plugin: EditorStatePlugin = {
+			id: 'test',
+			setup: ({ menus }) => {
+				menus.registerItem('moduleMenu', () => ({ title: 'Test item' }));
+			},
+		};
+		const first = createMenuItemRegistry();
+		const second = createMenuItemRegistry();
+		const state = createMockState();
+		const disposeFirst = installEditorStatePlugins(
+			[plugin],
+			createStateManager(state),
+			createMockEventDispatcher(),
+			first
+		);
+		const disposeSecond = installEditorStatePlugins(
+			[plugin],
+			createStateManager(createMockState()),
+			createMockEventDispatcher(),
+			second
+		);
+		expect(first.getItems('moduleMenu', { state })).toHaveLength(1);
+		expect(second.getItems('moduleMenu', { state })).toHaveLength(1);
+		disposeFirst();
+		expect(first.getItems('moduleMenu', { state })).toEqual([]);
+		expect(second.getItems('moduleMenu', { state })).toHaveLength(1);
+		disposeSecond();
 	});
 });
