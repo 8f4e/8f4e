@@ -398,6 +398,93 @@ describe('resolveMemoryReferences', () => {
 	});
 });
 
+describe('min/max result types', () => {
+	const value = createMemoryDeclaration('value', {
+		type: 'float64',
+		elementWordSize: 8,
+		wordAlignedSize: 2,
+		isInteger: false,
+		isFloat64: true,
+	});
+	const doubles = createMemoryDeclaration('doubles', {
+		type: 'float64',
+		numberOfElements: 2,
+		elementWordSize: 8,
+		wordAlignedSize: 4,
+		isInteger: false,
+	});
+	const pointer = createMemoryDeclaration('pointer', {
+		type: 'float64*',
+		pointeeBaseType: 'float64',
+		pointerDepth: 1,
+	});
+	const pointerPointer = createMemoryDeclaration('pointerPointer', {
+		type: 'float64**',
+		pointeeBaseType: 'float64',
+		pointerDepth: 2,
+	});
+	const float = createMemoryDeclaration('float', { type: 'float', isInteger: false });
+	const integer = createMemoryDeclaration('integer', { elementWordSize: 2, isUnsigned: true });
+	const floatPointer = createMemoryDeclaration('floatPointer', {
+		type: 'float*',
+		pointeeBaseType: 'float',
+		pointerDepth: 1,
+	});
+	const context = withRemoteModules(
+		createTestContext(
+			createPlannedModule('main', { value, doubles, pointer, pointerPointer, float, integer, floatPointer }),
+			{
+				locals: {
+					localPointer: { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 1 },
+					localPointerPointer: { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 2 },
+					localFloatPointer: { isInteger: true, pointeeBaseType: 'float', pointerDepth: 1 },
+				},
+			}
+		),
+		[createPlannedModule('source', { value, doubles })]
+	);
+
+	it.each(['value', 'doubles', 'source:value', 'source:doubles', '*pointer', '*localPointer'])(
+		'preserves float64 min/max types for %s',
+		target => {
+			for (const [query, expected] of [
+				['min', -Number.MAX_VALUE],
+				['max', Number.MAX_VALUE],
+			] as const) {
+				expect(tryResolveValueArgument(context, parseArgument(`${query}(${target})`))).toEqual({
+					value: expected,
+					isInteger: false,
+					isFloat64: true,
+				});
+			}
+		}
+	);
+
+	it.each([
+		['float', -3.4028234663852886e38, 3.4028234663852886e38, false],
+		['*floatPointer', -3.4028234663852886e38, 3.4028234663852886e38, false],
+		['*localFloatPointer', -3.4028234663852886e38, 3.4028234663852886e38, false],
+		['integer', 0, 65535, true],
+		['pointer', -2147483648, 2147483647, true],
+		['*pointerPointer', -2147483648, 2147483647, true],
+		['*localPointerPointer', -2147483648, 2147483647, true],
+	] as const)('preserves existing min/max types for %s', (target, min, max, isInteger) => {
+		expect(tryResolveValueArgument(context, parseArgument(`min(${target})`))).toEqual({ value: min, isInteger });
+		expect(tryResolveValueArgument(context, parseArgument(`max(${target})`))).toEqual({ value: max, isInteger });
+	});
+
+	it.each([
+		['min', -Number.MAX_VALUE / 2],
+		['max', Number.MAX_VALUE / 2],
+	] as const)('preserves float64 when folding %s(value)/2', (query, expected) => {
+		expect(tryResolveValueArgument(context, parseArgument(`${query}(value)/2`))).toEqual({
+			value: expected,
+			isInteger: false,
+			isFloat64: true,
+		});
+	});
+});
+
 describe('tryResolveValueArgument', () => {
 	const samples = createMemoryDeclaration('samples', {
 		byteAddress: 32,

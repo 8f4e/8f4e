@@ -1,0 +1,91 @@
+8f4e/v1
+
+note
+; @config runtime TestRuntime
+
+Float64 min/max queries retain finite bounds and their value type.
+Pointer-to-pointer bounds describe an integer address slot.
+noteEnd
+
+entry test
+module boundsSource
+float64 value 1.0f64
+moduleEnd
+
+module boundAssertions
+float64 value 1.0f64
+float64* pointer &value
+float64** pointerPointer &pointer
+float single 1.0
+int integer 1
+
+push min(value)
+assertEqual -1.7976931348623157e308f64
+push max(value)
+assertEqual 1.7976931348623157e308f64
+
+push min(boundsSource:value)
+assertEqual -1.7976931348623157e308f64
+push max(boundsSource:value)
+assertEqual 1.7976931348623157e308f64
+
+push min(*pointer)
+assertEqual -1.7976931348623157e308f64
+push max(*pointer)
+assertEqual 1.7976931348623157e308f64
+
+push min(value)/2
+assertEqual -8.988465674311579e307f64
+push max(value)/2
+assertEqual 8.988465674311579e307f64
+
+push min(single)
+assertEqual -3.4028234663852886e38
+push max(single)
+assertEqual 3.4028234663852886e38
+push min(integer)
+assertEqual -2147483648
+push max(integer)
+assertEqual 2147483647
+
+push min(*pointerPointer)
+assertEqual -2147483648
+push max(*pointerPointer)
+assertEqual 2147483647
+
+push &value
+call checkParameterBounds
+call checkLocalBounds
+push &pointer
+call checkDoublePointerBounds
+moduleEnd
+entryEnd
+
+function checkParameterBounds
+param float64* parameter
+push min(*parameter)
+assertEqual -1.7976931348623157e308f64
+push max(*parameter)
+assertEqual 1.7976931348623157e308f64
+functionEnd
+
+function checkLocalBounds
+local float64* localPointer
+push min(*localPointer)
+assertEqual -1.7976931348623157e308f64
+push max(*localPointer)
+assertEqual 1.7976931348623157e308f64
+functionEnd
+
+function checkDoublePointerBounds
+param float64** parameter
+local float64** localPointerPointer
+push min(*parameter)
+assertEqual -2147483648
+push max(*parameter)
+assertEqual 2147483647
+push min(*localPointerPointer)
+assertEqual -2147483648
+push max(*localPointerPointer)
+assertEqual 2147483647
+functionEnd

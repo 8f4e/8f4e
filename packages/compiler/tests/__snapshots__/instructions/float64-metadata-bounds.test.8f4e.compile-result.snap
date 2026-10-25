@@ -1,0 +1,1012 @@
+{
+  "functionAst": {
+    "checkDoublePointerBounds__float64_p_p": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "checkDoublePointerBounds",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float64**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "parameter",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float64**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "localPointerPointer",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-min",
+              "scope": "local",
+              "targetMemoryId": "parameter",
+              "type": "identifier",
+              "value": "min(*parameter)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -2147483648,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-max",
+              "scope": "local",
+              "targetMemoryId": "parameter",
+              "type": "identifier",
+              "value": "max(*parameter)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2147483647,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-min",
+              "scope": "local",
+              "targetMemoryId": "localPointerPointer",
+              "type": "identifier",
+              "value": "min(*localPointerPointer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -2147483648,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-max",
+              "scope": "local",
+              "targetMemoryId": "localPointerPointer",
+              "type": "identifier",
+              "value": "max(*localPointerPointer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2147483647,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "checkDoublePointerBounds",
+      "type": "function",
+    },
+    "checkLocalBounds__void": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "checkLocalBounds",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float64*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "localPointer",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-min",
+              "scope": "local",
+              "targetMemoryId": "localPointer",
+              "type": "identifier",
+              "value": "min(*localPointer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": -1.7976931348623157e+308,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-max",
+              "scope": "local",
+              "targetMemoryId": "localPointer",
+              "type": "identifier",
+              "value": "max(*localPointer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.7976931348623157e+308,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "checkLocalBounds",
+      "type": "function",
+    },
+    "checkParameterBounds__float64_p": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "checkParameterBounds",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float64*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "parameter",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-min",
+              "scope": "local",
+              "targetMemoryId": "parameter",
+              "type": "identifier",
+              "value": "min(*parameter)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": -1.7976931348623157e+308,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-max",
+              "scope": "local",
+              "targetMemoryId": "parameter",
+              "type": "identifier",
+              "value": "max(*parameter)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.7976931348623157e+308,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "checkParameterBounds",
+      "type": "function",
+    },
+  },
+  "functionOverview": {
+    "checkDoublePointerBounds__float64_p_p": {
+      "id": "checkDoublePointerBounds__float64_p_p",
+      "signature": {
+        "parameters": [
+          "float64**",
+        ],
+        "returns": [],
+      },
+    },
+    "checkLocalBounds__void": {
+      "id": "checkLocalBounds__void",
+      "signature": {
+        "parameters": [],
+        "returns": [],
+      },
+    },
+    "checkParameterBounds__float64_p": {
+      "id": "checkParameterBounds__float64_p",
+      "signature": {
+        "parameters": [
+          "float64*",
+        ],
+        "returns": [],
+      },
+    },
+  },
+  "moduleAst": {
+    "boundAssertions": {
+      "id": "boundAssertions",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "boundAssertions",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "float64",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "pointer",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "&value",
+            },
+          ],
+          "instruction": "float64*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "pointerPointer",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "pointer",
+              "type": "identifier",
+              "value": "&pointer",
+            },
+          ],
+          "instruction": "float64**",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "single",
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "float",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "integer",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-min",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "min(value)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": -1.7976931348623157e+308,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-max",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "max(value)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.7976931348623157e+308,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-element-min",
+              "scope": "intermodule",
+              "targetMemoryId": "value",
+              "targetModuleId": "boundsSource",
+              "type": "identifier",
+              "value": "min(boundsSource:value)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": -1.7976931348623157e+308,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-element-max",
+              "scope": "intermodule",
+              "targetMemoryId": "value",
+              "targetModuleId": "boundsSource",
+              "type": "identifier",
+              "value": "max(boundsSource:value)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.7976931348623157e+308,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-min",
+              "scope": "local",
+              "targetMemoryId": "pointer",
+              "type": "identifier",
+              "value": "min(*pointer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": -1.7976931348623157e+308,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-max",
+              "scope": "local",
+              "targetMemoryId": "pointer",
+              "type": "identifier",
+              "value": "max(*pointer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.7976931348623157e+308,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "left": {
+                "referenceKind": "element-min",
+                "scope": "local",
+                "targetMemoryId": "value",
+                "type": "identifier",
+                "value": "min(value)",
+              },
+              "operator": "/",
+              "right": {
+                "isInteger": true,
+                "type": "literal",
+                "value": 2,
+              },
+              "type": "compile_time_expression",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": -8.988465674311579e+307,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "left": {
+                "referenceKind": "element-max",
+                "scope": "local",
+                "targetMemoryId": "value",
+                "type": "identifier",
+                "value": "max(value)",
+              },
+              "operator": "/",
+              "right": {
+                "isInteger": true,
+                "type": "literal",
+                "value": 2,
+              },
+              "type": "compile_time_expression",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 8.988465674311579e+307,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-min",
+              "scope": "local",
+              "targetMemoryId": "single",
+              "type": "identifier",
+              "value": "min(single)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": -3.4028234663852886e+38,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-max",
+              "scope": "local",
+              "targetMemoryId": "single",
+              "type": "identifier",
+              "value": "max(single)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 3.4028234663852886e+38,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-min",
+              "scope": "local",
+              "targetMemoryId": "integer",
+              "type": "identifier",
+              "value": "min(integer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -2147483648,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-max",
+              "scope": "local",
+              "targetMemoryId": "integer",
+              "type": "identifier",
+              "value": "max(integer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2147483647,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-min",
+              "scope": "local",
+              "targetMemoryId": "pointerPointer",
+              "type": "identifier",
+              "value": "min(*pointerPointer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -2147483648,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-max",
+              "scope": "local",
+              "targetMemoryId": "pointerPointer",
+              "type": "identifier",
+              "value": "max(*pointerPointer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2147483647,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "&value",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "checkParameterBounds",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "checkLocalBounds",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "pointer",
+              "type": "identifier",
+              "value": "&pointer",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "checkDoublePointerBounds",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "boundsSource": {
+      "id": "boundsSource",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "boundsSource",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "float64",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+  },
+  "moduleMemory": {
+    "boundAssertions": {
+      "memory": {
+        "integer": {
+          "byteAddress": 28,
+          "default": 1,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "integer",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+          "wordAlignedAddress": 7,
+          "wordAlignedSize": 1,
+        },
+        "pointer": {
+          "byteAddress": 16,
+          "default": 8,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "pointer",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float64",
+          "pointerDepth": 1,
+          "type": "float64*",
+          "wordAlignedAddress": 4,
+          "wordAlignedSize": 1,
+        },
+        "pointerPointer": {
+          "byteAddress": 20,
+          "default": 16,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "pointerPointer",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float64",
+          "pointerDepth": 2,
+          "type": "float64**",
+          "wordAlignedAddress": 5,
+          "wordAlignedSize": 1,
+        },
+        "single": {
+          "byteAddress": 24,
+          "default": 1,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "single",
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "float",
+          "wordAlignedAddress": 6,
+          "wordAlignedSize": 1,
+        },
+        "value": {
+          "byteAddress": 8,
+          "default": 1,
+          "elementWordSize": 8,
+          "hasExplicitDefault": true,
+          "id": "value",
+          "isFloat64": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "float64",
+          "wordAlignedAddress": 2,
+          "wordAlignedSize": 3,
+        },
+      },
+    },
+    "boundsSource": {
+      "memory": {
+        "value": {
+          "byteAddress": 32,
+          "default": 1,
+          "elementWordSize": 8,
+          "hasExplicitDefault": true,
+          "id": "value",
+          "isFloat64": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "float64",
+          "wordAlignedAddress": 8,
+          "wordAlignedSize": 2,
+        },
+      },
+    },
+  },
+  "overview": {
+    "compiledFunctions": [
+      "checkDoublePointerBounds__float64_p_p",
+      "checkLocalBounds__void",
+      "checkParameterBounds__float64_p",
+    ],
+    "compiledModules": [
+      "boundAssertions",
+      "boundsSource",
+    ],
+    "requiredMemoryBytes": 40,
+    "wasmExports": [
+      "initDefaults",
+      "main",
+      "test",
+    ],
+  },
+}

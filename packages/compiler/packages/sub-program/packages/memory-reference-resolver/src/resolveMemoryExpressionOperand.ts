@@ -21,6 +21,7 @@ import {
 	getPointeeElementMinValueFromMetadata,
 	getPointeeElementWordSize,
 	getPointeeElementWordSizeFromMetadata,
+	getPointeeValueKindFromMetadata,
 	memoryEndAddressValue,
 	memoryStartAddressValue,
 	moduleAddressValue,
@@ -163,6 +164,7 @@ export function resolveMemoryExpressionOperand(
 			return {
 				value: getElementMaxValue(targetMemory),
 				isInteger: !!targetMemory.isInteger,
+				...(targetMemory.elementWordSize === 8 && !targetMemory.isInteger ? { isFloat64: true } : {}),
 			};
 		}
 		return undefined;
@@ -174,6 +176,7 @@ export function resolveMemoryExpressionOperand(
 			return {
 				value: getElementMinValue(targetMemory),
 				isInteger: !!targetMemory.isInteger,
+				...(targetMemory.elementWordSize === 8 && !targetMemory.isInteger ? { isFloat64: true } : {}),
 			};
 		}
 		return undefined;
@@ -238,6 +241,7 @@ export function resolveMemoryExpressionOperand(
 			return {
 				value: getPointeeElementMaxValue(memoryItem),
 				isInteger: getPointeeElementIsIntegerFromMetadata(memoryItem),
+				...(getPointeeValueKindFromMetadata(memoryItem) === 'float64' ? { isFloat64: true } : {}),
 			};
 		}
 		const local = context.locals[base];
@@ -245,6 +249,7 @@ export function resolveMemoryExpressionOperand(
 			return {
 				value: getPointeeElementMaxValueFromMetadata(local),
 				isInteger: getPointeeElementIsIntegerFromMetadata(local),
+				...(getPointeeValueKindFromMetadata(local) === 'float64' ? { isFloat64: true } : {}),
 			};
 		}
 		return undefined;
@@ -258,6 +263,7 @@ export function resolveMemoryExpressionOperand(
 			return {
 				value: getElementMaxValue(memoryItem),
 				isInteger: !!memoryItem.isInteger,
+				...(memoryItem.elementWordSize === 8 && !memoryItem.isInteger ? { isFloat64: true } : {}),
 			};
 		}
 		return undefined;
@@ -271,6 +277,7 @@ export function resolveMemoryExpressionOperand(
 			return {
 				value: getPointeeElementMinValue(memoryItem),
 				isInteger: getPointeeElementIsIntegerFromMetadata(memoryItem),
+				...(getPointeeValueKindFromMetadata(memoryItem) === 'float64' ? { isFloat64: true } : {}),
 			};
 		}
 		const local = context.locals[base];
@@ -278,6 +285,7 @@ export function resolveMemoryExpressionOperand(
 			return {
 				value: getPointeeElementMinValueFromMetadata(local),
 				isInteger: getPointeeElementIsIntegerFromMetadata(local),
+				...(getPointeeValueKindFromMetadata(local) === 'float64' ? { isFloat64: true } : {}),
 			};
 		}
 		return undefined;
@@ -291,6 +299,7 @@ export function resolveMemoryExpressionOperand(
 			return {
 				value: getElementMinValue(memoryItem),
 				isInteger: !!memoryItem.isInteger,
+				...(memoryItem.elementWordSize === 8 && !memoryItem.isInteger ? { isFloat64: true } : {}),
 			};
 		}
 		return undefined;
