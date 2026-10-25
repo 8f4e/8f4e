@@ -849,4 +849,126 @@ describe('codeBlockDragger', () => {
 			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 		});
 	});
+
+	describe('alwaysOnTop z-order partitioning', () => {
+		it('brings a normal block forward without crossing into the always-on-top partition', () => {
+			const normal1 = createCodeBlockGraphicData({
+				code: ['module normal1', 'moduleEnd'],
+				name: 'normal1',
+				gridX: 5,
+				gridY: 5,
+				x: 50,
+				y: 100,
+				width: 100,
+				height: 100,
+				creationIndex: 0,
+				blockType: 'module',
+				alwaysOnTop: false,
+			});
+			const normal2 = createCodeBlockGraphicData({
+				code: ['module normal2', 'moduleEnd'],
+				name: 'normal2',
+				gridX: 25,
+				gridY: 5,
+				x: 250,
+				y: 100,
+				width: 100,
+				height: 100,
+				creationIndex: 1,
+				blockType: 'module',
+				alwaysOnTop: false,
+			});
+			const top1 = createCodeBlockGraphicData({
+				code: ['module top1', '; @alwaysOnTop', 'moduleEnd'],
+				name: 'top1',
+				gridX: 45,
+				gridY: 5,
+				x: 450,
+				y: 100,
+				width: 100,
+				height: 100,
+				creationIndex: 2,
+				blockType: 'module',
+				alwaysOnTop: true,
+			});
+
+			state.codeBlockRendering.codeBlocks = [normal1, normal2, top1];
+
+			codeBlockDragger(store, events);
+
+			mousedownHandlers[0]({
+				x: 50,
+				y: 100,
+				movementX: 0,
+				movementY: 0,
+				buttons: 1,
+				stopPropagation: false,
+				canvasWidth: 800,
+				canvasHeight: 600,
+				altKey: false,
+			});
+
+			expect(state.codeBlockRendering.codeBlocks).toEqual([normal2, normal1, top1]);
+		});
+
+		it('brings an always-on-top block forward within the always-on-top partition', () => {
+			const normal1 = createCodeBlockGraphicData({
+				code: ['module normal1', 'moduleEnd'],
+				name: 'normal1',
+				gridX: 5,
+				gridY: 5,
+				x: 50,
+				y: 100,
+				width: 100,
+				height: 100,
+				creationIndex: 0,
+				blockType: 'module',
+				alwaysOnTop: false,
+			});
+			const top1 = createCodeBlockGraphicData({
+				code: ['module top1', '; @alwaysOnTop', 'moduleEnd'],
+				name: 'top1',
+				gridX: 25,
+				gridY: 5,
+				x: 250,
+				y: 100,
+				width: 100,
+				height: 100,
+				creationIndex: 1,
+				blockType: 'module',
+				alwaysOnTop: true,
+			});
+			const top2 = createCodeBlockGraphicData({
+				code: ['module top2', '; @alwaysOnTop', 'moduleEnd'],
+				name: 'top2',
+				gridX: 45,
+				gridY: 5,
+				x: 450,
+				y: 100,
+				width: 100,
+				height: 100,
+				creationIndex: 2,
+				blockType: 'module',
+				alwaysOnTop: true,
+			});
+
+			state.codeBlockRendering.codeBlocks = [normal1, top1, top2];
+
+			codeBlockDragger(store, events);
+
+			mousedownHandlers[0]({
+				x: 250,
+				y: 100,
+				movementX: 0,
+				movementY: 0,
+				buttons: 1,
+				stopPropagation: false,
+				canvasWidth: 800,
+				canvasHeight: 600,
+				altKey: false,
+			});
+
+			expect(state.codeBlockRendering.codeBlocks).toEqual([normal1, top2, top1]);
+		});
+	});
 });
