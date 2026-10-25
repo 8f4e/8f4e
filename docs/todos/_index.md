@@ -66,6 +66,7 @@ Active todo files are listed below.
 | 503 | Explore WebMCP tools for inspecting and editing projects | 🟡 | 1-2d | 2026-10-18 | Research and prototype a safe browser-agent command surface for semantic project inspection and code-block changes. |
 | 504 | Add a color-theme contrast audit tool | 🟡 | 1-2d | 2026-10-21 | Measure critical foreground/background pairs in resolved editor themes and report contrast failures, including alpha compositing. |
 | 505 | Add an initial editor mode directive | 🟡 | 4-8h | 2026-10-21 | Let projects request edit or view mode at load time while preserving host-level mode policy and later user mode changes. |
+| 506 | Add an inline sample browser directive | 🟡 | TBD | 2026-10-22 | Render a folder/file browser inside a code block and update a bound binary asset URL when a sample is selected. |
 
 ### 🟢 Low Priority
 
