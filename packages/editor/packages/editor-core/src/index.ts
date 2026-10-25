@@ -3,13 +3,17 @@ import type {
 	Callbacks,
 	EditorConfigSchemaContributionRegistry,
 	EditorMode,
-	EditorStatePlugin,
 	InfoRecord,
 	RuntimeRegistry,
 	State,
 } from '@8f4e/editor-state-types';
 import generateSprite from '@8f4e/sprite-generator';
-import initView, { type MemoryViews, type RenderStats, type WebUiOptions } from '@8f4e/web-ui';
+import initView, {
+	createCodeBlockDrawerRegistry,
+	type MemoryViews,
+	type RenderStats,
+	type WebUiOptions,
+} from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import {
 	BIN_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID,
@@ -29,6 +33,7 @@ import initEvents from './events';
 import keyboardEvents from './events/keyboardEvents';
 import pointerEvents from './events/pointerEvents';
 import { createMemoryViewManager, type MemoryRef } from './memoryViewManager';
+import { type EditorPlugin, installEditorPlugins } from './plugins';
 import { createSpriteSheetManager } from './spriteSheetManager';
 import { updateStateWithSpriteData } from './updateStateWithSpriteData';
 import {
@@ -58,8 +63,6 @@ export type {
 	EditorMenuItemProvider,
 	EditorMenuRegistry,
 	EditorMode,
-	EditorStatePlugin,
-	EditorStatePluginContext,
 	FeatureFlags,
 	FeatureFlagsConfig,
 	JSONSchemaLike,
@@ -71,8 +74,10 @@ export type {
 	RuntimeValuesByRuntimeId,
 	State,
 } from '@8f4e/editor-state-types';
+export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from '@8f4e/web-ui';
 export type { EventDispatcher } from './events';
 export type { MemoryRef } from './memoryViewManager';
+export type { EditorPlugin, EditorPluginContext } from './plugins';
 // Re-export helper functions
 export { updateStateWithSpriteData } from './updateStateWithSpriteData';
 
@@ -89,8 +94,8 @@ export interface Editor {
 }
 
 export interface EditorOptions {
-	/** Trusted state plugins, installed before initialization and session loading. */
-	plugins?: readonly EditorStatePlugin[];
+	/** Trusted plugins, installed before rendering, initialization, and session loading. */
+	plugins?: readonly EditorPlugin[];
 	/** Capture wheel gestures for viewport panning. Disable this for editors embedded in scrolling pages. */
 	captureWheel?: boolean;
 	featureFlags?: Partial<State['featureFlags']>;
@@ -227,6 +232,16 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			},
 		});
 		cleanups.push(() => store.dispose());
+		const drawers = createCodeBlockDrawerRegistry();
+		cleanups.push(
+			installEditorPlugins(options.plugins ?? [], {
+				store,
+				events,
+				menus: store.menus,
+				directives: store.directives,
+				drawers,
+			})
+		);
 		const state = store.getState();
 		cleanups.push(pointerEvents(canvas, events, state, options.captureWheel));
 		cleanups.push(keyboardEvents(canvas, events, store));
@@ -252,6 +267,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		const getOverlayTexture = () => resolveWebUiOverlayConfig(state) ?? options.overlayTexture;
 
 		view = await initView(state, renderProjection, canvas, memoryViews, spriteData, {
+			drawers,
 			renderStatsIntervalFrames: options.renderStatsIntervalFrames,
 			overlayTexture: getOverlayTexture(),
 			getCodeBuffer: () => currentCodeBuffer,

@@ -12,16 +12,16 @@ vi.mock('./storage-callbacks', () => ({
 	exportCanvasScreenshot: vi.fn(),
 }));
 
-describe('default editor state plugins', () => {
-	it('includes the execution toggle in the default composition', async () => {
+describe('default editor plugins', () => {
+	it('includes the execution toggle and switch widget in the default composition', async () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 		const editor = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage });
 		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toBe(defaultEditorPlugins);
-		expect(defaultEditorPlugins.map(plugin => plugin.id)).toContain('toggle-skip-execution');
+		expect(defaultEditorPlugins.map(plugin => plugin.id)).toEqual(['toggle-skip-execution', 'switch']);
 		editor.dispose();
 	});
 
-	it('lets hosts replace the plugin set or omit state plugins', async () => {
+	it('lets hosts replace the plugin set or omit plugins', async () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 		const plugins = [{ id: 'custom', setup: vi.fn(() => () => {}) }];
 		const editor = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage, plugins });

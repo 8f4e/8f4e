@@ -1,4 +1,4 @@
-import type { State, Switch } from '@8f4e/editor-state-types';
+import type { BinaryControl, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../../drawContext';
 
 const OFF_LABEL = '[| ]';
@@ -7,7 +7,7 @@ const ON_LABEL = '[ |]';
 export default function drawBinaryControl(
 	engine: DrawContext,
 	state: State,
-	control: Pick<Switch, 'x' | 'y' | 'width' | 'height'>,
+	control: Pick<BinaryControl, 'x' | 'y' | 'width' | 'height'>,
 	isOn: boolean
 ): void {
 	const spriteLookups = state.spriteLookups;

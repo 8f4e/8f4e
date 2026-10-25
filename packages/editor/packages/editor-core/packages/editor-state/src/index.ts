@@ -1,4 +1,10 @@
-import type { EventDispatcher, Options, State } from '@8f4e/editor-state-types';
+import type {
+	EditorDirectiveRegistry,
+	EditorMenuRegistry,
+	EventDispatcher,
+	Options,
+	State,
+} from '@8f4e/editor-state-types';
 import createStateManager, { type StateManager } from '@8f4e/state-manager';
 import binaryAssetLoadingDialog from './features/binary-assets/effect';
 import canvasScreenshot from './features/canvas-screenshot/effect';
@@ -12,8 +18,8 @@ import codeBlockNavigation from './features/code-blocks/features/codeBlockNaviga
 import button from './features/code-blocks/features/directives/button/interaction';
 import crossfade from './features/code-blocks/features/directives/crossfade/interaction';
 import pianoKeyboard from './features/code-blocks/features/directives/piano/interaction';
+import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
 import slider from './features/code-blocks/features/directives/slider/interaction';
-import _switch from './features/code-blocks/features/directives/switch/interaction';
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
 import favoriteToggler from './features/code-blocks/features/favoriteToggler/effect';
@@ -44,7 +50,6 @@ import projectImport from './features/project-import/effect';
 import runtime from './features/runtime/effect';
 import tooltip from './features/tooltip/effect';
 import viewport from './features/viewport/effect';
-import { installEditorStatePlugins } from './plugins';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
 
@@ -58,9 +63,15 @@ export {
 } from './features/editor-config/schemaValidator';
 
 // Function to create default state
-export default function init(events: EventDispatcher, options: Options): StateManager<State> {
-	const plugins = options.plugins ?? [];
+export default function init(
+	events: EventDispatcher,
+	options: Options
+): StateManager<State> & {
+	menus: EditorMenuRegistry;
+	directives: EditorDirectiveRegistry;
+} {
 	const menus = createMenuItemRegistry();
+	const directives = createDirectiveRegistry();
 	const initialEditorMode = options.initialEditorMode ?? (options.featureFlags?.editing ? 'edit' : 'view');
 	const featureFlags = validateFeatureFlags({
 		...options.featureFlags,
@@ -104,7 +115,6 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 	registerEffect(projectImport(store, events));
 	registerEffect(codeBlockDragger(store, events));
 	registerEffect(codeBlockNavigation(store, events));
-	registerEffect(_switch(state, events));
 	registerEffect(button(state, events));
 	registerEffect(slider(store, events));
 	registerEffect(sliderDefaultSaver(store, events));
@@ -127,7 +137,7 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 	registerEffect(blockTypeUpdater(store)); // Must run before compiler to classify blocks first
 	registerEffect(globalEditorDirectivesEffect(store));
 	registerEffect(compiler(store));
-	registerEffect(codeBlockRendering(store, events));
+	registerEffect(codeBlockRendering(store, events, directives.plugins));
 	registerEffect(assertions(store));
 	registerEffect(viewportDirectiveEffect(store, events));
 	registerEffect(entryOutlines(store));
@@ -146,22 +156,20 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 			effectCleanups.pop()!();
 		}
 	};
-	try {
-		registerEffect(installEditorStatePlugins(plugins, store, events, menus));
-	} catch (error) {
-		dispose();
-		throw error;
-	}
 	return {
 		...store,
+		menus,
+		directives,
 		dispose,
 	};
 }
 
 export { navigateToCodeBlockInDirection } from './features/code-blocks/features/codeBlockNavigation/effect';
+export { parseEditorDirectives } from './features/code-blocks/features/directives/utils';
 // Export helper functions
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
+export { default as gapCalculator } from './features/code-editing/gapCalculator';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
 // Export .8f4e format helpers
 export { serializeProjectTo8f4e } from './features/project-export/serializeTo8f4e';
@@ -169,3 +177,4 @@ export { serializeProjectTo8f4e } from './features/project-export/serializeTo8f4
 export { EMPTY_DEFAULT_PROJECT } from './features/project-import/emptyDefaultProject';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
+export { isMemoryAddress, parseFiniteNumber } from './shared/editorDirectiveArgumentTypes';

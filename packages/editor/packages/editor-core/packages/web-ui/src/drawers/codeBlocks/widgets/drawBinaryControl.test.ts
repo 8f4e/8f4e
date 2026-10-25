@@ -1,10 +1,10 @@
 import { createMockState } from '@8f4e/editor-state-testing';
-import type { Switch } from '@8f4e/editor-state-types';
+import type { BinaryControl } from '@8f4e/editor-state-types';
 import { describe, expect, it, type vi } from 'vitest';
 import { createDrawContextMock, createSpriteIdLookupMock } from '../../../__tests__/rendering';
 import drawBinaryControl from './drawBinaryControl';
 
-const control: Switch = {
+const control: BinaryControl = {
 	x: 10,
 	y: 20,
 	width: 32,

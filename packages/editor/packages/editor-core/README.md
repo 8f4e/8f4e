@@ -29,54 +29,59 @@ The editor supports view and edit modes. Selected code blocks have a continuousl
 Command+Arrow (or Control+Arrow) navigates between blocks with smooth viewport movement. Use `e` to enter edit mode
 and Escape to return to view mode when `modeToggling` is enabled.
 
-## State plugins
+## Plugins
 
-Pass a `plugins` array to initialization to install state-only extensions. `EditorStatePlugin` and
-`EditorStatePluginContext` are exported by `@8f4e/editor-core` and `@8f4e/editor-state-types`.
+Pass a `plugins` array to initialization. `EditorPlugin` and `EditorPluginContext` are exported by
+`@8f4e/editor-core`.
 
 ```ts
 import initEditor from '@8f4e/editor-core';
+import { switchPlugin } from '@8f4e/editor-plugin-switch';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
 
 const editor = await initEditor(canvas, {
 	...options,
-	plugins: [toggleSkipExecutionPlugin],
+	plugins: [toggleSkipExecutionPlugin, switchPlugin],
 });
 ```
 
-A plugin declares an `id` and a synchronous `setup({ store, events, menus })` function.
-The host installs plugins in array order after core effects, before rendering starts and before the `init` and
-`loadSession` events. Setup runs separately for each editor instance; allocate instance data inside setup.
-Plugins use the existing state manager and event dispatcher APIs. Store disposal belongs to the editor and is
-excluded from the plugin context type. This is a trusted extension interface, with the same state access as built-in effects.
+A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, drawers })` function.
+Editor-core installs plugins in array order after core state effects, before rendering starts and before the `init`
+and `loadSession` events. Setup runs separately for each editor instance; allocate instance data inside setup.
+Plugins receive the existing state manager and event dispatcher directly. Store disposal belongs to the editor and
+is excluded from the plugin context type. This is a trusted extension interface.
 
-Setup must return a disposer that releases every resource the plugin creates, including state subscriptions,
-event listeners, menu registrations, and timers. The host passes services directly and does not track registrations.
-It calls each returned disposer once, in reverse installation order, while the store and dispatcher are available.
-If a later plugin fails to initialize, the host disposes the plugins whose setup already completed. A plugin that
-throws during its own setup must unwind its partial allocations before throwing. Setup and cleanup errors propagate
-to the caller.
+Setup must return a disposer that releases every resource the plugin creates, including subscriptions, listeners,
+contribution registrations, and timers. The host calls these disposers in reverse installation order while the state
+and dispatcher remain available. It does not track individual registrations. Setup and cleanup errors propagate.
+If setup throws, that plugin must unwind its partial allocations; the host disposes previously completed plugins.
+Initialization failures later in startup also dispose installed plugins.
 
-Register a code-block menu item with `menus.registerItem('moduleMenu', provider)`. The provider receives the current
-`{ state, codeBlock }` context whenever that menu is built, including submenu navigation. The required `codeBlock`
-identifies the block the menu was opened for; it can differ from the current selection. Return a standard `ContextMenuItem`, or
-`undefined` to hide the item. Its `action` and `payload` use the existing event dispatcher. The plugin owns the label,
-visibility rules, target payload, and handler together.
+Register menu items with `menus.registerItem('moduleMenu', provider)`. Providers receive the current
+`{ state, codeBlock }` when the menu opens, and return a `ContextMenuItem` or `undefined` to omit it. The target block
+can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
+existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
 
-Contributed items appear in registration order after Enable/Disable and before the remaining block actions.
-Providers choose whether their item appears in view or edit mode. Registration returns an unregister function that
-the plugin calls from its disposer. Registrations belong to each editor instance and are held outside the state tree.
+Register widget directives with `directives.register(definition)`, using the existing `EditorDirectivePlugin`
+contract from `@8f4e/editor-state-types`. The core owns generic source parsing, directive matching, and the block
+layout pipeline. Each definition handles its own arguments through `apply`, contributes widget layout callbacks,
+and can clear its derived data through `clearGraphicData`. Registrations are local to each editor. Install them
+in setup before the initial project loads; there is no runtime plugin installation API.
 
-The execution-toggle plugin registers its own Skip/Unskip menu item. Omitting the plugin removes both the item
-and its handler. Group execution toggling remains built in. The core installs no state plugins by default;
-`@8f4e/editor-default` selects the standard plugin set.
+Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
+`{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
+the host applies viewport translation and visibility checks. Drawers run in registration order after error messages
+and before built-in controls. Use the current state's sprite lookups, which change with the font or color scheme.
+`@8f4e/web-ui` exports the drawing types and the shared `drawBinaryControl` helper. Registration returns an
+unregister function; call it from the plugin's disposer.
 
-Initialization records resources as they are acquired. If startup fails, those resources, including installed state
-plugins, are disposed before the initialization error propagates. Normal disposal uses the same cleanup stack.
+The switch plugin owns `@switch` argument handling, memory resolution, click handling, and drawing. Its widget data
+lives in a per-instance WeakMap rather than the core state shape. The execution-toggle plugin owns the Skip/Unskip
+menu item and its action. Group execution toggling and nested block shading remain built in. The core installs no
+plugins by default; `@8f4e/editor-default` selects the standard set.
 
-`@8f4e/editor-state` exports `setSkipExecution` for the source transformation shared by the plugin and group toggle,
-and `incrementCompilerInputRevision` for signaling changed compiler inputs after source edits and derived updates.
-State plugins currently have no renderer contributions or runtime installation/removal API.
+`@8f4e/editor-state` exports shared source-edit, directive-argument, and row-layout helpers. Its `/memory` entry
+exports memory scope and identifier resolution. Plugins use these public exports rather than importing core files.
 
 ## Project loading
 

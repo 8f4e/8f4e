@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { EditorPluginContext } from './plugins';
 
 const events = {
 	dispatch: vi.fn(),
@@ -18,6 +19,8 @@ const storeState: {
 };
 
 const store = {
+	menus: { registerItem: vi.fn(() => () => {}) },
+	directives: { register: vi.fn(() => () => {}) },
 	getState: vi.fn(() => storeState),
 	set: vi.fn((path: string, value: unknown) => {
 		if (path === 'info.graphics') {
@@ -62,7 +65,8 @@ vi.mock('@8f4e/editor-state', () => ({
 	default: vi.fn(() => store),
 }));
 
-vi.mock('@8f4e/web-ui', () => ({
+vi.mock('@8f4e/web-ui', async importOriginal => ({
+	...(await importOriginal<typeof import('@8f4e/web-ui')>()),
 	default: vi.fn(async () => view),
 }));
 
@@ -140,20 +144,38 @@ describe('editor init', () => {
 		}
 	);
 
-	it('passes state plugins into initialization before dispatching lifecycle events', async () => {
+	it('sets up plugins with state and drawing services before dispatching lifecycle events', async () => {
 		const { default: init } = await import('./index');
 		const { default: initState } = await import('@8f4e/editor-state');
-		const plugins = [{ id: 'test', setup: vi.fn(() => () => {}) }];
+		const { default: initView } = await import('@8f4e/web-ui');
+		const drawer = vi.fn();
+		const plugins = [
+			{ id: 'test', setup: vi.fn(({ drawers }: EditorPluginContext) => drawers.registerCodeBlockDrawer(drawer)) },
+		];
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
 			plugins,
 			runtimeRegistry: {},
 			callbacks: { loadSession: async () => null },
 		});
-		expect(vi.mocked(initState).mock.calls.at(-1)?.[1].plugins).toBe(plugins);
+		expect(plugins[0].setup).toHaveBeenCalledWith({
+			store,
+			events,
+			menus: store.menus,
+			directives: store.directives,
+			drawers: expect.objectContaining({ registerCodeBlockDrawer: expect.any(Function) }),
+		});
 		expect(vi.mocked(initState).mock.invocationCallOrder.at(-1)).toBeLessThan(
-			events.dispatch.mock.invocationCallOrder[0]
+			plugins[0].setup.mock.invocationCallOrder[0]
 		);
+		expect(plugins[0].setup.mock.invocationCallOrder[0]).toBeLessThan(events.dispatch.mock.invocationCallOrder[0]);
+		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![5]!.drawers!;
+		expect(rendererDrawers).toBe(plugins[0].setup.mock.calls[0][0].drawers);
+		const drawContext = {} as Parameters<typeof rendererDrawers.drawCodeBlock>[0];
+		rendererDrawers.drawCodeBlock(drawContext);
+		expect(drawer).toHaveBeenCalledOnce();
 		editor.dispose();
+		rendererDrawers.drawCodeBlock(drawContext);
+		expect(drawer).toHaveBeenCalledOnce();
 	});
 
 	beforeEach(() => {

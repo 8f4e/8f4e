@@ -34,7 +34,8 @@
     "@8f4e/runtime-test-runner": "*",
     "@8f4e/runtime-web-worker": "*",
     "@8f4e/stdlib": "*",
-    "@8f4e/tokenizer": "*"
+    "@8f4e/tokenizer": "*",
+    "@8f4e/editor-plugin-switch": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

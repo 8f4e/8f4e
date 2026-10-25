@@ -1,6 +1,7 @@
 import initState from '@8f4e/editor-state';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
-import type { EventDispatcher } from '@8f4e/editor-state-types';
+import type { EventDispatcher, Options } from '@8f4e/editor-state-types';
+import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { toggleSkipExecutionPlugin } from './index';
 
@@ -25,26 +26,43 @@ function createEvents(): EventDispatcher {
 	};
 }
 
-const editors: Array<ReturnType<typeof initState>> = [];
+const cleanups: Array<() => void> = [];
+
+function setupState(events: EventDispatcher, options: Options, installed = true) {
+	const store = initState(events, options);
+	const disposePlugin = installed
+		? toggleSkipExecutionPlugin.setup({
+				store,
+				events,
+				menus: store.menus,
+				directives: store.directives,
+				drawers: createCodeBlockDrawerRegistry(),
+			})
+		: () => {};
+	const dispose = () => {
+		disposePlugin();
+		store.dispose();
+	};
+	cleanups.push(dispose);
+	return { store, dispose };
+}
 
 function createContext(code = ['module test', '', 'moduleEnd']) {
 	const events = createEvents();
-	const store = initState(events, {
+	const { store, dispose } = setupState(events, {
 		callbacks: { loadSession: async () => null },
 		runtimeRegistry: {},
 		initialEditorMode: 'edit',
-		plugins: [toggleSkipExecutionPlugin],
 	});
-	editors.push(store);
 	const state = store.getState();
 	const codeBlock = createMockCodeBlock({ code, blockType: 'module', entry: 'main', lastUpdated: 1000 });
 	state.codeBlockRendering.rootCodeBlocks.push(codeBlock);
-	return { state, store, events, codeBlock };
+	return { state, store, events, codeBlock, dispose };
 }
 
 describe('toggle skip execution plugin', () => {
 	afterEach(() => {
-		while (editors.length) editors.pop()!.dispose();
+		while (cleanups.length) cleanups.pop()!();
 		vi.useRealTimers();
 	});
 
@@ -93,7 +111,7 @@ describe('toggle skip execution plugin', () => {
 
 	it('removes its handler when the host is disposed', () => {
 		const context = createContext();
-		context.store.dispose();
+		context.dispose();
 		context.events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: context.codeBlock });
 		expect(context.codeBlock.code).toEqual(['module test', '', 'moduleEnd']);
 	});
@@ -106,12 +124,15 @@ describe('toggle skip execution plugin', () => {
 		'contributes the menu item for installed module actions: $installed, $blockType',
 		async ({ installed, blockType, visible }) => {
 			const events = createEvents();
-			const store = initState(events, {
-				callbacks: { loadSession: async () => null },
-				runtimeRegistry: {},
-				initialEditorMode: 'edit',
-				plugins: installed ? [toggleSkipExecutionPlugin] : [],
-			});
+			const { store, dispose } = setupState(
+				events,
+				{
+					callbacks: { loadSession: async () => null },
+					runtimeRegistry: {},
+					initialEditorMode: 'edit',
+				},
+				installed
+			);
 			try {
 				const code = blockType === 'module' ? ['module test', 'moduleEnd'] : ['note test', 'noteEnd'];
 				const block = createMockCodeBlock({ code, blockType, entry: 'main' });
@@ -122,18 +143,17 @@ describe('toggle skip execution plugin', () => {
 					store.getState().contextMenu.items.some(item => item.action === 'toggleModuleSkipExecutionDirective')
 				).toBe(visible);
 			} finally {
-				store.dispose();
+				dispose();
 			}
 		}
 	);
 
 	it('opens the clicked block menu and toggles that block through the menu action', async () => {
 		const events = createEvents();
-		const store = initState(events, {
+		const { store, dispose } = setupState(events, {
 			callbacks: { loadSession: async () => null },
 			runtimeRegistry: {},
 			initialEditorMode: 'edit',
-			plugins: [toggleSkipExecutionPlugin],
 		});
 		try {
 			const block = createMockCodeBlock({ code: ['module target', 'moduleEnd'], blockType: 'module', entry: 'main' });
@@ -167,7 +187,7 @@ describe('toggle skip execution plugin', () => {
 			await Promise.resolve();
 			expect(state.contextMenu.items.some(item => item.action === 'toggleModuleSkipExecutionDirective')).toBe(false);
 		} finally {
-			store.dispose();
+			dispose();
 		}
 	});
 
@@ -175,11 +195,10 @@ describe('toggle skip execution plugin', () => {
 		vi.useFakeTimers();
 		const events = createEvents();
 		const compileCode = vi.fn().mockRejectedValue({ message: 'Test diagnostic', line: { lineNumber: 0 }, context: {} });
-		const store = initState(events, {
+		const { store, dispose } = setupState(events, {
 			callbacks: { loadSession: async () => null, compileCode },
 			runtimeRegistry: {},
 			initialEditorMode: 'edit',
-			plugins: [toggleSkipExecutionPlugin],
 		});
 		try {
 			const block = createMockCodeBlock({ code: ['module test', 'moduleEnd'], blockType: 'module', entry: 'main' });
@@ -189,7 +208,7 @@ describe('toggle skip execution plugin', () => {
 			expect(compileCode).toHaveBeenCalledOnce();
 			expect(compileCode.mock.calls[0][0].modules[0].code).toContain('#skipExecution');
 		} finally {
-			store.dispose();
+			dispose();
 		}
 	});
 
@@ -200,20 +219,19 @@ describe('toggle skip execution plugin', () => {
 			callbacks: { loadSession: async () => null },
 			runtimeRegistry: {},
 			initialEditorMode: 'edit' as const,
-			plugins: [toggleSkipExecutionPlugin],
 		};
-		const first = initState(firstEvents, options);
-		const second = initState(secondEvents, options);
+		const { store: first, dispose: disposeFirst } = setupState(firstEvents, options);
+		const { store: second, dispose: disposeSecond } = setupState(secondEvents, options);
 		const block = createMockCodeBlock({ code: ['module test', 'moduleEnd'], blockType: 'module', entry: 'main' });
 		firstEvents.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
 		expect(first.getState().compilerInputRevision).toBe(1);
 		expect(second.getState().compilerInputRevision).toBe(0);
-		first.dispose();
+		disposeFirst();
 		firstEvents.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
 		expect(block.code).toContain('#skipExecution');
 		secondEvents.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
 		expect(block.code).not.toContain('#skipExecution');
 		expect(second.getState().compilerInputRevision).toBe(1);
-		second.dispose();
+		disposeSecond();
 	});
 });

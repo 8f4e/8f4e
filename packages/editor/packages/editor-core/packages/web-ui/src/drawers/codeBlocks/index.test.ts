@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSpriteIdLookupMock } from '../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../drawContext';
 import type { MemoryViews } from '../../types';
+import { createCodeBlockDrawerRegistry } from '../registry';
 import drawModules from './index';
 
 const emptyRenderData: WebUiRenderData = { codeBlocks: new Map() };
@@ -76,6 +77,32 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 }
 
 describe('drawModules', () => {
+	it('runs plugin drawers inside each visible block group in registration order', () => {
+		const visible = createMockCodeBlock({ width: 96, height: 64, x: 16, y: 16 });
+		const offscreen = createMockCodeBlock({ creationIndex: 1, x: 10000 });
+		const state = createMockState({
+			spriteLookups: { fillColors: createSpriteIdLookupMock(), fontCode: createSpriteIdLookupMock() } as never,
+			codeBlockRendering: { codeBlocks: [visible, offscreen] },
+		});
+		const engine = createMockEngine();
+		const memoryViews = createMemoryViews();
+		const drawers = createCodeBlockDrawerRegistry();
+		const calls: string[] = [];
+		const first = vi.fn(context => {
+			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
+			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
+			calls.push('first');
+		});
+		const unregister = drawers.registerCodeBlockDrawer(first);
+		drawers.registerCodeBlockDrawer(() => calls.push('second'));
+		drawModules(engine, state, memoryViews, emptyRenderData, drawers);
+		expect(calls).toEqual(['first', 'second']);
+		unregister();
+		drawModules(engine, state, memoryViews, emptyRenderData, drawers);
+		expect(calls).toEqual(['first', 'second', 'second']);
+		expect(first).toHaveBeenCalledOnce();
+	});
+
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});

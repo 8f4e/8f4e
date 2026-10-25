@@ -25,7 +25,6 @@
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
     "@8f4e/language-spec": "*",
-    "@8f4e/sprite-generator": "*",
-    "@8f4e/state-manager": "*"
+    "@8f4e/sprite-generator": "*"
   }
 }

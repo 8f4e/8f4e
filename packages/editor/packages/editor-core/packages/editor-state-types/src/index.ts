@@ -17,6 +17,7 @@ import type {
 	ArrayMeter,
 	ArrayPlotter,
 	ArrayWave,
+	BinaryControl,
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockRendering,
@@ -35,7 +36,6 @@ import type {
 	PianoKeySprite,
 	PianoPressedOverlayFont,
 	Slider,
-	Switch,
 	TypedValueKind,
 } from './features/code-blocks/types';
 import type { InsertTextEvent, MoveCaretEvent, NavigateCodeBlockEvent } from './features/code-editing/types';
@@ -58,7 +58,6 @@ import type {
 	RuntimeValuesByRuntimeId,
 } from './features/runtime/types';
 import type { ProjectViewport, Viewport, ViewportAnimation } from './features/viewport/types';
-import type { EditorStatePlugin } from './plugins';
 import type {
 	CodeError,
 	EventDispatcher,
@@ -89,6 +88,7 @@ export type {
 	ArrayWave,
 	AssertionResult,
 	BinaryAsset,
+	BinaryControl,
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockRendering,
@@ -138,7 +138,6 @@ export type {
 	RuntimeValuesByRuntimeId,
 	Size,
 	Slider,
-	Switch,
 	TypedValueKind,
 };
 
@@ -347,13 +346,9 @@ export type {
 	EditorMenuItemContext,
 	EditorMenuItemProvider,
 	EditorMenuRegistry,
-	EditorStatePlugin,
-	EditorStatePluginContext,
-} from './plugins';
+} from './features/menu/contributions';
 
 export interface Options {
-	/** State plugins installed in declaration order before the editor starts. */
-	plugins?: readonly EditorStatePlugin[];
 	featureFlags?: FeatureFlagsConfig;
 	/** Mode used when the editor is initialized. */
 	initialEditorMode?: EditorMode;

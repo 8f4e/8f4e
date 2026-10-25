@@ -9,6 +9,7 @@ import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import codeBlockRendering from './effect';
 import codeBlockCreator from './features/codeBlockCreator/effect';
+import { directivePlugins } from './features/directives/registry';
 
 describe('creationIndex', () => {
 	let mockState: State;
@@ -100,7 +101,7 @@ describe('creationIndex', () => {
 	describe('projectImport', () => {
 		it('should assign creationIndex to code blocks when loading a project', () => {
 			projectImport(store, mockEvents);
-			codeBlockRendering(store, mockEvents);
+			codeBlockRendering(store, mockEvents, directivePlugins);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 			const loadProjectCall = onCalls.find(call => call[0] === 'loadProject');
@@ -128,7 +129,7 @@ describe('creationIndex', () => {
 
 		it('should reset creationIndex counter when loading a new project', () => {
 			projectImport(store, mockEvents);
-			codeBlockRendering(store, mockEvents);
+			codeBlockRendering(store, mockEvents, directivePlugins);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 			const loadProjectCall = onCalls.find(call => call[0] === 'loadProject');

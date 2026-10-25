@@ -14,10 +14,15 @@ import drawContextMenu from './drawers/contextMenu';
 import drawDialog from './drawers/dialog';
 import drawBackground from './drawers/drawBackground';
 import drawModeOverlay from './drawers/modeOverlay';
+import type { CodeBlockDrawerRegistry } from './drawers/registry';
 import { createWasmOverlayTextureDrawer, type WasmOverlayTextureOptions } from './drawers/wasmOverlayTexture';
 import type { MemoryViews } from './types';
 import { resolveWireColors } from './wire-colors';
 
+export type { DrawContext } from './drawContext';
+export { default as drawBinaryControl } from './drawers/codeBlocks/widgets/drawBinaryControl';
+export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from './drawers/registry';
+export { createCodeBlockDrawerRegistry } from './drawers/registry';
 // Re-export types
 export type { MemoryViews } from './types';
 
@@ -38,6 +43,7 @@ export interface RenderStats {
 }
 
 export interface WebUiOptions {
+	drawers?: CodeBlockDrawerRegistry;
 	onRenderStats?: (stats: RenderStats) => void;
 	/** Receives ids resolved against each installed atlas before rendering resumes. */
 	onSpriteAtlasResolved?: (spriteLookups: SpriteIdLookups, spriteData: SpriteData) => void;
@@ -190,7 +196,7 @@ export default async function init(
 
 	const drawFrame = () => {
 		drawBackground(draw, state);
-		drawCodeBlocks(draw, state, memoryViews, renderData.getSnapshot());
+		drawCodeBlocks(draw, state, memoryViews, renderData.getSnapshot(), options.drawers);
 		if (state.dialogStack.length === 0) {
 			drawConnections(lines, wireColors, state, memoryViews);
 		}

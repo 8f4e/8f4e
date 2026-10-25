@@ -144,7 +144,6 @@ describe('shared exposed memory resolution', () => {
 		expect(audio.widgets.arrayBars[0].length).toBe(4);
 		expect(audio.widgets.arrayWaves[0].length).toBe(4);
 		expect(audio.widgets.arrayMeters[0].memory.memory.allocationUnitAddress).toBe(gain.allocationUnitAddress);
-		expect(audio.widgets.switches[0].allocationUnitAddress).toBe(audio.widgets.buttons[0].allocationUnitAddress);
 		expect(audio.widgets.pianoKeyboards[0]).toMatchObject({
 			pressedKeysListModuleId: 'audio/notesData',
 			pressedNumberOfKeysModuleId: 'audio/countData',

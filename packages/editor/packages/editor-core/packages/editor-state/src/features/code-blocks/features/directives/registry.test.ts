@@ -1,10 +1,29 @@
 import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
 import { parseBlockDirectives } from '../../utils/parseBlockDirectives';
-import { deriveDirectiveState, directivePlugins } from './registry';
+import { createDirectiveRegistry, deriveDirectiveState, directivePlugins } from './registry';
 import { parseEditorDirectives } from './utils';
 
 describe('directive registry', () => {
+	it('registers directives per instance and removes their parsing and layout contributions', () => {
+		const first = createDirectiveRegistry();
+		const second = createDirectiveRegistry();
+		const unregister = first.register({
+			name: 'customWidget',
+			apply: (directive, draft) => {
+				draft.layoutContributions.push({ rawRow: directive.rawRow, rows: Number(directive.args[0]) });
+			},
+		});
+		const code = ['; @customWidget 2'];
+		const records = parseBlockDirectives(code);
+		expect(deriveDirectiveState(code, records, {}, first.plugins).layoutContributions).toEqual([
+			{ rawRow: 0, rows: 2 },
+		]);
+		expect(deriveDirectiveState(code, records, {}, second.plugins).layoutContributions).toEqual([]);
+		unregister();
+		expect(deriveDirectiveState(code, records, {}, first.plugins).layoutContributions).toEqual([]);
+	});
+
 	it('parses registered directives from code', () => {
 		const result = parseEditorDirectives(
 			[

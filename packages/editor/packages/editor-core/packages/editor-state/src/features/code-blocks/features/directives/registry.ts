@@ -4,6 +4,7 @@ import type {
 	DirectiveDerivedStateDraft,
 	DirectiveDeriveOptions,
 	EditorDirectivePlugin,
+	EditorDirectiveRegistry,
 	ParsedDirectiveRecord,
 	State,
 } from '@8f4e/editor-state-types';
@@ -23,7 +24,6 @@ import pianoDirective from './piano/plugin';
 import plotDirective from './plot/plugin';
 import sliderDirective from './slider/plugin';
 import stackDirective from './stack/plugin';
-import switchDirective from './switch/plugin';
 import { normalizeEditorDirectiveRecords } from './utils';
 import viewportDirective from './viewport/plugin';
 import watchDirective from './watch/plugin';
@@ -48,7 +48,6 @@ export const directivePlugins: EditorDirectivePlugin[] = [
 	crossfadeDirective,
 	pianoDirective,
 	buttonDirective,
-	switchDirective,
 	watchDirective,
 	stackDirective,
 	infoDirective,
@@ -60,6 +59,20 @@ export const directivePlugins: EditorDirectivePlugin[] = [
 	viewportDirective,
 	alwaysOnTopDirective,
 ];
+
+export function createDirectiveRegistry(): EditorDirectiveRegistry & { plugins: EditorDirectivePlugin[] } {
+	const plugins = [...directivePlugins];
+	return {
+		plugins,
+		register: directive => {
+			plugins.push(directive);
+			return () => {
+				const index = plugins.indexOf(directive);
+				if (index !== -1) plugins.splice(index, 1);
+			};
+		},
+	};
+}
 
 export function deriveDirectiveState(
 	code: string[],

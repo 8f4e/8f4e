@@ -74,3 +74,7 @@ export interface EditorDirectivePlugin {
 	clearGraphicData?: (graphicData: CodeBlockGraphicData) => void;
 	apply?: (directive: ParsedEditorDirective, draft: DirectiveDerivedStateDraft) => void;
 }
+
+export interface EditorDirectiveRegistry {
+	register: (directive: EditorDirectivePlugin) => () => void;
+}
