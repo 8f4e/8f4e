@@ -3,6 +3,7 @@ import type {
 	Callbacks,
 	EditorConfigSchemaContributionRegistry,
 	EditorMode,
+	EditorStatePlugin,
 	InfoRecord,
 	RuntimeRegistry,
 	State,
@@ -53,6 +54,8 @@ export type {
 	EditorConfigSchemaContribution,
 	EditorConfigSchemaContributionRegistry,
 	EditorMode,
+	EditorStatePlugin,
+	EditorStatePluginContext,
 	FeatureFlags,
 	FeatureFlagsConfig,
 	JSONSchemaLike,
@@ -82,6 +85,8 @@ export interface Editor {
 }
 
 export interface EditorOptions {
+	/** Trusted state plugins, installed before initialization and session loading. */
+	plugins?: readonly EditorStatePlugin[];
 	/** Capture wheel gestures for viewport panning. Disable this for editors embedded in scrolling pages. */
 	captureWheel?: boolean;
 	featureFlags?: Partial<State['featureFlags']>;

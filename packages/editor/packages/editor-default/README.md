@@ -38,6 +38,11 @@ It also owns persistence callbacks for its storage namespace. The default namesp
 Hosts may also provide a custom `Storage` implementation or an
 `initialProjectUrl`; interpreting page URLs remains the host's responsibility.
 
+The default composition includes `@8f4e/editor-plugin-toggle-skip-execution`, which implements the module menu's
+Skip/Unskip action. `defaultEditorPlugins` exports that plugin set. The `plugins` option replaces it: pass `[]` to
+omit state plugins, or `[...defaultEditorPlugins, customPlugin]` to extend the defaults. Each editor installs and
+disposes its own plugin effects. See the [state plugin contract](../editor-core/README.md#state-plugins).
+
 The runtime registry includes `TestRuntime`, selected with `; @config runtime TestRuntime`. For projects with an
 enabled test entry, it executes tests once after successful compilation or recompilation, using the editor's current
 memory and publishing results under `state.runtime.values.TestRuntime`. See the

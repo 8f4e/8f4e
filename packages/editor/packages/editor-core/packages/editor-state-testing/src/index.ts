@@ -134,6 +134,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 	const rootCodeBlocks: CodeBlockGraphicData[] = [];
 
 	const defaults: State = {
+		pluginActions: new Set<string>(),
 		compilerInputRevision: 0,
 		compiler: {
 			isCompiling: false,

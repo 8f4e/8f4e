@@ -5,6 +5,7 @@ export default function createDefaultState() {
 	const rootCodeBlocks: CodeBlockGraphicData[] = [];
 
 	return {
+		pluginActions: new Set<string>(),
 		compilerInputRevision: 0,
 		compiler: {
 			isCompiling: false,

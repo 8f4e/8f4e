@@ -4,6 +4,14 @@ import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils
 import { moduleMenu } from './moduleMenu';
 
 describe('module menu', () => {
+	it.each([true, false])('shows the module execution action only when its plugin is installed: %s', async installed => {
+		const codeBlock = createMockCodeBlock({ blockType: 'module', code: ['module test', 'moduleEnd'] });
+		const state = createMockState({ codeBlockRendering: { selectedCodeBlock: codeBlock } });
+		state.pluginActions = new Set(installed ? ['toggleModuleSkipExecutionDirective'] : []);
+		const items = await moduleMenu(state);
+		expect(items.some(item => item.action === 'toggleModuleSkipExecutionDirective')).toBe(installed);
+	});
+
 	it('adds an open action for project-group blocks', async () => {
 		const codeBlock = createMockCodeBlock({
 			name: 'Audio',

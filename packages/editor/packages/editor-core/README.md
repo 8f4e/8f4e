@@ -29,6 +29,41 @@ The editor supports view and edit modes. Selected code blocks have a continuousl
 Command+Arrow (or Control+Arrow) navigates between blocks with smooth viewport movement. Use `e` to enter edit mode
 and Escape to return to view mode when `modeToggling` is enabled.
 
+## State plugins
+
+Pass a `plugins` array to initialization to install state-only extensions. `EditorStatePlugin` and
+`EditorStatePluginContext` are exported by `@8f4e/editor-core` and `@8f4e/editor-state-types`.
+
+```ts
+import initEditor from '@8f4e/editor-core';
+import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
+
+const editor = await initEditor(canvas, {
+	...options,
+	plugins: [toggleSkipExecutionPlugin],
+});
+```
+
+A plugin declares a unique `id`, optional `actions` names, and a synchronous `setup({ store, events })` function.
+The host installs plugins in array order after core effects, before rendering starts and before the `init` and
+`loadSession` events. Setup runs separately for each editor instance; allocate instance data inside setup.
+Plugins use the existing state manager and event dispatcher APIs. The plugin store omits the editor's `dispose`
+method. This is a trusted extension interface, with the same state access as built-in effects.
+
+State subscriptions and event listeners registered through the supplied context are cleaned up automatically.
+Setup can return a function to release timers or other resources. Cleanup runs in reverse installation order,
+once, while the store and dispatcher are still available. Failed setup releases subscriptions and previously
+installed plugins before the error is propagated. Duplicate plugin IDs or action names are rejected before setup.
+
+Declared action names are available through `state.pluginActions`. The existing module menu shows the single-module
+Skip/Unskip action only when `toggleModuleSkipExecutionDirective` is contributed. Menu entries remain owned by
+the editor; action declarations do not automatically create menu items. Group execution toggling remains built in.
+The core installs no state plugins by default; `@8f4e/editor-default` selects the standard plugin set.
+
+`@8f4e/editor-state` exports `setSkipExecution` for the source transformation shared by the plugin and group toggle,
+and `incrementCompilerInputRevision` for signaling changed compiler inputs after source edits and derived updates.
+State plugins currently have no renderer contributions or runtime installation/removal API.
+
 ## Project loading
 
 Hosts can provide `getProject(url)` for loading individual projects by URL and `importProject` for the Open From Disk

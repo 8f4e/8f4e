@@ -3,6 +3,8 @@
 - This package owns the standard editor composition: compiler integration, runtime selection, the example module registry,
   standard-library resolution, and browser persistence.
 - Export composition APIs without mounting as an import side effect.
+- Compose the standard state plugin set here and expose host overrides through `plugins`; keep feature logic in its
+  plugin package and generic plugin installation in editor-core/editor-state.
 - Keep generic editor behavior in `@8f4e/editor-core` and website/deployment concerns in `@8f4e/editor-website`.
 - Run `npx nx run @8f4e/editor-default:build|test|typecheck` after changing this package.
 - The Vite build uses standard TypeScript and asset handling; project-authored GLSL effects are not supported.

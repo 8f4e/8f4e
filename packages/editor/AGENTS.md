@@ -6,10 +6,13 @@
 - `@8f4e/editor-core` is the minimal reusable editor.
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, examples, and storage.
 - `@8f4e/editor-website` is the thin deployable Vite host for the default composition.
+- `@8f4e/editor-plugin-toggle-skip-execution` owns the optional single-module execution toggle. State plugin contracts
+  live in `editor-state-types`, installation in `editor-state`, and the standard plugin set in `editor-default`.
 
 ## Build, Test, Dev
 
 - Build or test the composition with `npx nx run @8f4e/editor-default:build|test|typecheck`.
+- Build or verify the state plugin with `npx nx run @8f4e/editor-plugin-toggle-skip-execution:build|test|typecheck`.
 - Start the website with `npx nx run @8f4e/editor-website:dev`.
 - Build or preview it with `npx nx run @8f4e/editor-website:build|serve`.
 - Ensure dependency packages are built before relying on workspace aliases in the website.

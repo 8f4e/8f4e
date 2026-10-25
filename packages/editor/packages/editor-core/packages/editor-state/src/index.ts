@@ -27,7 +27,6 @@ import groupUngroupper from './features/code-blocks/features/group/ungroupper/ef
 import memoryConnectionRemover from './features/code-blocks/features/memoryConnectionRemover/effect';
 import parsedDirectivesUpdater from './features/code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
-import skipExecutionToggler from './features/code-blocks/features/skipExecutionToggler/effect';
 import sliderDefaultSaver from './features/code-blocks/features/sliderDefaultSaver/effect';
 import codeEditing from './features/code-editing/effect';
 import color from './features/color/effect';
@@ -44,6 +43,7 @@ import projectImport from './features/project-import/effect';
 import runtime from './features/runtime/effect';
 import tooltip from './features/tooltip/effect';
 import viewport from './features/viewport/effect';
+import { getEditorStatePluginActions, installEditorStatePlugins } from './plugins';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
 
@@ -58,6 +58,8 @@ export {
 
 // Function to create default state
 export default function init(events: EventDispatcher, options: Options): StateManager<State> {
+	const plugins = options.plugins ?? [];
+	const pluginActions = getEditorStatePluginActions(plugins);
 	const initialEditorMode = options.initialEditorMode ?? (options.featureFlags?.editing ? 'edit' : 'view');
 	const featureFlags = validateFeatureFlags({
 		...options.featureFlags,
@@ -74,6 +76,7 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 	// Create base state
 	const baseState = {
 		...createDefaultState(),
+		pluginActions,
 		callbacks: options.callbacks,
 		editorMode: initialEditorMode,
 		featureFlags,
@@ -109,7 +112,6 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 	registerEffect(pianoKeyboard(store, events));
 	registerEffect(viewport(store, events));
 	registerEffect(codeBlockCreator(store, events));
-	registerEffect(skipExecutionToggler(store, events));
 	registerEffect(groupSkipExecutionToggler(store, events));
 	registerEffect(groupNonstickToggler(store, events));
 	registerEffect(groupCopier(store, events));
@@ -140,30 +142,39 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 
 	const disposeSubscriptions = store.dispose;
 	let disposed = false;
+	const dispose = () => {
+		if (disposed) {
+			return;
+		}
+
+		disposed = true;
+		for (let index = effectCleanups.length - 1; index >= 0; index--) {
+			try {
+				effectCleanups[index]();
+			} catch (error) {
+				console.error('Failed to dispose editor state effect:', error);
+			}
+		}
+		effectCleanups.length = 0;
+		disposeSubscriptions();
+	};
+	try {
+		registerEffect(installEditorStatePlugins(plugins, store, events));
+	} catch (error) {
+		dispose();
+		throw error;
+	}
 	return {
 		...store,
-		dispose: () => {
-			if (disposed) {
-				return;
-			}
-
-			disposed = true;
-			for (let index = effectCleanups.length - 1; index >= 0; index--) {
-				try {
-					effectCleanups[index]();
-				} catch (error) {
-					console.error('Failed to dispose editor state effect:', error);
-				}
-			}
-			effectCleanups.length = 0;
-			disposeSubscriptions();
-		},
+		dispose,
 	};
 }
 
 export { navigateToCodeBlockInDirection } from './features/code-blocks/features/codeBlockNavigation/effect';
 // Export helper functions
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';
+export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
+export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
 // Export .8f4e format helpers
 export { serializeProjectTo8f4e } from './features/project-export/serializeTo8f4e';
 // Export EMPTY_DEFAULT_PROJECT as a value

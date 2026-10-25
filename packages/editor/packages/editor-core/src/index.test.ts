@@ -96,6 +96,22 @@ vi.mock('./spriteSheetManager', () => ({
 }));
 
 describe('editor init', () => {
+	it('passes state plugins into initialization before dispatching lifecycle events', async () => {
+		const { default: init } = await import('./index');
+		const { default: initState } = await import('@8f4e/editor-state');
+		const plugins = [{ id: 'test', setup: vi.fn() }];
+		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
+			plugins,
+			runtimeRegistry: {},
+			callbacks: { loadSession: async () => null },
+		});
+		expect(vi.mocked(initState).mock.calls.at(-1)?.[1].plugins).toBe(plugins);
+		expect(vi.mocked(initState).mock.invocationCallOrder.at(-1)).toBeLessThan(
+			events.dispatch.mock.invocationCallOrder[0]
+		);
+		editor.dispose();
+	});
+
 	beforeEach(() => {
 		events.dispatch.mockClear();
 		events.on.mockClear();

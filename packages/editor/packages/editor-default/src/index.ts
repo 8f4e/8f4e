@@ -1,4 +1,5 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
+import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
 import { createCompilerService } from './compiler-callback';
 import { getListOfModules, getModule, getModuleDependencies } from './examples/moduleRegistry';
 import { getProject } from './get-project';
@@ -15,7 +16,11 @@ const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
 export type DefaultEditorInstance = Editor;
 
+export const defaultEditorPlugins: NonNullable<EditorOptions['plugins']> = [toggleSkipExecutionPlugin];
+
 export interface DefaultEditorMountOptions {
+	/** Replaces the default state plugin set. Pass an empty array to omit all state plugins. */
+	plugins?: EditorOptions['plugins'];
 	/** Borrow this context when its sample rate matches the project. The host owns its lifetime. */
 	sharedAudioContext?: AudioContext;
 	/** Capture wheel gestures for viewport panning. Disable this for editors embedded in scrolling pages. */
@@ -30,6 +35,7 @@ export interface DefaultEditorMountOptions {
 export async function mountDefaultEditor(
 	canvas: HTMLCanvasElement,
 	{
+		plugins = defaultEditorPlugins,
 		sharedAudioContext,
 		captureWheel,
 		featureFlags,
@@ -45,6 +51,7 @@ export async function mountDefaultEditor(
 	let editor: Editor;
 	try {
 		editor = await initEditor(canvas, {
+			plugins,
 			captureWheel,
 			featureFlags,
 			initialEditorMode,

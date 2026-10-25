@@ -87,7 +87,7 @@ export const moduleMenu: MenuGenerator = state => {
 						payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
 						close: true,
 					},
-					...(blockType === moduleBlockType
+					...(blockType === moduleBlockType && state.pluginActions.has('toggleModuleSkipExecutionDirective')
 						? [
 								{
 									title: hasSkipExecutionDirective ? 'Unskip module' : 'Skip module',
