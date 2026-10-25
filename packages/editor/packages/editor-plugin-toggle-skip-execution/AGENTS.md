@@ -5,8 +5,8 @@
 - Own the Skip/Unskip menu label, visibility, and target payload here through `menus.registerItem`; keep editor-state's
   menu composition generic.
 - Use public workspace APIs; the source transformation is shared through `@8f4e/editor-state`.
-- Let the plugin host own listener and menu-registration cleanup. Test lifecycle behavior through editor-state
-  initialization instead of calling `setup` with a partial fake context.
+- Return a disposer that removes every listener and menu registration created by this plugin. The host calls that
+  disposer; it does not track individual registrations. Test lifecycle behavior through editor-state initialization.
 - Run `npx nx run @8f4e/editor-plugin-toggle-skip-execution:build|test|typecheck` after changes.
 - Keep tests for source edits, compiler revision changes, menu registration and selection, edit-mode gating, cleanup,
   and editor instance isolation.

@@ -26,6 +26,6 @@ export interface EditorStatePluginContext {
 /** A trusted, synchronous state extension installed once per editor instance. */
 export interface EditorStatePlugin {
 	id: string;
-	/** Subscriptions and menu registrations are scoped to the editor; return cleanup for other resources. */
-	setup: (context: EditorStatePluginContext) => void | (() => void);
+	/** Return a disposer for every resource owned by this plugin, including listeners and menu registrations. */
+	setup: (context: EditorStatePluginContext) => () => void;
 }

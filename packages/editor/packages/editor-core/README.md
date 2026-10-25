@@ -47,14 +47,15 @@ const editor = await initEditor(canvas, {
 A plugin declares an `id` and a synchronous `setup({ store, events, menus })` function.
 The host installs plugins in array order after core effects, before rendering starts and before the `init` and
 `loadSession` events. Setup runs separately for each editor instance; allocate instance data inside setup.
-Plugins use the existing state manager and event dispatcher APIs. The plugin store omits the editor's `dispose`
-method. This is a trusted extension interface, with the same state access as built-in effects.
+Plugins use the existing state manager and event dispatcher APIs. Store disposal belongs to the editor and is
+excluded from the plugin context type. This is a trusted extension interface, with the same state access as built-in effects.
 
-State subscriptions, event listeners, and menu registrations made through the supplied context are cleaned up automatically.
-Setup can return a function to release timers or other resources. Cleanup runs in reverse installation order,
-once, while the store and dispatcher are still available. Failed setup releases subscriptions and previously
-installed plugins before the error is propagated. Plugin composition is trusted; setup and cleanup errors propagate
-to the caller rather than being logged and suppressed.
+Setup must return a disposer that releases every resource the plugin creates, including state subscriptions,
+event listeners, menu registrations, and timers. The host passes services directly and does not track registrations.
+It calls each returned disposer once, in reverse installation order, while the store and dispatcher are available.
+If a later plugin fails to initialize, the host disposes the plugins whose setup already completed. A plugin that
+throws during its own setup must unwind its partial allocations before throwing. Setup and cleanup errors propagate
+to the caller.
 
 Register a code-block menu item with `menus.registerItem('moduleMenu', provider)`. The provider receives the current
 `{ state, codeBlock }` context whenever that menu is built, including submenu navigation. The required `codeBlock`
@@ -63,9 +64,8 @@ identifies the block the menu was opened for; it can differ from the current sel
 visibility rules, target payload, and handler together.
 
 Contributed items appear in registration order after Enable/Disable and before the remaining block actions.
-Providers choose whether their item appears in view or edit mode. Registration returns an idempotent unregister
-function and is also removed automatically with the plugin. Registrations belong to each editor instance and are
-held outside the state tree.
+Providers choose whether their item appears in view or edit mode. Registration returns an unregister function that
+the plugin calls from its disposer. Registrations belong to each editor instance and are held outside the state tree.
 
 The execution-toggle plugin registers its own Skip/Unskip menu item. Omitting the plugin removes both the item
 and its handler. Group execution toggling remains built in. The core installs no state plugins by default;

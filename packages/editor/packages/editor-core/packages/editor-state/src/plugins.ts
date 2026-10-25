@@ -19,43 +19,11 @@ export function installEditorStatePlugins(
 			cleanups.pop()!();
 		}
 	};
-	const context: EditorStatePluginContext = {
-		store: {
-			getState: store.getState,
-			set: store.set,
-			subscribe: (selector, callback) => {
-				const subscription = store.subscribe(selector, callback);
-				cleanups.push(() => store.unsubscribe(selector, callback));
-				return subscription;
-			},
-			subscribeToValue: (selector, matcher, callback) => {
-				const subscription = store.subscribeToValue(selector, matcher, callback);
-				cleanups.push(() => store.unsubscribe(selector, callback));
-				return subscription;
-			},
-			unsubscribe: store.unsubscribe,
-		},
-		events: {
-			on: (name, callback) => {
-				events.on(name, callback);
-				cleanups.push(() => events.off(name, callback));
-			},
-			off: events.off,
-			dispatch: events.dispatch,
-		},
-		menus: {
-			registerItem: (menu, provider) => {
-				const unregister = menus.registerItem(menu, provider);
-				cleanups.push(unregister);
-				return unregister;
-			},
-		},
-	};
+	const context: EditorStatePluginContext = { store, events, menus };
 
 	try {
 		for (const plugin of plugins) {
-			const cleanup = plugin.setup(context);
-			if (cleanup !== undefined) cleanups.push(cleanup);
+			cleanups.push(plugin.setup(context));
 		}
 	} catch (error) {
 		dispose();

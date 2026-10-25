@@ -23,7 +23,7 @@ describe('default editor state plugins', () => {
 
 	it('lets hosts replace the plugin set or omit state plugins', async () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
-		const plugins = [{ id: 'custom', setup: vi.fn() }];
+		const plugins = [{ id: 'custom', setup: vi.fn(() => () => {}) }];
 		const editor = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage, plugins });
 		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toBe(plugins);
 		editor.dispose();

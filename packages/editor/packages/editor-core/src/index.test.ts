@@ -143,7 +143,7 @@ describe('editor init', () => {
 	it('passes state plugins into initialization before dispatching lifecycle events', async () => {
 		const { default: init } = await import('./index');
 		const { default: initState } = await import('@8f4e/editor-state');
-		const plugins = [{ id: 'test', setup: vi.fn() }];
+		const plugins = [{ id: 'test', setup: vi.fn(() => () => {}) }];
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
 			plugins,
 			runtimeRegistry: {},

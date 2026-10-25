@@ -26,7 +26,7 @@ describe('editor state plugins', () => {
 		expect(calls).toEqual(['install first', 'install second', 'dispose second', 'dispose first']);
 	});
 
-	it('scopes store subscriptions, event listeners, and menu items to plugin installation', () => {
+	it('passes services directly and calls the plugin disposer to release its resources', () => {
 		const store = createStateManager(createMockState());
 		const events = createMockEventDispatcher();
 		const on = vi.spyOn(events, 'on');
@@ -40,10 +40,22 @@ describe('editor state plugins', () => {
 				{
 					id: 'subscriptions',
 					setup: context => {
+						expect(context.store).toBe(store);
+						expect(context.events).toBe(events);
+						expect(context.menus).toBe(menus);
 						context.store.subscribe('compilerInputRevision', onChange);
 						context.store.subscribeToValue('compilerInputRevision', 1, onMatchingValue);
 						context.events.on('plugin-action', onEvent);
-						context.menus.registerItem('moduleMenu', () => ({ title: 'Plugin action', action: 'plugin-action' }));
+						const unregister = context.menus.registerItem('moduleMenu', () => ({
+							title: 'Plugin action',
+							action: 'plugin-action',
+						}));
+						return () => {
+							unregister();
+							context.events.off('plugin-action', onEvent);
+							context.store.unsubscribe('compilerInputRevision', onMatchingValue);
+							context.store.unsubscribe('compilerInputRevision', onChange);
+						};
 					},
 				},
 			],
@@ -66,38 +78,40 @@ describe('editor state plugins', () => {
 		expect(menus.getItems('moduleMenu', { state: store.getState(), codeBlock: createMockCodeBlock() })).toEqual([]);
 	});
 
-	it('cleans up earlier plugins and partial subscriptions when setup fails', () => {
-		const store = createStateManager(createMockState());
-		const events = createMockEventDispatcher();
-		const off = vi.spyOn(events, 'off');
-		const cleanup = vi.fn();
-		const onChange = vi.fn();
-		const onEvent = vi.fn();
-		const menus = createMenuItemRegistry();
+	it('disposes completed plugins in reverse order when a later setup fails', () => {
+		const calls: string[] = [];
+		const laterSetup = vi.fn(() => () => {});
+		const error = new Error('Setup failed');
 		expect(() =>
 			installEditorStatePlugins(
 				[
-					{ id: 'first', setup: () => cleanup },
 					{
-						id: 'failing',
-						setup: context => {
-							context.store.subscribe('compilerInputRevision', onChange);
-							context.events.on('partial-action', onEvent);
-							context.menus.registerItem('moduleMenu', () => ({ title: 'Partial action' }));
-							throw new Error('Setup failed');
+						id: 'first',
+						setup: () => () => {
+							calls.push('first');
 						},
 					},
+					{
+						id: 'second',
+						setup: () => () => {
+							calls.push('second');
+						},
+					},
+					{
+						id: 'failing',
+						setup: () => {
+							throw error;
+						},
+					},
+					{ id: 'later', setup: laterSetup },
 				],
-				store,
-				events,
-				menus
+				createStateManager(createMockState()),
+				createMockEventDispatcher(),
+				createMenuItemRegistry()
 			)
-		).toThrow('Setup failed');
-		store.set('compilerInputRevision', 1);
-		expect(onChange).not.toHaveBeenCalled();
-		expect(off).toHaveBeenCalledWith('partial-action', onEvent);
-		expect(cleanup).toHaveBeenCalledOnce();
-		expect(menus.getItems('moduleMenu', { state: store.getState(), codeBlock: createMockCodeBlock() })).toEqual([]);
+		).toThrow(error);
+		expect(calls).toEqual(['second', 'first']);
+		expect(laterSetup).not.toHaveBeenCalled();
 	});
 
 	it('propagates plugin cleanup errors through the state host', () => {
@@ -121,7 +135,7 @@ describe('editor state plugins', () => {
 		const plugin: EditorStatePlugin = {
 			id: 'test',
 			setup: ({ menus }) => {
-				menus.registerItem('moduleMenu', () => ({ title: 'Test item' }));
+				return menus.registerItem('moduleMenu', () => ({ title: 'Test item' }));
 			},
 		};
 		const first = createMenuItemRegistry();
