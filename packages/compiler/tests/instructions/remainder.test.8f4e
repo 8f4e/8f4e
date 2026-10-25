@@ -1,0 +1,83 @@
+8f4e/v1
+
+note
+; @config runtime TestRuntime
+
+Signed remainder runs with a
+proven nonzero divisor.
+Dynamic divisors can be
+sanitized with ensureNonZero.
+noteEnd
+
+entry test
+module signedRemainders
+push 10
+push 3
+remainder
+assertEqual 1
+
+push -10
+push 3
+remainder
+assertEqual -1
+
+push 10
+push -3
+remainder
+assertEqual 1
+
+push -10
+push -3
+remainder
+assertEqual -1
+
+push 0
+push -3
+remainder
+assertEqual 0
+moduleEnd
+
+module minimumSignedDividend
+int dividend -2147483648
+push dividend
+push -1
+remainder
+assertEqual 0
+moduleEnd
+
+module guardedDynamicDivisors
+int zeroDivisor 0
+int positiveDivisor 3
+int negativeDivisor -3
+
+push 10
+push zeroDivisor
+ensureNonZero
+remainder
+assertEqual 0
+
+push 10
+push zeroDivisor
+ensureNonZero 3
+remainder
+assertEqual 1
+
+push -10
+push zeroDivisor
+ensureNonZero -3
+remainder
+assertEqual -1
+
+push 10
+push positiveDivisor
+ensureNonZero 2
+remainder
+assertEqual 1
+
+push -10
+push negativeDivisor
+ensureNonZero 2
+remainder
+assertEqual -1
+moduleEnd
+entryEnd

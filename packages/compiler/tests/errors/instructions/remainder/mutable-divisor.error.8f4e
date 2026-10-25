@@ -1,0 +1,11 @@
+8f4e/v1
+
+entry main
+module remainderWithMutableDivisor
+int divisor 3
+push 10
+push divisor
+remainder
+drop
+moduleEnd
+entryEnd
