@@ -94,14 +94,14 @@ Thanks to everyone who has contributed to 8f4e.
 </td>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Erfouni"><img src="https://github.com/Erfouni.png?size=96" width="72" alt="@Erfouni"><br><sub><b>erfouni</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AErfouni">🔀 7</a></sub>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AErfouni">🔀 8</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/aazminu"><img src="https://github.com/aazminu.png?size=96" width="72" alt="@aazminu"><br><sub><b>Abdullah Azmi</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Aaazminu">🔀 6</a></sub>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Aaazminu">🔀 7</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
-<a href="https://github.com/masyarakatai"><img src="https://github.com/masyarakatai.png?size=96" width="72" alt="@masyarakatai"><br><sub><b>Masyarakat AI Indonesia - FMD</b></sub></a><br>
+<a href="https://github.com/masyarakatai"><img src="https://github.com/masyarakatai.png?size=96" width="72" alt="@masyarakatai"><br><sub><b>Masyarakat AI</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Amasyarakatai">🔀 5</a></sub>
 </td>
 </tr>
@@ -111,6 +111,10 @@ Thanks to everyone who has contributed to 8f4e.
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Amouse-far">🔀 3</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
+<a href="https://github.com/theTemple10"><img src="https://github.com/theTemple10.png?size=96" width="72" alt="@theTemple10"><br><sub><b>Victor Akinremi</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AtheTemple10">🔀 3</a></sub>
+</td>
+<td align="center" valign="top" width="25%">
 <a href="https://github.com/MarioZhang420"><img src="https://github.com/MarioZhang420.png?size=96" width="72" alt="@MarioZhang420"><br><sub><b>Wenzhuo Zhang</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AMarioZhang420">🔀 3</a></sub>
 </td>
@@ -118,23 +122,19 @@ Thanks to everyone who has contributed to 8f4e.
 <a href="https://github.com/875612255-beep"><img src="https://github.com/875612255-beep.png?size=96" width="72" alt="@875612255-beep"><br><sub><b>875612255-beep</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3A875612255-beep">🔀 2</a></sub>
 </td>
+</tr>
+<tr>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Aaqibhafeezkhan"><img src="https://github.com/Aaqibhafeezkhan.png?size=96" width="72" alt="@Aaqibhafeezkhan"><br><sub><b>Aaqibhafeez Khan</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AAaqibhafeezkhan">🔀 2</a></sub>
 </td>
-</tr>
-<tr>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/nova-loop"><img src="https://github.com/nova-loop.png?size=96" width="72" alt="@nova-loop"><br><sub><b>nova-loop</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Anova-loop">🔀 2</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
-<a href="https://github.com/slopggobblercobbler81"><img src="https://github.com/slopggobblercobbler81.png?size=96" width="72" alt="@slopggobblercobbler81"><br><sub><b>Stephen Cork</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Aslopggobblercobbler81">🔀 2</a></sub>
-</td>
-<td align="center" valign="top" width="25%">
-<a href="https://github.com/theTemple10"><img src="https://github.com/theTemple10.png?size=96" width="72" alt="@theTemple10"><br><sub><b>Victor Akinremi</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AtheTemple10">🔀 2</a></sub>
+<a href="https://github.com/slopgobblercobbler"><img src="https://github.com/slopgobblercobbler.png?size=96" width="72" alt="@slopgobblercobbler"><br><sub><b>Stephen Cork</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Aslopgobblercobbler">🔀 2</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Abhijay-29r"><img src="https://github.com/Abhijay-29r.png?size=96" width="72" alt="@Abhijay-29r"><br><sub><b>Abhijay-29r</b></sub></a><br>
