@@ -16,6 +16,8 @@
 ## Testing
 - Vitest (via Nx). Tests under `__tests__` or `*.test.ts`.
 - Favor unit tests for view-models and utilities; snapshot tests acceptable.
+- Tests consume built dependency exports through workspace aliases; the test target builds dependencies first.
+  Do not add source-file aliases to preserve test imports across package boundaries.
 
 ## Commits & PRs
 - Commits: `editor: <change>` (e.g., `editor: fix drag selection`).

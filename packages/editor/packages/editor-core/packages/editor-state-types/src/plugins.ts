@@ -7,7 +7,7 @@ export type EditorMenuId = 'moduleMenu';
 export interface EditorMenuItemContext {
 	state: State;
 	/** The block the menu was opened for, independently of the current selection. */
-	codeBlock?: CodeBlockGraphicData;
+	codeBlock: CodeBlockGraphicData;
 }
 
 export type EditorMenuItemProvider = (context: EditorMenuItemContext) => ContextMenuItem | undefined;

@@ -1,4 +1,4 @@
-import { createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import type { EditorStatePlugin } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
@@ -55,7 +55,7 @@ describe('editor state plugins', () => {
 		expect(onChange).toHaveBeenCalledOnce();
 		expect(onMatchingValue).toHaveBeenCalledOnce();
 		expect(on).toHaveBeenCalledWith('plugin-action', onEvent);
-		expect(menus.getItems('moduleMenu', { state: store.getState() })).toHaveLength(1);
+		expect(menus.getItems('moduleMenu', { state: store.getState(), codeBlock: createMockCodeBlock() })).toHaveLength(1);
 		dispose();
 		dispose();
 		store.set('compilerInputRevision', 2);
@@ -63,7 +63,7 @@ describe('editor state plugins', () => {
 		expect(onChange).toHaveBeenCalledOnce();
 		expect(onMatchingValue).toHaveBeenCalledOnce();
 		expect(off).toHaveBeenCalledExactlyOnceWith('plugin-action', onEvent);
-		expect(menus.getItems('moduleMenu', { state: store.getState() })).toEqual([]);
+		expect(menus.getItems('moduleMenu', { state: store.getState(), codeBlock: createMockCodeBlock() })).toEqual([]);
 	});
 
 	it('cleans up earlier plugins and partial subscriptions when setup fails', () => {
@@ -97,44 +97,24 @@ describe('editor state plugins', () => {
 		expect(onChange).not.toHaveBeenCalled();
 		expect(off).toHaveBeenCalledWith('partial-action', onEvent);
 		expect(cleanup).toHaveBeenCalledOnce();
-		expect(menus.getItems('moduleMenu', { state: store.getState() })).toEqual([]);
+		expect(menus.getItems('moduleMenu', { state: store.getState(), codeBlock: createMockCodeBlock() })).toEqual([]);
 	});
 
-	it('continues disposal when a plugin cleanup throws', () => {
-		const cleanup = vi.fn();
-		const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
-		const dispose = installEditorStatePlugins(
-			[
-				{ id: 'first', setup: () => cleanup },
+	it('propagates plugin cleanup errors through the state host', () => {
+		const store = initState(createMockEventDispatcher(), {
+			callbacks: { loadSession: async () => null },
+			runtimeRegistry: {},
+			plugins: [
 				{
-					id: 'second',
+					id: 'failing-cleanup',
 					setup: () => () => {
 						throw new Error('Cleanup failed');
 					},
 				},
 			],
-			createStateManager(createMockState()),
-			createMockEventDispatcher()
-		);
-		dispose();
-		expect(cleanup).toHaveBeenCalledOnce();
-		expect(errorLog).toHaveBeenCalledOnce();
-		errorLog.mockRestore();
-	});
-
-	it('rejects duplicate plugin IDs before setup', () => {
-		const setup = vi.fn();
-		expect(() =>
-			initState(createMockEventDispatcher(), {
-				callbacks: { loadSession: async () => null },
-				runtimeRegistry: {},
-				plugins: [
-					{ id: 'duplicate', setup },
-					{ id: 'duplicate', setup },
-				],
-			})
-		).toThrow('duplicate');
-		expect(setup).not.toHaveBeenCalled();
+		});
+		expect(() => store.dispose()).toThrow('Cleanup failed');
+		store.dispose();
 	});
 
 	it('keeps menu registrations independent across editor instances', () => {
@@ -159,11 +139,11 @@ describe('editor state plugins', () => {
 			createMockEventDispatcher(),
 			second
 		);
-		expect(first.getItems('moduleMenu', { state })).toHaveLength(1);
-		expect(second.getItems('moduleMenu', { state })).toHaveLength(1);
+		expect(first.getItems('moduleMenu', { state, codeBlock: createMockCodeBlock() })).toHaveLength(1);
+		expect(second.getItems('moduleMenu', { state, codeBlock: createMockCodeBlock() })).toHaveLength(1);
 		disposeFirst();
-		expect(first.getItems('moduleMenu', { state })).toEqual([]);
-		expect(second.getItems('moduleMenu', { state })).toHaveLength(1);
+		expect(first.getItems('moduleMenu', { state, codeBlock: createMockCodeBlock() })).toEqual([]);
+		expect(second.getItems('moduleMenu', { state, codeBlock: createMockCodeBlock() })).toHaveLength(1);
 		disposeSecond();
 	});
 });

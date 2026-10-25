@@ -50,7 +50,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState);
+			const menu = moduleMenu(mockState, mockCodeBlock, []);
 
 			const copyItem = menu.find(item => item.title === 'Copy module');
 			expect(copyItem).toBeDefined();
@@ -64,7 +64,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState);
+			const menu = moduleMenu(mockState, mockCodeBlock, []);
 
 			const copyItem = menu.find(item => item.title === 'Copy module');
 			expect(copyItem).toBeDefined();
@@ -78,7 +78,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState);
+			const menu = moduleMenu(mockState, mockCodeBlock, []);
 
 			const copyItem = menu.find(item => item.title === 'Copy function');
 			expect(copyItem).toBeDefined();
@@ -92,7 +92,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState);
+			const menu = moduleMenu(mockState, mockCodeBlock, []);
 
 			const copyItem = menu.find(item => item.title === 'Copy note');
 			expect(copyItem).toBeDefined();

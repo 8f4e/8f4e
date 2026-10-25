@@ -1,7 +1,6 @@
 import initState from '@8f4e/editor-state';
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { EditorMenuRegistry, EventDispatcher } from '@8f4e/editor-state-types';
-import createStateManager from '@8f4e/state-manager';
+import { createMockCodeBlock } from '@8f4e/editor-state-testing';
+import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { toggleSkipExecutionPlugin } from './index';
 
@@ -26,26 +25,32 @@ function createEvents(): EventDispatcher {
 	};
 }
 
+const editors: Array<ReturnType<typeof initState>> = [];
+
 function createContext(code = ['module test', '', 'moduleEnd']) {
-	const state = createMockState();
-	const store = createStateManager(state);
 	const events = createEvents();
-	const unregisterMenuItem = vi.fn();
-	const menus = { registerItem: vi.fn<EditorMenuRegistry['registerItem']>(() => unregisterMenuItem) };
-	const codeBlock = createMockCodeBlock({ code, blockType: 'module', lastUpdated: 1000 });
-	state.codeBlockRendering.codeBlocks.push(codeBlock);
-	return { state, store, events, codeBlock, menus, unregisterMenuItem };
+	const store = initState(events, {
+		callbacks: { loadSession: async () => null },
+		runtimeRegistry: {},
+		initialEditorMode: 'edit',
+		plugins: [toggleSkipExecutionPlugin],
+	});
+	editors.push(store);
+	const state = store.getState();
+	const codeBlock = createMockCodeBlock({ code, blockType: 'module', entry: 'main', lastUpdated: 1000 });
+	state.codeBlockRendering.rootCodeBlocks.push(codeBlock);
+	return { state, store, events, codeBlock };
 }
 
 describe('toggle skip execution plugin', () => {
 	afterEach(() => {
+		while (editors.length) editors.pop()!.dispose();
 		vi.useRealTimers();
 	});
 
 	it('inserts the directive, publishes the source edit, and advances the compiler revision', () => {
 		const context = createContext();
 		const { state, store, events, codeBlock } = context;
-		toggleSkipExecutionPlugin.setup(context);
 		const revisions: string[][] = [];
 		store.subscribe('compilerInputRevision', () => revisions.push([...codeBlock.code]));
 		events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock });
@@ -63,7 +68,6 @@ describe('toggle skip execution plugin', () => {
 		'removes existing directives including whitespace and duplicates: %j',
 		(...lines) => {
 			const context = createContext(['module test', ...lines, 'moduleEnd']);
-			toggleSkipExecutionPlugin.setup(context);
 			context.events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: context.codeBlock });
 			expect(context.codeBlock.code).toEqual(['module test', ...lines.filter(line => line === ''), 'moduleEnd']);
 			expect(context.state.compilerInputRevision).toBe(1);
@@ -73,7 +77,6 @@ describe('toggle skip execution plugin', () => {
 	it('does not edit source or advance the compiler revision in view mode', () => {
 		const context = createContext();
 		context.state.featureFlags.editing = false;
-		toggleSkipExecutionPlugin.setup(context);
 		context.events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: context.codeBlock });
 		expect(context.codeBlock.code).toEqual(['module test', '', 'moduleEnd']);
 		expect(context.codeBlock.lastUpdated).toBe(1000);
@@ -82,62 +85,47 @@ describe('toggle skip execution plugin', () => {
 
 	it('ignores malformed source without publishing an edit', () => {
 		const context = createContext(['invalid']);
-		toggleSkipExecutionPlugin.setup(context);
 		context.events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: context.codeBlock });
 		expect(context.codeBlock.lastUpdated).toBe(1000);
 		expect(context.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBeUndefined();
 		expect(context.state.compilerInputRevision).toBe(0);
 	});
 
-	it('removes its handler on cleanup', () => {
+	it('removes its handler when the host is disposed', () => {
 		const context = createContext();
-		const cleanup = toggleSkipExecutionPlugin.setup(context);
-		cleanup?.();
-		expect(context.unregisterMenuItem).toHaveBeenCalledOnce();
+		context.store.dispose();
 		context.events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: context.codeBlock });
 		expect(context.codeBlock.code).toEqual(['module test', '', 'moduleEnd']);
 	});
 
-	it('owns the menu label, target, and visibility rules', () => {
-		const context = createContext();
-		toggleSkipExecutionPlugin.setup(context);
-		const [menu, provider] = context.menus.registerItem.mock.calls[0];
-		const { state, codeBlock } = context;
-		expect(menu).toBe('moduleMenu');
-		expect(provider({ state, codeBlock })).toEqual({
-			title: 'Skip module',
-			action: 'toggleModuleSkipExecutionDirective',
-			payload: { codeBlock },
-			close: true,
-		});
-		context.events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock });
-		expect(provider({ state, codeBlock })?.title).toBe('Unskip module');
-		expect(provider({ state })).toBeUndefined();
-		expect(provider({ state, codeBlock: createMockCodeBlock({ blockType: 'note' }) })).toBeUndefined();
-		state.featureFlags.editing = false;
-		expect(provider({ state, codeBlock })).toBeUndefined();
-	});
-
-	it.each([true, false])('contributes the menu item only when installed: %s', async installed => {
-		const events = createEvents();
-		const store = initState(events, {
-			callbacks: { loadSession: async () => null },
-			runtimeRegistry: {},
-			initialEditorMode: 'edit',
-			plugins: installed ? [toggleSkipExecutionPlugin] : [],
-		});
-		try {
-			const block = createMockCodeBlock({ code: ['module test', 'moduleEnd'], blockType: 'module', entry: 'main' });
-			store.getState().codeBlockRendering.rootCodeBlocks.push(block);
-			events.dispatch('contextmenu', { x: 16, y: 16 });
-			await Promise.resolve();
-			expect(
-				store.getState().contextMenu.items.some(item => item.action === 'toggleModuleSkipExecutionDirective')
-			).toBe(installed);
-		} finally {
-			store.dispose();
+	it.each([
+		{ installed: true, blockType: 'module' as const, visible: true },
+		{ installed: false, blockType: 'module' as const, visible: false },
+		{ installed: true, blockType: 'note' as const, visible: false },
+	])(
+		'contributes the menu item for installed module actions: $installed, $blockType',
+		async ({ installed, blockType, visible }) => {
+			const events = createEvents();
+			const store = initState(events, {
+				callbacks: { loadSession: async () => null },
+				runtimeRegistry: {},
+				initialEditorMode: 'edit',
+				plugins: installed ? [toggleSkipExecutionPlugin] : [],
+			});
+			try {
+				const code = blockType === 'module' ? ['module test', 'moduleEnd'] : ['note test', 'noteEnd'];
+				const block = createMockCodeBlock({ code, blockType, entry: 'main' });
+				store.getState().codeBlockRendering.rootCodeBlocks.push(block);
+				events.dispatch('contextmenu', { x: 16, y: 16 });
+				await Promise.resolve();
+				expect(
+					store.getState().contextMenu.items.some(item => item.action === 'toggleModuleSkipExecutionDirective')
+				).toBe(visible);
+			} finally {
+				store.dispose();
+			}
 		}
-	});
+	);
 
 	it('opens the clicked block menu and toggles that block through the menu action', async () => {
 		const events = createEvents();

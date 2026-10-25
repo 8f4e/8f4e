@@ -44,7 +44,7 @@ import projectImport from './features/project-import/effect';
 import runtime from './features/runtime/effect';
 import tooltip from './features/tooltip/effect';
 import viewport from './features/viewport/effect';
-import { installEditorStatePlugins, validateEditorStatePlugins } from './plugins';
+import { installEditorStatePlugins } from './plugins';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
 
@@ -60,7 +60,6 @@ export {
 // Function to create default state
 export default function init(events: EventDispatcher, options: Options): StateManager<State> {
 	const plugins = options.plugins ?? [];
-	validateEditorStatePlugins(plugins);
 	const menus = createMenuItemRegistry();
 	const initialEditorMode = options.initialEditorMode ?? (options.featureFlags?.editing ? 'edit' : 'view');
 	const featureFlags = validateFeatureFlags({
@@ -70,7 +69,7 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 	type EffectCleanup = () => void;
 	const effectCleanups: EffectCleanup[] = [];
 	const registerEffect = (cleanup: void | EffectCleanup): void => {
-		if (cleanup) {
+		if (cleanup !== undefined) {
 			effectCleanups.push(cleanup);
 		}
 	};
@@ -86,6 +85,7 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 	};
 
 	const store = createStateManager<State>(baseState);
+	effectCleanups.push(store.dispose);
 
 	const state = store.getState();
 
@@ -141,23 +141,10 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 	events.on('consoleLog', onConsoleLog);
 	registerEffect(() => events.off('consoleLog', onConsoleLog));
 
-	const disposeSubscriptions = store.dispose;
-	let disposed = false;
 	const dispose = () => {
-		if (disposed) {
-			return;
+		while (effectCleanups.length) {
+			effectCleanups.pop()!();
 		}
-
-		disposed = true;
-		for (let index = effectCleanups.length - 1; index >= 0; index--) {
-			try {
-				effectCleanups[index]();
-			} catch (error) {
-				console.error('Failed to dispose editor state effect:', error);
-			}
-		}
-		effectCleanups.length = 0;
-		disposeSubscriptions();
 	};
 	try {
 		registerEffect(installEditorStatePlugins(plugins, store, events, menus));

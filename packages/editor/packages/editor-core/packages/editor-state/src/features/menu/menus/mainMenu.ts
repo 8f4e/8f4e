@@ -40,7 +40,7 @@ export const mainMenu: MenuGenerator = state => [
 				{
 					title: 'Add Built-in Module',
 					action: 'openSubMenu',
-					payload: { menu: 'moduleCategoriesMenu' },
+					payload: { menu: 'moduleCategoriesMenu', path: [] },
 					close: false,
 					disabled: !state.callbacks.getListOfModules,
 				},

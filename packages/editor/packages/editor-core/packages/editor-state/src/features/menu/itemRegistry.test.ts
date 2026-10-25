@@ -7,7 +7,7 @@ describe('menu item registry', () => {
 		const registry = createMenuItemRegistry();
 		const state = createMockState();
 		const codeBlock = createMockCodeBlock({ name: 'first' });
-		const unregister = registry.registerItem('moduleMenu', ({ codeBlock }) => ({ title: codeBlock?.name }));
+		const unregister = registry.registerItem('moduleMenu', ({ codeBlock }) => ({ title: codeBlock.name }));
 		registry.registerItem('moduleMenu', ({ state }) =>
 			state.featureFlags.editing ? { title: 'Edit action' } : undefined
 		);

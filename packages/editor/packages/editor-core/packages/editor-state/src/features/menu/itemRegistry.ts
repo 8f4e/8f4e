@@ -25,7 +25,7 @@ export default function createMenuItemRegistry(): MenuItemRegistry {
 			for (const registration of registrations) {
 				if (registration.menu !== menu) continue;
 				const item = registration.provider(context);
-				if (item) items.push(item);
+				if (item !== undefined) items.push(item);
 			}
 			return items;
 		},

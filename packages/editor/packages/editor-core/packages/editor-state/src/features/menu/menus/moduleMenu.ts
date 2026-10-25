@@ -8,15 +8,13 @@ const functionBlockType = documentBlockInstructionByType.function.type;
 const moduleBlockType = documentBlockInstructionByType.module.type;
 const noteBlockType = documentBlockInstructionByType.note.type;
 
-interface ModuleMenuContext {
-	codeBlock?: CodeBlockGraphicData;
-	items?: readonly ContextMenuItem[];
-}
-
-export const moduleMenu = (state: State, context: ModuleMenuContext = {}): ContextMenuItem[] => {
-	const selectedCodeBlock = context.codeBlock ?? state.codeBlockRendering.selectedCodeBlock;
-	const blockType = selectedCodeBlock?.blockType;
-	const isProjectGroup = selectedCodeBlock?.nestedProjectCodeBlocks !== undefined;
+export const moduleMenu = (
+	state: State,
+	codeBlock: CodeBlockGraphicData,
+	items: readonly ContextMenuItem[]
+): ContextMenuItem[] => {
+	const blockType = codeBlock.blockType;
+	const isProjectGroup = codeBlock.nestedProjectCodeBlocks !== undefined;
 	let blockLabel = 'module';
 
 	if (isProjectGroup) {
@@ -27,16 +25,16 @@ export const moduleMenu = (state: State, context: ModuleMenuContext = {}): Conte
 		blockLabel = 'note';
 	}
 
-	const isDisabled = selectedCodeBlock?.disabled ?? false;
+	const isDisabled = codeBlock.disabled;
 
 	// Check if code block has ; @favorite directive
-	const hasFavoriteDirective = selectedCodeBlock?.isFavorite ?? false;
-	const hasSliders = (selectedCodeBlock?.widgets.sliders.length ?? 0) > 0;
-	const hasPianos = (selectedCodeBlock?.widgets.pianoKeyboards.length ?? 0) > 0;
-	const hasMemoryConnections = selectedCodeBlock ? hasIntermodularMemoryConnections(selectedCodeBlock.code) : false;
+	const hasFavoriteDirective = codeBlock.isFavorite;
+	const hasSliders = codeBlock.widgets.sliders.length > 0;
+	const hasPianos = codeBlock.widgets.pianoKeyboards.length > 0;
+	const hasMemoryConnections = hasIntermodularMemoryConnections(codeBlock.code);
 
 	// Check if code block has a group name and compute group skip/nonstick status
-	const groupName = selectedCodeBlock?.groupName;
+	const groupName = codeBlock.groupName;
 	const hasGroup = !!groupName;
 	let allGroupBlocksSkipped = false;
 	let allGroupBlocksNonstick = false;
@@ -66,7 +64,7 @@ export const moduleMenu = (state: State, context: ModuleMenuContext = {}): Conte
 					{
 						title: 'Open group',
 						action: 'openProjectGroup',
-						payload: { codeBlock: selectedCodeBlock },
+						payload: { codeBlock },
 						close: true,
 					},
 				]
@@ -76,18 +74,18 @@ export const moduleMenu = (state: State, context: ModuleMenuContext = {}): Conte
 					{
 						title: `Delete ${blockLabel}`,
 						action: 'deleteCodeBlock',
-						payload: { codeBlock: selectedCodeBlock },
+						payload: { codeBlock },
 						close: true,
 					},
 					{
 						title: isDisabled ? `Enable ${blockLabel}` : `Disable ${blockLabel}`,
 						action: 'toggleCodeBlockDisabled',
-						payload: { codeBlock: selectedCodeBlock },
+						payload: { codeBlock },
 						close: true,
 					},
 				]
 			: []),
-		...(context.items ?? []),
+		...items,
 		...(state.featureFlags.editing
 			? [
 					...(blockType === moduleBlockType && hasGroup
@@ -95,7 +93,7 @@ export const moduleMenu = (state: State, context: ModuleMenuContext = {}): Conte
 								{
 									title: allGroupBlocksSkipped ? 'Unskip group' : 'Skip group',
 									action: 'toggleGroupSkipExecutionDirective',
-									payload: { codeBlock: selectedCodeBlock },
+									payload: { codeBlock },
 									close: true,
 								},
 							]
@@ -105,26 +103,26 @@ export const moduleMenu = (state: State, context: ModuleMenuContext = {}): Conte
 								{
 									title: 'Align blocks in row',
 									action: 'alignGroupBlocksInRow',
-									payload: { codeBlock: selectedCodeBlock },
+									payload: { codeBlock },
 									close: true,
 								},
 								{
 									title: 'Remove from group',
 									action: 'removeFromGroupDirective',
-									payload: { codeBlock: selectedCodeBlock },
+									payload: { codeBlock },
 									close: true,
 								},
 								{
 									title: `Ungroup "${groupName}"`,
 									action: 'ungroupByName',
-									payload: { codeBlock: selectedCodeBlock },
+									payload: { codeBlock },
 									close: true,
 								},
 								{
 									title: allGroupBlocksNonstick ? 'Make Group Sticky' : 'Make Group Nonstick',
 									action: 'toggleGroupNonstick',
 									payload: {
-										codeBlock: selectedCodeBlock,
+										codeBlock: codeBlock,
 										makeNonstick: !allGroupBlocksNonstick,
 									},
 									close: true,
@@ -132,7 +130,7 @@ export const moduleMenu = (state: State, context: ModuleMenuContext = {}): Conte
 								{
 									title: 'Delete group',
 									action: 'deleteGroup',
-									payload: { codeBlock: selectedCodeBlock },
+									payload: { codeBlock },
 									close: true,
 								},
 							]
@@ -140,20 +138,20 @@ export const moduleMenu = (state: State, context: ModuleMenuContext = {}): Conte
 					{
 						title: hasFavoriteDirective ? 'Unfavorite' : 'Favorite',
 						action: 'toggleFavoriteDirective',
-						payload: { codeBlock: selectedCodeBlock },
+						payload: { codeBlock },
 						close: true,
 					},
 					{
 						title: 'Save slider and piano values to code',
 						action: 'saveSliderValuesToCode',
-						payload: { codeBlock: selectedCodeBlock },
+						payload: { codeBlock },
 						close: true,
 						disabled: !(hasSliders || hasPianos) || !state.callbacks.getWordFromMemory,
 					},
 					{
 						title: 'Remove connections',
 						action: 'removeConnections',
-						payload: { codeBlock: selectedCodeBlock },
+						payload: { codeBlock },
 						close: true,
 						disabled: !hasMemoryConnections,
 					},
@@ -162,7 +160,7 @@ export const moduleMenu = (state: State, context: ModuleMenuContext = {}): Conte
 		{
 			title: `Copy ${blockLabel}`,
 			action: 'copyCodeBlock',
-			payload: { codeBlock: selectedCodeBlock },
+			payload: { codeBlock },
 			close: true,
 			disabled: !state.callbacks.writeClipboardText,
 		},
@@ -171,7 +169,7 @@ export const moduleMenu = (state: State, context: ModuleMenuContext = {}): Conte
 					{
 						title: 'Copy group',
 						action: 'copyGroupBlocks',
-						payload: { codeBlock: selectedCodeBlock },
+						payload: { codeBlock },
 						close: true,
 						disabled: !state.callbacks.writeClipboardText,
 					},
@@ -180,7 +178,7 @@ export const moduleMenu = (state: State, context: ModuleMenuContext = {}): Conte
 		{
 			title: `Log ${blockLabel} info to console`,
 			action: 'consoleLog',
-			payload: { codeBlock: selectedCodeBlock },
+			payload: { codeBlock },
 			close: true,
 		},
 	];

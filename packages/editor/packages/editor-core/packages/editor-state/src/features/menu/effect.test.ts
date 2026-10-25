@@ -7,6 +7,27 @@ import contextMenu from './effect';
 import createMenuItemRegistry from './itemRegistry';
 
 describe('contextMenu effect', () => {
+	it('navigates module categories with explicit paths and restores the parent request', async () => {
+		const state = createMockState({
+			callbacks: { getListOfModules: async () => [{ slug: 'gain', title: 'Gain', category: 'Audio' }] },
+		});
+		const events = createMockEventDispatcherWithVitest();
+		const cleanup = contextMenu(createStateManager(state), events, createMenuItemRegistry());
+		const onCalls = (events.on as unknown as MockInstance).mock.calls;
+		const onOpenSubMenu = onCalls.find(call => call[0] === 'openSubMenu')![1];
+		const onMenuBack = onCalls.find(call => call[0] === 'menuBack')![1];
+		await onOpenSubMenu({ menu: 'moduleCategoriesMenu', path: [] });
+		const category = state.contextMenu.items.find(item => item.action === 'openSubMenu')!;
+		expect(category.payload).toEqual({ menu: 'moduleCategoriesMenu', path: ['Audio'] });
+		await onOpenSubMenu(category.payload);
+		expect(state.contextMenu.items.find(item => item.action === 'addCodeBlockBySlug')?.payload).toEqual({
+			codeBlockSlug: 'gain',
+		});
+		await onMenuBack();
+		expect(state.contextMenu.items.find(item => item.action === 'openSubMenu')?.payload).toEqual(category.payload);
+		cleanup();
+	});
+
 	it('rebuilds contributed items when opening and revisiting the block submenu', async () => {
 		const codeBlock = createMockCodeBlock({ name: 'first' });
 		const state = createMockState();
@@ -14,7 +35,7 @@ describe('contextMenu effect', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const items = createMenuItemRegistry();
 		items.registerItem('moduleMenu', ({ codeBlock }) => ({
-			title: `Inspect ${codeBlock?.name}`,
+			title: `Inspect ${codeBlock.name}`,
 			action: 'inspect',
 			payload: { codeBlock },
 		}));
@@ -45,7 +66,7 @@ describe('contextMenu effect', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		contextMenu(store, events);
+		contextMenu(store, events, createMenuItemRegistry());
 
 		const onCalls = (events.on as unknown as MockInstance).mock.calls;
 		const onContextMenu = onCalls.find(call => call[0] === 'contextmenu')![1];
@@ -69,7 +90,7 @@ describe('contextMenu effect', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		contextMenu(store, events);
+		contextMenu(store, events, createMenuItemRegistry());
 
 		const onCalls = (events.on as unknown as MockInstance).mock.calls;
 		const onContextMenu = onCalls.find(call => call[0] === 'contextmenu')![1];
@@ -102,7 +123,7 @@ describe('contextMenu effect', () => {
 			}
 		});
 
-		contextMenu(store, events);
+		contextMenu(store, events, createMenuItemRegistry());
 
 		const onCalls = (events.on as unknown as MockInstance).mock.calls;
 		const onContextMenu = onCalls.find(call => call[0] === 'contextmenu')![1];

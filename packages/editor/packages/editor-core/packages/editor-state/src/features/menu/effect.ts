@@ -1,14 +1,8 @@
-import type {
-	CodeBlockGraphicData,
-	ContextMenuItem,
-	EventDispatcher,
-	MenuGenerator,
-	State,
-} from '@8f4e/editor-state-types';
+import type { ContextMenuItem, EventDispatcher, MenuStackEntry, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import roundToGrid from '~/features/viewport/roundToGrid';
 import findCodeBlockAtViewportCoordinates from '../code-blocks/utils/finders/findCodeBlockAtViewportCoordinates';
-import createMenuItemRegistry, { type MenuItemRegistry } from './itemRegistry';
+import type { MenuItemRegistry } from './itemRegistry';
 import * as menus from './menus';
 
 interface MouseEvent {
@@ -16,11 +10,6 @@ interface MouseEvent {
 	y: number;
 	buttons?: number;
 	stopPropagation?: boolean;
-}
-
-interface MenuEvent {
-	menu: string;
-	[key: string]: unknown;
 }
 
 function getHighlightedMenuItem(x: number, y: number, width: number, height: number) {
@@ -77,20 +66,24 @@ function keepMenuWithinViewport(state: State): void {
 export default function contextMenu(
 	store: StateManager<State>,
 	events: EventDispatcher,
-	menuItems: MenuItemRegistry = createMenuItemRegistry()
+	menuItems: MenuItemRegistry
 ): () => void {
 	const state = store.getState();
-	const generateMenu = async (menu: string, payload?: unknown): Promise<ContextMenuItem[]> => {
-		if (menu === 'moduleMenu') {
-			const codeBlock =
-				(payload as { codeBlock?: CodeBlockGraphicData } | undefined)?.codeBlock ??
-				state.codeBlockRendering.selectedCodeBlock;
-			return menus.moduleMenu(state, {
-				codeBlock,
-				items: menuItems.getItems('moduleMenu', { state, codeBlock }),
-			});
+	const generateMenu = async (request: MenuStackEntry): Promise<ContextMenuItem[]> => {
+		switch (request.menu) {
+			case 'moduleMenu':
+				return menus.moduleMenu(
+					state,
+					request.codeBlock,
+					menuItems.getItems('moduleMenu', { state, codeBlock: request.codeBlock })
+				);
+			case 'mainMenu':
+				return menus.mainMenu(state);
+			case 'favoritesMenu':
+				return menus.favoritesMenu(state);
+			case 'moduleCategoriesMenu':
+				return menus.moduleCategoriesMenu(state, request.path);
 		}
-		return (menus as Record<string, MenuGenerator<State>>)[menu](state, payload);
 	};
 	const onMouseMove = (event: MouseEvent) => {
 		if (!state.contextMenu.open) {
@@ -156,22 +149,18 @@ export default function contextMenu(
 		const codeBlock = findCodeBlockAtViewportCoordinates(state, x, y);
 
 		if (codeBlock) {
-			state.contextMenu.items = decorateMenu(await generateMenu('moduleMenu', { codeBlock }));
+			state.contextMenu.items = decorateMenu(await generateMenu({ menu: 'moduleMenu', codeBlock }));
 		} else {
-			state.contextMenu.items = decorateMenu(await generateMenu('mainMenu'));
+			state.contextMenu.items = decorateMenu(await generateMenu({ menu: 'mainMenu' }));
 		}
 
 		state.contextMenu.itemWidth = getLongestMenuItem(state.contextMenu.items) * state.viewport.vGrid;
 		keepMenuWithinViewport(state);
 	};
 
-	const onOpenSubMenu = async (event: MenuEvent) => {
-		const { menu, ...payload } = event;
-		state.contextMenu.menuStack.push({ menu, payload });
-		state.contextMenu.items = decorateMenu([
-			{ title: '< Back', action: 'menuBack' },
-			...(await generateMenu(menu, payload)),
-		]);
+	const onOpenSubMenu = async (request: MenuStackEntry) => {
+		state.contextMenu.menuStack.push(request);
+		state.contextMenu.items = decorateMenu([{ title: '< Back', action: 'menuBack' }, ...(await generateMenu(request))]);
 		state.contextMenu.itemWidth = getLongestMenuItem(state.contextMenu.items) * state.viewport.vGrid;
 		keepMenuWithinViewport(state);
 	};
@@ -181,17 +170,13 @@ export default function contextMenu(
 		const entry = state.contextMenu.menuStack.pop();
 
 		if (!entry) {
-			state.contextMenu.items = decorateMenu(await generateMenu('mainMenu'));
+			state.contextMenu.items = decorateMenu(await generateMenu({ menu: 'mainMenu' }));
 			state.contextMenu.itemWidth = getLongestMenuItem(state.contextMenu.items) * state.viewport.vGrid;
 			keepMenuWithinViewport(state);
 			return;
 		}
 
-		const { menu, payload } = entry;
-		state.contextMenu.items = decorateMenu([
-			{ title: '< Back', action: 'menuBack' },
-			...(await generateMenu(menu, payload)),
-		]);
+		state.contextMenu.items = decorateMenu([{ title: '< Back', action: 'menuBack' }, ...(await generateMenu(entry))]);
 		state.contextMenu.itemWidth = getLongestMenuItem(state.contextMenu.items) * state.viewport.vGrid;
 		keepMenuWithinViewport(state);
 	};

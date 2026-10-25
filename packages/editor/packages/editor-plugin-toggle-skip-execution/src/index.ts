@@ -21,8 +21,8 @@ export const toggleSkipExecutionPlugin: EditorStatePlugin = {
 		};
 
 		events.on(action, onToggle);
-		const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-			if (!state.featureFlags.editing || codeBlock?.blockType !== 'module') return;
+		menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
+			if (!state.featureFlags.editing || codeBlock.blockType !== 'module') return;
 			const skipped = codeBlock.code.some(line => isSkipExecutionDirective(line));
 			return {
 				title: skipped ? 'Unskip module' : 'Skip module',
@@ -31,9 +31,5 @@ export const toggleSkipExecutionPlugin: EditorStatePlugin = {
 				close: true,
 			};
 		});
-		return () => {
-			unregisterMenuItem();
-			events.off(action, onToggle);
-		};
 	},
 };

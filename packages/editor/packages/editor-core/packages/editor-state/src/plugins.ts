@@ -6,37 +6,18 @@ import type {
 	State,
 } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import createMenuItemRegistry from './features/menu/itemRegistry';
-
-export function validateEditorStatePlugins(plugins: readonly EditorStatePlugin[]): void {
-	const ids = new Set<string>();
-	for (const plugin of plugins) {
-		if (!plugin.id.trim() || ids.has(plugin.id)) {
-			throw new Error(`Invalid or duplicate editor state plugin ID: "${plugin.id}"`);
-		}
-		ids.add(plugin.id);
-	}
-}
 
 export function installEditorStatePlugins(
 	plugins: readonly EditorStatePlugin[],
 	store: StateManager<State>,
 	events: EventDispatcher,
-	menus: EditorMenuRegistry = createMenuItemRegistry()
+	menus: EditorMenuRegistry
 ): () => void {
 	const cleanups: Array<() => void> = [];
-	let disposed = false;
 	const dispose = () => {
-		if (disposed) return;
-		disposed = true;
-		for (let index = cleanups.length - 1; index >= 0; index--) {
-			try {
-				cleanups[index]();
-			} catch (error) {
-				console.error('Failed to dispose editor state plugin resource:', error);
-			}
+		while (cleanups.length) {
+			cleanups.pop()!();
 		}
-		cleanups.length = 0;
 	};
 	const context: EditorStatePluginContext = {
 		store: {
@@ -74,7 +55,7 @@ export function installEditorStatePlugins(
 	try {
 		for (const plugin of plugins) {
 			const cleanup = plugin.setup(context);
-			if (cleanup) cleanups.push(cleanup);
+			if (cleanup !== undefined) cleanups.push(cleanup);
 		}
 	} catch (error) {
 		dispose();
