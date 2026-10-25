@@ -1,22 +1,26 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { BinaryControl, CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import { drawBinaryControl } from '@8f4e/web-ui';
-import { createSwitchDirective } from './directive';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import { createSwitchDirective, type SwitchWidget } from './directive';
 
 export const switchPlugin: EditorPlugin = {
 	id: 'switch',
 	setup: ({ store, events, directives, drawers }) => {
 		const state = store.getState();
-		const widgets = new WeakMap<CodeBlockGraphicData, BinaryControl[]>();
+		const widgets = new WeakMap<CodeBlockGraphicData, SwitchWidget[]>();
 		const unregisterDirective = directives.register(createSwitchDirective(widgets));
 		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
-			if (!state.spriteLookups) return;
+			const sprites = state.spriteLookups;
+			if (!sprites) return;
 			for (const control of widgets.get(codeBlock) ?? []) {
 				const value = memoryViews.int32[control.allocationUnitAddress] || 0;
 				if (value === control.onValue || value === control.offValue) {
-					drawBinaryControl(draw, state, control, value === control.onValue);
+					const isOn = value === control.onValue;
+					const knobX = control.x + state.viewport.vGrid * (isOn ? 2 : 1);
+					draw.drawSprite(control.x, control.y, sprites.fillColors.switchBackground, control.width, control.height);
+					draw.drawSprite(knobX, control.y, sprites.fillColors.controlKnob, state.viewport.vGrid, control.height);
+					draw.drawText(control.x, control.y, isOn ? '[ |]' : '[| ]', sprites.fontControlKnob);
 				} else {
-					draw.drawText(control.x, control.y, '[__]', state.spriteLookups.fontNumbers);
+					draw.drawText(control.x, control.y, '[__]', sprites.fontNumbers);
 				}
 			}
 		});

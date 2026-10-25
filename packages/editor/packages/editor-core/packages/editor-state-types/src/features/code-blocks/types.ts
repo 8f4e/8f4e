@@ -130,7 +130,7 @@ export interface ArrayMeter {
 	valueType: TypedValueKind;
 }
 
-export interface BinaryControl {
+export interface Button {
 	width: number;
 	height: number;
 	x: number;
@@ -325,7 +325,7 @@ export interface CodeBlockGraphicData {
 		arrayMeters: ArrayMeter[];
 		arrayWaves: ArrayWave[];
 		infoPanels: InfoPanel[];
-		buttons: BinaryControl[];
+		buttons: Button[];
 		sliders: Slider[];
 		crossfades: Crossfade[];
 		pianoKeyboards: PianoKeyboard[];

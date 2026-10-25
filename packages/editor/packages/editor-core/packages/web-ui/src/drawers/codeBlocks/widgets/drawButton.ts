@@ -1,13 +1,13 @@
-import type { BinaryControl, State } from '@8f4e/editor-state-types';
+import type { Button, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../../drawContext';
 
 const OFF_LABEL = '[| ]';
 const ON_LABEL = '[ |]';
 
-export default function drawBinaryControl(
+export default function drawButton(
 	engine: DrawContext,
 	state: State,
-	control: Pick<BinaryControl, 'x' | 'y' | 'width' | 'height'>,
+	control: Pick<Button, 'x' | 'y' | 'width' | 'height'>,
 	isOn: boolean
 ): void {
 	const spriteLookups = state.spriteLookups;

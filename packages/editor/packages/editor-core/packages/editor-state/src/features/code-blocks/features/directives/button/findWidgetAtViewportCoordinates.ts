@@ -1,4 +1,4 @@
-import type { BinaryControl, CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { Button, CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 
 /**
  * Locates the button overlay within a code block that intersects the provided viewport-relative coordinates.
@@ -15,7 +15,7 @@ export default function findButtonWidgetAtViewportCoordinates(
 	codeBlock: CodeBlockGraphicData,
 	x: number,
 	y: number
-): BinaryControl | undefined {
+): Button | undefined {
 	return codeBlock.widgets.buttons.find(button => {
 		return (
 			x >= codeBlock.x + button.x - state.viewport.x &&

@@ -72,8 +72,8 @@ Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer rece
 `{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
 the host applies viewport translation and visibility checks. Drawers run in registration order after error messages
 and before built-in controls. Use the current state's sprite lookups, which change with the font or color scheme.
-`@8f4e/web-ui` exports the drawing types and the shared `drawBinaryControl` helper. Registration returns an
-unregister function; call it from the plugin's disposer.
+`@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
+disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
 
 The switch plugin owns `@switch` argument handling, memory resolution, click handling, and drawing. Its widget data
 lives in a per-instance WeakMap rather than the core state shape. The execution-toggle plugin owns the Skip/Unskip

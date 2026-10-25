@@ -20,7 +20,6 @@ import type { MemoryViews } from './types';
 import { resolveWireColors } from './wire-colors';
 
 export type { DrawContext } from './drawContext';
-export { default as drawBinaryControl } from './drawers/codeBlocks/widgets/drawBinaryControl';
 export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from './drawers/registry';
 export { createCodeBlockDrawerRegistry } from './drawers/registry';
 // Re-export types
