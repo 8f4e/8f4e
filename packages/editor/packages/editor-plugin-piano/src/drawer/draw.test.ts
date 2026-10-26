@@ -46,31 +46,12 @@ function createMockMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Pl
 function createPianoKeyboardKeys(): PianoKeyboard['keys'] {
 	return Array.from({ length: 24 }, (_, offset) => {
 		const isBlack = [1, 3, 6, 8, 10].includes(offset % 12);
-		const baseKey = {
+		return {
 			offset,
 			x: offset * 2,
 			label: isBlack ? 'C#' : 'C',
-			labelX: offset * 2,
-			labelY: 0,
-			pressedOverlayX: offset * 2,
-		};
-
-		if (isBlack) {
-			return {
-				...baseKey,
-				kind: 'black',
-				sprite: 'pianoKeyBlack',
-				pressedOverlayRows: [4, 8, 12],
-				pressedOverlayFont: 'fontPianoKeyBlackPressedOverlay',
-			};
-		}
-
-		return {
-			...baseKey,
-			kind: 'white',
-			sprite: 'pianoKeyWhite',
-			pressedOverlayRows: [4, 8, 12, 16, 20],
-			pressedOverlayFont: 'fontPianoKeyWhitePressedOverlay',
+			kind: isBlack ? 'black' : 'white',
+			pressedOverlayRows: isBlack ? [4, 8, 12] : [4, 8, 12, 16, 20],
 		};
 	});
 }
@@ -78,7 +59,7 @@ function createPianoKeyboardKeys(): PianoKeyboard['keys'] {
 function createPianoKeyboard(overrides: Partial<PianoKeyboard> = {}): PianoKeyboard {
 	return {
 		pressedKeysListModuleId: 'test-block',
-		pressedNumberOfKeysModuleId: 'test-block',
+		pressedKeyCountModuleId: 'test-block',
 		x: 2,
 		y: 3,
 		width: 48,
@@ -101,12 +82,12 @@ function createPianoKeyboard(overrides: Partial<PianoKeyboard> = {}): PianoKeybo
 			allocationUnitCount: 12,
 			numberOfElements: 12,
 		}),
-		pressedNumberOfKeysMemory: createMockMemory({
+		pressedKeyCountMemory: createMockMemory({
 			id: 'notesCount',
 			byteAddress: 4,
 			allocationUnitAddress: 1,
 		}),
-		startingNumber: 48,
+		startingMidiNote: 48,
 		...overrides,
 	};
 }

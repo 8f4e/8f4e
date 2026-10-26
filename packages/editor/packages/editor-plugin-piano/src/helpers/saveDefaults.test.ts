@@ -39,7 +39,7 @@ function createPianoCodeBlock(
 	const keyboards = [
 		{
 			pressedKeysListModuleId: 'synth',
-			pressedNumberOfKeysModuleId: 'synth',
+			pressedKeyCountModuleId: 'synth',
 			pressedKeysListMemory: {
 				id: 'notes',
 				allocationUnitAddress: 4,
@@ -47,7 +47,7 @@ function createPianoCodeBlock(
 				elementWordSize: 4,
 				isInteger: true,
 			},
-			pressedNumberOfKeysMemory: { id: 'count', allocationUnitAddress: 8, isInteger: true },
+			pressedKeyCountMemory: { id: 'count', allocationUnitAddress: 8, isInteger: true },
 		} as PianoKeyboard,
 	];
 	return { codeBlock, keyboards };
@@ -63,7 +63,7 @@ describe('save piano default values to code', () => {
 			'moduleEnd',
 		]);
 		keyboards[0].pressedKeysListMemory.numberOfElements = 2;
-		keyboards[0].pressedNumberOfKeysMemory.allocationUnitAddress = 6;
+		keyboards[0].pressedKeyCountMemory.allocationUnitAddress = 6;
 		const memory = new Map([
 			[4, 2],
 			[5, 3],
@@ -197,7 +197,7 @@ describe('save piano default values to code', () => {
 			'moduleEnd',
 		]);
 		keyboards[0].pressedKeysListModuleId = 'other';
-		keyboards[0].pressedNumberOfKeysModuleId = 'other';
+		keyboards[0].pressedKeyCountModuleId = 'other';
 		const owner = createMockCodeBlock({
 			blockType: 'module',
 			code: ['module other', 'int[] notes 4 60', 'int count 1', 'moduleEnd'],

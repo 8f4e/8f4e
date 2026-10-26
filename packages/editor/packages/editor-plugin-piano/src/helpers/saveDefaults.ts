@@ -22,7 +22,7 @@ function decodeFloat64Words(lowWord: number, highWord: number): number {
 function getPianoDefaults(keyboards: PianoKeyboard[], read: (address: number) => number): MemoryDefaultValue[][] {
 	return keyboards.flatMap(keyboard => {
 		const notes = keyboard.pressedKeysListMemory;
-		const countMemory = keyboard.pressedNumberOfKeysMemory;
+		const countMemory = keyboard.pressedKeyCountMemory;
 		const runtimeCount = read(countMemory.allocationUnitAddress);
 		if (!Number.isFinite(runtimeCount)) return [];
 		const count = Math.min(Math.max(0, Math.trunc(runtimeCount)), notes.numberOfElements);
@@ -43,7 +43,7 @@ function getPianoDefaults(keyboards: PianoKeyboard[], read: (address: number) =>
 			[
 				{ moduleId: keyboard.pressedKeysListModuleId, memoryId: notes.id, value: values.join(' '), isArray: true },
 				{
-					moduleId: keyboard.pressedNumberOfKeysModuleId,
+					moduleId: keyboard.pressedKeyCountModuleId,
 					memoryId: countMemory.id,
 					value: count.toString(),
 					isArray: false,

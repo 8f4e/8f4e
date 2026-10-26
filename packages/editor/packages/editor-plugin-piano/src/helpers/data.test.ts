@@ -3,15 +3,15 @@ import { createPianoDirectiveData } from './data';
 
 describe('piano arguments', () => {
 	it.each([
-		{ args: ['&notes', '&count'], startingNumber: 0 },
-		{ args: ['&notes', '&count', '48'], startingNumber: 48 },
-		{ args: ['&group:notes', '&other:count', '60'], startingNumber: 60 },
-	])('reads note addresses and starting note from $args', ({ args, startingNumber }) => {
+		{ args: ['&notes', '&count'], startingMidiNote: 0 },
+		{ args: ['&notes', '&count', '48'], startingMidiNote: 48 },
+		{ args: ['&group:notes', '&other:count', '60'], startingMidiNote: 60 },
+	])('reads note addresses and starting note from $args', ({ args, startingMidiNote }) => {
 		expect(createPianoDirectiveData(args, 7)).toEqual({
 			sourceLineIndex: 7,
 			pressedKeysListMemoryId: args[0],
-			pressedNumberOfKeysMemoryId: args[1],
-			startingNumber,
+			pressedKeyCountMemoryId: args[1],
+			startingMidiNote,
 		});
 	});
 	it.each([

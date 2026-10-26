@@ -46,7 +46,7 @@ describe('piano interaction', () => {
 		keyboardsByBlock.set(codeBlock, [
 			{
 				pressedKeysListModuleId: 'test-block',
-				pressedNumberOfKeysModuleId: 'test-block',
+				pressedKeyCountModuleId: 'test-block',
 				x: 20,
 				y: 40,
 				width: 240,
@@ -65,13 +65,8 @@ describe('piano interaction', () => {
 					offset,
 					x: offset * 10,
 					label: 'C',
-					labelX: offset * 10,
-					labelY: 0,
 					kind: 'white',
-					sprite: 'pianoKeyWhite',
-					pressedOverlayX: offset * 10,
 					pressedOverlayRows: [],
-					pressedOverlayFont: 'fontPianoKeyWhitePressedOverlay',
 				})),
 				pressedKeysListMemory: {
 					id: 'notes',
@@ -80,14 +75,14 @@ describe('piano interaction', () => {
 					numberOfElements: 10,
 					isInteger: true,
 				},
-				pressedNumberOfKeysMemory: {
+				pressedKeyCountMemory: {
 					id: 'noteCount',
 					allocationUnitAddress: 20,
 					allocationUnitCount: 1,
 					numberOfElements: 1,
 					isInteger: true,
 				},
-				startingNumber: 48,
+				startingMidiNote: 48,
 			},
 		] as never);
 

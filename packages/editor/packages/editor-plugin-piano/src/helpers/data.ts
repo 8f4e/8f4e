@@ -2,9 +2,9 @@ import { isMemoryAddress, parseInteger } from '@8f4e/editor-state';
 
 export interface PianoDirectiveData {
 	sourceLineIndex: number;
-	pressedNumberOfKeysMemoryId: string;
+	pressedKeyCountMemoryId: string;
 	pressedKeysListMemoryId: string;
-	startingNumber: number;
+	startingMidiNote: number;
 }
 
 export function createPianoDirectiveData(args: string[], sourceLineIndex: number): PianoDirectiveData | undefined {
@@ -12,15 +12,15 @@ export function createPianoDirectiveData(args: string[], sourceLineIndex: number
 		return undefined;
 	}
 
-	const startingNumber = args[2] === undefined ? 0 : parseInteger(args[2]);
-	if (startingNumber === undefined || startingNumber < 0) {
+	const startingMidiNote = args[2] === undefined ? 0 : parseInteger(args[2]);
+	if (startingMidiNote === undefined || startingMidiNote < 0) {
 		return undefined;
 	}
 
 	return {
 		sourceLineIndex,
-		pressedNumberOfKeysMemoryId: args[1],
+		pressedKeyCountMemoryId: args[1],
 		pressedKeysListMemoryId: args[0],
-		startingNumber,
+		startingMidiNote,
 	};
 }

@@ -24,7 +24,7 @@ function createPianoKeyboardKeys(
 	keyHeight: number,
 	blackKeyHeight: number,
 	rowHeight: number,
-	startingNumber: number
+	startingMidiNote: number
 ): PianoKeyboardKey[] {
 	const whiteKeyPressedOverlayRows = Array.from(
 		{ length: Math.ceil(keyHeight / rowHeight) },
@@ -36,34 +36,14 @@ function createPianoKeyboardKeys(
 	);
 
 	return Array.from({ length: KEY_COUNT }, (_, offset) => {
-		const note = getNoteIndex(startingNumber + offset);
+		const note = getNoteIndex(startingMidiNote + offset);
 		const isBlack = BLACK_KEYS.has(note);
-		const x = offset * keyWidth;
-		const baseKey = {
-			offset,
-			x,
-			label: NOTE_LABELS[note],
-			labelX: x,
-			labelY: 0,
-			pressedOverlayX: x,
-		};
-
-		if (isBlack) {
-			return {
-				...baseKey,
-				kind: 'black',
-				sprite: 'pianoKeyBlack',
-				pressedOverlayRows: blackKeyPressedOverlayRows,
-				pressedOverlayFont: 'fontPianoKeyBlackPressedOverlay',
-			};
-		}
-
 		return {
-			...baseKey,
-			kind: 'white',
-			sprite: 'pianoKeyWhite',
-			pressedOverlayRows: whiteKeyPressedOverlayRows,
-			pressedOverlayFont: 'fontPianoKeyWhitePressedOverlay',
+			offset,
+			x: offset * keyWidth,
+			label: NOTE_LABELS[note],
+			kind: isBlack ? 'black' : 'white',
+			pressedOverlayRows: isBlack ? blackKeyPressedOverlayRows : whiteKeyPressedOverlayRows,
 		};
 	});
 }
@@ -80,10 +60,10 @@ function resolvePianoDirectiveWidget(
 	}
 
 	const scope = getCodeBlockMemoryScope(graphicData);
-	const memoryIdentifierKeysList = resolveMemoryIdentifier(state, scope, pianoKeyboard.pressedKeysListMemoryId);
-	const memoryIdentifierNumberOfKeys = resolveMemoryIdentifier(state, scope, pianoKeyboard.pressedNumberOfKeysMemoryId);
+	const pressedKeysList = resolveMemoryIdentifier(state, scope, pianoKeyboard.pressedKeysListMemoryId);
+	const pressedKeyCount = resolveMemoryIdentifier(state, scope, pianoKeyboard.pressedKeyCountMemoryId);
 
-	if (!memoryIdentifierKeysList || !memoryIdentifierNumberOfKeys) {
+	if (!pressedKeysList || !pressedKeyCount) {
 		return;
 	}
 
@@ -119,13 +99,13 @@ function resolvePianoDirectiveWidget(
 			keyHeight,
 			blackKeyHeight,
 			state.viewport.hGrid,
-			pianoKeyboard.startingNumber
+			pianoKeyboard.startingMidiNote
 		),
-		pressedKeysListMemory: memoryIdentifierKeysList.memory,
-		pressedNumberOfKeysMemory: memoryIdentifierNumberOfKeys.memory,
-		pressedKeysListModuleId: memoryIdentifierKeysList.target.moduleId,
-		pressedNumberOfKeysModuleId: memoryIdentifierNumberOfKeys.target.moduleId,
-		startingNumber: pianoKeyboard.startingNumber,
+		pressedKeysListMemory: pressedKeysList.memory,
+		pressedKeyCountMemory: pressedKeyCount.memory,
+		pressedKeysListModuleId: pressedKeysList.target.moduleId,
+		pressedKeyCountModuleId: pressedKeyCount.target.moduleId,
+		startingMidiNote: pianoKeyboard.startingMidiNote,
 	});
 }
 

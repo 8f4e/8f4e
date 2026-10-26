@@ -4,23 +4,13 @@ import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { PianoKeyboard, PianoKeyboardKey } from '../types';
 
 function drawPressedKey(engine: DrawContext, spriteLookups: SpriteIdLookups, key: PianoKeyboardKey): void {
+	const font =
+		key.kind === 'black'
+			? spriteLookups.fontPianoKeyBlackPressedOverlay
+			: spriteLookups.fontPianoKeyWhitePressedOverlay;
 	for (const y of key.pressedOverlayRows) {
-		engine.drawText(key.pressedOverlayX, y, ';;', spriteLookups[key.pressedOverlayFont]);
+		engine.drawText(key.x, y, ';;', font);
 	}
-}
-
-function drawPressedKeyOffset(
-	engine: DrawContext,
-	spriteLookups: SpriteIdLookups,
-	keys: PianoKeyboard['keys'],
-	keyOffset: number
-): void {
-	const key = keys[keyOffset];
-	if (!key) {
-		return;
-	}
-
-	drawPressedKey(engine, spriteLookups, key);
 }
 
 function drawRuntimePressedKeys(
@@ -28,20 +18,20 @@ function drawRuntimePressedKeys(
 	spriteLookups: SpriteIdLookups,
 	keys: PianoKeyboard['keys'],
 	pressedKeysListMemory: PianoKeyboard['pressedKeysListMemory'],
-	pressedNumberOfKeysMemory: PianoKeyboard['pressedNumberOfKeysMemory'],
-	startingNumber: number,
+	pressedKeyCountMemory: PianoKeyboard['pressedKeyCountMemory'],
+	startingMidiNote: number,
 	memoryViews: MemoryViews
 ): void {
 	const memoryBuffer = pressedKeysListMemory.isInteger ? memoryViews.int32 : memoryViews.float32;
-	const numberOfKeys = Math.max(0, memoryViews.int32[pressedNumberOfKeysMemory.allocationUnitAddress] || 0);
+	const numberOfKeys = Math.max(0, memoryViews.int32[pressedKeyCountMemory.allocationUnitAddress] || 0);
 	const readableKeys = Math.min(numberOfKeys, pressedKeysListMemory.allocationUnitCount);
 
 	for (let i = 0; i < readableKeys; i++) {
 		const keyValue = memoryBuffer[pressedKeysListMemory.allocationUnitAddress + i];
-		const keyOffset = Math.trunc(keyValue - startingNumber);
+		const keyOffset = Math.trunc(keyValue - startingMidiNote);
 
 		if (keyOffset >= 0 && keyOffset < keys.length) {
-			drawPressedKeyOffset(engine, spriteLookups, keys, keyOffset);
+			drawPressedKey(engine, spriteLookups, keys[keyOffset]);
 		}
 	}
 }
@@ -72,24 +62,24 @@ export function drawPianoKeyboards(
 		blackKeyGapHeight,
 		keys,
 		pressedKeysListMemory,
-		pressedNumberOfKeysMemory,
-		startingNumber,
+		pressedKeyCountMemory,
+		startingMidiNote,
 	} of keyboards) {
 		engine.startGroup(x, y);
 
 		for (const key of keys) {
 			if (key.kind === 'black') {
-				engine.drawSprite(key.x, keyY, spriteLookups.fillColors[key.sprite], keyWidth, blackKeyHeight);
+				engine.drawSprite(key.x, keyY, spriteLookups.fillColors.pianoKeyBlack, keyWidth, blackKeyHeight);
 				engine.drawSprite(key.x, blackKeySideY, spriteLookups.fillColors.pianoKeyWhite, keyWidth, blackKeySideHeight);
 				engine.drawSprite(
 					key.x + blackKeyGapXOffset,
 					blackKeyGapY,
-					spriteLookups.fillColors[key.sprite],
+					spriteLookups.fillColors.pianoKeyBlack,
 					blackKeyGapWidth,
 					blackKeyGapHeight
 				);
 			} else {
-				engine.drawSprite(key.x, keyY, spriteLookups.fillColors[key.sprite], keyWidth, keyHeight);
+				engine.drawSprite(key.x, keyY, spriteLookups.fillColors.pianoKeyWhite, keyWidth, keyHeight);
 			}
 		}
 
@@ -98,16 +88,16 @@ export function drawPianoKeyboards(
 			spriteLookups,
 			keys,
 			pressedKeysListMemory,
-			pressedNumberOfKeysMemory,
-			startingNumber,
+			pressedKeyCountMemory,
+			startingMidiNote,
 			memoryViews
 		);
 
 		for (const key of keys) {
 			if (key.offset % 2 === 1) {
-				engine.drawSprite(key.labelX, key.labelY, spriteLookups.fillColors.highlightedCodeLine, keyWidth, keyY);
+				engine.drawSprite(key.x, 0, spriteLookups.fillColors.highlightedCodeLine, keyWidth, keyY);
 			}
-			engine.drawText(key.labelX, key.labelY, key.label, spriteLookups.fontCode);
+			engine.drawText(key.x, 0, key.label, spriteLookups.fontCode);
 		}
 		engine.endGroup();
 	}

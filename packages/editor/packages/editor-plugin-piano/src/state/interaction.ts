@@ -6,17 +6,12 @@ const float32DecodeBuffer = new ArrayBuffer(4);
 const float32DecodeInt32 = new Int32Array(float32DecodeBuffer);
 const float32DecodeFloat32 = new Float32Array(float32DecodeBuffer);
 
-function readRuntimePressedKeys(state: State, keyboard: PianoKeyboard): Set<number> {
+function readRuntimePressedKeys(keyboard: PianoKeyboard, getWordFromMemory: (address: number) => number): Set<number> {
 	const pressedKeys = new Set<number>();
-	const getWordFromMemory = state.callbacks?.getWordFromMemory;
-
-	if (!getWordFromMemory) {
-		return pressedKeys;
-	}
 
 	const numberOfKeys = Math.max(
 		0,
-		Math.trunc(getWordFromMemory(keyboard.pressedNumberOfKeysMemory.allocationUnitAddress)) || 0
+		Math.trunc(getWordFromMemory(keyboard.pressedKeyCountMemory.allocationUnitAddress)) || 0
 	);
 	const readableKeys = Math.min(numberOfKeys, keyboard.pressedKeysListMemory.numberOfElements);
 
@@ -66,13 +61,13 @@ export function registerPianoInteraction(
 			return;
 		}
 
-		const setWordInMemory = state.callbacks?.setWordInMemory;
-		if (!state.callbacks?.getWordFromMemory || !setWordInMemory) {
+		const { getWordFromMemory, setWordInMemory } = state.callbacks;
+		if (!getWordFromMemory || !setWordInMemory) {
 			return;
 		}
 
-		const noteNumber = keyboard.startingNumber + key;
-		const pressedKeys = readRuntimePressedKeys(state, keyboard);
+		const noteNumber = keyboard.startingMidiNote + key;
+		const pressedKeys = readRuntimePressedKeys(keyboard, getWordFromMemory);
 		if (pressedKeys.has(noteNumber)) {
 			pressedKeys.delete(noteNumber);
 		} else {
@@ -91,7 +86,7 @@ export function registerPianoInteraction(
 			);
 			index += 1;
 		}
-		setWordInMemory(keyboard.pressedNumberOfKeysMemory.allocationUnitAddress, pressedKeys.size, true);
+		setWordInMemory(keyboard.pressedKeyCountMemory.allocationUnitAddress, pressedKeys.size, true);
 	};
 
 	events.on('codeBlockPointerDown', onCodeBlockPointerDown);

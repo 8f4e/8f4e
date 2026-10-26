@@ -17,32 +17,16 @@ export interface PianoKeyboard {
 	blackKeyGapHeight: number;
 	keys: PianoKeyboardKey[];
 	pressedKeysListMemory: PlannedMemoryDeclaration;
-	pressedNumberOfKeysMemory: PlannedMemoryDeclaration;
+	pressedKeyCountMemory: PlannedMemoryDeclaration;
 	pressedKeysListModuleId: string;
-	pressedNumberOfKeysModuleId: string;
-	startingNumber: number;
+	pressedKeyCountModuleId: string;
+	startingMidiNote: number;
 }
 
-interface PianoKeyboardKeyBase {
+export interface PianoKeyboardKey {
 	offset: number;
 	x: number;
 	label: string;
-	labelX: number;
-	labelY: number;
-	pressedOverlayX: number;
+	kind: 'white' | 'black';
 	pressedOverlayRows: number[];
 }
-
-export interface PianoKeyboardWhiteKey extends PianoKeyboardKeyBase {
-	kind: 'white';
-	sprite: 'pianoKeyWhite';
-	pressedOverlayFont: 'fontPianoKeyWhitePressedOverlay';
-}
-
-export interface PianoKeyboardBlackKey extends PianoKeyboardKeyBase {
-	kind: 'black';
-	sprite: 'pianoKeyBlack';
-	pressedOverlayFont: 'fontPianoKeyBlackPressedOverlay';
-}
-
-export type PianoKeyboardKey = PianoKeyboardWhiteKey | PianoKeyboardBlackKey;
