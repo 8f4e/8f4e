@@ -27,7 +27,7 @@ function resolveMeterDirectiveWidget(
 		return;
 	}
 
-	const displayRow = directiveState.displayModel.rawRowToDisplayRow[meter.lineNumber] ?? meter.lineNumber;
+	const displayRow = directiveState.displayModel.sourceLineIndexToDisplayRow[meter.lineNumber] ?? meter.lineNumber;
 	const minValue = meter.minValueOverride ?? valueSpec.minValue;
 	const maxValue = meter.maxValueOverride ?? valueSpec.maxValue;
 	const width = graphicData.width - (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;

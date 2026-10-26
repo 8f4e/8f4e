@@ -5,12 +5,12 @@ import { createPianoDirectiveLayoutCallbacks } from './resolve';
 export default createDirectiveDefinition(
 	'piano',
 	(directive, draft) => {
-		const piano = createPianoDirectiveData(directive.args, directive.rawRow);
+		const piano = createPianoDirectiveData(directive.args, directive.sourceLineIndex);
 		if (!piano) {
 			return;
 		}
 
-		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 6 });
+		draft.addVerticalSpaceAfterSourceLine({ sourceLineIndex: directive.sourceLineIndex, heightInRows: 6 });
 		draft.layoutCallbacks.push(createPianoDirectiveLayoutCallbacks(piano));
 	},
 	{

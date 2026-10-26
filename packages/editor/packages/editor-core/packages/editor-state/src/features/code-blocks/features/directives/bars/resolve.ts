@@ -45,7 +45,7 @@ function resolveBarsDirectiveWidget(
 		return;
 	}
 
-	const displayRow = directiveState.displayModel.rawRowToDisplayRow[bars.lineNumber] ?? bars.lineNumber;
+	const displayRow = directiveState.displayModel.sourceLineIndexToDisplayRow[bars.lineNumber] ?? bars.lineNumber;
 	const width = graphicData.width - (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	const minValue = bars.minValueOverride ?? valueSpec.minValue;
 	const maxValue = bars.maxValueOverride ?? valueSpec.maxValue;

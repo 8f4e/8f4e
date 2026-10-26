@@ -64,7 +64,7 @@ function resolveStackDirectiveWidget(
 	}
 
 	const displayRow =
-		directiveState.displayModel.rawRowToDisplayRow[stackDirective.lineNumber] ?? stackDirective.lineNumber;
+		directiveState.displayModel.sourceLineIndexToDisplayRow[stackDirective.lineNumber] ?? stackDirective.lineNumber;
 	const tabStopsByLine = getTabStopsByLine(graphicData.code);
 	const visualLineWidth = getVisualLineWidth(
 		graphicData.code[stackDirective.lineNumber] || '',

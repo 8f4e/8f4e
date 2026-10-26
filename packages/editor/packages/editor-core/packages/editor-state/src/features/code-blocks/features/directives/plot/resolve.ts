@@ -26,7 +26,7 @@ function resolvePlotDirectiveWidget(
 		return;
 	}
 
-	const displayRow = directiveState.displayModel.rawRowToDisplayRow[plotter.lineNumber] ?? plotter.lineNumber;
+	const displayRow = directiveState.displayModel.sourceLineIndexToDisplayRow[plotter.lineNumber] ?? plotter.lineNumber;
 
 	graphicData.widgets.arrayPlotters.push({
 		width: state.viewport.vGrid * 2,

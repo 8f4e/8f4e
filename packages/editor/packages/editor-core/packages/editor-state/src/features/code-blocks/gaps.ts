@@ -1,8 +1,9 @@
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import type { DirectiveDerivedState } from './features/directives/registry';
+import { getVerticalSpaceAfterSourceLineRequests } from './features/directives/verticalSpaceAfterSourceLine';
 
-function getDisplayRow(rawRow: number, directiveState: DirectiveDerivedState): number | undefined {
-	return directiveState.displayModel.rawRowToDisplayRow[rawRow];
+function getDisplayRow(sourceLineIndex: number, directiveState: DirectiveDerivedState): number | undefined {
+	return directiveState.displayModel.sourceLineIndexToDisplayRow[sourceLineIndex];
 }
 
 function addGap(graphicData: CodeBlockGraphicData, displayRow: number, size: number): void {
@@ -13,8 +14,7 @@ function addGap(graphicData: CodeBlockGraphicData, displayRow: number, size: num
 export default function gaps(graphicData: CodeBlockGraphicData, directiveState: DirectiveDerivedState) {
 	graphicData.gaps.clear();
 
-	// TODO: Error message layout should contribute through the same layout contribution path as other features.
-	// This is legacy coupling, not a pattern to copy: new gap sources should add layout contributions instead.
+	// TODO: Error messages should request space through addVerticalSpaceAfterSourceLine too.
 	graphicData.widgets.errorMessages.forEach(error => {
 		const displayRow = getDisplayRow(error.lineNumber, directiveState);
 		if (displayRow !== undefined) {
@@ -22,10 +22,10 @@ export default function gaps(graphicData: CodeBlockGraphicData, directiveState: 
 		}
 	});
 
-	directiveState.layoutContributions.forEach(contribution => {
-		const displayRow = getDisplayRow(contribution.rawRow, directiveState);
+	getVerticalSpaceAfterSourceLineRequests(directiveState).forEach(space => {
+		const displayRow = getDisplayRow(space.sourceLineIndex, directiveState);
 		if (displayRow !== undefined) {
-			addGap(graphicData, displayRow, contribution.rows);
+			addGap(graphicData, displayRow, space.heightInRows);
 		}
 	});
 }

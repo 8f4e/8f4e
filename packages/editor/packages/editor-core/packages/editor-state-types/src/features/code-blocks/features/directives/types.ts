@@ -4,14 +4,14 @@ import type { CodeBlockDisplayModel } from '../../buildDisplayModel';
 
 export interface ParsedEditorDirective {
 	name: string;
-	rawRow: number;
+	sourceLineIndex: number;
 	args: string[];
 	sourceLine?: string;
 }
 
-export interface DirectiveLayoutContribution {
-	rawRow: number;
-	rows: number;
+export interface VerticalSpaceAfterSourceLine {
+	sourceLineIndex: number;
+	heightInRows: number;
 }
 
 export type ViewportAnchor = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
@@ -33,7 +33,7 @@ export interface DirectiveBlockState {
 }
 
 export interface DirectiveDisplayState {
-	hideAfterRawRow?: number;
+	hideAfterSourceLineIndex?: number;
 }
 
 export interface DirectiveLayoutCallbacks {
@@ -50,7 +50,8 @@ export interface DirectiveDerivedState {
 	blockState: DirectiveBlockState;
 	displayState: DirectiveDisplayState;
 	displayModel: CodeBlockDisplayModel;
-	layoutContributions: DirectiveLayoutContribution[];
+	/** Add vertical space below a zero-based source line. Heights are measured in editor rows. */
+	addVerticalSpaceAfterSourceLine: (space: VerticalSpaceAfterSourceLine) => void;
 	layoutCallbacks: DirectiveLayoutCallbacks[];
 }
 

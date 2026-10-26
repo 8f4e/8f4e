@@ -35,7 +35,7 @@ function resolveSliderDirectiveWidget(
 		}
 	}
 
-	const displayRow = directiveState.displayModel.rawRowToDisplayRow[slider.lineNumber] ?? slider.lineNumber;
+	const displayRow = directiveState.displayModel.sourceLineIndexToDisplayRow[slider.lineNumber] ?? slider.lineNumber;
 
 	graphicData.widgets.sliders.push({
 		moduleId: memory.target.moduleId,

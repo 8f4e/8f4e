@@ -5,7 +5,7 @@ import crossfadeDirective from './plugin';
 
 function parseCrossfadeDirectiveData(code: string[]) {
 	return parseEditorDirectives(code, [crossfadeDirective]).map(directive =>
-		createCrossfadeDirectiveData(directive.args, directive.rawRow)
+		createCrossfadeDirectiveData(directive.args, directive.sourceLineIndex)
 	);
 }
 

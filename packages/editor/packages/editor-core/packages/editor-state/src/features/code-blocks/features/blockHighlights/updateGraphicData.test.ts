@@ -51,11 +51,11 @@ describe('updateBlockHighlightsGraphicData', () => {
 		const expandedHighlights = [...graphicData.widgets.blockHighlights];
 		expect(expandedHighlights).toHaveLength(1);
 
-		graphicData.displayModel = buildDisplayModel(code, { hideAfterRawRow: 1 });
+		graphicData.displayModel = buildDisplayModel(code, { hideAfterSourceLineIndex: 1 });
 		updateBlockHighlightsGraphicData(graphicData, state);
 		expect(graphicData.widgets.blockHighlights).toEqual([]);
 
-		graphicData.displayModel = buildDisplayModel(code, { hideAfterRawRow: 1, isExpandedForEditing: true });
+		graphicData.displayModel = buildDisplayModel(code, { hideAfterSourceLineIndex: 1, isExpandedForEditing: true });
 		updateBlockHighlightsGraphicData(graphicData, state);
 		expect(graphicData.widgets.blockHighlights).toEqual(expandedHighlights);
 	});
@@ -64,7 +64,7 @@ describe('updateBlockHighlightsGraphicData', () => {
 		const code = ['if condition', 'add', '; @hide', 'store', 'ifEnd'];
 		const graphicData = createMockCodeBlock({
 			code,
-			displayModel: buildDisplayModel(code, { hideAfterRawRow: 2 }),
+			displayModel: buildDisplayModel(code, { hideAfterSourceLineIndex: 2 }),
 			width: 200,
 			lineNumberColumnWidth: 1,
 		});

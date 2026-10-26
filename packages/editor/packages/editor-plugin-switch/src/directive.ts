@@ -23,13 +23,13 @@ export function createSwitchDirective(
 			widgets.set(codeBlock, []);
 		},
 		apply: (directive, draft) => {
-			const data = createSwitchDirectiveData(directive.args, directive.rawRow);
+			const data = createSwitchDirectiveData(directive.args, directive.sourceLineIndex);
 			if (!data) return;
 			draft.layoutCallbacks.push({
 				onBlockLayoutReady: (codeBlock, state, derived) => {
 					const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(codeBlock), data.id)?.memory;
 					if (!memory) return;
-					const row = derived.displayModel.rawRowToDisplayRow[data.lineNumber] ?? data.lineNumber;
+					const row = derived.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
 					widgets.get(codeBlock)!.push({
 						width: state.viewport.vGrid * 4,
 						height: state.viewport.hGrid,

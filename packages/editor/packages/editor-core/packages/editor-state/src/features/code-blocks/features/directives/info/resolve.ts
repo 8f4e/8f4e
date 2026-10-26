@@ -37,7 +37,7 @@ function resolveInfoDirectiveWidget(
 		return;
 	}
 
-	const displayRow = directiveState.displayModel.rawRowToDisplayRow[info.lineNumber] ?? info.lineNumber;
+	const displayRow = directiveState.displayModel.sourceLineIndexToDisplayRow[info.lineNumber] ?? info.lineNumber;
 	const x = (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	const width = Math.max(state.viewport.vGrid, graphicData.width - x);
 

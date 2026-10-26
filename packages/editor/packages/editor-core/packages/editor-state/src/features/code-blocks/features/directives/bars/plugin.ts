@@ -5,12 +5,12 @@ import { createBarsDirectiveLayoutCallbacks } from './resolve';
 export default createDirectiveDefinition(
 	'bars',
 	(directive, draft) => {
-		const bars = createBarsDirectiveData(directive.args, directive.rawRow);
+		const bars = createBarsDirectiveData(directive.args, directive.sourceLineIndex);
 		if (!bars) {
 			return;
 		}
 
-		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 8 });
+		draft.addVerticalSpaceAfterSourceLine({ sourceLineIndex: directive.sourceLineIndex, heightInRows: 8 });
 		draft.layoutCallbacks.push(createBarsDirectiveLayoutCallbacks(bars));
 	},
 	{

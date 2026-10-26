@@ -20,9 +20,9 @@ export function getProjectMemoryExposureConnectors(
 	}
 
 	const scope = getCodeBlockMemoryScope(graphicData);
-	return graphicData.code.flatMap((line, rawRow) => {
+	return graphicData.code.flatMap((line, sourceLineIndex) => {
 		const parsed = tryParseProjectMemoryExposureLine(line);
 		const exposure = parsed ? resolveMemoryTarget(state, scope, parsed.name)?.exposure : undefined;
-		return exposure ? [{ exposure, row: gapCalculator(rawRow, graphicData.gaps) }] : [];
+		return exposure ? [{ exposure, row: gapCalculator(sourceLineIndex, graphicData.gaps) }] : [];
 	});
 }

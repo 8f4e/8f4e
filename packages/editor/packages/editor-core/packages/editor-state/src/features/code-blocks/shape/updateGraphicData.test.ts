@@ -2,6 +2,10 @@ import type { MemoryDefaults, PlannedMemoryDeclaration, ValidatedModuleAST } fro
 import { describe, expect, it } from 'vitest';
 import { createMockState } from '../../../pureHelpers/testingUtils/testUtils';
 import type { DirectiveDerivedState } from '../features/directives/registry';
+import {
+	createVerticalSpaceAfterSourceLineAdder,
+	getVerticalSpaceAfterSourceLineRequests,
+} from '../features/directives/verticalSpaceAfterSourceLine';
 import gaps from '../gaps';
 import { createCodeBlockGraphicData } from '../utils/createCodeBlockGraphicData';
 import shape, { updateShapeDeclarations } from './updateGraphicData';
@@ -12,11 +16,11 @@ function createDirectiveState(): DirectiveDerivedState {
 		displayState: {},
 		displayModel: {
 			lines: [],
-			displayRowToRawRow: [],
-			rawRowToDisplayRow: [],
+			displayRowToSourceLineIndex: [],
+			sourceLineIndexToDisplayRow: [],
 			isCollapsed: false,
 		},
-		layoutContributions: [],
+		addVerticalSpaceAfterSourceLine: createVerticalSpaceAfterSourceLineAdder(),
 		layoutCallbacks: [],
 	};
 }
@@ -125,7 +129,7 @@ describe('shape', () => {
 
 		shape(module, state, directiveState);
 
-		expect(directiveState.layoutContributions).toEqual([{ rawRow: 1, rows: 4 }]);
+		expect(getVerticalSpaceAfterSourceLineRequests(directiveState)).toEqual([{ sourceLineIndex: 1, heightInRows: 4 }]);
 	});
 
 	it('skips modules without compiler-reported shape expansions', () => {
@@ -142,7 +146,7 @@ describe('shape', () => {
 
 		shape(module, state, directiveState);
 
-		expect(directiveState.layoutContributions).toEqual([]);
+		expect(getVerticalSpaceAfterSourceLineRequests(directiveState)).toEqual([]);
 	});
 
 	it('precomputes inherited declaration labels after gaps are applied', () => {
@@ -184,17 +188,18 @@ describe('shape', () => {
 			...createDirectiveState(),
 			displayModel: {
 				lines: [
-					{ rawRow: 0, text: 'module filterA' },
-					{ rawRow: 1, text: '; @plot other' },
-					{ rawRow: 2, text: 'shape filterState' },
-					{ rawRow: 3, text: 'moduleEnd' },
+					{ sourceLineIndex: 0, text: 'module filterA' },
+					{ sourceLineIndex: 1, text: '; @plot other' },
+					{ sourceLineIndex: 2, text: 'shape filterState' },
+					{ sourceLineIndex: 3, text: 'moduleEnd' },
 				],
-				displayRowToRawRow: [0, 1, 2, 3],
-				rawRowToDisplayRow: [0, 1, 2, 3],
+				displayRowToSourceLineIndex: [0, 1, 2, 3],
+				sourceLineIndexToDisplayRow: [0, 1, 2, 3],
 				isCollapsed: false,
 			},
-			layoutContributions: [{ rawRow: 1, rows: 2 }],
 		};
+
+		directiveState.addVerticalSpaceAfterSourceLine({ sourceLineIndex: 1, heightInRows: 2 });
 
 		shape(module, state, directiveState);
 		gaps(module, directiveState);

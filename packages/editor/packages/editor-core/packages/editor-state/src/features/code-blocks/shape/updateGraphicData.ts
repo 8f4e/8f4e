@@ -58,9 +58,9 @@ export default function shape(
 			return;
 		}
 
-		directiveState.layoutContributions.push({
-			rawRow: line.lineNumber,
-			rows: inheritedDeclarationCount,
+		directiveState.addVerticalSpaceAfterSourceLine({
+			sourceLineIndex: line.lineNumber,
+			heightInRows: inheritedDeclarationCount,
 		});
 	});
 }
@@ -85,7 +85,7 @@ export function updateShapeDeclarations(
 	const textX = (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	const memoryDefaults = state.compiler.memoryDefaultsByModuleId[moduleId]!;
 	for (const { memory, rowOffset } of getInheritedDeclarationRowOffsets(plannedModule!, memoryDefaults)) {
-		const displayRow = directiveState.displayModel.rawRowToDisplayRow[memory.lineNumber];
+		const displayRow = directiveState.displayModel.sourceLineIndexToDisplayRow[memory.lineNumber];
 		if (displayRow === undefined) {
 			continue;
 		}

@@ -5,12 +5,12 @@ import { createSliderDirectiveLayoutCallbacks } from './resolve';
 export default createDirectiveDefinition(
 	'slider',
 	(directive, draft) => {
-		const slider = createSliderDirectiveData(directive.args, directive.rawRow);
+		const slider = createSliderDirectiveData(directive.args, directive.sourceLineIndex);
 		if (!slider) {
 			return;
 		}
 
-		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 2 });
+		draft.addVerticalSpaceAfterSourceLine({ sourceLineIndex: directive.sourceLineIndex, heightInRows: 2 });
 		draft.layoutCallbacks.push(createSliderDirectiveLayoutCallbacks(slider));
 	},
 	{

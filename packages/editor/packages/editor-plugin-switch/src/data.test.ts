@@ -6,7 +6,7 @@ const switchDirective = { name: 'switch' };
 
 function parseSwitchDirectiveData(code: string[]) {
 	return parseEditorDirectives(code, [switchDirective])
-		.map(directive => createSwitchDirectiveData(directive.args, directive.rawRow))
+		.map(directive => createSwitchDirectiveData(directive.args, directive.sourceLineIndex))
 		.filter(result => result !== undefined);
 }
 

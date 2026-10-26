@@ -5,7 +5,7 @@ export default createDirectiveDefinition('hide', (directive, draft) => {
 		return;
 	}
 
-	if (draft.displayState.hideAfterRawRow === undefined) {
-		draft.displayState.hideAfterRawRow = directive.rawRow;
+	if (draft.displayState.hideAfterSourceLineIndex === undefined) {
+		draft.displayState.hideAfterSourceLineIndex = directive.sourceLineIndex;
 	}
 });

@@ -5,12 +5,12 @@ import { createPlotDirectiveLayoutCallbacks } from './resolve';
 export default createDirectiveDefinition(
 	'plot',
 	(directive, draft) => {
-		const plot = createPlotDirectiveData(directive.args, directive.rawRow);
+		const plot = createPlotDirectiveData(directive.args, directive.sourceLineIndex);
 		if (!plot) {
 			return;
 		}
 
-		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 8 });
+		draft.addVerticalSpaceAfterSourceLine({ sourceLineIndex: directive.sourceLineIndex, heightInRows: 8 });
 		draft.layoutCallbacks.push(createPlotDirectiveLayoutCallbacks(plot));
 	},
 	{

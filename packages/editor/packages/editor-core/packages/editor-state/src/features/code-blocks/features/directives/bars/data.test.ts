@@ -5,7 +5,7 @@ import barsDirective from './plugin';
 
 function parseBarsDirectiveData(code: string[]) {
 	return parseEditorDirectives(code, [barsDirective]).map(directive =>
-		createBarsDirectiveData(directive.args, directive.rawRow)
+		createBarsDirectiveData(directive.args, directive.sourceLineIndex)
 	);
 }
 

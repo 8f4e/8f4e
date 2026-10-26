@@ -24,9 +24,9 @@ describe('@config directive', () => {
 		]);
 
 		expect(result.resolved.configEntries).toEqual([
-			{ path: 'font', value: '6x10', rawRow: 1, codeBlockId: 0 },
-			{ path: 'color.text.code', value: '#112233', rawRow: 2, codeBlockId: 0 },
-			{ path: 'color.fill.wire', value: 'rgba(1,2,3,0.4)', rawRow: 3, codeBlockId: 0 },
+			{ path: 'font', value: '6x10', sourceLineIndex: 1, codeBlockId: 0 },
+			{ path: 'color.text.code', value: '#112233', sourceLineIndex: 2, codeBlockId: 0 },
+			{ path: 'color.fill.wire', value: 'rgba(1,2,3,0.4)', sourceLineIndex: 3, codeBlockId: 0 },
 		]);
 		expect(result.errors).toEqual([]);
 	});
@@ -37,7 +37,7 @@ describe('@config directive', () => {
 		]);
 
 		expect(result.resolved.configEntries).toEqual([
-			{ path: 'webUI.overlay.target', value: 'frame:buffer', rawRow: 1, codeBlockId: 0 },
+			{ path: 'webUI.overlay.target', value: 'frame:buffer', sourceLineIndex: 1, codeBlockId: 0 },
 		]);
 		expect(result.errors).toEqual([]);
 	});
@@ -55,7 +55,7 @@ describe('@config directive', () => {
 			{
 				path: 'audioRuntime.audioOutBufferLAddress',
 				value: 'buffer',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 				moduleId: 'audio/audioout',
 			},
@@ -75,9 +75,9 @@ describe('@config directive', () => {
 		]);
 
 		expect(result.resolved.configEntries).toEqual([
-			{ path: 'font', value: 'tiny', rawRow: 1, codeBlockId: 0 },
-			{ path: 'blockScale', value: '4', rawRow: 2, codeBlockId: 0 },
-			{ path: 'color.text.code', value: '???', rawRow: 3, codeBlockId: 0 },
+			{ path: 'font', value: 'tiny', sourceLineIndex: 1, codeBlockId: 0 },
+			{ path: 'blockScale', value: '4', sourceLineIndex: 2, codeBlockId: 0 },
+			{ path: 'color.text.code', value: '???', sourceLineIndex: 3, codeBlockId: 0 },
 		]);
 		expect(result.errors).toEqual([]);
 	});

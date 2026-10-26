@@ -20,28 +20,30 @@ export default function deriveCodeBlockCodeCells(
 	spriteLookups: SpriteIdLookups
 ): Array<Array<SpriteId | null>> {
 	const tabStopsByLine = getTabStopsByLine(block.code);
-	const characters = block.displayModel.lines.map(({ text, rawRow, isPlaceholder }, displayRow) => {
+	const characters = block.displayModel.lines.map(({ text, sourceLineIndex, isPlaceholder }, displayRow) => {
 		const prefix = getLineNumberPrefix(displayRow, block.lineNumberColumnWidth, text, isPlaceholder ?? false);
 		return [...prefix]
 			.map(character => character.charCodeAt(0) as number | string)
-			.concat(expandLineToCells(text, tabStopsByLine[rawRow] ?? []));
+			.concat(expandLineToCells(text, tabStopsByLine[sourceLineIndex] ?? []));
 	});
 	const rawColors = highlightSyntax(block.code, block.blockType, spriteLookups);
 	const prefixLength = block.lineNumberColumnWidth + 1;
 	const colors: Array<Array<SpriteFont | undefined>> = characters.map((line, displayRow) => {
 		const lineColors = new Array<SpriteFont | undefined>(line.length).fill(undefined);
 		const displayLine = block.displayModel.lines[displayRow];
-		const rawRow = block.displayModel.displayRowToRawRow[displayRow] ?? 0;
+		const sourceLineIndex = block.displayModel.displayRowToSourceLineIndex[displayRow] ?? 0;
 		lineColors[0] = spriteLookups.fontLineNumber;
 		lineColors[block.lineNumberColumnWidth] = displayLine?.isPlaceholder
 			? spriteLookups.fontCodeComment
 			: spriteLookups.fontCode;
 		if (!displayLine?.isPlaceholder) {
-			expandLineColorsToCells(block.code[rawRow] ?? '', rawColors[rawRow] ?? [], tabStopsByLine[rawRow] ?? []).forEach(
-				(color, index) => {
-					if (color !== undefined) lineColors[index + prefixLength] = color;
-				}
-			);
+			expandLineColorsToCells(
+				block.code[sourceLineIndex] ?? '',
+				rawColors[sourceLineIndex] ?? [],
+				tabStopsByLine[sourceLineIndex] ?? []
+			).forEach((color, index) => {
+				if (color !== undefined) lineColors[index + prefixLength] = color;
+			});
 		}
 		return lineColors;
 	});

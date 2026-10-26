@@ -20,9 +20,9 @@ export function createWaveDirectives(wavesByBlock: WeakMap<CodeBlockGraphicData,
 			wavesByBlock.set(codeBlock, []);
 		},
 		apply: (directive, draft) => {
-			const data = createWaveDirectiveData(directive.args, directive.rawRow);
+			const data = createWaveDirectiveData(directive.args, directive.sourceLineIndex);
 			if (!data) return;
-			draft.layoutContributions.push({ rawRow: directive.rawRow, rows: heightRows });
+			draft.addVerticalSpaceAfterSourceLine({ sourceLineIndex: directive.sourceLineIndex, heightInRows: heightRows });
 			draft.layoutCallbacks.push({
 				onBlockLayoutReady: (codeBlock, state, derived) => {
 					const scope = getCodeBlockMemoryScope(codeBlock);
@@ -30,7 +30,7 @@ export function createWaveDirectives(wavesByBlock: WeakMap<CodeBlockGraphicData,
 					const elementCount = resolveElementCount(data.length, scope, state);
 					const spec = source ? resolveTypedValueSpec(source) : undefined;
 					if (!source || !elementCount || !spec) return;
-					const row = derived.displayModel.rawRowToDisplayRow[data.lineNumber] ?? data.lineNumber;
+					const row = derived.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
 					wavesByBlock.get(codeBlock)!.push({
 						width: codeBlock.width - (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
 						height: state.viewport.hGrid * heightRows,

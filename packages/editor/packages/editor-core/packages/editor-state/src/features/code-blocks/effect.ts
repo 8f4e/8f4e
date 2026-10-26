@@ -71,7 +71,10 @@ export default function codeBlockRendering(
 		);
 		const displayModel = directiveState.displayModel;
 		const displayRow = reverseGapCalculator(Math.floor(relativeY / state.viewport.hGrid), codeBlock.gaps);
-		const row = displayModel.displayRowToRawRow[Math.min(displayRow, displayModel.displayRowToRawRow.length - 1)] ?? 0;
+		const row =
+			displayModel.displayRowToSourceLineIndex[
+				Math.min(displayRow, displayModel.displayRowToSourceLineIndex.length - 1)
+			] ?? 0;
 		const visualCol = Math.max(Math.floor(relativeX / state.viewport.vGrid) - (codeBlock.lineNumberColumnWidth + 2), 0);
 		const tabStopsByLine = getTabStopsByLine(codeBlock.code);
 		const col = getRawIndexForVisualColumn(
@@ -127,7 +130,7 @@ export default function codeBlockRendering(
 		graphicData.widgets.errorMessages = deriveErrorMessages(graphicData, state);
 		gaps(graphicData, directiveState);
 		for (const error of graphicData.widgets.errorMessages) {
-			const displayRow = displayModel.rawRowToDisplayRow[error.lineNumber] ?? error.lineNumber;
+			const displayRow = displayModel.sourceLineIndexToDisplayRow[error.lineNumber] ?? error.lineNumber;
 			error.y = (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid;
 		}
 		updateShapeDeclarations(graphicData, state, directiveState);
@@ -151,7 +154,7 @@ export default function codeBlockRendering(
 			) +
 				(graphicData.lineNumberColumnWidth + 2)) *
 			state.viewport.vGrid;
-		const displayRow = displayModel.rawRowToDisplayRow[graphicData.cursor.row] ?? graphicData.cursor.row;
+		const displayRow = displayModel.sourceLineIndexToDisplayRow[graphicData.cursor.row] ?? graphicData.cursor.row;
 		graphicData.cursor.y = gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid;
 		const previousAlwaysOnTop = Boolean(graphicData.alwaysOnTop);
 		graphicData.groupName = directiveState.blockState.groupName;

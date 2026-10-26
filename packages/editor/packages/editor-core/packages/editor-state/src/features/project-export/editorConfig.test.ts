@@ -8,7 +8,7 @@ describe('export file name editor config', () => {
 			exportFileNameEditorConfigValidator.validate({
 				path: EXPORT_FILE_NAME_CONFIG_PATH,
 				value: 'samplePlayer',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBeUndefined();
@@ -19,7 +19,7 @@ describe('export file name editor config', () => {
 			exportFileNameEditorConfigValidator.validate({
 				path: EXPORT_FILE_NAME_CONFIG_PATH,
 				value: '',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBe('@config export.fileName: file name must be non-empty');
