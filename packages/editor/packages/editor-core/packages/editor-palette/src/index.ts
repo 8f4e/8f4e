@@ -1,4 +1,4 @@
-import { type ALIASES, BASE_COLORS, type BaseColor } from './palette.js';
+import { type ALIASES, BASE_COLORS, type BaseColor, type PaletteToken } from './palette.js';
 
 export type { Rgba } from './color.js';
 export type {
@@ -43,8 +43,14 @@ export const FONT_ALIASES = [
 	'darkOverlaySoft',
 	'primaryOverlay',
 ] as const satisfies readonly (typeof ALIASES)[number][];
-export type FontPaletteToken = `${BaseColor}${(typeof FONT_SHADES)[number]}` | (typeof FONT_ALIASES)[number];
+// Additional primary steps let drawers compose the six-state output indicator from ordinary glyphs.
+const ADDITIONAL_FONT_TOKENS = ['primaryDark3', 'primaryDark1'] as const satisfies readonly PaletteToken[];
+export type FontPaletteToken =
+	| `${BaseColor}${(typeof FONT_SHADES)[number]}`
+	| (typeof FONT_ALIASES)[number]
+	| (typeof ADDITIONAL_FONT_TOKENS)[number];
 export const FONT_PALETTE_TOKENS: readonly FontPaletteToken[] = [
 	...BASE_COLORS.flatMap(base => FONT_SHADES.map(shade => `${base}${shade}` as FontPaletteToken)),
 	...FONT_ALIASES,
+	...ADDITIONAL_FONT_TOKENS,
 ];

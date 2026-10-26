@@ -1,7 +1,35 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import { Icon } from '@8f4e/sprite-generator';
+import type { SpriteFont, SpriteId } from '@8f4e/sprite-generator';
 import type { DrawContext } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
+
+const OUTPUT_FONTS = [
+	'fontPrimaryDark3',
+	'fontPrimaryDark2',
+	'fontPrimaryDark1',
+	'fontPrimaryBase',
+	'fontWarningBase',
+	'fontNegativeBase',
+] as const;
+
+/** Composes a connector from the shared fill and font sprites in background-to-foreground order. */
+function drawConnector(
+	engine: DrawContext,
+	x: number,
+	y: number,
+	width: number,
+	height: number,
+	background: SpriteId,
+	brackets: SpriteFont,
+	marker?: SpriteFont
+): void {
+	engine.drawSprite(x, y, background, width * 3, height);
+	engine.drawSprite(x, y, brackets[91] ?? brackets[63], width, height);
+	if (marker) {
+		engine.drawSprite(x + width, y, marker[42] ?? marker[63], width, height);
+	}
+	engine.drawSprite(x + width * 2, y, brackets[93] ?? brackets[63], width, height);
+}
 
 export default function drawConnectors(
 	engine: DrawContext,
@@ -9,9 +37,12 @@ export default function drawConnectors(
 	codeBlock: CodeBlockGraphicData,
 	memoryViews: MemoryViews
 ): void {
-	if (!state.spriteLookups) {
+	const sprites = state.spriteLookups;
+	if (!sprites) {
 		return;
 	}
+	const { vGrid: width, hGrid: height } = state.viewport;
+	const background = sprites.fillColors.surfaceRaised2;
 
 	for (const output of codeBlock.widgets.outputs) {
 		const { x, y, memory } = output;
@@ -33,16 +64,19 @@ export default function drawConnectors(
 			)
 		);
 
-		engine.drawSprite(
+		drawConnector(
+			engine,
 			x,
 			y,
-			state.spriteLookups.feedbackScale[scaleIndex] ?? state.spriteLookups.feedbackScale[0],
-			state.viewport.vGrid * 3,
-			state.viewport.hGrid
+			width,
+			height,
+			background,
+			sprites.fontSecondaryBase,
+			sprites[OUTPUT_FONTS[scaleIndex] ?? OUTPUT_FONTS[0]]
 		);
 	}
 
 	for (const { x, y } of codeBlock.widgets.inputs) {
-		engine.drawSprite(x, y, state.spriteLookups.icons[Icon.INPUT]);
+		drawConnector(engine, x, y, width, height, background, sprites.fontPrimaryBase);
 	}
 }
