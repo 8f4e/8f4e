@@ -52,11 +52,11 @@ export default function drawModules(
 		) {
 			engine.startGroup(codeBlock.x, codeBlock.y);
 			if (codeBlock === state.codeBlockRendering.draggedCodeBlock) {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.moduleBackgroundDragged, codeBlock.width, codeBlock.height);
+				engine.drawSprite(0, 0, spriteLookups.fillColors.surfaceRaised1, codeBlock.width, codeBlock.height);
 			} else if (codeBlock.disabled) {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.moduleBackgroundDisabled, codeBlock.width, codeBlock.height);
+				engine.drawSprite(0, 0, spriteLookups.fillColors.surfaceRaised1, codeBlock.width, codeBlock.height);
 			} else {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.moduleBackground, codeBlock.width, codeBlock.height);
+				engine.drawSprite(0, 0, spriteLookups.fillColors.surfaceBase, codeBlock.width, codeBlock.height);
 			}
 
 			drawBlockHighlights(engine, state, codeBlock);
@@ -65,14 +65,16 @@ export default function drawModules(
 				engine.drawSprite(
 					0,
 					codeBlock.cursor.y,
-					spriteLookups.fillColors.highlightedCodeLine,
+					spriteLookups.fillColors.primarySoft,
 					codeBlock.width,
 					state.viewport.hGrid
 				);
 			}
 
 			const cornerFont =
-				state.codeBlockRendering.selectedCodeBlock === codeBlock ? spriteLookups.fontNumbers : spriteLookups.fontCode;
+				state.codeBlockRendering.selectedCodeBlock === codeBlock
+					? spriteLookups.fontSecondaryBase
+					: spriteLookups.fontInkBase;
 
 			engine.drawText(0, 0, corner, cornerFont);
 			engine.drawText(codeBlock.width - state.viewport.vGrid, 0, corner, cornerFont);
@@ -95,7 +97,7 @@ export default function drawModules(
 					codeBlock.cursor.x,
 					codeBlock.cursor.y,
 					'_',
-					codeBlock.disabled ? spriteLookups.fontDisabledCode : spriteLookups.fontCode
+					codeBlock.disabled ? spriteLookups.fontInkFaint : spriteLookups.fontInkBase
 				);
 			}
 			drawAssertions(engine, state, codeBlock);

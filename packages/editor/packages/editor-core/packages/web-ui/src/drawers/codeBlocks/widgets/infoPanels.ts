@@ -65,7 +65,7 @@ export default function drawInfoPanels(engine: DrawContext, state: State, codeBl
 		let renderedRows = 0;
 
 		engine.startGroup(panel.x, panel.y);
-		engine.drawSprite(0, 0, spriteLookups.fillColors.plotterBackground, panel.width, panel.height);
+		engine.drawSprite(0, 0, spriteLookups.fillColors.surfaceBase, panel.width, panel.height);
 
 		for (const key in info) {
 			const value = info[key];
@@ -78,9 +78,9 @@ export default function drawInfoPanels(engine: DrawContext, state: State, codeBl
 			const truncatedKey = truncateToCells(key, panel.keyColumnWidth);
 			const truncatedValue = truncateToCells(formatInfoValue(value), panelCells - valueColumn);
 
-			engine.drawText(0, y, truncatedKey, spriteLookups.fontInfoKey);
-			engine.drawText(panel.keyColumnWidth * state.viewport.vGrid, y, ':', spriteLookups.fontInfoKey);
-			engine.drawText(valueColumn * state.viewport.vGrid, y, truncatedValue, spriteLookups.fontInfoValue);
+			engine.drawText(0, y, truncatedKey, spriteLookups.fontPrimaryBase);
+			engine.drawText(panel.keyColumnWidth * state.viewport.vGrid, y, ':', spriteLookups.fontPrimaryBase);
+			engine.drawText(valueColumn * state.viewport.vGrid, y, truncatedValue, spriteLookups.fontSecondaryBase);
 			renderedRows += 1;
 
 			if (renderedRows >= panel.rowCount) {

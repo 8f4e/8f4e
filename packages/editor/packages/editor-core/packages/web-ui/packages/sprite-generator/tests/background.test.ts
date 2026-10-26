@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createAtlasLayout } from '../src/atlasLayout';
 import generateBackground, { generateLookup } from '../src/background';
 import { Command } from '../src/types';
-import { characterDimensions6x10, characterDimensions8x16, minimalColorScheme } from './utils/testFixtures';
+import { characterDimensions6x10, characterDimensions8x16, testPalette } from './utils/testFixtures';
 import {
 	createMockBitmap,
 	findAllCommands,
@@ -12,8 +12,16 @@ import {
 } from './utils/testHelpers';
 
 describe('background module', () => {
-	const layout8x16 = createAtlasLayout(characterDimensions8x16.width, characterDimensions8x16.height);
-	const layout6x10 = createAtlasLayout(characterDimensions6x10.width, characterDimensions6x10.height);
+	const layout8x16 = createAtlasLayout(
+		characterDimensions8x16.width,
+		characterDimensions8x16.height,
+		testPalette.colors
+	);
+	const layout6x10 = createAtlasLayout(
+		characterDimensions6x10.width,
+		characterDimensions6x10.height,
+		testPalette.colors
+	);
 
 	describe('generateBackground function', () => {
 		const mockGlyphs = createMockBitmap(256);
@@ -23,7 +31,7 @@ describe('background module', () => {
 				mockGlyphs,
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			// Should start with reset transform
@@ -40,7 +48,7 @@ describe('background module', () => {
 				mockGlyphs,
 				characterDimensions6x10.width,
 				characterDimensions6x10.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			// Should start with reset transform
@@ -56,14 +64,14 @@ describe('background module', () => {
 				mockGlyphs,
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			const fillColorCommands = findAllCommands(commands, Command.FILL_COLOR);
 			const rectangleCommands = findAllCommands(commands, Command.RECTANGLE);
 
 			// Should have background color
-			const backgroundColorCommand = fillColorCommands.find(cmd => cmd[1] === minimalColorScheme.fill.background);
+			const backgroundColorCommand = fillColorCommands.find(cmd => cmd[1] === testPalette.colors.canvasBase);
 			expect(backgroundColorCommand).toBeDefined();
 
 			// Should have background rectangle with correct dimensions
@@ -84,16 +92,14 @@ describe('background module', () => {
 				mockGlyphs,
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			const fillColorCommands = findAllCommands(commands, Command.FILL_COLOR);
 
 			// Should have dots colors
-			const backgroundDotsCommands = fillColorCommands.filter(cmd => cmd[1] === minimalColorScheme.fill.backgroundDots);
-			const backgroundDots2Commands = fillColorCommands.filter(
-				cmd => cmd[1] === minimalColorScheme.fill.backgroundDots2
-			);
+			const backgroundDotsCommands = fillColorCommands.filter(cmd => cmd[1] === testPalette.colors.canvasDetail1);
+			const backgroundDots2Commands = fillColorCommands.filter(cmd => cmd[1] === testPalette.colors.canvasDetail2);
 
 			// Should have many dot color commands (32 rows * 64 cols = 2048 dots)
 			expect(backgroundDotsCommands.length + backgroundDots2Commands.length).toBe(32 * 64);
@@ -104,22 +110,22 @@ describe('background module', () => {
 				mockGlyphs,
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			const fillColorCommands = findAllCommands(commands, Command.FILL_COLOR);
 
 			// Find dot color commands (exclude background and other colors)
 			const dotColorCommands = fillColorCommands.filter(
-				cmd => cmd[1] === minimalColorScheme.fill.backgroundDots || cmd[1] === minimalColorScheme.fill.backgroundDots2
+				cmd => cmd[1] === testPalette.colors.canvasDetail1 || cmd[1] === testPalette.colors.canvasDetail2
 			);
 
 			// Check pattern for first few dots in first row (even columns should use backgroundDots2)
 			const firstRowDots = dotColorCommands.slice(0, 4);
-			expect(firstRowDots[0][1]).toBe(minimalColorScheme.fill.backgroundDots2); // j=0, even
-			expect(firstRowDots[1][1]).toBe(minimalColorScheme.fill.backgroundDots); // j=1, odd
-			expect(firstRowDots[2][1]).toBe(minimalColorScheme.fill.backgroundDots2); // j=2, even
-			expect(firstRowDots[3][1]).toBe(minimalColorScheme.fill.backgroundDots); // j=3, odd
+			expect(firstRowDots[0][1]).toBe(testPalette.colors.canvasDetail2); // j=0, even
+			expect(firstRowDots[1][1]).toBe(testPalette.colors.canvasDetail1); // j=1, odd
+			expect(firstRowDots[2][1]).toBe(testPalette.colors.canvasDetail2); // j=2, even
+			expect(firstRowDots[3][1]).toBe(testPalette.colors.canvasDetail1); // j=3, odd
 		});
 
 		it('should generate translate commands for positioning dots', () => {
@@ -127,7 +133,7 @@ describe('background module', () => {
 				mockGlyphs,
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			const translateCommands = findAllCommands(commands, Command.TRANSLATE);
@@ -154,7 +160,7 @@ describe('background module', () => {
 				mockGlyphs,
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			// Should generate commands even if pixel commands depend on font data
@@ -163,8 +169,8 @@ describe('background module', () => {
 		});
 
 		it('should handle different character dimensions correctly', () => {
-			const commands8x16 = generateBackground(mockGlyphs, 8, 16, minimalColorScheme.fill);
-			const commands6x10 = generateBackground(mockGlyphs, 6, 10, minimalColorScheme.fill);
+			const commands8x16 = generateBackground(mockGlyphs, 8, 16, testPalette.colors);
+			const commands6x10 = generateBackground(mockGlyphs, 6, 10, testPalette.colors);
 
 			// Both should have same structure
 			expect(commands8x16[0]).toEqual([Command.RESET_TRANSFORM]);
@@ -184,10 +190,10 @@ describe('background module', () => {
 			const fillColors6x10 = findAllCommands(commands6x10, Command.FILL_COLOR);
 
 			const dotColors8x16 = fillColors8x16.filter(
-				cmd => cmd[1] === minimalColorScheme.fill.backgroundDots || cmd[1] === minimalColorScheme.fill.backgroundDots2
+				cmd => cmd[1] === testPalette.colors.canvasDetail1 || cmd[1] === testPalette.colors.canvasDetail2
 			);
 			const dotColors6x10 = fillColors6x10.filter(
-				cmd => cmd[1] === minimalColorScheme.fill.backgroundDots || cmd[1] === minimalColorScheme.fill.backgroundDots2
+				cmd => cmd[1] === testPalette.colors.canvasDetail1 || cmd[1] === testPalette.colors.canvasDetail2
 			);
 
 			expect(dotColors8x16.length).toBe(32 * 64);
@@ -199,15 +205,15 @@ describe('background module', () => {
 				mockGlyphs,
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			const fillColorCommands = findAllCommands(commands, Command.FILL_COLOR);
 			const colorValues = fillColorCommands.map(cmd => cmd[1]);
 
-			expect(colorValues).toContain(minimalColorScheme.fill.background);
-			expect(colorValues).toContain(minimalColorScheme.fill.backgroundDots);
-			expect(colorValues).toContain(minimalColorScheme.fill.backgroundDots2);
+			expect(colorValues).toContain(testPalette.colors.canvasBase);
+			expect(colorValues).toContain(testPalette.colors.canvasDetail1);
+			expect(colorValues).toContain(testPalette.colors.canvasDetail2);
 		});
 
 		it('should generate correct number of horizontal and vertical movements', () => {
@@ -215,7 +221,7 @@ describe('background module', () => {
 				mockGlyphs,
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			const translateCommands = findAllCommands(commands, Command.TRANSLATE);
@@ -236,7 +242,7 @@ describe('background module', () => {
 
 	describe('generateLookup function', () => {
 		it('should generate correct lookup for 8x16 characters', () => {
-			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height);
+			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height, testPalette.colors);
 
 			// Should have single entry with key 0
 			expect(Object.keys(lookup)).toEqual(['0']);
@@ -244,7 +250,7 @@ describe('background module', () => {
 		});
 
 		it('should generate correct lookup for 6x10 characters', () => {
-			const lookup = generateLookup(characterDimensions6x10.width, characterDimensions6x10.height);
+			const lookup = generateLookup(characterDimensions6x10.width, characterDimensions6x10.height, testPalette.colors);
 
 			// Should have single entry with key 0
 			expect(Object.keys(lookup)).toEqual(['0']);
@@ -252,7 +258,7 @@ describe('background module', () => {
 		});
 
 		it('should generate correct sprite coordinates for 8x16 characters', () => {
-			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height);
+			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height, testPalette.colors);
 
 			const backgroundCoordinate = lookup[0];
 
@@ -266,7 +272,7 @@ describe('background module', () => {
 		});
 
 		it('should generate correct sprite coordinates for 6x10 characters', () => {
-			const lookup = generateLookup(characterDimensions6x10.width, characterDimensions6x10.height);
+			const lookup = generateLookup(characterDimensions6x10.width, characterDimensions6x10.height, testPalette.colors);
 
 			const backgroundCoordinate = lookup[0];
 
@@ -280,8 +286,8 @@ describe('background module', () => {
 		});
 
 		it('should generate coordinates with fixed offset position', () => {
-			const lookup8x16 = generateLookup(8, 16);
-			const lookup6x10 = generateLookup(6, 10);
+			const lookup8x16 = generateLookup(8, 16, testPalette.colors);
+			const lookup6x10 = generateLookup(6, 10, testPalette.colors);
 
 			// Both should have same offset position
 			expect(lookup8x16[0].x).toBe(layout8x16.background.x);
@@ -297,7 +303,7 @@ describe('background module', () => {
 		});
 
 		it('should generate lookup with consistent grid dimensions', () => {
-			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height);
+			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height, testPalette.colors);
 
 			const coordinate = lookup[0];
 
@@ -307,7 +313,7 @@ describe('background module', () => {
 		});
 
 		it('should have single background entry', () => {
-			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height);
+			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height, testPalette.colors);
 
 			// Should have exactly one entry
 			expect(Object.keys(lookup)).toHaveLength(1);

@@ -26,8 +26,8 @@ describe('selected line tooltip content', () => {
 	});
 
 	it('generates tooltip color transitions for instructions and stack values', () => {
-		const fontTooltipText = {};
-		const fontTooltipHighlight = {};
+		const fontInverseInk = {};
+		const fontInverseAccent = {};
 		const content = getSelectedLineTooltipContent(
 			'add',
 			TOOLTIP_WRAP_WIDTH,
@@ -48,8 +48,8 @@ describe('selected line tooltip content', () => {
 				},
 			},
 			{
-				fontTooltipText,
-				fontTooltipHighlight,
+				fontInverseInk,
+				fontInverseAccent,
 			} as never
 		);
 
@@ -63,17 +63,17 @@ describe('selected line tooltip content', () => {
 		expect(content.characters[0]).toEqual(toCharacters('add (T T -- T)'));
 		expect(content.lineCount).toBe(5);
 		expect(content.widthChars).toBe('Adds two numbers of the same'.length);
-		expect(content.colors[0][0]).toBe(fontTooltipHighlight);
+		expect(content.colors[0][0]).toBe(fontInverseAccent);
 		expect(content.colors[0][3]).toBeUndefined();
-		expect(content.colors[3][0]).toBe(fontTooltipText);
-		expect(content.colors[3][7]).toBe(fontTooltipHighlight);
+		expect(content.colors[3][0]).toBe(fontInverseInk);
+		expect(content.colors[3][7]).toBe(fontInverseAccent);
 		expect(content.colors[3][12]).toBeUndefined();
-		expect(content.colors[4][0]).toBe(fontTooltipText);
-		expect(content.colors[4][7]).toBe(fontTooltipHighlight);
+		expect(content.colors[4][0]).toBe(fontInverseInk);
+		expect(content.colors[4][7]).toBe(fontInverseAccent);
 		expect(content.highlightTargets).toEqual([
-			{ lineIndex: 3, column: 8, widthChars: 6, fillColor: 'tooltipConsumedHighlight' },
-			{ lineIndex: 3, column: 16, widthChars: 6, fillColor: 'tooltipConsumedHighlight' },
-			{ lineIndex: 4, column: 8, widthChars: 4, fillColor: 'tooltipAddedHighlight' },
+			{ lineIndex: 3, column: 8, widthChars: 6, fillColor: 'negativeSoft' },
+			{ lineIndex: 3, column: 16, widthChars: 6, fillColor: 'negativeSoft' },
+			{ lineIndex: 4, column: 8, widthChars: 4, fillColor: 'positiveSoft' },
 		]);
 	});
 });

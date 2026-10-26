@@ -16,15 +16,13 @@ function createFont(offset: number, fallback = offset + 63): SpriteFont {
 
 function createSpriteLookups(): SpriteIdLookups {
 	return {
-		fontCode: createFont(0),
-		fontDisabledCode: createFont(100),
-		fontLineNumber: createFont(200),
-		fontCodeComment: createFont(300),
-		fontInstruction: createFont(400),
-		fontNumbers: createFont(500),
-		fontBinaryZero: createFont(600),
-		fontBinaryOne: createFont(700),
-		fontBasePrefix: createFont(800),
+		fontInkBase: createFont(0),
+		fontInkFaint: createFont(100),
+		fontInkMuted: createFont(200),
+		fontTertiaryBase: createFont(300),
+		fontPrimaryBase: createFont(400),
+		fontPrimaryStrong: createFont(700),
+		fontSecondaryBase: createFont(500),
 	} as SpriteIdLookups;
 }
 
@@ -54,6 +52,11 @@ describe('deriveCodeBlockCodeCells', () => {
 		expect(cells[1]?.at(-1)).toBe(549);
 	});
 
+	it('keeps zero bits faint and one bits strongly accented', () => {
+		const cells = deriveCodeBlockCodeCells(createSource(['push 0b10']), createSpriteLookups());
+		expect(cells[0]?.slice(-2)).toEqual([749, 148]);
+	});
+
 	it('renders blank line-number gutters for pointer declarations', () => {
 		const cells = deriveCodeBlockCodeCells(
 			createSource(['module demo', 'int* ptr &buffer', 'float* out &buffer', 'push 1', 'moduleEnd']),
@@ -79,7 +82,7 @@ describe('deriveCodeBlockCodeCells', () => {
 
 	it('uses the validated font fallback for unsupported characters', () => {
 		const lookups = createSpriteLookups();
-		lookups.fontCode = { 63: 999 as SpriteId } as SpriteFont;
+		lookups.fontInkBase = { 63: 999 as SpriteId } as SpriteFont;
 
 		const cells = deriveCodeBlockCodeCells(createSource(['é'], { blockType: 'unknown' }), lookups);
 

@@ -13,7 +13,7 @@ describe('drawArrow', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
 			spriteLookups: {
-				fontArrow: createSpriteIdLookupMock(),
+				fontPrimaryBase: createSpriteIdLookupMock(),
 			} as never,
 			viewport: {
 				width: 1024,
@@ -36,7 +36,7 @@ describe('drawArrow', () => {
 		drawArrow(engine, createMockCodeBlock({ x: -100, y: 384 }), state);
 		drawArrow(engine, createMockCodeBlock({ x: 1200, y: -100 }), state);
 
-		const font = state.spriteLookups?.fontArrow;
+		const font = state.spriteLookups?.fontPrimaryBase;
 		expect((engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText).toHaveBeenCalledWith(
 			512,
 			0,

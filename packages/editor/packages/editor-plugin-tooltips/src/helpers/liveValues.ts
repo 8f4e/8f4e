@@ -52,7 +52,7 @@ export function getLiveTooltipContent(
 		return { text: [], colors: [], liveValueTargets: [], maxLineLength: 0 };
 	}
 
-	const valueColor = spriteLookups?.fontTooltipHighlight;
+	const valueColor = spriteLookups?.fontInverseAccent;
 	const valueLabel = memory.numberOfElements > 1 ? 'value[0]: ' : 'value: ';
 	const lines: LiveTooltipLine[] = [
 		{

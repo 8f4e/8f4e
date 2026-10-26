@@ -53,9 +53,9 @@ async function setup(code = source, installed = true, name = 'controls') {
 	store.set('initialProjectState', project);
 	state.spriteLookups = {
 		fillColors: createSpriteIdLookupMock(),
-		fontCode: createSpriteIdLookupMock(),
-		fontPianoKeyWhitePressedOverlay: createSpriteIdLookupMock(),
-		fontPianoKeyBlackPressedOverlay: createSpriteIdLookupMock(),
+		fontInkBase: createSpriteIdLookupMock(),
+		fontDarkOverlaySoft: createSpriteIdLookupMock(),
+		fontPrimaryOverlay: createSpriteIdLookupMock(),
 	} as never;
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
@@ -123,9 +123,9 @@ describe('piano plugin', () => {
 		expect(test.codeBlock.width).toBeGreaterThanOrEqual(48 * test.state.viewport.vGrid);
 		test.render();
 		expect(test.draw.startGroup).toHaveBeenCalledWith(0, 64);
-		expect(test.draw.drawSprite).toHaveBeenCalledWith(0, 16, 'pianoKeyWhite', 16, 80);
-		expect(test.draw.drawSprite).toHaveBeenCalledWith(16, 16, 'pianoKeyBlack', 16, 48);
-		expect(test.draw.drawText).toHaveBeenCalledWith(0, 0, 'C', test.state.spriteLookups!.fontCode);
+		expect(test.draw.drawSprite).toHaveBeenCalledWith(0, 16, 'lightBase', 16, 80);
+		expect(test.draw.drawSprite).toHaveBeenCalledWith(16, 16, 'darkBase', 16, 48);
+		expect(test.draw.drawText).toHaveBeenCalledWith(0, 0, 'C', test.state.spriteLookups!.fontInkBase);
 		expect(vi.mocked(test.draw.drawText).mock.calls.filter(call => call[2] !== ';;')).toHaveLength(24);
 	});
 	it('toggles notes from real pointer events and draws current runtime highlights', async () => {
@@ -136,12 +136,7 @@ describe('piano plugin', () => {
 		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(50);
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(
-			32,
-			16,
-			';;',
-			test.state.spriteLookups!.fontPianoKeyWhitePressedOverlay
-		);
+		expect(test.draw.drawText).toHaveBeenCalledWith(32, 16, ';;', test.state.spriteLookups!.fontDarkOverlaySoft);
 		test.press(2);
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(0);
 		expect(test.codeBlock.code).toEqual(original);
@@ -160,12 +155,7 @@ describe('piano plugin', () => {
 		test.memoryViews.int32[memory.count.allocationUnitAddress] = 2;
 		test.render();
 		for (const x of [32, 64]) {
-			expect(test.draw.drawText).toHaveBeenCalledWith(
-				x,
-				16,
-				';;',
-				test.state.spriteLookups!.fontPianoKeyWhitePressedOverlay
-			);
+			expect(test.draw.drawText).toHaveBeenCalledWith(x, 16, ';;', test.state.spriteLookups!.fontDarkOverlaySoft);
 		}
 
 		test.click(2);
@@ -327,12 +317,7 @@ describe('piano plugin', () => {
 		test.press(2);
 		test.press(4);
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(
-			32,
-			16,
-			';;',
-			test.state.spriteLookups!.fontPianoKeyWhitePressedOverlay
-		);
+		expect(test.draw.drawText).toHaveBeenCalledWith(32, 16, ';;', test.state.spriteLookups!.fontDarkOverlaySoft);
 		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
 		expect(test.codeBlock.nestedProjectCodeBlocks!.find(block => block.name === 'notesData')!.code).toContain(
 			'int[] notes 4 50 52'

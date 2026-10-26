@@ -9,7 +9,7 @@ describe('sprite atlas output', () => {
 		const red: SpriteCoordinates = { x: 0, y: 0, spriteWidth: 8, spriteHeight: 8 };
 		const green: SpriteCoordinates = { x: 8, y: 0, spriteWidth: 8, spriteHeight: 8 };
 		const atlas = createSpriteAtlas(image, {
-			fontCode: { 65: red, A: red },
+			fontInkBase: { 65: red, A: red },
 			fillColors: { foreground: red, background: green },
 		});
 
@@ -20,14 +20,14 @@ describe('sprite atlas output', () => {
 			1: green,
 		});
 		expect(atlas.spriteIdentifiers).toEqual({
-			fontCode: { 65: 0, A: 0 },
+			fontInkBase: { 65: 0, A: 0 },
 			fillColors: { foreground: 0, background: 1 },
 		});
 		const resolved = resolveSpriteIds(atlas.spriteIdentifiers, {
 			resolveSprite: identifier => (Number(identifier) + 10) as SpriteId,
 		});
 		expect(resolved).toEqual({
-			fontCode: { 65: 10, A: 10 },
+			fontInkBase: { 65: 10, A: 10 },
 			fillColors: { foreground: 10, background: 11 },
 		});
 	});

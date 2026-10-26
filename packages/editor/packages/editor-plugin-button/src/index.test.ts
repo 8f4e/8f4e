@@ -49,8 +49,8 @@ async function setup(code = source, installed = true, name = 'controls') {
 	store.set('initialProjectState', project);
 	state.spriteLookups = {
 		fillColors: createSpriteIdLookupMock(),
-		fontControlKnob: createSpriteIdLookupMock(),
-		fontNumbers: createSpriteIdLookupMock(),
+		fontInkOn: createSpriteIdLookupMock(),
+		fontSecondaryBase: createSpriteIdLookupMock(),
 	} as never;
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
@@ -77,17 +77,17 @@ describe('button plugin', () => {
 		const test = await setup();
 		test.render();
 		const x = test.codeBlock.width - 32;
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, x, 32, 'switchBackground', 32, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', test.state.spriteLookups!.fontControlKnob);
+		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, x, 32, 'primaryDark2', 32, 16);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', test.state.spriteLookups!.fontInkOn);
 		test.press();
 		test.render();
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(2, x + 16, 32, 'controlKnob', 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', test.state.spriteLookups!.fontControlKnob);
+		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(2, x + 16, 32, 'inkBase', 8, 16);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', test.state.spriteLookups!.fontInkOn);
 		const address = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		test.memoryViews.int32[address] = 7;
 		test.render();
 		expect(test.draw.drawSprite).not.toHaveBeenCalled();
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[__]', test.state.spriteLookups!.fontNumbers);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[__]', test.state.spriteLookups!.fontSecondaryBase);
 	});
 
 	it.each([true, false])('presses and releases through pointer events with editing=%s', async editing => {
@@ -112,7 +112,7 @@ describe('button plugin', () => {
 			expect.any(Number),
 			32,
 			'[| ]',
-			test.state.spriteLookups!.fontControlKnob
+			test.state.spriteLookups!.fontInkOn
 		);
 		test.press();
 		test.render();
@@ -121,7 +121,7 @@ describe('button plugin', () => {
 			expect.any(Number),
 			32,
 			'[ |]',
-			test.state.spriteLookups!.fontControlKnob
+			test.state.spriteLookups!.fontInkOn
 		);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0.1, false);
@@ -162,7 +162,7 @@ describe('button plugin', () => {
 		test.state.viewport.hGrid = 20;
 		test.events.dispatch('spriteSheetRerendered');
 		test.render();
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, test.codeBlock.width - 40, 40, 'switchBackground', 40, 20);
+		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, test.codeBlock.width - 40, 40, 'primaryDark2', 40, 20);
 		test.press();
 		expect(test.write).toHaveBeenCalledOnce();
 	});
@@ -289,7 +289,7 @@ describe('button plugin', () => {
 			expect.any(Number),
 			32,
 			'[ |]',
-			second.state.spriteLookups!.fontControlKnob
+			second.state.spriteLookups!.fontInkOn
 		);
 	});
 });

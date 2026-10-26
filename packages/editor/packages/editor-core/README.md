@@ -129,23 +129,20 @@ Configure editor settings with `; @config <path> <value>`.
 - `; @config runtime <runtimeId>` controls the runtime backend for the project.
 - Extensions can contribute schema-backed config roots; runtime packages use this for paths like `; @config audioRuntime.sampleRate 48000` and `; @config audioRuntime.audioOutBufferLAddress audioout:buffer`.
 - `; @config export.fileName <value>` controls the base file name used by editor export actions.
-- `; @config color.<path> <value>` controls individual color scheme entries.
+- `; @config color.<path> <value>` controls base palette colors.
 - `; @config webUI.overlay.<field> <value>` configures a WebAssembly-generated RGBA texture drawn over the editor.
-- Color values should be valid color strings (for example `#101820` or `rgba(255,255,255,0.65)`).
-- Main groups are `text`, `fill`, and `icons`.
+- Base colors accept hex with optional alpha, `rgb()` / `rgba()`, and `transparent`. The palette contains `canvas`,
+  `surface`, `ink`, `muted`, `primary`, `secondary`, `tertiary`, `highlight`, `detail`, `stroke`, `positive`, `warning`,
+  and `negative`. Optional accents preserve independently authored hues and opacity.
+  All shades and fixed opacity variants are generated before atlas creation.
 
 Example color overrides:
 
 ```txt
-; @config color.fill.moduleBackground #101820
-; @config color.fill.wire rgba(255,255,255,0.65)
-; @config color.text.instruction #b388ff
-; @config color.icons.feedbackScale0 #ff0000
-; @config color.icons.feedbackScale1 #cc0033
-; @config color.icons.feedbackScale2 #990066
-; @config color.icons.feedbackScale3 #660099
-; @config color.icons.feedbackScale4 #3300cc
-; @config color.icons.feedbackScale5 #0000ff
+; @config color.canvas #660099
+; @config color.surface #1a0b24
+; @config color.ink #f6eff8
+; @config color.primary #d9a6ff
 ```
 
 - `docs/color-paths.md` - Configurable color paths for `; @config color.<path> <value>`.

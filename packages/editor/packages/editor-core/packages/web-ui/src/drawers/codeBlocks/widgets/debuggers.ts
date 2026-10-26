@@ -37,11 +37,23 @@ function drawBracketedValue(
 	const leftBracketX = x - bracketOffset + (vGrid - bracketWidth) / 2;
 	const rightBracketBaseX = x + vGrid * (value.length + 1);
 	const rightBracketX = rightBracketBaseX + bracketOffset + (vGrid - bracketWidth) / 2;
-	const fontCode = state.spriteLookups!.fontCode;
+	const fontInkBase = state.spriteLookups!.fontInkBase;
 
-	engine.drawSprite(leftBracketX, bracketY, fontCode['['.charCodeAt(0)] ?? fontCode[63], bracketWidth, bracketHeight);
-	engine.drawText(x + state.viewport.vGrid, y, value, state.spriteLookups!.fontNumbers);
-	engine.drawSprite(rightBracketX, bracketY, fontCode[']'.charCodeAt(0)] ?? fontCode[63], bracketWidth, bracketHeight);
+	engine.drawSprite(
+		leftBracketX,
+		bracketY,
+		fontInkBase['['.charCodeAt(0)] ?? fontInkBase[63],
+		bracketWidth,
+		bracketHeight
+	);
+	engine.drawText(x + state.viewport.vGrid, y, value, state.spriteLookups!.fontSecondaryBase);
+	engine.drawSprite(
+		rightBracketX,
+		bracketY,
+		fontInkBase[']'.charCodeAt(0)] ?? fontInkBase[63],
+		bracketWidth,
+		bracketHeight
+	);
 }
 
 export default function drawDebuggers(

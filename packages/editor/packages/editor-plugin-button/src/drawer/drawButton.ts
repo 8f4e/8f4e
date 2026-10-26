@@ -9,7 +9,7 @@ export default function drawButton(engine: DrawContext, state: State, button: Bu
 	const spriteLookups = state.spriteLookups!;
 
 	const knobX = button.x + state.viewport.vGrid * (isOn ? 2 : 1);
-	engine.drawSprite(button.x, button.y, spriteLookups.fillColors.switchBackground, button.width, button.height);
-	engine.drawSprite(knobX, button.y, spriteLookups.fillColors.controlKnob, state.viewport.vGrid, button.height);
-	engine.drawText(button.x, button.y, isOn ? ON_LABEL : OFF_LABEL, spriteLookups.fontControlKnob);
+	engine.drawSprite(button.x, button.y, spriteLookups.fillColors.primaryDark2, button.width, button.height);
+	engine.drawSprite(knobX, button.y, spriteLookups.fillColors.inkBase, state.viewport.vGrid, button.height);
+	engine.drawText(button.x, button.y, isOn ? ON_LABEL : OFF_LABEL, spriteLookups.fontInkOn);
 }

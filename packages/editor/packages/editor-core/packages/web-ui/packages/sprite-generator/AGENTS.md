@@ -12,6 +12,12 @@
 ## Coding Style
 - TypeScript; use Biome as the fixer (`npx biome check --write <files>`) per root config. Keep pure, deterministic functions.
 
+## Palette
+
+- Consume `@8f4e/editor-palette`; do not restore feature-specific configurable colors.
+- Bake the shared catalog into fills and deduplicated font rows. Return the resolved palette with its atlas.
+- Tests build package dependencies before running.
+
 ## Testing
 - Vitest (via Nx). Prefer unit tests and golden/snapshot tests for outputs.
 - To update snapshots after intentional changes, use `npx nx run @8f4e/sprite-generator:test -- --update` (or the `:update` variant for screenshot tests).

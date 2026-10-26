@@ -20,7 +20,7 @@ function createTestState() {
 		viewport: { vGrid: 8, hGrid: 16 },
 		spriteLookups: {
 			fillColors: createSpriteIdLookupMock(),
-			fontControlKnob: createSpriteIdLookupMock(),
+			fontInkOn: createSpriteIdLookupMock(),
 		} as never,
 	});
 }
@@ -35,10 +35,10 @@ describe('drawButton', () => {
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 		expect(drawSprite.mock.calls).toEqual([
-			[10, 20, 'switchBackground', 32, 16],
-			[18, 20, 'controlKnob', 8, 16],
+			[10, 20, 'primaryDark2', 32, 16],
+			[18, 20, 'inkBase', 8, 16],
 		]);
-		expect(drawText).toHaveBeenCalledWith(10, 20, '[| ]', state.spriteLookups?.fontControlKnob);
+		expect(drawText).toHaveBeenCalledWith(10, 20, '[| ]', state.spriteLookups?.fontInkOn);
 	});
 
 	it('moves the knob fill and vertical bar to the on position', () => {
@@ -50,9 +50,9 @@ describe('drawButton', () => {
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 		expect(drawSprite.mock.calls).toEqual([
-			[10, 20, 'switchBackground', 32, 16],
-			[26, 20, 'controlKnob', 8, 16],
+			[10, 20, 'primaryDark2', 32, 16],
+			[26, 20, 'inkBase', 8, 16],
 		]);
-		expect(drawText).toHaveBeenCalledWith(10, 20, '[ |]', state.spriteLookups?.fontControlKnob);
+		expect(drawText).toHaveBeenCalledWith(10, 20, '[ |]', state.spriteLookups?.fontInkOn);
 	});
 });

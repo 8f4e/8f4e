@@ -57,7 +57,7 @@ entryEnd`);
 		memoryViews.int32[memory.notes.allocationUnitAddress + index] = note;
 	});
 	memoryViews.int32[memory.count.allocationUnitAddress] = 6;
-	const spriteData = await generateSprite({ font: state.editorConfig.font, colorScheme: state.editorConfig.color });
+	const spriteData = await generateSprite({ font: state.editorConfig.font, palette: state.editorConfig.color });
 	const projection = createWebUiRenderProjection(store, events);
 	const renderer = await initView(state, projection, canvas, memoryViews, spriteData, { drawers });
 	renderer.pauseRendering();

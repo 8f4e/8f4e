@@ -10,7 +10,7 @@ export default function drawShapeDeclarations(
 		return;
 	}
 
-	const font = codeBlock.disabled ? state.spriteLookups.fontDisabledCode : state.spriteLookups.fontCode;
+	const font = codeBlock.disabled ? state.spriteLookups.fontInkFaint : state.spriteLookups.fontInkBase;
 
 	for (const { x, y, text } of codeBlock.widgets.shapeDeclarations) {
 		engine.drawText(x, y, text, font);

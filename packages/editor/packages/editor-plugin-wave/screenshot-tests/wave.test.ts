@@ -57,7 +57,7 @@ entryEnd`);
 	for (let index = 0; index < 64; index++)
 		memoryViews.float32[memory.samples.allocationUnitAddress + index] = Math.sin((index * Math.PI * 4) / 63);
 	memoryViews.int32[memory.playhead.allocationUnitAddress] = memory.samples.byteAddress + 40 * 4;
-	const spriteData = await generateSprite({ font: state.editorConfig.font, colorScheme: state.editorConfig.color });
+	const spriteData = await generateSprite({ font: state.editorConfig.font, palette: state.editorConfig.color });
 	const projection = createWebUiRenderProjection(store, events);
 	const renderer = await initView(state, projection, canvas, memoryViews, spriteData, { drawers });
 	renderer.pauseRendering();

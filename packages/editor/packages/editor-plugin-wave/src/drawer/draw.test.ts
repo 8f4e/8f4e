@@ -47,9 +47,9 @@ describe('wave drawing', () => {
 		memory.int8.set([-128, 0, 127, 0]);
 		drawWaves(draw, state(), [wave()], memory);
 		expect(draw.startGroup).toHaveBeenCalledWith(2, 3);
-		expect(draw.drawSprite).toHaveBeenNthCalledWith(1, 0, 0, 'waveformBackground', 8, 8);
-		expect(draw.drawSprite).toHaveBeenNthCalledWith(2, 0, 7, 'waveform', 2, 1);
-		expect(draw.drawSprite).toHaveBeenNthCalledWith(4, 4, 0, 'waveform', 2, 1);
+		expect(draw.drawSprite).toHaveBeenNthCalledWith(1, 0, 0, 'darkSurface', 8, 8);
+		expect(draw.drawSprite).toHaveBeenNthCalledWith(2, 0, 7, 'highlightBase', 2, 1);
+		expect(draw.drawSprite).toHaveBeenNthCalledWith(4, 4, 0, 'highlightBase', 2, 1);
 	});
 	it('draws an absolute playhead over the waveform', () => {
 		const draw = createDrawContextMock();
@@ -59,7 +59,7 @@ describe('wave drawing', () => {
 		memory.int32[4] = 2;
 		data.playhead = { showAddress: false, bufferPointer: 0, memory: { allocationUnitAddress: 4 } } as never;
 		drawWaves(draw, state(), [data], memory);
-		expect(draw.drawSprite).toHaveBeenLastCalledWith(4, 0, 'scanLine', 2, 8);
+		expect(draw.drawSprite).toHaveBeenLastCalledWith(4, 0, 'secondaryReadable', 2, 8);
 	});
 	it('skips a waveform while its live element count is zero', () => {
 		const draw = createDrawContextMock();

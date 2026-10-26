@@ -19,10 +19,10 @@ export default function drawModeOverlay(engine: DrawContext, state: State): void
 	engine.drawSprite(
 		0,
 		0,
-		state.spriteLookups.fillColors.debugInfoBackground,
+		state.spriteLookups.fillColors.surfaceBase,
 		(modeHint.length + 2) * state.viewport.vGrid,
 		state.viewport.hGrid
 	);
-	engine.drawText(state.viewport.vGrid, 0, modeHint, state.spriteLookups.fontDebugInfo);
+	engine.drawText(state.viewport.vGrid, 0, modeHint, state.spriteLookups.fontInkMuted);
 	engine.endGroup();
 }

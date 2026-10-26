@@ -53,8 +53,8 @@ describe('selected line tooltip animation', () => {
 			featureFlags: { codeLineSelection: true },
 			codeBlockRendering: { selectedCodeBlock: codeBlock },
 			spriteLookups: {
-				fillColors: { tooltipBackground: 'tooltipBackground' },
-				fontTooltipHighlight: highlightFont,
+				fillColors: { inverseSurface: 'inverseSurface' },
+				fontInverseAccent: highlightFont,
 			} as never,
 		});
 		const tooltip: TooltipState = {
@@ -160,9 +160,9 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 describe('tooltip drawing', () => {
 	it('draws tooltip text next to the selected line', () => {
 		const fillColors = createSpriteIdLookupMock();
-		const fontCode = createSpriteIdLookupMock();
-		const fontTooltipHighlight = createSpriteIdLookupMock();
-		const fontTooltipText = createSpriteIdLookupMock();
+		const fontInkBase = createSpriteIdLookupMock();
+		const fontInverseAccent = createSpriteIdLookupMock();
+		const fontInverseInk = createSpriteIdLookupMock();
 		const block = createMockCodeBlock({
 			width: 100,
 			height: 80,
@@ -176,13 +176,12 @@ describe('tooltip drawing', () => {
 		const state = createMockState({
 			spriteLookups: {
 				fillColors,
-				fontCode,
-				fontNumbers: createSpriteIdLookupMock(),
-				fontDisabledCode: createSpriteIdLookupMock(),
-				fontLineNumber: createSpriteIdLookupMock(),
-				fontCodeComment: createSpriteIdLookupMock(),
-				fontTooltipHighlight,
-				fontTooltipText,
+				fontInkBase,
+				fontSecondaryBase: createSpriteIdLookupMock(),
+				fontInkFaint: createSpriteIdLookupMock(),
+				fontInkMuted: createSpriteIdLookupMock(),
+				fontInverseAccent,
+				fontInverseInk,
 			} as never,
 			codeBlockRendering: {
 				codeBlocks: [block],
@@ -206,10 +205,10 @@ describe('tooltip drawing', () => {
 				'after: [int=3]',
 			]),
 			colors: [
-				createTooltipColors('add (T T -- T)', fontTooltipText, [[0, fontTooltipHighlight]]),
-				createTooltipColors('Adds two numbers', fontTooltipText, []),
-				createTooltipColors('before [int=1, int=2]', fontTooltipText, [[7, fontTooltipHighlight]]),
-				createTooltipColors('after: [int=3]', fontTooltipText, [[7, fontTooltipHighlight]]),
+				createTooltipColors('add (T T -- T)', fontInverseInk, [[0, fontInverseAccent]]),
+				createTooltipColors('Adds two numbers', fontInverseInk, []),
+				createTooltipColors('before [int=1, int=2]', fontInverseInk, [[7, fontInverseAccent]]),
+				createTooltipColors('after: [int=3]', fontInverseInk, [[7, fontInverseAccent]]),
 			] as never,
 			lineCount: 4,
 			widthChars: 'before [int=1, int=2]'.length,
@@ -227,7 +226,7 @@ describe('tooltip drawing', () => {
 					y: 48,
 					width: 48,
 					height: 16,
-					fillColor: 'tooltipConsumedHighlight',
+					fillColor: 'negativeSoft',
 				},
 			],
 		};
@@ -238,14 +237,14 @@ describe('tooltip drawing', () => {
 		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
 			-192,
 			16,
-			'tooltipBackground',
+			'inverseSurface',
 			184,
 			64
 		);
 		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
 			-120,
 			48,
-			'tooltipConsumedHighlight',
+			'negativeSoft',
 			48,
 			16
 		);
@@ -326,13 +325,12 @@ describe('tooltip drawing', () => {
 			},
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
-				fontNumbers: createSpriteIdLookupMock(),
-				fontCode: createSpriteIdLookupMock(),
-				fontDisabledCode: createSpriteIdLookupMock(),
-				fontLineNumber: createSpriteIdLookupMock(),
-				fontCodeComment: createSpriteIdLookupMock(),
-				fontTooltipHighlight: createSpriteIdLookupMock(),
-				fontTooltipText: createSpriteIdLookupMock(),
+				fontSecondaryBase: createSpriteIdLookupMock(),
+				fontInkBase: createSpriteIdLookupMock(),
+				fontInkFaint: createSpriteIdLookupMock(),
+				fontInkMuted: createSpriteIdLookupMock(),
+				fontInverseAccent: createSpriteIdLookupMock(),
+				fontInverseInk: createSpriteIdLookupMock(),
 			} as never,
 			codeBlockRendering: {
 				codeBlocks: [block],

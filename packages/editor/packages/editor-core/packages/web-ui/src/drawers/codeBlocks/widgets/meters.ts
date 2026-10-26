@@ -36,7 +36,7 @@ function drawSegment(
 	startX: number,
 	endX: number,
 	fillWidth: number,
-	sprite: 'meterGreen' | 'meterYellow' | 'meterRed',
+	sprite: 'positiveBase' | 'warningBase' | 'negativeBase',
 	height: number,
 	spriteIds: NonNullable<State['spriteLookups']>['fillColors']
 ): void {
@@ -93,17 +93,17 @@ export default function drawer(
 		const fillWidth = Math.round(normalized * width);
 		const overloaded = isBipolar ? Math.abs(value) > amplitudeLimit : value < minValue || value > maxValue;
 
-		engine.drawSprite(0, 0, fillSprites.plotterBackground, width, height);
-		drawSegment(engine, 0, greenEndX, fillWidth, 'meterGreen', height, fillSprites);
-		drawSegment(engine, greenEndX, yellowEndX, fillWidth, 'meterYellow', height, fillSprites);
-		drawSegment(engine, yellowEndX, width, fillWidth, 'meterRed', height, fillSprites);
+		engine.drawSprite(0, 0, fillSprites.darkSurface, width, height);
+		drawSegment(engine, 0, greenEndX, fillWidth, 'positiveBase', height, fillSprites);
+		drawSegment(engine, greenEndX, yellowEndX, fillWidth, 'warningBase', height, fillSprites);
+		drawSegment(engine, yellowEndX, width, fillWidth, 'negativeBase', height, fillSprites);
 
 		if (overloaded) {
 			overloadHoldByMeter.set(meter, true);
 		}
 
 		if (overloadHoldByMeter.has(meter)) {
-			engine.drawSprite(overloadMarkerX, 0, fillSprites.meterRed, overloadMarkerWidth, height);
+			engine.drawSprite(overloadMarkerX, 0, fillSprites.negativeBase, overloadMarkerWidth, height);
 		}
 
 		engine.endGroup();

@@ -23,24 +23,24 @@ function resolveLine(line: string, font: SpriteFont): Array<SpriteId | null> {
  */
 export function resolveCodeWithAllColors(lines: string[], spriteLookups: SpriteIdLookups) {
 	const fonts = [
-		spriteLookups.fontBinaryOne,
-		spriteLookups.fontBinaryZero,
-		spriteLookups.fontCode,
-		spriteLookups.fontCodeComment,
-		spriteLookups.fontInfoKey,
-		spriteLookups.fontInfoValue,
-		spriteLookups.fontErrorMessage,
-		spriteLookups.fontDialogText,
-		spriteLookups.fontDialogTitle,
-		spriteLookups.fontInstruction,
-		spriteLookups.fontLineNumber,
-		spriteLookups.fontMenuItemText,
-		spriteLookups.fontMenuItemTextHighlighted,
-		spriteLookups.fontNumbers,
-		spriteLookups.fontPianoKeyWhitePressedOverlay,
-		spriteLookups.fontPianoKeyBlackPressedOverlay,
+		spriteLookups.fontPrimaryBase,
+		spriteLookups.fontInkMuted,
+		spriteLookups.fontInkBase,
+		spriteLookups.fontInkMuted,
+		spriteLookups.fontPrimaryBase,
+		spriteLookups.fontSecondaryBase,
+		spriteLookups.fontNegativeOn,
+		spriteLookups.fontInkBase,
+		spriteLookups.fontPrimaryBase,
+		spriteLookups.fontPrimaryBase,
+		spriteLookups.fontInkMuted,
+		spriteLookups.fontInkBase,
+		spriteLookups.fontPrimaryOn,
+		spriteLookups.fontSecondaryBase,
+		spriteLookups.fontDarkOverlaySoft,
+		spriteLookups.fontPrimaryOverlay,
 	];
-	return lines.map((line, index) => resolveLine(line, fonts[index] ?? spriteLookups.fontCode));
+	return lines.map((line, index) => resolveLine(line, fonts[index] ?? spriteLookups.fontInkBase));
 }
 
 /**

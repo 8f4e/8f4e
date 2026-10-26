@@ -72,10 +72,10 @@ describe('drawMeters', () => {
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [0.95] }));
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'plotterBackground', 20, 6);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'meterGreen', 13, 6);
-		expect(drawSprite).toHaveBeenCalledWith(13, 0, 'meterYellow', 5, 6);
-		expect(drawSprite).toHaveBeenCalledWith(18, 0, 'meterRed', 1, 6);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 20, 6);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'positiveBase', 13, 6);
+		expect(drawSprite).toHaveBeenCalledWith(13, 0, 'warningBase', 5, 6);
+		expect(drawSprite).toHaveBeenCalledWith(18, 0, 'negativeBase', 1, 6);
 	});
 
 	it('clamps out-of-range values to a full meter', () => {
@@ -102,9 +102,9 @@ describe('drawMeters', () => {
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [2] }));
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'meterGreen', 6, 4);
-		expect(drawSprite).toHaveBeenCalledWith(6, 0, 'meterYellow', 3, 4);
-		expect(drawSprite).toHaveBeenCalledWith(9, 0, 'meterRed', 1, 4);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'positiveBase', 6, 4);
+		expect(drawSprite).toHaveBeenCalledWith(6, 0, 'warningBase', 3, 4);
+		expect(drawSprite).toHaveBeenCalledWith(9, 0, 'negativeBase', 1, 4);
 	});
 
 	it('returns fully to zero when the bound scalar value is zero', () => {
@@ -132,7 +132,7 @@ describe('drawMeters', () => {
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
 		expect(drawSprite).toHaveBeenCalledTimes(1);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'plotterBackground', 12, 4);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 12, 4);
 	});
 
 	it('treats bipolar ranges as amplitude meters so silence renders empty', () => {
@@ -165,7 +165,7 @@ describe('drawMeters', () => {
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
 		expect(drawSprite).toHaveBeenCalledTimes(1);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'plotterBackground', 12, 4);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 12, 4);
 	});
 
 	it('fills negative bipolar values by magnitude', () => {
@@ -192,8 +192,8 @@ describe('drawMeters', () => {
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [-0.5] }));
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'plotterBackground', 20, 6);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'meterGreen', 10, 6);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 20, 6);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'positiveBase', 10, 6);
 	});
 
 	it('latches a red overload marker at the end of the meter after clipping', () => {
@@ -219,10 +219,10 @@ describe('drawMeters', () => {
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
 
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [1.2] }));
-		expect(drawSprite).toHaveBeenCalledWith(4, 0, 'meterRed', 8, 4);
+		expect(drawSprite).toHaveBeenCalledWith(4, 0, 'negativeBase', 8, 4);
 
 		drawSprite.mockClear();
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [0.4] }));
-		expect(drawSprite).toHaveBeenCalledWith(4, 0, 'meterRed', 8, 4);
+		expect(drawSprite).toHaveBeenCalledWith(4, 0, 'negativeBase', 8, 4);
 	});
 });

@@ -19,7 +19,7 @@ describe('editor config validators', () => {
 			validate: configEntry => (configEntry.value === '6x10' ? undefined : `unsupported font '${configEntry.value}'`),
 		},
 		color: {
-			knownPaths: ['color.text.code'],
+			knownPaths: ['color.ink'],
 			matches: path => path.startsWith('color.'),
 			validate: configEntry =>
 				configEntry.value.startsWith('#') ? undefined : `invalid color value '${configEntry.value}'`,
@@ -27,17 +27,15 @@ describe('editor config validators', () => {
 	};
 
 	it('collects known paths from the supplied validator registry', () => {
-		expect(getEditorConfigKnownPaths(registry)).toEqual(['font', 'color.text.code']);
+		expect(getEditorConfigKnownPaths(registry)).toEqual(['font', 'color.ink']);
 	});
 
 	it('validates known config paths', () => {
-		expect(validateEditorConfigEntries([entry('font', '6x10'), entry('color.text.code', '#112233')], registry)).toEqual(
-			[]
-		);
+		expect(validateEditorConfigEntries([entry('font', '6x10'), entry('color.ink', '#112233')], registry)).toEqual([]);
 	});
 
 	it('returns errors from supplied validators', () => {
-		const errors = validateEditorConfigEntries([entry('font', 'tiny'), entry('color.text.code', '???')], registry);
+		const errors = validateEditorConfigEntries([entry('font', 'tiny'), entry('color.ink', '???')], registry);
 
 		expect(errors).toHaveLength(2);
 		expect(errors[0].message).toBe("unsupported font 'tiny'");
@@ -55,28 +53,23 @@ describe('editor config validators', () => {
 	it('resolves valid entries into a path-shaped config object', () => {
 		expect(
 			resolveEditorConfigEntries(
-				[
-					entry('font', '6x10'),
-					entry('color.text.code', '#112233'),
-					entry('font', 'tiny'),
-					entry('unknown.path', 'value'),
-				],
+				[entry('font', '6x10'), entry('color.ink', '#112233'), entry('font', 'tiny'), entry('unknown.path', 'value')],
 				registry
 			)
 		).toEqual({
 			font: '6x10',
 			color: {
-				text: { code: '#112233' },
+				ink: '#112233',
 			},
 		});
 	});
 
 	it('uses last-write-wins for duplicate valid paths', () => {
 		expect(
-			resolveEditorConfigEntries([entry('color.text.code', '#111111'), entry('color.text.code', '#222222')], registry)
+			resolveEditorConfigEntries([entry('color.ink', '#111111'), entry('color.ink', '#222222')], registry)
 		).toEqual({
 			color: {
-				text: { code: '#222222' },
+				ink: '#222222',
 			},
 		});
 	});

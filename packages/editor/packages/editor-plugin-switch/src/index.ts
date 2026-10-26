@@ -16,11 +16,11 @@ export const switchPlugin: EditorPlugin = {
 				if (value === control.onValue || value === control.offValue) {
 					const isOn = value === control.onValue;
 					const knobX = control.x + state.viewport.vGrid * (isOn ? 2 : 1);
-					draw.drawSprite(control.x, control.y, sprites.fillColors.switchBackground, control.width, control.height);
-					draw.drawSprite(knobX, control.y, sprites.fillColors.controlKnob, state.viewport.vGrid, control.height);
-					draw.drawText(control.x, control.y, isOn ? '[ |]' : '[| ]', sprites.fontControlKnob);
+					draw.drawSprite(control.x, control.y, sprites.fillColors.primaryDark2, control.width, control.height);
+					draw.drawSprite(knobX, control.y, sprites.fillColors.inkBase, state.viewport.vGrid, control.height);
+					draw.drawText(control.x, control.y, isOn ? '[ |]' : '[| ]', sprites.fontInkOn);
 				} else {
-					draw.drawText(control.x, control.y, '[__]', sprites.fontNumbers);
+					draw.drawText(control.x, control.y, '[__]', sprites.fontSecondaryBase);
 				}
 			}
 		});

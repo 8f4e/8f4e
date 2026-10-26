@@ -1949,37 +1949,18 @@ moduleEnd
 module ultimateSoundtrackerColors
 ; @pos 555 -151
 ; @tab 46
-; @config color.fill.moduleBackground	#000
-; @config color.fill.background	rgba(0,0,0,0)
-; @config color.fill.backgroundDots	#03f
-; @config color.fill.backgroundDots2	#000
-; @config color.fill.highlightedCodeLine	#006
-; @config color.fill.moduleBackgroundDragged	#000
-; @config color.text.instruction	#03f
-; @config color.text.code	#c96
-; @config color.text.lineNumber	#630
-; @config color.text.codeComment	#963
-; @config color.text.numbers	#fc9
-; @config color.text.debugInfo	#03f
-; @config color.fill.debugInfoBackground	#000
-; @config color.fill.wire	rgba(255,255,255,0.3)
-; @config color.fill.wireHighlighted	#fff
-; @config color.fill.menuItemBackground	#00c
-; @config color.fill.menuItemBackgroundHighlighted	#fff
-; @config color.fill.errorMessageBackground	#900
-; @config color.fill.dialogBackground	#00c
-; @config color.fill.dialogDimmer	#000
-; @config color.fill.codeBlockHighlightLevel1	#000a14
-; @config color.fill.codeBlockHighlightLevel2	#001429
-; @config color.fill.codeBlockHighlightLevel3	#001f3d
-; @config color.fill.trace	#0f0
-; @config color.fill.scanLine	#fc9
-; @config color.fill.waveform	#03f
-; @config color.icons.outputConnectorBackground	#03f
-; @config color.icons.outputConnector	#000
-; @config color.icons.inputConnectorBackground	#03f
-; @config color.icons.inputConnector	#000
-; @config color.text.arrow	#fff
+; @config color.surface #000
+; @config color.ink #c96
+; @config color.primary #03f
+; @config color.secondary #fc9
+; @config color.positive #0f0
+; @config color.negative #900
+; @config color.muted #630
+; @config color.stroke rgba(255,255,255,0.3)
+; @config color.canvas rgba(0,0,0,0)
+; @config color.tertiary #963
+; @config color.highlight #03f
+; @config color.detail #ffffff
 moduleEnd
 module volume1
 ; @pos 320 -64

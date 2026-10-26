@@ -12,3 +12,11 @@ test.describe('Sprite Generator Screenshot Tests', () => {
 		});
 	}
 });
+
+test('generates the migrated example palettes with predefined sprite shades', async ({ page }) => {
+	page.on('pageerror', error => console.error(error));
+	await page.goto('http://localhost:3002/test-cases/palette-themes.html');
+	await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+	await expect(page.locator('canvas')).toHaveCount(9);
+	await expect(page).toHaveScreenshot('palette-themes.png');
+});

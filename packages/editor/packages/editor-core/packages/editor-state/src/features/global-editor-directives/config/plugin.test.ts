@@ -17,16 +17,16 @@ describe('@config directive', () => {
 			createParsedBlock([
 				'module a',
 				'; @config font 6x10',
-				'; @config color.text.code #112233',
-				'; @config color.fill.wire rgba(1,2,3,0.4)',
+				'; @config color.ink #112233',
+				'; @config color.primary #010203',
 				'moduleEnd',
 			]),
 		]);
 
 		expect(result.resolved.configEntries).toEqual([
 			{ path: 'font', value: '6x10', sourceLineIndex: 1, codeBlockId: 0 },
-			{ path: 'color.text.code', value: '#112233', sourceLineIndex: 2, codeBlockId: 0 },
-			{ path: 'color.fill.wire', value: 'rgba(1,2,3,0.4)', sourceLineIndex: 3, codeBlockId: 0 },
+			{ path: 'color.ink', value: '#112233', sourceLineIndex: 2, codeBlockId: 0 },
+			{ path: 'color.primary', value: '#010203', sourceLineIndex: 3, codeBlockId: 0 },
 		]);
 		expect(result.errors).toEqual([]);
 	});
@@ -69,7 +69,7 @@ describe('@config directive', () => {
 				'module a',
 				'; @config font tiny',
 				'; @config blockScale 4',
-				'; @config color.text.code ???',
+				'; @config color.ink ???',
 				'moduleEnd',
 			]),
 		]);
@@ -77,7 +77,7 @@ describe('@config directive', () => {
 		expect(result.resolved.configEntries).toEqual([
 			{ path: 'font', value: 'tiny', sourceLineIndex: 1, codeBlockId: 0 },
 			{ path: 'blockScale', value: '4', sourceLineIndex: 2, codeBlockId: 0 },
-			{ path: 'color.text.code', value: '???', sourceLineIndex: 3, codeBlockId: 0 },
+			{ path: 'color.ink', value: '???', sourceLineIndex: 3, codeBlockId: 0 },
 		]);
 		expect(result.errors).toEqual([]);
 	});

@@ -68,7 +68,7 @@
             }
           ]
         },
-        "projectBlockId": 387,
+        "projectBlockId": 329,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "keyboard"
@@ -213,7 +213,7 @@
             }
           ]
         },
-        "projectBlockId": 403,
+        "projectBlockId": 345,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "janko"
@@ -1671,7 +1671,7 @@
             }
           ]
         },
-        "projectBlockId": 425,
+        "projectBlockId": 367,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "midiLUT"
@@ -1904,7 +1904,7 @@
             }
           ]
         },
-        "projectBlockId": 558,
+        "projectBlockId": 500,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "midiNote2Freq"
@@ -2596,7 +2596,7 @@
             }
           ]
         },
-        "projectBlockId": 577,
+        "projectBlockId": 519,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "arEnv"
@@ -3046,7 +3046,7 @@
             }
           ]
         },
-        "projectBlockId": 638,
+        "projectBlockId": 580,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "phaseAccumulator"
@@ -3227,7 +3227,7 @@
             }
           ]
         },
-        "projectBlockId": 681,
+        "projectBlockId": 623,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "vca"
@@ -3596,7 +3596,7 @@
             }
           ]
         },
-        "projectBlockId": 695,
+        "projectBlockId": 637,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "audioout"

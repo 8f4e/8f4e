@@ -68,7 +68,7 @@ Active todo files are listed below.
 | 505 | Add an initial editor mode directive | 🟡 | 4-8h | 2026-10-21 | Let projects request edit or view mode at load time while preserving host-level mode policy and later user mode changes. |
 | 506 | Add an inline sample browser directive | 🟡 | TBD | 2026-10-22 | Render a folder/file browser inside a code block and update a bound binary asset URL when a sample is selected. |
 | 508 | Design lazy loading for editor plugins | 🟡 | TBD | 2026-10-26 | Work out plugin discovery, asynchronous activation, readiness, and per-editor cleanup while measuring initial-bundle savings. |
-| 509 | Rebuild editor colors from a small base palette | 🟡 | TBD | 2026-10-26 | Replace feature-specific colors with a few shared base colors, generate lighter and darker shades, and use those shades in core and plugin drawers. |
+| 510 | Use glyph masks and a GPU color palette | 🟡 | TBD | 2026-10-26 | Store glyph shapes once, upload colors separately, and pack sprite IDs with stable palette indices in the 20-byte instance format. |
 
 ### 🟢 Low Priority
 
@@ -84,6 +84,7 @@ Active todo files are listed below.
 
 | ID | Title | Completed | Notes |
 | ---- | ----- | --------- | ----- |
+| 509 | Rebuild editor colors from a small base palette | 2026-10-26 | Shared configurable accents, predefined shades and opacity, and generic core/plugin sprite lookups replace feature-specific colors. |
 | 507 | Design plugin fill-color contributions | 2026-10-26 | Cancelled; TODO 509 replaces plugin-owned color registration with a shared base palette and generated shades. |
 | 271 | Add float64 support for loadFloat instruction | 2026-10-21 | Completed in [PR #1120](https://github.com/8f4e/8f4e/pull/1120); linked issue #422 was closed as completed. |
 | 496 | Use Set and Map for binary-asset lookups | 2026-10-21 | Completed in [PR #1104](https://github.com/8f4e/8f4e/pull/1104); linked issue #1013 was closed as completed. |

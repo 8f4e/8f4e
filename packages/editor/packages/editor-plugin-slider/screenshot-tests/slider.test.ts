@@ -64,7 +64,7 @@ entryEnd`);
 	memoryViews.float32[memory.minimum.allocationUnitAddress] = 0;
 	memoryViews.float32[memory.middle.allocationUnitAddress] = 0.5;
 	memoryViews.float32[memory.maximum.allocationUnitAddress] = 1;
-	const spriteData = await generateSprite({ font: state.editorConfig.font, colorScheme: state.editorConfig.color });
+	const spriteData = await generateSprite({ font: state.editorConfig.font, palette: state.editorConfig.color });
 	const projection = createWebUiRenderProjection(store, events);
 	const renderer = await initView(state, projection, canvas, memoryViews, spriteData, { drawers });
 	renderer.pauseRendering();

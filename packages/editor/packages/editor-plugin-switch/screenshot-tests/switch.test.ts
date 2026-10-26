@@ -50,8 +50,10 @@ entryEnd`);
 	codeBlock.x = 32;
 	codeBlock.y = 32;
 	state.editorConfig.color = {
-		fill: { background: '#000', switchBackground: '#111', controlKnob: '#336699' },
-		text: { controlKnob: '#ffcc00' },
+		canvas: '#000',
+		surface: '#111',
+		primary: '#336699',
+		ink: '#ffcc00',
 	};
 	const buffer = new ArrayBuffer(65536);
 	const memoryViews: MemoryViews = {
@@ -64,7 +66,7 @@ entryEnd`);
 		float64: new Float64Array(buffer),
 	};
 	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.on.allocationUnitAddress] = 1;
-	const spriteData = await generateSprite({ font: state.editorConfig.font, colorScheme: state.editorConfig.color });
+	const spriteData = await generateSprite({ font: state.editorConfig.font, palette: state.editorConfig.color });
 	const projection = createWebUiRenderProjection(store, events);
 	const renderer = await initView(state, projection, canvas, memoryViews, spriteData, { drawers });
 	renderer.pauseRendering();

@@ -37,11 +37,9 @@ describe('drawDialog', () => {
 			},
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
-				fontCode: createSpriteIdLookupMock(),
-				fontDialogTitle: createSpriteIdLookupMock(),
-				fontDialogText: createSpriteIdLookupMock(),
-				fontMenuItemText: createSpriteIdLookupMock(),
-				fontMenuItemTextHighlighted: createSpriteIdLookupMock(),
+				fontInkBase: createSpriteIdLookupMock(),
+				fontPrimaryBase: createSpriteIdLookupMock(),
+				fontSelectionInk: createSpriteIdLookupMock(),
 			} as never,
 		});
 
@@ -50,7 +48,7 @@ describe('drawDialog', () => {
 		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
 			400,
 			80,
-			'menuItemBackgroundHighlighted',
+			'selectionSurface',
 			104,
 			48
 		);
@@ -58,7 +56,7 @@ describe('drawDialog', () => {
 			432,
 			96,
 			'Allow',
-			state.spriteLookups?.fontMenuItemTextHighlighted
+			state.spriteLookups?.fontSelectionInk
 		);
 	});
 });

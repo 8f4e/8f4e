@@ -13,8 +13,8 @@ describe('assertion rectangles', () => {
 			{ lineNumber: 4, passed: false, x: 8, y: 64, width: 16, height: 16 },
 		];
 		drawAssertions(engine, state, block);
-		expect(engine.drawSprite).toHaveBeenNthCalledWith(1, 8, 32, 'assertionPassed', 16, 16);
-		expect(engine.drawSprite).toHaveBeenNthCalledWith(2, 8, 64, 'assertionFailed', 16, 16);
+		expect(engine.drawSprite).toHaveBeenNthCalledWith(1, 8, 32, 'positiveBase', 16, 16);
+		expect(engine.drawSprite).toHaveBeenNthCalledWith(2, 8, 64, 'negativeBase', 16, 16);
 	});
 
 	it('omits markers for disabled blocks or missing sprite lookups', () => {

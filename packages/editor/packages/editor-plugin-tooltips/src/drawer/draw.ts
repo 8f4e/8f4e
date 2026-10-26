@@ -86,7 +86,7 @@ function drawCharactersWithColors(
 	y: number
 ): void {
 	const spriteLookups = state.spriteLookups!;
-	let currentLookup = colors?.[0] ?? spriteLookups.fontTooltipText;
+	let currentLookup = colors?.[0] ?? spriteLookups.fontInverseInk;
 
 	for (let index = 0; index < characters.length; index++) {
 		const nextLookup = colors?.[index] ?? currentLookup;
@@ -136,7 +136,7 @@ function drawLiveValue(
 		value,
 		liveValue.x + offset.x,
 		liveValue.y + offset.y,
-		liveValue.color ?? spriteLookups.fontTooltipHighlight
+		liveValue.color ?? spriteLookups.fontInverseAccent
 	);
 }
 
@@ -167,7 +167,7 @@ export default function drawTooltip(
 	engine.drawSprite(
 		x + animationOffset.x,
 		y + animationOffset.y,
-		spriteLookups.fillColors.tooltipBackground,
+		spriteLookups.fillColors.inverseSurface,
 		width,
 		height
 	);

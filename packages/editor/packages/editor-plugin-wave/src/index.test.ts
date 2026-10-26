@@ -74,14 +74,7 @@ describe('wave plugin', () => {
 		const x = (test.codeBlock.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
 		expect(test.codeBlock.gaps.get(2)?.size).toBe(rows);
 		expect(test.draw.startGroup).toHaveBeenCalledWith(x, 48);
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(
-			1,
-			0,
-			0,
-			'waveformBackground',
-			test.codeBlock.width - x,
-			rows * 16
-		);
+		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, 0, 0, 'darkSurface', test.codeBlock.width - x, rows * 16);
 		expect(test.codeBlock.widgets).not.toHaveProperty('arrayWaves');
 	});
 
@@ -98,7 +91,7 @@ describe('wave plugin', () => {
 		expect(
 			vi
 				.mocked(test.draw.drawSprite)
-				.mock.calls.filter(call => call[2] === test.state.spriteLookups!.fillColors.waveformBackground)
+				.mock.calls.filter(call => call[2] === test.state.spriteLookups!.fillColors.darkSurface)
 				.map(call => call[4])
 		).toEqual([32, 64, 128]);
 		expect(vi.mocked(test.draw.startGroup).mock.calls.map(call => call[1])).toEqual([48, 96, 176]);
@@ -117,7 +110,7 @@ describe('wave plugin', () => {
 		test.render();
 		const columns = vi
 			.mocked(test.draw.drawSprite)
-			.mock.calls.filter(call => call[2] === test.state.spriteLookups!.fillColors.waveform);
+			.mock.calls.filter(call => call[2] === test.state.spriteLookups!.fillColors.highlightBase);
 		expect(columns[0][1]).toBe(31);
 		expect(columns.at(-1)![1]).toBe(0);
 	});
@@ -136,7 +129,13 @@ describe('wave plugin', () => {
 		test.memoryViews.int32[memory.playhead.allocationUnitAddress] = memory.samples.byteAddress + 2 * 4;
 		test.render();
 		const width = test.codeBlock.width - (test.codeBlock.lineNumberColumnWidth + 2) * 8;
-		expect(test.draw.drawSprite).toHaveBeenLastCalledWith(Math.floor((2 / 3) * (width - 4)), 0, 'scanLine', 4, 32);
+		expect(test.draw.drawSprite).toHaveBeenLastCalledWith(
+			Math.floor((2 / 3) * (width - 4)),
+			0,
+			'secondaryReadable',
+			4,
+			32
+		);
 		test.memoryViews.int32[memory.length.allocationUnitAddress] = 0;
 		test.render();
 		expect(test.draw.drawSprite).not.toHaveBeenCalled();
@@ -156,7 +155,7 @@ describe('wave plugin', () => {
 			'groupEnd',
 		]);
 		test.render();
-		expect(test.draw.drawSprite).toHaveBeenCalledWith(0, 0, 'waveformBackground', expect.any(Number), 32);
+		expect(test.draw.drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', expect.any(Number), 32);
 	});
 
 	it('replaces waves and layout gaps after source edits', async () => {
@@ -165,7 +164,7 @@ describe('wave plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
 		test.render();
 		expect(test.codeBlock.gaps.get(2)?.size).toBe(8);
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, 0, 0, 'waveformBackground', expect.any(Number), 128);
+		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, 0, 0, 'darkSurface', expect.any(Number), 128);
 		test.codeBlock.code[2] = '; no wave';
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
 		test.render();
@@ -181,7 +180,7 @@ describe('wave plugin', () => {
 		test.render();
 		const x = (test.codeBlock.lineNumberColumnWidth + 2) * 10;
 		expect(test.draw.startGroup).toHaveBeenCalledWith(x, 60);
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, 0, 0, 'waveformBackground', test.codeBlock.width - x, 40);
+		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, 0, 0, 'darkSurface', test.codeBlock.width - x, 40);
 	});
 
 	it('rebinds compiler memory metadata and removes unresolved waves', async () => {
@@ -198,7 +197,7 @@ describe('wave plugin', () => {
 		expect(
 			vi
 				.mocked(test.draw.drawSprite)
-				.mock.calls.filter(call => call[2] === test.state.spriteLookups!.fillColors.waveform)[0][1]
+				.mock.calls.filter(call => call[2] === test.state.spriteLookups!.fillColors.highlightBase)[0][1]
 		).toBe(31);
 		delete memory.samples;
 		test.events.dispatch('runtimeInitialized');

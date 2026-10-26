@@ -73,9 +73,9 @@ async function setup(code = source, installed = true) {
 	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
 	state.spriteLookups = {
-		fillColors: { switchBackground: 1, controlKnob: 2 },
-		fontControlKnob: { 63: 63 },
-		fontNumbers: { 63: 63 },
+		fillColors: { primaryDark2: 1, inkBase: 2 },
+		fontInkOn: { 63: 63 },
+		fontSecondaryBase: { 63: 63 },
 	} as never;
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	const address = compiled.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
@@ -111,11 +111,11 @@ describe('switch plugin', () => {
 		const x = test.codeBlock.width - 32;
 		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, x, 32, 1, 32, 16);
 		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(2, x + 8, 32, 2, 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', test.state.spriteLookups!.fontControlKnob);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', test.state.spriteLookups!.fontInkOn);
 		test.memoryViews.int32[test.address] = 1;
 		test.render();
 		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(2, x + 16, 32, 2, 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', test.state.spriteLookups!.fontControlKnob);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', test.state.spriteLookups!.fontInkOn);
 	});
 
 	it('toggles through the state event pipeline in view mode as well as edit mode', async () => {
@@ -141,7 +141,7 @@ describe('switch plugin', () => {
 			test.codeBlock.width - 32,
 			32,
 			'[__]',
-			test.state.spriteLookups!.fontNumbers
+			test.state.spriteLookups!.fontSecondaryBase
 		);
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, -5, true);
@@ -258,7 +258,7 @@ describe('switch plugin', () => {
 			second.codeBlock.width - 32,
 			32,
 			'[ |]',
-			second.state.spriteLookups!.fontControlKnob
+			second.state.spriteLookups!.fontInkOn
 		);
 	});
 });

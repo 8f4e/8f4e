@@ -77,21 +77,21 @@ describe('tooltip effect', () => {
 				y: tooltip.getState().layout.y + 3 * 16,
 				width: 6 * 8,
 				height: 16,
-				fillColor: 'tooltipConsumedHighlight',
+				fillColor: 'negativeSoft',
 			},
 			{
 				x: tooltip.getState().layout.lineX + 16 * 8,
 				y: tooltip.getState().layout.y + 3 * 16,
 				width: 6 * 8,
 				height: 16,
-				fillColor: 'tooltipConsumedHighlight',
+				fillColor: 'negativeSoft',
 			},
 			{
 				x: tooltip.getState().layout.lineX + 8 * 8,
 				y: tooltip.getState().layout.y + 4 * 16,
 				width: 4 * 8,
 				height: 16,
-				fillColor: 'tooltipAddedHighlight',
+				fillColor: 'positiveSoft',
 			},
 		]);
 	});
@@ -164,16 +164,16 @@ describe('tooltip effect', () => {
 			'after: [+int]',
 		]);
 		expect(tooltip.getState().highlights.map(highlight => highlight.fillColor)).toEqual([
-			'tooltipConsumedHighlight',
-			'tooltipConsumedHighlight',
-			'tooltipAddedHighlight',
+			'negativeSoft',
+			'negativeSoft',
+			'positiveSoft',
 		]);
 	});
 
 	it.each(['', 'group'])('writes live value metadata in project path %s', projectPath => {
 		const moduleId = createProjectModuleId(projectPath, 'test');
-		const fontTooltipText = {};
-		const fontTooltipHighlight = {};
+		const fontInverseInk = {};
+		const fontInverseAccent = {};
 		const selectedBlock = createMockCodeBlock({
 			code: ['int value', 'add'],
 			name: 'test',
@@ -216,8 +216,8 @@ describe('tooltip effect', () => {
 				selectedCodeBlock: selectedBlock,
 			},
 			spriteLookups: {
-				fontTooltipText,
-				fontTooltipHighlight,
+				fontInverseInk,
+				fontInverseAccent,
 			} as never,
 		});
 		const store = createStateManager(state);
@@ -240,13 +240,13 @@ describe('tooltip effect', () => {
 				x: tooltip.getState().layout.lineX + 'address: '.length * 8,
 				y: tooltip.getState().layout.y + (tooltip.getState().text.length - 2) * 16,
 				source: { kind: 'memoryAddress', moduleId, memoryId: 'value' },
-				color: fontTooltipHighlight,
+				color: fontInverseAccent,
 			},
 			{
 				x: tooltip.getState().layout.lineX + 'value: '.length * 8,
 				y: tooltip.getState().layout.y + (tooltip.getState().text.length - 1) * 16,
 				source: { kind: 'memoryValue', moduleId, memoryId: 'value', elementIndex: 0 },
-				color: fontTooltipHighlight,
+				color: fontInverseAccent,
 			},
 		]);
 		expect(tooltip.getState().lineCount).toBe(tooltip.getState().text.length);
