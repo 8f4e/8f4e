@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/semantic-utils",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "private": true,
   "description": "Target-independent semantic context helpers for the 8f4e compiler pipeline",
   "type": "module",
