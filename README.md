@@ -102,7 +102,7 @@ Thanks to everyone who has contributed to 8f4e.
 </td>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/masyarakatai"><img src="https://github.com/masyarakatai.png?size=96" width="72" alt="@masyarakatai"><br><sub><b>Masyarakat AI</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Amasyarakatai">🔀 5</a></sub>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Amasyarakatai">🔀 7</a></sub>
 </td>
 </tr>
 <tr>
@@ -129,6 +129,10 @@ Thanks to everyone who has contributed to 8f4e.
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AAaqibhafeezkhan">🔀 2</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
+<a href="https://github.com/zFl4wless"><img src="https://github.com/zFl4wless.png?size=96" width="72" alt="@zFl4wless"><br><sub><b>Noah</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AzFl4wless">🔀 2</a></sub>
+</td>
+<td align="center" valign="top" width="25%">
 <a href="https://github.com/nova-loop"><img src="https://github.com/nova-loop.png?size=96" width="72" alt="@nova-loop"><br><sub><b>nova-loop</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Anova-loop">🔀 2</a></sub>
 </td>
@@ -136,12 +140,12 @@ Thanks to everyone who has contributed to 8f4e.
 <a href="https://github.com/slopgobblercobbler"><img src="https://github.com/slopgobblercobbler.png?size=96" width="72" alt="@slopgobblercobbler"><br><sub><b>Stephen Cork</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Aslopgobblercobbler">🔀 2</a></sub>
 </td>
+</tr>
+<tr>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Abhijay-29r"><img src="https://github.com/Abhijay-29r.png?size=96" width="72" alt="@Abhijay-29r"><br><sub><b>Abhijay-29r</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AAbhijay-29r">🔀 1</a></sub>
 </td>
-</tr>
-<tr>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Anikesh348"><img src="https://github.com/Anikesh348.png?size=96" width="72" alt="@Anikesh348"><br><sub><b>Anikesh Thakur</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AAnikesh348">🔀 1</a></sub>
@@ -154,19 +158,15 @@ Thanks to everyone who has contributed to 8f4e.
 <a href="https://github.com/cjy851096"><img src="https://github.com/cjy851096.png?size=96" width="72" alt="@cjy851096"><br><sub><b>Jianyang Chen</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Acjy851096">🔀 1</a></sub>
 </td>
+</tr>
+<tr>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Khushbu677"><img src="https://github.com/Khushbu677.png?size=96" width="72" alt="@Khushbu677"><br><sub><b>Khushbu Kumari</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AKhushbu677">🔀 1</a></sub>
 </td>
-</tr>
-<tr>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/mandiau-matthias"><img src="https://github.com/mandiau-matthias.png?size=96" width="72" alt="@mandiau-matthias"><br><sub><b>mandiau-matthias</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Amandiau-matthias">🔀 1</a></sub>
-</td>
-<td align="center" valign="top" width="25%">
-<a href="https://github.com/zFl4wless"><img src="https://github.com/zFl4wless.png?size=96" width="72" alt="@zFl4wless"><br><sub><b>Noah</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AzFl4wless">🔀 1</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Prisha38"><img src="https://github.com/Prisha38.png?size=96" width="72" alt="@Prisha38"><br><sub><b>Prisha</b></sub></a><br>
@@ -179,12 +179,12 @@ Thanks to everyone who has contributed to 8f4e.
 </tr>
 <tr>
 <td align="center" valign="top" width="25%">
-<a href="https://github.com/TanmayNileshShinde"><img src="https://github.com/TanmayNileshShinde.png?size=96" width="72" alt="@TanmayNileshShinde"><br><sub><b>Tanmay Nilesh Shinde</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3ATanmayNileshShinde">🔀 1</a></sub>
+<a href="https://github.com/StavanRKhobare"><img src="https://github.com/StavanRKhobare.png?size=96" width="72" alt="@StavanRKhobare"><br><sub><b>StavanRKhobare</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AStavanRKhobare">🔀 1</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
-<a href="https://github.com/Warma10032"><img src="https://github.com/Warma10032.png?size=96" width="72" alt="@Warma10032"><br><sub><b>一只小包子</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AWarma10032">🔀 1</a></sub>
+<a href="https://github.com/TanmayNileshShinde"><img src="https://github.com/TanmayNileshShinde.png?size=96" width="72" alt="@TanmayNileshShinde"><br><sub><b>Tanmay Nilesh Shinde</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3ATanmayNileshShinde">🔀 1</a></sub>
 </td>
 </tr>
 </table>
