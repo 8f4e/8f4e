@@ -1,4 +1,4 @@
-import { isMemoryAddress, parseFiniteNumber } from '~/shared/editorDirectiveArgumentTypes';
+import { isMemoryAddress, parseFiniteNumber } from '@8f4e/editor-state';
 
 export interface ButtonDirectiveData {
 	id: string;

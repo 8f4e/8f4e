@@ -320,7 +320,10 @@ Notes:
 
 ### `@button`
 
-Render a momentary button that writes to a memory address.
+Provided by `@8f4e/editor-plugin-button`, which is included in `@8f4e/editor-default`. Hosts composing the minimal
+editor must include this plugin to enable the directive.
+
+Render a momentary button that writes its on value when pressed and its off value when released.
 
 ```txt
 ; @button <memoryAddress> [offValue] [onValue]

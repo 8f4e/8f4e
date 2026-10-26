@@ -38,9 +38,9 @@ It also owns persistence callbacks for its storage namespace. The default namesp
 Hosts may also provide a custom `Storage` implementation or an
 `initialProjectUrl`; interpreting page URLs remains the host's responsibility.
 
-The default composition includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action
-and `@8f4e/editor-plugin-switch` for the switch widget, plus `@8f4e/editor-plugin-tooltips` for selected-line
-documentation, stack analysis, and live memory values. `defaultEditorPlugins` exports that plugin set.
+The default composition includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
+`@8f4e/editor-plugin-switch` for the switch widget, `@8f4e/editor-plugin-button` for momentary buttons,
+and `@8f4e/editor-plugin-tooltips` for selected-line documentation, stack analysis, and live memory values. `defaultEditorPlugins` exports that plugin set.
 The `plugins` option replaces it: pass `[]` to
 omit plugins, or `[...defaultEditorPlugins, customPlugin]` to extend the defaults. Each editor installs and
 disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).

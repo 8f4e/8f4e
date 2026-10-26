@@ -4,7 +4,6 @@ import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath, type ProjectObjectModel } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import button from '~/features/code-blocks/features/directives/button/interaction';
 import crossfade from '~/features/code-blocks/features/directives/crossfade/interaction';
 import {
 	deriveDirectiveState,
@@ -150,8 +149,8 @@ describe('shared exposed memory resolution', () => {
 		});
 	});
 
-	it('writes slider, button, and crossfade values to the resolved backing memory', () => {
-		const { state, audio, store, events, float32, int32 } = test;
+	it('writes slider and crossfade values to the resolved backing memory', () => {
+		const { audio, store, events, float32 } = test;
 		const cleanupSlider = slider(store, events);
 		const sliderWidget = audio.widgets.sliders[0];
 		events.dispatch('codeBlockClick', {
@@ -161,17 +160,6 @@ describe('shared exposed memory resolution', () => {
 		});
 		expect(float32[sliderWidget.allocationUnitAddress]).toBeCloseTo(0.5);
 		cleanupSlider();
-		const cleanupButton = button(state, events);
-		const buttonWidget = audio.widgets.buttons[0];
-		events.dispatch('codeBlockClick', {
-			codeBlock: audio,
-			x: audio.x + buttonWidget.x + 1,
-			y: audio.y + buttonWidget.y + 1,
-		});
-		expect(int32[buttonWidget.allocationUnitAddress]).toBe(1);
-		events.dispatch('mouseup');
-		expect(int32[buttonWidget.allocationUnitAddress]).toBe(0);
-		cleanupButton();
 		const cleanupCrossfade = crossfade(store, events);
 		const widget = audio.widgets.crossfades[0];
 		events.dispatch('codeBlockClick', {

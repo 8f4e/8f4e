@@ -11,7 +11,6 @@ import type {
 import buildDisplayModel from '../../buildDisplayModel';
 import alwaysOnTopDirective from './alwaysOnTop/plugin';
 import barsDirective from './bars/plugin';
-import buttonDirective from './button/plugin';
 import crossfadeDirective from './crossfade/plugin';
 import disabledDirective from './disabled/plugin';
 import favoriteDirective from './favorite/plugin';
@@ -47,7 +46,6 @@ export const directivePlugins: EditorDirectivePlugin[] = [
 	sliderDirective,
 	crossfadeDirective,
 	pianoDirective,
-	buttonDirective,
 	watchDirective,
 	stackDirective,
 	infoDirective,

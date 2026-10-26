@@ -78,9 +78,9 @@ current state's sprite lookups, which change with the font or color scheme.
 `@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
 disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
 
-The switch plugin owns `@switch` argument handling, memory resolution, click handling, and drawing. Its widget data
-lives in a per-instance WeakMap rather than the core state shape. The execution-toggle plugin owns the Skip/Unskip
-menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
+The switch and button plugins own their directives, memory resolution, interaction, and drawing. Each keeps widget
+data in a per-instance WeakMap. Buttons write their on value while pressed and their off value on release.
+The execution-toggle plugin owns the Skip/Unskip menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
 layout, animation, and overlay drawing, with its state private to each installation. Group execution toggling and
 nested block shading remain built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
 
