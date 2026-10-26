@@ -259,6 +259,18 @@ describe('AudioWorklet context lifetime', () => {
 		expect(worklets[0].connect).not.toHaveBeenCalled();
 	});
 
+	it('routes worklet messages to runtime initialization and runtime values', async () => {
+		const editor = mount(new MockContext());
+		await editor.allow();
+		const port = worklets[0].port as unknown as { onmessage: (event: { data: unknown }) => void };
+
+		port.onmessage({ data: { type: 'initialized', payload: { sampleRate: 48000 } } });
+		port.onmessage({ data: { type: 'runtimeValues', payload: { audioBufferSize: 128 } } });
+
+		expect(editor.events.dispatch).toHaveBeenCalledWith('runtimeInitialized', { sampleRate: 48000 });
+		expect(editor.store.getState().runtime.values.AudioWorkletRuntime).toEqual({ audioBufferSize: 128 });
+	});
+
 	it('allows a failed worklet load to be retried without closing the shared context', async () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
 		const shared = new MockContext();

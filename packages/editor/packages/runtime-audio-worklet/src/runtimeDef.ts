@@ -10,6 +10,15 @@ import type {
 } from '@8f4e/editor-core';
 import { resolveSchemaConfigRoot } from '@8f4e/editor-core';
 import type { StateManager } from '@8f4e/state-manager';
+import type { AudioInputBufferRoute, AudioOutputBufferRoute, AudioWorkletRuntimeMessage } from './messages';
+import {
+	type AudioContextLike,
+	type AudioNodeLike,
+	type AudioWorkletNodeLike,
+	browserAudioPlatform,
+	type MediaStreamLike,
+	type MediaStreamTrackLike,
+} from './platform';
 import { AUDIO_WORKLET_RUNTIME_ID, storeAudioWorkletRuntimeValues } from './runtimeValues';
 
 const AUDIO_PERMISSION_DIALOG_ID = 'audio-worklet-permission';
@@ -18,15 +27,8 @@ const AUDIO_BUFFER_SIZE = 128;
 const AUDIO_PERMISSION_TEXT =
 	"This project uses AudioWorklet for audio playback and requires your permission to start. Select Allow to start the program, or choose to do nothing; then the program won't start.";
 
-/** Host-side context operations used for sharing, without requiring DOM types in the worklet build. */
-export interface SharedAudioContext {
-	readonly sampleRate: number;
-	readonly state: string;
-	resume(): Promise<void>;
-	audioWorklet: { addModule(url: string): Promise<void> };
-	addEventListener(type: 'statechange', listener: () => void): void;
-	removeEventListener(type: 'statechange', listener: () => void): void;
-}
+/** Host audio context shared with the runtime; it is used like an owned context but never closed. */
+export type SharedAudioContext = AudioContextLike;
 
 const workletModules = new WeakMap<SharedAudioContext, Map<string, Promise<void>>>();
 
@@ -82,18 +84,6 @@ interface AudioWorkletRuntimeConfig {
 }
 
 type AudioBufferConfigKey = 'audioOutBufferLAddress' | 'audioOutBufferRAddress' | 'audioInBufferLAddress';
-
-interface AudioOutputBufferRoute {
-	audioBufferWordAddress: number;
-	output: number;
-	channel: number;
-}
-
-interface AudioInputBufferRoute {
-	audioBufferWordAddress: number;
-	input: number;
-	channel: number;
-}
 
 function getAudioWorkletRuntimeConfig(state: State): AudioWorkletRuntimeConfig {
 	const config = resolveSchemaConfigRoot(AUDIO_WORKLET_EDITOR_CONFIG, state.editorConfig, state) as Record<
@@ -158,11 +148,10 @@ export function audioWorkletRuntimeFactory(
 	sharedAudioContext?: SharedAudioContext
 ) {
 	const state = store.getState();
-	// Using any types for Web Audio API types that aren't available in worker context during build
-	let audioContext: any | null = null;
-	let audioWorklet: any | null = null;
-	let mediaStream: any | null = null;
-	let mediaStreamSource: any | null = null;
+	let audioContext: AudioContextLike | null = null;
+	let audioWorklet: AudioWorkletNodeLike | null = null;
+	let mediaStream: MediaStreamLike | null = null;
+	let mediaStreamSource: AudioNodeLike | null = null;
 	let disposed = false;
 	/**
 	 * Identifies the current audio initialization attempt. Incremented when initialization
@@ -237,7 +226,7 @@ export function audioWorkletRuntimeFactory(
 			}
 
 			if (mediaStream) {
-				mediaStream.getTracks().forEach((track: any) => track.stop());
+				mediaStream.getTracks().forEach((track: MediaStreamTrackLike) => track.stop());
 				mediaStream = null;
 			}
 			return;
@@ -248,8 +237,7 @@ export function audioWorkletRuntimeFactory(
 		}
 
 		try {
-			// @ts-expect-error - navigator.mediaDevices not available in worker context during build
-			const stream = await navigator.mediaDevices.getUserMedia({
+			const stream = await browserAudioPlatform.getUserMedia({
 				audio: {
 					echoCancellation: false,
 					noiseSuppression: false,
@@ -257,7 +245,7 @@ export function audioWorkletRuntimeFactory(
 				},
 			});
 			if (disposed || revision !== inputRevision) {
-				stream.getTracks().forEach((track: any) => track.stop());
+				stream.getTracks().forEach((track: MediaStreamTrackLike) => track.stop());
 				return;
 			}
 			mediaStream = stream;
@@ -276,10 +264,9 @@ export function audioWorkletRuntimeFactory(
 		const currentGeneration = ++generation;
 
 		try {
-			audioContext = getSharedAudioContext();
+			audioContext = getSharedAudioContext() ?? null;
 			if (!audioContext) {
-				// @ts-expect-error - AudioContext not available in worker context during build
-				audioContext = new AudioContext({
+				audioContext = browserAudioPlatform.createAudioContext({
 					sampleRate: getSampleRate(state.editorConfig),
 					latencyHint: 'interactive',
 				});
@@ -293,8 +280,7 @@ export function audioWorkletRuntimeFactory(
 			if (disposed || currentGeneration !== generation) {
 				return;
 			}
-			// @ts-expect-error - AudioWorkletNode not available in worker context during build
-			audioWorklet = new AudioWorkletNode(audioContext, 'worklet', {
+			audioWorklet = browserAudioPlatform.createAudioWorkletNode(audioContext, 'worklet', {
 				outputChannelCount: [2],
 				numberOfOutputs: 1,
 				numberOfInputs: 1, // Specify the number of inputs
@@ -302,15 +288,13 @@ export function audioWorkletRuntimeFactory(
 				channelCountMode: 'explicit',
 			});
 
-			audioWorklet.port.onmessage = (event: { data: unknown }) => {
-				const { data } = event;
-				const typedData = data as any;
-				switch (typedData.type) {
+			audioWorklet.port.onmessage = ({ data }: { data: AudioWorkletRuntimeMessage }) => {
+				switch (data.type) {
 					case 'initialized':
-						events.dispatch('runtimeInitialized', typedData.payload);
+						events.dispatch('runtimeInitialized', data.payload);
 						break;
 					case 'runtimeValues':
-						storeAudioWorkletRuntimeValues(store, state, typedData.payload);
+						storeAudioWorkletRuntimeValues(store, state, data.payload);
 						break;
 				}
 			};
@@ -347,7 +331,7 @@ export function audioWorkletRuntimeFactory(
 		}
 
 		if (mediaStream) {
-			mediaStream.getTracks().forEach((track: any) => track.stop());
+			mediaStream.getTracks().forEach((track: MediaStreamTrackLike) => track.stop());
 			mediaStream = null;
 		}
 
