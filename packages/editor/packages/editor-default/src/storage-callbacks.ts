@@ -211,36 +211,11 @@ async function importProjectWithInput(): Promise<ProjectObjectModel | null> {
 
 export async function exportBinaryCode(fileName: string, codeBuffer: Uint8Array): Promise<void> {
 	const blob = new Blob([new Uint8Array(codeBuffer)], { type: 'application/wasm' });
-
-	await saveBlobWithPickerFallback(blob, fileName, {
-		description: 'WebAssembly Binary',
-		accept: { 'application/wasm': ['.wasm'] },
-	});
-}
-
-async function saveBlobWithPickerFallback(
-	blob: Blob,
-	fileName: string,
-	fileType: {
-		description: string;
-		accept: Record<string, string[]>;
-	}
-): Promise<void> {
-	const showSaveFilePicker = (
-		window as Window & {
-			showSaveFilePicker?: (options: {
-				suggestedName: string;
-				types: Array<{ description: string; accept: Record<string, string[]> }>;
-			}) => Promise<{
-				createWritable: () => Promise<{ write: (data: Blob) => Promise<void>; close: () => Promise<void> }>;
-			}>;
-		}
-	).showSaveFilePicker;
-
-	if (showSaveFilePicker) {
-		const handle = await showSaveFilePicker({
+	const browserWindow = window as PickerWindow;
+	if (browserWindow.showSaveFilePicker) {
+		const handle = await browserWindow.showSaveFilePicker({
 			suggestedName: fileName,
-			types: [fileType],
+			types: [{ description: 'WebAssembly Binary', accept: { 'application/wasm': ['.wasm'] } }],
 		});
 		const writable = await handle.createWritable();
 		await writable.write(blob);

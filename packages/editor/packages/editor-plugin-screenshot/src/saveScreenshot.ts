@@ -1,15 +1,3 @@
-interface ScreenshotFileHandle {
-	createWritable: () => Promise<{ write: (data: Blob) => Promise<void>; close: () => Promise<void> }>;
-}
-
-type ScreenshotWindow = Window &
-	typeof globalThis & {
-		showSaveFilePicker?: (options: {
-			suggestedName: string;
-			types: Array<{ description: string; accept: Record<string, string[]> }>;
-		}) => Promise<ScreenshotFileHandle>;
-	};
-
 function getCanvasPngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
 	return new Promise((resolve, reject) => {
 		canvas.toBlob(blob => {
@@ -21,7 +9,13 @@ function getCanvasPngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
 
 export async function saveScreenshot(canvas: HTMLCanvasElement, fileName: string): Promise<void> {
 	const document = canvas.ownerDocument;
-	const browserWindow = document.defaultView as ScreenshotWindow;
+	const browserWindow = document.defaultView as Window &
+		typeof globalThis & {
+			showSaveFilePicker?: (options: {
+				suggestedName: string;
+				types: Array<{ description: string; accept: Record<string, string[]> }>;
+			}) => Promise<FileSystemFileHandle>;
+		};
 	// Start the picker in the menu's user gesture, before asynchronous PNG encoding.
 	const destination = browserWindow.showSaveFilePicker?.({
 		suggestedName: fileName,

@@ -2,15 +2,16 @@ import type { EditorPlugin } from '@8f4e/editor-core';
 import { getExportBaseName } from '@8f4e/editor-state';
 import { saveScreenshot } from './saveScreenshot';
 
-export interface ScreenshotPluginOptions {
+const action = 'exportCanvasScreenshot';
+
+export function createScreenshotPlugin({
+	canvas,
+	renderFrame,
+}: {
 	canvas: HTMLCanvasElement;
 	/** Called by screenshot actions after editor initialization. */
 	renderFrame: () => void;
-}
-
-const action = 'exportCanvasScreenshot';
-
-export function createScreenshotPlugin({ canvas, renderFrame }: ScreenshotPluginOptions): EditorPlugin {
+}): EditorPlugin {
 	return {
 		id: 'screenshot',
 		setup: ({ store, events, menus }) => {

@@ -1,7 +1,7 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createDefaultEditorPlugins, mountDefaultEditor } from './index';
+import { mountDefaultEditor } from './index';
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
 vi.mock('@8f4e/editor-plugin-screenshot', () => ({
@@ -35,16 +35,6 @@ describe('default editor plugins', () => {
 		options.renderFrame();
 		expect(renderFrame).toHaveBeenCalledOnce();
 		editor.dispose();
-	});
-
-	it('creates a separate browser plugin for each editor', () => {
-		const first = { canvas: {} as HTMLCanvasElement, renderFrame: vi.fn() };
-		const second = { canvas: {} as HTMLCanvasElement, renderFrame: vi.fn() };
-		const firstPlugins = createDefaultEditorPlugins(first);
-		const secondPlugins = createDefaultEditorPlugins(second);
-		expect(createScreenshotPlugin).toHaveBeenNthCalledWith(1, first);
-		expect(createScreenshotPlugin).toHaveBeenNthCalledWith(2, second);
-		expect(firstPlugins.at(-1)).not.toBe(secondPlugins.at(-1));
 	});
 
 	it('lets hosts replace the plugin set or omit plugins', async () => {

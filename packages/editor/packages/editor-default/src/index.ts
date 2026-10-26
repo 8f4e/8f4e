@@ -1,7 +1,7 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { buttonPlugin } from '@8f4e/editor-plugin-button';
 import { pianoPlugin } from '@8f4e/editor-plugin-piano';
-import { createScreenshotPlugin, type ScreenshotPluginOptions } from '@8f4e/editor-plugin-screenshot';
+import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { sliderPlugin } from '@8f4e/editor-plugin-slider';
 import { switchPlugin } from '@8f4e/editor-plugin-switch';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
@@ -18,7 +18,10 @@ const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
 export type DefaultEditorInstance = Editor;
 
-export function createDefaultEditorPlugins(options: ScreenshotPluginOptions): NonNullable<EditorOptions['plugins']> {
+export function createDefaultEditorPlugins(options: {
+	canvas: HTMLCanvasElement;
+	renderFrame: () => void;
+}): NonNullable<EditorOptions['plugins']> {
 	return [
 		toggleSkipExecutionPlugin,
 		switchPlugin,
