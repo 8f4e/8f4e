@@ -1,5 +1,4 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { WebUiRenderData } from '@8f4e/web-ui-render-projection';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSpriteIdLookupMock } from '../../__tests__/rendering';
@@ -32,50 +31,6 @@ function createMockEngine(): Engine {
 	} as unknown as Engine;
 }
 
-function createTooltipColors(
-	line: string,
-	defaultLookup: object,
-	transitions: Array<[number, object]>
-): Array<object | undefined> {
-	const colors: Array<object | undefined> = new Array(line.length).fill(undefined);
-	colors[0] = defaultLookup;
-
-	transitions.forEach(([index, lookup]) => {
-		colors[index] = lookup;
-	});
-
-	return colors;
-}
-
-function createCharacters(text: string): number[] {
-	return [...text].map(char => char.charCodeAt(0));
-}
-
-function createTooltipCharacters(lines: string[]): number[][] {
-	return lines.map(createCharacters);
-}
-
-function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemoryDeclaration {
-	return {
-		id: 'value',
-		numberOfElements: 1,
-		elementWordSize: 4,
-		type: 'int' as const,
-		byteAddress: 0,
-		elementByteLength: 4,
-		allocationUnitCount: 1,
-		allocatedByteLength: 4,
-		allocationUnitAddress: 0,
-		endByteAddress: 0,
-		endAddressSafeByteLength: 4,
-		lineNumber: 1,
-		isInteger: true,
-		pointerDepth: 0,
-		isUnsigned: false,
-		...overrides,
-	};
-}
-
 describe('drawModules', () => {
 	it('runs plugin drawers inside each visible block group in registration order', () => {
 		const visible = createMockCodeBlock({ width: 96, height: 64, x: 16, y: 16 });
@@ -95,11 +50,17 @@ describe('drawModules', () => {
 		});
 		const unregister = drawers.registerCodeBlockDrawer(first);
 		drawers.registerCodeBlockDrawer(() => calls.push('second'));
+		const unregisterOverlay = drawers.registerCodeBlockOverlay(context => {
+			expect(context.codeBlock).toBe(visible);
+			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
+			calls.push('overlay');
+		});
 		drawModules(engine, state, memoryViews, emptyRenderData, drawers);
-		expect(calls).toEqual(['first', 'second']);
+		expect(calls).toEqual(['first', 'second', 'overlay']);
 		unregister();
+		unregisterOverlay();
 		drawModules(engine, state, memoryViews, emptyRenderData, drawers);
-		expect(calls).toEqual(['first', 'second', 'second']);
+		expect(calls).toEqual(['first', 'second', 'overlay', 'second']);
 		expect(first).toHaveBeenCalledOnce();
 	});
 
@@ -339,264 +300,6 @@ describe('drawModules', () => {
 			16,
 			';;',
 			state.spriteLookups?.fontPianoKeyWhitePressedOverlay
-		);
-	});
-
-	it('draws tooltip text next to the selected line', () => {
-		const fillColors = createSpriteIdLookupMock();
-		const fontCode = createSpriteIdLookupMock();
-		const fontTooltipHighlight = createSpriteIdLookupMock();
-		const fontTooltipText = createSpriteIdLookupMock();
-		const block = createMockCodeBlock({
-			width: 100,
-			height: 80,
-			cursor: {
-				row: 1,
-				col: 0,
-				x: 16,
-				y: 16,
-			},
-		});
-		const state = createMockState({
-			spriteLookups: {
-				fillColors,
-				fontCode,
-				fontNumbers: createSpriteIdLookupMock(),
-				fontDisabledCode: createSpriteIdLookupMock(),
-				fontLineNumber: createSpriteIdLookupMock(),
-				fontCodeComment: createSpriteIdLookupMock(),
-				fontTooltipHighlight,
-				fontTooltipText,
-			} as never,
-			codeBlockRendering: {
-				codeBlocks: [block],
-				selectedCodeBlock: block,
-			},
-			featureFlags: {
-				codeLineSelection: true,
-			},
-			tooltip: {
-				text: ['add (T T -- T)', 'Adds two numbers', 'before [int=1, int=2]', 'after: [int=3]'],
-				characters: createTooltipCharacters([
-					'add (T T -- T)',
-					'Adds two numbers',
-					'before [int=1, int=2]',
-					'after: [int=3]',
-				]),
-				colors: [
-					createTooltipColors('add (T T -- T)', fontTooltipText, [[0, fontTooltipHighlight]]),
-					createTooltipColors('Adds two numbers', fontTooltipText, []),
-					createTooltipColors('before [int=1, int=2]', fontTooltipText, [[7, fontTooltipHighlight]]),
-					createTooltipColors('after: [int=3]', fontTooltipText, [[7, fontTooltipHighlight]]),
-				] as never,
-				lineCount: 4,
-				widthChars: 'before [int=1, int=2]'.length,
-				layout: {
-					horizontalPadding: 8,
-					width: 184,
-					height: 64,
-					x: -192,
-					y: 16,
-					lineX: -184,
-				},
-				highlights: [
-					{
-						x: -120,
-						y: 48,
-						width: 48,
-						height: 16,
-						fillColor: 'tooltipConsumedHighlight',
-					},
-				],
-			},
-			viewport: {
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const engine = createMockEngine();
-
-		drawModules(engine, state, createMemoryViews(), emptyRenderData);
-
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-192,
-			16,
-			'tooltipBackground',
-			184,
-			64
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-120,
-			48,
-			'tooltipConsumedHighlight',
-			48,
-			16
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-184,
-			16,
-			'a'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-184,
-			32,
-			'A'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-184,
-			48,
-			'b'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-128,
-			48,
-			'['.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-184,
-			64,
-			'a'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-128,
-			64,
-			'['.charCodeAt(0)
-		);
-	});
-
-	it('draws live memory declaration values from tooltip metadata', () => {
-		const block = createMockCodeBlock({
-			width: 100,
-			height: 80,
-			name: 'test',
-			cursor: {
-				row: 0,
-				col: 0,
-				x: 16,
-				y: 16,
-			},
-			code: ['add'],
-		});
-		const pointer = createMemory({
-			id: 'pointer',
-			type: 'int*' as const,
-			byteAddress: 8,
-			allocationUnitAddress: 2,
-			endByteAddress: 8,
-			pointeeBaseType: 'int',
-		});
-		const state = createMockState({
-			compiler: {
-				memoryPlan: {
-					modules: {
-						test: {
-							id: 'test',
-							lineNumber: 1,
-							byteAddress: 8,
-							allocationUnitCount: 1,
-							allocatedByteLength: 4,
-							endByteAddress: 8,
-							endAddressSafeByteLength: 4,
-							memory: {
-								pointer,
-							},
-							declarations: [pointer],
-							declarationSources: [],
-						},
-					},
-					moduleList: [],
-				},
-			},
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontNumbers: createSpriteIdLookupMock(),
-				fontCode: createSpriteIdLookupMock(),
-				fontDisabledCode: createSpriteIdLookupMock(),
-				fontLineNumber: createSpriteIdLookupMock(),
-				fontCodeComment: createSpriteIdLookupMock(),
-				fontTooltipHighlight: createSpriteIdLookupMock(),
-				fontTooltipText: createSpriteIdLookupMock(),
-			} as never,
-			codeBlockRendering: {
-				codeBlocks: [block],
-				selectedCodeBlock: block,
-			},
-			featureFlags: {
-				codeLineSelection: true,
-			},
-			tooltip: {
-				text: ['int ( -- )', 'address: ', 'value: ', 'deref: '],
-				characters: createTooltipCharacters(['int ( -- )', 'address: ', 'value: ', 'deref: ']),
-				colors: [[], [], [], []],
-				lineCount: 4,
-				widthChars: 19,
-				layout: {
-					horizontalPadding: 8,
-					width: 168,
-					height: 64,
-					x: -176,
-					y: 16,
-					lineX: -168,
-				},
-				liveValues: [
-					{
-						x: -168 + 'address: '.length * 8,
-						y: 16 + 16,
-						source: { kind: 'memoryAddress', moduleId: 'test', memoryId: 'pointer' },
-						color: createSpriteIdLookupMock(),
-					},
-					{
-						x: -168 + 'value: '.length * 8,
-						y: 16 + 2 * 16,
-						source: { kind: 'memoryValue', moduleId: 'test', memoryId: 'pointer', elementIndex: 0 },
-						color: createSpriteIdLookupMock(),
-					},
-					{
-						x: -168 + 'deref: '.length * 8,
-						y: 16 + 3 * 16,
-						source: {
-							kind: 'memoryDereference',
-							moduleId: 'test',
-							memoryId: 'pointer',
-							format: {
-								elementWordSize: 4,
-								isInteger: true,
-								isUnsigned: false,
-							},
-						},
-						color: createSpriteIdLookupMock(),
-					},
-				],
-			},
-		});
-		const engine = createMockEngine();
-
-		drawModules(engine, state, createMemoryViews({ int32: [0, 0, 20, 0, 0, 123] }), emptyRenderData);
-
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			expect.any(Number),
-			expect.any(Number),
-			'a'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			expect.any(Number),
-			expect.any(Number),
-			'v'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			expect.any(Number),
-			expect.any(Number),
-			'2'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			expect.any(Number),
-			expect.any(Number),
-			'd'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			expect.any(Number),
-			expect.any(Number),
-			'1'.charCodeAt(0)
 		);
 	});
 

@@ -1,8 +1,15 @@
-import { createFunctionId } from '@8f4e/language-spec';
+import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
+import { createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
-import { describe, expect, it } from 'vitest';
-import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
-import tooltip from './effect';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createEvents } from '../__tests__/events';
+import createTooltip from './effect';
+
+const cleanups: Array<() => void> = [];
+afterEach(() => {
+	while (cleanups.length) cleanups.pop()!();
+	vi.restoreAllMocks();
+});
 
 function toCharacters(text: string): number[] {
 	return [...text].map(char => char.charCodeAt(0));
@@ -48,39 +55,40 @@ describe('tooltip effect', () => {
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
 			},
-			tooltip: {
-				text: [],
-			},
 		});
 		const store = createStateManager(state);
 
-		tooltip(store);
+		const tooltip = createTooltip(store, createMockEventDispatcher());
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
 
-		expect(state.tooltip.text).toEqual([
+		expect(tooltip.getState().text).toEqual([
 			'add (T T -- T)',
 			'Adds two numbers of the same',
 			'type and pushes the result.',
 			'before [-int=1, -int=2]',
 			'after: [+int]',
 		]);
-		expect(state.tooltip.highlights).toEqual([
+		expect(tooltip.getState().highlights).toEqual([
 			{
-				x: state.tooltip.layout.lineX + 8 * 8,
-				y: state.tooltip.layout.y + 3 * 16,
+				x: tooltip.getState().layout.lineX + 8 * 8,
+				y: tooltip.getState().layout.y + 3 * 16,
 				width: 6 * 8,
 				height: 16,
 				fillColor: 'tooltipConsumedHighlight',
 			},
 			{
-				x: state.tooltip.layout.lineX + 16 * 8,
-				y: state.tooltip.layout.y + 3 * 16,
+				x: tooltip.getState().layout.lineX + 16 * 8,
+				y: tooltip.getState().layout.y + 3 * 16,
 				width: 6 * 8,
 				height: 16,
 				fillColor: 'tooltipConsumedHighlight',
 			},
 			{
-				x: state.tooltip.layout.lineX + 8 * 8,
-				y: state.tooltip.layout.y + 4 * 16,
+				x: tooltip.getState().layout.lineX + 8 * 8,
+				y: tooltip.getState().layout.y + 4 * 16,
 				width: 4 * 8,
 				height: 16,
 				fillColor: 'tooltipAddedHighlight',
@@ -139,34 +147,37 @@ describe('tooltip effect', () => {
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
 			},
-			tooltip: {
-				text: [],
-			},
 		});
 		const store = createStateManager(state);
 
-		tooltip(store);
+		const tooltip = createTooltip(store, createMockEventDispatcher());
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
 
-		expect(state.tooltip.text).toEqual([
+		expect(tooltip.getState().text).toEqual([
 			'add (T T -- T)',
 			'Adds two numbers of the same',
 			'type and pushes the result.',
 			'before [-int=1, -int=2]',
 			'after: [+int]',
 		]);
-		expect(state.tooltip.highlights.map(highlight => highlight.fillColor)).toEqual([
+		expect(tooltip.getState().highlights.map(highlight => highlight.fillColor)).toEqual([
 			'tooltipConsumedHighlight',
 			'tooltipConsumedHighlight',
 			'tooltipAddedHighlight',
 		]);
 	});
 
-	it('writes live value metadata for selected memory declarations', () => {
+	it.each(['', 'group'])('writes live value metadata in project path %s', projectPath => {
+		const moduleId = createProjectModuleId(projectPath, 'test');
 		const fontTooltipText = {};
 		const fontTooltipHighlight = {};
 		const selectedBlock = createMockCodeBlock({
 			code: ['int value', 'add'],
 			name: 'test',
+			projectPath,
 			cursor: {
 				row: 0,
 				col: 0,
@@ -178,7 +189,7 @@ describe('tooltip effect', () => {
 			compiler: {
 				memoryPlan: {
 					modules: {
-						test: {
+						[moduleId]: {
 							id: 'test',
 							lineNumber: 0,
 							byteAddress: 0,
@@ -208,41 +219,42 @@ describe('tooltip effect', () => {
 				fontTooltipText,
 				fontTooltipHighlight,
 			} as never,
-			tooltip: {
-				text: [],
-			},
 		});
 		const store = createStateManager(state);
 
-		tooltip(store);
+		const tooltip = createTooltip(store, createMockEventDispatcher());
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
 
-		expect(state.tooltip.text.slice(-2)).toEqual(['address: ', 'value: ']);
-		expect(state.tooltip.characters.slice(-2)).toEqual([toCharacters('address: '), toCharacters('value: ')]);
-		expect(state.tooltip.layout).toMatchObject({
+		expect(tooltip.getState().text.slice(-2)).toEqual(['address: ', 'value: ']);
+		expect(tooltip.getState().characters.slice(-2)).toEqual([toCharacters('address: '), toCharacters('value: ')]);
+		expect(tooltip.getState().layout).toMatchObject({
 			horizontalPadding: 8,
-			height: state.tooltip.lineCount * 16,
+			height: tooltip.getState().lineCount * 16,
 			y: 0,
 		});
-		expect(state.tooltip.liveValues).toEqual([
+		expect(tooltip.getState().liveValues).toEqual([
 			{
-				x: state.tooltip.layout.lineX + 'address: '.length * 8,
-				y: state.tooltip.layout.y + (state.tooltip.text.length - 2) * 16,
-				source: { kind: 'memoryAddress', moduleId: 'test', memoryId: 'value' },
+				x: tooltip.getState().layout.lineX + 'address: '.length * 8,
+				y: tooltip.getState().layout.y + (tooltip.getState().text.length - 2) * 16,
+				source: { kind: 'memoryAddress', moduleId, memoryId: 'value' },
 				color: fontTooltipHighlight,
 			},
 			{
-				x: state.tooltip.layout.lineX + 'value: '.length * 8,
-				y: state.tooltip.layout.y + (state.tooltip.text.length - 1) * 16,
-				source: { kind: 'memoryValue', moduleId: 'test', memoryId: 'value', elementIndex: 0 },
+				x: tooltip.getState().layout.lineX + 'value: '.length * 8,
+				y: tooltip.getState().layout.y + (tooltip.getState().text.length - 1) * 16,
+				source: { kind: 'memoryValue', moduleId, memoryId: 'value', elementIndex: 0 },
 				color: fontTooltipHighlight,
 			},
 		]);
-		expect(state.tooltip.lineCount).toBe(state.tooltip.text.length);
-		expect(state.tooltip.widthChars).toBeGreaterThanOrEqual(19);
+		expect(tooltip.getState().lineCount).toBe(tooltip.getState().text.length);
+		expect(tooltip.getState().widthChars).toBeGreaterThanOrEqual(19);
 
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
 
-		expect(state.tooltip.liveValues).toEqual([]);
+		expect(tooltip.getState().liveValues).toEqual([]);
 	});
 
 	it('writes documentation tooltip text when the selected line changes', () => {
@@ -259,15 +271,16 @@ describe('tooltip effect', () => {
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
 			},
-			tooltip: {
-				text: [],
-			},
 		});
 		const store = createStateManager(state);
 
-		tooltip(store);
+		const tooltip = createTooltip(store, createMockEventDispatcher());
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
 
-		expect(state.tooltip.text).toEqual([
+		expect(tooltip.getState().text).toEqual([
 			'add (T T -- T)',
 			'Adds two numbers of the same',
 			'type and pushes the result.',
@@ -275,7 +288,7 @@ describe('tooltip effect', () => {
 
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
 
-		expect(state.tooltip.text).toEqual(['drop (T -- )', 'Removes the top value from the', 'stack.']);
+		expect(tooltip.getState().text).toEqual(['drop (T -- )', 'Removes the top value from the', 'stack.']);
 	});
 
 	it('writes module execution order for selected module instructions', () => {
@@ -299,19 +312,20 @@ describe('tooltip effect', () => {
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
 			},
-			tooltip: {
-				text: [],
-			},
 		});
 		const store = createStateManager(state);
 
-		tooltip(store);
+		const tooltip = createTooltip(store, createMockEventDispatcher());
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
 
-		expect(state.tooltip.text).toEqual(['Starts a module block.', 'execution order: 2']);
+		expect(tooltip.getState().text).toEqual(['Starts a module block.', 'execution order: 2']);
 
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
 
-		expect(state.tooltip.text).not.toContain('execution order: 2');
+		expect(tooltip.getState().text).not.toContain('execution order: 2');
 	});
 
 	it('updates documentation tooltip text when the selected line text changes', () => {
@@ -328,17 +342,18 @@ describe('tooltip effect', () => {
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
 			},
-			tooltip: {
-				text: [],
-			},
 		});
 		const store = createStateManager(state);
 
-		tooltip(store);
+		const tooltip = createTooltip(store, createMockEventDispatcher());
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
 
 		store.set('codeBlockRendering.selectedCodeBlock.code', ['drop']);
 
-		expect(state.tooltip.text).toEqual(['drop (T -- )', 'Removes the top value from the', 'stack.']);
+		expect(tooltip.getState().text).toEqual(['drop (T -- )', 'Removes the top value from the', 'stack.']);
 	});
 
 	it('clears tooltip text when line selection is disabled', () => {
@@ -350,16 +365,56 @@ describe('tooltip effect', () => {
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
 			},
-			tooltip: {
-				text: ['Old tooltip'],
-			},
 		});
 		const store = createStateManager(state);
 
-		tooltip(store);
+		const tooltip = createTooltip(store, createMockEventDispatcher());
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
 
-		expect(state.tooltip.text).toEqual([]);
-		expect(state.tooltip.highlights).toEqual([]);
-		expect(state.tooltip.liveValues).toEqual([]);
+		expect(tooltip.getState().text).toEqual([]);
+		expect(tooltip.getState().highlights).toEqual([]);
+		expect(tooltip.getState().liveValues).toEqual([]);
+	});
+});
+
+describe('tooltip lifecycle', () => {
+	it('refreshes after atlas reloads and stops responding after disposal', () => {
+		const block = createMockCodeBlock({ code: ['add'] });
+		const state = createMockState({ codeBlockRendering: { selectedCodeBlock: block } });
+		const store = createStateManager(state);
+		const events = createEvents();
+		const tooltip = createTooltip(store, events);
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
+		const initial = tooltip.getState();
+		state.viewport.vGrid = 10;
+		events.dispatch('spriteSheetRerendered');
+		expect(tooltip.getState().layout.width).toBe((tooltip.getState().widthChars + 2) * 10);
+		expect(tooltip.getState().layout.width).not.toBe(initial.layout.width);
+		expect(tooltip.getState().animation.startedAt).toBe(initial.animation.startedAt);
+		tooltip.dispose();
+		const disposed = tooltip.getState();
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		events.dispatch('spriteSheetRerendered');
+		expect(tooltip.getState()).toBe(disposed);
+	});
+
+	it('refreshes compiler-derived content without moving the cursor', () => {
+		const block = createMockCodeBlock({ name: 'test', code: ['module test'] });
+		const state = createMockState({ codeBlockRendering: { selectedCodeBlock: block } });
+		const store = createStateManager(state);
+		const tooltip = createTooltip(store, createEvents());
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
+		expect(tooltip.getState().text).not.toContain('execution order: 2');
+		store.set('compiler.compiledModules', { first: {} as never, test: {} as never });
+		expect(tooltip.getState().text).toContain('execution order: 2');
 	});
 });

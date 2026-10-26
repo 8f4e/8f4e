@@ -15,7 +15,8 @@ completed: null
 Editor plugins can contribute widget directives and drawers, but their fill colors still depend on the core palette.
 The extracted switch plugin uses `fill.switchBackground`, which remains declared in the core color scheme and is
 also used by the built-in button. Adding another plugin-owned fill currently requires changes to core types,
-configuration validation, and sprite-atlas generation.
+configuration validation, and sprite-atlas generation. The tooltips plugin also uses core-owned tooltip background
+and stack-highlight fills; its tooltip font colors remain in the core text palette as well.
 
 Designing this contribution point spans more of the rendering and configuration pipeline than the initial plugin
 extraction. Defer it to a separate follow-up so the current work stays focused on state, directive, and drawer
@@ -60,6 +61,7 @@ generic color configuration and atlas machinery without declaring individual plu
 - `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/` - Palette types, atlas layout,
   fill generation, and sprite lookups.
 - `packages/editor/packages/editor-plugin-switch/` - Plugin-owned fill declaration and drawing.
+- `packages/editor/packages/editor-plugin-tooltips/` - Tooltip background and stack-highlight fills.
 
 ## References
 

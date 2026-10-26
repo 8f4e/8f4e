@@ -189,27 +189,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 				memoryReinitialized: false,
 			},
 		},
-		tooltip: {
-			text: [],
-			characters: [],
-			colors: [],
-			lineCount: 0,
-			widthChars: 0,
-			layout: {
-				horizontalPadding: 0,
-				width: 0,
-				height: 0,
-				x: 0,
-				y: 0,
-				lineX: 0,
-			},
-			highlights: [],
-			liveValues: [],
-			target: undefined,
-			animation: {
-				startedAt: undefined,
-			},
-		},
 		featureFlags: {
 			contextMenu: true,
 			moduleDragging: true,

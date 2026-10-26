@@ -1,9 +1,8 @@
-import type { TooltipLiveValueSource } from '@8f4e/editor-state-types';
 import { BASE_TYPE_METADATA, type PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { SpriteFont } from '@8f4e/sprite-generator';
+import type { SpriteLookups, TooltipLiveValueSource, TooltipLiveValueTarget } from '../types';
 import { getTooltipLineColors } from './colors';
 import { maxLiveMemoryAddressLength, maxLiveMemoryValueLength } from './constants';
-import type { SpriteLookups, TooltipLiveValueTarget } from './types';
 
 interface LiveTooltipLine {
 	label: string;

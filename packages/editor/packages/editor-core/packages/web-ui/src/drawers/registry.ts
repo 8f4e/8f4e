@@ -13,25 +13,40 @@ export interface CodeBlockDrawerContext {
 export type CodeBlockDrawer = (context: CodeBlockDrawerContext) => void;
 
 export interface EditorDrawerRegistry {
+	/** Draw after error messages and before built-in block widgets. */
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;
+	/** Draw after all built-in block widgets, inside the same block group. */
+	registerCodeBlockOverlay: (drawer: CodeBlockDrawer) => () => void;
 }
 
 export interface CodeBlockDrawerRegistry extends EditorDrawerRegistry {
 	drawCodeBlock: CodeBlockDrawer;
+	drawCodeBlockOverlay: CodeBlockDrawer;
 }
 
-export function createCodeBlockDrawerRegistry(): CodeBlockDrawerRegistry {
+function createDrawerSlot() {
 	const registrations = new Set<{ drawer: CodeBlockDrawer }>();
 	return {
-		registerCodeBlockDrawer: drawer => {
+		register: (drawer: CodeBlockDrawer) => {
 			const registration = { drawer };
 			registrations.add(registration);
 			return () => {
 				registrations.delete(registration);
 			};
 		},
-		drawCodeBlock: context => {
+		draw: (context: CodeBlockDrawerContext) => {
 			for (const { drawer } of registrations) drawer(context);
 		},
+	};
+}
+
+export function createCodeBlockDrawerRegistry(): CodeBlockDrawerRegistry {
+	const widgets = createDrawerSlot();
+	const overlays = createDrawerSlot();
+	return {
+		registerCodeBlockDrawer: widgets.register,
+		registerCodeBlockOverlay: overlays.register,
+		drawCodeBlock: widgets.draw,
+		drawCodeBlockOverlay: overlays.draw,
 	};
 }

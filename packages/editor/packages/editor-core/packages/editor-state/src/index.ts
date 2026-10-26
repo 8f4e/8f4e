@@ -48,7 +48,6 @@ import compiler from './features/program-compiler/effect';
 import projectExport from './features/project-export/effect';
 import projectImport from './features/project-import/effect';
 import runtime from './features/runtime/effect';
-import tooltip from './features/tooltip/effect';
 import viewport from './features/viewport/effect';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
@@ -142,7 +141,6 @@ export default function init(
 	registerEffect(viewportDirectiveEffect(store, events));
 	registerEffect(entryOutlines(store));
 	registerEffect(codeEditing(store, events));
-	registerEffect(tooltip(store));
 	registerEffect(historyTracking(store, events));
 
 	const onConsoleLog = (event: unknown) => {
@@ -168,7 +166,9 @@ export { navigateToCodeBlockInDirection } from './features/code-blocks/features/
 export { parseEditorDirectives } from './features/code-blocks/features/directives/utils';
 // Export helper functions
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';
+export { getCompiledFunctionForCodeBlock } from './features/code-blocks/utils/getCompiledFunctionForCodeBlock';
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
+export { default as wrapText } from './features/code-blocks/utils/wrapText';
 export { default as gapCalculator } from './features/code-editing/gapCalculator';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
 // Export .8f4e format helpers
@@ -178,3 +178,4 @@ export { EMPTY_DEFAULT_PROJECT } from './features/project-import/emptyDefaultPro
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
 export { isMemoryAddress, parseFiniteNumber } from './shared/editorDirectiveArgumentTypes';
+export { formatKnownStackValue } from './shared/formatKnownStackValue';

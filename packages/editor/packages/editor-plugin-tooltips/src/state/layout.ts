@@ -1,13 +1,14 @@
+import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import { tooltipHorizontalPaddingChars } from '../helpers/constants';
 import type {
-	CodeBlockGraphicData,
-	State,
+	SelectedLineTooltipContent,
 	TooltipHighlight,
+	TooltipHighlightTarget,
 	TooltipLayout,
 	TooltipLiveValue,
+	TooltipLiveValueTarget,
 	TooltipState,
-} from '@8f4e/editor-state-types';
-import { tooltipHorizontalPaddingChars } from './constants';
-import type { SelectedLineTooltipContent, TooltipHighlightTarget, TooltipLiveValueTarget } from './types';
+} from '../types';
 
 const emptyTooltipLayout: TooltipLayout = {
 	horizontalPadding: 0,
@@ -63,7 +64,7 @@ function getTooltipLayout(
 }
 
 /**
- * Converts live-value text columns into absolute drawer positions.
+ * Converts live-value text columns into block-relative drawer positions.
  */
 function getTooltipLiveValues(
 	targets: TooltipLiveValueTarget[],
@@ -79,7 +80,7 @@ function getTooltipLiveValues(
 }
 
 /**
- * Converts tooltip highlight columns into absolute drawer rectangles.
+ * Converts tooltip highlight columns into block-relative drawer rectangles.
  */
 function getTooltipHighlights(
 	targets: TooltipHighlightTarget[],
@@ -102,6 +103,7 @@ export function getTooltipState(
 	content: SelectedLineTooltipContent,
 	state: State,
 	selectedCodeBlock: CodeBlockGraphicData,
+	previous: TooltipState,
 	now = performance.now()
 ): TooltipState {
 	const layout = getTooltipLayout(content, state, selectedCodeBlock);
@@ -109,11 +111,11 @@ export function getTooltipState(
 		codeBlockCreationIndex: selectedCodeBlock.creationIndex,
 		lineNumber: selectedCodeBlock.cursor.row,
 	};
-	const previousTarget = state.tooltip.target;
+	const previousTarget = previous.target;
 	// Tooltip state also refreshes for compiler, sprite, and viewport changes. Preserve the start time for the
 	// same visible line so those updates do not restart its entrance animation.
 	const isSameTarget =
-		state.tooltip.lineCount > 0 &&
+		previous.lineCount > 0 &&
 		previousTarget?.codeBlockCreationIndex === target.codeBlockCreationIndex &&
 		previousTarget.lineNumber === target.lineNumber;
 
@@ -128,7 +130,7 @@ export function getTooltipState(
 		liveValues: getTooltipLiveValues(content.liveValueTargets, layout, state),
 		target,
 		animation: {
-			startedAt: isSameTarget ? state.tooltip.animation.startedAt : now,
+			startedAt: isSameTarget ? previous.animation.startedAt : now,
 		},
 	};
 }

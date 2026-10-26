@@ -1,6 +1,7 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { switchPlugin } from '@8f4e/editor-plugin-switch';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
+import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
 import { createCompilerService } from './compiler-callback';
 import { getListOfModules, getModule, getModuleDependencies } from './examples/moduleRegistry';
 import { getProject } from './get-project';
@@ -17,7 +18,11 @@ const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
 export type DefaultEditorInstance = Editor;
 
-export const defaultEditorPlugins: NonNullable<EditorOptions['plugins']> = [toggleSkipExecutionPlugin, switchPlugin];
+export const defaultEditorPlugins: NonNullable<EditorOptions['plugins']> = [
+	toggleSkipExecutionPlugin,
+	switchPlugin,
+	tooltipsPlugin,
+];
 
 export interface DefaultEditorMountOptions {
 	/** Replaces the default plugin set. Pass an empty array to omit all plugins. */

@@ -9,7 +9,7 @@ import type {
 	MemoryAction as CompilerMemoryAction,
 	ProjectObjectModel,
 } from '@8f4e/language-spec';
-import type { FillSpriteColorName, SpriteFont, SpriteIdLookups } from '@8f4e/sprite-generator';
+import type { SpriteIdLookups } from '@8f4e/sprite-generator';
 import type { AssertionResult } from './features/assertions/types';
 import type { BinaryAsset } from './features/binary-assets/types';
 import type {
@@ -144,85 +144,6 @@ export type {
 export type InfoValue = unknown;
 export type InfoRecord = Record<string, InfoValue>;
 export type InfoState = Record<string, InfoRecord | undefined>;
-
-export type TooltipLiveValueSourceKind = 'memoryAddress' | 'memoryValue' | 'memoryDereference';
-
-export interface TooltipLiveValueMemoryFormat {
-	elementWordSize: number;
-	isInteger: boolean;
-	isUnsigned: boolean;
-}
-
-export interface TooltipMemoryAddressLiveValueSource {
-	kind: 'memoryAddress';
-	moduleId: string;
-	memoryId: string;
-}
-
-export interface TooltipMemoryValueLiveValueSource {
-	kind: 'memoryValue';
-	moduleId: string;
-	memoryId: string;
-	elementIndex?: number;
-}
-
-export interface TooltipMemoryDereferenceLiveValueSource {
-	kind: 'memoryDereference';
-	moduleId: string;
-	memoryId: string;
-	format: TooltipLiveValueMemoryFormat;
-}
-
-export type TooltipLiveValueSource =
-	| TooltipMemoryAddressLiveValueSource
-	| TooltipMemoryValueLiveValueSource
-	| TooltipMemoryDereferenceLiveValueSource;
-
-export interface TooltipLiveValue {
-	x: number;
-	y: number;
-	source: TooltipLiveValueSource;
-	color: SpriteFont | undefined;
-}
-
-export interface TooltipLayout {
-	horizontalPadding: number;
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	lineX: number;
-}
-
-export interface TooltipHighlight {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	fillColor: FillSpriteColorName;
-}
-
-export interface TooltipTarget {
-	codeBlockCreationIndex: number;
-	lineNumber: number;
-}
-
-export interface TooltipAnimation {
-	startedAt?: number;
-}
-
-export interface TooltipState {
-	text: string[];
-	characters: Array<Array<number | string>>;
-	colors: Array<Array<SpriteFont | undefined>>;
-	lineCount: number;
-	widthChars: number;
-	layout: TooltipLayout;
-	highlights: TooltipHighlight[];
-	liveValues: TooltipLiveValue[];
-	target?: TooltipTarget;
-	animation: TooltipAnimation;
-}
 
 // Feature Flags types (top-level public API)
 export interface FeatureFlags {
@@ -371,7 +292,6 @@ export interface State {
 	spriteLookups?: SpriteIdLookups;
 	/** Arbitrary key/value records rendered by `; @info <id>` directives. */
 	info: InfoState;
-	tooltip: TooltipState;
 	callbacks: Callbacks;
 	featureFlags: FeatureFlags;
 	editorMode: EditorMode;
