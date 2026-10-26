@@ -1,7 +1,7 @@
 import type { SpriteFont } from '@8f4e/sprite-generator';
+import type { SpriteLookups, TooltipHighlightRange } from '../types';
 import { getStackSignatureFromSourceLine } from './sourceLine';
 import { getStackValueHighlightRange } from './stackAnalysisTooltip';
-import type { SpriteLookups, TooltipHighlightRange } from './types';
 
 /**
  * Encodes tooltip color transitions as sparse sprite lookups for the drawer.

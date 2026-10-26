@@ -4,10 +4,10 @@ import { getCodeBlockMemoryScope, resolveMemoryTarget } from '@8f4e/editor-state
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
 import { createProjectModuleId } from '@8f4e/language-spec';
-import { TOOLTIP_WRAP_WIDTH } from './constants';
-import { getSelectedLineTooltipContent } from './content';
+import { TOOLTIP_WRAP_WIDTH } from '../helpers/constants';
+import { getSelectedLineTooltipContent } from '../helpers/content';
+import { getInstructionNameFromSourceLine, getMemoryDeclarationIdFromSourceLine } from '../helpers/sourceLine';
 import { createEmptyTooltipState, getTooltipState } from './layout';
-import { getInstructionNameFromSourceLine, getMemoryDeclarationIdFromSourceLine } from './sourceLine';
 
 /**
  * Finds stack analysis for the currently selected source line.

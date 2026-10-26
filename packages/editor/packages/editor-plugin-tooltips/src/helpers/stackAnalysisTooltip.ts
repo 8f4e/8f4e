@@ -1,7 +1,7 @@
 import { formatKnownStackValue } from '@8f4e/editor-state';
 import type { CompiledStackAnalysisLine, Stack, StackItem } from '@8f4e/language-spec';
+import type { TooltipHighlightRange, TooltipHighlightTarget } from '../types';
 import { maxInlineStackItemCount } from './constants';
-import type { TooltipHighlightRange, TooltipHighlightTarget } from './types';
 
 const stackBeforeInlineLabel = 'before ';
 const stackBeforeBlockLabel = 'before: ';

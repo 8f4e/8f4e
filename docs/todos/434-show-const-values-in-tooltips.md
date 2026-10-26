@@ -64,7 +64,7 @@ If the value or type is unavailable, omit the unavailable row entirely. Do not s
 ## Validation Checkpoints
 
 - `npx nx run @8f4e/compiler:test -- --run tests/instructions/constants.test.ts tests/instructions/constantExpressions.test.ts`
-- `npx nx run @8f4e/editor-plugin-tooltips:test -- --run src/sourceLine.test.ts src/content.test.ts src/effect.test.ts`
+- `npx nx run @8f4e/editor-plugin-tooltips:test -- --run src/helpers/sourceLine.test.ts src/helpers/content.test.ts src/state/effect.test.ts`
 - `npx nx run-many --target=typecheck --projects=@8f4e/language-spec,@8f4e/compiler,@8f4e/editor-state`
 
 ## Success Criteria

@@ -3,8 +3,8 @@ import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { SpriteFont } from '@8f4e/sprite-generator';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import type { TooltipLiveValue, TooltipState } from '../types';
 import { formatMemoryValue } from './memoryValue';
-import type { TooltipLiveValue, TooltipState } from './types';
 
 const TOOLTIP_SPRING_DURATION_MS = 600;
 const TOOLTIP_SPRING_REVOLUTIONS = 1.5;

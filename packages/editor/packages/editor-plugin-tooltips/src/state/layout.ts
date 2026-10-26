@@ -1,5 +1,5 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import { tooltipHorizontalPaddingChars } from './constants';
+import { tooltipHorizontalPaddingChars } from '../helpers/constants';
 import type {
 	SelectedLineTooltipContent,
 	TooltipHighlight,
@@ -8,7 +8,7 @@ import type {
 	TooltipLiveValue,
 	TooltipLiveValueTarget,
 	TooltipState,
-} from './types';
+} from '../types';
 
 const emptyTooltipLayout: TooltipLayout = {
 	horizontalPadding: 0,

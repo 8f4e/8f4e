@@ -2,7 +2,7 @@ import { createMockCodeBlock, createMockEventDispatcher, createMockState } from 
 import { createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createEvents } from './__tests__/events';
+import { createEvents } from '../__tests__/events';
 import createTooltip from './effect';
 
 const cleanups: Array<() => void> = [];

@@ -1,6 +1,8 @@
 # Tooltips Plugin
 
 - Own selected-line documentation, stack analysis, live values, layout, animation, and overlay drawing here.
+- Keep rendering in `src/drawer/`, synchronization and layout in `src/state/`, and content-building utilities in
+  `src/helpers/`. Keep shared types and plugin setup at the source root, with tests beside their implementations.
 - Export an `EditorPlugin` without installing it as an import side effect. Editor-default selects the standard plugins.
 - Keep tooltip state inside setup, scoped to one editor instance, and use public workspace APIs.
 - Register drawing through `drawers.registerCodeBlockOverlay` so tooltips appear above built-in block widgets.

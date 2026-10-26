@@ -1,4 +1,5 @@
 import type { CompiledStackAnalysisLine, PlannedMemoryDeclaration } from '@8f4e/language-spec';
+import type { SelectedLineTooltipContent, SpriteLookups } from '../types';
 import { getSelectedLineTooltipColors } from './colors';
 import { TOOLTIP_WRAP_WIDTH } from './constants';
 import { getLiveTooltipContent } from './liveValues';
@@ -9,7 +10,6 @@ import {
 } from './sourceLine';
 import { getStackAnalysisTooltipContent } from './stackAnalysisTooltip';
 import { getMaxLineLength, getTooltipTextCharacters, wrapTooltipText } from './text';
-import type { SelectedLineTooltipContent, SpriteLookups } from './types';
 
 interface SelectedLineTooltipTextContent {
 	text: string[];

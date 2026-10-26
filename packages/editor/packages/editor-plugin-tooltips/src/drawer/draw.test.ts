@@ -2,10 +2,10 @@ import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from './__tests__/rendering';
+import { createDrawContextMock, createSpriteIdLookupMock } from '../__tests__/rendering';
+import { createEmptyTooltipState } from '../state/layout';
+import type { TooltipState } from '../types';
 import drawTooltip, { getTooltipAnimationOffset } from './draw';
-import { createEmptyTooltipState } from './layout';
-import type { TooltipState } from './types';
 
 describe('selected line tooltip animation', () => {
 	it('follows a damped elliptical path from the left into its final position', () => {

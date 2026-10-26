@@ -1,7 +1,7 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
+import type { SelectedLineTooltipContent } from '../types';
 import { createEmptyTooltipState, getTooltipState } from './layout';
-import type { SelectedLineTooltipContent } from './types';
 
 const content: SelectedLineTooltipContent = {
 	text: ['before [int=1]', 'after: [int=1]'],

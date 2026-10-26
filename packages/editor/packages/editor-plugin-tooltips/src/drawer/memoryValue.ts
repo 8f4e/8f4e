@@ -1,5 +1,5 @@
 import type { MemoryViews } from '@8f4e/web-ui';
-import type { TooltipLiveValueMemoryFormat } from './types';
+import type { TooltipLiveValueMemoryFormat } from '../types';
 
 /** Format one live tooltip value using the declaration's storage width and numeric type. */
 export function formatMemoryValue(
