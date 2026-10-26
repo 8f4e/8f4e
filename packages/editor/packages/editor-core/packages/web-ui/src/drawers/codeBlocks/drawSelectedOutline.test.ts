@@ -10,7 +10,7 @@ describe('drawSelectedOutline', () => {
 	])('loops around a $width by $height block with a $vGrid by $hGrid font grid', options => {
 		const state = createMockState({
 			viewport: { vGrid: options.vGrid, hGrid: options.hGrid },
-			spriteLookups: { fontNumbers: createSpriteIdLookupMock() } as never,
+			spriteLookups: { fontSecondaryBase: createSpriteIdLookupMock() } as never,
 		});
 		const engine = createDrawContextMock();
 		const drawText = vi.mocked(engine.drawText);

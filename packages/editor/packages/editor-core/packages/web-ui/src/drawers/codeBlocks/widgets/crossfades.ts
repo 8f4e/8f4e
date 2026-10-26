@@ -23,21 +23,15 @@ export default function drawer(
 		const handleX = Math.round(((position + 1) / 2) * crossfade.trackWidth);
 
 		engine.startGroup(crossfade.x, crossfade.y);
-		engine.drawSprite(0, 0, state.spriteLookups.fillColors.track, crossfade.width, crossfade.height);
+		engine.drawSprite(0, 0, state.spriteLookups.fillColors.surfaceRaised2, crossfade.width, crossfade.height);
 
 		if (handleX !== crossfade.centerX) {
 			const fillX = Math.min(crossfade.centerX, handleX);
 			const fillWidth = Math.abs(handleX - crossfade.centerX) + crossfade.handleWidth;
-			engine.drawSprite(fillX, 0, state.spriteLookups.fillColors.fill, fillWidth, crossfade.height);
+			engine.drawSprite(fillX, 0, state.spriteLookups.fillColors.primaryDark1, fillWidth, crossfade.height);
 		}
 
-		engine.drawSprite(
-			handleX,
-			0,
-			state.spriteLookups.fillColors.crossfadeHandle,
-			crossfade.handleWidth,
-			crossfade.height
-		);
+		engine.drawSprite(handleX, 0, state.spriteLookups.fillColors.inkBase, crossfade.handleWidth, crossfade.height);
 		engine.endGroup();
 	}
 }

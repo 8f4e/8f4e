@@ -26,11 +26,10 @@ function createFontIds() {
 function createSpriteLookups() {
 	return {
 		fillColors: {},
-		fontNumbers: createFontIds(),
-		fontCode: createFontIds(),
-		fontDisabledCode: createFontIds(),
-		fontLineNumber: createFontIds(),
-		fontCodeComment: createFontIds(),
+		fontSecondaryBase: createFontIds(),
+		fontInkBase: createFontIds(),
+		fontInkFaint: createFontIds(),
+		fontMutedBase: createFontIds(),
 	} as never;
 }
 

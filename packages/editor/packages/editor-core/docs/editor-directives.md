@@ -98,7 +98,7 @@ Supported paths:
 
 - `font` - editor font used for rendering code blocks and UI text.
 - `runtime` - runtime host loaded for the project.
-- `color.<path>` - editor color scheme override. See [Color Paths](./color-paths.md) for the full list of color paths.
+- `color.<path>` - editor base palette color. See [Color Paths](./color-paths.md) for the full list of color paths.
 - `export.fileName` - base file name used by editor export actions.
 - `bin.<id>.url` / `bin.<id>.memory` - binary asset URL and memory load target.
 - `bin.<id>.memories.<name>` - additional memory load targets for the same binary asset.
@@ -112,8 +112,8 @@ Examples:
 ; @config font ibmvga8x16
 ; @config runtime AudioWorkletRuntime
 ; @config export.fileName samplePlayer
-; @config color.text.code #cccccc
-; @config color.fill.moduleBackground rgba(0,0,0,0.9)
+; @config color.ink #cccccc
+; @config color.surface #101820
 ; @config bin.amen.url https://static.example.com/amen.pcm
 ; @config bin.amen.memory pcmPlayer:buffer
 ; @config keyboard.keyCodeMemory keyboard:keyCode

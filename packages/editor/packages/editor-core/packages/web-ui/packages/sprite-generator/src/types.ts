@@ -1,3 +1,4 @@
+import type { PaletteConfig } from '@8f4e/editor-palette';
 import type { SpriteCoordinates } from 'glugglugglug';
 
 export const Command = {
@@ -20,88 +21,6 @@ export type DrawingCommand =
 	| [command: typeof Command.SAVE]
 	| [command: typeof Command.RESTORE]
 	| [command: typeof Command.RESET_TRANSFORM];
-
-export interface ColorScheme {
-	text: {
-		lineNumber: string;
-		entryName: string;
-		debugInfo: string;
-		arrow: string;
-		instruction: string;
-		codeComment: string;
-		code: string;
-		infoKey: string;
-		infoValue: string;
-		errorMessage: string;
-		disabledCode: string;
-		numbers: string;
-		menuItemText: string;
-		menuItemTextHighlighted: string;
-		dialogTitle: string;
-		dialogText: string;
-		binaryZero: string;
-		binaryOne: string;
-		basePrefix: string;
-		pianoKeyWhitePressedOverlay: string;
-		pianoKeyBlackPressedOverlay: string;
-		tooltipText: string;
-		tooltipHighlight: string;
-		controlKnob: string;
-	};
-	fill: {
-		menuItemBackground: string;
-		menuItemBackgroundHighlighted: string;
-		background: string;
-		backgroundDots: string;
-		backgroundDots2: string;
-		moduleBackground: string;
-		debugInfoBackground: string;
-		moduleBackgroundDragged: string;
-		moduleBackgroundDisabled: string;
-		wire: string;
-		wireHighlighted: string;
-		errorMessageBackground: string;
-		assertionPassed: string;
-		assertionFailed: string;
-		dialogBackground: string;
-		dialogDimmer: string;
-		highlightedCodeLine: string;
-		trace: string;
-		plotterBackground: string;
-		bars: string;
-		waveformBackground: string;
-		waveform: string;
-		meterGreen: string;
-		meterYellow: string;
-		meterRed: string;
-		scanLine: string;
-		track: string;
-		fill: string;
-		controlKnob: string;
-		crossfadeHandle: string;
-		codeBlockHighlightLevel1: string;
-		codeBlockHighlightLevel2: string;
-		codeBlockHighlightLevel3: string;
-		pianoKeyWhite: string;
-		pianoKeyBlack: string;
-		switchBackground: string;
-		tooltipBackground: string;
-		tooltipAddedHighlight: string;
-		tooltipConsumedHighlight: string;
-	};
-	icons: {
-		inputConnector: string;
-		outputConnector: string;
-		inputConnectorBackground: string;
-		outputConnectorBackground: string;
-		feedbackScale0: string;
-		feedbackScale1: string;
-		feedbackScale2: string;
-		feedbackScale3: string;
-		feedbackScale4: string;
-		feedbackScale5: string;
-	};
-}
 
 export const FONT_NAMES = [
 	'attpc63008x16',
@@ -126,12 +45,8 @@ export const FONT_NAMES = [
 
 export type Font = (typeof FONT_NAMES)[number];
 
-export type ColorSchemeOverrides = {
-	[Section in keyof ColorScheme]?: Partial<ColorScheme[Section]>;
-};
-
 export interface Config {
-	colorScheme?: ColorSchemeOverrides | Record<string, unknown>;
+	palette?: PaletteConfig;
 	font?: string;
 }
 

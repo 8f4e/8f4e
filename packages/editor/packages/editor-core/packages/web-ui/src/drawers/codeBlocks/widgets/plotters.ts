@@ -110,7 +110,7 @@ export default function drawer(
 		const isDense = arrayLength > maxPlotterWidth;
 		const plotWidth = isDense ? maxPlotterWidth : sampleCount * columnWidth;
 
-		engine.drawSprite(0, 0, fillSprites.plotterBackground, plotWidth, plotHeight);
+		engine.drawSprite(0, 0, fillSprites.darkSurface, plotWidth, plotHeight);
 
 		if (isDense) {
 			drawDensePlot(
@@ -124,7 +124,7 @@ export default function drawer(
 				minValue,
 				maxValue,
 				valueRange,
-				fillSprites.trace
+				fillSprites.onDarkAccent
 			);
 		} else {
 			drawSparsePlot(
@@ -137,7 +137,7 @@ export default function drawer(
 				pointHeight,
 				minValue,
 				valueRange,
-				fillSprites.trace
+				fillSprites.onDarkAccent
 			);
 		}
 

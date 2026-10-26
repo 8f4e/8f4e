@@ -59,7 +59,7 @@ the initial bundle and whether the download savings justify the added asynchrono
 
 - [TODO 486: Lazy-load editing features on entering edit mode](486-lazy-load-editing-features-on-edit-mode.md)
 - [TODO 483: Lazy-load WASM overlay rendering](483-lazy-load-wasm-overlay-rendering.md)
-- [TODO 509: Rebuild editor colors from a small base palette](509-rebuild-editor-colors-from-base-palette.md)
+- [TODO 509: Rebuild editor colors from a small base palette](archived/509-rebuild-editor-colors-from-base-palette.md)
 
 ## References
 

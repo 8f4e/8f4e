@@ -102,9 +102,9 @@ describe('drawPianoKeyboards', () => {
 			},
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
-				fontCode: createSpriteIdLookupMock(),
-				fontPianoKeyWhitePressedOverlay: createSpriteIdLookupMock(),
-				fontPianoKeyBlackPressedOverlay: createSpriteIdLookupMock(),
+				fontInkBase: createSpriteIdLookupMock(),
+				fontDarkOverlaySoft: createSpriteIdLookupMock(),
+				fontPrimaryOverlay: createSpriteIdLookupMock(),
 			} as never,
 		});
 		const keyboards = [createPianoKeyboard()];
@@ -115,19 +115,19 @@ describe('drawPianoKeyboards', () => {
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 
 		expect(engine.startGroup).toHaveBeenCalledWith(2, 3);
-		expect(drawSprite).toHaveBeenCalledWith(0, 4, 'pianoKeyWhite', 2, 20);
-		expect(drawSprite).toHaveBeenCalledWith(2, 4, 'pianoKeyBlack', 2, 12);
-		expect(drawSprite).toHaveBeenCalledWith(2, 16, 'pianoKeyWhite', 2, 8);
-		expect(drawSprite).toHaveBeenCalledWith(2.75, 16, 'pianoKeyBlack', 0.5, 8);
-		expect(drawSprite).toHaveBeenCalledWith(4, 4, 'pianoKeyWhite', 2, 20);
-		expect(drawText).toHaveBeenCalledWith(0, 4, ';;', state.spriteLookups?.fontPianoKeyWhitePressedOverlay);
-		expect(drawText).toHaveBeenCalledWith(0, 8, ';;', state.spriteLookups?.fontPianoKeyWhitePressedOverlay);
-		expect(drawText).toHaveBeenCalledWith(0, 12, ';;', state.spriteLookups?.fontPianoKeyWhitePressedOverlay);
-		expect(drawText).toHaveBeenCalledWith(0, 16, ';;', state.spriteLookups?.fontPianoKeyWhitePressedOverlay);
-		expect(drawText).toHaveBeenCalledWith(0, 20, ';;', state.spriteLookups?.fontPianoKeyWhitePressedOverlay);
-		expect(drawText).toHaveBeenCalledWith(2, 4, ';;', state.spriteLookups?.fontPianoKeyBlackPressedOverlay);
-		expect(drawText).toHaveBeenCalledWith(2, 8, ';;', state.spriteLookups?.fontPianoKeyBlackPressedOverlay);
-		expect(drawText).toHaveBeenCalledWith(2, 12, ';;', state.spriteLookups?.fontPianoKeyBlackPressedOverlay);
+		expect(drawSprite).toHaveBeenCalledWith(0, 4, 'lightBase', 2, 20);
+		expect(drawSprite).toHaveBeenCalledWith(2, 4, 'darkBase', 2, 12);
+		expect(drawSprite).toHaveBeenCalledWith(2, 16, 'lightBase', 2, 8);
+		expect(drawSprite).toHaveBeenCalledWith(2.75, 16, 'darkBase', 0.5, 8);
+		expect(drawSprite).toHaveBeenCalledWith(4, 4, 'lightBase', 2, 20);
+		expect(drawText).toHaveBeenCalledWith(0, 4, ';;', state.spriteLookups?.fontDarkOverlaySoft);
+		expect(drawText).toHaveBeenCalledWith(0, 8, ';;', state.spriteLookups?.fontDarkOverlaySoft);
+		expect(drawText).toHaveBeenCalledWith(0, 12, ';;', state.spriteLookups?.fontDarkOverlaySoft);
+		expect(drawText).toHaveBeenCalledWith(0, 16, ';;', state.spriteLookups?.fontDarkOverlaySoft);
+		expect(drawText).toHaveBeenCalledWith(0, 20, ';;', state.spriteLookups?.fontDarkOverlaySoft);
+		expect(drawText).toHaveBeenCalledWith(2, 4, ';;', state.spriteLookups?.fontPrimaryOverlay);
+		expect(drawText).toHaveBeenCalledWith(2, 8, ';;', state.spriteLookups?.fontPrimaryOverlay);
+		expect(drawText).toHaveBeenCalledWith(2, 12, ';;', state.spriteLookups?.fontPrimaryOverlay);
 		expect(drawText).not.toHaveBeenCalledWith(2, 16, ';;');
 		expect(drawText).not.toHaveBeenCalledWith(2, 20, ';;');
 	});
@@ -141,9 +141,9 @@ describe('drawPianoKeyboards', () => {
 			},
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
-				fontCode: createSpriteIdLookupMock(),
-				fontPianoKeyWhitePressedOverlay: createSpriteIdLookupMock(),
-				fontPianoKeyBlackPressedOverlay: createSpriteIdLookupMock(),
+				fontInkBase: createSpriteIdLookupMock(),
+				fontDarkOverlaySoft: createSpriteIdLookupMock(),
+				fontPrimaryOverlay: createSpriteIdLookupMock(),
 			} as never,
 		});
 		const keyboards = [createPianoKeyboard()];
@@ -153,7 +153,7 @@ describe('drawPianoKeyboards', () => {
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 
-		expect(drawSprite).toHaveBeenCalledWith(4, 4, 'pianoKeyWhite', 2, 20);
+		expect(drawSprite).toHaveBeenCalledWith(4, 4, 'lightBase', 2, 20);
 		expect(drawText).not.toHaveBeenCalledWith(expect.any(Number), expect.any(Number), ';;');
 	});
 
@@ -166,9 +166,9 @@ describe('drawPianoKeyboards', () => {
 			},
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
-				fontCode: createSpriteIdLookupMock(),
-				fontPianoKeyWhitePressedOverlay: createSpriteIdLookupMock(),
-				fontPianoKeyBlackPressedOverlay: createSpriteIdLookupMock(),
+				fontInkBase: createSpriteIdLookupMock(),
+				fontDarkOverlaySoft: createSpriteIdLookupMock(),
+				fontPrimaryOverlay: createSpriteIdLookupMock(),
 			} as never,
 		});
 		const keyboards = [createPianoKeyboard()];

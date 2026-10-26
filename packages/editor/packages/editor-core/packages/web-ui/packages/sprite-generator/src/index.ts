@@ -1,7 +1,7 @@
+import { type ResolvedPalette, resolvePalette } from '@8f4e/editor-palette';
 import type { SpriteCoordinates, SpriteId, SpriteIdentifier } from 'glugglugglug';
 import { createAtlasLayout } from './atlasLayout.ts';
 import generateBackground, { generateLookup as generateLookupForBackground } from './background.ts';
-import defaultColorScheme from './defaultColorScheme.ts';
 import generateFeedbackScale, { generateLookup as generateLookupForFeedbackScale } from './feedbackScale.ts';
 import type { FillSpriteColorName } from './fillColors.ts';
 import generateFillColors, { generateLookup as generateLookupForFillColors } from './fillColors.ts';
@@ -17,10 +17,9 @@ import {
 	type SpriteIdLookup,
 	type SpriteIds,
 } from './sprite-atlas.ts';
-import { type ColorScheme, type ColorSchemeOverrides, Command, type Config, FONT_NAMES, type Font } from './types.ts';
+import { Command, type Config, FONT_NAMES, type Font } from './types.ts';
 
 export type { SpriteId } from 'glugglugglug';
-export { default as defaultColorScheme } from './defaultColorScheme.ts';
 export type { FillSpriteColorName } from './fillColors.ts';
 export { Icon } from './icons.ts';
 export type {
@@ -32,7 +31,7 @@ export type {
 	SpriteIds,
 } from './sprite-atlas.ts';
 export { createSpriteAtlas, resolveSpriteIds } from './sprite-atlas.ts';
-export type { ColorScheme, ColorSchemeOverrides, Font } from './types.ts';
+export type { Font } from './types.ts';
 export { FONT_NAMES } from './types.ts';
 
 type FontData = {
@@ -335,24 +334,16 @@ export type SpriteIdLookups = Omit<SpriteIds<NonFontAtlasCoordinates>, 'feedback
 	[Group in keyof FontLookups]: SpriteFont;
 };
 
-export function resolveColorScheme(overrides: Config['colorScheme'] = {}): ColorScheme {
-	const colorSchemeOverrides = overrides as ColorSchemeOverrides;
-	return {
-		text: { ...defaultColorScheme.text, ...colorSchemeOverrides.text },
-		fill: { ...defaultColorScheme.fill, ...colorSchemeOverrides.fill },
-		icons: { ...defaultColorScheme.icons, ...colorSchemeOverrides.icons },
-	};
-}
-
 export default async function generateSprite(config: Config): Promise<{
 	spriteAtlas: SpriteAtlas<SpriteIdentifierLookups>;
 	characterWidth: number;
 	characterHeight: number;
+	palette: ResolvedPalette;
 }> {
 	const { characterWidth, characterHeight, asciiBitmap, glyphsBitmap } = await loadFont(resolveFont(config.font));
-	const layout = createAtlasLayout(characterWidth, characterHeight);
+	const palette = resolvePalette(config.palette);
+	const layout = createAtlasLayout(characterWidth, characterHeight, palette.colors);
 	const canvas = new OffscreenCanvas(layout.canvasWidth, layout.canvasHeight);
-	const colorScheme = resolveColorScheme(config.colorScheme);
 
 	const ctx = canvas.getContext('2d', {
 		alpha: true,
@@ -360,11 +351,11 @@ export default async function generateSprite(config: Config): Promise<{
 	}) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
 	const commands = [
-		...generateFillColors(characterWidth, characterHeight, colorScheme.fill),
-		...generateFeedbackScale(asciiBitmap, characterWidth, characterHeight, colorScheme.icons),
-		...generateFont(asciiBitmap, characterWidth, characterHeight, colorScheme.text),
-		...generateBackground(glyphsBitmap, characterWidth, characterHeight, colorScheme.fill),
-		...generateIcons(asciiBitmap, characterWidth, characterHeight, colorScheme.icons),
+		...generateFillColors(characterWidth, characterHeight, palette.colors),
+		...generateFeedbackScale(asciiBitmap, characterWidth, characterHeight, palette.colors),
+		...generateFont(asciiBitmap, characterWidth, characterHeight, palette.colors),
+		...generateBackground(glyphsBitmap, characterWidth, characterHeight, palette.colors),
+		...generateIcons(asciiBitmap, characterWidth, characterHeight, palette.colors),
 	];
 
 	commands.forEach(([command, ...params]) => {
@@ -394,11 +385,11 @@ export default async function generateSprite(config: Config): Promise<{
 	});
 
 	const atlasCoordinates: AtlasCoordinates = {
-		fillColors: generateLookupForFillColors(characterWidth, characterHeight),
-		...generateLookupsForFonts(characterWidth, characterHeight, colorScheme.text),
-		feedbackScale: generateLookupForFeedbackScale(characterWidth, characterHeight, colorScheme.icons),
-		background: generateLookupForBackground(characterWidth, characterHeight),
-		icons: generateLookupForIcons(characterWidth, characterHeight),
+		fillColors: generateLookupForFillColors(characterWidth, characterHeight, palette.colors),
+		...generateLookupsForFonts(characterWidth, characterHeight, palette.colors),
+		feedbackScale: generateLookupForFeedbackScale(characterWidth, characterHeight, palette.colors),
+		background: generateLookupForBackground(characterWidth, characterHeight, palette.colors),
+		icons: generateLookupForIcons(characterWidth, characterHeight, palette.colors),
 	};
 	const rawSpriteAtlas = createSpriteAtlas(canvas, atlasCoordinates);
 	const spriteAtlas: SpriteAtlas<SpriteIdentifierLookups> = {
@@ -410,6 +401,7 @@ export default async function generateSprite(config: Config): Promise<{
 		characterHeight,
 		characterWidth,
 		spriteAtlas,
+		palette,
 	};
 }
 

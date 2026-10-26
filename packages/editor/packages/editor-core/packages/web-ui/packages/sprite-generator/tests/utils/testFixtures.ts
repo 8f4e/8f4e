@@ -1,96 +1,15 @@
-import type { ColorScheme, Config } from '../../src/types';
+import { resolvePalette } from '@8f4e/editor-palette';
+import type { Config } from '../../src/types';
 
-/**
- * Test fixture for a minimal color scheme
- */
-export const minimalColorScheme: ColorScheme = {
-	text: {
-		lineNumber: '#333333',
-		entryName: '#44ddff',
-		debugInfo: '#333333',
-		arrow: '#ffffff',
-		instruction: '#887ecb',
-		codeComment: '#666666',
-		code: '#ffffff',
-		infoKey: '#66ccff',
-		infoValue: '#ffd166',
-		errorMessage: '#ffffff',
-		disabledCode: 'rgba(0,0,0,0.5)',
-		numbers: '#c9d487',
-		menuItemText: '#ffffff',
-		menuItemTextHighlighted: '#000000',
-		dialogText: '#ffffff',
-		dialogTitle: '#ffffff',
-		binaryZero: '#c9d487',
-		binaryOne: '#c9d487',
-		basePrefix: '#c9d487',
-		pianoKeyWhitePressedOverlay: '#000000',
-		pianoKeyBlackPressedOverlay: '#ffffff',
-		tooltipText: '#666666',
-		tooltipHighlight: '#000000',
-		controlKnob: '#ffcc00',
-	},
-	fill: {
-		menuItemBackground: '#000000',
-		menuItemBackgroundHighlighted: '#ffffff',
-		background: '#000000',
-		backgroundDots: '#999999',
-		backgroundDots2: '#333333',
-		debugInfoBackground: '#000000',
-		moduleBackground: '#000000',
-		moduleBackgroundDragged: 'rgba(0,0,0,0.8)',
-		moduleBackgroundDisabled: 'rgba(0,0,0,0)',
-		wire: '#ffffff',
-		wireHighlighted: '#ffffff',
-		errorMessageBackground: '#ff0000',
-		assertionPassed: '#00ff00',
-		assertionFailed: '#ff0000',
-		dialogBackground: '#000000',
-		dialogDimmer: 'rgba(0,0,0,0.5)',
-		highlightedCodeLine: '#333333',
-		trace: '#ffffff',
-		plotterBackground: 'rgba(0,0,0,0)',
-		bars: 'rgba(255,255,255,0.45)',
-		waveformBackground: 'rgba(0,0,0,0)',
-		waveform: 'rgba(255,255,255,0.45)',
-		meterGreen: '#33cc66',
-		meterYellow: '#ffcc33',
-		meterRed: '#ff5533',
-		scanLine: '#ffffff',
-		track: '#333333',
-		fill: '#ffffff',
-		controlKnob: '#993366',
-		crossfadeHandle: '#000000',
-		codeBlockHighlightLevel1: '#333300',
-		codeBlockHighlightLevel2: '#333333',
-		codeBlockHighlightLevel3: '#003333',
-		pianoKeyWhite: '#ffffff',
-		pianoKeyBlack: '#000000',
-		switchBackground: '#336699',
-		tooltipBackground: '#ffffff',
-		tooltipAddedHighlight: '#ccffcc',
-		tooltipConsumedHighlight: '#ffcccc',
-	},
-	icons: {
-		inputConnector: '#ffffff',
-		outputConnector: '#ffffff',
-		inputConnectorBackground: '#111111',
-		outputConnectorBackground: '#111111',
-		feedbackScale0: '#ff0000',
-		feedbackScale1: '#cc0033',
-		feedbackScale2: '#990066',
-		feedbackScale3: '#660099',
-		feedbackScale4: '#3300cc',
-		feedbackScale5: '#0000ff',
-	},
-};
+export const testPaletteConfig = { canvas: '#061420', surface: '#021924', ink: '#f8ffff', primary: '#5bd5ff' };
+export const testPalette = resolvePalette(testPaletteConfig);
 
 /**
  * Test fixture for attpc63008x16 font configuration
  */
 export const configAttPc63008x16: Config = {
 	font: 'attpc63008x16',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**
@@ -98,7 +17,7 @@ export const configAttPc63008x16: Config = {
  */
 export const configNix8810M168x16: Config = {
 	font: 'nix8810m168x16',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**
@@ -106,7 +25,7 @@ export const configNix8810M168x16: Config = {
  */
 export const configOlivettiThin8x16: Config = {
 	font: 'olivettithin8x16',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**
@@ -114,7 +33,7 @@ export const configOlivettiThin8x16: Config = {
  */
 export const config8x16: Config = {
 	font: 'ibmvga8x16',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**
@@ -122,7 +41,7 @@ export const config8x16: Config = {
  */
 export const configTerminus8x16: Config = {
 	font: 'terminus8x16',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**
@@ -130,7 +49,7 @@ export const configTerminus8x16: Config = {
  */
 export const configTerminus8x16Bold: Config = {
 	font: 'terminus8x16bold',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**
@@ -138,7 +57,7 @@ export const configTerminus8x16Bold: Config = {
  */
 export const config6x10: Config = {
 	font: '6x10',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**
@@ -146,7 +65,7 @@ export const config6x10: Config = {
  */
 export const configTerminus10x18: Config = {
 	font: 'terminus10x18',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**
@@ -154,7 +73,7 @@ export const configTerminus10x18: Config = {
  */
 export const configTerminus10x18Bold: Config = {
 	font: 'terminus10x18bold',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**
@@ -162,7 +81,7 @@ export const configTerminus10x18Bold: Config = {
  */
 export const configKana12x13: Config = {
 	font: 'kana12x13',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**
@@ -170,7 +89,7 @@ export const configKana12x13: Config = {
  */
 export const configTerminus12x24: Config = {
 	font: 'terminus12x24',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**
@@ -178,7 +97,7 @@ export const configTerminus12x24: Config = {
  */
 export const configTerminus12x24Bold: Config = {
 	font: 'terminus12x24bold',
-	colorScheme: minimalColorScheme,
+	palette: testPaletteConfig,
 };
 
 /**

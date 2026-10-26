@@ -25,7 +25,7 @@ export default function drawSelectedOutline(
 	const startOffset = Math.max(0, perimeterLength - segmentLength);
 	const animationOffset = (Math.floor(now / OUTLINE_STEP_DURATION_MS) + startOffset) % perimeterLength;
 
-	const font = state.spriteLookups!.fontNumbers;
+	const font = state.spriteLookups!.fontSecondaryBase;
 
 	for (let i = 0; i < segmentLength; i++) {
 		const step = (animationOffset + i) % perimeterLength;

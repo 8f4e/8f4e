@@ -67,11 +67,11 @@ describe('drawBars', () => {
 		drawBars(engine, state, codeBlock, createMemoryViews({ float32: [0.25, 0.5, 0.75, 1] }));
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'plotterBackground', 8, 8);
-		expect(drawSprite).toHaveBeenCalledWith(0, 6, 'bars', 2, 2);
-		expect(drawSprite).toHaveBeenCalledWith(2, 4, 'bars', 2, 4);
-		expect(drawSprite).toHaveBeenCalledWith(4, 2, 'bars', 2, 6);
-		expect(drawSprite).toHaveBeenCalledWith(6, 0, 'bars', 2, 8);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 8, 8);
+		expect(drawSprite).toHaveBeenCalledWith(0, 6, 'detailBase', 2, 2);
+		expect(drawSprite).toHaveBeenCalledWith(2, 4, 'detailBase', 2, 4);
+		expect(drawSprite).toHaveBeenCalledWith(4, 2, 'detailBase', 2, 6);
+		expect(drawSprite).toHaveBeenCalledWith(6, 0, 'detailBase', 2, 8);
 	});
 
 	it('compresses dense arrays by the maximum value in each column', () => {
@@ -99,9 +99,9 @@ describe('drawBars', () => {
 		drawBars(engine, state, codeBlock, createMemoryViews({ float32: [0, 0.25, 0.1, 0.5, 0.2, 0.75, 0.3, 1] }));
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 6, 'bars', 1, 2);
-		expect(drawSprite).toHaveBeenCalledWith(1, 4, 'bars', 1, 4);
-		expect(drawSprite).toHaveBeenCalledWith(2, 2, 'bars', 1, 6);
-		expect(drawSprite).toHaveBeenCalledWith(3, 0, 'bars', 1, 8);
+		expect(drawSprite).toHaveBeenCalledWith(0, 6, 'detailBase', 1, 2);
+		expect(drawSprite).toHaveBeenCalledWith(1, 4, 'detailBase', 1, 4);
+		expect(drawSprite).toHaveBeenCalledWith(2, 2, 'detailBase', 1, 6);
+		expect(drawSprite).toHaveBeenCalledWith(3, 0, 'detailBase', 1, 8);
 	});
 });

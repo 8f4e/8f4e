@@ -53,7 +53,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	store.set('initialProjectState', project);
 	state.spriteLookups = {
 		fillColors: createSpriteIdLookupMock(),
-		fontControlKnob: createSpriteIdLookupMock(),
+		fontInkOn: createSpriteIdLookupMock(),
 	} as never;
 	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	const initialRevision = state.compilerInputRevision;
@@ -128,7 +128,7 @@ describe('slider plugin', () => {
 		expect(test.block.gaps.get(2)).toEqual({ size: 2 });
 		const x = (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
 		expect(test.draw.startGroup).toHaveBeenCalledWith(x, 48);
-		expect(test.draw.drawSprite).toHaveBeenCalledWith(0, 0, 'track', test.block.width - x, 32);
+		expect(test.draw.drawSprite).toHaveBeenCalledWith(0, 0, 'surfaceRaised2', test.block.width - x, 32);
 		expect(vi.mocked(test.draw.drawText).mock.calls.map(call => call[1])).toEqual([0, 16]);
 	});
 	it.each([true, false])(

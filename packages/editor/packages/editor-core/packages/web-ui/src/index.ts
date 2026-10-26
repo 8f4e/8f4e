@@ -1,3 +1,4 @@
+import type { ResolvedPalette } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import {
 	resolveSpriteIds,
@@ -26,6 +27,7 @@ export { createCodeBlockDrawerRegistry } from './drawers/registry';
 export type { MemoryViews } from './types';
 
 export interface SpriteData {
+	palette: ResolvedPalette;
 	spriteAtlas: SpriteAtlas<SpriteIdentifierLookups>;
 	characterWidth: number;
 	characterHeight: number;
@@ -80,7 +82,7 @@ export default async function init(
 	});
 	const lines = new LineDrawer(engine);
 	const draw = new DrawContext(engine, spriteData.characterWidth);
-	let wireColors = resolveWireColors(state.editorConfig.color);
+	let wireColors = resolveWireColors(spriteData.palette);
 	const renderStatsIntervalFrames = Math.max(1, Math.floor(options.renderStatsIntervalFrames ?? 60));
 	let viewportWidth = canvas.width;
 	let viewportHeight = canvas.height;
@@ -285,7 +287,7 @@ export default async function init(
 		loadSpriteAtlas: spriteData => {
 			installSpriteAtlas(spriteData);
 			draw.setCharacterWidth(spriteData.characterWidth);
-			wireColors = resolveWireColors(state.editorConfig.color);
+			wireColors = resolveWireColors(spriteData.palette);
 		},
 		pauseRendering,
 		releaseRenderingResources,

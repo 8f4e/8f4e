@@ -58,7 +58,7 @@ export default function drawer(
 				? length
 				: memoryViews.int32[length.memory.allocationUnitAddress + length.bufferPointer];
 
-		engine.drawSprite(0, 0, fillSprites.plotterBackground, width, height);
+		engine.drawSprite(0, 0, fillSprites.darkSurface, width, height);
 
 		if (arrayLength <= 0) {
 			engine.endGroup();
@@ -94,7 +94,7 @@ export default function drawer(
 
 			const barX = column.x;
 			const barY = height - barHeight;
-			engine.drawSprite(barX, barY, fillSprites.bars, column.width, barHeight);
+			engine.drawSprite(barX, barY, fillSprites.detailBase, column.width, barHeight);
 		}
 
 		engine.endGroup();

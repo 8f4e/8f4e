@@ -11,44 +11,43 @@ export default function drawDialog(engine: DrawContext, state: State): void {
 	}
 
 	engine.startGroup(0, 0);
-	engine.drawSprite(0, 0, state.spriteLookups.fillColors.dialogDimmer, state.viewport.width, state.viewport.height);
+	engine.drawSprite(0, 0, state.spriteLookups.fillColors.darkOverlay, state.viewport.width, state.viewport.height);
 	engine.endGroup();
 
 	engine.startGroup(state.dialog.x, state.dialog.y);
 
-	engine.drawSprite(0, 0, state.spriteLookups.fillColors.dialogBackground, state.dialog.width, state.dialog.height);
+	engine.drawSprite(0, 0, state.spriteLookups.fillColors.floatingSurface, state.dialog.width, state.dialog.height);
 
-	engine.drawText(0, 0, DIALOG_CORNER, state.spriteLookups.fontCode);
-	engine.drawText(state.dialog.width - state.viewport.vGrid, 0, DIALOG_CORNER, state.spriteLookups.fontCode);
-	engine.drawText(0, state.dialog.height - state.viewport.hGrid, DIALOG_CORNER, state.spriteLookups.fontCode);
+	engine.drawText(0, 0, DIALOG_CORNER, state.spriteLookups.fontFloatingInk);
+	engine.drawText(state.dialog.width - state.viewport.vGrid, 0, DIALOG_CORNER, state.spriteLookups.fontFloatingInk);
+	engine.drawText(0, state.dialog.height - state.viewport.hGrid, DIALOG_CORNER, state.spriteLookups.fontFloatingInk);
 	engine.drawText(
 		state.dialog.width - state.viewport.vGrid,
 		state.dialog.height - state.viewport.hGrid,
 		DIALOG_CORNER,
-		state.spriteLookups.fontCode
+		state.spriteLookups.fontFloatingInk
 	);
 
-	engine.drawText(state.viewport.vGrid, state.viewport.hGrid, state.dialog.title, state.spriteLookups.fontDialogTitle);
+	engine.drawText(
+		state.viewport.vGrid,
+		state.viewport.hGrid,
+		state.dialog.title,
+		state.spriteLookups.fontFloatingAccent
+	);
 
 	for (let i = 0; i < state.dialog.wrappedText.length; i++) {
 		const textY = state.viewport.hGrid * (3 + i);
-		engine.drawText(state.viewport.vGrid, textY, state.dialog.wrappedText[i], state.spriteLookups.fontDialogText);
+		engine.drawText(state.viewport.vGrid, textY, state.dialog.wrappedText[i], state.spriteLookups.fontFloatingInk);
 	}
 
 	for (let i = 0; i < state.dialog.buttons.length; i++) {
 		const button = state.dialog.buttons[i];
-		engine.drawSprite(
-			button.x,
-			button.y,
-			state.spriteLookups.fillColors.menuItemBackgroundHighlighted,
-			button.width,
-			button.height
-		);
+		engine.drawSprite(button.x, button.y, state.spriteLookups.fillColors.selectionSurface, button.width, button.height);
 		engine.drawText(
 			button.x + BUTTON_HORIZONTAL_PADDING_GRID_CELLS * state.viewport.vGrid,
 			button.y + BUTTON_VERTICAL_PADDING_GRID_CELLS * state.viewport.hGrid,
 			button.title,
-			state.spriteLookups.fontMenuItemTextHighlighted
+			state.spriteLookups.fontSelectionInk
 		);
 	}
 

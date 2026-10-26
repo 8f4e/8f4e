@@ -5,6 +5,6 @@ export default function drawAssertions(engine: DrawContext, state: State, codeBl
 	if (!state.spriteLookups || codeBlock.disabled) return;
 	const colors = state.spriteLookups.fillColors;
 	for (const { x, y, width, height, passed } of codeBlock.widgets.assertions) {
-		engine.drawSprite(x, y, passed ? colors.assertionPassed : colors.assertionFailed, width, height);
+		engine.drawSprite(x, y, passed ? colors.positiveBase : colors.negativeBase, width, height);
 	}
 }

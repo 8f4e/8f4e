@@ -39,8 +39,8 @@ entryEnd`);
 	store.set('initialProjectState', project);
 	store.set('spriteLookups', {
 		fillColors: createSpriteIdLookupMock(),
-		fontTooltipText: createSpriteIdLookupMock(),
-		fontTooltipHighlight: createSpriteIdLookupMock(),
+		fontInverseInk: createSpriteIdLookupMock(),
+		fontInverseAccent: createSpriteIdLookupMock(),
 	} as never);
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.selectedCodeBlock', codeBlock);
@@ -75,11 +75,11 @@ describe('tooltips plugin', () => {
 		expect(test.draw.drawSprite).toHaveBeenCalledWith(
 			expect.any(Number),
 			expect.any(Number),
-			'tooltipBackground',
+			'inverseSurface',
 			expect.any(Number),
 			5 * 16
 		);
-		expect(vi.mocked(test.draw.drawSprite).mock.calls.map(call => call[2])).toContain('tooltipConsumedHighlight');
+		expect(vi.mocked(test.draw.drawSprite).mock.calls.map(call => call[2])).toContain('negativeSoft');
 		expect(test.state).not.toHaveProperty('tooltip');
 		test.store.set('codeBlockRendering.selectedCodeBlock', undefined);
 		test.render();

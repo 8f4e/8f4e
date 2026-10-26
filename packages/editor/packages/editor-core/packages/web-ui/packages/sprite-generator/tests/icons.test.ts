@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createAtlasLayout } from '../src/atlasLayout';
 import generateIcons, { generateLookup, Icon } from '../src/icons';
 import { Command } from '../src/types';
-import { characterDimensions6x10, characterDimensions8x16, minimalColorScheme } from './utils/testFixtures';
+import { characterDimensions6x10, characterDimensions8x16, testPalette } from './utils/testFixtures';
 import {
 	createMockBitmap,
 	findAllCommands,
@@ -12,7 +12,11 @@ import {
 } from './utils/testHelpers';
 
 describe('icons module', () => {
-	const layout8x16 = createAtlasLayout(characterDimensions8x16.width, characterDimensions8x16.height);
+	const layout8x16 = createAtlasLayout(
+		characterDimensions8x16.width,
+		characterDimensions8x16.height,
+		testPalette.colors
+	);
 
 	describe('Icon enum', () => {
 		it('contains only the precomposed input connector', () => {
@@ -25,8 +29,8 @@ describe('icons module', () => {
 		const mockFont = createMockBitmap(256);
 
 		it('generates drawing commands for different character sizes', () => {
-			const commands8x16 = generateIcons(mockFont, 8, 16, minimalColorScheme.icons);
-			const commands6x10 = generateIcons(mockFont, 6, 10, minimalColorScheme.icons);
+			const commands8x16 = generateIcons(mockFont, 8, 16, testPalette.colors);
+			const commands6x10 = generateIcons(mockFont, 6, 10, testPalette.colors);
 
 			expect(commands8x16[0]).toEqual([Command.RESET_TRANSFORM]);
 			expect(commands6x10[0]).toEqual([Command.RESET_TRANSFORM]);
@@ -39,7 +43,7 @@ describe('icons module', () => {
 				mockFont,
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.icons
+				testPalette.colors
 			);
 			const translateCommand = findCommand(commands, Command.TRANSLATE);
 
@@ -52,12 +56,11 @@ describe('icons module', () => {
 				mockFont,
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.icons
+				testPalette.colors
 			);
 			const colorValues = findAllCommands(commands, Command.FILL_COLOR).map(command => command[1]);
 
-			expect(colorValues).toContain(minimalColorScheme.icons.inputConnectorBackground);
-			expect(colorValues).toContain(minimalColorScheme.icons.inputConnector);
+			expect(colorValues).toEqual([testPalette.colors.surfaceRaised2, testPalette.colors.primaryBase]);
 		});
 
 		it('draws the input brackets from the ascii font', () => {
@@ -69,29 +72,18 @@ describe('icons module', () => {
 				asciiFont,
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.icons
+				testPalette.colors
 			);
 			const pixels = findAllCommands(commands, Command.PIXEL);
 
 			expect(pixels).toContainEqual([Command.PIXEL, 0, 1]);
 			expect(pixels).toContainEqual([Command.PIXEL, 1, 2]);
 		});
-
-		it('handles a missing optional input background color', () => {
-			const colorsWithUndefined = {
-				...minimalColorScheme.icons,
-				inputConnectorBackground: undefined as string | undefined,
-			};
-
-			expect(() =>
-				generateIcons(mockFont, characterDimensions8x16.width, characterDimensions8x16.height, colorsWithUndefined)
-			).not.toThrow();
-		});
 	});
 
 	describe('generateLookup function', () => {
 		it('generates only the input connector lookup', () => {
-			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height);
+			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height, testPalette.colors);
 
 			expect(Object.keys(lookup)).toEqual([String(Icon.INPUT)]);
 			validateSpriteCoordinates(
@@ -104,7 +96,7 @@ describe('icons module', () => {
 		});
 
 		it('uses the current font dimensions', () => {
-			const lookup = generateLookup(characterDimensions6x10.width, characterDimensions6x10.height);
+			const lookup = generateLookup(characterDimensions6x10.width, characterDimensions6x10.height, testPalette.colors);
 
 			expect(lookup[Icon.INPUT].spriteWidth).toBe(characterDimensions6x10.width * 3);
 			expect(lookup[Icon.INPUT].spriteHeight).toBe(characterDimensions6x10.height);

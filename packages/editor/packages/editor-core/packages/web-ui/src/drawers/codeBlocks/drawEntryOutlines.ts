@@ -24,12 +24,12 @@ export default function drawEntryOutlines(engine: DrawContext, state: State): vo
 	const thickness = 1;
 
 	for (const outline of state.codeBlockRendering.entryOutlines) {
-		drawOutline(engine, outline, thickness, state.spriteLookups.fillColors.wire);
+		drawOutline(engine, outline, thickness, state.spriteLookups.fillColors.strokeBase);
 		engine.drawText(
 			outline.topLeft.x + state.viewport.vGrid,
 			outline.topLeft.y,
 			outline.entryName,
-			state.spriteLookups.fontEntryName
+			state.spriteLookups.fontInkBase
 		);
 	}
 }

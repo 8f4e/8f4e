@@ -18,7 +18,7 @@ describe('drawModeOverlay', () => {
 			editorMode: 'view',
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
-				fontDebugInfo: createSpriteIdLookupMock(),
+				fontMutedBase: createSpriteIdLookupMock(),
 			} as never,
 		});
 
@@ -28,7 +28,7 @@ describe('drawModeOverlay', () => {
 			state.viewport.vGrid,
 			0,
 			"You're in view mode, press e to edit",
-			state.spriteLookups?.fontDebugInfo
+			state.spriteLookups?.fontMutedBase
 		);
 	});
 
@@ -41,7 +41,7 @@ describe('drawModeOverlay', () => {
 			editorMode: 'edit',
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
-				fontDebugInfo: createSpriteIdLookupMock(),
+				fontMutedBase: createSpriteIdLookupMock(),
 			} as never,
 		});
 
@@ -51,7 +51,7 @@ describe('drawModeOverlay', () => {
 			state.viewport.vGrid,
 			0,
 			"You're in edit mode, press ESC to enter view mode",
-			state.spriteLookups?.fontDebugInfo
+			state.spriteLookups?.fontMutedBase
 		);
 	});
 
@@ -65,7 +65,7 @@ describe('drawModeOverlay', () => {
 			editorMode: 'view',
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
-				fontDebugInfo: createSpriteIdLookupMock(),
+				fontMutedBase: createSpriteIdLookupMock(),
 			} as never,
 		});
 

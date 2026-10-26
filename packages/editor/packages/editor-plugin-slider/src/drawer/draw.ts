@@ -29,11 +29,11 @@ export function drawSliders(engine: DrawContext, state: State, sliders: Slider[]
 
 		engine.startGroup(x, y);
 
-		engine.drawSprite(0, 0, state.spriteLookups.fillColors.track, width, height);
-		engine.drawSprite(0, 0, state.spriteLookups.fillColors.fill, handleX + handleWidth, height);
-		engine.drawSprite(handleX, 0, state.spriteLookups.fillColors.controlKnob, handleWidth, height);
-		engine.drawText(handleX, 0, HANDLE_LABEL, state.spriteLookups.fontControlKnob);
-		engine.drawText(handleX, state.viewport.hGrid, HANDLE_LABEL, state.spriteLookups.fontControlKnob);
+		engine.drawSprite(0, 0, state.spriteLookups.fillColors.surfaceRaised2, width, height);
+		engine.drawSprite(0, 0, state.spriteLookups.fillColors.primaryDark2, handleX + handleWidth, height);
+		engine.drawSprite(handleX, 0, state.spriteLookups.fillColors.inkBase, handleWidth, height);
+		engine.drawText(handleX, 0, HANDLE_LABEL, state.spriteLookups.fontInkOn);
+		engine.drawText(handleX, state.viewport.hGrid, HANDLE_LABEL, state.spriteLookups.fontInkOn);
 
 		engine.endGroup();
 	}

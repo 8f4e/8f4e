@@ -16,13 +16,13 @@ export function getTooltipLineColors(
 	}
 
 	const colors: Array<SpriteFont | undefined> = new Array(line.length).fill(undefined);
-	colors[0] = spriteLookups.fontTooltipText;
+	colors[0] = spriteLookups.fontInverseInk;
 
 	for (const range of highlightRanges) {
-		colors[range.start] = spriteLookups.fontTooltipHighlight;
+		colors[range.start] = spriteLookups.fontInverseAccent;
 
 		if (range.end < line.length) {
-			colors[range.end] = spriteLookups.fontTooltipText;
+			colors[range.end] = spriteLookups.fontInverseInk;
 		}
 	}
 

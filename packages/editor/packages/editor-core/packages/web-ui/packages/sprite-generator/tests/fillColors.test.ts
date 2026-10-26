@@ -1,20 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { createAtlasLayout } from '../src/atlasLayout';
+import { createAtlasLayout, FILL_COLOR_COLUMNS } from '../src/atlasLayout';
 import generateFillColors, { generateLookup } from '../src/fillColors';
 import { Command } from '../src/types';
-import { characterDimensions6x10, characterDimensions8x16, minimalColorScheme } from './utils/testFixtures';
+import { characterDimensions6x10, characterDimensions8x16, testPalette } from './utils/testFixtures';
 import { findAllCommands, findCommand, validateDrawingCommand, validateSpriteCoordinates } from './utils/testHelpers';
 
 describe('fillColors module', () => {
-	const layout8x16 = createAtlasLayout(characterDimensions8x16.width, characterDimensions8x16.height);
-	const layout6x10 = createAtlasLayout(characterDimensions6x10.width, characterDimensions6x10.height);
+	const layout8x16 = createAtlasLayout(
+		characterDimensions8x16.width,
+		characterDimensions8x16.height,
+		testPalette.colors
+	);
+	const layout6x10 = createAtlasLayout(
+		characterDimensions6x10.width,
+		characterDimensions6x10.height,
+		testPalette.colors
+	);
 
 	describe('generateFillColors function', () => {
 		it('should generate drawing commands for 8x16 characters', () => {
 			const commands = generateFillColors(
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			// Should start with reset transform
@@ -30,7 +38,7 @@ describe('fillColors module', () => {
 			const commands = generateFillColors(
 				characterDimensions6x10.width,
 				characterDimensions6x10.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			// Should start with reset transform
@@ -45,7 +53,7 @@ describe('fillColors module', () => {
 			const commands = generateFillColors(
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			const fillColorCommands = findAllCommands(commands, Command.FILL_COLOR);
@@ -60,23 +68,23 @@ describe('fillColors module', () => {
 			const commands = generateFillColors(
 				characterDimensions8x16.width,
 				characterDimensions8x16.height,
-				minimalColorScheme.fill
+				testPalette.colors
 			);
 
 			const fillColorCommands = findAllCommands(commands, Command.FILL_COLOR);
 			const colorValues = fillColorCommands.map(cmd => cmd[1]);
 
 			// Check that specific colors from our color scheme are included
-			expect(colorValues).toContain(minimalColorScheme.fill.background);
-			expect(colorValues).toContain(minimalColorScheme.fill.menuItemBackground);
-			expect(colorValues).toContain(minimalColorScheme.fill.wire);
-			expect(colorValues).toContain(minimalColorScheme.fill.plotterBackground);
+			expect(colorValues).toContain(testPalette.colors.canvasBase);
+			expect(colorValues).toContain(testPalette.colors.surfaceRaised1);
+			expect(colorValues).toContain(testPalette.colors.secondaryReadable);
+			expect(colorValues).toContain(testPalette.colors.surfaceBase);
 		});
 
 		it('should generate rectangle commands with correct dimensions', () => {
 			const width = characterDimensions8x16.width;
 			const height = characterDimensions8x16.height;
-			const commands = generateFillColors(width, height, minimalColorScheme.fill);
+			const commands = generateFillColors(width, height, testPalette.colors);
 
 			const rectangleCommands = findAllCommands(commands, Command.RECTANGLE);
 
@@ -91,7 +99,7 @@ describe('fillColors module', () => {
 		it('should generate translate commands for positioning', () => {
 			const width = characterDimensions8x16.width;
 			const height = characterDimensions8x16.height;
-			const commands = generateFillColors(width, height, minimalColorScheme.fill);
+			const commands = generateFillColors(width, height, testPalette.colors);
 
 			const translateCommands = findAllCommands(commands, Command.TRANSLATE);
 
@@ -104,8 +112,8 @@ describe('fillColors module', () => {
 		});
 
 		it('should handle different character dimensions correctly', () => {
-			const commands8x16 = generateFillColors(8, 16, minimalColorScheme.fill);
-			const commands6x10 = generateFillColors(6, 10, minimalColorScheme.fill);
+			const commands8x16 = generateFillColors(8, 16, testPalette.colors);
+			const commands6x10 = generateFillColors(6, 10, testPalette.colors);
 
 			// Both should have same structure but different dimensions
 			expect(commands8x16.length).toBe(commands6x10.length);
@@ -125,17 +133,17 @@ describe('fillColors module', () => {
 
 	describe('generateLookup function', () => {
 		it('should generate correct lookup for 8x16 characters', () => {
-			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height);
+			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height, testPalette.colors);
 
 			// Should have entries for all fill colors
-			expect(Object.keys(lookup)).toContain('background');
-			expect(Object.keys(lookup)).toContain('menuItemBackground');
-			expect(Object.keys(lookup)).toContain('wire');
-			expect(Object.keys(lookup)).toContain('errorMessageBackground');
+			expect(Object.keys(lookup)).toContain('canvasBase');
+			expect(Object.keys(lookup)).toContain('surfaceRaised1');
+			expect(Object.keys(lookup)).toContain('secondaryReadable');
+			expect(Object.keys(lookup)).toContain('negativeBase');
 		});
 
 		it('should generate correct sprite coordinates for first color', () => {
-			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height);
+			const lookup = generateLookup(characterDimensions8x16.width, characterDimensions8x16.height, testPalette.colors);
 
 			// First color should be at offset position
 			const firstColorKey = Object.keys(lookup)[0];
@@ -153,7 +161,7 @@ describe('fillColors module', () => {
 		it('should generate correct sprite coordinates with proper spacing', () => {
 			const width = characterDimensions8x16.width;
 			const height = characterDimensions8x16.height;
-			const lookup = generateLookup(width, height);
+			const lookup = generateLookup(width, height, testPalette.colors);
 
 			const keys = Object.keys(lookup);
 			if (keys.length >= 2) {
@@ -173,7 +181,7 @@ describe('fillColors module', () => {
 		});
 
 		it('should generate correct coordinates for 6x10 characters', () => {
-			const lookup = generateLookup(characterDimensions6x10.width, characterDimensions6x10.height);
+			const lookup = generateLookup(characterDimensions6x10.width, characterDimensions6x10.height, testPalette.colors);
 
 			const keys = Object.keys(lookup);
 			if (keys.length > 0) {
@@ -190,29 +198,29 @@ describe('fillColors module', () => {
 		});
 
 		it('should generate lookup with all expected fill color keys', () => {
-			const lookup = generateLookup(8, 16);
+			const lookup = generateLookup(8, 16, testPalette.colors);
 			const keys = Object.keys(lookup);
 
 			// Should include key fill colors from the fillColors array
-			expect(keys).toContain('menuItemBackground');
-			expect(keys).toContain('menuItemBackgroundHighlighted');
-			expect(keys).toContain('background');
-			expect(keys).toContain('wire');
-			expect(keys).toContain('errorMessageBackground');
+			expect(keys).toContain('surfaceRaised1');
+			expect(keys).toContain('primaryBase');
+			expect(keys).toContain('canvasBase');
+			expect(keys).toContain('secondaryReadable');
+			expect(keys).toContain('negativeBase');
 		});
 
-		it('should generate coordinates with increasing x positions', () => {
+		it('wraps the fill catalog into the existing sidebar and keeps every lookup inside the atlas', () => {
 			const width = 8;
-			const lookup = generateLookup(width, 16);
-			const keys = Object.keys(lookup);
-
-			// Check that x coordinates increase by character width
-			for (let i = 1; i < keys.length; i++) {
-				const prevCoordinate = lookup[keys[i - 1] as keyof typeof lookup];
-				const currentCoordinate = lookup[keys[i] as keyof typeof lookup];
-
-				expect(currentCoordinate.x).toBe(prevCoordinate.x + width);
-				expect(currentCoordinate.y).toBe(prevCoordinate.y); // y should stay same
+			const height = 16;
+			const layout = createAtlasLayout(width, height, testPalette.colors);
+			const lookup = generateLookup(width, height, testPalette.colors);
+			expect(Object.keys(lookup).length).toBeGreaterThan(FILL_COLOR_COLUMNS);
+			expect(layout.canvasWidth).toBe(128 * width);
+			for (const [index, coordinates] of Object.values(lookup).entries()) {
+				expect(coordinates.x).toBe(layout.fillColors.x + (index % FILL_COLOR_COLUMNS) * width);
+				expect(coordinates.y).toBe(layout.fillColors.y + Math.floor(index / FILL_COLOR_COLUMNS) * height);
+				expect(coordinates.x + width).toBeLessThanOrEqual(layout.canvasWidth);
+				expect(coordinates.y + height).toBeLessThanOrEqual(layout.canvasHeight);
 			}
 		});
 	});

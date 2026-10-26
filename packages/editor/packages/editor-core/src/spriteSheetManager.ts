@@ -23,7 +23,7 @@ export function createSpriteSheetManager(
 		const currentGeneration = ++generation;
 		const spriteData = await generateSprite({
 			font: state.editorConfig.font,
-			colorScheme: state.editorConfig.color,
+			palette: state.editorConfig.color,
 		});
 		if (disposed || currentGeneration !== generation) {
 			return;

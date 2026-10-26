@@ -839,37 +839,15 @@ constantsEnd
 
 note
 ; @pos -100 -135
-; @config color.text.lineNumber rgba(255,255,255,0.3)
-; @config color.text.code rgba(255,255,255,0.8)
-; @config color.text.instruction #ffffff
-; @config color.text.numbers #ffffff
-; @config color.text.codeComment rgba(255,255,255,0.5)
-; @config color.text.menuItemTextHighlighted #ffffff
-; @config color.text.debugInfo rgba(255,255,255,0.5)
-; @config color.text.dialogText #000
-; @config color.text.dialogTitle #000
-; @config color.text.menuItemText #000
-; @config color.fill.background #3399cc
-; @config color.fill.moduleBackground rgba(255,255,255,0.2)
-; @config color.fill.wire rgba(255,255,255,0.5)
-; @config color.fill.highlightedCodeLine rgba(255,255,255,0.4)
-; @config color.fill.moduleBackgroundDragged rgba(255,255,255,0.2)
-; @config color.fill.backgroundDots rgba(255,255,255,0.1)
-; @config color.fill.backgroundDots2 rgba(255,255,255,0.3)
-; @config color.fill.menuItemBackground rgba(255,255,255,0.6)
-; @config color.fill.menuItemBackgroundHighlighted #000
-; @config color.fill.codeBlockHighlightLevel1 rgba(255,255,255,0.1)
-; @config color.fill.codeBlockHighlightLevel2 rgba(255,255,255,0.1)
-; @config color.fill.codeBlockHighlightLevel3 rgba(255,255,255,0.1)
-; @config color.fill.waveform rgba(255,255,255,0.8)
-; @config color.fill.debugInfoBackground rgba(255,255,255,0.1)
-; @config color.fill.dialogDimmer rgba(255,255,255,0.2)
-; @config color.fill.dialogBackground rgba(255,255,255,0.8)
-; @config color.fill.bars rgba(255,255,255,0.8)
-; @config color.icons.inputConnectorBackground rgba(255,255,255,0.4)
-; @config color.icons.inputConnector #fff
-; @config color.icons.outputConnectorBackground rgba(255,255,255,0.4)
-; @config color.icons.outputConnector #fff
+; @config color.canvas #3399cc
+; @config color.primary #ffffff
+; @config color.secondary #ffffff
+; @config color.muted rgba(255,255,255,0.3)
+; @config color.stroke rgba(255,255,255,0.5)
+; @config color.surface rgba(255,255,255,0.2)
+; @config color.tertiary rgba(255,255,255,0.5)
+; @config color.highlight rgba(255,255,255,0.8)
+; @config color.detail rgba(255,255,255,0.8)
 noteEnd
 
 note

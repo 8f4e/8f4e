@@ -22,7 +22,11 @@ note
 ; @config webUI.overlay.height 32
 ; @config webUI.overlay.magnification 8
 ; @config webUI.overlay.position left
-; @config color.fill.background #002
+; @config color.canvas #002
+; @config color.tertiary #666666
+; @config color.highlight rgba(255,255,255,0.45)
+; @config color.detail #ffffff
+; @config color.stroke rgba(255,255,255,0.3)
 
 ; The main entry runs once per editor
 ; frame and fills a 32 x 32 RGBA8

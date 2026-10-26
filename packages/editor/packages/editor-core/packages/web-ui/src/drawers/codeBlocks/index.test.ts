@@ -36,7 +36,7 @@ describe('drawModules', () => {
 		const visible = createMockCodeBlock({ width: 96, height: 64, x: 16, y: 16 });
 		const offscreen = createMockCodeBlock({ creationIndex: 1, x: 10000 });
 		const state = createMockState({
-			spriteLookups: { fillColors: createSpriteIdLookupMock(), fontCode: createSpriteIdLookupMock() } as never,
+			spriteLookups: { fillColors: createSpriteIdLookupMock(), fontInkBase: createSpriteIdLookupMock() } as never,
 			codeBlockRendering: { codeBlocks: [visible, offscreen] },
 		});
 		const engine = createMockEngine();
@@ -75,8 +75,8 @@ describe('drawModules', () => {
 			editorMode,
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
-				fontCode: createSpriteIdLookupMock(),
-				fontNumbers: createSpriteIdLookupMock(),
+				fontInkBase: createSpriteIdLookupMock(),
+				fontSecondaryBase: createSpriteIdLookupMock(),
 			} as never,
 			codeBlockRendering: {
 				codeBlocks: [selectedBlock, otherBlock],
@@ -112,16 +112,16 @@ describe('drawModules', () => {
 		const block = createMockCodeBlock({ creationIndex: 4, width: 100, height: 64 });
 		block.widgets.assertions = [{ lineNumber: 2, passed: true, x: 8, y: 32, width: 8, height: 16 }];
 		const state = createMockState({
-			spriteLookups: { fillColors: createSpriteIdLookupMock(), fontCode: createSpriteIdLookupMock() } as never,
+			spriteLookups: { fillColors: createSpriteIdLookupMock(), fontInkBase: createSpriteIdLookupMock() } as never,
 			codeBlockRendering: { codeBlocks: [block] },
 		});
 		const engine = createMockEngine();
 		const renderData: WebUiRenderData = { codeBlocks: new Map([[4, { codeCells: [[1], [2], [3]] as never }]]) };
 		drawModules(engine, state, createMemoryViews(), renderData);
 		const sprites = vi.mocked(engine.drawSprite);
-		const markerSprite = state.spriteLookups!.fillColors.assertionPassed;
+		const markerSprite = state.spriteLookups!.fillColors.positiveBase;
 		const markerIndex = sprites.mock.calls.findIndex(call => call[2] === markerSprite);
-		expect(sprites).toHaveBeenCalledWith(8, 32, 'assertionPassed', 8, 16);
+		expect(sprites).toHaveBeenCalledWith(8, 32, 'positiveBase', 8, 16);
 		expect(sprites.mock.invocationCallOrder[markerIndex]).toBeGreaterThan(
 			vi.mocked(engine.drawResolvedText).mock.invocationCallOrder.at(-1)!
 		);
@@ -131,8 +131,8 @@ describe('drawModules', () => {
 		const state = createMockState({
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
-				fontCode: createSpriteIdLookupMock(),
-				fontNumbers: createSpriteIdLookupMock(),
+				fontInkBase: createSpriteIdLookupMock(),
+				fontSecondaryBase: createSpriteIdLookupMock(),
 			} as never,
 			codeBlockRendering: { codeBlocks: [block] },
 		});
@@ -154,7 +154,7 @@ describe('drawModules', () => {
 		const state = createMockState({
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
-				fontEntryName: createSpriteIdLookupMock(),
+				fontInkBase: createSpriteIdLookupMock(),
 			} as never,
 			codeBlockRendering: {
 				codeBlocks: [],
@@ -181,7 +181,7 @@ describe('drawModules', () => {
 			1,
 			8,
 			16,
-			'wire',
+			'strokeBase',
 			96,
 			1
 		);
@@ -189,7 +189,7 @@ describe('drawModules', () => {
 			2,
 			8,
 			95,
-			'wire',
+			'strokeBase',
 			96,
 			1
 		);
@@ -197,7 +197,7 @@ describe('drawModules', () => {
 			3,
 			8,
 			16,
-			'wire',
+			'strokeBase',
 			1,
 			80
 		);
@@ -205,7 +205,7 @@ describe('drawModules', () => {
 			4,
 			103,
 			16,
-			'wire',
+			'strokeBase',
 			1,
 			80
 		);
@@ -213,7 +213,7 @@ describe('drawModules', () => {
 			16,
 			16,
 			'main',
-			state.spriteLookups?.fontEntryName
+			state.spriteLookups?.fontInkBase
 		);
 	});
 
@@ -226,7 +226,7 @@ describe('drawModules', () => {
 		});
 		const state = createMockState({
 			spriteLookups: {
-				fontArrow: createSpriteIdLookupMock(),
+				fontPrimaryBase: createSpriteIdLookupMock(),
 			} as never,
 			codeBlockRendering: {
 				codeBlocks: [offscreenBlock],

@@ -2,6 +2,21 @@
 
 This package generates sprite sheets for the 8f4e editor, including fonts, icons, and UI elements.
 
+## Palette
+
+`generateSprite({ font, palette })` accepts a base palette containing `canvas`, `surface`, `ink`, `primary`, and optional
+`muted`, `secondary`, `tertiary`, `highlight`, `detail`, `stroke`, `positive`, `warning`, and `negative` colors.
+Omitted values inherit shared defaults. Colors accept hex with optional alpha, `rgb()` / `rgba()`, and `transparent`;
+base alpha is preserved in generated shades, with additional fixed 30%, 60%, and 90% opacity variants.
+The browser-independent `@8f4e/editor-palette` package resolves predefined Oklab shades, aliases,
+and RGBA values before atlas generation. See [the palette reference](../../../../docs/color-paths.md).
+
+Every tonal shade has a fill sprite. The current font catalog contains each base's `Dark2`, `Base`, and `Light2`
+variants plus the foreground materials in `FONT_ALIASES` (for example `fontPrimaryDark2` and `fontFloatingInk`). Identical font
+colors share rows, and the atlas layout uses the actual unique row count. No runtime sprite shading is required.
+Additional `Alpha30/60/90` swatches are fill-only; source alpha and shared text overlays remain available.
+The returned `palette` belongs to the generated atlas and also supplies colors for line rendering.
+
 ## Sprite atlas output
 
 The generator returns a `spriteAtlas` containing the generated `OffscreenCanvas`, one flat deduplicated lookup, and
@@ -18,8 +33,8 @@ const engine = new Engine(canvas);
 const resolver = engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup);
 const spriteIds = resolveSpriteIds(spriteAtlas.spriteIdentifiers, resolver);
 engine.renderFrame(() => {
-	engine.drawSprite(20, 20, spriteIds.fontCode[65]);
-	engine.drawSprite(40, 20, spriteIds.fillColors.background, 200, 100);
+	engine.drawSprite(20, 20, spriteIds.fontInkBase[65]);
+	engine.drawSprite(40, 20, spriteIds.fillColors.canvasBase, 200, 100);
 });
 ```
 

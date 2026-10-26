@@ -53,4 +53,37 @@ describe('sprite sheet manager', () => {
 		expect(view.loadSpriteAtlas).not.toHaveBeenCalled();
 		expect(events.dispatch).not.toHaveBeenCalled();
 	});
+
+	it('installs only the newest theme and font bundle when builds finish out of order', async () => {
+		const state = createMockState();
+		const originalPalette = { primary: '#5bd5ff' };
+		state.editorConfig = { font: 'ibmvga8x16', color: originalPalette };
+		const subscriptions = new Map<string, () => Promise<void>>();
+		const store = {
+			getState: () => state,
+			subscribe: (selector: string, callback: () => Promise<void>) => subscriptions.set(selector, callback),
+			unsubscribe: vi.fn(),
+		} as unknown as StateManager<State>;
+		const view = { loadSpriteAtlas: vi.fn() };
+		const events = { dispatch: vi.fn() };
+		const oldBuild = deferred<SpriteData>();
+		const newBuild = deferred<SpriteData>();
+		generateSprite.mockReturnValueOnce(oldBuild.promise).mockReturnValueOnce(newBuild.promise);
+		const dispose = createSpriteSheetManager(store, view, events as never);
+		const older = subscriptions.get('editorConfig.color')?.();
+		const nextPalette = { primary: '#d9a6ff' };
+		state.editorConfig = { font: '6x10', color: nextPalette };
+		const newer = subscriptions.get('editorConfig.font')?.();
+		const oldBundle = {} as SpriteData;
+		const newBundle = {} as SpriteData;
+		newBuild.resolve(newBundle);
+		await newer;
+		oldBuild.resolve(oldBundle);
+		await older;
+		expect(generateSprite).toHaveBeenNthCalledWith(1, { font: 'ibmvga8x16', palette: originalPalette });
+		expect(generateSprite).toHaveBeenNthCalledWith(2, { font: '6x10', palette: nextPalette });
+		expect(view.loadSpriteAtlas).toHaveBeenCalledExactlyOnceWith(newBundle);
+		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('spriteSheetRerendered');
+		dispose();
+	});
 });

@@ -1,12 +1,11 @@
-import defaultColorScheme from './defaultColorScheme.ts';
+import { FONT_PALETTE_TOKENS, PALETTE_TOKENS, type PaletteColors } from '@8f4e/editor-palette';
 
-import type { ColorScheme } from './types.ts';
-
-export const TEXT_COLOR_NAMES = Object.keys(defaultColorScheme.text) as Array<keyof ColorScheme['text']>;
-export const FILL_COLOR_NAMES = Object.keys(defaultColorScheme.fill) as Array<keyof ColorScheme['fill']>;
+export const TEXT_COLOR_NAMES = FONT_PALETTE_TOKENS;
+export const FILL_COLOR_NAMES = PALETTE_TOKENS;
 
 const FONT_COLUMNS = 128;
 const BACKGROUND_COLUMNS = 64;
+export const FILL_COLOR_COLUMNS = 64;
 const BACKGROUND_ROWS = 32;
 const FEEDBACK_SCALE_SLOT_COUNT = 6;
 const FEEDBACK_SCALE_ITEM_COLUMNS = 3;
@@ -47,16 +46,17 @@ function createSection(
 	};
 }
 
-export function createAtlasLayout(characterWidth: number, characterHeight: number) {
-	const fontRows = TEXT_COLOR_NAMES.length;
+export function createAtlasLayout(characterWidth: number, characterHeight: number, colors: PaletteColors) {
+	const fontRows = new Set(TEXT_COLOR_NAMES.map(token => colors[token])).size;
 	const backgroundYRows = fontRows;
 	const sidebarXColumns = BACKGROUND_COLUMNS;
 	const feedbackScaleYRows = backgroundYRows;
 	const fillColorsYRows = feedbackScaleYRows + 1;
-	const iconsYRows = fillColorsYRows + 1;
+	const fillColorRows = Math.ceil(FILL_COLOR_NAMES.length / FILL_COLOR_COLUMNS);
+	const iconsYRows = fillColorsYRows + fillColorRows;
 
 	const feedbackScaleWidthColumns = FEEDBACK_SCALE_SLOT_COUNT * FEEDBACK_SCALE_ITEM_COLUMNS;
-	const fillColorsWidthColumns = FILL_COLOR_NAMES.length;
+	const fillColorsWidthColumns = Math.min(FILL_COLOR_NAMES.length, FILL_COLOR_COLUMNS);
 	const iconsWidthColumns = ICON_CHARACTER_WIDTHS.reduce((sum, width) => sum + width, 0);
 	const sidebarWidthColumns = Math.max(feedbackScaleWidthColumns, fillColorsWidthColumns, iconsWidthColumns);
 
@@ -81,7 +81,7 @@ export function createAtlasLayout(characterWidth: number, characterHeight: numbe
 		sidebarXColumns,
 		fillColorsYRows,
 		fillColorsWidthColumns,
-		1,
+		fillColorRows,
 		characterWidth,
 		characterHeight
 	);

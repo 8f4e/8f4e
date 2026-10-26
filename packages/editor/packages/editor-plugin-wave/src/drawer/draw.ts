@@ -89,7 +89,7 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 		const waveformColumnWidth = Math.max(1, Math.floor(state.viewport.vGrid / 2));
 		const columnCount = Math.max(1, Math.floor(width / waveformColumnWidth));
 		const columnWidth = Math.max(1, Math.floor(width / columnCount));
-		engine.drawSprite(0, 0, fillSprites.waveformBackground, width, height);
+		engine.drawSprite(0, 0, fillSprites.darkSurface, width, height);
 		drawWaveform(
 			engine,
 			values,
@@ -101,7 +101,7 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 			minValue,
 			maxValue,
 			inverseValueRange,
-			fillSprites.waveform
+			fillSprites.highlightBase
 		);
 
 		if (playhead) {
@@ -113,7 +113,7 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 			const scanlineWidth = state.viewport.vGrid / 2;
 			const scanlineX = arrayLength <= 1 ? 0 : Math.floor((clampedIndex / (arrayLength - 1)) * (width - scanlineWidth));
 
-			engine.drawSprite(scanlineX, 0, fillSprites.scanLine, scanlineWidth, height);
+			engine.drawSprite(scanlineX, 0, fillSprites.secondaryReadable, scanlineWidth, height);
 		}
 
 		engine.endGroup();

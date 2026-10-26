@@ -11,19 +11,13 @@ export default function drawContextMenu(engine: DrawContext, state: State): void
 	engine.startGroup(x - state.viewport.x, y - state.viewport.y);
 	for (let i = 0; i < items.length; i++) {
 		engine.startGroup(0, i * state.viewport.hGrid);
-		let font = state.spriteLookups.fontMenuItemText;
+		let font = state.spriteLookups.fontFloatingInk;
 		if (i === highlightedItem && !items[i].disabled && !items[i].divider) {
-			engine.drawSprite(
-				0,
-				0,
-				state.spriteLookups.fillColors.menuItemBackgroundHighlighted,
-				itemWidth,
-				state.viewport.hGrid
-			);
-			font = state.spriteLookups.fontMenuItemTextHighlighted;
+			engine.drawSprite(0, 0, state.spriteLookups.fillColors.selectionSurface, itemWidth, state.viewport.hGrid);
+			font = state.spriteLookups.fontSelectionInk;
 		} else {
-			engine.drawSprite(0, 0, state.spriteLookups.fillColors.menuItemBackground, itemWidth, state.viewport.hGrid);
-			font = items[i].disabled ? state.spriteLookups.fontLineNumber : state.spriteLookups.fontMenuItemText;
+			engine.drawSprite(0, 0, state.spriteLookups.fillColors.floatingSurface, itemWidth, state.viewport.hGrid);
+			font = items[i].disabled ? state.spriteLookups.fontFloatingMuted : state.spriteLookups.fontFloatingInk;
 		}
 		if (!items[i].divider) {
 			engine.drawText(0, 0, items[i].title || '', font);

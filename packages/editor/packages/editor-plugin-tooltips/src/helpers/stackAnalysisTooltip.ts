@@ -6,8 +6,8 @@ import { maxInlineStackItemCount } from './constants';
 const stackBeforeInlineLabel = 'before ';
 const stackBeforeBlockLabel = 'before: ';
 const stackAfterLabel = 'after: ';
-const consumedStackItemHighlight = 'tooltipConsumedHighlight';
-const producedStackItemHighlight = 'tooltipAddedHighlight';
+const consumedStackItemHighlight = 'negativeSoft';
+const producedStackItemHighlight = 'positiveSoft';
 
 type StackItemMarker = 'consumed' | 'added';
 

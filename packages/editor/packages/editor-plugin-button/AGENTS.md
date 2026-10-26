@@ -8,7 +8,7 @@
   with core or other plugins.
 - Leave generic directive parsing and layout in editor-state. Use `onBlockLayoutReady` for shared drawing and hit-test geometry.
 - Own cleanup of the directive, drawer, and press/release listeners. Release a held button during disposal.
-- Use the existing palette roles.
+- Select shared base-palette shades; do not add feature-specific configurable colors.
 - Run `npx nx run @8f4e/editor-plugin-button:build|test|typecheck` after changes.
 - Run `npx nx run @8f4e/editor-plugin-button:test:screenshot` for browser rendering tests.
 - Cover actual pointer events, memory writes, layout, source changes, group exposures, cleanup, and editor isolation.

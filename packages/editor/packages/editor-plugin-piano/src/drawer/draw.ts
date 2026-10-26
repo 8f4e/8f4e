@@ -4,10 +4,7 @@ import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { PianoKeyboard, PianoKeyboardKey } from '../types';
 
 function drawPressedKey(engine: DrawContext, spriteLookups: SpriteIdLookups, key: PianoKeyboardKey): void {
-	const font =
-		key.kind === 'black'
-			? spriteLookups.fontPianoKeyBlackPressedOverlay
-			: spriteLookups.fontPianoKeyWhitePressedOverlay;
+	const font = key.kind === 'black' ? spriteLookups.fontPrimaryOverlay : spriteLookups.fontDarkOverlaySoft;
 	for (const y of key.pressedOverlayRows) {
 		engine.drawText(key.x, y, ';;', font);
 	}
@@ -68,17 +65,17 @@ export function drawPianoKeyboards(
 
 		for (const key of keys) {
 			if (key.kind === 'black') {
-				engine.drawSprite(key.x, keyY, spriteLookups.fillColors.pianoKeyBlack, keyWidth, blackKeyHeight);
-				engine.drawSprite(key.x, blackKeySideY, spriteLookups.fillColors.pianoKeyWhite, keyWidth, blackKeySideHeight);
+				engine.drawSprite(key.x, keyY, spriteLookups.fillColors.darkBase, keyWidth, blackKeyHeight);
+				engine.drawSprite(key.x, blackKeySideY, spriteLookups.fillColors.lightBase, keyWidth, blackKeySideHeight);
 				engine.drawSprite(
 					key.x + blackKeyGapXOffset,
 					blackKeyGapY,
-					spriteLookups.fillColors.pianoKeyBlack,
+					spriteLookups.fillColors.darkBase,
 					blackKeyGapWidth,
 					blackKeyGapHeight
 				);
 			} else {
-				engine.drawSprite(key.x, keyY, spriteLookups.fillColors.pianoKeyWhite, keyWidth, keyHeight);
+				engine.drawSprite(key.x, keyY, spriteLookups.fillColors.lightBase, keyWidth, keyHeight);
 			}
 		}
 
@@ -94,9 +91,9 @@ export function drawPianoKeyboards(
 
 		for (const key of keys) {
 			if (key.offset % 2 === 1) {
-				engine.drawSprite(key.x, 0, spriteLookups.fillColors.highlightedCodeLine, keyWidth, keyY);
+				engine.drawSprite(key.x, 0, spriteLookups.fillColors.primarySoft, keyWidth, keyY);
 			}
-			engine.drawText(key.x, 0, key.label, spriteLookups.fontCode);
+			engine.drawText(key.x, 0, key.label, spriteLookups.fontInkBase);
 		}
 		engine.endGroup();
 	}

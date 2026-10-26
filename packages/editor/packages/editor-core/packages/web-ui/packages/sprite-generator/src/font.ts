@@ -1,7 +1,8 @@
+import type { FontPaletteToken, PaletteColors } from '@8f4e/editor-palette';
 import type { SpriteCoordinates } from 'glugglugglug';
 
 import { createAtlasLayout, TEXT_COLOR_NAMES } from './atlasLayout.ts';
-import { type ColorScheme, Command, type DrawingCommand } from './types.ts';
+import { Command, type DrawingCommand } from './types.ts';
 
 const ASCII_START = 0;
 const ASCII_END = 127;
@@ -15,12 +16,12 @@ const ASCII_END = 127;
  * unique colors are assigned row indices in the order their first corresponding
  * role appears in TEXT_COLOR_NAMES.
  */
-export function buildFontLayout(colors: ColorScheme['text']): {
-	rowsByRole: Record<keyof ColorScheme['text'], number>;
-	uniqueRows: Array<{ color: string; roles: Array<keyof ColorScheme['text']> }>;
+export function buildFontLayout(colors: PaletteColors): {
+	rowsByRole: Record<FontPaletteToken, number>;
+	uniqueRows: Array<{ color: string; roles: Array<FontPaletteToken> }>;
 } {
 	const colorToRow = new Map<string, number>();
-	const uniqueRows: Array<{ color: string; roles: Array<keyof ColorScheme['text']> }> = [];
+	const uniqueRows: Array<{ color: string; roles: Array<FontPaletteToken> }> = [];
 
 	for (const role of TEXT_COLOR_NAMES) {
 		const color = colors[role];
@@ -32,7 +33,7 @@ export function buildFontLayout(colors: ColorScheme['text']): {
 	}
 
 	const rowsByRole = Object.fromEntries(TEXT_COLOR_NAMES.map(role => [role, colorToRow.get(colors[role])!])) as Record<
-		keyof ColorScheme['text'],
+		FontPaletteToken,
 		number
 	>;
 
@@ -108,9 +109,9 @@ export default function generateFonts(
 	font: number[],
 	characterWidth: number,
 	characterHeight: number,
-	colors: ColorScheme['text']
+	colors: PaletteColors
 ): DrawingCommand[] {
-	const layout = createAtlasLayout(characterWidth, characterHeight);
+	const layout = createAtlasLayout(characterWidth, characterHeight, colors);
 	const { uniqueRows } = buildFontLayout(colors);
 
 	return [
@@ -129,13 +130,11 @@ function capitalize(word: string) {
 }
 
 export type FontLookups = {
-	[key in keyof ColorScheme['text'] as `font${Capitalize<string & key>}`]: Partial<
-		Record<number | string, SpriteCoordinates>
-	>;
+	[key in FontPaletteToken as `font${Capitalize<string & key>}`]: Partial<Record<number | string, SpriteCoordinates>>;
 };
 
-export const generateLookups = (characterWidth: number, characterHeight: number, colors: ColorScheme['text']) => {
-	const layout = createAtlasLayout(characterWidth, characterHeight);
+export const generateLookups = (characterWidth: number, characterHeight: number, colors: PaletteColors) => {
+	const layout = createAtlasLayout(characterWidth, characterHeight, colors);
 	const { rowsByRole } = buildFontLayout(colors);
 
 	return Object.fromEntries(

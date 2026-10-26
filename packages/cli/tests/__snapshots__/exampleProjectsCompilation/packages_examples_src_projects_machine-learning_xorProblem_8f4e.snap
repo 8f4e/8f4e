@@ -65,7 +65,7 @@
             }
           ]
         },
-        "projectBlockId": 109,
+        "projectBlockId": 51,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "result"
@@ -115,7 +115,7 @@
             }
           ]
         },
-        "projectBlockId": 120,
+        "projectBlockId": 62,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "notes"
@@ -199,7 +199,7 @@
             }
           ]
         },
-        "projectBlockId": 130,
+        "projectBlockId": 72,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "inputs"
@@ -497,7 +497,7 @@
             }
           ]
         },
-        "projectBlockId": 140,
+        "projectBlockId": 82,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron"
@@ -795,7 +795,7 @@
             }
           ]
         },
-        "projectBlockId": 165,
+        "projectBlockId": 107,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron2"
@@ -938,7 +938,7 @@
             }
           ]
         },
-        "projectBlockId": 190,
+        "projectBlockId": 132,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn"
@@ -1081,7 +1081,7 @@
             }
           ]
         },
-        "projectBlockId": 202,
+        "projectBlockId": 144,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn2"
@@ -1380,7 +1380,7 @@
             }
           ]
         },
-        "projectBlockId": 214,
+        "projectBlockId": 156,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron3"
@@ -1610,7 +1610,7 @@
             }
           ]
         },
-        "projectBlockId": 239,
+        "projectBlockId": 181,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn3"

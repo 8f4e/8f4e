@@ -4,6 +4,7 @@
 
 - Path: `packages/editor`; this is an organizational parent for editor-owned packages.
 - `@8f4e/editor-core` is the minimal reusable editor.
+- `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, examples, and storage.
 - `@8f4e/editor-website` is the thin deployable Vite host for the default composition.
 - `@8f4e/editor-plugin-toggle-skip-execution` owns the optional single-module execution toggle. The switch widget

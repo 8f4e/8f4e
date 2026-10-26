@@ -236,7 +236,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		// Generate sprite data before initializing the view that installs and resolves the atlas.
 		const spriteData = await generateSprite({
 			font: state.editorConfig.font,
-			colorScheme: state.editorConfig.color,
+			palette: state.editorConfig.color,
 		});
 
 		const renderProjection = createWebUiRenderProjection(store, events);

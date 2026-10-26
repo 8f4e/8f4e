@@ -65,8 +65,8 @@ Atlas and font changes are explicit and are applied through `loadSpriteAtlas()`.
 current editor color scheme when the atlas is loaded.
 
 Assertion rectangles come from each code block's `widgets.assertions`. They are drawn after code text, covering
-the line-number area before the assertion instruction. Passed assertions use `color.fill.assertionPassed` (green)
-and failed assertions use `color.fill.assertionFailed` (red). Hidden previews and disabled blocks omit the markers.
+the line-number area before the assertion instruction. Passed assertions use `color.positive`
+and failed assertions use `color.negative`. Hidden previews and disabled blocks omit the markers.
 
 ## Docs
 

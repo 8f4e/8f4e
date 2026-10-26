@@ -13,7 +13,7 @@ export function drawButtons(draw: DrawContext, state: State, buttons: ButtonWidg
 		if (value === onValue || value === offValue) {
 			drawButton(draw, state, button, value === onValue);
 		} else {
-			draw.drawText(button.x, button.y, '[__]', sprites.fontNumbers);
+			draw.drawText(button.x, button.y, '[__]', sprites.fontSecondaryBase);
 		}
 	}
 }

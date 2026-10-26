@@ -60,11 +60,11 @@ describe('drawPlotters', () => {
 		drawPlotters(engine, state, codeBlock, createMemoryViews({ int8: [0, 1, 2, 3] }));
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'plotterBackground', 12, 32);
-		expect(drawSprite).toHaveBeenCalledWith(0, 31, 'trace', 3, 1);
-		expect(drawSprite).toHaveBeenCalledWith(3, 21, 'trace', 3, 1);
-		expect(drawSprite).toHaveBeenCalledWith(6, 10, 'trace', 3, 1);
-		expect(drawSprite).toHaveBeenCalledWith(9, 0, 'trace', 3, 1);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 12, 32);
+		expect(drawSprite).toHaveBeenCalledWith(0, 31, 'onDarkAccent', 3, 1);
+		expect(drawSprite).toHaveBeenCalledWith(3, 21, 'onDarkAccent', 3, 1);
+		expect(drawSprite).toHaveBeenCalledWith(6, 10, 'onDarkAccent', 3, 1);
+		expect(drawSprite).toHaveBeenCalledWith(9, 0, 'onDarkAccent', 3, 1);
 	});
 
 	it('matches sparse background width to the rendered trace width', () => {
@@ -105,8 +105,8 @@ describe('drawPlotters', () => {
 		drawPlotters(engine, state, codeBlock, createMemoryViews({ int8: [0, 1, 2, 3] }));
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'plotterBackground', 12, 32);
-		expect(drawSprite).toHaveBeenCalledWith(9, 0, 'trace', 3, 1);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 12, 32);
+		expect(drawSprite).toHaveBeenCalledWith(9, 0, 'onDarkAccent', 3, 1);
 	});
 
 	it('renders dense arrays as per-column min/max envelopes instead of truncating', () => {
@@ -148,10 +148,10 @@ describe('drawPlotters', () => {
 		drawPlotters(engine, state, codeBlock, createMemoryViews({ int8: values }));
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		const traceCalls = drawSprite.mock.calls.filter((call: unknown[]) => call[2] === 'trace');
+		const traceCalls = drawSprite.mock.calls.filter((call: unknown[]) => call[2] === 'onDarkAccent');
 
 		expect(traceCalls).toHaveLength(12);
-		expect(traceCalls[0]).toEqual([0, 0, 'trace', 1, 32]);
-		expect(traceCalls[11]).toEqual([11, 0, 'trace', 1, 32]);
+		expect(traceCalls[0]).toEqual([0, 0, 'onDarkAccent', 1, 32]);
+		expect(traceCalls[11]).toEqual([11, 0, 'onDarkAccent', 1, 32]);
 	});
 });

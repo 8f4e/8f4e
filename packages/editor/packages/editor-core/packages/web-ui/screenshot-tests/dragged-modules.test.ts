@@ -6,7 +6,7 @@ import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
 import createMockSpriteData from './utils/createMockSpriteData';
 import createMockStateWithColors from './utils/createMockStateWithColors';
-import { resolveCodeWithAllColors } from './utils/generateColorMapMock';
+import resolveFixtureCodeCells from './utils/resolveFixtureCodeCells';
 
 test('dragged module', async () => {
 	const canvas = createCanvas();
@@ -16,9 +16,12 @@ test('dragged module', async () => {
 	const codeBlocks = new Map<number, CodeBlockRenderData>();
 	const renderData: WebUiRenderDataSource = { getSnapshot: () => ({ codeBlocks }) };
 
-	await init(mockState, renderData, canvas, memoryViews, spriteData);
+	const renderer = await init(mockState, renderData, canvas, memoryViews, spriteData);
 
-	if (mockState.spriteLookups) {
+	try {
+		renderer.pauseRendering();
+		expect(mockState.spriteLookups).toBeDefined();
+		const lookups = mockState.spriteLookups!;
 		const codeLines = [
 			'',
 			'lorem ipsum dolor sit amet',
@@ -28,7 +31,7 @@ test('dragged module', async () => {
 			'quis nostrud exercitation',
 			'',
 		];
-		const codeToRender = resolveCodeWithAllColors(codeLines, mockState.spriteLookups);
+		const codeToRender = resolveFixtureCodeCells(codeLines, lookups.fontInkBase);
 
 		const codeBlockMock = createMockCodeBlock({
 			x: 16,
@@ -41,7 +44,9 @@ test('dragged module', async () => {
 
 		mockState.codeBlockRendering.codeBlocks.push(codeBlockMock);
 		codeBlocks.set(codeBlockMock.creationIndex, { codeCells: codeToRender });
+		renderer.renderFrame();
+		await expect(canvas).toMatchScreenshot();
+	} finally {
+		renderer.destroy();
 	}
-
-	await expect(canvas).toMatchScreenshot();
 });

@@ -4,8 +4,8 @@ priority: Medium
 effort: TBD
 created: 2026-10-26
 issue: null
-status: Open
-completed: null
+status: Completed
+completed: 2026-10-26
 ---
 
 # TODO: Rebuild editor colors from a small base palette
@@ -30,7 +30,7 @@ the colors of every feature.
 - Keep shade generation centralized so drawers do not implement separate lightening and darkening rules.
 
 This replaces the cancelled plugin fill-color contribution proposal in
-[TODO 507](archived/507-design-plugin-fill-color-contributions.md). Plugins should use the shared palette; they do
+[TODO 507](507-design-plugin-fill-color-contributions.md). Plugins should use the shared palette; they do
 not need a registry for declaring their own feature-specific colors.
 
 ## Implementation Plan
@@ -42,22 +42,34 @@ not need a registry for declaring their own feature-specific colors.
 4. Migrate core and plugin drawers, bundled themes, examples, and color documentation to the new palette.
 5. Verify theme changes and font/atlas rebuilds, and review screenshots of the migrated drawers.
 
-## Open Questions
+## Implementation
 
-- Which small set of base colors is sufficient for the editor?
-- How many lighter and darker shades should each color provide, and how should drawers name them?
-- Which color space and lightness rules should generate the shades?
-- How should the shared shade catalog be represented in text, fill, and other sprite lookups?
+Completed on 2026-10-26. The pure `@8f4e/editor-palette` package resolves optional canvas, surface, ink, muted,
+primary, secondary, tertiary, highlight, detail, stroke, positive, warning, and negative anchors. Extra accents retain
+independent hues in existing projects, including Aurora's purple comments, yellow waves, and blue bars. Source alpha
+is preserved, including translucent wire strokes.
+
+Each base provides nine fixed Oklab shades and three fixed opacity variants. Shared surface and foreground materials
+replace feature-specific configurable colors throughout core and plugins. All fill colors are baked into the atlas;
+fonts expose three shades per base and a bounded foreground catalog, with identical concrete colors sharing rows.
+The worst-case catalog fits an 8192-entry lookup texture without depending on equal colors in a particular theme.
+
+The generated atlas carries its resolved palette, including line RGBA values. Theme and font updates replace atlas
+and lookups together, and stale asynchronous builds are ignored. Bundled project palettes, CLI snapshots, browser
+screenshots, and gallery previews have been migrated. Build, typecheck, unit, example, and browser checks pass.
+
+The separate [glyph-mask/GPU palette migration](../510-use-glyph-masks-and-gpu-color-palette.md) will remove per-color
+font duplication and make the full shade catalog available to text without expanding sprite metadata.
 
 ## Success Criteria
 
-- [ ] Theme authors configure a small base palette instead of feature-specific colors.
-- [ ] Lighter and darker shades are generated consistently from the configured base colors.
-- [ ] Core and plugin drawers use the same resolved shade catalog.
-- [ ] Adding a feature or plugin does not require adding a feature-specific color key to core.
-- [ ] Feature-specific palette declarations and their old configuration paths are removed from the migrated system.
-- [ ] Theme changes and atlas rebuilds refresh the shades used by all drawers.
-- [ ] Tests cover shade generation and theme updates, and drawer screenshots are reviewed.
+- [x] Theme authors configure a small base palette instead of feature-specific colors.
+- [x] Lighter and darker shades are generated consistently from the configured base colors.
+- [x] Core and plugin drawers use the same resolved shade catalog.
+- [x] Adding a feature or plugin does not require adding a feature-specific color key to core.
+- [x] Feature-specific palette declarations and their old configuration paths are removed from the migrated system.
+- [x] Theme changes and atlas rebuilds refresh the shades used by all drawers.
+- [x] Tests cover shade generation and theme updates, and drawer screenshots are reviewed.
 
 ## Affected Components
 
@@ -71,10 +83,10 @@ not need a registry for declaring their own feature-specific colors.
 
 ## Related Items
 
-- [TODO 504: Add a color-theme contrast audit tool](504-add-color-theme-contrast-audit-tool.md)
-- [TODO 508: Design lazy loading for editor plugins](508-design-editor-plugin-lazy-loading.md)
+- [TODO 504: Add a color-theme contrast audit tool](../504-add-color-theme-contrast-audit-tool.md)
+- [TODO 508: Design lazy loading for editor plugins](../508-design-editor-plugin-lazy-loading.md)
 
 ## References
 
-- [Current color configuration paths](../../packages/editor/packages/editor-core/docs/color-paths.md)
-- [Editor plugin contract](../../packages/editor/packages/editor-core/README.md#plugins)
+- [Current color configuration paths](../../../packages/editor/packages/editor-core/docs/color-paths.md)
+- [Editor plugin contract](../../../packages/editor/packages/editor-core/README.md#plugins)

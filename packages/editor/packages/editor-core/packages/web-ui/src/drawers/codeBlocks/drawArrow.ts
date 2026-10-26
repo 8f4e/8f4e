@@ -19,7 +19,7 @@ const ARROW_CHARACTERS = {
  */
 export default function drawArrow(engine: DrawContext, codeBlock: CodeBlockGraphicData, state: State): void {
 	const arrowPlacement = calculateArrowPlacement(codeBlock, state);
-	const font = state.spriteLookups?.fontArrow;
+	const font = state.spriteLookups?.fontPrimaryBase;
 	if (!font) {
 		return;
 	}

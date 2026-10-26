@@ -9,6 +9,8 @@
   fixtures as assets; fixture editor directives select `TestRuntime` to run assertions after compilation.
 - Reusable Vite source discovery lives in `packages/vite-plugin-sources/`. It exposes lazy text collections through
   `virtual:8f4e-sources/<name>`; the default editor uses it for stdlib includes and example modules.
+- Editor colors: `@8f4e/editor-palette` owns the pure base palette and predefined shades. Configure only shared base
+  colors; core and plugin drawers select generic palette tokens. Shades are baked into the sprite atlas.
 - Packages (Nx workspaces): `packages/*` plus nested libs (e.g., `editor`, `compiler`,
   `editor/packages/editor-core/packages/web-ui/packages/glugglugglug`). Each builds to its own `dist/` directory
   under the package root.

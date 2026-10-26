@@ -26,7 +26,7 @@ describe('updateBlockHighlightsGraphicData', () => {
 				y: 20,
 				width: 170,
 				height: 40,
-				color: 'codeBlockHighlightLevel1',
+				color: 'surfaceRaised1',
 			},
 		]);
 	});
@@ -73,7 +73,7 @@ describe('updateBlockHighlightsGraphicData', () => {
 		updateBlockHighlightsGraphicData(graphicData, state);
 
 		expect(graphicData.widgets.blockHighlights).toEqual([
-			{ x: 30, y: 20, width: 170, height: 40, color: 'codeBlockHighlightLevel1' },
+			{ x: 30, y: 20, width: 170, height: 40, color: 'surfaceRaised1' },
 		]);
 	});
 });

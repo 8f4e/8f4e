@@ -10,6 +10,6 @@ import type { SpriteData } from '@8f4e/web-ui';
 export default async function createMockSpriteData(state: State): Promise<SpriteData> {
 	return generateSprite({
 		font: state.editorConfig.font,
-		colorScheme: state.editorConfig.color,
+		palette: state.editorConfig.color,
 	});
 }

@@ -25,15 +25,13 @@ describe('createWebUiRenderProjection', () => {
 		const state = createMockState({
 			codeBlockRendering: { codeBlocks: [block] },
 			spriteLookups: {
-				fontCode: font,
-				fontDisabledCode: font,
-				fontLineNumber: font,
-				fontCodeComment: font,
-				fontInstruction: font,
-				fontNumbers: font,
-				fontBinaryZero: font,
-				fontBinaryOne: font,
-				fontBasePrefix: font,
+				fontInkBase: font,
+				fontInkFaint: font,
+				fontMutedBase: font,
+				fontTertiaryBase: font,
+				fontPrimaryBase: font,
+				fontPrimaryStrong: font,
+				fontSecondaryBase: font,
 			} as SpriteIdLookups,
 		});
 		const subscriptions = new Map<string, () => void>();

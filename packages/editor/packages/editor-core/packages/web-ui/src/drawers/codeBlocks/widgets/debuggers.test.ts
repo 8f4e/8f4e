@@ -22,8 +22,8 @@ describe('drawDebuggers', () => {
 		const state = createMockState({
 			viewport: { vGrid: 8, hGrid: 16 },
 			spriteLookups: {
-				fontCode: createSpriteIdLookupMock(),
-				fontNumbers: createSpriteIdLookupMock(),
+				fontInkBase: createSpriteIdLookupMock(),
+				fontSecondaryBase: createSpriteIdLookupMock(),
 			} as never,
 		});
 		const codeBlock = createMockCodeBlock({
@@ -44,7 +44,7 @@ describe('drawDebuggers', () => {
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 		expect(drawSprite).toHaveBeenNthCalledWith(1, 5, 7, 91, 8, 16);
 		expect(drawText).toHaveBeenCalledOnce();
-		expect(drawText).toHaveBeenCalledWith(13, 7, '2, 3', state.spriteLookups?.fontNumbers);
+		expect(drawText).toHaveBeenCalledWith(13, 7, '2, 3', state.spriteLookups?.fontSecondaryBase);
 		expect(drawSprite).toHaveBeenNthCalledWith(2, 45, 7, 93, 8, 16);
 	});
 
@@ -53,8 +53,8 @@ describe('drawDebuggers', () => {
 		const state = createMockState({
 			viewport: { vGrid: 8, hGrid: 16 },
 			spriteLookups: {
-				fontCode: createSpriteIdLookupMock(),
-				fontNumbers: createSpriteIdLookupMock(),
+				fontInkBase: createSpriteIdLookupMock(),
+				fontSecondaryBase: createSpriteIdLookupMock(),
 			} as never,
 		});
 		const codeBlock = createMockCodeBlock({
@@ -80,7 +80,7 @@ describe('drawDebuggers', () => {
 		expect(leftSprite).toBe(91);
 		expect(bracketWidth).toBeCloseTo(8.16);
 		expect(bracketHeight).toBeCloseTo(16.32);
-		expect(drawText).toHaveBeenCalledWith(13, 7, '2, 3', state.spriteLookups?.fontNumbers);
+		expect(drawText).toHaveBeenCalledWith(13, 7, '2, 3', state.spriteLookups?.fontSecondaryBase);
 		expect(rightX).toBeCloseTo(45.67);
 		expect(rightY).toBeCloseTo(6.84);
 		expect(rightSprite).toBe(93);
@@ -93,8 +93,8 @@ describe('drawDebuggers', () => {
 		const state = createMockState({
 			viewport: { vGrid: 8, hGrid: 16 },
 			spriteLookups: {
-				fontCode: createSpriteIdLookupMock(),
-				fontNumbers: createSpriteIdLookupMock(),
+				fontInkBase: createSpriteIdLookupMock(),
+				fontSecondaryBase: createSpriteIdLookupMock(),
 			} as never,
 		});
 		const codeBlock = createMockCodeBlock({
@@ -125,7 +125,7 @@ describe('drawDebuggers', () => {
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 		expect(drawSprite).toHaveBeenNthCalledWith(1, 5, 7, 91, 8, 16);
 		expect(drawText).toHaveBeenCalledOnce();
-		expect(drawText).toHaveBeenCalledWith(13, 7, '?', state.spriteLookups?.fontNumbers);
+		expect(drawText).toHaveBeenCalledWith(13, 7, '?', state.spriteLookups?.fontSecondaryBase);
 		expect(drawSprite).toHaveBeenNthCalledWith(2, 21, 7, 93, 8, 16);
 	});
 
@@ -135,8 +135,8 @@ describe('drawDebuggers', () => {
 			const state = createMockState({
 				viewport: { vGrid: 8, hGrid: 16 },
 				spriteLookups: {
-					fontCode: createSpriteIdLookupMock(),
-					fontNumbers: createSpriteIdLookupMock(),
+					fontInkBase: createSpriteIdLookupMock(),
+					fontSecondaryBase: createSpriteIdLookupMock(),
 				} as never,
 			});
 			const codeBlock = createMockCodeBlock({

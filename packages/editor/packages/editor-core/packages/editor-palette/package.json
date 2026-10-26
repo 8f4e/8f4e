@@ -1,0 +1,12 @@
+{
+  "name": "@8f4e/editor-palette",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pure base palette resolution and predefined editor shades",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "sideEffects": false,
+  "license": "MIT"
+}

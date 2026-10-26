@@ -10,13 +10,13 @@ export default function drawErrorMessages(engine: DrawContext, state: State, cod
 		engine.drawSprite(
 			x,
 			y,
-			state.spriteLookups.fillColors.errorMessageBackground,
+			state.spriteLookups.fillColors.negativeBase,
 			codeBlock.width,
 			message.length * state.viewport.hGrid
 		);
 
 		for (let i = 0; i < message.length; i++) {
-			engine.drawText(x, y + i * state.viewport.hGrid, message[i], state.spriteLookups.fontErrorMessage);
+			engine.drawText(x, y + i * state.viewport.hGrid, message[i], state.spriteLookups.fontNegativeOn);
 		}
 	}
 }

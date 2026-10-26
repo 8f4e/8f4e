@@ -1,3 +1,4 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
@@ -143,10 +144,11 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 
 function createSpriteData(identifier = 0, characterWidth = 8, characterHeight = 16) {
 	return {
+		palette: resolvePalette(),
 		spriteAtlas: {
 			image: {} as OffscreenCanvas,
 			lookup: {},
-			spriteIdentifiers: { fillColors: { background: identifier } } as never,
+			spriteIdentifiers: { fillColors: { canvasBase: identifier } } as never,
 		},
 		characterWidth,
 		characterHeight,
@@ -183,7 +185,7 @@ describe('web-ui init', () => {
 
 		expect(frameState).toBe(state);
 		expect(frameRenderData).toBe(renderDataSnapshot);
-		expect(mocks.resolveWireColors).toHaveBeenCalledWith(state.editorConfig.color);
+		expect(mocks.resolveWireColors).toHaveBeenCalledWith(createSpriteData().palette);
 		expect(mocks.drawConnections).toHaveBeenCalledWith(mocks.lines, mocks.wireColors, frameState, memoryViews);
 		expect(mocks.drawModeOverlay).toHaveBeenCalledWith(expect.anything(), frameState);
 	});
@@ -338,17 +340,12 @@ describe('web-ui init', () => {
 			float64: new Float64Array(0),
 		};
 		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData());
-		const nextColorScheme = {
-			fill: {
-				wire: '#123456',
-				wireHighlighted: '#abcdef',
-			},
-		};
-
-		state.editorConfig.color = nextColorScheme;
-		view.loadSpriteAtlas(createSpriteData());
-
-		expect(mocks.resolveWireColors).toHaveBeenLastCalledWith(nextColorScheme);
+		const nextSpriteData = createSpriteData();
+		nextSpriteData.palette = resolvePalette({ primary: '#123456', ink: '#abcdef' });
+		// Pending editor settings must not get paired with an older atlas.
+		state.editorConfig.color = { primary: '#ff0000' };
+		view.loadSpriteAtlas(nextSpriteData);
+		expect(mocks.resolveWireColors).toHaveBeenLastCalledWith(nextSpriteData.palette);
 	});
 
 	it('rebuilds resolved sprite ids and grid metrics when the atlas is replaced', async () => {
@@ -365,11 +362,11 @@ describe('web-ui init', () => {
 		};
 
 		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData(7, 8, 16));
-		expect(state.spriteLookups?.fillColors.background).toBe(107);
+		expect(state.spriteLookups?.fillColors.canvasBase).toBe(107);
 		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 16, vGrid: 8 }));
 
 		view.loadSpriteAtlas(createSpriteData(42, 10, 18));
-		expect(state.spriteLookups?.fillColors.background).toBe(142);
+		expect(state.spriteLookups?.fillColors.canvasBase).toBe(142);
 		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 18, vGrid: 10 }));
 	});
 

@@ -14,7 +14,7 @@ completed: 2026-10-26
 
 Cancelled on 2026-10-26. Replace feature-specific theme colors with a small shared base palette and generated lighter
 and darker shades, used by both core and plugin drawers. This replaces the need for plugin-owned color registration.
-The new direction is tracked in [TODO 509](../509-rebuild-editor-colors-from-base-palette.md); the proposal below is
+The new direction is tracked in [TODO 509](509-rebuild-editor-colors-from-base-palette.md); the proposal below is
 retained as history.
 
 ## Problem Description
