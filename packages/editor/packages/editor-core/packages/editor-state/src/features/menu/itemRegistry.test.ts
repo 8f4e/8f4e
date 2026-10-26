@@ -3,6 +3,20 @@ import { describe, expect, it } from 'vitest';
 import createMenuItemRegistry from './itemRegistry';
 
 describe('menu item registry', () => {
+	it('keeps main-menu and block-menu contributions separate', () => {
+		const registry = createMenuItemRegistry();
+		const state = createMockState();
+		const codeBlock = createMockCodeBlock();
+		const unregister = registry.registerItem('mainMenu', ({ state }) => ({ title: state.editorMode }));
+		registry.registerItem('moduleMenu', ({ codeBlock }) => ({ title: codeBlock.name }));
+		expect(registry.getItems('mainMenu', { state })).toEqual([{ title: 'edit' }]);
+		expect(registry.getItems('moduleMenu', { state, codeBlock })).toEqual([{ title: codeBlock.name }]);
+		state.editorMode = 'view';
+		expect(registry.getItems('mainMenu', { state })).toEqual([{ title: 'view' }]);
+		unregister();
+		expect(registry.getItems('mainMenu', { state })).toEqual([]);
+	});
+
 	it('derives items from the current context in registration order and supports removal', () => {
 		const registry = createMenuItemRegistry();
 		const state = createMockState();

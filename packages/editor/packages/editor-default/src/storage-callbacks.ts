@@ -218,13 +218,6 @@ export async function exportBinaryCode(fileName: string, codeBuffer: Uint8Array)
 	});
 }
 
-export async function exportCanvasScreenshot(blob: Blob, fileName: string): Promise<void> {
-	await saveBlobWithPickerFallback(blob, fileName, {
-		description: 'PNG Image',
-		accept: { 'image/png': ['.png'] },
-	});
-}
-
 async function saveBlobWithPickerFallback(
 	blob: Blob,
 	fileName: string,

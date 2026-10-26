@@ -7,7 +7,6 @@ import type {
 } from '@8f4e/editor-state-types';
 import createStateManager, { type StateManager } from '@8f4e/state-manager';
 import binaryAssetLoadingDialog from './features/binary-assets/effect';
-import canvasScreenshot from './features/canvas-screenshot/effect';
 import codeBlockRendering from './features/code-blocks/effect';
 import assertions from './features/code-blocks/features/assertions/effect';
 import autoEnvConstants from './features/code-blocks/features/auto-env-constants/effect';
@@ -97,7 +96,6 @@ export default function init(
 	registerEffect(color(store));
 	registerEffect(registerEditorConfigSchemaContributionsValidator(store));
 	registerEffect(projectExport(store, events));
-	registerEffect(canvasScreenshot(store, events));
 	registerEffect(dialog(store, events));
 	// Menus must consume pointer events before code blocks and viewport interactions.
 	registerEffect(contextMenu(store, events, menus));
@@ -162,6 +160,7 @@ export { default as wrapText } from './features/code-blocks/utils/wrapText';
 export { default as gapCalculator } from './features/code-editing/gapCalculator';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
 // Export .8f4e format helpers
+export { default as getExportBaseName } from './features/project-export/getExportBaseName';
 export { serializeProjectTo8f4e } from './features/project-export/serializeTo8f4e';
 // Export EMPTY_DEFAULT_PROJECT as a value
 export { EMPTY_DEFAULT_PROJECT } from './features/project-import/emptyDefaultProject';

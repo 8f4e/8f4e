@@ -40,7 +40,8 @@
     "@8f4e/editor-plugin-button": "*",
     "@8f4e/editor-plugin-wave": "*",
     "@8f4e/editor-plugin-piano": "*",
-    "@8f4e/editor-plugin-slider": "*"
+    "@8f4e/editor-plugin-slider": "*",
+    "@8f4e/editor-plugin-screenshot": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

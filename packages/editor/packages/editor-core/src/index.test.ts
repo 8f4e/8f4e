@@ -384,37 +384,18 @@ describe('editor init', () => {
 		expect(view.destroy).toHaveBeenCalledOnce();
 	});
 
-	it('renders one fresh frame before exporting a canvas screenshot', async () => {
+	it('exposes immediate rendering without a browser-specific plugin service', async () => {
 		const { default: init } = await import('./index');
-		const { default: initState } = await import('@8f4e/editor-state');
-		const screenshotBlob = new Blob(['png'], { type: 'image/png' });
-		const exportCanvasScreenshot = vi.fn().mockResolvedValue(undefined);
-		const canvas = {
-			width: 640,
-			height: 480,
-			toBlob: vi.fn((callback: (blob: Blob | null) => void) => callback(screenshotBlob)),
-		} as unknown as HTMLCanvasElement;
-
-		await init(canvas, {
-			runtimeRegistry: {
-				WebWorkerRuntime: {
-					id: 'WebWorkerRuntime',
-					factory: () => () => {},
-				},
-			},
-			callbacks: {
-				loadSession: async () => null,
-				exportCanvasScreenshot,
-			},
+		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
+			runtimeRegistry: {},
+			callbacks: { loadSession: async () => null },
 		});
+		view.renderFrame.mockClear();
 
-		const initStateOptions = vi.mocked(initState).mock.calls.at(-1)![1];
+		editor.renderFrame();
 
-		await initStateOptions.callbacks.exportCanvasScreenshot?.('project.png');
-
-		expect(view.renderFrame).toHaveBeenCalledWith();
-		expect(canvas.toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/png');
-		expect(exportCanvasScreenshot).toHaveBeenCalledWith(screenshotBlob, 'project.png');
+		expect(view.renderFrame).toHaveBeenCalledOnce();
+		editor.dispose();
 	});
 
 	it('commits sampled render stats into info.graphics', async () => {

@@ -205,7 +205,6 @@ export interface Callbacks {
 	saveProject?: (data: string, fileName: string) => Promise<void>;
 	exportProject?: (data: string, fileName: string) => Promise<void>;
 	exportBinaryCode?: (fileName: string) => Promise<void>;
-	exportCanvasScreenshot?: (fileName: string) => Promise<void>;
 	getStorageQuota?: () => Promise<{ usedBytes: number; totalBytes: number }>;
 
 	// Memory manipulation callback

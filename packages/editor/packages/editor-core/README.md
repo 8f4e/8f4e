@@ -24,6 +24,7 @@ Wheel input pans the editor viewport and prevents page scrolling by default. Emb
 Hosts can pause rendering without releasing memory through `pauseRendering()`. `releaseRenderingResources()` also
 releases reloadable GPU textures, dynamic buffers, and the canvas drawing buffer. `resumeRendering()` restores the
 resources and applies any canvas resize that happened while they were released.
+`renderFrame()` immediately renders the current state, including while the animation loop is paused.
 
 The editor supports view and edit modes. Selected code blocks have a continuously animated outline in both modes.
 Command+Arrow (or Control+Arrow) navigates between blocks with smooth viewport movement. Use `e` to enter edit mode
@@ -57,10 +58,18 @@ and dispatcher remain available. It does not track individual registrations. Set
 If setup throws, that plugin must unwind its partial allocations; the host disposes previously completed plugins.
 Initialization failures later in startup also dispose installed plugins.
 
+Keep browser dependencies in plugin factories rather than the shared setup context. A browser host can create
+`createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })` before initializing the editor; the
+returned plugin captures those dependencies and uses the regular setup services. The render callback runs from
+actions after initialization, once `editor` is available. Each editor receives a plugin bound to its own canvas.
+
 Register menu items with `menus.registerItem('moduleMenu', provider)`. Providers receive the current
 `{ state, codeBlock }` when the menu opens, and return a `ContextMenuItem` or `undefined` to omit it. The target block
 can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
 existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
+Use `menus.registerItem('mainMenu', provider)` for the background menu. Its providers receive `{ state }`, and
+contributions appear in registration order after the built-in items. Main-menu contributions are rebuilt when the
+menu opens or is revisited, just like block-menu contributions.
 
 Register widget directives with `directives.register(definition)`, using the existing `EditorDirectiveDefinition`
 contract from `@8f4e/editor-state-types`. The core owns generic source parsing, directive matching, and the block
@@ -90,6 +99,7 @@ data in a per-instance WeakMap. Buttons write their on value while pressed and t
 The wave plugin owns `@wave`, `@wave2`, and `@wave4`, including their layout space, typed samples, playheads, and drawing.
 The piano plugin owns `@piano`, key geometry, runtime note toggling, drawing, and its save-to-code menu action.
 The slider plugin owns `@slider`, its geometry, drag interaction, live drawing, and save-to-code menu action.
+The screenshot plugin owns the main-menu action, temporary overlay visibility, PNG encoding, and browser file saving.
 The execution-toggle plugin owns the Skip/Unskip menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
 layout, animation, and overlay drawing, with its state private to each installation. Group execution toggling and
 nested block shading remain built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.

@@ -1,6 +1,7 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { buttonPlugin } from '@8f4e/editor-plugin-button';
 import { pianoPlugin } from '@8f4e/editor-plugin-piano';
+import { createScreenshotPlugin, type ScreenshotPluginOptions } from '@8f4e/editor-plugin-screenshot';
 import { sliderPlugin } from '@8f4e/editor-plugin-slider';
 import { switchPlugin } from '@8f4e/editor-plugin-switch';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
@@ -11,26 +12,24 @@ import { getListOfModules, getModule, getModuleDependencies } from './examples/m
 import { getProject } from './get-project';
 import { createRuntimeRegistry } from './runtime-registry';
 import { resolveStdlibInclude } from './stdlib-resolver';
-import {
-	createProjectFileCallbacks,
-	createStorageCallbacks,
-	exportBinaryCode,
-	exportCanvasScreenshot,
-} from './storage-callbacks';
+import { createProjectFileCallbacks, createStorageCallbacks, exportBinaryCode } from './storage-callbacks';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
 export type DefaultEditorInstance = Editor;
 
-export const defaultEditorPlugins: NonNullable<EditorOptions['plugins']> = [
-	toggleSkipExecutionPlugin,
-	switchPlugin,
-	buttonPlugin,
-	wavePlugin,
-	pianoPlugin,
-	sliderPlugin,
-	tooltipsPlugin,
-];
+export function createDefaultEditorPlugins(options: ScreenshotPluginOptions): NonNullable<EditorOptions['plugins']> {
+	return [
+		toggleSkipExecutionPlugin,
+		switchPlugin,
+		buttonPlugin,
+		wavePlugin,
+		pianoPlugin,
+		sliderPlugin,
+		tooltipsPlugin,
+		createScreenshotPlugin(options),
+	];
+}
 
 export interface DefaultEditorMountOptions {
 	/** Replaces the default plugin set. Pass an empty array to omit all plugins. */
@@ -49,7 +48,7 @@ export interface DefaultEditorMountOptions {
 export async function mountDefaultEditor(
 	canvas: HTMLCanvasElement,
 	{
-		plugins = defaultEditorPlugins,
+		plugins,
 		sharedAudioContext,
 		captureWheel,
 		featureFlags,
@@ -65,7 +64,7 @@ export async function mountDefaultEditor(
 	let editor: Editor;
 	try {
 		editor = await initEditor(canvas, {
-			plugins,
+			plugins: plugins ?? createDefaultEditorPlugins({ canvas, renderFrame: () => editor.renderFrame() }),
 			captureWheel,
 			featureFlags,
 			initialEditorMode,
@@ -80,7 +79,6 @@ export async function mountDefaultEditor(
 				...storageCallbacks,
 				...projectFileCallbacks,
 				exportBinaryCode: fileName => exportBinaryCode(fileName, compilerService.getCodeBuffer()),
-				exportCanvasScreenshot,
 			},
 		});
 	} catch (error) {
