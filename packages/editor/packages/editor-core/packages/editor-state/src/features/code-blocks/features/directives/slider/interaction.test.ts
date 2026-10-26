@@ -193,6 +193,39 @@ describe('slider interaction', () => {
 		cleanup();
 	});
 
+	it('preserves descending range direction while clicking and dragging', () => {
+		const cleanup = slider(mockStore as any, mockEvents);
+		const codeBlockClickCallback = onCallbacks.get('codeBlockClick');
+		const mouseMoveCallback = onCallbacks.get('mousemove');
+		const mockCodeBlock = createMockCodeBlock({ name: 'test-block', x: 0, y: 0 });
+		mockCodeBlock.widgets.sliders = [
+			{
+				moduleId: 'test-block',
+				id: 'testSlider',
+				x: 50,
+				y: 50,
+				width: 100,
+				height: 20,
+				allocationUnitAddress: 5,
+				byteAddress: 20,
+				isInteger: true,
+				min: 100,
+				max: 0,
+			},
+		];
+
+		codeBlockClickCallback?.({ x: 50, y: 60, codeBlock: mockCodeBlock });
+		expect(memoryStore.get(5)).toBe(100);
+
+		mouseMoveCallback?.({ x: 100, stopPropagation: false });
+		expect(memoryStore.get(5)).toBe(50);
+
+		codeBlockClickCallback?.({ x: 150, y: 60, codeBlock: mockCodeBlock });
+		expect(memoryStore.get(5)).toBe(0);
+
+		cleanup();
+	});
+
 	it('should snap to step value when step is provided', () => {
 		const cleanup = slider(mockStore as any, mockEvents);
 		const codeBlockPointerDownCallback = onCallbacks.get('codeBlockPointerDown');
