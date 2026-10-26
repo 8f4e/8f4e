@@ -30,8 +30,8 @@ High-level approach:
 - Pull the current upstream PixelCode release/source from `https://github.com/qwerasd205/PixelCode`.
 - Confirm the available source format in the upstream `dist/` or `src/` directories.
 - Convert the ASCII glyphs into the sprite-generator source format used by the existing fonts.
-- Reuse or adapt the current custom editor glyph fallback strategy so icons and non-ASCII editor glyphs continue to render.
-- Generate the committed bitmap metadata with the existing sprite-generator tooling.
+- Configure the background dot position and rectangle size in the font definition; connectors use ordinary bracket/star characters and the shared fill mask.
+- Generate the git-ignored bitmap metadata with the existing sprite-generator tooling.
 - Register the font in the sprite-generator public font list and lazy metadata loader.
 - Update third-party font documentation and commit the OFL license text.
 
@@ -46,8 +46,7 @@ High-level approach:
 ### Step 2: Add sprite-generator font sources
 
 - Add `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/pixelcode/ascii.ts`.
-- Add `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/pixelcode/glyphs.ts`, either from compatible PixelCode glyphs or padded/adapted from the current fallback font.
-- Run the existing bitmap generation tool so `generated/ascii.ts` and `generated/glyphs.ts` are created.
+- Run the existing bitmap generation tool so `generated/ascii.ts` is created.
 
 ### Step 3: Register the font
 
@@ -79,7 +78,7 @@ High-level approach:
 - [ ] `pixelcode` is a selectable sprite-generator font.
 - [ ] The font loads through the same lazy metadata path as existing bundled fonts.
 - [ ] ASCII code glyphs render from PixelCode-derived data.
-- [ ] Editor custom glyphs still render correctly with the new font.
+- [ ] Connectors and the tiled background render correctly with the new font.
 - [ ] Sprite-generator tests and typecheck pass.
 - [ ] Third-party font attribution and OFL license text are committed.
 

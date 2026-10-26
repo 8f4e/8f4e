@@ -43,7 +43,8 @@ rectangles stay unchanged. Replace and resolve the atlas when font shapes or dim
 
 Input and output connectors are composed at runtime from fills and ordinary bracket/star glyphs. The background uses
 one base fill and the same pattern mask drawn in two colors, with the second instance offset horizontally by one
-character cell. Tiling keeps both layers aligned without submitting one instance per dot.
+character cell. Tiling keeps both layers aligned without submitting one instance per dot. The mask is constructed once
+from solid rectangles at each font's configured dot position: 2×2 pixels, or 4×4 for `spleen16x32`.
 
 ## Font Bitmaps
 
@@ -54,9 +55,7 @@ Font bitmaps are precomputed from ASCII art sources and bundled as Base64-encode
 Font glyphs are defined as ASCII art in the source files:
 
 - `src/fonts/ibmvga8x16/ascii.ts` - 8x16 ASCII character font
-- `src/fonts/ibmvga8x16/glyphs.ts` - 8x16 custom glyphs for UI elements
 - `src/fonts/6x10/ascii.ts` - 6x10 ASCII character font
-- `src/fonts/6x10/glyphs.ts` - 6x10 custom glyphs for UI elements
 
 Each glyph is an array of strings where:
 - `' '` (space) represents an unset pixel
@@ -75,21 +74,21 @@ Example:
 ]
 ```
 
+BDF fonts can be imported with `node tools/import-bdf.mjs <bdf-path> <font-name>`. The importer writes only
+`src/fonts/<font-name>/ascii.ts`. Register the font dimensions in the bitmap generator and add its lazy loader and
+background dot metrics to `FONT_DEFINITIONS` in `src/index.ts`. Connectors use ordinary bracket/star characters and
+the shared fill mask; font additions need no separate editor glyph table.
+
 ### Regenerating Font Bitmaps
 
 Font bitmaps are automatically regenerated as part of the build process. However, you can manually regenerate them:
 
 ```bash
-# From the sprite-generator package directory
-node tools/generate-font-bitmaps.mjs
-
-# Or using Nx
+# From the repository root
 npx nx run @8f4e/sprite-generator:generate-fonts
 ```
 
-Generated files are located in:
-- `src/fonts/ibmvga8x16/generated/`
-- `src/fonts/6x10/generated/`
+Each font produces one payload at `src/fonts/<font-name>/generated/ascii.ts`.
 
 These files are git-ignored and should not be committed.
 

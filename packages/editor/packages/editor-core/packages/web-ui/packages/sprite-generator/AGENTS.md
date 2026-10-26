@@ -16,6 +16,9 @@
 
 - Keep production generation independent of palettes; browser previews resolve colors with `@8f4e/editor-palette`.
 - Generate one R8 glyph set, one fully covered fill texel, and one reusable background pattern mask.
+- Font sources contain only `ascii.ts`; `generate-fonts` produces `generated/ascii.ts`. The BDF importer takes only
+  a source path and font name. Configure background dot position and rectangle size in `FONT_DEFINITIONS`; do not
+  add special editor glyph tables.
 - Keep shapes and lookup IDs independent of theme values. Return only masks, source identifiers, and font metrics.
 - Input and output connectors are composed by web-ui from fills and font glyphs; do not add prerendered connector sprites.
 - Tests build package dependencies before running.
