@@ -26,18 +26,8 @@ function resolveSliderDirectiveWidget(
 		return;
 	}
 
-	let min = slider.min;
-	let max = slider.max;
-
-	if (min === undefined || max === undefined) {
-		if (memory.memory.isInteger) {
-			min = min ?? 0;
-			max = max ?? 127;
-		} else {
-			min = min ?? 0;
-			max = max ?? 1;
-		}
-	}
+	const min = slider.min ?? 0;
+	const max = slider.max ?? (memory.memory.isInteger ? 127 : 1);
 
 	const displayRow =
 		directiveState.displayModel.sourceLineIndexToDisplayRow[slider.sourceLineIndex] ?? slider.sourceLineIndex;

@@ -83,6 +83,7 @@ Interaction handlers can subscribe to `codeBlockPointerDown` for the start of a 
 Use `events.on('mousemove', handler, { capture: true })` when a plugin must consume a drag before ordinary listeners,
 such as viewport panning. Capture listeners run first in registration order. Setting `event.stopPropagation = true`
 stops the remaining capture and ordinary listeners. Unregister with the same `events.off` call as other listeners.
+Core registers menu movement in capture before plugins, so an open menu retains priority over plugin drags.
 
 The switch and button plugins own their directives, memory resolution, interaction, and drawing. Each keeps widget
 data in a per-instance WeakMap. Buttons write their on value while pressed and their off value on release.

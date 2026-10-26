@@ -13,24 +13,16 @@ export function registerSliderInteraction(
 ): () => void {
 	let activeSlider: ActiveSlider | null = null;
 
-	const updateSliderValue = (x: number) => {
-		if (!activeSlider) return;
-
-		const { slider, codeBlock } = activeSlider;
-
-		// Calculate relative x position within the slider
+	const updateSliderValue = ({ slider, codeBlock }: ActiveSlider, x: number) => {
 		const relativeX = x - (codeBlock.x + slider.x - state.viewport.x);
 		const normalizedValue = Math.max(0, Math.min(1, relativeX / slider.width));
 
-		// Map to slider range
 		let value = slider.min + normalizedValue * (slider.max - slider.min);
 
-		// Apply step if provided (must be positive)
-		if (slider.step !== undefined && slider.step > 0) {
+		if (slider.step !== undefined) {
 			value = slider.min + Math.round((value - slider.min) / slider.step) * slider.step;
 		}
 
-		// Clamp to min/max
 		value = Math.max(slider.min, Math.min(slider.max, value));
 
 		const hasFloatRange =
@@ -57,12 +49,10 @@ export function registerSliderInteraction(
 			return;
 		}
 
-		// Set active slider for drag handling
 		activeSlider = { slider, codeBlock };
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 
-		// Update value on click
-		updateSliderValue(x);
+		updateSliderValue(activeSlider, x);
 	};
 
 	const onMouseMove = (event: InternalMouseEvent) => {
@@ -70,13 +60,11 @@ export function registerSliderInteraction(
 			return;
 		}
 
-		// Update value during drag
-		updateSliderValue(event.x);
+		updateSliderValue(activeSlider, event.x);
 		event.stopPropagation = true;
 	};
 
 	const onMouseUp = () => {
-		// Clear active slider when mouse is released
 		activeSlider = null;
 	};
 

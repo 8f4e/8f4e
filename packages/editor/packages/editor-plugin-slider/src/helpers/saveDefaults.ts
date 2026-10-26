@@ -54,11 +54,7 @@ function formatRuntimeSliderValue(value: number, slider: Slider): string | undef
 	}
 
 	const decimalPlaces =
-		slider.step !== undefined && slider.step > 0
-			? Math.min(12, getDecimalPlaces(slider.step))
-			: slider.isFloat64
-				? 12
-				: 6;
+		slider.step !== undefined ? Math.min(12, getDecimalPlaces(slider.step)) : slider.isFloat64 ? 12 : 6;
 	const roundedValue = Number.parseFloat(value.toFixed(decimalPlaces));
 	const serializedValue = Object.is(roundedValue, -0) ? '0' : roundedValue.toString();
 

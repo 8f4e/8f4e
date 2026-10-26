@@ -1,6 +1,6 @@
 import { createMockState } from '@8f4e/editor-state-testing';
 import type { MemoryViews } from '@8f4e/web-ui';
-import { describe, expect, it, type vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock, createSpriteIdLookupMock } from '../__tests__/rendering';
 import type { Slider } from '../types';
 import { drawSliders } from './draw';
@@ -45,8 +45,8 @@ describe('drawSliders', () => {
 
 		drawSliders(engine, state, [slider], createMemoryViews(0.5));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
+		const drawSprite = vi.mocked(engine.drawSprite);
+		const drawText = vi.mocked(engine.drawText);
 		expect(drawSprite.mock.calls).toEqual([
 			[0, 0, 'track', 32, 32],
 			[0, 0, 'fill', 20, 32],

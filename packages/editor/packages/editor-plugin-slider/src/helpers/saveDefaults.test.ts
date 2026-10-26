@@ -29,7 +29,7 @@ function createRawMemoryReader(values: Record<number, { type: 'int32' | 'float32
 		}
 	}
 
-	return (allocationUnitAddress: number) => int32[allocationUnitAddress] ?? 0;
+	return (allocationUnitAddress: number) => int32[allocationUnitAddress];
 }
 
 describe('save slider default values to code', () => {

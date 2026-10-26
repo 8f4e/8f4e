@@ -168,6 +168,28 @@ describe('slider plugin', () => {
 		test.move(2);
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), 100, true);
 	});
+	it('gives an open context menu pointer movement before an active slider drag', async () => {
+		const test = await setup();
+		test.events.dispatch('mousedown', { ...test.point(0.25), buttons: 1, altKey: false, stopPropagation: false });
+		test.events.dispatch('contextmenu', { ...test.point(0.25), buttons: 3, stopPropagation: false });
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(test.state.contextMenu.open).toBe(true);
+		test.write.mockClear();
+		const move = {
+			x: test.state.contextMenu.x - test.state.viewport.x + 1,
+			y: test.state.contextMenu.y - test.state.viewport.y + test.state.viewport.hGrid + 1,
+			movementX: 0,
+			movementY: 16,
+			buttons: 3,
+			altKey: false,
+			stopPropagation: false,
+		};
+		test.events.dispatch('mousemove', move);
+		expect(test.state.contextMenu.highlightedItem).toBe(1);
+		expect(move.stopPropagation).toBe(true);
+		expect(test.write).not.toHaveBeenCalled();
+	});
 	it.each([
 		{ type: 'int', max: 127, integer: true },
 		{ type: 'float', max: 1, integer: false },
