@@ -13,7 +13,7 @@ vi.mock('./storage-callbacks', () => ({
 }));
 
 describe('default editor plugins', () => {
-	it('includes the execution toggle, switch, button, wave, piano, and tooltips in the default composition', async () => {
+	it('includes the execution toggle, switch, button, wave, piano, slider, and tooltips in the default composition', async () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 		const editor = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage });
 		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toBe(defaultEditorPlugins);
@@ -23,6 +23,7 @@ describe('default editor plugins', () => {
 			'button',
 			'wave',
 			'piano',
+			'slider',
 			'tooltips',
 		]);
 		editor.dispose();

@@ -29,7 +29,6 @@ export const moduleMenu = (
 
 	// Check if code block has ; @favorite directive
 	const hasFavoriteDirective = codeBlock.isFavorite;
-	const hasSliders = codeBlock.widgets.sliders.length > 0;
 	const hasMemoryConnections = hasIntermodularMemoryConnections(codeBlock.code);
 
 	// Check if code block has a group name and compute group skip/nonstick status
@@ -139,13 +138,6 @@ export const moduleMenu = (
 						action: 'toggleFavoriteDirective',
 						payload: { codeBlock },
 						close: true,
-					},
-					{
-						title: 'Save slider values to code',
-						action: 'saveSliderValuesToCode',
-						payload: { codeBlock },
-						close: true,
-						disabled: !hasSliders || !state.callbacks.getWordFromMemory,
 					},
 					{
 						title: 'Remove connections',

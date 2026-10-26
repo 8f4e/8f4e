@@ -17,7 +17,6 @@ import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/e
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
 import crossfade from './features/code-blocks/features/directives/crossfade/interaction';
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
-import slider from './features/code-blocks/features/directives/slider/interaction';
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
 import favoriteToggler from './features/code-blocks/features/favoriteToggler/effect';
@@ -31,7 +30,6 @@ import groupUngroupper from './features/code-blocks/features/group/ungroupper/ef
 import memoryConnectionRemover from './features/code-blocks/features/memoryConnectionRemover/effect';
 import parsedDirectivesUpdater from './features/code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
-import sliderDefaultSaver from './features/code-blocks/features/sliderDefaultSaver/effect';
 import codeEditing from './features/code-editing/effect';
 import color from './features/color/effect';
 import dialog from './features/dialog/effect';
@@ -110,8 +108,6 @@ export default function init(
 	registerEffect(projectImport(store, events));
 	registerEffect(codeBlockDragger(store, events));
 	registerEffect(codeBlockNavigation(store, events));
-	registerEffect(slider(store, events));
-	registerEffect(sliderDefaultSaver(store, events));
 	registerEffect(memoryConnectionRemover(store, events));
 	registerEffect(crossfade(store, events));
 	registerEffect(viewport(store, events));

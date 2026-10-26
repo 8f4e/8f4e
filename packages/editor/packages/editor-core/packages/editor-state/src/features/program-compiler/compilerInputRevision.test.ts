@@ -19,7 +19,6 @@ import groupUngroupper from '../code-blocks/features/group/ungroupper/effect';
 import memoryConnectionRemover from '../code-blocks/features/memoryConnectionRemover/effect';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
-import sliderDefaultSaver from '../code-blocks/features/sliderDefaultSaver/effect';
 import codeEditing from '../code-editing/effect';
 import historyTracking from '../edit-history/effect';
 import globalEditorDirectivesEffect from '../global-editor-directives/effect';
@@ -260,18 +259,6 @@ describe('compiler input revision', () => {
 		expect(block.code[1]).toBe('float value');
 		expect(state.compilerInputRevision).toBe(1);
 		dispatch('removeConnections', { codeBlock: block });
-		expect(state.compilerInputRevision).toBe(1);
-	});
-
-	it('advances when saving runtime defaults, but not when defaults already match', () => {
-		sliderDefaultSaver(store, events);
-		block.code = ['module main', 'int value 1', 'moduleEnd'];
-		block.widgets.sliders = [{ moduleId: 'main', id: 'value', isInteger: true, allocationUnitAddress: 0 } as never];
-		state.callbacks.getWordFromMemory = () => 2;
-		dispatch('saveSliderValuesToCode', { codeBlock: block });
-		expect(block.code[1]).toBe('int value 2');
-		expect(state.compilerInputRevision).toBe(1);
-		dispatch('saveSliderValuesToCode', { codeBlock: block });
 		expect(state.compilerInputRevision).toBe(1);
 	});
 

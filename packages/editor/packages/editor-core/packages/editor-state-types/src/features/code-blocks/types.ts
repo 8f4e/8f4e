@@ -132,23 +132,6 @@ export interface ArrayMeter {
 
 export type TypedValueKind = 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'float32' | 'float64';
 
-export interface Slider {
-	/** Canonical owner of the backing declaration, including for exposed aliases. */
-	moduleId: string;
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	id: string;
-	allocationUnitAddress: number;
-	byteAddress: number;
-	isInteger: boolean;
-	isFloat64?: boolean;
-	min: number;
-	max: number;
-	step?: number;
-}
-
 export interface Crossfade {
 	width: number;
 	height: number;
@@ -244,7 +227,6 @@ export interface CodeBlockGraphicData {
 		arrayBars: ArrayBars[];
 		arrayMeters: ArrayMeter[];
 		infoPanels: InfoPanel[];
-		sliders: Slider[];
 		crossfades: Crossfade[];
 		shapeDeclarations: ShapeDeclaration[];
 		errorMessages: Array<{

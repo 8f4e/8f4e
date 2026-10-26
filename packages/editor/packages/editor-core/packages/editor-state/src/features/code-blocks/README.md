@@ -60,7 +60,7 @@ This feature contains several subfeatures under `features/` that handle specific
 - `state.codeBlockRendering.rootCodeBlocks` - Recursive root tree of project-owned code-block arrays
 - `state.codeBlockRendering.codeBlocks` - Direct pointer to the project slice currently rendered
 - `state.codeBlockRendering.selectedCodeBlock` - Currently selected block reference
-- Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs/sliders)
+- Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs)
 
 Project-group blocks use the same `CodeBlockGraphicData` representation as other blocks. Their optional
 `nestedProjectCodeBlocks` field points to the child project slice. Project-owned arrays keep stable identity; add,

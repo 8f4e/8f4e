@@ -1,9 +1,6 @@
-import type { CodeBlockGraphicData, Slider, State } from '@8f4e/editor-state-types';
-import {
-	getMemoryDefaultEdits,
-	type MemoryDefaultEdit,
-	type MemoryDefaultValue,
-} from '~/pureHelpers/getMemoryDefaultEdits';
+import { getMemoryDefaultEdits, type MemoryDefaultEdit, type MemoryDefaultValue } from '@8f4e/editor-state/memory';
+import type { State } from '@8f4e/editor-state-types';
+import type { Slider } from '../types';
 
 const float32DecodeBuffer = new ArrayBuffer(4);
 const float32DecodeInt32 = new Int32Array(float32DecodeBuffer);
@@ -57,11 +54,7 @@ function formatRuntimeSliderValue(value: number, slider: Slider): string | undef
 	}
 
 	const decimalPlaces =
-		slider.step !== undefined && slider.step > 0
-			? Math.min(12, getDecimalPlaces(slider.step))
-			: slider.isFloat64
-				? 12
-				: 6;
+		slider.step !== undefined ? Math.min(12, getDecimalPlaces(slider.step)) : slider.isFloat64 ? 12 : 6;
 	const roundedValue = Number.parseFloat(value.toFixed(decimalPlaces));
 	const serializedValue = Object.is(roundedValue, -0) ? '0' : roundedValue.toString();
 
@@ -75,8 +68,8 @@ function getSliderDefaults(sliders: Slider[], read: (address: number) => number)
 	});
 }
 
-export function getSliderDefaultEdits(state: State, source: CodeBlockGraphicData): MemoryDefaultEdit[] {
+export function getSliderDefaultEdits(state: State, sliders: Slider[]): MemoryDefaultEdit[] {
 	const read = state.callbacks.getWordFromMemory;
 	if (!read) return [];
-	return getMemoryDefaultEdits(state, getSliderDefaults(source.widgets.sliders, read));
+	return getMemoryDefaultEdits(state, getSliderDefaults(sliders, read));
 }

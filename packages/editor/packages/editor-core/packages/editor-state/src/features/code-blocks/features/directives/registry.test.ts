@@ -38,7 +38,7 @@ describe('directive registry', () => {
 				'module foo',
 				'; @plot &buffer count(buffer)',
 				'; @bars &bins count(bins)',
-				'; @slider &gain 0 1 0.01',
+				'; @meter gain 0 1',
 				'; @crossfade &dry &wet',
 				'; @info foo',
 				'; @stack',
@@ -62,10 +62,10 @@ describe('directive registry', () => {
 				sourceLine: '; @bars &bins count(bins)',
 			},
 			{
-				name: 'slider',
+				name: 'meter',
 				sourceLineIndex: 3,
-				args: ['&gain', '0', '1', '0.01'],
-				sourceLine: '; @slider &gain 0 1 0.01',
+				args: ['gain', '0', '1'],
+				sourceLine: '; @meter gain 0 1',
 			},
 			{
 				name: 'crossfade',

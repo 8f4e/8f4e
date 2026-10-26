@@ -185,7 +185,7 @@ export default function contextMenu(
 	events.on('contextmenu', onContextMenu);
 	events.on('menuBack', onMenuBack);
 	events.on('mousedown', onMouseDown);
-	events.on('mousemove', onMouseMove);
+	events.on('mousemove', onMouseMove, { capture: true });
 
 	return () => {
 		events.off('contextmenu', onContextMenu);

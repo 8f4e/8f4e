@@ -1,6 +1,7 @@
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
-import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
+import type { Slider } from '../types';
 import { getSliderDefaultEdits } from './saveDefaults';
 
 function createProjectState(blocks: CodeBlockGraphicData[], read: State['callbacks']['getWordFromMemory']): State {
@@ -28,7 +29,7 @@ function createRawMemoryReader(values: Record<number, { type: 'int32' | 'float32
 		}
 	}
 
-	return (allocationUnitAddress: number) => int32[allocationUnitAddress] ?? 0;
+	return (allocationUnitAddress: number) => int32[allocationUnitAddress];
 }
 
 describe('save slider default values to code', () => {
@@ -37,7 +38,7 @@ describe('save slider default values to code', () => {
 			blockType: 'module',
 			code: ['module synth', 'float foo 1.3', 'int bar 1', '; @slider &foo', '; @slider &bar', 'moduleEnd'],
 		});
-		codeBlock.widgets.sliders = [
+		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
 				id: 'foo',
@@ -74,7 +75,7 @@ describe('save slider default values to code', () => {
 			})
 		);
 
-		const edits = getSliderDefaultEdits(state, codeBlock);
+		const edits = getSliderDefaultEdits(state, sliders);
 		expect(edits).toEqual([
 			{
 				codeBlock,
@@ -89,7 +90,7 @@ describe('save slider default values to code', () => {
 			blockType: 'module',
 			code: ['module synth', 'float gain ; @slider &gain 0 1 0.01', 'moduleEnd'],
 		});
-		codeBlock.widgets.sliders = [
+		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
 				id: 'gain',
@@ -113,7 +114,7 @@ describe('save slider default values to code', () => {
 			})
 		);
 
-		expect(getSliderDefaultEdits(state, codeBlock)).toEqual([
+		expect(getSliderDefaultEdits(state, sliders)).toEqual([
 			{ codeBlock, code: ['module synth', 'float gain 1.0 ; @slider &gain 0 1 0.01', 'moduleEnd'] },
 		]);
 	});
@@ -123,7 +124,7 @@ describe('save slider default values to code', () => {
 			blockType: 'module',
 			code: ['module synth', 'float gain 0.0', '; @slider &gain 0 1 0.01', 'moduleEnd'],
 		});
-		codeBlock.widgets.sliders = [
+		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
 				id: 'gain',
@@ -147,7 +148,7 @@ describe('save slider default values to code', () => {
 			})
 		);
 
-		expect(getSliderDefaultEdits(state, codeBlock)).toEqual([
+		expect(getSliderDefaultEdits(state, sliders)).toEqual([
 			{ codeBlock, code: ['module synth', 'float gain 0.7', '; @slider &gain 0 1 0.01', 'moduleEnd'] },
 		]);
 	});
@@ -157,7 +158,7 @@ describe('save slider default values to code', () => {
 			blockType: 'module',
 			code: ['module synth', 'float64 phase 0.0', '; @slider &phase 0 4 0.001', 'moduleEnd'],
 		});
-		codeBlock.widgets.sliders = [
+		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
 				id: 'phase',
@@ -182,7 +183,7 @@ describe('save slider default values to code', () => {
 			})
 		);
 
-		expect(getSliderDefaultEdits(state, codeBlock)).toEqual([
+		expect(getSliderDefaultEdits(state, sliders)).toEqual([
 			{ codeBlock, code: ['module synth', 'float64 phase 3.142', '; @slider &phase 0 4 0.001', 'moduleEnd'] },
 		]);
 	});
@@ -192,7 +193,7 @@ describe('save slider default values to code', () => {
 			blockType: 'module',
 			code: ['module synth', 'float foo 1.3', '; @slider &foo', 'moduleEnd'],
 		});
-		codeBlock.widgets.sliders = [
+		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
 				id: 'foo',
@@ -209,7 +210,7 @@ describe('save slider default values to code', () => {
 		];
 
 		const state = createProjectState([codeBlock], undefined);
-		expect(getSliderDefaultEdits(state, codeBlock)).toEqual([]);
+		expect(getSliderDefaultEdits(state, sliders)).toEqual([]);
 	});
 
 	it('skips sliders without a matching named scalar declaration', () => {
@@ -217,7 +218,7 @@ describe('save slider default values to code', () => {
 			blockType: 'module',
 			code: ['module synth', 'float other 1.3', '; @slider &foo', 'moduleEnd'],
 		});
-		codeBlock.widgets.sliders = [
+		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
 				id: 'foo',
@@ -234,6 +235,6 @@ describe('save slider default values to code', () => {
 		];
 
 		const state = createProjectState([codeBlock], createRawMemoryReader({ 4: { type: 'float32', value: 0.75 } }));
-		expect(getSliderDefaultEdits(state, codeBlock)).toEqual([]);
+		expect(getSliderDefaultEdits(state, sliders)).toEqual([]);
 	});
 });

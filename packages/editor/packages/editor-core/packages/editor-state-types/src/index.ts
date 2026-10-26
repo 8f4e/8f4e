@@ -27,7 +27,6 @@ import type {
 	MemoryIdentifier,
 	Output,
 	ParsedDirectiveRecord,
-	Slider,
 	TypedValueKind,
 } from './features/code-blocks/types';
 import type { InsertTextEvent, MoveCaretEvent, NavigateCodeBlockEvent } from './features/code-editing/types';
@@ -53,6 +52,7 @@ import type { ProjectViewport, Viewport, ViewportAnimation } from './features/vi
 import type {
 	CodeError,
 	EventDispatcher,
+	EventSubscriptionOptions,
 	GridCoordinates,
 	InternalKeyboardEvent,
 	InternalMouseEvent,
@@ -97,6 +97,7 @@ export type {
 	DialogContent,
 	DialogState,
 	EventDispatcher,
+	EventSubscriptionOptions,
 	GridCoordinates,
 	InfoPanel,
 	Input,
@@ -121,7 +122,6 @@ export type {
 	RuntimeRegistryEntry,
 	RuntimeValuesByRuntimeId,
 	Size,
-	Slider,
 	TypedValueKind,
 };
 
