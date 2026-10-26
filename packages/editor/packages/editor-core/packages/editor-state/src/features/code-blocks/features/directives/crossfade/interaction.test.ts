@@ -96,9 +96,9 @@ describe('crossfade interaction', () => {
 
 	it('writes silence to both sides when clicked in the center', () => {
 		const cleanup = crossfade(mockStore as any, mockEvents);
-		const codeBlockClickCallback = onCallbacks.get('codeBlockClick');
+		const codeBlockPointerDownCallback = onCallbacks.get('codeBlockPointerDown');
 
-		codeBlockClickCallback?.({ x: 100, y: 60, codeBlock: createCrossfadeCodeBlock() });
+		codeBlockPointerDownCallback?.({ x: 100, y: 60, codeBlock: createCrossfadeCodeBlock() });
 
 		expect(memoryStore.get(5)).toBe(0.5);
 		expect(memoryStore.get(6)).toBe(0.5);
@@ -107,9 +107,9 @@ describe('crossfade interaction', () => {
 
 	it('writes fully left when clicked on the left edge', () => {
 		const cleanup = crossfade(mockStore as any, mockEvents);
-		const codeBlockClickCallback = onCallbacks.get('codeBlockClick');
+		const codeBlockPointerDownCallback = onCallbacks.get('codeBlockPointerDown');
 
-		codeBlockClickCallback?.({ x: 50, y: 60, codeBlock: createCrossfadeCodeBlock() });
+		codeBlockPointerDownCallback?.({ x: 50, y: 60, codeBlock: createCrossfadeCodeBlock() });
 
 		expect(memoryStore.get(5)).toBe(1);
 		expect(memoryStore.get(6)).toBe(0);
@@ -118,10 +118,10 @@ describe('crossfade interaction', () => {
 
 	it('updates both values during drag', () => {
 		const cleanup = crossfade(mockStore as any, mockEvents);
-		const codeBlockClickCallback = onCallbacks.get('codeBlockClick');
+		const codeBlockPointerDownCallback = onCallbacks.get('codeBlockPointerDown');
 		const mouseMoveCallback = onCallbacks.get('mousemove');
 
-		codeBlockClickCallback?.({ x: 100, y: 60, codeBlock: createCrossfadeCodeBlock() });
+		codeBlockPointerDownCallback?.({ x: 100, y: 60, codeBlock: createCrossfadeCodeBlock() });
 		mouseMoveCallback?.({ x: 150, stopPropagation: false });
 
 		expect(memoryStore.get(5)).toBe(0);
@@ -131,11 +131,11 @@ describe('crossfade interaction', () => {
 
 	it('stops updating when the mouse is released', () => {
 		const cleanup = crossfade(mockStore as any, mockEvents);
-		const codeBlockClickCallback = onCallbacks.get('codeBlockClick');
+		const codeBlockPointerDownCallback = onCallbacks.get('codeBlockPointerDown');
 		const mouseMoveCallback = onCallbacks.get('mousemove');
 		const mouseUpCallback = onCallbacks.get('mouseup');
 
-		codeBlockClickCallback?.({ x: 100, y: 60, codeBlock: createCrossfadeCodeBlock() });
+		codeBlockPointerDownCallback?.({ x: 100, y: 60, codeBlock: createCrossfadeCodeBlock() });
 		mouseUpCallback?.();
 		mouseMoveCallback?.({ x: 150, stopPropagation: false });
 

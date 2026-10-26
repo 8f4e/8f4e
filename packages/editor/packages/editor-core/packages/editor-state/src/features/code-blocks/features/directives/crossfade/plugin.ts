@@ -1,8 +1,8 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 import { createCrossfadeDirectiveData } from './data';
-import { createCrossfadeDirectiveWidgetContribution } from './resolve';
+import { createCrossfadeDirectiveLayoutCallbacks } from './resolve';
 
-export default createDirectivePlugin(
+export default createDirectiveDefinition(
 	'crossfade',
 	(directive, draft) => {
 		const crossfade = createCrossfadeDirectiveData(directive.args, directive.rawRow);
@@ -11,10 +11,10 @@ export default createDirectivePlugin(
 		}
 
 		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 2 });
-		draft.widgets.push(createCrossfadeDirectiveWidgetContribution(crossfade));
+		draft.layoutCallbacks.push(createCrossfadeDirectiveLayoutCallbacks(crossfade));
 	},
 	{
-		clearGraphicData: graphicData => {
+		clearDerivedBlockData: graphicData => {
 			graphicData.widgets.crossfades = [];
 		},
 	}

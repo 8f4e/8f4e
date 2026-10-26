@@ -12,13 +12,13 @@ Manages the lifecycle of code blocks in the editor: creation, selection, drag op
 - **Graphics Derivation**: Computes visual properties (position, size, color) from block data
 - **Block Widgets**: Derives interactive elements from code annotations:
   - Inputs/Outputs for audio routing
-  - Buttons for interactive controls
   - Piano keyboard for note input
   - Debuggers for runtime inspection
   - Plotters for visualization
 
-Switch widgets are provided by `@8f4e/editor-plugin-switch`, included in `@8f4e/editor-default`. The plugin owns
-their derived data, interactions, and drawing through the [plugin API](../../../../../README.md#plugins).
+Switch and button widgets are provided by `@8f4e/editor-plugin-switch` and `@8f4e/editor-plugin-button`, included in
+`@8f4e/editor-default`. Their plugins own derived data, interactions, and drawing through the
+[plugin API](../../../../../README.md#plugins).
 
 ## Block Types
 
@@ -40,7 +40,6 @@ This feature contains several subfeatures under `features/` that handle specific
 - `assertions` - Derives assertion result rectangles from `state.assertionResults` into `widgets.assertions`
 - `blockTypeUpdater` - Automatic block type detection and updates
 - `arrayPlotters` - Visualization of runtime array data
-- `buttons` - Interactive button controls derived from code
 - `codeBlockCreator` - Block creation logic
 - `codeBlockDragger` - Drag and drop operations
 - `codeBlockNavigation` - Keyboard navigation between blocks
@@ -63,7 +62,7 @@ This feature contains several subfeatures under `features/` that handle specific
 - `state.codeBlockRendering.rootCodeBlocks` - Recursive root tree of project-owned code-block arrays
 - `state.codeBlockRendering.codeBlocks` - Direct pointer to the project slice currently rendered
 - `state.codeBlockRendering.selectedCodeBlock` - Currently selected block reference
-- Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs/buttons)
+- Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs/sliders)
 
 Project-group blocks use the same `CodeBlockGraphicData` representation as other blocks. Their optional
 `nestedProjectCodeBlocks` field points to the child project slice. Project-owned arrays keep stable identity; add,

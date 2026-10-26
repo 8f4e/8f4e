@@ -15,7 +15,6 @@ import blockTypeUpdater from './features/code-blocks/features/blockTypeUpdater/e
 import codeBlockCreator from './features/code-blocks/features/codeBlockCreator/effect';
 import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
-import button from './features/code-blocks/features/directives/button/interaction';
 import crossfade from './features/code-blocks/features/directives/crossfade/interaction';
 import pianoKeyboard from './features/code-blocks/features/directives/piano/interaction';
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
@@ -97,8 +96,6 @@ export default function init(
 	const store = createStateManager<State>(baseState);
 	effectCleanups.push(store.dispose);
 
-	const state = store.getState();
-
 	registerEffect(font(store));
 	registerEffect(color(store));
 	registerEffect(registerEditorConfigSchemaContributionsValidator(store));
@@ -114,7 +111,6 @@ export default function init(
 	registerEffect(projectImport(store, events));
 	registerEffect(codeBlockDragger(store, events));
 	registerEffect(codeBlockNavigation(store, events));
-	registerEffect(button(state, events));
 	registerEffect(slider(store, events));
 	registerEffect(sliderDefaultSaver(store, events));
 	registerEffect(memoryConnectionRemover(store, events));
@@ -136,7 +132,7 @@ export default function init(
 	registerEffect(blockTypeUpdater(store)); // Must run before compiler to classify blocks first
 	registerEffect(globalEditorDirectivesEffect(store));
 	registerEffect(compiler(store));
-	registerEffect(codeBlockRendering(store, events, directives.plugins));
+	registerEffect(codeBlockRendering(store, events, directives.definitions));
 	registerEffect(assertions(store));
 	registerEffect(viewportDirectiveEffect(store, events));
 	registerEffect(entryOutlines(store));

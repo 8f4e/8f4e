@@ -10,7 +10,6 @@ import drawShapeDeclarations from './drawShapeDeclarations';
 import drawAssertions from './widgets/assertions';
 import drawBars from './widgets/bars';
 import drawBlockHighlights from './widgets/blockHighlights';
-import drawButtons from './widgets/buttons';
 import drawConnectors from './widgets/connectors';
 import drawCrossfades from './widgets/crossfades';
 import drawDebuggers from './widgets/debuggers';
@@ -110,7 +109,6 @@ export default function drawModules(
 
 			drawErrorMessages(engine, state, codeBlock);
 			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
-			drawButtons(engine, state, codeBlock, memoryViews);
 			drawSliders(engine, state, codeBlock, memoryViews);
 			drawCrossfades(engine, state, codeBlock, memoryViews);
 			drawPianoKeyboards(engine, state, codeBlock, memoryViews);

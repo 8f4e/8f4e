@@ -1,9 +1,9 @@
 import type { ViewportAnchor } from '@8f4e/editor-state-types';
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 
 const VALID_ANCHORS = new Set<string>(['top-left', 'top-right', 'bottom-left', 'bottom-right']);
 
-export default createDirectivePlugin('viewport', (directive, draft) => {
+export default createDirectiveDefinition('viewport', (directive, draft) => {
 	// Only process the first @viewport directive; subsequent ones are ignored.
 	if (draft.blockState.viewportAnchor !== undefined) {
 		return;

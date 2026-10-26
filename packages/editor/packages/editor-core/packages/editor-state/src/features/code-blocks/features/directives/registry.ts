@@ -3,7 +3,7 @@ import type {
 	DirectiveDerivedState,
 	DirectiveDerivedStateDraft,
 	DirectiveDeriveOptions,
-	EditorDirectivePlugin,
+	EditorDirectiveDefinition,
 	EditorDirectiveRegistry,
 	ParsedDirectiveRecord,
 	State,
@@ -11,7 +11,6 @@ import type {
 import buildDisplayModel from '../../buildDisplayModel';
 import alwaysOnTopDirective from './alwaysOnTop/plugin';
 import barsDirective from './bars/plugin';
-import buttonDirective from './button/plugin';
 import crossfadeDirective from './crossfade/plugin';
 import disabledDirective from './disabled/plugin';
 import favoriteDirective from './favorite/plugin';
@@ -37,7 +36,7 @@ export type {
 	ViewportAnchor,
 } from '@8f4e/editor-state-types';
 
-export const directivePlugins: EditorDirectivePlugin[] = [
+export const directiveDefinitions: EditorDirectiveDefinition[] = [
 	meterDirective,
 	barsDirective,
 	plotDirective,
@@ -47,7 +46,6 @@ export const directivePlugins: EditorDirectivePlugin[] = [
 	sliderDirective,
 	crossfadeDirective,
 	pianoDirective,
-	buttonDirective,
 	watchDirective,
 	stackDirective,
 	infoDirective,
@@ -60,15 +58,15 @@ export const directivePlugins: EditorDirectivePlugin[] = [
 	alwaysOnTopDirective,
 ];
 
-export function createDirectiveRegistry(): EditorDirectiveRegistry & { plugins: EditorDirectivePlugin[] } {
-	const plugins = [...directivePlugins];
+export function createDirectiveRegistry(): EditorDirectiveRegistry & { definitions: EditorDirectiveDefinition[] } {
+	const definitions = [...directiveDefinitions];
 	return {
-		plugins,
+		definitions,
 		register: directive => {
-			plugins.push(directive);
+			definitions.push(directive);
 			return () => {
-				const index = plugins.indexOf(directive);
-				if (index !== -1) plugins.splice(index, 1);
+				const index = definitions.indexOf(directive);
+				if (index !== -1) definitions.splice(index, 1);
 			};
 		},
 	};
@@ -78,9 +76,9 @@ export function deriveDirectiveState(
 	code: string[],
 	parsedDirectives: ParsedDirectiveRecord[],
 	options: DirectiveDeriveOptions = {},
-	plugins: EditorDirectivePlugin[] = directivePlugins
+	definitions: EditorDirectiveDefinition[] = directiveDefinitions
 ): DirectiveDerivedState {
-	const directives = normalizeEditorDirectiveRecords(parsedDirectives, plugins);
+	const directives = normalizeEditorDirectiveRecords(parsedDirectives, definitions);
 	const draft: DirectiveDerivedStateDraft = {
 		sourceCode: code,
 		blockState: {
@@ -91,13 +89,13 @@ export function deriveDirectiveState(
 		displayState: {},
 		displayModel: buildDisplayModel(code),
 		layoutContributions: [],
-		widgets: [],
+		layoutCallbacks: [],
 		state: options.state,
 	};
 
 	for (const directive of directives) {
-		const plugin = plugins.find(candidate => candidate.name === directive.name);
-		plugin?.apply?.(directive, draft);
+		const definition = definitions.find(candidate => candidate.name === directive.name);
+		definition?.apply?.(directive, draft);
 	}
 
 	return {
@@ -108,7 +106,7 @@ export function deriveDirectiveState(
 			isExpandedForEditing: options.isExpandedForEditing,
 		}),
 		layoutContributions: draft.layoutContributions,
-		widgets: draft.widgets,
+		layoutCallbacks: draft.layoutCallbacks,
 	};
 }
 
@@ -117,8 +115,8 @@ export function runBlockLayoutReady(
 	state: State,
 	directiveState: DirectiveDerivedState
 ): void {
-	directiveState.widgets.forEach(widget => {
-		widget.onBlockLayoutReady?.(graphicData, state, directiveState);
+	directiveState.layoutCallbacks.forEach(callbacks => {
+		callbacks.onBlockLayoutReady?.(graphicData, state, directiveState);
 	});
 }
 
@@ -126,13 +124,13 @@ export function runBeforeGraphicDataWidthCalculation(
 	graphicData: CodeBlockGraphicData,
 	state: State,
 	directiveState: DirectiveDerivedState,
-	plugins: EditorDirectivePlugin[] = directivePlugins
+	definitions: EditorDirectiveDefinition[] = directiveDefinitions
 ): void {
-	plugins.forEach(plugin => {
-		plugin.clearGraphicData?.(graphicData);
+	definitions.forEach(definition => {
+		definition.clearDerivedBlockData?.(graphicData);
 	});
 
-	directiveState.widgets.forEach(widget => {
-		widget.beforeGraphicDataWidthCalculation?.(graphicData, state, directiveState);
+	directiveState.layoutCallbacks.forEach(callbacks => {
+		callbacks.beforeGraphicDataWidthCalculation?.(graphicData, state, directiveState);
 	});
 }

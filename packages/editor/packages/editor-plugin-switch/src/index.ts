@@ -24,7 +24,7 @@ export const switchPlugin: EditorPlugin = {
 				}
 			}
 		});
-		const onClick = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+		const onPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
 			const control = widgets
 				.get(codeBlock)
 				?.find(
@@ -42,9 +42,9 @@ export const switchPlugin: EditorPlugin = {
 				control.isInteger
 			);
 		};
-		events.on('codeBlockClick', onClick);
+		events.on('codeBlockPointerDown', onPointerDown);
 		return () => {
-			events.off('codeBlockClick', onClick);
+			events.off('codeBlockPointerDown', onPointerDown);
 			unregisterDrawer();
 			unregisterDirective();
 		};

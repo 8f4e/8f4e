@@ -1,16 +1,16 @@
-import type { DirectiveDerivedState, DirectiveWidgetContribution } from '@8f4e/editor-state-types';
+import type { DirectiveDerivedState, DirectiveLayoutCallbacks } from '@8f4e/editor-state-types';
 import gapCalculator from '~/features/code-editing/gapCalculator';
 import { getTabStopsByLine, getVisualLineWidth } from '~/features/code-editing/tabLayout';
 import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import type { WatchDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
+type DirectiveLayoutResolver = NonNullable<DirectiveLayoutCallbacks['onBlockLayoutReady']>;
 
 function resolveWatchDirectiveWidget(
 	_debugger: WatchDirectiveData,
-	graphicData: Parameters<DirectiveWidgetResolver>[0],
-	state: Parameters<DirectiveWidgetResolver>[1],
+	graphicData: Parameters<DirectiveLayoutResolver>[0],
+	state: Parameters<DirectiveLayoutResolver>[1],
 	directiveState: DirectiveDerivedState
 ): void {
 	if (!graphicData.name) {
@@ -43,7 +43,7 @@ function resolveWatchDirectiveWidget(
 	});
 }
 
-export function createWatchDirectiveWidgetContribution(_debugger: WatchDirectiveData): DirectiveWidgetContribution {
+export function createWatchDirectiveLayoutCallbacks(_debugger: WatchDirectiveData): DirectiveLayoutCallbacks {
 	return {
 		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveWatchDirectiveWidget(_debugger, graphicData, state, directiveState);

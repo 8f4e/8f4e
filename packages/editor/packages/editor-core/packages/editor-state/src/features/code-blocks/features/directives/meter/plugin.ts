@@ -1,8 +1,8 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 import { createMeterDirectiveData } from './data';
-import { createMeterDirectiveWidgetContribution } from './resolve';
+import { createMeterDirectiveLayoutCallbacks } from './resolve';
 
-export default createDirectivePlugin(
+export default createDirectiveDefinition(
 	'meter',
 	(directive, draft) => {
 		const meter = createMeterDirectiveData(directive.args, directive.rawRow, directive.sourceLine);
@@ -11,11 +11,11 @@ export default createDirectivePlugin(
 		}
 
 		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 1 });
-		draft.widgets.push(createMeterDirectiveWidgetContribution(meter));
+		draft.layoutCallbacks.push(createMeterDirectiveLayoutCallbacks(meter));
 	},
 	{
 		allowTrailingComment: true,
-		clearGraphicData: graphicData => {
+		clearDerivedBlockData: graphicData => {
 			graphicData.widgets.arrayMeters = [];
 		},
 	}

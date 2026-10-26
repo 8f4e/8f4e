@@ -1,8 +1,8 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 import { createPlotDirectiveData } from './data';
-import { createPlotDirectiveWidgetContribution } from './resolve';
+import { createPlotDirectiveLayoutCallbacks } from './resolve';
 
-export default createDirectivePlugin(
+export default createDirectiveDefinition(
 	'plot',
 	(directive, draft) => {
 		const plot = createPlotDirectiveData(directive.args, directive.rawRow);
@@ -11,10 +11,10 @@ export default createDirectivePlugin(
 		}
 
 		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 8 });
-		draft.widgets.push(createPlotDirectiveWidgetContribution(plot));
+		draft.layoutCallbacks.push(createPlotDirectiveLayoutCallbacks(plot));
 	},
 	{
-		clearGraphicData: graphicData => {
+		clearDerivedBlockData: graphicData => {
 			graphicData.widgets.arrayPlotters = [];
 		},
 	}

@@ -36,7 +36,8 @@
     "@8f4e/stdlib": "*",
     "@8f4e/tokenizer": "*",
     "@8f4e/editor-plugin-switch": "*",
-    "@8f4e/editor-plugin-tooltips": "*"
+    "@8f4e/editor-plugin-tooltips": "*",
+    "@8f4e/editor-plugin-button": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

@@ -1,5 +1,5 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 
-export default createDirectivePlugin('favorite', (_, draft) => {
+export default createDirectiveDefinition('favorite', (_, draft) => {
 	draft.blockState.isFavorite = true;
 });

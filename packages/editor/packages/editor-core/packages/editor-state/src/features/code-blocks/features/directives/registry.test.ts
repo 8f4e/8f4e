@@ -1,7 +1,7 @@
 import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
 import { parseBlockDirectives } from '../../utils/parseBlockDirectives';
-import { createDirectiveRegistry, deriveDirectiveState, directivePlugins } from './registry';
+import { createDirectiveRegistry, deriveDirectiveState, directiveDefinitions } from './registry';
 import { parseEditorDirectives } from './utils';
 
 describe('directive registry', () => {
@@ -16,12 +16,12 @@ describe('directive registry', () => {
 		});
 		const code = ['; @customWidget 2'];
 		const records = parseBlockDirectives(code);
-		expect(deriveDirectiveState(code, records, {}, first.plugins).layoutContributions).toEqual([
+		expect(deriveDirectiveState(code, records, {}, first.definitions).layoutContributions).toEqual([
 			{ rawRow: 0, rows: 2 },
 		]);
-		expect(deriveDirectiveState(code, records, {}, second.plugins).layoutContributions).toEqual([]);
+		expect(deriveDirectiveState(code, records, {}, second.definitions).layoutContributions).toEqual([]);
 		unregister();
-		expect(deriveDirectiveState(code, records, {}, first.plugins).layoutContributions).toEqual([]);
+		expect(deriveDirectiveState(code, records, {}, first.definitions).layoutContributions).toEqual([]);
 	});
 
 	it('parses registered directives from code', () => {
@@ -37,7 +37,7 @@ describe('directive registry', () => {
 				'; note',
 				'moduleEnd',
 			],
-			directivePlugins
+			directiveDefinitions
 		);
 
 		expect(result).toEqual([
@@ -80,10 +80,10 @@ describe('directive registry', () => {
 		]);
 	});
 
-	it('parses trailing-comment directives only for plugins that allow them', () => {
+	it('parses trailing-comment directives only for definitions that allow them', () => {
 		const result = parseEditorDirectives(
 			['int foo 1 ; @watch', 'push 1 ; @stack', 'float out ; @meter', 'int bar 1 ; @plot buffer'],
-			directivePlugins
+			directiveDefinitions
 		);
 
 		expect(result).toEqual([
@@ -94,7 +94,7 @@ describe('directive registry', () => {
 	});
 
 	it('parses chained directives from a single full-line comment', () => {
-		const result = parseEditorDirectives(['; @home @favorite'], directivePlugins);
+		const result = parseEditorDirectives(['; @home @favorite'], directiveDefinitions);
 
 		expect(result).toEqual([
 			{ name: 'home', rawRow: 0, args: [], sourceLine: '; @home @favorite' },
@@ -102,8 +102,8 @@ describe('directive registry', () => {
 		]);
 	});
 
-	it('normalizes plugin aliases during parsing', () => {
-		const result = parseEditorDirectives(['; @w value', 'push 1 ; @s'], directivePlugins);
+	it('normalizes definition aliases during parsing', () => {
+		const result = parseEditorDirectives(['; @w value', 'push 1 ; @s'], directiveDefinitions);
 
 		expect(result).toEqual([
 			{ name: 'watch', rawRow: 0, args: ['value'], sourceLine: '; @w value' },
@@ -226,7 +226,7 @@ describe('directive registry', () => {
 	it('deriveDirectiveState and parseEditorDirectives agree on trailing directive behavior', () => {
 		// @watch allows trailing comments; @plot does not.
 		const code = ['int foo 1 ; @watch', 'int bar 1 ; @plot buffer'];
-		const fromParse = parseEditorDirectives(code, directivePlugins);
+		const fromParse = parseEditorDirectives(code, directiveDefinitions);
 		const fromDerive = deriveDirectiveState(code, parseBlockDirectives(code));
 
 		// Both flows must recognize the trailing @watch (results in one parsed directive / one widget).
@@ -237,12 +237,12 @@ describe('directive registry', () => {
 
 	it('normalizes aliases in deriveDirectiveState the same way as parseEditorDirectives', () => {
 		const code = ['; @w value'];
-		const fromParse = parseEditorDirectives(code, directivePlugins);
+		const fromParse = parseEditorDirectives(code, directiveDefinitions);
 		const fromDerive = deriveDirectiveState(code, parseBlockDirectives(code));
 
 		// Both paths normalize '@w' to the canonical 'watch' name.
 		expect(fromParse[0].name).toBe('watch');
 		// @watch with a valid arg produces one widget.
-		expect(fromDerive.widgets).toHaveLength(1);
+		expect(fromDerive.layoutCallbacks).toHaveLength(1);
 	});
 });

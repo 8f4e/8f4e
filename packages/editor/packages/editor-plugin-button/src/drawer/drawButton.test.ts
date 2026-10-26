@@ -1,15 +1,14 @@
 import { createMockState } from '@8f4e/editor-state-testing';
-import type { Button } from '@8f4e/editor-state-types';
 import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../../../__tests__/rendering';
+import { createDrawContextMock, createSpriteIdLookupMock } from '../__tests__/rendering';
+import type { ButtonWidget } from '../types';
 import drawButton from './drawButton';
 
-const control: Button = {
+const control: ButtonWidget = {
 	x: 10,
 	y: 20,
 	width: 32,
 	height: 16,
-	id: 'gate',
 	allocationUnitAddress: 0,
 	isInteger: true,
 	offValue: 0,

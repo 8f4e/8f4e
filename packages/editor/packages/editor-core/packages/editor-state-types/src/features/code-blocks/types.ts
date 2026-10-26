@@ -130,18 +130,6 @@ export interface ArrayMeter {
 	valueType: TypedValueKind;
 }
 
-export interface Button {
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	id: string;
-	allocationUnitAddress: number;
-	isInteger: boolean;
-	offValue: number;
-	onValue: number;
-}
-
 export interface PianoKeyboard {
 	x: number;
 	y: number;
@@ -325,7 +313,6 @@ export interface CodeBlockGraphicData {
 		arrayMeters: ArrayMeter[];
 		arrayWaves: ArrayWave[];
 		infoPanels: InfoPanel[];
-		buttons: Button[];
 		sliders: Slider[];
 		crossfades: Crossfade[];
 		pianoKeyboards: PianoKeyboard[];

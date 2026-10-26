@@ -1,4 +1,4 @@
-import type { DirectiveDerivedState, DirectiveWidgetContribution, State } from '@8f4e/editor-state-types';
+import type { DirectiveDerivedState, DirectiveLayoutCallbacks, State } from '@8f4e/editor-state-types';
 import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
 import gapCalculator from '~/features/code-editing/gapCalculator';
 import { getTabStopsByLine, getVisualLineWidth } from '~/features/code-editing/tabLayout';
@@ -11,10 +11,10 @@ interface StackDirectiveData {
 	isTrailing: boolean;
 }
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
+type DirectiveLayoutResolver = NonNullable<DirectiveLayoutCallbacks['onBlockLayoutReady']>;
 
 function getStackAnalysisLines(
-	graphicData: Parameters<DirectiveWidgetResolver>[0],
+	graphicData: Parameters<DirectiveLayoutResolver>[0],
 	state: State
 ): CompiledStackAnalysisLine[] | undefined {
 	if (graphicData.blockType === 'function') {
@@ -45,8 +45,8 @@ function findStackAnalysisLine(
 
 function resolveStackDirectiveWidget(
 	stackDirective: StackDirectiveData,
-	graphicData: Parameters<DirectiveWidgetResolver>[0],
-	state: Parameters<DirectiveWidgetResolver>[1],
+	graphicData: Parameters<DirectiveLayoutResolver>[0],
+	state: Parameters<DirectiveLayoutResolver>[1],
 	directiveState: DirectiveDerivedState
 ): void {
 	const stackAnalysisLines = getStackAnalysisLines(graphicData, state);
@@ -85,9 +85,7 @@ function resolveStackDirectiveWidget(
 	});
 }
 
-export function createStackDirectiveWidgetContribution(
-	stackDirective: StackDirectiveData
-): DirectiveWidgetContribution {
+export function createStackDirectiveLayoutCallbacks(stackDirective: StackDirectiveData): DirectiveLayoutCallbacks {
 	return {
 		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveStackDirectiveWidget(stackDirective, graphicData, state, directiveState);

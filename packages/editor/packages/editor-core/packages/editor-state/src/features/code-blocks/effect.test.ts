@@ -6,7 +6,7 @@ import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';
 import codeBlockRenderingEffect from './effect';
-import { directivePlugins } from './features/directives/registry';
+import { directiveDefinitions } from './features/directives/registry';
 import entryOutlines from './features/entryOutlines/effect';
 import parsedDirectivesUpdater from './features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
@@ -46,12 +46,12 @@ describe('code block layout readiness', () => {
 		const store = createStateManager(state);
 		const layouts: Array<{ width: number; height: number; cursorX: number; cursorY: number; gap: number }> = [];
 		codeBlockRenderingEffect(store, createMockEventDispatcherWithVitest(), [
-			...directivePlugins,
+			...directiveDefinitions,
 			{
 				name: 'layoutProbe',
 				apply: (directive, draft) => {
 					draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 2 });
-					draft.widgets.push({
+					draft.layoutCallbacks.push({
 						beforeGraphicDataWidthCalculation: codeBlock => {
 							codeBlock.minGridWidth = 40;
 						},
@@ -104,7 +104,7 @@ describe('code block rendering error mapping', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 
 		expect(rootScope.widgets.errorMessages[0]?.message.join('')).toContain('Undefined root constant');
 		expect(group.widgets.errorMessages[0]?.message.join('')).toContain('Undefined child constant');
@@ -134,7 +134,7 @@ describe('code block rendering error mapping', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 
 		expect(functionBlock.widgets.errorMessages).toHaveLength(1);
 		expect(functionBlock.widgets.errorMessages[0].lineNumber).toBe(2);
@@ -166,13 +166,13 @@ describe('code block rendering cursor selection', () => {
 		const onSelectedRowChanged = vi.fn();
 
 		store.subscribe('codeBlockRendering.selectedCodeBlock.cursor.row', onSelectedRowChanged);
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 
-		const codeBlockClickHandler = (events.on as Mock).mock.calls.find(
-			([eventName]) => eventName === 'codeBlockClick'
+		const codeBlockPointerDownHandler = (events.on as Mock).mock.calls.find(
+			([eventName]) => eventName === 'codeBlockPointerDown'
 		)?.[1] as ((event: { relativeX: number; relativeY: number; codeBlock: typeof selectedBlock }) => void) | undefined;
 
-		codeBlockClickHandler?.({
+		codeBlockPointerDownHandler?.({
 			relativeX: 0,
 			relativeY: state.viewport.hGrid,
 			codeBlock: selectedBlock,
@@ -195,7 +195,7 @@ describe('code block rendering home directive', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 		store.set('initialProjectState', state.initialProjectState);
 
 		expect(state.codeBlockRendering.codeBlocks).toHaveLength(1);
@@ -211,7 +211,7 @@ describe('code block rendering home directive', () => {
 		state.codeBlockRendering.outputsByWordAddress.set(40, {} as never);
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 
 		store.set('codeBlockRendering.codeBlocks', []);
 
@@ -237,7 +237,7 @@ describe('code block rendering home directive', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 		store.set('initialProjectState', state.initialProjectState);
 
 		expect(state.codeBlockRendering.codeBlocks).toHaveLength(2);
@@ -272,7 +272,7 @@ describe('code block rendering home directive', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 		store.set('initialProjectState', state.initialProjectState);
 
 		expect(state.codeBlockRendering.codeBlocks).toBe(state.codeBlockRendering.rootCodeBlocks);
@@ -319,7 +319,7 @@ entryEnd`);
 		const state = createMockState({ initialProjectState: project, spriteLookups: createSpriteLookups() });
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 		entryOutlines(store);
 		projectGroupNavigation(store, events);
 		store.set('initialProjectState', project);
@@ -376,7 +376,7 @@ entryEnd`);
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 		store.set('initialProjectState', state.initialProjectState);
 		expect(state.compilerInputRevision).toBe(1);
 		const firstRoot = state.codeBlockRendering.rootCodeBlocks;
@@ -422,7 +422,7 @@ entryEnd`);
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 		store.set('initialProjectState', state.initialProjectState);
 
 		expect(state.codeBlockRendering.codeBlocks).toHaveLength(1);
@@ -463,7 +463,7 @@ entryEnd`);
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 		store.set('initialProjectState', state.initialProjectState);
 
 		const [homeBlock] = state.codeBlockRendering.codeBlocks;
@@ -515,7 +515,7 @@ entryEnd`);
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 		state.viewport.vGrid = 6;
 		state.viewport.hGrid = 12;
 		const spriteSheetRerenderedHandler = (events.on as Mock).mock.calls.find(
@@ -564,7 +564,7 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		const events = createMockEventDispatcherWithVitest();
 
 		parsedDirectivesUpdater(store);
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 
 		store.set('codeBlockRendering.selectedCodeBlock.code', ['module normalA', '; @alwaysOnTop', 'moduleEnd']);
 
@@ -607,7 +607,7 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		const events = createMockEventDispatcherWithVitest();
 
 		parsedDirectivesUpdater(store);
-		codeBlockRenderingEffect(store, events, directivePlugins);
+		codeBlockRenderingEffect(store, events, directiveDefinitions);
 
 		store.set('codeBlockRendering.selectedCodeBlock.code', ['module topB', 'moduleEnd']);
 

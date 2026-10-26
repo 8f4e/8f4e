@@ -62,12 +62,13 @@ Register menu items with `menus.registerItem('moduleMenu', provider)`. Providers
 can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
 existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
 
-Register widget directives with `directives.register(definition)`, using the existing `EditorDirectivePlugin`
+Register widget directives with `directives.register(definition)`, using the existing `EditorDirectiveDefinition`
 contract from `@8f4e/editor-state-types`. The core owns generic source parsing, directive matching, and the block
-layout pipeline. Each definition handles its own arguments through `apply`, contributes widget layout callbacks,
-and can clear its derived data through `clearGraphicData`. Widget contributions use `onBlockLayoutReady` to derive
-geometry after the block's dimensions, display rows, gaps, and cursor coordinates are current. Registrations are local
-to each editor. Install them in setup before the initial project loads; there is no runtime plugin installation API.
+layout pipeline. Each definition handles its own arguments through `apply`, registers `DirectiveLayoutCallbacks`
+in `draft.layoutCallbacks`, and can clear its derived data through `clearDerivedBlockData`. These callbacks use
+`onBlockLayoutReady` to derive geometry after the block's dimensions, display rows, gaps, and cursor coordinates are
+current. Registrations are local to each editor. Install them in setup before the initial project loads; there is
+no runtime plugin installation API.
 
 Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
 `{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
@@ -78,9 +79,11 @@ current state's sprite lookups, which change with the font or color scheme.
 `@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
 disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
 
-The switch plugin owns `@switch` argument handling, memory resolution, click handling, and drawing. Its widget data
-lives in a per-instance WeakMap rather than the core state shape. The execution-toggle plugin owns the Skip/Unskip
-menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
+Interaction handlers can subscribe to `codeBlockPointerDown` for the start of a block press and `mouseup` for release.
+
+The switch and button plugins own their directives, memory resolution, interaction, and drawing. Each keeps widget
+data in a per-instance WeakMap. Buttons write their on value while pressed and their off value on release.
+The execution-toggle plugin owns the Skip/Unskip menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
 layout, animation, and overlay drawing, with its state private to each installation. Group execution toggling and
 nested block shading remain built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
 

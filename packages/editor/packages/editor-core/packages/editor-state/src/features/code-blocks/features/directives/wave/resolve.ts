@@ -1,16 +1,16 @@
-import type { DirectiveDerivedState, DirectiveWidgetContribution } from '@8f4e/editor-state-types';
+import type { DirectiveDerivedState, DirectiveLayoutCallbacks } from '@8f4e/editor-state-types';
 import gapCalculator from '~/features/code-editing/gapCalculator';
 import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import { resolveElementCount, resolveTypedValueSpec } from '../shared/typedValueSpec';
 import type { WaveDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
+type DirectiveLayoutResolver = NonNullable<DirectiveLayoutCallbacks['onBlockLayoutReady']>;
 
 function resolveWaveDirectiveWidget(
 	wave: WaveDirectiveData,
-	graphicData: Parameters<DirectiveWidgetResolver>[0],
-	state: Parameters<DirectiveWidgetResolver>[1],
+	graphicData: Parameters<DirectiveLayoutResolver>[0],
+	state: Parameters<DirectiveLayoutResolver>[1],
 	directiveState: DirectiveDerivedState
 ): void {
 	if (!graphicData.name) {
@@ -47,7 +47,7 @@ function resolveWaveDirectiveWidget(
 	});
 }
 
-export function createWaveDirectiveWidgetContribution(wave: WaveDirectiveData): DirectiveWidgetContribution {
+export function createWaveDirectiveLayoutCallbacks(wave: WaveDirectiveData): DirectiveLayoutCallbacks {
 	return {
 		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveWaveDirectiveWidget(wave, graphicData, state, directiveState);

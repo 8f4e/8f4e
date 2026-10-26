@@ -1,6 +1,6 @@
 import { gapCalculator } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorDirectivePlugin } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorDirectiveDefinition } from '@8f4e/editor-state-types';
 import { createSwitchDirectiveData } from './data';
 
 export interface SwitchWidget {
@@ -14,16 +14,18 @@ export interface SwitchWidget {
 	onValue: number;
 }
 
-export function createSwitchDirective(widgets: WeakMap<CodeBlockGraphicData, SwitchWidget[]>): EditorDirectivePlugin {
+export function createSwitchDirective(
+	widgets: WeakMap<CodeBlockGraphicData, SwitchWidget[]>
+): EditorDirectiveDefinition {
 	return {
 		name: 'switch',
-		clearGraphicData: codeBlock => {
+		clearDerivedBlockData: codeBlock => {
 			widgets.set(codeBlock, []);
 		},
 		apply: (directive, draft) => {
 			const data = createSwitchDirectiveData(directive.args, directive.rawRow);
 			if (!data) return;
-			draft.widgets.push({
+			draft.layoutCallbacks.push({
 				onBlockLayoutReady: (codeBlock, state, derived) => {
 					const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(codeBlock), data.id)?.memory;
 					if (!memory) return;

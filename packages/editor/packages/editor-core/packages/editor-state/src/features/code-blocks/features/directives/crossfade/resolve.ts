@@ -1,15 +1,15 @@
-import type { DirectiveDerivedState, DirectiveWidgetContribution } from '@8f4e/editor-state-types';
+import type { DirectiveDerivedState, DirectiveLayoutCallbacks } from '@8f4e/editor-state-types';
 import gapCalculator from '~/features/code-editing/gapCalculator';
 import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import type { CrossfadeDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
+type DirectiveLayoutResolver = NonNullable<DirectiveLayoutCallbacks['onBlockLayoutReady']>;
 
 function resolveCrossfadeDirectiveWidget(
 	crossfade: CrossfadeDirectiveData,
-	graphicData: Parameters<DirectiveWidgetResolver>[0],
-	state: Parameters<DirectiveWidgetResolver>[1],
+	graphicData: Parameters<DirectiveLayoutResolver>[0],
+	state: Parameters<DirectiveLayoutResolver>[1],
 	directiveState: DirectiveDerivedState
 ): void {
 	if (!graphicData.name) {
@@ -58,9 +58,7 @@ function resolveCrossfadeDirectiveWidget(
 	});
 }
 
-export function createCrossfadeDirectiveWidgetContribution(
-	crossfade: CrossfadeDirectiveData
-): DirectiveWidgetContribution {
+export function createCrossfadeDirectiveLayoutCallbacks(crossfade: CrossfadeDirectiveData): DirectiveLayoutCallbacks {
 	return {
 		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveCrossfadeDirectiveWidget(crossfade, graphicData, state, directiveState);

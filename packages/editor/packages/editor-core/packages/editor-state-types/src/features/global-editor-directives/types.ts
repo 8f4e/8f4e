@@ -25,7 +25,7 @@ export interface GlobalEditorDirectiveContext {
 	blockType?: CodeBlockType;
 }
 
-export interface GlobalEditorDirectivePlugin {
+export interface GlobalEditorDirectiveDefinition {
 	name: string;
 	apply?: (
 		directive: ParsedGlobalEditorDirective,

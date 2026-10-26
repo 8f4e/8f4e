@@ -1,9 +1,9 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 import { createInfoDirectiveData } from './data';
 import { getInfoLayout } from './entries';
-import { createInfoDirectiveWidgetContribution } from './resolve';
+import { createInfoDirectiveLayoutCallbacks } from './resolve';
 
-export default createDirectivePlugin(
+export default createDirectiveDefinition(
 	'info',
 	(directive, draft) => {
 		const info = createInfoDirectiveData(directive.args, directive.rawRow);
@@ -12,13 +12,13 @@ export default createDirectivePlugin(
 		}
 
 		const layout = getInfoLayout(draft.state, info.id);
-		draft.widgets.push(createInfoDirectiveWidgetContribution(info, layout));
+		draft.layoutCallbacks.push(createInfoDirectiveLayoutCallbacks(info, layout));
 		if (layout.rowCount > 0) {
 			draft.layoutContributions.push({ rawRow: directive.rawRow, rows: layout.rowCount });
 		}
 	},
 	{
-		clearGraphicData: graphicData => {
+		clearDerivedBlockData: graphicData => {
 			graphicData.widgets.infoPanels = [];
 		},
 	}

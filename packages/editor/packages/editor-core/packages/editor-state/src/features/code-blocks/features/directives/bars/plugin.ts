@@ -1,8 +1,8 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 import { createBarsDirectiveData } from './data';
-import { createBarsDirectiveWidgetContribution } from './resolve';
+import { createBarsDirectiveLayoutCallbacks } from './resolve';
 
-export default createDirectivePlugin(
+export default createDirectiveDefinition(
 	'bars',
 	(directive, draft) => {
 		const bars = createBarsDirectiveData(directive.args, directive.rawRow);
@@ -11,10 +11,10 @@ export default createDirectivePlugin(
 		}
 
 		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 8 });
-		draft.widgets.push(createBarsDirectiveWidgetContribution(bars));
+		draft.layoutCallbacks.push(createBarsDirectiveLayoutCallbacks(bars));
 	},
 	{
-		clearGraphicData: graphicData => {
+		clearDerivedBlockData: graphicData => {
 			graphicData.widgets.arrayBars = [];
 		},
 	}

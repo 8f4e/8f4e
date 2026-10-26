@@ -46,7 +46,7 @@ export default function slider(store: StateManager<State>, events: EventDispatch
 		state.callbacks?.setWordInMemory?.(slider.allocationUnitAddress, value, shouldWriteInteger);
 	};
 
-	const onCodeBlockClick = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+	const onCodeBlockPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
 		const slider = findSliderWidgetAtViewportCoordinates(state, codeBlock, x, y);
 
 		if (!slider) {
@@ -76,12 +76,12 @@ export default function slider(store: StateManager<State>, events: EventDispatch
 		activeSlider = null;
 	};
 
-	events.on('codeBlockClick', onCodeBlockClick);
+	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
 	events.on('mousemove', onMouseMove);
 	events.on('mouseup', onMouseUp);
 
 	return () => {
-		events.off('codeBlockClick', onCodeBlockClick);
+		events.off('codeBlockPointerDown', onCodeBlockPointerDown);
 		events.off('mousemove', onMouseMove);
 		events.off('mouseup', onMouseUp);
 	};
