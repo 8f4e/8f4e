@@ -1,6 +1,6 @@
-import type { MenuGenerator } from '@8f4e/editor-state-types';
+import type { ContextMenuItem, State } from '@8f4e/editor-state-types';
 
-export const mainMenu: MenuGenerator = state => [
+export const mainMenu = (state: State): ContextMenuItem[] => [
 	...(state.codeBlockRendering.codeBlocks !== state.codeBlockRendering.rootCodeBlocks
 		? [{ title: 'Go back', action: 'goToParentProjectGroup', close: true }, { divider: true }]
 		: []),
@@ -88,11 +88,5 @@ export const mainMenu: MenuGenerator = state => [
 		action: 'exportWasm',
 		close: true,
 		disabled: !state.callbacks.exportBinaryCode,
-	},
-	{
-		title: 'Take Screenshot',
-		action: 'exportCanvasScreenshot',
-		close: true,
-		disabled: !state.callbacks.exportCanvasScreenshot,
 	},
 ];

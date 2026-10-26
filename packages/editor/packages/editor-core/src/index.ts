@@ -83,6 +83,8 @@ export { updateStateWithSpriteData } from './updateStateWithSpriteData';
 
 export interface Editor {
 	resize: (width: number, height: number) => void;
+	/** Render the current state immediately. */
+	renderFrame: () => void;
 	pauseRendering: () => void;
 	/** Releases reloadable GPU resources and the canvas drawing buffer. */
 	releaseRenderingResources: () => void;
@@ -101,12 +103,7 @@ export interface EditorOptions {
 	featureFlags?: Partial<State['featureFlags']>;
 	/** Mode used when the editor is initialized. */
 	initialEditorMode?: EditorMode;
-	callbacks: Omit<
-		Callbacks,
-		'getWordFromMemory' | 'setWordInMemory' | 'readClipboardText' | 'writeClipboardText' | 'exportCanvasScreenshot'
-	> & {
-		exportCanvasScreenshot?: (blob: Blob, fileName: string) => Promise<void>;
-	};
+	callbacks: Omit<Callbacks, 'getWordFromMemory' | 'setWordInMemory' | 'readClipboardText' | 'writeClipboardText'>;
 	runtimeRegistry: RuntimeRegistry;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 	renderStatsIntervalFrames?: number;
@@ -127,19 +124,6 @@ function getCanvasDisplaySize(canvas: HTMLCanvasElement): CanvasSize | null {
 	}
 
 	return { width, height };
-}
-
-async function getCanvasPngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
-	return new Promise<Blob>((resolve, reject) => {
-		canvas.toBlob(result => {
-			if (!result) {
-				reject(new Error('Failed to encode canvas as PNG'));
-				return;
-			}
-
-			resolve(result);
-		}, 'image/png');
-	});
 }
 
 function toGraphicsInfoRecord(stats: RenderStats): InfoRecord {
@@ -178,7 +162,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		let currentCodeBuffer = new Uint8Array();
 		let store: ReturnType<typeof initState>;
 		let view: Awaited<ReturnType<typeof initView>>;
-		const exportCanvasScreenshot = options.callbacks.exportCanvasScreenshot;
 		const compileCode = options.callbacks.compileCode;
 		const editorConfigSchemaContributions: EditorConfigSchemaContributionRegistry = {
 			[WEB_UI_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID]: webUiEditorConfigSchemaContribution,
@@ -221,12 +204,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				writeClipboardText: async (text: string) => {
 					await navigator.clipboard.writeText(text);
 				},
-				exportCanvasScreenshot: exportCanvasScreenshot
-					? async (fileName: string) => {
-							view.renderFrame();
-							await exportCanvasScreenshot(await getCanvasPngBlob(canvas), fileName);
-						}
-					: undefined,
 				requestAnimationFrame: callback => window.requestAnimationFrame(callback),
 				cancelAnimationFrame: id => window.cancelAnimationFrame(id),
 			},
@@ -322,6 +299,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 
 		return {
 			resize,
+			renderFrame: () => view.renderFrame(),
 			pauseRendering: () => view.pauseRendering(),
 			releaseRenderingResources: () => view.releaseRenderingResources(),
 			resumeRendering: () => view.resumeRendering(),

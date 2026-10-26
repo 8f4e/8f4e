@@ -110,33 +110,31 @@ describe('contextMenu effect', () => {
 	});
 
 	it('closes the menu before dispatching closeable actions', async () => {
-		const state = createMockState({
-			callbacks: { exportCanvasScreenshot: async () => {} },
-		});
+		const state = createMockState();
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
-		let menuWasOpenWhenScreenshotDispatched: boolean | undefined;
+		let menuWasOpenWhenActionDispatched: boolean | undefined;
 
 		(events.dispatch as unknown as MockInstance).mockImplementation(action => {
-			if (action === 'exportCanvasScreenshot') {
-				menuWasOpenWhenScreenshotDispatched = state.contextMenu.open;
+			if (action === 'contributedAction') {
+				menuWasOpenWhenActionDispatched = state.contextMenu.open;
 			}
 		});
 
-		contextMenu(store, events, createMenuItemRegistry());
+		const items = createMenuItemRegistry();
+		items.registerItem('mainMenu', () => ({ title: 'Contributed action', action: 'contributedAction', close: true }));
+		contextMenu(store, events, items);
 
 		const onCalls = (events.on as unknown as MockInstance).mock.calls;
 		const onContextMenu = onCalls.find(call => call[0] === 'contextmenu')![1];
 
 		await onContextMenu({ x: 100, y: 112 });
 
-		state.contextMenu.highlightedItem = state.contextMenu.items.findIndex(
-			item => item.action === 'exportCanvasScreenshot'
-		);
+		state.contextMenu.highlightedItem = state.contextMenu.items.findIndex(item => item.action === 'contributedAction');
 
 		const onMouseDown = (events.on as unknown as MockInstance).mock.calls.find(call => call[0] === 'mousedown')![1];
 		onMouseDown({ x: 100, y: 112 });
 
-		expect(menuWasOpenWhenScreenshotDispatched).toBe(false);
+		expect(menuWasOpenWhenActionDispatched).toBe(false);
 	});
 });

@@ -37,7 +37,7 @@ the initial bundle and whether the download savings justify the added asynchrono
 - What must be ready before configuration validation, project loading, rendering, or the first user interaction?
 - How should pending imports, load failures, project changes, and editor disposal interact?
 - How should declaration order be preserved when plugins finish loading in a different order?
-- How would delayed contributions to the sprite atlas interact with plugin-owned fill colors?
+- Which shared palette and sprite resources must be ready before a lazy-loaded drawer can render?
 
 ## Success Criteria
 
@@ -59,7 +59,7 @@ the initial bundle and whether the download savings justify the added asynchrono
 
 - [TODO 486: Lazy-load editing features on entering edit mode](486-lazy-load-editing-features-on-edit-mode.md)
 - [TODO 483: Lazy-load WASM overlay rendering](483-lazy-load-wasm-overlay-rendering.md)
-- [TODO 507: Design plugin fill-color contributions](507-design-plugin-fill-color-contributions.md)
+- [TODO 509: Rebuild editor colors from a small base palette](509-rebuild-editor-colors-from-base-palette.md)
 
 ## References
 

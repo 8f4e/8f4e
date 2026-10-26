@@ -22,8 +22,7 @@ The **Save slider values to code** menu action updates the original declaration 
 group aliases, and preserves inline comments. Runtime dragging leaves source text unchanged.
 
 Disposal removes the directive, drawer, menu action, and event listeners. Generic parsing, layout, memory resolution,
-and declaration editing remain in core. Theme contributions remain tracked in
-[TODO 507](../../../../docs/todos/507-design-plugin-fill-color-contributions.md).
+and declaration editing remain in core.
 
 ```bash
 npx nx run @8f4e/editor-plugin-slider:build

@@ -67,8 +67,8 @@ Active todo files are listed below.
 | 504 | Add a color-theme contrast audit tool | 🟡 | 1-2d | 2026-10-21 | Measure critical foreground/background pairs in resolved editor themes and report contrast failures, including alpha compositing. |
 | 505 | Add an initial editor mode directive | 🟡 | 4-8h | 2026-10-21 | Let projects request edit or view mode at load time while preserving host-level mode policy and later user mode changes. |
 | 506 | Add an inline sample browser directive | 🟡 | TBD | 2026-10-22 | Render a folder/file browser inside a code block and update a bound binary asset URL when a sample is selected. |
-| 507 | Design plugin fill-color contributions | 🟡 | TBD | 2026-10-26 | Work out plugin-owned fill registration across color configuration, sprite-atlas generation, and font/theme rebuilds. |
 | 508 | Design lazy loading for editor plugins | 🟡 | TBD | 2026-10-26 | Work out plugin discovery, asynchronous activation, readiness, and per-editor cleanup while measuring initial-bundle savings. |
+| 509 | Rebuild editor colors from a small base palette | 🟡 | TBD | 2026-10-26 | Replace feature-specific colors with a few shared base colors, generate lighter and darker shades, and use those shades in core and plugin drawers. |
 
 ### 🟢 Low Priority
 
@@ -84,6 +84,7 @@ Active todo files are listed below.
 
 | ID | Title | Completed | Notes |
 | ---- | ----- | --------- | ----- |
+| 507 | Design plugin fill-color contributions | 2026-10-26 | Cancelled; TODO 509 replaces plugin-owned color registration with a shared base palette and generated shades. |
 | 271 | Add float64 support for loadFloat instruction | 2026-10-21 | Completed in [PR #1120](https://github.com/8f4e/8f4e/pull/1120); linked issue #422 was closed as completed. |
 | 496 | Use Set and Map for binary-asset lookups | 2026-10-21 | Completed in [PR #1104](https://github.com/8f4e/8f4e/pull/1104); linked issue #1013 was closed as completed. |
 | 475 | Remove dead compiler block-state caches | 2026-10-20 | Completed in [PR #1101](https://github.com/8f4e/8f4e/pull/1101); linked issue #954 was closed as completed. |

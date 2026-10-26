@@ -81,8 +81,8 @@ const state = init(events, project, {
 
 ### Clean Export Rendering
 
-Screenshot export temporarily disables visual guide features such as `modeOverlay` and `offscreenBlockArrows` through
-editor-state before rendering the capture frame.
+The screenshot plugin temporarily disables visual guide features such as `modeOverlay` and `offscreenBlockArrows`
+through the state manager before rendering the capture frame, and restores their previous values afterward.
 
 ### Completely Locked Editor
 

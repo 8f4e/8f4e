@@ -27,3 +27,5 @@
 - Install plugins in editor-core so one setup receives state, event, menu, directive, and drawer services.
 - Keep generic directive parsing and layout in editor-state, and generic drawing hooks in web-ui.
 - Plugins own their registrations, listeners, private widget data, and disposal. Do not add automatic tracking.
+- Keep browser resources out of the shared plugin context. Browser plugins receive instance dependencies through
+  factories composed by the browser host. `Editor.renderFrame()` provides generic immediate rendering.

@@ -7,7 +7,7 @@
 - Keep tooltip state inside setup, scoped to one editor instance, and use public workspace APIs.
 - Register drawing through `drawers.registerCodeBlockOverlay` so tooltips appear above built-in block widgets.
 - Return a disposer that removes every store subscription, event listener, and drawer registration.
-- Keep generic parsing, memory resolution, and compiler metadata in core. Theme contribution remains deferred.
+- Keep generic parsing, memory resolution, and compiler metadata in core.
 - Run `npx nx run @8f4e/editor-plugin-tooltips:build|test|typecheck` after changes.
 - Run `npx nx run @8f4e/editor-plugin-tooltips:test:screenshot` for browser rendering tests.
 - Cover content, compiler updates, selection changes, atlas reloads, drawing, cleanup, and instance isolation.

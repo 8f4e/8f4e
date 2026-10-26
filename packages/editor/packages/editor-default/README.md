@@ -41,12 +41,14 @@ Hosts may also provide a custom `Storage` implementation or an
 The default composition includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
 `@8f4e/editor-plugin-switch` for the switch widget, `@8f4e/editor-plugin-button` for momentary buttons,
 `@8f4e/editor-plugin-wave` for waveform displays, `@8f4e/editor-plugin-piano` for piano keyboards,
-`@8f4e/editor-plugin-slider` for sliders, and
+`@8f4e/editor-plugin-slider` for sliders,
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
-stack analysis, and live memory values. `defaultEditorPlugins` exports that plugin set.
-The `plugins` option replaces it: pass `[]` to
-omit plugins, or `[...defaultEditorPlugins, customPlugin]` to extend the defaults. Each editor installs and
-disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).
+stack analysis, and live memory values, and `@8f4e/editor-plugin-screenshot` for PNG screenshots.
+`createDefaultEditorPlugins({ canvas, renderFrame })` constructs this plugin set with resources for one editor.
+The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
+browser resources; browser dependencies are supplied to plugin factories by this composition.
+The `plugins` option replaces the default set: pass `[]` to omit plugins, or a custom array to select and extend it.
+Each editor installs and disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).
 
 The runtime registry includes `TestRuntime`, selected with `; @config runtime TestRuntime`. For projects with an
 enabled test entry, it executes tests once after successful compilation or recompilation, using the editor's current

@@ -121,29 +121,4 @@ describe('menus - go home entry', () => {
 
 		expect(newModuleItem).toBeUndefined();
 	});
-
-	it('shows "Take Screenshot" when canvas screenshot export is available', () => {
-		const mockState = createMockState({
-			callbacks: { exportCanvasScreenshot: async () => {} },
-		});
-
-		const menu = mainMenu(mockState);
-		const screenshotItem = menu.find(item => item.title === 'Take Screenshot');
-
-		expect(screenshotItem).toBeDefined();
-		expect(screenshotItem?.action).toBe('exportCanvasScreenshot');
-		expect(screenshotItem?.disabled).toBe(false);
-	});
-
-	it('disables "Take Screenshot" when canvas screenshot export is unavailable', () => {
-		const mockState = createMockState({
-			callbacks: { exportCanvasScreenshot: undefined },
-		});
-
-		const menu = mainMenu(mockState);
-		const screenshotItem = menu.find(item => item.title === 'Take Screenshot');
-
-		expect(screenshotItem).toBeDefined();
-		expect(screenshotItem?.disabled).toBe(true);
-	});
 });

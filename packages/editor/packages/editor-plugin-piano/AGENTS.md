@@ -8,7 +8,7 @@
 - Use `addVerticalSpaceAfterSourceLine` and `onBlockLayoutReady` for layout, and public memory APIs for resolution and
   generic declaration edits. Keep syntax parsing and source ownership routing in core.
 - Own the save menu action and every directive, drawer, and event registration; return an explicit disposer.
-- Palette contribution remains deferred to TODO 507; use the existing fill and text roles.
+- Use the existing fill and text roles.
 - Run `npx nx run @8f4e/editor-plugin-piano:build|test|typecheck` after changes.
 - Run `npx nx run @8f4e/editor-plugin-piano:test:screenshot` for browser rendering tests.
 - Cover real pointer events, runtime memory, exposed addresses, saving, source edits, cleanup, and editor isolation.

@@ -78,7 +78,7 @@ export default function contextMenu(
 					menuItems.getItems('moduleMenu', { state, codeBlock: request.codeBlock })
 				);
 			case 'mainMenu':
-				return menus.mainMenu(state);
+				return [...menus.mainMenu(state), ...menuItems.getItems('mainMenu', { state })];
 			case 'favoritesMenu':
 				return menus.favoritesMenu(state);
 			case 'moduleCategoriesMenu':

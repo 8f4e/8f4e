@@ -24,8 +24,7 @@ The default editor includes this plugin. Each installation keeps keyboard geomet
 declarations, including when they belong to different modules. Sliders have their own save action.
 
 Disposal removes all registrations. Generic syntax parsing, layout, memory resolution, and source editing remain in
-core. The plugin uses the existing piano fill and pressed-note text colors; contributions remain deferred to
-[TODO 507](../../../../docs/todos/507-design-plugin-fill-color-contributions.md).
+core. The plugin uses the existing piano fill and pressed-note text colors.
 
 ```bash
 npx nx run @8f4e/editor-plugin-piano:build

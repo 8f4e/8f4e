@@ -7,23 +7,25 @@ import type {
 } from '@8f4e/editor-state-types';
 
 export interface MenuItemRegistry extends EditorMenuRegistry {
-	getItems: (menu: EditorMenuId, context: EditorMenuItemContext) => ContextMenuItem[];
+	getItems: <Menu extends EditorMenuId>(menu: Menu, context: EditorMenuItemContext<Menu>) => ContextMenuItem[];
 }
 
 export default function createMenuItemRegistry(): MenuItemRegistry {
-	const registrations = new Set<{ menu: EditorMenuId; provider: EditorMenuItemProvider }>();
+	const registrations: { [Menu in EditorMenuId]: Set<{ provider: EditorMenuItemProvider<Menu> }> } = {
+		mainMenu: new Set(),
+		moduleMenu: new Set(),
+	};
 	return {
 		registerItem: (menu, provider) => {
-			const registration = { menu, provider };
-			registrations.add(registration);
+			const registration = { provider };
+			registrations[menu].add(registration);
 			return () => {
-				registrations.delete(registration);
+				registrations[menu].delete(registration);
 			};
 		},
 		getItems: (menu, context) => {
 			const items: ContextMenuItem[] = [];
-			for (const registration of registrations) {
-				if (registration.menu !== menu) continue;
+			for (const registration of registrations[menu]) {
 				const item = registration.provider(context);
 				if (item !== undefined) items.push(item);
 			}

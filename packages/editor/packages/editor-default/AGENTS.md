@@ -5,6 +5,8 @@
 - Export composition APIs without mounting as an import side effect.
 - Compose the standard plugin set here and expose host overrides through `plugins`; keep feature logic in its
   plugin package and generic plugin installation in editor-core.
+- Construct the standard set with `createDefaultEditorPlugins({ canvas, renderFrame })` per mounted editor. Inject
+  browser dependencies into plugin factories here; render callbacks run after initialization.
 - Keep generic editor behavior in `@8f4e/editor-core` and website/deployment concerns in `@8f4e/editor-website`.
 - Run `npx nx run @8f4e/editor-default:build|test|typecheck` after changing this package.
 - The Vite build uses standard TypeScript and asset handling; project-authored GLSL effects are not supported.
