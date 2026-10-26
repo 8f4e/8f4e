@@ -26,7 +26,6 @@ import stackDirective from './stack/plugin';
 import { normalizeEditorDirectiveRecords } from './utils';
 import viewportDirective from './viewport/plugin';
 import watchDirective from './watch/plugin';
-import waveDirective, { wave2Directive, wave4Directive } from './wave/plugin';
 
 export type {
 	DirectiveBlockState,
@@ -40,9 +39,6 @@ export const directiveDefinitions: EditorDirectiveDefinition[] = [
 	meterDirective,
 	barsDirective,
 	plotDirective,
-	waveDirective,
-	wave2Directive,
-	wave4Directive,
 	sliderDirective,
 	crossfadeDirective,
 	pianoDirective,

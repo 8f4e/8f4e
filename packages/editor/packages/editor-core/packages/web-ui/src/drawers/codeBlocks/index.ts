@@ -19,7 +19,6 @@ import drawMeters from './widgets/meters';
 import drawPianoKeyboards from './widgets/pianoKeyboards';
 import drawPlotters from './widgets/plotters';
 import drawSliders from './widgets/sliders';
-import drawWaves from './widgets/waves';
 
 const corner = '+';
 
@@ -116,7 +115,6 @@ export default function drawModules(
 			drawBars(engine, state, codeBlock, memoryViews);
 			drawMeters(engine, state, codeBlock, memoryViews);
 			drawPlotters(engine, state, codeBlock, memoryViews);
-			drawWaves(engine, state, codeBlock, memoryViews);
 			drawInfoPanels(engine, state, codeBlock);
 			drawDebuggers(engine, state, codeBlock, memoryViews);
 			drawers?.drawCodeBlockOverlay({ draw: engine, state, codeBlock, memoryViews });

@@ -116,7 +116,6 @@ export function createMockCodeBlock(
 			arrayPlotters: [],
 			arrayBars: [],
 			arrayMeters: [],
-			arrayWaves: [],
 			infoPanels: [],
 			shapeDeclarations: [],
 			errorMessages: [],

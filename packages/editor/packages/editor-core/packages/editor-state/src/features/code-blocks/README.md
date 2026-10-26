@@ -16,9 +16,9 @@ Manages the lifecycle of code blocks in the editor: creation, selection, drag op
   - Debuggers for runtime inspection
   - Plotters for visualization
 
-Switch and button widgets are provided by `@8f4e/editor-plugin-switch` and `@8f4e/editor-plugin-button`, included in
-`@8f4e/editor-default`. Their plugins own derived data, interactions, and drawing through the
-[plugin API](../../../../../README.md#plugins).
+Switch, button, and waveform features are provided by `@8f4e/editor-plugin-switch`, `@8f4e/editor-plugin-button`, and
+`@8f4e/editor-plugin-wave`, included in `@8f4e/editor-default`. Their plugins own derived data and drawing through the
+[plugin API](../../../../../README.md#plugins), with switch and button plugins also owning their interactions.
 
 ## Block Types
 

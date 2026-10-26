@@ -7,8 +7,8 @@
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, examples, and storage.
 - `@8f4e/editor-website` is the thin deployable Vite host for the default composition.
 - `@8f4e/editor-plugin-toggle-skip-execution` owns the optional single-module execution toggle. The switch widget
-  lives in `@8f4e/editor-plugin-switch`, momentary buttons in `@8f4e/editor-plugin-button`, and selected-line tooltips
-  in `@8f4e/editor-plugin-tooltips`. Plugin contracts and
+  lives in `@8f4e/editor-plugin-switch`, momentary buttons in `@8f4e/editor-plugin-button`, waveforms in
+  `@8f4e/editor-plugin-wave`, and selected-line tooltips in `@8f4e/editor-plugin-tooltips`. Plugin contracts and
   installation live in `editor-core`, generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   The standard plugin set is composed in `editor-default`.
 
@@ -18,7 +18,8 @@
 - Build or verify the plugins with `npx nx run @8f4e/editor-plugin-toggle-skip-execution:build|test|typecheck` or
   `npx nx run @8f4e/editor-plugin-switch:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-tooltips:build|test|typecheck`, or
-  `npx nx run @8f4e/editor-plugin-button:build|test|typecheck`.
+  `npx nx run @8f4e/editor-plugin-button:build|test|typecheck`, or
+  `npx nx run @8f4e/editor-plugin-wave:build|test|typecheck`.
 - Start the website with `npx nx run @8f4e/editor-website:dev`.
 - Build or preview it with `npx nx run @8f4e/editor-website:build|serve`.
 - Ensure dependency packages are built before relying on workspace aliases in the website.

@@ -37,7 +37,8 @@
     "@8f4e/tokenizer": "*",
     "@8f4e/editor-plugin-switch": "*",
     "@8f4e/editor-plugin-tooltips": "*",
-    "@8f4e/editor-plugin-button": "*"
+    "@8f4e/editor-plugin-button": "*",
+    "@8f4e/editor-plugin-wave": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

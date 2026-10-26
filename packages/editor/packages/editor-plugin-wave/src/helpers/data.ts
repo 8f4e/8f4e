@@ -1,18 +1,13 @@
-import { isPointerSource, parseElementCount } from '~/shared/editorDirectiveArgumentTypes';
+import { isPointerSource, parseElementCount } from '@8f4e/editor-state';
 
 export interface WaveDirectiveData {
 	startAddressMemoryId: string;
 	length: number | string;
 	pointerMemoryId?: string;
 	lineNumber: number;
-	heightRows: number;
 }
 
-export function createWaveDirectiveData(
-	args: string[],
-	lineNumber: number,
-	heightRows = 2
-): WaveDirectiveData | undefined {
+export function createWaveDirectiveData(args: string[], lineNumber: number): WaveDirectiveData | undefined {
 	if (
 		(args.length !== 2 && args.length !== 3) ||
 		!isPointerSource(args[0]) ||
@@ -31,6 +26,5 @@ export function createWaveDirectiveData(
 		length,
 		pointerMemoryId: args[2],
 		lineNumber,
-		heightRows,
 	};
 }

@@ -183,23 +183,6 @@ export type PianoKeyboardKey = PianoKeyboardWhiteKey | PianoKeyboardBlackKey;
 
 export type TypedValueKind = 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'float32' | 'float64';
 
-export interface ArrayWave {
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	startAddress: MemoryIdentifier;
-	elementByteSize: number;
-	inverseElementByteSize: number;
-	baseSampleShift: 0 | 1 | 2 | 3;
-	length: number | MemoryIdentifier;
-	pointer?: MemoryIdentifier;
-	valueType: TypedValueKind;
-	minValue: number;
-	maxValue: number;
-	inverseValueRange: number;
-}
-
 export interface Slider {
 	/** Canonical owner of the backing declaration, including for exposed aliases. */
 	moduleId: string;
@@ -311,7 +294,6 @@ export interface CodeBlockGraphicData {
 		arrayPlotters: ArrayPlotter[];
 		arrayBars: ArrayBars[];
 		arrayMeters: ArrayMeter[];
-		arrayWaves: ArrayWave[];
 		infoPanels: InfoPanel[];
 		sliders: Slider[];
 		crossfades: Crossfade[];

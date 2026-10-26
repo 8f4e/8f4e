@@ -121,7 +121,6 @@ describe('directive registry', () => {
 			'; @plot &buffer count(buffer)',
 			'; @bars &bins count(bins)',
 			'; @crossfade &dry &wet',
-			'; @wave &buffer 16 pointer',
 			'moduleEnd',
 		];
 		const result = deriveDirectiveState(code, parseBlockDirectives(code));
@@ -137,24 +136,9 @@ describe('directive registry', () => {
 			{ rawRow: 5, rows: 8 },
 			{ rawRow: 6, rows: 8 },
 			{ rawRow: 7, rows: 2 },
-			{ rawRow: 8, rows: 2 },
 		]);
 		expect(result.displayState).toEqual({});
-		expect(result.displayModel.displayRowToRawRow).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-	});
-
-	it('allocates double layout height for @wave2', () => {
-		const code = ['module foo', '; @wave2 &buffer 16 pointer', 'moduleEnd'];
-		const result = deriveDirectiveState(code, parseBlockDirectives(code));
-
-		expect(result.layoutContributions).toEqual([{ rawRow: 1, rows: 4 }]);
-	});
-
-	it('allocates quadruple layout height for @wave4', () => {
-		const code = ['module foo', '; @wave4 &buffer 16 pointer', 'moduleEnd'];
-		const result = deriveDirectiveState(code, parseBlockDirectives(code));
-
-		expect(result.layoutContributions).toEqual([{ rawRow: 1, rows: 8 }]);
+		expect(result.displayModel.displayRowToRawRow).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
 	});
 
 	it('allocates one info layout row per state.info key', () => {

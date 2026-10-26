@@ -33,7 +33,6 @@ function mockCodeBlock(
 			arrayPlotters: [],
 			arrayBars: [],
 			arrayMeters: [],
-			arrayWaves: [],
 			sliders: [],
 			pianoKeyboards: [],
 			errorMessages: [],
