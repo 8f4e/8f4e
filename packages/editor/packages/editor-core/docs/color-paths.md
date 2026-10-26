@@ -85,7 +85,12 @@ choose contrasting pairs for other shades. This does not replace a complete cont
 Fill sprites expose all nine tonal shades. Fonts expose `Dark2`, `Base`, and `Light2` for each base, plus the shared
 foreground materials listed in `FONT_ALIASES`: `sprites.fillColors.primaryDark2`,
 `sprites.fillColors.inkBase`, and `sprites.fontInkOn` can be reused across unrelated controls. Local visual choices belong
-to drawers rather than theme configuration. Composite icons bake only their actual color combinations.
+to drawers rather than theme configuration. The primary font catalog also includes `Dark3` and `Dark1` so the
+six-step output scale can use ordinary glyphs without changing its colors.
+
+Connector icons are composed at runtime: a `surfaceRaised2` fill sits behind input brackets in `primaryBase` or output
+brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`, `primaryDark1`, `primaryBase`,
+`warningBase`, or `negativeBase` from the calibrated value. There are no dedicated input or feedback-scale atlas entries.
 
 All shades and opacity variants are baked into the atlas. The extra `Alpha30/60/90` swatches are fill-only to avoid
 duplicating entire font strips; text retains source alpha and the shared prepared overlays. The bounded font catalog

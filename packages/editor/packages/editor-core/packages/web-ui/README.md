@@ -64,6 +64,12 @@ The web-ui package reads from the editor state and render projection but does **
 Atlas and font changes are explicit and are applied through `loadSpriteAtlas()`. Wire colors are resolved from the
 current editor color scheme when the atlas is loaded.
 
+Input `[ ]` and output `[*]` connectors are composed at runtime from the shared fill and font sprites. Both use a
+three-cell `surfaceRaised2` background; input brackets use `primaryBase`, and output brackets use `secondaryBase`.
+The output star selects `primaryDark3`, `primaryDark2`, `primaryDark1`, `primaryBase`, `warningBase`, or `negativeBase`
+using the existing calibrated value scale. Each input submits three sprites and each output four, in the same sprite
+batch. The generator does not prerender connector icons.
+
 Assertion rectangles come from each code block's `widgets.assertions`. They are drawn after code text, covering
 the line-number area before the assertion instruction. Passed assertions use `color.positive`
 and failed assertions use `color.negative`. Hidden previews and disabled blocks omit the markers.

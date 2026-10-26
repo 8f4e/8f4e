@@ -43,9 +43,9 @@ core, and plugins; compatibility with the existing APIs and atlas format is not 
 
 ## Implementation Plan
 
-Complete [TODO 511: Compose input and output icons at runtime](511-compose-input-output-icons-at-runtime.md) first,
-using the existing colored font and fill sprites. This task then changes the resources and drawing APIs underneath
-that composition; it does not introduce the connector composition change itself.
+[TODO 511: Compose input and output icons at runtime](archived/511-compose-input-output-icons-at-runtime.md) is complete,
+using the existing colored font and fill sprites. Build on that runtime composition while changing the underlying
+resources and drawing APIs in this task.
 
 ### Step 1: Define the palette and instance contracts
 
@@ -157,8 +157,8 @@ that composition; it does not introduce the connector composition change itself.
 
 ## Related Items
 
-- **Depends on:** [TODO 511: Compose input and output icons at runtime](511-compose-input-output-icons-at-runtime.md).
-  Implement and verify the composition change before the R8 and GPU palette migration.
+- **Completed prerequisite:** [TODO 511: Compose input and output icons at runtime](archived/511-compose-input-output-icons-at-runtime.md).
+  The connector composition is implemented and verified before the R8 and GPU palette migration.
 - [TODO 509: Rebuild editor colors from a small base palette](archived/509-rebuild-editor-colors-from-base-palette.md)
 - [TODO 504: Add a color-theme contrast audit tool](504-add-color-theme-contrast-audit-tool.md)
 - [TODO 482: Resolve sprite identifiers before drawing](archived/482-resolve-sprite-identifiers-before-drawing.md)

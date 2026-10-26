@@ -142,7 +142,7 @@ describe('font module', () => {
 
 	describe('palette font catalog', () => {
 		it('fits the lookup texture even when every configurable font color is distinct', () => {
-			expect(FONT_PALETTE_TOKENS.length * 128 + PALETTE_TOKENS.length + 8).toBeLessThanOrEqual(8_192);
+			expect(FONT_PALETTE_TOKENS.length * 128 + PALETTE_TOKENS.length + 1).toBeLessThanOrEqual(8_192);
 		});
 
 		it('renders every concrete color once and shares coordinates between matching tokens', () => {
@@ -153,7 +153,7 @@ describe('font module', () => {
 			]);
 			const { rowsByRole, uniqueRows } = buildFontLayout(colors);
 			expect(uniqueRows.length).toBe(new Set(FONT_PALETTE_TOKENS.map(token => colors[token])).size);
-			expect(uniqueRows.length * 128 + PALETTE_TOKENS.length + 8).toBeLessThanOrEqual(8_192);
+			expect(uniqueRows.length * 128 + PALETTE_TOKENS.length + 1).toBeLessThanOrEqual(8_192);
 			expect(rowsByRole.primaryBase).toBe(rowsByRole.secondaryBase);
 			const lookups = generateLookups(8, 16, colors);
 			expect(lookups.fontPrimaryBase).toEqual(lookups.fontSecondaryBase);

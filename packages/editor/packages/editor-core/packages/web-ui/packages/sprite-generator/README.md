@@ -1,6 +1,6 @@
 # Sprite Generator Package
 
-This package generates sprite sheets for the 8f4e editor, including fonts, icons, and UI elements.
+This package generates sprite sheets for the 8f4e editor, containing font glyphs, palette fills, and the background pattern.
 
 ## Palette
 
@@ -12,10 +12,15 @@ The browser-independent `@8f4e/editor-palette` package resolves predefined Oklab
 and RGBA values before atlas generation. See [the palette reference](../../../../docs/color-paths.md).
 
 Every tonal shade has a fill sprite. The current font catalog contains each base's `Dark2`, `Base`, and `Light2`
-variants plus the foreground materials in `FONT_ALIASES` (for example `fontPrimaryDark2` and `fontFloatingInk`). Identical font
-colors share rows, and the atlas layout uses the actual unique row count. No runtime sprite shading is required.
+variants plus the foreground materials in `FONT_ALIASES` (for example `fontPrimaryDark2` and `fontFloatingInk`).
+`primaryDark3` and `primaryDark1` are also available as fonts to preserve the six-step output indicator colors.
+Identical font colors share rows, and the atlas layout uses the actual unique row count. No runtime sprite shading is required.
 Additional `Alpha30/60/90` swatches are fill-only; source alpha and shared text overlays remain available.
 The returned `palette` belongs to the generated atlas and also supplies colors for line rendering.
+
+Input and output connectors are composed by web-ui at runtime from a `surfaceRaised2` fill and ordinary bracket/star
+glyphs. The atlas has no dedicated icon or feedback-scale sprites or lookup groups. Fill swatches start beside the
+background immediately below the font rows.
 
 ## Sprite atlas output
 

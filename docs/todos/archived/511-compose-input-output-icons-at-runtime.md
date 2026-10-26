@@ -4,8 +4,8 @@ priority: Medium
 effort: TBD
 created: 2026-10-26
 issue: null
-status: Open
-completed: null
+status: Completed
+completed: 2026-10-26
 ---
 
 # TODO: Compose input and output icons at runtime
@@ -17,7 +17,7 @@ Each sprite combines a solid background, font brackets, and, for outputs, a star
 value. All of these parts already exist as ordinary font and fill sprites.
 
 Compose these connectors in the drawer at runtime and remove the dedicated atlas entries. Do this before
-[TODO 510: Use glyph masks and a GPU color palette](510-use-glyph-masks-and-gpu-color-palette.md), using the current
+[TODO 510: Use glyph masks and a GPU color palette](../510-use-glyph-masks-and-gpu-color-palette.md), using the current
 colored font rows and fill sprites. This isolates the composition change so its appearance and rendering cost can
 be verified before changing the renderer's texture format and drawing API.
 
@@ -75,12 +75,12 @@ be verified before changing the renderer's texture format and drawing API.
 
 ## Success Criteria
 
-- [ ] Inputs and outputs are assembled at runtime from existing font and fill sprites.
-- [ ] Connector geometry, colors, output calibration, and scale selection retain their current behavior.
-- [ ] The dedicated input icon and six feedback-scale atlas sprites, lookups, and unused exports are removed.
-- [ ] Atlas layout is compacted and affected consumers, fixtures, and documentation are updated.
-- [ ] No R8 texture, GPU palette, or renderer instance-format change is included in this task.
-- [ ] Unit checks and visual regressions pass, and the additional instance/upload cost is measured.
+- [x] Inputs and outputs are assembled at runtime from existing font and fill sprites.
+- [x] Connector geometry, colors, output calibration, and scale selection retain their current behavior.
+- [x] The dedicated input icon and six feedback-scale atlas sprites, lookups, and unused exports are removed.
+- [x] Atlas layout is compacted and affected consumers, fixtures, and documentation are updated.
+- [x] No R8 texture, GPU palette, or renderer instance-format change is included in this task.
+- [x] Unit checks and visual regressions pass, and the additional instance/upload cost is measured.
 
 ## Affected Components
 
@@ -100,16 +100,48 @@ be verified before changing the renderer's texture format and drawing API.
 - Removing lookup groups can affect fixtures outside the connector drawer; migrate all consumers directly.
 - The background pattern and its planned offset-mask reuse belong to TODO 510 and are outside this task.
 
+## Implementation Notes
+
+The connector drawer now submits three instances per input and four per output, preserving the existing calibration,
+six output colors, and different input/output bracket colors. The generator no longer exposes icon or feedback-scale
+lookup groups. Fills begin beside the background immediately below the font rows.
+
+The current bounded font catalog did not include `primaryDark3` or `primaryDark1`. Both shades were added as ordinary
+fonts to preserve the existing output colors. For the default 8x16 font, this increases atlas storage from 3.875 MiB
+to 4 MiB and the number of sprite definitions from 4,037 to 4,286, despite removing seven composite sprites. The
+worst-case catalog still fits the 8,192-entry lookup budget. TODO 510 will remove the colored font duplication.
+
+A local headless Chromium comparison used a 1280x800 canvas with 1,000 inputs and 1,000 outputs. It reconstructed the
+seven legacy composites from the same glyph and fill pixels, then alternated both paths on the same renderer and
+atlas. After warming up, 30 batches of 10 frames gave the following medians:
+
+| Measurement | Prerendered composites | Runtime composition |
+| --- | ---: | ---: |
+| Sprite instances per frame | 2,000 | 7,000 |
+| Instance upload bytes per frame | 40,000 | 140,000 |
+| CPU frame submission | 0.05 ms | 0.15 ms |
+| Submission plus `gl.finish()` | 0.05 ms | 0.15 ms |
+
+These are local stress-test timings at the browser timer's precision, not isolated GPU timings or a general frame-rate
+guarantee. Both paths retain one instanced sprite draw call.
+
+Nine connector screenshots were captured before the implementation and matched after it: `6x10`, `ibmvga8x16`, and
+`spleen16x32`, each with default, distinct primary/secondary, and translucent palettes. The atlas screenshots and the
+last font-catalog page change intentionally because of the new rows and removed composite regions.
+
+Validation: palette, sprite-generator, web-ui, and editor-core unit tests and typechecks passed (319 unit tests),
+along with both screenshot suites (24 browser tests), the editor website production build, and Biome checks.
+
 ## Related Items
 
-- **Follow-up:** [TODO 510: Use glyph masks and a GPU color palette](510-use-glyph-masks-and-gpu-color-palette.md).
+- **Follow-up:** [TODO 510: Use glyph masks and a GPU color palette](../510-use-glyph-masks-and-gpu-color-palette.md).
   Perform this connector composition change first, then migrate its primitives to masks and palette indices.
 
 ## References
 
-- [Connector drawer](../../packages/editor/packages/editor-core/packages/web-ui/src/drawers/codeBlocks/widgets/connectors.ts)
-- [Current input icon generation](../../packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/icons.ts)
-- [Current output feedback-scale generation](../../packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/feedbackScale.ts)
+- [Connector drawer](../../../packages/editor/packages/editor-core/packages/web-ui/src/drawers/codeBlocks/widgets/connectors.ts)
+- [Atlas layout](../../../packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/atlasLayout.ts)
+- [Font palette catalog](../../../packages/editor/packages/editor-core/packages/editor-palette/src/index.ts)
 
 ## Archive Instructions
 

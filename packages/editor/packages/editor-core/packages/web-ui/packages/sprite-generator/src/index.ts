@@ -2,13 +2,11 @@ import { type ResolvedPalette, resolvePalette } from '@8f4e/editor-palette';
 import type { SpriteCoordinates, SpriteId, SpriteIdentifier } from 'glugglugglug';
 import { createAtlasLayout } from './atlasLayout.ts';
 import generateBackground, { generateLookup as generateLookupForBackground } from './background.ts';
-import generateFeedbackScale, { generateLookup as generateLookupForFeedbackScale } from './feedbackScale.ts';
 import type { FillSpriteColorName } from './fillColors.ts';
 import generateFillColors, { generateLookup as generateLookupForFillColors } from './fillColors.ts';
 import generateFont, { type FontLookups, generateLookups as generateLookupsForFonts } from './font.ts';
 import decodeFontBase64 from './fonts/font-decoder.ts';
 import type { FontMetadata } from './fonts/ibmvga8x16/generated/ascii.ts';
-import generateIcons, { generateLookup as generateLookupForIcons, type IconValue } from './icons.ts';
 import {
 	createSpriteAtlas,
 	type SpriteAtlas,
@@ -21,7 +19,6 @@ import { Command, type Config, FONT_NAMES, type Font } from './types.ts';
 
 export type { SpriteId } from 'glugglugglug';
 export type { FillSpriteColorName } from './fillColors.ts';
-export { Icon } from './icons.ts';
 export type {
 	ResolvedSpriteIds,
 	SpriteAtlas,
@@ -305,32 +302,22 @@ async function loadFont(font: Font): Promise<FontData> {
 interface AtlasCoordinates extends FontLookups {
 	fillColors: Record<FillSpriteColorName, SpriteCoordinates>;
 	background: Record<0, SpriteCoordinates>;
-	icons: Record<IconValue, SpriteCoordinates>;
-	feedbackScale: Partial<Record<number, SpriteCoordinates>>;
 }
 
 /** Validated fixed-cell font whose fallback glyph is guaranteed to exist. */
 export type SpriteFont = SpriteIdLookup & { readonly 63: SpriteId };
 
-/** Validated feedback scale whose neutral fallback sprite is guaranteed to exist. */
-export type SpriteFeedbackScale = SpriteIdLookup & { readonly 0: SpriteId };
-
 type NonFontAtlasCoordinates = Omit<AtlasCoordinates, keyof FontLookups>;
 
 type SpriteIdentifierFont = SpriteIdentifierLookup & { readonly 63: SpriteIdentifier };
-type SpriteIdentifierFeedbackScale = SpriteIdentifierLookup & { readonly 0: SpriteIdentifier };
 
 /** Grouped public identifiers emitted with a generated atlas and resolved when that atlas is installed. */
-export type SpriteIdentifierLookups = Omit<SpriteIdentifiers<NonFontAtlasCoordinates>, 'feedbackScale'> & {
-	feedbackScale: SpriteIdentifierFeedbackScale;
-} & {
+export type SpriteIdentifierLookups = SpriteIdentifiers<NonFontAtlasCoordinates> & {
 	[Group in keyof FontLookups]: SpriteIdentifierFont;
 };
 
 /** Grouped numeric sprite identifiers used by the editor render hot path. */
-export type SpriteIdLookups = Omit<SpriteIds<NonFontAtlasCoordinates>, 'feedbackScale'> & {
-	feedbackScale: SpriteFeedbackScale;
-} & {
+export type SpriteIdLookups = SpriteIds<NonFontAtlasCoordinates> & {
 	[Group in keyof FontLookups]: SpriteFont;
 };
 
@@ -352,10 +339,8 @@ export default async function generateSprite(config: Config): Promise<{
 
 	const commands = [
 		...generateFillColors(characterWidth, characterHeight, palette.colors),
-		...generateFeedbackScale(asciiBitmap, characterWidth, characterHeight, palette.colors),
 		...generateFont(asciiBitmap, characterWidth, characterHeight, palette.colors),
 		...generateBackground(glyphsBitmap, characterWidth, characterHeight, palette.colors),
-		...generateIcons(asciiBitmap, characterWidth, characterHeight, palette.colors),
 	];
 
 	commands.forEach(([command, ...params]) => {
@@ -387,9 +372,7 @@ export default async function generateSprite(config: Config): Promise<{
 	const atlasCoordinates: AtlasCoordinates = {
 		fillColors: generateLookupForFillColors(characterWidth, characterHeight, palette.colors),
 		...generateLookupsForFonts(characterWidth, characterHeight, palette.colors),
-		feedbackScale: generateLookupForFeedbackScale(characterWidth, characterHeight, palette.colors),
 		background: generateLookupForBackground(characterWidth, characterHeight, palette.colors),
-		icons: generateLookupForIcons(characterWidth, characterHeight, palette.colors),
 	};
 	const rawSpriteAtlas = createSpriteAtlas(canvas, atlasCoordinates);
 	const spriteAtlas: SpriteAtlas<SpriteIdentifierLookups> = {
@@ -409,16 +392,13 @@ export default async function generateSprite(config: Config): Promise<{
  * Strengthens generated lookup groups after confirming that their required fallback sprites exist.
  *
  * @param spriteIdentifiers - Public atlas lookups produced from validated source rectangles.
- * @returns The same lookups with required font and feedback fallbacks reflected in their types.
+ * @returns The same lookups with required font fallbacks reflected in their types.
  */
 function validateSpriteIdentifiers(spriteIdentifiers: SpriteIdentifiers<AtlasCoordinates>): SpriteIdentifierLookups {
 	for (const [groupName, group] of Object.entries(spriteIdentifiers)) {
 		if (groupName.startsWith('font') && (group as SpriteIdentifierLookup)[63] === undefined) {
 			throw new Error(`Generated sprite font ${groupName} is missing fallback glyph 63.`);
 		}
-	}
-	if (spriteIdentifiers.feedbackScale[0] === undefined) {
-		throw new Error('Generated feedback scale is missing fallback sprite 0.');
 	}
 	return spriteIdentifiers as SpriteIdentifierLookups;
 }

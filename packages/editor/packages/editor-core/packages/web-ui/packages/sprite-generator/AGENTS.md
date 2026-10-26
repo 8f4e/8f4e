@@ -16,6 +16,7 @@
 
 - Consume `@8f4e/editor-palette`; do not restore feature-specific configurable colors.
 - Bake the shared catalog into fills and deduplicated font rows. Return the resolved palette with its atlas.
+- Input and output connectors are composed by web-ui from fills and font glyphs; do not add prerendered connector sprites.
 - Tests build package dependencies before running.
 
 ## Testing
