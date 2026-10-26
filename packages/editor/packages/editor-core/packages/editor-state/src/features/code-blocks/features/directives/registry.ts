@@ -112,13 +112,13 @@ export function deriveDirectiveState(
 	};
 }
 
-export function runAfterGraphicDataWidthCalculation(
+export function runBlockLayoutReady(
 	graphicData: CodeBlockGraphicData,
 	state: State,
 	directiveState: DirectiveDerivedState
 ): void {
 	directiveState.widgets.forEach(widget => {
-		widget.afterGraphicDataWidthCalculation?.(graphicData, state, directiveState);
+		widget.onBlockLayoutReady?.(graphicData, state, directiveState);
 	});
 }
 

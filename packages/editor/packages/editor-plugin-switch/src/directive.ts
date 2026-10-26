@@ -24,7 +24,7 @@ export function createSwitchDirective(widgets: WeakMap<CodeBlockGraphicData, Swi
 			const data = createSwitchDirectiveData(directive.args, directive.rawRow);
 			if (!data) return;
 			draft.widgets.push({
-				afterGraphicDataWidthCalculation: (codeBlock, state, derived) => {
+				onBlockLayoutReady: (codeBlock, state, derived) => {
 					const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(codeBlock), data.id)?.memory;
 					if (!memory) return;
 					const row = derived.displayModel.rawRowToDisplayRow[data.lineNumber] ?? data.lineNumber;

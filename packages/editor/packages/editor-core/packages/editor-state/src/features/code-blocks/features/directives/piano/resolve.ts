@@ -5,7 +5,7 @@ import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import { PIANO_KEYBOARD_MIN_GRID_WIDTH } from './constants';
 import type { PianoDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
 
 const BLACK_KEYS = new Set([1, 3, 6, 8, 10]);
 const NOTE_LABELS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -130,7 +130,7 @@ export function createPianoDirectiveWidgetContribution(pianoKeyboard: PianoDirec
 		beforeGraphicDataWidthCalculation: graphicData => {
 			graphicData.minGridWidth = PIANO_KEYBOARD_MIN_GRID_WIDTH;
 		},
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolvePianoDirectiveWidget(pianoKeyboard, graphicData, state, directiveState);
 		},
 	};

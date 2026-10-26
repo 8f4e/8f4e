@@ -21,8 +21,8 @@ import type { CodeBlockClickEvent } from './features/codeBlockDragger/effect';
 import parsePos from './features/directives/pos/data';
 import {
 	deriveDirectiveState,
-	runAfterGraphicDataWidthCalculation,
 	runBeforeGraphicDataWidthCalculation,
+	runBlockLayoutReady,
 } from './features/directives/registry';
 import inputs from './features/inputs/updateGraphicData';
 import outputs from './features/outputs/updateGraphicData';
@@ -136,7 +136,6 @@ export default function codeBlockRendering(
 
 		graphicData.width = getCodeBlockGridWidth(graphicData.code, graphicData.minGridWidth) * state.viewport.vGrid;
 
-		runAfterGraphicDataWidthCalculation(graphicData, state, directiveState);
 		outputs(graphicData, state);
 		inputs(graphicData, state);
 		blockHighlights(graphicData, state);
@@ -159,6 +158,7 @@ export default function codeBlockRendering(
 		graphicData.groupNonstick = directiveState.blockState.groupNonstick;
 		graphicData.viewportAnchor = directiveState.blockState.viewportAnchor;
 		graphicData.alwaysOnTop = directiveState.blockState.alwaysOnTop ?? false;
+		runBlockLayoutReady(graphicData, state, directiveState);
 		return graphicData.alwaysOnTop !== previousAlwaysOnTop;
 	};
 

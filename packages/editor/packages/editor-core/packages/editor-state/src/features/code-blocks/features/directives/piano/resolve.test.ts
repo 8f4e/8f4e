@@ -7,7 +7,7 @@ import {
 	deriveDirectiveStateForMockCodeBlock,
 	setMockCodeBlockCode,
 } from '~/pureHelpers/testingUtils/testUtils';
-import { runAfterGraphicDataWidthCalculation, runBeforeGraphicDataWidthCalculation } from '../registry';
+import { runBeforeGraphicDataWidthCalculation, runBlockLayoutReady } from '../registry';
 
 describe('piano directive widget resolution', () => {
 	let mockGraphicData: CodeBlockGraphicData;
@@ -77,7 +77,7 @@ describe('piano directive widget resolution', () => {
 	function runDirectiveResolution() {
 		const directiveState = deriveDirectiveStateForMockCodeBlock(mockGraphicData);
 		runBeforeGraphicDataWidthCalculation(mockGraphicData, mockState, directiveState);
-		runAfterGraphicDataWidthCalculation(mockGraphicData, mockState, directiveState);
+		runBlockLayoutReady(mockGraphicData, mockState, directiveState);
 	}
 
 	it('adds a piano keyboard to graphic data widgets', () => {

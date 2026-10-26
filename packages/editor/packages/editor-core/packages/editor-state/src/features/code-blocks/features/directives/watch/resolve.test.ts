@@ -9,7 +9,7 @@ import {
 	findWidgetById,
 	setMockCodeBlockCode,
 } from '~/pureHelpers/testingUtils/testUtils';
-import { runAfterGraphicDataWidthCalculation, runBeforeGraphicDataWidthCalculation } from '../registry';
+import { runBeforeGraphicDataWidthCalculation, runBlockLayoutReady } from '../registry';
 
 describe('watch directive widget resolution', () => {
 	let mockGraphicData: CodeBlockGraphicData;
@@ -60,7 +60,7 @@ describe('watch directive widget resolution', () => {
 	function runDirectiveResolution() {
 		const directiveState = deriveDirectiveStateForMockCodeBlock(mockGraphicData);
 		runBeforeGraphicDataWidthCalculation(mockGraphicData, mockState, directiveState);
-		runAfterGraphicDataWidthCalculation(mockGraphicData, mockState, directiveState);
+		runBlockLayoutReady(mockGraphicData, mockState, directiveState);
 	}
 
 	it('should add debugger to graphicData widgets', () => {

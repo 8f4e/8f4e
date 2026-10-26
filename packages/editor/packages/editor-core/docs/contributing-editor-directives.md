@@ -78,11 +78,12 @@ Each directive folder should contain its own semantic logic. Avoid putting direc
 
 The current directive pipeline is:
 
-1. `deriveDirectiveState(code, options)` scans the block once and parses all registered directives.
+1. `deriveDirectiveState(code, parsedDirectives, options)` matches parsed directives to their registered definitions.
 2. Each directive plugin applies its own contributions to a shared draft.
 3. `codeBlockRendering` consumes the derived result.
 4. Directive-owned widget contributions optionally run `beforeGraphicDataWidthCalculation(...)` before width calculation.
-5. Directive-owned widget contributions run `afterGraphicDataWidthCalculation(...)` after width calculation.
+5. Core calculates the block's dimensions and cursor coordinates using the display rows and layout gaps.
+6. Directive-owned widget contributions run `onBlockLayoutReady(...)` with the completed block layout.
 
 The important boundary is:
 
@@ -242,11 +243,14 @@ Directive-owned widgets should use generic widget contributions.
 A widget contribution can:
 
 - `beforeGraphicDataWidthCalculation(...)`
-- `afterGraphicDataWidthCalculation(...)`
+- `onBlockLayoutReady(...)`
 
 Use `beforeGraphicDataWidthCalculation(...)` when the directive must affect graphic data before block width is computed, for example setting `minGridWidth`.
 
-Use `afterGraphicDataWidthCalculation(...)` when the directive builds runtime/editor widgets after layout information is available.
+Use `onBlockLayoutReady(...)` to derive runtime/editor widgets from the completed block layout. The block's width,
+height, display rows, gaps, and cursor coordinates are current when it runs. Layout constraints such as minimum width
+and extra rows must be contributed before this hook. Keep derived widget geometry available to both drawing and
+hit-testing. Widget coordinates are relative to the block; viewport placement is handled separately by core.
 
 The center should only iterate widget contributions. It should not know concrete widget categories.
 
@@ -263,7 +267,7 @@ Prefer testing through:
 
 - `deriveDirectiveState(...)`
 - `runBeforeGraphicDataWidthCalculation(...)`
-- `runAfterGraphicDataWidthCalculation(...)`
+- `runBlockLayoutReady(...)`
 
 instead of reviving old directive-specific update entry points.
 

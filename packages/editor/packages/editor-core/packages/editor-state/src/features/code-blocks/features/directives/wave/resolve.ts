@@ -5,7 +5,7 @@ import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import { resolveElementCount, resolveTypedValueSpec } from '../shared/typedValueSpec';
 import type { WaveDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
 
 function resolveWaveDirectiveWidget(
 	wave: WaveDirectiveData,
@@ -49,7 +49,7 @@ function resolveWaveDirectiveWidget(
 
 export function createWaveDirectiveWidgetContribution(wave: WaveDirectiveData): DirectiveWidgetContribution {
 	return {
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveWaveDirectiveWidget(wave, graphicData, state, directiveState);
 		},
 	};

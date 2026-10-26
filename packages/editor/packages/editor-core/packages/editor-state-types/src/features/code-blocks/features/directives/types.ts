@@ -42,11 +42,8 @@ export interface DirectiveWidgetContribution {
 		state: State,
 		directiveState: DirectiveDerivedState
 	) => void;
-	afterGraphicDataWidthCalculation?: (
-		graphicData: CodeBlockGraphicData,
-		state: State,
-		directiveState: DirectiveDerivedState
-	) => void;
+	/** Derive block-local widgets after dimensions, display rows, gaps, and cursor coordinates are current. */
+	onBlockLayoutReady?: (graphicData: CodeBlockGraphicData, state: State, directiveState: DirectiveDerivedState) => void;
 }
 
 export interface DirectiveDerivedState {

@@ -11,7 +11,7 @@ interface StackDirectiveData {
 	isTrailing: boolean;
 }
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
 
 function getStackAnalysisLines(
 	graphicData: Parameters<DirectiveWidgetResolver>[0],
@@ -89,7 +89,7 @@ export function createStackDirectiveWidgetContribution(
 	stackDirective: StackDirectiveData
 ): DirectiveWidgetContribution {
 	return {
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveStackDirectiveWidget(stackDirective, graphicData, state, directiveState);
 		},
 	};

@@ -34,6 +34,49 @@ function createSpriteLookups() {
 	} as never;
 }
 
+describe('code block layout readiness', () => {
+	it('runs widget callbacks with current block dimensions, row gaps, and cursor coordinates', () => {
+		const block = createMockCodeBlock({
+			code: ['module layoutProbe', '; @layoutProbe', 'push 1', 'moduleEnd'],
+			width: 1,
+			height: 1,
+			cursor: { row: 2, col: 0, x: -1, y: -1 },
+		});
+		const state = createMockState({ codeBlockRendering: { codeBlocks: [block] } });
+		const store = createStateManager(state);
+		const layouts: Array<{ width: number; height: number; cursorX: number; cursorY: number; gap: number }> = [];
+		codeBlockRenderingEffect(store, createMockEventDispatcherWithVitest(), [
+			...directivePlugins,
+			{
+				name: 'layoutProbe',
+				apply: (directive, draft) => {
+					draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 2 });
+					draft.widgets.push({
+						beforeGraphicDataWidthCalculation: codeBlock => {
+							codeBlock.minGridWidth = 40;
+						},
+						onBlockLayoutReady: codeBlock => {
+							layouts.push({
+								width: codeBlock.width,
+								height: codeBlock.height,
+								cursorX: codeBlock.cursor.x,
+								cursorY: codeBlock.cursor.y,
+								gap: codeBlock.gaps.get(1)!.size,
+							});
+						},
+					});
+				},
+			},
+		]);
+		expect(layouts).toEqual([{ width: 320, height: 96, cursorX: 24, cursorY: 64, gap: 2 }]);
+		state.viewport.vGrid = 10;
+		state.viewport.hGrid = 20;
+		store.set('info', state.info);
+		expect(layouts.at(-1)).toEqual({ width: 400, height: 120, cursorX: 30, cursorY: 80, gap: 2 });
+		store.dispose();
+	});
+});
+
 describe('code block rendering error mapping', () => {
 	it('maps project-scope compiler errors by canonical group path', () => {
 		const rootScope = createMockCodeBlock({

@@ -5,7 +5,7 @@ import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import type { WatchDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
 
 function resolveWatchDirectiveWidget(
 	_debugger: WatchDirectiveData,
@@ -45,7 +45,7 @@ function resolveWatchDirectiveWidget(
 
 export function createWatchDirectiveWidgetContribution(_debugger: WatchDirectiveData): DirectiveWidgetContribution {
 	return {
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveWatchDirectiveWidget(_debugger, graphicData, state, directiveState);
 		},
 	};

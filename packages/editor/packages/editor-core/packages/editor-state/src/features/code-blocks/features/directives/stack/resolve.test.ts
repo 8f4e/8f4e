@@ -6,7 +6,7 @@ import {
 	createMockState,
 	deriveDirectiveStateForMockCodeBlock,
 } from '~/pureHelpers/testingUtils/testUtils';
-import { runAfterGraphicDataWidthCalculation, runBeforeGraphicDataWidthCalculation } from '../registry';
+import { runBeforeGraphicDataWidthCalculation, runBlockLayoutReady } from '../registry';
 
 function createStackAnalysisLine(lineNumber: number, stackAfter: Stack): CompiledStackAnalysisLine {
 	return {
@@ -55,7 +55,7 @@ describe('stack directive widget resolution', () => {
 	function runDirectiveResolution(): void {
 		const directiveState = deriveDirectiveStateForMockCodeBlock(graphicData);
 		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState);
-		runAfterGraphicDataWidthCalculation(graphicData, state, directiveState);
+		runBlockLayoutReady(graphicData, state, directiveState);
 	}
 
 	it('renders known values from the preceding instruction for a standalone directive', () => {

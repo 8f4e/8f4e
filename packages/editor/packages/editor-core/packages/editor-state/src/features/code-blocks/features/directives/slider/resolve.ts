@@ -4,7 +4,7 @@ import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import type { SliderDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
 
 function resolveSliderDirectiveWidget(
 	slider: SliderDirectiveData,
@@ -56,7 +56,7 @@ function resolveSliderDirectiveWidget(
 
 export function createSliderDirectiveWidgetContribution(slider: SliderDirectiveData): DirectiveWidgetContribution {
 	return {
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveSliderDirectiveWidget(slider, graphicData, state, directiveState);
 		},
 	};

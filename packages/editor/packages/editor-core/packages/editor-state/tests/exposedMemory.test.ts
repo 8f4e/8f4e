@@ -8,8 +8,8 @@ import button from '~/features/code-blocks/features/directives/button/interactio
 import crossfade from '~/features/code-blocks/features/directives/crossfade/interaction';
 import {
 	deriveDirectiveState,
-	runAfterGraphicDataWidthCalculation,
 	runBeforeGraphicDataWidthCalculation,
+	runBlockLayoutReady,
 } from '~/features/code-blocks/features/directives/registry';
 import slider from '~/features/code-blocks/features/directives/slider/interaction';
 import updateInputs from '~/features/code-blocks/features/inputs/updateGraphicData';
@@ -69,7 +69,7 @@ async function setup() {
 	const derive = (block: CodeBlockGraphicData) => {
 		const directives = deriveDirectiveState(block.code, block.parsedDirectives);
 		runBeforeGraphicDataWidthCalculation(block, state, directives);
-		runAfterGraphicDataWidthCalculation(block, state, directives);
+		runBlockLayoutReady(block, state, directives);
 	};
 	derive(audio);
 	derive(controls);
