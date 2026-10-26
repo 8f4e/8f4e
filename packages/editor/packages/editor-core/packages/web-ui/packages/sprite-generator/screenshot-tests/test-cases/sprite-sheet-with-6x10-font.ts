@@ -1,23 +1,12 @@
-import spriteGenerator from '@8f4e/sprite-generator';
+import generateSprite from '@8f4e/sprite-generator';
 
-(async () => {
-	const canvasElement = document.getElementById('test-canvas') as HTMLCanvasElement;
-	const { spriteAtlas } = await spriteGenerator({
-		font: '6x10',
-	});
-
-	const ctx = canvasElement.getContext('2d');
-	if (ctx) {
-		const blob = await spriteAtlas.image.convertToBlob();
-		const img = new Image();
-		const objectURL = URL.createObjectURL(blob);
-
-		img.onload = () => {
-			ctx.imageSmoothingEnabled = false;
-			ctx.drawImage(img, 0, 0);
-			URL.revokeObjectURL(objectURL);
-		};
-
-		img.src = objectURL;
-	}
-})();
+const canvas = document.getElementById('test-canvas') as HTMLCanvasElement;
+const {
+	spriteAtlas: { image },
+} = await generateSprite({ font: '6x10' });
+canvas.width = image.width;
+canvas.height = image.height;
+const pixels = new Uint8ClampedArray(image.width * image.height * 4);
+for (let i = 0; i < image.data.length; i++) pixels.set([image.data[i], image.data[i], image.data[i], 255], i * 4);
+canvas.getContext('2d')!.putImageData(new ImageData(pixels, image.width, image.height), 0, 0);
+document.body.dataset.ready = 'true';

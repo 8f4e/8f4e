@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
@@ -37,23 +38,11 @@ function drawBracketedValue(
 	const leftBracketX = x - bracketOffset + (vGrid - bracketWidth) / 2;
 	const rightBracketBaseX = x + vGrid * (value.length + 1);
 	const rightBracketX = rightBracketBaseX + bracketOffset + (vGrid - bracketWidth) / 2;
-	const fontInkBase = state.spriteLookups!.fontInkBase;
+	const color = PALETTE_INDICES.inkBase;
 
-	engine.drawSprite(
-		leftBracketX,
-		bracketY,
-		fontInkBase['['.charCodeAt(0)] ?? fontInkBase[63],
-		bracketWidth,
-		bracketHeight
-	);
-	engine.drawText(x + state.viewport.vGrid, y, value, state.spriteLookups!.fontSecondaryBase);
-	engine.drawSprite(
-		rightBracketX,
-		bracketY,
-		fontInkBase[']'.charCodeAt(0)] ?? fontInkBase[63],
-		bracketWidth,
-		bracketHeight
-	);
+	engine.drawCharacter(leftBracketX, bracketY, 91, color, bracketWidth, bracketHeight);
+	engine.drawText(x + state.viewport.vGrid, y, value, PALETTE_INDICES.secondaryBase);
+	engine.drawCharacter(rightBracketX, bracketY, 93, color, bracketWidth, bracketHeight);
 }
 
 export default function drawDebuggers(

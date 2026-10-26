@@ -1,7 +1,8 @@
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
 import type { Crossfade } from '@8f4e/editor-state-types';
-import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../../../__tests__/rendering';
+import { describe, expect, it, vi } from 'vitest';
+import { createDrawContextMock } from '../../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
 import drawCrossfades from './crossfades';
@@ -47,7 +48,7 @@ describe('drawCrossfades', () => {
 				vGrid: 2,
 				hGrid: 8,
 			},
-			spriteLookups: { fillColors: createSpriteIdLookupMock() } as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			name: 'test-block',
@@ -58,9 +59,9 @@ describe('drawCrossfades', () => {
 
 		drawCrossfades(engine, state, codeBlock, createMemoryViews({ float32: [0, 0] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'surfaceRaised2', 10, 8);
-		expect(drawSprite).toHaveBeenCalledWith(4, 0, 'inkBase', 2, 8);
+		const drawSprite = vi.mocked(engine.drawFill);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.surfaceRaised2, 10, 8);
+		expect(drawSprite).toHaveBeenCalledWith(4, 0, PALETTE_INDICES.inkBase, 2, 8);
 	});
 
 	it('draws a fill rectangle from the center to the left knob position', () => {
@@ -70,7 +71,7 @@ describe('drawCrossfades', () => {
 				vGrid: 2,
 				hGrid: 8,
 			},
-			spriteLookups: { fillColors: createSpriteIdLookupMock() } as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			name: 'test-block',
@@ -81,9 +82,9 @@ describe('drawCrossfades', () => {
 
 		drawCrossfades(engine, state, codeBlock, createMemoryViews({ float32: [1, 0] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'surfaceRaised2', 10, 8);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'primaryDark1', 6, 8);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'inkBase', 2, 8);
+		const drawSprite = vi.mocked(engine.drawFill);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.surfaceRaised2, 10, 8);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.primaryDark1, 6, 8);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.inkBase, 2, 8);
 	});
 });

@@ -1,9 +1,11 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { gapCalculator } from '@8f4e/editor-state';
+import { createMockSpriteLookups } from '@8f4e/editor-state-testing';
 import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
-import { createDrawContextMock, createSpriteIdLookupMock } from './__tests__/rendering';
+import { createDrawContextMock } from './__tests__/rendering';
 import { sliderPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
@@ -51,15 +53,12 @@ async function setup(code = source, installed = true, name = 'controls') {
 	state.compiler.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
-	state.spriteLookups = {
-		fillColors: createSpriteIdLookupMock(),
-		fontInkOn: createSpriteIdLookupMock(),
-	} as never;
+	state.spriteLookups = createMockSpriteLookups() as never;
 	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	const initialRevision = state.compilerInputRevision;
 	const draw = createDrawContextMock();
 	const render = () => {
-		vi.mocked(draw.drawSprite).mockClear();
+		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawText).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
@@ -128,7 +127,7 @@ describe('slider plugin', () => {
 		expect(test.block.gaps.get(2)).toEqual({ size: 2 });
 		const x = (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
 		expect(test.draw.startGroup).toHaveBeenCalledWith(x, 48);
-		expect(test.draw.drawSprite).toHaveBeenCalledWith(0, 0, 'surfaceRaised2', test.block.width - x, 32);
+		expect(test.draw.drawFill).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.surfaceRaised2, test.block.width - x, 32);
 		expect(vi.mocked(test.draw.drawText).mock.calls.map(call => call[1])).toEqual([0, 16]);
 	});
 	it.each([true, false])(
@@ -214,7 +213,7 @@ describe('slider plugin', () => {
 		test.block.code = test.block.code.filter(line => !line.includes('@slider'));
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.block);
 		test.render();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.block.gaps.size).toBe(0);
 		expect(await test.menuItems()).toEqual([]);
 	});
@@ -222,7 +221,7 @@ describe('slider plugin', () => {
 		const unresolved = await setup(source.map(line => line.replace('&gain', '&missing')));
 		unresolved.render();
 		unresolved.press();
-		expect(unresolved.draw.drawSprite).not.toHaveBeenCalled();
+		expect(unresolved.draw.drawFill).not.toHaveBeenCalled();
 		expect(unresolved.write).not.toHaveBeenCalled();
 		const test = await setup();
 		test.events.dispatch('codeBlockPointerDown', { codeBlock: test.block, x: -100, y: -100 });
@@ -337,14 +336,14 @@ describe('slider plugin', () => {
 		test.render();
 		test.press();
 		expect(test.write).not.toHaveBeenCalled();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});
 	it('reads and saves float64 values from live memory', async () => {
 		const test = await setup(source.map(line => line.replace('float gain 0.25', 'float64 gain 0.0')));
 		const memory = test.compiled.memoryPlan.modules.controls.memory.gain;
 		test.memoryViews.float64[memory.byteAddress / 8] = 0.75;
 		test.render();
-		expect(test.draw.drawSprite).toHaveBeenCalled();
+		expect(test.draw.drawFill).toHaveBeenCalled();
 		test.events.dispatch('saveSliderValuesToCode', { codeBlock: test.block });
 		expect(test.block.code).toContain('float64 gain 0.75');
 	});
@@ -357,7 +356,7 @@ describe('slider plugin', () => {
 		bare.press();
 		bare.render();
 		expect(bare.write).not.toHaveBeenCalled();
-		expect(bare.draw.drawSprite).not.toHaveBeenCalled();
+		expect(bare.draw.drawFill).not.toHaveBeenCalled();
 		expect(bare.block.gaps.size).toBe(0);
 		expect(await bare.menuItems()).toEqual([]);
 	});
@@ -371,7 +370,7 @@ describe('slider plugin', () => {
 		test.render();
 		test.events.dispatch('saveSliderValuesToCode', { codeBlock: test.block });
 		expect(test.write).not.toHaveBeenCalled();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(await test.menuItems()).toEqual([]);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.block);

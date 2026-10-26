@@ -74,7 +74,7 @@ vi.mock('@8f4e/sprite-generator', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/sprite-generator')>()),
 	default: vi.fn(async () => ({
 		spriteAtlas: {
-			image: {} as OffscreenCanvas,
+			image: { width: 1, height: 1, data: new Uint8Array([255]) },
 			lookup: {},
 			spriteIdentifiers: {},
 		},
@@ -168,7 +168,7 @@ describe('editor init', () => {
 			plugins[0].setup.mock.invocationCallOrder[0]
 		);
 		expect(plugins[0].setup.mock.invocationCallOrder[0]).toBeLessThan(events.dispatch.mock.invocationCallOrder[0]);
-		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![5]!.drawers!;
+		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![6]!.drawers!;
 		expect(rendererDrawers).toBe(plugins[0].setup.mock.calls[0][0].drawers);
 		const drawContext = {} as Parameters<typeof rendererDrawers.drawCodeBlock>[0];
 		rendererDrawers.drawCodeBlock(drawContext);
@@ -424,7 +424,7 @@ describe('editor init', () => {
 		});
 
 		const viewCall = vi.mocked(initView).mock.calls.at(-1)!;
-		const viewOptions = viewCall[5]!;
+		const viewOptions = viewCall[6]!;
 		const initStateOptions = vi.mocked(initState).mock.calls.at(-1)![1];
 		expect(viewCall[1]).toBe(renderProjection);
 		viewOptions.onRenderStats?.({

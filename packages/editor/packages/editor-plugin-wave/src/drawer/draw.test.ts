@@ -1,7 +1,8 @@
-import { createMockState } from '@8f4e/editor-state-testing';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../__tests__/rendering';
+import { createDrawContextMock } from '../__tests__/rendering';
 import type { Wave } from '../types';
 import drawWaves from './draw';
 
@@ -35,7 +36,7 @@ function wave(): Wave {
 }
 function state() {
 	return createMockState({
-		spriteLookups: { fillColors: createSpriteIdLookupMock() } as never,
+		spriteLookups: createMockSpriteLookups() as never,
 		viewport: { vGrid: 4 },
 	});
 }
@@ -47,9 +48,9 @@ describe('wave drawing', () => {
 		memory.int8.set([-128, 0, 127, 0]);
 		drawWaves(draw, state(), [wave()], memory);
 		expect(draw.startGroup).toHaveBeenCalledWith(2, 3);
-		expect(draw.drawSprite).toHaveBeenNthCalledWith(1, 0, 0, 'darkSurface', 8, 8);
-		expect(draw.drawSprite).toHaveBeenNthCalledWith(2, 0, 7, 'highlightBase', 2, 1);
-		expect(draw.drawSprite).toHaveBeenNthCalledWith(4, 4, 0, 'highlightBase', 2, 1);
+		expect(draw.drawFill).toHaveBeenNthCalledWith(1, 0, 0, PALETTE_INDICES.darkSurface, 8, 8);
+		expect(draw.drawFill).toHaveBeenNthCalledWith(2, 0, 7, PALETTE_INDICES.highlightBase, 2, 1);
+		expect(draw.drawFill).toHaveBeenNthCalledWith(4, 4, 0, PALETTE_INDICES.highlightBase, 2, 1);
 	});
 	it('draws an absolute playhead over the waveform', () => {
 		const draw = createDrawContextMock();
@@ -59,14 +60,14 @@ describe('wave drawing', () => {
 		memory.int32[4] = 2;
 		data.playhead = { showAddress: false, bufferPointer: 0, memory: { allocationUnitAddress: 4 } } as never;
 		drawWaves(draw, state(), [data], memory);
-		expect(draw.drawSprite).toHaveBeenLastCalledWith(4, 0, 'secondaryReadable', 2, 8);
+		expect(draw.drawFill).toHaveBeenLastCalledWith(4, 0, PALETTE_INDICES.secondaryReadable, 2, 8);
 	});
 	it('skips a waveform while its live element count is zero', () => {
 		const draw = createDrawContextMock();
 		const data = wave();
 		data.elementCount = { memory: { allocationUnitAddress: 4 }, bufferPointer: 0 } as never;
 		drawWaves(draw, state(), [data], memoryViews());
-		expect(draw.drawSprite).not.toHaveBeenCalled();
+		expect(draw.drawFill).not.toHaveBeenCalled();
 		expect(draw.endGroup).toHaveBeenCalledOnce();
 	});
 });

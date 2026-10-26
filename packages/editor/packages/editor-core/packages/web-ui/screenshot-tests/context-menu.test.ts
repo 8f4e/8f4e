@@ -1,3 +1,4 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import init from '@8f4e/web-ui';
 import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
@@ -14,7 +15,7 @@ test('context menu', async () => {
 	const spriteData = await createMockSpriteData(mockState);
 
 	const renderData: WebUiRenderDataSource = { getSnapshot: () => ({ codeBlocks: new Map() }) };
-	await init(mockState, renderData, canvas, memoryViews, spriteData);
+	await init(mockState, renderData, canvas, memoryViews, spriteData, resolvePalette(mockState.editorConfig.color));
 	mockState.contextMenu = generateContextMenuMock();
 	await expect(canvas).toMatchScreenshot();
 });

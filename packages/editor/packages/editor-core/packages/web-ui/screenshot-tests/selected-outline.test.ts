@@ -1,3 +1,4 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import init from '@8f4e/web-ui';
 import { deriveCodeBlockCodeCells, type WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
@@ -34,7 +35,14 @@ test.each(['view', 'edit'] as const)('selected outline in %s mode', async editor
 			]),
 		}),
 	};
-	const renderer = await init(state, renderData, canvas, createMockMemoryViews(), await createMockSpriteData(state));
+	const renderer = await init(
+		state,
+		renderData,
+		canvas,
+		createMockMemoryViews(),
+		await createMockSpriteData(state),
+		resolvePalette(state.editorConfig.color)
+	);
 	renderer.pauseRendering();
 	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 	try {

@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
@@ -45,7 +46,7 @@ export default function drawer(
 		return;
 	}
 
-	const fillSprites = state.spriteLookups.fillColors;
+	const colors = PALETTE_INDICES;
 
 	for (const bars of codeBlock.widgets.arrayBars) {
 		const { x, y, width, height, length, valueType, minValue, inverseValueRange, staticColumnLayout } = bars;
@@ -58,7 +59,7 @@ export default function drawer(
 				? length
 				: memoryViews.int32[length.memory.allocationUnitAddress + length.bufferPointer];
 
-		engine.drawSprite(0, 0, fillSprites.darkSurface, width, height);
+		engine.drawFill(0, 0, colors.darkSurface, width, height);
 
 		if (arrayLength <= 0) {
 			engine.endGroup();
@@ -94,7 +95,7 @@ export default function drawer(
 
 			const barX = column.x;
 			const barY = height - barHeight;
-			engine.drawSprite(barX, barY, fillSprites.detailBase, column.width, barHeight);
+			engine.drawFill(barX, barY, colors.detailBase, column.width, barHeight);
 		}
 
 		engine.endGroup();

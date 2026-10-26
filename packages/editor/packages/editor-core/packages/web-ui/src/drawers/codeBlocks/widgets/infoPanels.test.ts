@@ -1,6 +1,7 @@
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../../../__tests__/rendering';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { describe, expect, it, vi } from 'vitest';
+import { createDrawContextMock } from '../../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../../drawContext';
 import drawInfoPanels from './infoPanels';
 
@@ -20,13 +21,7 @@ describe('drawInfoPanels', () => {
 					foo: 1.234567,
 				},
 			},
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontInkBase: createSpriteIdLookupMock(),
-				fontMutedBase: createSpriteIdLookupMock(),
-				fontPrimaryBase: createSpriteIdLookupMock(),
-				fontSecondaryBase: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -36,28 +31,22 @@ describe('drawInfoPanels', () => {
 
 		drawInfoPanels(engine, state, codeBlock);
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
+		const drawSprite = vi.mocked(engine.drawFill);
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'surfaceBase', 216, 48);
-		expect(drawText).toHaveBeenCalledWith(0, 0, 'a', state.spriteLookups?.fontPrimaryBase);
-		expect(drawText).toHaveBeenCalledWith(24, 0, ':', state.spriteLookups?.fontPrimaryBase);
-		expect(drawText).toHaveBeenCalledWith(40, 0, '1', state.spriteLookups?.fontSecondaryBase);
-		expect(drawText).toHaveBeenCalledWith(0, 32, 'foo', state.spriteLookups?.fontPrimaryBase);
-		expect(drawText).toHaveBeenCalledWith(40, 32, '1.2346', state.spriteLookups?.fontSecondaryBase);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.surfaceBase, 216, 48);
+		expect(drawText).toHaveBeenCalledWith(0, 0, 'a', PALETTE_INDICES.primaryBase);
+		expect(drawText).toHaveBeenCalledWith(24, 0, ':', PALETTE_INDICES.primaryBase);
+		expect(drawText).toHaveBeenCalledWith(40, 0, '1', PALETTE_INDICES.secondaryBase);
+		expect(drawText).toHaveBeenCalledWith(0, 32, 'foo', PALETTE_INDICES.primaryBase);
+		expect(drawText).toHaveBeenCalledWith(40, 32, '1.2346', PALETTE_INDICES.secondaryBase);
 		expect(drawText).not.toHaveBeenCalledWith(0, 32, 'skip');
 	});
 
 	it('skips missing info records', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontInkBase: createSpriteIdLookupMock(),
-				fontMutedBase: createSpriteIdLookupMock(),
-				fontPrimaryBase: createSpriteIdLookupMock(),
-				fontSecondaryBase: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -67,7 +56,7 @@ describe('drawInfoPanels', () => {
 
 		drawInfoPanels(engine, state, codeBlock);
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
+		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).not.toHaveBeenCalled();
 	});
 
@@ -79,13 +68,7 @@ describe('drawInfoPanels', () => {
 					longKey: 'overflow',
 				},
 			},
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontInkBase: createSpriteIdLookupMock(),
-				fontMutedBase: createSpriteIdLookupMock(),
-				fontPrimaryBase: createSpriteIdLookupMock(),
-				fontSecondaryBase: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -97,9 +80,9 @@ describe('drawInfoPanels', () => {
 
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 
-		expect(drawText).toHaveBeenCalledWith(0, 0, 'longKey', state.spriteLookups?.fontPrimaryBase);
-		expect(drawText).toHaveBeenCalledWith(56, 0, ':', state.spriteLookups?.fontPrimaryBase);
-		expect(drawText).toHaveBeenCalledWith(72, 0, '', state.spriteLookups?.fontSecondaryBase);
+		expect(drawText).toHaveBeenCalledWith(0, 0, 'longKey', PALETTE_INDICES.primaryBase);
+		expect(drawText).toHaveBeenCalledWith(56, 0, ':', PALETTE_INDICES.primaryBase);
+		expect(drawText).toHaveBeenCalledWith(72, 0, '', PALETTE_INDICES.secondaryBase);
 		expect(drawText).not.toHaveBeenCalledWith(72, 0, 'overflow');
 	});
 });

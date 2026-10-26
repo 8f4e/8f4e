@@ -1,4 +1,4 @@
-import type { PaletteConfig } from '@8f4e/editor-palette';
+import { PALETTE_INDICES, type PaletteConfig, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import generateSprite, { type Font, resolveSpriteIds } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
@@ -17,11 +17,12 @@ const themes: Array<{ name: string; palette: PaletteConfig }> = [
 for (const font of ['6x10', 'ibmvga8x16', 'spleen16x32'] satisfies Font[]) {
 	for (const { name, palette } of themes) {
 		test(`connectors with ${font} and ${name} colors`, async () => {
-			const { characterWidth, characterHeight, spriteAtlas } = await generateSprite({ font, palette });
+			const { characterWidth, characterHeight, spriteAtlas } = await generateSprite({ font });
 			const canvas = createCanvas();
 			canvas.width = characterWidth * 29;
 			canvas.height = characterHeight * 3;
 			const engine = new Engine(canvas);
+			engine.setPalette(toPaletteBytes(resolvePalette(palette)));
 			const spriteLookups = resolveSpriteIds(
 				spriteAtlas.spriteIdentifiers,
 				engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup)
@@ -77,8 +78,8 @@ for (const font of ['6x10', 'ibmvga8x16', 'spleen16x32'] satisfies Font[]) {
 			}
 			try {
 				engine.renderFrame(() => {
-					engine.drawSprite(0, 0, spriteLookups.fillColors.white, canvas.width, canvas.height);
-					drawConnectors(new DrawContext(engine, characterWidth), state, block, memoryViews);
+					engine.drawSprite(0, 0, spriteLookups.fill, PALETTE_INDICES.white, canvas.width, canvas.height);
+					drawConnectors(new DrawContext(engine, characterWidth, spriteLookups), state, block, memoryViews);
 				});
 				await expect(canvas).toMatchScreenshot();
 			} finally {

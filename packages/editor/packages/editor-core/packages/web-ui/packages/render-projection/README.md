@@ -45,7 +45,7 @@ when their ownership boundary is clear.
 ### The web UI render projection owns
 
 - replaceable, render-ready data derived from editor state;
-- syntax font transitions and resolved glyph sprite IDs; and
+- syntax palette transitions and resolved glyph shape/color selections; and
 - snapshots that can be recalculated outside the draw loop.
 
 ### The renderer owns
@@ -90,7 +90,7 @@ interface WebUiRenderData {
 }
 
 interface CodeBlockRenderData {
-  codeCells: Array<Array<SpriteId | null>>;
+  codeCells: Array<Array<SpriteCell | null>>; // SpriteCell is a uint32 packing a uint16 shape ID and uint16 palette index.
 }
 ```
 
@@ -117,3 +117,8 @@ npx nx run @8f4e/web-ui-render-projection:test
 npx nx run @8f4e/web-ui-render-projection:typecheck
 npx nx run @8f4e/web-ui-render-projection:build
 ```
+
+Palette-only updates retain the same shape IDs and stable token indices, so the cached cells remain valid without
+rebuilding the projection. Font changes replace the shared glyph table and refresh projected cells.
+Pre-resolved cells store shape and color together in one unsigned 32-bit number. This retains numeric cell storage
+and avoids allocating a separate array or object for every glyph when the projection refreshes.

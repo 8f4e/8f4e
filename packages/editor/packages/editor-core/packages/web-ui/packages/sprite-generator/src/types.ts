@@ -1,27 +1,3 @@
-import type { PaletteConfig } from '@8f4e/editor-palette';
-import type { SpriteCoordinates } from 'glugglugglug';
-
-export const Command = {
-	FILL_COLOR: 0,
-	RECTANGLE: 1,
-	TRANSLATE: 2,
-	SAVE: 3,
-	RESTORE: 4,
-	RESET_TRANSFORM: 5,
-	PIXEL: 6,
-} as const;
-
-export type CommandValue = (typeof Command)[keyof typeof Command];
-
-export type DrawingCommand =
-	| [command: typeof Command.FILL_COLOR, fillColor: string]
-	| [command: typeof Command.RECTANGLE, x: number, y: number, width: number, height: number]
-	| [command: typeof Command.TRANSLATE, x: number, y: number]
-	| [command: typeof Command.PIXEL, x: number, y: number]
-	| [command: typeof Command.SAVE]
-	| [command: typeof Command.RESTORE]
-	| [command: typeof Command.RESET_TRANSFORM];
-
 export const FONT_NAMES = [
 	'attpc63008x16',
 	'6x10',
@@ -46,8 +22,5 @@ export const FONT_NAMES = [
 export type Font = (typeof FONT_NAMES)[number];
 
 export interface Config {
-	palette?: PaletteConfig;
 	font?: string;
 }
-
-export type SpriteLookup<T extends string = string> = Record<T, SpriteCoordinates>;

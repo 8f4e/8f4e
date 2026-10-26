@@ -1,5 +1,6 @@
+import type { PaletteIndex } from '@8f4e/editor-palette';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import type { SpriteId } from '@8f4e/sprite-generator';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { Wave } from '../types';
 
@@ -23,7 +24,7 @@ function drawWaveform(
 	minValue: number,
 	maxValue: number,
 	inverseValueRange: number,
-	waveformSpriteId: SpriteId
+	color: PaletteIndex
 ): void {
 	for (let column = 0; column < columnCount; column++) {
 		const sliceStart = Math.floor((column / columnCount) * arrayLength);
@@ -44,7 +45,7 @@ function drawWaveform(
 		const rectY = Math.min(minY, maxY);
 		const rectHeight = Math.max(1, Math.abs(maxY - minY) + 1);
 
-		engine.drawSprite(column * columnWidth, rectY, waveformSpriteId, columnWidth, rectHeight);
+		engine.drawFill(column * columnWidth, rectY, color, columnWidth, rectHeight);
 	}
 }
 
@@ -53,7 +54,7 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 		return;
 	}
 
-	const fillSprites = state.spriteLookups.fillColors;
+	const colors = PALETTE_INDICES;
 
 	for (const {
 		x,
@@ -89,7 +90,7 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 		const waveformColumnWidth = Math.max(1, Math.floor(state.viewport.vGrid / 2));
 		const columnCount = Math.max(1, Math.floor(width / waveformColumnWidth));
 		const columnWidth = Math.max(1, Math.floor(width / columnCount));
-		engine.drawSprite(0, 0, fillSprites.darkSurface, width, height);
+		engine.drawFill(0, 0, colors.darkSurface, width, height);
 		drawWaveform(
 			engine,
 			values,
@@ -101,7 +102,7 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 			minValue,
 			maxValue,
 			inverseValueRange,
-			fillSprites.highlightBase
+			colors.highlightBase
 		);
 
 		if (playhead) {
@@ -113,7 +114,7 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 			const scanlineWidth = state.viewport.vGrid / 2;
 			const scanlineX = arrayLength <= 1 ? 0 : Math.floor((clampedIndex / (arrayLength - 1)) * (width - scanlineWidth));
 
-			engine.drawSprite(scanlineX, 0, fillSprites.secondaryReadable, scanlineWidth, height);
+			engine.drawFill(scanlineX, 0, colors.secondaryReadable, scanlineWidth, height);
 		}
 
 		engine.endGroup();

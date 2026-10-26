@@ -1,5 +1,6 @@
+import type { PaletteIndex } from '@8f4e/editor-palette';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import type { SpriteId } from '@8f4e/sprite-generator';
 import type { DrawContext } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
 import { getBaseValueIndex, getTypedValueView } from './typedValueView';
@@ -33,12 +34,12 @@ function drawSparsePlot(
 	pointHeight: number,
 	minValue: number,
 	valueRange: number,
-	traceSpriteId: SpriteId
+	color: PaletteIndex
 ): void {
 	for (let i = 0; i < width; i++) {
 		const value = values[baseValueIndex + i];
 		const pointY = valueToY(value, minValue, valueRange, plotHeight, pointHeight);
-		engine.drawSprite(i * columnWidth, pointY, traceSpriteId, columnWidth, pointHeight);
+		engine.drawFill(i * columnWidth, pointY, color, columnWidth, pointHeight);
 	}
 }
 
@@ -53,7 +54,7 @@ function drawDensePlot(
 	minValue: number,
 	maxValue: number,
 	valueRange: number,
-	traceSpriteId: SpriteId
+	color: PaletteIndex
 ): void {
 	for (let column = 0; column < columnCount; column++) {
 		const sliceStart = Math.floor((column / columnCount) * arrayLength);
@@ -74,7 +75,7 @@ function drawDensePlot(
 		const rectY = Math.min(minY, maxY);
 		const rectHeight = Math.max(pointHeight, Math.abs(maxY - minY) + pointHeight);
 
-		engine.drawSprite(column, rectY, traceSpriteId, 1, rectHeight);
+		engine.drawFill(column, rectY, color, 1, rectHeight);
 	}
 }
 
@@ -88,7 +89,7 @@ export default function drawer(
 		return;
 	}
 
-	const fillSprites = state.spriteLookups.fillColors;
+	const colors = PALETTE_INDICES;
 
 	const maxPlotterWidth = codeBlock.width - state.viewport.hGrid * 2;
 	const plotHeight = state.viewport.hGrid * 8;
@@ -110,7 +111,7 @@ export default function drawer(
 		const isDense = arrayLength > maxPlotterWidth;
 		const plotWidth = isDense ? maxPlotterWidth : sampleCount * columnWidth;
 
-		engine.drawSprite(0, 0, fillSprites.darkSurface, plotWidth, plotHeight);
+		engine.drawFill(0, 0, colors.darkSurface, plotWidth, plotHeight);
 
 		if (isDense) {
 			drawDensePlot(
@@ -124,7 +125,7 @@ export default function drawer(
 				minValue,
 				maxValue,
 				valueRange,
-				fillSprites.onDarkAccent
+				colors.onDarkAccent
 			);
 		} else {
 			drawSparsePlot(
@@ -137,7 +138,7 @@ export default function drawer(
 				pointHeight,
 				minValue,
 				valueRange,
-				fillSprites.onDarkAccent
+				colors.onDarkAccent
 			);
 		}
 

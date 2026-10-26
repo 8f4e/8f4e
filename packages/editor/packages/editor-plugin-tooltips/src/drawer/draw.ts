@@ -1,7 +1,7 @@
+import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import { resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
-import type { SpriteFont } from '@8f4e/sprite-generator';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { TooltipLiveValue, TooltipState } from '../types';
 import { formatMemoryValue } from './memoryValue';
@@ -80,21 +80,20 @@ function getLiveValueText(state: State, memoryViews: MemoryViews, liveValue: Too
 function drawCharactersWithColors(
 	engine: DrawContext,
 	state: State,
-	characters: Array<number | string>,
-	colors: Array<SpriteFont | undefined> | undefined,
+	characters: Array<number>,
+	colors: Array<PaletteIndex | undefined> | undefined,
 	x: number,
 	y: number
 ): void {
-	const spriteLookups = state.spriteLookups!;
-	let currentLookup = colors?.[0] ?? spriteLookups.fontInverseInk;
+	let currentColor = colors?.[0] ?? PALETTE_INDICES.inverseInk;
 
 	for (let index = 0; index < characters.length; index++) {
-		const nextLookup = colors?.[index] ?? currentLookup;
+		const nextColor = colors?.[index] ?? currentColor;
 
-		currentLookup = nextLookup;
+		currentColor = nextColor;
 
 		if (characters[index] !== 32) {
-			engine.drawSprite(x + index * state.viewport.vGrid, y, currentLookup[characters[index]] ?? currentLookup[63]);
+			engine.drawCharacter(x + index * state.viewport.vGrid, y, characters[index], currentColor);
 		}
 	}
 }
@@ -105,13 +104,13 @@ function drawTextCharacters(
 	text: string,
 	x: number,
 	y: number,
-	font: SpriteFont
+	color: PaletteIndex
 ): void {
 	for (let index = 0; index < text.length; index++) {
 		const character = text.charCodeAt(index);
 
 		if (character !== 32) {
-			engine.drawSprite(x + index * state.viewport.vGrid, y, font[character] ?? font[63]);
+			engine.drawCharacter(x + index * state.viewport.vGrid, y, character, color);
 		}
 	}
 }
@@ -123,7 +122,6 @@ function drawLiveValue(
 	liveValue: TooltipLiveValue,
 	offset: TooltipAnimationOffset
 ): void {
-	const spriteLookups = state.spriteLookups!;
 	const value = getLiveValueText(state, memoryViews, liveValue);
 
 	if (value === undefined) {
@@ -136,7 +134,7 @@ function drawLiveValue(
 		value,
 		liveValue.x + offset.x,
 		liveValue.y + offset.y,
-		liveValue.color ?? spriteLookups.fontInverseAccent
+		liveValue.color ?? PALETTE_INDICES.inverseAccent
 	);
 }
 
@@ -164,19 +162,13 @@ export default function drawTooltip(
 	const { width, height, x, y, lineX } = tooltip.layout;
 	const animationOffset = getTooltipAnimationOffset(tooltip, state.viewport.vGrid);
 
-	engine.drawSprite(
-		x + animationOffset.x,
-		y + animationOffset.y,
-		spriteLookups.fillColors.inverseSurface,
-		width,
-		height
-	);
+	engine.drawFill(x + animationOffset.x, y + animationOffset.y, PALETTE_INDICES.inverseSurface, width, height);
 
 	for (const highlight of tooltip.highlights) {
-		engine.drawSprite(
+		engine.drawFill(
 			highlight.x + animationOffset.x,
 			highlight.y + animationOffset.y,
-			spriteLookups.fillColors[highlight.fillColor],
+			PALETTE_INDICES[highlight.fillColor],
 			highlight.width,
 			highlight.height
 		);

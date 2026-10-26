@@ -68,7 +68,9 @@ Active todo files are listed below.
 | 505 | Add an initial editor mode directive | 🟡 | 4-8h | 2026-10-21 | Let projects request edit or view mode at load time while preserving host-level mode policy and later user mode changes. |
 | 506 | Add an inline sample browser directive | 🟡 | TBD | 2026-10-22 | Render a folder/file browser inside a code block and update a bound binary asset URL when a sample is selected. |
 | 508 | Design lazy loading for editor plugins | 🟡 | TBD | 2026-10-26 | Work out plugin discovery, asynchronous activation, readiness, and per-editor cleanup while measuring initial-bundle savings. |
-| 510 | Use glyph masks and a GPU color palette | 🟡 | TBD | 2026-10-26 | Store glyph shapes once, upload colors separately, and pack sprite IDs with stable palette indices in the 20-byte instance format. |
+| 512 | Investigate integer sprite instance packing | 🟡 | TBD | 2026-10-26 | Evaluate a 12-byte integer sprite layout against the 20-byte baseline, checking coordinate limits, code complexity, and measured CPU/GPU costs. |
+| 513 | Benchmark fixed-grid glyph addressing | 🟡 | TBD | 2026-10-26 | Compare calculated glyph rectangles with the GPU rectangle lookup, verifying equivalent rendering and measured gains before restricting the atlas layout. |
+| 514 | Investigate viewport culling for code text | 🟡 | TBD | 2026-10-26 | Determine visible text row and column ranges before sprite submission, preserving partial glyphs and layout while measuring traversal, upload, and CPU/GPU savings. |
 
 ### 🟢 Low Priority
 
@@ -84,6 +86,7 @@ Active todo files are listed below.
 
 | ID | Title | Completed | Notes |
 | ---- | ----- | --------- | ----- |
+| 510 | Use glyph masks and a GPU color palette | 2026-10-26 | R8 masks and stable GPU palette indices replace colored font copies; the default atlas drops from 4 MiB to 96 KiB while retaining 20-byte instances. |
 | 511 | Compose input and output icons at runtime | 2026-10-26 | Inputs and six-state outputs use shared font/fill sprites; prerendered connectors are removed, with visual and rendering-cost checks recorded. |
 | 509 | Rebuild editor colors from a small base palette | 2026-10-26 | Shared configurable accents, predefined shades and opacity, and generic core/plugin sprite lookups replace feature-specific colors. |
 | 507 | Design plugin fill-color contributions | 2026-10-26 | Cancelled; TODO 509 replaces plugin-owned color registration with a shared base palette and generated shades. |

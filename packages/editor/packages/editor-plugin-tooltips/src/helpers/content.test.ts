@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { describe, expect, it } from 'vitest';
 
 import { TOOLTIP_WRAP_WIDTH } from './constants';
@@ -26,32 +27,24 @@ describe('selected line tooltip content', () => {
 	});
 
 	it('generates tooltip color transitions for instructions and stack values', () => {
-		const fontInverseInk = {};
-		const fontInverseAccent = {};
-		const content = getSelectedLineTooltipContent(
-			'add',
-			TOOLTIP_WRAP_WIDTH,
-			{
-				lineNumber: 2,
-				instruction: 'add',
-				stackAnalysis: {
-					stackBefore: [
-						{ kind: 'value', valueType: 'int', knownValue: 1 },
-						{ kind: 'value', valueType: 'int', knownValue: 2 },
-					],
-					consumedOperands: [
-						{ kind: 'value', valueType: 'int', knownValue: 1 },
-						{ kind: 'value', valueType: 'int', knownValue: 2 },
-					],
-					producedStackItems: [{ kind: 'value', valueType: 'int' }],
-					stackAfter: [{ kind: 'value', valueType: 'int' }],
-				},
+		const fontInverseInk = PALETTE_INDICES.inverseInk;
+		const fontInverseAccent = PALETTE_INDICES.inverseAccent;
+		const content = getSelectedLineTooltipContent('add', TOOLTIP_WRAP_WIDTH, {
+			lineNumber: 2,
+			instruction: 'add',
+			stackAnalysis: {
+				stackBefore: [
+					{ kind: 'value', valueType: 'int', knownValue: 1 },
+					{ kind: 'value', valueType: 'int', knownValue: 2 },
+				],
+				consumedOperands: [
+					{ kind: 'value', valueType: 'int', knownValue: 1 },
+					{ kind: 'value', valueType: 'int', knownValue: 2 },
+				],
+				producedStackItems: [{ kind: 'value', valueType: 'int' }],
+				stackAfter: [{ kind: 'value', valueType: 'int' }],
 			},
-			{
-				fontInverseInk,
-				fontInverseAccent,
-			} as never
-		);
+		});
 
 		expect(content.text).toEqual([
 			'add (T T -- T)',

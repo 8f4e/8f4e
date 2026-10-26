@@ -1,3 +1,4 @@
+import { createMockSpriteLookups } from '@8f4e/editor-state-testing';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type Mock, vi } from 'vitest';
@@ -11,26 +12,8 @@ import entryOutlines from './features/entryOutlines/effect';
 import parsedDirectivesUpdater from './features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
 
-function createFontIds() {
-	return new Proxy(
-		{ 63: 63 },
-		{
-			get: (target, key) => {
-				const characterCode = Number(key);
-				return Number.isNaN(characterCode) ? Reflect.get(target, key) : characterCode;
-			},
-		}
-	);
-}
-
 function createSpriteLookups() {
-	return {
-		fillColors: {},
-		fontSecondaryBase: createFontIds(),
-		fontInkBase: createFontIds(),
-		fontInkFaint: createFontIds(),
-		fontMutedBase: createFontIds(),
-	} as never;
+	return createMockSpriteLookups() as never;
 }
 
 describe('code block layout readiness', () => {

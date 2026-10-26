@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { Slider } from '../types';
@@ -29,11 +30,11 @@ export function drawSliders(engine: DrawContext, state: State, sliders: Slider[]
 
 		engine.startGroup(x, y);
 
-		engine.drawSprite(0, 0, state.spriteLookups.fillColors.surfaceRaised2, width, height);
-		engine.drawSprite(0, 0, state.spriteLookups.fillColors.primaryDark2, handleX + handleWidth, height);
-		engine.drawSprite(handleX, 0, state.spriteLookups.fillColors.inkBase, handleWidth, height);
-		engine.drawText(handleX, 0, HANDLE_LABEL, state.spriteLookups.fontInkOn);
-		engine.drawText(handleX, state.viewport.hGrid, HANDLE_LABEL, state.spriteLookups.fontInkOn);
+		engine.drawFill(0, 0, PALETTE_INDICES.surfaceRaised2, width, height);
+		engine.drawFill(0, 0, PALETTE_INDICES.primaryDark2, handleX + handleWidth, height);
+		engine.drawFill(handleX, 0, PALETTE_INDICES.inkBase, handleWidth, height);
+		engine.drawText(handleX, 0, HANDLE_LABEL, PALETTE_INDICES.inkOn);
+		engine.drawText(handleX, state.viewport.hGrid, HANDLE_LABEL, PALETTE_INDICES.inkOn);
 
 		engine.endGroup();
 	}

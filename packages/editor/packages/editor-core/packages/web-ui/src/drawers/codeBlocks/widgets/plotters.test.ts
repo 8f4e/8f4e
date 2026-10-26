@@ -1,6 +1,7 @@
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../../../__tests__/rendering';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { describe, expect, it, vi } from 'vitest';
+import { createDrawContextMock } from '../../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
 import drawPlotters from './plotters';
@@ -25,9 +26,7 @@ describe('drawPlotters', () => {
 	it('renders one sample per point for short arrays', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 			viewport: {
 				hGrid: 4,
 				vGrid: 8,
@@ -59,20 +58,18 @@ describe('drawPlotters', () => {
 
 		drawPlotters(engine, state, codeBlock, createMemoryViews({ int8: [0, 1, 2, 3] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 12, 32);
-		expect(drawSprite).toHaveBeenCalledWith(0, 31, 'onDarkAccent', 3, 1);
-		expect(drawSprite).toHaveBeenCalledWith(3, 21, 'onDarkAccent', 3, 1);
-		expect(drawSprite).toHaveBeenCalledWith(6, 10, 'onDarkAccent', 3, 1);
-		expect(drawSprite).toHaveBeenCalledWith(9, 0, 'onDarkAccent', 3, 1);
+		const drawSprite = vi.mocked(engine.drawFill);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 12, 32);
+		expect(drawSprite).toHaveBeenCalledWith(0, 31, PALETTE_INDICES.onDarkAccent, 3, 1);
+		expect(drawSprite).toHaveBeenCalledWith(3, 21, PALETTE_INDICES.onDarkAccent, 3, 1);
+		expect(drawSprite).toHaveBeenCalledWith(6, 10, PALETTE_INDICES.onDarkAccent, 3, 1);
+		expect(drawSprite).toHaveBeenCalledWith(9, 0, PALETTE_INDICES.onDarkAccent, 3, 1);
 	});
 
 	it('matches sparse background width to the rendered trace width', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 			viewport: {
 				hGrid: 4,
 				vGrid: 8,
@@ -104,17 +101,15 @@ describe('drawPlotters', () => {
 
 		drawPlotters(engine, state, codeBlock, createMemoryViews({ int8: [0, 1, 2, 3] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 12, 32);
-		expect(drawSprite).toHaveBeenCalledWith(9, 0, 'onDarkAccent', 3, 1);
+		const drawSprite = vi.mocked(engine.drawFill);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 12, 32);
+		expect(drawSprite).toHaveBeenCalledWith(9, 0, PALETTE_INDICES.onDarkAccent, 3, 1);
 	});
 
 	it('renders dense arrays as per-column min/max envelopes instead of truncating', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 			viewport: {
 				hGrid: 4,
 				vGrid: 8,
@@ -147,11 +142,11 @@ describe('drawPlotters', () => {
 		const values = Array.from({ length: 24 }, (_, index) => (index % 2 === 0 ? 0 : 10));
 		drawPlotters(engine, state, codeBlock, createMemoryViews({ int8: values }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		const traceCalls = drawSprite.mock.calls.filter((call: unknown[]) => call[2] === 'onDarkAccent');
+		const drawSprite = vi.mocked(engine.drawFill);
+		const traceCalls = drawSprite.mock.calls.filter((call: unknown[]) => call[2] === PALETTE_INDICES.onDarkAccent);
 
 		expect(traceCalls).toHaveLength(12);
-		expect(traceCalls[0]).toEqual([0, 0, 'onDarkAccent', 1, 32]);
-		expect(traceCalls[11]).toEqual([11, 0, 'onDarkAccent', 1, 32]);
+		expect(traceCalls[0]).toEqual([0, 0, PALETTE_INDICES.onDarkAccent, 1, 32]);
+		expect(traceCalls[11]).toEqual([11, 0, PALETTE_INDICES.onDarkAccent, 1, 32]);
 	});
 });

@@ -82,21 +82,23 @@ choose contrasting pairs for other shades. This does not replace a complete cont
 
 ## Drawing API
 
-Fill sprites expose all nine tonal shades. Fonts expose `Dark2`, `Base`, and `Light2` for each base, plus the shared
-foreground materials listed in `FONT_ALIASES`: `sprites.fillColors.primaryDark2`,
-`sprites.fillColors.inkBase`, and `sprites.fontInkOn` can be reused across unrelated controls. Local visual choices belong
-to drawers rather than theme configuration. The primary font catalog also includes `Dark3` and `Dark1` so the
-six-step output scale can use ordinary glyphs without changing its colors.
+`PALETTE_INDICES` exposes stable numeric indices for every shade, opacity variant, and shared material. Drawers choose
+these indices directly: `draw.drawFill(x, y, PALETTE_INDICES.primaryDark2, width, height)` and
+`draw.drawText(x, y, text, PALETTE_INDICES.inkOn)` reuse the same fill mask and glyph table across unrelated controls.
+Local visual choices belong to drawers rather than theme configuration. Equal resolved colors keep separate indices
+so a theme change can make them diverge without rebuilding projections.
 
 Connector icons are composed at runtime: a `surfaceRaised2` fill sits behind input brackets in `primaryBase` or output
 brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`, `primaryDark1`, `primaryBase`,
 `warningBase`, or `negativeBase` from the calibrated value. There are no dedicated input or feedback-scale atlas entries.
 
-All shades and opacity variants are baked into the atlas. The extra `Alpha30/60/90` swatches are fill-only to avoid
-duplicating entire font strips; text retains source alpha and the shared prepared overlays. The bounded font catalog
-keeps metadata within an 8192-entry lookup texture. [TODO 510](../../../../../docs/todos/510-use-glyph-masks-and-gpu-color-palette.md)
-will separate glyph masks from colors so every shade can be used for text without duplicating glyph sprites. Identical
-concrete font colors share an atlas row, and fill swatches wrap within the existing atlas width.
-`@8f4e/editor-palette` owns the pure color model and conversion math.
-The atlas result carries its resolved palette so line-rendered wires use that exact palette, including alpha.
-Theme and font changes replace the atlas and lookups together; stale asynchronous builds are ignored.
+The sprite atlas contains color-independent R8 coverage masks: one glyph set, one fully covered fill texel, and one
+background pattern. All palette entries can color text, including `Alpha30/60/90` variants. Background rendering draws
+a `canvasBase` fill and layers the same pattern mask in `canvasDetail2` and `canvasDetail1`, offset by one character cell.
+The vertex shader fetches the selected RGBA8 entry and premultiplies it; the fragment shader applies red-channel mask
+coverage. Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
+
+`@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
+the generated masks and separately resolved palette. Theme changes upload only palette colors and refresh line-rendered wire colors;
+font changes rebuild masks and source lookups. Font builds leave the active palette untouched, and
+stale asynchronous font builds are ignored.

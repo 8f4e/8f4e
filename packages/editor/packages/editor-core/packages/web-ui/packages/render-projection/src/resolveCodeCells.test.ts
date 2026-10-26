@@ -1,47 +1,24 @@
 import type { SpriteFont, SpriteId } from '@8f4e/sprite-generator';
+import { createSpriteCell } from '@8f4e/sprite-generator';
 import { describe, expect, it } from 'vitest';
 import resolveCodeCells from './resolveCodeCells';
 
-const spriteId = (value: number): SpriteId => value as SpriteId;
+const cell = (id: number, color: number) => createSpriteCell(id as SpriteId, color);
 
-function createFont(fallback: number, glyphs: Record<string | number, number> = {}): SpriteFont {
-	return {
-		63: spriteId(fallback),
-		...Object.fromEntries(Object.entries(glyphs).map(([character, id]) => [character, spriteId(id)])),
-	} as SpriteFont;
-}
-
+const font = { 63: 90 as SpriteId, 65: 1 as SpriteId, 66: 2 as SpriteId, 67: 3 as SpriteId } as SpriteFont;
 describe('resolveCodeCells', () => {
-	it('resolves glyphs, preserves font transitions, and advances over spaces', () => {
-		const defaultFont = createFont(90, { 65: 1, 66: 2 });
-		const syntaxFont = createFont(91, { 66: 12, 67: 13 });
-
-		expect(resolveCodeCells([[65, 32, 66, 67]], [[undefined, syntaxFont]], defaultFont)).toEqual([
-			[spriteId(1), null, spriteId(12), spriteId(13)],
+	it('applies color transitions at spaces and accepts palette index zero', () => {
+		expect(resolveCodeCells([[65, 32, 66, 67]], [[undefined, 0]], 5, undefined, font)).toEqual([
+			[cell(1, 5), null, cell(2, 0), cell(3, 0)],
 		]);
 	});
-
-	it('uses the active font fallback for unknown glyphs', () => {
-		const defaultFont = createFont(90);
-		const syntaxFont = createFont(91);
-
-		expect(resolveCodeCells([['unknown']], [[syntaxFont]], defaultFont)).toEqual([[spriteId(91)]]);
+	it('uses shared fallback geometry with the active color for unknown glyphs', () => {
+		expect(resolveCodeCells([[128]], [[2]], 5, undefined, font)).toEqual([[cell(90, 2)]]);
 	});
-
-	it('uses the disabled font for every non-space cell and ignores syntax transitions', () => {
-		const defaultFont = createFont(90, { 65: 1 });
-		const syntaxFont = createFont(91, { 65: 11 });
-		const disabledFont = createFont(92, { 65: 21 });
-
-		expect(resolveCodeCells([[65, 32, 65]], [[syntaxFont]], defaultFont, disabledFont)).toEqual([
-			[spriteId(21), null, spriteId(21)],
-		]);
+	it('uses disabled color zero for all non-space cells', () => {
+		expect(resolveCodeCells([[65, 32, 65]], [[2]], 5, 0, font)).toEqual([[cell(1, 0), null, cell(1, 0)]]);
 	});
-
-	it('resolves rows independently from the default font', () => {
-		const defaultFont = createFont(90, { 65: 1 });
-		const syntaxFont = createFont(91, { 65: 11 });
-
-		expect(resolveCodeCells([[65], [65]], [[syntaxFont], []], defaultFont)).toEqual([[spriteId(11)], [spriteId(1)]]);
+	it('resets each row to its default color', () => {
+		expect(resolveCodeCells([[65], [65]], [[2], []], 5, undefined, font)).toEqual([[cell(1, 2)], [cell(1, 5)]]);
 	});
 });

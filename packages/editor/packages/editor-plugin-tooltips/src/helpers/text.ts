@@ -11,14 +11,14 @@ export function wrapTooltipText(text: string, maxLength = TOOLTIP_WRAP_WIDTH): s
 /**
  * Converts text into character codes for the drawer's sprite pipeline.
  */
-function getTextCharacters(text: string): Array<number | string> {
+function getTextCharacters(text: string): Array<number> {
 	return [...text].map(char => char.charCodeAt(0));
 }
 
 /**
  * Converts tooltip lines into drawer character arrays.
  */
-export function getTooltipTextCharacters(text: string[]): Array<Array<number | string>> {
+export function getTooltipTextCharacters(text: string[]): Array<Array<number>> {
 	return text.map(getTextCharacters);
 }
 

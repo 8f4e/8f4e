@@ -1,6 +1,10 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { SpriteFont, SpriteId, SpriteIdLookups } from '@8f4e/sprite-generator';
+import { type SpriteId as CellSpriteId, createSpriteCell } from '@8f4e/sprite-generator';
 import { describe, expect, it } from 'vitest';
 import deriveCodeBlockCodeCells, { type CodeBlockRenderSource } from './deriveCodeBlockCodeCells';
+
+const cell = (id: number, color: number) => createSpriteCell(id as CellSpriteId, color);
 
 function createFont(offset: number, fallback = offset + 63): SpriteFont {
 	return new Proxy(
@@ -15,15 +19,7 @@ function createFont(offset: number, fallback = offset + 63): SpriteFont {
 }
 
 function createSpriteLookups(): SpriteIdLookups {
-	return {
-		fontInkBase: createFont(0),
-		fontInkFaint: createFont(100),
-		fontMutedBase: createFont(200),
-		fontTertiaryBase: createFont(300),
-		fontPrimaryBase: createFont(400),
-		fontPrimaryStrong: createFont(700),
-		fontSecondaryBase: createFont(500),
-	} as SpriteIdLookups;
+	return { font: createFont(0), fill: 128 as SpriteId, background: 129 as SpriteId };
 }
 
 function createSource(code: string[], overrides: Partial<CodeBlockRenderSource> = {}): CodeBlockRenderSource {
@@ -48,13 +44,17 @@ describe('deriveCodeBlockCodeCells', () => {
 	it('owns line-number and syntax sprite resolution', () => {
 		const cells = deriveCodeBlockCodeCells(createSource(['module demo', 'push 1']), createSpriteLookups());
 
-		expect(cells[0]?.slice(0, 3)).toEqual([248, null, 509]);
-		expect(cells[1]?.at(-1)).toBe(549);
+		expect(cells[0]?.slice(0, 3)).toEqual([
+			cell(48, PALETTE_INDICES.mutedBase),
+			null,
+			cell(109, PALETTE_INDICES.primaryBase),
+		]);
+		expect(cells[1]?.at(-1)).toEqual(cell(49, PALETTE_INDICES.secondaryBase));
 	});
 
 	it('keeps zero bits faint and one bits strongly accented', () => {
 		const cells = deriveCodeBlockCodeCells(createSource(['push 0b10']), createSpriteLookups());
-		expect(cells[0]?.slice(-2)).toEqual([749, 148]);
+		expect(cells[0]?.slice(-2)).toEqual([cell(49, PALETTE_INDICES.primaryStrong), cell(48, PALETTE_INDICES.inkFaint)]);
 	});
 
 	it('renders blank line-number gutters for pointer declarations', () => {
@@ -63,10 +63,10 @@ describe('deriveCodeBlockCodeCells', () => {
 			createSpriteLookups()
 		);
 
-		expect(cells[0]?.slice(0, 2)).toEqual([248, null]);
+		expect(cells[0]?.slice(0, 2)).toEqual([cell(48, PALETTE_INDICES.mutedBase), null]);
 		expect(cells[1]?.slice(0, 2)).toEqual([null, null]);
 		expect(cells[2]?.slice(0, 2)).toEqual([null, null]);
-		expect(cells[3]?.slice(0, 2)).toEqual([251, null]);
+		expect(cells[3]?.slice(0, 2)).toEqual([cell(51, PALETTE_INDICES.mutedBase), null]);
 	});
 
 	it('inserts editor-owned logical gaps into the graphics rows', () => {
@@ -82,10 +82,10 @@ describe('deriveCodeBlockCodeCells', () => {
 
 	it('uses the validated font fallback for unsupported characters', () => {
 		const lookups = createSpriteLookups();
-		lookups.fontInkBase = { 63: 999 as SpriteId } as SpriteFont;
+		lookups.font = { 63: 999 as SpriteId } as SpriteFont;
 
 		const cells = deriveCodeBlockCodeCells(createSource(['é'], { blockType: 'unknown' }), lookups);
 
-		expect(cells[0]?.at(-1)).toBe(999);
+		expect(cells[0]?.at(-1)).toEqual(cell(999, PALETTE_INDICES.inkBase));
 	});
 });

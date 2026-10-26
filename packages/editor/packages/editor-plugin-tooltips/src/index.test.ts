@@ -1,9 +1,11 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
+import { createMockSpriteLookups } from '@8f4e/editor-state-testing';
 import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
-import { createDrawContextMock, createSpriteIdLookupMock } from './__tests__/rendering';
+import { createDrawContextMock } from './__tests__/rendering';
 import { tooltipsPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
@@ -37,11 +39,7 @@ entryEnd`);
 	const state = store.getState();
 	Object.assign(state.compiler, compiled);
 	store.set('initialProjectState', project);
-	store.set('spriteLookups', {
-		fillColors: createSpriteIdLookupMock(),
-		fontInverseInk: createSpriteIdLookupMock(),
-		fontInverseAccent: createSpriteIdLookupMock(),
-	} as never);
+	store.set('spriteLookups', createMockSpriteLookups() as never);
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.selectedCodeBlock', codeBlock);
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 4);
@@ -57,7 +55,7 @@ entryEnd`);
 	};
 	const draw = createDrawContextMock();
 	const render = () => {
-		vi.mocked(draw.drawSprite).mockClear();
+		vi.mocked(draw.drawFill).mockClear();
 		drawers.drawCodeBlockOverlay({ draw, state, codeBlock, memoryViews });
 	};
 	return { store, state, events, draw, render, dispose };
@@ -72,28 +70,28 @@ describe('tooltips plugin', () => {
 	it('draws selected-line documentation and compiler stack analysis through the overlay contribution', async () => {
 		const test = await setup();
 		test.render();
-		expect(test.draw.drawSprite).toHaveBeenCalledWith(
+		expect(test.draw.drawFill).toHaveBeenCalledWith(
 			expect.any(Number),
 			expect.any(Number),
-			'inverseSurface',
+			PALETTE_INDICES.inverseSurface,
 			expect.any(Number),
 			5 * 16
 		);
-		expect(vi.mocked(test.draw.drawSprite).mock.calls.map(call => call[2])).toContain('negativeSoft');
+		expect(vi.mocked(test.draw.drawFill).mock.calls.map(call => call[2])).toContain(PALETTE_INDICES.negativeSoft);
 		expect(test.state).not.toHaveProperty('tooltip');
 		test.store.set('codeBlockRendering.selectedCodeBlock', undefined);
 		test.render();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});
 
 	it('has no tooltip contribution when omitted or disposed', async () => {
 		const omitted = await setup(false);
 		omitted.render();
-		expect(omitted.draw.drawSprite).not.toHaveBeenCalled();
+		expect(omitted.draw.drawFill).not.toHaveBeenCalled();
 		const installed = await setup();
 		installed.dispose();
 		installed.render();
-		expect(installed.draw.drawSprite).not.toHaveBeenCalled();
+		expect(installed.draw.drawFill).not.toHaveBeenCalled();
 	});
 
 	it('keeps tooltip state and registrations independent across editors', async () => {
@@ -102,7 +100,7 @@ describe('tooltips plugin', () => {
 		first.dispose();
 		first.render();
 		second.render();
-		expect(first.draw.drawSprite).not.toHaveBeenCalled();
-		expect(second.draw.drawSprite).toHaveBeenCalled();
+		expect(first.draw.drawFill).not.toHaveBeenCalled();
+		expect(second.draw.drawFill).toHaveBeenCalled();
 	});
 });

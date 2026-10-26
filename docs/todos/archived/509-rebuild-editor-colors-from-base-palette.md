@@ -58,7 +58,7 @@ The generated atlas carries its resolved palette, including line RGBA values. Th
 and lookups together, and stale asynchronous builds are ignored. Bundled project palettes, CLI snapshots, browser
 screenshots, and gallery previews have been migrated. Build, typecheck, unit, example, and browser checks pass.
 
-The separate [glyph-mask/GPU palette migration](../510-use-glyph-masks-and-gpu-color-palette.md) will remove per-color
+The separate [glyph-mask/GPU palette migration](510-use-glyph-masks-and-gpu-color-palette.md) will remove per-color
 font duplication and make the full shade catalog available to text without expanding sprite metadata.
 
 ## Success Criteria
