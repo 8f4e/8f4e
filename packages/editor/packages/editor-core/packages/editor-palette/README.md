@@ -13,9 +13,10 @@ const gpuColors = toPaletteBytes(palette); // Straight-alpha RGBA8 bytes, four p
 ```
 
 The configurable bases, fixed nine-shade ramps, generic materials, opacity variants, and validation rules are documented in
-[the editor palette reference](../../docs/color-paths.md). Resolve a palette only when configuration changes or an
-atlas is built. Drawers select stable palette indices and share color-independent glyph/fill masks. Equal colors keep distinct indices
-so a later theme can give them different values without changing projections.
+[the editor palette reference](../../docs/color-paths.md). Resolve a palette during initialization or when configuration
+changes. Drawers select stable palette indices and share color-independent glyph/fill masks. The renderer accepts up to
+256 such entries and prepares premultiplied colors in a 4 KiB uniform buffer. Equal colors keep distinct indices so a
+later theme can give them different values without changing projections.
 
 The implementation keeps the token catalog in `palette.ts`, base defaults and shade generation in `resolvePalette.ts`,
 and material recipes and contrast selection in `materials.ts`. Color parsing, math, and RGB normalization live in

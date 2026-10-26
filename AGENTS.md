@@ -10,7 +10,8 @@
 - Reusable Vite source discovery lives in `packages/vite-plugin-sources/`. It exposes lazy text collections through
   `virtual:8f4e-sources/<name>`; the default editor uses it for stdlib includes and example modules.
 - Editor colors: `@8f4e/editor-palette` owns the pure base palette and predefined shades. Configure only shared base
-  colors; core and plugin drawers select generic palette tokens. Shades are uploaded as a GPU palette; the sprite atlas contains color-independent R8 coverage masks.
+  colors; core and plugin drawers select generic palette tokens. Shades are uploaded as premultiplied colors in a GPU
+  uniform buffer (up to 256 entries); the sprite atlas contains color-independent R8 coverage masks.
 - Packages (Nx workspaces): `packages/*` plus nested libs (e.g., `editor`, `compiler`,
   `editor/packages/editor-core/packages/web-ui/packages/glugglugglug`). Each builds to its own `dist/` directory
   under the package root.
@@ -48,6 +49,9 @@
 - `npx nx run-many --target=lint --projects=@8f4e/editor-default,@8f4e/editor-website`: Biome check/fix for the
   composition and website. Use `run-many --target=lint --all` to lint every project if needed.
 - `npx nx graph`: Open Nx project dependency graph.
+- After building `@8f4e/editor-core`, compare GPU palette storage with
+  `npx nx exec --projects=@8f4e/web-ui --excludeTaskDependencies -- node "$PWD/tools/rendering/benchmark-palette-storage.mjs" --baseline <renderer-git-ref>`; use a renderer ref
+  with the texture-based palette. The benchmark measures synthetic text and actual editor drawers separately.
 - `npx nx run @8f4e/editor-website:kill-dev`: Kill any dev server on port 3000.
 - Production deployments run only in the manually dispatched `Release` GitHub Actions workflow on `main`, after
   release checks, builds, and the atomic release push succeed. It deploys 8f4e.com (`8f4e-website`) and
