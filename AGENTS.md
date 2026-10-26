@@ -49,9 +49,6 @@
 - `npx nx run-many --target=lint --projects=@8f4e/editor-default,@8f4e/editor-website`: Biome check/fix for the
   composition and website. Use `run-many --target=lint --all` to lint every project if needed.
 - `npx nx graph`: Open Nx project dependency graph.
-- After building `@8f4e/editor-core`, compare GPU palette storage with
-  `npx nx exec --projects=@8f4e/web-ui --excludeTaskDependencies -- node "$PWD/tools/rendering/benchmark-palette-storage.mjs" --baseline <renderer-git-ref>`; use a renderer ref
-  with the texture-based palette. The benchmark measures synthetic text and actual editor drawers separately.
 - `npx nx run @8f4e/editor-website:kill-dev`: Kill any dev server on port 3000.
 - Production deployments run only in the manually dispatched `Release` GitHub Actions workflow on `main`, after
   release checks, builds, and the atomic release push succeed. It deploys 8f4e.com (`8f4e-website`) and

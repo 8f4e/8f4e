@@ -99,8 +99,6 @@ The renderer accepts straight-alpha RGBA8 palette bytes and prepares premultipli
 The vertex shader reads the selected color from a uniform buffer; the fragment shader applies red-channel mask coverage.
 The buffer reserves 256 colors (4 KiB), with 189 active entries using 3,024 bytes from a 756-byte RGBA8 input.
 Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
-See the [palette storage benchmark](../../../../../docs/rendering-palette-benchmark.md) for measured CPU/GPU costs
-and reproduction steps.
 
 `@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
 the generated masks and separately resolved palette. Theme changes upload only palette colors and refresh line-rendered wire colors;
