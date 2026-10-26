@@ -4,7 +4,7 @@ import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import type { ButtonDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
 
 function resolveButtonDirectiveWidget(
 	button: ButtonDirectiveData,
@@ -39,7 +39,7 @@ function resolveButtonDirectiveWidget(
 
 export function createButtonDirectiveWidgetContribution(button: ButtonDirectiveData): DirectiveWidgetContribution {
 	return {
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveButtonDirectiveWidget(button, graphicData, state, directiveState);
 		},
 	};

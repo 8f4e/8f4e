@@ -1,8 +1,8 @@
 import type { PlannedMemoryDeclaration, PlannedMemoryModule } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import {
-	runAfterGraphicDataWidthCalculation,
 	runBeforeGraphicDataWidthCalculation,
+	runBlockLayoutReady,
 } from '../features/code-blocks/features/directives/registry';
 import resolveMemoryIdentifier, { getDeclarationsByByteAddress } from './resolveMemoryIdentifier';
 import {
@@ -177,7 +177,7 @@ describe('resolveMemoryIdentifier', () => {
 		const resolveWatchWidget = () => {
 			const directiveState = deriveDirectiveStateForMockCodeBlock(block);
 			runBeforeGraphicDataWidthCalculation(block, state, directiveState);
-			runAfterGraphicDataWidthCalculation(block, state, directiveState);
+			runBlockLayoutReady(block, state, directiveState);
 			return findWidgetById(block.widgets.debuggers, '*pointer');
 		};
 

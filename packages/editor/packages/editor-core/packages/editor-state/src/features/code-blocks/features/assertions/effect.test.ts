@@ -3,6 +3,7 @@ import type { AssertionResult } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it } from 'vitest';
 import codeBlockRendering from '../../effect';
+import { directivePlugins } from '../directives/registry';
 import parsedDirectivesUpdater from '../parsedDirectivesUpdater/effect';
 import assertions from './effect';
 
@@ -37,7 +38,7 @@ describe('assertion marker effect', () => {
 	it('shows failure values inline once per site and clears messages and gaps on restart', () => {
 		const { store, state, block, result } = setup();
 		block.code = ['module checks', 'push 10', 'assertEqual 9', 'push 0', 'assert', 'moduleEnd'];
-		codeBlockRendering(store, createMockEventDispatcher());
+		codeBlockRendering(store, createMockEventDispatcher(), directivePlugins);
 		const dispose = assertions(store);
 		const failure = {
 			...result[0],
@@ -82,7 +83,7 @@ describe('assertion marker effect', () => {
 		block.projectPath = 'nested';
 		state.codeBlockRendering.codeBlocks = [];
 		parsedDirectivesUpdater(store);
-		codeBlockRendering(store, createMockEventDispatcher());
+		codeBlockRendering(store, createMockEventDispatcher(), directivePlugins);
 		const failure = {
 			...result[0],
 			site: { ...result[0].site, projectGroupPath: 'nested' },
@@ -138,7 +139,7 @@ describe('assertion marker effect', () => {
 
 	it('recomputes rectangle positions along with block layout and font dimensions', () => {
 		const { store, state, block, result } = setup();
-		codeBlockRendering(store, createMockEventDispatcher());
+		codeBlockRendering(store, createMockEventDispatcher(), directivePlugins);
 		const dispose = assertions(store);
 		store.set('assertionResults', result);
 		expect(block.widgets.assertions[0]).toMatchObject({ x: 8, y: 32, width: 8, height: 16 });

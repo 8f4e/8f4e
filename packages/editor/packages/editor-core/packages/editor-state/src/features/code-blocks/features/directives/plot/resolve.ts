@@ -5,7 +5,7 @@ import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import { resolveElementCount, resolveTypedValueSpec } from '../shared/typedValueSpec';
 import type { PlotDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
 
 function resolvePlotDirectiveWidget(
 	plotter: PlotDirectiveData,
@@ -44,7 +44,7 @@ function resolvePlotDirectiveWidget(
 
 export function createPlotDirectiveWidgetContribution(plotter: PlotDirectiveData): DirectiveWidgetContribution {
 	return {
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolvePlotDirectiveWidget(plotter, graphicData, state, directiveState);
 		},
 	};

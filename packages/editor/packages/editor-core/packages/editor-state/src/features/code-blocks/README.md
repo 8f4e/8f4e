@@ -12,10 +12,13 @@ Manages the lifecycle of code blocks in the editor: creation, selection, drag op
 - **Graphics Derivation**: Computes visual properties (position, size, color) from block data
 - **Block Widgets**: Derives interactive elements from code annotations:
   - Inputs/Outputs for audio routing
-  - Buttons and Switches for interactive controls
+  - Buttons for interactive controls
   - Piano keyboard for note input
   - Debuggers for runtime inspection
   - Plotters for visualization
+
+Switch widgets are provided by `@8f4e/editor-plugin-switch`, included in `@8f4e/editor-default`. The plugin owns
+their derived data, interactions, and drawing through the [plugin API](../../../../../README.md#plugins).
 
 ## Block Types
 
@@ -46,7 +49,6 @@ This feature contains several subfeatures under `features/` that handle specific
 - `inputs` - Audio input routing
 - `outputs` - Audio output routing
 - `pianoKeyboard` - Piano keyboard interface
-- `switches` - Toggle switch controls
 
 ## Events & Callbacks
 
@@ -61,7 +63,7 @@ This feature contains several subfeatures under `features/` that handle specific
 - `state.codeBlockRendering.rootCodeBlocks` - Recursive root tree of project-owned code-block arrays
 - `state.codeBlockRendering.codeBlocks` - Direct pointer to the project slice currently rendered
 - `state.codeBlockRendering.selectedCodeBlock` - Currently selected block reference
-- Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs/buttons/switches)
+- Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs/buttons)
 
 Project-group blocks use the same `CodeBlockGraphicData` representation as other blocks. Their optional
 `nestedProjectCodeBlocks` field points to the child project slice. Project-owned arrays keep stable identity; add,

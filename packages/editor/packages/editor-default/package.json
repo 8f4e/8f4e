@@ -27,13 +27,15 @@
     "@8f4e/compiler": "*",
     "@8f4e/compiler-worker": "*",
     "@8f4e/editor-core": "*",
+    "@8f4e/editor-plugin-toggle-skip-execution": "*",
     "@8f4e/examples": "*",
     "@8f4e/language-spec": "*",
     "@8f4e/runtime-audio-worklet": "*",
     "@8f4e/runtime-test-runner": "*",
     "@8f4e/runtime-web-worker": "*",
     "@8f4e/stdlib": "*",
-    "@8f4e/tokenizer": "*"
+    "@8f4e/tokenizer": "*",
+    "@8f4e/editor-plugin-switch": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

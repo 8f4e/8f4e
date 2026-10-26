@@ -2,7 +2,7 @@ import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-
 import type { StateManager } from '@8f4e/state-manager';
 import { isSkipExecutionDirective } from '@8f4e/tokenizer';
 import incrementCompilerInputRevision from '../../../../program-compiler/incrementCompilerInputRevision';
-import setSkipExecution from '../../skipExecutionToggler/setSkipExecution';
+import setSkipExecution from '../../../utils/setSkipExecution';
 import { getGroupModuleBlocks } from '../getGroupBlocks';
 
 /**

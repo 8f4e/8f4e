@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorDirectivePlugin, EventDispatcher, State } from '@8f4e/editor-state-types';
 import {
 	createChildProjectGroupPath,
 	type ProjectBlock,
@@ -21,8 +21,8 @@ import type { CodeBlockClickEvent } from './features/codeBlockDragger/effect';
 import parsePos from './features/directives/pos/data';
 import {
 	deriveDirectiveState,
-	runAfterGraphicDataWidthCalculation,
 	runBeforeGraphicDataWidthCalculation,
+	runBlockLayoutReady,
 } from './features/directives/registry';
 import inputs from './features/inputs/updateGraphicData';
 import outputs from './features/outputs/updateGraphicData';
@@ -36,7 +36,11 @@ import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
 import { parseBlockDirectives } from './utils/parseBlockDirectives';
 
-export default function codeBlockRendering(store: StateManager<State>, events: EventDispatcher) {
+export default function codeBlockRendering(
+	store: StateManager<State>,
+	events: EventDispatcher,
+	directives: EditorDirectivePlugin[]
+) {
 	const state = store.getState();
 	const updateProjectSliceIdentity = (codeBlocks: CodeBlockGraphicData[], projectPath: ProjectGroupPath): void => {
 		for (const codeBlock of codeBlocks) {
@@ -57,9 +61,14 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			return;
 		}
 
-		const directiveState = deriveDirectiveState(codeBlock.code, codeBlock.parsedDirectives, {
-			isExpandedForEditing: !codeBlock.isCollapsed,
-		});
+		const directiveState = deriveDirectiveState(
+			codeBlock.code,
+			codeBlock.parsedDirectives,
+			{
+				isExpandedForEditing: !codeBlock.isCollapsed,
+			},
+			directives
+		);
 		const displayModel = directiveState.displayModel;
 		const displayRow = reverseGapCalculator(Math.floor(relativeY / state.viewport.hGrid), codeBlock.gaps);
 		const row = displayModel.displayRowToRawRow[Math.min(displayRow, displayModel.displayRowToRawRow.length - 1)] ?? 0;
@@ -83,10 +92,15 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 	};
 
 	const updateBlockDerivedState = (graphicData: CodeBlockGraphicData) => {
-		const directiveState = deriveDirectiveState(graphicData.code, graphicData.parsedDirectives, {
-			isExpandedForEditing: shouldExpandCodeBlockForEditing(graphicData),
-			state,
-		});
+		const directiveState = deriveDirectiveState(
+			graphicData.code,
+			graphicData.parsedDirectives,
+			{
+				isExpandedForEditing: shouldExpandCodeBlockForEditing(graphicData),
+				state,
+			},
+			directives
+		);
 		const displayModel = directiveState.displayModel;
 		graphicData.displayModel = displayModel;
 
@@ -118,11 +132,10 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 		}
 		updateShapeDeclarations(graphicData, state, directiveState);
 		updateParamShapeDeclarations(graphicData, state, directiveState);
-		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState);
+		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState, directives);
 
 		graphicData.width = getCodeBlockGridWidth(graphicData.code, graphicData.minGridWidth) * state.viewport.vGrid;
 
-		runAfterGraphicDataWidthCalculation(graphicData, state, directiveState);
 		outputs(graphicData, state);
 		inputs(graphicData, state);
 		blockHighlights(graphicData, state);
@@ -145,6 +158,7 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 		graphicData.groupNonstick = directiveState.blockState.groupNonstick;
 		graphicData.viewportAnchor = directiveState.blockState.viewportAnchor;
 		graphicData.alwaysOnTop = directiveState.blockState.alwaysOnTop ?? false;
+		runBlockLayoutReady(graphicData, state, directiveState);
 		return graphicData.alwaysOnTop !== previousAlwaysOnTop;
 	};
 
@@ -289,7 +303,7 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			const posResult = parsePos(blockParsedDirectives);
 			const gridX = posResult?.x ?? 0;
 			const gridY = posResult?.y ?? 0;
-			const directiveState = deriveDirectiveState(codeBlock.code, blockParsedDirectives);
+			const directiveState = deriveDirectiveState(codeBlock.code, blockParsedDirectives, {}, directives);
 
 			// For viewport-anchored blocks, x/y will be resolved after block derivation sets
 			// width/height; initialize to 0 here as a safe placeholder.

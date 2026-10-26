@@ -5,7 +5,7 @@ import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import { resolveElementCount, resolveTypedValueSpec } from '../shared/typedValueSpec';
 import type { BarsDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
 
 function createStaticColumnLayout(width: number, length: number) {
 	if (length <= 0) {
@@ -73,7 +73,7 @@ function resolveBarsDirectiveWidget(
 
 export function createBarsDirectiveWidgetContribution(bars: BarsDirectiveData): DirectiveWidgetContribution {
 	return {
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveBarsDirectiveWidget(bars, graphicData, state, directiveState);
 		},
 	};

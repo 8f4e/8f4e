@@ -4,7 +4,7 @@ import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import type { CrossfadeDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
 
 function resolveCrossfadeDirectiveWidget(
 	crossfade: CrossfadeDirectiveData,
@@ -62,7 +62,7 @@ export function createCrossfadeDirectiveWidgetContribution(
 	crossfade: CrossfadeDirectiveData
 ): DirectiveWidgetContribution {
 	return {
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveCrossfadeDirectiveWidget(crossfade, graphicData, state, directiveState);
 		},
 	};

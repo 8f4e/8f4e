@@ -1,9 +1,8 @@
-import type { MenuGenerator, State } from '@8f4e/editor-state-types';
+import type { ContextMenuItem, State } from '@8f4e/editor-state-types';
 import type { CategoryItem } from '../categoryTree';
 import { buildCategoryTree, getNodeAtPath, nodeToMenuItems } from '../categoryTree';
 
-export const moduleCategoriesMenu: MenuGenerator<State> = async (state, payload = {}) => {
-	const { path = [] } = payload as { path?: string[] };
+export const moduleCategoriesMenu = async (state: State, path: string[]): Promise<ContextMenuItem[]> => {
 	if (!state.callbacks.getListOfModules) {
 		return [];
 	}

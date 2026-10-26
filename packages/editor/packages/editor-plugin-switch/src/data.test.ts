@@ -1,7 +1,8 @@
+import { parseEditorDirectives } from '@8f4e/editor-state';
 import { describe, expect, it } from 'vitest';
-import { parseEditorDirectives } from '../utils';
 import { createSwitchDirectiveData } from './data';
-import switchDirective from './plugin';
+
+const switchDirective = { name: 'switch' };
 
 function parseSwitchDirectiveData(code: string[]) {
 	return parseEditorDirectives(code, [switchDirective])

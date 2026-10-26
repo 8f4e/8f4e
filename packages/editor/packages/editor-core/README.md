@@ -29,6 +29,61 @@ The editor supports view and edit modes. Selected code blocks have a continuousl
 Command+Arrow (or Control+Arrow) navigates between blocks with smooth viewport movement. Use `e` to enter edit mode
 and Escape to return to view mode when `modeToggling` is enabled.
 
+## Plugins
+
+Pass a `plugins` array to initialization. `EditorPlugin` and `EditorPluginContext` are exported by
+`@8f4e/editor-core`.
+
+```ts
+import initEditor from '@8f4e/editor-core';
+import { switchPlugin } from '@8f4e/editor-plugin-switch';
+import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
+
+const editor = await initEditor(canvas, {
+	...options,
+	plugins: [toggleSkipExecutionPlugin, switchPlugin],
+});
+```
+
+A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, drawers })` function.
+Editor-core installs plugins in array order after core state effects, before rendering starts and before the `init`
+and `loadSession` events. Setup runs separately for each editor instance; allocate instance data inside setup.
+Plugins receive the existing state manager and event dispatcher directly. Store disposal belongs to the editor and
+is excluded from the plugin context type. This is a trusted extension interface.
+
+Setup must return a disposer that releases every resource the plugin creates, including subscriptions, listeners,
+contribution registrations, and timers. The host calls these disposers in reverse installation order while the state
+and dispatcher remain available. It does not track individual registrations. Setup and cleanup errors propagate.
+If setup throws, that plugin must unwind its partial allocations; the host disposes previously completed plugins.
+Initialization failures later in startup also dispose installed plugins.
+
+Register menu items with `menus.registerItem('moduleMenu', provider)`. Providers receive the current
+`{ state, codeBlock }` when the menu opens, and return a `ContextMenuItem` or `undefined` to omit it. The target block
+can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
+existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
+
+Register widget directives with `directives.register(definition)`, using the existing `EditorDirectivePlugin`
+contract from `@8f4e/editor-state-types`. The core owns generic source parsing, directive matching, and the block
+layout pipeline. Each definition handles its own arguments through `apply`, contributes widget layout callbacks,
+and can clear its derived data through `clearGraphicData`. Widget contributions use `onBlockLayoutReady` to derive
+geometry after the block's dimensions, display rows, gaps, and cursor coordinates are current. Registrations are local
+to each editor. Install them in setup before the initial project loads; there is no runtime plugin installation API.
+
+Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
+`{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
+the host applies viewport translation and visibility checks. Drawers run in registration order after error messages
+and before built-in controls. Use the current state's sprite lookups, which change with the font or color scheme.
+`@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
+disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
+
+The switch plugin owns `@switch` argument handling, memory resolution, click handling, and drawing. Its widget data
+lives in a per-instance WeakMap rather than the core state shape. The execution-toggle plugin owns the Skip/Unskip
+menu item and its action. Group execution toggling and nested block shading remain built in. The core installs no
+plugins by default; `@8f4e/editor-default` selects the standard set.
+
+`@8f4e/editor-state` exports shared source-edit, directive-argument, and row-layout helpers. Its `/memory` entry
+exports memory scope and identifier resolution. Plugins use these public exports rather than importing core files.
+
 ## Project loading
 
 Hosts can provide `getProject(url)` for loading individual projects by URL and `importProject` for the Open From Disk

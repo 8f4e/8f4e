@@ -19,7 +19,6 @@ import groupUngroupper from '../code-blocks/features/group/ungroupper/effect';
 import memoryConnectionRemover from '../code-blocks/features/memoryConnectionRemover/effect';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
-import skipExecutionToggler from '../code-blocks/features/skipExecutionToggler/effect';
 import sliderDefaultSaver from '../code-blocks/features/sliderDefaultSaver/effect';
 import codeEditing from '../code-editing/effect';
 import historyTracking from '../edit-history/effect';
@@ -236,19 +235,6 @@ describe('compiler input revision', () => {
 		expect(state.compilerInputRevision).toBe(1);
 		pasteMultipleBlocks(store, { x: 0, y: 0, blocks: [] });
 		expect(state.compilerInputRevision).toBe(1);
-	});
-
-	it('advances for execution toggles and ignores a malformed module with no change', () => {
-		skipExecutionToggler(store, events);
-		dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
-		expect(block.code).toContain('#skipExecution');
-		expect(state.compilerInputRevision).toBe(1);
-		dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
-		expect(block.code).not.toContain('#skipExecution');
-		expect(state.compilerInputRevision).toBe(2);
-		block.code = ['invalid'];
-		dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
-		expect(state.compilerInputRevision).toBe(2);
 	});
 
 	it('advances once per group execution toggle or group deletion', () => {

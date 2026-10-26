@@ -17,6 +17,7 @@ import type {
 	ArrayMeter,
 	ArrayPlotter,
 	ArrayWave,
+	Button,
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockRendering,
@@ -35,7 +36,6 @@ import type {
 	PianoKeySprite,
 	PianoPressedOverlayFont,
 	Slider,
-	Switch,
 	TypedValueKind,
 } from './features/code-blocks/types';
 import type { InsertTextEvent, MoveCaretEvent, NavigateCodeBlockEvent } from './features/code-editing/types';
@@ -88,6 +88,7 @@ export type {
 	ArrayWave,
 	AssertionResult,
 	BinaryAsset,
+	Button,
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockRendering,
@@ -137,7 +138,6 @@ export type {
 	RuntimeValuesByRuntimeId,
 	Size,
 	Slider,
-	Switch,
 	TypedValueKind,
 };
 
@@ -341,6 +341,13 @@ export interface Callbacks {
 }
 
 // Options interface for editor initialization (top-level public API)
+export type {
+	EditorMenuId,
+	EditorMenuItemContext,
+	EditorMenuItemProvider,
+	EditorMenuRegistry,
+} from './features/menu/contributions';
+
 export interface Options {
 	featureFlags?: FeatureFlagsConfig;
 	/** Mode used when the editor is initialized. */

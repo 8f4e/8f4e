@@ -3,6 +3,7 @@
  */
 
 import type { Position } from '../../shared/types';
+import type { CodeBlockGraphicData } from '../code-blocks/types';
 
 interface ContextMenuButton {
 	action?: string;
@@ -27,10 +28,11 @@ export type ContextMenuItem = ContextMenuButton | MenuItemDivider;
 // The actual State type is provided when the generator is called.
 export type MenuGenerator<S = any> = (state: S, payload?: unknown) => ContextMenuItem[] | Promise<ContextMenuItem[]>;
 
-export interface MenuStackEntry {
-	menu: string;
-	payload?: unknown;
-}
+export type MenuStackEntry =
+	| { menu: 'mainMenu' }
+	| { menu: 'favoritesMenu' }
+	| { menu: 'moduleMenu'; codeBlock: CodeBlockGraphicData }
+	| { menu: 'moduleCategoriesMenu'; path: string[] };
 
 /**
  * Context menu position is stored in editor/world coordinates so it tracks viewport movement.

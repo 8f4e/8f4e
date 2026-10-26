@@ -2,6 +2,7 @@ import type { State } from '@8f4e/editor-state-types';
 import type { WebUiRenderData } from '@8f4e/web-ui-render-projection';
 import type { DrawContext } from '../../drawContext';
 import type { MemoryViews } from '../../types';
+import type { CodeBlockDrawerRegistry } from '../registry';
 import drawArrow from './drawArrow';
 import drawEntryOutlines from './drawEntryOutlines';
 import drawSelectedLineHint from './drawSelectedLineHint';
@@ -20,7 +21,6 @@ import drawMeters from './widgets/meters';
 import drawPianoKeyboards from './widgets/pianoKeyboards';
 import drawPlotters from './widgets/plotters';
 import drawSliders from './widgets/sliders';
-import drawSwitches from './widgets/switches';
 import drawWaves from './widgets/waves';
 
 const corner = '+';
@@ -29,7 +29,8 @@ export default function drawModules(
 	engine: DrawContext,
 	state: State,
 	memoryViews: MemoryViews,
-	renderData: WebUiRenderData
+	renderData: WebUiRenderData,
+	drawers?: CodeBlockDrawerRegistry
 ): void {
 	const spriteLookups = state.spriteLookups;
 
@@ -109,7 +110,7 @@ export default function drawModules(
 			}
 
 			drawErrorMessages(engine, state, codeBlock);
-			drawSwitches(engine, state, codeBlock, memoryViews);
+			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
 			drawButtons(engine, state, codeBlock, memoryViews);
 			drawSliders(engine, state, codeBlock, memoryViews);
 			drawCrossfades(engine, state, codeBlock, memoryViews);

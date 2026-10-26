@@ -34,7 +34,6 @@ function mockCodeBlock(
 			arrayBars: [],
 			arrayMeters: [],
 			arrayWaves: [],
-			switches: [],
 			buttons: [],
 			sliders: [],
 			pianoKeyboards: [],

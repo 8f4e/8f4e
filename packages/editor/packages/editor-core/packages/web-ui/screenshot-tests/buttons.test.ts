@@ -8,7 +8,7 @@ import createMockSpriteData from './utils/createMockSpriteData';
 import createMockStateWithColors from './utils/createMockStateWithColors';
 import { resolveCodeWithOneColor } from './utils/generateColorMapMock';
 
-test('switches', async () => {
+test('buttons', async () => {
 	const canvas = createCanvas();
 	const mockState = await createMockStateWithColors({
 		editorConfig: {
@@ -54,7 +54,7 @@ test('switches', async () => {
 			width: 256,
 			height: lines1.length * 16,
 		});
-		codeBlockMock.widgets.switches = [control];
+		codeBlockMock.widgets.buttons = [control];
 
 		mockState.codeBlockRendering.selectedCodeBlock = codeBlockMock;
 

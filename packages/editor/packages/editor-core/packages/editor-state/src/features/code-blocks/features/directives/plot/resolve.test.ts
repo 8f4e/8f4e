@@ -7,7 +7,7 @@ import {
 	deriveDirectiveStateForMockCodeBlock,
 	setMockCodeBlockCode,
 } from '~/pureHelpers/testingUtils/testUtils';
-import { runAfterGraphicDataWidthCalculation, runBeforeGraphicDataWidthCalculation } from '../registry';
+import { runBeforeGraphicDataWidthCalculation, runBlockLayoutReady } from '../registry';
 
 describe('plot directive widget resolution', () => {
 	let mockGraphicData: CodeBlockGraphicData;
@@ -67,7 +67,7 @@ describe('plot directive widget resolution', () => {
 	function runDirectiveResolution() {
 		const directiveState = deriveDirectiveStateForMockCodeBlock(mockGraphicData);
 		runBeforeGraphicDataWidthCalculation(mockGraphicData, mockState, directiveState);
-		runAfterGraphicDataWidthCalculation(mockGraphicData, mockState, directiveState);
+		runBlockLayoutReady(mockGraphicData, mockState, directiveState);
 	}
 
 	it('adds a plotter to graphic data widgets', () => {

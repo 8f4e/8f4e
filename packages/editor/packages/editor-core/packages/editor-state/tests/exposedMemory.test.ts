@@ -8,8 +8,8 @@ import button from '~/features/code-blocks/features/directives/button/interactio
 import crossfade from '~/features/code-blocks/features/directives/crossfade/interaction';
 import {
 	deriveDirectiveState,
-	runAfterGraphicDataWidthCalculation,
 	runBeforeGraphicDataWidthCalculation,
+	runBlockLayoutReady,
 } from '~/features/code-blocks/features/directives/registry';
 import slider from '~/features/code-blocks/features/directives/slider/interaction';
 import updateInputs from '~/features/code-blocks/features/inputs/updateGraphicData';
@@ -69,7 +69,7 @@ async function setup() {
 	const derive = (block: CodeBlockGraphicData) => {
 		const directives = deriveDirectiveState(block.code, block.parsedDirectives);
 		runBeforeGraphicDataWidthCalculation(block, state, directives);
-		runAfterGraphicDataWidthCalculation(block, state, directives);
+		runBlockLayoutReady(block, state, directives);
 	};
 	derive(audio);
 	derive(controls);
@@ -144,7 +144,6 @@ describe('shared exposed memory resolution', () => {
 		expect(audio.widgets.arrayBars[0].length).toBe(4);
 		expect(audio.widgets.arrayWaves[0].length).toBe(4);
 		expect(audio.widgets.arrayMeters[0].memory.memory.allocationUnitAddress).toBe(gain.allocationUnitAddress);
-		expect(audio.widgets.switches[0].allocationUnitAddress).toBe(audio.widgets.buttons[0].allocationUnitAddress);
 		expect(audio.widgets.pianoKeyboards[0]).toMatchObject({
 			pressedKeysListModuleId: 'audio/notesData',
 			pressedNumberOfKeysModuleId: 'audio/countData',

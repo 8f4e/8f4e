@@ -16,7 +16,14 @@
 ## Testing
 - Vitest (via Nx). Tests under `__tests__` or `*.test.ts`.
 - Favor unit tests for view-models and utilities; snapshot tests acceptable.
+- Tests consume built dependency exports through workspace aliases; the test target builds dependencies first.
+  Do not add source-file aliases to preserve test imports across package boundaries.
 
 ## Commits & PRs
 - Commits: `editor: <change>` (e.g., `editor: fix drag selection`).
 - PRs: add screenshots/gifs for UI changes, include test notes, link issues.
+
+## Plugins
+- Install plugins in editor-core so one setup receives state, event, menu, directive, and drawer services.
+- Keep generic directive parsing and layout in editor-state, and generic drawing hooks in web-ui.
+- Plugins own their registrations, listeners, private widget data, and disposal. Do not add automatic tracking.

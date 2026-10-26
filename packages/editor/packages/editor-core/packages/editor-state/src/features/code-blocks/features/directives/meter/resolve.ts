@@ -5,7 +5,7 @@ import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import { resolveDirectOrPointerTypedValueSpec } from '../shared/typedValueSpec';
 import type { MeterDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
 
 const GREEN_START_FACTOR = 0.75;
 const RED_THRESHOLD = 0.9;
@@ -65,7 +65,7 @@ function resolveMeterDirectiveWidget(
 
 export function createMeterDirectiveWidgetContribution(meter: MeterDirectiveData): DirectiveWidgetContribution {
 	return {
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveMeterDirectiveWidget(meter, graphicData, state, directiveState);
 		},
 	};

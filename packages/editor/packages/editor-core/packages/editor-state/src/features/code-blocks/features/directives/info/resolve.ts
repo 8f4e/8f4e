@@ -3,7 +3,7 @@ import gapCalculator from '~/features/code-editing/gapCalculator';
 import type { InfoDirectiveData } from './data';
 import type { InfoLayout } from './entries';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
 
 const rowCountsByGraphicData = new WeakMap<Parameters<DirectiveWidgetResolver>[0], Map<string, number>>();
 
@@ -66,7 +66,7 @@ export function createInfoDirectiveWidgetContribution(
 				);
 			}
 		},
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveInfoDirectiveWidget(info, layout, graphicData, state, directiveState);
 		},
 	};

@@ -1,8 +1,8 @@
-import type { CodeBlockGraphicData, EventDispatcher, State, Switch } from '@8f4e/editor-state-types';
+import type { Button, CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import findButtonWidgetAtViewportCoordinates from './findWidgetAtViewportCoordinates';
 
 export default function button(state: State, events: EventDispatcher): () => void {
-	let lastPushedButton: Switch | undefined;
+	let lastPushedButton: Button | undefined;
 
 	const onCodeBlockClick = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
 		lastPushedButton = findButtonWidgetAtViewportCoordinates(state, codeBlock, x, y);

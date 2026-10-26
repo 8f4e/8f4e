@@ -1,10 +1,10 @@
 import { createMockState } from '@8f4e/editor-state-testing';
-import type { Switch } from '@8f4e/editor-state-types';
+import type { Button } from '@8f4e/editor-state-types';
 import { describe, expect, it, type vi } from 'vitest';
 import { createDrawContextMock, createSpriteIdLookupMock } from '../../../__tests__/rendering';
-import drawBinaryControl from './drawBinaryControl';
+import drawButton from './drawButton';
 
-const control: Switch = {
+const control: Button = {
 	x: 10,
 	y: 20,
 	width: 32,
@@ -26,12 +26,12 @@ function createTestState() {
 	});
 }
 
-describe('drawBinaryControl', () => {
+describe('drawButton', () => {
 	it('builds the off state from fill rectangles and basic characters', () => {
 		const engine = createDrawContextMock();
 		const state = createTestState();
 
-		drawBinaryControl(engine, state, control, false);
+		drawButton(engine, state, control, false);
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
@@ -46,7 +46,7 @@ describe('drawBinaryControl', () => {
 		const engine = createDrawContextMock();
 		const state = createTestState();
 
-		drawBinaryControl(engine, state, control, true);
+		drawButton(engine, state, control, true);
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
