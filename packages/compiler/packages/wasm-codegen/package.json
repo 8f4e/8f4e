@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/wasm-codegen",
-  "version": "4.0.9",
+  "version": "4.0.10",
   "private": true,
   "description": "WebAssembly code generation for 8f4e compiled programs",
   "type": "module",
