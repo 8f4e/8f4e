@@ -1,11 +1,11 @@
-import { getValueByPath } from './getValueByPath.js';
+import { getValueByTokens } from './getValueByPath.js';
+import { tokenizeSelector } from './tokenizeSelector.js';
 
 import type { Path, PathValue, Subscription } from './types';
 
 export function createSet<State>(state: State, subscriptions: Set<Subscription<State>>) {
 	return function set<P extends Path<State>>(selector: P, value: PathValue<State, P>) {
-		const path = String(selector);
-		const keys = path.split('.');
+		const keys = tokenizeSelector(selector);
 		let current: any = state;
 
 		if (keys.length === 1) {
@@ -27,7 +27,7 @@ export function createSet<State>(state: State, subscriptions: Set<Subscription<S
 				}
 			}
 
-			const target = getValueByPath(state, subscription.selector);
+			const target = getValueByTokens(state, tokens);
 
 			if ('matcher' in subscription) {
 				let matches: boolean;
