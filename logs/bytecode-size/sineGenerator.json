@@ -796,5 +796,11 @@
 		"version": "7.0.7",
 		"benchmark": "sineGenerator.8f4e",
 		"emittedBytes": 499
+	},
+	{
+		"commit": "e1d1f69b80c488e9a7c2097edf131411df5ec382",
+		"version": "7.0.8",
+		"benchmark": "sineGenerator.8f4e",
+		"emittedBytes": 499
 	}
 ]

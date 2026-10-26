@@ -548,5 +548,15 @@
 			"percentage": 100,
 			"byKind": {}
 		}
+	},
+	{
+		"commit": "e1d1f69b80c488e9a7c2097edf131411df5ec382",
+		"recordedAt": "2026-10-26T10:29:42.606Z",
+		"coverage": {
+			"documented": 0,
+			"total": 0,
+			"percentage": 100,
+			"byKind": {}
+		}
 	}
 ]
