@@ -1,11 +1,11 @@
-import type { DirectiveDerivedState, DirectiveWidgetContribution } from '@8f4e/editor-state-types';
+import type { DirectiveDerivedState, DirectiveLayoutCallbacks } from '@8f4e/editor-state-types';
 import gapCalculator from '~/features/code-editing/gapCalculator';
 import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import { resolveElementCount, resolveTypedValueSpec } from '../shared/typedValueSpec';
 import type { BarsDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
+type DirectiveLayoutResolver = NonNullable<DirectiveLayoutCallbacks['onBlockLayoutReady']>;
 
 function createStaticColumnLayout(width: number, length: number) {
 	if (length <= 0) {
@@ -28,8 +28,8 @@ function createStaticColumnLayout(width: number, length: number) {
 
 function resolveBarsDirectiveWidget(
 	bars: BarsDirectiveData,
-	graphicData: Parameters<DirectiveWidgetResolver>[0],
-	state: Parameters<DirectiveWidgetResolver>[1],
+	graphicData: Parameters<DirectiveLayoutResolver>[0],
+	state: Parameters<DirectiveLayoutResolver>[1],
 	directiveState: DirectiveDerivedState
 ): void {
 	if (!graphicData.name) {
@@ -71,7 +71,7 @@ function resolveBarsDirectiveWidget(
 	});
 }
 
-export function createBarsDirectiveWidgetContribution(bars: BarsDirectiveData): DirectiveWidgetContribution {
+export function createBarsDirectiveLayoutCallbacks(bars: BarsDirectiveData): DirectiveLayoutCallbacks {
 	return {
 		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveBarsDirectiveWidget(bars, graphicData, state, directiveState);

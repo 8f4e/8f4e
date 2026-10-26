@@ -1,6 +1,6 @@
 import { createDirectivePlugin } from '../utils';
 import { createPianoDirectiveData } from './data';
-import { createPianoDirectiveWidgetContribution } from './resolve';
+import { createPianoDirectiveLayoutCallbacks } from './resolve';
 
 export default createDirectivePlugin(
 	'piano',
@@ -11,7 +11,7 @@ export default createDirectivePlugin(
 		}
 
 		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 6 });
-		draft.widgets.push(createPianoDirectiveWidgetContribution(piano));
+		draft.layoutCallbacks.push(createPianoDirectiveLayoutCallbacks(piano));
 	},
 	{
 		clearGraphicData: graphicData => {

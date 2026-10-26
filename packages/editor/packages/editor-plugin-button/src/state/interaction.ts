@@ -4,7 +4,7 @@ import type { ButtonWidget } from '../types';
 export function registerButtonInteraction(
 	state: State,
 	events: EventDispatcher,
-	widgets: WeakMap<CodeBlockGraphicData, ButtonWidget[]>
+	buttonsByBlock: WeakMap<CodeBlockGraphicData, ButtonWidget[]>
 ): () => void {
 	let pressedButton: ButtonWidget | undefined;
 	const release = () => {
@@ -14,7 +14,7 @@ export function registerButtonInteraction(
 		state.callbacks.setWordInMemory?.(button.allocationUnitAddress, button.offValue, button.isInteger);
 	};
 	const onClick = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
-		pressedButton = widgets
+		pressedButton = buttonsByBlock
 			.get(codeBlock)
 			?.find(
 				button =>

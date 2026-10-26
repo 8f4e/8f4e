@@ -1,19 +1,19 @@
-import type { DirectiveDerivedState, DirectiveWidgetContribution } from '@8f4e/editor-state-types';
+import type { DirectiveDerivedState, DirectiveLayoutCallbacks } from '@8f4e/editor-state-types';
 import gapCalculator from '~/features/code-editing/gapCalculator';
 import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import { resolveDirectOrPointerTypedValueSpec } from '../shared/typedValueSpec';
 import type { MeterDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
+type DirectiveLayoutResolver = NonNullable<DirectiveLayoutCallbacks['onBlockLayoutReady']>;
 
 const GREEN_START_FACTOR = 0.75;
 const RED_THRESHOLD = 0.9;
 
 function resolveMeterDirectiveWidget(
 	meter: MeterDirectiveData,
-	graphicData: Parameters<DirectiveWidgetResolver>[0],
-	state: Parameters<DirectiveWidgetResolver>[1],
+	graphicData: Parameters<DirectiveLayoutResolver>[0],
+	state: Parameters<DirectiveLayoutResolver>[1],
 	directiveState: DirectiveDerivedState
 ): void {
 	if (!graphicData.name) {
@@ -63,7 +63,7 @@ function resolveMeterDirectiveWidget(
 	});
 }
 
-export function createMeterDirectiveWidgetContribution(meter: MeterDirectiveData): DirectiveWidgetContribution {
+export function createMeterDirectiveLayoutCallbacks(meter: MeterDirectiveData): DirectiveLayoutCallbacks {
 	return {
 		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveMeterDirectiveWidget(meter, graphicData, state, directiveState);

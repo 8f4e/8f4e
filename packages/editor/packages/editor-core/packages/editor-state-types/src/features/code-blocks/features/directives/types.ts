@@ -36,13 +36,13 @@ export interface DirectiveDisplayState {
 	hideAfterRawRow?: number;
 }
 
-export interface DirectiveWidgetContribution {
+export interface DirectiveLayoutCallbacks {
 	beforeGraphicDataWidthCalculation?: (
 		graphicData: CodeBlockGraphicData,
 		state: State,
 		directiveState: DirectiveDerivedState
 	) => void;
-	/** Derive block-local widgets after dimensions, display rows, gaps, and cursor coordinates are current. */
+	/** Run after block dimensions, display rows, gaps, and cursor coordinates are current. */
 	onBlockLayoutReady?: (graphicData: CodeBlockGraphicData, state: State, directiveState: DirectiveDerivedState) => void;
 }
 
@@ -51,7 +51,7 @@ export interface DirectiveDerivedState {
 	displayState: DirectiveDisplayState;
 	displayModel: CodeBlockDisplayModel;
 	layoutContributions: DirectiveLayoutContribution[];
-	widgets: DirectiveWidgetContribution[];
+	layoutCallbacks: DirectiveLayoutCallbacks[];
 }
 
 export interface DirectiveDerivedStateDraft extends DirectiveDerivedState {

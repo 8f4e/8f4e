@@ -243,6 +243,6 @@ describe('directive registry', () => {
 		// Both paths normalize '@w' to the canonical 'watch' name.
 		expect(fromParse[0].name).toBe('watch');
 		// @watch with a valid arg produces one widget.
-		expect(fromDerive.widgets).toHaveLength(1);
+		expect(fromDerive.layoutCallbacks).toHaveLength(1);
 	});
 });

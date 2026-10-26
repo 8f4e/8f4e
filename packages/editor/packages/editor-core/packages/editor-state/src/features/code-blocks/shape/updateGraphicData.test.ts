@@ -17,7 +17,7 @@ function createDirectiveState(): DirectiveDerivedState {
 			isCollapsed: false,
 		},
 		layoutContributions: [],
-		widgets: [],
+		layoutCallbacks: [],
 	};
 }
 

@@ -1,6 +1,6 @@
 import { createDirectivePlugin } from '../utils';
 import { createMeterDirectiveData } from './data';
-import { createMeterDirectiveWidgetContribution } from './resolve';
+import { createMeterDirectiveLayoutCallbacks } from './resolve';
 
 export default createDirectivePlugin(
 	'meter',
@@ -11,7 +11,7 @@ export default createDirectivePlugin(
 		}
 
 		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 1 });
-		draft.widgets.push(createMeterDirectiveWidgetContribution(meter));
+		draft.layoutCallbacks.push(createMeterDirectiveLayoutCallbacks(meter));
 	},
 	{
 		allowTrailingComment: true,

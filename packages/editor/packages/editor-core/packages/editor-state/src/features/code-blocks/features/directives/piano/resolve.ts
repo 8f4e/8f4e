@@ -1,11 +1,11 @@
-import type { DirectiveDerivedState, DirectiveWidgetContribution, PianoKeyboardKey } from '@8f4e/editor-state-types';
+import type { DirectiveDerivedState, DirectiveLayoutCallbacks, PianoKeyboardKey } from '@8f4e/editor-state-types';
 import gapCalculator from '~/features/code-editing/gapCalculator';
 import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import { PIANO_KEYBOARD_MIN_GRID_WIDTH } from './constants';
 import type { PianoDirectiveData } from './data';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['onBlockLayoutReady']>;
+type DirectiveLayoutResolver = NonNullable<DirectiveLayoutCallbacks['onBlockLayoutReady']>;
 
 const BLACK_KEYS = new Set([1, 3, 6, 8, 10]);
 const NOTE_LABELS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -67,8 +67,8 @@ function createPianoKeyboardKeys(
 
 function resolvePianoDirectiveWidget(
 	pianoKeyboard: PianoDirectiveData,
-	graphicData: Parameters<DirectiveWidgetResolver>[0],
-	state: Parameters<DirectiveWidgetResolver>[1],
+	graphicData: Parameters<DirectiveLayoutResolver>[0],
+	state: Parameters<DirectiveLayoutResolver>[1],
 	directiveState: DirectiveDerivedState
 ): void {
 	if (!graphicData.name) {
@@ -125,7 +125,7 @@ function resolvePianoDirectiveWidget(
 	});
 }
 
-export function createPianoDirectiveWidgetContribution(pianoKeyboard: PianoDirectiveData): DirectiveWidgetContribution {
+export function createPianoDirectiveLayoutCallbacks(pianoKeyboard: PianoDirectiveData): DirectiveLayoutCallbacks {
 	return {
 		beforeGraphicDataWidthCalculation: graphicData => {
 			graphicData.minGridWidth = PIANO_KEYBOARD_MIN_GRID_WIDTH;

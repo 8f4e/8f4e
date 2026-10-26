@@ -23,7 +23,7 @@ export function createSwitchDirective(widgets: WeakMap<CodeBlockGraphicData, Swi
 		apply: (directive, draft) => {
 			const data = createSwitchDirectiveData(directive.args, directive.rawRow);
 			if (!data) return;
-			draft.widgets.push({
+			draft.layoutCallbacks.push({
 				onBlockLayoutReady: (codeBlock, state, derived) => {
 					const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(codeBlock), data.id)?.memory;
 					if (!memory) return;

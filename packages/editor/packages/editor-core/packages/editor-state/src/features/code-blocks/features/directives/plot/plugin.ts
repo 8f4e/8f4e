@@ -1,6 +1,6 @@
 import { createDirectivePlugin } from '../utils';
 import { createPlotDirectiveData } from './data';
-import { createPlotDirectiveWidgetContribution } from './resolve';
+import { createPlotDirectiveLayoutCallbacks } from './resolve';
 
 export default createDirectivePlugin(
 	'plot',
@@ -11,7 +11,7 @@ export default createDirectivePlugin(
 		}
 
 		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 8 });
-		draft.widgets.push(createPlotDirectiveWidgetContribution(plot));
+		draft.layoutCallbacks.push(createPlotDirectiveLayoutCallbacks(plot));
 	},
 	{
 		clearGraphicData: graphicData => {

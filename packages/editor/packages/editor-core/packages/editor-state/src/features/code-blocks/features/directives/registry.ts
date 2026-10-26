@@ -89,7 +89,7 @@ export function deriveDirectiveState(
 		displayState: {},
 		displayModel: buildDisplayModel(code),
 		layoutContributions: [],
-		widgets: [],
+		layoutCallbacks: [],
 		state: options.state,
 	};
 
@@ -106,7 +106,7 @@ export function deriveDirectiveState(
 			isExpandedForEditing: options.isExpandedForEditing,
 		}),
 		layoutContributions: draft.layoutContributions,
-		widgets: draft.widgets,
+		layoutCallbacks: draft.layoutCallbacks,
 	};
 }
 
@@ -115,8 +115,8 @@ export function runBlockLayoutReady(
 	state: State,
 	directiveState: DirectiveDerivedState
 ): void {
-	directiveState.widgets.forEach(widget => {
-		widget.onBlockLayoutReady?.(graphicData, state, directiveState);
+	directiveState.layoutCallbacks.forEach(callbacks => {
+		callbacks.onBlockLayoutReady?.(graphicData, state, directiveState);
 	});
 }
 
@@ -130,7 +130,7 @@ export function runBeforeGraphicDataWidthCalculation(
 		plugin.clearGraphicData?.(graphicData);
 	});
 
-	directiveState.widgets.forEach(widget => {
-		widget.beforeGraphicDataWidthCalculation?.(graphicData, state, directiveState);
+	directiveState.layoutCallbacks.forEach(callbacks => {
+		callbacks.beforeGraphicDataWidthCalculation?.(graphicData, state, directiveState);
 	});
 }

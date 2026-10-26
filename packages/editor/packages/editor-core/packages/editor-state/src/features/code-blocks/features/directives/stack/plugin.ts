@@ -1,5 +1,5 @@
 import { createDirectivePlugin } from '../utils';
-import { createStackDirectiveWidgetContribution } from './resolve';
+import { createStackDirectiveLayoutCallbacks } from './resolve';
 
 export default createDirectivePlugin(
 	'stack',
@@ -8,8 +8,8 @@ export default createDirectivePlugin(
 			return;
 		}
 
-		draft.widgets.push(
-			createStackDirectiveWidgetContribution({
+		draft.layoutCallbacks.push(
+			createStackDirectiveLayoutCallbacks({
 				lineNumber: directive.rawRow,
 				isTrailing: !/^\s*;/.test(directive.sourceLine ?? ''),
 			})

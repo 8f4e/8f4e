@@ -1,6 +1,6 @@
 import { createDirectivePlugin } from '../utils';
 import { createSliderDirectiveData } from './data';
-import { createSliderDirectiveWidgetContribution } from './resolve';
+import { createSliderDirectiveLayoutCallbacks } from './resolve';
 
 export default createDirectivePlugin(
 	'slider',
@@ -11,7 +11,7 @@ export default createDirectivePlugin(
 		}
 
 		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 2 });
-		draft.widgets.push(createSliderDirectiveWidgetContribution(slider));
+		draft.layoutCallbacks.push(createSliderDirectiveLayoutCallbacks(slider));
 	},
 	{
 		clearGraphicData: graphicData => {

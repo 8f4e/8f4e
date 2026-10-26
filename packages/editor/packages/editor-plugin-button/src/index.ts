@@ -9,12 +9,12 @@ export const buttonPlugin: EditorPlugin = {
 	id: 'button',
 	setup: ({ store, events, directives, drawers }) => {
 		const state = store.getState();
-		const widgets = new WeakMap<CodeBlockGraphicData, ButtonWidget[]>();
-		const unregisterDirective = directives.register(createButtonDirective(widgets));
+		const buttonsByBlock = new WeakMap<CodeBlockGraphicData, ButtonWidget[]>();
+		const unregisterDirective = directives.register(createButtonDirective(buttonsByBlock));
 		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
-			drawButtons(draw, state, widgets.get(codeBlock) ?? [], memoryViews);
+			drawButtons(draw, state, buttonsByBlock.get(codeBlock) ?? [], memoryViews);
 		});
-		const unregisterInteraction = registerButtonInteraction(state, events, widgets);
+		const unregisterInteraction = registerButtonInteraction(state, events, buttonsByBlock);
 		return () => {
 			unregisterInteraction();
 			unregisterDrawer();

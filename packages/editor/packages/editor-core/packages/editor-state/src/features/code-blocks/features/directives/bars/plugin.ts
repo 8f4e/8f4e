@@ -1,6 +1,6 @@
 import { createDirectivePlugin } from '../utils';
 import { createBarsDirectiveData } from './data';
-import { createBarsDirectiveWidgetContribution } from './resolve';
+import { createBarsDirectiveLayoutCallbacks } from './resolve';
 
 export default createDirectivePlugin(
 	'bars',
@@ -11,7 +11,7 @@ export default createDirectivePlugin(
 		}
 
 		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 8 });
-		draft.widgets.push(createBarsDirectiveWidgetContribution(bars));
+		draft.layoutCallbacks.push(createBarsDirectiveLayoutCallbacks(bars));
 	},
 	{
 		clearGraphicData: graphicData => {

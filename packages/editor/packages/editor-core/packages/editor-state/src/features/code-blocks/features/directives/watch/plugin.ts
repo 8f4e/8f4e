@@ -1,6 +1,6 @@
 import { createDirectivePlugin } from '../utils';
 import { createWatchDirectiveData } from './data';
-import { createWatchDirectiveWidgetContribution } from './resolve';
+import { createWatchDirectiveLayoutCallbacks } from './resolve';
 
 export default createDirectivePlugin(
 	'watch',
@@ -10,7 +10,7 @@ export default createDirectivePlugin(
 			return;
 		}
 
-		draft.widgets.push(createWatchDirectiveWidgetContribution(watch));
+		draft.layoutCallbacks.push(createWatchDirectiveLayoutCallbacks(watch));
 	},
 	{
 		aliases: ['w'],

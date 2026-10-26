@@ -19,7 +19,7 @@ describe('gaps', () => {
 				isCollapsed: false,
 			},
 			layoutContributions: [{ rawRow: 1, rows: 8 }],
-			widgets: [],
+			layoutCallbacks: [],
 		};
 		const graphicData = createCodeBlockGraphicData({ code: ['module foo', '; @plot buffer', 'push 1', 'moduleEnd'] });
 
@@ -46,7 +46,7 @@ describe('gaps', () => {
 				{ rawRow: 1, rows: 2 },
 				{ rawRow: 1, rows: 3 },
 			],
-			widgets: [],
+			layoutCallbacks: [],
 		};
 		const graphicData = createCodeBlockGraphicData({ code: ['module foo', 'shape sharedState', 'moduleEnd'] });
 
@@ -70,7 +70,7 @@ describe('gaps', () => {
 				isCollapsed: false,
 			},
 			layoutContributions: [{ rawRow: 1, rows: 2 }],
-			widgets: [],
+			layoutCallbacks: [],
 		};
 		const graphicData = createCodeBlockGraphicData({
 			code: ['module foo', 'shape sharedState', 'moduleEnd'],
@@ -110,7 +110,7 @@ describe('gaps', () => {
 				isCollapsed: true,
 			},
 			layoutContributions: [{ rawRow: 1, rows: 8 }],
-			widgets: [],
+			layoutCallbacks: [],
 		};
 		const graphicData = createCodeBlockGraphicData({
 			code: ['module foo', '; @plot buffer', 'push 1', 'moduleEnd'],

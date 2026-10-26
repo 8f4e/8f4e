@@ -1,7 +1,7 @@
 import { createDirectivePlugin } from '../utils';
 import { createInfoDirectiveData } from './data';
 import { getInfoLayout } from './entries';
-import { createInfoDirectiveWidgetContribution } from './resolve';
+import { createInfoDirectiveLayoutCallbacks } from './resolve';
 
 export default createDirectivePlugin(
 	'info',
@@ -12,7 +12,7 @@ export default createDirectivePlugin(
 		}
 
 		const layout = getInfoLayout(draft.state, info.id);
-		draft.widgets.push(createInfoDirectiveWidgetContribution(info, layout));
+		draft.layoutCallbacks.push(createInfoDirectiveLayoutCallbacks(info, layout));
 		if (layout.rowCount > 0) {
 			draft.layoutContributions.push({ rawRow: directive.rawRow, rows: layout.rowCount });
 		}
