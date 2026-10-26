@@ -72,16 +72,20 @@ to each editor. Install them in setup before the initial project loads; there is
 Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
 `{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
 the host applies viewport translation and visibility checks. Drawers run in registration order after error messages
-and before built-in controls. Use the current state's sprite lookups, which change with the font or color scheme.
+and before built-in controls. Register overlays with `drawers.registerCodeBlockOverlay(drawer)` to draw after all
+built-in block widgets, using the same context and coordinates. Each slot preserves registration order. Use the
+current state's sprite lookups, which change with the font or color scheme.
 `@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
 disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
 
 The switch plugin owns `@switch` argument handling, memory resolution, click handling, and drawing. Its widget data
 lives in a per-instance WeakMap rather than the core state shape. The execution-toggle plugin owns the Skip/Unskip
-menu item and its action. Group execution toggling and nested block shading remain built in. The core installs no
-plugins by default; `@8f4e/editor-default` selects the standard set.
+menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
+layout, animation, and overlay drawing, with its state private to each installation. Group execution toggling and
+nested block shading remain built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
 
-`@8f4e/editor-state` exports shared source-edit, directive-argument, and row-layout helpers. Its `/memory` entry
+`@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
+and compiled-function lookup helpers. Its `/memory` entry
 exports memory scope and identifier resolution. Plugins use these public exports rather than importing core files.
 
 ## Project loading

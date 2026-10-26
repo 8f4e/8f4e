@@ -1,10 +1,11 @@
+import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
 import { getStackAnalysisTooltipContent, getStackAnalysisTooltipText } from './stackAnalysisTooltip';
 
 describe('stack analysis tooltip text', () => {
 	it('formats selected line stack analysis', () => {
-		const stackAnalysisLine = {
+		const stackAnalysisLine: CompiledStackAnalysisLine = {
 			lineNumber: 2,
 			instruction: 'add',
 			stackAnalysis: {
@@ -23,7 +24,7 @@ describe('stack analysis tooltip text', () => {
 					{ kind: 'value', valueType: 'int' },
 				],
 			},
-		} as const;
+		};
 
 		expect(getStackAnalysisTooltipText(stackAnalysisLine)).toEqual([
 			'before [int=0, -int=1, -int=2]',
@@ -37,7 +38,7 @@ describe('stack analysis tooltip text', () => {
 	});
 
 	it('formats known float32 and float64 values', () => {
-		const stackAnalysisLine = {
+		const stackAnalysisLine: CompiledStackAnalysisLine = {
 			lineNumber: 1,
 			instruction: 'push',
 			stackAnalysis: {
@@ -52,7 +53,7 @@ describe('stack analysis tooltip text', () => {
 					{ kind: 'value', valueType: 'float64', knownValue: Math.PI },
 				],
 			},
-		} as const;
+		};
 
 		expect(getStackAnalysisTooltipText(stackAnalysisLine)).toEqual([
 			'before []',
@@ -61,7 +62,7 @@ describe('stack analysis tooltip text', () => {
 	});
 
 	it('formats long stack analysis as multiline blocks', () => {
-		const stackAnalysisLine = {
+		const stackAnalysisLine: CompiledStackAnalysisLine = {
 			lineNumber: 6,
 			instruction: 'drop',
 			stackAnalysis: {
@@ -83,7 +84,7 @@ describe('stack analysis tooltip text', () => {
 					{ kind: 'value', valueType: 'int' },
 				],
 			},
-		} as const;
+		};
 
 		expect(getStackAnalysisTooltipText(stackAnalysisLine)).toEqual([
 			'before: [',

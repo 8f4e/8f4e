@@ -1,26 +1,13 @@
+import type { EditorPluginContext } from '@8f4e/editor-core';
+import { getCompiledFunctionForCodeBlock } from '@8f4e/editor-state';
+import { getCodeBlockMemoryScope, resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
-import type { StateManager } from '@8f4e/state-manager';
-import getCodeBlockMemoryScope from '../../pureHelpers/getCodeBlockMemoryScope';
-import getCodeBlockModuleId from '../../pureHelpers/getCodeBlockModuleId';
-import resolveMemoryTarget from '../../pureHelpers/resolveMemoryTarget';
-import { getCompiledFunctionForCodeBlock } from '../code-blocks/utils/getCompiledFunctionForCodeBlock';
+import { createProjectModuleId } from '@8f4e/language-spec';
 import { TOOLTIP_WRAP_WIDTH } from './constants';
 import { getSelectedLineTooltipContent } from './content';
 import { createEmptyTooltipState, getTooltipState } from './layout';
 import { getInstructionNameFromSourceLine, getMemoryDeclarationIdFromSourceLine } from './sourceLine';
-
-export { getSelectedLineTooltipColors } from './colors';
-export { TOOLTIP_WRAP_WIDTH } from './constants';
-export { getSelectedLineTooltipContent, getSelectedLineTooltipText } from './content';
-export {
-	getInstructionNameFromSourceLine,
-	getInstructionSpecFromSourceLine,
-	getMemoryDeclarationIdFromSourceLine,
-	getStackSignatureFromSourceLine,
-} from './sourceLine';
-export { getStackAnalysisTooltipText } from './stackAnalysisTooltip';
-export { wrapTooltipText } from './text';
 
 /**
  * Finds stack analysis for the currently selected source line.
@@ -38,9 +25,9 @@ function getSelectedCodeBlockStackAnalysisLine(
 		return compiledFunction?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row);
 	}
 
-	return state.compiler.compiledModules[getCodeBlockModuleId(selectedCodeBlock)]?.stackAnalysis?.find(
-		line => line.lineNumber === selectedCodeBlock.cursor.row
-	);
+	return state.compiler.compiledModules[
+		createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name)
+	]?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row);
 }
 
 /**
@@ -63,21 +50,24 @@ function getSelectedModuleExecutionOrder(
 		return undefined;
 	}
 
-	const moduleIndex = Object.keys(state.compiler.compiledModules).indexOf(getCodeBlockModuleId(selectedCodeBlock));
+	const moduleIndex = Object.keys(state.compiler.compiledModules).indexOf(
+		createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name)
+	);
 	return moduleIndex === -1 ? undefined : moduleIndex + 1;
 }
 
 /**
- * Keeps central tooltip state synchronized with the selected code line.
+ * Keeps plugin-owned tooltip state synchronized with the selected code line.
  */
-export default function tooltip(store: StateManager<State>): void {
+export default function createTooltip(store: EditorPluginContext['store'], events: EditorPluginContext['events']) {
+	let tooltip = createEmptyTooltipState();
 	const state = store.getState();
 
 	function syncSelectedLineTooltip(): void {
 		const selectedCodeBlock = state.codeBlockRendering.selectedCodeBlock;
 
 		if (!state.featureFlags.codeLineSelection || !selectedCodeBlock) {
-			store.set('tooltip', createEmptyTooltipState());
+			tooltip = createEmptyTooltipState();
 			return;
 		}
 
@@ -88,23 +78,31 @@ export default function tooltip(store: StateManager<State>): void {
 			TOOLTIP_WRAP_WIDTH,
 			getSelectedCodeBlockStackAnalysisLine(state, selectedCodeBlock),
 			state.spriteLookups,
-			selectedCodeBlock.name,
+			createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name),
 			getSelectedMemoryDeclaration(state, selectedCodeBlock, memoryId),
 			getSelectedModuleExecutionOrder(state, selectedCodeBlock, line)
 		);
-		store.set('tooltip', getTooltipState(content, state, selectedCodeBlock));
+		tooltip = getTooltipState(content, state, selectedCodeBlock, tooltip);
 	}
 
-	store.subscribe('codeBlockRendering.selectedCodeBlock', syncSelectedLineTooltip);
-	store.subscribe('codeBlockRendering.selectedCodeBlock.code', syncSelectedLineTooltip);
-	store.subscribe('codeBlockRendering.selectedCodeBlock.cursor.row', syncSelectedLineTooltip);
-	store.subscribe('codeBlockRendering.selectedCodeBlock.cursor.y', syncSelectedLineTooltip);
-	store.subscribe('featureFlags.codeLineSelection', syncSelectedLineTooltip);
-	store.subscribe('compiler.compiledModules', syncSelectedLineTooltip);
-	store.subscribe('compiler.compiledFunctions', syncSelectedLineTooltip);
-	store.subscribe('spriteLookups', syncSelectedLineTooltip);
-	store.subscribe('viewport.vGrid', syncSelectedLineTooltip);
-	store.subscribe('viewport.hGrid', syncSelectedLineTooltip);
-
+	const selectors = [
+		'codeBlockRendering.selectedCodeBlock',
+		'codeBlockRendering.selectedCodeBlockForProgrammaticEdit',
+		'codeBlockRendering.codeBlocks',
+		'featureFlags.codeLineSelection',
+		'compiler',
+		'spriteLookups',
+		'viewport.vGrid',
+		'viewport.hGrid',
+	] as const;
+	for (const selector of selectors) store.subscribe(selector, syncSelectedLineTooltip);
+	events.on('spriteSheetRerendered', syncSelectedLineTooltip);
 	syncSelectedLineTooltip();
+	return {
+		getState: () => tooltip,
+		dispose: () => {
+			events.off('spriteSheetRerendered', syncSelectedLineTooltip);
+			for (const selector of selectors) store.unsubscribe(selector, syncSelectedLineTooltip);
+		},
+	};
 }

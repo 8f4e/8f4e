@@ -1,4 +1,4 @@
-import wrapText from '../code-blocks/utils/wrapText';
+import { wrapText } from '@8f4e/editor-state';
 import { TOOLTIP_WRAP_WIDTH } from './constants';
 
 /**

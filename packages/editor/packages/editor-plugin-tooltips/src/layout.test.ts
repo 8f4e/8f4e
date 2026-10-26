@@ -1,5 +1,5 @@
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
-import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createEmptyTooltipState, getTooltipState } from './layout';
 import type { SelectedLineTooltipContent } from './types';
 
@@ -20,15 +20,16 @@ describe('tooltip layout', () => {
 			codeBlockRendering: { selectedCodeBlock },
 		});
 
-		state.tooltip = getTooltipState(content, state, selectedCodeBlock, 100);
-		expect(state.tooltip.animation.startedAt).toBe(100);
+		let tooltip = createEmptyTooltipState();
+		tooltip = getTooltipState(content, state, selectedCodeBlock, tooltip, 100);
+		expect(tooltip.animation.startedAt).toBe(100);
 
-		state.tooltip = getTooltipState(content, state, selectedCodeBlock, 200);
-		expect(state.tooltip.animation.startedAt).toBe(100);
+		tooltip = getTooltipState(content, state, selectedCodeBlock, tooltip, 200);
+		expect(tooltip.animation.startedAt).toBe(100);
 
 		selectedCodeBlock.cursor.row = 1;
-		state.tooltip = getTooltipState(content, state, selectedCodeBlock, 300);
-		expect(state.tooltip.animation.startedAt).toBe(300);
+		tooltip = getTooltipState(content, state, selectedCodeBlock, tooltip, 300);
+		expect(tooltip.animation.startedAt).toBe(300);
 	});
 
 	it('restarts animation when content appears for the current target', () => {
@@ -37,10 +38,11 @@ describe('tooltip layout', () => {
 			codeBlockRendering: { selectedCodeBlock },
 		});
 
-		state.tooltip = getTooltipState(content, state, selectedCodeBlock, 100);
-		state.tooltip = createEmptyTooltipState();
-		state.tooltip = getTooltipState(content, state, selectedCodeBlock, 200);
+		let tooltip = createEmptyTooltipState();
+		tooltip = getTooltipState(content, state, selectedCodeBlock, tooltip, 100);
+		tooltip = createEmptyTooltipState();
+		tooltip = getTooltipState(content, state, selectedCodeBlock, tooltip, 200);
 
-		expect(state.tooltip.animation.startedAt).toBe(200);
+		expect(tooltip.animation.startedAt).toBe(200);
 	});
 });

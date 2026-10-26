@@ -5,7 +5,6 @@ import type { MemoryViews } from '../../types';
 import type { CodeBlockDrawerRegistry } from '../registry';
 import drawArrow from './drawArrow';
 import drawEntryOutlines from './drawEntryOutlines';
-import drawSelectedLineHint from './drawSelectedLineHint';
 import drawSelectedOutline from './drawSelectedOutline';
 import drawShapeDeclarations from './drawShapeDeclarations';
 import drawAssertions from './widgets/assertions';
@@ -122,7 +121,7 @@ export default function drawModules(
 			drawWaves(engine, state, codeBlock, memoryViews);
 			drawInfoPanels(engine, state, codeBlock);
 			drawDebuggers(engine, state, codeBlock, memoryViews);
-			drawSelectedLineHint(engine, state, codeBlock, memoryViews);
+			drawers?.drawCodeBlockOverlay({ draw: engine, state, codeBlock, memoryViews });
 
 			engine.endGroup();
 		} else if (state.featureFlags.offscreenBlockArrows) {

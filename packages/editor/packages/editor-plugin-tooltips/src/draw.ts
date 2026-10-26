@@ -1,10 +1,10 @@
 import { resolveMemoryTarget } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, State, TooltipLiveValue } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { SpriteFont } from '@8f4e/sprite-generator';
-import type { DrawContext } from '../../drawContext';
-import type { MemoryViews } from '../../types';
-import formatDebuggerValue, { formatDebuggerValueAtAddress } from './widgets/formatDebuggerValue';
+import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import { formatMemoryValue } from './memoryValue';
+import type { TooltipLiveValue, TooltipState } from './types';
 
 const TOOLTIP_SPRING_DURATION_MS = 600;
 const TOOLTIP_SPRING_REVOLUTIONS = 1.5;
@@ -16,8 +16,12 @@ export interface TooltipAnimationOffset {
 	y: number;
 }
 
-export function getTooltipAnimationOffset(state: State, now = performance.now()): TooltipAnimationOffset {
-	const { startedAt } = state.tooltip.animation;
+export function getTooltipAnimationOffset(
+	tooltip: TooltipState,
+	vGrid: number,
+	now = performance.now()
+): TooltipAnimationOffset {
+	const { startedAt } = tooltip.animation;
 
 	if (startedAt === undefined) {
 		return { x: 0, y: 0 };
@@ -30,7 +34,7 @@ export function getTooltipAnimationOffset(state: State, now = performance.now())
 
 	const damping = (1 - progress) ** 1.5;
 	const angle = progress * TOOLTIP_SPRING_REVOLUTIONS * Math.PI * 2;
-	const horizontalRadius = tooltipAnimationOffsetChars * state.viewport.vGrid;
+	const horizontalRadius = tooltipAnimationOffsetChars * vGrid;
 	const verticalRadius = horizontalRadius * TOOLTIP_SPRING_VERTICAL_SCALE;
 	const x = Math.round(-horizontalRadius * damping * Math.cos(angle));
 	const y = Math.round(-verticalRadius * damping * Math.sin(angle));
@@ -60,16 +64,15 @@ function getLiveValueText(state: State, memoryViews: MemoryViews, liveValue: Too
 		case 'memoryAddress':
 			return String(memory.byteAddress);
 		case 'memoryValue':
-			return formatDebuggerValue(memoryViews, memory, liveValue.source.elementIndex ?? 0, 'decimal');
+			return formatMemoryValue(
+				memoryViews,
+				memory.byteAddress + (liveValue.source.elementIndex ?? 0) * memory.elementWordSize,
+				memory.allocationUnitAddress + (liveValue.source.elementIndex ?? 0),
+				memory
+			);
 		case 'memoryDereference': {
 			const pointerByteAddress = memoryViews.int32[memory.allocationUnitAddress];
-			return formatDebuggerValueAtAddress(
-				memoryViews,
-				pointerByteAddress,
-				pointerByteAddress / 4,
-				liveValue.source.format,
-				'decimal'
-			);
+			return formatMemoryValue(memoryViews, pointerByteAddress, pointerByteAddress / 4, liveValue.source.format);
 		}
 	}
 }
@@ -137,11 +140,12 @@ function drawLiveValue(
 	);
 }
 
-export default function drawSelectedLineHint(
+export default function drawTooltip(
 	engine: DrawContext,
 	state: State,
 	codeBlock: CodeBlockGraphicData,
-	memoryViews: MemoryViews
+	memoryViews: MemoryViews,
+	tooltip: TooltipState
 ): void {
 	const spriteLookups = state.spriteLookups;
 
@@ -153,12 +157,12 @@ export default function drawSelectedLineHint(
 		return;
 	}
 
-	if (state.tooltip.lineCount === 0) {
+	if (tooltip.lineCount === 0) {
 		return;
 	}
 
-	const { width, height, x, y, lineX } = state.tooltip.layout;
-	const animationOffset = getTooltipAnimationOffset(state);
+	const { width, height, x, y, lineX } = tooltip.layout;
+	const animationOffset = getTooltipAnimationOffset(tooltip, state.viewport.vGrid);
 
 	engine.drawSprite(
 		x + animationOffset.x,
@@ -168,7 +172,7 @@ export default function drawSelectedLineHint(
 		height
 	);
 
-	for (const highlight of state.tooltip.highlights) {
+	for (const highlight of tooltip.highlights) {
 		engine.drawSprite(
 			highlight.x + animationOffset.x,
 			highlight.y + animationOffset.y,
@@ -178,18 +182,18 @@ export default function drawSelectedLineHint(
 		);
 	}
 
-	for (let index = 0; index < state.tooltip.characters.length; index++) {
+	for (let index = 0; index < tooltip.characters.length; index++) {
 		drawCharactersWithColors(
 			engine,
 			state,
-			state.tooltip.characters[index],
-			state.tooltip.colors[index],
+			tooltip.characters[index],
+			tooltip.colors[index],
 			lineX + animationOffset.x,
 			y + index * state.viewport.hGrid + animationOffset.y
 		);
 	}
 
-	for (const liveValue of state.tooltip.liveValues) {
+	for (const liveValue of tooltip.liveValues) {
 		drawLiveValue(engine, state, memoryViews, liveValue, animationOffset);
 	}
 }
