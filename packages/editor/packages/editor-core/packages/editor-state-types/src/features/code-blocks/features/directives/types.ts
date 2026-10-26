@@ -64,14 +64,14 @@ export interface DirectiveDeriveOptions {
 	state?: State;
 }
 
-export interface EditorDirectivePlugin {
+export interface EditorDirectiveDefinition {
 	name: string;
 	aliases?: string[];
 	allowTrailingComment?: boolean;
-	clearGraphicData?: (graphicData: CodeBlockGraphicData) => void;
+	clearDerivedBlockData?: (graphicData: CodeBlockGraphicData) => void;
 	apply?: (directive: ParsedEditorDirective, draft: DirectiveDerivedStateDraft) => void;
 }
 
 export interface EditorDirectiveRegistry {
-	register: (directive: EditorDirectivePlugin) => () => void;
+	register: (directive: EditorDirectiveDefinition) => () => void;
 }

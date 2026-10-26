@@ -91,13 +91,13 @@ async function setup(code = source, installed = true) {
 		vi.mocked(draw.drawText).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
-	const click = () =>
-		events.dispatch('codeBlockClick', {
+	const press = () =>
+		events.dispatch('codeBlockPointerDown', {
 			codeBlock,
 			x: codeBlock.x + codeBlock.width - 4 * state.viewport.vGrid - state.viewport.x + 1,
 			y: codeBlock.y + 2 * state.viewport.hGrid - state.viewport.y + 1,
 		});
-	return { store, state, events, drawers, codeBlock, memoryViews, draw, write, render, click, address, disposePlugin };
+	return { store, state, events, drawers, codeBlock, memoryViews, draw, write, render, press, address, disposePlugin };
 }
 
 describe('switch plugin', () => {
@@ -121,18 +121,18 @@ describe('switch plugin', () => {
 	it('toggles through the state event pipeline in view mode as well as edit mode', async () => {
 		const test = await setup();
 		test.store.set('featureFlags.editing', false);
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, 1, true);
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, 0, true);
 	});
 
 	it('uses configured values and resets an unmatched value to off', async () => {
 		const test = await setup(['module controls', 'int gate 0', '; @switch &gate -5 100', 'moduleEnd']);
 		test.memoryViews.int32[test.address] = -5;
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, 100, true);
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, -5, true);
 		test.memoryViews.int32[test.address] = 42;
 		test.render();
@@ -143,7 +143,7 @@ describe('switch plugin', () => {
 			'[__]',
 			test.state.spriteLookups!.fontNumbers
 		);
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, -5, true);
 	});
 
@@ -153,9 +153,9 @@ describe('switch plugin', () => {
 		test.codeBlock.y = 160;
 		test.state.viewport.x = 150;
 		test.state.viewport.y = 100;
-		test.events.dispatch('codeBlockClick', { codeBlock: test.codeBlock, x: 0, y: 0 });
+		test.events.dispatch('codeBlockPointerDown', { codeBlock: test.codeBlock, x: 0, y: 0 });
 		expect(test.write).not.toHaveBeenCalled();
-		test.click();
+		test.press();
 		expect(test.memoryViews.int32[test.address]).toBe(1);
 	});
 
@@ -163,14 +163,14 @@ describe('switch plugin', () => {
 		const test = await setup();
 		test.codeBlock.code[2] = '; @switch &gate 0 7';
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, 7, true);
 		test.codeBlock.code[2] = '; no widget';
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
 		test.render();
 		expect(test.draw.drawSprite).not.toHaveBeenCalled();
 		test.write.mockClear();
-		test.click();
+		test.press();
 		expect(test.write).not.toHaveBeenCalled();
 	});
 
@@ -194,7 +194,7 @@ describe('switch plugin', () => {
 			'moduleEnd',
 		]);
 		const address = test.state.compiler.memoryPlan.modules.other.memory.gate.allocationUnitAddress;
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);
 		expect(test.memoryViews.int32[test.address]).toBe(0);
 	});
@@ -204,7 +204,7 @@ describe('switch plugin', () => {
 		const memory = test.state.compiler.memoryPlan.modules.controls.memory;
 		memory.gate = { ...memory.gate, allocationUnitAddress: test.address + 4 };
 		test.events.dispatch('runtimeInitialized');
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address + 4, 1, true);
 		delete memory.gate;
 		test.events.dispatch('runtimeInitialized');
@@ -217,7 +217,7 @@ describe('switch plugin', () => {
 		async line => {
 			const test = await setup(['module controls', 'int gate 0', line, 'moduleEnd']);
 			test.render();
-			test.click();
+			test.press();
 			expect(test.draw.drawSprite).not.toHaveBeenCalled();
 			expect(test.draw.drawText).not.toHaveBeenCalled();
 			expect(test.write).not.toHaveBeenCalled();
@@ -230,16 +230,16 @@ describe('switch plugin', () => {
 			expect.objectContaining({ name: 'switch', args: ['&gate'] })
 		);
 		test.render();
-		test.click();
+		test.press();
 		expect(test.draw.drawSprite).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
 	});
 
-	it('unregisters its directive, click handler, and drawer on disposal', async () => {
+	it('unregisters its directive, press handler, and drawer on disposal', async () => {
 		const test = await setup();
 		test.disposePlugin();
 		test.render();
-		test.click();
+		test.press();
 		expect(test.draw.drawSprite).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
 	});
@@ -247,11 +247,11 @@ describe('switch plugin', () => {
 	it('keeps widget data and registrations independent across editor instances', async () => {
 		const first = await setup();
 		const second = await setup();
-		first.click();
+		first.press();
 		expect(first.memoryViews.int32[first.address]).toBe(1);
 		expect(second.memoryViews.int32[second.address]).toBe(0);
 		first.disposePlugin();
-		second.click();
+		second.press();
 		second.render();
 		expect(second.memoryViews.int32[second.address]).toBe(1);
 		expect(second.draw.drawText).toHaveBeenCalledWith(

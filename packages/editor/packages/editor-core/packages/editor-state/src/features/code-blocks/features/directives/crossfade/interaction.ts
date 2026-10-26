@@ -37,7 +37,7 @@ export default function crossfade(store: StateManager<State>, events: EventDispa
 		state.callbacks?.setWordInMemory?.(crossfade.rightWordAddress, rightValue, false);
 	};
 
-	const onCodeBlockClick = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+	const onCodeBlockPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
 		const crossfade = findCrossfadeWidgetAtViewportCoordinates(state, codeBlock, x, y);
 
 		if (!crossfade || !codeBlock.name) {
@@ -62,12 +62,12 @@ export default function crossfade(store: StateManager<State>, events: EventDispa
 		activeCrossfade = null;
 	};
 
-	events.on('codeBlockClick', onCodeBlockClick);
+	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
 	events.on('mousemove', onMouseMove);
 	events.on('mouseup', onMouseUp);
 
 	return () => {
-		events.off('codeBlockClick', onCodeBlockClick);
+		events.off('codeBlockPointerDown', onCodeBlockPointerDown);
 		events.off('mousemove', onMouseMove);
 		events.off('mouseup', onMouseUp);
 	};

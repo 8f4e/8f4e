@@ -1,13 +1,13 @@
 import type {
-	GlobalEditorDirectivePlugin,
+	GlobalEditorDirectiveDefinition,
 	ParsedDirectiveRecord,
 	ParsedGlobalEditorDirective,
 } from '@8f4e/editor-state-types';
 
-export function createGlobalEditorDirectivePlugin(
+export function createGlobalEditorDirectiveDefinition(
 	name: string,
-	apply: NonNullable<GlobalEditorDirectivePlugin['apply']>
-): GlobalEditorDirectivePlugin {
+	apply: NonNullable<GlobalEditorDirectiveDefinition['apply']>
+): GlobalEditorDirectiveDefinition {
 	return {
 		name,
 		apply,
@@ -16,12 +16,12 @@ export function createGlobalEditorDirectivePlugin(
 
 export function parseGlobalEditorDirectives(
 	parsedDirectives: ParsedDirectiveRecord[],
-	plugins: GlobalEditorDirectivePlugin[]
+	definitions: GlobalEditorDirectiveDefinition[]
 ): ParsedGlobalEditorDirective[] {
-	const pluginNames = new Set(plugins.map(plugin => plugin.name));
+	const definitionNames = new Set(definitions.map(definition => definition.name));
 
 	return parsedDirectives
-		.filter(directive => directive.prefix === '@' && pluginNames.has(directive.name))
+		.filter(directive => directive.prefix === '@' && definitionNames.has(directive.name))
 		.map(directive => ({
 			name: directive.name,
 			args: directive.args,

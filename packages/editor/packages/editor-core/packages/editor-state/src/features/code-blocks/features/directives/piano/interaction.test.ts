@@ -107,7 +107,7 @@ describe('pianoKeyboard interaction', () => {
 	}
 
 	function clickKey(codeBlock: ReturnType<typeof createCodeBlockWithPiano>, keyOffset: number) {
-		onCallbacks.get('codeBlockClick')?.({
+		onCallbacks.get('codeBlockPointerDown')?.({
 			x: 100 + 20 + keyOffset * 10 + 1,
 			y: 50 + 40 + 1,
 			codeBlock,
@@ -117,7 +117,7 @@ describe('pianoKeyboard interaction', () => {
 	it('registers event listeners on initialization', () => {
 		const cleanup = pianoKeyboard(mockStore, mockEvents);
 
-		expect(mockEvents.on).toHaveBeenCalledWith('codeBlockClick', expect.any(Function));
+		expect(mockEvents.on).toHaveBeenCalledWith('codeBlockPointerDown', expect.any(Function));
 
 		cleanup();
 	});
@@ -126,7 +126,7 @@ describe('pianoKeyboard interaction', () => {
 		const cleanup = pianoKeyboard(mockStore, mockEvents);
 		cleanup();
 
-		expect(mockEvents.off).toHaveBeenCalledWith('codeBlockClick', expect.any(Function));
+		expect(mockEvents.off).toHaveBeenCalledWith('codeBlockPointerDown', expect.any(Function));
 	});
 
 	it('adds a clicked note directly to runtime memory without editing code', () => {

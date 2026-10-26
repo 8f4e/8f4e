@@ -738,7 +738,10 @@ describe('codeBlockDragger', () => {
 			});
 			mouseupHandlers[0]();
 
-			expect(events.dispatch).toHaveBeenCalledWith('codeBlockClick', expect.objectContaining({ codeBlock: block1 }));
+			expect(events.dispatch).toHaveBeenCalledWith(
+				'codeBlockPointerDown',
+				expect.objectContaining({ codeBlock: block1 })
+			);
 			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 			expect(block1.x).toBe(50);
 			expect(block1.y).toBe(100);

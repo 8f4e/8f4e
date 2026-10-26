@@ -2,7 +2,7 @@ import type {
 	CodeBlockType,
 	CodeError,
 	GlobalEditorDirectiveContext,
-	GlobalEditorDirectivePlugin,
+	GlobalEditorDirectiveDefinition,
 	GlobalEditorDirectiveResolutionResult,
 	ParsedDirectiveRecord,
 	ParsedGlobalEditorDirective,
@@ -12,7 +12,7 @@ import { createProjectModuleId, type ProjectGroupPath } from '@8f4e/language-spe
 import configDirective from './config/plugin';
 import { parseGlobalEditorDirectives } from './utils';
 
-export const globalEditorDirectivePlugins: GlobalEditorDirectivePlugin[] = [configDirective];
+export const globalEditorDirectiveDefinitions: GlobalEditorDirectiveDefinition[] = [configDirective];
 
 export function resolveGlobalEditorDirectives(
 	codeBlocks: {
@@ -22,9 +22,9 @@ export function resolveGlobalEditorDirectives(
 		name?: string;
 		blockType?: CodeBlockType;
 	}[],
-	plugins: GlobalEditorDirectivePlugin[] = globalEditorDirectivePlugins
+	definitions: GlobalEditorDirectiveDefinition[] = globalEditorDirectiveDefinitions
 ): GlobalEditorDirectiveResolutionResult {
-	const pluginMap = new Map(plugins.map(plugin => [plugin.name, plugin]));
+	const definitionMap = new Map(definitions.map(definition => [definition.name, definition]));
 	const draft: {
 		resolved: ResolvedGlobalEditorDirectives;
 		errors: CodeError[];
@@ -35,7 +35,7 @@ export function resolveGlobalEditorDirectives(
 
 	for (let blockIndex = 0; blockIndex < codeBlocks.length; blockIndex++) {
 		const block = codeBlocks[blockIndex];
-		const directives: ParsedGlobalEditorDirective[] = parseGlobalEditorDirectives(block.parsedDirectives, plugins);
+		const directives: ParsedGlobalEditorDirective[] = parseGlobalEditorDirectives(block.parsedDirectives, definitions);
 		const codeBlockId = block.creationIndex ?? blockIndex;
 		const context: GlobalEditorDirectiveContext = {
 			codeBlockId,
@@ -45,7 +45,7 @@ export function resolveGlobalEditorDirectives(
 		};
 
 		for (const directive of directives) {
-			pluginMap.get(directive.name)?.apply?.(directive, draft, context);
+			definitionMap.get(directive.name)?.apply?.(directive, draft, context);
 		}
 	}
 

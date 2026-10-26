@@ -13,7 +13,7 @@ export function registerButtonInteraction(
 		pressedButton = undefined;
 		state.callbacks.setWordInMemory?.(button.allocationUnitAddress, button.offValue, button.isInteger);
 	};
-	const onClick = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+	const onPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
 		pressedButton = buttonsByBlock
 			.get(codeBlock)
 			?.find(
@@ -30,10 +30,10 @@ export function registerButtonInteraction(
 			pressedButton.isInteger
 		);
 	};
-	events.on('codeBlockClick', onClick);
+	events.on('codeBlockPointerDown', onPointerDown);
 	events.on('mouseup', release);
 	return () => {
-		events.off('codeBlockClick', onClick);
+		events.off('codeBlockPointerDown', onPointerDown);
 		events.off('mouseup', release);
 		release();
 	};

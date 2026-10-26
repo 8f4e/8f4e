@@ -96,8 +96,6 @@ export default function init(
 	const store = createStateManager<State>(baseState);
 	effectCleanups.push(store.dispose);
 
-	const state = store.getState();
-
 	registerEffect(font(store));
 	registerEffect(color(store));
 	registerEffect(registerEditorConfigSchemaContributionsValidator(store));
@@ -134,7 +132,7 @@ export default function init(
 	registerEffect(blockTypeUpdater(store)); // Must run before compiler to classify blocks first
 	registerEffect(globalEditorDirectivesEffect(store));
 	registerEffect(compiler(store));
-	registerEffect(codeBlockRendering(store, events, directives.plugins));
+	registerEffect(codeBlockRendering(store, events, directives.definitions));
 	registerEffect(assertions(store));
 	registerEffect(viewportDirectiveEffect(store, events));
 	registerEffect(entryOutlines(store));

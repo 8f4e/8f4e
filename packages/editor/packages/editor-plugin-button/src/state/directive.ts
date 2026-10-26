@@ -1,15 +1,15 @@
 import { gapCalculator } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorDirectivePlugin } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorDirectiveDefinition } from '@8f4e/editor-state-types';
 import { createButtonDirectiveData } from '../helpers/data';
 import type { ButtonWidget } from '../types';
 
 export function createButtonDirective(
 	buttonsByBlock: WeakMap<CodeBlockGraphicData, ButtonWidget[]>
-): EditorDirectivePlugin {
+): EditorDirectiveDefinition {
 	return {
 		name: 'button',
-		clearGraphicData: codeBlock => {
+		clearDerivedBlockData: codeBlock => {
 			buttonsByBlock.set(codeBlock, []);
 		},
 		apply: (directive, draft) => {

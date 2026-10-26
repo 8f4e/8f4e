@@ -62,10 +62,10 @@ Register menu items with `menus.registerItem('moduleMenu', provider)`. Providers
 can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
 existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
 
-Register widget directives with `directives.register(definition)`, using the existing `EditorDirectivePlugin`
+Register widget directives with `directives.register(definition)`, using the existing `EditorDirectiveDefinition`
 contract from `@8f4e/editor-state-types`. The core owns generic source parsing, directive matching, and the block
 layout pipeline. Each definition handles its own arguments through `apply`, registers `DirectiveLayoutCallbacks`
-in `draft.layoutCallbacks`, and can clear its derived data through `clearGraphicData`. These callbacks use
+in `draft.layoutCallbacks`, and can clear its derived data through `clearDerivedBlockData`. These callbacks use
 `onBlockLayoutReady` to derive geometry after the block's dimensions, display rows, gaps, and cursor coordinates are
 current. Registrations are local to each editor. Install them in setup before the initial project loads; there is
 no runtime plugin installation API.
@@ -78,6 +78,8 @@ built-in block widgets, using the same context and coordinates. Each slot preser
 current state's sprite lookups, which change with the font or color scheme.
 `@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
 disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
+
+Interaction handlers can subscribe to `codeBlockPointerDown` for the start of a block press and `mouseup` for release.
 
 The switch and button plugins own their directives, memory resolution, interaction, and drawing. Each keeps widget
 data in a per-instance WeakMap. Buttons write their on value while pressed and their off value on release.

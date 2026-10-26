@@ -1,8 +1,8 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 import { createPianoDirectiveData } from './data';
 import { createPianoDirectiveLayoutCallbacks } from './resolve';
 
-export default createDirectivePlugin(
+export default createDirectiveDefinition(
 	'piano',
 	(directive, draft) => {
 		const piano = createPianoDirectiveData(directive.args, directive.rawRow);
@@ -14,7 +14,7 @@ export default createDirectivePlugin(
 		draft.layoutCallbacks.push(createPianoDirectiveLayoutCallbacks(piano));
 	},
 	{
-		clearGraphicData: graphicData => {
+		clearDerivedBlockData: graphicData => {
 			graphicData.widgets.pianoKeyboards = [];
 			delete graphicData.minGridWidth;
 		},

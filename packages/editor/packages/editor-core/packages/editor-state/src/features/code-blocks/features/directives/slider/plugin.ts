@@ -1,8 +1,8 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 import { createSliderDirectiveData } from './data';
 import { createSliderDirectiveLayoutCallbacks } from './resolve';
 
-export default createDirectivePlugin(
+export default createDirectiveDefinition(
 	'slider',
 	(directive, draft) => {
 		const slider = createSliderDirectiveData(directive.args, directive.rawRow);
@@ -14,7 +14,7 @@ export default createDirectivePlugin(
 		draft.layoutCallbacks.push(createSliderDirectiveLayoutCallbacks(slider));
 	},
 	{
-		clearGraphicData: graphicData => {
+		clearDerivedBlockData: graphicData => {
 			graphicData.widgets.sliders = [];
 		},
 	}

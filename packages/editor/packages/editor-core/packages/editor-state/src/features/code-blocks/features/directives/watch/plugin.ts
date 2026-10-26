@@ -1,8 +1,8 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 import { createWatchDirectiveData } from './data';
 import { createWatchDirectiveLayoutCallbacks } from './resolve';
 
-export default createDirectivePlugin(
+export default createDirectiveDefinition(
 	'watch',
 	(directive, draft) => {
 		const watch = createWatchDirectiveData(directive.args, directive.rawRow, directive.sourceLine);
@@ -15,7 +15,7 @@ export default createDirectivePlugin(
 	{
 		aliases: ['w'],
 		allowTrailingComment: true,
-		clearGraphicData: graphicData => {
+		clearDerivedBlockData: graphicData => {
 			graphicData.widgets.debuggers = [];
 		},
 	}

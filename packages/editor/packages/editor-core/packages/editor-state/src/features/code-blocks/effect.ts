@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, EditorDirectivePlugin, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorDirectiveDefinition, EventDispatcher, State } from '@8f4e/editor-state-types';
 import {
 	createChildProjectGroupPath,
 	type ProjectBlock,
@@ -17,7 +17,7 @@ import updateViewport from '../viewport/updateViewport';
 import deriveErrorMessages from './deriveErrorMessages';
 import deriveAssertionMarkers from './features/assertions/deriveAssertionMarkers';
 import blockHighlights from './features/blockHighlights/updateGraphicData';
-import type { CodeBlockClickEvent } from './features/codeBlockDragger/effect';
+import type { CodeBlockPointerDownEvent } from './features/codeBlockDragger/effect';
 import parsePos from './features/directives/pos/data';
 import {
 	deriveDirectiveState,
@@ -39,7 +39,7 @@ import { parseBlockDirectives } from './utils/parseBlockDirectives';
 export default function codeBlockRendering(
 	store: StateManager<State>,
 	events: EventDispatcher,
-	directives: EditorDirectivePlugin[]
+	directives: EditorDirectiveDefinition[]
 ) {
 	const state = store.getState();
 	const updateProjectSliceIdentity = (codeBlocks: CodeBlockGraphicData[], projectPath: ProjectGroupPath): void => {
@@ -56,7 +56,7 @@ export default function codeBlockRendering(
 	const shouldExpandCodeBlockForEditing = (codeBlock: CodeBlockGraphicData): boolean =>
 		codeBlock === state.codeBlockRendering.selectedCodeBlock;
 
-	const onCodeBlockClick = ({ relativeX = 0, relativeY = 0, codeBlock }: CodeBlockClickEvent) => {
+	const onCodeBlockPointerDown = ({ relativeX = 0, relativeY = 0, codeBlock }: CodeBlockPointerDownEvent) => {
 		if (!state.featureFlags.codeLineSelection) {
 			return;
 		}
@@ -432,8 +432,8 @@ export default function codeBlockRendering(
 
 	updateAllBlockDerivedState();
 
-	events.on<CodeBlockClickEvent>('codeBlockClick', onCodeBlockClick);
-	events.on<CodeBlockClickEvent>('codeBlockClick', ({ codeBlock }) => updateBlockDerivedState(codeBlock));
+	events.on<CodeBlockPointerDownEvent>('codeBlockPointerDown', onCodeBlockPointerDown);
+	events.on<CodeBlockPointerDownEvent>('codeBlockPointerDown', ({ codeBlock }) => updateBlockDerivedState(codeBlock));
 	events.on('runtimeInitialized', updateAllBlockDerivedState);
 	events.on('spriteSheetRerendered', () => {
 		recomputePixelCoordinatesAndBlockDerivedState();

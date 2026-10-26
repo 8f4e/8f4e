@@ -179,8 +179,8 @@ describe('editor state lifecycle', () => {
 					close: true,
 				},
 			];
-			const onCodeBlockClick = vi.fn();
-			events.on('codeBlockClick', onCodeBlockClick);
+			const onCodeBlockPointerDown = vi.fn();
+			events.on('codeBlockPointerDown', onCodeBlockPointerDown);
 			const click = {
 				x: 17,
 				y: 1,
@@ -197,7 +197,7 @@ describe('editor state lifecycle', () => {
 
 			expect(state.contextMenu.open).toBe(false);
 			expect(click.stopPropagation).toBe(true);
-			expect(onCodeBlockClick).not.toHaveBeenCalled();
+			expect(onCodeBlockPointerDown).not.toHaveBeenCalled();
 			expect(setWordInMemory).not.toHaveBeenCalled();
 			expect(memory.get(4)).toBe(2);
 			expect(memory.get(5)).toBe(3);

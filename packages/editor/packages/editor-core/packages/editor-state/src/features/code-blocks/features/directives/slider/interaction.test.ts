@@ -74,7 +74,7 @@ describe('slider interaction', () => {
 	it('should register event listeners on initialization', () => {
 		const cleanup = slider(mockStore as any, mockEvents);
 
-		expect(mockEvents.on).toHaveBeenCalledWith('codeBlockClick', expect.any(Function));
+		expect(mockEvents.on).toHaveBeenCalledWith('codeBlockPointerDown', expect.any(Function));
 		expect(mockEvents.on).toHaveBeenCalledWith('mousemove', expect.any(Function));
 		expect(mockEvents.on).toHaveBeenCalledWith('mouseup', expect.any(Function));
 
@@ -85,14 +85,14 @@ describe('slider interaction', () => {
 		const cleanup = slider(mockStore as any, mockEvents);
 		cleanup();
 
-		expect(mockEvents.off).toHaveBeenCalledWith('codeBlockClick', expect.any(Function));
+		expect(mockEvents.off).toHaveBeenCalledWith('codeBlockPointerDown', expect.any(Function));
 		expect(mockEvents.off).toHaveBeenCalledWith('mousemove', expect.any(Function));
 		expect(mockEvents.off).toHaveBeenCalledWith('mouseup', expect.any(Function));
 	});
 
 	it('should set value when slider is clicked', () => {
 		const cleanup = slider(mockStore as any, mockEvents);
-		const codeBlockClickCallback = onCallbacks.get('codeBlockClick');
+		const codeBlockPointerDownCallback = onCallbacks.get('codeBlockPointerDown');
 
 		const mockCodeBlock = createMockCodeBlock({
 			name: 'test-block',
@@ -116,7 +116,7 @@ describe('slider interaction', () => {
 		];
 
 		// Click at 75% of slider width (should set value to 75)
-		codeBlockClickCallback?.({ x: 125, y: 60, codeBlock: mockCodeBlock });
+		codeBlockPointerDownCallback?.({ x: 125, y: 60, codeBlock: mockCodeBlock });
 
 		expect(setWordInMemory).toHaveBeenCalled();
 		const setValue = memoryStore.get(5);
@@ -127,7 +127,7 @@ describe('slider interaction', () => {
 
 	it('should clamp value to min when clicked at left edge', () => {
 		const cleanup = slider(mockStore as any, mockEvents);
-		const codeBlockClickCallback = onCallbacks.get('codeBlockClick');
+		const codeBlockPointerDownCallback = onCallbacks.get('codeBlockPointerDown');
 
 		const mockCodeBlock = createMockCodeBlock({
 			name: 'test-block',
@@ -151,7 +151,7 @@ describe('slider interaction', () => {
 		];
 
 		// Click at left edge
-		codeBlockClickCallback?.({ x: 50, y: 60, codeBlock: mockCodeBlock });
+		codeBlockPointerDownCallback?.({ x: 50, y: 60, codeBlock: mockCodeBlock });
 
 		const setValue = memoryStore.get(5);
 		expect(setValue).toBe(10);
@@ -161,7 +161,7 @@ describe('slider interaction', () => {
 
 	it('should clamp value to max when clicked at right edge', () => {
 		const cleanup = slider(mockStore as any, mockEvents);
-		const codeBlockClickCallback = onCallbacks.get('codeBlockClick');
+		const codeBlockPointerDownCallback = onCallbacks.get('codeBlockPointerDown');
 
 		const mockCodeBlock = createMockCodeBlock({
 			name: 'test-block',
@@ -185,7 +185,7 @@ describe('slider interaction', () => {
 		];
 
 		// Click at right edge
-		codeBlockClickCallback?.({ x: 150, y: 60, codeBlock: mockCodeBlock });
+		codeBlockPointerDownCallback?.({ x: 150, y: 60, codeBlock: mockCodeBlock });
 
 		const setValue = memoryStore.get(5);
 		expect(setValue).toBe(100);
@@ -195,7 +195,7 @@ describe('slider interaction', () => {
 
 	it('should snap to step value when step is provided', () => {
 		const cleanup = slider(mockStore as any, mockEvents);
-		const codeBlockClickCallback = onCallbacks.get('codeBlockClick');
+		const codeBlockPointerDownCallback = onCallbacks.get('codeBlockPointerDown');
 
 		const mockCodeBlock = createMockCodeBlock({
 			name: 'test-block',
@@ -220,7 +220,7 @@ describe('slider interaction', () => {
 		];
 
 		// Click at 47% (should snap to 50)
-		codeBlockClickCallback?.({ x: 97, y: 60, codeBlock: mockCodeBlock });
+		codeBlockPointerDownCallback?.({ x: 97, y: 60, codeBlock: mockCodeBlock });
 
 		const setValue = memoryStore.get(5);
 		expect(setValue).toBe(50);
@@ -230,7 +230,7 @@ describe('slider interaction', () => {
 
 	it('should update value during drag', () => {
 		const cleanup = slider(mockStore as any, mockEvents);
-		const codeBlockClickCallback = onCallbacks.get('codeBlockClick');
+		const codeBlockPointerDownCallback = onCallbacks.get('codeBlockPointerDown');
 		const mouseMoveCallback = onCallbacks.get('mousemove');
 
 		const mockCodeBlock = createMockCodeBlock({
@@ -255,7 +255,7 @@ describe('slider interaction', () => {
 		];
 
 		// Click to start drag
-		codeBlockClickCallback?.({ x: 100, y: 60, codeBlock: mockCodeBlock });
+		codeBlockPointerDownCallback?.({ x: 100, y: 60, codeBlock: mockCodeBlock });
 		expect(setWordInMemory).toHaveBeenCalled();
 
 		// Move mouse to drag
@@ -270,7 +270,7 @@ describe('slider interaction', () => {
 
 	it('should stop updating when mouse is released', () => {
 		const cleanup = slider(mockStore as any, mockEvents);
-		const codeBlockClickCallback = onCallbacks.get('codeBlockClick');
+		const codeBlockPointerDownCallback = onCallbacks.get('codeBlockPointerDown');
 		const mouseMoveCallback = onCallbacks.get('mousemove');
 		const mouseUpCallback = onCallbacks.get('mouseup');
 
@@ -296,7 +296,7 @@ describe('slider interaction', () => {
 		];
 
 		// Click to start drag
-		codeBlockClickCallback?.({ x: 100, y: 60, codeBlock: mockCodeBlock });
+		codeBlockPointerDownCallback?.({ x: 100, y: 60, codeBlock: mockCodeBlock });
 
 		// Release mouse
 		mouseUpCallback?.();

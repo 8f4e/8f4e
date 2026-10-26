@@ -63,9 +63,9 @@ async function setup(code = source, installed = true, name = 'controls') {
 		x: codeBlock.x + codeBlock.width - 4 * state.viewport.vGrid - state.viewport.x + 1,
 		y: codeBlock.y + row * state.viewport.hGrid - state.viewport.y + 1,
 	});
-	const click = (row = 2) => events.dispatch('codeBlockClick', { codeBlock, ...point(row) });
+	const press = (row = 2) => events.dispatch('codeBlockPointerDown', { codeBlock, ...point(row) });
 	const release = () => events.dispatch('mouseup');
-	return { store, state, codeBlock, events, memoryViews, draw, write, render, point, click, release, dispose };
+	return { store, state, codeBlock, events, memoryViews, draw, write, render, point, press, release, dispose };
 }
 
 afterEach(() => {
@@ -79,7 +79,7 @@ describe('button plugin', () => {
 		const x = test.codeBlock.width - 32;
 		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, x, 32, 'switchBackground', 32, 16);
 		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', test.state.spriteLookups!.fontControlKnob);
-		test.click();
+		test.press();
 		test.render();
 		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(2, x + 16, 32, 'controlKnob', 8, 16);
 		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', test.state.spriteLookups!.fontControlKnob);
@@ -114,7 +114,7 @@ describe('button plugin', () => {
 			'[| ]',
 			test.state.spriteLookups!.fontControlKnob
 		);
-		test.click();
+		test.press();
 		test.render();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0.9, false);
 		expect(test.draw.drawText).toHaveBeenCalledWith(
@@ -133,9 +133,9 @@ describe('button plugin', () => {
 		test.codeBlock.y = 160;
 		test.state.viewport.x = 150;
 		test.state.viewport.y = 100;
-		test.events.dispatch('codeBlockClick', { codeBlock: test.codeBlock, x: 0, y: 0 });
+		test.events.dispatch('codeBlockPointerDown', { codeBlock: test.codeBlock, x: 0, y: 0 });
 		expect(test.write).not.toHaveBeenCalled();
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenCalledOnce();
 	});
 
@@ -143,14 +143,14 @@ describe('button plugin', () => {
 		const test = await setup();
 		test.codeBlock.code[2] = '; @button &gate -5 100';
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), 100, true);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), -5, true);
 		test.codeBlock.code[2] = '; no widget';
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
 		test.write.mockClear();
-		test.click();
+		test.press();
 		test.render();
 		expect(test.draw.drawSprite).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
@@ -163,7 +163,7 @@ describe('button plugin', () => {
 		test.events.dispatch('spriteSheetRerendered');
 		test.render();
 		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, test.codeBlock.width - 40, 40, 'switchBackground', 40, 20);
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenCalledOnce();
 	});
 
@@ -178,10 +178,10 @@ describe('button plugin', () => {
 		]);
 		const first = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		const second = test.state.compiler.memoryPlan.modules.controls.memory.second.allocationUnitAddress;
-		test.click(3);
+		test.press(3);
 		expect(test.write).toHaveBeenLastCalledWith(first, 1, true);
 		test.release();
-		test.click(4);
+		test.press(4);
 		expect(test.write).toHaveBeenLastCalledWith(second, 20, true);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(second, 10, true);
@@ -198,7 +198,7 @@ describe('button plugin', () => {
 			'moduleEnd',
 		]);
 		const address = test.state.compiler.memoryPlan.modules.other.memory.gate.allocationUnitAddress;
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0, true);
@@ -215,7 +215,7 @@ describe('button plugin', () => {
 			'groupEnd',
 		]);
 		const address = test.state.compiler.memoryPlan.modules['controls/voice'].memory.gate.allocationUnitAddress;
-		test.click();
+		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0, true);
@@ -227,13 +227,13 @@ describe('button plugin', () => {
 		const address = memory.gate.allocationUnitAddress + 4;
 		memory.gate = { ...memory.gate, allocationUnitAddress: address };
 		test.events.dispatch('runtimeInitialized');
-		test.click();
+		test.press();
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0, true);
 		delete memory.gate;
 		test.events.dispatch('runtimeInitialized');
 		test.write.mockClear();
-		test.click();
+		test.press();
 		test.render();
 		expect(test.draw.drawSprite).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
@@ -244,7 +244,7 @@ describe('button plugin', () => {
 		async line => {
 			const test = await setup(['module controls', 'int gate 0', line, 'moduleEnd']);
 			test.render();
-			test.click();
+			test.press();
 			expect(test.draw.drawSprite).not.toHaveBeenCalled();
 			expect(test.write).not.toHaveBeenCalled();
 		}
@@ -256,7 +256,7 @@ describe('button plugin', () => {
 			expect.objectContaining({ name: 'button', args: ['&gate'] })
 		);
 		expect(test.codeBlock.widgets).not.toHaveProperty('buttons');
-		test.click();
+		test.press();
 		test.release();
 		test.render();
 		expect(test.write).not.toHaveBeenCalled();
@@ -265,11 +265,11 @@ describe('button plugin', () => {
 
 	it('releases a held button and unregisters its listeners, directive, and drawer on disposal', async () => {
 		const test = await setup();
-		test.click();
+		test.press();
 		test.dispose();
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), 0, true);
 		test.write.mockClear();
-		test.click();
+		test.press();
 		test.release();
 		test.render();
 		expect(test.write).not.toHaveBeenCalled();
@@ -279,11 +279,11 @@ describe('button plugin', () => {
 	it('keeps button data and held state independent across editors', async () => {
 		const first = await setup();
 		const second = await setup();
-		first.click();
+		first.press();
 		second.release();
 		expect(second.write).not.toHaveBeenCalled();
 		first.dispose();
-		second.click();
+		second.press();
 		second.render();
 		expect(second.draw.drawText).toHaveBeenCalledWith(
 			expect.any(Number),

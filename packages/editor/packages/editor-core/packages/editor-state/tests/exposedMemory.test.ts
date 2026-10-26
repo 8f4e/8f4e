@@ -153,7 +153,7 @@ describe('shared exposed memory resolution', () => {
 		const { audio, store, events, float32 } = test;
 		const cleanupSlider = slider(store, events);
 		const sliderWidget = audio.widgets.sliders[0];
-		events.dispatch('codeBlockClick', {
+		events.dispatch('codeBlockPointerDown', {
 			codeBlock: audio,
 			x: audio.x + sliderWidget.x + sliderWidget.width / 2,
 			y: audio.y + sliderWidget.y + 1,
@@ -162,7 +162,7 @@ describe('shared exposed memory resolution', () => {
 		cleanupSlider();
 		const cleanupCrossfade = crossfade(store, events);
 		const widget = audio.widgets.crossfades[0];
-		events.dispatch('codeBlockClick', {
+		events.dispatch('codeBlockPointerDown', {
 			codeBlock: audio,
 			x: audio.x + widget.x + widget.handleWidth / 2,
 			y: audio.y + widget.y + 1,

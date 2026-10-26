@@ -1,7 +1,7 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 import { createStackDirectiveLayoutCallbacks } from './resolve';
 
-export default createDirectivePlugin(
+export default createDirectiveDefinition(
 	'stack',
 	(directive, draft) => {
 		if (directive.args.length > 0) {

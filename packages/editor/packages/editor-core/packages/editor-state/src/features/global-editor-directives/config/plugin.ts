@@ -1,6 +1,6 @@
-import { createGlobalEditorDirectivePlugin } from '../utils';
+import { createGlobalEditorDirectiveDefinition } from '../utils';
 
-export default createGlobalEditorDirectivePlugin('config', (directive, draft, context) => {
+export default createGlobalEditorDirectiveDefinition('config', (directive, draft, context) => {
 	if (directive.args.length !== 2) {
 		draft.errors.push({
 			lineNumber: directive.rawRow,

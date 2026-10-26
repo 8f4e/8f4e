@@ -1,9 +1,9 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 import { createWaveDirectiveData } from './data';
 import { createWaveDirectiveLayoutCallbacks } from './resolve';
 
 function createWaveDirectivePlugin(name: string, heightRows: number) {
-	return createDirectivePlugin(
+	return createDirectiveDefinition(
 		name,
 		(directive, draft) => {
 			const wave = createWaveDirectiveData(directive.args, directive.rawRow, heightRows);
@@ -15,7 +15,7 @@ function createWaveDirectivePlugin(name: string, heightRows: number) {
 			draft.layoutCallbacks.push(createWaveDirectiveLayoutCallbacks(wave));
 		},
 		{
-			clearGraphicData: graphicData => {
+			clearDerivedBlockData: graphicData => {
 				graphicData.widgets.arrayWaves = [];
 			},
 		}

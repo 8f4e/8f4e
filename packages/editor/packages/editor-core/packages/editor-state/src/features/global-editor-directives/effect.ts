@@ -2,7 +2,7 @@ import type { CodeBlockGraphicData, CodeError, State } from '@8f4e/editor-state-
 import type { StateManager } from '@8f4e/state-manager';
 import deepEqual from '../../shared/utils/deepEqual';
 import { resolveEditorConfigEntries, validateEditorConfigEntries } from '../editor-config/validators';
-import { globalEditorDirectivePlugins, resolveGlobalEditorDirectives } from './registry';
+import { globalEditorDirectiveDefinitions, resolveGlobalEditorDirectives } from './registry';
 import { parseGlobalEditorDirectives } from './utils';
 
 const GLOBAL_EDITOR_DIRECTIVES_ERROR_OWNER_ID = 'global-editor-directives';
@@ -23,7 +23,7 @@ function collectProjectCodeBlocks(codeBlocks: CodeBlockGraphicData[]): CodeBlock
 
 function getGlobalDirectiveInputs(block: CodeBlockGraphicData) {
 	return {
-		directives: parseGlobalEditorDirectives(block.parsedDirectives, globalEditorDirectivePlugins),
+		directives: parseGlobalEditorDirectives(block.parsedDirectives, globalEditorDirectiveDefinitions),
 		creationIndex: block.creationIndex,
 		name: block.name,
 		blockType: block.blockType,
