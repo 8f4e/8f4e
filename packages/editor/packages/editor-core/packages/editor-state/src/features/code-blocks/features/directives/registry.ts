@@ -19,7 +19,6 @@ import hideDirective from './hide/plugin';
 import homeDirective from './home/plugin';
 import infoDirective from './info/plugin';
 import meterDirective from './meter/plugin';
-import pianoDirective from './piano/plugin';
 import plotDirective from './plot/plugin';
 import sliderDirective from './slider/plugin';
 import stackDirective from './stack/plugin';
@@ -41,7 +40,6 @@ export const directiveDefinitions: EditorDirectiveDefinition[] = [
 	plotDirective,
 	sliderDirective,
 	crossfadeDirective,
-	pianoDirective,
 	watchDirective,
 	stackDirective,
 	infoDirective,
@@ -122,6 +120,7 @@ export function runBeforeGraphicDataWidthCalculation(
 	directiveState: DirectiveDerivedState,
 	definitions: EditorDirectiveDefinition[] = directiveDefinitions
 ): void {
+	delete graphicData.minGridWidth;
 	definitions.forEach(definition => {
 		definition.clearDerivedBlockData?.(graphicData);
 	});

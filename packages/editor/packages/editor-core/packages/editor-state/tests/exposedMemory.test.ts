@@ -14,7 +14,7 @@ import slider from '~/features/code-blocks/features/directives/slider/interactio
 import updateInputs from '~/features/code-blocks/features/inputs/updateGraphicData';
 import updateOutputs from '~/features/code-blocks/features/outputs/updateGraphicData';
 import saveDefaults from '~/features/code-blocks/features/sliderDefaultSaver/effect';
-import { getControlDefaultEdits } from '~/features/code-blocks/features/sliderDefaultSaver/saveDefaults';
+import { getSliderDefaultEdits } from '~/features/code-blocks/features/sliderDefaultSaver/saveDefaults';
 import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import resolveMemoryTarget from '~/pureHelpers/resolveMemoryTarget';
@@ -142,10 +142,6 @@ describe('shared exposed memory resolution', () => {
 		expect(audio.widgets.arrayPlotters[0].length).toBe(4);
 		expect(audio.widgets.arrayBars[0].length).toBe(4);
 		expect(audio.widgets.arrayMeters[0].memory.memory.allocationUnitAddress).toBe(gain.allocationUnitAddress);
-		expect(audio.widgets.pianoKeyboards[0]).toMatchObject({
-			pressedKeysListModuleId: 'audio/notesData',
-			pressedNumberOfKeysModuleId: 'audio/countData',
-		});
 	});
 
 	it('writes slider and crossfade values to the resolved backing memory', () => {
@@ -171,8 +167,8 @@ describe('shared exposed memory resolution', () => {
 		cleanupCrossfade();
 	});
 
-	it('saves group controls into their distinct backing modules and preserves interface and unrelated declarations', () => {
-		const { state, audio, voice, controls, store, events, float32, int32 } = test;
+	it('saves group sliders into their backing module and preserves interface and unrelated declarations', () => {
+		const { state, audio, voice, controls, store, events, float32 } = test;
 		audio.nestedProjectCodeBlocks!.push(
 			createMockCodeBlock({
 				name: 'voice',
@@ -184,17 +180,9 @@ describe('shared exposed memory resolution', () => {
 		const originalGroup = [...audio.code];
 		const originalControls = [...controls.code];
 		float32[audio.widgets.sliders[0].allocationUnitAddress] = 0.8;
-		const piano = audio.widgets.pianoKeyboards[0];
-		int32[piano.pressedKeysListMemory.allocationUnitAddress] = 50;
-		int32[piano.pressedKeysListMemory.allocationUnitAddress + 1] = 52;
-		int32[piano.pressedNumberOfKeysMemory.allocationUnitAddress] = 2;
 		saveDefaults(store, events);
 		events.dispatch('saveSliderValuesToCode', { codeBlock: audio });
 		expect(voice.code).toContain('float level 0.8');
-		expect(audio.nestedProjectCodeBlocks!.find(block => block.name === 'notesData')!.code).toContain(
-			'int[] notes 4 50 52'
-		);
-		expect(audio.nestedProjectCodeBlocks!.find(block => block.name === 'countData')!.code).toContain('int count 2');
 		expect(audio.code).toEqual(originalGroup);
 		expect(controls.code).toEqual(originalControls);
 		expect(state.compilerInputRevision).toBe(1);
@@ -205,7 +193,7 @@ describe('shared exposed memory resolution', () => {
 		expect(voice.code).toContain('float level 0.6');
 		expect(controls.code).toEqual(originalControls);
 		expect(state.compilerInputRevision).toBe(2);
-		expect(getControlDefaultEdits(state, audio)).toEqual([]);
+		expect(getSliderDefaultEdits(state, audio)).toEqual([]);
 		store.dispose();
 	});
 

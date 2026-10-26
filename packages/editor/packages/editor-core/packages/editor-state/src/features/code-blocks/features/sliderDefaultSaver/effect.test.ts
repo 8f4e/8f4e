@@ -1,4 +1,4 @@
-import type { EventDispatcher, PianoKeyboard, State } from '@8f4e/editor-state-types';
+import type { EventDispatcher, State } from '@8f4e/editor-state-types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import sliderDefaultSaver from './effect';
@@ -83,48 +83,5 @@ describe('slider default saver', () => {
 			'moduleEnd',
 		]);
 		expect(mockStore.set).toHaveBeenCalledWith('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', codeBlock);
-	});
-	it('uses the existing action and programmatic edit path to save piano defaults', () => {
-		const codeBlock = createMockCodeBlock({
-			name: 'synth',
-			blockType: 'module',
-			code: ['module synth', 'int[] notes 4', 'int count 0', '; @piano &notes &count 48', 'moduleEnd'],
-		});
-		codeBlock.widgets.pianoKeyboards = [
-			{
-				pressedKeysListModuleId: 'synth',
-				pressedNumberOfKeysModuleId: 'synth',
-				lineNumber: 3,
-				pressedKeysListMemory: {
-					id: 'notes',
-					allocationUnitAddress: 4,
-					numberOfElements: 4,
-					elementWordSize: 4,
-					isInteger: true,
-				},
-				pressedNumberOfKeysMemory: { id: 'count', allocationUnitAddress: 8, isInteger: true },
-			} as PianoKeyboard,
-		];
-		const memory = new Map([
-			[4, 50],
-			[5, 52],
-			[8, 2],
-		]);
-		mockState.callbacks.getWordFromMemory = address => memory.get(address) ?? 0;
-		mockState.codeBlockRendering.rootCodeBlocks.push(codeBlock);
-		mockState.codeBlockRendering.selectedCodeBlock = codeBlock;
-		sliderDefaultSaver(mockStore as any, mockEvents);
-
-		onCallbacks.get('saveSliderValuesToCode')?.();
-
-		expect(codeBlock.code).toEqual([
-			'module synth',
-			'int[] notes 4 50 52',
-			'int count 2',
-			'; @piano &notes &count 48',
-			'moduleEnd',
-		]);
-		expect(mockStore.set).toHaveBeenCalledWith('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', codeBlock);
-		expect(mockStore.set).toHaveBeenCalledWith('compilerInputRevision', 1);
 	});
 });

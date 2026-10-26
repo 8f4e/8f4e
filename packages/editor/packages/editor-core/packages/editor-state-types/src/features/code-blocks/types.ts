@@ -130,57 +130,6 @@ export interface ArrayMeter {
 	valueType: TypedValueKind;
 }
 
-export interface PianoKeyboard {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	keyWidth: number;
-	keyY: number;
-	keyHeight: number;
-	blackKeyHeight: number;
-	blackKeySideY: number;
-	blackKeySideHeight: number;
-	blackKeyGapXOffset: number;
-	blackKeyGapY: number;
-	blackKeyGapWidth: number;
-	blackKeyGapHeight: number;
-	lineNumber: number;
-	keys: PianoKeyboardKey[];
-	pressedKeysListMemory: PlannedMemoryDeclaration;
-	pressedNumberOfKeysMemory: PlannedMemoryDeclaration;
-	pressedKeysListModuleId: string;
-	pressedNumberOfKeysModuleId: string;
-	startingNumber: number;
-}
-
-export type PianoKeySprite = 'pianoKeyWhite' | 'pianoKeyBlack';
-export type PianoPressedOverlayFont = 'fontPianoKeyWhitePressedOverlay' | 'fontPianoKeyBlackPressedOverlay';
-
-interface PianoKeyboardKeyBase {
-	offset: number;
-	x: number;
-	label: string;
-	labelX: number;
-	labelY: number;
-	pressedOverlayX: number;
-	pressedOverlayRows: number[];
-}
-
-export interface PianoKeyboardWhiteKey extends PianoKeyboardKeyBase {
-	kind: 'white';
-	sprite: 'pianoKeyWhite';
-	pressedOverlayFont: 'fontPianoKeyWhitePressedOverlay';
-}
-
-export interface PianoKeyboardBlackKey extends PianoKeyboardKeyBase {
-	kind: 'black';
-	sprite: 'pianoKeyBlack';
-	pressedOverlayFont: 'fontPianoKeyBlackPressedOverlay';
-}
-
-export type PianoKeyboardKey = PianoKeyboardWhiteKey | PianoKeyboardBlackKey;
-
 export type TypedValueKind = 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'float32' | 'float64';
 
 export interface Slider {
@@ -256,7 +205,7 @@ export interface CodeBlockGraphicData {
 	displayModel: CodeBlockDisplayModel;
 	/** The gaps between lines */
 	gaps: Map<number, { size: number }>;
-	/** Optional minimum grid width override (e.g., for piano keyboards) */
+	/** Optional minimum grid width contributed before block layout. */
 	minGridWidth?: number;
 	cursor: {
 		/** The column of the cursor */
@@ -297,7 +246,6 @@ export interface CodeBlockGraphicData {
 		infoPanels: InfoPanel[];
 		sliders: Slider[];
 		crossfades: Crossfade[];
-		pianoKeyboards: PianoKeyboard[];
 		shapeDeclarations: ShapeDeclaration[];
 		errorMessages: Array<{
 			message: string[];

@@ -38,7 +38,8 @@
     "@8f4e/editor-plugin-switch": "*",
     "@8f4e/editor-plugin-tooltips": "*",
     "@8f4e/editor-plugin-button": "*",
-    "@8f4e/editor-plugin-wave": "*"
+    "@8f4e/editor-plugin-wave": "*",
+    "@8f4e/editor-plugin-piano": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

@@ -34,7 +34,6 @@ function mockCodeBlock(
 			arrayBars: [],
 			arrayMeters: [],
 			sliders: [],
-			pianoKeyboards: [],
 			errorMessages: [],
 		},
 	} as CodeBlockGraphicData;

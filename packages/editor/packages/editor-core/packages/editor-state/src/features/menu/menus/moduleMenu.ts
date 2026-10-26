@@ -30,7 +30,6 @@ export const moduleMenu = (
 	// Check if code block has ; @favorite directive
 	const hasFavoriteDirective = codeBlock.isFavorite;
 	const hasSliders = codeBlock.widgets.sliders.length > 0;
-	const hasPianos = codeBlock.widgets.pianoKeyboards.length > 0;
 	const hasMemoryConnections = hasIntermodularMemoryConnections(codeBlock.code);
 
 	// Check if code block has a group name and compute group skip/nonstick status
@@ -142,11 +141,11 @@ export const moduleMenu = (
 						close: true,
 					},
 					{
-						title: 'Save slider and piano values to code',
+						title: 'Save slider values to code',
 						action: 'saveSliderValuesToCode',
 						payload: { codeBlock },
 						close: true,
-						disabled: !(hasSliders || hasPianos) || !state.callbacks.getWordFromMemory,
+						disabled: !hasSliders || !state.callbacks.getWordFromMemory,
 					},
 					{
 						title: 'Remove connections',

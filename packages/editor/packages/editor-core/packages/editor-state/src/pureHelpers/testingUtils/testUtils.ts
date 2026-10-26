@@ -112,7 +112,6 @@ export function createMockCodeBlock(
 			debuggers: [],
 			sliders: [],
 			crossfades: [],
-			pianoKeyboards: [],
 			arrayPlotters: [],
 			arrayBars: [],
 			arrayMeters: [],
