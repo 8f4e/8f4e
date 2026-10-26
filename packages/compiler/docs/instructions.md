@@ -59,6 +59,7 @@
 
 - [Stack instructions](instructions/stack.md)
   - [push](instructions/stack.md#push)
+  - [pushShape](instructions/stack.md#pushshape)
   - [drop](instructions/stack.md#drop)
   - [clearStack](instructions/stack.md#clearstack)
 
@@ -98,6 +99,7 @@
   - [shape](instructions/blocks/prototype.md#shape)
   - [function](instructions/program-structure-and-functions.md#function)
   - [param](instructions/program-structure-and-functions.md#param)
+  - [paramShape](instructions/blocks/function.md#paramshape)
   - [functionEnd](instructions/program-structure-and-functions.md#functionend)
   - [call](instructions/program-structure-and-functions.md#call)
   - [Imported functions](instructions/program-structure-and-functions.md#imported-functions)

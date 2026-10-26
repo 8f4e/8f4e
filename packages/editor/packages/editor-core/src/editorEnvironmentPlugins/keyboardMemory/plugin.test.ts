@@ -1,3 +1,4 @@
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -50,7 +51,7 @@ function createMemoryPlan(
 				id: memoryId,
 				numberOfElements: 1,
 				elementWordSize: 4,
-				type: 'int',
+				type: 'int' as const,
 				byteAddress: memoryData.allocationUnitAddress * 4,
 				elementByteLength: 4,
 				allocationUnitCount: 1,
@@ -93,7 +94,7 @@ describe('keyboardMemoryPlugin', () => {
 
 	it.each([false, true])('writes key values and tracks pressed keys through aliases=%s', exposed => {
 		const setWordInMemory = vi.fn();
-		const state = {
+		const state = createMockState({
 			editorConfig: {
 				keyboard: {
 					keyCodeMemory: 'keys:code',
@@ -110,7 +111,7 @@ describe('keyboardMemoryPlugin', () => {
 			callbacks: {
 				setWordInMemory,
 			},
-		} as unknown as State;
+		});
 
 		if (exposed) {
 			state.editorConfig.keyboard = { keyCodeMemory: 'keyboard:code', keyPressedMemory: 'keyboard:pressed' };
@@ -155,7 +156,7 @@ describe('keyboardMemoryPlugin', () => {
 
 	it('clears pressed flag on blur and skips unresolved memory ids silently', () => {
 		const setWordInMemory = vi.fn();
-		const state = {
+		const state = createMockState({
 			editorConfig: {
 				keyboard: {
 					keyCodeMemory: 'missing:code',
@@ -171,7 +172,7 @@ describe('keyboardMemoryPlugin', () => {
 			callbacks: {
 				setWordInMemory,
 			},
-		} as unknown as State;
+		});
 
 		const store = {
 			getState: () => state,

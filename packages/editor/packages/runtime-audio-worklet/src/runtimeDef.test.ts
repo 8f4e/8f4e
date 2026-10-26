@@ -1,4 +1,5 @@
 import type { EventDispatcher, State } from '@8f4e/editor-core';
+import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -11,11 +12,11 @@ import { storeAudioWorkletRuntimeValues } from './runtimeValues';
 
 describe('storeAudioWorkletRuntimeValues', () => {
 	it('merges AudioWorklet runtime values into editor state', () => {
-		const state = {
+		const state = createMockState({
 			runtime: {
 				values: {},
 			},
-		} as State;
+		});
 		const store = createStateManager(state);
 
 		storeAudioWorkletRuntimeValues(store, state, { audioBufferSize: 128 });
@@ -98,12 +99,12 @@ describe('AudioWorklet context lifetime', () => {
 	});
 
 	function mount(sharedAudioContext?: MockContext, sampleRate = 48000, input = false, entry?: string) {
-		const state = {
+		const state = createMockState({
 			editorConfig: {
 				audioRuntime: { sampleRate, ...(input ? { audioInBufferLAddress: 0 } : {}), ...(entry ? { entry } : {}) },
 			},
 			compiler: { isCompiling: false },
-		} as unknown as State;
+		});
 		const store = createStateManager(state);
 		const handlers = new Map<string, () => Promise<void>>();
 		const events = {
@@ -347,7 +348,7 @@ describe('AudioWorklet runtime config', () => {
 	}
 
 	function createState(): State {
-		return {
+		return createMockState({
 			editorConfig: {
 				audioRuntime: {
 					audioOutBufferLAddress: 'audiooutL:buffer',
@@ -362,7 +363,7 @@ describe('AudioWorklet runtime config', () => {
 					audiooutR: { buffer: { allocationUnitAddress: 24 } },
 				}),
 			},
-		} as State;
+		});
 	}
 
 	it('contributes the default entry and audio buffer address config fields', () => {

@@ -4594,5 +4594,117 @@
 				}
 			}
 		}
+	},
+	{
+		"commit": "744f601976f3ac6be9c4aa0c0defb6512e835957",
+		"recordedAt": "2026-10-22T08:33:13.658Z",
+		"coverage": {
+			"documented": 19,
+			"total": 207,
+			"percentage": 9.2,
+			"byKind": {
+				"function": {
+					"documented": 7,
+					"total": 86,
+					"percentage": 8.1
+				},
+				"variable": {
+					"documented": 0,
+					"total": 28,
+					"percentage": 0
+				},
+				"class": {
+					"documented": 1,
+					"total": 1,
+					"percentage": 100
+				},
+				"class-property": {
+					"documented": 0,
+					"total": 1,
+					"percentage": 0
+				},
+				"constructor": {
+					"documented": 1,
+					"total": 1,
+					"percentage": 100
+				},
+				"class-method": {
+					"documented": 6,
+					"total": 6,
+					"percentage": 100
+				},
+				"interface": {
+					"documented": 2,
+					"total": 9,
+					"percentage": 22.2
+				},
+				"property-signature": {
+					"documented": 1,
+					"total": 70,
+					"percentage": 1.4
+				},
+				"type": {
+					"documented": 1,
+					"total": 5,
+					"percentage": 20
+				}
+			}
+		}
+	},
+	{
+		"commit": "c8db839f8d5c3ee23431afbb0e140be4d133e2cb",
+		"recordedAt": "2026-10-22T11:45:03.017Z",
+		"coverage": {
+			"documented": 19,
+			"total": 207,
+			"percentage": 9.2,
+			"byKind": {
+				"function": {
+					"documented": 7,
+					"total": 86,
+					"percentage": 8.1
+				},
+				"variable": {
+					"documented": 0,
+					"total": 28,
+					"percentage": 0
+				},
+				"class": {
+					"documented": 1,
+					"total": 1,
+					"percentage": 100
+				},
+				"class-property": {
+					"documented": 0,
+					"total": 1,
+					"percentage": 0
+				},
+				"constructor": {
+					"documented": 1,
+					"total": 1,
+					"percentage": 100
+				},
+				"class-method": {
+					"documented": 6,
+					"total": 6,
+					"percentage": 100
+				},
+				"interface": {
+					"documented": 2,
+					"total": 9,
+					"percentage": 22.2
+				},
+				"property-signature": {
+					"documented": 1,
+					"total": 70,
+					"percentage": 1.4
+				},
+				"type": {
+					"documented": 1,
+					"total": 5,
+					"percentage": 20
+				}
+			}
+		}
 	}
 ]

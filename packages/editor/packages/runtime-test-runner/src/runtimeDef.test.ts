@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import type { EventDispatcher, State } from '@8f4e/editor-core';
+import type { EventDispatcher } from '@8f4e/editor-core';
+import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { executeTests } from './executeTests';
@@ -32,11 +33,11 @@ function createProgram(): TestRuntimeProgram {
 function setup(initialProgram?: TestRuntimeProgram, isCompiling = false) {
 	FakeWorker.instances = [];
 	let program = initialProgram;
-	const state = {
+	const state = createMockState({
 		compiler: { isCompiling },
 		assertionResults: [],
 		runtime: { values: { other: { retained: true } } },
-	} as unknown as State;
+	});
 	const store = createStateManager(state);
 	const events = { dispatch: vi.fn() } as unknown as EventDispatcher;
 	const definition = createTestRuntimeDef(

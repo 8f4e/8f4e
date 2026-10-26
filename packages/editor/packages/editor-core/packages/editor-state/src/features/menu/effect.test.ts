@@ -1,4 +1,3 @@
-import type { State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type MockInstance } from 'vitest';
 import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
@@ -18,7 +17,7 @@ describe('contextMenu effect', () => {
 				hGrid: 16,
 			},
 		});
-		const store = createStateManager(state as State);
+		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
 		contextMenu(store, events);
@@ -42,7 +41,7 @@ describe('contextMenu effect', () => {
 				hGrid: 16,
 			},
 		});
-		const store = createStateManager(state as State);
+		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
 		contextMenu(store, events);
@@ -68,7 +67,7 @@ describe('contextMenu effect', () => {
 		const state = createMockState({
 			callbacks: { exportCanvasScreenshot: async () => {} },
 		});
-		const store = createStateManager(state as State);
+		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 		let menuWasOpenWhenScreenshotDispatched: boolean | undefined;
 

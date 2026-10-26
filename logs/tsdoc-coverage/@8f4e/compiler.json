@@ -3354,5 +3354,57 @@
 				}
 			}
 		}
+	},
+	{
+		"commit": "744f601976f3ac6be9c4aa0c0defb6512e835957",
+		"recordedAt": "2026-10-22T08:33:13.658Z",
+		"coverage": {
+			"documented": 5,
+			"total": 11,
+			"percentage": 45.5,
+			"byKind": {
+				"function": {
+					"documented": 5,
+					"total": 7,
+					"percentage": 71.4
+				},
+				"variable": {
+					"documented": 0,
+					"total": 2,
+					"percentage": 0
+				},
+				"property-signature": {
+					"documented": 0,
+					"total": 2,
+					"percentage": 0
+				}
+			}
+		}
+	},
+	{
+		"commit": "c8db839f8d5c3ee23431afbb0e140be4d133e2cb",
+		"recordedAt": "2026-10-22T11:45:03.017Z",
+		"coverage": {
+			"documented": 5,
+			"total": 11,
+			"percentage": 45.5,
+			"byKind": {
+				"function": {
+					"documented": 5,
+					"total": 7,
+					"percentage": 71.4
+				},
+				"variable": {
+					"documented": 0,
+					"total": 2,
+					"percentage": 0
+				},
+				"property-signature": {
+					"documented": 0,
+					"total": 2,
+					"percentage": 0
+				}
+			}
+		}
 	}
 ]

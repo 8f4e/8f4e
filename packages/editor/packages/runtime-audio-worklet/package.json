@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/runtime-audio-worklet",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "private": true,
   "description": "8f4e audio worklet runtime package",
   "type": "module",
@@ -33,7 +33,9 @@
   "dependencies": {
     "@8f4e/test-runner": "*"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@8f4e/editor-state-testing": "*"
+  },
   "peerDependencies": {
     "@8f4e/editor-core": "*",
     "@8f4e/state-manager": "*"

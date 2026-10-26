@@ -197,7 +197,7 @@ function updatePointerMemoryMetadata(line: CompilerASTLine, context: MemoryRefer
 		return;
 	}
 
-	if (pointeeElementCount !== undefined && pointeeElementCount !== 1) {
+	if (pointeeElementCount !== undefined) {
 		context.pointerMetadata[moduleId]![idArgument.value] = { pointeeElementCount };
 	} else {
 		delete context.pointerMetadata[moduleId]![idArgument.value];

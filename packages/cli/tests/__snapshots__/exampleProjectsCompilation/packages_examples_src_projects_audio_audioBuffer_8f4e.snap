@@ -443,7 +443,7 @@
             }
           ]
         },
-        "projectBlockId": 202,
+        "projectBlockId": 203,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "phaseAccumulator"
@@ -834,7 +834,7 @@
             }
           ]
         },
-        "projectBlockId": 245,
+        "projectBlockId": 246,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "audioout"
@@ -1716,8 +1716,16 @@
     }
   },
   "pointerMetadataByModuleId": {
-    "audioout": {},
-    "phaseAccumulator": {}
+    "audioout": {
+      "in": {
+        "pointeeElementCount": 1
+      }
+    },
+    "phaseAccumulator": {
+      "frequency": {
+        "pointeeElementCount": 1
+      }
+    }
   },
   "compiledWasm": "AGFzbQEAAAABFwVgAABgAX8Bf2ACf38Bf2AAAGABfQF9AhEBBGhvc3QGbWVtb3J5AgMBAQMHBgAAAwQAAAcgAwxpbml0RGVmYXVsdHMAAARtYWluAAEGYnVmZmVyAAIMAQIK9wIGIQBBAEEAQZgE/AsAQQBBAEEE/AgAAEGEBEEAQQz8CAEACwYAEAQQBQskAQF/QQAhAAJAA0AgAEGAAU4EQAwCCyAAQQFqIQAQAQwACwsLZAEBfSAAQ9sPyT9eBEBD2w9JQCAAkyEACyAAQ9sPyT9DAACAv5RdBEBD2w9JQEMAAIC/lCAAkyEACyAAIACUIQEgAUPRDFC5lEOIiAg8kiABlEOrqiq+kiABlEMAAIA/kiAAlAtkAQF9QZAEQZAEKgIAQ9sPyUBBjAQoAgAqAgCUQYD3ArIhACAAQwAAAABbBEBDAACAPyEACyAAlZI4AgBBkAQqAgBD2w9JQF4EQEGQBEPbD0nAOAIAC0GUBEGQBCoCABADOAIAC10CAX8BfUGEBCgCAEEAKAIAKgIAQwAAAD+UIQEhACAAPwBBAWtBEHRB/P8Dak0EQCAAIAE4AgAFC0GEBEGEBCgCAEEEajYCAEGEBCgCAEGABEoEQEGEBEEENgIACwsLFQIBBBQCAAABDAQAAAAAANxDCAIAAA==",
   "requiredMemoryBytes": 536

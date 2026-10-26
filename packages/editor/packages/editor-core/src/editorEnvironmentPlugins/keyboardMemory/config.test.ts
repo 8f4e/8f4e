@@ -1,4 +1,4 @@
-import type { State } from '@8f4e/editor-state-types';
+import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
 import { getKeyboardMemoryConfig, keyboardEditorConfigSchemaContribution } from './config';
 
@@ -21,14 +21,14 @@ describe('keyboard memory editor config', () => {
 	});
 
 	it('reads keyboard memory targets from editor config', () => {
-		const state = {
+		const state = createMockState({
 			editorConfig: {
 				keyboard: {
 					keyCodeMemory: 'keys:code',
 					keyPressedMemory: 'keys:pressed',
 				},
 			},
-		} as unknown as State;
+		});
 
 		expect(getKeyboardMemoryConfig(state)).toEqual({
 			keyCodeMemory: 'keys:code',

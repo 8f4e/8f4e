@@ -1,3 +1,4 @@
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
@@ -6,13 +7,13 @@ import editorMode from './effect';
 describe('editorMode', () => {
 	function setup(editorModeValue: State['editorMode'] = 'view', editing = false) {
 		const handlers = new Map<string, (() => void)[]>();
-		const state = {
+		const state = createMockState({
 			featureFlags: {
 				editing,
 				codeLineSelection: false,
 			},
 			editorMode: editorModeValue,
-		} as State;
+		});
 		const store = {
 			getState: () => state,
 			set: vi.fn((path: string, value: unknown) => {

@@ -5274,15 +5274,55 @@
     }
   },
   "pointerMetadataByModuleId": {
-    "andGate": {},
+    "andGate": {
+      "in1": {
+        "pointeeElementCount": 1
+      },
+      "in2": {
+        "pointeeElementCount": 1
+      }
+    },
     "buttons": {},
-    "negate": {},
-    "norGate": {},
-    "norGate2": {},
-    "orGate": {},
+    "negate": {
+      "in": {
+        "pointeeElementCount": 1
+      }
+    },
+    "norGate": {
+      "in1": {
+        "pointeeElementCount": 1
+      },
+      "in2": {
+        "pointeeElementCount": 1
+      }
+    },
+    "norGate2": {
+      "in1": {
+        "pointeeElementCount": 1
+      },
+      "in2": {
+        "pointeeElementCount": 1
+      }
+    },
+    "orGate": {
+      "in1": {
+        "pointeeElementCount": 1
+      },
+      "in2": {
+        "pointeeElementCount": 1
+      }
+    },
     "resetButton": {},
-    "scope": {},
-    "scope2": {},
+    "scope": {
+      "in": {
+        "pointeeElementCount": 1
+      }
+    },
+    "scope2": {
+      "in": {
+        "pointeeElementCount": 1
+      }
+    },
     "setButton": {}
   },
   "compiledWasm": "AGFzbQEAAAABDwNgAABgAX8Bf2ACf38BfwIRAQRob3N0Bm1lbW9yeQIDAQEDDQwAAAAAAAAAAAAAAAAHFwIMaW5pdERlZmF1bHRzAAAEbWFpbgABDAEDCq4DDC0AQQBBAEHYBPwLAEEAQQBByAD8CAAAQcgCQQBBCPwIAQBB0ARBAEEE/AgCAAsWABACEAMQBBAFEAYQBxAIEAkQChALCwIACwIACyMAQSxBKCgCACgCAEEwKAIAKAIAakEARgR/QQEFQQALNgIACyMAQSBBHCgCACgCAEEkKAIAKAIAakEARgR/QQEFQQALNgIAC1kCAX8Bf0HIAkHIAigCAEEEajYCAEHIAigCAEHEAkoEQEHIAkHIADYCAAtByAIoAgBBxAAoAgAoAgAhASEAIAA/AEEBa0EQdEH8/wNqTQRAIAAgATYCAAULCwIACxoAQRhBFCgCACgCAEEARgR/QQEFQQALNgIACyMAQThBNCgCACgCAEE8KAIAKAIAakEBTgR/QQEFQQALNgIACyMAQQRBACgCACgCAEEIKAIAKAIAbEEBTgR/QQEFQQALNgIAC1kCAX8Bf0HQBEHQBCgCAEEEajYCAEHQBCgCAEHMBEoEQEHQBEHQAjYCAAtB0AQoAgBBzAIoAgAoAgAhASEAIAA/AEEBa0EQdEH8/wNqTQRAIAAgATYCAAULCwtbAwFIOAAAAAAAAAAYAAAAAAAAAAAAAAAQAAAAAAAAACwAAAAAAAAAQAAAACAAAAAAAAAAVAIAAAQAAAAAAAAADAAAAAAAAAAgAAAAAQhIAAAABAAAAAEEUAEAAA==",

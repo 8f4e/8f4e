@@ -1,4 +1,4 @@
-import type { State } from '@8f4e/editor-state-types';
+import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
 import type { EditorEnvironmentPluginContext } from '../types';
@@ -12,27 +12,29 @@ interface MIDIInputMock {
 }
 
 function createStore(bindings: MidiInBinding[]) {
-	return createStateManager({
-		codeBlockRendering: {
-			codeBlocks: [],
-		},
-		compiler: {
-			isCompiling: false,
-		},
-		editorConfig: {
-			midi: {
-				inputs: Object.fromEntries(
-					bindings.map((binding, index) => [
-						String(index),
-						{
-							port: Number(binding.port),
-							callback: binding.exportName,
-						},
-					])
-				),
+	return createStateManager(
+		createMockState({
+			codeBlockRendering: {
+				codeBlocks: [],
 			},
-		},
-	} as unknown as State);
+			compiler: {
+				isCompiling: false,
+			},
+			editorConfig: {
+				midi: {
+					inputs: Object.fromEntries(
+						bindings.map((binding, index) => [
+							String(index),
+							{
+								port: Number(binding.port),
+								callback: binding.exportName,
+							},
+						])
+					),
+				},
+			},
+		})
+	);
 }
 
 function createMIDIInputMock(): MIDIInputMock {

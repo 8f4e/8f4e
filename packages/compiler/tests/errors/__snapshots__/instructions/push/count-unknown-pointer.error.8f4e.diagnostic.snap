@@ -1,0 +1,23 @@
+{
+  "code": 58,
+  "context": {
+    "codeBlockId": "unknownCount",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "isPointee": true,
+        "referenceKind": "pointee-element-count",
+        "scope": "local",
+        "targetMemoryId": "pointer",
+        "type": "identifier",
+        "value": "count(*pointer)",
+      },
+    ],
+    "instruction": "push",
+    "lineNumber": 2,
+  },
+  "message": "Pointee element count is unknown: count(*pointer). Pass the length explicitly or use count() on a named memory declaration. (58)",
+}

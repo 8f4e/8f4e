@@ -1,4 +1,3 @@
-import type { State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
@@ -81,7 +80,7 @@ describe('globalEditorDirectivesEffect', () => {
 				codeBlocks: rootCodeBlocks,
 			},
 		});
-		const store = createStateManager(state as State);
+		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
 		await runtimeEffect(store, events);

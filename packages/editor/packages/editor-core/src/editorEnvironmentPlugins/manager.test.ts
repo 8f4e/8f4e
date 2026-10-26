@@ -1,3 +1,4 @@
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
@@ -5,7 +6,7 @@ import { createEditorEnvironmentPluginManager } from './manager';
 import type { EditorEnvironmentPluginContext, EditorEnvironmentPluginRegistryEntry } from './types';
 
 function createState(codeBlocks: CodeBlockGraphicData[] = []): State {
-	return {
+	return createMockState({
 		codeBlockRendering: {
 			codeBlocks,
 		},
@@ -13,7 +14,7 @@ function createState(codeBlocks: CodeBlockGraphicData[] = []): State {
 			compilationErrors: [],
 			editorDirectiveErrors: [],
 		},
-	} as unknown as State;
+	});
 }
 
 function createCodeBlockWithEditorDirective(name: string, args: string[] = []): CodeBlockGraphicData {

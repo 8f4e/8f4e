@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/runtime-web-worker",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "private": true,
   "description": "8f4e web worker runtime package",
   "type": "module",
@@ -31,6 +31,7 @@
     "@8f4e/test-runner": "*"
   },
   "devDependencies": {
+    "@8f4e/editor-state-testing": "*",
     "@types/node": "24.13.2"
   },
   "peerDependencies": {

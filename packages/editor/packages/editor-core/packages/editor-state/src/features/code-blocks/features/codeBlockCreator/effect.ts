@@ -5,6 +5,7 @@ import type { StateManager } from '@8f4e/state-manager';
 import { instructionParser } from '@8f4e/tokenizer';
 import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
 import incrementProjectRevision from '../../../program-compiler/incrementProjectRevision';
+import { insertCodeBlockRespectingAlwaysOnTop } from '../../partitionCodeBlocksByAlwaysOnTop';
 import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
 import getBlockType from '../../utils/codeParsers/getBlockType';
 import { createCodeBlockGraphicData } from '../../utils/createCodeBlockGraphicData';
@@ -12,6 +13,7 @@ import getCodeBlockNameFromSource from '../../utils/getCodeBlockNameFromSource';
 import { parseClipboardData, serializeCodeBlocksToClipboard } from '../clipboard/clipboardUtils';
 import upsertDisabled from '../directives/disabled/upsert';
 import upsertPos from '../directives/pos/upsert';
+import { hasDirective } from '../directives/utils';
 import findEntryNameAtPosition from '../entryOutlines/findEntryNameAtPosition';
 import { findProjectSlicePath } from '../projectGroupNavigation/effect';
 import extractPublicBlockFromModuleSource from './extractPublicBlockFromModuleSource';
@@ -247,13 +249,12 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 			projectPath,
 			disabled: false,
 			isHome: false,
+			alwaysOnTop: hasDirective(code, 'alwaysOnTop'),
 		});
 
-		// Insert new block before any always-on-top blocks to maintain z-order partition.
+		// Insert new block into its z-order partition (normal blocks first, always-on-top last).
 		const existingBlocks = state.codeBlockRendering.codeBlocks;
-		const normalBlocks = existingBlocks.filter(b => !b.alwaysOnTop);
-		const topBlocks = existingBlocks.filter(b => b.alwaysOnTop);
-		replaceCodeBlocksInPlace(existingBlocks, [...normalBlocks, codeBlock, ...topBlocks]);
+		replaceCodeBlocksInPlace(existingBlocks, insertCodeBlockRespectingAlwaysOnTop(existingBlocks, codeBlock));
 		store.set('codeBlockRendering.codeBlocks', existingBlocks);
 		incrementCompilerInputRevision(store);
 		incrementProjectRevision(store);

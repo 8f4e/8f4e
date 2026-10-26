@@ -1,4 +1,5 @@
-import type { EventDispatcher, State } from '@8f4e/editor-core';
+import type { EventDispatcher } from '@8f4e/editor-core';
+import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -35,7 +36,7 @@ describe('WebWorker runtime config', () => {
 			}
 		}
 
-		const state = {
+		const state = createMockState({
 			editorConfig: {
 				workerRuntime: {
 					sampleRate: 25,
@@ -44,7 +45,7 @@ describe('WebWorker runtime config', () => {
 			},
 			compiler: { isCompiling: false },
 			info: {},
-		} as unknown as State;
+		});
 		const cleanup = webWorkerRuntimeFactory(
 			createStateManager(state),
 			{ dispatch: vi.fn() } as unknown as EventDispatcher,

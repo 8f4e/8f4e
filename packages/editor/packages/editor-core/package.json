@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-core",
-  "version": "8.0.6",
+  "version": "8.0.7",
   "private": true,
   "description": "8f4e minimal editor package",
   "type": "module",
@@ -33,6 +33,7 @@
     "@8f4e/test-runner": "*"
   },
   "devDependencies": {
+    "@8f4e/editor-state-testing": "*",
     "vite": "7.3.7"
   }
 }

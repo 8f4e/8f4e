@@ -1,4 +1,4 @@
-import type { State } from '@8f4e/editor-state-types';
+import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import { binaryAssetsEditorConfigSchemaContribution, resolveBinaryAssetLoadRequests } from './config';
 
@@ -21,7 +21,7 @@ describe('binary asset editor config', () => {
 	});
 
 	it('resolves single and named memory load targets', () => {
-		const state = {
+		const state = createMockState({
 			editorConfig: {
 				bin: {
 					kick: {
@@ -33,7 +33,7 @@ describe('binary asset editor config', () => {
 					},
 				},
 			},
-		} as unknown as State;
+		});
 
 		expect(resolveBinaryAssetLoadRequests(state)).toEqual([
 			{
@@ -51,7 +51,7 @@ describe('binary asset editor config', () => {
 
 	it('logs invalid direct state shapes and skips them', () => {
 		const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-		const state = {
+		const state = createMockState({
 			editorConfig: {
 				bin: {
 					kick: {
@@ -59,7 +59,7 @@ describe('binary asset editor config', () => {
 					},
 				},
 			},
-		} as unknown as State;
+		});
 
 		expect(resolveBinaryAssetLoadRequests(state)).toEqual([]);
 		expect(consoleError).toHaveBeenCalledWith('Binary asset config "kick" must define a url.');

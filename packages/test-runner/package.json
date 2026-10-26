@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/test-runner",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "private": true,
   "description": "Shared assertion execution and source reporting for 8f4e tests",
   "type": "module",

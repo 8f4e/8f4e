@@ -7,6 +7,7 @@ import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/
 import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';
 import codeBlockRenderingEffect from './effect';
 import entryOutlines from './features/entryOutlines/effect';
+import parsedDirectivesUpdater from './features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
 
 function createFontIds() {
@@ -486,5 +487,93 @@ entryEnd`);
 			x: state.viewport.x,
 			y: state.viewport.y,
 		});
+	});
+});
+
+describe('code block rendering @alwaysOnTop live edits', () => {
+	it('re-partitions codeBlocks when @alwaysOnTop is added via live code edit', () => {
+		const normalA = createMockCodeBlock({
+			name: 'normalA',
+			code: ['module normalA', 'moduleEnd'],
+			alwaysOnTop: false,
+		});
+		const normalB = createMockCodeBlock({
+			name: 'normalB',
+			code: ['module normalB', 'moduleEnd'],
+			alwaysOnTop: false,
+		});
+		const topA = createMockCodeBlock({
+			name: 'topA',
+			code: ['module topA', '; @alwaysOnTop', 'moduleEnd'],
+			alwaysOnTop: true,
+		});
+		const codeBlocks = [normalA, normalB, topA];
+		const state = createMockState({
+			codeBlockRendering: {
+				rootCodeBlocks: codeBlocks,
+				codeBlocks,
+				selectedCodeBlock: normalA,
+			},
+			spriteLookups: createSpriteLookups(),
+		});
+		const store = createStateManager(state);
+		const events = createMockEventDispatcherWithVitest();
+
+		parsedDirectivesUpdater(store);
+		codeBlockRenderingEffect(store, events);
+
+		store.set('codeBlockRendering.selectedCodeBlock.code', ['module normalA', '; @alwaysOnTop', 'moduleEnd']);
+
+		expect(normalA.alwaysOnTop).toBe(true);
+		expect(state.codeBlockRendering.codeBlocks).toBe(codeBlocks);
+		expect(state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['normalB', 'normalA', 'topA']);
+	});
+
+	it('re-partitions codeBlocks when @alwaysOnTop is removed from the last of multiple top blocks via live code edit', () => {
+		const normalA = createMockCodeBlock({
+			name: 'normalA',
+			code: ['module normalA', 'moduleEnd'],
+			alwaysOnTop: false,
+		});
+		const normalB = createMockCodeBlock({
+			name: 'normalB',
+			code: ['module normalB', 'moduleEnd'],
+			alwaysOnTop: false,
+		});
+		const topA = createMockCodeBlock({
+			name: 'topA',
+			code: ['module topA', '; @alwaysOnTop', 'moduleEnd'],
+			alwaysOnTop: true,
+		});
+		const topB = createMockCodeBlock({
+			name: 'topB',
+			code: ['module topB', '; @alwaysOnTop', 'moduleEnd'],
+			alwaysOnTop: true,
+		});
+		const codeBlocks = [normalA, normalB, topA, topB];
+		const state = createMockState({
+			codeBlockRendering: {
+				rootCodeBlocks: codeBlocks,
+				codeBlocks,
+				selectedCodeBlock: topB,
+			},
+			spriteLookups: createSpriteLookups(),
+		});
+		const store = createStateManager(state);
+		const events = createMockEventDispatcherWithVitest();
+
+		parsedDirectivesUpdater(store);
+		codeBlockRenderingEffect(store, events);
+
+		store.set('codeBlockRendering.selectedCodeBlock.code', ['module topB', 'moduleEnd']);
+
+		expect(topB.alwaysOnTop).toBe(false);
+		expect(state.codeBlockRendering.codeBlocks).toBe(codeBlocks);
+		expect(state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual([
+			'normalA',
+			'normalB',
+			'topB',
+			'topA',
+		]);
 	});
 });

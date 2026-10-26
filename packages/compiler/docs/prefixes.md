@@ -47,8 +47,8 @@ push **pptr   ; loads target
 ## Element count
 
 - `count(name)` pushes the element count for a buffer (or 1 for scalars).
-- `count(*name)` pushes the known element count of the value pointed to by a pointer-typed memory item when the pointer is initialized from a tracked memory start address.
-- If the pointer has no tracked pointee element count, `count(*name)` resolves to `1`. On a non-pointer memory identifier, current compiler behavior resolves `count(*name)` to `0`.
+- `count(*name)` pushes the known element count of the value pointed to by a pointer-typed memory item when the pointer is initialized from a tracked memory start address. Known counts of zero and one are preserved, including through group initializers.
+- If the pointer has no tracked pointee element count, `count(*name)` raises `POINTEE_ELEMENT_COUNT_UNKNOWN`. An end-address initializer does not establish a count; pass the length explicitly instead.
 - Metadata queries currently support one leading `*`. For double pointers, `count(*name)` describes the intermediate pointer slot. `count(**name)` is not supported yet.
 
 Example:

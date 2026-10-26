@@ -4004,15 +4004,52 @@
     }
   },
   "pointerMetadataByModuleId": {
-    "activationFn": {},
-    "activationFn2": {},
-    "activationFn3": {},
+    "activationFn": {
+      "in": {
+        "pointeeElementCount": 1
+      }
+    },
+    "activationFn2": {
+      "in": {
+        "pointeeElementCount": 1
+      }
+    },
+    "activationFn3": {
+      "in": {
+        "pointeeElementCount": 1
+      }
+    },
     "inputs": {},
     "notes": {},
-    "perceptron": {},
-    "perceptron2": {},
-    "perceptron3": {},
-    "result": {}
+    "perceptron": {
+      "in1": {
+        "pointeeElementCount": 1
+      },
+      "in2": {
+        "pointeeElementCount": 1
+      }
+    },
+    "perceptron2": {
+      "in1": {
+        "pointeeElementCount": 1
+      },
+      "in2": {
+        "pointeeElementCount": 1
+      }
+    },
+    "perceptron3": {
+      "in1": {
+        "pointeeElementCount": 1
+      },
+      "in2": {
+        "pointeeElementCount": 1
+      }
+    },
+    "result": {
+      "out": {
+        "pointeeElementCount": 1
+      }
+    }
   },
   "compiledWasm": "AGFzbQEAAAABFARgAABgAX8Bf2ACf38Bf2ABfQF9AhEBBGhvc3QGbWVtb3J5AgMBAQMNDAAAAwAAAAAAAAAAAAcXAgxpbml0RGVmYXVsdHMAAARtYWluAAEMAQEKpAIMFwBBAEEAQcgA/AsAQQBBAEHIAPwIAAALFAAQAxAEEAUQBhAHEAgQCRAKEAsLJgEBfSAAIACLQwAAgD+SIQEgAUMAAAAAWwRAQwAAgD8hAQsgAZULAgALAgALAgALKgBBKEEgKAIAKgIAQ1bmIEGUQSQoAgAqAgBDxiUqwpSSQ4Are8CSOAIACyoAQTRBLCgCACoCAEOqoIzClEEwKAIAKgIAQ2gcxkGUkkPbPQzBkjgCAAsRAEEEQQAoAgAqAgAQAjgCAAsRAEEMQQgoAgAqAgAQAjgCAAsrAEHAAEE4KAIAKgIAQ65H3kCUQTwoAgAqAgBDsKzUQJSSQ6nZwUCSOAIACx8AQRRBECgCACoCABACQwAAAD9eBH9BAQVBAAs2AgALC0sBAUgoAAAAAAAAADQAAAAAAAAAQAAAAAAAAAAAAIA/AAAAABgAAAAcAAAAAAAAABgAAAAcAAAAAAAAAAQAAAAMAAAAAAAAABQAAAA=",
   "requiredMemoryBytes": 72

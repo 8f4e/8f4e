@@ -3319,5 +3319,87 @@
 				}
 			}
 		}
+	},
+	{
+		"commit": "744f601976f3ac6be9c4aa0c0defb6512e835957",
+		"recordedAt": "2026-10-22T08:33:13.658Z",
+		"coverage": {
+			"documented": 2,
+			"total": 58,
+			"percentage": 3.4,
+			"byKind": {
+				"function": {
+					"documented": 2,
+					"total": 12,
+					"percentage": 16.7
+				},
+				"interface": {
+					"documented": 0,
+					"total": 8,
+					"percentage": 0
+				},
+				"property-signature": {
+					"documented": 0,
+					"total": 26,
+					"percentage": 0
+				},
+				"variable": {
+					"documented": 0,
+					"total": 7,
+					"percentage": 0
+				},
+				"type": {
+					"documented": 0,
+					"total": 2,
+					"percentage": 0
+				},
+				"class-method": {
+					"documented": 0,
+					"total": 3,
+					"percentage": 0
+				}
+			}
+		}
+	},
+	{
+		"commit": "c8db839f8d5c3ee23431afbb0e140be4d133e2cb",
+		"recordedAt": "2026-10-22T11:45:03.017Z",
+		"coverage": {
+			"documented": 2,
+			"total": 58,
+			"percentage": 3.4,
+			"byKind": {
+				"function": {
+					"documented": 2,
+					"total": 12,
+					"percentage": 16.7
+				},
+				"interface": {
+					"documented": 0,
+					"total": 8,
+					"percentage": 0
+				},
+				"property-signature": {
+					"documented": 0,
+					"total": 26,
+					"percentage": 0
+				},
+				"variable": {
+					"documented": 0,
+					"total": 7,
+					"percentage": 0
+				},
+				"type": {
+					"documented": 0,
+					"total": 2,
+					"percentage": 0
+				},
+				"class-method": {
+					"documented": 0,
+					"total": 3,
+					"percentage": 0
+				}
+			}
+		}
 	}
 ]

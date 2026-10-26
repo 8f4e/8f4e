@@ -21,6 +21,7 @@ import groupCopier from './features/code-blocks/features/group/copier/effect';
 import groupDeleter from './features/code-blocks/features/group/deleter/effect';
 import groupNonstickToggler from './features/code-blocks/features/group/nonstickToggler/effect';
 import groupRemover from './features/code-blocks/features/group/remover/effect';
+import groupRowAligner from './features/code-blocks/features/group/rowAligner/effect';
 import groupSkipExecutionToggler from './features/code-blocks/features/group/skipExecutionToggler/effect';
 import groupUngroupper from './features/code-blocks/features/group/ungroupper/effect';
 import memoryConnectionRemover from './features/code-blocks/features/memoryConnectionRemover/effect';
@@ -116,6 +117,7 @@ export default function init(events: EventDispatcher, options: Options): StateMa
 	registerEffect(groupRemover(store, events));
 	registerEffect(groupUngroupper(store, events));
 	registerEffect(groupDeleter(store, events));
+	registerEffect(groupRowAligner(store, events));
 	registerEffect(projectGroupNavigation(store, events));
 	registerEffect(parsedDirectivesUpdater(store));
 	registerEffect(autoEnvConstants(store)); // Must run after codeBlockCreator to ensure env block is created

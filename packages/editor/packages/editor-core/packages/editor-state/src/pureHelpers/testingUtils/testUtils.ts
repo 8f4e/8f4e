@@ -3,7 +3,6 @@ import type {
 	DirectiveDerivedState,
 	DirectiveDeriveOptions,
 	EventDispatcher,
-	State,
 	Viewport,
 } from '@8f4e/editor-state-types';
 import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
@@ -12,26 +11,10 @@ import getCodeBlockNameFromSource from '~/features/code-blocks/utils/getCodeBloc
 import { parseBlockDirectives } from '~/features/code-blocks/utils/parseBlockDirectives';
 
 /**
- * Deep partial type that makes all properties and nested properties optional
- */
-type DeepPartial<T> = T extends object
-	? {
-			[P in keyof T]?: DeepPartial<T[P]>;
-		}
-	: T;
-
-/**
  * Creates a no-op function that can be used as a mock in any testing framework
  */
 function createMockFunction<T extends (...args: unknown[]) => unknown>(): T {
 	return (() => {}) as T;
-}
-
-/**
- * Creates a mock function that returns a resolved promise with the given value
- */
-function createMockAsyncFunction<T>(returnValue: T): () => Promise<T> {
-	return async () => returnValue;
 }
 
 /**
@@ -453,3 +436,4 @@ function mergeDeep<T>(target: T, source: DeepPartial<T>): T {
 
 	return result;
 }
+export { createMockState } from '@8f4e/editor-state-testing';

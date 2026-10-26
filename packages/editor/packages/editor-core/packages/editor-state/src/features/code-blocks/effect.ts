@@ -29,6 +29,8 @@ import outputs from './features/outputs/updateGraphicData';
 import gaps from './gaps';
 import getCodeBlockGridWidth from './getCodeBlockGridWidth';
 import paramShape, { updateParamShapeDeclarations } from './paramShape/updateGraphicData';
+import { partitionCodeBlocksByAlwaysOnTop } from './partitionCodeBlocksByAlwaysOnTop';
+import replaceCodeBlocksInPlace from './replaceCodeBlocksInPlace';
 import shape, { updateShapeDeclarations } from './shape/updateGraphicData';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
@@ -138,22 +140,38 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			state.viewport.vGrid;
 		const displayRow = displayModel.rawRowToDisplayRow[graphicData.cursor.row] ?? graphicData.cursor.row;
 		graphicData.cursor.y = gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid;
+		const previousAlwaysOnTop = Boolean(graphicData.alwaysOnTop);
 		graphicData.groupName = directiveState.blockState.groupName;
 		graphicData.groupNonstick = directiveState.blockState.groupNonstick;
 		graphicData.viewportAnchor = directiveState.blockState.viewportAnchor;
 		graphicData.alwaysOnTop = directiveState.blockState.alwaysOnTop ?? false;
+		return graphicData.alwaysOnTop !== previousAlwaysOnTop;
+	};
+
+	const repartitionRenderedCodeBlocks = () => {
+		replaceCodeBlocksInPlace(
+			state.codeBlockRendering.codeBlocks,
+			partitionCodeBlocksByAlwaysOnTop(state.codeBlockRendering.codeBlocks)
+		);
 	};
 
 	const updateAllBlockDerivedState = () => {
 		state.codeBlockRendering.outputsByWordAddress.clear();
+		let alwaysOnTopChanged = false;
 		for (const graphicData of state.codeBlockRendering.codeBlocks) {
-			updateBlockDerivedState(graphicData);
+			if (updateBlockDerivedState(graphicData)) {
+				alwaysOnTopChanged = true;
+			}
+		}
+		if (alwaysOnTopChanged) {
+			repartitionRenderedCodeBlocks();
 		}
 	};
 
 	const recomputePixelCoordinatesAndBlockDerivedState = () => {
 		// When viewport grid dimensions change (e.g., font change), recompute pixel positions
 		// from the stable grid coordinates, then update graphics. Combined into single iteration.
+		let alwaysOnTopChanged = false;
 		for (const codeBlock of state.codeBlockRendering.codeBlocks) {
 			if (!codeBlock.viewportAnchor) {
 				// World-space blocks: derive pixel position directly from grid coordinates.
@@ -163,7 +181,12 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			// Viewport-anchored blocks: x/y depend on current block width/height (for right/bottom
 			// anchors). Block derivation computes width and height first, then applies the anchored
 			// position at the end of its execution. No pre-assignment needed here.
-			updateBlockDerivedState(codeBlock);
+			if (updateBlockDerivedState(codeBlock)) {
+				alwaysOnTopChanged = true;
+			}
+		}
+		if (alwaysOnTopChanged) {
+			repartitionRenderedCodeBlocks();
 		}
 	};
 
@@ -184,7 +207,9 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 		if (!state.codeBlockRendering.selectedCodeBlock) {
 			return;
 		}
-		updateBlockDerivedState(state.codeBlockRendering.selectedCodeBlock);
+		if (updateBlockDerivedState(state.codeBlockRendering.selectedCodeBlock)) {
+			repartitionRenderedCodeBlocks();
+		}
 	};
 
 	const updateProgrammaticSelectedCodeBlock = () => {
@@ -192,20 +217,28 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 		if (!block) {
 			return;
 		}
-		updateBlockDerivedState(block);
+		if (updateBlockDerivedState(block)) {
+			repartitionRenderedCodeBlocks();
+		}
 	};
 
 	const updateHideSelectionTransition = (
 		previousBlock: CodeBlockGraphicData | undefined,
 		nextBlock: CodeBlockGraphicData | undefined
 	) => {
+		let alwaysOnTopChanged = false;
 		[previousBlock, nextBlock].forEach(codeBlock => {
 			if (!codeBlock) {
 				return;
 			}
 
-			updateBlockDerivedState(codeBlock);
+			if (updateBlockDerivedState(codeBlock)) {
+				alwaysOnTopChanged = true;
+			}
 		});
+		if (alwaysOnTopChanged) {
+			repartitionRenderedCodeBlocks();
+		}
 	};
 
 	let previousSelectedCodeBlock = state.codeBlockRendering.selectedCodeBlock;
@@ -340,10 +373,7 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			const projectCodeBlocks = [...projectScopeBlocks, ...codeBlocks, ...groupBlocks];
 
 			// Stable-sort to maintain the partition: normal blocks first, always-on-top last.
-			return [
-				...projectCodeBlocks.filter(block => !block.alwaysOnTop),
-				...projectCodeBlocks.filter(block => block.alwaysOnTop),
-			];
+			return partitionCodeBlocksByAlwaysOnTop(projectCodeBlocks);
 		};
 		const rootCodeBlocks = createProjectCodeBlockSlice(project, ROOT_PROJECT_GROUP_PATH);
 		state.codeBlockRendering.nextCodeBlockCreationIndex = nextCodeBlockCreationIndex;

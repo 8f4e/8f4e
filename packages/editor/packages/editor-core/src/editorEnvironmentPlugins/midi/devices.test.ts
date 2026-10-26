@@ -1,4 +1,4 @@
-import type { State } from '@8f4e/editor-state-types';
+import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
 import createMidiDeviceManager from './devices';
@@ -51,9 +51,11 @@ function createMIDIAccessMock({
 }
 
 function createStore() {
-	return createStateManager({
-		info: {},
-	} as unknown as State);
+	return createStateManager(
+		createMockState({
+			info: {},
+		})
+	);
 }
 
 async function flushPromises(): Promise<void> {

@@ -1,0 +1,12 @@
+8f4e/v1
+
+entry main
+module remainderWithComputedZero
+push 10
+push 3
+push 3
+sub
+remainder
+drop
+moduleEnd
+entryEnd

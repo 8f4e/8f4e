@@ -627,3 +627,57 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 		expect(codeBlock.disabled).toBe(false);
 	});
 });
+
+describe('codeBlockCreator - alwaysOnTop z-order partitioning', () => {
+	let mockState: State;
+	let store: ReturnType<typeof createStateManager<State>>;
+	let mockEvents: ReturnType<typeof createMockEventDispatcherWithVitest>;
+
+	beforeEach(() => {
+		mockState = createMockState();
+		store = createStateManager(mockState);
+		mockEvents = createMockEventDispatcherWithVitest();
+	});
+
+	it('inserts a normal block before existing always-on-top blocks', async () => {
+		const existingNormal = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
+		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
+		mockState.codeBlockRendering.codeBlocks = [existingNormal, existingTop];
+
+		codeBlockCreator(store, mockEvents);
+
+		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
+		const addCodeBlockCallback = onCalls.find(call => call[0] === 'addCodeBlock')![1];
+
+		await addCodeBlockCallback({
+			x: 100,
+			y: 100,
+			isNew: false,
+			code: ['module normal2', 'moduleEnd'],
+		});
+
+		expect(mockState.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['normal1', 'normal2', 'top1']);
+		expect(mockState.codeBlockRendering.codeBlocks[1].alwaysOnTop).toBe(false);
+	});
+
+	it('derives alwaysOnTop and inserts an @alwaysOnTop block directly into the top partition', async () => {
+		const existingNormal = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
+		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
+		mockState.codeBlockRendering.codeBlocks = [existingNormal, existingTop];
+
+		codeBlockCreator(store, mockEvents);
+
+		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
+		const addCodeBlockCallback = onCalls.find(call => call[0] === 'addCodeBlock')![1];
+
+		await addCodeBlockCallback({
+			x: 100,
+			y: 100,
+			isNew: false,
+			code: ['module top2', '; @alwaysOnTop', 'moduleEnd'],
+		});
+
+		expect(mockState.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['normal1', 'top1', 'top2']);
+		expect(mockState.codeBlockRendering.codeBlocks[2].alwaysOnTop).toBe(true);
+	});
+});

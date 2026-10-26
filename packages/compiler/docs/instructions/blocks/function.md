@@ -240,6 +240,52 @@ Inline call arguments are compiled as `push` instructions before the call, so th
 - Parameter names must be unique within the function
 - Parameters can be accessed using `push` and modified using `localSet`
 
+## paramShape
+
+The `paramShape` instruction expands a prototype's scalar memory declarations into typed pointer parameters. It takes
+one prototype name and must appear with the other parameter declarations, before locals or executable instructions. Fields
+are expanded in prototype declaration order. Each scalar field becomes a pointer parameter with the same name and base type;
+read a field with `push *<field>` inside an impure function.
+
+The prototype and the function can be defined independently of the consuming module:
+
+```8f4e
+prototype mixerState
+int a 2
+float b 4.5
+prototypeEnd
+
+function sumMixer
+#impure
+paramShape mixerState
+push *a
+castToFloat
+push *b
+add
+functionEnd float
+```
+
+In a module, `shape` materializes the prototype fields and `pushShape` pushes their addresses in the same order. The
+function receives pointers, not copied field values, so `sumMixer` returns `6.5` here:
+
+```8f4e
+entry main
+module mixer
+shape mixerState
+pushShape mixerState
+call sumMixer
+; stack: 6.5
+moduleEnd
+entryEnd
+```
+
+Explicit parameters and `paramShape` share one positional signature and preserve source order. For example, with
+`param int base`, `paramShape mixerState`, and `param int tail`, callers push `base`, then `pushShape mixerState`, then
+`tail` before `call`; the shape pointers occupy the middle positions.
+
+The module's effective fields are used when a shape is overridden locally. Replacing the materialized fields with
+`int a 8` and `float b 1.5` makes the same `pushShape mixerState` and `call sumMixer` return `9.5`.
+
 ## functionEnd
 
 The functionEnd instruction ends a function block and declares the return types (`functionEnd int float` or pointer types such as `functionEnd int16u*`).

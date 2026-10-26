@@ -1,4 +1,4 @@
-import type { State } from '@8f4e/editor-state-types';
+import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
 import type { EditorEnvironmentPluginContext } from '../types';
@@ -6,16 +6,18 @@ import midiPlugin from './plugin';
 
 function createContext(): EditorEnvironmentPluginContext {
 	return {
-		store: createStateManager({
-			info: {},
-			codeBlockRendering: {
-				codeBlocks: [],
-			},
-			compiler: {
-				isCompiling: false,
-			},
-			editorConfig: {},
-		} as unknown as State),
+		store: createStateManager(
+			createMockState({
+				info: {},
+				codeBlockRendering: {
+					codeBlocks: [],
+				},
+				compiler: {
+					isCompiling: false,
+				},
+				editorConfig: {},
+			})
+		),
 		events: {} as never,
 		window: {} as Window,
 		navigator: {} as Navigator,

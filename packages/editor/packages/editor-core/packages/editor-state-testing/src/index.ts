@@ -1,11 +1,18 @@
 import type { CodeBlockGraphicData, EventDispatcher, State, Viewport } from '@8f4e/editor-state-types';
 import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
 
-type DeepPartial<T> = T extends object
-	? {
-			[P in keyof T]?: DeepPartial<T[P]>;
-		}
-	: T;
+type DeepPartial<T> = T extends (...args: never[]) => unknown
+	? T
+	: T extends object
+		? {
+				[P in keyof T]?: DeepPartial<T[P]>;
+			}
+		: T;
+
+// EditorConfig already accepts partial JSON; expanding its recursive values adds no useful constraints.
+type StateOverrides = {
+	[K in keyof State]?: K extends 'editorConfig' ? State[K] : DeepPartial<State[K]>;
+};
 
 function createMockFunction<T extends (...args: unknown[]) => unknown>(): T {
 	return (() => {}) as T;
@@ -121,7 +128,7 @@ export function createMockEventDispatcher(): EventDispatcher {
 	};
 }
 
-export function createMockState(overrides: DeepPartial<State> = {}): State {
+export function createMockState(overrides: StateOverrides = {}): State {
 	const mockRuntimeFactory = () => () => {};
 	const workerRuntimeDefaults = { sampleRate: 50 } as const;
 	const rootCodeBlocks: CodeBlockGraphicData[] = [];
@@ -277,10 +284,17 @@ export function createMockState(overrides: DeepPartial<State> = {}): State {
 		},
 	};
 
-	return mergeDeep(defaults, overrides);
+	const state = mergeDeep<State>(defaults, overrides);
+	const rendering = overrides.codeBlockRendering;
+	if (rendering?.rootCodeBlocks !== undefined && rendering.codeBlocks === undefined) {
+		state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
+	} else if (rendering?.codeBlocks !== undefined && rendering.rootCodeBlocks === undefined) {
+		state.codeBlockRendering.rootCodeBlocks = state.codeBlockRendering.codeBlocks;
+	}
+	return state;
 }
 
-function mergeDeep<T>(target: T, source: DeepPartial<T>): T {
+function mergeDeep<T>(target: T, source: unknown): T {
 	if (typeof target !== 'object' || target === null || Array.isArray(target)) {
 		return target;
 	}
@@ -317,7 +331,7 @@ function mergeDeep<T>(target: T, source: DeepPartial<T>): T {
 			!(targetValue instanceof Set);
 
 		if (shouldMerge) {
-			result[targetKey] = mergeDeep(targetValue, sourceValue as DeepPartial<typeof targetValue>);
+			result[targetKey] = mergeDeep(targetValue, sourceValue);
 		} else {
 			result[targetKey] = sourceValue as T[keyof T];
 		}

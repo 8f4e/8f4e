@@ -288,7 +288,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 245,
+        "projectBlockId": 246,
         "sourceIdentity": {
           "codeBlockId": "audioout",
           "projectGroupPath": "",
@@ -730,7 +730,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 202,
+        "projectBlockId": 203,
         "sourceIdentity": {
           "codeBlockId": "phaseAccumulator",
           "projectGroupPath": "",
@@ -1895,7 +1895,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "moduleEnd",
       ],
       "entry": "main",
-      "id": 202,
+      "id": 203,
     },
     {
       "code": [
@@ -1944,7 +1944,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "moduleEnd",
       ],
       "entry": "main",
-      "id": 245,
+      "id": 246,
     },
   ],
   "notes": [
@@ -1955,6 +1955,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "; @config runtime AudioWorkletRuntime",
         "; @config audioRuntime.sampleRate 48000",
         "; @config audioRuntime.audioOutBufferLAddress audioout:buffer",
+        "; @config audioRuntime.audioOutBufferRAddress audioout:buffer",
         "; @config export.fileName audioBuffer",
         "; @config color.text.lineNumber #607481",
         "; @config color.text.entryName #dce9ec",
@@ -2044,12 +2045,20 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "; (audioout)",
         "noteEnd",
       ],
-      "id": 191,
+      "id": 192,
     },
   ],
   "pointerMetadataByModuleId": {
-    "audioout": {},
-    "phaseAccumulator": {},
+    "audioout": {
+      "in": {
+        "pointeeElementCount": 1,
+      },
+    },
+    "phaseAccumulator": {
+      "frequency": {
+        "pointeeElementCount": 1,
+      },
+    },
   },
   "projectMemoryExposuresByGroupPath": {},
   "prototypes": [],

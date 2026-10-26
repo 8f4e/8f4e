@@ -110,6 +110,12 @@ export const moduleMenu: MenuGenerator = state => {
 					...(hasGroup
 						? [
 								{
+									title: 'Align blocks in row',
+									action: 'alignGroupBlocksInRow',
+									payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },
+									close: true,
+								},
+								{
 									title: 'Remove from group',
 									action: 'removeFromGroupDirective',
 									payload: { codeBlock: state.codeBlockRendering.selectedCodeBlock },

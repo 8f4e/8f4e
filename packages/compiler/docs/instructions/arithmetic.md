@@ -89,14 +89,43 @@ max       ; stack: [ 0.7 ]
 
 ### remainder
 
-The "remainder" instruction retrieves two integer operands from the stack, divides the first operand by the second operand, and then computes the remainder of this division. It then stores the remainder back onto the stack. 
+The `remainder` instruction consumes a signed integer dividend followed by a signed integer divisor and pushes their remainder. A nonzero result has the same sign as the dividend: `-10` remainder `3` is `-1`, while `10` remainder `-3` is `1`.
+
+The compiler must be able to prove that the divisor is nonzero. A zero literal, an expression known to produce zero, or a value loaded from mutable memory without a nonzero guarantee is rejected at compile time with `Possible division by zero. (14)`. A nonzero memory initializer alone does not establish that guarantee, because the value can change at runtime.
+
+For a dynamic divisor, use `ensureNonZero` immediately before `remainder`. It preserves nonzero values and replaces zero with `1` by default, or with a supplied nonzero integer fallback. This sanitizes the divisor; it does not make `remainder` return a special value for division by zero. The compiler emits WebAssembly `i32.rem_s`, whose zero-divisor trap is prevented by this compile-time requirement.
+
+Unlike signed integer division, `-2147483648` remainder `-1` does not overflow or trap; its result is `0`.
 
 #### Examples
 
 ```
 push 10
 push 3
-remainder
+remainder    ; stack: [ 1 ]
+```
+
+An unguarded dynamic divisor is rejected:
+
+```
+module unguardedRemainder
+int divisor 3
+push 10
+push divisor
+remainder    ; compile-time error: Possible division by zero. (14)
+moduleEnd
+```
+
+Sanitize the loaded divisor to handle zero at runtime:
+
+```
+module guardedRemainder
+int divisor 0
+push 10
+push divisor
+ensureNonZero 3
+remainder    ; stack: [ 1 ], because zero was replaced with 3
+moduleEnd
 ```
 
 ### sub

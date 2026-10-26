@@ -1,0 +1,387 @@
+{
+  "functionAst": {},
+  "functionOverview": {},
+  "moduleAst": {
+    "notZeroFloat64Assertions": {
+      "id": "notZeroFloat64Assertions",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "notZeroFloat64Assertions",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": -0,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.5,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": -1.5,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1e-300,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "notZeroFloatAssertions": {
+      "id": "notZeroFloatAssertions",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "notZeroFloatAssertions",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": -0,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.5,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": -1.5,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "notZeroIntAssertions": {
+      "id": "notZeroIntAssertions",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "notZeroIntAssertions",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 7,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -7,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "notZero",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+  },
+  "moduleMemory": {
+    "notZeroFloat64Assertions": {
+      "memory": {},
+    },
+    "notZeroFloatAssertions": {
+      "memory": {},
+    },
+    "notZeroIntAssertions": {
+      "memory": {},
+    },
+  },
+  "overview": {
+    "compiledFunctions": [],
+    "compiledModules": [
+      "notZeroFloat64Assertions",
+      "notZeroFloatAssertions",
+      "notZeroIntAssertions",
+    ],
+    "requiredMemoryBytes": 4,
+    "wasmExports": [
+      "initDefaults",
+      "main",
+      "test",
+    ],
+  },
+}

@@ -47,6 +47,8 @@ module processor
 int* input
 push *input
 assertEqual 17
+push count(*input)
+assertEqual 1
 moduleEnd
 groupEnd
 groupEnd
@@ -70,6 +72,8 @@ module processor
 shape state
 push *input
 assertEqual 55
+push count(*input)
+assertEqual 1
 moduleEnd
 groupEnd
 entryEnd

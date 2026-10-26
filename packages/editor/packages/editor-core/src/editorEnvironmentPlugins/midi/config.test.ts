@@ -1,4 +1,4 @@
-import type { State } from '@8f4e/editor-state-types';
+import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import { midiEditorConfigSchemaContribution, resolveMidiInputBindings } from './config';
 
@@ -18,7 +18,7 @@ describe('MIDI editor config', () => {
 	});
 
 	it('resolves input bindings from editor config', () => {
-		const state = {
+		const state = createMockState({
 			editorConfig: {
 				midi: {
 					inputs: {
@@ -27,7 +27,7 @@ describe('MIDI editor config', () => {
 					},
 				},
 			},
-		} as unknown as State;
+		});
 
 		expect(resolveMidiInputBindings(state)).toEqual([
 			{ port: '0', exportName: 'onMidiIn' },
@@ -37,7 +37,7 @@ describe('MIDI editor config', () => {
 
 	it('logs and skips incomplete or duplicate input bindings', () => {
 		const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-		const state = {
+		const state = createMockState({
 			editorConfig: {
 				midi: {
 					inputs: {
@@ -47,7 +47,7 @@ describe('MIDI editor config', () => {
 					},
 				},
 			},
-		} as unknown as State;
+		});
 
 		expect(resolveMidiInputBindings(state)).toEqual([{ port: '0', exportName: 'onMidiIn' }]);
 		expect(consoleError).toHaveBeenCalledWith('Duplicate MIDI input binding for port "0" and callback "onMidiIn".');

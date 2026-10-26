@@ -250,6 +250,7 @@
           "isUnsigned": false,
           "numberOfElements": 1,
           "pointeeBaseType": "int",
+          "pointeeElementCount": 1,
           "pointerDepth": 1,
           "type": "int*",
         },

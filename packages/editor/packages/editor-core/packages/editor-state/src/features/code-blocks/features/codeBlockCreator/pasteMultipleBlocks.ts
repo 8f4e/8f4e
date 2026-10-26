@@ -3,6 +3,7 @@ import { createChildProjectGroupPath, type ProjectGroupPath, ROOT_PROJECT_GROUP_
 import type { StateManager } from '@8f4e/state-manager';
 import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
 import incrementProjectRevision from '../../../program-compiler/incrementProjectRevision';
+import { partitionCodeBlocksByAlwaysOnTop } from '../../partitionCodeBlocksByAlwaysOnTop';
 import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
 import getBlockType from '../../utils/codeParsers/getBlockType';
 import { createCodeBlockGraphicData } from '../../utils/createCodeBlockGraphicData';
@@ -267,10 +268,7 @@ export function pasteMultipleBlocks(
 	}
 
 	// Stable-sort to maintain the partition: normal blocks first, always-on-top last.
-	const sorted = [
-		...state.codeBlockRendering.codeBlocks.filter(b => !b.alwaysOnTop),
-		...state.codeBlockRendering.codeBlocks.filter(b => b.alwaysOnTop),
-	];
+	const sorted = partitionCodeBlocksByAlwaysOnTop(state.codeBlockRendering.codeBlocks);
 
 	// Trigger single store update with all new blocks
 	replaceCodeBlocksInPlace(state.codeBlockRendering.codeBlocks, sorted);

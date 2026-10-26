@@ -1,0 +1,57 @@
+8f4e/v1
+
+note
+; @config runtime TestRuntime
+
+Pointer counts retain every proven element count, including zero and one.
+noteEnd
+
+entry test
+module scalarPointers
+int value 7
+int* pointer &value
+float64 wide 2.0f64
+float64* widePointer &wide
+
+push count(*pointer)
+assertEqual 1
+push *pointer
+assertEqual 7
+push count(*widePointer)
+assertEqual 1
+push *widePointer
+assertEqual 2.0f64
+moduleEnd
+
+module arrayPointers
+int[] empty 0
+int* emptyPointer &empty
+int[] single 1 7
+int* singlePointer &single
+int[] multiple 2 11 12
+int* multiplePointer &multiple
+int* tailPointer &multiple+4
+int** indirect &singlePointer
+
+push count(*emptyPointer)
+assertEqual 0
+push count(*singlePointer)
+assertEqual 1
+push count(*multiplePointer)
+assertEqual 2
+push count(*tailPointer)
+assertEqual 1
+push count(*indirect)
+assertEqual 1
+moduleEnd
+
+module remotePointers
+int* scalarPointer &scalarPointers:value
+int* arrayPointer &arrayPointers:single
+
+push count(*scalarPointer)
+assertEqual 1
+push count(*arrayPointer)
+assertEqual 1
+moduleEnd
+entryEnd

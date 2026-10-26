@@ -51,6 +51,29 @@
           "instruction": "assertEqual",
         },
         {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-count",
+              "scope": "local",
+              "targetMemoryId": "input",
+              "type": "identifier",
+              "value": "count(*input)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
           "arguments": [],
           "instruction": "moduleEnd",
         },
@@ -101,6 +124,29 @@
               "isInteger": true,
               "type": "literal",
               "value": 17,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-count",
+              "scope": "local",
+              "targetMemoryId": "input",
+              "type": "identifier",
+              "value": "count(*input)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
             },
           ],
           "instruction": "assertEqual",
@@ -453,6 +499,7 @@
           "isUnsigned": false,
           "numberOfElements": 1,
           "pointeeBaseType": "int",
+          "pointeeElementCount": 1,
           "pointerDepth": 1,
           "type": "int*",
         },
@@ -472,6 +519,7 @@
           "isUnsigned": false,
           "numberOfElements": 1,
           "pointeeBaseType": "int",
+          "pointeeElementCount": 1,
           "pointerDepth": 1,
           "type": "int*",
         },

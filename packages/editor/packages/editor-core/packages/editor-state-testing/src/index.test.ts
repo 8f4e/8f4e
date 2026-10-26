@@ -81,4 +81,57 @@ describe('editor-state testing utilities', () => {
 			roundedHeight: 200,
 		});
 	});
+
+	it('provides complete compiler defaults and fresh mutable state for every fixture', async () => {
+		const state = createMockState();
+		const other = createMockState();
+		expect(state.compiler.memoryPlan).toEqual({ modules: {}, moduleList: [] });
+		expect(state.compiler.projectMemoryExposuresByGroupPath).toEqual({});
+		expect(state.compiler.memoryDefaultsByModuleId).toEqual({});
+		await expect(state.callbacks.loadSession()).resolves.toBeNull();
+		expect(state.compiler.memoryPlan.moduleList).not.toBe(other.compiler.memoryPlan.moduleList);
+		state.compiler.projectMemoryExposuresByGroupPath.root = [];
+		state.codeBlockRendering.codeBlocks.push(createMockCodeBlock());
+		expect(state.codeBlockRendering.outputsByWordAddress).not.toBe(other.codeBlockRendering.outputsByWordAddress);
+		expect(other.compiler.memoryPlan.moduleList).toEqual([]);
+		expect(other.compiler.projectMemoryExposuresByGroupPath).toEqual({});
+		expect(other.codeBlockRendering.codeBlocks).toEqual([]);
+		expect(other.codeBlockRendering.outputsByWordAddress.size).toBe(0);
+	});
+
+	it('uses a root-only block override as the active slice without copying it', () => {
+		const blocks = [createMockCodeBlock()];
+		const state = createMockState({ codeBlockRendering: { rootCodeBlocks: blocks } });
+		expect(state.codeBlockRendering.rootCodeBlocks).toBe(blocks);
+		expect(state.codeBlockRendering.codeBlocks).toBe(blocks);
+	});
+
+	it('owns an active-only block override in the root tree', () => {
+		const blocks = [createMockCodeBlock()];
+		const state = createMockState({ codeBlockRendering: { codeBlocks: blocks } });
+		expect(state.codeBlockRendering.rootCodeBlocks).toBe(blocks);
+		expect(state.codeBlockRendering.codeBlocks).toBe(blocks);
+	});
+
+	it('preserves an explicitly selected nested slice and its project ownership', () => {
+		const nested = [createMockCodeBlock({ projectPath: 'group' })];
+		const root = [createMockCodeBlock({ name: 'group', nestedProjectCodeBlocks: nested })];
+		const state = createMockState({ codeBlockRendering: { rootCodeBlocks: root, codeBlocks: nested } });
+		expect(state.codeBlockRendering.rootCodeBlocks).toBe(root);
+		expect(state.codeBlockRendering.codeBlocks).toBe(root[0].nestedProjectCodeBlocks);
+	});
+
+	it('retains callback and collection overrides while preserving unrelated nested defaults', async () => {
+		const loadSession = async () => null;
+		const outputs = new Map();
+		const state = createMockState({
+			callbacks: { loadSession },
+			compiler: { isCompiling: true },
+			codeBlockRendering: { outputsByWordAddress: outputs },
+		});
+		expect(state.callbacks.loadSession).toBe(loadSession);
+		expect(state.codeBlockRendering.outputsByWordAddress).toBe(outputs);
+		expect(state.compiler.isCompiling).toBe(true);
+		expect(state.compiler.memoryPlan).toEqual({ modules: {}, moduleList: [] });
+	});
 });

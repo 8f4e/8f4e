@@ -1,3 +1,4 @@
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { BinaryAsset, EventDispatcher, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,7 +23,7 @@ function createMemoryPlan(byteAddress: number): State['compiler']['memoryPlan'] 
 		id: 'buffer',
 		numberOfElements: 1,
 		elementWordSize: 4,
-		type: 'int',
+		type: 'int' as const,
 		byteAddress,
 		elementByteLength: 4,
 		allocationUnitCount: 4,
@@ -59,7 +60,7 @@ function createAlignedFloat64MemoryPlan(): State['compiler']['memoryPlan'] {
 		id: 'prefix',
 		numberOfElements: 1,
 		elementWordSize: 4,
-		type: 'int',
+		type: 'int' as const,
 		byteAddress: 16,
 		elementByteLength: 4,
 		allocationUnitCount: 1,
@@ -76,7 +77,7 @@ function createAlignedFloat64MemoryPlan(): State['compiler']['memoryPlan'] {
 		id: 'value',
 		numberOfElements: 1,
 		elementWordSize: 8,
-		type: 'float64',
+		type: 'float64' as const,
 		byteAddress: 24,
 		elementByteLength: 8,
 		allocationUnitCount: 3,
@@ -118,11 +119,13 @@ function createAlignedFloat64MemoryPlan(): State['compiler']['memoryPlan'] {
 function createState({
 	url = 'https://example.com/amen.pcm',
 	byteAddress = 16,
+	memory = 'samples:buffer',
 }: {
 	url?: string;
 	byteAddress?: number;
+	memory?: string;
 } = {}): State {
-	return {
+	return createMockState({
 		codeBlockRendering: {
 			codeBlocks: [],
 		},
@@ -130,7 +133,7 @@ function createState({
 			bin: {
 				amen: {
 					url,
-					memory: 'samples:buffer',
+					memory,
 				},
 			},
 		},
@@ -139,7 +142,7 @@ function createState({
 			memoryPlan: createMemoryPlan(byteAddress),
 		},
 		binaryAssets: [],
-	} as unknown as State;
+	});
 }
 
 async function flushPromises(): Promise<void> {
@@ -173,11 +176,10 @@ describe('binary assets plugin', () => {
 		};
 		fetchBinaryAssetsMock.mockResolvedValue([fetchedAsset]);
 		loadBinaryAssetIntoMemoryMock.mockResolvedValue();
-		const store = createStateManager(createState());
+		const store = createStateManager(createState({ memory: exposed ? 'audio:publicBuffer' : 'samples:buffer' }));
 
 		if (exposed) {
 			const state = store.getState();
-			state.editorConfig.bin!.amen.memory = 'audio:publicBuffer';
 			state.compiler.projectMemoryExposuresByGroupPath.audio = [
 				{
 					name: 'publicBuffer',
@@ -229,8 +231,7 @@ describe('binary assets plugin', () => {
 		};
 		fetchBinaryAssetsMock.mockResolvedValue([fetchedAsset]);
 		loadBinaryAssetIntoMemoryMock.mockResolvedValue();
-		const state = createState({ url: fetchedAsset.url });
-		state.editorConfig.bin!.amen.memory = 'samples:value';
+		const state = createState({ url: fetchedAsset.url, memory: 'samples:value' });
 		state.compiler.memoryPlan = createAlignedFloat64MemoryPlan();
 		const store = createStateManager(state);
 
@@ -503,7 +504,10 @@ describe('binary assets plugin', () => {
 			endByteAddress: 32,
 		};
 		baseState.compiler.memoryPlan.modules.samples.memory.previewBuffer = previewBuffer;
-		baseState.compiler.memoryPlan.modules.samples.declarations.push(previewBuffer);
+		baseState.compiler.memoryPlan.modules.samples.declarations = [
+			...baseState.compiler.memoryPlan.modules.samples.declarations,
+			previewBuffer,
+		];
 		baseState.editorConfig.bin = {
 			kick: {
 				url: 'https://example.com/kick.pcm',

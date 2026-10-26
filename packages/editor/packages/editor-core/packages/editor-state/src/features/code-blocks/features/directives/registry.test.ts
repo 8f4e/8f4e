@@ -1,4 +1,4 @@
-import type { State } from '@8f4e/editor-state-types';
+import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
 import { parseBlockDirectives } from '../../utils/parseBlockDirectives';
 import { deriveDirectiveState, directivePlugins } from './registry';
@@ -141,7 +141,7 @@ describe('directive registry', () => {
 	it('allocates one info layout row per state.info key', () => {
 		const code = ['module foo', '; @info foo', 'moduleEnd'];
 		const result = deriveDirectiveState(code, parseBlockDirectives(code), {
-			state: {
+			state: createMockState({
 				info: {
 					foo: {
 						a: 1,
@@ -149,7 +149,7 @@ describe('directive registry', () => {
 						foo: 'something longer',
 					},
 				},
-			} as unknown as State,
+			}),
 		});
 
 		expect(result.layoutContributions).toEqual([{ rawRow: 1, rows: 3 }]);

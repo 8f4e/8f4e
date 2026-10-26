@@ -1,4 +1,3 @@
-import type { State } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 import { mainMenu, moduleMenu } from '../../src/features/menu/menus';
 import { createMockCodeBlock, createMockState } from '../../src/pureHelpers/testingUtils/testUtils';
@@ -11,7 +10,7 @@ describe('menus - clipboard callback disabled state', () => {
 				callbacks: { readClipboardText: undefined },
 			});
 
-			const menu = mainMenu(mockState as State);
+			const menu = mainMenu(mockState);
 
 			const pasteCodeBlockItem = menu.find(item => item.title === 'Paste Code Block');
 			expect(pasteCodeBlockItem).toBeDefined();
@@ -24,7 +23,7 @@ describe('menus - clipboard callback disabled state', () => {
 				callbacks: { readClipboardText: async () => 'test' },
 			});
 
-			const menu = mainMenu(mockState as State);
+			const menu = mainMenu(mockState);
 
 			const pasteCodeBlockItem = menu.find(item => item.title === 'Paste Code Block');
 			expect(pasteCodeBlockItem).toBeDefined();
@@ -36,7 +35,7 @@ describe('menus - clipboard callback disabled state', () => {
 				featureFlags: { editing: false },
 			});
 
-			const menu = mainMenu(mockState as State);
+			const menu = mainMenu(mockState);
 
 			const pasteCodeBlockItem = menu.find(item => item.title === 'Paste Code Block');
 			expect(pasteCodeBlockItem).toBeUndefined();
@@ -51,7 +50,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState as State);
+			const menu = moduleMenu(mockState);
 
 			const copyItem = menu.find(item => item.title === 'Copy module');
 			expect(copyItem).toBeDefined();
@@ -65,7 +64,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState as State);
+			const menu = moduleMenu(mockState);
 
 			const copyItem = menu.find(item => item.title === 'Copy module');
 			expect(copyItem).toBeDefined();
@@ -79,7 +78,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState as State);
+			const menu = moduleMenu(mockState);
 
 			const copyItem = menu.find(item => item.title === 'Copy function');
 			expect(copyItem).toBeDefined();
@@ -93,7 +92,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState as State);
+			const menu = moduleMenu(mockState);
 
 			const copyItem = menu.find(item => item.title === 'Copy note');
 			expect(copyItem).toBeDefined();

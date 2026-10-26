@@ -1,3 +1,4 @@
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import type { SpriteData } from '@8f4e/web-ui';
@@ -22,9 +23,8 @@ describe('sprite sheet manager', () => {
 	});
 
 	it('unsubscribes and ignores sprite generation that finishes after disposal', async () => {
-		const state = {
-			editorConfig: { font: 'terminus8x16', color: {} },
-		} as unknown as State;
+		const state = createMockState();
+		state.editorConfig = { font: 'terminus8x16', color: {} };
 		const subscriptions = new Map<string, () => Promise<void>>();
 		const store = {
 			getState: () => state,

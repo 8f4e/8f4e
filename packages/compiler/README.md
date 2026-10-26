@@ -2,6 +2,76 @@
 
 Core compiler that transforms an 8f4e project into WebAssembly plus runtime metadata.
 
+## Quickstart
+
+After completing the [repository setup](../../CONTRIBUTING.md#getting-started), build the compiler and its dependencies
+from the repository root. `@8f4e/compiler` is a workspace package in this checkout.
+
+```sh
+npx nx run @8f4e/compiler:build
+```
+
+Save the following as `quickstart.mjs` in the repository root:
+
+```js
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
+
+const project = parseProjectSource(`8f4e/v1
+entry main
+module counter
+int value 41
+push &value
+push value
+push 1
+add
+store
+moduleEnd
+entryEnd
+
+function double
+#export
+param int value
+push value
+push 2
+mul
+functionEnd int
+`);
+
+const firstResult = await compileProject(project, { disableSharedMemory: true });
+const pages = Math.max(1, Math.ceil(firstResult.requiredMemoryBytes / 65536));
+const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+const { instance } = await WebAssembly.instantiate(new Uint8Array(firstResult.codeBuffer), {
+	host: { memory },
+});
+
+instance.exports.initDefaults();
+instance.exports.main();
+
+const valueAddress = firstResult.memoryPlan.modules.counter.memory.value.byteAddress;
+console.log(new DataView(memory.buffer).getInt32(valueAddress, true)); // 42
+console.log(instance.exports.double(21)); // 42
+
+const secondResult = await compileProject(project, {
+	disableSharedMemory: true,
+	cache: firstResult.cache,
+});
+```
+
+Run it with `node quickstart.mjs`; it prints `42` twice. `requiredMemoryBytes` determines the number of 64 KiB
+WebAssembly pages to allocate. Call `initDefaults()` before invoking entries so declared defaults, such as `41`, are
+present. The `byteAddress` field is measured in bytes, and the `true` argument to `getInt32` selects little-endian reads.
+
+The example uses non-shared memory, so both compilations set `disableSharedMemory: true`. The compiler enables shared
+memory by default; hosts using that mode must supply matching memory created with `shared: true` and a maximum.
+
+The second compilation reuses the returned cache. It produces a new compilation result; to execute it, instantiate
+`secondResult.codeBuffer` with suitable memory and initialize that instance's defaults too.
+
+Next, see [standard-library includes](docs/standard-library.md#include-syntax) and supply `resolveInclude` to load their
+source text. For executable assertions, see the [testing instructions](docs/instructions/testing.md) and
+[@8f4e/test-runner](../test-runner/README.md). The [compiler design](docs/compiler-design.md) describes the pipeline in
+more detail.
+
 ## Compilation boundaries
 
 ```text

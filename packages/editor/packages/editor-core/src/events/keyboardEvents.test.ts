@@ -1,3 +1,4 @@
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -58,6 +59,7 @@ describe('keyboardEvents mode switching', () => {
 		inputTarget = createMockInputTarget();
 
 		featureFlags = {
+			...createMockState().featureFlags,
 			contextMenu: true,
 			moduleDragging: true,
 			codeLineSelection: false,
@@ -74,7 +76,7 @@ describe('keyboardEvents mode switching', () => {
 		};
 
 		store = {
-			getState: () => ({ featureFlags, editorMode }) as State,
+			getState: () => createMockState({ featureFlags, editorMode }),
 		} as unknown as StateManager<State>;
 	});
 

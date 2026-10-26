@@ -1,3 +1,4 @@
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { describe, expect, it } from 'vitest';
@@ -6,7 +7,7 @@ import { resolveSchemaConfigRoot } from './schemaValidator';
 
 const store = {
 	getState: () =>
-		({
+		createMockState({
 			editorConfigSchemaContributions: {
 				audio: {
 					root: 'audioRuntime',
@@ -56,7 +57,7 @@ const store = {
 				},
 				memoryDefaultsByModuleId: {},
 			},
-		}) as State,
+		}),
 } as StateManager<State>;
 
 describe('editor config schema contributions', () => {
@@ -159,7 +160,7 @@ describe('editor config schema contributions', () => {
 	it('validates dynamic object properties from additionalProperties schemas', () => {
 		const dynamicStore = {
 			getState: () =>
-				({
+				createMockState({
 					editorConfigSchemaContributions: {
 						midi: {
 							root: 'midi',
@@ -182,7 +183,7 @@ describe('editor config schema contributions', () => {
 							},
 						},
 					},
-				}) as State,
+				}),
 		} as StateManager<State>;
 		const validator = createEditorConfigSchemaContributionsValidator(dynamicStore);
 
@@ -224,7 +225,7 @@ describe('editor config schema contributions', () => {
 	it('parses module-memory-id formatted config values against the directive module', () => {
 		const validator = createEditorConfigSchemaContributionsValidator({
 			getState: () =>
-				({
+				createMockState({
 					editorConfigSchemaContributions: {
 						keyboard: {
 							root: 'keyboard',
@@ -240,7 +241,7 @@ describe('editor config schema contributions', () => {
 							},
 						},
 					},
-				}) as State,
+				}),
 		} as StateManager<State>);
 
 		expect(

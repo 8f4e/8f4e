@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/runtime-test-runner",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "private": true,
   "description": "8f4e runtime that executes tests once after compilation",
   "type": "module",
@@ -32,6 +32,7 @@
     "@8f4e/state-manager": "*"
   },
   "devDependencies": {
+    "@8f4e/editor-state-testing": "*",
     "@8f4e/compiler": "*",
     "@8f4e/config": "*",
     "@types/node": "24.13.2",

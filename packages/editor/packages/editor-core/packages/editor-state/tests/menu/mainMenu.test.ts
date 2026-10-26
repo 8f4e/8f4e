@@ -1,4 +1,3 @@
-import type { State } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 import { mainMenu } from '../../src/features/menu/menus';
 import { createMockState } from '../../src/pureHelpers/testingUtils/testUtils';
@@ -14,7 +13,7 @@ describe('menus - go home entry', () => {
 			},
 		});
 
-		const menu = mainMenu(mockState as State);
+		const menu = mainMenu(mockState);
 
 		expect(menu.find(item => item.action === 'goToParentProjectGroup')).toEqual({
 			title: 'Go back',
@@ -26,7 +25,7 @@ describe('menus - go home entry', () => {
 	it('does not add a go-back action at the project root', () => {
 		const mockState = createMockState();
 
-		const menu = mainMenu(mockState as State);
+		const menu = mainMenu(mockState);
 
 		expect(menu.some(item => item.action === 'goToParentProjectGroup')).toBe(false);
 	});
@@ -36,7 +35,7 @@ describe('menus - go home entry', () => {
 			editorMode: 'edit',
 		});
 
-		const menu = mainMenu(mockState as State);
+		const menu = mainMenu(mockState);
 
 		const goHomeIndex = menu.findIndex(item => item.title === 'Go @home');
 		const jumpToIndex = menu.findIndex(item => item.title === 'Jump to...');
@@ -51,7 +50,7 @@ describe('menus - go home entry', () => {
 			codeBlockRendering: { codeBlocks: [] },
 		});
 
-		const menu = mainMenu(mockState as State);
+		const menu = mainMenu(mockState);
 
 		const goHomeItem = menu.find(item => item.title === 'Go @home');
 
@@ -65,7 +64,7 @@ describe('menus - go home entry', () => {
 			featureFlags: { editing: false },
 		});
 
-		const menu = mainMenu(mockState as State);
+		const menu = mainMenu(mockState);
 		const jumpToItem = menu.find(item => item.title === 'Jump to...');
 
 		expect(jumpToItem).toBeDefined();
@@ -77,7 +76,7 @@ describe('menus - go home entry', () => {
 			editorMode: 'edit',
 		});
 
-		const menu = mainMenu(mockState as State);
+		const menu = mainMenu(mockState);
 		const newNoteItem = menu.find(item => item.title === 'New Note');
 
 		expect(newNoteItem).toBeDefined();
@@ -90,7 +89,7 @@ describe('menus - go home entry', () => {
 			editorMode: 'edit',
 		});
 
-		const menu = mainMenu(mockState as State);
+		const menu = mainMenu(mockState);
 		const newPrototypeItem = menu.find(item => item.title === 'New Prototype');
 
 		expect(newPrototypeItem).toBeDefined();
@@ -103,7 +102,7 @@ describe('menus - go home entry', () => {
 			editorMode: 'edit',
 		});
 
-		const menu = mainMenu(mockState as State);
+		const menu = mainMenu(mockState);
 		const newModuleItem = menu.find(item => item.title === 'New Module');
 
 		expect(newModuleItem).toBeDefined();
@@ -117,7 +116,7 @@ describe('menus - go home entry', () => {
 			featureFlags: { editing: false },
 		});
 
-		const menu = mainMenu(mockState as State);
+		const menu = mainMenu(mockState);
 		const newModuleItem = menu.find(item => item.title === 'New Module');
 
 		expect(newModuleItem).toBeUndefined();
@@ -128,7 +127,7 @@ describe('menus - go home entry', () => {
 			callbacks: { exportCanvasScreenshot: async () => {} },
 		});
 
-		const menu = mainMenu(mockState as State);
+		const menu = mainMenu(mockState);
 		const screenshotItem = menu.find(item => item.title === 'Take Screenshot');
 
 		expect(screenshotItem).toBeDefined();
@@ -141,7 +140,7 @@ describe('menus - go home entry', () => {
 			callbacks: { exportCanvasScreenshot: undefined },
 		});
 
-		const menu = mainMenu(mockState as State);
+		const menu = mainMenu(mockState);
 		const screenshotItem = menu.find(item => item.title === 'Take Screenshot');
 
 		expect(screenshotItem).toBeDefined();

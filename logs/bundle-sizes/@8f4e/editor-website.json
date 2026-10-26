@@ -2218,5 +2218,35 @@
 			"gzip": 85352,
 			"brotli": 71806
 		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-10-22T08:33:44.356Z",
+		"commit": "744f601976f3ac6be9c4aa0c0defb6512e835957",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.0.8",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.0.8",
+		"bytes": {
+			"raw": 302685,
+			"gzip": 85602,
+			"brotli": 72003
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-10-22T11:45:46.050Z",
+		"commit": "c8db839f8d5c3ee23431afbb0e140be4d133e2cb",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.0.9",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.0.9",
+		"bytes": {
+			"raw": 302685,
+			"gzip": 85602,
+			"brotli": 72003
+		}
 	}
 ]

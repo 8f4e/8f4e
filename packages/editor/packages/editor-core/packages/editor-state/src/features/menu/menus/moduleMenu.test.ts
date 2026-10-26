@@ -172,6 +172,42 @@ describe('module menu', () => {
 		);
 	});
 
+	it('adds an align blocks in row action for grouped blocks', async () => {
+		const codeBlock = createMockCodeBlock({
+			code: ['module synth', '; @group myGroup', 'moduleEnd'],
+			blockType: 'module',
+		});
+		codeBlock.groupName = 'myGroup';
+		const state = createMockState({
+			codeBlockRendering: {
+				codeBlocks: [codeBlock],
+				selectedCodeBlock: codeBlock,
+			},
+		});
+
+		const items = await moduleMenu(state);
+
+		expect(items.find(candidate => candidate.action === 'alignGroupBlocksInRow')).toEqual({
+			title: 'Align blocks in row',
+			action: 'alignGroupBlocksInRow',
+			payload: { codeBlock },
+			close: true,
+		});
+	});
+
+	it('does not add the align blocks in row action to ungrouped blocks', async () => {
+		const codeBlock = createMockCodeBlock();
+		const state = createMockState({
+			codeBlockRendering: {
+				selectedCodeBlock: codeBlock,
+			},
+		});
+
+		const items = await moduleMenu(state);
+
+		expect(items.some(candidate => candidate.action === 'alignGroupBlocksInRow')).toBe(false);
+	});
+
 	it('disables the remove connections action when only local memory references exist', async () => {
 		const codeBlock = createMockCodeBlock({
 			blockType: 'module',

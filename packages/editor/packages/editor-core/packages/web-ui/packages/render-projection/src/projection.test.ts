@@ -1,3 +1,4 @@
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { SpriteIdLookups } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
@@ -6,7 +7,7 @@ import createWebUiRenderProjection from './projection';
 
 describe('createWebUiRenderProjection', () => {
 	it('subscribes beside editor-state and publishes render data by runtime id', () => {
-		const block = {
+		const block = createMockCodeBlock({
 			creationIndex: 7,
 			code: ['x'],
 			blockType: 'unknown',
@@ -19,9 +20,9 @@ describe('createWebUiRenderProjection', () => {
 				isCollapsed: false,
 			},
 			gaps: new Map(),
-		};
+		});
 		const font = new Proxy({ 63: 63 }, { get: (target, key) => target[Number(key) as 63] ?? Number(key) });
-		const state = {
+		const state = createMockState({
 			codeBlockRendering: { codeBlocks: [block] },
 			spriteLookups: {
 				fontCode: font,
@@ -34,7 +35,7 @@ describe('createWebUiRenderProjection', () => {
 				fontBinaryOne: font,
 				fontBasePrefix: font,
 			} as SpriteIdLookups,
-		} as unknown as State;
+		});
 		const subscriptions = new Map<string, () => void>();
 		const store = {
 			getState: () => state,

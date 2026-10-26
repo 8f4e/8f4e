@@ -6659,5 +6659,137 @@
 				}
 			}
 		}
+	},
+	{
+		"commit": "744f601976f3ac6be9c4aa0c0defb6512e835957",
+		"recordedAt": "2026-10-22T08:33:13.658Z",
+		"coverage": {
+			"documented": 129,
+			"total": 239,
+			"percentage": 54,
+			"byKind": {
+				"variable": {
+					"documented": 1,
+					"total": 16,
+					"percentage": 6.3
+				},
+				"class": {
+					"documented": 7,
+					"total": 7,
+					"percentage": 100
+				},
+				"class-property": {
+					"documented": 8,
+					"total": 64,
+					"percentage": 12.5
+				},
+				"constructor": {
+					"documented": 7,
+					"total": 7,
+					"percentage": 100
+				},
+				"class-method": {
+					"documented": 42,
+					"total": 43,
+					"percentage": 97.7
+				},
+				"accessor": {
+					"documented": 5,
+					"total": 5,
+					"percentage": 100
+				},
+				"function": {
+					"documented": 30,
+					"total": 30,
+					"percentage": 100
+				},
+				"type": {
+					"documented": 14,
+					"total": 24,
+					"percentage": 58.3
+				},
+				"method-signature": {
+					"documented": 2,
+					"total": 3,
+					"percentage": 66.7
+				},
+				"property-signature": {
+					"documented": 11,
+					"total": 38,
+					"percentage": 28.9
+				},
+				"interface": {
+					"documented": 2,
+					"total": 2,
+					"percentage": 100
+				}
+			}
+		}
+	},
+	{
+		"commit": "c8db839f8d5c3ee23431afbb0e140be4d133e2cb",
+		"recordedAt": "2026-10-22T11:45:03.017Z",
+		"coverage": {
+			"documented": 129,
+			"total": 239,
+			"percentage": 54,
+			"byKind": {
+				"variable": {
+					"documented": 1,
+					"total": 16,
+					"percentage": 6.3
+				},
+				"class": {
+					"documented": 7,
+					"total": 7,
+					"percentage": 100
+				},
+				"class-property": {
+					"documented": 8,
+					"total": 64,
+					"percentage": 12.5
+				},
+				"constructor": {
+					"documented": 7,
+					"total": 7,
+					"percentage": 100
+				},
+				"class-method": {
+					"documented": 42,
+					"total": 43,
+					"percentage": 97.7
+				},
+				"accessor": {
+					"documented": 5,
+					"total": 5,
+					"percentage": 100
+				},
+				"function": {
+					"documented": 30,
+					"total": 30,
+					"percentage": 100
+				},
+				"type": {
+					"documented": 14,
+					"total": 24,
+					"percentage": 58.3
+				},
+				"method-signature": {
+					"documented": 2,
+					"total": 3,
+					"percentage": 66.7
+				},
+				"property-signature": {
+					"documented": 11,
+					"total": 38,
+					"percentage": 28.9
+				},
+				"interface": {
+					"documented": 2,
+					"total": 2,
+					"percentage": 100
+				}
+			}
+		}
 	}
 ]

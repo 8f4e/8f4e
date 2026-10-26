@@ -113,6 +113,7 @@ note
 ; @config runtime AudioWorkletRuntime
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
+; @config audioRuntime.audioOutBufferRAddress audioout:buffer
 ; @config export.fileName audioBuffer
 ; @config color.text.lineNumber #607481
 ; @config color.text.entryName #dce9ec

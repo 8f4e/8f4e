@@ -1,4 +1,4 @@
-import type { State } from '@8f4e/editor-state-types';
+import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
 import { resolveWebUiOverlayConfig, webUiEditorConfigSchemaContribution } from './webUiConfig';
 
@@ -26,7 +26,7 @@ describe('web-ui editor config', () => {
 	});
 
 	it('resolves structured overlay texture config', () => {
-		const state = {
+		const state = createMockState({
 			editorConfig: {
 				webUI: {
 					overlay: {
@@ -39,7 +39,7 @@ describe('web-ui editor config', () => {
 					},
 				},
 			},
-		} as State;
+		});
 
 		expect(resolveWebUiOverlayConfig(state)).toEqual({
 			entry: 'renderFrame',
@@ -52,7 +52,7 @@ describe('web-ui editor config', () => {
 	});
 
 	it('ignores incomplete overlay texture config', () => {
-		const state = {
+		const state = createMockState({
 			editorConfig: {
 				webUI: {
 					overlay: {
@@ -63,7 +63,7 @@ describe('web-ui editor config', () => {
 					},
 				},
 			},
-		} as State;
+		});
 
 		expect(resolveWebUiOverlayConfig(state)).toBeUndefined();
 	});
