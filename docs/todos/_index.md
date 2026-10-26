@@ -68,6 +68,7 @@ Active todo files are listed below.
 | 505 | Add an initial editor mode directive | 🟡 | 4-8h | 2026-10-21 | Let projects request edit or view mode at load time while preserving host-level mode policy and later user mode changes. |
 | 506 | Add an inline sample browser directive | 🟡 | TBD | 2026-10-22 | Render a folder/file browser inside a code block and update a bound binary asset URL when a sample is selected. |
 | 507 | Design plugin fill-color contributions | 🟡 | TBD | 2026-10-26 | Work out plugin-owned fill registration across color configuration, sprite-atlas generation, and font/theme rebuilds. |
+| 508 | Design lazy loading for editor plugins | 🟡 | TBD | 2026-10-26 | Work out plugin discovery, asynchronous activation, readiness, and per-editor cleanup while measuring initial-bundle savings. |
 
 ### 🟢 Low Priority
 
