@@ -13,3 +13,8 @@ const wire = palette.rgba.strokeBase;
 The configurable bases, fixed nine-shade ramps, generic materials, opacity variants, and validation rules are documented in
 [the editor palette reference](../../docs/color-paths.md). Resolve a palette only when configuration changes or an
 atlas is built. Drawers select already generated colors and sprite IDs.
+
+The implementation keeps the token catalog in `palette.ts`, base defaults and shade generation in `resolvePalette.ts`,
+and material recipes and contrast selection in `materials.ts`. Color parsing, math, and RGB normalization live in
+`color.ts`. Material recipes run in declaration order, after the materials they depend on. Each generated color is
+normalized to eight-bit RGB before later recipes use it, preserving the colors baked into the current atlas.

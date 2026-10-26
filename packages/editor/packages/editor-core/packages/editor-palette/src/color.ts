@@ -2,6 +2,22 @@
 export type Triple = [number, number, number];
 export type Rgba = readonly [number, number, number, number];
 
+export const BLACK: Rgba = [0, 0, 0, 1];
+export const WHITE: Rgba = [1, 1, 1, 1];
+
+/** Match the atlas's eight-bit RGB channels while preserving the authored alpha. */
+export function normalizeColor(color: Rgba): Rgba {
+	return [...rgb(parseColor(toHex(rgb(color)))), color[3]];
+}
+
+export function formatColor(color: Rgba): string {
+	return color[3] === 1
+		? toHex(rgb(color))
+		: `rgba(${rgb(color)
+				.map(value => Math.round(value * 255))
+				.join(',')},${Number(color[3].toFixed(6))})`;
+}
+
 /** Parse the portable palette syntax without relying on a browser CSS parser. */
 export function parseColor(color: string): Rgba {
 	if (color === 'transparent') return [0, 0, 0, 0];
