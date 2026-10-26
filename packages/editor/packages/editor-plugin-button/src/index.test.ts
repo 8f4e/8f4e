@@ -75,12 +75,12 @@ describe('button plugin', () => {
 		const test = await setup();
 		test.render();
 		const x = test.codeBlock.width - 32;
-		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, x, 32, PALETTE_INDICES.primaryDark2, 32, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', PALETTE_INDICES.inkOn);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, x, 32, PALETTE_INDICES.accentSurface, 32, 16);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', PALETTE_INDICES.darkBase);
 		test.press();
 		test.render();
-		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 16, 32, PALETTE_INDICES.inkBase, 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', PALETTE_INDICES.inkOn);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 16, 32, PALETTE_INDICES.lightBase, 8, 16);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', PALETTE_INDICES.darkBase);
 		const address = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		test.memoryViews.int32[address] = 7;
 		test.render();
@@ -106,11 +106,11 @@ describe('button plugin', () => {
 		const address = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		test.memoryViews.float32[address] = 0.1;
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[| ]', PALETTE_INDICES.inkOn);
+		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[| ]', PALETTE_INDICES.darkBase);
 		test.press();
 		test.render();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0.9, false);
-		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[ |]', PALETTE_INDICES.inkOn);
+		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[ |]', PALETTE_INDICES.darkBase);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0.1, false);
 	});
@@ -154,7 +154,7 @@ describe('button plugin', () => {
 			1,
 			test.codeBlock.width - 40,
 			40,
-			PALETTE_INDICES.primaryDark2,
+			PALETTE_INDICES.accentSurface,
 			40,
 			20
 		);
@@ -280,6 +280,6 @@ describe('button plugin', () => {
 		first.dispose();
 		second.press();
 		second.render();
-		expect(second.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[ |]', PALETTE_INDICES.inkOn);
+		expect(second.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[ |]', PALETTE_INDICES.darkBase);
 	});
 });

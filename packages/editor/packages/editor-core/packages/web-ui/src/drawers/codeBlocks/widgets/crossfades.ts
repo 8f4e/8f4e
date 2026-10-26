@@ -29,10 +29,10 @@ export default function drawer(
 		if (handleX !== crossfade.centerX) {
 			const fillX = Math.min(crossfade.centerX, handleX);
 			const fillWidth = Math.abs(handleX - crossfade.centerX) + crossfade.handleWidth;
-			engine.drawFill(fillX, 0, PALETTE_INDICES.primaryDark1, fillWidth, crossfade.height);
+			engine.drawFill(fillX, 0, PALETTE_INDICES.accentSurface, fillWidth, crossfade.height);
 		}
 
-		engine.drawFill(handleX, 0, PALETTE_INDICES.inkBase, crossfade.handleWidth, crossfade.height);
+		engine.drawFill(handleX, 0, PALETTE_INDICES.lightBase, crossfade.handleWidth, crossfade.height);
 		engine.endGroup();
 	}
 }

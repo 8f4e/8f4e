@@ -109,13 +109,13 @@ describe('switch plugin', () => {
 		const test = await setup();
 		test.render();
 		const x = test.codeBlock.width - 32;
-		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, x, 32, PALETTE_INDICES.primaryDark2, 32, 16);
-		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 8, 32, PALETTE_INDICES.inkBase, 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', PALETTE_INDICES.inkOn);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, x, 32, PALETTE_INDICES.accentSurface, 32, 16);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 8, 32, PALETTE_INDICES.lightBase, 8, 16);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', PALETTE_INDICES.darkBase);
 		test.memoryViews.int32[test.address] = 1;
 		test.render();
-		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 16, 32, PALETTE_INDICES.inkBase, 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', PALETTE_INDICES.inkOn);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 16, 32, PALETTE_INDICES.lightBase, 8, 16);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', PALETTE_INDICES.darkBase);
 	});
 
 	it('toggles through the state event pipeline in view mode as well as edit mode', async () => {
@@ -184,7 +184,7 @@ describe('switch plugin', () => {
 			1,
 			test.codeBlock.width - 40,
 			40,
-			PALETTE_INDICES.primaryDark2,
+			PALETTE_INDICES.accentSurface,
 			40,
 			20
 		);
@@ -261,6 +261,11 @@ describe('switch plugin', () => {
 		second.press();
 		second.render();
 		expect(second.memoryViews.int32[second.address]).toBe(1);
-		expect(second.draw.drawText).toHaveBeenCalledWith(second.codeBlock.width - 32, 32, '[ |]', PALETTE_INDICES.inkOn);
+		expect(second.draw.drawText).toHaveBeenCalledWith(
+			second.codeBlock.width - 32,
+			32,
+			'[ |]',
+			PALETTE_INDICES.darkBase
+		);
 	});
 });

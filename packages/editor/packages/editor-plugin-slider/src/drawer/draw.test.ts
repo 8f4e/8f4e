@@ -47,12 +47,12 @@ describe('drawSliders', () => {
 		const drawText = vi.mocked(engine.drawText);
 		expect(drawSprite.mock.calls).toEqual([
 			[0, 0, PALETTE_INDICES.surfaceRaised2, 32, 32],
-			[0, 0, PALETTE_INDICES.primaryDark2, 20, 32],
-			[12, 0, PALETTE_INDICES.inkBase, 8, 32],
+			[0, 0, PALETTE_INDICES.accentSurface, 20, 32],
+			[12, 0, PALETTE_INDICES.lightBase, 8, 32],
 		]);
 		expect(drawText.mock.calls).toEqual([
-			[12, 0, '|', PALETTE_INDICES.inkOn],
-			[12, 16, '|', PALETTE_INDICES.inkOn],
+			[12, 0, '|', PALETTE_INDICES.darkBase],
+			[12, 16, '|', PALETTE_INDICES.darkBase],
 		]);
 	});
 });

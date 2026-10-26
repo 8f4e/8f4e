@@ -55,7 +55,7 @@ export default function drawModules(
 			if (codeBlock === state.codeBlockRendering.draggedCodeBlock) {
 				engine.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
 			} else if (codeBlock.disabled) {
-				engine.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
+				engine.drawFill(0, 0, PALETTE_INDICES.surfaceSubdued, codeBlock.width, codeBlock.height);
 			} else {
 				engine.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
 			}

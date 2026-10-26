@@ -3,7 +3,11 @@ import { PALETTE_INDICES, type PaletteIndex, resolvePalette, SHADES, toPaletteBy
 import cga from '@8f4e/examples/modules/color-schemes/cgaColors.8f4em?raw';
 import dx7 from '@8f4e/examples/modules/color-schemes/dx7.8f4em?raw';
 import temple from '@8f4e/examples/modules/color-schemes/templeOs.8f4em?raw';
+import aftertouch from '@8f4e/examples/projects/audio/amigaMods/aftertouch.8f4e?raw';
 import aurora from '@8f4e/examples/projects/audio/amigaMods/hymn_to_aurora.8f4e?raw';
+import translucent from '@8f4e/examples/projects/audio/amigaMods/lowerIntentions.8f4e?raw';
+import sampler from '@8f4e/examples/projects/audio/samplePlayer.8f4e?raw';
+import classifier from '@8f4e/examples/projects/machine-learning/digitClassifier.8f4e?raw';
 import blue from '@8f4e/examples/projects/misc/landingPageDemo1.8f4e?raw';
 import green from '@8f4e/examples/projects/misc/landingPageDemo2.8f4e?raw';
 import purple from '@8f4e/examples/projects/misc/landingPageDemo3.8f4e?raw';
@@ -26,7 +30,10 @@ for (const [name, source] of [
 	['CGA', cga],
 	['TempleOS', temple],
 	['DX7', dx7],
-	['Default', ''],
+	['Aftertouch', aftertouch],
+	['Classifier', classifier],
+	['Sampler', sampler],
+	['Lower Intentions', translucent],
 ]) {
 	const canvas = document.createElement('canvas');
 	canvas.width = 248;
@@ -51,14 +58,17 @@ for (const [name, source] of [
 		engine.drawSprite(0, 0, ids.background, PALETTE_INDICES.canvasDetail2);
 		engine.drawSprite(8, 0, ids.background, PALETTE_INDICES.canvasDetail1);
 		engine.drawSprite(8, 24, ids.fill, PALETTE_INDICES.surfaceBase, 232, 208);
-		text(16, 32, name, PALETTE_INDICES.inkBase);
+		text(16, 32, name, PALETTE_INDICES.inkStrong);
 		text(16, 64, 'push', PALETTE_INDICES.primaryBase);
 		text(64, 64, '42', PALETTE_INDICES.secondaryBase);
+		text(96, 64, '0b', PALETTE_INDICES.secondarySoft);
+		text(112, 64, '0', PALETTE_INDICES.mutedSoft);
+		text(120, 64, '1', PALETTE_INDICES.primaryStrong);
 		text(16, 80, '; supporting text', PALETTE_INDICES.tertiaryBase);
-		engine.drawSprite(16, 112, ids.fill, PALETTE_INDICES.surfaceRaised2, 208, 16);
-		engine.drawSprite(16, 112, ids.fill, PALETTE_INDICES.primaryDark2, 128, 16);
-		engine.drawSprite(136, 112, ids.fill, PALETTE_INDICES.inkBase, 16, 16);
-		text(140, 112, '|', PALETTE_INDICES.inkOn);
+		engine.drawSprite(16, 112, ids.fill, PALETTE_INDICES.surfaceOverlay, 208, 16);
+		engine.drawSprite(16, 112, ids.fill, PALETTE_INDICES.accentSurface, 128, 16);
+		engine.drawSprite(136, 112, ids.fill, PALETTE_INDICES.lightBase, 16, 16);
+		text(140, 112, '|', PALETTE_INDICES.darkBase);
 		lines.drawLine(0, 100, 248, 100, 2, palette.rgba.strokeBase);
 		engine.drawSprite(16, 136, ids.fill, PALETTE_INDICES.darkSurface, 208, 20);
 		for (let x = 0; x < 72; x++)

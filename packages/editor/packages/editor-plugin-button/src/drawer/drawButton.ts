@@ -8,7 +8,7 @@ const ON_LABEL = '[ |]';
 
 export default function drawButton(engine: DrawContext, state: State, button: ButtonWidget, isOn: boolean): void {
 	const knobX = button.x + state.viewport.vGrid * (isOn ? 2 : 1);
-	engine.drawFill(button.x, button.y, PALETTE_INDICES.primaryDark2, button.width, button.height);
-	engine.drawFill(knobX, button.y, PALETTE_INDICES.inkBase, state.viewport.vGrid, button.height);
-	engine.drawText(button.x, button.y, isOn ? ON_LABEL : OFF_LABEL, PALETTE_INDICES.inkOn);
+	engine.drawFill(button.x, button.y, PALETTE_INDICES.accentSurface, button.width, button.height);
+	engine.drawFill(knobX, button.y, PALETTE_INDICES.lightBase, state.viewport.vGrid, button.height);
+	engine.drawText(button.x, button.y, isOn ? ON_LABEL : OFF_LABEL, PALETTE_INDICES.darkBase);
 }

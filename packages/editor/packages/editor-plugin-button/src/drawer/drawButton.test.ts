@@ -33,10 +33,10 @@ describe('drawButton', () => {
 		const drawSprite = vi.mocked(engine.drawFill);
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 		expect(drawSprite.mock.calls).toEqual([
-			[10, 20, PALETTE_INDICES.primaryDark2, 32, 16],
-			[18, 20, PALETTE_INDICES.inkBase, 8, 16],
+			[10, 20, PALETTE_INDICES.accentSurface, 32, 16],
+			[18, 20, PALETTE_INDICES.lightBase, 8, 16],
 		]);
-		expect(drawText).toHaveBeenCalledWith(10, 20, '[| ]', PALETTE_INDICES.inkOn);
+		expect(drawText).toHaveBeenCalledWith(10, 20, '[| ]', PALETTE_INDICES.darkBase);
 	});
 
 	it('moves the knob fill and vertical bar to the on position', () => {
@@ -48,9 +48,9 @@ describe('drawButton', () => {
 		const drawSprite = vi.mocked(engine.drawFill);
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 		expect(drawSprite.mock.calls).toEqual([
-			[10, 20, PALETTE_INDICES.primaryDark2, 32, 16],
-			[26, 20, PALETTE_INDICES.inkBase, 8, 16],
+			[10, 20, PALETTE_INDICES.accentSurface, 32, 16],
+			[26, 20, PALETTE_INDICES.lightBase, 8, 16],
 		]);
-		expect(drawText).toHaveBeenCalledWith(10, 20, '[ |]', PALETTE_INDICES.inkOn);
+		expect(drawText).toHaveBeenCalledWith(10, 20, '[ |]', PALETTE_INDICES.darkBase);
 	});
 });

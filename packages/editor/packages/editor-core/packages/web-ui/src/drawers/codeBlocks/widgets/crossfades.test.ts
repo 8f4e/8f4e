@@ -61,7 +61,7 @@ describe('drawCrossfades', () => {
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.surfaceRaised2, 10, 8);
-		expect(drawSprite).toHaveBeenCalledWith(4, 0, PALETTE_INDICES.inkBase, 2, 8);
+		expect(drawSprite).toHaveBeenCalledWith(4, 0, PALETTE_INDICES.lightBase, 2, 8);
 	});
 
 	it('draws a fill rectangle from the center to the left knob position', () => {
@@ -84,7 +84,7 @@ describe('drawCrossfades', () => {
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.surfaceRaised2, 10, 8);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.primaryDark1, 6, 8);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.inkBase, 2, 8);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.accentSurface, 6, 8);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.lightBase, 2, 8);
 	});
 });

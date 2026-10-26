@@ -90,7 +90,7 @@ describe('drawConnectors', () => {
 		drawConnectors(engine, state, block, memory);
 
 		expect(drawSprite.mock.calls).toEqual([
-			[2, 3, 1, PALETTE_INDICES.surfaceRaised2, width * 3, height],
+			[2, 3, 1, PALETTE_INDICES.surfaceOverlay, width * 3, height],
 			[2, 3, 102, PALETTE_INDICES.primaryBase, width, height],
 			[2 + width * 2, 3, 103, PALETTE_INDICES.primaryBase, width, height],
 		]);
@@ -110,7 +110,7 @@ describe('drawConnectors', () => {
 		drawConnectors(engine, state, block, memory);
 
 		expect(drawSprite.mock.calls).toEqual([
-			[2, 3, 1, PALETTE_INDICES.surfaceRaised2, 24, 16],
+			[2, 3, 1, PALETTE_INDICES.surfaceOverlay, 24, 16],
 			[2, 3, 102, PALETTE_INDICES.secondaryBase, 8, 16],
 			[10, 3, 100, star, 8, 16],
 			[18, 3, 103, PALETTE_INDICES.secondaryBase, 8, 16],

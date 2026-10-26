@@ -32,9 +32,9 @@ export default function deriveCodeBlockCodeCells(
 		fontCode: PALETTE_INDICES.inkBase,
 		fontCodeComment: PALETTE_INDICES.tertiaryBase,
 		fontNumbers: PALETTE_INDICES.secondaryBase,
-		fontBinaryZero: PALETTE_INDICES.inkFaint,
+		fontBinaryZero: PALETTE_INDICES.mutedSoft,
 		fontBinaryOne: PALETTE_INDICES.primaryStrong,
-		fontBasePrefix: PALETTE_INDICES.secondaryBase,
+		fontBasePrefix: PALETTE_INDICES.secondarySoft,
 	});
 	const prefixLength = block.lineNumberColumnWidth + 1;
 	const colors: Array<Array<PaletteIndex | undefined>> = characters.map((line, displayRow) => {

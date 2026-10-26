@@ -17,9 +17,9 @@ export const switchPlugin: EditorPlugin = {
 				if (value === control.onValue || value === control.offValue) {
 					const isOn = value === control.onValue;
 					const knobX = control.x + state.viewport.vGrid * (isOn ? 2 : 1);
-					draw.drawFill(control.x, control.y, PALETTE_INDICES.primaryDark2, control.width, control.height);
-					draw.drawFill(knobX, control.y, PALETTE_INDICES.inkBase, state.viewport.vGrid, control.height);
-					draw.drawText(control.x, control.y, isOn ? '[ |]' : '[| ]', PALETTE_INDICES.inkOn);
+					draw.drawFill(control.x, control.y, PALETTE_INDICES.accentSurface, control.width, control.height);
+					draw.drawFill(knobX, control.y, PALETTE_INDICES.lightBase, state.viewport.vGrid, control.height);
+					draw.drawText(control.x, control.y, isOn ? '[ |]' : '[| ]', PALETTE_INDICES.darkBase);
 				} else {
 					draw.drawText(control.x, control.y, '[__]', PALETTE_INDICES.secondaryBase);
 				}

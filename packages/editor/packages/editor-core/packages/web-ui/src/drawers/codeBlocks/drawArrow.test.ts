@@ -35,7 +35,7 @@ describe('drawArrow', () => {
 		drawArrow(engine, createMockCodeBlock({ x: -100, y: 384 }), state);
 		drawArrow(engine, createMockCodeBlock({ x: 1200, y: -100 }), state);
 
-		const font = PALETTE_INDICES.primaryBase;
+		const font = PALETTE_INDICES.secondaryBase;
 		expect((engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText).toHaveBeenCalledWith(
 			512,
 			0,

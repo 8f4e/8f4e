@@ -840,6 +840,7 @@ constantsEnd
 note
 ; @pos -100 -135
 ; @config color.canvas #3399cc
+; @config color.ink rgba(255,255,255,0.8)
 ; @config color.primary #ffffff
 ; @config color.secondary #ffffff
 ; @config color.muted rgba(255,255,255,0.3)

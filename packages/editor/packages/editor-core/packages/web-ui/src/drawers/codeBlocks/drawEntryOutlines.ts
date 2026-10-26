@@ -35,7 +35,7 @@ export default function drawEntryOutlines(engine: DrawContext, state: State): vo
 			outline.topLeft.x + state.viewport.vGrid,
 			outline.topLeft.y,
 			outline.entryName,
-			PALETTE_INDICES.inkBase
+			PALETTE_INDICES.inkStrong
 		);
 	}
 }

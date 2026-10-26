@@ -42,7 +42,7 @@ export default function drawConnectors(
 		return;
 	}
 	const { vGrid: width, hGrid: height } = state.viewport;
-	const background = PALETTE_INDICES.surfaceRaised2;
+	const background = PALETTE_INDICES.surfaceOverlay;
 
 	for (const output of codeBlock.widgets.outputs) {
 		const { x, y, memory } = output;
