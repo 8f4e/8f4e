@@ -24,7 +24,7 @@ function createCodeBlockWithEditorDirective(name: string, args: string[] = []): 
 				prefix: '@',
 				name,
 				args,
-				rawRow: 0,
+				sourceLineIndex: 0,
 				isTrailing: false,
 			},
 		],

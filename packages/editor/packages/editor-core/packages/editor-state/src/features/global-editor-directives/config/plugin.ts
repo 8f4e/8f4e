@@ -3,7 +3,7 @@ import { createGlobalEditorDirectiveDefinition } from '../utils';
 export default createGlobalEditorDirectiveDefinition('config', (directive, draft, context) => {
 	if (directive.args.length !== 2) {
 		draft.errors.push({
-			lineNumber: directive.rawRow,
+			lineNumber: directive.sourceLineIndex,
 			message: '@config requires exactly 2 arguments: <path> <value>',
 			codeBlockId: context.codeBlockId,
 		});
@@ -16,7 +16,7 @@ export default createGlobalEditorDirectiveDefinition('config', (directive, draft
 		{
 			path,
 			value,
-			rawRow: directive.rawRow,
+			sourceLineIndex: directive.sourceLineIndex,
 			codeBlockId: context.codeBlockId,
 			...(context.moduleId ? { moduleId: context.moduleId } : {}),
 		},

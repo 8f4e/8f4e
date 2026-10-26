@@ -120,7 +120,7 @@ describe('parseEditorDirectives', () => {
 		).toEqual([
 			{
 				name: 'config',
-				rawRow: 0,
+				sourceLineIndex: 0,
 				args: ['webUI.overlay.target', 'frame:buffer'],
 				sourceLine: '; @config',
 			},
@@ -147,33 +147,33 @@ describe('normalizeEditorDirectiveRecords', () => {
 	const plotDefinition = createDirectiveDefinition('plot', () => undefined);
 
 	it('normalizes alias to canonical definition name', () => {
-		const records = [{ prefix: '@' as const, name: 'w', args: ['value'], rawRow: 0, isTrailing: false }];
+		const records = [{ prefix: '@' as const, name: 'w', args: ['value'], sourceLineIndex: 0, isTrailing: false }];
 		expect(normalizeEditorDirectiveRecords(records, [watchDefinition])).toEqual([
-			{ name: 'watch', rawRow: 0, args: ['value'], sourceLine: undefined },
+			{ name: 'watch', sourceLineIndex: 0, args: ['value'], sourceLine: undefined },
 		]);
 	});
 
 	it('filters out unknown directive names', () => {
-		const records = [{ prefix: '@' as const, name: 'unknown', args: [], rawRow: 0, isTrailing: false }];
+		const records = [{ prefix: '@' as const, name: 'unknown', args: [], sourceLineIndex: 0, isTrailing: false }];
 		expect(normalizeEditorDirectiveRecords(records, [watchDefinition])).toEqual([]);
 	});
 
 	it('allows trailing directives for definitions with allowTrailingComment', () => {
-		const records = [{ prefix: '@' as const, name: 'watch', args: [], rawRow: 1, isTrailing: true }];
+		const records = [{ prefix: '@' as const, name: 'watch', args: [], sourceLineIndex: 1, isTrailing: true }];
 		expect(normalizeEditorDirectiveRecords(records, [watchDefinition])).toEqual([
-			{ name: 'watch', rawRow: 1, args: [], sourceLine: undefined },
+			{ name: 'watch', sourceLineIndex: 1, args: [], sourceLine: undefined },
 		]);
 	});
 
 	it('blocks trailing directives for definitions without allowTrailingComment', () => {
-		const records = [{ prefix: '@' as const, name: 'plot', args: ['buf'], rawRow: 2, isTrailing: true }];
+		const records = [{ prefix: '@' as const, name: 'plot', args: ['buf'], sourceLineIndex: 2, isTrailing: true }];
 		expect(normalizeEditorDirectiveRecords(records, [plotDefinition])).toEqual([]);
 	});
 
 	it('allows non-trailing directives for definitions without allowTrailingComment', () => {
-		const records = [{ prefix: '@' as const, name: 'plot', args: ['buf'], rawRow: 2, isTrailing: false }];
+		const records = [{ prefix: '@' as const, name: 'plot', args: ['buf'], sourceLineIndex: 2, isTrailing: false }];
 		expect(normalizeEditorDirectiveRecords(records, [plotDefinition])).toEqual([
-			{ name: 'plot', rawRow: 2, args: ['buf'], sourceLine: undefined },
+			{ name: 'plot', sourceLineIndex: 2, args: ['buf'], sourceLine: undefined },
 		]);
 	});
 });

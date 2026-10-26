@@ -16,7 +16,8 @@ Editor plugins can contribute widget directives and drawers, but their fill colo
 The extracted switch plugin uses `fill.switchBackground`, which remains declared in the core color scheme and is
 also used by the extracted button plugin. Adding another plugin-owned fill currently requires changes to core types,
 configuration validation, and sprite-atlas generation. The tooltips plugin also uses core-owned tooltip background
-and stack-highlight fills; its tooltip font colors remain in the core text palette as well.
+and stack-highlight fills; its tooltip font colors remain in the core text palette as well. The wave plugin uses
+core-owned waveform fills and the shared scan-line fill.
 
 Designing this contribution point spans more of the rendering and configuration pipeline than the initial plugin
 extraction. Defer it to a separate follow-up so the current work stays focused on state, directive, and drawer
@@ -62,6 +63,7 @@ generic color configuration and atlas machinery without declaring individual plu
   fill generation, and sprite lookups.
 - `packages/editor/packages/editor-plugin-switch/` - Plugin-owned fill declaration and drawing.
 - `packages/editor/packages/editor-plugin-button/` - Button background and knob fills.
+- `packages/editor/packages/editor-plugin-wave/` - Waveform background, samples, and playhead fills.
 - `packages/editor/packages/editor-plugin-tooltips/` - Tooltip background and stack-highlight fills.
 
 ## References

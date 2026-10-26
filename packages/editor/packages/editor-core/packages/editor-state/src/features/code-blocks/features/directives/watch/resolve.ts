@@ -22,7 +22,8 @@ function resolveWatchDirectiveWidget(
 		return;
 	}
 
-	const displayRow = directiveState.displayModel.rawRowToDisplayRow[_debugger.lineNumber] ?? _debugger.lineNumber;
+	const displayRow =
+		directiveState.displayModel.sourceLineIndexToDisplayRow[_debugger.lineNumber] ?? _debugger.lineNumber;
 	const tabStopsByLine = getTabStopsByLine(graphicData.code);
 	const visualLineWidth = getVisualLineWidth(
 		graphicData.code[_debugger.lineNumber] || '',

@@ -104,12 +104,12 @@ describe('assertion marker derivation', () => {
 	it('uses displayed rows and widget gaps, omitting assertions hidden by collapse', () => {
 		const { block, state } = setup();
 		state.assertionResults = [invocation(site()), invocation(site({ siteId: 1, lineNumber: 4 }))];
-		block.displayModel = buildDisplayModel(code, { hideAfterRawRow: 3 });
+		block.displayModel = buildDisplayModel(code, { hideAfterSourceLineIndex: 3 });
 		block.gaps.set(1, { size: 3 });
 		expect(deriveAssertionMarkers(block, state)).toEqual([
 			{ lineNumber: 2, passed: true, x: 8, y: 80, width: 16, height: 16 },
 		]);
-		block.displayModel = buildDisplayModel(code, { hideAfterRawRow: 3, isExpandedForEditing: true });
+		block.displayModel = buildDisplayModel(code, { hideAfterSourceLineIndex: 3, isExpandedForEditing: true });
 		expect(deriveAssertionMarkers(block, state)).toHaveLength(2);
 	});
 

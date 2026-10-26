@@ -3,6 +3,7 @@ import { buttonPlugin } from '@8f4e/editor-plugin-button';
 import { switchPlugin } from '@8f4e/editor-plugin-switch';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
 import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
+import { wavePlugin } from '@8f4e/editor-plugin-wave';
 import { createCompilerService } from './compiler-callback';
 import { getListOfModules, getModule, getModuleDependencies } from './examples/moduleRegistry';
 import { getProject } from './get-project';
@@ -23,6 +24,7 @@ export const defaultEditorPlugins: NonNullable<EditorOptions['plugins']> = [
 	toggleSkipExecutionPlugin,
 	switchPlugin,
 	buttonPlugin,
+	wavePlugin,
 	tooltipsPlugin,
 ];
 

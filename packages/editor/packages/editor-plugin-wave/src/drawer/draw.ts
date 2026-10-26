@@ -1,18 +1,13 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { State } from '@8f4e/editor-state-types';
 import type { SpriteId } from '@8f4e/sprite-generator';
-import type { DrawContext } from '../../../drawContext';
-import type { MemoryViews } from '../../../types';
-import { getBaseValueIndex, getTypedValueView } from './typedValueView';
+import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import type { Wave } from '../types';
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.max(min, Math.min(value, max));
 }
 
 function valueToY(value: number, minValue: number, inverseValueRange: number, height: number): number {
-	if (inverseValueRange === 0) {
-		return Math.floor(height / 2);
-	}
-
 	const normalized = (value - minValue) * inverseValueRange;
 	return clamp(height - 1 - Math.round(normalized * (height - 1)), 0, height - 1);
 }
@@ -22,7 +17,6 @@ function drawWaveform(
 	samples: ArrayLike<number>,
 	baseIndex: number,
 	arrayLength: number,
-	width: number,
 	height: number,
 	columnWidth: number,
 	columnCount: number,
@@ -54,12 +48,7 @@ function drawWaveform(
 	}
 }
 
-export default function drawer(
-	engine: DrawContext,
-	state: State,
-	codeBlock: CodeBlockGraphicData,
-	memoryViews: MemoryViews
-): void {
+export default function drawWaves(engine: DrawContext, state: State, waves: Wave[], memoryViews: MemoryViews): void {
 	if (!state.spriteLookups) {
 		return;
 	}
@@ -71,32 +60,32 @@ export default function drawer(
 		y,
 		width,
 		height,
-		startAddress,
+		source,
 		inverseElementByteSize,
 		baseSampleShift,
-		length,
-		pointer,
+		elementCount,
+		playhead,
 		valueType,
 		minValue,
 		maxValue,
 		inverseValueRange,
-	} of codeBlock.widgets.arrayWaves) {
+	} of waves) {
 		engine.startGroup(x, y);
 
 		const arrayLength =
-			typeof length === 'number'
-				? length
-				: memoryViews.int32[length.memory.allocationUnitAddress + length.bufferPointer];
-		if (arrayLength <= 0 || inverseElementByteSize <= 0) {
+			typeof elementCount === 'number'
+				? elementCount
+				: memoryViews.int32[elementCount.memory.allocationUnitAddress + elementCount.bufferPointer];
+		if (arrayLength <= 0) {
 			engine.endGroup();
 			continue;
 		}
 
-		const startPointerValue = startAddress.showAddress
-			? startAddress.memory.byteAddress
-			: memoryViews.int32[startAddress.memory.allocationUnitAddress + startAddress.bufferPointer];
-		const baseValueIndex = getBaseValueIndex(startAddress, memoryViews, baseSampleShift);
-		const values = getTypedValueView(memoryViews, valueType);
+		const startPointerValue = source.showAddress
+			? source.memory.byteAddress
+			: memoryViews.int32[source.memory.allocationUnitAddress + source.bufferPointer];
+		const baseValueIndex = startPointerValue >> baseSampleShift;
+		const values = memoryViews[valueType];
 		const waveformColumnWidth = Math.max(1, Math.floor(state.viewport.vGrid / 2));
 		const columnCount = Math.max(1, Math.floor(width / waveformColumnWidth));
 		const columnWidth = Math.max(1, Math.floor(width / columnCount));
@@ -106,7 +95,6 @@ export default function drawer(
 			values,
 			baseValueIndex,
 			arrayLength,
-			width,
 			height,
 			columnWidth,
 			columnCount,
@@ -116,10 +104,10 @@ export default function drawer(
 			fillSprites.waveform
 		);
 
-		if (pointer) {
-			const pointerValue = pointer.showAddress
-				? pointer.memory.byteAddress
-				: memoryViews.int32[pointer.memory.allocationUnitAddress + pointer.bufferPointer];
+		if (playhead) {
+			const pointerValue = playhead.showAddress
+				? playhead.memory.byteAddress
+				: memoryViews.int32[playhead.memory.allocationUnitAddress + playhead.bufferPointer];
 			const pointerIndex = Math.floor((pointerValue - startPointerValue) * inverseElementByteSize);
 			const clampedIndex = Math.max(0, Math.min(pointerIndex, arrayLength - 1));
 			const scanlineWidth = state.viewport.vGrid / 2;

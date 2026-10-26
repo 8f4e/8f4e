@@ -5,7 +5,7 @@ import watchDirective from './plugin';
 
 function parseWatchDirectiveData(code: string[]) {
 	return parseEditorDirectives(code, [watchDirective])
-		.map(directive => createWatchDirectiveData(directive.args, directive.rawRow, directive.sourceLine))
+		.map(directive => createWatchDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine))
 		.filter(result => result !== undefined);
 }
 

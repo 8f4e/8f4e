@@ -6,7 +6,7 @@ function entry(value: string): EditorConfigEntry {
 	return {
 		path: RECOMPILE_DEBOUNCE_DELAY_CONFIG_PATH,
 		value,
-		rawRow: 1,
+		sourceLineIndex: 1,
 		codeBlockId: 0,
 	};
 }

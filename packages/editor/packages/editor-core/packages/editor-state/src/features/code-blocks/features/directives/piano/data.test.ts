@@ -5,7 +5,7 @@ import pianoDirective from './plugin';
 
 function parsePianoDirectiveData(code: string[]) {
 	return parseEditorDirectives(code, [pianoDirective]).map(directive =>
-		createPianoDirectiveData(directive.args, directive.rawRow)
+		createPianoDirectiveData(directive.args, directive.sourceLineIndex)
 	);
 }
 

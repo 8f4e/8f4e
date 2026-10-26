@@ -3,25 +3,33 @@ import { describe, expect, it } from 'vitest';
 import { parseBlockDirectives } from '../../utils/parseBlockDirectives';
 import { createDirectiveRegistry, deriveDirectiveState, directiveDefinitions } from './registry';
 import { parseEditorDirectives } from './utils';
+import { getVerticalSpaceAfterSourceLineRequests } from './verticalSpaceAfterSourceLine';
 
 describe('directive registry', () => {
-	it('registers directives per instance and removes their parsing and layout contributions', () => {
+	it('registers directives per instance and removes their parsing and vertical-space requests', () => {
 		const first = createDirectiveRegistry();
 		const second = createDirectiveRegistry();
 		const unregister = first.register({
 			name: 'customWidget',
 			apply: (directive, draft) => {
-				draft.layoutContributions.push({ rawRow: directive.rawRow, rows: Number(directive.args[0]) });
+				draft.addVerticalSpaceAfterSourceLine({
+					sourceLineIndex: directive.sourceLineIndex,
+					heightInRows: Number(directive.args[0]),
+				});
 			},
 		});
 		const code = ['; @customWidget 2'];
 		const records = parseBlockDirectives(code);
-		expect(deriveDirectiveState(code, records, {}, first.definitions).layoutContributions).toEqual([
-			{ rawRow: 0, rows: 2 },
-		]);
-		expect(deriveDirectiveState(code, records, {}, second.definitions).layoutContributions).toEqual([]);
+		expect(getVerticalSpaceAfterSourceLineRequests(deriveDirectiveState(code, records, {}, first.definitions))).toEqual(
+			[{ sourceLineIndex: 0, heightInRows: 2 }]
+		);
+		expect(
+			getVerticalSpaceAfterSourceLineRequests(deriveDirectiveState(code, records, {}, second.definitions))
+		).toEqual([]);
 		unregister();
-		expect(deriveDirectiveState(code, records, {}, first.definitions).layoutContributions).toEqual([]);
+		expect(getVerticalSpaceAfterSourceLineRequests(deriveDirectiveState(code, records, {}, first.definitions))).toEqual(
+			[]
+		);
 	});
 
 	it('parses registered directives from code', () => {
@@ -43,37 +51,37 @@ describe('directive registry', () => {
 		expect(result).toEqual([
 			{
 				name: 'plot',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				args: ['&buffer', 'count(buffer)'],
 				sourceLine: '; @plot &buffer count(buffer)',
 			},
 			{
 				name: 'bars',
-				rawRow: 2,
+				sourceLineIndex: 2,
 				args: ['&bins', 'count(bins)'],
 				sourceLine: '; @bars &bins count(bins)',
 			},
 			{
 				name: 'slider',
-				rawRow: 3,
+				sourceLineIndex: 3,
 				args: ['&gain', '0', '1', '0.01'],
 				sourceLine: '; @slider &gain 0 1 0.01',
 			},
 			{
 				name: 'crossfade',
-				rawRow: 4,
+				sourceLineIndex: 4,
 				args: ['&dry', '&wet'],
 				sourceLine: '; @crossfade &dry &wet',
 			},
 			{
 				name: 'info',
-				rawRow: 5,
+				sourceLineIndex: 5,
 				args: ['foo'],
 				sourceLine: '; @info foo',
 			},
 			{
 				name: 'stack',
-				rawRow: 6,
+				sourceLineIndex: 6,
 				args: [],
 				sourceLine: '; @stack',
 			},
@@ -87,9 +95,9 @@ describe('directive registry', () => {
 		);
 
 		expect(result).toEqual([
-			{ name: 'watch', rawRow: 0, args: [], sourceLine: 'int foo 1 ; @watch' },
-			{ name: 'stack', rawRow: 1, args: [], sourceLine: 'push 1 ; @stack' },
-			{ name: 'meter', rawRow: 2, args: [], sourceLine: 'float out ; @meter' },
+			{ name: 'watch', sourceLineIndex: 0, args: [], sourceLine: 'int foo 1 ; @watch' },
+			{ name: 'stack', sourceLineIndex: 1, args: [], sourceLine: 'push 1 ; @stack' },
+			{ name: 'meter', sourceLineIndex: 2, args: [], sourceLine: 'float out ; @meter' },
 		]);
 	});
 
@@ -97,8 +105,8 @@ describe('directive registry', () => {
 		const result = parseEditorDirectives(['; @home @favorite'], directiveDefinitions);
 
 		expect(result).toEqual([
-			{ name: 'home', rawRow: 0, args: [], sourceLine: '; @home @favorite' },
-			{ name: 'favorite', rawRow: 0, args: [], sourceLine: '; @home @favorite' },
+			{ name: 'home', sourceLineIndex: 0, args: [], sourceLine: '; @home @favorite' },
+			{ name: 'favorite', sourceLineIndex: 0, args: [], sourceLine: '; @home @favorite' },
 		]);
 	});
 
@@ -106,8 +114,8 @@ describe('directive registry', () => {
 		const result = parseEditorDirectives(['; @w value', 'push 1 ; @s'], directiveDefinitions);
 
 		expect(result).toEqual([
-			{ name: 'watch', rawRow: 0, args: ['value'], sourceLine: '; @w value' },
-			{ name: 'stack', rawRow: 1, args: [], sourceLine: 'push 1 ; @s' },
+			{ name: 'watch', sourceLineIndex: 0, args: ['value'], sourceLine: '; @w value' },
+			{ name: 'stack', sourceLineIndex: 1, args: [], sourceLine: 'push 1 ; @s' },
 		]);
 	});
 
@@ -121,7 +129,6 @@ describe('directive registry', () => {
 			'; @plot &buffer count(buffer)',
 			'; @bars &bins count(bins)',
 			'; @crossfade &dry &wet',
-			'; @wave &buffer 16 pointer',
 			'moduleEnd',
 		];
 		const result = deriveDirectiveState(code, parseBlockDirectives(code));
@@ -132,29 +139,14 @@ describe('directive registry', () => {
 			homeAlignment: 'center',
 			isFavorite: true,
 		});
-		expect(result.layoutContributions).toEqual([
-			{ rawRow: 4, rows: 1 },
-			{ rawRow: 5, rows: 8 },
-			{ rawRow: 6, rows: 8 },
-			{ rawRow: 7, rows: 2 },
-			{ rawRow: 8, rows: 2 },
+		expect(getVerticalSpaceAfterSourceLineRequests(result)).toEqual([
+			{ sourceLineIndex: 4, heightInRows: 1 },
+			{ sourceLineIndex: 5, heightInRows: 8 },
+			{ sourceLineIndex: 6, heightInRows: 8 },
+			{ sourceLineIndex: 7, heightInRows: 2 },
 		]);
 		expect(result.displayState).toEqual({});
-		expect(result.displayModel.displayRowToRawRow).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-	});
-
-	it('allocates double layout height for @wave2', () => {
-		const code = ['module foo', '; @wave2 &buffer 16 pointer', 'moduleEnd'];
-		const result = deriveDirectiveState(code, parseBlockDirectives(code));
-
-		expect(result.layoutContributions).toEqual([{ rawRow: 1, rows: 4 }]);
-	});
-
-	it('allocates quadruple layout height for @wave4', () => {
-		const code = ['module foo', '; @wave4 &buffer 16 pointer', 'moduleEnd'];
-		const result = deriveDirectiveState(code, parseBlockDirectives(code));
-
-		expect(result.layoutContributions).toEqual([{ rawRow: 1, rows: 8 }]);
+		expect(result.displayModel.displayRowToSourceLineIndex).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
 	});
 
 	it('allocates one info layout row per state.info key', () => {
@@ -171,7 +163,7 @@ describe('directive registry', () => {
 			}),
 		});
 
-		expect(result.layoutContributions).toEqual([{ rawRow: 1, rows: 3 }]);
+		expect(getVerticalSpaceAfterSourceLineRequests(result)).toEqual([{ sourceLineIndex: 1, heightInRows: 3 }]);
 	});
 
 	it('ignores unregistered directives', () => {
@@ -184,7 +176,7 @@ describe('directive registry', () => {
 			homeAlignment: 'center',
 			isFavorite: false,
 		});
-		expect(result.layoutContributions).toEqual([{ rawRow: 2, rows: 8 }]);
+		expect(getVerticalSpaceAfterSourceLineRequests(result)).toEqual([{ sourceLineIndex: 2, heightInRows: 8 }]);
 	});
 
 	it('derives optional home alignment from @home', () => {
@@ -207,9 +199,9 @@ describe('directive registry', () => {
 		const code = ['module foo', '; @hide', 'push 1', 'moduleEnd'];
 		const result = deriveDirectiveState(code, parseBlockDirectives(code));
 
-		expect(result.displayState).toEqual({ hideAfterRawRow: 1 });
-		expect(result.displayModel.displayRowToRawRow).toEqual([0, 1, 1]);
-		expect(result.displayModel.lines[2]).toEqual({ rawRow: 1, text: '...', isPlaceholder: true });
+		expect(result.displayState).toEqual({ hideAfterSourceLineIndex: 1 });
+		expect(result.displayModel.displayRowToSourceLineIndex).toEqual([0, 1, 1]);
+		expect(result.displayModel.lines[2]).toEqual({ sourceLineIndex: 1, text: '...', isPlaceholder: true });
 		expect(result.displayModel.isCollapsed).toBe(true);
 	});
 
@@ -219,7 +211,7 @@ describe('directive registry', () => {
 			isExpandedForEditing: true,
 		});
 
-		expect(result.displayModel.displayRowToRawRow).toEqual([0, 1, 2, 3]);
+		expect(result.displayModel.displayRowToSourceLineIndex).toEqual([0, 1, 2, 3]);
 		expect(result.displayModel.isCollapsed).toBe(false);
 	});
 
@@ -231,8 +223,8 @@ describe('directive registry', () => {
 
 		// Both flows must recognize the trailing @watch (results in one parsed directive / one widget).
 		expect(fromParse.map(d => d.name)).toEqual(['watch']);
-		// @plot trailing should not produce any layout contribution.
-		expect(fromDerive.layoutContributions).toEqual([]);
+		// @plot trailing should not produce any extra vertical space.
+		expect(getVerticalSpaceAfterSourceLineRequests(fromDerive)).toEqual([]);
 	});
 
 	it('normalizes aliases in deriveDirectiveState the same way as parseEditorDirectives', () => {

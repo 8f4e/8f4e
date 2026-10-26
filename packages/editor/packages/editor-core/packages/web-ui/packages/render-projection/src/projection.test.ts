@@ -14,9 +14,9 @@ describe('createWebUiRenderProjection', () => {
 			disabled: false,
 			lineNumberColumnWidth: 1,
 			displayModel: {
-				lines: [{ text: 'x', rawRow: 0 }],
-				displayRowToRawRow: [0],
-				rawRowToDisplayRow: [0],
+				lines: [{ text: 'x', sourceLineIndex: 0 }],
+				displayRowToSourceLineIndex: [0],
+				sourceLineIndexToDisplayRow: [0],
 				isCollapsed: false,
 			},
 			gaps: new Map(),
@@ -52,9 +52,9 @@ describe('createWebUiRenderProjection', () => {
 
 		block.code = ['y'];
 		block.displayModel = {
-			lines: [{ text: 'y', rawRow: 0 }],
-			displayRowToRawRow: [0],
-			rawRowToDisplayRow: [0],
+			lines: [{ text: 'y', sourceLineIndex: 0 }],
+			displayRowToSourceLineIndex: [0],
+			sourceLineIndexToDisplayRow: [0],
 			isCollapsed: false,
 		};
 		subscriptions.get('codeBlockRendering')?.();

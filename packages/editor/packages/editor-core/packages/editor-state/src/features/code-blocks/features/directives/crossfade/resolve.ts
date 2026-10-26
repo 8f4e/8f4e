@@ -38,7 +38,8 @@ function resolveCrossfadeDirectiveWidget(
 		return;
 	}
 
-	const displayRow = directiveState.displayModel.rawRowToDisplayRow[crossfade.lineNumber] ?? crossfade.lineNumber;
+	const displayRow =
+		directiveState.displayModel.sourceLineIndexToDisplayRow[crossfade.lineNumber] ?? crossfade.lineNumber;
 	const width = graphicData.width - (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	const handleWidth = Math.min(state.viewport.vGrid, width);
 	const trackWidth = Math.max(width - handleWidth, 1);

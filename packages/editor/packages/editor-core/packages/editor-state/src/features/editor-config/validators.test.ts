@@ -6,7 +6,7 @@ function entry(path: string, value: string): EditorConfigEntry {
 	return {
 		path,
 		value,
-		rawRow: 1,
+		sourceLineIndex: 1,
 		codeBlockId: 0,
 	};
 }

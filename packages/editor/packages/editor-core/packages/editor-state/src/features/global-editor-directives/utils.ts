@@ -25,6 +25,6 @@ export function parseGlobalEditorDirectives(
 		.map(directive => ({
 			name: directive.name,
 			args: directive.args,
-			rawRow: directive.rawRow,
+			sourceLineIndex: directive.sourceLineIndex,
 		}));
 }

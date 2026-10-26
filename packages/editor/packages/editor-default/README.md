@@ -40,7 +40,8 @@ Hosts may also provide a custom `Storage` implementation or an
 
 The default composition includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
 `@8f4e/editor-plugin-switch` for the switch widget, `@8f4e/editor-plugin-button` for momentary buttons,
-and `@8f4e/editor-plugin-tooltips` for selected-line documentation, stack analysis, and live memory values. `defaultEditorPlugins` exports that plugin set.
+`@8f4e/editor-plugin-wave` for waveform displays, and `@8f4e/editor-plugin-tooltips` for selected-line documentation,
+stack analysis, and live memory values. `defaultEditorPlugins` exports that plugin set.
 The `plugins` option replaces it: pass `[]` to
 omit plugins, or `[...defaultEditorPlugins, customPlugin]` to extend the defaults. Each editor installs and
 disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).

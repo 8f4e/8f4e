@@ -5,7 +5,7 @@ import { createWatchDirectiveLayoutCallbacks } from './resolve';
 export default createDirectiveDefinition(
 	'watch',
 	(directive, draft) => {
-		const watch = createWatchDirectiveData(directive.args, directive.rawRow, directive.sourceLine);
+		const watch = createWatchDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine);
 		if (!watch) {
 			return;
 		}

@@ -173,5 +173,10 @@ export { serializeProjectTo8f4e } from './features/project-export/serializeTo8f4
 export { EMPTY_DEFAULT_PROJECT } from './features/project-import/emptyDefaultProject';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
-export { isMemoryAddress, parseFiniteNumber } from './shared/editorDirectiveArgumentTypes';
+export {
+	isMemoryAddress,
+	isPointerSource,
+	parseElementCount,
+	parseFiniteNumber,
+} from './shared/editorDirectiveArgumentTypes';
 export { formatKnownStackValue } from './shared/formatKnownStackValue';

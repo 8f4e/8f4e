@@ -76,8 +76,8 @@ export function parseDirectiveRecords(code: string[]): ParsedDirectiveRecord[] {
 	const records: ParsedDirectiveRecord[] = [];
 	let previousRecord: ParsedDirectiveRecord | undefined;
 
-	for (let rawRow = 0; rawRow < code.length; rawRow++) {
-		const line = code[rawRow];
+	for (let sourceLineIndex = 0; sourceLineIndex < code.length; sourceLineIndex++) {
+		const line = code[sourceLineIndex];
 		const continuationArgs = parseDirectiveContinuationArgs(line);
 		if (continuationArgs) {
 			if (previousRecord && continuationArgs.length > 0) {
@@ -90,7 +90,7 @@ export function parseDirectiveRecords(code: string[]): ParsedDirectiveRecord[] {
 			prefix: parsed.prefix,
 			name: parsed.name,
 			args: parsed.args,
-			rawRow,
+			sourceLineIndex,
 			sourceLine: line,
 			isTrailing: parsed.isTrailing,
 		}));
@@ -165,7 +165,7 @@ export function normalizeEditorDirectiveRecords(
 		return [
 			{
 				name: definition.name,
-				rawRow: record.rawRow,
+				sourceLineIndex: record.sourceLineIndex,
 				args: record.args,
 				sourceLine: record.sourceLine,
 			},

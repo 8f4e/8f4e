@@ -84,7 +84,7 @@ function resolvePianoDirectiveWidget(
 	}
 
 	const displayRow =
-		directiveState.displayModel.rawRowToDisplayRow[pianoKeyboard.lineNumber] ?? pianoKeyboard.lineNumber;
+		directiveState.displayModel.sourceLineIndexToDisplayRow[pianoKeyboard.lineNumber] ?? pianoKeyboard.lineNumber;
 	const keyWidth = state.viewport.vGrid * 2;
 	const keyY = state.viewport.hGrid;
 	const keyHeight = state.viewport.hGrid * 5;

@@ -5,7 +5,7 @@ import plotDirective from './plugin';
 
 function parsePlotDirectiveData(code: string[]) {
 	return parseEditorDirectives(code, [plotDirective]).map(directive =>
-		createPlotDirectiveData(directive.args, directive.rawRow)
+		createPlotDirectiveData(directive.args, directive.sourceLineIndex)
 	);
 }
 

@@ -83,13 +83,15 @@ Interaction handlers can subscribe to `codeBlockPointerDown` for the start of a 
 
 The switch and button plugins own their directives, memory resolution, interaction, and drawing. Each keeps widget
 data in a per-instance WeakMap. Buttons write their on value while pressed and their off value on release.
+The wave plugin owns `@wave`, `@wave2`, and `@wave4`, including their layout space, typed samples, playheads, and drawing.
 The execution-toggle plugin owns the Skip/Unskip menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
 layout, animation, and overlay drawing, with its state private to each installation. Group execution toggling and
 nested block shading remain built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
 
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
 and compiled-function lookup helpers. Its `/memory` entry
-exports memory scope and identifier resolution. Plugins use these public exports rather than importing core files.
+exports memory scope, identifier, element-count, and typed-value resolution. Plugins use these public exports rather
+than importing core files.
 
 ## Project loading
 

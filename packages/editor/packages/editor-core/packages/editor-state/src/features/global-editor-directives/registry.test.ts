@@ -11,7 +11,7 @@ describe('global editor directive registry', () => {
 						prefix: '@',
 						name: 'unknown',
 						args: ['x'],
-						rawRow: 0,
+						sourceLineIndex: 0,
 						isTrailing: false,
 					},
 				],

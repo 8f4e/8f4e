@@ -10,7 +10,7 @@ export default createDirectiveDefinition(
 
 		draft.layoutCallbacks.push(
 			createStackDirectiveLayoutCallbacks({
-				lineNumber: directive.rawRow,
+				lineNumber: directive.sourceLineIndex,
 				isTrailing: !/^\s*;/.test(directive.sourceLine ?? ''),
 			})
 		);

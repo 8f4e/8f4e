@@ -24,14 +24,13 @@ import plotDirective from './plot/plugin';
 import sliderDirective from './slider/plugin';
 import stackDirective from './stack/plugin';
 import { normalizeEditorDirectiveRecords } from './utils';
+import { createVerticalSpaceAfterSourceLineAdder } from './verticalSpaceAfterSourceLine';
 import viewportDirective from './viewport/plugin';
 import watchDirective from './watch/plugin';
-import waveDirective, { wave2Directive, wave4Directive } from './wave/plugin';
 
 export type {
 	DirectiveBlockState,
 	DirectiveDerivedState,
-	DirectiveLayoutContribution,
 	ParsedEditorDirective,
 	ViewportAnchor,
 } from '@8f4e/editor-state-types';
@@ -40,9 +39,6 @@ export const directiveDefinitions: EditorDirectiveDefinition[] = [
 	meterDirective,
 	barsDirective,
 	plotDirective,
-	waveDirective,
-	wave2Directive,
-	wave4Directive,
 	sliderDirective,
 	crossfadeDirective,
 	pianoDirective,
@@ -88,7 +84,7 @@ export function deriveDirectiveState(
 		},
 		displayState: {},
 		displayModel: buildDisplayModel(code),
-		layoutContributions: [],
+		addVerticalSpaceAfterSourceLine: createVerticalSpaceAfterSourceLineAdder(),
 		layoutCallbacks: [],
 		state: options.state,
 	};
@@ -105,7 +101,7 @@ export function deriveDirectiveState(
 			...draft.displayState,
 			isExpandedForEditing: options.isExpandedForEditing,
 		}),
-		layoutContributions: draft.layoutContributions,
+		addVerticalSpaceAfterSourceLine: draft.addVerticalSpaceAfterSourceLine,
 		layoutCallbacks: draft.layoutCallbacks,
 	};
 }

@@ -5,7 +5,7 @@ import sliderDirective from './plugin';
 
 function parseSliderDirectiveData(code: string[]) {
 	return parseEditorDirectives(code, [sliderDirective]).map(directive =>
-		createSliderDirectiveData(directive.args, directive.rawRow)
+		createSliderDirectiveData(directive.args, directive.sourceLineIndex)
 	);
 }
 

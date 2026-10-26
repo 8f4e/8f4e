@@ -6,7 +6,7 @@ import { createInfoDirectiveLayoutCallbacks } from './resolve';
 export default createDirectiveDefinition(
 	'info',
 	(directive, draft) => {
-		const info = createInfoDirectiveData(directive.args, directive.rawRow);
+		const info = createInfoDirectiveData(directive.args, directive.sourceLineIndex);
 		if (!info) {
 			return;
 		}
@@ -14,7 +14,10 @@ export default createDirectiveDefinition(
 		const layout = getInfoLayout(draft.state, info.id);
 		draft.layoutCallbacks.push(createInfoDirectiveLayoutCallbacks(info, layout));
 		if (layout.rowCount > 0) {
-			draft.layoutContributions.push({ rawRow: directive.rawRow, rows: layout.rowCount });
+			draft.addVerticalSpaceAfterSourceLine({
+				sourceLineIndex: directive.sourceLineIndex,
+				heightInRows: layout.rowCount,
+			});
 		}
 	},
 	{

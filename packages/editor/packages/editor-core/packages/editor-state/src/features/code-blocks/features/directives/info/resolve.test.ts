@@ -14,7 +14,7 @@ function createInfoBlock(overrides: Parameters<typeof createMockCodeBlock>[0] = 
 				prefix: '@',
 				name: 'info',
 				args: ['foo'],
-				rawRow: 1,
+				sourceLineIndex: 1,
 				sourceLine: code[1],
 				isTrailing: false,
 			},

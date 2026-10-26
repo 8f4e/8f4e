@@ -19,7 +19,7 @@ export default function deriveAssertionMarkers(
 	}
 
 	return [...sites.values()].flatMap(({ site, passed }) => {
-		const displayRow = codeBlock.displayModel.rawRowToDisplayRow[site.lineNumber];
+		const displayRow = codeBlock.displayModel.sourceLineIndexToDisplayRow[site.lineNumber];
 		if (displayRow === undefined || codeBlock.displayModel.lines[displayRow].isPlaceholder) return [];
 		return [
 			{

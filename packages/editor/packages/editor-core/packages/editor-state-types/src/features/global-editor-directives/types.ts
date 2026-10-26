@@ -10,7 +10,7 @@ import type { EditorConfigEntry } from '../editor-config/types';
 
 export interface ParsedGlobalEditorDirective {
 	name: string;
-	rawRow: number;
+	sourceLineIndex: number;
 	args: string[];
 }
 

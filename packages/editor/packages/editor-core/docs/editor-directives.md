@@ -265,6 +265,9 @@ Notes:
 
 ### `@wave`
 
+Provided by `@8f4e/editor-plugin-wave`, which also provides `@wave2` and `@wave4` and is included in
+`@8f4e/editor-default`. Hosts composing the minimal editor must include this plugin to enable these directives.
+
 Draw a waveform over a typed absolute pointer range. The first argument provides the start pointer and element size metadata, the second argument is the element count, and the optional third argument is an absolute pointer in the same address space.
 
 ```txt

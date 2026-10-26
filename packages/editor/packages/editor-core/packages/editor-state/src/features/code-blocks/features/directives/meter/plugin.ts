@@ -5,12 +5,12 @@ import { createMeterDirectiveLayoutCallbacks } from './resolve';
 export default createDirectiveDefinition(
 	'meter',
 	(directive, draft) => {
-		const meter = createMeterDirectiveData(directive.args, directive.rawRow, directive.sourceLine);
+		const meter = createMeterDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine);
 		if (!meter) {
 			return;
 		}
 
-		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 1 });
+		draft.addVerticalSpaceAfterSourceLine({ sourceLineIndex: directive.sourceLineIndex, heightInRows: 1 });
 		draft.layoutCallbacks.push(createMeterDirectiveLayoutCallbacks(meter));
 	},
 	{

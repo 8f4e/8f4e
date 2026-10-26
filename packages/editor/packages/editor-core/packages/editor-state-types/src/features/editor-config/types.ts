@@ -42,7 +42,7 @@ export interface EditorConfigSchemaContributionRegistry {
 export interface EditorConfigEntry {
 	path: string;
 	value: string;
-	rawRow: number;
+	sourceLineIndex: number;
 	codeBlockId: number;
 	moduleId?: string;
 }

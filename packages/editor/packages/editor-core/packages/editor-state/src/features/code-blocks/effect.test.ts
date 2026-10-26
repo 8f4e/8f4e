@@ -50,7 +50,7 @@ describe('code block layout readiness', () => {
 			{
 				name: 'layoutProbe',
 				apply: (directive, draft) => {
-					draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 2 });
+					draft.addVerticalSpaceAfterSourceLine({ sourceLineIndex: directive.sourceLineIndex, heightInRows: 2 });
 					draft.layoutCallbacks.push({
 						beforeGraphicDataWidthCalculation: codeBlock => {
 							codeBlock.minGridWidth = 40;

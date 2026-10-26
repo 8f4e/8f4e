@@ -5,12 +5,12 @@ import { createCrossfadeDirectiveLayoutCallbacks } from './resolve';
 export default createDirectiveDefinition(
 	'crossfade',
 	(directive, draft) => {
-		const crossfade = createCrossfadeDirectiveData(directive.args, directive.rawRow);
+		const crossfade = createCrossfadeDirectiveData(directive.args, directive.sourceLineIndex);
 		if (!crossfade) {
 			return;
 		}
 
-		draft.layoutContributions.push({ rawRow: directive.rawRow, rows: 2 });
+		draft.addVerticalSpaceAfterSourceLine({ sourceLineIndex: directive.sourceLineIndex, heightInRows: 2 });
 		draft.layoutCallbacks.push(createCrossfadeDirectiveLayoutCallbacks(crossfade));
 	},
 	{

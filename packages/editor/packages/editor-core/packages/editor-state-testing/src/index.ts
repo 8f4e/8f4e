@@ -47,9 +47,9 @@ export function createMockCodeBlock(
 		y: cursorYValue,
 	};
 	const displayModel = {
-		lines: code.map((text, rawRow) => ({ text, rawRow })),
-		displayRowToRawRow: code.map((_, rawRow) => rawRow),
-		rawRowToDisplayRow: code.map((_, rawRow) => rawRow),
+		lines: code.map((text, sourceLineIndex) => ({ text, sourceLineIndex })),
+		displayRowToSourceLineIndex: code.map((_, sourceLineIndex) => sourceLineIndex),
+		sourceLineIndexToDisplayRow: code.map((_, sourceLineIndex) => sourceLineIndex),
 		isCollapsed: false,
 	};
 
@@ -88,7 +88,6 @@ export function createMockCodeBlock(
 			arrayPlotters: [],
 			arrayBars: [],
 			arrayMeters: [],
-			arrayWaves: [],
 			infoPanels: [],
 			shapeDeclarations: [],
 			errorMessages: [],

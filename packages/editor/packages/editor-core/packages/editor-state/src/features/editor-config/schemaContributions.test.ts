@@ -68,19 +68,19 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'audioRuntime.sampleRate',
 				value: '48000',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBeUndefined();
 
-		expect(validator.parse?.({ path: 'audioRuntime.sampleRate', value: '48000', rawRow: 1, codeBlockId: 0 })).toBe(
-			48000
-		);
+		expect(
+			validator.parse?.({ path: 'audioRuntime.sampleRate', value: '48000', sourceLineIndex: 1, codeBlockId: 0 })
+		).toBe(48000);
 		expect(
 			validator.parse?.({
 				path: 'audioRuntime.audioOutBufferLAddress',
 				value: '24',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBe(24);
@@ -88,7 +88,7 @@ describe('editor config schema contributions', () => {
 			validator.parse?.({
 				path: 'audioRuntime.audioOutBufferLAddress',
 				value: 'audioout:buffer',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBe('audioout:buffer');
@@ -96,7 +96,7 @@ describe('editor config schema contributions', () => {
 			validator.parse?.({
 				path: 'audioRuntime.audioOutBufferLAddress',
 				value: 'buffer',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 				moduleId: 'audioout',
 			})
@@ -105,7 +105,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'audioRuntime.audioOutBufferLAddress',
 				value: 'buffer',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 				moduleId: 'audioout',
 			})
@@ -114,7 +114,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'audioRuntime.audioOutBufferLAddress',
 				value: 'audioout',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBe("@config audioRuntime.audioOutBufferLAddress: invalid value 'audioout'");
@@ -122,7 +122,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'audioRuntime.audioOutBufferLAddress',
 				value: '&buffer',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 				moduleId: 'audioout',
 			})
@@ -132,7 +132,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'audioRuntime.sampleRate',
 				value: '0',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBe('@config audioRuntime.sampleRate: value 0 must be at least 1');
@@ -141,7 +141,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'audioRuntime.unknown',
 				value: '1',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBe("@config: unknown config path 'audioRuntime.unknown'");
@@ -192,7 +192,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'midi.inputs.0.port',
 				value: '0',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBeUndefined();
@@ -200,7 +200,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'midi.inputs.0.callback',
 				value: 'onMidiIn',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBeUndefined();
@@ -208,7 +208,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'midi.inputs.0.callback',
 				value: 'bad-name',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBe("@config midi.inputs.0.callback: invalid string value 'bad-name'");
@@ -216,7 +216,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'midi.inputs.0.unknown',
 				value: '1',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBe("@config: unknown config path 'midi.inputs.0.unknown'");
@@ -248,7 +248,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'keyboard.keyCodeMemory',
 				value: 'keyCode',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 				moduleId: 'keyboard',
 			})
@@ -257,7 +257,7 @@ describe('editor config schema contributions', () => {
 			validator.parse?.({
 				path: 'keyboard.keyCodeMemory',
 				value: 'keyCode',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 				moduleId: 'keyboard',
 			})
@@ -266,7 +266,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'keyboard.keyCodeMemory',
 				value: 'keyCode',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBe("@config keyboard.keyCodeMemory: memory value 'keyCode' must include a module id outside module blocks");
@@ -274,7 +274,7 @@ describe('editor config schema contributions', () => {
 			validator.validate({
 				path: 'keyboard.keyCodeMemory',
 				value: '&keyCode',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 				moduleId: 'keyboard',
 			})
