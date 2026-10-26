@@ -16,7 +16,6 @@ import codeBlockCreator from './features/code-blocks/features/codeBlockCreator/e
 import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
 import crossfade from './features/code-blocks/features/directives/crossfade/interaction';
-import pianoKeyboard from './features/code-blocks/features/directives/piano/interaction';
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
 import slider from './features/code-blocks/features/directives/slider/interaction';
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
@@ -115,7 +114,6 @@ export default function init(
 	registerEffect(sliderDefaultSaver(store, events));
 	registerEffect(memoryConnectionRemover(store, events));
 	registerEffect(crossfade(store, events));
-	registerEffect(pianoKeyboard(store, events));
 	registerEffect(viewport(store, events));
 	registerEffect(codeBlockCreator(store, events));
 	registerEffect(groupSkipExecutionToggler(store, events));
@@ -178,5 +176,6 @@ export {
 	isPointerSource,
 	parseElementCount,
 	parseFiniteNumber,
+	parseInteger,
 } from './shared/editorDirectiveArgumentTypes';
 export { formatKnownStackValue } from './shared/formatKnownStackValue';

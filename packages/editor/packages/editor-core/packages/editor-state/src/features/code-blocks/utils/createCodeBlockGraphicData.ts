@@ -63,7 +63,6 @@ export function createCodeBlockGraphicData(
 			debuggers: [],
 			sliders: [],
 			crossfades: [],
-			pianoKeyboards: [],
 			arrayPlotters: [],
 			arrayBars: [],
 			arrayMeters: [],

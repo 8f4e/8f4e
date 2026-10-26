@@ -1,7 +1,5 @@
-import type { CodeBlockGraphicData, EventDispatcher, PianoKeyboard, State } from '@8f4e/editor-state-types';
-import type { StateManager } from '@8f4e/state-manager';
-import type { CodeBlockPointerDownEvent } from '../../codeBlockDragger/effect';
-import findPianoKeyboardWidgetAtViewportCoordinates from './findWidgetAtViewportCoordinates';
+import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { PianoKeyboard } from '../types';
 
 // Runtime memory is the source of truth for both clicks and pressed-note highlights.
 const float32DecodeBuffer = new ArrayBuffer(4);
@@ -43,10 +41,21 @@ function getClickedKeyOffset(
 	return Math.floor((x - keyboardViewportX) / keyboard.keyWidth);
 }
 
-export default function pianoKeyboard(store: StateManager<State>, events: EventDispatcher): () => void {
-	const state = store.getState();
-	const onCodeBlockPointerDown = ({ x, y, codeBlock }: CodeBlockPointerDownEvent) => {
-		const keyboard = findPianoKeyboardWidgetAtViewportCoordinates(state, codeBlock, x, y);
+export function registerPianoInteraction(
+	state: State,
+	events: EventDispatcher,
+	keyboardsByBlock: WeakMap<CodeBlockGraphicData, PianoKeyboard[]>
+): () => void {
+	const onCodeBlockPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+		const keyboard = keyboardsByBlock
+			.get(codeBlock)
+			?.find(
+				keyboard =>
+					x >= codeBlock.x + keyboard.x - state.viewport.x &&
+					x <= codeBlock.x + keyboard.x + keyboard.width - state.viewport.x &&
+					y >= codeBlock.y + keyboard.y - state.viewport.y &&
+					y <= codeBlock.y + keyboard.y + keyboard.height - state.viewport.y
+			);
 
 		if (!keyboard) {
 			return;

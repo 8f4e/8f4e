@@ -8,14 +8,12 @@ expose gate &voice:gate
 expose gateAlias &voice:gate
 expose input &voice:pointer
 expose keys &notesData:notes
-expose pressed &countData:count
 ; @slider &gain 0 1 0.01
 ; @watch gain
 ; @meter gain 0 1
 ; @plot &keys count(keys)
 ; @bars &keys count(keys)
 ; @crossfade &gain &wet
-; @piano &keys &pressed 48
 
 module voice
 float level 0.25
@@ -26,10 +24,6 @@ moduleEnd
 
 module notesData
 int[] notes 4 48
-moduleEnd
-
-module countData
-int count 1
 moduleEnd
 
 group nested

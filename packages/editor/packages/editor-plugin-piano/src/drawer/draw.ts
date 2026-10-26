@@ -1,10 +1,7 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { State } from '@8f4e/editor-state-types';
 import type { SpriteIdLookups } from '@8f4e/sprite-generator';
-import type { DrawContext } from '../../../drawContext';
-import type { MemoryViews } from '../../../types';
-
-type PianoKeyboardData = CodeBlockGraphicData['widgets']['pianoKeyboards'][number];
-type PianoKeyboardKey = PianoKeyboardData['keys'][number];
+import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import type { PianoKeyboard, PianoKeyboardKey } from '../types';
 
 function drawPressedKey(engine: DrawContext, spriteLookups: SpriteIdLookups, key: PianoKeyboardKey): void {
 	for (const y of key.pressedOverlayRows) {
@@ -15,7 +12,7 @@ function drawPressedKey(engine: DrawContext, spriteLookups: SpriteIdLookups, key
 function drawPressedKeyOffset(
 	engine: DrawContext,
 	spriteLookups: SpriteIdLookups,
-	keys: PianoKeyboardData['keys'],
+	keys: PianoKeyboard['keys'],
 	keyOffset: number
 ): void {
 	const key = keys[keyOffset];
@@ -29,9 +26,9 @@ function drawPressedKeyOffset(
 function drawRuntimePressedKeys(
 	engine: DrawContext,
 	spriteLookups: SpriteIdLookups,
-	keys: PianoKeyboardData['keys'],
-	pressedKeysListMemory: CodeBlockGraphicData['widgets']['pianoKeyboards'][number]['pressedKeysListMemory'],
-	pressedNumberOfKeysMemory: CodeBlockGraphicData['widgets']['pianoKeyboards'][number]['pressedNumberOfKeysMemory'],
+	keys: PianoKeyboard['keys'],
+	pressedKeysListMemory: PianoKeyboard['pressedKeysListMemory'],
+	pressedNumberOfKeysMemory: PianoKeyboard['pressedNumberOfKeysMemory'],
 	startingNumber: number,
 	memoryViews: MemoryViews
 ): void {
@@ -49,10 +46,10 @@ function drawRuntimePressedKeys(
 	}
 }
 
-export default function drawer(
+export function drawPianoKeyboards(
 	engine: DrawContext,
 	state: State,
-	codeBlock: CodeBlockGraphicData,
+	keyboards: PianoKeyboard[],
 	memoryViews: MemoryViews
 ): void {
 	if (!state.spriteLookups) {
@@ -77,7 +74,7 @@ export default function drawer(
 		pressedKeysListMemory,
 		pressedNumberOfKeysMemory,
 		startingNumber,
-	} of codeBlock.widgets.pianoKeyboards) {
+	} of keyboards) {
 		engine.startGroup(x, y);
 
 		for (const key of keys) {

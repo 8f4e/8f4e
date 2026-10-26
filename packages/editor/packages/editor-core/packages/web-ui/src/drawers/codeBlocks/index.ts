@@ -16,7 +16,6 @@ import drawDebuggers from './widgets/debuggers';
 import drawErrorMessages from './widgets/errorMessages';
 import drawInfoPanels from './widgets/infoPanels';
 import drawMeters from './widgets/meters';
-import drawPianoKeyboards from './widgets/pianoKeyboards';
 import drawPlotters from './widgets/plotters';
 import drawSliders from './widgets/sliders';
 
@@ -110,7 +109,6 @@ export default function drawModules(
 			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
 			drawSliders(engine, state, codeBlock, memoryViews);
 			drawCrossfades(engine, state, codeBlock, memoryViews);
-			drawPianoKeyboards(engine, state, codeBlock, memoryViews);
 			drawConnectors(engine, state, codeBlock, memoryViews);
 			drawBars(engine, state, codeBlock, memoryViews);
 			drawMeters(engine, state, codeBlock, memoryViews);

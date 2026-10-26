@@ -1,7 +1,7 @@
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
-import { getControlDefaultEdits } from './saveDefaults';
+import { getSliderDefaultEdits } from './saveDefaults';
 
 export default function sliderDefaultSaver(store: StateManager<State>, events: EventDispatcher): () => void {
 	const state = store.getState();
@@ -16,7 +16,7 @@ export default function sliderDefaultSaver(store: StateManager<State>, events: E
 			return;
 		}
 
-		const edits = getControlDefaultEdits(state, targetCodeBlock);
+		const edits = getSliderDefaultEdits(state, targetCodeBlock);
 		if (edits.length === 0) return;
 
 		for (const { codeBlock, code } of edits) {

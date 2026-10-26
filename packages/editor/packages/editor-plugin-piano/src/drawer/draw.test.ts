@@ -1,11 +1,10 @@
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { PianoKeyboard } from '@8f4e/editor-state-types';
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
+import type { DrawContext as Engine, MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../../../__tests__/rendering';
-import type { DrawContext as Engine } from '../../../drawContext';
-import type { MemoryViews } from '../../../types';
-import drawPianoKeyboards from './pianoKeyboards';
+import { createDrawContextMock, createSpriteIdLookupMock } from '../__tests__/rendering';
+import type { PianoKeyboard } from '../types';
+import { drawPianoKeyboards } from './draw';
 
 function createMemoryViews({ int32 = [], float32 = [] }: { int32?: number[]; float32?: number[] } = {}): MemoryViews {
 	return {
@@ -27,12 +26,16 @@ function createMockMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Pl
 	return {
 		id: 'memory',
 		numberOfElements: 1,
-		elementWordSize: 1,
+		elementWordSize: 4,
 		type: 'int' as const,
 		byteAddress: 0,
+		elementByteLength: 4,
 		allocationUnitCount: 1,
+		allocatedByteLength: 4,
 		allocationUnitAddress: 0,
-		default: 0,
+		endByteAddress: 4,
+		endAddressSafeByteLength: 4,
+		lineNumber: 0,
 		isInteger: true,
 		pointerDepth: 0,
 		isUnsigned: false,
@@ -90,7 +93,6 @@ function createPianoKeyboard(overrides: Partial<PianoKeyboard> = {}): PianoKeybo
 		blackKeyGapY: 16,
 		blackKeyGapWidth: 0.5,
 		blackKeyGapHeight: 8,
-		lineNumber: 0,
 		keys: createPianoKeyboardKeys(),
 		pressedKeysListMemory: createMockMemory({
 			id: 'notes',
@@ -124,13 +126,9 @@ describe('drawPianoKeyboards', () => {
 				fontPianoKeyBlackPressedOverlay: createSpriteIdLookupMock(),
 			} as never,
 		});
-		const codeBlock = createMockCodeBlock({
-			widgets: {
-				pianoKeyboards: [createPianoKeyboard()],
-			} as never,
-		});
+		const keyboards = [createPianoKeyboard()];
 
-		drawPianoKeyboards(engine, state, codeBlock, createMemoryViews({ int32: [0, 2, 0, 0, 48, 49] }));
+		drawPianoKeyboards(engine, state, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 49] }));
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
@@ -167,13 +165,9 @@ describe('drawPianoKeyboards', () => {
 				fontPianoKeyBlackPressedOverlay: createSpriteIdLookupMock(),
 			} as never,
 		});
-		const codeBlock = createMockCodeBlock({
-			widgets: {
-				pianoKeyboards: [createPianoKeyboard()],
-			} as never,
-		});
+		const keyboards = [createPianoKeyboard()];
 
-		drawPianoKeyboards(engine, state, codeBlock, createMemoryViews({ int32: [0, 0, 0, 0, 0, 0] }));
+		drawPianoKeyboards(engine, state, keyboards, createMemoryViews({ int32: [0, 0, 0, 0, 0, 0] }));
 
 		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
@@ -196,13 +190,9 @@ describe('drawPianoKeyboards', () => {
 				fontPianoKeyBlackPressedOverlay: createSpriteIdLookupMock(),
 			} as never,
 		});
-		const codeBlock = createMockCodeBlock({
-			widgets: {
-				pianoKeyboards: [createPianoKeyboard()],
-			} as never,
-		});
+		const keyboards = [createPianoKeyboard()];
 
-		drawPianoKeyboards(engine, state, codeBlock, createMemoryViews({ int32: [0, 2, 0, 0, 48, 48] }));
+		drawPianoKeyboards(engine, state, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 48] }));
 
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 		const overlayCalls = drawText.mock.calls.filter(call => call[2] === ';;');

@@ -12,7 +12,6 @@ Manages the lifecycle of code blocks in the editor: creation, selection, drag op
 - **Graphics Derivation**: Computes visual properties (position, size, color) from block data
 - **Block Widgets**: Derives interactive elements from code annotations:
   - Inputs/Outputs for audio routing
-  - Piano keyboard for note input
   - Debuggers for runtime inspection
   - Plotters for visualization
 
@@ -47,7 +46,6 @@ This feature contains several subfeatures under `features/` that handle specific
 - `codeBlockRendering` - Visual properties computation
 - `inputs` - Audio input routing
 - `outputs` - Audio output routing
-- `pianoKeyboard` - Piano keyboard interface
 
 ## Events & Callbacks
 
