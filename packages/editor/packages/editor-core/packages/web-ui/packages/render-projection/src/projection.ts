@@ -1,10 +1,10 @@
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { SpriteId } from '@8f4e/sprite-generator';
+import type { SpriteCell } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
 import deriveCodeBlockCodeCells from './deriveCodeBlockCodeCells';
 
 export interface CodeBlockRenderData {
-	codeCells: Array<Array<SpriteId | null>>;
+	codeCells: Array<Array<SpriteCell | null>>;
 }
 
 export interface WebUiRenderData {

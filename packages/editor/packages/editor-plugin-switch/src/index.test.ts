@@ -1,5 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
+import { createMockSpriteLookups } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { createCodeBlockDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -72,22 +74,20 @@ async function setup(code = source, installed = true) {
 	state.compiler.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
-	state.spriteLookups = {
-		fillColors: { primaryDark2: 1, inkBase: 2 },
-		fontInkOn: { 63: 63 },
-		fontSecondaryBase: { 63: 63 },
-	} as never;
+	state.spriteLookups = createMockSpriteLookups() as never;
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	const address = compiled.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 	const draw = {
 		drawSprite: vi.fn(),
+		drawFill: vi.fn(),
+		drawCharacter: vi.fn(),
 		drawText: vi.fn(),
 		drawResolvedText: vi.fn(),
 		startGroup: vi.fn(),
 		endGroup: vi.fn(),
 	} as unknown as DrawContext;
 	const render = () => {
-		vi.mocked(draw.drawSprite).mockClear();
+		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawText).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
@@ -109,13 +109,13 @@ describe('switch plugin', () => {
 		const test = await setup();
 		test.render();
 		const x = test.codeBlock.width - 32;
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, x, 32, 1, 32, 16);
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(2, x + 8, 32, 2, 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', test.state.spriteLookups!.fontInkOn);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, x, 32, PALETTE_INDICES.primaryDark2, 32, 16);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 8, 32, PALETTE_INDICES.inkBase, 8, 16);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', PALETTE_INDICES.inkOn);
 		test.memoryViews.int32[test.address] = 1;
 		test.render();
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(2, x + 16, 32, 2, 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', test.state.spriteLookups!.fontInkOn);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 16, 32, PALETTE_INDICES.inkBase, 8, 16);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', PALETTE_INDICES.inkOn);
 	});
 
 	it('toggles through the state event pipeline in view mode as well as edit mode', async () => {
@@ -136,12 +136,12 @@ describe('switch plugin', () => {
 		expect(test.write).toHaveBeenLastCalledWith(test.address, -5, true);
 		test.memoryViews.int32[test.address] = 42;
 		test.render();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.draw.drawText).toHaveBeenCalledWith(
 			test.codeBlock.width - 32,
 			32,
 			'[__]',
-			test.state.spriteLookups!.fontSecondaryBase
+			PALETTE_INDICES.secondaryBase
 		);
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, -5, true);
@@ -168,7 +168,7 @@ describe('switch plugin', () => {
 		test.codeBlock.code[2] = '; no widget';
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
 		test.render();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		test.write.mockClear();
 		test.press();
 		expect(test.write).not.toHaveBeenCalled();
@@ -180,7 +180,14 @@ describe('switch plugin', () => {
 		test.state.viewport.hGrid = 20;
 		test.events.dispatch('spriteSheetRerendered');
 		test.render();
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, test.codeBlock.width - 40, 40, 1, 40, 20);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(
+			1,
+			test.codeBlock.width - 40,
+			40,
+			PALETTE_INDICES.primaryDark2,
+			40,
+			20
+		);
 	});
 
 	it('resolves cross-module memory references through the core memory API', async () => {
@@ -209,7 +216,7 @@ describe('switch plugin', () => {
 		delete memory.gate;
 		test.events.dispatch('runtimeInitialized');
 		test.render();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});
 
 	it.each(['; @switch &missing', '; @switch &gate bad', 'int extra 0 ; @switch &gate'])(
@@ -218,7 +225,7 @@ describe('switch plugin', () => {
 			const test = await setup(['module controls', 'int gate 0', line, 'moduleEnd']);
 			test.render();
 			test.press();
-			expect(test.draw.drawSprite).not.toHaveBeenCalled();
+			expect(test.draw.drawFill).not.toHaveBeenCalled();
 			expect(test.draw.drawText).not.toHaveBeenCalled();
 			expect(test.write).not.toHaveBeenCalled();
 		}
@@ -231,7 +238,7 @@ describe('switch plugin', () => {
 		);
 		test.render();
 		test.press();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
 	});
 
@@ -240,7 +247,7 @@ describe('switch plugin', () => {
 		test.disposePlugin();
 		test.render();
 		test.press();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
 	});
 
@@ -254,11 +261,6 @@ describe('switch plugin', () => {
 		second.press();
 		second.render();
 		expect(second.memoryViews.int32[second.address]).toBe(1);
-		expect(second.draw.drawText).toHaveBeenCalledWith(
-			second.codeBlock.width - 32,
-			32,
-			'[ |]',
-			second.state.spriteLookups!.fontInkOn
-		);
+		expect(second.draw.drawText).toHaveBeenCalledWith(second.codeBlock.width - 32, 32, '[ |]', PALETTE_INDICES.inkOn);
 	});
 });

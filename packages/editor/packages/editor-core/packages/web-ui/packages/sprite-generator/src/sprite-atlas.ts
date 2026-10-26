@@ -1,4 +1,11 @@
-import type { SpriteAtlasResolver, SpriteCoordinates, SpriteId, SpriteIdentifier, SpriteLookup } from 'glugglugglug';
+import type {
+	SpriteAtlasImage,
+	SpriteAtlasResolver,
+	SpriteCoordinates,
+	SpriteId,
+	SpriteIdentifier,
+	SpriteLookup,
+} from 'glugglugglug';
 
 type SpriteLookupGroup = Record<string | number, SpriteCoordinates>;
 
@@ -27,7 +34,7 @@ export type ResolvedSpriteIds<Identifiers> = {
 export type SpriteIds<Lookups> = ResolvedSpriteIds<SpriteIdentifiers<Lookups>>;
 
 export type SpriteAtlas<Identifiers> = {
-	image: OffscreenCanvas;
+	image: SpriteAtlasImage;
 	lookup: SpriteLookup;
 	spriteIdentifiers: Identifiers;
 };
@@ -44,7 +51,7 @@ export type SpriteAtlas<Identifiers> = {
  * @returns An atlas image, flat lookup, and grouped public identifiers.
  */
 export function createSpriteAtlas<Lookups extends object>(
-	image: OffscreenCanvas,
+	image: SpriteAtlasImage,
 	groupedLookups: Lookups
 ): SpriteAtlas<SpriteIdentifiers<Lookups>> {
 	const lookup: SpriteLookup = {};
@@ -120,7 +127,7 @@ export function resolveSpriteIds<Identifiers extends object>(
  * @param coordinates - Rectangle to validate against the atlas and packed lookup format.
  */
 function assertValidCoordinates(
-	image: OffscreenCanvas,
+	image: SpriteAtlasImage,
 	groupName: string,
 	spriteIdentifier: string,
 	coordinates: SpriteCoordinates

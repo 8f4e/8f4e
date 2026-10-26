@@ -17,7 +17,7 @@ Each sprite combines a solid background, font brackets, and, for outputs, a star
 value. All of these parts already exist as ordinary font and fill sprites.
 
 Compose these connectors in the drawer at runtime and remove the dedicated atlas entries. Do this before
-[TODO 510: Use glyph masks and a GPU color palette](../510-use-glyph-masks-and-gpu-color-palette.md), using the current
+[TODO 510: Use glyph masks and a GPU color palette](510-use-glyph-masks-and-gpu-color-palette.md), using the current
 colored font rows and fill sprites. This isolates the composition change so its appearance and rendering cost can
 be verified before changing the renderer's texture format and drawing API.
 
@@ -134,7 +134,7 @@ along with both screenshot suites (24 browser tests), the editor website product
 
 ## Related Items
 
-- **Follow-up:** [TODO 510: Use glyph masks and a GPU color palette](../510-use-glyph-masks-and-gpu-color-palette.md).
+- **Follow-up:** [TODO 510: Use glyph masks and a GPU color palette](510-use-glyph-masks-and-gpu-color-palette.md).
   Perform this connector composition change first, then migrate its primitives to masks and palette indices.
 
 ## References

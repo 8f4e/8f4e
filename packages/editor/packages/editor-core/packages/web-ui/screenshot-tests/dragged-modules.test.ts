@@ -31,7 +31,7 @@ test('dragged module', async () => {
 			'quis nostrud exercitation',
 			'',
 		];
-		const codeToRender = resolveFixtureCodeCells(codeLines, lookups.fontInkBase);
+		const codeToRender = resolveFixtureCodeCells(codeLines, lookups.font);
 
 		const codeBlockMock = createMockCodeBlock({
 			x: 16,

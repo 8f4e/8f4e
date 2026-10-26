@@ -1,9 +1,9 @@
+import type { PaletteToken } from '@8f4e/editor-palette';
 /**
  * Types for code-blocks feature - manages code block entities, rendering, and interactions.
  */
 
 import type { DocumentBlockType, PlannedMemoryDeclaration, ProjectGroupPath } from '@8f4e/language-spec';
-import type { FillSpriteColorName } from '@8f4e/sprite-generator';
 import type { ViewportBlockAlignment } from '../viewport/blockAlignment';
 import type { CodeBlockDisplayModel } from './buildDisplayModel';
 
@@ -218,7 +218,7 @@ export interface CodeBlockGraphicData {
 			y: number;
 			height: number;
 			width: number;
-			color: FillSpriteColorName;
+			color: PaletteToken;
 		}>;
 		inputs: Input[];
 		outputs: Output[];

@@ -1,9 +1,11 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
+import { createMockSpriteLookups } from '@8f4e/editor-state-testing';
 import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
-import { createDrawContextMock, createSpriteIdLookupMock } from './__tests__/rendering';
+import { createDrawContextMock } from './__tests__/rendering';
 import { wavePlugin } from './index';
 
 const cleanups: Array<() => void> = [];
@@ -46,11 +48,11 @@ async function setup(code = source, installed = true, name = 'audio') {
 	state.compiler.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
-	state.spriteLookups = { fillColors: createSpriteIdLookupMock() } as never;
+	state.spriteLookups = createMockSpriteLookups() as never;
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
-		vi.mocked(draw.drawSprite).mockClear();
+		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
 		vi.mocked(draw.endGroup).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
@@ -74,7 +76,14 @@ describe('wave plugin', () => {
 		const x = (test.codeBlock.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
 		expect(test.codeBlock.gaps.get(2)?.size).toBe(rows);
 		expect(test.draw.startGroup).toHaveBeenCalledWith(x, 48);
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, 0, 0, 'darkSurface', test.codeBlock.width - x, rows * 16);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(
+			1,
+			0,
+			0,
+			PALETTE_INDICES.darkSurface,
+			test.codeBlock.width - x,
+			rows * 16
+		);
 		expect(test.codeBlock.widgets).not.toHaveProperty('arrayWaves');
 	});
 
@@ -90,8 +99,8 @@ describe('wave plugin', () => {
 		test.render();
 		expect(
 			vi
-				.mocked(test.draw.drawSprite)
-				.mock.calls.filter(call => call[2] === test.state.spriteLookups!.fillColors.darkSurface)
+				.mocked(test.draw.drawFill)
+				.mock.calls.filter(call => call[2] === PALETTE_INDICES.darkSurface)
 				.map(call => call[4])
 		).toEqual([32, 64, 128]);
 		expect(vi.mocked(test.draw.startGroup).mock.calls.map(call => call[1])).toEqual([48, 96, 176]);
@@ -108,9 +117,7 @@ describe('wave plugin', () => {
 	])('reads $type samples with the correct bounds', async ({ type, min, max }) => {
 		const test = await setup(['module audio', `${type}[] samples 2 ${min} ${max}`, '; @wave &samples 2', 'moduleEnd']);
 		test.render();
-		const columns = vi
-			.mocked(test.draw.drawSprite)
-			.mock.calls.filter(call => call[2] === test.state.spriteLookups!.fillColors.highlightBase);
+		const columns = vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase);
 		expect(columns[0][1]).toBe(31);
 		expect(columns.at(-1)![1]).toBe(0);
 	});
@@ -129,19 +136,19 @@ describe('wave plugin', () => {
 		test.memoryViews.int32[memory.playhead.allocationUnitAddress] = memory.samples.byteAddress + 2 * 4;
 		test.render();
 		const width = test.codeBlock.width - (test.codeBlock.lineNumberColumnWidth + 2) * 8;
-		expect(test.draw.drawSprite).toHaveBeenLastCalledWith(
+		expect(test.draw.drawFill).toHaveBeenLastCalledWith(
 			Math.floor((2 / 3) * (width - 4)),
 			0,
-			'secondaryReadable',
+			PALETTE_INDICES.secondaryReadable,
 			4,
 			32
 		);
 		test.memoryViews.int32[memory.length.allocationUnitAddress] = 0;
 		test.render();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		test.memoryViews.int32[memory.length.allocationUnitAddress] = 4;
 		test.render();
-		expect(test.draw.drawSprite).toHaveBeenCalled();
+		expect(test.draw.drawFill).toHaveBeenCalled();
 	});
 
 	it('resolves exposed group memory through the public memory API', async () => {
@@ -155,7 +162,7 @@ describe('wave plugin', () => {
 			'groupEnd',
 		]);
 		test.render();
-		expect(test.draw.drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', expect.any(Number), 32);
+		expect(test.draw.drawFill).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, expect.any(Number), 32);
 	});
 
 	it('replaces waves and layout gaps after source edits', async () => {
@@ -164,12 +171,12 @@ describe('wave plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
 		test.render();
 		expect(test.codeBlock.gaps.get(2)?.size).toBe(8);
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, 0, 0, 'darkSurface', expect.any(Number), 128);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, 0, 0, PALETTE_INDICES.darkSurface, expect.any(Number), 128);
 		test.codeBlock.code[2] = '; no wave';
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
 		test.render();
 		expect(test.codeBlock.gaps.size).toBe(0);
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});
 
 	it('recomputes geometry when the grid changes', async () => {
@@ -180,7 +187,14 @@ describe('wave plugin', () => {
 		test.render();
 		const x = (test.codeBlock.lineNumberColumnWidth + 2) * 10;
 		expect(test.draw.startGroup).toHaveBeenCalledWith(x, 60);
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, 0, 0, 'darkSurface', test.codeBlock.width - x, 40);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(
+			1,
+			0,
+			0,
+			PALETTE_INDICES.darkSurface,
+			test.codeBlock.width - x,
+			40
+		);
 	});
 
 	it('rebinds compiler memory metadata and removes unresolved waves', async () => {
@@ -195,14 +209,12 @@ describe('wave plugin', () => {
 		test.events.dispatch('runtimeInitialized');
 		test.render();
 		expect(
-			vi
-				.mocked(test.draw.drawSprite)
-				.mock.calls.filter(call => call[2] === test.state.spriteLookups!.fillColors.highlightBase)[0][1]
+			vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase)[0][1]
 		).toBe(31);
 		delete memory.samples;
 		test.events.dispatch('runtimeInitialized');
 		test.render();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});
 
 	it.each(['; @wave missing 4', '; @wave &samples missingCount', '; @wave &samples 0', '; @wave *samples 4'])(
@@ -210,7 +222,7 @@ describe('wave plugin', () => {
 		async line => {
 			const test = await setup(['module audio', 'float[] samples 4 -1 0 1 0', line, 'moduleEnd']);
 			test.render();
-			expect(test.draw.drawSprite).not.toHaveBeenCalled();
+			expect(test.draw.drawFill).not.toHaveBeenCalled();
 		}
 	);
 
@@ -221,7 +233,7 @@ describe('wave plugin', () => {
 			expect.objectContaining({ name: 'wave', args: ['&samples', 'count(samples)'] })
 		);
 		expect(test.codeBlock.gaps.size).toBe(0);
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});
 
 	it('unregisters all definitions and the drawer on disposal', async () => {
@@ -230,7 +242,7 @@ describe('wave plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
 		test.render();
 		expect(test.codeBlock.gaps.size).toBe(0);
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});
 
 	it('keeps wave data and registrations independent across editors', async () => {
@@ -239,7 +251,7 @@ describe('wave plugin', () => {
 		first.dispose();
 		first.render();
 		second.render();
-		expect(first.draw.drawSprite).not.toHaveBeenCalled();
-		expect(second.draw.drawSprite).toHaveBeenCalled();
+		expect(first.draw.drawFill).not.toHaveBeenCalled();
+		expect(second.draw.drawFill).toHaveBeenCalled();
 	});
 });

@@ -18,8 +18,11 @@ const mocks = vi.hoisted(() => {
 			spriteCount: 100,
 			uploadedInstanceBytes: 2000,
 		},
+		setPalette: vi.fn(),
 		setSpriteAtlas: vi.fn(() => ({ resolveSprite: (identifier: string | number) => Number(identifier) + 100 })),
 		drawSprite: vi.fn(),
+		drawFill: vi.fn(),
+		drawCharacter: vi.fn(),
 		renderFrame: vi.fn((drawFrame: () => void) => {
 			for (const hook of engine.hooks.preDraw) hook();
 			drawFrame();
@@ -146,9 +149,9 @@ function createSpriteData(identifier = 0, characterWidth = 8, characterHeight = 
 	return {
 		palette: resolvePalette(),
 		spriteAtlas: {
-			image: {} as OffscreenCanvas,
+			image: { width: 1, height: 1, data: new Uint8Array([255]) },
 			lookup: {},
-			spriteIdentifiers: { fillColors: { canvasBase: identifier } } as never,
+			spriteIdentifiers: { fill: { 0: identifier }, font: { 63: identifier }, background: { 0: identifier } } as never,
 		},
 		characterWidth,
 		characterHeight,
@@ -346,6 +349,13 @@ describe('web-ui init', () => {
 		state.editorConfig.color = { primary: '#ff0000' };
 		view.loadSpriteAtlas(nextSpriteData);
 		expect(mocks.resolveWireColors).toHaveBeenLastCalledWith(nextSpriteData.palette);
+		const lookup = state.spriteLookups;
+		const installCount = mocks.engine.setSpriteAtlas.mock.calls.length;
+		const palette = resolvePalette({ primary: '#00ff00' });
+		view.loadPalette(palette);
+		expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(installCount);
+		expect(state.spriteLookups).toBe(lookup);
+		expect(mocks.resolveWireColors).toHaveBeenLastCalledWith(palette);
 	});
 
 	it('rebuilds resolved sprite ids and grid metrics when the atlas is replaced', async () => {
@@ -362,11 +372,11 @@ describe('web-ui init', () => {
 		};
 
 		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData(7, 8, 16));
-		expect(state.spriteLookups?.fillColors.canvasBase).toBe(107);
+		expect(state.spriteLookups?.fill[0]).toBe(107);
 		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 16, vGrid: 8 }));
 
 		view.loadSpriteAtlas(createSpriteData(42, 10, 18));
-		expect(state.spriteLookups?.fillColors.canvasBase).toBe(142);
+		expect(state.spriteLookups?.fill[0]).toBe(142);
 		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 18, vGrid: 10 }));
 	});
 

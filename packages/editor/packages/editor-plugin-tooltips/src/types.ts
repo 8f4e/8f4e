@@ -1,5 +1,5 @@
+import type { PaletteIndex, PaletteToken } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import type { FillSpriteColorName, SpriteFont } from '@8f4e/sprite-generator';
 
 export type SpriteLookups = NonNullable<State['spriteLookups']>;
 
@@ -18,7 +18,7 @@ export interface TooltipLiveValueTarget {
 	lineIndex: number;
 	column: number;
 	source: TooltipLiveValueSource;
-	color: SpriteFont | undefined;
+	color: PaletteIndex | undefined;
 }
 
 /**
@@ -28,7 +28,7 @@ export interface TooltipHighlightTarget {
 	lineIndex: number;
 	column: number;
 	widthChars: number;
-	fillColor: FillSpriteColorName;
+	fillColor: PaletteToken;
 }
 
 /**
@@ -37,7 +37,7 @@ export interface TooltipHighlightTarget {
 export interface SelectedLineTooltipContent {
 	text: string[];
 	characters: Array<Array<number | string>>;
-	colors: Array<Array<SpriteFont | undefined>>;
+	colors: Array<Array<PaletteIndex | undefined>>;
 	lineCount: number;
 	widthChars: number;
 	highlightTargets: TooltipHighlightTarget[];
@@ -79,7 +79,7 @@ export interface TooltipLiveValue {
 	x: number;
 	y: number;
 	source: TooltipLiveValueSource;
-	color: SpriteFont | undefined;
+	color: PaletteIndex | undefined;
 }
 
 export interface TooltipLayout {
@@ -96,7 +96,7 @@ export interface TooltipHighlight {
 	y: number;
 	width: number;
 	height: number;
-	fillColor: FillSpriteColorName;
+	fillColor: PaletteToken;
 }
 
 export interface TooltipTarget {
@@ -111,7 +111,7 @@ export interface TooltipAnimation {
 export interface TooltipState {
 	text: string[];
 	characters: Array<Array<number | string>>;
-	colors: Array<Array<SpriteFont | undefined>>;
+	colors: Array<Array<PaletteIndex | undefined>>;
 	lineCount: number;
 	widthChars: number;
 	layout: TooltipLayout;

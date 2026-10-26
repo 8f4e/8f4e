@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
@@ -23,15 +24,15 @@ export default function drawer(
 		const handleX = Math.round(((position + 1) / 2) * crossfade.trackWidth);
 
 		engine.startGroup(crossfade.x, crossfade.y);
-		engine.drawSprite(0, 0, state.spriteLookups.fillColors.surfaceRaised2, crossfade.width, crossfade.height);
+		engine.drawFill(0, 0, PALETTE_INDICES.surfaceRaised2, crossfade.width, crossfade.height);
 
 		if (handleX !== crossfade.centerX) {
 			const fillX = Math.min(crossfade.centerX, handleX);
 			const fillWidth = Math.abs(handleX - crossfade.centerX) + crossfade.handleWidth;
-			engine.drawSprite(fillX, 0, state.spriteLookups.fillColors.primaryDark1, fillWidth, crossfade.height);
+			engine.drawFill(fillX, 0, PALETTE_INDICES.primaryDark1, fillWidth, crossfade.height);
 		}
 
-		engine.drawSprite(handleX, 0, state.spriteLookups.fillColors.inkBase, crossfade.handleWidth, crossfade.height);
+		engine.drawFill(handleX, 0, PALETTE_INDICES.inkBase, crossfade.handleWidth, crossfade.height);
 		engine.endGroup();
 	}
 }

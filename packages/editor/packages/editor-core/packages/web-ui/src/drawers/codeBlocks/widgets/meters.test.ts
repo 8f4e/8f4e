@@ -1,7 +1,8 @@
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
 import type { ArrayMeter } from '@8f4e/editor-state-types';
-import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../../../__tests__/rendering';
+import { describe, expect, it, vi } from 'vitest';
+import { createDrawContextMock } from '../../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
 import drawMeters from './meters';
@@ -59,9 +60,7 @@ describe('drawMeters', () => {
 	it('renders a segmented horizontal meter based on the current value', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -71,19 +70,17 @@ describe('drawMeters', () => {
 
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [0.95] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 20, 6);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'positiveBase', 13, 6);
-		expect(drawSprite).toHaveBeenCalledWith(13, 0, 'warningBase', 5, 6);
-		expect(drawSprite).toHaveBeenCalledWith(18, 0, 'negativeBase', 1, 6);
+		const drawSprite = vi.mocked(engine.drawFill);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 20, 6);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.positiveBase, 13, 6);
+		expect(drawSprite).toHaveBeenCalledWith(13, 0, PALETTE_INDICES.warningBase, 5, 6);
+		expect(drawSprite).toHaveBeenCalledWith(18, 0, PALETTE_INDICES.negativeBase, 1, 6);
 	});
 
 	it('clamps out-of-range values to a full meter', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -101,18 +98,16 @@ describe('drawMeters', () => {
 
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [2] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'positiveBase', 6, 4);
-		expect(drawSprite).toHaveBeenCalledWith(6, 0, 'warningBase', 3, 4);
-		expect(drawSprite).toHaveBeenCalledWith(9, 0, 'negativeBase', 1, 4);
+		const drawSprite = vi.mocked(engine.drawFill);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.positiveBase, 6, 4);
+		expect(drawSprite).toHaveBeenCalledWith(6, 0, PALETTE_INDICES.warningBase, 3, 4);
+		expect(drawSprite).toHaveBeenCalledWith(9, 0, PALETTE_INDICES.negativeBase, 1, 4);
 	});
 
 	it('returns fully to zero when the bound scalar value is zero', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -130,17 +125,15 @@ describe('drawMeters', () => {
 
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [0] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
+		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledTimes(1);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 12, 4);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 12, 4);
 	});
 
 	it('treats bipolar ranges as amplitude meters so silence renders empty', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -163,17 +156,15 @@ describe('drawMeters', () => {
 
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [0] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
+		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledTimes(1);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 12, 4);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 12, 4);
 	});
 
 	it('fills negative bipolar values by magnitude', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -191,17 +182,15 @@ describe('drawMeters', () => {
 
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [-0.5] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 20, 6);
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'positiveBase', 10, 6);
+		const drawSprite = vi.mocked(engine.drawFill);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 20, 6);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.positiveBase, 10, 6);
 	});
 
 	it('latches a red overload marker at the end of the meter after clipping', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -216,13 +205,13 @@ describe('drawMeters', () => {
 				],
 			} as never,
 		});
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
+		const drawSprite = vi.mocked(engine.drawFill);
 
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [1.2] }));
-		expect(drawSprite).toHaveBeenCalledWith(4, 0, 'negativeBase', 8, 4);
+		expect(drawSprite).toHaveBeenCalledWith(4, 0, PALETTE_INDICES.negativeBase, 8, 4);
 
 		drawSprite.mockClear();
 		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [0.4] }));
-		expect(drawSprite).toHaveBeenCalledWith(4, 0, 'negativeBase', 8, 4);
+		expect(drawSprite).toHaveBeenCalledWith(4, 0, PALETTE_INDICES.negativeBase, 8, 4);
 	});
 });

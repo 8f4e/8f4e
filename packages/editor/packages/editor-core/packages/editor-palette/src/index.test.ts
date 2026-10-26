@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { composite, contrast, parseColor, rgb, toOklab } from './color';
-import { BASE_COLORS, defaultPalette, isPaletteColor, PALETTE_TOKENS, resolvePalette, SHADES } from './index';
+import {
+	BASE_COLORS,
+	defaultPalette,
+	isPaletteColor,
+	PALETTE_INDICES,
+	PALETTE_TOKENS,
+	resolvePalette,
+	SHADES,
+	toPaletteBytes,
+} from './index';
 
 describe('editor palette', () => {
 	it('preserves and normalizes anchors, with secondary following the selected primary', () => {
@@ -126,5 +135,18 @@ describe('editor palette', () => {
 
 	it('rejects feature keys instead of retaining a legacy override layer', () => {
 		expect(() => resolvePalette({ fill: {} } as never)).toThrow("Unknown palette color 'fill'");
+	});
+});
+
+describe('GPU palette indices', () => {
+	it('keeps equal tokens distinct when a later theme gives them different colors', () => {
+		const a = PALETTE_INDICES.primaryBase;
+		const b = PALETTE_INDICES.secondaryBase;
+		expect(a).not.toBe(b);
+		const equal = toPaletteBytes(resolvePalette({ primary: '#fff' }));
+		expect(equal.slice(a * 4, a * 4 + 4)).toEqual(equal.slice(b * 4, b * 4 + 4));
+		const different = toPaletteBytes(resolvePalette({ primary: '#fff', secondary: 'rgba(255,0,0,0.5)' }));
+		expect([...different.slice(b * 4, b * 4 + 4)]).toEqual([255, 0, 0, 128]);
+		expect([...different.slice(a * 4, a * 4 + 4)]).toEqual([255, 255, 255, 255]);
 	});
 });

@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import type { WebUiRenderData } from '@8f4e/web-ui-render-projection';
 import type { DrawContext } from '../../drawContext';
@@ -52,29 +53,23 @@ export default function drawModules(
 		) {
 			engine.startGroup(codeBlock.x, codeBlock.y);
 			if (codeBlock === state.codeBlockRendering.draggedCodeBlock) {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.surfaceRaised1, codeBlock.width, codeBlock.height);
+				engine.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
 			} else if (codeBlock.disabled) {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.surfaceRaised1, codeBlock.width, codeBlock.height);
+				engine.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
 			} else {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.surfaceBase, codeBlock.width, codeBlock.height);
+				engine.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
 			}
 
 			drawBlockHighlights(engine, state, codeBlock);
 
 			if (state.featureFlags.codeLineSelection && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
-				engine.drawSprite(
-					0,
-					codeBlock.cursor.y,
-					spriteLookups.fillColors.primarySoft,
-					codeBlock.width,
-					state.viewport.hGrid
-				);
+				engine.drawFill(0, codeBlock.cursor.y, PALETTE_INDICES.primarySoft, codeBlock.width, state.viewport.hGrid);
 			}
 
 			const cornerFont =
 				state.codeBlockRendering.selectedCodeBlock === codeBlock
-					? spriteLookups.fontSecondaryBase
-					: spriteLookups.fontInkBase;
+					? PALETTE_INDICES.secondaryBase
+					: PALETTE_INDICES.inkBase;
 
 			engine.drawText(0, 0, corner, cornerFont);
 			engine.drawText(codeBlock.width - state.viewport.vGrid, 0, corner, cornerFont);
@@ -97,7 +92,7 @@ export default function drawModules(
 					codeBlock.cursor.x,
 					codeBlock.cursor.y,
 					'_',
-					codeBlock.disabled ? spriteLookups.fontInkFaint : spriteLookups.fontInkBase
+					codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase
 				);
 			}
 			drawAssertions(engine, state, codeBlock);

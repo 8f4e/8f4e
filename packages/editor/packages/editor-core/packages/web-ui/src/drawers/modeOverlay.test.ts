@@ -1,6 +1,7 @@
-import { createMockState } from '@8f4e/editor-state-testing';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../__tests__/rendering';
+import { createDrawContextMock } from '../__tests__/rendering';
 import type { DrawContext as Engine } from '../drawContext';
 import drawModeOverlay from './modeOverlay';
 
@@ -16,10 +17,7 @@ describe('drawModeOverlay', () => {
 				modeToggling: true,
 			},
 			editorMode: 'view',
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontMutedBase: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 
 		drawModeOverlay(engine, state);
@@ -28,7 +26,7 @@ describe('drawModeOverlay', () => {
 			state.viewport.vGrid,
 			0,
 			"You're in view mode, press e to edit",
-			state.spriteLookups?.fontMutedBase
+			PALETTE_INDICES.mutedBase
 		);
 	});
 
@@ -39,10 +37,7 @@ describe('drawModeOverlay', () => {
 				modeToggling: true,
 			},
 			editorMode: 'edit',
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontMutedBase: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 
 		drawModeOverlay(engine, state);
@@ -51,7 +46,7 @@ describe('drawModeOverlay', () => {
 			state.viewport.vGrid,
 			0,
 			"You're in edit mode, press ESC to enter view mode",
-			state.spriteLookups?.fontMutedBase
+			PALETTE_INDICES.mutedBase
 		);
 	});
 
@@ -63,10 +58,7 @@ describe('drawModeOverlay', () => {
 				modeToggling: true,
 			},
 			editorMode: 'view',
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontMutedBase: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 
 		drawModeOverlay(engine, state);

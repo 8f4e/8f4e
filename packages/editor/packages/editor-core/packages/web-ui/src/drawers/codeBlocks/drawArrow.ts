@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../drawContext';
 import { calculateArrowPlacement } from './arrowPlacement';
@@ -19,8 +20,8 @@ const ARROW_CHARACTERS = {
  */
 export default function drawArrow(engine: DrawContext, codeBlock: CodeBlockGraphicData, state: State): void {
 	const arrowPlacement = calculateArrowPlacement(codeBlock, state);
-	const font = state.spriteLookups?.fontPrimaryBase;
-	if (!font) {
+	const font = PALETTE_INDICES.primaryBase;
+	if (!state.spriteLookups) {
 		return;
 	}
 

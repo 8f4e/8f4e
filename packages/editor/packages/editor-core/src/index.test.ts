@@ -74,7 +74,7 @@ vi.mock('@8f4e/sprite-generator', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/sprite-generator')>()),
 	default: vi.fn(async () => ({
 		spriteAtlas: {
-			image: {} as OffscreenCanvas,
+			image: { width: 1, height: 1, data: new Uint8Array([255]) },
 			lookup: {},
 			spriteIdentifiers: {},
 		},

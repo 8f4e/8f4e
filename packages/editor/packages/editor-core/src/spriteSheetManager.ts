@@ -1,3 +1,4 @@
+import { type ResolvedPalette, resolvePalette } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import generateSprite from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
@@ -6,6 +7,7 @@ import type { EventDispatcher } from './events';
 
 type SpriteSheetView = {
 	loadSpriteAtlas: (spriteData: SpriteData) => void;
+	loadPalette: (palette: ResolvedPalette) => void;
 };
 
 /**
@@ -29,13 +31,17 @@ export function createSpriteSheetManager(
 			return;
 		}
 
+		spriteData.palette = resolvePalette(state.editorConfig.color);
 		view.loadSpriteAtlas(spriteData);
 
 		events.dispatch('spriteSheetRerendered');
 	};
 
 	store.subscribe('editorConfig.font', rerenderSpriteSheet);
-	store.subscribe('editorConfig.color', rerenderSpriteSheet);
+	const updatePalette = () => {
+		if (!disposed) view.loadPalette(resolvePalette(state.editorConfig.color));
+	};
+	store.subscribe('editorConfig.color', updatePalette);
 
 	return () => {
 		if (disposed) {
@@ -45,6 +51,6 @@ export function createSpriteSheetManager(
 		disposed = true;
 		generation++;
 		store.unsubscribe('editorConfig.font', rerenderSpriteSheet);
-		store.unsubscribe('editorConfig.color', rerenderSpriteSheet);
+		store.unsubscribe('editorConfig.color', updatePalette);
 	};
 }

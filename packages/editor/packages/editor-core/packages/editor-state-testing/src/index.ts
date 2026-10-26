@@ -1,5 +1,6 @@
 import type { CodeBlockGraphicData, EventDispatcher, State, Viewport } from '@8f4e/editor-state-types';
 import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
+import type { SpriteFont, SpriteId, SpriteIdLookups } from '@8f4e/sprite-generator';
 
 type DeepPartial<T> = T extends (...args: never[]) => unknown
 	? T
@@ -311,4 +312,10 @@ function mergeDeep<T>(target: T, source: unknown): T {
 	}
 
 	return result;
+}
+
+/** Shared shape-only atlas fixture. Colors are selected separately using editor-palette indices. */
+export function createMockSpriteLookups(): SpriteIdLookups {
+	const font = Object.fromEntries(Array.from({ length: 128 }, (_, code) => [code, code as SpriteId])) as SpriteFont;
+	return { font, fill: { 0: 128 as SpriteId }, background: { 0: 129 as SpriteId } };
 }

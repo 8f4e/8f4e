@@ -1,5 +1,5 @@
+import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import { BASE_TYPE_METADATA, type PlannedMemoryDeclaration } from '@8f4e/language-spec';
-import type { SpriteFont } from '@8f4e/sprite-generator';
 import type { SpriteLookups, TooltipLiveValueSource, TooltipLiveValueTarget } from '../types';
 import { getTooltipLineColors } from './colors';
 import { maxLiveMemoryAddressLength, maxLiveMemoryValueLength } from './constants';
@@ -12,7 +12,7 @@ interface LiveTooltipLine {
 
 export interface LiveTooltipContent {
 	text: string[];
-	colors: Array<Array<SpriteFont | undefined>>;
+	colors: Array<Array<PaletteIndex | undefined>>;
 	liveValueTargets: TooltipLiveValueTarget[];
 	maxLineLength: number;
 }
@@ -52,7 +52,7 @@ export function getLiveTooltipContent(
 		return { text: [], colors: [], liveValueTargets: [], maxLineLength: 0 };
 	}
 
-	const valueColor = spriteLookups?.fontInverseAccent;
+	const valueColor = PALETTE_INDICES.inverseAccent;
 	const valueLabel = memory.numberOfElements > 1 ? 'value[0]: ' : 'value: ';
 	const lines: LiveTooltipLine[] = [
 		{

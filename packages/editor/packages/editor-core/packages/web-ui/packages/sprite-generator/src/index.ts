@@ -1,24 +1,15 @@
 import { type ResolvedPalette, resolvePalette } from '@8f4e/editor-palette';
 import type { SpriteCoordinates, SpriteId, SpriteIdentifier } from 'glugglugglug';
-import { createAtlasLayout } from './atlasLayout.ts';
-import generateBackground, { generateLookup as generateLookupForBackground } from './background.ts';
-import type { FillSpriteColorName } from './fillColors.ts';
-import generateFillColors, { generateLookup as generateLookupForFillColors } from './fillColors.ts';
-import generateFont, { type FontLookups, generateLookups as generateLookupsForFonts } from './font.ts';
+import { BACKGROUND_COLUMNS, BACKGROUND_ROWS, createAtlasLayout, FONT_COLUMNS } from './atlasLayout.ts';
+import { writeGlyph } from './font.ts';
 import decodeFontBase64 from './fonts/font-decoder.ts';
 import type { FontMetadata } from './fonts/ibmvga8x16/generated/ascii.ts';
-import {
-	createSpriteAtlas,
-	type SpriteAtlas,
-	type SpriteIdentifierLookup,
-	type SpriteIdentifiers,
-	type SpriteIdLookup,
-	type SpriteIds,
-} from './sprite-atlas.ts';
-import { Command, type Config, FONT_NAMES, type Font } from './types.ts';
+import Glyph from './fonts/types.ts';
+import { createSpriteAtlas, type SpriteAtlas } from './sprite-atlas.ts';
+import { type Config, FONT_NAMES, type Font } from './types.ts';
 
 export type { SpriteId } from 'glugglugglug';
-export type { FillSpriteColorName } from './fillColors.ts';
+export { BACKGROUND_COLUMNS, BACKGROUND_ROWS } from './atlasLayout.ts';
 export type {
 	ResolvedSpriteIds,
 	SpriteAtlas,
@@ -299,106 +290,71 @@ async function loadFont(font: Font): Promise<FontData> {
 	return fontData;
 }
 
-interface AtlasCoordinates extends FontLookups {
-	fillColors: Record<FillSpriteColorName, SpriteCoordinates>;
-	background: Record<0, SpriteCoordinates>;
+declare const spriteCellBrand: unique symbol;
+/** Compact pre-resolved cell: low 16 bits are the glyph ID, high 16 bits are the palette index. */
+export type SpriteCell = number & { readonly [spriteCellBrand]: true };
+
+/** Packs validated shape/color selections outside the render loop without allocating an object per glyph. */
+export function createSpriteCell(spriteId: SpriteId, paletteIndex: number): SpriteCell {
+	return (((paletteIndex << 16) | spriteId) >>> 0) as SpriteCell;
 }
 
-/** Validated fixed-cell font whose fallback glyph is guaranteed to exist. */
-export type SpriteFont = SpriteIdLookup & { readonly 63: SpriteId };
-
-type NonFontAtlasCoordinates = Omit<AtlasCoordinates, keyof FontLookups>;
-
-type SpriteIdentifierFont = SpriteIdentifierLookup & { readonly 63: SpriteIdentifier };
-
-/** Grouped public identifiers emitted with a generated atlas and resolved when that atlas is installed. */
-export type SpriteIdentifierLookups = SpriteIdentifiers<NonFontAtlasCoordinates> & {
-	[Group in keyof FontLookups]: SpriteIdentifierFont;
+/** Fixed-cell glyph IDs, shared by all palette colors. */
+export type SpriteFont = Readonly<Partial<Record<number, SpriteId>>> & { readonly 63: SpriteId };
+export type SpriteIdentifierLookups = {
+	font: Partial<Record<number, SpriteIdentifier>> & { readonly 63: SpriteIdentifier };
+	fill: { readonly 0: SpriteIdentifier };
+	background: { readonly 0: SpriteIdentifier };
+};
+export type SpriteIdLookups = {
+	font: SpriteFont;
+	fill: { readonly 0: SpriteId };
+	background: { readonly 0: SpriteId };
 };
 
-/** Grouped numeric sprite identifiers used by the editor render hot path. */
-export type SpriteIdLookups = SpriteIds<NonFontAtlasCoordinates> & {
-	[Group in keyof FontLookups]: SpriteFont;
-};
-
-export default async function generateSprite(config: Config): Promise<{
+export default async function generateSprite(config: Config = {}): Promise<{
 	spriteAtlas: SpriteAtlas<SpriteIdentifierLookups>;
 	characterWidth: number;
 	characterHeight: number;
 	palette: ResolvedPalette;
 }> {
 	const { characterWidth, characterHeight, asciiBitmap, glyphsBitmap } = await loadFont(resolveFont(config.font));
-	const palette = resolvePalette(config.palette);
-	const layout = createAtlasLayout(characterWidth, characterHeight, palette.colors);
-	const canvas = new OffscreenCanvas(layout.canvasWidth, layout.canvasHeight);
-
-	const ctx = canvas.getContext('2d', {
-		alpha: true,
-		antialias: false,
-	}) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
-
-	const commands = [
-		...generateFillColors(characterWidth, characterHeight, palette.colors),
-		...generateFont(asciiBitmap, characterWidth, characterHeight, palette.colors),
-		...generateBackground(glyphsBitmap, characterWidth, characterHeight, palette.colors),
-	];
-
-	commands.forEach(([command, ...params]) => {
-		switch (command) {
-			case Command.FILL_COLOR:
-				ctx.fillStyle = <string>params[0];
-				break;
-			case Command.RECTANGLE:
-				ctx.fillRect(...(params as [number, number, number, number]));
-				break;
-			case Command.SAVE:
-				ctx.save();
-				break;
-			case Command.RESET_TRANSFORM:
-				ctx.resetTransform();
-				break;
-			case Command.RESTORE:
-				ctx.restore();
-				break;
-			case Command.TRANSLATE:
-				ctx.translate(...(params as [number, number]));
-				break;
-			case Command.PIXEL:
-				ctx.fillRect(...(params as [number, number]), 1, 1);
-				break;
-		}
-	});
-
-	const atlasCoordinates: AtlasCoordinates = {
-		fillColors: generateLookupForFillColors(characterWidth, characterHeight, palette.colors),
-		...generateLookupsForFonts(characterWidth, characterHeight, palette.colors),
-		background: generateLookupForBackground(characterWidth, characterHeight, palette.colors),
-	};
-	const rawSpriteAtlas = createSpriteAtlas(canvas, atlasCoordinates);
-	const spriteAtlas: SpriteAtlas<SpriteIdentifierLookups> = {
-		...rawSpriteAtlas,
-		spriteIdentifiers: validateSpriteIdentifiers(rawSpriteAtlas.spriteIdentifiers),
-	};
-
-	return {
-		characterHeight,
-		characterWidth,
-		spriteAtlas,
-		palette,
-	};
-}
-
-/**
- * Strengthens generated lookup groups after confirming that their required fallback sprites exist.
- *
- * @param spriteIdentifiers - Public atlas lookups produced from validated source rectangles.
- * @returns The same lookups with required font fallbacks reflected in their types.
- */
-function validateSpriteIdentifiers(spriteIdentifiers: SpriteIdentifiers<AtlasCoordinates>): SpriteIdentifierLookups {
-	for (const [groupName, group] of Object.entries(spriteIdentifiers)) {
-		if (groupName.startsWith('font') && (group as SpriteIdentifierLookup)[63] === undefined) {
-			throw new Error(`Generated sprite font ${groupName} is missing fallback glyph 63.`);
+	const layout = createAtlasLayout(characterWidth, characterHeight);
+	const image = { width: layout.width, height: layout.height, data: new Uint8Array(layout.width * layout.height) };
+	const font: Record<number, SpriteCoordinates> = {};
+	for (let code = 0; code < 128; code++) {
+		const x = (code % FONT_COLUMNS) * characterWidth;
+		const y = Math.floor(code / FONT_COLUMNS) * characterHeight;
+		writeGlyph(image.data, image.width, asciiBitmap, code, characterWidth, characterHeight, x, y);
+		font[code] = { x, y, spriteWidth: characterWidth, spriteHeight: characterHeight };
+	}
+	// Even columns form one color layer. Draw the same mask offset by one cell for odd columns.
+	for (let row = 0; row < BACKGROUND_ROWS; row++) {
+		for (let column = 0; column < BACKGROUND_COLUMNS; column += 2) {
+			writeGlyph(
+				image.data,
+				image.width,
+				glyphsBitmap,
+				Glyph.DOT,
+				characterWidth,
+				characterHeight,
+				column * characterWidth,
+				layout.background.y + row * characterHeight
+			);
 		}
 	}
-	return spriteIdentifiers as SpriteIdentifierLookups;
+	image.data[layout.fill.y * image.width + layout.fill.x] = 255;
+	const spriteAtlas = createSpriteAtlas(image, {
+		font,
+		fill: { 0: layout.fill },
+		background: {
+			0: { x: 0, y: layout.background.y, spriteWidth: layout.background.width, spriteHeight: layout.background.height },
+		},
+	});
+	return {
+		characterWidth,
+		characterHeight,
+		palette: resolvePalette(config.palette),
+		spriteAtlas: spriteAtlas as SpriteAtlas<SpriteIdentifierLookups>,
+	};
 }

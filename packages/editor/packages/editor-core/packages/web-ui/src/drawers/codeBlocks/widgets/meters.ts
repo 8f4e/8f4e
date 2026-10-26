@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
@@ -38,7 +39,7 @@ function drawSegment(
 	fillWidth: number,
 	sprite: 'positiveBase' | 'warningBase' | 'negativeBase',
 	height: number,
-	spriteIds: NonNullable<State['spriteLookups']>['fillColors']
+	spriteIds: typeof PALETTE_INDICES
 ): void {
 	const segmentStart = Math.floor(startX);
 	const segmentEnd = Math.floor(endX);
@@ -48,7 +49,7 @@ function drawSegment(
 		return;
 	}
 
-	engine.drawSprite(segmentStart, 0, spriteIds[sprite], width, height);
+	engine.drawFill(segmentStart, 0, spriteIds[sprite], width, height);
 }
 
 export default function drawer(
@@ -61,7 +62,7 @@ export default function drawer(
 		return;
 	}
 
-	const fillSprites = state.spriteLookups.fillColors;
+	const colors = PALETTE_INDICES;
 
 	for (const meter of codeBlock.widgets.arrayMeters) {
 		const {
@@ -93,17 +94,17 @@ export default function drawer(
 		const fillWidth = Math.round(normalized * width);
 		const overloaded = isBipolar ? Math.abs(value) > amplitudeLimit : value < minValue || value > maxValue;
 
-		engine.drawSprite(0, 0, fillSprites.darkSurface, width, height);
-		drawSegment(engine, 0, greenEndX, fillWidth, 'positiveBase', height, fillSprites);
-		drawSegment(engine, greenEndX, yellowEndX, fillWidth, 'warningBase', height, fillSprites);
-		drawSegment(engine, yellowEndX, width, fillWidth, 'negativeBase', height, fillSprites);
+		engine.drawFill(0, 0, colors.darkSurface, width, height);
+		drawSegment(engine, 0, greenEndX, fillWidth, 'positiveBase', height, colors);
+		drawSegment(engine, greenEndX, yellowEndX, fillWidth, 'warningBase', height, colors);
+		drawSegment(engine, yellowEndX, width, fillWidth, 'negativeBase', height, colors);
 
 		if (overloaded) {
 			overloadHoldByMeter.set(meter, true);
 		}
 
 		if (overloadHoldByMeter.has(meter)) {
-			engine.drawSprite(overloadMarkerX, 0, fillSprites.negativeBase, overloadMarkerWidth, height);
+			engine.drawFill(overloadMarkerX, 0, colors.negativeBase, overloadMarkerWidth, height);
 		}
 
 		engine.endGroup();

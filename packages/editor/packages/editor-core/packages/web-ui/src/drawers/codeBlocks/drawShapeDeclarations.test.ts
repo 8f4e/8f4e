@@ -1,6 +1,7 @@
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../../__tests__/rendering';
+import { createDrawContextMock } from '../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../drawContext';
 import drawShapeDeclarations from './drawShapeDeclarations';
 
@@ -10,7 +11,7 @@ function createMockEngine(): Engine {
 
 describe('drawShapeDeclarations', () => {
 	it('draws precomputed shape declaration labels', () => {
-		const fontInkBase = createSpriteIdLookupMock();
+		const fontInkBase = PALETTE_INDICES.inkBase;
 		const block = createMockCodeBlock({
 			widgets: {
 				...createMockCodeBlock().widgets,
@@ -21,9 +22,7 @@ describe('drawShapeDeclarations', () => {
 			},
 		});
 		const state = createMockState({
-			spriteLookups: {
-				fontInkBase,
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const engine = createMockEngine();
 
@@ -36,9 +35,7 @@ describe('drawShapeDeclarations', () => {
 	it('skips drawing when there are no precomputed labels', () => {
 		const block = createMockCodeBlock();
 		const state = createMockState({
-			spriteLookups: {
-				fontInkBase: createSpriteIdLookupMock(),
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const engine = createMockEngine();
 

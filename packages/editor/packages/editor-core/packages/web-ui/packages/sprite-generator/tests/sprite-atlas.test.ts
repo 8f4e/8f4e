@@ -5,12 +5,12 @@ import { createSpriteAtlas, resolveSpriteIds } from '../src/index.ts';
 
 describe('sprite atlas output', () => {
 	it('flattens semantic groups into dense numeric sprite ids', () => {
-		const image = {} as OffscreenCanvas;
+		const image = { width: 64, height: 64, data: new Uint8Array(64 * 64) };
 		const red: SpriteCoordinates = { x: 0, y: 0, spriteWidth: 8, spriteHeight: 8 };
 		const green: SpriteCoordinates = { x: 8, y: 0, spriteWidth: 8, spriteHeight: 8 };
 		const atlas = createSpriteAtlas(image, {
-			fontInkBase: { 65: red, A: red },
-			fillColors: { foreground: red, background: green },
+			font: { 65: red, A: red },
+			masks: { foreground: red, background: green },
 		});
 
 		const compatibleLookup: SpriteLookup = atlas.lookup;
@@ -20,20 +20,20 @@ describe('sprite atlas output', () => {
 			1: green,
 		});
 		expect(atlas.spriteIdentifiers).toEqual({
-			fontInkBase: { 65: 0, A: 0 },
-			fillColors: { foreground: 0, background: 1 },
+			font: { 65: 0, A: 0 },
+			masks: { foreground: 0, background: 1 },
 		});
 		const resolved = resolveSpriteIds(atlas.spriteIdentifiers, {
 			resolveSprite: identifier => (Number(identifier) + 10) as SpriteId,
 		});
 		expect(resolved).toEqual({
-			fontInkBase: { 65: 10, A: 10 },
-			fillColors: { foreground: 10, background: 11 },
+			font: { 65: 10, A: 10 },
+			masks: { foreground: 10, background: 11 },
 		});
 	});
 
 	it('copies coordinates into a deterministic lookup without mutating the grouped input', () => {
-		const image = {} as OffscreenCanvas;
+		const image = { width: 64, height: 64, data: new Uint8Array(64 * 64) };
 		const coordinates: SpriteCoordinates = { x: 3, y: 5, spriteWidth: 7, spriteHeight: 11 };
 		const groupedLookups = { icons: { play: coordinates } };
 		const first = createSpriteAtlas(image, groupedLookups);
@@ -45,7 +45,7 @@ describe('sprite atlas output', () => {
 	});
 
 	it('rejects invalid rectangles before assigning validated sprite ids', () => {
-		const image = { width: 16, height: 8 } as OffscreenCanvas;
+		const image = { width: 16, height: 8, data: new Uint8Array(128) };
 
 		expect(() =>
 			createSpriteAtlas(image, {

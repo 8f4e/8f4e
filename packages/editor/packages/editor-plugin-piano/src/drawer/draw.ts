@@ -1,10 +1,11 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import type { SpriteIdLookups } from '@8f4e/sprite-generator';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { PianoKeyboard, PianoKeyboardKey } from '../types';
 
 function drawPressedKey(engine: DrawContext, spriteLookups: SpriteIdLookups, key: PianoKeyboardKey): void {
-	const font = key.kind === 'black' ? spriteLookups.fontPrimaryOverlay : spriteLookups.fontDarkOverlaySoft;
+	const font = key.kind === 'black' ? PALETTE_INDICES.primaryOverlay : PALETTE_INDICES.darkOverlaySoft;
 	for (const y of key.pressedOverlayRows) {
 		engine.drawText(key.x, y, ';;', font);
 	}
@@ -65,17 +66,17 @@ export function drawPianoKeyboards(
 
 		for (const key of keys) {
 			if (key.kind === 'black') {
-				engine.drawSprite(key.x, keyY, spriteLookups.fillColors.darkBase, keyWidth, blackKeyHeight);
-				engine.drawSprite(key.x, blackKeySideY, spriteLookups.fillColors.lightBase, keyWidth, blackKeySideHeight);
-				engine.drawSprite(
+				engine.drawFill(key.x, keyY, PALETTE_INDICES.darkBase, keyWidth, blackKeyHeight);
+				engine.drawFill(key.x, blackKeySideY, PALETTE_INDICES.lightBase, keyWidth, blackKeySideHeight);
+				engine.drawFill(
 					key.x + blackKeyGapXOffset,
 					blackKeyGapY,
-					spriteLookups.fillColors.darkBase,
+					PALETTE_INDICES.darkBase,
 					blackKeyGapWidth,
 					blackKeyGapHeight
 				);
 			} else {
-				engine.drawSprite(key.x, keyY, spriteLookups.fillColors.lightBase, keyWidth, keyHeight);
+				engine.drawFill(key.x, keyY, PALETTE_INDICES.lightBase, keyWidth, keyHeight);
 			}
 		}
 
@@ -91,9 +92,9 @@ export function drawPianoKeyboards(
 
 		for (const key of keys) {
 			if (key.offset % 2 === 1) {
-				engine.drawSprite(key.x, 0, spriteLookups.fillColors.primarySoft, keyWidth, keyY);
+				engine.drawFill(key.x, 0, PALETTE_INDICES.primarySoft, keyWidth, keyY);
 			}
-			engine.drawText(key.x, 0, key.label, spriteLookups.fontInkBase);
+			engine.drawText(key.x, 0, key.label, PALETTE_INDICES.inkBase);
 		}
 		engine.endGroup();
 	}

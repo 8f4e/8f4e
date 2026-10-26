@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../drawContext';
 
@@ -10,7 +11,7 @@ export default function drawShapeDeclarations(
 		return;
 	}
 
-	const font = codeBlock.disabled ? state.spriteLookups.fontInkFaint : state.spriteLookups.fontInkBase;
+	const font = codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase;
 
 	for (const { x, y, text } of codeBlock.widgets.shapeDeclarations) {
 		engine.drawText(x, y, text, font);

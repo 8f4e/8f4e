@@ -1,4 +1,10 @@
-import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import {
+	createMockCodeBlock,
+	createMockEventDispatcher,
+	createMockSpriteLookups,
+	createMockState,
+} from '@8f4e/editor-state-testing';
 import { createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -172,8 +178,8 @@ describe('tooltip effect', () => {
 
 	it.each(['', 'group'])('writes live value metadata in project path %s', projectPath => {
 		const moduleId = createProjectModuleId(projectPath, 'test');
-		const fontInverseInk = {};
-		const fontInverseAccent = {};
+
+		const fontInverseAccent = PALETTE_INDICES.inverseAccent;
 		const selectedBlock = createMockCodeBlock({
 			code: ['int value', 'add'],
 			name: 'test',
@@ -215,10 +221,7 @@ describe('tooltip effect', () => {
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
 			},
-			spriteLookups: {
-				fontInverseInk,
-				fontInverseAccent,
-			} as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const store = createStateManager(state);
 

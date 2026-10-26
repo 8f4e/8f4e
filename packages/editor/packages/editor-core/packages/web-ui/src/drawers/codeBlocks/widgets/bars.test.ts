@@ -1,7 +1,8 @@
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
 import type { ArrayBars } from '@8f4e/editor-state-types';
-import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../../../__tests__/rendering';
+import { describe, expect, it, vi } from 'vitest';
+import { createDrawContextMock } from '../../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
 import drawBars from './bars';
@@ -56,7 +57,7 @@ describe('drawBars', () => {
 	it('renders buffer values as vertical bars', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: { fillColors: createSpriteIdLookupMock() } as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -66,18 +67,18 @@ describe('drawBars', () => {
 
 		drawBars(engine, state, codeBlock, createMemoryViews({ float32: [0.25, 0.5, 0.75, 1] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 0, 'darkSurface', 8, 8);
-		expect(drawSprite).toHaveBeenCalledWith(0, 6, 'detailBase', 2, 2);
-		expect(drawSprite).toHaveBeenCalledWith(2, 4, 'detailBase', 2, 4);
-		expect(drawSprite).toHaveBeenCalledWith(4, 2, 'detailBase', 2, 6);
-		expect(drawSprite).toHaveBeenCalledWith(6, 0, 'detailBase', 2, 8);
+		const drawSprite = vi.mocked(engine.drawFill);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 8, 8);
+		expect(drawSprite).toHaveBeenCalledWith(0, 6, PALETTE_INDICES.detailBase, 2, 2);
+		expect(drawSprite).toHaveBeenCalledWith(2, 4, PALETTE_INDICES.detailBase, 2, 4);
+		expect(drawSprite).toHaveBeenCalledWith(4, 2, PALETTE_INDICES.detailBase, 2, 6);
+		expect(drawSprite).toHaveBeenCalledWith(6, 0, PALETTE_INDICES.detailBase, 2, 8);
 	});
 
 	it('compresses dense arrays by the maximum value in each column', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: { fillColors: createSpriteIdLookupMock() } as never,
+			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -98,10 +99,10 @@ describe('drawBars', () => {
 
 		drawBars(engine, state, codeBlock, createMemoryViews({ float32: [0, 0.25, 0.1, 0.5, 0.2, 0.75, 0.3, 1] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
-		expect(drawSprite).toHaveBeenCalledWith(0, 6, 'detailBase', 1, 2);
-		expect(drawSprite).toHaveBeenCalledWith(1, 4, 'detailBase', 1, 4);
-		expect(drawSprite).toHaveBeenCalledWith(2, 2, 'detailBase', 1, 6);
-		expect(drawSprite).toHaveBeenCalledWith(3, 0, 'detailBase', 1, 8);
+		const drawSprite = vi.mocked(engine.drawFill);
+		expect(drawSprite).toHaveBeenCalledWith(0, 6, PALETTE_INDICES.detailBase, 1, 2);
+		expect(drawSprite).toHaveBeenCalledWith(1, 4, PALETTE_INDICES.detailBase, 1, 4);
+		expect(drawSprite).toHaveBeenCalledWith(2, 2, PALETTE_INDICES.detailBase, 1, 6);
+		expect(drawSprite).toHaveBeenCalledWith(3, 0, PALETTE_INDICES.detailBase, 1, 8);
 	});
 });

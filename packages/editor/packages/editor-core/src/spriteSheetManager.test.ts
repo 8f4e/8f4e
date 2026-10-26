@@ -1,3 +1,4 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
 import type { State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
@@ -6,84 +7,75 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSpriteSheetManager } from './spriteSheetManager';
 
 const { generateSprite } = vi.hoisted(() => ({ generateSprite: vi.fn() }));
-
 vi.mock('@8f4e/sprite-generator', () => ({ default: generateSprite }));
-
 function deferred<T>() {
 	let resolve!: (value: T) => void;
-	const promise = new Promise<T>(resolvePromise => {
-		resolve = resolvePromise;
+	const promise = new Promise<T>(done => {
+		resolve = done;
 	});
 	return { promise, resolve };
 }
-
+function setup() {
+	const state = createMockState();
+	state.editorConfig = { font: 'ibmvga8x16', color: { primary: '#ffffff' } };
+	const subscriptions = new Map<string, () => void | Promise<void>>();
+	const store = {
+		getState: () => state,
+		subscribe: vi.fn((key: string, callback: () => void | Promise<void>) => subscriptions.set(key, callback)),
+		unsubscribe: vi.fn((key: string) => subscriptions.delete(key)),
+	} as unknown as StateManager<State>;
+	const view = { loadSpriteAtlas: vi.fn(), loadPalette: vi.fn() };
+	const events = { dispatch: vi.fn() };
+	const dispose = createSpriteSheetManager(store, view, events as never);
+	return { state, store, view, events, subscriptions, dispose };
+}
 describe('sprite sheet manager', () => {
-	beforeEach(() => {
-		generateSprite.mockReset();
+	beforeEach(() => generateSprite.mockReset());
+	it('updates only the palette on a theme change without rebuilding masks or projections', () => {
+		const test = setup();
+		test.state.editorConfig.color = { primary: 'rgba(255,0,0,0.5)' };
+		test.subscriptions.get('editorConfig.color')?.();
+		expect(test.view.loadPalette).toHaveBeenCalledExactlyOnceWith(resolvePalette(test.state.editorConfig.color));
+		expect(generateSprite).not.toHaveBeenCalled();
+		expect(test.view.loadSpriteAtlas).not.toHaveBeenCalled();
+		expect(test.events.dispatch).not.toHaveBeenCalled();
+		test.dispose();
 	});
-
-	it('unsubscribes and ignores sprite generation that finishes after disposal', async () => {
-		const state = createMockState();
-		state.editorConfig = { font: 'terminus8x16', color: {} };
-		const subscriptions = new Map<string, () => Promise<void>>();
-		const store = {
-			getState: () => state,
-			subscribe: vi.fn((selector: string, callback: () => Promise<void>) => subscriptions.set(selector, callback)),
-			unsubscribe: vi.fn((selector: string, callback: () => Promise<void>) => {
-				if (subscriptions.get(selector) === callback) {
-					subscriptions.delete(selector);
-				}
-			}),
-		} as unknown as StateManager<State>;
-		const view = { loadSpriteAtlas: vi.fn() };
-		const events = { dispatch: vi.fn() };
-		const pendingSprite = deferred<SpriteData>();
-		generateSprite.mockReturnValueOnce(pendingSprite.promise);
-		const dispose = createSpriteSheetManager(store, view, events as never);
-
-		const rerender = subscriptions.get('editorConfig.font');
-		expect(rerender).toBeDefined();
-		const rerenderPromise = rerender?.() as Promise<void>;
-		dispose();
-		pendingSprite.resolve({} as SpriteData);
-		await rerenderPromise;
-
-		expect(store.unsubscribe).toHaveBeenCalledWith('editorConfig.font', rerender);
-		expect(store.unsubscribe).toHaveBeenCalledWith('editorConfig.color', expect.any(Function));
-		expect(view.loadSpriteAtlas).not.toHaveBeenCalled();
-		expect(events.dispatch).not.toHaveBeenCalled();
+	it('installs only the newest font build and uses the latest palette at completion', async () => {
+		const test = setup();
+		const older = deferred<SpriteData>();
+		const newer = deferred<SpriteData>();
+		generateSprite.mockReturnValueOnce(older.promise).mockReturnValueOnce(newer.promise);
+		const oldRequest = test.subscriptions.get('editorConfig.font')?.();
+		test.state.editorConfig.font = '6x10';
+		const newRequest = test.subscriptions.get('editorConfig.font')?.();
+		test.state.editorConfig.color = { primary: '#00ff00' };
+		test.subscriptions.get('editorConfig.color')?.();
+		const bundle = { palette: resolvePalette() } as SpriteData;
+		newer.resolve(bundle);
+		await newRequest;
+		older.resolve({} as SpriteData);
+		await oldRequest;
+		expect(test.view.loadSpriteAtlas).toHaveBeenCalledExactlyOnceWith(bundle);
+		expect(bundle.palette).toEqual(resolvePalette({ primary: '#00ff00' }));
+		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('spriteSheetRerendered');
+		expect(generateSprite).toHaveBeenCalledTimes(2);
+		test.dispose();
 	});
-
-	it('installs only the newest theme and font bundle when builds finish out of order', async () => {
-		const state = createMockState();
-		const originalPalette = { primary: '#5bd5ff' };
-		state.editorConfig = { font: 'ibmvga8x16', color: originalPalette };
-		const subscriptions = new Map<string, () => Promise<void>>();
-		const store = {
-			getState: () => state,
-			subscribe: (selector: string, callback: () => Promise<void>) => subscriptions.set(selector, callback),
-			unsubscribe: vi.fn(),
-		} as unknown as StateManager<State>;
-		const view = { loadSpriteAtlas: vi.fn() };
-		const events = { dispatch: vi.fn() };
-		const oldBuild = deferred<SpriteData>();
-		const newBuild = deferred<SpriteData>();
-		generateSprite.mockReturnValueOnce(oldBuild.promise).mockReturnValueOnce(newBuild.promise);
-		const dispose = createSpriteSheetManager(store, view, events as never);
-		const older = subscriptions.get('editorConfig.color')?.();
-		const nextPalette = { primary: '#d9a6ff' };
-		state.editorConfig = { font: '6x10', color: nextPalette };
-		const newer = subscriptions.get('editorConfig.font')?.();
-		const oldBundle = {} as SpriteData;
-		const newBundle = {} as SpriteData;
-		newBuild.resolve(newBundle);
-		await newer;
-		oldBuild.resolve(oldBundle);
-		await older;
-		expect(generateSprite).toHaveBeenNthCalledWith(1, { font: 'ibmvga8x16', palette: originalPalette });
-		expect(generateSprite).toHaveBeenNthCalledWith(2, { font: '6x10', palette: nextPalette });
-		expect(view.loadSpriteAtlas).toHaveBeenCalledExactlyOnceWith(newBundle);
-		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('spriteSheetRerendered');
-		dispose();
+	it('unsubscribes and ignores pending font work and captured palette callbacks after disposal', async () => {
+		const test = setup();
+		const pending = deferred<SpriteData>();
+		generateSprite.mockReturnValueOnce(pending.promise);
+		const request = test.subscriptions.get('editorConfig.font')?.();
+		const color = test.subscriptions.get('editorConfig.color');
+		test.dispose();
+		test.dispose();
+		color?.();
+		pending.resolve({} as SpriteData);
+		await request;
+		expect(test.view.loadSpriteAtlas).not.toHaveBeenCalled();
+		expect(test.view.loadPalette).not.toHaveBeenCalled();
+		expect(test.events.dispatch).not.toHaveBeenCalled();
+		expect(test.store.unsubscribe).toHaveBeenCalledTimes(2);
 	});
 });

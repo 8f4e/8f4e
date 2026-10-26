@@ -1,9 +1,11 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { gapCalculator } from '@8f4e/editor-state';
+import { createMockSpriteLookups } from '@8f4e/editor-state-testing';
 import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
-import { createDrawContextMock, createSpriteIdLookupMock } from './__tests__/rendering';
+import { createDrawContextMock } from './__tests__/rendering';
 import { pianoPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
@@ -51,16 +53,11 @@ async function setup(code = source, installed = true, name = 'controls') {
 	state.compiler.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
-	state.spriteLookups = {
-		fillColors: createSpriteIdLookupMock(),
-		fontInkBase: createSpriteIdLookupMock(),
-		fontDarkOverlaySoft: createSpriteIdLookupMock(),
-		fontPrimaryOverlay: createSpriteIdLookupMock(),
-	} as never;
+	state.spriteLookups = createMockSpriteLookups() as never;
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
-		vi.mocked(draw.drawSprite).mockClear();
+		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawText).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
@@ -123,9 +120,9 @@ describe('piano plugin', () => {
 		expect(test.codeBlock.width).toBeGreaterThanOrEqual(48 * test.state.viewport.vGrid);
 		test.render();
 		expect(test.draw.startGroup).toHaveBeenCalledWith(0, 64);
-		expect(test.draw.drawSprite).toHaveBeenCalledWith(0, 16, 'lightBase', 16, 80);
-		expect(test.draw.drawSprite).toHaveBeenCalledWith(16, 16, 'darkBase', 16, 48);
-		expect(test.draw.drawText).toHaveBeenCalledWith(0, 0, 'C', test.state.spriteLookups!.fontInkBase);
+		expect(test.draw.drawFill).toHaveBeenCalledWith(0, 16, PALETTE_INDICES.lightBase, 16, 80);
+		expect(test.draw.drawFill).toHaveBeenCalledWith(16, 16, PALETTE_INDICES.darkBase, 16, 48);
+		expect(test.draw.drawText).toHaveBeenCalledWith(0, 0, 'C', PALETTE_INDICES.inkBase);
 		expect(vi.mocked(test.draw.drawText).mock.calls.filter(call => call[2] !== ';;')).toHaveLength(24);
 	});
 	it('toggles notes from real pointer events and draws current runtime highlights', async () => {
@@ -136,7 +133,7 @@ describe('piano plugin', () => {
 		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(50);
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(32, 16, ';;', test.state.spriteLookups!.fontDarkOverlaySoft);
+		expect(test.draw.drawText).toHaveBeenCalledWith(32, 16, ';;', PALETTE_INDICES.darkOverlaySoft);
 		test.press(2);
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(0);
 		expect(test.codeBlock.code).toEqual(original);
@@ -155,7 +152,7 @@ describe('piano plugin', () => {
 		test.memoryViews.int32[memory.count.allocationUnitAddress] = 2;
 		test.render();
 		for (const x of [32, 64]) {
-			expect(test.draw.drawText).toHaveBeenCalledWith(x, 16, ';;', test.state.spriteLookups!.fontDarkOverlaySoft);
+			expect(test.draw.drawText).toHaveBeenCalledWith(x, 16, ';;', PALETTE_INDICES.darkOverlaySoft);
 		}
 
 		test.click(2);
@@ -185,7 +182,7 @@ describe('piano plugin', () => {
 		test.click(2);
 		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
 
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.draw.drawText).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
 		expect(test.memoryViews.int32).toEqual(originalMemory);
@@ -199,7 +196,7 @@ describe('piano plugin', () => {
 			const test = await setup(source.map(line => line.replace('int count 0', declaration)));
 			test.render();
 			test.press(2);
-			expect(test.draw.drawSprite).not.toHaveBeenCalled();
+			expect(test.draw.drawFill).not.toHaveBeenCalled();
 			expect(test.write).not.toHaveBeenCalled();
 			expect(await test.menuItems()).toEqual([]);
 		}
@@ -223,7 +220,7 @@ describe('piano plugin', () => {
 		test.codeBlock.code = test.codeBlock.code.filter(line => !line.includes('@piano'));
 		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
 		test.render();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.codeBlock.minGridWidth).toBeUndefined();
 		expect(test.codeBlock.gaps.size).toBe(0);
 		expect(await test.menuItems()).toEqual([]);
@@ -232,7 +229,7 @@ describe('piano plugin', () => {
 		const test = await setup(source.map(line => line.replace('&notes', '&missing')));
 		test.render();
 		test.press();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
 	});
 	it('maps keys correctly with a shifted viewport', async () => {
@@ -317,7 +314,7 @@ describe('piano plugin', () => {
 		test.press(2);
 		test.press(4);
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(32, 16, ';;', test.state.spriteLookups!.fontDarkOverlaySoft);
+		expect(test.draw.drawText).toHaveBeenCalledWith(32, 16, ';;', PALETTE_INDICES.darkOverlaySoft);
 		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
 		expect(test.codeBlock.nestedProjectCodeBlocks!.find(block => block.name === 'notesData')!.code).toContain(
 			'int[] notes 4 50 52'
@@ -338,7 +335,7 @@ describe('piano plugin', () => {
 		bare.press(2);
 		expect(second.write).not.toHaveBeenCalled();
 		expect(vi.mocked(second.draw.drawText).mock.calls.some(call => call[2] === ';;')).toBe(false);
-		expect(bare.draw.drawSprite).not.toHaveBeenCalled();
+		expect(bare.draw.drawFill).not.toHaveBeenCalled();
 		expect(bare.write).not.toHaveBeenCalled();
 		expect(bare.codeBlock.minGridWidth).toBeUndefined();
 		expect(bare.codeBlock.gaps.size).toBe(0);
@@ -350,7 +347,7 @@ describe('piano plugin', () => {
 		test.render();
 		test.press(2);
 		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
 		expect(await test.menuItems()).toEqual([]);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);

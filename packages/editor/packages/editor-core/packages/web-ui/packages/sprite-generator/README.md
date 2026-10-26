@@ -1,6 +1,6 @@
 # Sprite Generator Package
 
-This package generates sprite sheets for the 8f4e editor, containing font glyphs, palette fills, and the background pattern.
+This package generates sprite sheets for the 8f4e editor, containing color-independent R8 font glyphs, a shared fill mask, and the background pattern.
 
 ## Palette
 
@@ -9,44 +9,43 @@ This package generates sprite sheets for the 8f4e editor, containing font glyphs
 Omitted values inherit shared defaults. Colors accept hex with optional alpha, `rgb()` / `rgba()`, and `transparent`;
 base alpha is preserved in generated shades, with additional fixed 30%, 60%, and 90% opacity variants.
 The browser-independent `@8f4e/editor-palette` package resolves predefined Oklab shades, aliases,
-and RGBA values before atlas generation. See [the palette reference](../../../../docs/color-paths.md).
+and RGBA values independently of atlas generation. See [the palette reference](../../../../docs/color-paths.md).
 
-Every tonal shade has a fill sprite. The current font catalog contains each base's `Dark2`, `Base`, and `Light2`
-variants plus the foreground materials in `FONT_ALIASES` (for example `fontPrimaryDark2` and `fontFloatingInk`).
-`primaryDark3` and `primaryDark1` are also available as fonts to preserve the six-step output indicator colors.
-Identical font colors share rows, and the atlas layout uses the actual unique row count. No runtime sprite shading is required.
-Additional `Alpha30/60/90` swatches are fill-only; source alpha and shared text overlays remain available.
-The returned `palette` belongs to the generated atlas and also supplies colors for line rendering.
-
-Input and output connectors are composed by web-ui at runtime from a `surfaceRaised2` fill and ordinary bracket/star
-glyphs. The atlas has no dedicated icon or feedback-scale sprites or lookup groups. Fill swatches start beside the
-background immediately below the font rows.
+Every palette token can color any glyph or fill, including opacity variants. `PALETTE_INDICES` gives tokens stable
+numeric indices across theme changes; equal colors retain different indices. `toPaletteBytes(palette)` encodes the
+resolved colors as a straight-alpha RGBA8 table for the generic renderer.
 
 ## Sprite atlas output
 
-The generator returns a `spriteAtlas` containing the generated `OffscreenCanvas`, one flat deduplicated lookup, and
-grouped public numeric identifiers. Resolve those identifiers against the installed atlas to produce dense IDs for
-hot-path drawing. Source coordinates are an internal generation detail and are not included in the public result:
+The generator returns a `spriteAtlas` with `image: { width, height, data }`, where `data` is a tightly packed `Uint8Array`
+of R8 coverage. It contains one set of 128 glyphs keyed by numeric character code, a shared one-pixel fill, and one
+background pattern mask. There are 130 unique source rectangles, independently of the selected theme. No canvas is
+needed to generate these resources.
+
+Resolve the grouped public IDs (`font`, `fill`, `background`) against the installed atlas before drawing:
 
 ```ts
+import { PALETTE_INDICES, toPaletteBytes } from '@8f4e/editor-palette';
 import generateSprite, { resolveSpriteIds } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 
-const { spriteAtlas } = await generateSprite({ font: 'ibmvga8x16' });
+const { spriteAtlas, palette } = await generateSprite({ font: 'ibmvga8x16' });
 const engine = new Engine(canvas);
-
 const resolver = engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup);
-const spriteIds = resolveSpriteIds(spriteAtlas.spriteIdentifiers, resolver);
+const ids = resolveSpriteIds(spriteAtlas.spriteIdentifiers, resolver);
+engine.setPalette(toPaletteBytes(palette));
 engine.renderFrame(() => {
-	engine.drawSprite(20, 20, spriteIds.fontInkBase[65]);
-	engine.drawSprite(40, 20, spriteIds.fillColors.canvasBase, 200, 100);
+	engine.drawSprite(40, 20, ids.fill[0], PALETTE_INDICES.surfaceBase, 200, 100);
+	engine.drawSprite(20, 20, ids.font[65], PALETTE_INDICES.inkBase);
 });
 ```
 
-Aliases and semantic roles that refer to the same source rectangle share one public numeric identifier. Callers resolve
-the grouped `spriteIdentifiers` against the resolver returned for the installed atlas, retain the resulting `spriteIds`,
-and pass those dense ids directly rather than resolving identifiers inside the render loop. Repeat this step whenever
-the atlas is replaced.
+A theme change only needs `engine.setPalette(toPaletteBytes(resolvePalette(config)))`; the mask pixels and source
+rectangles stay unchanged. Replace and resolve the atlas when font shapes or dimensions change.
+
+Input and output connectors are composed at runtime from fills and ordinary bracket/star glyphs. The background uses
+one base fill and the same pattern mask drawn in two colors, with the second instance offset horizontally by one
+character cell. Tiling keeps both layers aligned without submitting one instance per dot.
 
 ## Font Bitmaps
 
@@ -169,7 +168,7 @@ Screenshot tests are located in `screenshot-tests/`:
 ### Test Cases
 
 Current test scenarios include:
-- **sprite-sheet-with-8x16-font** - Default 8x16 font with the standard color scheme
+- **sprite-sheet-with-8x16-font** - R8 masks for the default 8x16 font
 - **sprite-sheet-with-6x10-font** - Sprite sheet generated with the 6x10 font
 - **sprite-atlas** - Generated flat lookup and numeric IDs rendered through the WebGL engine
 

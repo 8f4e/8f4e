@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { ButtonWidget } from '../types';
@@ -13,7 +14,7 @@ export function drawButtons(draw: DrawContext, state: State, buttons: ButtonWidg
 		if (value === onValue || value === offValue) {
 			drawButton(draw, state, button, value === onValue);
 		} else {
-			draw.drawText(button.x, button.y, '[__]', sprites.fontSecondaryBase);
+			draw.drawText(button.x, button.y, '[__]', PALETTE_INDICES.secondaryBase);
 		}
 	}
 }
