@@ -367,7 +367,9 @@ Notes:
   memory, like sliders. Clicks leave source code and declaration defaults unchanged; note highlights reflect runtime memory.
 - Use **Save piano values to code** in the block context menu to save the current notes and count into their
   backing declarations. This preserves array sizes and inline comments, including when aliases target different modules.
-- `pressedKeysListAddress` identifies the pressed-key array.
+- `pressedKeysListAddress` must identify an `int[]` array of MIDI note numbers (32-bit integers).
+- `pressedKeyCountAddress` must identify a single `int` count. Other backing types, including `float[]` and `float64[]`
+  notes, do not create an interactive keyboard or a save action.
 - `startingMidiNote` defaults to `0`.
 - `startingMidiNote` must be a non-negative integer.
 - Every other note label has a shaded background using the theme's highlighted code line color, starting with the second

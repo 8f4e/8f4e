@@ -72,6 +72,19 @@ async function setup(code = source, installed = true, name = 'controls') {
 		};
 	};
 	const press = (key = 0, line = 3) => events.dispatch('codeBlockPointerDown', { codeBlock, ...point(key, line) });
+	const click = (key = 0, line = 3) => {
+		events.dispatch('mousedown', {
+			...point(key, line),
+			movementX: 0,
+			movementY: 0,
+			buttons: 1,
+			altKey: false,
+			canvasWidth: 800,
+			canvasHeight: 600,
+			stopPropagation: false,
+		});
+		events.dispatch('mouseup');
+	};
 	const initialRevision = state.compilerInputRevision;
 	const menuItems = async () => {
 		events.dispatch('openSubMenu', { menu: 'moduleMenu', codeBlock });
@@ -92,6 +105,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		write,
 		point,
 		press,
+		click,
 		menuItems,
 		dispose,
 	};
@@ -118,17 +132,7 @@ describe('piano plugin', () => {
 		const test = await setup([...source.slice(0, -1), '; @pos 40 20', 'moduleEnd']);
 		const original = [...test.codeBlock.code];
 		const memory = test.compiled.memoryPlan.modules.controls.memory;
-		test.events.dispatch('mousedown', {
-			...test.point(2),
-			movementX: 0,
-			movementY: 0,
-			buttons: 1,
-			altKey: false,
-			canvasWidth: 800,
-			canvasHeight: 600,
-			stopPropagation: false,
-		});
-		test.events.dispatch('mouseup');
+		test.click(2);
 		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(50);
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
 		test.render();
@@ -142,18 +146,74 @@ describe('piano plugin', () => {
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(0);
 		expect(test.codeBlock.code).toEqual(original);
 	});
-	it('reads and writes float note arrays', async () => {
-		const test = await setup(source.map(line => line.replace('int[] notes', 'float[] notes')));
+	it('compacts integer notes and saves the remaining note after a real pointer click', async () => {
+		const test = await setup([
+			'module controls',
+			'int[] notes 4 50 52',
+			'int count 2',
+			'; @piano &notes &count 48',
+			'; @pos 40 20',
+			'moduleEnd',
+		]);
 		const memory = test.compiled.memoryPlan.modules.controls.memory;
-		test.memoryViews.float32[memory.notes.allocationUnitAddress] = 48;
-		test.memoryViews.int32[memory.count.allocationUnitAddress] = 1;
-		test.press(2);
-		expect(
-			Array.from(
-				test.memoryViews.float32.slice(memory.notes.allocationUnitAddress, memory.notes.allocationUnitAddress + 2)
-			)
-		).toEqual([48, 50]);
+		test.memoryViews.int32.set([50, 52], memory.notes.allocationUnitAddress);
+		test.memoryViews.int32[memory.count.allocationUnitAddress] = 2;
+		test.render();
+		for (const x of [32, 64]) {
+			expect(test.draw.drawText).toHaveBeenCalledWith(
+				x,
+				16,
+				';;',
+				test.state.spriteLookups!.fontPianoKeyWhitePressedOverlay
+			);
+		}
+
+		test.click(2);
+		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(52);
+		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
+		expect(test.write).toHaveBeenCalledWith(memory.notes.allocationUnitAddress, 52, true);
+		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
+		expect(test.codeBlock.code).toContain('int[] notes 4 52');
+		expect(test.codeBlock.code).toContain('int count 1');
 	});
+	it.each(['float', 'float64'] as const)('rejects %s note arrays before drawing, clicking, or saving', async type => {
+		const test = await setup([
+			'module controls',
+			`${type}[] notes 4 50.0 52.0`,
+			'int count 2',
+			'; @piano &notes &count 48',
+			'; @pos 40 20',
+			'moduleEnd',
+		]);
+		const memory = test.compiled.memoryPlan.modules.controls.memory;
+		const notes = type === 'float64' ? test.memoryViews.float64 : test.memoryViews.float32;
+		notes.set([50, 52], memory.notes.byteAddress / notes.BYTES_PER_ELEMENT);
+		test.memoryViews.int32[memory.count.allocationUnitAddress] = 2;
+		const originalMemory = test.memoryViews.int32.slice();
+		const originalCode = [...test.codeBlock.code];
+		test.render();
+		test.click(2);
+		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
+
+		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawText).not.toHaveBeenCalled();
+		expect(test.write).not.toHaveBeenCalled();
+		expect(test.memoryViews.int32).toEqual(originalMemory);
+		expect(test.codeBlock.code).toEqual(originalCode);
+		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
+		expect(await test.menuItems()).toEqual([]);
+	});
+	it.each(['float count 0.0', 'float64 count 0.0', 'int[] count 2'])(
+		'rejects an unsupported count declaration: %s',
+		async declaration => {
+			const test = await setup(source.map(line => line.replace('int count 0', declaration)));
+			test.render();
+			test.press(2);
+			expect(test.draw.drawSprite).not.toHaveBeenCalled();
+			expect(test.write).not.toHaveBeenCalled();
+			expect(await test.menuItems()).toEqual([]);
+		}
+	);
 	it('lays out multiple keyboards after earlier spacing requests', async () => {
 		const test = await setup([...source.slice(0, -1), '; @piano &notes &count 60', 'moduleEnd']);
 		test.render();

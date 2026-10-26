@@ -6,14 +6,14 @@ import { createDrawContextMock, createSpriteIdLookupMock } from '../__tests__/re
 import type { PianoKeyboard } from '../types';
 import { drawPianoKeyboards } from './draw';
 
-function createMemoryViews({ int32 = [], float32 = [] }: { int32?: number[]; float32?: number[] } = {}): MemoryViews {
+function createMemoryViews({ int32 = [] }: { int32?: number[] } = {}): MemoryViews {
 	return {
 		int8: new Int8Array(0),
 		int16: new Int16Array(0),
 		int32: new Int32Array(int32),
 		uint8: new Uint8Array(0),
 		uint16: new Uint16Array(0),
-		float32: new Float32Array(float32),
+		float32: new Float32Array(0),
 		float64: new Float64Array(0),
 	};
 }

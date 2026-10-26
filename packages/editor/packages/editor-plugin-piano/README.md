@@ -7,6 +7,8 @@
 ```
 
 Both memory arguments are addresses, including group-exposed addresses. The starting note defaults to zero.
+The note array must use `int[]` (32-bit integers), and the count must be a single `int`. Other memory types,
+including `float[]` and `float64[]` notes, do not create an interactive keyboard or a save action.
 The keyboard adds six rows below its directive and requests enough block width for its keys. Clicking a key toggles
 that note in the runtime array and updates the active count. Runtime memory also drives the pressed-note highlights.
 

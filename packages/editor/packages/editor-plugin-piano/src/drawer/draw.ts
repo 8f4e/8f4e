@@ -22,13 +22,12 @@ function drawRuntimePressedKeys(
 	startingMidiNote: number,
 	memoryViews: MemoryViews
 ): void {
-	const memoryBuffer = pressedKeysListMemory.isInteger ? memoryViews.int32 : memoryViews.float32;
 	const numberOfKeys = Math.max(0, memoryViews.int32[pressedKeyCountMemory.allocationUnitAddress] || 0);
-	const readableKeys = Math.min(numberOfKeys, pressedKeysListMemory.allocationUnitCount);
+	const readableKeys = Math.min(numberOfKeys, pressedKeysListMemory.numberOfElements);
 
 	for (let i = 0; i < readableKeys; i++) {
-		const keyValue = memoryBuffer[pressedKeysListMemory.allocationUnitAddress + i];
-		const keyOffset = Math.trunc(keyValue - startingMidiNote);
+		const keyValue = memoryViews.int32[pressedKeysListMemory.allocationUnitAddress + i];
+		const keyOffset = keyValue - startingMidiNote;
 
 		if (keyOffset >= 0 && keyOffset < keys.length) {
 			drawPressedKey(engine, spriteLookups, keys[keyOffset]);

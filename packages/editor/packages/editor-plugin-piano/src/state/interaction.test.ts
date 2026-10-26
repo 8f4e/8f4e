@@ -20,11 +20,8 @@ describe('piano interaction', () => {
 			viewport: { vGrid: 10, hGrid: 20, x: 0, y: 0 },
 			callbacks: {
 				getWordFromMemory: vi.fn((allocationUnitAddress: number) => memoryStore.get(allocationUnitAddress) ?? 0),
-				setWordInMemory: vi.fn((allocationUnitAddress: number, value: number, isInteger: boolean) => {
-					memoryStore.set(
-						allocationUnitAddress,
-						isInteger ? value : new Int32Array(new Float32Array([value]).buffer)[0]
-					);
+				setWordInMemory: vi.fn((allocationUnitAddress: number, value: number) => {
+					memoryStore.set(allocationUnitAddress, value);
 				}),
 			},
 		});
@@ -120,6 +117,7 @@ describe('piano interaction', () => {
 		clickKey(codeBlock, 2);
 
 		expect(memoryStore.get(5)).toBe(50);
+		expect(mockState.callbacks.setWordInMemory).toHaveBeenCalledWith(5, 50, true);
 		expect(memoryStore.get(20)).toBe(1);
 		expect(mockState.callbacks.setWordInMemory).toHaveBeenLastCalledWith(20, 1, true);
 		expect(codeBlock.code).toEqual(originalCode);
@@ -199,24 +197,6 @@ describe('piano interaction', () => {
 		clickKey(codeBlock, 2);
 
 		expect(memoryStore.get(20)).toBe(0);
-		cleanup();
-	});
-
-	it('decodes and writes float32 note arrays through the memory callbacks', () => {
-		const codeBlock = createCodeBlockWithPiano();
-		keyboardsByBlock.get(codeBlock)![0].pressedKeysListMemory.isInteger = false;
-		memoryStore.set(20, 1);
-		memoryStore.set(5, new Int32Array(new Float32Array([48]).buffer)[0]);
-		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock);
-
-		clickKey(codeBlock, 2);
-
-		expect(mockState.callbacks.setWordInMemory).toHaveBeenCalledWith(5, 48, false);
-		expect(mockState.callbacks.setWordInMemory).toHaveBeenCalledWith(6, 50, false);
-		expect(memoryStore.get(20)).toBe(2);
-
-		clickKey(codeBlock, 2);
-		expect(memoryStore.get(20)).toBe(1);
 		cleanup();
 	});
 

@@ -12,24 +12,8 @@ function createProjectState(blocks: CodeBlockGraphicData[], read: State['callbac
 	return state;
 }
 
-function createRawMemoryReader(values: Record<number, { type: 'int32' | 'float32' | 'float64'; value: number }>) {
-	const buffer = new ArrayBuffer(64);
-	const int32 = new Int32Array(buffer);
-	const float32 = new Float32Array(buffer);
-	const float64 = new Float64Array(buffer);
-
-	for (const [address, entry] of Object.entries(values)) {
-		const wordAddress = Number.parseInt(address, 10);
-		if (entry.type === 'int32') {
-			int32[wordAddress] = entry.value;
-		} else if (entry.type === 'float32') {
-			float32[wordAddress] = entry.value;
-		} else {
-			float64[wordAddress / 2] = entry.value;
-		}
-	}
-
-	return (allocationUnitAddress: number) => int32[allocationUnitAddress] ?? 0;
+function createRawMemoryReader(values: Record<number, number>) {
+	return (allocationUnitAddress: number) => values[allocationUnitAddress] ?? 0;
 }
 
 function createPianoCodeBlock(
@@ -89,11 +73,11 @@ describe('save piano default values to code', () => {
 		const state = createProjectState(
 			[codeBlock],
 			createRawMemoryReader({
-				4: { type: 'int32', value: 36 },
-				5: { type: 'int32', value: 52 },
-				6: { type: 'int32', value: 84 },
-				7: { type: 'int32', value: 99 },
-				8: { type: 'int32', value: 3 },
+				4: 36,
+				5: 52,
+				6: 84,
+				7: 99,
+				8: 3,
 			})
 		);
 
@@ -121,38 +105,13 @@ describe('save piano default values to code', () => {
 		]);
 	});
 
-	it('decodes float32 notes and keeps floating-point literal syntax', () => {
-		const { codeBlock, keyboards } = createPianoCodeBlock([
-			'module synth',
-			'float[] notes 4 48.0',
-			'int count 1',
-			'; @piano &notes &count 48',
-			'moduleEnd',
-		]);
-		keyboards[0].pressedKeysListMemory.isInteger = false;
-		const state = createProjectState(
-			[codeBlock],
-			createRawMemoryReader({
-				4: { type: 'float32', value: 50 },
-				5: { type: 'float32', value: 52 },
-				8: { type: 'int32', value: 2 },
-			})
-		);
-		expect(getPianoDefaultEdits(state, keyboards)).toEqual([
-			{
-				codeBlock,
-				code: ['module synth', 'float[] notes 4 50.0 52.0', 'int count 2', '; @piano &notes &count 48', 'moduleEnd'],
-			},
-		]);
-	});
-
 	it('bounds the count to the array capacity before reading notes', () => {
 		const reader = createRawMemoryReader({
-			4: { type: 'int32', value: 48 },
-			5: { type: 'int32', value: 50 },
-			6: { type: 'int32', value: 52 },
-			7: { type: 'int32', value: 54 },
-			8: { type: 'int32', value: 100 },
+			4: 48,
+			5: 50,
+			6: 52,
+			7: 54,
+			8: 100,
 		});
 		const { codeBlock, keyboards } = createPianoCodeBlock();
 		const state = createProjectState([codeBlock], reader);
@@ -169,8 +128,8 @@ describe('save piano default values to code', () => {
 		const state = createProjectState(
 			[codeBlock],
 			createRawMemoryReader({
-				4: { type: 'int32', value: 48 },
-				8: { type: 'int32', value: 1 },
+				4: 48,
+				8: 1,
 			})
 		);
 		expect(getPianoDefaultEdits(state, keyboards)).toEqual([]);
@@ -227,19 +186,6 @@ describe('save piano default values to code', () => {
 				code: ['module synth', 'int[] notes 4', 'int count 0', '; @piano &synth:notes &synth:count 48', 'moduleEnd'],
 			},
 		]);
-	});
-
-	it('skips invalid floating-point runtime values without saving a partial count', () => {
-		const { codeBlock, keyboards } = createPianoCodeBlock();
-		keyboards[0].pressedKeysListMemory.isInteger = false;
-		const state = createProjectState(
-			[codeBlock],
-			createRawMemoryReader({
-				4: { type: 'float32', value: Number.NaN },
-				8: { type: 'int32', value: 1 },
-			})
-		);
-		expect(getPianoDefaultEdits(state, keyboards)).toEqual([]);
 	});
 
 	it('skips saving when runtime memory cannot be read', () => {

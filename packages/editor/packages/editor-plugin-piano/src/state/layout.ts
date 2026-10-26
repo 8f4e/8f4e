@@ -66,6 +66,13 @@ function resolvePianoDirectiveWidget(
 	if (!pressedKeysList || !pressedKeyCount) {
 		return;
 	}
+	if (
+		pressedKeysList.memory.type !== 'int' ||
+		pressedKeyCount.memory.type !== 'int' ||
+		pressedKeyCount.memory.numberOfElements !== 1
+	) {
+		return;
+	}
 
 	const displayRow =
 		directiveState.displayModel.sourceLineIndexToDisplayRow[pianoKeyboard.sourceLineIndex] ??

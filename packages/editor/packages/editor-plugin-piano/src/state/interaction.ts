@@ -2,24 +2,14 @@ import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-
 import type { PianoKeyboard } from '../types';
 
 // Runtime memory is the source of truth for both clicks and pressed-note highlights.
-const float32DecodeBuffer = new ArrayBuffer(4);
-const float32DecodeInt32 = new Int32Array(float32DecodeBuffer);
-const float32DecodeFloat32 = new Float32Array(float32DecodeBuffer);
-
 function readRuntimePressedKeys(keyboard: PianoKeyboard, getWordFromMemory: (address: number) => number): Set<number> {
 	const pressedKeys = new Set<number>();
 
-	const numberOfKeys = Math.max(
-		0,
-		Math.trunc(getWordFromMemory(keyboard.pressedKeyCountMemory.allocationUnitAddress)) || 0
-	);
+	const numberOfKeys = Math.max(0, getWordFromMemory(keyboard.pressedKeyCountMemory.allocationUnitAddress) || 0);
 	const readableKeys = Math.min(numberOfKeys, keyboard.pressedKeysListMemory.numberOfElements);
 
 	for (let i = 0; i < readableKeys; i++) {
-		const word = getWordFromMemory(keyboard.pressedKeysListMemory.allocationUnitAddress + i);
-		float32DecodeInt32[0] = word;
-		const keyValue = keyboard.pressedKeysListMemory.isInteger ? word : float32DecodeFloat32[0];
-		pressedKeys.add(keyValue);
+		pressedKeys.add(getWordFromMemory(keyboard.pressedKeysListMemory.allocationUnitAddress + i));
 	}
 
 	return pressedKeys;
@@ -79,11 +69,7 @@ export function registerPianoInteraction(
 
 		let index = 0;
 		for (const note of pressedKeys) {
-			setWordInMemory(
-				keyboard.pressedKeysListMemory.allocationUnitAddress + index,
-				note,
-				keyboard.pressedKeysListMemory.isInteger
-			);
+			setWordInMemory(keyboard.pressedKeysListMemory.allocationUnitAddress + index, note, true);
 			index += 1;
 		}
 		setWordInMemory(keyboard.pressedKeyCountMemory.allocationUnitAddress, pressedKeys.size, true);
