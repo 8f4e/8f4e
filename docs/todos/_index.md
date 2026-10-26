@@ -68,6 +68,9 @@ Active todo files are listed below.
 | 505 | Add an initial editor mode directive | 🟡 | 4-8h | 2026-10-21 | Let projects request edit or view mode at load time while preserving host-level mode policy and later user mode changes. |
 | 506 | Add an inline sample browser directive | 🟡 | TBD | 2026-10-22 | Render a folder/file browser inside a code block and update a bound binary asset URL when a sample is selected. |
 | 508 | Design lazy loading for editor plugins | 🟡 | TBD | 2026-10-26 | Work out plugin discovery, asynchronous activation, readiness, and per-editor cleanup while measuring initial-bundle savings. |
+| 512 | Investigate integer sprite instance packing | 🟡 | TBD | 2026-10-26 | Evaluate a 12-byte integer sprite layout against the 20-byte baseline, checking coordinate limits, code complexity, and measured CPU/GPU costs. |
+| 513 | Benchmark fixed-grid glyph addressing | 🟡 | TBD | 2026-10-26 | Compare calculated glyph rectangles with the GPU rectangle lookup, verifying equivalent rendering and measured gains before restricting the atlas layout. |
+| 514 | Investigate viewport culling for code text | 🟡 | TBD | 2026-10-26 | Determine visible text row and column ranges before sprite submission, preserving partial glyphs and layout while measuring traversal, upload, and CPU/GPU savings. |
 
 ### 🟢 Low Priority
 
