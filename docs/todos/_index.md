@@ -69,6 +69,7 @@ Active todo files are listed below.
 | 506 | Add an inline sample browser directive | 🟡 | TBD | 2026-10-22 | Render a folder/file browser inside a code block and update a bound binary asset URL when a sample is selected. |
 | 508 | Design lazy loading for editor plugins | 🟡 | TBD | 2026-10-26 | Work out plugin discovery, asynchronous activation, readiness, and per-editor cleanup while measuring initial-bundle savings. |
 | 510 | Use glyph masks and a GPU color palette | 🟡 | TBD | 2026-10-26 | Store glyph shapes once, upload colors separately, and pack sprite IDs with stable palette indices in the 20-byte instance format. |
+| 511 | Compose input and output icons at runtime | 🟡 | TBD | 2026-10-26 | Draw connectors from existing font and fill sprites and remove prerendered icon variants before the R8 and GPU palette migration in TODO 510. |
 
 ### 🟢 Low Priority
 

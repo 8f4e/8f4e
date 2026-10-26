@@ -37,11 +37,15 @@ core, and plugins; compatibility with the existing APIs and atlas format is not 
 - Target the existing 20-byte instance size: four 32-bit floats for position and size, followed by a 16-bit sprite ID
   and a 16-bit palette index. Document and enforce the resulting limits during resource setup.
 - Make the main sprite atlas mask-based. Replace baked solid-color sprites with a shared fully covered mask and a
-  palette index, and compose feedback indicators, icons, and other previously prerendered composites at runtime.
+  palette index. Migrate the runtime input/output composition introduced separately in TODO 511 to the new primitives.
 - For the background, draw its base fill and reuse the same pattern mask in overlapping instances with different
   palette selections and positional offsets. Do not prerender separate colored versions of the background pattern.
 
 ## Implementation Plan
+
+Complete [TODO 511: Compose input and output icons at runtime](511-compose-input-output-icons-at-runtime.md) first,
+using the existing colored font and fill sprites. This task then changes the resources and drawing APIs underneath
+that composition; it does not introduce the connector composition change itself.
 
 ### Step 1: Define the palette and instance contracts
 
@@ -69,8 +73,8 @@ core, and plugins; compatibility with the existing APIs and atlas format is not 
   `UNSIGNED_BYTE` data. Store zero for uncovered pixels and 255 for fully covered pixels, and sample `.r` as normalized
   coverage. Use a byte-array upload path rather than retaining an RGBA mask atlas.
 - Set the unpack alignment explicitly for single-channel rows, including widths that are not multiples of four.
-- Use a shared opaque mask for solid rectangles. Rework multicolor composite sprites into ordered fills and masks
-  composed at runtime so their colors also come from the GPU palette.
+- Use a shared opaque mask for solid rectangles. Migrate the connector fills and glyphs from TODO 511 to masks and
+  palette indices, and replace any remaining baked composites with runtime composition.
 - Generate one reusable background pattern mask and layer offset instances over the base fill. Preserve the pattern's
   alignment at tile boundaries without expanding the background into an instance per dot.
 - Review atlas packing to avoid retaining a large mostly empty atlas after the font rows are removed.
@@ -119,7 +123,8 @@ core, and plugins; compatibility with the existing APIs and atlas format is not 
 - [ ] Sprite instances retain the 20-byte layout, with explicit 16-bit sprite ID and palette index limits.
 - [ ] Palette lookup happens in the vertex shader and colors do not require separate draw calls.
 - [ ] Palette-only updates refresh all migrated sprite colors without rebuilding or reuploading the atlas.
-- [ ] Previously prerendered composites are assembled at runtime; background layers reuse one pattern mask with offsets.
+- [ ] Runtime connector composition from TODO 511 uses masks and palette indices; background layers reuse one pattern
+  mask with offsets.
 - [ ] Premultiplied alpha, nearest-neighbor bitmap rendering, and compositing order remain correct.
 - [ ] Palette resources participate in renderer memory release, restoration, and disposal.
 - [ ] Core/plugin consumers use the new APIs and obsolete colored sprite APIs are removed without compatibility shims.
@@ -152,6 +157,8 @@ core, and plugins; compatibility with the existing APIs and atlas format is not 
 
 ## Related Items
 
+- **Depends on:** [TODO 511: Compose input and output icons at runtime](511-compose-input-output-icons-at-runtime.md).
+  Implement and verify the composition change before the R8 and GPU palette migration.
 - [TODO 509: Rebuild editor colors from a small base palette](archived/509-rebuild-editor-colors-from-base-palette.md)
 - [TODO 504: Add a color-theme contrast audit tool](504-add-color-theme-contrast-audit-tool.md)
 - [TODO 482: Resolve sprite identifiers before drawing](archived/482-resolve-sprite-identifiers-before-drawing.md)
