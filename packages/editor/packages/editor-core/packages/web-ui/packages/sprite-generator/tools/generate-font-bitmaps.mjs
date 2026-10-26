@@ -100,11 +100,9 @@ export const fontMetadata: FontMetadata = {
 `;
 }
 
-function writeGeneratedFont(fontName, characterWidth, characterHeight, asciiBitmap, glyphsBitmap) {
+function writeGeneratedFont(fontName, characterWidth, characterHeight, asciiBitmap) {
 	const asciiBytesPerValue = Math.max(...asciiBitmap) <= 255 ? 1 : 2;
-	const glyphsBytesPerValue = Math.max(...glyphsBitmap) <= 255 ? 1 : 2;
 	const asciiBase64 = fontToBase64(asciiBitmap);
-	const glyphsBase64 = fontToBase64(glyphsBitmap);
 
 	const asciiModule = generateFontModule(
 		`${fontName}/ascii`,
@@ -113,22 +111,13 @@ function writeGeneratedFont(fontName, characterWidth, characterHeight, asciiBitm
 		asciiBase64,
 		asciiBytesPerValue
 	);
-	const glyphsModule = generateFontModule(
-		`${fontName}/glyphs`,
-		characterWidth,
-		characterHeight,
-		glyphsBase64,
-		glyphsBytesPerValue
-	);
 
 	const outputDir = join(projectRoot, 'src', 'fonts', fontName, 'generated');
 	mkdirSync(outputDir, { recursive: true });
 
 	writeFileSync(join(outputDir, 'ascii.ts'), asciiModule, 'utf-8');
-	writeFileSync(join(outputDir, 'glyphs.ts'), glyphsModule, 'utf-8');
 
 	console.log(`  ✓ Generated ${fontName}/generated/ascii.ts (${asciiBase64.length} base64 chars)`);
-	console.log(`  ✓ Generated ${fontName}/generated/glyphs.ts (${glyphsBase64.length} base64 chars)`);
 
 	return {
 		fontName,
@@ -137,13 +126,7 @@ function writeGeneratedFont(fontName, characterWidth, characterHeight, asciiBitm
 			base64Length: asciiBase64.length,
 			bytesPerValue: asciiBytesPerValue,
 		},
-		glyphs: {
-			bitmapLength: glyphsBitmap.length,
-			base64Length: glyphsBase64.length,
-			bytesPerValue: glyphsBytesPerValue,
-		},
 		asciiBitmap,
-		glyphsBitmap,
 	};
 }
 
@@ -155,17 +138,12 @@ async function processFont(fontName, characterWidth, characterHeight) {
 
 	const fontDir = join(projectRoot, 'src', 'fonts', fontName);
 	const asciiPath = join(fontDir, 'ascii.ts');
-	const glyphsPath = join(fontDir, 'glyphs.ts');
 
 	// Read and parse ASCII font
 	const asciiGlyphs = await loadGlyphsModule(asciiPath);
 	const asciiBitmap = asciiGlyphsToFont(asciiGlyphs, characterWidth);
 
-	// Read and parse glyphs font
-	const glyphsGlyphs = await loadGlyphsModule(glyphsPath);
-	const glyphsBitmap = asciiGlyphsToFont(glyphsGlyphs, characterWidth);
-
-	return writeGeneratedFont(fontName, characterWidth, characterHeight, asciiBitmap, glyphsBitmap);
+	return writeGeneratedFont(fontName, characterWidth, characterHeight, asciiBitmap);
 }
 
 /**
@@ -202,10 +180,9 @@ async function main() {
 
 	console.log('\n✓ Font generation complete!');
 	console.log('\nSummary:');
-	stats.forEach(({ fontName, ascii, glyphs }) => {
+	stats.forEach(({ fontName, ascii }) => {
 		console.log(`  ${fontName}:`);
 		console.log(`    ASCII:  ${ascii.bitmapLength} values → ${ascii.base64Length} base64 chars`);
-		console.log(`    Glyphs: ${glyphs.bitmapLength} values → ${glyphs.base64Length} base64 chars`);
 	});
 }
 

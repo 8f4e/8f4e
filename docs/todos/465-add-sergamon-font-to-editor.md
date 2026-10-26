@@ -29,8 +29,8 @@ High-level approach:
 
 - Import the upstream plain-text `.glyph` sources, which describe glyphs directly on an 8x16 pixel grid.
 - Convert the required editor character set into the sprite-generator source format.
-- Reuse or adapt the current custom editor glyph fallback strategy for icons and any unsupported editor glyphs.
-- Generate the committed bitmap metadata with the existing sprite-generator tooling.
+- Configure the background dot position and rectangle size in the font definition; connectors use ordinary bracket/star characters and the shared fill mask.
+- Generate the git-ignored bitmap metadata with the existing sprite-generator tooling.
 - Register Sergamon in the public font list and lazy metadata loader.
 - Update third-party font documentation and commit the SIL Open Font License 1.1 text.
 
@@ -45,9 +45,8 @@ High-level approach:
 ### Step 2: Add sprite-generator font sources
 
 - Add `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/sergamon/ascii.ts`.
-- Add `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/sergamon/glyphs.ts`, using compatible Sergamon glyphs where available and the established fallback strategy otherwise.
 - Add or adapt an import tool that converts Sergamon's `.glyph` format deterministically.
-- Run the existing bitmap generation tool so `generated/ascii.ts` and `generated/glyphs.ts` are created.
+- Run the existing bitmap generation tool so `generated/ascii.ts` is created.
 
 ### Step 3: Register the font
 
@@ -80,7 +79,7 @@ High-level approach:
 - [ ] `sergamon` is selectable as an editor sprite-generator font.
 - [ ] The font loads through the same lazy metadata path as existing bundled fonts.
 - [ ] ASCII code glyphs render from Sergamon-derived 8x16 data.
-- [ ] Editor custom glyphs continue to render correctly.
+- [ ] Connectors and the tiled background render correctly with the new font.
 - [ ] Sprite-generator tests, typecheck, and rendering checks pass.
 - [ ] Third-party attribution and OFL license text are committed.
 
@@ -96,7 +95,7 @@ High-level approach:
 
 ## Risks & Considerations
 
-- **Character coverage**: Confirm the editor-required character set and define explicit fallbacks for missing custom glyphs.
+- **Character coverage**: Confirm the editor-required character set and verify the ordinary bracket/star characters used by connectors.
 - **Font naming**: Respect any Reserved Font Name declarations when naming converted or modified assets.
 - **Single weight**: Do not synthesize a bold variant; Sergamon intentionally provides one weight.
 - **Generated-file churn**: Keep generated bitmap changes limited to the new `sergamon` font directory.
