@@ -20,7 +20,6 @@ Integer and float values are drawn from their respective memory views. Disposal 
 its listeners and contributions.
 
 The button uses the existing `switchBackground`, `controlKnob`, and `fontControlKnob` palette entries.
-Extensible palette contributions remain tracked in [TODO 507](../../../../docs/todos/507-design-plugin-fill-color-contributions.md).
 
 ```bash
 npx nx run @8f4e/editor-plugin-button:build

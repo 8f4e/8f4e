@@ -16,8 +16,7 @@ Each installation keeps its tooltip state private and registers a code-block ove
 source, compiler, grid, and sprite changes. Live values are read from the current runtime memory during drawing.
 Disposal removes its subscriptions, sprite-reload listener, and overlay contribution.
 
-The plugin uses the existing tooltip font and fill entries in the sprite palette. Extensible palette contributions
-are tracked separately in [TODO 507](../../../../docs/todos/507-design-plugin-fill-color-contributions.md).
+The plugin uses the existing tooltip font and fill entries in the sprite palette.
 
 ```bash
 npx nx run @8f4e/editor-plugin-tooltips:build

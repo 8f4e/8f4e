@@ -28,7 +28,6 @@ samples use `-1..1`. It reads samples, pointer starts, live counts, and playhead
 Group-exposed memory uses the same public memory resolution as module declarations.
 
 The plugin uses the existing `waveformBackground`, `waveform`, and `scanLine` palette entries.
-Palette contributions remain tracked in [TODO 507](../../../../docs/todos/507-design-plugin-fill-color-contributions.md).
 
 ```bash
 npx nx run @8f4e/editor-plugin-wave:build

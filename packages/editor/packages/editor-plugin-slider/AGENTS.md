@@ -9,7 +9,7 @@
   editing remain in core.
 - Consume active drags with a capture listener so viewport panning and block dragging do not run for slider moves.
 - Own every directive, drawer, menu, and event registration. Return an explicit disposer.
-- Palette contributions remain deferred to TODO 507; use existing shared palette roles.
+- Use existing shared palette roles.
 - Run `npx nx run @8f4e/editor-plugin-slider:build|test|typecheck` after changes.
 - Run `npx nx run @8f4e/editor-plugin-slider:test:screenshot` for browser rendering tests.
 - Cover actual pointer events, live memory, ranges and steps, aliases, source edits, saving, cleanup, and isolation.

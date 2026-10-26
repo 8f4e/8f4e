@@ -4,11 +4,18 @@ priority: Medium
 effort: TBD
 created: 2026-10-26
 issue: null
-status: Open
-completed: null
+status: Cancelled
+completed: 2026-10-26
 ---
 
 # TODO: Design plugin fill-color contributions
+
+## Cancellation
+
+Cancelled on 2026-10-26. Replace feature-specific theme colors with a small shared base palette and generated lighter
+and darker shades, used by both core and plugin drawers. This replaces the need for plugin-owned color registration.
+The new direction is tracked in [TODO 509](../509-rebuild-editor-colors-from-base-palette.md); the proposal below is
+retained as history.
 
 ## Problem Description
 
@@ -69,8 +76,8 @@ generic color configuration and atlas machinery without declaring individual plu
 ## References
 
 - [Plugin extraction PR #1218](https://github.com/8f4e/8f4e/pull/1218)
-- [Editor plugin contract](../../packages/editor/packages/editor-core/README.md#plugins)
-- [Color configuration paths](../../packages/editor/packages/editor-core/docs/color-paths.md)
+- [Editor plugin contract](../../../packages/editor/packages/editor-core/README.md#plugins)
+- [Color configuration paths](../../../packages/editor/packages/editor-core/docs/color-paths.md)
 
 ## Notes
 

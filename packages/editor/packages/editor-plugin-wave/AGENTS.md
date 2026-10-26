@@ -9,7 +9,7 @@
   `layoutCallbacks.onBlockLayoutReady` for geometry after block layout.
 - Use public memory APIs for module/group scopes, typed sample metadata, and element counts.
 - Read live sample buffers, counts, and optional playheads during drawing.
-- Own cleanup of all three directive registrations and the drawer. Palette contributions remain deferred to TODO 507.
+- Own cleanup of all three directive registrations and the drawer.
 - Run `npx nx run @8f4e/editor-plugin-wave:build|test|typecheck` after changes.
 - Run `npx nx run @8f4e/editor-plugin-wave:test:screenshot` for browser rendering tests.
 - Cover all height variants, sample types, pointer/count sources, exposed memory, source edits, cleanup, and isolation.
