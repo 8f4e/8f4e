@@ -27,12 +27,6 @@ describe('R8 glyph masks', () => {
 			for (let x = characterWidth; x < characterWidth * 2; x++) expect(image.data[y * image.width + x]).toBe(0);
 		}
 	});
-	it('keeps mask pixels and all source rectangles unchanged when only the theme changes', async () => {
-		const before = await generateSprite({ font: 'ibmvga8x16', palette: { primary: '#ffffff' } });
-		const after = await generateSprite({ font: 'ibmvga8x16', palette: { primary: 'rgba(255,0,0,0.5)' } });
-		expect(after.spriteAtlas).toEqual(before.spriteAtlas);
-		expect(after.palette).not.toEqual(before.palette);
-	});
 });
 
 it('keeps packed text cells unsigned and preserves zero-valued shapes and colors', () => {

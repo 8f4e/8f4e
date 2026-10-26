@@ -28,7 +28,7 @@ describe('createWebUiRenderProjection', () => {
 		const font = new Proxy({ 63: 63 }, { get: (target, key) => target[Number(key) as 63] ?? Number(key) });
 		const state = createMockState({
 			codeBlockRendering: { codeBlocks: [block] },
-			spriteLookups: { font, fill: { 0: 128 }, background: { 0: 129 } } as SpriteIdLookups,
+			spriteLookups: { font, fill: 128, background: 129 } as SpriteIdLookups,
 		});
 		const subscriptions = new Map<string, () => void>();
 		const store = {

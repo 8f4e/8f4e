@@ -10,8 +10,8 @@ export default function drawBackground(engine: DrawContext, state: State): void 
 	const height = BACKGROUND_ROWS * state.viewport.hGrid;
 	for (let x = 0; x < state.viewport.width; x += width) {
 		for (let y = 0; y < state.viewport.height; y += height) {
-			engine.drawSprite(x, y, state.spriteLookups.background[0], PALETTE_INDICES.canvasDetail2);
-			engine.drawSprite(x + state.viewport.vGrid, y, state.spriteLookups.background[0], PALETTE_INDICES.canvasDetail1);
+			engine.drawSprite(x, y, state.spriteLookups.background, PALETTE_INDICES.canvasDetail2);
+			engine.drawSprite(x + state.viewport.vGrid, y, state.spriteLookups.background, PALETTE_INDICES.canvasDetail1);
 		}
 	}
 }

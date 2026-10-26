@@ -1,4 +1,4 @@
-import { PALETTE_INDICES, toPaletteBytes } from '@8f4e/editor-palette';
+import { PALETTE_INDICES, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
 import generateSprite, { resolveSpriteIds } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 
@@ -7,14 +7,14 @@ if (!output) {
 	throw new Error('Could not find the sprite atlas test canvas.');
 }
 
-const { characterHeight, characterWidth, spriteAtlas, palette } = await generateSprite({ font: 'ibmvga8x16' });
+const { characterHeight, characterWidth, spriteAtlas } = await generateSprite({ font: 'ibmvga8x16' });
 const engine = new Engine(output, { initialCapacity: 4 });
-engine.setPalette(toPaletteBytes(palette));
+engine.setPalette(toPaletteBytes(resolvePalette()));
 const resolver = engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup);
 const ids = resolveSpriteIds(spriteAtlas.spriteIdentifiers, resolver);
 engine.renderFrame(() => {
-	engine.drawSprite(0, 0, ids.fill[0], PALETTE_INDICES.canvasBase, output.width, output.height);
-	engine.drawSprite(32, 32, ids.fill[0], PALETTE_INDICES.surfaceBase, 640, 208);
+	engine.drawSprite(0, 0, ids.fill, PALETTE_INDICES.canvasBase, output.width, output.height);
+	engine.drawSprite(32, 32, ids.fill, PALETTE_INDICES.surfaceBase, 640, 208);
 
 	for (const [index, character] of [...'SPRITE ATLAS'].entries()) {
 		engine.drawSprite(
@@ -35,7 +35,7 @@ engine.renderFrame(() => {
 		engine.drawSprite(48 + index * characterWidth, 144, ids.font[character.charCodeAt(0)], PALETTE_INDICES.mutedBase);
 	}
 
-	engine.drawSprite(48, 184, ids.fill[0], PALETTE_INDICES.primarySoft, 448, characterHeight);
+	engine.drawSprite(48, 184, ids.fill, PALETTE_INDICES.primarySoft, 448, characterHeight);
 	for (const [index, character] of [...'ordered and pixelated'].entries()) {
 		engine.drawSprite(48 + index * characterWidth, 184, ids.font[character.charCodeAt(0)], PALETTE_INDICES.primaryBase);
 	}

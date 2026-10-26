@@ -24,7 +24,7 @@ export default function deriveCodeBlockCodeCells(
 	const characters = block.displayModel.lines.map(({ text, sourceLineIndex, isPlaceholder }, displayRow) => {
 		const prefix = getLineNumberPrefix(displayRow, block.lineNumberColumnWidth, text, isPlaceholder ?? false);
 		return [...prefix]
-			.map(character => character.charCodeAt(0) as number | string)
+			.map(character => character.charCodeAt(0))
 			.concat(expandLineToCells(text, tabStopsByLine[sourceLineIndex] ?? []));
 	});
 	const rawColors = highlightSyntax(block.code, block.blockType, {

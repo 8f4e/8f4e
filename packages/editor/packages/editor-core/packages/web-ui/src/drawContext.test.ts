@@ -5,8 +5,8 @@ import { DrawContext } from './drawContext';
 
 const ids = {
 	font: { 63: 9 as SpriteId, 65: 1 as SpriteId, 66: 2 as SpriteId },
-	fill: { 0: 7 as SpriteId },
-	background: { 0: 8 as SpriteId },
+	fill: 7 as SpriteId,
+	background: 8 as SpriteId,
 } satisfies SpriteIdLookups;
 describe('DrawContext', () => {
 	it('forwards separate shared shape and color indices through nested offsets', () => {
@@ -37,7 +37,7 @@ describe('DrawContext', () => {
 		const target = { drawSprite: vi.fn() };
 		const draw = new DrawContext(target, 8, ids);
 		draw.drawResolvedText(2, 3, [createSpriteCell(0 as SpriteId, 0), null, createSpriteCell(2 as SpriteId, 4)]);
-		draw.setSpriteLookups({ ...ids, fill: { 0: 12 as SpriteId } });
+		draw.setSpriteLookups({ ...ids, fill: 12 as SpriteId });
 		draw.drawFill(0, 0, 5, 10, 20);
 		expect(target.drawSprite.mock.calls).toEqual([
 			[2, 3, 0, 0, undefined, undefined],

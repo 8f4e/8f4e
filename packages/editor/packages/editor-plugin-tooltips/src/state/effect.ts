@@ -77,7 +77,6 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 			line,
 			TOOLTIP_WRAP_WIDTH,
 			getSelectedCodeBlockStackAnalysisLine(state, selectedCodeBlock),
-			state.spriteLookups,
 			createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name),
 			getSelectedMemoryDeclaration(state, selectedCodeBlock, memoryId),
 			getSelectedModuleExecutionOrder(state, selectedCodeBlock, line)
@@ -91,7 +90,6 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 		'codeBlockRendering.codeBlocks',
 		'featureFlags.codeLineSelection',
 		'compiler',
-		'spriteLookups',
 		'viewport.vGrid',
 		'viewport.hGrid',
 	] as const;

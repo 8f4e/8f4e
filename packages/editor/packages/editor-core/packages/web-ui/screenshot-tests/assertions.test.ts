@@ -1,3 +1,4 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import init from '@8f4e/web-ui';
 import { deriveCodeBlockCodeCells, type WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
@@ -68,7 +69,14 @@ test('assertions cover line numbers without covering instructions', async () => 
 			),
 		}),
 	};
-	const renderer = await init(state, renderData, canvas, createMockMemoryViews(), await createMockSpriteData(state));
+	const renderer = await init(
+		state,
+		renderData,
+		canvas,
+		createMockMemoryViews(),
+		await createMockSpriteData(state),
+		resolvePalette(state.editorConfig.color)
+	);
 	try {
 		renderer.pauseRendering();
 		renderer.renderFrame();
@@ -117,7 +125,14 @@ test('assertion failures show expected and received values', async () => {
 			]),
 		}),
 	};
-	const renderer = await init(state, renderData, canvas, createMockMemoryViews(), await createMockSpriteData(state));
+	const renderer = await init(
+		state,
+		renderData,
+		canvas,
+		createMockMemoryViews(),
+		await createMockSpriteData(state),
+		resolvePalette(state.editorConfig.color)
+	);
 	try {
 		renderer.pauseRendering();
 		renderer.renderFrame();

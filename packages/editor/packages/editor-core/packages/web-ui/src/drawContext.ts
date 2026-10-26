@@ -22,18 +22,10 @@ export class DrawContext {
 		this.sprites.drawSprite(x, y, spriteId, color, width, height);
 	}
 	drawFill(x: number, y: number, color: PaletteIndex, width: number, height: number): void {
-		this.drawSprite(x, y, this.lookups.fill[0], color, width, height);
+		this.drawSprite(x, y, this.lookups.fill, color, width, height);
 	}
-	drawCharacter(
-		x: number,
-		y: number,
-		character: number | string,
-		color: PaletteIndex,
-		width?: number,
-		height?: number
-	): void {
-		const code = typeof character === 'string' ? (character.length === 1 ? character.charCodeAt(0) : NaN) : character;
-		this.drawSprite(x, y, this.lookups.font[code] ?? this.lookups.font[63], color, width, height);
+	drawCharacter(x: number, y: number, character: number, color: PaletteIndex, width?: number, height?: number): void {
+		this.drawSprite(x, y, this.lookups.font[character] ?? this.lookups.font[63], color, width, height);
 	}
 	drawText(x: number, y: number, text: string, color: PaletteIndex): void {
 		for (let index = 0; index < text.length; index++) {

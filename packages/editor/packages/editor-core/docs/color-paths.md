@@ -98,7 +98,7 @@ a `canvasBase` fill and layers the same pattern mask in `canvasDetail2` and `can
 The vertex shader fetches the selected RGBA8 entry and premultiplies it; the fragment shader applies red-channel mask
 coverage. Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
 
-`@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. Initial atlas data
-carries a separately resolved palette. Theme changes upload only palette colors and refresh line-rendered wire colors;
-font changes rebuild masks and source lookups. A pending font build uses the latest palette when it completes, and
+`@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
+the generated masks and separately resolved palette. Theme changes upload only palette colors and refresh line-rendered wire colors;
+font changes rebuild masks and source lookups. Font builds leave the active palette untouched, and
 stale asynchronous font builds are ignored.

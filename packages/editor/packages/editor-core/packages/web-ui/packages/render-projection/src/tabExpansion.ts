@@ -26,13 +26,13 @@ function getTabAdvance(currentVisualColumn: number, tabStops: number[]): number 
 	);
 }
 
-export function expandLineToCells(line: string, tabStops: number[]): Array<number | string> {
-	const cells: Array<number | string> = [];
+export function expandLineToCells(line: string, tabStops: number[]): Array<number> {
+	const cells: Array<number> = [];
 	let visualColumn = 0;
 	for (let index = 0; index < line.length; index += 1) {
 		if (line[index] === '\t') {
 			const advance = getTabAdvance(visualColumn, tabStops);
-			cells.push('\t', ...new Array(Math.max(advance - 1, 0)).fill(32));
+			cells.push(9, ...new Array(Math.max(advance - 1, 0)).fill(32));
 			visualColumn += advance;
 		} else {
 			cells.push(line.charCodeAt(index));

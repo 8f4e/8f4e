@@ -11,9 +11,9 @@ export default function drawShapeDeclarations(
 		return;
 	}
 
-	const font = codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase;
+	const color = codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase;
 
 	for (const { x, y, text } of codeBlock.widgets.shapeDeclarations) {
-		engine.drawText(x, y, text, font);
+		engine.drawText(x, y, text, color);
 	}
 }

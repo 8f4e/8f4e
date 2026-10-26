@@ -1,3 +1,4 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import type {
 	Callbacks,
@@ -234,29 +235,34 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		);
 
 		// Generate sprite data before initializing the view that installs and resolves the atlas.
-		const spriteData = await generateSprite({
-			font: state.editorConfig.font,
-			palette: state.editorConfig.color,
-		});
+		const spriteData = await generateSprite({ font: state.editorConfig.font });
 
 		const renderProjection = createWebUiRenderProjection(store, events);
 		cleanups.push(() => renderProjection.dispose());
 		const getOverlayTexture = () => resolveWebUiOverlayConfig(state) ?? options.overlayTexture;
 
-		view = await initView(state, renderProjection, canvas, memoryViews, spriteData, {
-			drawers,
-			renderStatsIntervalFrames: options.renderStatsIntervalFrames,
-			overlayTexture: getOverlayTexture(),
-			getCodeBuffer: () => currentCodeBuffer,
-			getMemory: () => currentMemoryRef,
-			onRenderStats: stats => {
-				store.set('info.graphics', toGraphicsInfoRecord(stats));
-			},
-			onSpriteAtlasResolved: (spriteLookups, resolvedSpriteData) => {
-				updateStateWithSpriteData(state, resolvedSpriteData, spriteLookups);
-				renderProjection.refresh();
-			},
-		});
+		view = await initView(
+			state,
+			renderProjection,
+			canvas,
+			memoryViews,
+			spriteData,
+			resolvePalette(state.editorConfig.color),
+			{
+				drawers,
+				renderStatsIntervalFrames: options.renderStatsIntervalFrames,
+				overlayTexture: getOverlayTexture(),
+				getCodeBuffer: () => currentCodeBuffer,
+				getMemory: () => currentMemoryRef,
+				onRenderStats: stats => {
+					store.set('info.graphics', toGraphicsInfoRecord(stats));
+				},
+				onSpriteAtlasResolved: (spriteLookups, resolvedSpriteData) => {
+					updateStateWithSpriteData(state, resolvedSpriteData, spriteLookups);
+					renderProjection.refresh();
+				},
+			}
+		);
 		cleanups.push(() => view.destroy());
 		const syncOverlayTexture = () => {
 			view.setOverlayTexture(getOverlayTexture());

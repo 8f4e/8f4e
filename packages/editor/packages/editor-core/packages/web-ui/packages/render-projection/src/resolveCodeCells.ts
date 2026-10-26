@@ -3,7 +3,7 @@ import { createSpriteCell, type SpriteCell, type SpriteFont } from '@8f4e/sprite
 
 /** Resolve shared glyph IDs and palette transitions once, outside the frame submission loop. */
 export default function resolveCodeCells(
-	characters: ReadonlyArray<ReadonlyArray<number | string>>,
+	characters: ReadonlyArray<ReadonlyArray<number>>,
 	colorTransitions: ReadonlyArray<ReadonlyArray<PaletteIndex | undefined>>,
 	defaultColor: PaletteIndex,
 	disabledColor: PaletteIndex | undefined,
@@ -15,8 +15,7 @@ export default function resolveCodeCells(
 			const nextColor = colorTransitions[row]?.[column];
 			if (disabledColor === undefined && nextColor !== undefined) color = nextColor;
 			if (character === 32) return null;
-			const code = typeof character === 'string' ? (character.length === 1 ? character.charCodeAt(0) : NaN) : character;
-			return createSpriteCell(font[code] ?? font[63], color);
+			return createSpriteCell(font[character] ?? font[63], color);
 		});
 	});
 }

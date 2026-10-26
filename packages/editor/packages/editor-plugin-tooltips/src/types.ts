@@ -1,7 +1,4 @@
 import type { PaletteIndex, PaletteToken } from '@8f4e/editor-palette';
-import type { State } from '@8f4e/editor-state-types';
-
-export type SpriteLookups = NonNullable<State['spriteLookups']>;
 
 /**
  * Character range that should switch to the tooltip highlight color.
@@ -36,7 +33,7 @@ export interface TooltipHighlightTarget {
  */
 export interface SelectedLineTooltipContent {
 	text: string[];
-	characters: Array<Array<number | string>>;
+	characters: Array<Array<number>>;
 	colors: Array<Array<PaletteIndex | undefined>>;
 	lineCount: number;
 	widthChars: number;
@@ -110,7 +107,7 @@ export interface TooltipAnimation {
 
 export interface TooltipState {
 	text: string[];
-	characters: Array<Array<number | string>>;
+	characters: Array<Array<number>>;
 	colors: Array<Array<PaletteIndex | undefined>>;
 	lineCount: number;
 	widthChars: number;

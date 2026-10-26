@@ -1,4 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import { resolvePalette } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
 import generateSprite from '@8f4e/sprite-generator';
@@ -66,9 +67,17 @@ entryEnd`);
 		float64: new Float64Array(buffer),
 	};
 	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.on.allocationUnitAddress] = 1;
-	const spriteData = await generateSprite({ font: state.editorConfig.font, palette: state.editorConfig.color });
+	const spriteData = await generateSprite({ font: state.editorConfig.font });
 	const projection = createWebUiRenderProjection(store, events);
-	const renderer = await initView(state, projection, canvas, memoryViews, spriteData, { drawers });
+	const renderer = await initView(
+		state,
+		projection,
+		canvas,
+		memoryViews,
+		spriteData,
+		resolvePalette(state.editorConfig.color),
+		{ drawers }
+	);
 	renderer.pauseRendering();
 	projection.refresh();
 	try {

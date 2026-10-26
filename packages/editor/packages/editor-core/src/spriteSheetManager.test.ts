@@ -1,8 +1,8 @@
 import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
 import type { State } from '@8f4e/editor-state-types';
+import type { SpriteData } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
-import type { SpriteData } from '@8f4e/web-ui';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSpriteSheetManager } from './spriteSheetManager';
 
@@ -41,7 +41,7 @@ describe('sprite sheet manager', () => {
 		expect(test.events.dispatch).not.toHaveBeenCalled();
 		test.dispose();
 	});
-	it('installs only the newest font build and uses the latest palette at completion', async () => {
+	it('installs only the newest font build without changing the independently updated palette', async () => {
 		const test = setup();
 		const older = deferred<SpriteData>();
 		const newer = deferred<SpriteData>();
@@ -51,13 +51,15 @@ describe('sprite sheet manager', () => {
 		const newRequest = test.subscriptions.get('editorConfig.font')?.();
 		test.state.editorConfig.color = { primary: '#00ff00' };
 		test.subscriptions.get('editorConfig.color')?.();
-		const bundle = { palette: resolvePalette() } as SpriteData;
+		const bundle = { characterWidth: 6, characterHeight: 10 } as SpriteData;
 		newer.resolve(bundle);
 		await newRequest;
 		older.resolve({} as SpriteData);
 		await oldRequest;
 		expect(test.view.loadSpriteAtlas).toHaveBeenCalledExactlyOnceWith(bundle);
-		expect(bundle.palette).toEqual(resolvePalette({ primary: '#00ff00' }));
+		expect(test.view.loadPalette).toHaveBeenCalledExactlyOnceWith(resolvePalette({ primary: '#00ff00' }));
+		expect(generateSprite).toHaveBeenNthCalledWith(1, { font: 'ibmvga8x16' });
+		expect(generateSprite).toHaveBeenNthCalledWith(2, { font: '6x10' });
 		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('spriteSheetRerendered');
 		expect(generateSprite).toHaveBeenCalledTimes(2);
 		test.dispose();

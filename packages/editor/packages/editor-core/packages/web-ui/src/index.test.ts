@@ -147,11 +147,10 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 
 function createSpriteData(identifier = 0, characterWidth = 8, characterHeight = 16) {
 	return {
-		palette: resolvePalette(),
 		spriteAtlas: {
 			image: { width: 1, height: 1, data: new Uint8Array([255]) },
 			lookup: {},
-			spriteIdentifiers: { fill: { 0: identifier }, font: { 63: identifier }, background: { 0: identifier } } as never,
+			spriteIdentifiers: { fill: identifier, font: { 63: identifier }, background: identifier } as never,
 		},
 		characterWidth,
 		characterHeight,
@@ -179,7 +178,14 @@ describe('web-ui init', () => {
 			float64: new Float64Array(0),
 		};
 
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData());
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createSpriteData(),
+			resolvePalette(state.editorConfig.color)
+		);
 
 		view.renderFrame();
 
@@ -188,7 +194,7 @@ describe('web-ui init', () => {
 
 		expect(frameState).toBe(state);
 		expect(frameRenderData).toBe(renderDataSnapshot);
-		expect(mocks.resolveWireColors).toHaveBeenCalledWith(createSpriteData().palette);
+		expect(mocks.resolveWireColors).toHaveBeenCalledWith(resolvePalette(state.editorConfig.color));
 		expect(mocks.drawConnections).toHaveBeenCalledWith(mocks.lines, mocks.wireColors, frameState, memoryViews);
 		expect(mocks.drawModeOverlay).toHaveBeenCalledWith(expect.anything(), frameState);
 	});
@@ -206,7 +212,14 @@ describe('web-ui init', () => {
 			float64: new Float64Array(0),
 		};
 
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData());
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createSpriteData(),
+			resolvePalette(state.editorConfig.color)
+		);
 		view.renderFrame();
 
 		expect(mocks.RgbaTextureLayer).not.toHaveBeenCalled();
@@ -224,16 +237,24 @@ describe('web-ui init', () => {
 			float32: new Float32Array(0),
 			float64: new Float64Array(0),
 		};
-		await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData(), {
-			overlayTexture: {
-				entry: 'renderFrame',
-				target: 'screen:rgba',
-				width: 1,
-				height: 1,
-			},
-			getCodeBuffer: () => new Uint8Array(0),
-			getMemory: () => null,
-		});
+		await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createSpriteData(),
+			resolvePalette(state.editorConfig.color),
+			{
+				overlayTexture: {
+					entry: 'renderFrame',
+					target: 'screen:rgba',
+					width: 1,
+					height: 1,
+				},
+				getCodeBuffer: () => new Uint8Array(0),
+				getMemory: () => null,
+			}
+		);
 
 		expect(mocks.RgbaTextureLayer).toHaveBeenCalledWith(mocks.engine, { phase: 'postDraw' });
 		expect(mocks.LineDrawer.mock.invocationCallOrder[0]).toBeLessThan(
@@ -255,7 +276,14 @@ describe('web-ui init', () => {
 			float32: new Float32Array(0),
 			float64: new Float64Array(0),
 		};
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData());
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createSpriteData(),
+			resolvePalette(state.editorConfig.color)
+		);
 
 		expect(mocks.drawConnections).not.toHaveBeenCalled();
 
@@ -277,7 +305,14 @@ describe('web-ui init', () => {
 			float32: new Float32Array(0),
 			float64: new Float64Array(0),
 		};
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData());
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createSpriteData(),
+			resolvePalette(state.editorConfig.color)
+		);
 		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
 		expect(mocks.requestAnimationFrame).toHaveBeenCalledOnce();
 
@@ -309,7 +344,14 @@ describe('web-ui init', () => {
 			float64: new Float64Array(0),
 		};
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
-		const view = await init(state, renderData, canvas, memoryViews, createSpriteData());
+		const view = await init(
+			state,
+			renderData,
+			canvas,
+			memoryViews,
+			createSpriteData(),
+			resolvePalette(state.editorConfig.color)
+		);
 
 		view.releaseRenderingResources();
 		view.releaseRenderingResources();
@@ -330,7 +372,7 @@ describe('web-ui init', () => {
 		expect(mocks.engine.renderFrame).toHaveBeenCalledTimes(2);
 	});
 
-	it('re-resolves wire colors from the current theme when the atlas is loaded', async () => {
+	it('updates palette and wire colors independently of font atlas replacement', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = {
@@ -342,13 +384,19 @@ describe('web-ui init', () => {
 			float32: new Float32Array(0),
 			float64: new Float64Array(0),
 		};
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData());
-		const nextSpriteData = createSpriteData();
-		nextSpriteData.palette = resolvePalette({ primary: '#123456', ink: '#abcdef' });
-		// Pending editor settings must not get paired with an older atlas.
-		state.editorConfig.color = { primary: '#ff0000' };
-		view.loadSpriteAtlas(nextSpriteData);
-		expect(mocks.resolveWireColors).toHaveBeenLastCalledWith(nextSpriteData.palette);
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createSpriteData(),
+			resolvePalette(state.editorConfig.color)
+		);
+		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
+		const wireUpdates = mocks.resolveWireColors.mock.calls.length;
+		view.loadSpriteAtlas(createSpriteData());
+		expect(mocks.engine.setPalette).toHaveBeenCalledTimes(paletteUploads);
+		expect(mocks.resolveWireColors).toHaveBeenCalledTimes(wireUpdates);
 		const lookup = state.spriteLookups;
 		const installCount = mocks.engine.setSpriteAtlas.mock.calls.length;
 		const palette = resolvePalette({ primary: '#00ff00' });
@@ -371,12 +419,19 @@ describe('web-ui init', () => {
 			float64: new Float64Array(0),
 		};
 
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData(7, 8, 16));
-		expect(state.spriteLookups?.fill[0]).toBe(107);
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createSpriteData(7, 8, 16),
+			resolvePalette(state.editorConfig.color)
+		);
+		expect(state.spriteLookups?.fill).toBe(107);
 		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 16, vGrid: 8 }));
 
 		view.loadSpriteAtlas(createSpriteData(42, 10, 18));
-		expect(state.spriteLookups?.fill[0]).toBe(142);
+		expect(state.spriteLookups?.fill).toBe(142);
 		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 18, vGrid: 10 }));
 	});
 
@@ -399,10 +454,18 @@ describe('web-ui init', () => {
 		};
 		const onRenderStats = vi.fn();
 
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData(), {
-			onRenderStats,
-			renderStatsIntervalFrames: 2,
-		});
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createSpriteData(),
+			resolvePalette(state.editorConfig.color),
+			{
+				onRenderStats,
+				renderStatsIntervalFrames: 2,
+			}
+		);
 		expect(onRenderStats).not.toHaveBeenCalled();
 
 		view.renderFrame();
@@ -468,11 +531,19 @@ describe('web-ui init', () => {
 		const instantiateOverlayTextureWasm = vi.fn(async () => ({ renderFrame: renderFrameExport }));
 		const canvas = { width: 160, height: 90 } as HTMLCanvasElement;
 
-		const view = await init(state, renderData, canvas, memoryViews, createSpriteData(), {
-			getCodeBuffer: () => codeBuffer,
-			getMemory: () => memory,
-			instantiateOverlayTextureWasm,
-		});
+		const view = await init(
+			state,
+			renderData,
+			canvas,
+			memoryViews,
+			createSpriteData(),
+			resolvePalette(state.editorConfig.color),
+			{
+				getCodeBuffer: () => codeBuffer,
+				getMemory: () => memory,
+				instantiateOverlayTextureWasm,
+			}
+		);
 
 		view.renderFrame();
 		expect(instantiateOverlayTextureWasm).not.toHaveBeenCalled();

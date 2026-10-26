@@ -19,7 +19,7 @@ function createFont(offset: number, fallback = offset + 63): SpriteFont {
 }
 
 function createSpriteLookups(): SpriteIdLookups {
-	return { font: createFont(0), fill: { 0: 128 as SpriteId }, background: { 0: 129 as SpriteId } };
+	return { font: createFont(0), fill: 128 as SpriteId, background: 129 as SpriteId };
 }
 
 function createSource(code: string[], overrides: Partial<CodeBlockRenderSource> = {}): CodeBlockRenderSource {

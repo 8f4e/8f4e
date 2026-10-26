@@ -1,6 +1,3 @@
-import type { PaletteConfig } from '@8f4e/editor-palette';
-import type { SpriteCoordinates } from 'glugglugglug';
-
 export const FONT_NAMES = [
 	'attpc63008x16',
 	'6x10',
@@ -25,8 +22,5 @@ export const FONT_NAMES = [
 export type Font = (typeof FONT_NAMES)[number];
 
 export interface Config {
-	palette?: PaletteConfig;
 	font?: string;
 }
-
-export type SpriteLookup<T extends string = string> = Record<T, SpriteCoordinates>;

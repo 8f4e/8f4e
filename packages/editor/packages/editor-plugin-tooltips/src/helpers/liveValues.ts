@@ -1,6 +1,6 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import { BASE_TYPE_METADATA, type PlannedMemoryDeclaration } from '@8f4e/language-spec';
-import type { SpriteLookups, TooltipLiveValueSource, TooltipLiveValueTarget } from '../types';
+import type { TooltipLiveValueSource, TooltipLiveValueTarget } from '../types';
 import { getTooltipLineColors } from './colors';
 import { maxLiveMemoryAddressLength, maxLiveMemoryValueLength } from './constants';
 
@@ -45,8 +45,7 @@ export function getLiveTooltipContent(
 	memory: PlannedMemoryDeclaration | undefined,
 	moduleId: string | undefined,
 	memoryId: string | undefined,
-	firstLineIndex: number,
-	spriteLookups: SpriteLookups | undefined
+	firstLineIndex: number
 ): LiveTooltipContent {
 	if (!memory || !moduleId || !memoryId) {
 		return { text: [], colors: [], liveValueTargets: [], maxLineLength: 0 };
@@ -77,7 +76,7 @@ export function getLiveTooltipContent(
 
 	return {
 		text: lines.map(liveLine => liveLine.label),
-		colors: lines.map(liveLine => getTooltipLineColors(liveLine.label, spriteLookups)),
+		colors: lines.map(liveLine => getTooltipLineColors(liveLine.label)),
 		liveValueTargets: lines.map((liveLine, index) => ({
 			lineIndex: firstLineIndex + index,
 			column: liveLine.label.length,

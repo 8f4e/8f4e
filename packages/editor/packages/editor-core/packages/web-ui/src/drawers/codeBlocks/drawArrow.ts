@@ -20,13 +20,13 @@ const ARROW_CHARACTERS = {
  */
 export default function drawArrow(engine: DrawContext, codeBlock: CodeBlockGraphicData, state: State): void {
 	const arrowPlacement = calculateArrowPlacement(codeBlock, state);
-	const font = PALETTE_INDICES.primaryBase;
+	const color = PALETTE_INDICES.primaryBase;
 	if (!state.spriteLookups) {
 		return;
 	}
 
 	if (arrowPlacement.top) {
-		engine.drawText(arrowPlacement.top.x, arrowPlacement.top.y, ARROW_CHARACTERS.top, font);
+		engine.drawText(arrowPlacement.top.x, arrowPlacement.top.y, ARROW_CHARACTERS.top, color);
 	}
 
 	if (arrowPlacement.right) {
@@ -34,7 +34,7 @@ export default function drawArrow(engine: DrawContext, codeBlock: CodeBlockGraph
 			arrowPlacement.right.x - state.viewport.vGrid,
 			arrowPlacement.right.y,
 			ARROW_CHARACTERS.right,
-			font
+			color
 		);
 	}
 
@@ -43,11 +43,11 @@ export default function drawArrow(engine: DrawContext, codeBlock: CodeBlockGraph
 			arrowPlacement.bottom.x,
 			arrowPlacement.bottom.y - state.viewport.hGrid,
 			ARROW_CHARACTERS.bottom,
-			font
+			color
 		);
 	}
 
 	if (arrowPlacement.left) {
-		engine.drawText(arrowPlacement.left.x, arrowPlacement.left.y, ARROW_CHARACTERS.left, font);
+		engine.drawText(arrowPlacement.left.x, arrowPlacement.left.y, ARROW_CHARACTERS.left, color);
 	}
 }

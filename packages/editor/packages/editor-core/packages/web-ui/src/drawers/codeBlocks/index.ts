@@ -66,19 +66,19 @@ export default function drawModules(
 				engine.drawFill(0, codeBlock.cursor.y, PALETTE_INDICES.primarySoft, codeBlock.width, state.viewport.hGrid);
 			}
 
-			const cornerFont =
+			const cornerColor =
 				state.codeBlockRendering.selectedCodeBlock === codeBlock
 					? PALETTE_INDICES.secondaryBase
 					: PALETTE_INDICES.inkBase;
 
-			engine.drawText(0, 0, corner, cornerFont);
-			engine.drawText(codeBlock.width - state.viewport.vGrid, 0, corner, cornerFont);
-			engine.drawText(0, codeBlock.height - state.viewport.hGrid, corner, cornerFont);
+			engine.drawText(0, 0, corner, cornerColor);
+			engine.drawText(codeBlock.width - state.viewport.vGrid, 0, corner, cornerColor);
+			engine.drawText(0, codeBlock.height - state.viewport.hGrid, corner, cornerColor);
 			engine.drawText(
 				codeBlock.width - state.viewport.vGrid,
 				codeBlock.height - state.viewport.hGrid,
 				corner,
-				cornerFont
+				cornerColor
 			);
 
 			for (let i = 0; i < codeCells.length; i++) {

@@ -1,19 +1,17 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import type { SpriteIdLookups } from '@8f4e/sprite-generator';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { PianoKeyboard, PianoKeyboardKey } from '../types';
 
-function drawPressedKey(engine: DrawContext, spriteLookups: SpriteIdLookups, key: PianoKeyboardKey): void {
-	const font = key.kind === 'black' ? PALETTE_INDICES.primaryOverlay : PALETTE_INDICES.darkOverlaySoft;
+function drawPressedKey(engine: DrawContext, key: PianoKeyboardKey): void {
+	const color = key.kind === 'black' ? PALETTE_INDICES.primaryOverlay : PALETTE_INDICES.darkOverlaySoft;
 	for (const y of key.pressedOverlayRows) {
-		engine.drawText(key.x, y, ';;', font);
+		engine.drawText(key.x, y, ';;', color);
 	}
 }
 
 function drawRuntimePressedKeys(
 	engine: DrawContext,
-	spriteLookups: SpriteIdLookups,
 	keys: PianoKeyboard['keys'],
 	pressedKeysListMemory: PianoKeyboard['pressedKeysListMemory'],
 	pressedKeyCountMemory: PianoKeyboard['pressedKeyCountMemory'],
@@ -28,7 +26,7 @@ function drawRuntimePressedKeys(
 		const keyOffset = keyValue - startingMidiNote;
 
 		if (keyOffset >= 0 && keyOffset < keys.length) {
-			drawPressedKey(engine, spriteLookups, keys[keyOffset]);
+			drawPressedKey(engine, keys[keyOffset]);
 		}
 	}
 }
@@ -42,7 +40,6 @@ export function drawPianoKeyboards(
 	if (!state.spriteLookups) {
 		return;
 	}
-	const spriteLookups = state.spriteLookups;
 
 	for (const {
 		x,
@@ -80,15 +77,7 @@ export function drawPianoKeyboards(
 			}
 		}
 
-		drawRuntimePressedKeys(
-			engine,
-			spriteLookups,
-			keys,
-			pressedKeysListMemory,
-			pressedKeyCountMemory,
-			startingMidiNote,
-			memoryViews
-		);
+		drawRuntimePressedKeys(engine, keys, pressedKeysListMemory, pressedKeyCountMemory, startingMidiNote, memoryViews);
 
 		for (const key of keys) {
 			if (key.offset % 2 === 1) {

@@ -13,7 +13,7 @@ describe('resolveCodeCells', () => {
 		]);
 	});
 	it('uses shared fallback geometry with the active color for unknown glyphs', () => {
-		expect(resolveCodeCells([['unknown']], [[2]], 5, undefined, font)).toEqual([[cell(90, 2)]]);
+		expect(resolveCodeCells([[128]], [[2]], 5, undefined, font)).toEqual([[cell(90, 2)]]);
 	});
 	it('uses disabled color zero for all non-space cells', () => {
 		expect(resolveCodeCells([[65, 32, 65]], [[2]], 5, 0, font)).toEqual([[cell(1, 0), null, cell(1, 0)]]);

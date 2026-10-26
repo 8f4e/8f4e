@@ -1,17 +1,16 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
-import type { SpriteLookups, TooltipHighlightRange } from '../types';
+import type { TooltipHighlightRange } from '../types';
 import { getStackSignatureFromSourceLine } from './sourceLine';
 import { getStackValueHighlightRange } from './stackAnalysisTooltip';
 
 /**
- * Encodes tooltip color transitions as sparse sprite lookups for the drawer.
+ * Encodes tooltip color transitions as sparse palette transitions for the drawer.
  */
 export function getTooltipLineColors(
 	line: string,
-	spriteLookups: SpriteLookups | undefined,
 	highlightRanges: TooltipHighlightRange[] = []
 ): Array<PaletteIndex | undefined> {
-	if (!spriteLookups || line.length === 0) {
+	if (line.length === 0) {
 		return [];
 	}
 
@@ -34,8 +33,7 @@ export function getTooltipLineColors(
  */
 export function getSelectedLineTooltipColors(
 	line: string | undefined,
-	text: string[],
-	spriteLookups: SpriteLookups | undefined
+	text: string[]
 ): Array<Array<PaletteIndex | undefined>> {
 	const stackSignature = line ? getStackSignatureFromSourceLine(line) : undefined;
 
@@ -45,6 +43,6 @@ export function getSelectedLineTooltipColors(
 				? { start: 0, end: tooltipLine.length }
 				: getStackValueHighlightRange(tooltipLine);
 
-		return getTooltipLineColors(tooltipLine, spriteLookups, highlightRange ? [highlightRange] : []);
+		return getTooltipLineColors(tooltipLine, highlightRange ? [highlightRange] : []);
 	});
 }

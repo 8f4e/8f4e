@@ -1,6 +1,5 @@
 import type { State } from '@8f4e/editor-state-types';
-import type { SpriteIdLookups } from '@8f4e/sprite-generator';
-import type { SpriteData } from '@8f4e/web-ui';
+import type { SpriteData, SpriteIdLookups } from '@8f4e/sprite-generator';
 
 /**
  * Installs sprite ids resolved against the active renderer atlas and updates font grid metrics.

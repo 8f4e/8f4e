@@ -1,11 +1,6 @@
 import { type ResolvedPalette, toPaletteBytes } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import {
-	resolveSpriteIds,
-	type SpriteAtlas,
-	type SpriteIdentifierLookups,
-	type SpriteIdLookups,
-} from '@8f4e/sprite-generator';
+import { resolveSpriteIds, type SpriteData, type SpriteIdLookups } from '@8f4e/sprite-generator';
 import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { Engine, LineDrawer, RgbaTextureLayer } from 'glugglugglug';
 import { DrawContext } from './drawContext';
@@ -25,13 +20,6 @@ export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } fr
 export { createCodeBlockDrawerRegistry } from './drawers/registry';
 // Re-export types
 export type { MemoryViews } from './types';
-
-export interface SpriteData {
-	palette: ResolvedPalette;
-	spriteAtlas: SpriteAtlas<SpriteIdentifierLookups>;
-	characterWidth: number;
-	characterHeight: number;
-}
 
 export interface RenderStats {
 	timeToRenderMs: number;
@@ -64,6 +52,7 @@ export default async function init(
 	canvas: HTMLCanvasElement,
 	memoryViews: MemoryViews,
 	spriteData: SpriteData,
+	palette: ResolvedPalette,
 	options: WebUiOptions = {}
 ): Promise<{
 	resize: (width: number, height: number) => boolean;
@@ -83,7 +72,8 @@ export default async function init(
 	});
 	const lines = new LineDrawer(engine);
 	let draw: DrawContext;
-	let wireColors = resolveWireColors(spriteData.palette);
+	let wireColors = resolveWireColors(palette);
+	engine.setPalette(toPaletteBytes(palette));
 	const renderStatsIntervalFrames = Math.max(1, Math.floor(options.renderStatsIntervalFrames ?? 60));
 	let viewportWidth = canvas.width;
 	let viewportHeight = canvas.height;
@@ -93,8 +83,7 @@ export default async function init(
 
 	function installSpriteAtlas(nextSpriteData: SpriteData): void {
 		const resolver = engine.setSpriteAtlas(nextSpriteData.spriteAtlas.image, nextSpriteData.spriteAtlas.lookup);
-		const spriteLookups = resolveSpriteIds(nextSpriteData.spriteAtlas.spriteIdentifiers, resolver) as SpriteIdLookups;
-		engine.setPalette(toPaletteBytes(nextSpriteData.palette));
+		const spriteLookups = resolveSpriteIds(nextSpriteData.spriteAtlas.spriteIdentifiers, resolver);
 		if (draw) draw.setSpriteLookups(spriteLookups);
 		else draw = new DrawContext(engine, nextSpriteData.characterWidth, spriteLookups);
 		if (options.onSpriteAtlasResolved) {
@@ -291,7 +280,6 @@ export default async function init(
 		loadSpriteAtlas: spriteData => {
 			installSpriteAtlas(spriteData);
 			draw.setCharacterWidth(spriteData.characterWidth);
-			wireColors = resolveWireColors(spriteData.palette);
 		},
 		loadPalette: palette => {
 			engine.setPalette(toPaletteBytes(palette));

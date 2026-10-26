@@ -1,3 +1,4 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import init from '@8f4e/web-ui';
 import type { CodeBlockRenderData, WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
@@ -16,7 +17,14 @@ test('dragged module', async () => {
 	const codeBlocks = new Map<number, CodeBlockRenderData>();
 	const renderData: WebUiRenderDataSource = { getSnapshot: () => ({ codeBlocks }) };
 
-	const renderer = await init(mockState, renderData, canvas, memoryViews, spriteData);
+	const renderer = await init(
+		mockState,
+		renderData,
+		canvas,
+		memoryViews,
+		spriteData,
+		resolvePalette(mockState.editorConfig.color)
+	);
 
 	try {
 		renderer.pauseRendering();

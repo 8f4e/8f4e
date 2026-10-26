@@ -80,7 +80,7 @@ function getLiveValueText(state: State, memoryViews: MemoryViews, liveValue: Too
 function drawCharactersWithColors(
 	engine: DrawContext,
 	state: State,
-	characters: Array<number | string>,
+	characters: Array<number>,
 	colors: Array<PaletteIndex | undefined> | undefined,
 	x: number,
 	y: number

@@ -1,24 +1,21 @@
-import { type ResolvedPalette, resolvePalette } from '@8f4e/editor-palette';
-import type { SpriteCoordinates, SpriteId, SpriteIdentifier } from 'glugglugglug';
+import type { SpriteId, SpriteLookup } from 'glugglugglug';
 import { BACKGROUND_COLUMNS, BACKGROUND_ROWS, createAtlasLayout, FONT_COLUMNS } from './atlasLayout.ts';
 import { writeGlyph } from './font.ts';
 import decodeFontBase64 from './fonts/font-decoder.ts';
 import type { FontMetadata } from './fonts/ibmvga8x16/generated/ascii.ts';
 import Glyph from './fonts/types.ts';
-import { createSpriteAtlas, type SpriteAtlas } from './sprite-atlas.ts';
+import type { SpriteAtlas } from './sprite-atlas.ts';
 import { type Config, FONT_NAMES, type Font } from './types.ts';
 
 export type { SpriteId } from 'glugglugglug';
 export { BACKGROUND_COLUMNS, BACKGROUND_ROWS } from './atlasLayout.ts';
 export type {
-	ResolvedSpriteIds,
 	SpriteAtlas,
-	SpriteIdentifierLookup,
-	SpriteIdentifiers,
-	SpriteIdLookup,
-	SpriteIds,
+	SpriteFont,
+	SpriteIdentifierLookups,
+	SpriteIdLookups,
 } from './sprite-atlas.ts';
-export { createSpriteAtlas, resolveSpriteIds } from './sprite-atlas.ts';
+export { resolveSpriteIds } from './sprite-atlas.ts';
 export type { Font } from './types.ts';
 export { FONT_NAMES } from './types.ts';
 
@@ -299,34 +296,24 @@ export function createSpriteCell(spriteId: SpriteId, paletteIndex: number): Spri
 	return (((paletteIndex << 16) | spriteId) >>> 0) as SpriteCell;
 }
 
-/** Fixed-cell glyph IDs, shared by all palette colors. */
-export type SpriteFont = Readonly<Partial<Record<number, SpriteId>>> & { readonly 63: SpriteId };
-export type SpriteIdentifierLookups = {
-	font: Partial<Record<number, SpriteIdentifier>> & { readonly 63: SpriteIdentifier };
-	fill: { readonly 0: SpriteIdentifier };
-	background: { readonly 0: SpriteIdentifier };
-};
-export type SpriteIdLookups = {
-	font: SpriteFont;
-	fill: { readonly 0: SpriteId };
-	background: { readonly 0: SpriteId };
-};
-
-export default async function generateSprite(config: Config = {}): Promise<{
-	spriteAtlas: SpriteAtlas<SpriteIdentifierLookups>;
+export interface SpriteData {
+	spriteAtlas: SpriteAtlas;
 	characterWidth: number;
 	characterHeight: number;
-	palette: ResolvedPalette;
-}> {
+}
+
+export default async function generateSprite(config: Config = {}): Promise<SpriteData> {
 	const { characterWidth, characterHeight, asciiBitmap, glyphsBitmap } = await loadFont(resolveFont(config.font));
 	const layout = createAtlasLayout(characterWidth, characterHeight);
 	const image = { width: layout.width, height: layout.height, data: new Uint8Array(layout.width * layout.height) };
-	const font: Record<number, SpriteCoordinates> = {};
+	const lookup: SpriteLookup = {};
+	const font: Record<number, number> & { 63: number } = { 63: 63 };
 	for (let code = 0; code < 128; code++) {
 		const x = (code % FONT_COLUMNS) * characterWidth;
 		const y = Math.floor(code / FONT_COLUMNS) * characterHeight;
 		writeGlyph(image.data, image.width, asciiBitmap, code, characterWidth, characterHeight, x, y);
-		font[code] = { x, y, spriteWidth: characterWidth, spriteHeight: characterHeight };
+		lookup[code] = { x, y, spriteWidth: characterWidth, spriteHeight: characterHeight };
+		font[code] = code;
 	}
 	// Even columns form one color layer. Draw the same mask offset by one cell for odd columns.
 	for (let row = 0; row < BACKGROUND_ROWS; row++) {
@@ -344,17 +331,18 @@ export default async function generateSprite(config: Config = {}): Promise<{
 		}
 	}
 	image.data[layout.fill.y * image.width + layout.fill.x] = 255;
-	const spriteAtlas = createSpriteAtlas(image, {
-		font,
-		fill: { 0: layout.fill },
-		background: {
-			0: { x: 0, y: layout.background.y, spriteWidth: layout.background.width, spriteHeight: layout.background.height },
-		},
-	});
+	const fill = 128;
+	const background = 129;
+	lookup[fill] = layout.fill;
+	lookup[background] = {
+		x: 0,
+		y: layout.background.y,
+		spriteWidth: layout.background.width,
+		spriteHeight: layout.background.height,
+	};
 	return {
 		characterWidth,
 		characterHeight,
-		palette: resolvePalette(config.palette),
-		spriteAtlas: spriteAtlas as SpriteAtlas<SpriteIdentifierLookups>,
+		spriteAtlas: { image, lookup, spriteIdentifiers: { font, fill, background } },
 	};
 }

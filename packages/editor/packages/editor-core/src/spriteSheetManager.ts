@@ -1,8 +1,7 @@
 import { type ResolvedPalette, resolvePalette } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import generateSprite from '@8f4e/sprite-generator';
+import generateSprite, { type SpriteData } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
-import type { SpriteData } from '@8f4e/web-ui';
 import type { EventDispatcher } from './events';
 
 type SpriteSheetView = {
@@ -25,13 +24,11 @@ export function createSpriteSheetManager(
 		const currentGeneration = ++generation;
 		const spriteData = await generateSprite({
 			font: state.editorConfig.font,
-			palette: state.editorConfig.color,
 		});
 		if (disposed || currentGeneration !== generation) {
 			return;
 		}
 
-		spriteData.palette = resolvePalette(state.editorConfig.color);
 		view.loadSpriteAtlas(spriteData);
 
 		events.dispatch('spriteSheetRerendered');

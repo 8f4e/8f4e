@@ -10,7 +10,7 @@ drawn below the sprites, while connections are drawn as a line overlay above the
 
 ## API
 
-### `init(state, renderData, canvas, memoryViews, spriteData, options?)`
+### `init(state, renderData, canvas, memoryViews, spriteData, palette, options?)`
 
 Initializes the web UI renderer.
 
@@ -21,13 +21,14 @@ Initializes the web UI renderer.
 - `canvas: HTMLCanvasElement` - The canvas element to render to
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
 - `spriteData: SpriteData` - Pre-generated numeric atlas data from `@8f4e/sprite-generator`
+- `palette: ResolvedPalette` - Initial theme resolved separately by `@8f4e/editor-palette`
 - `options.onRenderStats` - Optional callback for sampled render statistics
 - `options.renderStatsIntervalFrames` - Optional frame interval for `onRenderStats` (defaults to 60)
 
 **Returns:** An object with methods to control the renderer:
 
 - `resize(width, height)` - Resize the canvas
-- `loadSpriteAtlas(spriteData)` - Replace font masks, palette, and derived drawing data
+- `loadSpriteAtlas(spriteData)` - Replace font masks and derived drawing data
 - `loadPalette(palette)` - Update GPU colors and wire colors without rebuilding masks or lookups
 - `renderFrame()` - Draw one frame on demand
 - `destroy()` - Release renderer and plugin resources
@@ -49,11 +50,10 @@ interface RenderStats {
 
 ### `SpriteData`
 
-Type representing sprite sheet data:
+Type exported by `@8f4e/sprite-generator` representing sprite sheet data:
 ```typescript
 interface SpriteData {
-  palette: ResolvedPalette;
-  spriteAtlas: SpriteAtlas<SpriteIdentifierLookups>;
+  spriteAtlas: SpriteAtlas;
   characterWidth: number;
   characterHeight: number;
 }

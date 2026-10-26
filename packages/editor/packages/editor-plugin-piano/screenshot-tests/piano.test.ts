@@ -1,4 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import { resolvePalette } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import generateSprite from '@8f4e/sprite-generator';
 import initView, { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
@@ -57,9 +58,17 @@ entryEnd`);
 		memoryViews.int32[memory.notes.allocationUnitAddress + index] = note;
 	});
 	memoryViews.int32[memory.count.allocationUnitAddress] = 6;
-	const spriteData = await generateSprite({ font: state.editorConfig.font, palette: state.editorConfig.color });
+	const spriteData = await generateSprite({ font: state.editorConfig.font });
 	const projection = createWebUiRenderProjection(store, events);
-	const renderer = await initView(state, projection, canvas, memoryViews, spriteData, { drawers });
+	const renderer = await initView(
+		state,
+		projection,
+		canvas,
+		memoryViews,
+		spriteData,
+		resolvePalette(state.editorConfig.color),
+		{ drawers }
+	);
 	renderer.pauseRendering();
 	events.dispatch('spriteSheetRerendered');
 	projection.refresh();

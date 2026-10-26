@@ -1,4 +1,4 @@
-import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
@@ -37,9 +37,8 @@ function drawSegment(
 	startX: number,
 	endX: number,
 	fillWidth: number,
-	sprite: 'positiveBase' | 'warningBase' | 'negativeBase',
-	height: number,
-	spriteIds: typeof PALETTE_INDICES
+	color: PaletteIndex,
+	height: number
 ): void {
 	const segmentStart = Math.floor(startX);
 	const segmentEnd = Math.floor(endX);
@@ -49,7 +48,7 @@ function drawSegment(
 		return;
 	}
 
-	engine.drawFill(segmentStart, 0, spriteIds[sprite], width, height);
+	engine.drawFill(segmentStart, 0, color, width, height);
 }
 
 export default function drawer(
@@ -95,9 +94,9 @@ export default function drawer(
 		const overloaded = isBipolar ? Math.abs(value) > amplitudeLimit : value < minValue || value > maxValue;
 
 		engine.drawFill(0, 0, colors.darkSurface, width, height);
-		drawSegment(engine, 0, greenEndX, fillWidth, 'positiveBase', height, colors);
-		drawSegment(engine, greenEndX, yellowEndX, fillWidth, 'warningBase', height, colors);
-		drawSegment(engine, yellowEndX, width, fillWidth, 'negativeBase', height, colors);
+		drawSegment(engine, 0, greenEndX, fillWidth, colors.positiveBase, height);
+		drawSegment(engine, greenEndX, yellowEndX, fillWidth, colors.warningBase, height);
+		drawSegment(engine, yellowEndX, width, fillWidth, colors.negativeBase, height);
 
 		if (overloaded) {
 			overloadHoldByMeter.set(meter, true);

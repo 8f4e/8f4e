@@ -1,4 +1,4 @@
-import { PALETTE_INDICES, PALETTE_TOKENS } from '@8f4e/editor-palette';
+import { PALETTE_INDICES, PALETTE_TOKENS, resolvePalette } from '@8f4e/editor-palette';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import init from '@8f4e/web-ui';
 import type { CodeBlockRenderData, WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
@@ -41,7 +41,8 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 	const codeBlocks = new Map<number, CodeBlockRenderData>();
 	const renderData: WebUiRenderDataSource = { getSnapshot: () => ({ codeBlocks }) };
 	const spriteData = await createMockSpriteData(state);
-	const renderer = await init(state, renderData, canvas, createMockMemoryViews(), spriteData);
+	const palette = resolvePalette(state.editorConfig.color);
+	const renderer = await init(state, renderData, canvas, createMockMemoryViews(), spriteData, palette);
 	try {
 		renderer.pauseRendering();
 		expect(state.spriteLookups).toBeDefined();
@@ -62,7 +63,7 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 				height: codeLines.length * 16,
 			});
 			// Keep each sample visible, including surface colors and dark foreground materials.
-			const [r, g, b] = spriteData.palette.rgba[token];
+			const [r, g, b] = palette.rgba[token];
 			block.widgets.blockHighlights.push({
 				x: 0,
 				y: 0,

@@ -26,7 +26,7 @@ export default function drawSelectedOutline(
 	const startOffset = Math.max(0, perimeterLength - segmentLength);
 	const animationOffset = (Math.floor(now / OUTLINE_STEP_DURATION_MS) + startOffset) % perimeterLength;
 
-	const font = PALETTE_INDICES.secondaryBase;
+	const color = PALETTE_INDICES.secondaryBase;
 
 	for (let i = 0; i < segmentLength; i++) {
 		const step = (animationOffset + i) % perimeterLength;
@@ -66,6 +66,6 @@ export default function drawSelectedOutline(
 							: '-'
 					: '|';
 
-		engine.drawText(x, y, character, font);
+		engine.drawText(x, y, character, color);
 	}
 }

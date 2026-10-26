@@ -4,12 +4,9 @@ This package generates sprite sheets for the 8f4e editor, containing color-indep
 
 ## Palette
 
-`generateSprite({ font, palette })` accepts a base palette containing `canvas`, `surface`, `ink`, `primary`, and optional
-`muted`, `secondary`, `tertiary`, `highlight`, `detail`, `stroke`, `positive`, `warning`, and `negative` colors.
-Omitted values inherit shared defaults. Colors accept hex with optional alpha, `rgb()` / `rgba()`, and `transparent`;
-base alpha is preserved in generated shades, with additional fixed 30%, 60%, and 90% opacity variants.
-The browser-independent `@8f4e/editor-palette` package resolves predefined Oklab shades, aliases,
-and RGBA values independently of atlas generation. See [the palette reference](../../../../docs/color-paths.md).
+`generateSprite({ font })` returns only masks, source identifiers, and font metrics. Resolve themes separately with
+`@8f4e/editor-palette`, which owns predefined shades, semantic aliases, alpha, and RGBA values.
+See [the palette reference](../../../../docs/color-paths.md).
 
 Every palette token can color any glyph or fill, including opacity variants. `PALETTE_INDICES` gives tokens stable
 numeric indices across theme changes; equal colors retain different indices. `toPaletteBytes(palette)` encodes the
@@ -22,20 +19,21 @@ of R8 coverage. It contains one set of 128 glyphs keyed by numeric character cod
 background pattern mask. There are 130 unique source rectangles, independently of the selected theme. No canvas is
 needed to generate these resources.
 
-Resolve the grouped public IDs (`font`, `fill`, `background`) against the installed atlas before drawing:
+Resolve the public IDs (`font` glyph table, `fill`, and `background`) against the installed atlas before drawing:
 
 ```ts
-import { PALETTE_INDICES, toPaletteBytes } from '@8f4e/editor-palette';
+import { PALETTE_INDICES, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
 import generateSprite, { resolveSpriteIds } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 
-const { spriteAtlas, palette } = await generateSprite({ font: 'ibmvga8x16' });
+const { spriteAtlas } = await generateSprite({ font: 'ibmvga8x16' });
+const palette = resolvePalette();
 const engine = new Engine(canvas);
 const resolver = engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup);
 const ids = resolveSpriteIds(spriteAtlas.spriteIdentifiers, resolver);
 engine.setPalette(toPaletteBytes(palette));
 engine.renderFrame(() => {
-	engine.drawSprite(40, 20, ids.fill[0], PALETTE_INDICES.surfaceBase, 200, 100);
+	engine.drawSprite(40, 20, ids.fill, PALETTE_INDICES.surfaceBase, 200, 100);
 	engine.drawSprite(20, 20, ids.font[65], PALETTE_INDICES.inkBase);
 });
 ```
