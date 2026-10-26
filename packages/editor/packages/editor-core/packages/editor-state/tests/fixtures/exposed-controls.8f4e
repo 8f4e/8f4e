@@ -15,7 +15,6 @@ expose pressed &countData:count
 ; @plot &keys count(keys)
 ; @bars &keys count(keys)
 ; @wave &keys count(keys)
-; @switch &gate 0 1
 ; @button &gate 0 1
 ; @crossfade &gain &wet
 ; @piano &keys &pressed 48

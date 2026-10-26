@@ -333,6 +333,9 @@ Defaults:
 
 ### `@switch`
 
+Provided by `@8f4e/editor-plugin-switch`, which is included in `@8f4e/editor-default`. Hosts composing the minimal
+editor must include this plugin to enable the directive.
+
 Render a toggle switch that reads and writes a memory address.
 
 ```txt
