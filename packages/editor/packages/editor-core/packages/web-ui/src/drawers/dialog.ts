@@ -12,7 +12,7 @@ export default function drawDialog(engine: DrawContext, state: State): void {
 	}
 
 	engine.startGroup(0, 0);
-	engine.drawFill(0, 0, PALETTE_INDICES.darkOverlay, state.viewport.width, state.viewport.height);
+	engine.drawFill(0, 0, PALETTE_INDICES.scrim, state.viewport.width, state.viewport.height);
 	engine.endGroup();
 
 	engine.startGroup(state.dialog.x, state.dialog.y);

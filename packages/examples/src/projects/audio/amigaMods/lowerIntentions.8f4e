@@ -821,6 +821,7 @@ noteEnd
 note
 ; @pos 717 -138
 ; @config color.canvas #7898d2
+; @config color.ink rgba(249,248,255,0.9)
 ; @config color.primary #fff
 ; @config color.secondary #ffe0bd
 ; @config color.positive #2f7d63

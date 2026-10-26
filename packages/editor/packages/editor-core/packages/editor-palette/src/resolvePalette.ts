@@ -64,6 +64,7 @@ function resolveBaseColors(config: PaletteConfig): { bases: BaseColors; theme: P
 		isDark: toOklab(rgb(background))[0] < toOklab(rgb(visibleInk))[0],
 		primaryChroma,
 		surfaceChroma: chroma(background),
+		isLightOverlay: surface[3] > 0 && surface[3] < 1 && toOklab(rgb(surface))[0] > 0.8,
 	};
 	const muted = parsed.muted ?? mix(primaryChroma > 0.02 ? mix(ink, primary, 0.5) : ink, background, 0.2, 1);
 	const secondary = parsed.secondary ?? primary;

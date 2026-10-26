@@ -52,9 +52,14 @@ describe('deriveCodeBlockCodeCells', () => {
 		expect(cells[1]?.at(-1)).toEqual(cell(49, PALETTE_INDICES.secondaryBase));
 	});
 
-	it('keeps zero bits faint and one bits strongly accented', () => {
+	it('distinguishes softened prefixes and zero bits from accented one bits', () => {
 		const cells = deriveCodeBlockCodeCells(createSource(['push 0b10']), createSpriteLookups());
-		expect(cells[0]?.slice(-2)).toEqual([cell(49, PALETTE_INDICES.primaryStrong), cell(48, PALETTE_INDICES.inkFaint)]);
+		expect(cells[0]?.slice(-4)).toEqual([
+			cell(48, PALETTE_INDICES.secondarySoft),
+			cell(98, PALETTE_INDICES.secondarySoft),
+			cell(49, PALETTE_INDICES.primaryStrong),
+			cell(48, PALETTE_INDICES.mutedSoft),
+		]);
 	});
 
 	it('renders blank line-number gutters for pointer declarations', () => {

@@ -105,7 +105,22 @@ describe('editor palette', () => {
 			muted: 'rgba(255,255,255,0.3)',
 		});
 		expect(palette.isDark).toBe(true);
-		expect(palette.rgba.surfaceRaised1[2]).toBeGreaterThan(palette.rgba.surfaceRaised1[0]);
+		const raised = composite(palette.rgba.surfaceRaised1, palette.rgba.canvasBase);
+		expect(raised[2]).toBeGreaterThan(raised[0]);
+		for (const token of [
+			'surfaceRaised1',
+			'surfaceRaised2',
+			'surfaceRaised3',
+			'surfaceSubdued',
+			'surfaceOverlay',
+			'accentSurface',
+			'darkSurface',
+			'floatingSurface',
+			'scrim',
+		] as const) {
+			expect(palette.rgba[token][3]).toBeGreaterThan(0);
+			expect(palette.rgba[token][3]).toBeLessThan(1);
+		}
 		expect(palette.rgba.mutedBase[3]).toBe(0.3);
 		expect(palette.rgba.inkFaint[3]).toBe(0.3);
 		expect(palette.colors.onDarkAccent).toBe(palette.colors.primaryBase);
@@ -120,6 +135,29 @@ describe('editor palette', () => {
 			contrast(rgb(composite(palette.rgba.secondaryReadable, background)), rgb(background))
 		).toBeGreaterThanOrEqual(4.5);
 	});
+
+	it.each([
+		{ canvas: '#050816', surface: '#0c1730', ink: '#e6f1f5', muted: 'rgba(99,122,161,0.7)' },
+		{ surface: '#f6f5fa', ink: '#35405c', muted: 'rgba(139,147,168,0.7)' },
+	])('keeps strong labels legible and softened text between its anchor and surface for %o', config => {
+		const { rgba } = resolvePalette(config);
+		const background = composite(rgba.surfaceBase, composite(rgba.canvasBase, [0, 0, 0, 1]));
+		const visibleContrast = (color: typeof rgba.inkBase) =>
+			contrast(rgb(composite(color, background)), rgb(background));
+		expect(visibleContrast(rgba.inkStrong)).toBeGreaterThanOrEqual(visibleContrast(rgba.inkBase));
+		expect(visibleContrast(rgba.mutedSoft)).toBeLessThan(visibleContrast(rgba.mutedBase));
+		expect(visibleContrast(rgba.mutedSoft)).toBeGreaterThanOrEqual(visibleContrast(rgba.inkFaint));
+		expect(rgba.mutedSoft[3]).toBe(0.7);
+	});
+
+	it.each(['#f06c78', '#aa0000', '#ffffff', 'rgba(220,50,130,0.6)'])(
+		'keeps negative text readable on its stronger surface for %s',
+		negative => {
+			const { rgba } = resolvePalette({ surface: '#ffffff', negative });
+			const background = composite(rgba.negativeSurface, rgba.surfaceBase);
+			expect(contrast(rgb(composite(rgba.negativeOn, background)), rgb(background))).toBeGreaterThanOrEqual(4.5);
+		}
+	);
 
 	it('keeps transparency separate from opaque shade generation', () => {
 		const palette = resolvePalette({ primary: '#ff0000' });

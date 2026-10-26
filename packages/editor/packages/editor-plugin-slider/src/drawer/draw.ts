@@ -31,10 +31,10 @@ export function drawSliders(engine: DrawContext, state: State, sliders: Slider[]
 		engine.startGroup(x, y);
 
 		engine.drawFill(0, 0, PALETTE_INDICES.surfaceRaised2, width, height);
-		engine.drawFill(0, 0, PALETTE_INDICES.primaryDark2, handleX + handleWidth, height);
-		engine.drawFill(handleX, 0, PALETTE_INDICES.inkBase, handleWidth, height);
-		engine.drawText(handleX, 0, HANDLE_LABEL, PALETTE_INDICES.inkOn);
-		engine.drawText(handleX, state.viewport.hGrid, HANDLE_LABEL, PALETTE_INDICES.inkOn);
+		engine.drawFill(0, 0, PALETTE_INDICES.accentSurface, handleX + handleWidth, height);
+		engine.drawFill(handleX, 0, PALETTE_INDICES.lightBase, handleWidth, height);
+		engine.drawText(handleX, 0, HANDLE_LABEL, PALETTE_INDICES.darkBase);
+		engine.drawText(handleX, state.viewport.hGrid, HANDLE_LABEL, PALETTE_INDICES.darkBase);
 
 		engine.endGroup();
 	}

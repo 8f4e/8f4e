@@ -176,7 +176,7 @@ describe('drawModules', () => {
 			16,
 			16,
 			'main',
-			PALETTE_INDICES.inkBase
+			PALETTE_INDICES.inkStrong
 		);
 	});
 

@@ -1,7 +1,7 @@
 # Base Palette
 
 Projects configure a small palette with `; @config color.<name> <value>`. The editor generates a fixed catalog of shades
-and opacity variants before building its sprite atlas. No colors are lightened, darkened, or tinted during drawing.
+and opacity variants when resolving the palette. No colors are lightened, darkened, or tinted during drawing.
 
 ```txt
 ; @config color.canvas #660099
@@ -63,8 +63,9 @@ Generic material colors derive from the anchors with predefined blending rules. 
 use the visible, composited surface, so translucent white panels over a dark canvas retain the canvas tint:
 
 - `canvasDetail1/2` retain the canvas hue while adding visible detail.
-- `surfaceRaised1/2/3` are subtle accent-tinted surfaces; saturated surfaces retain their own hue.
-- `mutedBase` is the configured subdued foreground; `inkFaint` blends it toward the surface.
+- `surfaceRaised1/2/3` are subtle surfaces tinted with muted foreground; saturated surfaces retain their own hue.
+- `mutedBase` is the configured subdued foreground; `mutedSoft` and `inkFaint` blend it toward the surface.
+- `inkStrong` increases foreground contrast for labels; `secondarySoft` softens numeric prefixes in light and dark themes.
 - Syntax highlighting uses the authored `primaryBase`, `secondaryBase`, and `tertiaryBase` unchanged.
 - `secondaryReadable` chooses a shade with at least 4.5:1 contrast on the composited base surface.
 - `primarySoft` blends a small accent into the surface; `primaryStrong` supplies stronger emphasis in light themes.
@@ -73,9 +74,17 @@ use the visible, composited surface, so translucent white panels over a dark can
 - `darkSurface` and `onDarkAccent` keep dark regions available in both light and dark themes.
 - `inverseSurface`, `inverseInk`, and `inverseAccent` provide an inverted material, including a dark material in light themes.
 - `positiveSoft` and `negativeSoft` provide status backgrounds appropriate to the inverse material.
-- `inkOn` and `negativeOn` provide contrasting foregrounds; `strokeStrong` supplies an opaque outline.
+- `inkOn` contrasts with `inkBase`; `negativeOn` contrasts with `negativeSurface`, which supplies dark or soft negative surfaces.
+  `strokeStrong` supplies an opaque outline.
 - `lightBase`, `darkBase`, `black`, and `white` supply neutral endpoints and contrast fallbacks.
-- `darkOverlay`, `darkOverlaySoft`, `primaryOverlay`, and `transparent` supply fixed RGBA overlays.
+- `scrim`, `darkOverlaySoft`, `primaryOverlay`, and `transparent` supply predefined RGBA overlays.
+
+Light translucent surfaces retain layered materials: `surfaceRaised1/2/3` use half, three-quarters, and full base
+surface alpha; `surfaceSubdued` uses half alpha, and `surfaceOverlay` uses 40% alpha. Floating surfaces stay light
+and translucent with dark text, while dark surfaces retain the canvas hue and base surface alpha.
+`accentSurface` uses a translucent secondary accent for these overlays and `detailDark1` for opaque themes. Canvas detail
+and the scrim use light translucent overlays. This keeps pale overlays over colored canvases distinct from opaque
+light and dark themes.
 
 All rules run once during palette resolution. `secondaryReadable` applies to its documented background; drawers must still
 choose contrasting pairs for other shades. This does not replace a complete contrast audit.
@@ -85,10 +94,11 @@ choose contrasting pairs for other shades. This does not replace a complete cont
 `PALETTE_INDICES` exposes stable numeric indices for every shade, opacity variant, and shared material. Drawers choose
 these indices directly: `draw.drawFill(x, y, PALETTE_INDICES.primaryDark2, width, height)` and
 `draw.drawText(x, y, text, PALETTE_INDICES.inkOn)` reuse the same fill mask and glyph table across unrelated controls.
-Local visual choices belong to drawers rather than theme configuration. Equal resolved colors keep separate indices
+Local visual choices belong to drawers rather than theme configuration. Controls use `accentSurface` fills and
+`lightBase` handles with `darkBase` labels; disabled panels use `surfaceSubdued`. Equal resolved colors keep separate indices
 so a theme change can make them diverge without rebuilding projections.
 
-Connector icons are composed at runtime: a `surfaceRaised2` fill sits behind input brackets in `primaryBase` or output
+Connector icons are composed at runtime: a `surfaceOverlay` fill sits behind input brackets in `primaryBase` or output
 brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`, `primaryDark1`, `primaryBase`,
 `warningBase`, or `negativeBase` from the calibrated value. There are no dedicated input or feedback-scale atlas entries.
 
@@ -97,7 +107,7 @@ background pattern. All palette entries can color text, including `Alpha30/60/90
 a `canvasBase` fill and layers the same pattern mask in `canvasDetail2` and `canvasDetail1`, offset by one character cell.
 The renderer accepts straight-alpha RGBA8 palette bytes and prepares premultiplied float32 colors on changed uploads.
 The vertex shader reads the selected color from a uniform buffer; the fragment shader applies red-channel mask coverage.
-The buffer reserves 256 colors (4 KiB), with 189 active entries using 3,024 bytes from a 756-byte RGBA8 input.
+The buffer reserves 256 colors (4 KiB), with 196 active entries using 3,136 bytes from a 784-byte RGBA8 input.
 Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
 
 `@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs

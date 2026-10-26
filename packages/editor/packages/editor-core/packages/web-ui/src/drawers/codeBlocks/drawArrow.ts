@@ -20,7 +20,7 @@ const ARROW_CHARACTERS = {
  */
 export default function drawArrow(engine: DrawContext, codeBlock: CodeBlockGraphicData, state: State): void {
 	const arrowPlacement = calculateArrowPlacement(codeBlock, state);
-	const color = PALETTE_INDICES.primaryBase;
+	const color = PALETTE_INDICES.secondaryBase;
 	if (!state.spriteLookups) {
 		return;
 	}
