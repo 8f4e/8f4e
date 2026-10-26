@@ -27,7 +27,7 @@ describe('createWebUiRenderProjection', () => {
 			spriteLookups: {
 				fontInkBase: font,
 				fontInkFaint: font,
-				fontInkMuted: font,
+				fontMutedBase: font,
 				fontTertiaryBase: font,
 				fontPrimaryBase: font,
 				fontPrimaryStrong: font,

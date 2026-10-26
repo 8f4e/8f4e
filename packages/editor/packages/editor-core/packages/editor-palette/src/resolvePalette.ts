@@ -66,13 +66,13 @@ function resolveBaseColors(config: PaletteConfig): { bases: BaseColors; theme: P
 		surfaceChroma: chroma(background),
 	};
 	const muted = parsed.muted ?? mix(primaryChroma > 0.02 ? mix(ink, primary, 0.5) : ink, background, 0.2, 1);
+	const secondary = parsed.secondary ?? primary;
 	const bases: BaseColors = {
 		...parsed,
 		muted,
-		secondary: parsed.secondary ?? primary,
+		secondary,
 		tertiary: parsed.tertiary ?? mix(muted, background, 0.25, muted[3]),
-		// Only authored accents replace the translucent default highlight.
-		highlight: parsed.highlight ?? parsed.secondary ?? (config.primary !== undefined ? primary : [1, 1, 1, 0.45]),
+		highlight: parsed.highlight ?? secondary,
 		detail: parsed.detail ?? primary,
 		stroke: parsed.stroke ?? [...rgb(primary), 0.3],
 	};

@@ -8,7 +8,6 @@ const cases = [
 		config: {},
 		expected: {
 			surfaceRaised2: '#222222',
-			inkSoft: '#a1a1a1',
 			lightBase: '#cccccc',
 			darkBase: '#000000',
 			floatingSurface: '#161616',
@@ -23,7 +22,6 @@ const cases = [
 		},
 		expected: {
 			surfaceRaised2: '#1b1222',
-			inkSoft: '#a596b2',
 			lightBase: '#cccccc',
 			darkBase: '#000000',
 			floatingSurface: '#110a16',
@@ -42,7 +40,6 @@ const cases = [
 		},
 		expected: {
 			surfaceRaised2: '#e3e6f4',
-			inkSoft: '#7d869c',
 			lightBase: '#f6f5fa',
 			darkBase: '#35405c',
 			floatingSurface: '#e3e6f4',
@@ -60,7 +57,6 @@ const cases = [
 		},
 		expected: {
 			surfaceRaised2: '#e2ebfd',
-			inkSoft: '#a6a6a6',
 			lightBase: '#ffffff',
 			darkBase: '#000000',
 			floatingSurface: '#001e9f',
@@ -78,7 +74,6 @@ const cases = [
 		},
 		expected: {
 			surfaceRaised2: '#4a0060',
-			inkSoft: '#e7ccb9',
 			lightBase: '#ffffff',
 			darkBase: '#000000',
 			floatingSurface: '#700090',
@@ -97,7 +92,6 @@ const cases = [
 		},
 		expected: {
 			surfaceRaised2: '#88c2e1',
-			inkSoft: 'rgba(245,245,245,0.3)',
 			lightBase: '#cccccc',
 			darkBase: '#000000',
 			floatingSurface: '#7fbedf',
@@ -115,7 +109,6 @@ const cases = [
 		},
 		expected: {
 			surfaceRaised2: '#e8d6db',
-			inkSoft: '#ae8c97',
 			lightBase: '#e6e6e6',
 			darkBase: '#000000',
 			floatingSurface: '#c61370',

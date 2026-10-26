@@ -39,7 +39,7 @@ export default function generate(
 export const generateLookup = (
 	characterWidth: number,
 	characterHeight: number,
-	colors?: PaletteColors
+	colors: PaletteColors
 ): Record<0, SpriteCoordinates> => {
 	const layout = createAtlasLayout(characterWidth, characterHeight, colors);
 

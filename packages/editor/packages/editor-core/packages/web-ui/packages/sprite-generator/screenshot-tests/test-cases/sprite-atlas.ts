@@ -29,7 +29,7 @@ engine.renderFrame(() => {
 	}
 
 	for (const [index, character] of [...'sprite-generator atlas'].entries()) {
-		engine.drawSprite(48 + index * characterWidth, 144, ids.fontInkMuted[character]);
+		engine.drawSprite(48 + index * characterWidth, 144, ids.fontMutedBase[character]);
 	}
 
 	engine.drawSprite(48, 184, ids.fillColors.primarySoft, 448, characterHeight);

@@ -28,7 +28,7 @@ export default function generate(
 	];
 }
 
-export const generateLookup = (characterWidth: number, characterHeight: number, colors?: PaletteColors) => {
+export const generateLookup = (characterWidth: number, characterHeight: number, colors: PaletteColors) => {
 	const layout = createAtlasLayout(characterWidth, characterHeight, colors);
 
 	return Object.fromEntries(

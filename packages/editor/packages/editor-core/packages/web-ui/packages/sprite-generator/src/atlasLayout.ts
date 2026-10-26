@@ -1,8 +1,7 @@
-import { FONT_PALETTE_TOKENS, PALETTE_TOKENS, type PaletteColors, resolvePalette } from '@8f4e/editor-palette';
+import { FONT_PALETTE_TOKENS, PALETTE_TOKENS, type PaletteColors } from '@8f4e/editor-palette';
 
 export const TEXT_COLOR_NAMES = FONT_PALETTE_TOKENS;
 export const FILL_COLOR_NAMES = PALETTE_TOKENS;
-const DEFAULT_COLORS = resolvePalette().colors;
 
 const FONT_COLUMNS = 128;
 const BACKGROUND_COLUMNS = 64;
@@ -47,11 +46,7 @@ function createSection(
 	};
 }
 
-export function createAtlasLayout(
-	characterWidth: number,
-	characterHeight: number,
-	colors: PaletteColors = DEFAULT_COLORS
-) {
+export function createAtlasLayout(characterWidth: number, characterHeight: number, colors: PaletteColors) {
 	const fontRows = new Set(TEXT_COLOR_NAMES.map(token => colors[token])).size;
 	const backgroundYRows = fontRows;
 	const sidebarXColumns = BACKGROUND_COLUMNS;

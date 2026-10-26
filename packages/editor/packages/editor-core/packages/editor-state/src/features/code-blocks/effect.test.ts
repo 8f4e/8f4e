@@ -29,7 +29,7 @@ function createSpriteLookups() {
 		fontSecondaryBase: createFontIds(),
 		fontInkBase: createFontIds(),
 		fontInkFaint: createFontIds(),
-		fontInkMuted: createFontIds(),
+		fontMutedBase: createFontIds(),
 	} as never;
 }
 

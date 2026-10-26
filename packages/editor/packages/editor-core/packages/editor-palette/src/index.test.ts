@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { composite, contrast, parseColor, parseHex, rgb, toOklab } from './color';
+import { composite, contrast, parseColor, rgb, toOklab } from './color';
 import { BASE_COLORS, defaultPalette, isPaletteColor, PALETTE_TOKENS, resolvePalette, SHADES } from './index';
 
 describe('editor palette', () => {
@@ -12,14 +12,30 @@ describe('editor palette', () => {
 		expect(defaultPalette.primary).toBe('#ffffff');
 	});
 
+	it('resolves omitted and explicitly supplied defaults identically', () => {
+		const palette = resolvePalette();
+		expect(resolvePalette(defaultPalette)).toEqual(palette);
+		expect(resolvePalette({ primary: defaultPalette.primary })).toEqual(palette);
+		expect(resolvePalette({ secondary: palette.colors.secondaryBase })).toEqual(palette);
+	});
+
+	it('inherits the secondary color and alpha for highlights unless explicitly configured', () => {
+		const secondary = 'rgba(242,200,121,0.35)';
+		const palette = resolvePalette({ secondary });
+		expect(palette.rgba.highlightBase).toEqual(palette.rgba.secondaryBase);
+		expect(palette.rgba.highlightLight2[3]).toBe(0.35);
+		expect(resolvePalette({ secondary, highlight: 'rgba(255,255,255,0.45)' }).rgba.highlightBase).toEqual([
+			1, 1, 1, 0.45,
+		]);
+	});
+
 	it('produces a complete, deterministic catalog with matching sRGB and RGBA values', () => {
 		const palette = resolvePalette();
 		expect(Object.keys(palette.colors).sort()).toEqual([...PALETTE_TOKENS].sort());
 		expect(palette).toEqual(resolvePalette());
 		for (const token of PALETTE_TOKENS) {
 			expect(palette.rgba[token].every(value => value >= 0 && value <= 1)).toBe(true);
-			if (palette.rgba[token][3] === 1)
-				expect(palette.rgba[token].slice(0, 3)).toEqual(parseHex(palette.colors[token]));
+			expect(palette.rgba[token]).toEqual(parseColor(palette.colors[token]));
 		}
 	});
 
@@ -28,7 +44,7 @@ describe('editor palette', () => {
 		color => {
 			const palette = resolvePalette(Object.fromEntries(BASE_COLORS.map(base => [base, color])));
 			for (const base of BASE_COLORS) {
-				const levels = SHADES.map(shade => toOklab(parseHex(palette.colors[`${base}${shade}`]))[0]);
+				const levels = SHADES.map(shade => toOklab(rgb(palette.rgba[`${base}${shade}`]))[0]);
 				for (let index = 1; index < levels.length; index++)
 					expect(levels[index]).toBeGreaterThanOrEqual(levels[index - 1] - 0.002);
 			}
@@ -40,10 +56,10 @@ describe('editor palette', () => {
 		{ surface: '#ffffff', ink: '#000000', primary: '#0000cc' },
 		{ surface: '#777777', ink: '#eeeeee', primary: '#888888' },
 		{ surface: '#666666', ink: '#cccccc', primary: '#888888' },
-	])('selects readable accent and on-accent colors once for %o', config => {
-		const { colors } = resolvePalette(config);
-		expect(contrast(parseHex(colors.primaryReadable), parseHex(colors.surfaceBase))).toBeGreaterThanOrEqual(4.5);
-		expect(contrast(parseHex(colors.primaryOn), parseHex(colors.primaryBase))).toBeGreaterThanOrEqual(4.5);
+	])('selects readable secondary and on-ink colors once for %o', config => {
+		const { rgba } = resolvePalette(config);
+		expect(contrast(rgb(rgba.secondaryReadable), rgb(rgba.surfaceBase))).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(rgb(rgba.inkOn), rgb(rgba.inkBase))).toBeGreaterThanOrEqual(4.5);
 	});
 
 	it('keeps muted ink as a separate anchor and uses dark visualizer surfaces in light themes', () => {
@@ -54,7 +70,7 @@ describe('editor palette', () => {
 			primary: '#4c60b4',
 			warning: '#d6a748',
 		});
-		expect(palette.colors.inkMuted).toBe('#8b93a8');
+		expect(palette.colors.mutedBase).toBe('#8b93a8');
 		expect(toOklab(rgb(palette.rgba.darkSurface))[0]).toBeLessThan(0.35);
 		expect(toOklab(rgb(palette.rgba.inverseSurface))[0]).toBeLessThan(0.4);
 		expect(contrast(rgb(palette.rgba.inverseInk), rgb(palette.rgba.inverseSurface))).toBeGreaterThanOrEqual(4.5);
@@ -81,7 +97,8 @@ describe('editor palette', () => {
 		});
 		expect(palette.isDark).toBe(true);
 		expect(palette.rgba.surfaceRaised1[2]).toBeGreaterThan(palette.rgba.surfaceRaised1[0]);
-		expect(palette.rgba.inkSoft[3]).toBe(0.3);
+		expect(palette.rgba.mutedBase[3]).toBe(0.3);
+		expect(palette.rgba.inkFaint[3]).toBe(0.3);
 		expect(palette.colors.onDarkAccent).toBe(palette.colors.primaryBase);
 		expect(palette.colors.primaryStrong).toBe(palette.colors.primaryBase);
 		expect(palette.rgba.surfaceBase).toEqual([1, 1, 1, 0.2]);
@@ -90,9 +107,9 @@ describe('editor palette', () => {
 	it('selects readable text against the composited translucent surface', () => {
 		const palette = resolvePalette({ canvas: '#fff', surface: 'rgba(0,0,0,0.1)', ink: '#000', primary: '#bbb' });
 		const background = composite(palette.rgba.surfaceBase, palette.rgba.canvasBase);
-		expect(contrast(rgb(composite(palette.rgba.primaryReadable, background)), rgb(background))).toBeGreaterThanOrEqual(
-			4.5
-		);
+		expect(
+			contrast(rgb(composite(palette.rgba.secondaryReadable, background)), rgb(background))
+		).toBeGreaterThanOrEqual(4.5);
 	});
 
 	it('keeps transparency separate from opaque shade generation', () => {

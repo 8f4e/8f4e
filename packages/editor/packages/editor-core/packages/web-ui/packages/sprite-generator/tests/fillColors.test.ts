@@ -77,7 +77,7 @@ describe('fillColors module', () => {
 			// Check that specific colors from our color scheme are included
 			expect(colorValues).toContain(testPalette.colors.canvasBase);
 			expect(colorValues).toContain(testPalette.colors.surfaceRaised1);
-			expect(colorValues).toContain(testPalette.colors.primaryReadable);
+			expect(colorValues).toContain(testPalette.colors.secondaryReadable);
 			expect(colorValues).toContain(testPalette.colors.surfaceBase);
 		});
 
@@ -138,7 +138,7 @@ describe('fillColors module', () => {
 			// Should have entries for all fill colors
 			expect(Object.keys(lookup)).toContain('canvasBase');
 			expect(Object.keys(lookup)).toContain('surfaceRaised1');
-			expect(Object.keys(lookup)).toContain('primaryReadable');
+			expect(Object.keys(lookup)).toContain('secondaryReadable');
 			expect(Object.keys(lookup)).toContain('negativeBase');
 		});
 
@@ -205,7 +205,7 @@ describe('fillColors module', () => {
 			expect(keys).toContain('surfaceRaised1');
 			expect(keys).toContain('primaryBase');
 			expect(keys).toContain('canvasBase');
-			expect(keys).toContain('primaryReadable');
+			expect(keys).toContain('secondaryReadable');
 			expect(keys).toContain('negativeBase');
 		});
 

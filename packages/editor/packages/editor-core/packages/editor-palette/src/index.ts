@@ -27,13 +27,9 @@ export const FONT_SHADES = ['Dark2', 'Base', 'Light2'] as const;
 export const FONT_ALIASES = [
 	'black',
 	'white',
-	'inkMuted',
-	'inkSoft',
 	'inkFaint',
-	'primaryReadable',
 	'secondaryReadable',
 	'primaryStrong',
-	'primaryOn',
 	'inkOn',
 	'negativeOn',
 	'lightBase',

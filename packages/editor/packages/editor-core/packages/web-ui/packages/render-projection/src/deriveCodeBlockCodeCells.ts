@@ -40,9 +40,9 @@ export default function deriveCodeBlockCodeCells(
 		const lineColors = new Array<SpriteFont | undefined>(line.length).fill(undefined);
 		const displayLine = block.displayModel.lines[displayRow];
 		const sourceLineIndex = block.displayModel.displayRowToSourceLineIndex[displayRow] ?? 0;
-		lineColors[0] = spriteLookups.fontInkMuted;
+		lineColors[0] = spriteLookups.fontMutedBase;
 		lineColors[block.lineNumberColumnWidth] = displayLine?.isPlaceholder
-			? spriteLookups.fontInkMuted
+			? spriteLookups.fontMutedBase
 			: spriteLookups.fontInkBase;
 		if (!displayLine?.isPlaceholder) {
 			expandLineColorsToCells(

@@ -23,7 +23,7 @@ describe('drawInfoPanels', () => {
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
 				fontInkBase: createSpriteIdLookupMock(),
-				fontInkMuted: createSpriteIdLookupMock(),
+				fontMutedBase: createSpriteIdLookupMock(),
 				fontPrimaryBase: createSpriteIdLookupMock(),
 				fontSecondaryBase: createSpriteIdLookupMock(),
 			} as never,
@@ -54,7 +54,7 @@ describe('drawInfoPanels', () => {
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
 				fontInkBase: createSpriteIdLookupMock(),
-				fontInkMuted: createSpriteIdLookupMock(),
+				fontMutedBase: createSpriteIdLookupMock(),
 				fontPrimaryBase: createSpriteIdLookupMock(),
 				fontSecondaryBase: createSpriteIdLookupMock(),
 			} as never,
@@ -82,7 +82,7 @@ describe('drawInfoPanels', () => {
 			spriteLookups: {
 				fillColors: createSpriteIdLookupMock(),
 				fontInkBase: createSpriteIdLookupMock(),
-				fontInkMuted: createSpriteIdLookupMock(),
+				fontMutedBase: createSpriteIdLookupMock(),
 				fontPrimaryBase: createSpriteIdLookupMock(),
 				fontSecondaryBase: createSpriteIdLookupMock(),
 			} as never,

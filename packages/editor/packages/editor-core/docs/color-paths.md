@@ -27,7 +27,7 @@ and opacity variants before building its sprite atlas. No colors are lightened, 
 | `color.muted` | Subdued foreground | Generated from ink, primary, and surface |
 | `color.secondary` | Additional accent | Resolved `primary` |
 | `color.tertiary` | Supporting accent, including comments | Generated from muted and surface |
-| `color.highlight` | Bright accent for visualizations | Secondary, primary, or translucent white |
+| `color.highlight` | Bright accent for visualizations | Resolved `secondary` (including alpha) |
 | `color.detail` | Additional contrasting accent | Resolved `primary` |
 | `color.stroke` | Shared lines and outlines | Primary at 30% opacity |
 | `color.positive` | Positive states | `#00ff00` |
@@ -64,20 +64,20 @@ use the visible, composited surface, so translucent white panels over a dark can
 
 - `canvasDetail1/2` retain the canvas hue while adding visible detail.
 - `surfaceRaised1/2/3` are subtle accent-tinted surfaces; saturated surfaces retain their own hue.
-- `inkMuted`, `inkSoft`, and `inkFaint` share the configured muted foreground and its derived variants.
+- `mutedBase` is the configured subdued foreground; `inkFaint` blends it toward the surface.
 - Syntax highlighting uses the authored `primaryBase`, `secondaryBase`, and `tertiaryBase` unchanged.
-- Optional `primaryReadable` and `secondaryReadable` choose a shade with at least 4.5:1 contrast on the composited base surface.
+- `secondaryReadable` chooses a shade with at least 4.5:1 contrast on the composited base surface.
 - `primarySoft` blends a small accent into the surface; `primaryStrong` supplies stronger emphasis in light themes.
 - `floatingSurface`, `floatingInk`, `floatingMuted`, and `floatingAccent` supply contrasting floating materials.
 - `selectionSurface` and `selectionInk` supply the selected floating material.
 - `darkSurface` and `onDarkAccent` keep dark regions available in both light and dark themes.
 - `inverseSurface`, `inverseInk`, and `inverseAccent` provide an inverted material, including a dark material in light themes.
 - `positiveSoft` and `negativeSoft` provide status backgrounds appropriate to the inverse material.
-- `primaryOn`, `inkOn`, and `negativeOn` provide contrasting foregrounds; `strokeStrong` supplies an opaque outline.
+- `inkOn` and `negativeOn` provide contrasting foregrounds; `strokeStrong` supplies an opaque outline.
 - `lightBase`, `darkBase`, `black`, and `white` supply neutral endpoints and contrast fallbacks.
 - `darkOverlay`, `darkOverlaySoft`, `primaryOverlay`, and `transparent` supply fixed RGBA overlays.
 
-All rules run once during palette resolution. Readable aliases apply to their documented background; drawers must still
+All rules run once during palette resolution. `secondaryReadable` applies to its documented background; drawers must still
 choose contrasting pairs for other shades. This does not replace a complete contrast audit.
 
 ## Drawing API

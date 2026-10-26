@@ -1,12 +1,5 @@
 import { BLACK, composite, contrast, gamutMap, mix, normalizeColor, type Rgba, rgb, toOklab, WHITE } from './color.js';
-import {
-	type BaseColors,
-	type MaterialToken,
-	type PaletteToken,
-	SHADES,
-	type ShadeColors,
-	type ShadeToken,
-} from './palette.js';
+import { type BaseColors, type MaterialToken, type PaletteToken, SHADES, type ShadeColors } from './palette.js';
 
 export interface PaletteTheme {
 	readonly background: Rgba;
@@ -31,7 +24,7 @@ export function resolveMaterials(
 	const { primary, muted } = bases;
 	const lighter = isDark ? visibleInk : background;
 	const darker = isDark ? background : visibleInk;
-	const onBase = (base: 'primary' | 'ink' | 'negative') =>
+	const onBase = (base: 'ink' | 'negative') =>
 		contrasting(composite(values[`${base}Base`], background), [
 			values.surfaceBase,
 			values.inkBase,
@@ -51,11 +44,8 @@ export function resolveMaterials(
 		surfaceRaised1: () => raisedSurface(bases, theme, 0),
 		surfaceRaised2: () => raisedSurface(bases, theme, 1),
 		surfaceRaised3: () => raisedSurface(bases, theme, 2),
-		inkMuted: () => values.mutedBase,
-		inkSoft: () => softInk(bases, theme),
 		inkFaint: () => mix(muted, background, 0.45, muted[3]),
-		primaryReadable: () => readable('primary', background, shades),
-		secondaryReadable: () => readable('secondary', background, shades),
+		secondaryReadable: () => readableSecondary(background, shades),
 		primarySoft: () => mix(background, primary, isDark ? 0.4 : 0.12, 1),
 		primaryStrong: () => (isDark ? values.primaryBase : values.primaryDark2),
 		lightBase: () => (lightness(lighter) >= 0.8 ? opaque(lighter) : WHITE),
@@ -91,7 +81,6 @@ export function resolveMaterials(
 			),
 		positiveSoft: () => (isDark ? values.positiveLight2 : values.positiveDark2),
 		negativeSoft: () => (isDark ? values.negativeLight2 : values.negativeDark2),
-		primaryOn: () => onBase('primary'),
 		inkOn: () => onBase('ink'),
 		negativeOn: () => onBase('negative'),
 		strokeStrong: () => opaque(isDark ? values.strokeLight2 : values.strokeBase),
@@ -117,13 +106,6 @@ function raisedSurface(bases: BaseColors, theme: PaletteTheme, level: 0 | 1 | 2)
 	return mix(theme.background, tint, amount, 1);
 }
 
-function softInk(bases: BaseColors, theme: PaletteTheme): Rgba {
-	const { muted, ink } = bases;
-	if (theme.isDark) return mix(muted, ink, 0.2, muted[3]);
-	if (lightness(muted) < 0.55) return mix(muted, theme.background, 0.5, muted[3]);
-	return mix(muted, ink, 0.15, muted[3]);
-}
-
 function floatingSurface(bases: BaseColors, theme: PaletteTheme, values: Record<PaletteToken, Rgba>): Rgba {
 	if (theme.isDark)
 		return mix(theme.background, bases.primary, theme.surfaceChroma > SATURATED_SURFACE_CHROMA ? 0 : 0.2, 1);
@@ -143,9 +125,9 @@ function contrasting(back: Rgba, candidates: readonly Rgba[]): Rgba {
 	);
 }
 
-function readable(base: 'primary' | 'secondary', back: Rgba, shades: ShadeColors): Rgba {
-	const baseLightness = lightness(shades[`${base}Base`]);
-	const candidates = SHADES.map(shade => shades[`${base}${shade}` as ShadeToken]).sort(
+function readableSecondary(back: Rgba, shades: ShadeColors): Rgba {
+	const baseLightness = lightness(shades.secondaryBase);
+	const candidates = SHADES.map(shade => shades[`secondary${shade}`]).sort(
 		(a, b) => Math.abs(lightness(a) - baseLightness) - Math.abs(lightness(b) - baseLightness)
 	);
 	return contrasting(back, candidates);

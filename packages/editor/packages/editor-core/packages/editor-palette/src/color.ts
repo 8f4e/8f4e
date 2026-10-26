@@ -69,14 +69,6 @@ export function composite(front: Rgba, back: Rgba): Rgba {
 	];
 }
 
-export function parseHex(color: string): Triple {
-	if (!/^#(?:[\da-f]{3}|[\da-f]{6})$/i.test(color)) {
-		throw new TypeError(`Invalid palette color '${color}': expected opaque #rgb or #rrggbb.`);
-	}
-	const hex = color.length === 4 ? [...color.slice(1)].map(value => value + value).join('') : color.slice(1);
-	return [0, 2, 4].map(offset => Number.parseInt(hex.slice(offset, offset + 2), 16) / 255) as Triple;
-}
-
 export function toHex(rgb: Triple): string {
 	return `#${rgb
 		.map(value =>

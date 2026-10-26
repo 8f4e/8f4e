@@ -18,7 +18,7 @@ function createSpriteLookups(): SpriteIdLookups {
 	return {
 		fontInkBase: createFont(0),
 		fontInkFaint: createFont(100),
-		fontInkMuted: createFont(200),
+		fontMutedBase: createFont(200),
 		fontTertiaryBase: createFont(300),
 		fontPrimaryBase: createFont(400),
 		fontPrimaryStrong: createFont(700),

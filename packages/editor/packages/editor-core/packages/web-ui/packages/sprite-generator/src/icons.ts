@@ -5,23 +5,7 @@ import { createAtlasLayout } from './atlasLayout.ts';
 import { drawCharacter } from './font.ts';
 import { Command, type DrawingCommand } from './types.ts';
 
-const icons = (
-	characterWidth: number,
-	characterHeight: number,
-	colors?: PaletteColors
-): {
-	commandsBeforeRenderingGlyphs: DrawingCommand[];
-	chars: string[];
-}[] => [
-	{
-		commandsBeforeRenderingGlyphs: [
-			[Command.FILL_COLOR, colors?.surfaceRaised2 || ''],
-			[Command.RECTANGLE, 0, 0, characterWidth * 3, characterHeight],
-			[Command.FILL_COLOR, colors?.primaryBase || ''],
-		],
-		chars: ['[', ' ', ']'],
-	},
-];
+const INPUT_CHARACTERS = ['[', ' ', ']'] as const;
 
 export const Icon = {
 	INPUT: 0,
@@ -36,48 +20,31 @@ export default function generate(
 	colors: PaletteColors
 ): DrawingCommand[] {
 	const layout = createAtlasLayout(characterWidth, characterHeight, colors);
-
 	return [
 		[Command.RESET_TRANSFORM],
 		[Command.TRANSLATE, layout.icons.x, layout.icons.y],
-		...icons(characterWidth, characterHeight, colors).flatMap<DrawingCommand>(icon => {
-			return [
-				...icon.commandsBeforeRenderingGlyphs,
-				...icon.chars.flatMap<DrawingCommand>(char => {
-					return [
-						...drawCharacter(asciiFont, char, characterWidth, characterHeight),
-						[Command.TRANSLATE, characterWidth, 0],
-					];
-				}),
-			];
-		}),
+		[Command.FILL_COLOR, colors.surfaceRaised2],
+		[Command.RECTANGLE, 0, 0, characterWidth * INPUT_CHARACTERS.length, characterHeight],
+		[Command.FILL_COLOR, colors.primaryBase],
+		...INPUT_CHARACTERS.flatMap<DrawingCommand>(char => [
+			...drawCharacter(asciiFont, char, characterWidth, characterHeight),
+			[Command.TRANSLATE, characterWidth, 0],
+		]),
 	];
 }
 
-function generateIconPositions(characterWidth: number, characterHeight: number, colors?: PaletteColors) {
+export function generateLookup(
+	characterWidth: number,
+	characterHeight: number,
+	colors: PaletteColors
+): Record<IconValue, SpriteCoordinates> {
 	const layout = createAtlasLayout(characterWidth, characterHeight, colors);
-
-	return icons(characterWidth, characterHeight).reduce((acc, current) => {
-		const length = acc.reduce((acc, icon) => acc + icon[2], 0);
-		acc.push([layout.icons.x + length, layout.icons.y, current.chars.length * characterWidth]);
-		return acc;
-	}, [] as number[][]);
+	return {
+		[Icon.INPUT]: {
+			x: layout.icons.x,
+			y: layout.icons.y,
+			spriteWidth: INPUT_CHARACTERS.length * characterWidth,
+			spriteHeight: characterHeight,
+		},
+	};
 }
-
-export const generateLookup = (characterWidth: number, characterHeight: number, colors?: PaletteColors) => {
-	const iconPositions = generateIconPositions(characterWidth, characterHeight, colors);
-
-	return Object.fromEntries(
-		icons(characterWidth, characterHeight).map((icon, index) => {
-			return [
-				index,
-				{
-					x: iconPositions[index][0],
-					y: iconPositions[index][1],
-					spriteWidth: iconPositions[index][2],
-					spriteHeight: characterHeight,
-				},
-			];
-		})
-	) as Record<IconValue, SpriteCoordinates>;
-};

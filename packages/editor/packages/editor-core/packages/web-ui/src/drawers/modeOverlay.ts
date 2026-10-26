@@ -23,6 +23,6 @@ export default function drawModeOverlay(engine: DrawContext, state: State): void
 		(modeHint.length + 2) * state.viewport.vGrid,
 		state.viewport.hGrid
 	);
-	engine.drawText(state.viewport.vGrid, 0, modeHint, state.spriteLookups.fontInkMuted);
+	engine.drawText(state.viewport.vGrid, 0, modeHint, state.spriteLookups.fontMutedBase);
 	engine.endGroup();
 }

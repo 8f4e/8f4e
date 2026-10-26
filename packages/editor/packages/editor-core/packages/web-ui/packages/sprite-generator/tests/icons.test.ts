@@ -60,8 +60,7 @@ describe('icons module', () => {
 			);
 			const colorValues = findAllCommands(commands, Command.FILL_COLOR).map(command => command[1]);
 
-			expect(colorValues).toContain(testPalette.colors.surfaceRaised2);
-			expect(colorValues).toContain(testPalette.colors.primaryReadable);
+			expect(colorValues).toEqual([testPalette.colors.surfaceRaised2, testPalette.colors.primaryBase]);
 		});
 
 		it('draws the input brackets from the ascii font', () => {
@@ -79,17 +78,6 @@ describe('icons module', () => {
 
 			expect(pixels).toContainEqual([Command.PIXEL, 0, 1]);
 			expect(pixels).toContainEqual([Command.PIXEL, 1, 2]);
-		});
-
-		it('handles a missing optional input background color', () => {
-			const colorsWithUndefined = {
-				...testPalette.colors,
-				inputConnectorBackground: undefined as string | undefined,
-			};
-
-			expect(() =>
-				generateIcons(mockFont, characterDimensions8x16.width, characterDimensions8x16.height, colorsWithUndefined)
-			).not.toThrow();
 		});
 	});
 
