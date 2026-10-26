@@ -31,7 +31,7 @@ renderer to this atlas layout. Recording this TODO does not implement the protot
 - Establish how installed sprite identifiers map to glyph codes and primitive kinds; do not assume arbitrary dense
   renderer IDs already carry those meanings.
 - Evaluate the loss of arbitrary source-rectangle support and the complexity of the resulting renderer contract.
-- Retain the R8 atlas, palette texture, 20-byte instance records, draw order, and draw-call count during comparisons.
+- Retain the R8 atlas, palette storage, 20-byte instance records, draw order, and draw-call count during comparisons.
 
 Palette transport, integer instance packing, visible-cell culling, and text-cache changes are separate experiments.
 The mask texture sampling, palette lookup, and blending work remain part of both benchmark variants.

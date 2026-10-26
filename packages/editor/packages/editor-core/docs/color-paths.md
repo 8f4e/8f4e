@@ -95,8 +95,10 @@ brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`,
 The sprite atlas contains color-independent R8 coverage masks: one glyph set, one fully covered fill texel, and one
 background pattern. All palette entries can color text, including `Alpha30/60/90` variants. Background rendering draws
 a `canvasBase` fill and layers the same pattern mask in `canvasDetail2` and `canvasDetail1`, offset by one character cell.
-The vertex shader fetches the selected RGBA8 entry and premultiplies it; the fragment shader applies red-channel mask
-coverage. Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
+The renderer accepts straight-alpha RGBA8 palette bytes and prepares premultiplied float32 colors on changed uploads.
+The vertex shader reads the selected color from a uniform buffer; the fragment shader applies red-channel mask coverage.
+The buffer reserves 256 colors (4 KiB), with 189 active entries using 3,024 bytes from a 756-byte RGBA8 input.
+Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
 
 `@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
 the generated masks and separately resolved palette. Theme changes upload only palette colors and refresh line-rendered wire colors;

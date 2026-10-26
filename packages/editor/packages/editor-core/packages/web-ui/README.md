@@ -65,7 +65,9 @@ The web-ui package reads from the editor state and render projection but does **
 `@8f4e/web-ui-render-projection` package subscribes to editor state changes and precalculates code-cell shape IDs and palette indices.
 Atlas and font changes are explicit and are applied through `loadSpriteAtlas()`. Theme-only changes use `loadPalette()` and retain the atlas and projected glyph IDs. Wire colors are refreshed from
 the same resolved palette. `DrawContext.drawFill()` uses the shared fill mask, `drawText()` uses the shared glyph table,
-and both accept an explicit palette index. Font changes reinstall the glyph table and update character metrics.
+and both accept an explicit palette index. The renderer prepares up to 256 palette colors as premultiplied float32
+values in a 4 KiB uniform buffer, while `loadPalette()` continues accepting the resolved editor palette.
+Font changes reinstall the glyph table and update character metrics.
 
 Input `[ ]` and output `[*]` connectors are composed at runtime from the shared fill and font sprites. Both use a
 three-cell `surfaceRaised2` background; input brackets use `primaryBase`, and output brackets use `secondaryBase`.
