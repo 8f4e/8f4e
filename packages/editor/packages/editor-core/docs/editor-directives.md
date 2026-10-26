@@ -292,7 +292,7 @@ Same as `@wave`, but rendered at quadruple height.
 
 ### `@slider`
 
-Render a slider that writes to a memory address.
+Render a slider that writes to a memory address. Provided by `@8f4e/editor-plugin-slider`, included in the default editor.
 
 ```txt
 ; @slider <memoryAddress> [min] [max] [step]

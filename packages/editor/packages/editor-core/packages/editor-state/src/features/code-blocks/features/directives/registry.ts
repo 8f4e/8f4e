@@ -20,7 +20,6 @@ import homeDirective from './home/plugin';
 import infoDirective from './info/plugin';
 import meterDirective from './meter/plugin';
 import plotDirective from './plot/plugin';
-import sliderDirective from './slider/plugin';
 import stackDirective from './stack/plugin';
 import { normalizeEditorDirectiveRecords } from './utils';
 import { createVerticalSpaceAfterSourceLineAdder } from './verticalSpaceAfterSourceLine';
@@ -38,7 +37,6 @@ export const directiveDefinitions: EditorDirectiveDefinition[] = [
 	meterDirective,
 	barsDirective,
 	plotDirective,
-	sliderDirective,
 	crossfadeDirective,
 	watchDirective,
 	stackDirective,

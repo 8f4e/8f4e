@@ -1,16 +1,20 @@
-import type { DirectiveDerivedState, DirectiveLayoutCallbacks } from '@8f4e/editor-state-types';
-import gapCalculator from '~/features/code-editing/gapCalculator';
-import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
-import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
-import type { SliderDirectiveData } from './data';
-
-type DirectiveLayoutResolver = NonNullable<DirectiveLayoutCallbacks['onBlockLayoutReady']>;
+import { gapCalculator } from '@8f4e/editor-state';
+import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
+import type {
+	CodeBlockGraphicData,
+	DirectiveDerivedState,
+	DirectiveLayoutCallbacks,
+	State,
+} from '@8f4e/editor-state-types';
+import type { SliderDirectiveData } from '../helpers/data';
+import type { Slider } from '../types';
 
 function resolveSliderDirectiveWidget(
 	slider: SliderDirectiveData,
-	graphicData: Parameters<DirectiveLayoutResolver>[0],
-	state: Parameters<DirectiveLayoutResolver>[1],
-	directiveState: DirectiveDerivedState
+	graphicData: CodeBlockGraphicData,
+	state: State,
+	directiveState: DirectiveDerivedState,
+	sliders: Slider[]
 ): void {
 	if (!graphicData.name) {
 		return;
@@ -35,9 +39,10 @@ function resolveSliderDirectiveWidget(
 		}
 	}
 
-	const displayRow = directiveState.displayModel.sourceLineIndexToDisplayRow[slider.lineNumber] ?? slider.lineNumber;
+	const displayRow =
+		directiveState.displayModel.sourceLineIndexToDisplayRow[slider.sourceLineIndex] ?? slider.sourceLineIndex;
 
-	graphicData.widgets.sliders.push({
+	sliders.push({
 		moduleId: memory.target.moduleId,
 		width: graphicData.width - (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
 		height: state.viewport.hGrid * 2,
@@ -46,7 +51,7 @@ function resolveSliderDirectiveWidget(
 		id: memory.memory.id,
 		allocationUnitAddress: memory.memory.allocationUnitAddress,
 		byteAddress: memory.memory.byteAddress,
-		isInteger: memory.memory.isInteger ?? true,
+		isInteger: memory.memory.isInteger,
 		isFloat64: memory.memory.isFloat64,
 		min,
 		max,
@@ -54,10 +59,13 @@ function resolveSliderDirectiveWidget(
 	});
 }
 
-export function createSliderDirectiveLayoutCallbacks(slider: SliderDirectiveData): DirectiveLayoutCallbacks {
+export function createSliderDirectiveLayoutCallbacks(
+	slider: SliderDirectiveData,
+	slidersByBlock: WeakMap<CodeBlockGraphicData, Slider[]>
+): DirectiveLayoutCallbacks {
 	return {
 		onBlockLayoutReady: (graphicData, state, directiveState) => {
-			resolveSliderDirectiveWidget(slider, graphicData, state, directiveState);
+			resolveSliderDirectiveWidget(slider, graphicData, state, directiveState, slidersByBlock.get(graphicData)!);
 		},
 	};
 }

@@ -17,7 +17,6 @@ import drawErrorMessages from './widgets/errorMessages';
 import drawInfoPanels from './widgets/infoPanels';
 import drawMeters from './widgets/meters';
 import drawPlotters from './widgets/plotters';
-import drawSliders from './widgets/sliders';
 
 const corner = '+';
 
@@ -107,7 +106,6 @@ export default function drawModules(
 
 			drawErrorMessages(engine, state, codeBlock);
 			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
-			drawSliders(engine, state, codeBlock, memoryViews);
 			drawCrossfades(engine, state, codeBlock, memoryViews);
 			drawConnectors(engine, state, codeBlock, memoryViews);
 			drawBars(engine, state, codeBlock, memoryViews);

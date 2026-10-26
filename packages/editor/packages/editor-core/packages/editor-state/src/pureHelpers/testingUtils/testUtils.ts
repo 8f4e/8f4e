@@ -110,7 +110,6 @@ export function createMockCodeBlock(
 			inputs: [],
 			outputs: [],
 			debuggers: [],
-			sliders: [],
 			crossfades: [],
 			arrayPlotters: [],
 			arrayBars: [],
@@ -154,8 +153,8 @@ export function deriveDirectiveStateForCode(
  * @returns The item with the matching id, or undefined if not found
  *
  * @example
- * const slider = findWidgetById(mockGraphicData.widgets.sliders, 'slider1');
- * expect(slider).toBeDefined();
+ * const output = findWidgetById(mockGraphicData.widgets.outputs, 'output1');
+ * expect(output).toBeDefined();
  */
 export function findWidgetById<T extends { id: string }>(array: T[], id: string): T | undefined {
 	return array.find(item => item.id === id);

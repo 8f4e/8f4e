@@ -10,11 +10,8 @@ import {
 	runBeforeGraphicDataWidthCalculation,
 	runBlockLayoutReady,
 } from '~/features/code-blocks/features/directives/registry';
-import slider from '~/features/code-blocks/features/directives/slider/interaction';
 import updateInputs from '~/features/code-blocks/features/inputs/updateGraphicData';
 import updateOutputs from '~/features/code-blocks/features/outputs/updateGraphicData';
-import saveDefaults from '~/features/code-blocks/features/sliderDefaultSaver/effect';
-import { getSliderDefaultEdits } from '~/features/code-blocks/features/sliderDefaultSaver/saveDefaults';
 import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import resolveMemoryTarget from '~/pureHelpers/resolveMemoryTarget';
@@ -57,7 +54,6 @@ async function setup() {
 	state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
 	const audio = state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'audio')!;
 	const controls = state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'controls')!;
-	const voice = audio.nestedProjectCodeBlocks!.find(block => block.name === 'voice')!;
 	const store = createStateManager(state);
 	const events = createMockEventDispatcherWithVitest();
 	events.dispatch = (name, payload) => {
@@ -72,7 +68,7 @@ async function setup() {
 	};
 	derive(audio);
 	derive(controls);
-	return { state, audio, controls, voice, store, events, int32, float32, derive };
+	return { state, audio, controls, store, events, int32, float32, derive };
 }
 
 describe('shared exposed memory resolution', () => {
@@ -120,19 +116,11 @@ describe('shared exposed memory resolution', () => {
 		expect(resolveMemoryIdentifier(state, scope, '*input')?.memory).toBe(target);
 	});
 
-	it('shares backing addresses and infers control types and connector direction from backing memory', () => {
-		const { state, audio, derive } = test;
-		const bare = createMockCodeBlock({
-			name: 'audio',
-			code: ['group audio', '; @slider &gain', 'groupEnd'],
-			nestedProjectCodeBlocks: audio.nestedProjectCodeBlocks,
-		});
-		derive(bare);
-		expect(bare.widgets.sliders[0]).toMatchObject({ min: 0, max: 1, isInteger: false });
+	it('shares backing addresses between memory displays and connectors', () => {
+		const { state, audio } = test;
 		updateInputs(audio, state);
 		updateOutputs(audio, state);
-		const gain = audio.widgets.sliders[0];
-		expect(gain).toMatchObject({ moduleId: 'audio/voice', id: 'level', isInteger: false });
+		const gain = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(audio), '&gain')!.memory;
 		expect(audio.widgets.debuggers[0].memory?.allocationUnitAddress).toBe(gain.allocationUnitAddress);
 		expect(audio.widgets.outputs.find(output => output.id === 'gain')?.memory.allocationUnitAddress).toBe(
 			gain.allocationUnitAddress
@@ -144,17 +132,8 @@ describe('shared exposed memory resolution', () => {
 		expect(audio.widgets.arrayMeters[0].memory.memory.allocationUnitAddress).toBe(gain.allocationUnitAddress);
 	});
 
-	it('writes slider and crossfade values to the resolved backing memory', () => {
+	it('writes crossfade values to the resolved backing memory', () => {
 		const { audio, store, events, float32 } = test;
-		const cleanupSlider = slider(store, events);
-		const sliderWidget = audio.widgets.sliders[0];
-		events.dispatch('codeBlockPointerDown', {
-			codeBlock: audio,
-			x: audio.x + sliderWidget.x + sliderWidget.width / 2,
-			y: audio.y + sliderWidget.y + 1,
-		});
-		expect(float32[sliderWidget.allocationUnitAddress]).toBeCloseTo(0.5);
-		cleanupSlider();
 		const cleanupCrossfade = crossfade(store, events);
 		const widget = audio.widgets.crossfades[0];
 		events.dispatch('codeBlockPointerDown', {
@@ -167,36 +146,6 @@ describe('shared exposed memory resolution', () => {
 		cleanupCrossfade();
 	});
 
-	it('saves group sliders into their backing module and preserves interface and unrelated declarations', () => {
-		const { state, audio, voice, controls, store, events, float32 } = test;
-		audio.nestedProjectCodeBlocks!.push(
-			createMockCodeBlock({
-				name: 'voice',
-				projectPath: 'audio',
-				blockType: 'function',
-				code: ['function voice', 'functionEnd'],
-			})
-		);
-		const originalGroup = [...audio.code];
-		const originalControls = [...controls.code];
-		float32[audio.widgets.sliders[0].allocationUnitAddress] = 0.8;
-		saveDefaults(store, events);
-		events.dispatch('saveSliderValuesToCode', { codeBlock: audio });
-		expect(voice.code).toContain('float level 0.8');
-		expect(audio.code).toEqual(originalGroup);
-		expect(controls.code).toEqual(originalControls);
-		expect(state.compilerInputRevision).toBe(1);
-		events.dispatch('saveSliderValuesToCode', { codeBlock: controls });
-		expect(state.compilerInputRevision).toBe(1);
-		float32[audio.widgets.sliders[0].allocationUnitAddress] = 0.6;
-		events.dispatch('saveSliderValuesToCode', { codeBlock: controls });
-		expect(voice.code).toContain('float level 0.6');
-		expect(controls.code).toEqual(originalControls);
-		expect(state.compilerInputRevision).toBe(2);
-		expect(getSliderDefaultEdits(state, audio)).toEqual([]);
-		store.dispose();
-	});
-
 	it('rebinds controls to replacement metadata and removes unresolved aliases', () => {
 		const { state, audio, derive } = test;
 		const replacement = {
@@ -206,11 +155,12 @@ describe('shared exposed memory resolution', () => {
 		};
 		state.compiler.projectMemoryExposuresByGroupPath = { audio: [replacement] };
 		derive(audio);
-		expect(audio.widgets.sliders[0].moduleId).toBe('other/voice');
-		expect(audio.widgets.sliders[0].allocationUnitAddress).toBe(replacement.targetMemory.allocationUnitAddress);
+		expect(resolveMemoryTarget(state, getCodeBlockMemoryScope(audio), 'gain')?.memory).toBe(replacement.targetMemory);
+		expect(audio.widgets.debuggers[0].memory?.allocationUnitAddress).toBe(
+			replacement.targetMemory.allocationUnitAddress
+		);
 		state.compiler.projectMemoryExposuresByGroupPath = {};
 		derive(audio);
-		expect(audio.widgets.sliders).toEqual([]);
 		expect(audio.widgets.debuggers).toEqual([]);
 		expect(resolveMemoryTarget(state, { kind: 'project', groupPath: '' }, 'audio:gain')).toBeUndefined();
 	});

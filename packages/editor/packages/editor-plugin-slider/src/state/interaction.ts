@@ -1,20 +1,16 @@
-import type {
-	CodeBlockGraphicData,
-	EventDispatcher,
-	InternalMouseEvent,
-	Slider,
-	State,
-} from '@8f4e/editor-state-types';
-import type { StateManager } from '@8f4e/state-manager';
-import findSliderWidgetAtViewportCoordinates from './findWidgetAtViewportCoordinates';
+import type { CodeBlockGraphicData, EventDispatcher, InternalMouseEvent, State } from '@8f4e/editor-state-types';
+import type { Slider } from '../types';
 
 interface ActiveSlider {
 	slider: Slider;
 	codeBlock: CodeBlockGraphicData;
 }
 
-export default function slider(store: StateManager<State>, events: EventDispatcher): () => void {
-	const state = store.getState();
+export function registerSliderInteraction(
+	state: State,
+	events: EventDispatcher,
+	slidersByBlock: WeakMap<CodeBlockGraphicData, Slider[]>
+): () => void {
 	let activeSlider: ActiveSlider | null = null;
 
 	const updateSliderValue = (x: number) => {
@@ -43,11 +39,19 @@ export default function slider(store: StateManager<State>, events: EventDispatch
 			(slider.step !== undefined && !Number.isInteger(slider.step));
 		const shouldWriteInteger = slider.isInteger && !hasFloatRange;
 
-		state.callbacks?.setWordInMemory?.(slider.allocationUnitAddress, value, shouldWriteInteger);
+		state.callbacks.setWordInMemory?.(slider.allocationUnitAddress, value, shouldWriteInteger);
 	};
 
 	const onCodeBlockPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
-		const slider = findSliderWidgetAtViewportCoordinates(state, codeBlock, x, y);
+		const slider = slidersByBlock
+			.get(codeBlock)
+			?.find(
+				slider =>
+					x >= codeBlock.x + slider.x - state.viewport.x &&
+					x <= codeBlock.x + slider.x + slider.width - state.viewport.x &&
+					y >= codeBlock.y + slider.y - state.viewport.y &&
+					y <= codeBlock.y + slider.y + slider.height - state.viewport.y
+			);
 
 		if (!slider) {
 			return;
@@ -77,7 +81,7 @@ export default function slider(store: StateManager<State>, events: EventDispatch
 	};
 
 	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
-	events.on('mousemove', onMouseMove);
+	events.on('mousemove', onMouseMove, { capture: true });
 	events.on('mouseup', onMouseUp);
 
 	return () => {

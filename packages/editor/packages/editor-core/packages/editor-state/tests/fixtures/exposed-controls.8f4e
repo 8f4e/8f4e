@@ -8,7 +8,6 @@ expose gate &voice:gate
 expose gateAlias &voice:gate
 expose input &voice:pointer
 expose keys &notesData:notes
-; @slider &gain 0 1 0.01
 ; @watch gain
 ; @meter gain 0 1
 ; @plot &keys count(keys)
@@ -43,7 +42,6 @@ groupEnd
 
 module controls
 float level 0.1
-; @slider &audio:gain 0 1 0.01
 ; @watch audio:gain
 moduleEnd
 entryEnd

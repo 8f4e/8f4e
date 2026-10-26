@@ -18,11 +18,11 @@ describe('remove intermodular memory connections from code', () => {
 	it('preserves inline comments and directives', () => {
 		const result = removeIntermodularMemoryConnectionsFromCode([
 			'module synth',
-			'float foo &module:bar ; @slider &foo 0 1 0.01',
+			'float foo &module:bar ; @customControl &foo 0 1 0.01',
 			'moduleEnd',
 		]);
 
-		expect(result).toEqual(['module synth', 'float foo ; @slider &foo 0 1 0.01', 'moduleEnd']);
+		expect(result).toEqual(['module synth', 'float foo ; @customControl &foo 0 1 0.01', 'moduleEnd']);
 	});
 
 	it('removes intermodular array defaults while preserving array size and local defaults', () => {
