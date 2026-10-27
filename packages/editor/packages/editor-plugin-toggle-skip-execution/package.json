@@ -25,7 +25,7 @@
     "@8f4e/config": "*",
     "@8f4e/editor-state-testing": "*",
     "@8f4e/state-manager": "*",
-    "vitest": "4.1.7",
+    "vitest": "4.1.11",
     "@8f4e/web-ui": "*"
   }
 }
