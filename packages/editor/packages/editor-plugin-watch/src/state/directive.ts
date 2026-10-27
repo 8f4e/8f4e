@@ -19,7 +19,7 @@ export function createWatchDirective(
 			if (!data) return;
 			draft.layoutCallbacks.push({
 				onBlockLayoutReady: (graphicData, state, directiveState) => {
-					const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(graphicData), data.id);
+					const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(graphicData), data.memoryId);
 					if (!memory) {
 						return;
 					}
@@ -37,8 +37,8 @@ export function createWatchDirective(
 						y: gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid,
 						memory: memory.memory,
 						showAddress: memory.showAddress,
-						showEndAddress: memory.showEndAddress,
-						displayFormat: memory.displayFormat,
+						showEndAddress: data.showEndAddress,
+						displayFormat: data.displayFormat,
 						bufferPointer: memory.bufferPointer,
 					});
 				},

@@ -57,9 +57,7 @@ export interface InfoPanel {
 export interface MemoryIdentifier {
 	memory: PlannedMemoryDeclaration;
 	showAddress: boolean;
-	showEndAddress: boolean;
 	bufferPointer: number;
-	displayFormat: 'decimal' | 'binary' | 'hex';
 }
 
 export type TypedValueKind = 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'float32' | 'float64';

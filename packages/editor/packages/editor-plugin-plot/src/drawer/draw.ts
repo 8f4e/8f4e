@@ -103,7 +103,11 @@ export default function drawPlot(
 			typeof length === 'number'
 				? length
 				: memoryViews.int32[length.memory.allocationUnitAddress + length.bufferPointer];
-		const sampleCount = Math.min(arrayLength || startAddress.memory.allocationUnitCount, maxPlotterWidth);
+		if (arrayLength <= 0) {
+			engine.endGroup();
+			continue;
+		}
+		const sampleCount = Math.min(arrayLength, maxPlotterWidth);
 		const valueRange = maxValue - minValue;
 		const columnWidth = Math.max(1, Math.floor(maxPlotterWidth / Math.max(sampleCount, 1)));
 		const isDense = arrayLength > maxPlotterWidth;

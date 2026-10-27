@@ -6,7 +6,6 @@ export interface Bars {
 	x: number;
 	y: number;
 	minValue: number;
-	maxValue: number;
 	inverseValueRange: number;
 	staticBaseValueIndex?: number;
 	staticColumnLayout?: Array<{

@@ -28,7 +28,6 @@ function createBarsWidget(overrides: Partial<Bars> = {}): Bars {
 		width: 8,
 		height: 8,
 		minValue: 0,
-		maxValue: 1,
 		inverseValueRange: 1,
 		staticBaseValueIndex: 0,
 		staticColumnLayout: [
@@ -39,9 +38,7 @@ function createBarsWidget(overrides: Partial<Bars> = {}): Bars {
 		],
 		startAddress: {
 			showAddress: true,
-			showEndAddress: false,
 			bufferPointer: 0,
-			displayFormat: 'decimal',
 			memory: { byteAddress: 0, allocationUnitAddress: 0, allocationUnitCount: 4 },
 		} as never,
 		baseSampleShift: 2,

@@ -17,6 +17,8 @@ and drawing hooks. Feature data lives in a WeakMap created by each installation 
 ```
 
 References use the public editor-state memory helpers, including memory exposed by project groups.
+When the element count comes from runtime memory, a zero or negative count draws no samples. Layout space remains
+allocated by the directive so subsequent source lines stay in place.
 
 Cleanup unregisters the directive and drawer. Omit the plugin to remove its behavior and layout space.
 

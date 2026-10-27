@@ -1,17 +1,26 @@
-import type { EventDispatcher } from '@8f4e/editor-state-types';
+import type { EventDispatcher, EventSubscriptionOptions } from '@8f4e/editor-state-types';
 
 export function createEvents(): EventDispatcher {
-	const listeners = new Map<string, Set<(event: unknown) => void>>();
+	const listeners = new Map<string, Array<{ callback: (event: unknown) => void; capture: boolean }>>();
 	return {
-		on: (name, listener) => {
-			if (!listeners.has(name)) listeners.set(name, new Set());
-			listeners.get(name)!.add(listener as (event: unknown) => void);
+		on: (name, callback, options: EventSubscriptionOptions = {}) => {
+			if (!listeners.has(name)) listeners.set(name, []);
+			listeners.get(name)!.push({ callback: callback as (event: unknown) => void, capture: options.capture ?? false });
 		},
-		off: (name, listener) => {
-			listeners.get(name)?.delete(listener as (event: unknown) => void);
+		off: (name, callback) => {
+			listeners.set(
+				name,
+				(listeners.get(name) ?? []).filter(item => item.callback !== callback)
+			);
 		},
 		dispatch: (name, event) => {
-			for (const listener of listeners.get(name) ?? []) listener(event);
+			for (const capture of [true, false]) {
+				for (const item of listeners.get(name) ?? []) {
+					if (item.capture !== capture) continue;
+					if ((event as { stopPropagation?: boolean } | undefined)?.stopPropagation) return;
+					item.callback(event);
+				}
+			}
 		},
 	};
 }

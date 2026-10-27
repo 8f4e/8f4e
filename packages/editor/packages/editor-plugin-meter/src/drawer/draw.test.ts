@@ -39,9 +39,7 @@ function createMeterWidget(overrides: Partial<Meter> = {}): Meter {
 		staticValueIndex: 0,
 		memory: {
 			showAddress: false,
-			showEndAddress: false,
 			bufferPointer: 0,
-			displayFormat: 'decimal',
 			memory: {
 				byteAddress: 0,
 				allocationUnitAddress: 0,

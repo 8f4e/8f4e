@@ -62,6 +62,31 @@ describe('watch plugin', () => {
 			expect.any(Number)
 		);
 	});
+	it('renders an invalid marker for out-of-range decimal and hexadecimal indices', async () => {
+		const test = await setup(plugin, [
+			'module audio',
+			'int value 7',
+			'; @watch value[65536]',
+			'; @watch 0xvalue[65536]',
+			'moduleEnd',
+		]);
+		test.render();
+		expect(test.draw.drawText).toHaveBeenCalledTimes(2);
+		expect(test.draw.drawText).toHaveBeenNthCalledWith(
+			1,
+			expect.any(Number),
+			expect.any(Number),
+			'?',
+			expect.any(Number)
+		);
+		expect(test.draw.drawText).toHaveBeenNthCalledWith(
+			2,
+			expect.any(Number),
+			expect.any(Number),
+			'?',
+			expect.any(Number)
+		);
+	});
 	it('resolves exposed memory and drops stale values after a metadata replacement', async () => {
 		const test = await setup(plugin, exposedSource);
 		test.render();

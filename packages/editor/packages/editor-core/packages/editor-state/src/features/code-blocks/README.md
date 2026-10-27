@@ -96,8 +96,8 @@ canonical. Local module declarations and group exposures remain distinct even wh
 Widgets, connectors, and other code-block consumers use `getCodeBlockMemoryScope` to convert graphical blocks at the
 editor boundary. Configuration and renderer consumers construct scopes from their known project paths or canonical
 module IDs. `resolveMemoryTarget` handles target lookup using these explicit scopes, and `resolveMemoryIdentifier`
-adds address operators, dereferencing, indexing, and display formats. The resolvers accept no graphical blocks or
-implicit string scopes.
+adds address operators, dereferencing, and indexing. The watch plugin owns binary/hex formatting prefixes and
+end-address display syntax. The resolvers accept no graphical blocks or implicit string scopes.
 
 ## References
 

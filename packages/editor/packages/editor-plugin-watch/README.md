@@ -18,6 +18,8 @@ and drawing hooks. Feature data lives in a WeakMap created by each installation 
 ```
 
 Watch also accepts `@w`; inline directives can infer the memory declaration on the same line.
+The plugin parses `0b`/`0x` display prefixes and the trailing `&` end-address form before asking core to resolve
+the memory reference. Formatting choices remain private to watch.
 
 The browser host supplies `prefersReducedMotion: () => boolean` to the factory. The plugin reads it when drawing; it does not access browser globals.
 

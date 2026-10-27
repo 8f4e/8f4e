@@ -36,11 +36,13 @@ describe('plot plugin', () => {
 			'; @plot pointer length 0 3',
 			'moduleEnd',
 		]);
-		test.render();
-		const before = vi.mocked(test.draw.drawFill).mock.calls.length;
-		test.memoryViews.int32[test.compiled.memoryPlan.modules.audio.memory.length.allocationUnitAddress] = 1;
-		test.render();
-		expect(vi.mocked(test.draw.drawFill).mock.calls.length).toBeLessThan(before);
+		const lengthAddress = test.compiled.memoryPlan.modules.audio.memory.length.allocationUnitAddress;
+		for (const length of [4, 0, 1]) {
+			test.memoryViews.int32[lengthAddress] = length;
+			test.render();
+			const points = vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.onDarkAccent);
+			expect(points).toHaveLength(length);
+		}
 	});
 	it('resolves arrays exposed by a project group', async () => {
 		const test = await setup(plotPlugin, exposedSource);

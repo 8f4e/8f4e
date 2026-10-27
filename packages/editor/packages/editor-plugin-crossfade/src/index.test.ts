@@ -1,3 +1,4 @@
+import type { EditorPlugin } from '@8f4e/editor-core';
 import { describe, expect, it, vi } from 'vitest';
 import { exposedSource } from './__tests__/exposed-source';
 import { setup } from './__tests__/setup';
@@ -26,6 +27,31 @@ describe('crossfade plugin', () => {
 		test.setWordInMemory.mockClear();
 		test.events.dispatch('mousemove', { ...drag, stopPropagation: false });
 		expect(test.setWordInMemory).not.toHaveBeenCalled();
+	});
+	it('consumes drag movement before ordinary listeners registered earlier', async () => {
+		const onMove = vi.fn();
+		const plugin: EditorPlugin = {
+			id: 'crossfade-with-ordinary-listener',
+			setup: context => {
+				context.events.on('mousemove', onMove);
+				const dispose = crossfadePlugin.setup(context);
+				return () => {
+					dispose();
+					context.events.off('mousemove', onMove);
+				};
+			},
+		};
+		const test = await setup(plugin, source);
+		test.render();
+		const [localX, localY] = vi.mocked(test.draw.startGroup).mock.calls[0];
+		const x = test.block.x + localX - test.state.viewport.x;
+		const y = test.block.y + localY + 1 - test.state.viewport.y;
+		test.events.dispatch('mousedown', { x, y, stopPropagation: false });
+		test.events.dispatch('mousemove', { x: x + 20, y, movementX: 20, movementY: 0, stopPropagation: false });
+		expect(onMove).not.toHaveBeenCalled();
+		test.events.dispatch('mouseup');
+		test.events.dispatch('mousemove', { x: x + 40, y, movementX: 20, movementY: 0, stopPropagation: false });
+		expect(onMove).toHaveBeenCalledOnce();
 	});
 	it('writes to the backing addresses of exposed project-group memory', async () => {
 		const test = await setup(crossfadePlugin, exposedSource);

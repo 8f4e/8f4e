@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createMemory } from '../__tests__/memory';
-import formatWatchValue, { formatWatchValueAtAddress } from './formatWatchValue';
+import formatWatchValue from './formatWatchValue';
 
 function createMemoryViews() {
 	const buffer = new ArrayBuffer(8);
@@ -28,54 +28,22 @@ describe('formatWatchValue', () => {
 		const memoryViews = createMemoryViews();
 		memoryViews.uint8.set([0x0f, 0x00]);
 
-		expect(
-			formatWatchValue(memoryViews, createMemory({ elementWordSize: 2, allocationUnitCount: 0.5 }), 0, 'hex')
-		).toBe('00 0f');
+		expect(formatWatchValue(memoryViews, createMemory({ elementWordSize: 2 }), 0, 'hex')).toBe('00 0f');
 	});
 
 	it('formats single-byte hex values as a padded byte', () => {
 		const memoryViews = createMemoryViews();
 		memoryViews.uint8[0] = 0x0a;
 
-		expect(
-			formatWatchValue(memoryViews, createMemory({ elementWordSize: 1, allocationUnitCount: 0.25 }), 0, 'hex')
-		).toBe('0a');
+		expect(formatWatchValue(memoryViews, createMemory({ elementWordSize: 1 }), 0, 'hex')).toBe('0a');
 	});
 
-	it('renders an invalid marker for a negative dereferenced byte address', () => {
-		const memoryViews = createMemoryViews();
+	it.each(['decimal', 'binary', 'hex'] as const)(
+		'renders an invalid marker for an out-of-range %s watch index',
+		format => {
+			const memoryViews = createMemoryViews();
 
-		expect(
-			formatWatchValueAtAddress(
-				memoryViews,
-				-1,
-				-0.25,
-				{ elementWordSize: 1, isInteger: true, isUnsigned: true },
-				'decimal'
-			)
-		).toBe('?');
-	});
-
-	it('renders an invalid marker for an out-of-range watch index', () => {
-		const memoryViews = createMemoryViews();
-
-		expect(formatWatchValue(memoryViews, createMemory({ elementWordSize: 4 }), 2, 'decimal')).toBe('?');
-	});
-
-	it('renders an invalid marker for misaligned and truncated values', () => {
-		const memoryViews = createMemoryViews();
-
-		expect(
-			formatWatchValueAtAddress(
-				memoryViews,
-				1,
-				0,
-				{ elementWordSize: 2, isInteger: true, isUnsigned: false },
-				'decimal'
-			)
-		).toBe('?');
-		expect(
-			formatWatchValueAtAddress(memoryViews, 4, 1, { elementWordSize: 8, isInteger: false, isUnsigned: false }, 'hex')
-		).toBe('?');
-	});
+			expect(formatWatchValue(memoryViews, createMemory({ elementWordSize: 4 }), 2, format)).toBe('?');
+		}
+	);
 });

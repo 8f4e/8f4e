@@ -8,24 +8,6 @@ function clamp(value: number, min: number, max: number): number {
 	return Math.max(min, Math.min(value, max));
 }
 
-function getMeterValueIndex(meter: Meter, baseSampleShift: 0 | 1 | 2 | 3, memoryViews: MemoryViews): number {
-	if (meter.staticValueIndex !== undefined) {
-		return meter.staticValueIndex;
-	}
-
-	const { memory } = meter;
-
-	if (memory.showAddress) {
-		return (memory.memory.byteAddress >> baseSampleShift) + memory.bufferPointer;
-	}
-
-	if (memory.memory.pointerDepth > 0) {
-		return memoryViews.int32[memory.memory.allocationUnitAddress + memory.bufferPointer] >> baseSampleShift;
-	}
-
-	return (memory.memory.byteAddress >> baseSampleShift) + memory.bufferPointer;
-}
-
 function drawSegment(
 	engine: DrawContext,
 	startX: number,
@@ -69,11 +51,12 @@ export default function drawMeter(engine: DrawContext, values: Meter[], memoryVi
 		engine.startGroup(x, y);
 
 		const values = memoryViews[valueType];
-		const value = values[getMeterValueIndex(meter, baseSampleShift, memoryViews)] ?? minValue;
+		const valueIndex =
+			meter.staticValueIndex ??
+			memoryViews.int32[meter.memory.memory.allocationUnitAddress + meter.memory.bufferPointer] >> baseSampleShift;
+		const value = values[valueIndex] ?? minValue;
 		const normalized = isBipolar
-			? amplitudeLimit === 0
-				? 0
-				: clamp(Math.abs(value) / amplitudeLimit, 0, 1)
+			? clamp(Math.abs(value) / amplitudeLimit, 0, 1)
 			: clamp((value - minValue) * inverseValueRange, 0, 1);
 		const fillWidth = Math.round(normalized * width);
 		const overloaded = isBipolar ? Math.abs(value) > amplitudeLimit : value < minValue || value > maxValue;

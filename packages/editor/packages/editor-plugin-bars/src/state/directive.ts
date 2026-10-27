@@ -10,10 +10,6 @@ import { createBarsDirectiveData } from '../helpers/data';
 import type { Bars } from '../types';
 
 function createStaticColumnLayout(width: number, length: number) {
-	if (length <= 0) {
-		return [];
-	}
-
 	const columnCount = Math.min(length, width);
 	const columnWidth = Math.max(1, Math.floor(width / Math.max(columnCount, 1)));
 
@@ -72,7 +68,6 @@ export function createBarsDirective(barsByBlock: WeakMap<CodeBlockGraphicData, B
 						length,
 						valueType: valueSpec.valueType,
 						minValue,
-						maxValue,
 					});
 				},
 			});

@@ -2,8 +2,10 @@ import { ArgumentType, isMemoryDeclarationLine } from '@8f4e/language-spec';
 import { parseLine } from '@8f4e/tokenizer';
 
 export interface WatchDirectiveData {
-	id: string;
+	memoryId: string;
 	lineNumber: number;
+	displayFormat: 'decimal' | 'binary' | 'hex';
+	showEndAddress: boolean;
 }
 
 function applyWatchTemplate(template: string, inferredId: string): string | undefined {
@@ -86,9 +88,14 @@ export function createWatchDirectiveData(
 	if (!id) {
 		return undefined;
 	}
+	const displayFormat = id.startsWith('0b') ? 'binary' : id.startsWith('0x') ? 'hex' : 'decimal';
+	const formattedId = displayFormat === 'decimal' ? id : id.slice(2);
+	const showEndAddress = formattedId.endsWith('&');
 
 	return {
-		id,
+		memoryId: showEndAddress ? formattedId.slice(0, -1) : formattedId,
 		lineNumber,
+		displayFormat,
+		showEndAddress,
 	};
 }

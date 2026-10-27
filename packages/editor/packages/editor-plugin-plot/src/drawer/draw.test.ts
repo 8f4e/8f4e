@@ -39,8 +39,6 @@ describe('drawPlotters', () => {
 				y: 0,
 				startAddress: {
 					showAddress: true,
-					showEndAddress: false,
-					displayFormat: 'decimal',
 					bufferPointer: 0,
 					memory: createMemory({ byteAddress: 0, allocationUnitAddress: 0, allocationUnitCount: 4 }),
 				},
@@ -77,8 +75,6 @@ describe('drawPlotters', () => {
 				y: 0,
 				startAddress: {
 					showAddress: true,
-					showEndAddress: false,
-					displayFormat: 'decimal',
 					bufferPointer: 0,
 					memory: createMemory({ byteAddress: 0, allocationUnitAddress: 0, allocationUnitCount: 4 }),
 				},
@@ -112,8 +108,6 @@ describe('drawPlotters', () => {
 				y: 0,
 				startAddress: {
 					showAddress: true,
-					showEndAddress: false,
-					displayFormat: 'decimal',
 					bufferPointer: 0,
 					memory: createMemory({ byteAddress: 0, allocationUnitAddress: 0, allocationUnitCount: 24 }),
 				},
