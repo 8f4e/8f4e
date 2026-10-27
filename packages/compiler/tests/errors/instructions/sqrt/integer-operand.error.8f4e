@@ -1,0 +1,8 @@
+8f4e/v1
+
+entry main
+module integerSqrtOperand
+push 4
+sqrt
+moduleEnd
+entryEnd
