@@ -25,6 +25,27 @@ describe('remove intermodular memory connections from code', () => {
 		expect(result).toEqual(['module synth', 'float foo ; @customControl &foo 0 1 0.01', 'moduleEnd']);
 	});
 
+	it('preserves quoted semicolons and escaped quotes while removing a default', () => {
+		const result = removeIntermodularMemoryConnectionsFromCode([
+			'module synth',
+			'int label "a; \\"b\\"" &source:value ; keep this comment',
+			'moduleEnd',
+		]);
+
+		expect(result).toEqual(['module synth', 'int label "a; \\"b\\"" ; keep this comment', 'moduleEnd']);
+	});
+
+	it('leaves incomplete source alone while disconnecting other declarations', () => {
+		const result = removeIntermodularMemoryConnectionsFromCode([
+			'module synth',
+			'int unfinished "',
+			'float foo &source:value',
+			'moduleEnd',
+		]);
+
+		expect(result).toEqual(['module synth', 'int unfinished "', 'float foo', 'moduleEnd']);
+	});
+
 	it('removes intermodular array defaults while preserving array size and local defaults', () => {
 		const result = removeIntermodularMemoryConnectionsFromCode([
 			'module synth',

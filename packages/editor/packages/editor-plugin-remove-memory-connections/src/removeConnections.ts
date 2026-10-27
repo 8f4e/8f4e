@@ -5,13 +5,14 @@ import {
 	isArrayMemoryDeclarationLine,
 	isScalarMemoryDeclarationLine,
 } from '@8f4e/language-spec';
-import { parseLine } from '@8f4e/tokenizer';
+import { parseInstructionTokens, parseLine, SyntaxRulesError } from '@8f4e/tokenizer';
 
 function parseSourceLine(line: string, lineNumber: number): CompilerASTLine | undefined {
 	try {
 		return parseLine(line, lineNumber);
-	} catch {
-		return undefined;
+	} catch (error) {
+		if (error instanceof SyntaxRulesError) return undefined;
+		throw error;
 	}
 }
 
@@ -42,49 +43,6 @@ function splitComment(line: string): { body: string; comment?: string } {
 	}
 
 	return { body: line };
-}
-
-function tokenizeInstructionBody(body: string): string[] {
-	const tokens: string[] = [];
-	let index = 0;
-
-	while (index < body.length) {
-		if (/\s/.test(body[index])) {
-			index++;
-			continue;
-		}
-
-		if (body[index] === '"') {
-			let token = '"';
-			index++;
-			while (index < body.length && body[index] !== '"') {
-				if (body[index] === '\\' && index + 1 < body.length) {
-					token += body[index] + body[index + 1];
-					index += 2;
-				} else {
-					token += body[index];
-					index++;
-				}
-			}
-			if (index < body.length) {
-				token += '"';
-				index++;
-			}
-			tokens.push(token);
-			continue;
-		}
-
-		let token = '';
-		while (index < body.length && !/\s/.test(body[index])) {
-			token += body[index];
-			index++;
-		}
-		if (token) {
-			tokens.push(token);
-		}
-	}
-
-	return tokens;
 }
 
 function getMemoryDefaultArgumentStartIndex(parsedLine: CompilerASTLine): number | undefined {
@@ -139,7 +97,9 @@ function removeIntermodularMemoryConnectionsFromLine(line: string, lineNumber: n
 
 	const { body, comment } = splitComment(line);
 	const leadingWhitespace = body.match(/^\s*/)?.[0] ?? '';
-	const keptTokens = tokenizeInstructionBody(body).filter((_token, tokenIndex) => !removedTokenIndexes.has(tokenIndex));
+	const keptTokens = parseInstructionTokens(body, lineNumber).filter(
+		(_token, tokenIndex) => !removedTokenIndexes.has(tokenIndex)
+	);
 	const updatedLine = `${leadingWhitespace}${keptTokens.join(' ')}`;
 
 	return comment !== undefined ? `${updatedLine} ;${comment}` : updatedLine;
@@ -149,7 +109,7 @@ export function removeIntermodularMemoryConnectionsFromCode(code: string[]): str
 	let didUpdate = false;
 	const updatedCode = code.map((line, index) => {
 		const updatedLine = removeIntermodularMemoryConnectionsFromLine(line, index + 1);
-		if (updatedLine === undefined || updatedLine === line) {
+		if (updatedLine === undefined) {
 			return line;
 		}
 

@@ -6,10 +6,12 @@ import { meterPlugin } from '@8f4e/editor-plugin-meter';
 import { pianoPlugin } from '@8f4e/editor-plugin-piano';
 import { plotPlugin } from '@8f4e/editor-plugin-plot';
 import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
+import { removeMemoryConnectionsPlugin } from '@8f4e/editor-plugin-remove-memory-connections';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { sliderPlugin } from '@8f4e/editor-plugin-slider';
 import { createStackPlugin } from '@8f4e/editor-plugin-stack';
 import { switchPlugin } from '@8f4e/editor-plugin-switch';
+import { toggleFavoritePlugin } from '@8f4e/editor-plugin-toggle-favorite';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
 import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
@@ -37,6 +39,8 @@ export function createDefaultEditorPlugins(options: {
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
 		toggleSkipExecutionPlugin,
+		toggleFavoritePlugin,
+		removeMemoryConnectionsPlugin,
 		switchPlugin,
 		buttonPlugin,
 		wavePlugin,

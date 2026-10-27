@@ -2,7 +2,6 @@ import type { CodeBlockGraphicData, ContextMenuItem, State } from '@8f4e/editor-
 import { documentBlockInstructionByType } from '@8f4e/language-spec';
 import { isSkipExecutionDirective } from '@8f4e/tokenizer';
 import { getGroupBlocks, getGroupModuleBlocks } from '../../code-blocks/features/group/getGroupBlocks';
-import { hasIntermodularMemoryConnections } from '../../code-blocks/features/memoryConnectionRemover/removeConnections';
 
 const functionBlockType = documentBlockInstructionByType.function.type;
 const moduleBlockType = documentBlockInstructionByType.module.type;
@@ -26,10 +25,6 @@ export const moduleMenu = (
 	}
 
 	const isDisabled = codeBlock.disabled;
-
-	// Check if code block has ; @favorite directive
-	const hasFavoriteDirective = codeBlock.isFavorite;
-	const hasMemoryConnections = hasIntermodularMemoryConnections(codeBlock.code);
 
 	// Check if code block has a group name and compute group skip/nonstick status
 	const groupName = codeBlock.groupName;
@@ -133,19 +128,6 @@ export const moduleMenu = (
 								},
 							]
 						: []),
-					{
-						title: hasFavoriteDirective ? 'Unfavorite' : 'Favorite',
-						action: 'toggleFavoriteDirective',
-						payload: { codeBlock },
-						close: true,
-					},
-					{
-						title: 'Remove connections',
-						action: 'removeConnections',
-						payload: { codeBlock },
-						close: true,
-						disabled: !hasMemoryConnections,
-					},
 				]
 			: []),
 		{

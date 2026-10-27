@@ -110,6 +110,12 @@ The execution-toggle plugin owns the Skip/Unskip menu item and its action. The t
 layout, animation, and overlay drawing, with its state private to each installation. Group execution toggling and
 nested block shading remain built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
 
+The favorite-toggle plugin owns Favorite/Unfavorite editing and its block-menu item. Favorite directive derivation
+and Jump to navigation remain in core. The memory-connection-removal plugin owns its block-menu item, enabled
+state, and source transformation for disconnecting intermodular memory defaults. Both receive the clicked block
+through their action payload and respect edit mode; their menu entries disappear when the plugins are omitted.
+The public `removeDirective` helper edits generic directive comments without coupling core to either action.
+
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
 tab-aware text measurement, module identity, and compiled-function lookup helpers. Its `/memory` entry
 exports memory scope, identifier, element-count, and typed-value resolution, plus `getMemoryDefaultEdits` for rewriting

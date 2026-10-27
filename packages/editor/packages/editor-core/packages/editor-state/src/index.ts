@@ -17,7 +17,6 @@ import codeBlockNavigation from './features/code-blocks/features/codeBlockNaviga
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
-import favoriteToggler from './features/code-blocks/features/favoriteToggler/effect';
 import groupCopier from './features/code-blocks/features/group/copier/effect';
 import groupDeleter from './features/code-blocks/features/group/deleter/effect';
 import groupNonstickToggler from './features/code-blocks/features/group/nonstickToggler/effect';
@@ -25,7 +24,6 @@ import groupRemover from './features/code-blocks/features/group/remover/effect';
 import groupRowAligner from './features/code-blocks/features/group/rowAligner/effect';
 import groupSkipExecutionToggler from './features/code-blocks/features/group/skipExecutionToggler/effect';
 import groupUngroupper from './features/code-blocks/features/group/ungroupper/effect';
-import memoryConnectionRemover from './features/code-blocks/features/memoryConnectionRemover/effect';
 import parsedDirectivesUpdater from './features/code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
 import codeEditing from './features/code-editing/effect';
@@ -107,13 +105,11 @@ export default function init(
 	registerEffect(projectImport(store, events));
 	registerEffect(codeBlockDragger(store, events));
 	registerEffect(codeBlockNavigation(store, events));
-	registerEffect(memoryConnectionRemover(store, events));
 	registerEffect(viewport(store, events));
 	registerEffect(codeBlockCreator(store, events));
 	registerEffect(groupSkipExecutionToggler(store, events));
 	registerEffect(groupNonstickToggler(store, events));
 	registerEffect(groupCopier(store, events));
-	registerEffect(favoriteToggler(store, events));
 	registerEffect(groupRemover(store, events));
 	registerEffect(groupUngroupper(store, events));
 	registerEffect(groupDeleter(store, events));
@@ -151,6 +147,7 @@ export default function init(
 }
 
 export { navigateToCodeBlockInDirection } from './features/code-blocks/features/codeBlockNavigation/effect';
+export { removeDirective } from './features/code-blocks/features/directiveEditing';
 export { parseEditorDirectives } from './features/code-blocks/features/directives/utils';
 // Export helper functions
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';

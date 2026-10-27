@@ -49,7 +49,9 @@
     "@8f4e/editor-plugin-stack": "*",
     "@8f4e/editor-plugin-bars": "*",
     "@8f4e/editor-plugin-project-export": "*",
-    "@8f4e/editor-plugin-wasm-export": "*"
+    "@8f4e/editor-plugin-wasm-export": "*",
+    "@8f4e/editor-plugin-toggle-favorite": "*",
+    "@8f4e/editor-plugin-remove-memory-connections": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

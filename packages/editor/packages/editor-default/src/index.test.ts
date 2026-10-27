@@ -54,6 +54,8 @@ describe('default editor plugins', () => {
 				.plugins?.map(plugin => plugin.id)
 		).toEqual([
 			'toggle-skip-execution',
+			'toggle-favorite',
+			'remove-memory-connections',
 			'switch',
 			'button',
 			'wave',

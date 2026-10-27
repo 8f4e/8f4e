@@ -39,6 +39,8 @@ Hosts may also provide a custom `Storage` implementation or an
 `initialProjectUrl`; interpreting page URLs remains the host's responsibility.
 
 The default composition includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
+`@8f4e/editor-plugin-toggle-favorite` for Favorite/Unfavorite editing,
+`@8f4e/editor-plugin-remove-memory-connections` for disconnecting intermodular memory defaults,
 `@8f4e/editor-plugin-switch` for the switch widget, `@8f4e/editor-plugin-button` for momentary buttons,
 `@8f4e/editor-plugin-wave` for waveform displays, `@8f4e/editor-plugin-piano` for piano keyboards,
 `@8f4e/editor-plugin-slider` for sliders,

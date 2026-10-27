@@ -21,3 +21,5 @@
 
 - Compose meter, plot, bars, crossfade, watch, and stack with the default plugin set. Supply watch/stack factories
   with a live reduced-motion preference from the browser; install their overlays before tooltips.
+- Include `toggleFavoritePlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Core does
+  not install these editing actions or their menus.
