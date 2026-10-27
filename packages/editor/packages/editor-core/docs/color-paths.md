@@ -120,6 +120,8 @@ Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette la
 
 Web-ui owns the background, line, and RGBA texture render plugins under `src/plugins/`, including their shared WebGL
 setup helpers and resource lifetimes. Glugglugglug supplies sprite rendering and the generic render-hook contract.
+RGBA overlays establish their sampler binding and tightly packed pixel-upload state after raw hooks, including frames
+with no sprite pass. Their nearest filtering and straight-alpha uploads are independent of state left by other passes.
 
 `@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
 the generated masks and separately resolved palette. Theme changes update palette colors, the background's three

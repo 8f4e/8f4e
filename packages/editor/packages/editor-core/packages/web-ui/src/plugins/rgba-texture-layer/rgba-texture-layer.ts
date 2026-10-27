@@ -99,7 +99,14 @@ export class RgbaTextureLayer {
 		if (this.texture === null) this.texture = requireResource(gl.createTexture(), 'RGBA8 overlay texture');
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.texture);
+		gl.bindBuffer(gl.PIXEL_UNPACK_BUFFER, null);
 		gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
+		gl.pixelStorei(gl.UNPACK_ROW_LENGTH, 0);
+		gl.pixelStorei(gl.UNPACK_SKIP_PIXELS, 0);
+		gl.pixelStorei(gl.UNPACK_SKIP_ROWS, 0);
+		gl.pixelStorei(gl.UNPACK_IMAGE_HEIGHT, 0);
+		gl.pixelStorei(gl.UNPACK_SKIP_IMAGES, 0);
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -120,6 +127,7 @@ export class RgbaTextureLayer {
 		prepareRenderPass(gl, this.program, this.geometry.vertexArray);
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.texture);
+		gl.bindSampler(0, null);
 		gl.uniform1i(this.textureLocation, 0);
 		gl.uniform2f(this.resolutionLocation, gl.drawingBufferWidth, gl.drawingBufferHeight);
 		gl.uniform4f(this.rectangleLocation, x, y, width, height);
