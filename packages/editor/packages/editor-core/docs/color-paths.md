@@ -109,7 +109,9 @@ background in a separate procedural pass before sprites, using the font's dot ge
 draws the complete background. Transparent pixels are discarded and a fully transparent background is skipped.
 The background uses no atlas entries, texture samples, or per-dot instance uploads.
 The renderer accepts straight-alpha RGBA8 palette bytes and prepares premultiplied float32 colors on changed uploads.
-The vertex shader reads the selected color from a uniform buffer; the fragment shader applies red-channel mask coverage.
+The vertex shader reads the selected color from a uniform buffer; the sprite fragment shader applies red-channel mask
+coverage and discards only exact-zero resulting alpha. Surviving translucent colors and fractional coverage use
+premultiplied-alpha blending.
 The buffer reserves 256 colors (4 KiB), with 196 active entries using 3,136 bytes from a 784-byte RGBA8 input.
 Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
 
