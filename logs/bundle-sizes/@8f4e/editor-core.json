@@ -2173,5 +2173,20 @@
 			"gzip": 9619,
 			"brotli": 8553
 		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-10-27T21:17:23.501Z",
+		"commit": "c0c9d9cd09b68a064347ff33c95d093fcb91963c",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@8.1.7",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "8.1.7",
+		"bytes": {
+			"raw": 28880,
+			"gzip": 9303,
+			"brotli": 8277
+		}
 	}
 ]
