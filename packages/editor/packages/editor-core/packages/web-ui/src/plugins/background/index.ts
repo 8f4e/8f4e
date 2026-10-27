@@ -10,14 +10,12 @@ export default class BackgroundRenderer {
 	private readonly vertexArray: WebGLVertexArrayObject;
 	private readonly patternScaleLocation: WebGLUniformLocation;
 	private readonly dotBoundsLocation: WebGLUniformLocation;
-	private readonly firstLayerLocation: WebGLUniformLocation;
 	private readonly colorLocations: WebGLUniformLocation[];
 	private readonly colors = [new Float32Array(4), new Float32Array(4), new Float32Array(4)];
 	private readonly dotBounds = new Float32Array(4);
 	private inversePatternWidth = 0;
 	private inversePatternHeight = 0;
-	private firstLayer = 0;
-	private layerCount = 0;
+	private visible = false;
 	private destroyed = false;
 	private readonly drawHook: RenderHook = () => this.draw();
 
@@ -29,7 +27,6 @@ export default class BackgroundRenderer {
 			vertexArray = requireResource(gl.createVertexArray(), 'background vertex array');
 			this.patternScaleLocation = requireUniform(gl, program, 'u_patternScale');
 			this.dotBoundsLocation = requireUniform(gl, program, 'u_dotBounds');
-			this.firstLayerLocation = requireUniform(gl, program, 'u_firstLayer');
 			this.colorLocations = ['u_baseColor', 'u_evenColor', 'u_oddColor'].map(name => requireUniform(gl, program, name));
 		} catch (error) {
 			if (vertexArray) gl.deleteVertexArray(vertexArray);
@@ -56,26 +53,27 @@ export default class BackgroundRenderer {
 		]);
 	}
 
-	/** Match the sprite renderer's RGBA8 quantization and premultiplied float32 palette upload. */
+	/** Prepare premultiplied colors, compositing each dot color over the base once per palette change. */
 	setPalette(bytes: Uint8Array): void {
 		for (const [index, token] of (['canvasBase', 'canvasDetail2', 'canvasDetail1'] as const).entries()) {
 			const offset = PALETTE_INDICES[token] * 4;
 			const color = this.colors[index];
-			const alpha = Math.fround(bytes[offset + 3] / 255);
-			color[0] = Math.fround(bytes[offset] / 255) * alpha;
-			color[1] = Math.fround(bytes[offset + 1] / 255) * alpha;
-			color[2] = Math.fround(bytes[offset + 2] / 255) * alpha;
+			const alpha = bytes[offset + 3] / 255;
+			color[0] = (bytes[offset] / 255) * alpha;
+			color[1] = (bytes[offset + 1] / 255) * alpha;
+			color[2] = (bytes[offset + 2] / 255) * alpha;
 			color[3] = alpha;
 		}
-		const baseVisible = this.colors[0][3] !== 0;
-		const dotsVisible = this.colors[1][3] !== 0 || this.colors[2][3] !== 0;
-		this.firstLayer = baseVisible ? 0 : 1;
-		this.layerCount = Number(baseVisible) + Number(dotsVisible);
+		for (const color of this.colors.slice(1)) {
+			const remaining = 1 - color[3];
+			for (let channel = 0; channel < 4; channel++) color[channel] += this.colors[0][channel] * remaining;
+		}
+		this.visible = this.colors.some(color => color[3] !== 0);
 	}
 
 	/** Programs and the empty VAO have no reloadable storage and survive rendering-memory release. */
 	private draw(): void {
-		if (this.layerCount === 0) return;
+		if (!this.visible) return;
 		const gl = this.host.gl;
 		// The background shares the raw context with render hooks; establish every state needed by this pass.
 		prepareRenderPass(gl, this.program, this.vertexArray);
@@ -85,11 +83,9 @@ export default class BackgroundRenderer {
 			gl.drawingBufferHeight * this.inversePatternHeight
 		);
 		gl.uniform4fv(this.dotBoundsLocation, this.dotBounds);
-		gl.uniform1ui(this.firstLayerLocation, this.firstLayer);
 		for (let index = 0; index < this.colors.length; index++)
 			gl.uniform4fv(this.colorLocations[index], this.colors[index]);
-		// Separate ordered instances preserve the base-fill quantization and translucent dot blending.
-		gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, this.layerCount);
+		gl.drawArrays(gl.TRIANGLES, 0, 3);
 	}
 
 	destroy(): void {

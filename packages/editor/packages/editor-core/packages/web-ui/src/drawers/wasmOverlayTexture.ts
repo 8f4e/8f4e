@@ -1,7 +1,7 @@
 import { resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import type { State } from '@8f4e/editor-state-types';
 import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/test-runner';
-import type { RgbaTexture, RgbaTextureLayer } from '../plugins/rgba-texture-layer';
+import type { RgbaTextureLayer } from '../plugins/rgba-texture-layer';
 import type { MemoryViews } from '../types';
 
 type OverlayPosition = 'left' | 'center' | 'right';
@@ -91,7 +91,6 @@ export function createWasmOverlayTextureDrawer({
 	const byteLength = sourceWidth * sourceHeight * 4;
 	const magnification = normalizeMagnification(overlayTexture.magnification);
 	const position = overlayTexture.position ?? 'center';
-	let texture: RgbaTexture | undefined;
 	let cachedMemory: WebAssembly.Memory | null = null;
 	let cachedCodeBuffer: Uint8Array | undefined;
 	let cachedExports: WebAssembly.Exports | undefined;
@@ -179,10 +178,7 @@ export function createWasmOverlayTextureDrawer({
 		}
 
 		const data = memoryViews.uint8.subarray(byteAddress, byteAddress + byteLength);
-		texture = layer.uploadRgba8Texture(data, sourceWidth, sourceHeight, {
-			texture,
-			filter: 'nearest',
-		});
+		layer.uploadRgba8Texture(data, sourceWidth, sourceHeight);
 		const viewport = getViewportSize();
 		const drawRect = getOverlayDrawRect(
 			sourceWidth,
@@ -192,6 +188,6 @@ export function createWasmOverlayTextureDrawer({
 			magnification,
 			position
 		);
-		layer.drawTexture(texture, drawRect.x, drawRect.y, drawRect.width, drawRect.height);
+		layer.drawTexture(drawRect.x, drawRect.y, drawRect.width, drawRect.height);
 	};
 }

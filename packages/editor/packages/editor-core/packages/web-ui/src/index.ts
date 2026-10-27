@@ -181,7 +181,7 @@ export default async function init(
 			getViewportSize: () => ({ width: viewportWidth, height: viewportHeight }),
 			instantiate: options.instantiateOverlayTextureWasm,
 		});
-		overlayTextureLayer = new RgbaTextureLayer(engine, { phase: 'postDraw' });
+		overlayTextureLayer = new RgbaTextureLayer(engine);
 		overlayTextureLayer.setDrawCallback(layer => {
 			drawWasmOverlayTexture(layer);
 		});

@@ -26,78 +26,43 @@ const textureFragmentShaderSource = `#version 300 es
 
 	in vec2 v_textureCoordinate;
 	uniform sampler2D u_texture;
-	uniform float u_alpha;
 
 	out vec4 outColor;
 
 	void main() {
 		vec4 color = texture(u_texture, v_textureCoordinate);
-		outColor = vec4(color.rgb * color.a, color.a) * u_alpha;
+		outColor = vec4(color.rgb * color.a, color.a);
 	}
 `;
 
-/** Filtering applied to one uploaded RGBA8 texture. */
-export type RgbaTextureFilter = 'nearest' | 'linear';
-
-/** CPU pixel arrays accepted by the RGBA texture uploader. */
-export type RgbaTextureData = Uint8Array | Uint8ClampedArray;
-
-/** Mutable handle for one GPU texture owned by an `RgbaTextureLayer`. */
-export type RgbaTexture = {
-	texture: WebGLTexture;
-	width: number;
-	height: number;
-	filter: RgbaTextureFilter;
-};
-
-/** Options controlling creation or update of one RGBA8 texture. */
-export type RgbaTextureUploadOptions = {
-	/** Existing handle whose GPU object and storage should be reused. */
-	texture?: RgbaTexture;
-	/** Texture filtering; defaults to the existing filter or `nearest`. */
-	filter?: RgbaTextureFilter;
-};
-
-/** Construction options for a fixed-phase RGBA texture layer. */
-export type RgbaTextureLayerOptions = {
-	/** Layer phase; defaults to `preDraw`, below all sprites. */
-	phase?: 'preDraw' | 'postDraw';
-};
-
-/** Callback invoked from the configured hook so callers can update and draw current texture data. */
-export type RgbaTextureLayerDrawCallback = (layer: RgbaTextureLayer) => void;
-
-/** Uploads and draws caller-owned RGBA8 pixels in one fixed underlay or overlay phase. */
+/** Uploads and draws caller-owned RGBA8 pixels in an overlay above sprites and lines. */
 export class RgbaTextureLayer {
 	private readonly gl: WebGL2RenderingContext;
 	private readonly hooks: RenderPluginHost['hooks'];
-	private readonly phase: 'preDraw' | 'postDraw';
 	private readonly geometry: RectangleGeometry;
 	private readonly program: WebGLProgram;
 	private readonly resolutionLocation: WebGLUniformLocation;
 	private readonly rectangleLocation: WebGLUniformLocation;
 	private readonly textureLocation: WebGLUniformLocation;
-	private readonly alphaLocation: WebGLUniformLocation;
-	private readonly textures = new Set<RgbaTexture>();
-	private readonly releasedTextures = new WeakSet<RgbaTexture>();
-	private drawCallback: RgbaTextureLayerDrawCallback | null = null;
+	private texture: WebGLTexture | null = null;
+	private width = 0;
+	private height = 0;
+	private drawCallback: ((layer: RgbaTextureLayer) => void) | null = null;
 	private destroyed = false;
 
-	/** Invokes the current layer callback from its configured render phase. */
+	/** Invokes the current layer callback from its overlay render phase. */
 	private readonly drawHook: RenderHook = () => {
 		this.drawCallback?.(this);
 	};
 
 	/**
-	 * Creates and attaches an initially empty fixed-phase texture layer.
+	 * Creates and attaches an initially empty overlay texture layer.
 	 *
 	 * @param host - Engine or compatible render-plugin host.
-	 * @param options - Layer phase configuration.
 	 */
-	constructor(host: RenderPluginHost, options: RgbaTextureLayerOptions = {}) {
+	constructor(host: RenderPluginHost) {
 		this.gl = host.gl;
 		this.hooks = host.hooks;
-		this.phase = options.phase ?? 'preDraw';
 		const geometry = createRectangleGeometry(this.gl);
 		let program: WebGLProgram | null = null;
 		try {
@@ -105,7 +70,6 @@ export class RgbaTextureLayer {
 			this.resolutionLocation = requireUniform(this.gl, program, 'u_resolution');
 			this.rectangleLocation = requireUniform(this.gl, program, 'u_rectangle');
 			this.textureLocation = requireUniform(this.gl, program, 'u_texture');
-			this.alphaLocation = requireUniform(this.gl, program, 'u_alpha');
 		} catch (error) {
 			if (program) {
 				this.gl.deleteProgram(program);
@@ -115,51 +79,30 @@ export class RgbaTextureLayer {
 		}
 		this.geometry = geometry;
 		this.program = program;
-		this.hooks[this.phase].push(this.drawHook);
+		this.hooks.postDraw.push(this.drawHook);
 	}
 
 	/**
-	 * Sets or clears the callback executed from the configured layer hook.
+	 * Sets the callback that uploads and draws the current overlay after sprites and lines.
 	 *
-	 * @param callback - Per-frame texture update/draw callback, or `null` to disable layer work.
+	 * @param callback - Per-frame texture update/draw callback.
 	 */
-	setDrawCallback(callback: RgbaTextureLayerDrawCallback | null): void {
+	setDrawCallback(callback: (layer: RgbaTextureLayer) => void): void {
 		this.drawCallback = callback;
 	}
 
-	/**
-	 * Creates or updates one RGBA8 texture.
-	 *
-	 * Same-sized updates retain storage and use `texSubImage2D()`; dimension changes replace storage on the same handle.
-	 *
-	 * @param data - Straight-alpha RGBA8 pixel data in top-to-bottom row order.
-	 * @param width - Positive texture width in pixels.
-	 * @param height - Positive texture height in pixels.
-	 * @param options - Existing handle and filter selection.
-	 * @returns New or updated texture handle owned by this layer.
-	 */
-	uploadRgba8Texture(
-		data: RgbaTextureData,
-		width: number,
-		height: number,
-		options: RgbaTextureUploadOptions = {}
-	): RgbaTexture {
+	/** Uploads the overlay's RGBA8 pixels, reusing same-sized GPU storage. */
+	uploadRgba8Texture(data: Uint8Array, width: number, height: number): void {
 		assertTextureInput(data, width, height);
 		const gl = this.gl;
-		const existing = options.texture;
-		const filter = options.filter ?? existing?.filter ?? 'nearest';
-		const existingTextureReleased = existing ? this.releasedTextures.delete(existing) : false;
-		const texture =
-			!existing || existingTextureReleased
-				? requireResource(gl.createTexture(), 'RGBA8 layer texture')
-				: existing.texture;
-		const sizeChanged = !existing || existingTextureReleased || existing.width !== width || existing.height !== height;
-
+		const sizeChanged = this.texture === null || this.width !== width || this.height !== height;
+		if (this.texture === null) this.texture = requireResource(gl.createTexture(), 'RGBA8 overlay texture');
 		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, texture);
+		gl.bindTexture(gl.TEXTURE_2D, this.texture);
 		gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
 		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-		applyTextureFilter(gl, filter);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		if (sizeChanged) {
@@ -167,102 +110,42 @@ export class RgbaTextureLayer {
 		} else {
 			gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data);
 		}
-
-		if (existing) {
-			existing.texture = texture;
-			existing.width = width;
-			existing.height = height;
-			existing.filter = filter;
-			return existing;
-		}
-		const handle = { texture, width, height, filter };
-		this.textures.add(handle);
-		return handle;
+		this.width = width;
+		this.height = height;
 	}
 
-	/**
-	 * Immediately draws one texture rectangle in the plugin's current hook phase.
-	 *
-	 * This hot path intentionally does not validate handle ownership or numeric input.
-	 *
-	 * @param texture - Texture handle created by this layer.
-	 * @param x - Destination X coordinate in canvas pixels.
-	 * @param y - Destination Y coordinate in canvas pixels.
-	 * @param width - Destination width; defaults to the texture width.
-	 * @param height - Destination height; defaults to the texture height.
-	 * @param alpha - Additional opacity multiplier; defaults to one.
-	 */
-	drawTexture(
-		texture: RgbaTexture,
-		x: number,
-		y: number,
-		width: number = texture.width,
-		height: number = texture.height,
-		alpha: number = 1
-	): void {
+	/** Draws the uploaded overlay in canvas pixels with its own per-pixel alpha and nearest filtering. */
+	drawTexture(x: number, y: number, width: number, height: number): void {
 		const gl = this.gl;
 		prepareRenderPass(gl, this.program, this.geometry.vertexArray);
 		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, texture.texture);
+		gl.bindTexture(gl.TEXTURE_2D, this.texture);
 		gl.uniform1i(this.textureLocation, 0);
 		gl.uniform2f(this.resolutionLocation, gl.drawingBufferWidth, gl.drawingBufferHeight);
 		gl.uniform4f(this.rectangleLocation, x, y, width, height);
-		gl.uniform1f(this.alphaLocation, alpha);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 	}
 
-	/**
-	 * Deletes one texture handle owned by this layer.
-	 *
-	 * @param texture - Handle to delete. Repeated deletion has no effect.
-	 */
-	deleteTexture(texture: RgbaTexture): void {
-		if (this.textures.delete(texture)) {
-			if (!this.releasedTextures.delete(texture)) {
-				this.gl.deleteTexture(texture.texture);
-			}
-		}
-	}
-
-	/** Releases every uploaded texture while keeping handles valid for lazy reallocation on their next upload. */
+	/** Releases overlay pixel storage; the next upload recreates it. */
 	releaseMemory(): void {
-		for (const texture of this.textures) {
-			if (!this.releasedTextures.has(texture)) {
-				this.gl.deleteTexture(texture.texture);
-				this.releasedTextures.add(texture);
-			}
+		if (this.texture !== null) {
+			this.gl.deleteTexture(this.texture);
+			this.texture = null;
 		}
 	}
 
-	/** Detaches the hook and deletes every texture and WebGL resource owned by this plugin. */
+	/** Detaches the hook and deletes the overlay's WebGL resources. */
 	destroy(): void {
 		if (this.destroyed) {
 			return;
 		}
 		this.destroyed = true;
-		removeHook(this.hooks[this.phase], this.drawHook);
-		for (const texture of this.textures) {
-			if (!this.releasedTextures.delete(texture)) {
-				this.gl.deleteTexture(texture.texture);
-			}
-		}
-		this.textures.clear();
+		removeHook(this.hooks.postDraw, this.drawHook);
+		this.releaseMemory();
 		this.gl.deleteProgram(this.program);
 		deleteRectangleGeometry(this.gl, this.geometry);
 		this.drawCallback = null;
 	}
-}
-
-/**
- * Applies one explicit minification and magnification filter.
- *
- * @param gl - WebGL2 context whose bound texture is configured.
- * @param filter - Public nearest or linear filter name.
- */
-function applyTextureFilter(gl: WebGL2RenderingContext, filter: RgbaTextureFilter): void {
-	const glFilter = filter === 'linear' ? gl.LINEAR : gl.NEAREST;
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, glFilter);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, glFilter);
 }
 
 /**
@@ -272,7 +155,7 @@ function applyTextureFilter(gl: WebGL2RenderingContext, filter: RgbaTextureFilte
  * @param width - Requested texture width.
  * @param height - Requested texture height.
  */
-function assertTextureInput(data: RgbaTextureData, width: number, height: number): void {
+function assertTextureInput(data: Uint8Array, width: number, height: number): void {
 	if (!Number.isInteger(width) || width <= 0 || !Number.isInteger(height) || height <= 0) {
 		throw new RangeError('RGBA8 texture dimensions must be positive integers.');
 	}

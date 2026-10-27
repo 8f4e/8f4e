@@ -19,6 +19,10 @@ plugin owns its resources and destruction. Web-ui initializes background and lin
 only for configured overlays, and coordinates memory release and restoration. Backgrounds run in `preDraw`; lines
 run in `postDraw`, followed by configured texture overlays.
 
+The background precomposes dot colors over the base when the palette changes and draws one triangle. Each RGBA
+overlay owns one texture, uses nearest filtering, and takes opacity from its pixels. Pixel uploads reuse storage
+until the image dimensions change; memory release deletes the texture and the next upload recreates it.
+
 ## API
 
 ### `init(state, renderData, canvas, memoryViews, spriteData, palette, options?)`

@@ -105,8 +105,9 @@ brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`,
 The sprite atlas contains color-independent R8 coverage masks: 128 glyphs and one fully covered fill cell, all on the
 same 16-column grid. All palette entries can color text, including `Alpha30/60/90` variants. Web-ui renders the
 background in a separate procedural pass before sprites, using the font's dot geometry and `canvasBase`,
-`canvasDetail2`, and `canvasDetail1` colors. Ordered base/dot instances preserve translucent compositing; fully
-transparent layers are skipped. The background uses no atlas entries, texture samples, or per-dot instance uploads.
+`canvasDetail2`, and `canvasDetail1` colors. Palette changes precompose each dot color over the base so one triangle
+draws the complete background. Transparent pixels are discarded and a fully transparent background is skipped.
+The background uses no atlas entries, texture samples, or per-dot instance uploads.
 The renderer accepts straight-alpha RGBA8 palette bytes and prepares premultiplied float32 colors on changed uploads.
 The vertex shader reads the selected color from a uniform buffer; the fragment shader applies red-channel mask coverage.
 The buffer reserves 256 colors (4 KiB), with 196 active entries using 3,136 bytes from a 784-byte RGBA8 input.

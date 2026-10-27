@@ -34,10 +34,10 @@ const mocks = vi.hoisted(() => {
 		destroy: vi.fn(),
 	};
 	const overlayTextureLayer = {
-		setDrawCallback: vi.fn((callback: ((layer: unknown) => void) | null) => {
-			overlayTextureDrawCallback = callback ?? undefined;
+		setDrawCallback: vi.fn((callback: (layer: unknown) => void) => {
+			overlayTextureDrawCallback = callback;
 		}),
-		uploadRgba8Texture: vi.fn(() => ({ texture: {}, width: 128, height: 128, filter: 'nearest' })),
+		uploadRgba8Texture: vi.fn(),
 		drawTexture: vi.fn(),
 		releaseMemory: vi.fn(),
 		destroy: vi.fn(() => {
@@ -75,8 +75,8 @@ const mocks = vi.hoisted(() => {
 			return engine;
 		}),
 		// biome-ignore lint/complexity/useArrowFunction: Plugins are constructed with new in the code under test.
-		RgbaTextureLayer: vi.fn(function (_host: unknown, options: { phase?: 'preDraw' | 'postDraw' } = {}) {
-			engine.hooks[options.phase ?? 'preDraw'].push(() => overlayTextureDrawCallback?.(overlayTextureLayer));
+		RgbaTextureLayer: vi.fn(function () {
+			engine.hooks.postDraw.push(() => overlayTextureDrawCallback?.(overlayTextureLayer));
 			return overlayTextureLayer;
 		}),
 		// biome-ignore lint/complexity/useArrowFunction: Plugins are constructed with new in the code under test.
@@ -263,7 +263,7 @@ describe('web-ui init', () => {
 			}
 		);
 
-		expect(mocks.RgbaTextureLayer).toHaveBeenCalledWith(mocks.engine, { phase: 'postDraw' });
+		expect(mocks.RgbaTextureLayer).toHaveBeenCalledWith(mocks.engine);
 		expect(mocks.LineDrawer.mock.invocationCallOrder[0]).toBeLessThan(
 			mocks.RgbaTextureLayer.mock.invocationCallOrder[0]
 		);
@@ -579,19 +579,10 @@ describe('web-ui init', () => {
 		view.renderFrame();
 
 		expect(renderFrameExport).toHaveBeenCalledTimes(1);
-		expect(mocks.overlayTextureLayer.uploadRgba8Texture).toHaveBeenCalledWith(expect.any(Uint8Array), 1, 1, {
-			texture: undefined,
-			filter: 'nearest',
-		});
+		expect(mocks.overlayTextureLayer.uploadRgba8Texture).toHaveBeenCalledWith(expect.any(Uint8Array), 1, 1);
 		const data = mocks.overlayTextureLayer.uploadRgba8Texture.mock.calls.at(-1)?.[0] as Uint8Array;
 		expect([...data]).toEqual([10, 20, 30, 255]);
-		expect(mocks.overlayTextureLayer.drawTexture).toHaveBeenCalledWith(
-			{ texture: {}, width: 128, height: 128, filter: 'nearest' },
-			64,
-			74,
-			32,
-			32
-		);
+		expect(mocks.overlayTextureLayer.drawTexture).toHaveBeenCalledWith(64, 74, 32, 32);
 
 		view.releaseRenderingResources();
 		expect(mocks.overlayTextureLayer.releaseMemory).toHaveBeenCalledOnce();

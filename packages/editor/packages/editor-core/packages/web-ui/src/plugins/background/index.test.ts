@@ -50,8 +50,7 @@ function createHost() {
 		colorMask: vi.fn(),
 		uniform2f: vi.fn(),
 		uniform4fv: vi.fn(),
-		uniform1ui: vi.fn(),
-		drawArraysInstanced: vi.fn(),
+		drawArrays: vi.fn(),
 	};
 	const host: RenderPluginHost = {
 		gl: gl as unknown as WebGL2RenderingContext,
@@ -71,14 +70,13 @@ function palette(base: number[], even: number[], odd: number[]): Uint8Array {
 const font = { characterWidth: 8, characterHeight: 16, backgroundDot: { x: 3, y: 7, size: 2 } };
 
 describe('procedural background', () => {
-	it('uses ordered base/dot instances and follows font and drawing-buffer size changes', () => {
+	it('draws one triangle and follows font and drawing-buffer size changes', () => {
 		const { host, gl, draw } = createHost();
 		const background = new BackgroundRenderer(host);
 		background.setFont(font);
 		background.setPalette(palette([20, 30, 40, 102], [99, 99, 99, 255], [58, 58, 58, 255]));
 		draw();
-		expect(gl.uniform1ui).toHaveBeenLastCalledWith({ name: 'u_firstLayer' }, 0);
-		expect(gl.drawArraysInstanced).toHaveBeenLastCalledWith(gl.TRIANGLES, 0, 3, 2);
+		expect(gl.drawArrays).toHaveBeenLastCalledWith(gl.TRIANGLES, 0, 3);
 		expect(gl.uniform2f).toHaveBeenLastCalledWith({ name: 'u_patternScale' }, 321 / 16, 197 / 16);
 		expect(gl.uniform4fv).toHaveBeenCalledWith(
 			{ name: 'u_dotBounds' },
@@ -95,32 +93,25 @@ describe('procedural background', () => {
 		background.destroy();
 	});
 
-	it('matches premultiplied sprite colors and skips fully invisible layers', () => {
+	it('composites translucent dots over the base before drawing and skips an invisible background', () => {
 		const { host, gl, draw } = createHost();
 		const background = new BackgroundRenderer(host);
 		background.setFont(font);
-		background.setPalette(palette([0, 0, 0, 0], [128, 64, 32, 77], [0, 0, 0, 0]));
+		background.setPalette(palette([0, 0, 255, 128], [255, 0, 0, 128], [0, 0, 0, 0]));
 		draw();
-		const alpha = Math.fround(77 / 255);
-		expect(gl.uniform4fv).toHaveBeenCalledWith(
-			{ name: 'u_evenColor' },
-			new Float32Array([
-				Math.fround(128 / 255) * alpha,
-				Math.fround(64 / 255) * alpha,
-				Math.fround(32 / 255) * alpha,
-				alpha,
-			])
-		);
-		expect(gl.uniform1ui).toHaveBeenLastCalledWith({ name: 'u_firstLayer' }, 1);
-		expect(gl.drawArraysInstanced).toHaveBeenLastCalledWith(gl.TRIANGLES, 0, 3, 1);
-		background.setPalette(palette([20, 30, 40, 255], [0, 0, 0, 0], [0, 0, 0, 0]));
-		draw();
-		expect(gl.uniform1ui).toHaveBeenLastCalledWith({ name: 'u_firstLayer' }, 0);
-		expect(gl.drawArraysInstanced).toHaveBeenLastCalledWith(gl.TRIANGLES, 0, 3, 1);
+		const uploaded = (name: string) => [...gl.uniform4fv.mock.calls.find(([location]) => location.name === name)![1]];
+		expect(uploaded('u_baseColor')).toEqual([0, 0, expect.closeTo(128 / 255), expect.closeTo(128 / 255)]);
+		expect(uploaded('u_evenColor')).toEqual([
+			expect.closeTo(128 / 255),
+			0,
+			expect.closeTo((128 * 127) / (255 * 255)),
+			expect.closeTo(1 - (127 / 255) ** 2),
+		]);
+		expect(uploaded('u_oddColor')).toEqual(uploaded('u_baseColor'));
 		background.setPalette(new Uint8Array(256 * 4));
-		gl.drawArraysInstanced.mockClear();
+		gl.drawArrays.mockClear();
 		draw();
-		expect(gl.drawArraysInstanced).not.toHaveBeenCalled();
+		expect(gl.drawArrays).not.toHaveBeenCalled();
 		background.destroy();
 	});
 
