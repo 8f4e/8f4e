@@ -5,7 +5,7 @@ export const lineVertexShaderSource = `#version 300 es
 	layout(location = 1) in float a_thickness;
 	layout(location = 2) in vec4 a_color;
 
-	uniform vec2 u_resolution;
+	uniform vec2 u_pixelToClip;
 
 	out vec4 v_color;
 
@@ -23,8 +23,7 @@ export const lineVertexShaderSource = `#version 300 es
 		vec2 normal = normalize(vec2(-line.y, line.x));
 		vec2 corner = CORNERS[gl_VertexID];
 		vec2 pixelPosition = mix(start, end, corner.x) + normal * corner.y * a_thickness;
-		vec2 clipPosition = pixelPosition / u_resolution * 2.0 - 1.0;
-		gl_Position = vec4(clipPosition * vec2(1.0, -1.0), 0.0, 1.0);
+		gl_Position = vec4(pixelPosition * u_pixelToClip + vec2(-1.0, 1.0), 0.0, 1.0);
 		v_color = a_color;
 	}
 `;
