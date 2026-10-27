@@ -25,7 +25,7 @@
     "vitest": "4.1.7",
     "@8f4e/compiler": "*",
     "@vitest/browser-playwright": "4.1.7",
-    "@vitest/browser": "4.1.7",
+    "@vitest/browser": "4.1.10",
     "@8f4e/editor-state-testing": "*"
   }
 }
