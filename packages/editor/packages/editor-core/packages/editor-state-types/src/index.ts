@@ -10,7 +10,6 @@ import type {
 	ProjectObjectModel,
 } from '@8f4e/language-spec';
 import type { AssertionResult } from './features/assertions/types';
-import type { BinaryAsset } from './features/binary-assets/types';
 import type {
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
@@ -64,12 +63,10 @@ import type {
 // Re-export global-editor-directives types
 // Re-export runtime types
 // Re-export logger types
-// Re-export binary-assets types
 // Re-export code-editing types
 // Re-export project-import types
 export type {
 	AssertionResult,
-	BinaryAsset,
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockRendering,
@@ -270,7 +267,8 @@ export interface State {
 	initialProjectState?: ProjectObjectModel;
 	redoStack: ProjectObjectModel[];
 	storageQuota: { usedBytes: number; totalBytes: number };
-	binaryAssets: BinaryAsset[];
+	/** Source lines contributed to the generated environment constants block, keyed by contributor. */
+	envConstantContributions: Record<string, string[]>;
 	/** Console state for internal logging */
 	console: ConsoleState;
 	/** Executed assertion outcomes published by the active runtime for editor rendering. */
@@ -292,7 +290,6 @@ export interface State {
 	viewportAnimation: ViewportAnimation;
 }
 
-export type * from './features/binary-assets/types';
 export type * from './features/code-blocks/buildDisplayModel';
 export type * from './features/code-blocks/features/directives/types';
 export type * from './features/code-blocks/types';

@@ -37,3 +37,6 @@
   Project-file and WebAssembly export actions, menus, and the save shortcut belong to their plugins.
 - Favorite toggling and memory-connection removal belong to their plugins, including menu labels and availability.
   Favorite directive derivation and navigation stay in core. Export shared directive editing through public helpers.
+- Binary assets belong to `editor-plugin-binary-assets`, including their schema, fetching/cache, private state, dialog,
+  and size constants. Keep only generic `envConstantContributions`, schema registration, dialogs, and memory resolution
+  in core. Environment constants refresh when blocks are populated as well as when contributions change.

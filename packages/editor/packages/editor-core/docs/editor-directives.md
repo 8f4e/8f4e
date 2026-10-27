@@ -470,7 +470,8 @@ moduleEnd
 
 ### Binary Asset Config
 
-Define a named binary asset URL and load it into a memory location.
+`@8f4e/editor-plugin-binary-assets`, included by the default editor, defines named binary asset URLs and loads them
+into runtime memory. The plugin owns fetching, CacheStorage, the loading dialog, and generated size constants.
 
 ```txt
 ; @config bin.<id>.url <url>
@@ -482,7 +483,7 @@ Notes:
 - Asset size constants are auto-generated in the env block as `ASSET_<ID>_SIZE`.
 - `memory` may use a local memory id inside a module block, or a module-qualified memory id from any block.
 - Invalid paths/values are reported through config validation.
-- This is editor metadata only and does not affect compiler output.
+- Binary payloads stay outside serialized project models; generated size constants are available to compilation.
 - Assets with a `url` but no load target are not fetched.
 
 Multiple loads for one asset are supported with named load targets:

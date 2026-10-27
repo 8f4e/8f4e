@@ -55,7 +55,7 @@ redo preserve it. Cancelled or failed disk imports leave both the current projec
 
 - `state.initialProjectState` - Initial project loaded on startup
 - `state.codeBlockRendering` - Populated from loaded code blocks
-- `state.binaryAssets` - Runtime asset metadata populated by the editor environment binary-assets plugin when binary asset config is active
+- Binary asset runtime metadata and bytes stay private to `@8f4e/editor-plugin-binary-assets`
 
 ## Integration Points
 
@@ -79,4 +79,4 @@ redo preserve it. Cancelled or failed disk imports leave both the current projec
 
 - Import callbacks are optional (graceful degradation to defaults)
 - Project validation is minimal beyond `.8f4e` parser checks
-- Binary asset fetching and memory loading are handled by the lazy editor environment binary-assets plugin, triggered by `@config bin...` values
+- Binary asset fetching and memory loading belong to `@8f4e/editor-plugin-binary-assets`, triggered by `@config bin...` values

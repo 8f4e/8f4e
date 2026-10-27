@@ -165,69 +165,42 @@ describe('autoEnvConstants', () => {
 		expect(unusedRuntimeLine).toBeUndefined();
 	});
 
-	test('should include binary asset sizes when available', () => {
+	test('includes contributed source alongside runtime constants when creating env', () => {
 		autoEnvConstants(store);
-
-		// Add binary asset with size
-		store.set('binaryAssets', [
-			{
-				url: 'https://example.com/test.wav',
-				fileName: 'test.wav',
-				assetByteLength: 12345,
-				loadedIntoMemory: false,
-			},
-		]);
-
+		store.set('envConstantContributions', {
+			first: ['const FIRST 1'],
+			second: ['; second provider', 'const SECOND 2'],
+		});
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
-
-		const envBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		const assetSizeLine = envBlock?.code.find(line => line.includes('ASSET_0_SIZE'));
-		expect(assetSizeLine).toBe('const ASSET_0_SIZE 12345');
+		const env = state.initialProjectState?.constants.find(block => block.code[0] === 'constants env');
+		expect(env?.code).toEqual(
+			expect.arrayContaining(['const RUNTIME_MAGIC 50', 'const FIRST 1', '; second provider', 'const SECOND 2'])
+		);
 	});
 
-	test('should use binary asset id in generated size constants when present', () => {
+	test('refreshes contributed constants and removes contributions without changing the env position', () => {
 		autoEnvConstants(store);
-
-		store.set('binaryAssets', [
-			{
-				id: 'snare',
-				url: 'https://example.com/snare.wav',
-				fileName: 'snare.wav',
-				assetByteLength: 22050,
-				loadedIntoMemory: false,
-			},
+		store.set('codeBlockRendering.codeBlocks', [
+			createGraphicEnvBlock(['constants env', '; @pos 7 9', 'constantsEnd'], {
+				parsedDirectives: [
+					{
+						prefix: '@',
+						name: 'pos',
+						args: ['7', '9'],
+						sourceLineIndex: 1,
+						sourceLine: '; @pos 7 9',
+						isTrailing: false,
+					},
+				],
+			}),
 		]);
-
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
-
-		const envBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		const assetSizeLine = envBlock?.code.find(line => line.includes('ASSET_SNARE_SIZE'));
-		expect(assetSizeLine).toBe('const ASSET_SNARE_SIZE 22050');
-	});
-
-	test('should update when binary assets change', () => {
-		autoEnvConstants(store);
-		store.set('initialProjectState', { ...PROJECT_WITH_CODE_BLOCK });
-
-		// Simulate codeBlockRendering populating codeBlocks from initialProjectState
-		const envCodeBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		if (envCodeBlock) {
-			store.set('codeBlockRendering.codeBlocks', [createGraphicEnvBlock(envCodeBlock.code)]);
-		}
-
-		// Add binary asset
-		store.set('binaryAssets', [
-			{
-				url: 'https://example.com/test.wav',
-				fileName: 'test.wav',
-				assetByteLength: 88200,
-				loadedIntoMemory: false,
-			},
-		]);
-
-		const envBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === AUTO_ENV_BLOCK_NAME);
-		const assetSizeLine = envBlock?.code.find(line => line.includes('ASSET_0_SIZE'));
-		expect(assetSizeLine).toBe('const ASSET_0_SIZE 88200');
+		store.set('envConstantContributions.example', ['const PROVIDED 42']);
+		const env = state.codeBlockRendering.codeBlocks[0];
+		expect(env.code).toContain('const PROVIDED 42');
+		expect(env.code).toContain('; @pos 7 9');
+		store.set('envConstantContributions', {});
+		expect(env.code).not.toContain('const PROVIDED 42');
+		expect(env.code).toContain('; @pos 7 9');
 	});
 
 	test('should preserve existing @pos when regenerating env block', () => {
@@ -286,91 +259,5 @@ describe('autoEnvConstants', () => {
 
 		const envBlocks = state.initialProjectState?.constants.filter(block => block.code[0]?.includes('constants env'));
 		expect(envBlocks?.length).toBe(1);
-	});
-
-	test('should include file name comments for binary asset sizes', () => {
-		autoEnvConstants(store);
-
-		store.set('binaryAssets', [
-			{
-				url: 'https://example.com/test.wav',
-				fileName: 'test.wav',
-				assetByteLength: 1024,
-				loadedIntoMemory: false,
-			},
-		]);
-
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
-
-		const envBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		const assetCommentLine = envBlock?.code.find(line => line.includes("; 'test.wav'"));
-		const assetSizeLine = envBlock?.code.find(line => line.includes('ASSET_0_SIZE'));
-		expect(assetCommentLine).toBe("; 'test.wav'");
-		expect(assetSizeLine).toBe('const ASSET_0_SIZE 1024');
-	});
-
-	test('should skip binary assets without assetByteLength', () => {
-		autoEnvConstants(store);
-
-		store.set('binaryAssets', [
-			{
-				url: 'https://example.com/test.wav',
-				fileName: 'test.wav',
-				// no assetByteLength
-				loadedIntoMemory: false,
-			},
-		]);
-
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
-
-		const envBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		const assetSizeLine = envBlock?.code.find(line => line.includes('ASSET_0_SIZE'));
-		expect(assetSizeLine).toBeUndefined();
-	});
-
-	test('should skip binary assets without file metadata', () => {
-		autoEnvConstants(store);
-
-		store.set('binaryAssets', [
-			{
-				url: 'https://example.com/test.wav',
-				loadedIntoMemory: false,
-			},
-		]);
-
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
-
-		const envBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		const binaryAssetSection = envBlock?.code.indexOf('// Binary asset sizes in bytes');
-		expect(binaryAssetSection).toBe(-1);
-	});
-
-	test('should emit each asset size constant only once for duplicate asset ids', () => {
-		autoEnvConstants(store);
-
-		store.set('binaryAssets', [
-			{
-				id: 'amen',
-				url: 'https://example.com/amen.pcm',
-				fileName: 'amen.pcm',
-				assetByteLength: 1024,
-				loadedIntoMemory: true,
-				memoryId: 'playerA.buffer',
-			},
-			{
-				id: 'amen',
-				url: 'https://example.com/amen.pcm',
-				fileName: 'amen.pcm',
-				assetByteLength: 1024,
-				loadedIntoMemory: true,
-				memoryId: 'playerB.buffer',
-			},
-		]);
-
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
-
-		const envBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		const sizeLines = envBlock?.code.filter(line => line.includes('const ASSET_AMEN_SIZE'));
-		expect(sizeLines).toEqual(['const ASSET_AMEN_SIZE 1024']);
 	});
 });

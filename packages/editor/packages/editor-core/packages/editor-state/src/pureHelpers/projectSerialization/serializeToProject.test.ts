@@ -17,7 +17,7 @@ describe('serializeToProject', () => {
 				rootCodeBlocks,
 				codeBlocks: rootCodeBlocks,
 			},
-			binaryAssets: [],
+			envConstantContributions: {},
 			viewport: {
 				x: 40,
 				y: 50,
