@@ -3,6 +3,8 @@
 ## Project Structure & Module Organization
 - Editor product: the reusable default composition lives in `packages/editor/packages/editor-default/`; the thin
   Vite website lives in `packages/editor/packages/editor-website/`.
+- Optional editor features live in `packages/editor/plugins/<feature>/` as independent npm/Nx packages named
+  `@8f4e/editor-plugin-<feature>`.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`
   compiler fixture gallery, all embedding the default editor. Its build includes `src/index.html`,
   `src/examples/index.html`, and `src/tests/index.html`. The test gallery bundles the compiler's `.test.8f4e`

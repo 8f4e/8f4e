@@ -52,7 +52,7 @@ the initial bundle and whether the download savings justify the added asynchrono
 - `packages/editor/packages/editor-default/src/index.ts` - Standard plugin composition and import boundaries.
 - `packages/editor/packages/editor-core/src/plugins.ts` - Installation order and plugin lifecycle.
 - `packages/editor/packages/editor-core/src/index.ts` - Initialization and readiness of editor services.
-- `packages/editor/packages/editor-plugin-*/` - Plugin entry points and loading boundaries.
+- `packages/editor/plugins/*/` - Plugin entry points and loading boundaries.
 - Editor website builds - Emitted chunks, initial downloads, and activation timing.
 
 ## Related Items
