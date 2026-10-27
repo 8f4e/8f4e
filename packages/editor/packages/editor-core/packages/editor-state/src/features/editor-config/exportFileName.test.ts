@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { EXPORT_FILE_NAME_CONFIG_PATH, exportFileNameEditorConfigValidator } from './editorConfig';
+import { EXPORT_FILE_NAME_CONFIG_PATH, exportFileNameEditorConfigValidator } from './exportFileName';
 
 describe('export file name editor config', () => {
 	it('validates export file name config path', () => {

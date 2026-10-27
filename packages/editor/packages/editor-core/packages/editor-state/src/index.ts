@@ -33,6 +33,7 @@ import codeEditing from './features/code-editing/effect';
 import color from './features/color/effect';
 import dialog from './features/dialog/effect';
 import historyTracking from './features/edit-history/effect';
+import { registerExportFileNameEditorConfigValidator } from './features/editor-config/exportFileName';
 import { registerEditorConfigSchemaContributionsValidator } from './features/editor-config/schemaContributions';
 import editorMode from './features/editor-mode/effect';
 import font from './features/font/effect';
@@ -40,9 +41,9 @@ import globalEditorDirectivesEffect from './features/global-editor-directives/ef
 import contextMenu from './features/menu/effect';
 import createMenuItemRegistry from './features/menu/itemRegistry';
 import compiler from './features/program-compiler/effect';
-import projectExport from './features/project-export/effect';
 import projectImport from './features/project-import/effect';
 import runtime from './features/runtime/effect';
+import sessionPersistence from './features/session-persistence/effect';
 import viewport from './features/viewport/effect';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
@@ -95,7 +96,8 @@ export default function init(
 	registerEffect(font(store));
 	registerEffect(color(store));
 	registerEffect(registerEditorConfigSchemaContributionsValidator(store));
-	registerEffect(projectExport(store, events));
+	registerExportFileNameEditorConfigValidator(store);
+	registerEffect(sessionPersistence(store, events));
 	registerEffect(dialog(store, events));
 	// Menus must consume pointer events before code blocks and viewport interactions.
 	registerEffect(contextMenu(store, events, menus));
@@ -158,14 +160,16 @@ export { getCompiledFunctionForCodeBlock } from './features/code-blocks/utils/ge
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
 export { default as gapCalculator } from './features/code-editing/gapCalculator';
+export { error as logError } from './features/logger/logger';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
-// Export .8f4e format helpers
-export { default as getExportBaseName } from './features/project-export/getExportBaseName';
-export { serializeProjectTo8f4e } from './features/project-export/serializeTo8f4e';
 // Export EMPTY_DEFAULT_PROJECT as a value
 export { EMPTY_DEFAULT_PROJECT } from './features/project-import/emptyDefaultProject';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
+// Export project serialization helpers
+export { default as getExportBaseName } from './pureHelpers/getExportBaseName';
+export { serializeProjectTo8f4e } from './pureHelpers/projectSerialization/serializeTo8f4e';
+export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
 export {
 	isMemoryAddress,
 	isPointerSource,

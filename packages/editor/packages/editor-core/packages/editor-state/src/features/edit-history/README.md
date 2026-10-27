@@ -35,7 +35,7 @@ Provides undo/redo functionality for code changes by maintaining snapshots of pr
 
 ## Integration Points
 
-- **Project Export**: Uses `serializeToProject()` to create snapshots
+- **Project Serialization**: Uses `serializeToProject()` to create snapshots
 - **Project Import**: Uses `loadProject` event to restore snapshots
 - **Code Editing**: Monitors code changes through state subscriptions
 

@@ -1,5 +1,5 @@
 import createStateManager from '@8f4e/state-manager';
-import { describe, expect, it, type MockInstance } from 'vitest';
+import { describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
@@ -7,6 +7,24 @@ import contextMenu from './effect';
 import createMenuItemRegistry from './itemRegistry';
 
 describe('contextMenu effect', () => {
+	it.each([false, true])('separates main-menu contributions without trailing dividers: %s', async contributed => {
+		const state = createMockState({ featureFlags: { projectCreation: false, projectOpening: false } });
+		const store = createStateManager(state);
+		const events = createMockEventDispatcherWithVitest();
+		const items = createMenuItemRegistry();
+		if (contributed) items.registerItem('mainMenu', () => ({ title: 'Inspect', action: 'inspect' }));
+		const dispose = contextMenu(store, events, items);
+		await vi
+			.mocked(events.on)
+			.mock.calls.find(([name]) => name === 'contextmenu')![1]({ x: 100, y: 112 });
+		expect(state.contextMenu.items.at(-1)?.divider).not.toBe(true);
+		if (contributed) {
+			expect(state.contextMenu.items.at(-1)?.action).toBe('inspect');
+			expect(state.contextMenu.items.at(-2)?.divider).toBe(true);
+		}
+		dispose();
+		store.dispose();
+	});
 	it('navigates module categories with explicit paths and restores the parent request', async () => {
 		const state = createMockState({
 			callbacks: { getListOfModules: async () => [{ slug: 'gain', title: 'Gain', category: 'Audio' }] },

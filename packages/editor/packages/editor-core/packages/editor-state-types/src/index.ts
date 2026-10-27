@@ -201,9 +201,6 @@ export interface Callbacks {
 	importProject?: () => Promise<ProjectObjectModel | null>;
 	/** Called for unrelated project replacements, including successful disk imports; excluded for undo/redo. */
 	projectLoaded?: (project: ProjectObjectModel) => void;
-	saveProject?: (data: string, fileName: string) => Promise<void>;
-	exportProject?: (data: string, fileName: string) => Promise<void>;
-	exportBinaryCode?: (fileName: string) => Promise<void>;
 	getStorageQuota?: () => Promise<{ usedBytes: number; totalBytes: number }>;
 
 	// Memory manipulation callback

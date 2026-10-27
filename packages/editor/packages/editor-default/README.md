@@ -43,8 +43,11 @@ The default composition includes `@8f4e/editor-plugin-toggle-skip-execution` for
 `@8f4e/editor-plugin-wave` for waveform displays, `@8f4e/editor-plugin-piano` for piano keyboards,
 `@8f4e/editor-plugin-slider` for sliders,
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
-stack analysis, and live memory values, and `@8f4e/editor-plugin-screenshot` for PNG screenshots.
-`createDefaultEditorPlugins({ canvas, renderFrame })` constructs this plugin set with resources for one editor.
+stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
+`@8f4e/editor-plugin-project-export` for project Save/Export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
+`createDefaultEditorPlugins({ canvas, renderFrame, saveProject, exportProject, exportBinaryCode })` constructs this
+plugin set with resources for one editor. Project save/export callbacks share the file service used by Open;
+the WebAssembly callback reads the compiler's current code buffer when invoked.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
 browser resources; browser dependencies are supplied to plugin factories by this composition.
 The `plugins` option replaces the default set: pass `[]` to omit plugins, or a custom array to select and extend it.
@@ -65,7 +68,7 @@ catalog is derived from source paths without loading module text. Selecting a mo
 module dependencies are resolved through the same local catalog.
 
 Code changes automatically save a recovery session to browser storage. With the editor canvas focused, `Cmd+S`
-or `Ctrl+S` saves canonical `.8f4e` source to disk. In browsers supporting the File System Access API in a secure
+or `Ctrl+S` saves canonical `.8f4e` source to disk through the project-export plugin. In browsers supporting the File System Access API in a secure
 context, the first Save chooses a destination and later saves reuse it. Opening a project from disk associates the
 selected file with the editor; the first Save can ask for write permission. The Export Project menu action acts as
 Save As: it chooses a destination and makes that file the target of later saves.
