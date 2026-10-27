@@ -41,7 +41,6 @@ Block types are automatically detected and updated based on code content.
 This feature contains several subfeatures under `features/` that handle specific aspects:
 
 - `blockHighlights` - Visual highlighting for selected/hovered blocks
-- `assertions` - Derives assertion result rectangles from `state.assertionResults` into `widgets.assertions`
 - `blockTypeUpdater` - Automatic block type detection and updates
 - `codeBlockCreator` - Block creation logic
 - `codeBlockDragger` - Drag and drop operations
@@ -73,17 +72,13 @@ Project-group blocks expose an **Open group** context-menu action that points `c
 slice. Nested-slice context menus expose **Go back**, which finds the immediate parent through those stable array
 references.
 
-Assertion markers match compiler site block IDs to `creationIndex` within the corresponding `projectPath`.
-Repeated calls to a site produce one marker; any failure makes it failed. Sites that were not executed or belong
-to included source have no marker. Geometry is relative to the code block, using the source-to-display row map
-and widget gaps. Runtime updates and group navigation refresh markers, and normal block derivation updates their
-layout. Markers remain during the debounce delay and clear when compilation starts.
-The web UI draws these rectangles over the line numbers, using `assertionPassed` (green) and `assertionFailed`
-(red) fill sprites. The instruction text remains visible.
+`@8f4e/editor-plugin-assertion-markers` owns assertion site aggregation, geometry, and drawing over line numbers.
+It reads `state.assertionResults` and current block layout through the generic drawer hook. Core block state
+contains no marker rectangles.
 
-Failed assertions also use the inline error-message widget. The runtime can provide a formatted `message` with
+Failed assertions use the inline error-message widget independently of the marker plugin. The runtime can provide a formatted `message` with
 expected and received values; outcomes without a message display `Assertion failed`. One message is shown per
-source site, using its first failed invocation. Messages follow the same block and project identity as markers,
+source site, using its first failed invocation. Messages match compiler block IDs and project paths,
 clear with results or compilation start, and contribute space below the assertion through the existing error layout.
 
 ## Integration Points

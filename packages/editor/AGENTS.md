@@ -16,6 +16,9 @@
   Favorite editing lives in `editor-plugin-toggle-favorite`, and memory-default disconnection in
   `editor-plugin-remove-memory-connections`. Favorite navigation and directive derivation remain core features.
   `editor-plugin-binary-assets` owns binary fetching, caching, memory loading, dialogs, and size constants.
+  Assertion marker drawing lives in `editor-plugin-assertion-markers`, keyboard-to-memory input in
+  `editor-plugin-keyboard-memory`, and MIDI discovery/input in `editor-plugin-midi-input`. These use the same plugin
+  contract; there is no separate environment-plugin manager. Assertion results and inline diagnostics remain core.
   Plugin contracts and installation live in `editor-core`,
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   The standard plugin set is composed in `editor-default`.
@@ -36,6 +39,9 @@
 - Start the website with `npx nx run @8f4e/editor-website:dev`.
 - Verify binary assets with `npx nx run @8f4e/editor-plugin-binary-assets:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-binary-assets:test:screenshot`.
+- Verify assertion markers and input plugins with
+  `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-assertion-markers,@8f4e/editor-plugin-keyboard-memory,@8f4e/editor-plugin-midi-input`.
+  Assertion markers also have a `test:screenshot` target; MIDI tests require no hardware.
 - Verify the favorite and memory-connection actions with
   `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-toggle-favorite,@8f4e/editor-plugin-remove-memory-connections`.
   Each also has a `test:screenshot` target for its canvas menu interaction.

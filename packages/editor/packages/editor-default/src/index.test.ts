@@ -1,5 +1,7 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
+import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
+import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
 import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
@@ -20,6 +22,12 @@ const { projectFiles, getCodeBuffer, getMemory } = vi.hoisted(() => ({
 }));
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('@8f4e/editor-plugin-keyboard-memory', () => ({
+	createKeyboardMemoryPlugin: vi.fn(() => ({ id: 'keyboard-memory', setup: () => () => {} })),
+}));
+vi.mock('@8f4e/editor-plugin-midi-input', () => ({
+	createMidiInputPlugin: vi.fn(() => ({ id: 'midi-input', setup: () => () => {} })),
+}));
 vi.mock('@8f4e/editor-plugin-binary-assets', () => ({
 	createBinaryAssetsPlugin: vi.fn(() => ({ id: 'binary-assets', setup: () => () => {} })),
 }));
@@ -45,14 +53,16 @@ vi.mock('./storage-callbacks', () => ({
 describe('default editor plugins', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.stubGlobal('window', { matchMedia: vi.fn(() => ({ matches: false })) });
+		getMemory.mockReturnValue(null);
+		getCodeBuffer.mockReturnValue(new Uint8Array());
+		vi.stubGlobal('window', { navigator: {}, matchMedia: vi.fn(() => ({ matches: false })) });
 	});
 	afterEach(() => vi.unstubAllGlobals());
 
 	it('composes the standard plugins and injects the mounted canvas and render callback', async () => {
 		const renderFrame = vi.fn();
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn(), renderFrame } as Editor);
-		const canvas = {} as HTMLCanvasElement;
+		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const editor = await mountDefaultEditor(canvas, { storage: {} as Storage });
 		expect(
 			vi
@@ -60,6 +70,9 @@ describe('default editor plugins', () => {
 				.mock.calls.at(-1)?.[1]
 				.plugins?.map(plugin => plugin.id)
 		).toEqual([
+			'assertion-markers',
+			'keyboard-memory',
+			'midi-input',
 			'binary-assets',
 			'toggle-skip-execution',
 			'toggle-favorite',
@@ -81,6 +94,8 @@ describe('default editor plugins', () => {
 			'screenshot',
 		]);
 		const getBytes = vi.mocked(createBinaryAssetsPlugin).mock.calls[0][0].getMemoryBytes;
+		expect(createKeyboardMemoryPlugin).toHaveBeenCalledWith({ inputTarget: canvas });
+		expect(createMidiInputPlugin).toHaveBeenCalledWith({ navigator: window.navigator, getMemory, getCodeBuffer });
 		expect(getBytes()).toBeUndefined();
 		const memory = new WebAssembly.Memory({ initial: 1 });
 		getMemory.mockReturnValue(memory);
@@ -118,6 +133,8 @@ describe('default editor plugins', () => {
 		const withoutPlugins = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage, plugins: [] });
 		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toEqual([]);
 		expect(createBinaryAssetsPlugin).not.toHaveBeenCalled();
+		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();
+		expect(createMidiInputPlugin).not.toHaveBeenCalled();
 		expect(createScreenshotPlugin).not.toHaveBeenCalled();
 		expect(createProjectExportPlugin).not.toHaveBeenCalled();
 		expect(createWasmExportPlugin).not.toHaveBeenCalled();

@@ -56,7 +56,6 @@ const renderProjection = {
 const cleanupSpriteSheet = vi.fn();
 const cleanupPointer = vi.fn();
 const cleanupKeyboard = vi.fn();
-const cleanupEnvironmentPlugins = vi.fn();
 
 vi.mock('@8f4e/web-ui-render-projection', () => ({
 	createWebUiRenderProjection: vi.fn(() => renderProjection),
@@ -89,10 +88,6 @@ vi.mock('./events/pointerEvents', () => ({
 
 vi.mock('./events/keyboardEvents', () => ({
 	default: vi.fn(() => cleanupKeyboard),
-}));
-
-vi.mock('./editorEnvironmentPlugins/manager', () => ({
-	createEditorEnvironmentPluginManager: vi.fn(() => cleanupEnvironmentPlugins),
 }));
 
 vi.mock('./spriteSheetManager', () => ({
@@ -132,7 +127,6 @@ describe('editor init', () => {
 			expect(cleanup).toHaveBeenCalledOnce();
 			expect(cleanupPointer).toHaveBeenCalledOnce();
 			expect(cleanupKeyboard).toHaveBeenCalledOnce();
-			expect(cleanupEnvironmentPlugins).toHaveBeenCalledOnce();
 			expect(events.dispose).toHaveBeenCalledOnce();
 			expect(renderProjection.dispose).toHaveBeenCalledTimes(stage === 'renderer' ? 1 : 0);
 			expect(view.destroy).not.toHaveBeenCalled();
@@ -195,7 +189,6 @@ describe('editor init', () => {
 		cleanupSpriteSheet.mockClear();
 		cleanupPointer.mockClear();
 		cleanupKeyboard.mockClear();
-		cleanupEnvironmentPlugins.mockClear();
 		storeState.editorConfig = {};
 		storeState.info = {};
 	});
@@ -322,7 +315,6 @@ describe('editor init', () => {
 	it('makes its canvas focusable and restores its previous tab index when disposed', async () => {
 		const { default: init } = await import('./index');
 		const { default: keyboardEvents } = await import('./events/keyboardEvents');
-		const { createEditorEnvironmentPluginManager } = await import('./editorEnvironmentPlugins/manager');
 		const canvas = {
 			width: 640,
 			height: 480,
@@ -349,11 +341,6 @@ describe('editor init', () => {
 
 		expect(canvas.tabIndex).toBe(0);
 		expect(keyboardEvents).toHaveBeenLastCalledWith(canvas, events, store);
-		expect(createEditorEnvironmentPluginManager).toHaveBeenLastCalledWith(
-			store,
-			events,
-			expect.objectContaining({ inputTarget: canvas })
-		);
 
 		editor.dispose();
 		expect(canvas.tabIndex).toBe(-1);
@@ -477,12 +464,7 @@ describe('editor init', () => {
 				type: 'object',
 			},
 		});
-		expect(initStateOptions.editorConfigSchemaContributions?.keyboard).toMatchObject({
-			root: 'keyboard',
-			schema: {
-				type: 'object',
-			},
-		});
+
 		expect(store.set).toHaveBeenCalledWith('info.graphics', {
 			timeToRenderMs: 10,
 			fps: 50,

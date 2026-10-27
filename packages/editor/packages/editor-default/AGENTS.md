@@ -25,3 +25,6 @@
   not install these editing actions or their menus.
 - Compose `createBinaryAssetsPlugin({ getMemoryBytes })` with a getter for the compiler service's current memory.
   Fetching, caching, binary metadata, loading UI, and generated asset constants remain inside the plugin.
+- Include `assertionMarkersPlugin`, `createKeyboardMemoryPlugin({ inputTarget: canvas })`, and
+  `createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })` in the standard set. Use the canvas's browser
+  navigator and live compiler getters. MIDI owns WASM instantiation and caching; core has no separate environment-plugin system.

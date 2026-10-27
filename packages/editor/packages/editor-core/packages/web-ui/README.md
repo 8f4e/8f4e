@@ -94,9 +94,8 @@ The output star selects `primaryDark3`, `primaryDark2`, `primaryDark1`, `primary
 using the existing calibrated value scale. Each input submits three sprites and each output four, in the same sprite
 batch. The generator does not prerender connector icons.
 
-Assertion rectangles come from each code block's `widgets.assertions`. They are drawn after code text, covering
-the line-number area before the assertion instruction. Passed assertions use `positiveBase`
-and failed assertions use `negativeBase`. Hidden previews and disabled blocks omit the markers.
+`@8f4e/editor-plugin-assertion-markers` uses the generic code-block drawer hook to draw passed/failed assertion
+indicators after source text. The renderer has no assertion-specific drawer or marker fields.
 
 ## Docs
 

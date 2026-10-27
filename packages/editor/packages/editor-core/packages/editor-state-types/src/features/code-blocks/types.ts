@@ -127,8 +127,6 @@ export interface CodeBlockGraphicData {
 	/** Pixel-space Y coordinate, computed from gridY * hGrid (where hGrid = characterHeight) */
 	y: number;
 	widgets: {
-		/** Rectangles covering executed assertion line numbers; failure takes precedence across repeated calls. */
-		assertions: Array<{ lineNumber: number; passed: boolean; x: number; y: number; width: number; height: number }>;
 		blockHighlights: Array<{
 			x: number;
 			y: number;

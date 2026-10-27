@@ -8,7 +8,6 @@ import drawArrow from './drawArrow';
 import drawEntryOutlines from './drawEntryOutlines';
 import drawSelectedOutline from './drawSelectedOutline';
 import drawShapeDeclarations from './drawShapeDeclarations';
-import drawAssertions from './widgets/assertions';
 import drawBlockHighlights from './widgets/blockHighlights';
 import drawConnectors from './widgets/connectors';
 import drawErrorMessages from './widgets/errorMessages';
@@ -84,7 +83,6 @@ export default function drawModules(
 					codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase
 				);
 			}
-			drawAssertions(engine, codeBlock);
 
 			if (state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				drawSelectedOutline(engine, state, codeBlock.width, codeBlock.height);

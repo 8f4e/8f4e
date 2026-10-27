@@ -47,7 +47,7 @@ The default composition includes `@8f4e/editor-plugin-toggle-skip-execution` for
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
 `@8f4e/editor-plugin-project-export` for project Save/Export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
-`createDefaultEditorPlugins({ canvas, renderFrame, saveProject, exportProject, exportBinaryCode })` constructs this
+`createDefaultEditorPlugins({ canvas, renderFrame, saveProject, exportProject, exportBinaryCode, getMemory, getCodeBuffer })` constructs this
 plugin set with resources for one editor. Project save/export callbacks share the file service used by Open;
 the WebAssembly callback reads the compiler's current code buffer when invoked.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
@@ -60,6 +60,12 @@ Each editor installs and disposes its own plugin effects. See the [plugin contra
 `@8f4e/editor-plugin-binary-assets` is also included. It owns binary asset configuration, fetching, caching, memory
 copies, loading UI, and generated size constants. The default editor supplies a getter for current compiler memory
 bytes, so memory replacement and growth are visible to the plugin without sharing browser-specific context fields.
+
+The standard set includes `@8f4e/editor-plugin-assertion-markers` for executed assertion indicators,
+`@8f4e/editor-plugin-keyboard-memory` for keyboard-to-memory input, and `@8f4e/editor-plugin-midi-input` for MIDI
+discovery and callbacks. Keyboard input receives the mounted canvas. MIDI receives that canvas's navigator and
+live compiler memory/bytecode getters, and owns its WASM instance and export cache. MIDI access is requested only
+when the project has MIDI configuration. Omitting these plugins also omits their schemas and input listeners.
 
 The runtime registry includes `TestRuntime`, selected with `; @config runtime TestRuntime`. For projects with an
 enabled test entry, it executes tests once after successful compilation or recompilation, using the editor's current

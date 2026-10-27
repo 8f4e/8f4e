@@ -23,9 +23,9 @@ assertion results or runtime error. Assertion failures are also formatted in the
 
 Execution results, run status, and worker-message types belong to this runtime package. Separately, the runtime
 publishes executed source sites, pass/fail outcomes, and formatted failure messages to `state.assertionResults`, whose `AssertionResult` type
-belongs to `@8f4e/editor-state-types` and has no test-runner dependency. The editor's assertion-marker effect
-subscribes to that runtime-independent array and derives per-block `widgets.assertions` rectangles, which the
-web UI draws over the assertion line numbers. The array is cleared when compilation starts, a new run starts,
+belongs to `@8f4e/editor-state-types` and has no test-runner dependency. The optional
+`@8f4e/editor-plugin-assertion-markers` reads that array and current block layout in its drawer to cover assertion
+line numbers with pass/fail indicators. The array is cleared when compilation starts, a new run starts,
 a run errors, or the runtime is disposed; results remain visible during recompilation debouncing.
 
 Failed assertions also appear as inline editor errors below their source line. Equality failures show both values

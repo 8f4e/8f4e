@@ -52,7 +52,10 @@
     "@8f4e/editor-plugin-wasm-export": "*",
     "@8f4e/editor-plugin-toggle-favorite": "*",
     "@8f4e/editor-plugin-remove-memory-connections": "*",
-    "@8f4e/editor-plugin-binary-assets": "*"
+    "@8f4e/editor-plugin-binary-assets": "*",
+    "@8f4e/editor-plugin-assertion-markers": "*",
+    "@8f4e/editor-plugin-midi-input": "*",
+    "@8f4e/editor-plugin-keyboard-memory": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

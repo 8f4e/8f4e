@@ -40,3 +40,7 @@
 - Binary assets belong to `editor-plugin-binary-assets`, including their schema, fetching/cache, private state, dialog,
   and size constants. Keep only generic `envConstantContributions`, schema registration, dialogs, and memory resolution
   in core. Environment constants refresh when blocks are populated as well as when contributions change.
+- Assertion marker geometry and drawing belong to `editor-plugin-assertion-markers`; retain runtime results and
+  inline assertion error messages in core. Do not add marker fields to `CodeBlockGraphicData`.
+- Keyboard-to-memory and MIDI input belong to their plugin packages. The default host supplies their browser and
+  compiler resources through factories; core owns no input-specific schemas, WASM export services, or environment-plugin manager.

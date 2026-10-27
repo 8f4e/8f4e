@@ -1,9 +1,12 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
+import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
 import { barsPlugin } from '@8f4e/editor-plugin-bars';
 import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { buttonPlugin } from '@8f4e/editor-plugin-button';
 import { crossfadePlugin } from '@8f4e/editor-plugin-crossfade';
+import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { meterPlugin } from '@8f4e/editor-plugin-meter';
+import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
 import { pianoPlugin } from '@8f4e/editor-plugin-piano';
 import { plotPlugin } from '@8f4e/editor-plugin-plot';
 import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
@@ -35,12 +38,25 @@ export function createDefaultEditorPlugins(options: {
 	saveProject: (text: string, fileName: string) => Promise<void>;
 	exportProject: (text: string, fileName: string) => Promise<void>;
 	exportBinaryCode: (fileName: string) => Promise<void>;
-	getMemoryBytes: () => Uint8Array | undefined;
+	getMemory: () => WebAssembly.Memory | null;
+	getCodeBuffer: () => Uint8Array;
 }): NonNullable<EditorOptions['plugins']> {
 	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
-		createBinaryAssetsPlugin({ getMemoryBytes: options.getMemoryBytes }),
+		assertionMarkersPlugin,
+		createKeyboardMemoryPlugin({ inputTarget: options.canvas }),
+		createMidiInputPlugin({
+			navigator: options.canvas.ownerDocument.defaultView!.navigator,
+			getMemory: options.getMemory,
+			getCodeBuffer: options.getCodeBuffer,
+		}),
+		createBinaryAssetsPlugin({
+			getMemoryBytes: () => {
+				const memory = options.getMemory();
+				return memory ? new Uint8Array(memory.buffer) : undefined;
+			},
+		}),
 		toggleSkipExecutionPlugin,
 		toggleFavoritePlugin,
 		removeMemoryConnectionsPlugin,
@@ -113,10 +129,8 @@ export async function mountDefaultEditor(
 					saveProject,
 					exportProject,
 					exportBinaryCode: saveWasm,
-					getMemoryBytes: () => {
-						const memory = compilerService.getMemory();
-						return memory ? new Uint8Array(memory.buffer) : undefined;
-					},
+					getMemory: compilerService.getMemory,
+					getCodeBuffer: compilerService.getCodeBuffer,
 				}),
 			captureWheel,
 			featureFlags,

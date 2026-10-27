@@ -116,6 +116,12 @@ state, and source transformation for disconnecting intermodular memory defaults.
 through their action payload and respect edit mode; their menu entries disappear when the plugins are omitted.
 The public `removeDirective` helper edits generic directive comments without coupling core to either action.
 
+The assertion-markers plugin draws runtime results over assertion line numbers using current block layout; core
+keeps the results and inline failure messages. Keyboard-to-memory input and MIDI input live in their plugin packages.
+Their factories receive the input target or navigator and compiler-resource getters from the host. Each plugin
+owns its configuration schema and cleanup. MIDI also owns its WASM instance and export cache; there is no separate
+environment-plugin manager in core.
+
 The binary-assets plugin owns `bin` configuration, browser fetching and caching, private asset bytes/metadata,
 memory loading, the loading dialog, and generated asset-size constants. Its factory receives a getter for current
 runtime memory bytes; the shared plugin context carries no browser resources or binary asset fields.
