@@ -1,7 +1,7 @@
 import { resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import type { State } from '@8f4e/editor-state-types';
 import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/test-runner';
-import type { RgbaTexture, RgbaTextureLayer } from 'glugglugglug';
+import type { RgbaTexture, RgbaTextureLayer } from '../plugins/rgba-texture-layer';
 import type { MemoryViews } from '../types';
 
 type OverlayPosition = 'left' | 'center' | 'right';

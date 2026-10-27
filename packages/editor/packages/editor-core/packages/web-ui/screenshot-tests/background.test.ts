@@ -2,7 +2,7 @@ import { PALETTE_INDICES, type PaletteConfig, resolvePalette, toPaletteBytes } f
 import generateSprite, { FONT_NAMES, type SpriteData } from '@8f4e/sprite-generator';
 import { Engine, type SpriteId, type SpriteLookup } from 'glugglugglug';
 import { expect, test } from 'vitest';
-import BackgroundRenderer from '../src/drawers/background';
+import BackgroundRenderer from '../src/plugins/background';
 
 /** Reconstruct the previous atlas layout independently of the procedural shaders. */
 function legacyAtlas({ characterWidth: w, characterHeight: h, backgroundDot, spriteAtlas }: SpriteData) {

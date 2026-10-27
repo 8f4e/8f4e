@@ -112,6 +112,9 @@ The vertex shader reads the selected color from a uniform buffer; the fragment s
 The buffer reserves 256 colors (4 KiB), with 196 active entries using 3,136 bytes from a 784-byte RGBA8 input.
 Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
 
+Web-ui owns the background, line, and RGBA texture render plugins under `src/plugins/`, including their shared WebGL
+setup helpers and resource lifetimes. Glugglugglug supplies sprite rendering and the generic render-hook contract.
+
 `@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
 the generated masks and separately resolved palette. Theme changes update palette colors, the background's three
 premultiplied color uniforms, and line-rendered wire colors; font changes rebuild masks and source lookups and update

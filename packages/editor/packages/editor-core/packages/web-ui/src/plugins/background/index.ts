@@ -1,6 +1,7 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { SpriteData } from '@8f4e/sprite-generator';
 import type { RenderHook, RenderPluginHost } from 'glugglugglug';
+import { createProgram, prepareRenderPass, removeHook, requireResource, requireUniform } from '../webgl';
 import { fragmentShaderSource, vertexShaderSource } from './shaders';
 
 /** Draws the editor's base and alternating dots without atlas masks or per-dot instance data. */
@@ -22,7 +23,7 @@ export default class BackgroundRenderer {
 
 	constructor(private readonly host: RenderPluginHost) {
 		const gl = host.gl;
-		const program = createProgram(gl);
+		const program = createProgram(gl, vertexShaderSource, fragmentShaderSource, 'background');
 		let vertexArray: WebGLVertexArrayObject | null = null;
 		try {
 			vertexArray = requireResource(gl.createVertexArray(), 'background vertex array');
@@ -77,19 +78,7 @@ export default class BackgroundRenderer {
 		if (this.layerCount === 0) return;
 		const gl = this.host.gl;
 		// The background shares the raw context with render hooks; establish every state needed by this pass.
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-		gl.useProgram(this.program);
-		gl.bindVertexArray(this.vertexArray);
-		gl.enable(gl.BLEND);
-		gl.blendEquation(gl.FUNC_ADD);
-		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-		gl.colorMask(true, true, true, true);
-		gl.disable(gl.SCISSOR_TEST);
-		gl.disable(gl.DEPTH_TEST);
-		gl.disable(gl.STENCIL_TEST);
-		gl.disable(gl.CULL_FACE);
-		gl.disable(gl.RASTERIZER_DISCARD);
+		prepareRenderPass(gl, this.program, this.vertexArray);
 		gl.uniform2f(
 			this.patternScaleLocation,
 			gl.drawingBufferWidth * this.inversePatternWidth,
@@ -106,55 +95,8 @@ export default class BackgroundRenderer {
 	destroy(): void {
 		if (this.destroyed) return;
 		this.destroyed = true;
-		const index = this.host.hooks.preDraw.indexOf(this.drawHook);
-		if (index !== -1) this.host.hooks.preDraw.splice(index, 1);
+		removeHook(this.host.hooks.preDraw, this.drawHook);
 		this.host.gl.deleteVertexArray(this.vertexArray);
 		this.host.gl.deleteProgram(this.program);
 	}
-}
-
-function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
-	const vertex = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-	let fragment: WebGLShader | null = null;
-	let program: WebGLProgram | null = null;
-	try {
-		fragment = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-		program = requireResource(gl.createProgram(), 'background program');
-		gl.attachShader(program, vertex);
-		gl.attachShader(program, fragment);
-		gl.linkProgram(program);
-		if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-			throw new Error(gl.getProgramInfoLog(program) ?? 'Could not link the background program.');
-		}
-		return program;
-	} catch (error) {
-		if (program) gl.deleteProgram(program);
-		throw error;
-	} finally {
-		gl.deleteShader(vertex);
-		if (fragment) gl.deleteShader(fragment);
-	}
-}
-
-function compileShader(gl: WebGL2RenderingContext, type: number, source: string): WebGLShader {
-	const shader = requireResource(gl.createShader(type), 'background shader');
-	gl.shaderSource(shader, source);
-	gl.compileShader(shader);
-	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		const message = gl.getShaderInfoLog(shader) ?? 'Could not compile a background shader.';
-		gl.deleteShader(shader);
-		throw new Error(message);
-	}
-	return shader;
-}
-
-function requireResource<T>(resource: T | null, name: string): T {
-	if (resource === null) throw new Error(`Could not create the ${name}.`);
-	return resource;
-}
-
-function requireUniform(gl: WebGL2RenderingContext, program: WebGLProgram, name: string): WebGLUniformLocation {
-	const location = gl.getUniformLocation(program, name);
-	if (location === null) throw new Error(`Could not find the ${name} background uniform.`);
-	return location;
 }

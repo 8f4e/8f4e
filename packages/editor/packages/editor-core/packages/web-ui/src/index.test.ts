@@ -97,11 +97,12 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('glugglugglug', () => ({
 	Engine: mocks.Engine,
-	RgbaTextureLayer: mocks.RgbaTextureLayer,
-	LineDrawer: mocks.LineDrawer,
 }));
 
-vi.mock('./drawers/background', () => ({
+vi.mock('./plugins/line-drawer', () => ({ LineDrawer: mocks.LineDrawer }));
+vi.mock('./plugins/rgba-texture-layer', () => ({ RgbaTextureLayer: mocks.RgbaTextureLayer }));
+
+vi.mock('./plugins/background', () => ({
 	default: mocks.BackgroundRenderer,
 }));
 

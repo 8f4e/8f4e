@@ -13,7 +13,7 @@ import green from '@8f4e/examples/projects/misc/landingPageDemo2.8f4e?raw';
 import purple from '@8f4e/examples/projects/misc/landingPageDemo3.8f4e?raw';
 import amber from '@8f4e/examples/projects/misc/landingPageDemo4.8f4e?raw';
 import generateSprite, { resolveSpriteIds } from '@8f4e/sprite-generator';
-import { Engine, LineDrawer } from 'glugglugglug';
+import { Engine } from 'glugglugglug';
 
 function paletteFromSource(source: string): PaletteConfig {
 	return Object.fromEntries(
@@ -44,7 +44,6 @@ for (const [name, source] of [
 	const palette = resolvePalette(paletteFromSource(source));
 	const engine = new Engine(canvas);
 	engine.setPalette(toPaletteBytes(palette));
-	const lines = new LineDrawer(engine);
 	const ids = resolveSpriteIds(
 		spriteAtlas.spriteIdentifiers,
 		engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup)
@@ -80,7 +79,7 @@ for (const [name, source] of [
 		engine.drawSprite(16, 112, ids.fill, PALETTE_INDICES.accentSurface, 128, 16);
 		engine.drawSprite(136, 112, ids.fill, PALETTE_INDICES.lightBase, 16, 16);
 		text(140, 112, '|', PALETTE_INDICES.darkBase);
-		lines.drawLine(0, 100, 248, 100, 2, palette.rgba.strokeBase);
+		engine.drawSprite(0, 99, ids.fill, PALETTE_INDICES.strokeBase, 248, 2);
 		engine.drawSprite(16, 136, ids.fill, PALETTE_INDICES.darkSurface, 208, 20);
 		for (let x = 0; x < 72; x++)
 			engine.drawSprite(
