@@ -50,7 +50,6 @@ const view = {
 
 const renderProjection = {
 	getSnapshot: vi.fn(() => ({ codeBlocks: new Map() })),
-	refresh: vi.fn(),
 	dispose: vi.fn(),
 };
 

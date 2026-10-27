@@ -1,4 +1,4 @@
-import type { SpriteId } from '@8f4e/sprite-generator';
+import type { SpriteId } from 'glugglugglug';
 import { describe, expect, it } from 'vitest';
 import resolveCodeCells from './resolveCodeCells';
 import { createSpriteCell } from './spriteCell';

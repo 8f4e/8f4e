@@ -1,13 +1,13 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { SpriteId as CellSpriteId } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
+import type { SpriteId } from 'glugglugglug';
 import { describe, expect, it, vi } from 'vitest';
 import createWebUiRenderProjection from './projection';
 import { createSpriteCell } from './spriteCell';
 
-const cell = (id: number, color: number) => createSpriteCell(id as CellSpriteId, color);
+const cell = (id: number, color: number) => createSpriteCell(id as SpriteId, color);
 
 describe('createWebUiRenderProjection', () => {
 	it('subscribes beside editor-state and publishes render data by runtime id', () => {

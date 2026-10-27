@@ -4,7 +4,6 @@ import { writeGlyph } from './font.ts';
 import { DEFAULT_FONT, FONTS, type Font } from './fonts/catalog.ts';
 import decodeFontBase64 from './fonts/font-decoder.ts';
 
-export type { SpriteId } from 'glugglugglug';
 export { DEFAULT_FONT, FONT_NAMES, type Font } from './fonts/catalog.ts';
 
 export const FILL_SPRITE_ID = GLYPH_COUNT as SpriteId;

@@ -1,10 +1,10 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { SpriteId as CellSpriteId } from '@8f4e/sprite-generator';
+import type { SpriteId } from 'glugglugglug';
 import { describe, expect, it } from 'vitest';
 import deriveCodeBlockCodeCells, { type CodeBlockRenderSource } from './deriveCodeBlockCodeCells';
 import { createSpriteCell } from './spriteCell';
 
-const cell = (id: number, color: number) => createSpriteCell(id as CellSpriteId, color);
+const cell = (id: number, color: number) => createSpriteCell(id as SpriteId, color);
 
 function createSource(code: string[], overrides: Partial<CodeBlockRenderSource> = {}): CodeBlockRenderSource {
 	return {

@@ -16,7 +16,6 @@ export interface WebUiRenderDataSource {
 }
 
 export interface WebUiRenderProjection extends WebUiRenderDataSource {
-	refresh: () => void;
 	dispose: () => void;
 }
 
@@ -46,7 +45,6 @@ export default function createWebUiRenderProjection(
 
 	return {
 		getSnapshot: () => snapshot,
-		refresh,
 		dispose: () => {
 			for (const selector of selectors) store.unsubscribe(selector, refresh);
 			for (const eventName of eventNames) events.off(eventName, refresh);

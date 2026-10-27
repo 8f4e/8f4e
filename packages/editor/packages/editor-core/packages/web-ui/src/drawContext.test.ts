@@ -1,5 +1,5 @@
-import type { SpriteId } from '@8f4e/sprite-generator';
 import { createSpriteCell } from '@8f4e/web-ui-render-projection';
+import type { SpriteId } from 'glugglugglug';
 import { describe, expect, it, vi } from 'vitest';
 import { DrawContext } from './drawContext';
 

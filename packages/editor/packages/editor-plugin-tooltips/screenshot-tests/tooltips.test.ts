@@ -81,7 +81,6 @@ entryEnd`);
 	renderer.pauseRendering();
 	events.dispatch('spriteSheetRerendered');
 	now.mockReturnValue(1000);
-	projection.refresh();
 	try {
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();

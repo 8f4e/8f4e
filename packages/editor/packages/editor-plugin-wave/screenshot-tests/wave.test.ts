@@ -71,7 +71,6 @@ entryEnd`);
 	);
 	renderer.pauseRendering();
 	events.dispatch('spriteSheetRerendered');
-	projection.refresh();
 	try {
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();

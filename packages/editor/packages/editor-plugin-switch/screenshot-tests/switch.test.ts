@@ -79,7 +79,6 @@ entryEnd`);
 		{ drawers }
 	);
 	renderer.pauseRendering();
-	projection.refresh();
 	try {
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();
