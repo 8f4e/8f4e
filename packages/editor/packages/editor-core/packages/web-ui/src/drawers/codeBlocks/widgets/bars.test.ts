@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import type { ArrayBars } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../../../__tests__/rendering';
@@ -56,14 +56,13 @@ function createBarsWidget(overrides: Partial<ArrayBars> = {}): ArrayBars {
 describe('drawBars', () => {
 	it('renders buffer values as vertical bars', () => {
 		const engine = createMockEngine();
-		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayBars: [createBarsWidget()],
 			} as never,
 		});
 
-		drawBars(engine, state, codeBlock, createMemoryViews({ float32: [0.25, 0.5, 0.75, 1] }));
+		drawBars(engine, codeBlock, createMemoryViews({ float32: [0.25, 0.5, 0.75, 1] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 8, 8);
@@ -75,7 +74,6 @@ describe('drawBars', () => {
 
 	it('compresses dense arrays by the maximum value in each column', () => {
 		const engine = createMockEngine();
-		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayBars: [
@@ -93,7 +91,7 @@ describe('drawBars', () => {
 			} as never,
 		});
 
-		drawBars(engine, state, codeBlock, createMemoryViews({ float32: [0, 0.25, 0.1, 0.5, 0.2, 0.75, 0.3, 1] }));
+		drawBars(engine, codeBlock, createMemoryViews({ float32: [0, 0.25, 0.1, 0.5, 0.2, 0.75, 0.3, 1] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledWith(0, 6, PALETTE_INDICES.detailBase, 1, 2);

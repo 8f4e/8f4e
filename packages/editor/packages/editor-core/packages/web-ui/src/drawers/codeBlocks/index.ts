@@ -54,7 +54,7 @@ export default function drawModules(
 				engine.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
 			}
 
-			drawBlockHighlights(engine, state, codeBlock);
+			drawBlockHighlights(engine, codeBlock);
 
 			if (state.featureFlags.codeLineSelection && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				engine.drawFill(0, codeBlock.cursor.y, PALETTE_INDICES.primarySoft, codeBlock.width, state.viewport.hGrid);
@@ -79,7 +79,7 @@ export default function drawModules(
 				engine.drawResolvedText(state.viewport.vGrid, state.viewport.hGrid * i, codeCells[i]);
 			}
 
-			drawShapeDeclarations(engine, state, codeBlock);
+			drawShapeDeclarations(engine, codeBlock);
 
 			if (state.featureFlags.editing && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				engine.drawText(
@@ -89,7 +89,7 @@ export default function drawModules(
 					codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase
 				);
 			}
-			drawAssertions(engine, state, codeBlock);
+			drawAssertions(engine, codeBlock);
 
 			if (state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				drawSelectedOutline(engine, state, codeBlock.width, codeBlock.height);
@@ -97,10 +97,10 @@ export default function drawModules(
 
 			drawErrorMessages(engine, state, codeBlock);
 			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
-			drawCrossfades(engine, state, codeBlock, memoryViews);
+			drawCrossfades(engine, codeBlock, memoryViews);
 			drawConnectors(engine, state, codeBlock, memoryViews);
-			drawBars(engine, state, codeBlock, memoryViews);
-			drawMeters(engine, state, codeBlock, memoryViews);
+			drawBars(engine, codeBlock, memoryViews);
+			drawMeters(engine, codeBlock, memoryViews);
 			drawPlotters(engine, state, codeBlock, memoryViews);
 			drawInfoPanels(engine, state, codeBlock);
 			drawDebuggers(engine, state, codeBlock, memoryViews);

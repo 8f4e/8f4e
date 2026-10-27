@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import type { ArrayMeter } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../../../__tests__/rendering';
@@ -59,14 +59,13 @@ function createMeterWidget(overrides: Partial<ArrayMeter> = {}): ArrayMeter {
 describe('drawMeters', () => {
 	it('renders a segmented horizontal meter based on the current value', () => {
 		const engine = createMockEngine();
-		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [createMeterWidget({ x: 2, y: 3 })],
 			} as never,
 		});
 
-		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [0.95] }));
+		drawMeters(engine, codeBlock, createMemoryViews({ float32: [0.95] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 20, 6);
@@ -77,7 +76,6 @@ describe('drawMeters', () => {
 
 	it('clamps out-of-range values to a full meter', () => {
 		const engine = createMockEngine();
-		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [
@@ -92,7 +90,7 @@ describe('drawMeters', () => {
 			} as never,
 		});
 
-		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [2] }));
+		drawMeters(engine, codeBlock, createMemoryViews({ float32: [2] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.positiveBase, 6, 4);
@@ -102,7 +100,6 @@ describe('drawMeters', () => {
 
 	it('returns fully to zero when the bound scalar value is zero', () => {
 		const engine = createMockEngine();
-		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [
@@ -117,7 +114,7 @@ describe('drawMeters', () => {
 			} as never,
 		});
 
-		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [0] }));
+		drawMeters(engine, codeBlock, createMemoryViews({ float32: [0] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledTimes(1);
@@ -126,7 +123,6 @@ describe('drawMeters', () => {
 
 	it('treats bipolar ranges as amplitude meters so silence renders empty', () => {
 		const engine = createMockEngine();
-		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [
@@ -146,7 +142,7 @@ describe('drawMeters', () => {
 			} as never,
 		});
 
-		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [0] }));
+		drawMeters(engine, codeBlock, createMemoryViews({ float32: [0] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledTimes(1);
@@ -155,7 +151,6 @@ describe('drawMeters', () => {
 
 	it('fills negative bipolar values by magnitude', () => {
 		const engine = createMockEngine();
-		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [
@@ -170,7 +165,7 @@ describe('drawMeters', () => {
 			} as never,
 		});
 
-		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [-0.5] }));
+		drawMeters(engine, codeBlock, createMemoryViews({ float32: [-0.5] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 20, 6);
@@ -179,7 +174,6 @@ describe('drawMeters', () => {
 
 	it('latches a red overload marker at the end of the meter after clipping', () => {
 		const engine = createMockEngine();
-		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [
@@ -195,11 +189,11 @@ describe('drawMeters', () => {
 		});
 		const drawSprite = vi.mocked(engine.drawFill);
 
-		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [1.2] }));
+		drawMeters(engine, codeBlock, createMemoryViews({ float32: [1.2] }));
 		expect(drawSprite).toHaveBeenCalledWith(4, 0, PALETTE_INDICES.negativeBase, 8, 4);
 
 		drawSprite.mockClear();
-		drawMeters(engine, state, codeBlock, createMemoryViews({ float32: [0.4] }));
+		drawMeters(engine, codeBlock, createMemoryViews({ float32: [0.4] }));
 		expect(drawSprite).toHaveBeenCalledWith(4, 0, PALETTE_INDICES.negativeBase, 8, 4);
 	});
 });

@@ -1,12 +1,8 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../drawContext';
 
-export default function drawShapeDeclarations(
-	engine: DrawContext,
-	state: State,
-	codeBlock: CodeBlockGraphicData
-): void {
+export default function drawShapeDeclarations(engine: DrawContext, codeBlock: CodeBlockGraphicData): void {
 	if (codeBlock.widgets.shapeDeclarations.length === 0) {
 		return;
 	}

@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
 
@@ -7,12 +7,7 @@ function clamp(value: number, min: number, max: number): number {
 	return Math.max(min, Math.min(value, max));
 }
 
-export default function drawer(
-	engine: DrawContext,
-	state: State,
-	codeBlock: CodeBlockGraphicData,
-	memoryViews: MemoryViews
-): void {
+export default function drawer(engine: DrawContext, codeBlock: CodeBlockGraphicData, memoryViews: MemoryViews): void {
 	if (!codeBlock.name) {
 		return;
 	}
