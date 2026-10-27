@@ -1,5 +1,5 @@
 import type { SpriteId, SpriteLookup } from 'glugglugglug';
-import { BACKGROUND_COLUMNS, BACKGROUND_ROWS, createAtlasLayout, FONT_COLUMNS } from './atlasLayout.ts';
+import { createAtlasLayout, FONT_COLUMNS, GLYPH_COUNT } from './atlasLayout.ts';
 import { writeGlyph } from './font.ts';
 import decodeFontBase64 from './fonts/font-decoder.ts';
 import type { FontMetadata } from './fonts/ibmvga8x16/generated/ascii.ts';
@@ -7,7 +7,6 @@ import type { SpriteAtlas } from './sprite-atlas.ts';
 import { type Config, FONT_NAMES, type Font } from './types.ts';
 
 export type { SpriteId } from 'glugglugglug';
-export { BACKGROUND_COLUMNS, BACKGROUND_ROWS } from './atlasLayout.ts';
 export type {
 	SpriteAtlas,
 	SpriteFont,
@@ -22,10 +21,17 @@ type FontData = Omit<FontDefinition, 'loadMetadata'> & {
 	asciiBitmap: number[];
 };
 
+/** Pixel-aligned dot geometry, repeated by the editor's procedural background renderer. */
+export interface BackgroundDot {
+	readonly x: number;
+	readonly y: number;
+	readonly size: number;
+}
+
 type FontDefinition = {
 	characterWidth: number;
 	characterHeight: number;
-	backgroundDot: { x: number; y: number; size: number };
+	backgroundDot: BackgroundDot;
 	loadMetadata: () => Promise<{ fontMetadata: FontMetadata }>;
 };
 
@@ -184,6 +190,7 @@ export interface SpriteData {
 	spriteAtlas: SpriteAtlas;
 	characterWidth: number;
 	characterHeight: number;
+	backgroundDot: BackgroundDot;
 }
 
 export default async function generateSprite(config: Config = {}): Promise<SpriteData> {
@@ -192,37 +199,23 @@ export default async function generateSprite(config: Config = {}): Promise<Sprit
 	const image = { width: layout.width, height: layout.height, data: new Uint8Array(layout.width * layout.height) };
 	const lookup: SpriteLookup = {};
 	const font: Record<number, number> & { 63: number } = { 63: 63 };
-	for (let code = 0; code < 128; code++) {
+	for (let code = 0; code < GLYPH_COUNT; code++) {
 		const x = (code % FONT_COLUMNS) * characterWidth;
 		const y = Math.floor(code / FONT_COLUMNS) * characterHeight;
 		writeGlyph(image.data, image.width, asciiBitmap, code, characterWidth, characterHeight, x, y);
 		lookup[code] = { x, y, spriteWidth: characterWidth, spriteHeight: characterHeight };
 		font[code] = code;
 	}
-	// Even columns form one color layer. Draw the same mask offset by one cell for odd columns.
-	for (let row = 0; row < BACKGROUND_ROWS; row++) {
-		for (let column = 0; column < BACKGROUND_COLUMNS; column += 2) {
-			const x = column * characterWidth + backgroundDot.x;
-			const y = layout.background.y + row * characterHeight + backgroundDot.y;
-			for (let dotRow = 0; dotRow < backgroundDot.size; dotRow++) {
-				const start = (y + dotRow) * image.width + x;
-				image.data.fill(255, start, start + backgroundDot.size);
-			}
-		}
+	for (let row = 0; row < characterHeight; row++) {
+		const start = (layout.fill.y + row) * image.width + layout.fill.x;
+		image.data.fill(255, start, start + characterWidth);
 	}
-	image.data[layout.fill.y * image.width + layout.fill.x] = 255;
-	const fill = 128;
-	const background = 129;
+	const fill = GLYPH_COUNT;
 	lookup[fill] = layout.fill;
-	lookup[background] = {
-		x: 0,
-		y: layout.background.y,
-		spriteWidth: layout.background.width,
-		spriteHeight: layout.background.height,
-	};
 	return {
 		characterWidth,
 		characterHeight,
-		spriteAtlas: { image, lookup, spriteIdentifiers: { font, fill, background } },
+		backgroundDot,
+		spriteAtlas: { image, lookup, spriteIdentifiers: { font, fill } },
 	};
 }

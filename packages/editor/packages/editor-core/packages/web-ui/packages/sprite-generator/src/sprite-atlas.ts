@@ -6,13 +6,11 @@ export type SpriteFont = Readonly<Partial<Record<number, SpriteId>>> & { readonl
 export interface SpriteIdentifierLookups {
 	font: Readonly<Record<number, SpriteIdentifier>> & { readonly 63: SpriteIdentifier };
 	fill: SpriteIdentifier;
-	background: SpriteIdentifier;
 }
 
 export interface SpriteIdLookups {
 	font: SpriteFont;
 	fill: SpriteId;
-	background: SpriteId;
 }
 
 export interface SpriteAtlas {
@@ -28,6 +26,5 @@ export function resolveSpriteIds(identifiers: SpriteIdentifierLookups, resolver:
 			Object.entries(identifiers.font).map(([code, identifier]) => [code, resolver.resolveSprite(identifier)])
 		) as SpriteFont,
 		fill: resolver.resolveSprite(identifiers.fill),
-		background: resolver.resolveSprite(identifiers.background),
 	};
 }

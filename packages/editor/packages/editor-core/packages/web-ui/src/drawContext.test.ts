@@ -6,7 +6,6 @@ import { DrawContext } from './drawContext';
 const ids = {
 	font: { 63: 9 as SpriteId, 65: 1 as SpriteId, 66: 2 as SpriteId },
 	fill: 7 as SpriteId,
-	background: 8 as SpriteId,
 } satisfies SpriteIdLookups;
 describe('DrawContext', () => {
 	it('forwards separate shared shape and color indices through nested offsets', () => {

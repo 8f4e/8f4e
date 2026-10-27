@@ -2,16 +2,18 @@ import { type ResolvedPalette, toPaletteBytes } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import { resolveSpriteIds, type SpriteData, type SpriteIdLookups } from '@8f4e/sprite-generator';
 import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
-import { Engine, LineDrawer, RgbaTextureLayer } from 'glugglugglug';
+import { Engine } from 'glugglugglug';
 import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
 import drawConnections from './drawers/codeBlocks/widgets/connections';
 import drawContextMenu from './drawers/contextMenu';
 import drawDialog from './drawers/dialog';
-import drawBackground from './drawers/drawBackground';
 import drawModeOverlay from './drawers/modeOverlay';
 import type { CodeBlockDrawerRegistry } from './drawers/registry';
 import { createWasmOverlayTextureDrawer, type WasmOverlayTextureOptions } from './drawers/wasmOverlayTexture';
+import BackgroundRenderer from './plugins/background';
+import { LineDrawer } from './plugins/line-drawer';
+import { RgbaTextureLayer } from './plugins/rgba-texture-layer';
 import type { MemoryViews } from './types';
 import { resolveWireColors } from './wire-colors';
 
@@ -71,9 +73,12 @@ export default async function init(
 		frameStartedAt = performance.now();
 	});
 	const lines = new LineDrawer(engine);
+	const background = new BackgroundRenderer(engine);
 	let draw: DrawContext;
 	let wireColors = resolveWireColors(palette);
-	engine.setPalette(toPaletteBytes(palette));
+	const paletteBytes = toPaletteBytes(palette);
+	engine.setPalette(paletteBytes);
+	background.setPalette(paletteBytes);
 	const renderStatsIntervalFrames = Math.max(1, Math.floor(options.renderStatsIntervalFrames ?? 60));
 	let viewportWidth = canvas.width;
 	let viewportHeight = canvas.height;
@@ -84,6 +89,7 @@ export default async function init(
 	function installSpriteAtlas(nextSpriteData: SpriteData): void {
 		const resolver = engine.setSpriteAtlas(nextSpriteData.spriteAtlas.image, nextSpriteData.spriteAtlas.lookup);
 		const spriteLookups = resolveSpriteIds(nextSpriteData.spriteAtlas.spriteIdentifiers, resolver);
+		background.setFont(nextSpriteData);
 		if (draw) draw.setSpriteLookups(spriteLookups);
 		else draw = new DrawContext(engine, nextSpriteData.characterWidth, spriteLookups);
 		if (options.onSpriteAtlasResolved) {
@@ -175,7 +181,7 @@ export default async function init(
 			getViewportSize: () => ({ width: viewportWidth, height: viewportHeight }),
 			instantiate: options.instantiateOverlayTextureWasm,
 		});
-		overlayTextureLayer = new RgbaTextureLayer(engine, { phase: 'postDraw' });
+		overlayTextureLayer = new RgbaTextureLayer(engine);
 		overlayTextureLayer.setDrawCallback(layer => {
 			drawWasmOverlayTexture(layer);
 		});
@@ -189,7 +195,6 @@ export default async function init(
 	}
 
 	const drawFrame = () => {
-		drawBackground(draw, state);
 		drawCodeBlocks(draw, state, memoryViews, renderData.getSnapshot(), options.drawers);
 		if (state.dialogStack.length === 0) {
 			drawConnections(lines, wireColors, state, memoryViews);
@@ -282,7 +287,9 @@ export default async function init(
 			draw.setCharacterWidth(spriteData.characterWidth);
 		},
 		loadPalette: palette => {
-			engine.setPalette(toPaletteBytes(palette));
+			const bytes = toPaletteBytes(palette);
+			engine.setPalette(bytes);
+			background.setPalette(bytes);
 			wireColors = resolveWireColors(palette);
 		},
 		pauseRendering,
@@ -296,6 +303,7 @@ export default async function init(
 		destroy: () => {
 			pauseRendering();
 			lines.destroy();
+			background.destroy();
 			destroyOverlayTextureLayer();
 			engine.destroy();
 		},

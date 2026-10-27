@@ -10,21 +10,27 @@ describe('R8 glyph masks', () => {
 		expect([...data.entries()].filter(([, value]) => value).map(([index]) => index)).toEqual([9, 11, 17]);
 		expect(new Set(data)).toEqual(new Set([0, 255]));
 	});
-	it.each(FONT_NAMES)('generates shared, bounded glyph and background masks for %s without canvas APIs', async font => {
+	it.each(FONT_NAMES)('generates a uniform grid of glyph and fill masks for %s without canvas APIs', async font => {
 		const { spriteAtlas, characterWidth, characterHeight } = await generateSprite({ font });
 		const image = spriteAtlas.image;
 		expect(image.data.length).toBe(image.width * image.height);
 		expect(image.data.some(value => value === 255)).toBe(true);
-		expect(Object.keys(spriteAtlas.spriteIdentifiers)).toEqual(['font', 'fill', 'background']);
-		expect(Object.keys(spriteAtlas.lookup)).toHaveLength(130);
+		expect(Object.keys(spriteAtlas.spriteIdentifiers)).toEqual(['font', 'fill']);
+		expect(Object.keys(spriteAtlas.lookup)).toHaveLength(129);
+		expect(new Set(image.data)).toEqual(new Set([0, 255]));
 		for (const rect of Object.values(spriteAtlas.lookup)) {
+			expect([rect.spriteWidth, rect.spriteHeight]).toEqual([characterWidth, characterHeight]);
+			expect(rect.x % characterWidth).toBe(0);
+			expect(rect.y % characterHeight).toBe(0);
 			expect(rect.x + rect.spriteWidth).toBeLessThanOrEqual(image.width);
 			expect(rect.y + rect.spriteHeight).toBeLessThanOrEqual(image.height);
 		}
 		const layout = createAtlasLayout(characterWidth, characterHeight);
-		// The odd columns are empty, allowing the same mask to be shifted by one cell at runtime.
-		for (let y = layout.background.y; y < image.height; y++) {
-			for (let x = characterWidth; x < characterWidth * 2; x++) expect(image.data[y * image.width + x]).toBe(0);
+		expect([image.width, image.height]).toEqual([characterWidth * 16, characterHeight * 9]);
+		for (let y = layout.fill.y; y < image.height; y++) {
+			for (let x = 0; x < image.width; x++) {
+				expect(image.data[y * image.width + x]).toBe(x < characterWidth ? 255 : 0);
+			}
 		}
 	});
 });

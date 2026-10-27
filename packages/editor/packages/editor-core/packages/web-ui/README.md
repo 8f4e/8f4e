@@ -6,7 +6,22 @@ replaceable by renderers for other platforms.
 
 Rendering is backed by `glugglugglug`. Sprite names are resolved to dense numeric IDs when the atlas is generated, so
 per-frame drawers submit positions, sizes, shared shape IDs, and numeric palette indices. WebAssembly RGBA frames are
-drawn below the sprites, while connections are drawn as a line overlay above them.
+drawn above the sprites and connection lines. A procedural dotted background runs before the sprite pass.
+
+## Rendering plugins
+
+Web-ui owns its rendering plugins under `src/plugins/`: `background` draws the canvas pattern, `line-drawer` batches
+connection wires, and `rgba-texture-layer` draws WebAssembly framebuffer overlays. They depend only on glugglugglug's
+`RenderPluginHost` context and hook contract. Glugglugglug owns the sprite renderer; it does not bundle these plugins.
+
+The plugins share shader compilation, required-uniform lookup, render-state setup, and hook removal helpers. Each
+plugin owns its resources and destruction. Web-ui initializes background and line rendering, creates texture layers
+only for configured overlays, and coordinates memory release and restoration. Backgrounds run in `preDraw`; lines
+run in `postDraw`, followed by configured texture overlays.
+
+The background precomposes dot colors over the base when the palette changes and draws one triangle. Each RGBA
+overlay owns one texture, uses nearest filtering, and takes opacity from its pixels. Pixel uploads reuse storage
+until the image dimensions change; memory release deletes the texture and the next upload recreates it.
 
 ## API
 
@@ -56,6 +71,7 @@ interface SpriteData {
   spriteAtlas: SpriteAtlas;
   characterWidth: number;
   characterHeight: number;
+  backgroundDot: { readonly x: number; readonly y: number; readonly size: number };
 }
 ```
 

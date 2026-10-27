@@ -34,10 +34,10 @@ const mocks = vi.hoisted(() => {
 		destroy: vi.fn(),
 	};
 	const overlayTextureLayer = {
-		setDrawCallback: vi.fn((callback: ((layer: unknown) => void) | null) => {
-			overlayTextureDrawCallback = callback ?? undefined;
+		setDrawCallback: vi.fn((callback: (layer: unknown) => void) => {
+			overlayTextureDrawCallback = callback;
 		}),
-		uploadRgba8Texture: vi.fn(() => ({ texture: {}, width: 128, height: 128, filter: 'nearest' })),
+		uploadRgba8Texture: vi.fn(),
 		drawTexture: vi.fn(),
 		releaseMemory: vi.fn(),
 		destroy: vi.fn(() => {
@@ -49,6 +49,7 @@ const mocks = vi.hoisted(() => {
 		releaseMemory: vi.fn(),
 		destroy: vi.fn(),
 	};
+	const background = { setFont: vi.fn(), setPalette: vi.fn(), destroy: vi.fn() };
 	const wireColors = {
 		wire: [0.1, 0.2, 0.3, 1] as const,
 		wireHighlighted: [0.4, 0.5, 0.6, 1] as const,
@@ -61,6 +62,7 @@ const mocks = vi.hoisted(() => {
 		engine,
 		overlayTextureLayer,
 		lines,
+		background,
 		wireColors,
 		resolveWireColors,
 		requestAnimationFrame,
@@ -73,15 +75,18 @@ const mocks = vi.hoisted(() => {
 			return engine;
 		}),
 		// biome-ignore lint/complexity/useArrowFunction: Plugins are constructed with new in the code under test.
-		RgbaTextureLayer: vi.fn(function (_host: unknown, options: { phase?: 'preDraw' | 'postDraw' } = {}) {
-			engine.hooks[options.phase ?? 'preDraw'].push(() => overlayTextureDrawCallback?.(overlayTextureLayer));
+		RgbaTextureLayer: vi.fn(function () {
+			engine.hooks.postDraw.push(() => overlayTextureDrawCallback?.(overlayTextureLayer));
 			return overlayTextureLayer;
 		}),
 		// biome-ignore lint/complexity/useArrowFunction: Plugins are constructed with new in the code under test.
 		LineDrawer: vi.fn(function () {
 			return lines;
 		}),
-		drawBackground: vi.fn(),
+		// biome-ignore lint/complexity/useArrowFunction: The background renderer is constructed with new.
+		BackgroundRenderer: vi.fn(function () {
+			return background;
+		}),
 		drawCodeBlocks: vi.fn(),
 		drawConnections: vi.fn(),
 		drawContextMenu: vi.fn(),
@@ -92,12 +97,13 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('glugglugglug', () => ({
 	Engine: mocks.Engine,
-	RgbaTextureLayer: mocks.RgbaTextureLayer,
-	LineDrawer: mocks.LineDrawer,
 }));
 
-vi.mock('./drawers/drawBackground', () => ({
-	default: mocks.drawBackground,
+vi.mock('./plugins/line-drawer', () => ({ LineDrawer: mocks.LineDrawer }));
+vi.mock('./plugins/rgba-texture-layer', () => ({ RgbaTextureLayer: mocks.RgbaTextureLayer }));
+
+vi.mock('./plugins/background', () => ({
+	default: mocks.BackgroundRenderer,
 }));
 
 vi.mock('./drawers/codeBlocks', () => ({
@@ -150,10 +156,11 @@ function createSpriteData(identifier = 0, characterWidth = 8, characterHeight = 
 		spriteAtlas: {
 			image: { width: 1, height: 1, data: new Uint8Array([255]) },
 			lookup: {},
-			spriteIdentifiers: { fill: identifier, font: { 63: identifier }, background: identifier } as never,
+			spriteIdentifiers: { fill: identifier, font: { 63: identifier } } as never,
 		},
 		characterWidth,
 		characterHeight,
+		backgroundDot: { x: 3, y: 7, size: 2 },
 	};
 }
 
@@ -256,7 +263,7 @@ describe('web-ui init', () => {
 			}
 		);
 
-		expect(mocks.RgbaTextureLayer).toHaveBeenCalledWith(mocks.engine, { phase: 'postDraw' });
+		expect(mocks.RgbaTextureLayer).toHaveBeenCalledWith(mocks.engine);
 		expect(mocks.LineDrawer.mock.invocationCallOrder[0]).toBeLessThan(
 			mocks.RgbaTextureLayer.mock.invocationCallOrder[0]
 		);
@@ -328,6 +335,7 @@ describe('web-ui init', () => {
 
 		view.destroy();
 		expect(mocks.cancelAnimationFrame).toHaveBeenCalledTimes(2);
+		expect(mocks.background.destroy).toHaveBeenCalledOnce();
 		expect(mocks.engine.destroy).toHaveBeenCalledOnce();
 	});
 
@@ -393,14 +401,17 @@ describe('web-ui init', () => {
 			resolvePalette(state.editorConfig.color)
 		);
 		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
+		const backgroundPaletteUploads = mocks.background.setPalette.mock.calls.length;
 		const wireUpdates = mocks.resolveWireColors.mock.calls.length;
 		view.loadSpriteAtlas(createSpriteData());
 		expect(mocks.engine.setPalette).toHaveBeenCalledTimes(paletteUploads);
+		expect(mocks.background.setPalette).toHaveBeenCalledTimes(backgroundPaletteUploads);
 		expect(mocks.resolveWireColors).toHaveBeenCalledTimes(wireUpdates);
 		const lookup = state.spriteLookups;
 		const installCount = mocks.engine.setSpriteAtlas.mock.calls.length;
 		const palette = resolvePalette({ primary: '#00ff00' });
 		view.loadPalette(palette);
+		expect(mocks.background.setPalette).toHaveBeenCalledWith(mocks.engine.setPalette.mock.calls.at(-1)?.[0]);
 		expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(installCount);
 		expect(state.spriteLookups).toBe(lookup);
 		expect(mocks.resolveWireColors).toHaveBeenLastCalledWith(palette);
@@ -431,6 +442,7 @@ describe('web-ui init', () => {
 		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 16, vGrid: 8 }));
 
 		view.loadSpriteAtlas(createSpriteData(42, 10, 18));
+		expect(mocks.background.setFont).toHaveBeenLastCalledWith(createSpriteData(42, 10, 18));
 		expect(state.spriteLookups?.fill).toBe(142);
 		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 18, vGrid: 10 }));
 	});
@@ -567,19 +579,10 @@ describe('web-ui init', () => {
 		view.renderFrame();
 
 		expect(renderFrameExport).toHaveBeenCalledTimes(1);
-		expect(mocks.overlayTextureLayer.uploadRgba8Texture).toHaveBeenCalledWith(expect.any(Uint8Array), 1, 1, {
-			texture: undefined,
-			filter: 'nearest',
-		});
+		expect(mocks.overlayTextureLayer.uploadRgba8Texture).toHaveBeenCalledWith(expect.any(Uint8Array), 1, 1);
 		const data = mocks.overlayTextureLayer.uploadRgba8Texture.mock.calls.at(-1)?.[0] as Uint8Array;
 		expect([...data]).toEqual([10, 20, 30, 255]);
-		expect(mocks.overlayTextureLayer.drawTexture).toHaveBeenCalledWith(
-			{ texture: {}, width: 128, height: 128, filter: 'nearest' },
-			64,
-			74,
-			32,
-			32
-		);
+		expect(mocks.overlayTextureLayer.drawTexture).toHaveBeenCalledWith(64, 74, 32, 32);
 
 		view.releaseRenderingResources();
 		expect(mocks.overlayTextureLayer.releaseMemory).toHaveBeenCalledOnce();

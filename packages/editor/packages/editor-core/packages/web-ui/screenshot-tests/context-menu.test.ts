@@ -15,7 +15,20 @@ test('context menu', async () => {
 	const spriteData = await createMockSpriteData(mockState);
 
 	const renderData: WebUiRenderDataSource = { getSnapshot: () => ({ codeBlocks: new Map() }) };
-	await init(mockState, renderData, canvas, memoryViews, spriteData, resolvePalette(mockState.editorConfig.color));
-	mockState.contextMenu = generateContextMenuMock();
-	await expect(canvas).toMatchScreenshot();
+	const renderer = await init(
+		mockState,
+		renderData,
+		canvas,
+		memoryViews,
+		spriteData,
+		resolvePalette(mockState.editorConfig.color)
+	);
+	try {
+		renderer.pauseRendering();
+		mockState.contextMenu = generateContextMenuMock();
+		renderer.renderFrame();
+		await expect(canvas).toMatchScreenshot();
+	} finally {
+		renderer.destroy();
+	}
 });

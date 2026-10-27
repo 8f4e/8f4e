@@ -1,10 +1,12 @@
 # Sprite Generator Package
 
-This package generates sprite sheets for the 8f4e editor, containing color-independent R8 font glyphs, a shared fill mask, and the background pattern.
+This package generates a uniform grid of color-independent R8 font glyphs and a solid fill cell for the 8f4e editor.
+It also supplies font-specific dot geometry for web-ui's procedural background pass.
 
 ## Palette
 
-`generateSprite({ font })` returns only masks, source identifiers, and font metrics. Resolve themes separately with
+`generateSprite({ font })` returns masks, source identifiers, font dimensions, and `backgroundDot: { x, y, size }`.
+Resolve themes separately with
 `@8f4e/editor-palette`, which owns predefined shades, semantic aliases, alpha, and RGBA values.
 See [the palette reference](../../../../docs/color-paths.md).
 
@@ -15,11 +17,11 @@ resolved colors as a straight-alpha RGBA8 table for the generic renderer.
 ## Sprite atlas output
 
 The generator returns a `spriteAtlas` with `image: { width, height, data }`, where `data` is a tightly packed `Uint8Array`
-of R8 coverage. It contains one set of 128 glyphs keyed by numeric character code, a shared one-pixel fill, and one
-background pattern mask. There are 130 unique source rectangles, independently of the selected theme. No canvas is
-needed to generate these resources.
+of R8 coverage. It contains 128 glyphs keyed by numeric character code and a shared solid fill cell. All 129 source
+rectangles have the selected font's cell dimensions and sit on a 16-column grid. The default 8×16 font uses a
+128×144 atlas (18 KiB). No canvas is needed to generate these resources.
 
-Resolve the public IDs (`font` glyph table, `fill`, and `background`) against the installed atlas before drawing:
+Resolve the public IDs (`font` glyph table and `fill`) against the installed atlas before drawing:
 
 ```ts
 import { PALETTE_INDICES, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
@@ -41,10 +43,10 @@ engine.renderFrame(() => {
 A theme change only needs `engine.setPalette(toPaletteBytes(resolvePalette(config)))`; the mask pixels and source
 rectangles stay unchanged. Replace and resolve the atlas when font shapes or dimensions change.
 
-Input and output connectors are composed at runtime from fills and ordinary bracket/star glyphs. The background uses
-one base fill and the same pattern mask drawn in two colors, with the second instance offset horizontally by one
-character cell. Tiling keeps both layers aligned without submitting one instance per dot. The mask is constructed once
-from solid rectangles at each font's configured dot position: 2×2 pixels, or 4×4 for `spleen16x32`.
+Input and output connectors are composed at runtime from fills and ordinary bracket/star glyphs. Web-ui's dedicated
+background pass draws the base fill and alternating dot colors before sprites. It uses `backgroundDot` and the font
+dimensions to generate the pattern on the GPU, without background textures or per-dot uploads. Dots retain each
+font's configured placement and size: 2×2 pixels, or 4×4 for `spleen16x32`.
 
 ## Font Bitmaps
 

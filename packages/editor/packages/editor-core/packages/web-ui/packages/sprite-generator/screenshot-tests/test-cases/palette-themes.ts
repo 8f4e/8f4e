@@ -13,7 +13,7 @@ import green from '@8f4e/examples/projects/misc/landingPageDemo2.8f4e?raw';
 import purple from '@8f4e/examples/projects/misc/landingPageDemo3.8f4e?raw';
 import amber from '@8f4e/examples/projects/misc/landingPageDemo4.8f4e?raw';
 import generateSprite, { resolveSpriteIds } from '@8f4e/sprite-generator';
-import { Engine, LineDrawer } from 'glugglugglug';
+import { Engine } from 'glugglugglug';
 
 function paletteFromSource(source: string): PaletteConfig {
 	return Object.fromEntries(
@@ -40,11 +40,10 @@ for (const [name, source] of [
 	canvas.height = 240;
 	canvas.setAttribute('aria-label', name);
 	document.body.append(canvas);
-	const { spriteAtlas } = await generateSprite({ font: 'ibmvga8x16' });
+	const { spriteAtlas, characterWidth, characterHeight, backgroundDot } = await generateSprite({ font: 'ibmvga8x16' });
 	const palette = resolvePalette(paletteFromSource(source));
 	const engine = new Engine(canvas);
 	engine.setPalette(toPaletteBytes(palette));
-	const lines = new LineDrawer(engine);
 	const ids = resolveSpriteIds(
 		spriteAtlas.spriteIdentifiers,
 		engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup)
@@ -55,8 +54,19 @@ for (const [name, source] of [
 	};
 	engine.renderFrame(() => {
 		engine.drawSprite(0, 0, ids.fill, PALETTE_INDICES.canvasBase, canvas.width, canvas.height);
-		engine.drawSprite(0, 0, ids.background, PALETTE_INDICES.canvasDetail2);
-		engine.drawSprite(8, 0, ids.background, PALETTE_INDICES.canvasDetail1);
+		// This static generator preview composes dots from fill cells; web-ui draws the pattern procedurally.
+		for (let x = 0, column = 0; x < canvas.width; x += characterWidth, column++) {
+			for (let y = 0; y < canvas.height; y += characterHeight) {
+				engine.drawSprite(
+					x + backgroundDot.x,
+					y + backgroundDot.y,
+					ids.fill,
+					column % 2 === 0 ? PALETTE_INDICES.canvasDetail2 : PALETTE_INDICES.canvasDetail1,
+					backgroundDot.size,
+					backgroundDot.size
+				);
+			}
+		}
 		engine.drawSprite(8, 24, ids.fill, PALETTE_INDICES.surfaceBase, 232, 208);
 		text(16, 32, name, PALETTE_INDICES.inkStrong);
 		text(16, 64, 'push', PALETTE_INDICES.primaryBase);
@@ -69,7 +79,7 @@ for (const [name, source] of [
 		engine.drawSprite(16, 112, ids.fill, PALETTE_INDICES.accentSurface, 128, 16);
 		engine.drawSprite(136, 112, ids.fill, PALETTE_INDICES.lightBase, 16, 16);
 		text(140, 112, '|', PALETTE_INDICES.darkBase);
-		lines.drawLine(0, 100, 248, 100, 2, palette.rgba.strokeBase);
+		engine.drawSprite(0, 99, ids.fill, PALETTE_INDICES.strokeBase, 248, 2);
 		engine.drawSprite(16, 136, ids.fill, PALETTE_INDICES.darkSurface, 208, 20);
 		for (let x = 0; x < 72; x++)
 			engine.drawSprite(

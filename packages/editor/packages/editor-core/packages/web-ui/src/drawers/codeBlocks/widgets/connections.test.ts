@@ -1,7 +1,7 @@
 import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
 import type { Input, Output } from '@8f4e/editor-state-types';
-import type { LineDrawer } from 'glugglugglug';
 import { describe, expect, it, vi } from 'vitest';
+import type { LineDrawer } from '../../../plugins/line-drawer';
 import type { MemoryViews } from '../../../types';
 import type { WireColors } from '../../../wire-colors';
 import drawConnections from './connections';
