@@ -1,4 +1,4 @@
-import type { SpriteId, SpriteLookup } from 'glugglugglug';
+import type { SpriteId } from 'glugglugglug';
 import { createAtlasLayout, FONT_COLUMNS, GLYPH_COUNT } from './atlasLayout.ts';
 import { writeGlyph } from './font.ts';
 import decodeFontBase64 from './fonts/font-decoder.ts';
@@ -10,10 +10,8 @@ export type { SpriteId } from 'glugglugglug';
 export type {
 	SpriteAtlas,
 	SpriteFont,
-	SpriteIdentifierLookups,
 	SpriteIdLookups,
 } from './sprite-atlas.ts';
-export { resolveSpriteIds } from './sprite-atlas.ts';
 export type { Font } from './types.ts';
 export { FONT_NAMES } from './types.ts';
 
@@ -197,13 +195,11 @@ export default async function generateSprite(config: Config = {}): Promise<Sprit
 	const { characterWidth, characterHeight, asciiBitmap, backgroundDot } = await loadFont(resolveFont(config.font));
 	const layout = createAtlasLayout(characterWidth, characterHeight);
 	const image = { width: layout.width, height: layout.height, data: new Uint8Array(layout.width * layout.height) };
-	const lookup: SpriteLookup = {};
 	const font: Record<number, number> & { 63: number } = { 63: 63 };
 	for (let code = 0; code < GLYPH_COUNT; code++) {
 		const x = (code % FONT_COLUMNS) * characterWidth;
 		const y = Math.floor(code / FONT_COLUMNS) * characterHeight;
 		writeGlyph(image.data, image.width, asciiBitmap, code, characterWidth, characterHeight, x, y);
-		lookup[code] = { x, y, spriteWidth: characterWidth, spriteHeight: characterHeight };
 		font[code] = code;
 	}
 	for (let row = 0; row < characterHeight; row++) {
@@ -211,11 +207,19 @@ export default async function generateSprite(config: Config = {}): Promise<Sprit
 		image.data.fill(255, start, start + characterWidth);
 	}
 	const fill = GLYPH_COUNT;
-	lookup[fill] = layout.fill;
 	return {
 		characterWidth,
 		characterHeight,
 		backgroundDot,
-		spriteAtlas: { image, lookup, spriteIdentifiers: { font, fill } },
+		spriteAtlas: {
+			image,
+			grid: {
+				cellWidth: characterWidth,
+				cellHeight: characterHeight,
+				columns: FONT_COLUMNS,
+				cellCount: GLYPH_COUNT + 1,
+			},
+			sprites: { font, fill },
+		},
 	};
 }

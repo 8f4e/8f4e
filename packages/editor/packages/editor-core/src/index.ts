@@ -257,8 +257,8 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				onRenderStats: stats => {
 					store.set('info.graphics', toGraphicsInfoRecord(stats));
 				},
-				onSpriteAtlasResolved: (spriteLookups, resolvedSpriteData) => {
-					updateStateWithSpriteData(state, resolvedSpriteData, spriteLookups);
+				onSpriteAtlasChanged: (spriteLookups, spriteData) => {
+					updateStateWithSpriteData(state, spriteData, spriteLookups);
 					renderProjection.refresh();
 				},
 			}

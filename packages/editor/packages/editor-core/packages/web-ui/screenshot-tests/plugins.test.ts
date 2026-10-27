@@ -13,9 +13,8 @@ test('RGBA overlays use nearest filtering and per-pixel alpha above sprites and 
 	const overlay = new RgbaTextureLayer(engine);
 	try {
 		const { spriteAtlas } = await generateSprite();
-		const fill = engine
-			.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup)
-			.resolveSprite(spriteAtlas.spriteIdentifiers.fill);
+		engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.grid);
+		const fill = spriteAtlas.sprites.fill;
 		engine.setPalette(new Uint8Array([255, 0, 0, 255]));
 		const pixels = new Uint8Array([255, 0, 0, 255, 0, 0, 255, 128, 0, 0, 0, 0, 255, 255, 0, 255]);
 		overlay.setDrawCallback(layer => {

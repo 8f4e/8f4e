@@ -1,5 +1,5 @@
 import { PALETTE_INDICES, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
-import generateSprite, { resolveSpriteIds } from '@8f4e/sprite-generator';
+import generateSprite from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 
 const output = document.querySelector<HTMLCanvasElement>('#test-canvas');
@@ -10,8 +10,8 @@ if (!output) {
 const { characterHeight, characterWidth, spriteAtlas } = await generateSprite({ font: 'ibmvga8x16' });
 const engine = new Engine(output, { initialCapacity: 4 });
 engine.setPalette(toPaletteBytes(resolvePalette()));
-const resolver = engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup);
-const ids = resolveSpriteIds(spriteAtlas.spriteIdentifiers, resolver);
+engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.grid);
+const ids = spriteAtlas.sprites;
 engine.renderFrame(() => {
 	engine.drawSprite(0, 0, ids.fill, PALETTE_INDICES.canvasBase, output.width, output.height);
 	engine.drawSprite(32, 32, ids.fill, PALETTE_INDICES.surfaceBase, 640, 208);

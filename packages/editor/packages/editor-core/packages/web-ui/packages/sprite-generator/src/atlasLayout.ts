@@ -9,8 +9,6 @@ export function createAtlasLayout(characterWidth: number, characterHeight: numbe
 		fill: {
 			x: (GLYPH_COUNT % FONT_COLUMNS) * characterWidth,
 			y: Math.floor(GLYPH_COUNT / FONT_COLUMNS) * characterHeight,
-			spriteWidth: characterWidth,
-			spriteHeight: characterHeight,
 		},
 	};
 }

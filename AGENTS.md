@@ -14,7 +14,8 @@
   uniform buffer (up to 256 entries); the sprite atlas contains color-independent R8 binary visibility masks.
 - Rendering plugins: web-ui owns the procedural background, line drawer, and RGBA texture layer under `src/plugins/`.
   Glugglugglug owns sprite rendering and generic render hooks. The sprite generator supplies font-specific dot geometry
-  and a uniform grid of glyph/fill cells; background patterns do not occupy the sprite atlas.
+  and a uniform grid of glyph/fill cells; background patterns do not occupy the sprite atlas. Sprite IDs are row-major cell indices; the renderer derives source
+  coordinates from grid dimensions without a rectangle lookup texture.
 - Packages (Nx workspaces): `packages/*` plus nested libs (e.g., `editor`, `compiler`,
   `editor/packages/editor-core/packages/web-ui/packages/glugglugglug`). Each builds to its own `dist/` directory
   under the package root.

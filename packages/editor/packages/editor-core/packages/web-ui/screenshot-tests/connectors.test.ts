@@ -1,6 +1,6 @@
 import { PALETTE_INDICES, type PaletteConfig, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import generateSprite, { type Font, resolveSpriteIds } from '@8f4e/sprite-generator';
+import generateSprite, { type Font } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { DrawContext } from '../src/drawContext';
@@ -23,10 +23,8 @@ for (const font of ['6x10', 'ibmvga8x16', 'spleen16x32'] satisfies Font[]) {
 			canvas.height = characterHeight * 3;
 			const engine = new Engine(canvas);
 			engine.setPalette(toPaletteBytes(resolvePalette(palette)));
-			const spriteLookups = resolveSpriteIds(
-				spriteAtlas.spriteIdentifiers,
-				engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup)
-			);
+			engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.grid);
+			const spriteLookups = spriteAtlas.sprites;
 			const state = createMockState({
 				viewport: { vGrid: characterWidth, hGrid: characterHeight },
 			});

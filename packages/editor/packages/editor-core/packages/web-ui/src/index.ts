@@ -1,6 +1,6 @@
 import { type ResolvedPalette, toPaletteBytes } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import { resolveSpriteIds, type SpriteData, type SpriteIdLookups } from '@8f4e/sprite-generator';
+import type { SpriteData, SpriteIdLookups } from '@8f4e/sprite-generator';
 import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { Engine } from 'glugglugglug';
 import { DrawContext } from './drawContext';
@@ -36,8 +36,8 @@ export interface RenderStats {
 export interface WebUiOptions {
 	drawers?: CodeBlockDrawerRegistry;
 	onRenderStats?: (stats: RenderStats) => void;
-	/** Receives ids resolved against each installed atlas before rendering resumes. */
-	onSpriteAtlasResolved?: (spriteLookups: SpriteIdLookups, spriteData: SpriteData) => void;
+	/** Receives cell indices for each installed atlas before rendering resumes. */
+	onSpriteAtlasChanged?: (spriteLookups: SpriteIdLookups, spriteData: SpriteData) => void;
 	renderStatsIntervalFrames?: number;
 	overlayTexture?: WasmOverlayTextureOptions;
 	getCodeBuffer?: () => Uint8Array;
@@ -87,13 +87,13 @@ export default async function init(
 	let statsSampleStartTime = performance.now();
 
 	function installSpriteAtlas(nextSpriteData: SpriteData): void {
-		const resolver = engine.setSpriteAtlas(nextSpriteData.spriteAtlas.image, nextSpriteData.spriteAtlas.lookup);
-		const spriteLookups = resolveSpriteIds(nextSpriteData.spriteAtlas.spriteIdentifiers, resolver);
+		engine.setSpriteAtlas(nextSpriteData.spriteAtlas.image, nextSpriteData.spriteAtlas.grid);
+		const spriteLookups = nextSpriteData.spriteAtlas.sprites;
 		background.setFont(nextSpriteData);
 		if (draw) draw.setSpriteLookups(spriteLookups);
 		else draw = new DrawContext(engine, nextSpriteData.characterWidth, spriteLookups);
-		if (options.onSpriteAtlasResolved) {
-			options.onSpriteAtlasResolved(spriteLookups, nextSpriteData);
+		if (options.onSpriteAtlasChanged) {
+			options.onSpriteAtlasChanged(spriteLookups, nextSpriteData);
 		} else {
 			state.spriteLookups = spriteLookups;
 			state.viewport.hGrid = nextSpriteData.characterHeight;

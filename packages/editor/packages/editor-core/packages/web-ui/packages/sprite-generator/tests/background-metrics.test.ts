@@ -35,11 +35,10 @@ describe('procedural background metrics', () => {
 			expect([characterWidth, characterHeight]).toEqual([width, height]);
 			expect(backgroundDot).toEqual({ x: dotX, y: dotY, size });
 			expect(spriteAtlas.image.data.byteLength).toBe(width * height * 16 * 9);
-			expect(Object.keys(spriteAtlas.lookup)).toHaveLength(129);
-			expect(Object.keys(spriteAtlas.spriteIdentifiers.font)).toHaveLength(128);
-			const fill = spriteAtlas.lookup[spriteAtlas.spriteIdentifiers.fill];
-			expect(fill).toEqual({ x: 0, y: height * 8, spriteWidth: width, spriteHeight: height });
-			expect(spriteAtlas.image.data[fill.y * spriteAtlas.image.width + fill.x]).toBe(255);
+			expect(spriteAtlas.grid.cellCount).toBe(129);
+			expect(Object.keys(spriteAtlas.sprites.font)).toHaveLength(128);
+			expect(spriteAtlas.sprites.fill).toBe(128);
+			expect(spriteAtlas.image.data[height * 8 * spriteAtlas.image.width]).toBe(255);
 		}
 	);
 });
