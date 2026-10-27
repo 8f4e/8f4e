@@ -34,6 +34,11 @@ export class LineInstanceBuffer {
 		return this.bytes.byteLength / LINE_INSTANCE_BYTE_STRIDE;
 	}
 
+	/** Number of bytes occupied by this frame's line records. */
+	get usedByteLength(): number {
+		return this._count * LINE_INSTANCE_BYTE_STRIDE;
+	}
+
 	/** Resets the write cursor while retaining allocated storage. */
 	reset(): void {
 		this._count = 0;
@@ -66,9 +71,9 @@ export class LineInstanceBuffer {
 		this._count += 1;
 	}
 
-	/** Returns a view containing only line records written for this frame. */
-	usedBytes(): Uint8Array {
-		return this.bytes.subarray(0, this._count * LINE_INSTANCE_BYTE_STRIDE);
+	/** Retained full-storage view; upload only `usedByteLength` bytes and skip empty uploads. */
+	get fullBytes(): Uint8Array {
+		return this.bytes;
 	}
 
 	/**

@@ -22,6 +22,7 @@ describe('LineDrawer', () => {
 		expect(gl.bufferData).toHaveBeenLastCalledWith(gl.ARRAY_BUFFER, 2 * LINE_INSTANCE_BYTE_STRIDE, gl.DYNAMIC_DRAW);
 		expect(gl.bufferSubData).toHaveBeenCalledOnce();
 		const bytes = gl.bufferSubData.mock.calls[0][2] as Uint8Array;
+		expect(gl.bufferSubData).toHaveBeenCalledWith(gl.ARRAY_BUFFER, 0, bytes, 0, 2 * LINE_INSTANCE_BYTE_STRIDE);
 		expect(bytes.byteLength).toBe(2 * LINE_INSTANCE_BYTE_STRIDE);
 		const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 		expect([0, 1, 2, 3, 4].map(index => view.getFloat32(index * 4, true))).toEqual([1, 2, 11, 12, 3]);
@@ -66,6 +67,36 @@ describe('LineDrawer', () => {
 
 		expect(gl.bufferData).toHaveBeenCalledTimes(2);
 		expect(gl.bufferData).toHaveBeenLastCalledWith(gl.ARRAY_BUFFER, 2 * LINE_INSTANCE_BYTE_STRIDE, gl.DYNAMIC_DRAW);
+	});
+
+	it('reuses upload views and limits used ranges after growth, empty frames, and memory release', () => {
+		const { gl, hooks } = createHost();
+		const lines = new LineDrawer({ gl, hooks }, { initialCapacity: 1 });
+		const render = (count: number): Uint8Array | undefined => {
+			gl.bufferSubData.mockClear();
+			hooks.preDraw[0](gl);
+			for (let i = 0; i < count; i++) lines.drawLine(i, 0, i + 1, 1, 1, [1, 0.5, 0, 0.25]);
+			hooks.postDraw[0](gl);
+			if (count === 0) {
+				expect(gl.bufferSubData).not.toHaveBeenCalled();
+				return undefined;
+			}
+			expect(gl.bufferSubData).toHaveBeenCalledOnce();
+			const bytes = gl.bufferSubData.mock.calls[0][2] as Uint8Array;
+			expect(gl.bufferSubData).toHaveBeenCalledWith(gl.ARRAY_BUFFER, 0, bytes, 0, count * LINE_INSTANCE_BYTE_STRIDE);
+			return bytes;
+		};
+
+		const initial = render(1);
+		expect(render(1)).toBe(initial);
+		const grown = render(3);
+		expect(grown).not.toBe(initial);
+		expect(grown?.byteLength).toBe(4 * LINE_INSTANCE_BYTE_STRIDE);
+		expect(render(1)).toBe(grown);
+		render(0);
+		lines.releaseMemory();
+		render(0);
+		expect(render(2)).toBe(grown);
 	});
 
 	it('detaches and deletes only its own resources idempotently', () => {

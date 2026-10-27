@@ -137,7 +137,7 @@ export class LineDrawer {
 			this.gpuCapacity = this.lines.capacity;
 			gl.bufferData(gl.ARRAY_BUFFER, this.gpuCapacity * LINE_INSTANCE_BYTE_STRIDE, gl.DYNAMIC_DRAW);
 		}
-		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.lines.usedBytes());
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.lines.fullBytes, 0, this.lines.usedByteLength);
 		gl.uniform2f(this.resolutionLocation, gl.drawingBufferWidth, gl.drawingBufferHeight);
 		gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.lines.count);
 	}
