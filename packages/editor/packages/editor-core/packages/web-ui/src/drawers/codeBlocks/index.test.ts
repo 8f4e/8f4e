@@ -104,23 +104,6 @@ describe('drawModules', () => {
 		expect(outlineCalls()).toHaveLength(0);
 	});
 
-	it('draws assertion rectangles over the rendered line numbers', () => {
-		const block = createMockCodeBlock({ creationIndex: 4, width: 100, height: 64 });
-		block.widgets.assertions = [{ lineNumber: 2, passed: true, x: 8, y: 32, width: 8, height: 16 }];
-		const state = createMockState({
-			codeBlockRendering: { codeBlocks: [block] },
-		});
-		const engine = createMockEngine();
-		const renderData: WebUiRenderData = { codeBlocks: new Map([[4, { codeCells: [[1], [2], [3]] as never }]]) };
-		drawModules(engine, state, createMemoryViews(), renderData);
-		const sprites = vi.mocked(engine.drawFill);
-		const markerSprite = PALETTE_INDICES.positiveBase;
-		const markerIndex = sprites.mock.calls.findIndex(call => call[2] === markerSprite);
-		expect(sprites).toHaveBeenCalledWith(8, 32, PALETTE_INDICES.positiveBase, 8, 16);
-		expect(sprites.mock.invocationCallOrder[markerIndex]).toBeGreaterThan(
-			vi.mocked(engine.drawResolvedText).mock.invocationCallOrder.at(-1)!
-		);
-	});
 	it('draws resolved code cells from projected render data', () => {
 		const block = createMockCodeBlock({ creationIndex: 4, width: 100, height: 50 });
 		const state = createMockState({

@@ -1,64 +1,62 @@
 import { createMockState } from '@8f4e/editor-state-testing';
-import type { State } from '@8f4e/editor-state-types';
-import type { StateManager } from '@8f4e/state-manager';
+import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it } from 'vitest';
 import { createEditorConfigSchemaContributionsValidator } from './schemaContributions';
 import { resolveSchemaConfigRoot } from './schemaValidator';
 
-const store = {
-	getState: () =>
-		createMockState({
-			editorConfigSchemaContributions: {
-				audio: {
-					root: 'audioRuntime',
-					defaults: { sampleRate: 44100 },
-					schema: {
-						type: 'object',
-						properties: {
-							sampleRate: { type: 'number', minimum: 1 },
-							audioOutBufferLAddress: {
-								format: 'memory-address',
-								anyOf: [
-									{ type: 'integer', minimum: 0 },
-									{ type: 'string', pattern: '^[^:\\s]+:[^:\\s]+$' },
-								],
-							},
+const store = createStateManager(
+	createMockState({
+		editorConfigSchemaContributions: {
+			settings: {
+				root: 'settings',
+				defaults: { scale: 1 },
+				schema: {
+					type: 'object',
+					properties: {
+						scale: { type: 'number', minimum: 1 },
+						targetAddress: {
+							format: 'memory-address',
+							anyOf: [
+								{ type: 'integer', minimum: 0 },
+								{ type: 'string', pattern: '^[^:\\s]+:[^:\\s]+$' },
+							],
 						},
 					},
 				},
 			},
-			editorConfig: {
-				audioRuntime: {
-					sampleRate: 48000,
-					audioOutBufferLAddress: 'audioout:buffer',
-				},
+		},
+		editorConfig: {
+			settings: {
+				scale: 2,
+				targetAddress: 'source:buffer',
 			},
-			compiler: {
-				projectMemoryExposuresByGroupPath: {},
-				compiledModules: {},
-				memoryPlan: {
-					modules: {
-						audioout: {
-							id: 'audioout',
-							lineNumber: 0,
-							byteAddress: 0,
-							allocationUnitCount: 0,
-							allocatedByteLength: 0,
-							endByteAddress: 0,
-							endAddressSafeByteLength: 0,
-							memory: {
-								buffer: { id: 'buffer', allocationUnitAddress: 32 },
-							},
-							declarations: [],
-							declarationSources: [],
+		},
+		compiler: {
+			projectMemoryExposuresByGroupPath: {},
+			compiledModules: {},
+			memoryPlan: {
+				modules: {
+					source: {
+						id: 'source',
+						lineNumber: 0,
+						byteAddress: 0,
+						allocationUnitCount: 0,
+						allocatedByteLength: 0,
+						endByteAddress: 0,
+						endAddressSafeByteLength: 0,
+						memory: {
+							buffer: { id: 'buffer', allocationUnitAddress: 32 },
 						},
+						declarations: [],
+						declarationSources: [],
 					},
-					moduleList: [],
 				},
-				memoryDefaultsByModuleId: {},
+				moduleList: [],
 			},
-		}),
-} as StateManager<State>;
+			memoryDefaultsByModuleId: {},
+		},
+	})
+);
 
 describe('editor config schema contributions', () => {
 	it('validates and parses values against contributed schemas', () => {
@@ -66,19 +64,17 @@ describe('editor config schema contributions', () => {
 
 		expect(
 			validator.validate({
-				path: 'audioRuntime.sampleRate',
-				value: '48000',
+				path: 'settings.scale',
+				value: '2',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBeUndefined();
 
-		expect(
-			validator.parse?.({ path: 'audioRuntime.sampleRate', value: '48000', sourceLineIndex: 1, codeBlockId: 0 })
-		).toBe(48000);
+		expect(validator.parse?.({ path: 'settings.scale', value: '2', sourceLineIndex: 1, codeBlockId: 0 })).toBe(2);
 		expect(
 			validator.parse?.({
-				path: 'audioRuntime.audioOutBufferLAddress',
+				path: 'settings.targetAddress',
 				value: '24',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
@@ -86,111 +82,110 @@ describe('editor config schema contributions', () => {
 		).toBe(24);
 		expect(
 			validator.parse?.({
-				path: 'audioRuntime.audioOutBufferLAddress',
-				value: 'audioout:buffer',
+				path: 'settings.targetAddress',
+				value: 'source:buffer',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
-		).toBe('audioout:buffer');
+		).toBe('source:buffer');
 		expect(
 			validator.parse?.({
-				path: 'audioRuntime.audioOutBufferLAddress',
+				path: 'settings.targetAddress',
 				value: 'buffer',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
-				moduleId: 'audioout',
+				moduleId: 'source',
 			})
-		).toBe('audioout:buffer');
+		).toBe('source:buffer');
 		expect(
 			validator.validate({
-				path: 'audioRuntime.audioOutBufferLAddress',
+				path: 'settings.targetAddress',
 				value: 'buffer',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
-				moduleId: 'audioout',
+				moduleId: 'source',
 			})
 		).toBeUndefined();
 		expect(
 			validator.validate({
-				path: 'audioRuntime.audioOutBufferLAddress',
-				value: 'audioout',
+				path: 'settings.targetAddress',
+				value: 'source',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
-		).toBe("@config audioRuntime.audioOutBufferLAddress: invalid value 'audioout'");
+		).toBe("@config settings.targetAddress: invalid value 'source'");
 		expect(
 			validator.validate({
-				path: 'audioRuntime.audioOutBufferLAddress',
+				path: 'settings.targetAddress',
 				value: '&buffer',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
-				moduleId: 'audioout',
+				moduleId: 'source',
 			})
-		).toBe("@config audioRuntime.audioOutBufferLAddress: invalid value '&buffer'");
+		).toBe("@config settings.targetAddress: invalid value '&buffer'");
 
 		expect(
 			validator.validate({
-				path: 'audioRuntime.sampleRate',
+				path: 'settings.scale',
 				value: '0',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
-		).toBe('@config audioRuntime.sampleRate: value 0 must be at least 1');
+		).toBe('@config settings.scale: value 0 must be at least 1');
 
 		expect(
 			validator.validate({
-				path: 'audioRuntime.unknown',
+				path: 'settings.unknown',
 				value: '1',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
-		).toBe("@config: unknown config path 'audioRuntime.unknown'");
+		).toBe("@config: unknown config path 'settings.unknown'");
 	});
 
 	it('resolves memory-address formatted config values against compiled memory maps', () => {
 		const state = store.getState();
-		const config = resolveSchemaConfigRoot(state.editorConfigSchemaContributions.audio!, state.editorConfig, state);
+		const config = resolveSchemaConfigRoot(state.editorConfigSchemaContributions.settings!, state.editorConfig, state);
 
 		expect(config).toMatchObject({
-			sampleRate: 48000,
-			audioOutBufferLAddress: 32,
+			scale: 2,
+			targetAddress: 32,
 		});
 	});
 
 	it('validates dynamic object properties from additionalProperties schemas', () => {
-		const dynamicStore = {
-			getState: () =>
-				createMockState({
-					editorConfigSchemaContributions: {
-						midi: {
-							root: 'midi',
-							schema: {
-								type: 'object',
-								properties: {
-									inputs: {
+		const dynamicStore = createStateManager(
+			createMockState({
+				editorConfigSchemaContributions: {
+					bindings: {
+						root: 'bindings',
+						schema: {
+							type: 'object',
+							properties: {
+								entries: {
+									type: 'object',
+									additionalProperties: {
 										type: 'object',
-										additionalProperties: {
-											type: 'object',
-											properties: {
-												port: { type: 'integer', minimum: 0 },
-												callback: { type: 'string', pattern: '^[A-Za-z_][A-Za-z0-9_]*$' },
-											},
-											additionalProperties: false,
+										properties: {
+											index: { type: 'integer', minimum: 0 },
+											name: { type: 'string', pattern: '^[A-Za-z_][A-Za-z0-9_]*$' },
 										},
+										additionalProperties: false,
 									},
 								},
-								additionalProperties: false,
 							},
+							additionalProperties: false,
 						},
 					},
-				}),
-		} as StateManager<State>;
+				},
+			})
+		);
 		const validator = createEditorConfigSchemaContributionsValidator(dynamicStore);
 
-		expect(validator.knownPaths).toEqual(['midi.inputs.*.port', 'midi.inputs.*.callback']);
+		expect(validator.knownPaths).toEqual(['bindings.entries.*.index', 'bindings.entries.*.name']);
 		expect(
 			validator.validate({
-				path: 'midi.inputs.0.port',
+				path: 'bindings.entries.0.index',
 				value: '0',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
@@ -198,41 +193,41 @@ describe('editor config schema contributions', () => {
 		).toBeUndefined();
 		expect(
 			validator.validate({
-				path: 'midi.inputs.0.callback',
-				value: 'onMidiIn',
+				path: 'bindings.entries.0.name',
+				value: 'exampleName',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBeUndefined();
 		expect(
 			validator.validate({
-				path: 'midi.inputs.0.callback',
+				path: 'bindings.entries.0.name',
 				value: 'bad-name',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
-		).toBe("@config midi.inputs.0.callback: invalid string value 'bad-name'");
+		).toBe("@config bindings.entries.0.name: invalid string value 'bad-name'");
 		expect(
 			validator.validate({
-				path: 'midi.inputs.0.unknown',
+				path: 'bindings.entries.0.unrelatedProperty',
 				value: '1',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
-		).toBe("@config: unknown config path 'midi.inputs.0.unknown'");
+		).toBe("@config: unknown config path 'bindings.entries.0.unrelatedProperty'");
 	});
 
 	it('parses module-memory-id formatted config values against the directive module', () => {
-		const validator = createEditorConfigSchemaContributionsValidator({
-			getState: () =>
+		const validator = createEditorConfigSchemaContributionsValidator(
+			createStateManager(
 				createMockState({
 					editorConfigSchemaContributions: {
-						keyboard: {
-							root: 'keyboard',
+						targets: {
+							root: 'targets',
 							schema: {
 								type: 'object',
 								properties: {
-									keyCodeMemory: {
+									memory: {
 										type: 'string',
 										format: 'module-memory-id',
 									},
@@ -241,43 +236,44 @@ describe('editor config schema contributions', () => {
 							},
 						},
 					},
-				}),
-		} as StateManager<State>);
+				})
+			)
+		);
 
 		expect(
 			validator.validate({
-				path: 'keyboard.keyCodeMemory',
-				value: 'keyCode',
+				path: 'targets.memory',
+				value: 'value',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
-				moduleId: 'keyboard',
+				moduleId: 'source',
 			})
 		).toBeUndefined();
 		expect(
 			validator.parse?.({
-				path: 'keyboard.keyCodeMemory',
-				value: 'keyCode',
+				path: 'targets.memory',
+				value: 'value',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
-				moduleId: 'keyboard',
+				moduleId: 'source',
 			})
-		).toBe('keyboard:keyCode');
+		).toBe('source:value');
 		expect(
 			validator.validate({
-				path: 'keyboard.keyCodeMemory',
-				value: 'keyCode',
+				path: 'targets.memory',
+				value: 'value',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
-		).toBe("@config keyboard.keyCodeMemory: memory value 'keyCode' must include a module id outside module blocks");
+		).toBe("@config targets.memory: memory value 'value' must include a module id outside module blocks");
 		expect(
 			validator.validate({
-				path: 'keyboard.keyCodeMemory',
-				value: '&keyCode',
+				path: 'targets.memory',
+				value: '&value',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
-				moduleId: 'keyboard',
+				moduleId: 'source',
 			})
-		).toBe("@config keyboard.keyCodeMemory: invalid string value '&keyCode'");
+		).toBe("@config targets.memory: invalid string value '&value'");
 	});
 });

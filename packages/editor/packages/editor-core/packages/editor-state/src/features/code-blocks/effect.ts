@@ -15,7 +15,6 @@ import incrementCompilerInputRevision from '../program-compiler/incrementCompile
 import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';
 import updateViewport from '../viewport/updateViewport';
 import deriveErrorMessages from './deriveErrorMessages';
-import deriveAssertionMarkers from './features/assertions/deriveAssertionMarkers';
 import blockHighlights from './features/blockHighlights/updateGraphicData';
 import type { CodeBlockPointerDownEvent } from './features/codeBlockDragger/effect';
 import parsePos from './features/directives/pos/data';
@@ -142,7 +141,6 @@ export default function codeBlockRendering(
 		outputs(graphicData, state);
 		inputs(graphicData, state);
 		blockHighlights(graphicData, state);
-		graphicData.widgets.assertions = deriveAssertionMarkers(graphicData, state);
 
 		const gapRowCount = [...graphicData.gaps.values()].reduce((total, gap) => total + gap.size, 0);
 		graphicData.height = (displayModel.lines.length + gapRowCount) * state.viewport.hGrid;

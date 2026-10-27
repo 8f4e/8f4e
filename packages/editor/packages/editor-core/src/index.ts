@@ -17,16 +17,6 @@ import initView, {
 } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 
-import {
-	KEYBOARD_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID,
-	keyboardEditorConfigSchemaContribution,
-} from './editorEnvironmentPlugins/keyboardMemory/config';
-import { createEditorEnvironmentPluginManager } from './editorEnvironmentPlugins/manager';
-import {
-	MIDI_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID,
-	midiEditorConfigSchemaContribution,
-} from './editorEnvironmentPlugins/midi/config';
-import { createEditorEnvironmentPluginServices } from './editorEnvironmentPlugins/services';
 import initEvents from './events';
 import keyboardEvents from './events/keyboardEvents';
 import pointerEvents from './events/pointerEvents';
@@ -161,14 +151,8 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		const compileCode = options.callbacks.compileCode;
 		const editorConfigSchemaContributions: EditorConfigSchemaContributionRegistry = {
 			[WEB_UI_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID]: webUiEditorConfigSchemaContribution,
-			[KEYBOARD_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID]: keyboardEditorConfigSchemaContribution,
-			[MIDI_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID]: midiEditorConfigSchemaContribution,
 			...options.editorConfigSchemaContributions,
 		};
-		const pluginServices = createEditorEnvironmentPluginServices({
-			getWasmMemory: () => currentMemoryRef,
-			getCodeBuffer: () => currentCodeBuffer,
-		});
 
 		store = initState(events, {
 			...options,
@@ -179,7 +163,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 					? async (input, compilerOptions) => {
 							const result = await compileCode(input, compilerOptions);
 							currentCodeBuffer = new Uint8Array(result.codeBuffer);
-							pluginServices.invalidateWasmExports();
 							return result;
 						}
 					: undefined,
@@ -217,16 +200,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		const state = store.getState();
 		cleanups.push(pointerEvents(canvas, events, state, options.captureWheel));
 		cleanups.push(keyboardEvents(canvas, events, store));
-		const browserWindow = canvas.ownerDocument?.defaultView ?? globalThis.window;
-		cleanups.push(
-			createEditorEnvironmentPluginManager(store, events, {
-				window: browserWindow as Window,
-				navigator: browserWindow?.navigator ?? globalThis.navigator,
-				inputTarget: canvas,
-				memoryViews,
-				services: pluginServices.services,
-			})
-		);
 
 		// Load the selected font before initializing the view.
 		const fontAtlas = await loadFontAtlas(state.editorConfig.font);
@@ -278,6 +251,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			width: canvas.width,
 			height: canvas.height,
 		};
+		const browserWindow = canvas.ownerDocument?.defaultView ?? globalThis.window;
 		const resizeObserver = browserWindow?.ResizeObserver
 			? new browserWindow.ResizeObserver(() => {
 					const size = getCanvasDisplaySize(canvas);
@@ -303,7 +277,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			resumeRendering: () => view.resumeRendering(),
 			updateMemoryViews: (memoryRef: MemoryRef) => {
 				currentMemoryRef = memoryRef instanceof WebAssembly.Memory ? memoryRef : null;
-				pluginServices.invalidateWasmExports();
 				updateMemoryViews(memoryRef);
 			},
 			getMemoryViews: () => memoryViews,
