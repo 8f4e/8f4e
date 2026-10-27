@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import generateSprite, { BACKGROUND_COLUMNS, BACKGROUND_ROWS, FONT_NAMES } from '../src/index.ts';
+import generateSprite, { FONT_NAMES } from '../src/index.ts';
 
 // Pixel bounds captured from the former DOT bitmaps, including their off-center placement.
 const backgrounds = [
@@ -23,36 +23,22 @@ const backgrounds = [
 	['spleen16x32', 16, 32, 6, 14, 4],
 ] as const;
 
-describe('background mask', () => {
+describe('procedural background metrics', () => {
 	it('covers every bundled font', () => {
 		expect(backgrounds.map(([font]) => font).sort()).toEqual([...FONT_NAMES].sort());
 	});
 
 	it.each(backgrounds)(
-		'preserves the background pixels and atlas sources for %s',
+		'preserves the dot placement for %s without allocating background atlas pixels',
 		async (font, width, height, dotX, dotY, size) => {
-			const { characterWidth, characterHeight, spriteAtlas } = await generateSprite({ font });
+			const { characterWidth, characterHeight, backgroundDot, spriteAtlas } = await generateSprite({ font });
 			expect([characterWidth, characterHeight]).toEqual([width, height]);
-			const background = spriteAtlas.lookup[spriteAtlas.spriteIdentifiers.background];
-			expect(background).toEqual({
-				x: 0,
-				y: height * 8,
-				spriteWidth: width * BACKGROUND_COLUMNS,
-				spriteHeight: height * BACKGROUND_ROWS,
-			});
-			const pixels = spriteAtlas.image.data.slice(background.y * spriteAtlas.image.width);
-			const expected = Uint8Array.from({ length: background.spriteWidth * background.spriteHeight }, (_, index) => {
-				const x = index % background.spriteWidth;
-				const y = Math.floor(index / background.spriteWidth);
-				const inDot =
-					x % (width * 2) >= dotX && x % (width * 2) < dotX + size && y % height >= dotY && y % height < dotY + size;
-				return inDot ? 255 : 0;
-			});
-			expect(pixels).toEqual(expected);
-			expect(Object.keys(spriteAtlas.lookup)).toHaveLength(130);
+			expect(backgroundDot).toEqual({ x: dotX, y: dotY, size });
+			expect(spriteAtlas.image.data.byteLength).toBe(width * height * 16 * 9);
+			expect(Object.keys(spriteAtlas.lookup)).toHaveLength(129);
 			expect(Object.keys(spriteAtlas.spriteIdentifiers.font)).toHaveLength(128);
 			const fill = spriteAtlas.lookup[spriteAtlas.spriteIdentifiers.fill];
-			expect(fill).toEqual({ x: width * 16, y: 0, spriteWidth: 1, spriteHeight: 1 });
+			expect(fill).toEqual({ x: 0, y: height * 8, spriteWidth: width, spriteHeight: height });
 			expect(spriteAtlas.image.data[fill.y * spriteAtlas.image.width + fill.x]).toBe(255);
 		}
 	);

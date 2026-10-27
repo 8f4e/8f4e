@@ -102,15 +102,19 @@ Connector icons are composed at runtime: a `surfaceOverlay` fill sits behind inp
 brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`, `primaryDark1`, `primaryBase`,
 `warningBase`, or `negativeBase` from the calibrated value. There are no dedicated input or feedback-scale atlas entries.
 
-The sprite atlas contains color-independent R8 coverage masks: one glyph set, one fully covered fill texel, and one
-background pattern. All palette entries can color text, including `Alpha30/60/90` variants. Background rendering draws
-a `canvasBase` fill and layers the same pattern mask in `canvasDetail2` and `canvasDetail1`, offset by one character cell.
+The sprite atlas contains color-independent R8 coverage masks: 128 glyphs and one fully covered fill cell, all on the
+same 16-column grid. All palette entries can color text, including `Alpha30/60/90` variants. Web-ui renders the
+background in a separate procedural pass before sprites, using the font's dot geometry and `canvasBase`,
+`canvasDetail2`, and `canvasDetail1` colors. Ordered base/dot instances preserve translucent compositing; fully
+transparent layers are skipped. The background uses no atlas entries, texture samples, or per-dot instance uploads.
 The renderer accepts straight-alpha RGBA8 palette bytes and prepares premultiplied float32 colors on changed uploads.
 The vertex shader reads the selected color from a uniform buffer; the fragment shader applies red-channel mask coverage.
 The buffer reserves 256 colors (4 KiB), with 196 active entries using 3,136 bytes from a 784-byte RGBA8 input.
 Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
 
 `@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
-the generated masks and separately resolved palette. Theme changes upload only palette colors and refresh line-rendered wire colors;
-font changes rebuild masks and source lookups. Font builds leave the active palette untouched, and
+the generated masks and separately resolved palette. Theme changes update palette colors, the background's three
+premultiplied color uniforms, and line-rendered wire colors; font changes rebuild masks and source lookups and update
+the background's dot geometry. Its program and empty vertex array survive rendering-memory release and are deleted
+when the view is destroyed. Font builds leave the active palette untouched, and
 stale asynchronous font builds are ignored.

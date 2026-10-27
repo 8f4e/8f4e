@@ -20,7 +20,7 @@ function fixture(width = 8, height = 16) {
 
 	const state = createMockState({
 		viewport: { vGrid: width, hGrid: height },
-		spriteLookups: { font: font(100), fill: 1 as SpriteId, background: 2 as SpriteId },
+		spriteLookups: { font: font(100), fill: 1 as SpriteId },
 	});
 	const engine = new DrawContext({ drawSprite }, width, state.spriteLookups!);
 	const block = createMockCodeBlock();

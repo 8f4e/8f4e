@@ -317,5 +317,5 @@ function mergeDeep<T>(target: T, source: unknown): T {
 /** Shared shape-only atlas fixture. Colors are selected separately using editor-palette indices. */
 export function createMockSpriteLookups(): SpriteIdLookups {
 	const font = Object.fromEntries(Array.from({ length: 128 }, (_, code) => [code, code as SpriteId])) as SpriteFont;
-	return { font, fill: 128 as SpriteId, background: 129 as SpriteId };
+	return { font, fill: 128 as SpriteId };
 }

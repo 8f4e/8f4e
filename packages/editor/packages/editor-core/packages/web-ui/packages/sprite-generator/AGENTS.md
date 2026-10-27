@@ -15,7 +15,8 @@
 ## Palette
 
 - Keep production generation independent of palettes; browser previews resolve colors with `@8f4e/editor-palette`.
-- Generate one R8 glyph set, one fully covered fill texel, and one reusable background pattern mask.
+- Generate one R8 glyph set and one fully covered fill cell on the same fixed-size grid. Return font-specific
+  background dot metrics; web-ui renders the background procedurally without an atlas entry.
 - Font sources contain only `ascii.ts`; `generate-fonts` produces `generated/ascii.ts`. The BDF importer takes only
   a source path and font name. Configure background dot position and rectangle size in `FONT_DEFINITIONS`; do not
   add special editor glyph tables.
