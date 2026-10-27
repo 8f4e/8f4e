@@ -26,6 +26,6 @@
     "@8f4e/web-ui": "*",
     "vitest": "4.1.7",
     "@vitest/browser-playwright": "4.1.7",
-    "@vitest/browser": "4.1.7"
+    "@vitest/browser": "4.1.10"
   }
 }
