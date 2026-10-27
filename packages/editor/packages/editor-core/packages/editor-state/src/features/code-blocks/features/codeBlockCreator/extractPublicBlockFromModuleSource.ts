@@ -1,6 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import type { ProjectBlock } from '@8f4e/language-spec';
-import { FORMAT_HEADER } from '~/features/project-format';
+import { FORMAT_HEADER } from '@8f4e/project-preparser';
 import { parseBlockDirectives } from '../../utils/parseBlockDirectives';
 import removeDirective from '../../utils/removeDirective';
 

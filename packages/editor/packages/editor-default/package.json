@@ -47,7 +47,9 @@
     "@8f4e/editor-plugin-watch": "*",
     "@8f4e/editor-plugin-crossfade": "*",
     "@8f4e/editor-plugin-stack": "*",
-    "@8f4e/editor-plugin-bars": "*"
+    "@8f4e/editor-plugin-bars": "*",
+    "@8f4e/editor-plugin-project-export": "*",
+    "@8f4e/editor-plugin-wasm-export": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

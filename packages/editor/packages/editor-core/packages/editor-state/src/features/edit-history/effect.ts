@@ -1,7 +1,7 @@
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 
-import serializeToProject from '../project-export/serializeToProject';
+import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
 
 export default function historyTracking(store: StateManager<State>, events: EventDispatcher): void | (() => void) {
 	const state = store.getState();

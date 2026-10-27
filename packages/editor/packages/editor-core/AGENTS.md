@@ -32,3 +32,6 @@
 
 - Meter, plot, bars, crossfade, watch, and stack own their data and drawers in plugin packages. Keep memory scope,
   typed-value resolution, tab layout, and compiler lookups generic and available through public helper exports.
+- Keep project serialization under editor-state's `pureHelpers/projectSerialization`, filename configuration under
+  `features/editor-config`, and session persistence as its own core feature.
+  Project-file and WebAssembly export actions, menus, and the save shortcut belong to their plugins.

@@ -22,7 +22,6 @@ describe('main menu', () => {
 
 		expect(items.some(item => item.action === 'importProject')).toBe(false);
 		expect(items.some(item => item.action === 'new')).toBe(true);
-		expect(items.some(item => item.action === 'exportProject')).toBe(true);
 	});
 
 	it('hides the new-project action when project creation is disabled', async () => {
@@ -36,7 +35,6 @@ describe('main menu', () => {
 
 		expect(items.some(item => item.action === 'new')).toBe(false);
 		expect(items.some(item => item.action === 'importProject')).toBe(true);
-		expect(items.some(item => item.action === 'exportProject')).toBe(true);
 	});
 
 	it('does not add adjacent dividers when project actions are disabled', async () => {

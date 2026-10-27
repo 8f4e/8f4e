@@ -1,15 +1,15 @@
-# Project Export Feature
+# Project Serialization
 
 ## Purpose
 
-Serializes editor state for session persistence and project file export.
+Shared conversion between live editor blocks, the canonical project model, and `.8f4e` source.
 
 ## Key Behaviors
 
 - **Session Object Serialization**: `serializeToProject` converts editor code blocks to `ProjectObjectModel`
-- **Session Saving**: Saves current session state through the local/session storage callbacks
-- **`.8f4e` Save/Export**: Serializes canonical source through separate `saveProject` and `exportProject` callbacks
-- **WASM Export**: Exports compiled WASM modules through the separate WASM export path
+- **Consumers**: Compilation, undo/redo, session persistence, and optional file-export plugins
+- **Source Serialization**: Formats the canonical project model as `.8f4e` text
+- **Pure Helpers**: No event handlers, subscriptions, or plugin installation
 
 ## Export
 
@@ -25,18 +25,19 @@ history snapshots, and project files, regardless of their names.
 
 ### `.8f4e` Project Export
 
-The `saveProject` and `exportProject` events first call `serializeToProject` to collect the current code blocks,
-then pass that structure to `serializeProjectTo8f4e` to produce canonical `.8f4e` source. Both callbacks receive that
-text and the configured export filename. The focused canvas's `Cmd+S`/`Ctrl+S` shortcut dispatches `saveProject`.
-The export menu dispatches `exportProject`, which the default composition implements as Save As.
+`serializeToProject(state)` collects the root code-block tree. `serializeProjectTo8f4e(project)` formats that
+model as canonical source and rejects incomplete block syntax. Both helpers are public exports from editor-state.
+The project-export plugin owns the file actions and shortcut; the browser host supplies file writing.
 
-Code-change subscriptions continue to call `saveSession` with the project object for browser recovery. Explicit
-file saves do not call `saveSession`, and automatic session saves do not write to disk. Browser handles, permissions,
-and fallback downloads belong to the host composition; the editor state owns serialization and event routing.
+The [session persistence feature](../../features/session-persistence/effect.ts) uses these helpers and saves project
+objects independently of file exports.
+WebAssembly export belongs to `@8f4e/editor-plugin-wasm-export` and uses compiled bytes rather than source serialization.
 
-### WASM Export
+### Export Naming
 
-WASM export is separate from project serialization and writes compiled binary modules through the configured `exportBinaryCode` callback.
+The separate [getExportBaseName](../getExportBaseName.ts) helper reads `export.fileName`, strips a recognized source
+or WebAssembly extension, and defaults to `project`. [Filename configuration](../../features/editor-config/exportFileName.ts)
+is registered independently of plugins so all export features can use the same configuration.
 
 ## State Sources
 
@@ -83,7 +84,7 @@ collections. Compilation recursively composes those collections into one program
 
 - [`serializeToProject.ts`](./serializeToProject.ts) - Session JSON structure serialization
 - [`serializeTo8f4e.ts`](./serializeTo8f4e.ts) - `.8f4e` file serialization
-- Project import counterpart: See `project-import` feature
+- [Project import](../../features/project-import/README.md)
 
 ## Notes & Limitations
 

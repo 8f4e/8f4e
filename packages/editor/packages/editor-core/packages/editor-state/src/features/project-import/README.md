@@ -73,7 +73,7 @@ redo preserve it. Cancelled or failed disk imports leave both the current projec
 ## References
 
 - Object model: `ProjectObjectModel` in `@8f4e/language-spec`
-- Counterpart: `project-export` feature for saving
+- Counterpart: `@8f4e/editor-plugin-project-export` for Save/Export; shared serialization lives in `pureHelpers/projectSerialization`
 
 ## Notes & Limitations
 
