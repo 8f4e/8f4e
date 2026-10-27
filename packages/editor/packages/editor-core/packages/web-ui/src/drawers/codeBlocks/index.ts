@@ -28,12 +28,6 @@ export default function drawModules(
 	renderData: WebUiRenderData,
 	drawers?: CodeBlockDrawerRegistry
 ): void {
-	const spriteLookups = state.spriteLookups;
-
-	if (!spriteLookups) {
-		return;
-	}
-
 	const { x, y } = state.viewport;
 
 	const offsetX = -x;

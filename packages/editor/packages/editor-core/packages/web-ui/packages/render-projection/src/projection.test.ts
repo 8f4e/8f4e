@@ -1,11 +1,11 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { SpriteIdLookups } from '@8f4e/sprite-generator';
-import { type SpriteId as CellSpriteId, createSpriteCell } from '@8f4e/sprite-generator';
+import type { SpriteId as CellSpriteId } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
 import createWebUiRenderProjection from './projection';
+import { createSpriteCell } from './spriteCell';
 
 const cell = (id: number, color: number) => createSpriteCell(id as CellSpriteId, color);
 
@@ -25,10 +25,8 @@ describe('createWebUiRenderProjection', () => {
 			},
 			gaps: new Map(),
 		});
-		const font = new Proxy({ 63: 63 }, { get: (target, key) => target[Number(key) as 63] ?? Number(key) });
 		const state = createMockState({
 			codeBlockRendering: { codeBlocks: [block] },
-			spriteLookups: { font, fill: 128 } as SpriteIdLookups,
 		});
 		const subscriptions = new Map<string, () => void>();
 		const store = {
@@ -44,7 +42,7 @@ describe('createWebUiRenderProjection', () => {
 			cell(120, PALETTE_INDICES.inkBase)
 		);
 		expect(store.subscribe).toHaveBeenCalledWith('codeBlockRendering', expect.any(Function));
-		expect(events.on).toHaveBeenCalledWith('spriteSheetRerendered', expect.any(Function));
+		expect(events.on).toHaveBeenCalledWith('runtimeInitialized', expect.any(Function));
 
 		block.code = ['y'];
 		block.displayModel = {
@@ -58,8 +56,13 @@ describe('createWebUiRenderProjection', () => {
 			cell(121, PALETTE_INDICES.inkBase)
 		);
 
+		block.gaps = new Map([[0, { size: 2 }]]);
+		const fontChanged = vi.mocked(events.on).mock.calls.find(([name]) => name === 'spriteSheetRerendered')?.[1];
+		fontChanged?.({});
+		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells).toHaveLength(3);
+
 		projection.dispose();
 		expect(store.unsubscribe).toHaveBeenCalledWith('codeBlockRendering', expect.any(Function));
-		expect(events.off).toHaveBeenCalledWith('spriteSheetRerendered', expect.any(Function));
+		expect(events.off).toHaveBeenCalledWith('runtimeInitialized', expect.any(Function));
 	});
 });

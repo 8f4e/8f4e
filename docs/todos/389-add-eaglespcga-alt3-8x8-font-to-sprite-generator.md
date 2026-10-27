@@ -17,8 +17,8 @@ The editor sprite-generator has several bundled bitmap fonts, including a few co
 Adding it should follow the existing sprite-generator font pipeline instead of introducing a browser font dependency:
 
 - committed source glyph data under `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/`
-- generated base64 bitmap metadata under the font's `generated/` directory
-- a `Font` union and `FONT_DEFINITIONS` entry so editor config can select it
+- generated Base64 payloads under `src/generated/`
+- a shared font catalog entry so editor config can select it
 - third-party font attribution and license tracking
 
 ## Proposed Solution
@@ -30,7 +30,7 @@ High-level approach:
 - Locate the authoritative EagleSpCGA Alt3 8x8 source font file and prefer BDF or another deterministic bitmap source when available.
 - Confirm the upstream license and attribution requirements before committing converted glyph data.
 - Convert the ASCII glyphs into the sprite-generator source format used by the existing fonts.
-- Configure the background dot position and rectangle size in the font definition; connectors use ordinary bracket/star characters and the shared fill mask.
+- Configure background dot placement in web-ui's `src/plugins/background/dot-settings.ts`; connectors use ordinary bracket/star characters and the shared fill mask.
 - Generate the git-ignored bitmap metadata with the existing sprite-generator tooling.
 - Register the font in the sprite-generator public font list and lazy metadata loader.
 - Update third-party font documentation and commit required license text.
@@ -47,12 +47,12 @@ High-level approach:
 
 - Add `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/eaglespcgaalt38x8/ascii.ts`.
 - Use `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tools/import-bdf.mjs` if the upstream source is BDF.
-- Run the existing bitmap generation tool so `generated/ascii.ts` is created.
+- Run the existing bitmap generation tool so `src/generated/<font>.ts` is created.
 
 ### Step 3: Register the font
 
-- Add `eaglespcgaalt38x8` to the `Font` type and `FONT_NAMES`.
-- Add a `FONT_DEFINITIONS.eaglespcgaalt38x8` entry in `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/index.ts`.
+- Add `eaglespcgaalt38x8` to the font catalog; `Font` and `FONT_NAMES` are derived from it.
+- Add a `FONTS.eaglespcgaalt38x8` entry in `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/catalog.ts`.
 - Add test fixture coverage for the new font configuration.
 
 ### Step 4: Document attribution
@@ -70,9 +70,9 @@ High-level approach:
 ## Validation Checkpoints
 
 - `rg -n "eaglespcga|EagleSpCGA|Alt3" packages/editor docs/todos`
-- `npx nx run sprite-generator:test`
-- `npx nx run sprite-generator:typecheck`
-- `npx nx run sprite-generator:test:screenshot`
+- `npx nx run @8f4e/sprite-generator:test`
+- `npx nx run @8f4e/sprite-generator:typecheck`
+- `npx nx run @8f4e/sprite-generator:test:screenshot`
 
 ## Success Criteria
 
@@ -85,9 +85,8 @@ High-level approach:
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/eaglespcgaalt38x8/` - new font source and generated bitmap metadata.
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/types.ts` - font id registration.
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/index.ts` - font definition and lazy metadata loader.
+- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/eaglespcgaalt38x8/` - new font source.
+- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/catalog.ts` - font dimensions, lazy payload import, and derived font-name types.
 - `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tests/` - fixture and font selection coverage.
 - `packages/editor/THIRD_PARTY_FONTS.md` - upstream attribution.
 - `packages/editor/licenses/` - EagleSpCGA Alt3 8x8 license text.

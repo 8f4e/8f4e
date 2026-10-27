@@ -1,4 +1,4 @@
-import { createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../../__tests__/rendering';
 import drawSelectedOutline from './drawSelectedOutline';
@@ -10,7 +10,6 @@ describe('drawSelectedOutline', () => {
 	])('loops around a $width by $height block with a $vGrid by $hGrid font grid', options => {
 		const state = createMockState({
 			viewport: { vGrid: options.vGrid, hGrid: options.hGrid },
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const engine = createDrawContextMock();
 		const drawText = vi.mocked(engine.drawText);

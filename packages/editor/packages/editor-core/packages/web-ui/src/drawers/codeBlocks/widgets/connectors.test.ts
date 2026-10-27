@@ -1,28 +1,17 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { Output } from '@8f4e/editor-state-types';
-import type { SpriteFont, SpriteId } from '@8f4e/sprite-generator';
 import { describe, expect, it, vi } from 'vitest';
 import { DrawContext } from '../../../drawContext';
 import drawConnectors from './connectors';
-
-function font(star: number): SpriteFont {
-	return {
-		42: star as SpriteId,
-		63: (star + 1) as SpriteId,
-		91: (star + 2) as SpriteId,
-		93: (star + 3) as SpriteId,
-	};
-}
 
 function fixture(width = 8, height = 16) {
 	const drawSprite = vi.fn();
 
 	const state = createMockState({
 		viewport: { vGrid: width, hGrid: height },
-		spriteLookups: { font: font(100), fill: 1 as SpriteId },
 	});
-	const engine = new DrawContext({ drawSprite }, width, state.spriteLookups!);
+	const engine = new DrawContext({ drawSprite }, width);
 	const block = createMockCodeBlock();
 	const output: Output = {
 		codeBlock: block,
@@ -90,9 +79,9 @@ describe('drawConnectors', () => {
 		drawConnectors(engine, state, block, memory);
 
 		expect(drawSprite.mock.calls).toEqual([
-			[2, 3, 1, PALETTE_INDICES.surfaceOverlay, width * 3, height],
-			[2, 3, 102, PALETTE_INDICES.primaryBase, width, height],
-			[2 + width * 2, 3, 103, PALETTE_INDICES.primaryBase, width, height],
+			[2, 3, 128, PALETTE_INDICES.surfaceOverlay, width * 3, height],
+			[2, 3, 91, PALETTE_INDICES.primaryBase, width, height],
+			[2 + width * 2, 3, 93, PALETTE_INDICES.primaryBase, width, height],
 		]);
 	});
 
@@ -110,10 +99,10 @@ describe('drawConnectors', () => {
 		drawConnectors(engine, state, block, memory);
 
 		expect(drawSprite.mock.calls).toEqual([
-			[2, 3, 1, PALETTE_INDICES.surfaceOverlay, 24, 16],
-			[2, 3, 102, PALETTE_INDICES.secondaryBase, 8, 16],
-			[10, 3, 100, star, 8, 16],
-			[18, 3, 103, PALETTE_INDICES.secondaryBase, 8, 16],
+			[2, 3, 128, PALETTE_INDICES.surfaceOverlay, 24, 16],
+			[2, 3, 91, PALETTE_INDICES.secondaryBase, 8, 16],
+			[10, 3, 42, star, 8, 16],
+			[18, 3, 93, PALETTE_INDICES.secondaryBase, 8, 16],
 		]);
 	});
 
@@ -126,7 +115,7 @@ describe('drawConnectors', () => {
 
 		drawConnectors(engine, state, block, memory);
 
-		expect(drawSprite).toHaveBeenNthCalledWith(3, 10, 3, 100, PALETTE_INDICES.primaryDark3, 8, 16);
+		expect(drawSprite).toHaveBeenNthCalledWith(3, 10, 3, 42, PALETTE_INDICES.primaryDark3, 8, 16);
 	});
 
 	it('reads float64 outputs by byte address rather than float32 index', () => {
@@ -138,7 +127,7 @@ describe('drawConnectors', () => {
 
 		drawConnectors(engine, state, block, memory);
 
-		expect(drawSprite).toHaveBeenNthCalledWith(3, 10, 3, 100, PALETTE_INDICES.negativeBase, 8, 16);
+		expect(drawSprite).toHaveBeenNthCalledWith(3, 10, 3, 42, PALETTE_INDICES.negativeBase, 8, 16);
 	});
 
 	it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
@@ -149,7 +138,7 @@ describe('drawConnectors', () => {
 
 			drawConnectors(engine, state, block, memory);
 
-			expect(drawSprite).toHaveBeenNthCalledWith(3, 10, 3, 100, PALETTE_INDICES.primaryBase, 8, 16);
+			expect(drawSprite).toHaveBeenNthCalledWith(3, 10, 3, 42, PALETTE_INDICES.primaryBase, 8, 16);
 			expect([output.calibratedMin, output.calibratedMax]).toEqual([-1, 1]);
 		}
 	);
@@ -167,7 +156,7 @@ describe('drawConnectors', () => {
 		drawConnectors(engine, state, block, memory);
 
 		expect([output.calibratedMin, output.calibratedMax]).toEqual([min, max]);
-		expect(drawSprite).toHaveBeenNthCalledWith(3, 10, 3, 100, star, 8, 16);
+		expect(drawSprite).toHaveBeenNthCalledWith(3, 10, 3, 42, star, 8, 16);
 	});
 
 	it('retains the first scale color when finite float64 calibration overflows', () => {
@@ -179,15 +168,6 @@ describe('drawConnectors', () => {
 
 		drawConnectors(engine, state, block, memory);
 
-		expect(drawSprite).toHaveBeenNthCalledWith(3, 10, 3, 100, PALETTE_INDICES.primaryDark3, 8, 16);
-	});
-
-	it('draws nothing before an atlas is installed', () => {
-		const { engine, drawSprite, state, block, memory } = fixture();
-		state.spriteLookups = undefined;
-
-		drawConnectors(engine, state, block, memory);
-
-		expect(drawSprite).not.toHaveBeenCalled();
+		expect(drawSprite).toHaveBeenNthCalledWith(3, 10, 3, 42, PALETTE_INDICES.primaryDark3, 8, 16);
 	});
 });

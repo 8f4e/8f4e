@@ -1,4 +1,4 @@
-import generateSprite from '@8f4e/sprite-generator';
+import loadFontAtlas, { FILL_SPRITE_ID } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { LineDrawer } from '../src/plugins/line-drawer';
@@ -12,9 +12,9 @@ test('RGBA overlays use nearest filtering and per-pixel alpha above sprites and 
 	const lines = new LineDrawer(engine);
 	const overlay = new RgbaTextureLayer(engine);
 	try {
-		const { spriteAtlas } = await generateSprite();
+		const spriteAtlas = await loadFontAtlas();
 		engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.grid);
-		const fill = spriteAtlas.sprites.fill;
+		const fill = FILL_SPRITE_ID;
 		engine.setPalette(new Uint8Array([255, 0, 0, 255]));
 		const pixels = new Uint8Array([255, 0, 0, 255, 0, 0, 255, 128, 0, 0, 0, 0, 255, 255, 0, 255]);
 		overlay.setDrawCallback(layer => {

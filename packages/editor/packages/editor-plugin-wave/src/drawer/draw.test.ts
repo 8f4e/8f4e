@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it } from 'vitest';
 import { createDrawContextMock } from '../__tests__/rendering';
@@ -36,7 +36,6 @@ function wave(): Wave {
 }
 function state() {
 	return createMockState({
-		spriteLookups: createMockSpriteLookups() as never,
 		viewport: { vGrid: 4 },
 	});
 }

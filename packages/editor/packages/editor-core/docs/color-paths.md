@@ -93,7 +93,7 @@ choose contrasting pairs for other shades. This does not replace a complete cont
 
 `PALETTE_INDICES` exposes stable numeric indices for every shade, opacity variant, and shared material. Drawers choose
 these indices directly: `draw.drawFill(x, y, PALETTE_INDICES.primaryDark2, width, height)` and
-`draw.drawText(x, y, text, PALETTE_INDICES.inkOn)` reuse the same fill mask and glyph table across unrelated controls.
+`draw.drawText(x, y, text, PALETTE_INDICES.inkOn)` reuse the same fill mask and fixed glyph IDs across unrelated controls.
 Local visual choices belong to drawers rather than theme configuration. Controls use `accentSurface` fills and
 `lightBase` handles with `darkBase` labels; disabled panels use `surfaceSubdued`. Equal resolved colors keep separate indices
 so a theme change can make them diverge without rebuilding projections.
@@ -125,7 +125,8 @@ with no sprite pass. Their nearest filtering and straight-alpha uploads are inde
 
 `@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
 the generated masks and separately resolved palette. Theme changes update palette colors, the background's three
-premultiplied color uniforms, and line-rendered wire colors. Font changes rebuild masks, install grid dimensions and cell
-indices, and update the background's dot geometry. Its program and empty vertex array survive rendering-memory release and are deleted
-when the view is destroyed. Font builds leave the active palette untouched, and
+premultiplied color uniforms, and line-rendered wire colors. Font changes load cached masks, install grid dimensions,
+and update the background's dot geometry from web-ui's font-specific settings. Glyph IDs remain stable, and editor
+state carries no sprite lookup tables. The background program and empty vertex array survive rendering-memory
+release and are deleted when the view is destroyed. Font builds leave the active palette untouched, and
 stale asynchronous font builds are ignored.

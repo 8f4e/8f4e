@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
@@ -53,7 +53,6 @@ describe('selected line tooltip animation', () => {
 			} as never,
 			featureFlags: { codeLineSelection: true },
 			codeBlockRendering: { selectedCodeBlock: codeBlock },
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const tooltip: TooltipState = {
 			...createEmptyTooltipState(),
@@ -166,7 +165,6 @@ describe('tooltip drawing', () => {
 			},
 		});
 		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
 			codeBlockRendering: {
 				codeBlocks: [block],
 				selectedCodeBlock: block,
@@ -271,7 +269,6 @@ describe('tooltip drawing', () => {
 					moduleList: [],
 				},
 			},
-			spriteLookups: createMockSpriteLookups() as never,
 			codeBlockRendering: {
 				codeBlocks: [block],
 				selectedCodeBlock: block,

@@ -1,43 +1,42 @@
 import { describe, expect, it } from 'vitest';
-import { createAtlasLayout } from '../src/atlasLayout';
 import { writeGlyph } from '../src/font';
-import generateSprite, { createSpriteCell, FONT_NAMES, type SpriteId } from '../src/index';
+import loadFontAtlas, { FILL_SPRITE_ID, FONT_NAMES, getGlyphSpriteId } from '../src/index';
 
-describe('R8 glyph masks', () => {
+describe('R8 font atlases', () => {
 	it('writes asymmetric bits at the correct row and column with an odd destination stride', () => {
 		const data = new Uint8Array(7 * 5);
-		writeGlyph(data, 7, [0b101, 0b010], 0, 3, 2, 2, 1);
+		writeGlyph(data, 7, new Uint8Array([0b101, 0b010]), 0, 3, 2, 2, 1);
 		expect([...data.entries()].filter(([, value]) => value).map(([index]) => index)).toEqual([9, 11, 17]);
-		expect(new Set(data)).toEqual(new Set([0, 255]));
 	});
-	it.each(FONT_NAMES)('generates a uniform grid of glyph and fill masks for %s without canvas APIs', async font => {
-		const { spriteAtlas, characterWidth, characterHeight } = await generateSprite({ font });
-		const image = spriteAtlas.image;
-		expect(image.data.length).toBe(image.width * image.height);
-		expect(image.data.some(value => value === 255)).toBe(true);
-		expect(Object.keys(spriteAtlas.sprites)).toEqual(['font', 'fill']);
-		expect(spriteAtlas.grid).toEqual({
-			cellWidth: characterWidth,
-			cellHeight: characterHeight,
-			columns: 16,
-			cellCount: 129,
-		});
-		expect(Object.values(spriteAtlas.sprites.font)).toEqual(Array.from({ length: 128 }, (_, i) => i));
-		expect(spriteAtlas.sprites.fill).toBe(128);
-		expect(new Set(image.data)).toEqual(new Set([0, 255]));
-		const layout = createAtlasLayout(characterWidth, characterHeight);
-		expect([image.width, image.height]).toEqual([characterWidth * 16, characterHeight * 9]);
-		for (let y = layout.fill.y; y < image.height; y++) {
-			for (let x = 0; x < image.width; x++) {
-				expect(image.data[y * image.width + x]).toBe(x < characterWidth ? 255 : 0);
+	it.each(FONT_NAMES)('matches all source glyph pixels and the solid fill for %s', async font => {
+		const { image, grid } = await loadFontAtlas(font);
+		const { default: glyphs } = await import(`../src/fonts/${font}/ascii.ts`);
+		const { cellWidth, cellHeight, columns, cellCount } = grid;
+		expect([columns, cellCount]).toEqual([16, 129]);
+		expect([image.width, image.height]).toEqual([cellWidth * 16, cellHeight * 9]);
+		const expected = new Uint8Array(image.width * image.height);
+		for (let code = 0; code < 128; code++) {
+			for (let row = 0; row < cellHeight; row++) {
+				for (let column = 0; column < cellWidth; column++) {
+					const x = (code % 16) * cellWidth + column;
+					const y = Math.floor(code / 16) * cellHeight + row;
+					expected[y * image.width + x] = glyphs[code][row][column] === '#' ? 255 : 0;
+				}
 			}
 		}
+		for (let row = cellHeight * 8; row < image.height; row++)
+			expected.fill(255, row * image.width, row * image.width + cellWidth);
+		expect(image.data).toEqual(expected);
 	});
-});
-
-it('keeps packed text cells unsigned and preserves zero-valued shapes and colors', () => {
-	expect(createSpriteCell(0 as SpriteId, 0)).toBe(0);
-	expect(createSpriteCell(0xffff as SpriteId, 0xffff)).toBe(0xffffffff);
-	expect(createSpriteCell(42 as SpriteId, 7) & 0xffff).toBe(42);
-	expect(createSpriteCell(42 as SpriteId, 7) >>> 16).toBe(7);
+	it('shares one lazy load across concurrent requests and later reuse', async () => {
+		const first = loadFontAtlas('terminus12x24bold');
+		expect(loadFontAtlas('terminus12x24bold')).toBe(first);
+		const atlas = await first;
+		expect(await loadFontAtlas('terminus12x24bold')).toBe(atlas);
+	});
+	it('uses fixed ASCII IDs and the question-mark fallback without colliding with fill', () => {
+		for (let code = 0; code < 128; code++) expect(getGlyphSpriteId(code)).toBe(code);
+		for (const code of [-1, 128, 233, 937, 0xffff]) expect(getGlyphSpriteId(code)).toBe(63);
+		expect(FILL_SPRITE_ID).toBe(128);
+	});
 });

@@ -23,10 +23,6 @@ function drawOutline(
 }
 
 export default function drawEntryOutlines(engine: DrawContext, state: State): void {
-	if (!state.spriteLookups) {
-		return;
-	}
-
 	const thickness = 1;
 
 	for (const outline of state.codeBlockRendering.entryOutlines) {

@@ -1,4 +1,4 @@
-import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { Input, Output } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
 import type { LineDrawer } from '../../../plugins/line-drawer';
@@ -86,7 +86,6 @@ describe('drawConnections', () => {
 					},
 				},
 			},
-			spriteLookups: createMockSpriteLookups() as never,
 			codeBlockRendering: {
 				codeBlocks: [inputBlock, outputBlock],
 				selectedCodeBlock: inputBlock,

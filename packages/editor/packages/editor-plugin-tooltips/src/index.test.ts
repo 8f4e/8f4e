@@ -1,7 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import { createMockSpriteLookups } from '@8f4e/editor-state-testing';
 import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
@@ -39,7 +38,6 @@ entryEnd`);
 	const state = store.getState();
 	Object.assign(state.compiler, compiled);
 	store.set('initialProjectState', project);
-	store.set('spriteLookups', createMockSpriteLookups() as never);
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.selectedCodeBlock', codeBlock);
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 4);

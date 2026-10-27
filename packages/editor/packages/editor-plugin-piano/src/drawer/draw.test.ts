@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { DrawContext as Engine, MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
@@ -101,7 +101,6 @@ describe('drawPianoKeyboards', () => {
 				vGrid: 1,
 				hGrid: 4,
 			},
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const keyboards = [createPianoKeyboard()];
 
@@ -135,7 +134,6 @@ describe('drawPianoKeyboards', () => {
 				vGrid: 1,
 				hGrid: 4,
 			},
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const keyboards = [createPianoKeyboard()];
 
@@ -155,7 +153,6 @@ describe('drawPianoKeyboards', () => {
 				vGrid: 1,
 				hGrid: 4,
 			},
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const keyboards = [createPianoKeyboard()];
 

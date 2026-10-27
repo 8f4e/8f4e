@@ -57,10 +57,6 @@ export default function drawer(
 	codeBlock: CodeBlockGraphicData,
 	memoryViews: MemoryViews
 ): void {
-	if (!state.spriteLookups) {
-		return;
-	}
-
 	const colors = PALETTE_INDICES;
 
 	for (const meter of codeBlock.widgets.arrayMeters) {

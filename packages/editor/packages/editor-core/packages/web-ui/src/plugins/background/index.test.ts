@@ -67,13 +67,13 @@ function palette(base: number[], even: number[], odd: number[]): Uint8Array {
 	return bytes;
 }
 
-const font = { characterWidth: 8, characterHeight: 16, backgroundDot: { x: 3, y: 7, size: 2 } };
+const grid = { cellWidth: 8, cellHeight: 16 };
 
 describe('procedural background', () => {
 	it('draws one triangle and follows font and drawing-buffer size changes', () => {
 		const { host, gl, draw } = createHost();
 		const background = new BackgroundRenderer(host);
-		background.setFont(font);
+		background.setFont('ibmvga8x16', grid);
 		background.setPalette(palette([20, 30, 40, 102], [99, 99, 99, 255], [58, 58, 58, 255]));
 		draw();
 		expect(gl.drawArrays).toHaveBeenLastCalledWith(gl.TRIANGLES, 0, 3);
@@ -84,7 +84,7 @@ describe('procedural background', () => {
 		);
 		expect(gl.bindFramebuffer).toHaveBeenCalledWith(gl.FRAMEBUFFER, null);
 		expect(gl.blendFunc).toHaveBeenCalledWith(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-		background.setFont({ characterWidth: 5, characterHeight: 8, backgroundDot: { x: 1, y: 4, size: 2 } });
+		background.setFont('spleen5x8', { cellWidth: 5, cellHeight: 8 });
 		gl.drawingBufferWidth = 800;
 		gl.drawingBufferHeight = 601;
 		draw();
@@ -96,7 +96,7 @@ describe('procedural background', () => {
 	it('composites translucent dots over the base before drawing and skips an invisible background', () => {
 		const { host, gl, draw } = createHost();
 		const background = new BackgroundRenderer(host);
-		background.setFont(font);
+		background.setFont('ibmvga8x16', grid);
 		background.setPalette(palette([0, 0, 255, 128], [255, 0, 0, 128], [0, 0, 0, 0]));
 		draw();
 		const uploaded = (name: string) => [...gl.uniform4fv.mock.calls.find(([location]) => location.name === name)![1]];

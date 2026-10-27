@@ -13,7 +13,7 @@ export default function drawer(
 	codeBlock: CodeBlockGraphicData,
 	memoryViews: MemoryViews
 ): void {
-	if (!state.spriteLookups || !codeBlock.name) {
+	if (!codeBlock.name) {
 		return;
 	}
 

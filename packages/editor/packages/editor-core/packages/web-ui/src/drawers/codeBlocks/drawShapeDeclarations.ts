@@ -7,7 +7,7 @@ export default function drawShapeDeclarations(
 	state: State,
 	codeBlock: CodeBlockGraphicData
 ): void {
-	if (!state.spriteLookups || codeBlock.widgets.shapeDeclarations.length === 0) {
+	if (codeBlock.widgets.shapeDeclarations.length === 0) {
 		return;
 	}
 

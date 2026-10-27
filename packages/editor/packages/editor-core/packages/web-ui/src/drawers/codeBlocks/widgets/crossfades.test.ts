@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { Crossfade } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../../../__tests__/rendering';
@@ -48,7 +48,6 @@ describe('drawCrossfades', () => {
 				vGrid: 2,
 				hGrid: 8,
 			},
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			name: 'test-block',
@@ -71,7 +70,6 @@ describe('drawCrossfades', () => {
 				vGrid: 2,
 				hGrid: 8,
 			},
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			name: 'test-block',

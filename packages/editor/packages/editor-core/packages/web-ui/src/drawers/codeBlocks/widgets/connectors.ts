@@ -37,10 +37,6 @@ export default function drawConnectors(
 	codeBlock: CodeBlockGraphicData,
 	memoryViews: MemoryViews
 ): void {
-	const sprites = state.spriteLookups;
-	if (!sprites) {
-		return;
-	}
 	const { vGrid: width, hGrid: height } = state.viewport;
 	const background = PALETTE_INDICES.surfaceOverlay;
 

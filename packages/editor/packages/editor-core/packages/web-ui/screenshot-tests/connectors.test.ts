@@ -1,6 +1,6 @@
 import { PALETTE_INDICES, type PaletteConfig, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import generateSprite, { type Font } from '@8f4e/sprite-generator';
+import loadFontAtlas, { FILL_SPRITE_ID, type Font } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { DrawContext } from '../src/drawContext';
@@ -17,18 +17,17 @@ const themes: Array<{ name: string; palette: PaletteConfig }> = [
 for (const font of ['6x10', 'ibmvga8x16', 'spleen16x32'] satisfies Font[]) {
 	for (const { name, palette } of themes) {
 		test(`connectors with ${font} and ${name} colors`, async () => {
-			const { characterWidth, characterHeight, spriteAtlas } = await generateSprite({ font });
+			const spriteAtlas = await loadFontAtlas(font);
+			const { cellWidth: characterWidth, cellHeight: characterHeight } = spriteAtlas.grid;
 			const canvas = createCanvas();
 			canvas.width = characterWidth * 29;
 			canvas.height = characterHeight * 3;
 			const engine = new Engine(canvas);
 			engine.setPalette(toPaletteBytes(resolvePalette(palette)));
 			engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.grid);
-			const spriteLookups = spriteAtlas.sprites;
 			const state = createMockState({
 				viewport: { vGrid: characterWidth, hGrid: characterHeight },
 			});
-			state.spriteLookups = spriteLookups;
 			const block = createMockCodeBlock();
 			block.widgets.inputs.push({
 				codeBlock: block,
@@ -76,8 +75,8 @@ for (const font of ['6x10', 'ibmvga8x16', 'spleen16x32'] satisfies Font[]) {
 			}
 			try {
 				engine.renderFrame(() => {
-					engine.drawSprite(0, 0, spriteLookups.fill, PALETTE_INDICES.white, canvas.width, canvas.height);
-					drawConnectors(new DrawContext(engine, characterWidth, spriteLookups), state, block, memoryViews);
+					engine.drawSprite(0, 0, FILL_SPRITE_ID, PALETTE_INDICES.white, canvas.width, canvas.height);
+					drawConnectors(new DrawContext(engine, characterWidth), state, block, memoryViews);
 				});
 				await expect(canvas).toMatchScreenshot();
 			} finally {

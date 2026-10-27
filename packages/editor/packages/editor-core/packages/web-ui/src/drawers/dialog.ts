@@ -7,7 +7,7 @@ const BUTTON_HORIZONTAL_PADDING_GRID_CELLS = 4;
 const BUTTON_VERTICAL_PADDING_GRID_CELLS = 1;
 
 export default function drawDialog(engine: DrawContext, state: State): void {
-	if (state.dialogStack.length === 0 || !state.spriteLookups) {
+	if (state.dialogStack.length === 0) {
 		return;
 	}
 

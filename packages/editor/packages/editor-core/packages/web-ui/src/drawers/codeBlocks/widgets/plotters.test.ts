@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../../drawContext';
@@ -26,7 +26,6 @@ describe('drawPlotters', () => {
 	it('renders one sample per point for short arrays', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
 			viewport: {
 				hGrid: 4,
 				vGrid: 8,
@@ -69,7 +68,6 @@ describe('drawPlotters', () => {
 	it('matches sparse background width to the rendered trace width', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
 			viewport: {
 				hGrid: 4,
 				vGrid: 8,
@@ -109,7 +107,6 @@ describe('drawPlotters', () => {
 	it('renders dense arrays as per-column min/max envelopes instead of truncating', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
 			viewport: {
 				hGrid: 4,
 				vGrid: 8,

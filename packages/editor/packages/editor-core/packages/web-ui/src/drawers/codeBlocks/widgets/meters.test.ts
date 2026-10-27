@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { ArrayMeter } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../../../__tests__/rendering';
@@ -59,9 +59,7 @@ function createMeterWidget(overrides: Partial<ArrayMeter> = {}): ArrayMeter {
 describe('drawMeters', () => {
 	it('renders a segmented horizontal meter based on the current value', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
-		});
+		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [createMeterWidget({ x: 2, y: 3 })],
@@ -79,9 +77,7 @@ describe('drawMeters', () => {
 
 	it('clamps out-of-range values to a full meter', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
-		});
+		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [
@@ -106,9 +102,7 @@ describe('drawMeters', () => {
 
 	it('returns fully to zero when the bound scalar value is zero', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
-		});
+		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [
@@ -132,9 +126,7 @@ describe('drawMeters', () => {
 
 	it('treats bipolar ranges as amplitude meters so silence renders empty', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
-		});
+		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [
@@ -163,9 +155,7 @@ describe('drawMeters', () => {
 
 	it('fills negative bipolar values by magnitude', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
-		});
+		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [
@@ -189,9 +179,7 @@ describe('drawMeters', () => {
 
 	it('latches a red overload marker at the end of the meter after clipping', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
-		});
+		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				arrayMeters: [

@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../__tests__/rendering';
 import type { ButtonWidget } from '../types';
@@ -19,7 +19,6 @@ const control: ButtonWidget = {
 function createTestState() {
 	return createMockState({
 		viewport: { vGrid: 8, hGrid: 16 },
-		spriteLookups: createMockSpriteLookups() as never,
 	});
 }
 

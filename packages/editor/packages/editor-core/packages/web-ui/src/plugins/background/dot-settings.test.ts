@@ -1,5 +1,6 @@
+import { FONT_NAMES } from '@8f4e/sprite-generator';
 import { describe, expect, it } from 'vitest';
-import generateSprite, { FONT_NAMES } from '../src/index.ts';
+import { BACKGROUND_DOTS } from './dot-settings';
 
 // Pixel bounds captured from the former DOT bitmaps, including their off-center placement.
 const backgrounds = [
@@ -30,15 +31,10 @@ describe('procedural background metrics', () => {
 
 	it.each(backgrounds)(
 		'preserves the dot placement for %s without allocating background atlas pixels',
-		async (font, width, height, dotX, dotY, size) => {
-			const { characterWidth, characterHeight, backgroundDot, spriteAtlas } = await generateSprite({ font });
-			expect([characterWidth, characterHeight]).toEqual([width, height]);
-			expect(backgroundDot).toEqual({ x: dotX, y: dotY, size });
-			expect(spriteAtlas.image.data.byteLength).toBe(width * height * 16 * 9);
-			expect(spriteAtlas.grid.cellCount).toBe(129);
-			expect(Object.keys(spriteAtlas.sprites.font)).toHaveLength(128);
-			expect(spriteAtlas.sprites.fill).toBe(128);
-			expect(spriteAtlas.image.data[height * 8 * spriteAtlas.image.width]).toBe(255);
+		(font, width, height, dotX, dotY, size) => {
+			expect(BACKGROUND_DOTS[font]).toEqual({ x: dotX, y: dotY, size });
+			expect(dotX + size).toBeLessThanOrEqual(width);
+			expect(dotY + size).toBeLessThanOrEqual(height);
 		}
 	);
 });

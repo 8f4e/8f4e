@@ -85,10 +85,6 @@ export default function drawer(
 	codeBlock: CodeBlockGraphicData,
 	memoryViews: MemoryViews
 ): void {
-	if (!state.spriteLookups) {
-		return;
-	}
-
 	const colors = PALETTE_INDICES;
 
 	const maxPlotterWidth = codeBlock.width - state.viewport.hGrid * 2;

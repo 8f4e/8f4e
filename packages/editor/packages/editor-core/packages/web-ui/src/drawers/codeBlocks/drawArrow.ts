@@ -21,9 +21,6 @@ const ARROW_CHARACTERS = {
 export default function drawArrow(engine: DrawContext, codeBlock: CodeBlockGraphicData, state: State): void {
 	const arrowPlacement = calculateArrowPlacement(codeBlock, state);
 	const color = PALETTE_INDICES.secondaryBase;
-	if (!state.spriteLookups) {
-		return;
-	}
 
 	if (arrowPlacement.top) {
 		engine.drawText(arrowPlacement.top.x, arrowPlacement.top.y, ARROW_CHARACTERS.top, color);

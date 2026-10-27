@@ -1,5 +1,6 @@
 import type { PaletteIndex } from '@8f4e/editor-palette';
-import type { SpriteCell, SpriteId, SpriteIdLookups } from '@8f4e/sprite-generator';
+import { FILL_SPRITE_ID, getGlyphSpriteId, type SpriteId } from '@8f4e/sprite-generator';
+import type { SpriteCell } from '@8f4e/web-ui-render-projection';
 import { DrawContext as SpriteDrawContext, type SpriteTarget } from 'glugglugglug/utils';
 
 /** Editor text/fill primitives bind shared shapes to explicit palette indices without per-frame allocations. */
@@ -7,25 +8,21 @@ export class DrawContext {
 	private readonly sprites: SpriteDrawContext;
 	constructor(
 		target: SpriteTarget,
-		private characterWidth: number,
-		private lookups: SpriteIdLookups
+		private characterWidth: number
 	) {
 		this.sprites = new SpriteDrawContext(target);
 	}
 	setCharacterWidth(width: number): void {
 		this.characterWidth = width;
 	}
-	setSpriteLookups(lookups: SpriteIdLookups): void {
-		this.lookups = lookups;
-	}
 	drawSprite(x: number, y: number, spriteId: SpriteId, color: PaletteIndex, width?: number, height?: number): void {
 		this.sprites.drawSprite(x, y, spriteId, color, width, height);
 	}
 	drawFill(x: number, y: number, color: PaletteIndex, width: number, height: number): void {
-		this.drawSprite(x, y, this.lookups.fill, color, width, height);
+		this.drawSprite(x, y, FILL_SPRITE_ID, color, width, height);
 	}
 	drawCharacter(x: number, y: number, character: number, color: PaletteIndex, width?: number, height?: number): void {
-		this.drawSprite(x, y, this.lookups.font[character] ?? this.lookups.font[63], color, width, height);
+		this.drawSprite(x, y, getGlyphSpriteId(character), color, width, height);
 	}
 	drawText(x: number, y: number, text: string, color: PaletteIndex): void {
 		for (let index = 0; index < text.length; index++) {

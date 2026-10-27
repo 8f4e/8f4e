@@ -37,10 +37,6 @@ export function drawPianoKeyboards(
 	keyboards: PianoKeyboard[],
 	memoryViews: MemoryViews
 ): void {
-	if (!state.spriteLookups) {
-		return;
-	}
-
 	for (const {
 		x,
 		y,

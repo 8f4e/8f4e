@@ -9,7 +9,6 @@ import type {
 	MemoryAction as CompilerMemoryAction,
 	ProjectObjectModel,
 } from '@8f4e/language-spec';
-import type { SpriteIdLookups } from '@8f4e/sprite-generator';
 import type { AssertionResult } from './features/assertions/types';
 import type { BinaryAsset } from './features/binary-assets/types';
 import type {
@@ -272,7 +271,6 @@ export interface State {
 	compiler: Compiler;
 	codeBlockRendering: CodeBlockRendering;
 	contextMenu: ContextMenu;
-	spriteLookups?: SpriteIdLookups;
 	/** Arbitrary key/value records rendered by `; @info <id>` directives. */
 	info: InfoState;
 	callbacks: Callbacks;

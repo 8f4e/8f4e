@@ -5,8 +5,6 @@ import type { ButtonWidget } from '../types';
 import drawButton from './drawButton';
 
 export function drawButtons(draw: DrawContext, state: State, buttons: ButtonWidget[], memory: MemoryViews): void {
-	const sprites = state.spriteLookups;
-	if (!sprites) return;
 	for (const button of buttons) {
 		const value = (button.isInteger ? memory.int32 : memory.float32)[button.allocationUnitAddress];
 		const onValue = button.isInteger ? button.onValue : Math.fround(button.onValue);

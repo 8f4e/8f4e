@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, type vi } from 'vitest';
 import { createDrawContextMock } from '../../../__tests__/rendering';
 import type { MemoryViews } from '../../../types';
@@ -22,7 +22,6 @@ describe('drawDebuggers', () => {
 		const engine = createDrawContextMock();
 		const state = createMockState({
 			viewport: { vGrid: 8, hGrid: 16 },
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -50,7 +49,6 @@ describe('drawDebuggers', () => {
 		const engine = createDrawContextMock();
 		const state = createMockState({
 			viewport: { vGrid: 8, hGrid: 16 },
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -87,7 +85,6 @@ describe('drawDebuggers', () => {
 		const engine = createDrawContextMock();
 		const state = createMockState({
 			viewport: { vGrid: 8, hGrid: 16 },
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -126,7 +123,6 @@ describe('drawDebuggers', () => {
 			const engine = createDrawContextMock();
 			const state = createMockState({
 				viewport: { vGrid: 8, hGrid: 16 },
-				spriteLookups: createMockSpriteLookups() as never,
 			});
 			const codeBlock = createMockCodeBlock({
 				widgets: {

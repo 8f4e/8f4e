@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../../drawContext';
@@ -21,7 +21,6 @@ describe('drawInfoPanels', () => {
 					foo: 1.234567,
 				},
 			},
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
@@ -45,9 +44,7 @@ describe('drawInfoPanels', () => {
 
 	it('skips missing info records', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
-		});
+		const state = createMockState({});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
 				infoPanels: [{ x: 24, y: 32, width: 216, height: 48, id: 'missing', rowCount: 3, keyColumnWidth: 3 }],
@@ -68,7 +65,6 @@ describe('drawInfoPanels', () => {
 					longKey: 'overflow',
 				},
 			},
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const codeBlock = createMockCodeBlock({
 			widgets: {
