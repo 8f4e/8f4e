@@ -27,10 +27,6 @@ function validateCodeBlock(code: string[], blockIndex: number): void {
 		lastNonEmptyIndex--;
 	}
 
-	if (lastNonEmptyIndex < 0) {
-		throw new Error(`Block ${blockIndex}: missing closer`);
-	}
-
 	const closerLine = code[lastNonEmptyIndex].trim();
 	const closer = getProjectCloserKeyword(closerLine);
 	if (!closer) {

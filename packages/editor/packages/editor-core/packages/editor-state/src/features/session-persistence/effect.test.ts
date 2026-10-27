@@ -1,8 +1,18 @@
+import { EventEmitter } from 'node:events';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import type { EventDispatcher } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
-import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import sessionPersistence from './effect';
+
+function createEvents(): EventDispatcher {
+	const events = new EventEmitter();
+	return {
+		on: events.on.bind(events),
+		off: events.off.bind(events),
+		dispatch: events.emit.bind(events),
+	};
+}
 
 describe('session persistence', () => {
 	it('saves the root project and updates storage quota', async () => {
@@ -13,15 +23,13 @@ describe('session persistence', () => {
 			createMockCodeBlock({ blockType: 'module', code: ['module other', 'moduleEnd'], entry: 'main' })
 		);
 		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
+		const events = createEvents();
 		const dispose = sessionPersistence(store, events);
-		await vi
-			.mocked(events.on)
-			.mock.calls.find(([name]) => name === 'saveSession')![1](undefined);
+		events.dispatch('saveSession');
 		expect(saveSession.mock.calls[0][0].modules).toEqual([
 			{ id: 0, code: ['module other', 'moduleEnd'], entry: 'main' },
 		]);
-		expect(state.storageQuota).toEqual({ usedBytes: 1024, totalBytes: 10240 });
+		await vi.waitFor(() => expect(state.storageQuota).toEqual({ usedBytes: 1024, totalBytes: 10240 }));
 		dispose();
 		store.dispose();
 	});
@@ -32,7 +40,7 @@ describe('session persistence', () => {
 		state.codeBlockRendering.rootCodeBlocks.push(note);
 		state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit = note;
 		const store = createStateManager(state);
-		const dispose = sessionPersistence(store, createMockEventDispatcherWithVitest());
+		const dispose = sessionPersistence(store, createEvents());
 		const code = ['note local.settings', '; @pos 4 8', 'noteEnd'];
 		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', code);
 		expect(saveSession).toHaveBeenLastCalledWith(expect.objectContaining({ notes: [{ id: 0, code }] }));
@@ -42,23 +50,25 @@ describe('session persistence', () => {
 		dispose();
 		store.dispose();
 	});
-	it('does nothing when session saving is unavailable', async () => {
-		const store = createStateManager(createMockState());
-		const events = createMockEventDispatcherWithVitest();
+	it('does nothing when session saving is unavailable', () => {
+		const getStorageQuota = vi.fn();
+		const store = createStateManager(createMockState({ callbacks: { getStorageQuota } }));
+		const events = createEvents();
 		const dispose = sessionPersistence(store, events);
-		await expect(vi.mocked(events.on).mock.calls[0][1](undefined)).resolves.toBeUndefined();
+		events.dispatch('saveSession');
+		expect(getStorageQuota).not.toHaveBeenCalled();
 		dispose();
 		store.dispose();
 	});
 	it('releases code subscriptions and its event listener', () => {
 		const saveSession = vi.fn().mockResolvedValue(undefined);
 		const store = createStateManager(createMockState({ callbacks: { saveSession } }));
-		const events = createMockEventDispatcherWithVitest();
+		const events = createEvents();
 		const dispose = sessionPersistence(store, events);
 		dispose();
 		store.set('codeBlockRendering.codeBlocks', []);
+		events.dispatch('saveSession');
 		expect(saveSession).not.toHaveBeenCalled();
-		expect(events.off).toHaveBeenCalledWith('saveSession', expect.any(Function));
 		store.dispose();
 	});
 });

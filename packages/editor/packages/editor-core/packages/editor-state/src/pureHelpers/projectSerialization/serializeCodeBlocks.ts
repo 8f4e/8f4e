@@ -1,7 +1,6 @@
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import type { ProjectBlock, ProjectObjectModel } from '@8f4e/language-spec';
 import { tryParseProjectMemoryExposureLine } from '@8f4e/project-preparser';
-import sortCodeBlocksByGridPosition from './sortCodeBlocksByGridPosition';
 
 function createEmptyProject(): ProjectObjectModel {
 	return {
@@ -20,8 +19,11 @@ function createEmptyProject(): ProjectObjectModel {
 /** Converts editor-owned live blocks directly into the canonical project collections. */
 export default function convertGraphicDataToProjectStructure(codeBlocks: CodeBlockGraphicData[]): ProjectObjectModel {
 	const project = createEmptyProject();
+	const sortedBlocks = [...codeBlocks].sort(
+		(a, b) => a.gridX - b.gridX || a.gridY - b.gridY || a.creationIndex - b.creationIndex
+	);
 
-	for (const codeBlock of sortCodeBlocksByGridPosition(codeBlocks)) {
+	for (const codeBlock of sortedBlocks) {
 		if (codeBlock.isProjectScope) {
 			project.code.push(...codeBlock.code);
 			continue;

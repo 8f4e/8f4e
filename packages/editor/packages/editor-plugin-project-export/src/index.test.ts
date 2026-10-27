@@ -91,24 +91,24 @@ describe('project export plugin', () => {
 		expect(test.saveSession).not.toHaveBeenCalled();
 	});
 
-	it.each(['ctrlKey', 'metaKey'] as const)(
-		'starts saving synchronously from %s+S and reads the latest code',
-		modifier => {
-			const test = setup();
+	it.each([
+		{ mode: 'edit', modifier: 'ctrlKey' },
+		{ mode: 'edit', modifier: 'metaKey' },
+		{ mode: 'view', modifier: 'ctrlKey' },
+		{ mode: 'view', modifier: 'metaKey' },
+	] as const)(
+		'starts saving synchronously from $modifier+S in $mode mode and reads the latest code',
+		({ mode, modifier }) => {
+			const test = setup(true, mode);
 			test.block.code[1] = 'int value 42';
 			const event = test.keydown('S', { [modifier]: true });
 			expect(event.defaultPrevented).toBe(true);
+			expect(test.saveProject).toHaveBeenCalledOnce();
 			expect(test.saveProject).toHaveBeenCalledWith(expect.stringContaining('int value 42'), 'project.8f4e');
 			expect(test.exportProject).not.toHaveBeenCalled();
 			expect(test.saveSession).not.toHaveBeenCalled();
 		}
 	);
-
-	it.each(['view', 'edit'] as const)('saves in %s mode', mode => {
-		const test = setup(true, mode);
-		test.keydown('s', { metaKey: true });
-		expect(test.saveProject).toHaveBeenCalledOnce();
-	});
 
 	it.each([{ key: 's' }, { key: 'x', ctrlKey: true }])(
 		'leaves unrelated keys unhandled: $key',
