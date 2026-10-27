@@ -253,10 +253,10 @@ describe('compiler input revision', () => {
 		autoEnvConstants(store);
 		const env = createMockCodeBlock({ name: 'env', blockType: 'constants', code: ['constants env', 'constantsEnd'] });
 		state.codeBlockRendering.codeBlocks.push(env);
-		store.set('binaryAssets', [{ id: 'sound', fileName: 'sound.wav', assetByteLength: 100 }]);
-		expect(env.code).toContain('const ASSET_SOUND_SIZE 100');
+		store.set('envConstantContributions.test', ['const CONTRIBUTED_VALUE 100']);
+		expect(env.code).toContain('const CONTRIBUTED_VALUE 100');
 		expect(state.compilerInputRevision).toBe(1);
-		store.set('binaryAssets', state.binaryAssets);
+		store.set('envConstantContributions', state.envConstantContributions);
 		expect(state.compilerInputRevision).toBe(1);
 	});
 

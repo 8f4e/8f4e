@@ -116,6 +116,15 @@ state, and source transformation for disconnecting intermodular memory defaults.
 through their action payload and respect edit mode; their menu entries disappear when the plugins are omitted.
 The public `removeDirective` helper edits generic directive comments without coupling core to either action.
 
+The binary-assets plugin owns `bin` configuration, browser fetching and caching, private asset bytes/metadata,
+memory loading, the loading dialog, and generated asset-size constants. Its factory receives a getter for current
+runtime memory bytes; the shared plugin context carries no browser resources or binary asset fields.
+
+Plugins can contribute source to the generated `env` constants block with
+`store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines these lines with the selected
+runtime's constants and recompiles when generated source changes. Each plugin removes its own contribution key
+when disposed. The registry contains source lines only; feature metadata stays private to its owner.
+
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
 tab-aware text measurement, module identity, and compiled-function lookup helpers. Its `/memory` entry
 exports memory scope, identifier, element-count, and typed-value resolution, plus `getMemoryDefaultEdits` for rewriting

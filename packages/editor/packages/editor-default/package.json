@@ -51,7 +51,8 @@
     "@8f4e/editor-plugin-project-export": "*",
     "@8f4e/editor-plugin-wasm-export": "*",
     "@8f4e/editor-plugin-toggle-favorite": "*",
-    "@8f4e/editor-plugin-remove-memory-connections": "*"
+    "@8f4e/editor-plugin-remove-memory-connections": "*",
+    "@8f4e/editor-plugin-binary-assets": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

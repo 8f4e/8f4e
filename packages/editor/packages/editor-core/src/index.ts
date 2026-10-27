@@ -16,10 +16,7 @@ import initView, {
 	type WebUiOptions,
 } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
-import {
-	BIN_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID,
-	binaryAssetsEditorConfigSchemaContribution,
-} from './editorEnvironmentPlugins/binaryAssets/config';
+
 import {
 	KEYBOARD_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID,
 	keyboardEditorConfigSchemaContribution,
@@ -164,7 +161,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		const compileCode = options.callbacks.compileCode;
 		const editorConfigSchemaContributions: EditorConfigSchemaContributionRegistry = {
 			[WEB_UI_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID]: webUiEditorConfigSchemaContribution,
-			[BIN_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID]: binaryAssetsEditorConfigSchemaContribution,
 			[KEYBOARD_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID]: keyboardEditorConfigSchemaContribution,
 			[MIDI_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID]: midiEditorConfigSchemaContribution,
 			...options.editorConfigSchemaContributions,

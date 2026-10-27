@@ -57,6 +57,10 @@ a live reduced-motion preference from the browser host and keep their animation 
 The `plugins` option replaces the default set: pass `[]` to omit plugins, or a custom array to select and extend it.
 Each editor installs and disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).
 
+`@8f4e/editor-plugin-binary-assets` is also included. It owns binary asset configuration, fetching, caching, memory
+copies, loading UI, and generated size constants. The default editor supplies a getter for current compiler memory
+bytes, so memory replacement and growth are visible to the plugin without sharing browser-specific context fields.
+
 The runtime registry includes `TestRuntime`, selected with `; @config runtime TestRuntime`. For projects with an
 enabled test entry, it executes tests once after successful compilation or recompilation, using the editor's current
 memory and publishing results under `state.runtime.values.TestRuntime`. See the

@@ -8,12 +8,6 @@ export const editorEnvironmentPluginRegistry: EditorEnvironmentPluginRegistryEnt
 		load: () => import('./keyboardMemory/plugin'),
 	},
 	{
-		id: 'binary-assets',
-		editorDirectives: [],
-		editorConfigPaths: ['bin'],
-		load: () => import('./binaryAssets/plugin'),
-	},
-	{
 		id: 'midi',
 		editorDirectives: [],
 		editorConfigPaths: ['midi'],

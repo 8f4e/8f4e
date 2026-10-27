@@ -1,4 +1,5 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
@@ -6,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mountDefaultEditor } from './index';
 import { exportBinaryCode } from './storage-callbacks';
 
-const { projectFiles, getCodeBuffer } = vi.hoisted(() => ({
+const { projectFiles, getCodeBuffer, getMemory } = vi.hoisted(() => ({
 	projectFiles: {
 		dispose: vi.fn(),
 		importProject: vi.fn(),
@@ -15,9 +16,13 @@ const { projectFiles, getCodeBuffer } = vi.hoisted(() => ({
 		exportProject: vi.fn(),
 	},
 	getCodeBuffer: vi.fn(() => new Uint8Array()),
+	getMemory: vi.fn<() => WebAssembly.Memory | null>(() => null),
 }));
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('@8f4e/editor-plugin-binary-assets', () => ({
+	createBinaryAssetsPlugin: vi.fn(() => ({ id: 'binary-assets', setup: () => () => {} })),
+}));
 vi.mock('@8f4e/editor-plugin-screenshot', () => ({
 	createScreenshotPlugin: vi.fn(() => ({ id: 'screenshot', setup: () => () => {} })),
 }));
@@ -27,7 +32,9 @@ vi.mock('@8f4e/editor-plugin-project-export', () => ({
 vi.mock('@8f4e/editor-plugin-wasm-export', () => ({
 	createWasmExportPlugin: vi.fn(() => ({ id: 'wasm-export', setup: () => () => {} })),
 }));
-vi.mock('./compiler-callback', () => ({ createCompilerService: () => ({ dispose: vi.fn(), getCodeBuffer }) }));
+vi.mock('./compiler-callback', () => ({
+	createCompilerService: () => ({ dispose: vi.fn(), getCodeBuffer, getMemory }),
+}));
 vi.mock('./runtime-registry', () => ({ createRuntimeRegistry: () => ({}) }));
 vi.mock('./storage-callbacks', () => ({
 	createStorageCallbacks: () => ({}),
@@ -53,6 +60,7 @@ describe('default editor plugins', () => {
 				.mock.calls.at(-1)?.[1]
 				.plugins?.map(plugin => plugin.id)
 		).toEqual([
+			'binary-assets',
 			'toggle-skip-execution',
 			'toggle-favorite',
 			'remove-memory-connections',
@@ -72,6 +80,13 @@ describe('default editor plugins', () => {
 			'wasm-export',
 			'screenshot',
 		]);
+		const getBytes = vi.mocked(createBinaryAssetsPlugin).mock.calls[0][0].getMemoryBytes;
+		expect(getBytes()).toBeUndefined();
+		const memory = new WebAssembly.Memory({ initial: 1 });
+		getMemory.mockReturnValue(memory);
+		expect(getBytes()?.buffer).toBe(memory.buffer);
+		memory.grow(1);
+		expect(getBytes()?.byteLength).toBe(memory.buffer.byteLength);
 		const options = vi.mocked(createScreenshotPlugin).mock.calls[0][0];
 		expect(options.canvas).toBe(canvas);
 		expect(createProjectExportPlugin).toHaveBeenCalledWith({
@@ -102,6 +117,7 @@ describe('default editor plugins', () => {
 		editor.dispose();
 		const withoutPlugins = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage, plugins: [] });
 		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toEqual([]);
+		expect(createBinaryAssetsPlugin).not.toHaveBeenCalled();
 		expect(createScreenshotPlugin).not.toHaveBeenCalled();
 		expect(createProjectExportPlugin).not.toHaveBeenCalled();
 		expect(createWasmExportPlugin).not.toHaveBeenCalled();

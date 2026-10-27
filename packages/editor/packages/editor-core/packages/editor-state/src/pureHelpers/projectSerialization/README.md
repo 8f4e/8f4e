@@ -89,4 +89,4 @@ collections. Compilation recursively composes those collections into one program
 ## Notes & Limitations
 
 - Compiled data is excluded from history snapshots to save memory
-- Binary assets are declared in code blocks with `@config bin...` values and loaded by the lazy editor environment plugin; exported projects do not embed binary payloads
+- Binary assets are declared with `@config bin...` values and loaded by `@8f4e/editor-plugin-binary-assets`; exported projects do not embed binary payloads

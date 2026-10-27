@@ -23,3 +23,5 @@
   with a live reduced-motion preference from the browser; install their overlays before tooltips.
 - Include `toggleFavoritePlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Core does
   not install these editing actions or their menus.
+- Compose `createBinaryAssetsPlugin({ getMemoryBytes })` with a getter for the compiler service's current memory.
+  Fetching, caching, binary metadata, loading UI, and generated asset constants remain inside the plugin.

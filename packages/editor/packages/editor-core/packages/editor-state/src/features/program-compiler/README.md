@@ -77,7 +77,7 @@ operations also advance the compiler input revision.
 
 ## Integration Points
 
-- **Binary Assets**: Exposes memory recreation state used by the editor environment binary-assets plugin to reload assets
+- **Memory Consumers**: Publishes memory plans used by plugins to resolve current memory targets
 - **Runtime**: Runtime selection affects environment constants
 - **Runtime**: Compiled modules are consumed by runtime implementations and editor widgets
 
@@ -94,7 +94,8 @@ The compiler reports memory state:
 - **`recreated`**: WASM memory was newly created or resized
 - **`reused`**: Existing memory was reused
 
-When memory is recreated, `state.compiler.hasMemoryBeenReinitialized` is updated. The editor environment binary-assets plugin observes that state and reloads active assets into memory when needed.
+The binary-assets plugin observes `state.compiler.memoryPlan` and reloads its retained bytes into current targets
+when a new plan is published. The compiler feature stores no binary asset metadata.
 
 ## References
 

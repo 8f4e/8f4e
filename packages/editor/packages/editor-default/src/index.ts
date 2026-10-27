@@ -1,5 +1,6 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { barsPlugin } from '@8f4e/editor-plugin-bars';
+import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { buttonPlugin } from '@8f4e/editor-plugin-button';
 import { crossfadePlugin } from '@8f4e/editor-plugin-crossfade';
 import { meterPlugin } from '@8f4e/editor-plugin-meter';
@@ -34,10 +35,12 @@ export function createDefaultEditorPlugins(options: {
 	saveProject: (text: string, fileName: string) => Promise<void>;
 	exportProject: (text: string, fileName: string) => Promise<void>;
 	exportBinaryCode: (fileName: string) => Promise<void>;
+	getMemoryBytes: () => Uint8Array | undefined;
 }): NonNullable<EditorOptions['plugins']> {
 	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
+		createBinaryAssetsPlugin({ getMemoryBytes: options.getMemoryBytes }),
 		toggleSkipExecutionPlugin,
 		toggleFavoritePlugin,
 		removeMemoryConnectionsPlugin,
@@ -110,6 +113,10 @@ export async function mountDefaultEditor(
 					saveProject,
 					exportProject,
 					exportBinaryCode: saveWasm,
+					getMemoryBytes: () => {
+						const memory = compilerService.getMemory();
+						return memory ? new Uint8Array(memory.buffer) : undefined;
+					},
 				}),
 			captureWheel,
 			featureFlags,

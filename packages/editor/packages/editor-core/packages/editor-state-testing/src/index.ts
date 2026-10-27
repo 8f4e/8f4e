@@ -199,7 +199,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		historyStack: [],
 		redoStack: [],
 		storageQuota: { usedBytes: 0, totalBytes: 0 },
-		binaryAssets: [],
+		envConstantContributions: {},
 		codeErrors: {
 			compilationErrors: [],
 			editorDirectiveErrors: [],

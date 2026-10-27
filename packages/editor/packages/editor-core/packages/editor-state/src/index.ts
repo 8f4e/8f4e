@@ -6,7 +6,6 @@ import type {
 	State,
 } from '@8f4e/editor-state-types';
 import createStateManager, { type StateManager } from '@8f4e/state-manager';
-import binaryAssetLoadingDialog from './features/binary-assets/effect';
 import codeBlockRendering from './features/code-blocks/effect';
 import assertions from './features/code-blocks/features/assertions/effect';
 import autoEnvConstants from './features/code-blocks/features/auto-env-constants/effect';
@@ -98,7 +97,6 @@ export default function init(
 	registerEffect(dialog(store, events));
 	// Menus must consume pointer events before code blocks and viewport interactions.
 	registerEffect(contextMenu(store, events, menus));
-	registerEffect(binaryAssetLoadingDialog(store, events));
 
 	registerEffect(runtime(store, events));
 	registerEffect(editorMode(store, events));
