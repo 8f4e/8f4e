@@ -20,7 +20,7 @@
 - Font sources contain only `ascii.ts`; `generate-fonts` produces `generated/ascii.ts`. The BDF importer takes only
   a source path and font name. Configure background dot position and rectangle size in `FONT_DEFINITIONS`; do not
   add special editor glyph tables.
-- Keep shapes and lookup IDs independent of theme values. Return only masks, source identifiers, and font metrics.
+- Keep shapes and grid-cell indices independent of theme values. Return only masks, grid dimensions, cell indices, and font metrics.
 - Input and output connectors are composed by web-ui from fills and font glyphs; do not add prerendered connector sprites.
 - Tests build package dependencies before running.
 

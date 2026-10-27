@@ -15,16 +15,16 @@ describe('R8 glyph masks', () => {
 		const image = spriteAtlas.image;
 		expect(image.data.length).toBe(image.width * image.height);
 		expect(image.data.some(value => value === 255)).toBe(true);
-		expect(Object.keys(spriteAtlas.spriteIdentifiers)).toEqual(['font', 'fill']);
-		expect(Object.keys(spriteAtlas.lookup)).toHaveLength(129);
+		expect(Object.keys(spriteAtlas.sprites)).toEqual(['font', 'fill']);
+		expect(spriteAtlas.grid).toEqual({
+			cellWidth: characterWidth,
+			cellHeight: characterHeight,
+			columns: 16,
+			cellCount: 129,
+		});
+		expect(Object.values(spriteAtlas.sprites.font)).toEqual(Array.from({ length: 128 }, (_, i) => i));
+		expect(spriteAtlas.sprites.fill).toBe(128);
 		expect(new Set(image.data)).toEqual(new Set([0, 255]));
-		for (const rect of Object.values(spriteAtlas.lookup)) {
-			expect([rect.spriteWidth, rect.spriteHeight]).toEqual([characterWidth, characterHeight]);
-			expect(rect.x % characterWidth).toBe(0);
-			expect(rect.y % characterHeight).toBe(0);
-			expect(rect.x + rect.spriteWidth).toBeLessThanOrEqual(image.width);
-			expect(rect.y + rect.spriteHeight).toBeLessThanOrEqual(image.height);
-		}
 		const layout = createAtlasLayout(characterWidth, characterHeight);
 		expect([image.width, image.height]).toEqual([characterWidth * 16, characterHeight * 9]);
 		for (let y = layout.fill.y; y < image.height; y++) {

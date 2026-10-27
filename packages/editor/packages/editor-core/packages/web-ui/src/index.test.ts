@@ -19,7 +19,7 @@ const mocks = vi.hoisted(() => {
 			uploadedInstanceBytes: 2000,
 		},
 		setPalette: vi.fn(),
-		setSpriteAtlas: vi.fn(() => ({ resolveSprite: (identifier: string | number) => Number(identifier) + 100 })),
+		setSpriteAtlas: vi.fn(),
 		drawSprite: vi.fn(),
 		drawFill: vi.fn(),
 		drawCharacter: vi.fn(),
@@ -151,12 +151,16 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 	};
 }
 
-function createSpriteData(identifier = 0, characterWidth = 8, characterHeight = 16) {
+function createSpriteData(cellIndex = 0, characterWidth = 8, characterHeight = 16) {
 	return {
 		spriteAtlas: {
-			image: { width: 1, height: 1, data: new Uint8Array([255]) },
-			lookup: {},
-			spriteIdentifiers: { fill: identifier, font: { 63: identifier } } as never,
+			image: {
+				width: characterWidth * 16,
+				height: characterHeight * 9,
+				data: new Uint8Array(characterWidth * 16 * characterHeight * 9),
+			},
+			grid: { cellWidth: characterWidth, cellHeight: characterHeight, columns: 16, cellCount: 129 },
+			sprites: { fill: cellIndex, font: { 63: cellIndex } },
 		},
 		characterWidth,
 		characterHeight,
@@ -417,7 +421,7 @@ describe('web-ui init', () => {
 		expect(mocks.resolveWireColors).toHaveBeenLastCalledWith(palette);
 	});
 
-	it('rebuilds resolved sprite ids and grid metrics when the atlas is replaced', async () => {
+	it('installs cell indices and grid metrics when the atlas is replaced', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = {
@@ -438,12 +442,12 @@ describe('web-ui init', () => {
 			createSpriteData(7, 8, 16),
 			resolvePalette(state.editorConfig.color)
 		);
-		expect(state.spriteLookups?.fill).toBe(107);
+		expect(state.spriteLookups?.fill).toBe(7);
 		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 16, vGrid: 8 }));
 
 		view.loadSpriteAtlas(createSpriteData(42, 10, 18));
 		expect(mocks.background.setFont).toHaveBeenLastCalledWith(createSpriteData(42, 10, 18));
-		expect(state.spriteLookups?.fill).toBe(142);
+		expect(state.spriteLookups?.fill).toBe(42);
 		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 18, vGrid: 10 }));
 	});
 

@@ -75,8 +75,8 @@ vi.mock('@8f4e/sprite-generator', async importOriginal => ({
 	default: vi.fn(async () => ({
 		spriteAtlas: {
 			image: { width: 1, height: 1, data: new Uint8Array([255]) },
-			lookup: {},
-			spriteIdentifiers: {},
+			grid: { cellWidth: 1, cellHeight: 1, columns: 1, cellCount: 1 },
+			sprites: { font: { 63: 0 }, fill: 0 },
 		},
 		characterWidth: 8,
 		characterHeight: 16,

@@ -12,7 +12,7 @@ import blue from '@8f4e/examples/projects/misc/landingPageDemo1.8f4e?raw';
 import green from '@8f4e/examples/projects/misc/landingPageDemo2.8f4e?raw';
 import purple from '@8f4e/examples/projects/misc/landingPageDemo3.8f4e?raw';
 import amber from '@8f4e/examples/projects/misc/landingPageDemo4.8f4e?raw';
-import generateSprite, { resolveSpriteIds } from '@8f4e/sprite-generator';
+import generateSprite from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 
 function paletteFromSource(source: string): PaletteConfig {
@@ -44,10 +44,8 @@ for (const [name, source] of [
 	const palette = resolvePalette(paletteFromSource(source));
 	const engine = new Engine(canvas);
 	engine.setPalette(toPaletteBytes(palette));
-	const ids = resolveSpriteIds(
-		spriteAtlas.spriteIdentifiers,
-		engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup)
-	);
+	engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.grid);
+	const ids = spriteAtlas.sprites;
 	const text = (x: number, y: number, value: string, color: PaletteIndex) => {
 		for (const [index, character] of [...value].entries())
 			engine.drawSprite(x + index * 8, y, ids.font[character.charCodeAt(0)] ?? ids.font[63], color);

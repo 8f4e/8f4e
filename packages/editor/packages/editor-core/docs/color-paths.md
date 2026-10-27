@@ -103,7 +103,9 @@ brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`,
 `warningBase`, or `negativeBase` from the calibrated value. There are no dedicated input or feedback-scale atlas entries.
 
 The sprite atlas contains color-independent R8 binary visibility masks: 128 glyphs and one fully covered fill cell,
-all on the same 16-column grid. All palette entries can color text, including `Alpha30/60/90` variants. Web-ui renders the
+all on the same 16-column grid. Sprite IDs are their row-major cell positions; the vertex shader derives source
+coordinates from these IDs and shared cell dimensions without a rectangle lookup texture. All palette entries can color
+text, including `Alpha30/60/90` variants. Web-ui renders the
 background in a separate procedural pass before sprites, using the font's dot geometry and `canvasBase`,
 `canvasDetail2`, and `canvasDetail1` colors. Palette changes precompose each dot color over the base so one triangle
 draws the complete background. Transparent pixels are discarded and a fully transparent background is skipped.
@@ -121,7 +123,7 @@ setup helpers and resource lifetimes. Glugglugglug supplies sprite rendering and
 
 `@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
 the generated masks and separately resolved palette. Theme changes update palette colors, the background's three
-premultiplied color uniforms, and line-rendered wire colors; font changes rebuild masks and source lookups and update
-the background's dot geometry. Its program and empty vertex array survive rendering-memory release and are deleted
+premultiplied color uniforms, and line-rendered wire colors. Font changes rebuild masks, install grid dimensions and cell
+indices, and update the background's dot geometry. Its program and empty vertex array survive rendering-memory release and are deleted
 when the view is destroyed. Font builds leave the active palette untouched, and
 stale asynchronous font builds are ignored.

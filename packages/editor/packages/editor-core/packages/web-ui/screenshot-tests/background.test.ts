@@ -46,7 +46,7 @@ function createScene() {
 		install(data: SpriteData, colors = toPaletteBytes(resolvePalette())) {
 			font = data;
 			bytes = colors;
-			engine.setSpriteAtlas(data.spriteAtlas.image, data.spriteAtlas.lookup);
+			engine.setSpriteAtlas(data.spriteAtlas.image, data.spriteAtlas.grid);
 			engine.setPalette(bytes);
 			background.setFont(data);
 			background.setPalette(bytes);
