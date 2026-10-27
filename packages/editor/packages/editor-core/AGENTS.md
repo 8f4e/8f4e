@@ -35,3 +35,5 @@
 - Keep project serialization under editor-state's `pureHelpers/projectSerialization`, filename configuration under
   `features/editor-config`, and session persistence as its own core feature.
   Project-file and WebAssembly export actions, menus, and the save shortcut belong to their plugins.
+- Favorite toggling and memory-connection removal belong to their plugins, including menu labels and availability.
+  Favorite directive derivation and navigation stay in core. Export shared directive editing through public helpers.

@@ -19,6 +19,11 @@ Switch, button, and waveform features are provided by `@8f4e/editor-plugin-switc
 slider also live in their own `@8f4e/editor-plugin-<name>` packages. Core carries no derived data or drawers for these
 features; the default composition selects and installs them.
 
+Favorite/Unfavorite editing and Remove connections are provided by `@8f4e/editor-plugin-toggle-favorite` and
+`@8f4e/editor-plugin-remove-memory-connections`. They own their action handlers and block-menu contributions.
+Core still derives `isFavorite` from directives and provides favorite navigation; generic directive editing remains
+available through the public `removeDirective` helper.
+
 ## Block Types
 
 Code blocks are categorized by type, which determines compilation and rendering behavior:

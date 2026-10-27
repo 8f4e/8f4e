@@ -13,6 +13,8 @@
   selected-line tooltips in `@8f4e/editor-plugin-tooltips`, browser screenshots in `@8f4e/editor-plugin-screenshot`,
   project Save/Export in `@8f4e/editor-plugin-project-export`, and WebAssembly export in `@8f4e/editor-plugin-wasm-export`.
   Meter, plot, bars, crossfade, watch, and stack each live in their matching `editor-plugin-<name>` packages.
+  Favorite editing lives in `editor-plugin-toggle-favorite`, and memory-default disconnection in
+  `editor-plugin-remove-memory-connections`. Favorite navigation and directive derivation remain core features.
   Plugin contracts and installation live in `editor-core`,
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   The standard plugin set is composed in `editor-default`.
@@ -31,6 +33,9 @@
   `npx nx run @8f4e/editor-plugin-project-export:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-wasm-export:build|test|typecheck`.
 - Start the website with `npx nx run @8f4e/editor-website:dev`.
+- Verify the favorite and memory-connection actions with
+  `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-toggle-favorite,@8f4e/editor-plugin-remove-memory-connections`.
+  Each also has a `test:screenshot` target for its canvas menu interaction.
 - Build or preview it with `npx nx run @8f4e/editor-website:build|serve`.
 - Ensure dependency packages are built before relying on workspace aliases in the website.
 
