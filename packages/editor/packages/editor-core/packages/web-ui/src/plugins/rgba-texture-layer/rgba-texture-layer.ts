@@ -7,7 +7,7 @@ const textureVertexShaderSource = `#version 300 es
 
 	layout(location = 0) in vec2 a_position;
 
-	uniform vec2 u_resolution;
+	uniform vec2 u_pixelToClip;
 	uniform vec4 u_rectangle;
 
 	out vec2 v_textureCoordinate;
@@ -15,8 +15,7 @@ const textureVertexShaderSource = `#version 300 es
 	void main() {
 		vec2 corner = (a_position + 1.0) * 0.5;
 		vec2 pixelPosition = u_rectangle.xy + corner * u_rectangle.zw;
-		vec2 clipPosition = pixelPosition / u_resolution * 2.0 - 1.0;
-		gl_Position = vec4(clipPosition * vec2(1.0, -1.0), 0.0, 1.0);
+		gl_Position = vec4(pixelPosition * u_pixelToClip + vec2(-1.0, 1.0), 0.0, 1.0);
 		v_textureCoordinate = corner;
 	}
 `;
@@ -41,7 +40,7 @@ export class RgbaTextureLayer {
 	private readonly hooks: RenderPluginHost['hooks'];
 	private readonly geometry: RectangleGeometry;
 	private readonly program: WebGLProgram;
-	private readonly resolutionLocation: WebGLUniformLocation;
+	private readonly pixelToClipLocation: WebGLUniformLocation;
 	private readonly rectangleLocation: WebGLUniformLocation;
 	private readonly textureLocation: WebGLUniformLocation;
 	private texture: WebGLTexture | null = null;
@@ -67,7 +66,7 @@ export class RgbaTextureLayer {
 		let program: WebGLProgram | null = null;
 		try {
 			program = createProgram(this.gl, textureVertexShaderSource, textureFragmentShaderSource, 'RGBA texture layer');
-			this.resolutionLocation = requireUniform(this.gl, program, 'u_resolution');
+			this.pixelToClipLocation = requireUniform(this.gl, program, 'u_pixelToClip');
 			this.rectangleLocation = requireUniform(this.gl, program, 'u_rectangle');
 			this.textureLocation = requireUniform(this.gl, program, 'u_texture');
 		} catch (error) {
@@ -129,7 +128,7 @@ export class RgbaTextureLayer {
 		gl.bindTexture(gl.TEXTURE_2D, this.texture);
 		gl.bindSampler(0, null);
 		gl.uniform1i(this.textureLocation, 0);
-		gl.uniform2f(this.resolutionLocation, gl.drawingBufferWidth, gl.drawingBufferHeight);
+		gl.uniform2f(this.pixelToClipLocation, 2 / gl.drawingBufferWidth, -2 / gl.drawingBufferHeight);
 		gl.uniform4f(this.rectangleLocation, x, y, width, height);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 	}
