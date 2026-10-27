@@ -47,21 +47,6 @@ export default function generateContextMenuMock(): ContextMenu {
 				close: true,
 				disabled: false,
 			},
-			{
-				divider: true,
-			},
-			{
-				title: '................ Export Project',
-				action: 'exportProject',
-				close: true,
-				disabled: false,
-			},
-			{
-				title: '............ Export WebAssembly',
-				action: 'exportWasm',
-				close: true,
-				disabled: false,
-			},
 		],
 		open: true,
 		x: 552,

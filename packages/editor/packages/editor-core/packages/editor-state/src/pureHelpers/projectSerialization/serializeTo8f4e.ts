@@ -1,5 +1,10 @@
 import type { ProjectGroupObjectModel, ProjectModuleBlock, ProjectObjectModel } from '@8f4e/language-spec';
-import { FORMAT_HEADER, getCloserKeyword, getExpectedCloserPrefix, getOpenerKeyword } from '../project-format';
+import {
+	FORMAT_HEADER,
+	getExpectedProjectCloserPrefix,
+	getProjectCloserKeyword,
+	getProjectOpenerKeyword,
+} from '@8f4e/project-preparser';
 
 function validateCodeBlock(code: string[], blockIndex: number): void {
 	// Find first non-empty line (must be opener)
@@ -8,12 +13,12 @@ function validateCodeBlock(code: string[], blockIndex: number): void {
 		throw new Error(`Block ${blockIndex}: block has no content`);
 	}
 
-	const opener = getOpenerKeyword(firstNonEmptyLine.trim());
+	const opener = getProjectOpenerKeyword(firstNonEmptyLine.trim());
 	if (!opener) {
 		throw new Error(`Block ${blockIndex}: unknown or missing opener "${firstNonEmptyLine.trim()}"`);
 	}
 
-	const expectedCloserPrefix = getExpectedCloserPrefix(opener);
+	const expectedCloserPrefix = getExpectedProjectCloserPrefix(opener);
 	const firstLineIndex = code.indexOf(firstNonEmptyLine);
 
 	// Find last non-empty line (must be matching closer)
@@ -27,7 +32,7 @@ function validateCodeBlock(code: string[], blockIndex: number): void {
 	}
 
 	const closerLine = code[lastNonEmptyIndex].trim();
-	const closer = getCloserKeyword(closerLine);
+	const closer = getProjectCloserKeyword(closerLine);
 	if (!closer) {
 		throw new Error(`Block ${blockIndex}: unknown or missing closer "${closerLine}"`);
 	}
@@ -41,14 +46,14 @@ function validateCodeBlock(code: string[], blockIndex: number): void {
 		const lineTrimmed = code[i].trim();
 		if (lineTrimmed === '') continue;
 
-		const innerOpener = getOpenerKeyword(lineTrimmed);
+		const innerOpener = getProjectOpenerKeyword(lineTrimmed);
 		if (innerOpener) {
 			throw new Error(
 				`Block ${blockIndex}: mixed block type markers (found opener "${lineTrimmed}" inside "${opener}" block)`
 			);
 		}
 
-		const innerCloser = getCloserKeyword(lineTrimmed);
+		const innerCloser = getProjectCloserKeyword(lineTrimmed);
 		if (innerCloser) {
 			throw new Error(`Block ${blockIndex}: closer "${lineTrimmed}" is not at the end of the block`);
 		}

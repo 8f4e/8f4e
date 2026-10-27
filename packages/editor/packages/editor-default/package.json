@@ -41,7 +41,9 @@
     "@8f4e/editor-plugin-wave": "*",
     "@8f4e/editor-plugin-piano": "*",
     "@8f4e/editor-plugin-slider": "*",
-    "@8f4e/editor-plugin-screenshot": "*"
+    "@8f4e/editor-plugin-screenshot": "*",
+    "@8f4e/editor-plugin-project-export": "*",
+    "@8f4e/editor-plugin-wasm-export": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

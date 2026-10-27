@@ -1,7 +1,7 @@
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import type { ProjectBlock, ProjectObjectModel } from '@8f4e/language-spec';
 import { tryParseProjectMemoryExposureLine } from '@8f4e/project-preparser';
-import sortCodeBlocksByGridPosition from '../code-blocks/sortCodeBlocksByGridPosition';
+import sortCodeBlocksByGridPosition from './sortCodeBlocksByGridPosition';
 
 function createEmptyProject(): ProjectObjectModel {
 	return {
