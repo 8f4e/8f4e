@@ -8,6 +8,9 @@ Rendering is backed by `glugglugglug`. Sprite names are resolved to dense numeri
 per-frame drawers submit positions, sizes, shared shape IDs, and numeric palette indices. WebAssembly RGBA frames are
 drawn above the sprites and connection lines. A procedural dotted background runs before the sprite pass.
 
+The default framebuffer has no depth buffer; passes use explicit drawing order. Custom raw-context hooks requiring
+depth testing must use a framebuffer with their own depth attachment.
+
 ## Rendering plugins
 
 Web-ui owns its rendering plugins under `src/plugins/`: `background` draws the canvas pattern, `line-drawer` batches
