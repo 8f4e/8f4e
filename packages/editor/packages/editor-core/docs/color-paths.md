@@ -102,15 +102,16 @@ Connector icons are composed at runtime: a `surfaceOverlay` fill sits behind inp
 brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`, `primaryDark1`, `primaryBase`,
 `warningBase`, or `negativeBase` from the calibrated value. There are no dedicated input or feedback-scale atlas entries.
 
-The sprite atlas contains color-independent R8 coverage masks: 128 glyphs and one fully covered fill cell, all on the
-same 16-column grid. All palette entries can color text, including `Alpha30/60/90` variants. Web-ui renders the
+The sprite atlas contains color-independent R8 binary visibility masks: 128 glyphs and one fully covered fill cell,
+all on the same 16-column grid. All palette entries can color text, including `Alpha30/60/90` variants. Web-ui renders the
 background in a separate procedural pass before sprites, using the font's dot geometry and `canvasBase`,
 `canvasDetail2`, and `canvasDetail1` colors. Palette changes precompose each dot color over the base so one triangle
 draws the complete background. Transparent pixels are discarded and a fully transparent background is skipped.
 The background uses no atlas entries, texture samples, or per-dot instance uploads.
 The renderer accepts straight-alpha RGBA8 palette bytes and prepares premultiplied float32 colors on changed uploads.
-The vertex shader reads the selected color from a uniform buffer; the sprite fragment shader applies red-channel mask
-coverage and discards only exact-zero resulting alpha. Surviving translucent colors and fractional coverage use
+The vertex shader reads the selected color from a uniform buffer; the sprite fragment shader discards zero mask samples
+and zero-alpha palette colors, then emits the prepared palette color directly. Atlas bytes must be 0 or 255;
+atlas installation validates this once. Translucent colors use
 premultiplied-alpha blending.
 The buffer reserves 256 colors (4 KiB), with 196 active entries using 3,136 bytes from a 784-byte RGBA8 input.
 Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.

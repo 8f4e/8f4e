@@ -11,7 +11,7 @@
   `virtual:8f4e-sources/<name>`; the default editor uses it for stdlib includes and example modules.
 - Editor colors: `@8f4e/editor-palette` owns the pure base palette and predefined shades. Configure only shared base
   colors; core and plugin drawers select generic palette tokens. Shades are uploaded as premultiplied colors in a GPU
-  uniform buffer (up to 256 entries); the sprite atlas contains color-independent R8 coverage masks.
+  uniform buffer (up to 256 entries); the sprite atlas contains color-independent R8 binary visibility masks.
 - Rendering plugins: web-ui owns the procedural background, line drawer, and RGBA texture layer under `src/plugins/`.
   Glugglugglug owns sprite rendering and generic render hooks. The sprite generator supplies font-specific dot geometry
   and a uniform grid of glyph/fill cells; background patterns do not occupy the sprite atlas.
