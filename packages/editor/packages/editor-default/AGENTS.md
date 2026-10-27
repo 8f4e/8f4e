@@ -16,3 +16,6 @@
 - Example module metadata comes from file paths without loading source text. Keep existing filename-based slugs,
   titles, and categories; reject duplicate slugs. Modules load as local lazy chunks and ship with each host's build.
 - Keep `@8f4e/examples` as a dependency so its generators run before discovery and its sources affect build caching.
+
+- Compose meter, plot, bars, crossfade, watch, and stack with the default plugin set. Supply watch/stack factories
+  with a live reduced-motion preference from the browser; install their overlays before tooltips.

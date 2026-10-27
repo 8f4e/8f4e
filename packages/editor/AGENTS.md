@@ -11,6 +11,7 @@
   lives in `@8f4e/editor-plugin-switch`, momentary buttons in `@8f4e/editor-plugin-button`, waveforms in
   `@8f4e/editor-plugin-wave`, piano keyboards in `@8f4e/editor-plugin-piano`, sliders in `@8f4e/editor-plugin-slider`,
   selected-line tooltips in `@8f4e/editor-plugin-tooltips`, and browser screenshots in `@8f4e/editor-plugin-screenshot`.
+  Meter, plot, bars, crossfade, watch, and stack each live in their matching `editor-plugin-<name>` packages.
   Plugin contracts and installation live in `editor-core`,
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   The standard plugin set is composed in `editor-default`.

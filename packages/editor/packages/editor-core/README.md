@@ -84,7 +84,7 @@ Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer rece
 the host applies viewport translation and visibility checks. Drawers run in registration order after error messages
 and before built-in controls. Register overlays with `drawers.registerCodeBlockOverlay(drawer)` to draw after all
 built-in block widgets, using the same context and coordinates. Each slot preserves registration order. Use the
-current state's sprite lookups, which change with the font or color scheme.
+drawing surface's text/fill primitives and shared numeric palette indices.
 `@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
 disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
 
@@ -99,13 +99,16 @@ data in a per-instance WeakMap. Buttons write their on value while pressed and t
 The wave plugin owns `@wave`, `@wave2`, and `@wave4`, including their layout space, typed samples, playheads, and drawing.
 The piano plugin owns `@piano`, key geometry, runtime note toggling, drawing, and its save-to-code menu action.
 The slider plugin owns `@slider`, its geometry, drag interaction, live drawing, and save-to-code menu action.
+Meter, plot, and bars plugins own their typed-memory visualization and layout. Crossfade owns its float-memory
+interaction and drawer. Watch and stack own separate inline value overlays; their factories receive a
+`prefersReducedMotion` function from the host. None of these features adds fields to core code-block state.
 The screenshot plugin owns the main-menu action, temporary overlay visibility, PNG encoding, and browser file saving.
 The execution-toggle plugin owns the Skip/Unskip menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
 layout, animation, and overlay drawing, with its state private to each installation. Group execution toggling and
 nested block shading remain built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
 
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
-and compiled-function lookup helpers. Its `/memory` entry
+tab-aware text measurement, module identity, and compiled-function lookup helpers. Its `/memory` entry
 exports memory scope, identifier, element-count, and typed-value resolution, plus `getMemoryDefaultEdits` for rewriting
 resolved memory defaults in their source modules. Each group of values is edited together, even across module owners.
 Plugins use these public exports rather than importing core files.

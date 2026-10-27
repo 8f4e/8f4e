@@ -12,15 +12,10 @@ import type {
 import type { AssertionResult } from './features/assertions/types';
 import type { BinaryAsset } from './features/binary-assets/types';
 import type {
-	ArrayBars,
-	ArrayMeter,
-	ArrayPlotter,
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockRendering,
 	CodeBlockType,
-	Crossfade,
-	Debugger,
 	InfoPanel,
 	Input,
 	MemoryIdentifier,
@@ -73,9 +68,6 @@ import type {
 // Re-export code-editing types
 // Re-export project-import types
 export type {
-	ArrayBars,
-	ArrayMeter,
-	ArrayPlotter,
 	AssertionResult,
 	BinaryAsset,
 	CodeBlockEntryOutline,
@@ -89,8 +81,6 @@ export type {
 	ConsoleState,
 	ContextMenu,
 	ContextMenuItem,
-	Crossfade,
-	Debugger,
 	DialogButton,
 	DialogButtonState,
 	DialogContent,

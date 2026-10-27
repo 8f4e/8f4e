@@ -41,7 +41,13 @@
     "@8f4e/editor-plugin-wave": "*",
     "@8f4e/editor-plugin-piano": "*",
     "@8f4e/editor-plugin-slider": "*",
-    "@8f4e/editor-plugin-screenshot": "*"
+    "@8f4e/editor-plugin-screenshot": "*",
+    "@8f4e/editor-plugin-meter": "*",
+    "@8f4e/editor-plugin-plot": "*",
+    "@8f4e/editor-plugin-watch": "*",
+    "@8f4e/editor-plugin-crossfade": "*",
+    "@8f4e/editor-plugin-stack": "*",
+    "@8f4e/editor-plugin-bars": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

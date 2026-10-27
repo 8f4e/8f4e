@@ -47,6 +47,8 @@ stack analysis, and live memory values, and `@8f4e/editor-plugin-screenshot` for
 `createDefaultEditorPlugins({ canvas, renderFrame })` constructs this plugin set with resources for one editor.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
 browser resources; browser dependencies are supplied to plugin factories by this composition.
+Meter, plot, bars, crossfade, watch, and stack are also optional plugins in this standard set. Watch and stack receive
+a live reduced-motion preference from the browser host and keep their animation and data inside their installations.
 The `plugins` option replaces the default set: pass `[]` to omit plugins, or a custom array to select and extend it.
 Each editor installs and disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).
 

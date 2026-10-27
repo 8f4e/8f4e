@@ -1,4 +1,5 @@
 export {
+	resolveDirectOrPointerTypedValueSpec,
 	resolveElementCount,
 	resolveTypedValueSpec,
 } from './features/code-blocks/features/directives/shared/typedValueSpec';

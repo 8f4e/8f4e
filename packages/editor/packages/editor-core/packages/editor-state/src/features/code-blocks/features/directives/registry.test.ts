@@ -1,9 +1,31 @@
 import { createMockState } from '@8f4e/editor-state-testing';
+import type { EditorDirectiveDefinition } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 import { parseBlockDirectives } from '../../utils/parseBlockDirectives';
 import { createDirectiveRegistry, deriveDirectiveState, directiveDefinitions } from './registry';
 import { parseEditorDirectives } from './utils';
 import { getVerticalSpaceAfterSourceLineRequests } from './verticalSpaceAfterSourceLine';
+
+const contributedDirectives: EditorDirectiveDefinition[] = [
+	{
+		name: 'inlineDisplay',
+		aliases: ['inline'],
+		allowTrailingComment: true,
+		apply: (_, draft) => {
+			draft.layoutCallbacks.push({});
+		},
+	},
+	{
+		name: 'rowDisplay',
+		apply: (directive, draft) => {
+			draft.addVerticalSpaceAfterSourceLine({
+				sourceLineIndex: directive.sourceLineIndex,
+				heightInRows: Number(directive.args[0]),
+			});
+		},
+	},
+];
+const definitions = [...directiveDefinitions, ...contributedDirectives];
 
 describe('directive registry', () => {
 	it('registers directives per instance and removes their parsing and vertical-space requests', () => {
@@ -32,72 +54,15 @@ describe('directive registry', () => {
 		);
 	});
 
-	it('parses registered directives from code', () => {
-		const result = parseEditorDirectives(
-			[
-				'module foo',
-				'; @plot &buffer count(buffer)',
-				'; @bars &bins count(bins)',
-				'; @meter gain 0 1',
-				'; @crossfade &dry &wet',
-				'; @info foo',
-				'; @stack',
-				'; note',
-				'moduleEnd',
-			],
-			directiveDefinitions
-		);
-
-		expect(result).toEqual([
-			{
-				name: 'plot',
-				sourceLineIndex: 1,
-				args: ['&buffer', 'count(buffer)'],
-				sourceLine: '; @plot &buffer count(buffer)',
-			},
-			{
-				name: 'bars',
-				sourceLineIndex: 2,
-				args: ['&bins', 'count(bins)'],
-				sourceLine: '; @bars &bins count(bins)',
-			},
-			{
-				name: 'meter',
-				sourceLineIndex: 3,
-				args: ['gain', '0', '1'],
-				sourceLine: '; @meter gain 0 1',
-			},
-			{
-				name: 'crossfade',
-				sourceLineIndex: 4,
-				args: ['&dry', '&wet'],
-				sourceLine: '; @crossfade &dry &wet',
-			},
-			{
-				name: 'info',
-				sourceLineIndex: 5,
-				args: ['foo'],
-				sourceLine: '; @info foo',
-			},
-			{
-				name: 'stack',
-				sourceLineIndex: 6,
-				args: [],
-				sourceLine: '; @stack',
-			},
-		]);
-	});
-
-	it('parses trailing-comment directives only for definitions that allow them', () => {
-		const result = parseEditorDirectives(
-			['int foo 1 ; @watch', 'push 1 ; @stack', 'float out ; @meter', 'int bar 1 ; @plot buffer'],
-			directiveDefinitions
-		);
-
-		expect(result).toEqual([
-			{ name: 'watch', sourceLineIndex: 0, args: [], sourceLine: 'int foo 1 ; @watch' },
-			{ name: 'stack', sourceLineIndex: 1, args: [], sourceLine: 'push 1 ; @stack' },
-			{ name: 'meter', sourceLineIndex: 2, args: [], sourceLine: 'float out ; @meter' },
+	it('parses registered directives and permits trailing comments only when enabled', () => {
+		expect(
+			parseEditorDirectives(
+				['; @rowDisplay 2', 'int value 1 ; @inlineDisplay', 'int value 1 ; @rowDisplay 2'],
+				definitions
+			)
+		).toEqual([
+			{ name: 'rowDisplay', sourceLineIndex: 0, args: ['2'], sourceLine: '; @rowDisplay 2' },
+			{ name: 'inlineDisplay', sourceLineIndex: 1, args: [], sourceLine: 'int value 1 ; @inlineDisplay' },
 		]);
 	});
 
@@ -110,43 +75,12 @@ describe('directive registry', () => {
 		]);
 	});
 
-	it('normalizes definition aliases during parsing', () => {
-		const result = parseEditorDirectives(['; @w value', 'push 1 ; @s'], directiveDefinitions);
-
-		expect(result).toEqual([
-			{ name: 'watch', sourceLineIndex: 0, args: ['value'], sourceLine: '; @w value' },
-			{ name: 'stack', sourceLineIndex: 1, args: [], sourceLine: 'push 1 ; @s' },
-		]);
-	});
-
-	it('derives block state and layout in a single pass', () => {
-		const code = [
-			'module foo',
-			'; @disabled',
-			'; @home',
-			'; @favorite',
-			'; @meter level 0 1',
-			'; @plot &buffer count(buffer)',
-			'; @bars &bins count(bins)',
-			'; @crossfade &dry &wet',
-			'moduleEnd',
-		];
-		const result = deriveDirectiveState(code, parseBlockDirectives(code));
-
-		expect(result.blockState).toEqual({
-			disabled: true,
-			isHome: true,
-			homeAlignment: 'center',
-			isFavorite: true,
-		});
-		expect(getVerticalSpaceAfterSourceLineRequests(result)).toEqual([
-			{ sourceLineIndex: 4, heightInRows: 1 },
-			{ sourceLineIndex: 5, heightInRows: 8 },
-			{ sourceLineIndex: 6, heightInRows: 8 },
-			{ sourceLineIndex: 7, heightInRows: 2 },
-		]);
-		expect(result.displayState).toEqual({});
-		expect(result.displayModel.displayRowToSourceLineIndex).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+	it('derives block state and contributed layout in a single pass', () => {
+		const code = ['module foo', '; @disabled @home @favorite', '; @rowDisplay 3', 'moduleEnd'];
+		const result = deriveDirectiveState(code, parseBlockDirectives(code), {}, definitions);
+		expect(result.blockState).toEqual({ disabled: true, isHome: true, homeAlignment: 'center', isFavorite: true });
+		expect(getVerticalSpaceAfterSourceLineRequests(result)).toEqual([{ sourceLineIndex: 2, heightInRows: 3 }]);
+		expect(result.displayModel.displayRowToSourceLineIndex).toEqual([0, 1, 2, 3]);
 	});
 
 	it('allocates one info layout row per state.info key', () => {
@@ -167,7 +101,7 @@ describe('directive registry', () => {
 	});
 
 	it('ignores unregistered directives', () => {
-		const code = ['; @unknown', '; @home', '; @plot &buffer count(buffer)'];
+		const code = ['; @unknown', '; @home', '; @unregistered'];
 		const result = deriveDirectiveState(code, parseBlockDirectives(code));
 
 		expect(result.blockState).toEqual({
@@ -176,7 +110,7 @@ describe('directive registry', () => {
 			homeAlignment: 'center',
 			isFavorite: false,
 		});
-		expect(getVerticalSpaceAfterSourceLineRequests(result)).toEqual([{ sourceLineIndex: 2, heightInRows: 8 }]);
+		expect(getVerticalSpaceAfterSourceLineRequests(result)).toEqual([]);
 	});
 
 	it('derives optional home alignment from @home', () => {
@@ -215,26 +149,12 @@ describe('directive registry', () => {
 		expect(result.displayModel.isCollapsed).toBe(false);
 	});
 
-	it('deriveDirectiveState and parseEditorDirectives agree on trailing directive behavior', () => {
-		// @watch allows trailing comments; @plot does not.
-		const code = ['int foo 1 ; @watch', 'int bar 1 ; @plot buffer'];
-		const fromParse = parseEditorDirectives(code, directiveDefinitions);
-		const fromDerive = deriveDirectiveState(code, parseBlockDirectives(code));
-
-		// Both flows must recognize the trailing @watch (results in one parsed directive / one widget).
-		expect(fromParse.map(d => d.name)).toEqual(['watch']);
-		// @plot trailing should not produce any extra vertical space.
-		expect(getVerticalSpaceAfterSourceLineRequests(fromDerive)).toEqual([]);
-	});
-
-	it('normalizes aliases in deriveDirectiveState the same way as parseEditorDirectives', () => {
-		const code = ['; @w value'];
-		const fromParse = parseEditorDirectives(code, directiveDefinitions);
-		const fromDerive = deriveDirectiveState(code, parseBlockDirectives(code));
-
-		// Both paths normalize '@w' to the canonical 'watch' name.
-		expect(fromParse[0].name).toBe('watch');
-		// @watch with a valid arg produces one widget.
-		expect(fromDerive.layoutCallbacks).toHaveLength(1);
+	it('normalizes aliases and trailing records consistently in parsing and derivation', () => {
+		const code = ['int value 1 ; @inline', 'int other 1 ; @rowDisplay 3'];
+		const parsed = parseEditorDirectives(code, definitions);
+		const derived = deriveDirectiveState(code, parseBlockDirectives(code), {}, definitions);
+		expect(parsed.map(directive => directive.name)).toEqual(['inlineDisplay']);
+		expect(derived.layoutCallbacks).toHaveLength(1);
+		expect(getVerticalSpaceAfterSourceLineRequests(derived)).toEqual([]);
 	});
 });

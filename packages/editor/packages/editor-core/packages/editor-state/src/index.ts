@@ -14,7 +14,6 @@ import blockTypeUpdater from './features/code-blocks/features/blockTypeUpdater/e
 import codeBlockCreator from './features/code-blocks/features/codeBlockCreator/effect';
 import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
-import crossfade from './features/code-blocks/features/directives/crossfade/interaction';
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
@@ -107,7 +106,6 @@ export default function init(
 	registerEffect(codeBlockDragger(store, events));
 	registerEffect(codeBlockNavigation(store, events));
 	registerEffect(memoryConnectionRemover(store, events));
-	registerEffect(crossfade(store, events));
 	registerEffect(viewport(store, events));
 	registerEffect(codeBlockCreator(store, events));
 	registerEffect(groupSkipExecutionToggler(store, events));
@@ -158,6 +156,7 @@ export { getCompiledFunctionForCodeBlock } from './features/code-blocks/utils/ge
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
 export { default as gapCalculator } from './features/code-editing/gapCalculator';
+export { getTabStopsByLine, getVisualLineWidth } from './features/code-editing/tabLayout';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
 // Export .8f4e format helpers
 export { default as getExportBaseName } from './features/project-export/getExportBaseName';
@@ -166,6 +165,7 @@ export { serializeProjectTo8f4e } from './features/project-export/serializeTo8f4
 export { EMPTY_DEFAULT_PROJECT } from './features/project-import/emptyDefaultProject';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
+export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';
 export {
 	isMemoryAddress,
 	isPointerSource,

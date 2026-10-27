@@ -8,11 +8,6 @@ expose gate &voice:gate
 expose gateAlias &voice:gate
 expose input &voice:pointer
 expose keys &notesData:notes
-; @watch gain
-; @meter gain 0 1
-; @plot &keys count(keys)
-; @bars &keys count(keys)
-; @crossfade &gain &wet
 
 module voice
 float level 0.25
@@ -42,6 +37,5 @@ groupEnd
 
 module controls
 float level 0.1
-; @watch audio:gain
 moduleEnd
 entryEnd
