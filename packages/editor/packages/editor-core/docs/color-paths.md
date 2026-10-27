@@ -1,7 +1,7 @@
 # Base Palette
 
 Projects configure a small palette with `; @config color.<name> <value>`. The editor generates a fixed catalog of shades
-and opacity variants before building its sprite atlas. No colors are lightened, darkened, or tinted during drawing.
+and opacity variants when resolving the palette. No colors are lightened, darkened, or tinted during drawing.
 
 ```txt
 ; @config color.canvas #660099
@@ -63,8 +63,9 @@ Generic material colors derive from the anchors with predefined blending rules. 
 use the visible, composited surface, so translucent white panels over a dark canvas retain the canvas tint:
 
 - `canvasDetail1/2` retain the canvas hue while adding visible detail.
-- `surfaceRaised1/2/3` are subtle accent-tinted surfaces; saturated surfaces retain their own hue.
-- `mutedBase` is the configured subdued foreground; `inkFaint` blends it toward the surface.
+- `surfaceRaised1/2/3` are subtle surfaces tinted with muted foreground; saturated surfaces retain their own hue.
+- `mutedBase` is the configured subdued foreground; `mutedSoft` and `inkFaint` blend it toward the surface.
+- `inkStrong` increases foreground contrast for labels; `secondarySoft` softens numeric prefixes in light and dark themes.
 - Syntax highlighting uses the authored `primaryBase`, `secondaryBase`, and `tertiaryBase` unchanged.
 - `secondaryReadable` chooses a shade with at least 4.5:1 contrast on the composited base surface.
 - `primarySoft` blends a small accent into the surface; `primaryStrong` supplies stronger emphasis in light themes.
@@ -73,25 +74,59 @@ use the visible, composited surface, so translucent white panels over a dark can
 - `darkSurface` and `onDarkAccent` keep dark regions available in both light and dark themes.
 - `inverseSurface`, `inverseInk`, and `inverseAccent` provide an inverted material, including a dark material in light themes.
 - `positiveSoft` and `negativeSoft` provide status backgrounds appropriate to the inverse material.
-- `inkOn` and `negativeOn` provide contrasting foregrounds; `strokeStrong` supplies an opaque outline.
+- `inkOn` contrasts with `inkBase`; `negativeOn` contrasts with `negativeSurface`, which supplies dark or soft negative surfaces.
+  `strokeStrong` supplies an opaque outline.
 - `lightBase`, `darkBase`, `black`, and `white` supply neutral endpoints and contrast fallbacks.
-- `darkOverlay`, `darkOverlaySoft`, `primaryOverlay`, and `transparent` supply fixed RGBA overlays.
+- `scrim`, `darkOverlaySoft`, `primaryOverlay`, and `transparent` supply predefined RGBA overlays.
+
+Light translucent surfaces retain layered materials: `surfaceRaised1/2/3` use half, three-quarters, and full base
+surface alpha; `surfaceSubdued` uses half alpha, and `surfaceOverlay` uses 40% alpha. Floating surfaces stay light
+and translucent with dark text, while dark surfaces retain the canvas hue and base surface alpha.
+`accentSurface` uses a translucent secondary accent for these overlays and `detailDark1` for opaque themes. Canvas detail
+and the scrim use light translucent overlays. This keeps pale overlays over colored canvases distinct from opaque
+light and dark themes.
 
 All rules run once during palette resolution. `secondaryReadable` applies to its documented background; drawers must still
 choose contrasting pairs for other shades. This does not replace a complete contrast audit.
 
 ## Drawing API
 
-Fill sprites expose all nine tonal shades. Fonts expose `Dark2`, `Base`, and `Light2` for each base, plus the shared
-foreground materials listed in `FONT_ALIASES`: `sprites.fillColors.primaryDark2`,
-`sprites.fillColors.inkBase`, and `sprites.fontInkOn` can be reused across unrelated controls. Local visual choices belong
-to drawers rather than theme configuration. Composite icons bake only their actual color combinations.
+`PALETTE_INDICES` exposes stable numeric indices for every shade, opacity variant, and shared material. Drawers choose
+these indices directly: `draw.drawFill(x, y, PALETTE_INDICES.primaryDark2, width, height)` and
+`draw.drawText(x, y, text, PALETTE_INDICES.inkOn)` reuse the same fill mask and fixed glyph IDs across unrelated controls.
+Local visual choices belong to drawers rather than theme configuration. Controls use `accentSurface` fills and
+`lightBase` handles with `darkBase` labels; disabled panels use `surfaceSubdued`. Equal resolved colors keep separate indices
+so a theme change can make them diverge without rebuilding projections.
 
-All shades and opacity variants are baked into the atlas. The extra `Alpha30/60/90` swatches are fill-only to avoid
-duplicating entire font strips; text retains source alpha and the shared prepared overlays. The bounded font catalog
-keeps metadata within an 8192-entry lookup texture. [TODO 510](../../../../../docs/todos/510-use-glyph-masks-and-gpu-color-palette.md)
-will separate glyph masks from colors so every shade can be used for text without duplicating glyph sprites. Identical
-concrete font colors share an atlas row, and fill swatches wrap within the existing atlas width.
-`@8f4e/editor-palette` owns the pure color model and conversion math.
-The atlas result carries its resolved palette so line-rendered wires use that exact palette, including alpha.
-Theme and font changes replace the atlas and lookups together; stale asynchronous builds are ignored.
+Connector icons are composed at runtime: a `surfaceOverlay` fill sits behind input brackets in `primaryBase` or output
+brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`, `primaryDark1`, `primaryBase`,
+`warningBase`, or `negativeBase` from the calibrated value. There are no dedicated input or feedback-scale atlas entries.
+
+The sprite atlas contains color-independent R8 binary visibility masks: 128 glyphs and one fully covered fill cell,
+all on the same 16-column grid. Sprite IDs are their row-major cell positions; the vertex shader derives source
+coordinates from these IDs and shared cell dimensions without a rectangle lookup texture. All palette entries can color
+text, including `Alpha30/60/90` variants. Web-ui renders the
+background in a separate procedural pass before sprites, using the font's dot geometry and `canvasBase`,
+`canvasDetail2`, and `canvasDetail1` colors. Palette changes precompose each dot color over the base so one triangle
+draws the complete background. Transparent pixels are discarded and a fully transparent background is skipped.
+The background uses no atlas entries, texture samples, or per-dot instance uploads.
+The renderer accepts straight-alpha RGBA8 palette bytes and prepares premultiplied float32 colors on changed uploads.
+The vertex shader reads the selected color from a uniform buffer; the sprite fragment shader discards zero mask samples
+and zero-alpha palette colors, then emits the prepared palette color directly. Atlas bytes must be 0 or 255;
+atlas installation validates this once. Translucent colors use
+premultiplied-alpha blending.
+The buffer reserves 256 colors (4 KiB), with 196 active entries using 3,136 bytes from a 784-byte RGBA8 input.
+Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
+
+Web-ui owns the background, line, and RGBA texture render plugins under `src/plugins/`, including their shared WebGL
+setup helpers and resource lifetimes. Glugglugglug supplies sprite rendering and the generic render-hook contract.
+RGBA overlays establish their sampler binding and tightly packed pixel-upload state after raw hooks, including frames
+with no sprite pass. Their nearest filtering and straight-alpha uploads are independent of state left by other passes.
+
+`@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
+the generated masks and separately resolved palette. Theme changes update palette colors, the background's three
+premultiplied color uniforms, and line-rendered wire colors. Font changes load cached masks, install grid dimensions,
+and update the background's dot geometry from web-ui's font-specific settings. Glyph IDs remain stable, and editor
+state carries no sprite lookup tables. The background program and empty vertex array survive rendering-memory
+release and are deleted when the view is destroyed. Font builds leave the active palette untouched, and
+stale asynchronous font builds are ignored.

@@ -1,3 +1,4 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import type {
 	Callbacks,
@@ -7,7 +8,7 @@ import type {
 	RuntimeRegistry,
 	State,
 } from '@8f4e/editor-state-types';
-import generateSprite from '@8f4e/sprite-generator';
+import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, {
 	createCodeBlockDrawerRegistry,
 	type MemoryViews,
@@ -35,7 +36,6 @@ import pointerEvents from './events/pointerEvents';
 import { createMemoryViewManager, type MemoryRef } from './memoryViewManager';
 import { type EditorPlugin, installEditorPlugins } from './plugins';
 import { createSpriteSheetManager } from './spriteSheetManager';
-import { updateStateWithSpriteData } from './updateStateWithSpriteData';
 import {
 	resolveWebUiOverlayConfig,
 	WEB_UI_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID,
@@ -79,7 +79,6 @@ export type { EventDispatcher } from './events';
 export type { MemoryRef } from './memoryViewManager';
 export type { EditorPlugin, EditorPluginContext } from './plugins';
 // Re-export helper functions
-export { updateStateWithSpriteData } from './updateStateWithSpriteData';
 
 export interface Editor {
 	resize: (width: number, height: number) => void;
@@ -233,30 +232,33 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			})
 		);
 
-		// Generate sprite data before initializing the view that installs and resolves the atlas.
-		const spriteData = await generateSprite({
-			font: state.editorConfig.font,
-			palette: state.editorConfig.color,
-		});
+		// Load the selected font before initializing the view.
+		const fontAtlas = await loadFontAtlas(state.editorConfig.font);
+		state.viewport.hGrid = fontAtlas.grid.cellHeight;
+		state.viewport.vGrid = fontAtlas.grid.cellWidth;
 
 		const renderProjection = createWebUiRenderProjection(store, events);
 		cleanups.push(() => renderProjection.dispose());
 		const getOverlayTexture = () => resolveWebUiOverlayConfig(state) ?? options.overlayTexture;
 
-		view = await initView(state, renderProjection, canvas, memoryViews, spriteData, {
-			drawers,
-			renderStatsIntervalFrames: options.renderStatsIntervalFrames,
-			overlayTexture: getOverlayTexture(),
-			getCodeBuffer: () => currentCodeBuffer,
-			getMemory: () => currentMemoryRef,
-			onRenderStats: stats => {
-				store.set('info.graphics', toGraphicsInfoRecord(stats));
-			},
-			onSpriteAtlasResolved: (spriteLookups, resolvedSpriteData) => {
-				updateStateWithSpriteData(state, resolvedSpriteData, spriteLookups);
-				renderProjection.refresh();
-			},
-		});
+		view = await initView(
+			state,
+			renderProjection,
+			canvas,
+			memoryViews,
+			fontAtlas,
+			resolvePalette(state.editorConfig.color),
+			{
+				drawers,
+				renderStatsIntervalFrames: options.renderStatsIntervalFrames,
+				overlayTexture: getOverlayTexture(),
+				getCodeBuffer: () => currentCodeBuffer,
+				getMemory: () => currentMemoryRef,
+				onRenderStats: stats => {
+					store.set('info.graphics', toGraphicsInfoRecord(stats));
+				},
+			}
+		);
 		cleanups.push(() => view.destroy());
 		const syncOverlayTexture = () => {
 			view.setOverlayTexture(getOverlayTexture());

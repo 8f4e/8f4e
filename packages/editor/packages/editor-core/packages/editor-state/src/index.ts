@@ -14,11 +14,9 @@ import blockTypeUpdater from './features/code-blocks/features/blockTypeUpdater/e
 import codeBlockCreator from './features/code-blocks/features/codeBlockCreator/effect';
 import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
-import crossfade from './features/code-blocks/features/directives/crossfade/interaction';
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
-import favoriteToggler from './features/code-blocks/features/favoriteToggler/effect';
 import groupCopier from './features/code-blocks/features/group/copier/effect';
 import groupDeleter from './features/code-blocks/features/group/deleter/effect';
 import groupNonstickToggler from './features/code-blocks/features/group/nonstickToggler/effect';
@@ -26,13 +24,13 @@ import groupRemover from './features/code-blocks/features/group/remover/effect';
 import groupRowAligner from './features/code-blocks/features/group/rowAligner/effect';
 import groupSkipExecutionToggler from './features/code-blocks/features/group/skipExecutionToggler/effect';
 import groupUngroupper from './features/code-blocks/features/group/ungroupper/effect';
-import memoryConnectionRemover from './features/code-blocks/features/memoryConnectionRemover/effect';
 import parsedDirectivesUpdater from './features/code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
 import codeEditing from './features/code-editing/effect';
 import color from './features/color/effect';
 import dialog from './features/dialog/effect';
 import historyTracking from './features/edit-history/effect';
+import { registerExportFileNameEditorConfigValidator } from './features/editor-config/exportFileName';
 import { registerEditorConfigSchemaContributionsValidator } from './features/editor-config/schemaContributions';
 import editorMode from './features/editor-mode/effect';
 import font from './features/font/effect';
@@ -40,9 +38,9 @@ import globalEditorDirectivesEffect from './features/global-editor-directives/ef
 import contextMenu from './features/menu/effect';
 import createMenuItemRegistry from './features/menu/itemRegistry';
 import compiler from './features/program-compiler/effect';
-import projectExport from './features/project-export/effect';
 import projectImport from './features/project-import/effect';
 import runtime from './features/runtime/effect';
+import sessionPersistence from './features/session-persistence/effect';
 import viewport from './features/viewport/effect';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
@@ -95,7 +93,8 @@ export default function init(
 	registerEffect(font(store));
 	registerEffect(color(store));
 	registerEffect(registerEditorConfigSchemaContributionsValidator(store));
-	registerEffect(projectExport(store, events));
+	registerExportFileNameEditorConfigValidator(store);
+	registerEffect(sessionPersistence(store, events));
 	registerEffect(dialog(store, events));
 	// Menus must consume pointer events before code blocks and viewport interactions.
 	registerEffect(contextMenu(store, events, menus));
@@ -106,14 +105,11 @@ export default function init(
 	registerEffect(projectImport(store, events));
 	registerEffect(codeBlockDragger(store, events));
 	registerEffect(codeBlockNavigation(store, events));
-	registerEffect(memoryConnectionRemover(store, events));
-	registerEffect(crossfade(store, events));
 	registerEffect(viewport(store, events));
 	registerEffect(codeBlockCreator(store, events));
 	registerEffect(groupSkipExecutionToggler(store, events));
 	registerEffect(groupNonstickToggler(store, events));
 	registerEffect(groupCopier(store, events));
-	registerEffect(favoriteToggler(store, events));
 	registerEffect(groupRemover(store, events));
 	registerEffect(groupUngroupper(store, events));
 	registerEffect(groupDeleter(store, events));
@@ -151,6 +147,7 @@ export default function init(
 }
 
 export { navigateToCodeBlockInDirection } from './features/code-blocks/features/codeBlockNavigation/effect';
+export { removeDirective } from './features/code-blocks/features/directiveEditing';
 export { parseEditorDirectives } from './features/code-blocks/features/directives/utils';
 // Export helper functions
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';
@@ -158,14 +155,18 @@ export { getCompiledFunctionForCodeBlock } from './features/code-blocks/utils/ge
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
 export { default as gapCalculator } from './features/code-editing/gapCalculator';
+export { getTabStopsByLine, getVisualLineWidth } from './features/code-editing/tabLayout';
+export { error as logError } from './features/logger/logger';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
-// Export .8f4e format helpers
-export { default as getExportBaseName } from './features/project-export/getExportBaseName';
-export { serializeProjectTo8f4e } from './features/project-export/serializeTo8f4e';
 // Export EMPTY_DEFAULT_PROJECT as a value
 export { EMPTY_DEFAULT_PROJECT } from './features/project-import/emptyDefaultProject';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
+export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';
+// Export project serialization helpers
+export { default as getExportBaseName } from './pureHelpers/getExportBaseName';
+export { serializeProjectTo8f4e } from './pureHelpers/projectSerialization/serializeTo8f4e';
+export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
 export {
 	isMemoryAddress,
 	isPointerSource,

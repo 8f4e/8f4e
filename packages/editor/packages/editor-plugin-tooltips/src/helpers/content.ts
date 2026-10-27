@@ -1,5 +1,5 @@
 import type { CompiledStackAnalysisLine, PlannedMemoryDeclaration } from '@8f4e/language-spec';
-import type { SelectedLineTooltipContent, SpriteLookups } from '../types';
+import type { SelectedLineTooltipContent } from '../types';
 import { getSelectedLineTooltipColors } from './colors';
 import { TOOLTIP_WRAP_WIDTH } from './constants';
 import { getLiveTooltipContent } from './liveValues';
@@ -82,7 +82,6 @@ export function getSelectedLineTooltipContent(
 	line: string | undefined,
 	maxLength = TOOLTIP_WRAP_WIDTH,
 	stackAnalysisLine?: CompiledStackAnalysisLine,
-	spriteLookups?: SpriteLookups,
 	moduleId?: string,
 	memory?: PlannedMemoryDeclaration,
 	moduleExecutionOrder?: number
@@ -90,8 +89,8 @@ export function getSelectedLineTooltipContent(
 	const textContent = getSelectedLineTooltipTextContent(line, maxLength, stackAnalysisLine, moduleExecutionOrder);
 	const text = textContent.text;
 	const memoryId = getMemoryDeclarationIdFromSourceLine(line);
-	const colors = getSelectedLineTooltipColors(line, text, spriteLookups);
-	const liveTooltipContent = getLiveTooltipContent(memory, moduleId, memoryId, text.length, spriteLookups);
+	const colors = getSelectedLineTooltipColors(line, text);
+	const liveTooltipContent = getLiveTooltipContent(memory, moduleId, memoryId, text.length);
 
 	text.push(...liveTooltipContent.text);
 	colors.push(...liveTooltipContent.colors);

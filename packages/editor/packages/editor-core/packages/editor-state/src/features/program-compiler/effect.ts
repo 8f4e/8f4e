@@ -4,8 +4,8 @@ import { WASM_MEMORY_PAGE_SIZE } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import { hasTestEntry } from '@8f4e/test-runner';
 import debounceTrailing from '../../pureHelpers/debounceTrailing';
+import convertGraphicDataToProjectStructure from '../../pureHelpers/projectSerialization/serializeCodeBlocks';
 import { log } from '../logger/logger';
-import convertGraphicDataToProjectStructure from '../project-export/serializeCodeBlocks';
 import { DEFAULT_RECOMPILE_DEBOUNCE_DELAY, registerRecompileDebounceDelayEditorConfigValidator } from './editorConfig';
 
 export default function compiler(store: StateManager<State>): () => void {

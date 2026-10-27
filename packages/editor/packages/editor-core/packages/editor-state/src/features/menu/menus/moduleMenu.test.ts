@@ -9,7 +9,7 @@ describe('module menu', () => {
 		const item = { title: 'Custom block action', action: 'customAction' };
 		const items = moduleMenu(state, codeBlock, [item]);
 		expect(items.indexOf(item)).toBe(items.findIndex(item => item.action === 'toggleCodeBlockDisabled') + 1);
-		expect(items.indexOf(item)).toBeLessThan(items.findIndex(item => item.action === 'toggleFavoriteDirective'));
+		expect(items.indexOf(item)).toBeLessThan(items.findIndex(item => item.action === 'copyCodeBlock'));
 	});
 
 	it('allows contributed actions in view mode', () => {
@@ -74,30 +74,6 @@ describe('module menu', () => {
 		});
 	});
 
-	it('adds an action for removing intermodular memory connections', async () => {
-		const codeBlock = createMockCodeBlock({
-			blockType: 'module',
-			code: ['module synth', 'float foo &module:bar', 'moduleEnd'],
-		});
-		const state = createMockState({
-			codeBlockRendering: {
-				selectedCodeBlock: codeBlock,
-			},
-		});
-
-		const items = await moduleMenu(state, codeBlock, []);
-		const item = items.find(candidate => candidate.action === 'removeConnections');
-
-		expect(item).toEqual(
-			expect.objectContaining({
-				title: 'Remove connections',
-				payload: { codeBlock },
-				close: true,
-				disabled: false,
-			})
-		);
-	});
-
 	it('adds an align blocks in row action for grouped blocks', async () => {
 		const codeBlock = createMockCodeBlock({
 			code: ['module synth', '; @group myGroup', 'moduleEnd'],
@@ -132,22 +108,5 @@ describe('module menu', () => {
 		const items = await moduleMenu(state, codeBlock, []);
 
 		expect(items.some(candidate => candidate.action === 'alignGroupBlocksInRow')).toBe(false);
-	});
-
-	it('disables the remove connections action when only local memory references exist', async () => {
-		const codeBlock = createMockCodeBlock({
-			blockType: 'module',
-			code: ['module synth', 'float bar &bar', 'moduleEnd'],
-		});
-		const state = createMockState({
-			codeBlockRendering: {
-				selectedCodeBlock: codeBlock,
-			},
-		});
-
-		const items = await moduleMenu(state, codeBlock, []);
-		const item = items.find(candidate => candidate.action === 'removeConnections');
-
-		expect(item).toEqual(expect.objectContaining({ disabled: true }));
 	});
 });

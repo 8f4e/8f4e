@@ -10,13 +10,11 @@ import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
 import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
-import favoriteToggler from '../code-blocks/features/favoriteToggler/effect';
 import groupDeleter from '../code-blocks/features/group/deleter/effect';
 import groupNonstickToggler from '../code-blocks/features/group/nonstickToggler/effect';
 import groupRemover from '../code-blocks/features/group/remover/effect';
 import groupSkipExecutionToggler from '../code-blocks/features/group/skipExecutionToggler/effect';
 import groupUngroupper from '../code-blocks/features/group/ungroupper/effect';
-import memoryConnectionRemover from '../code-blocks/features/memoryConnectionRemover/effect';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
 import codeEditing from '../code-editing/effect';
@@ -182,7 +180,6 @@ describe('compiler input revision', () => {
 	});
 
 	it.each([
-		['toggleFavoriteDirective', favoriteToggler, {}],
 		['toggleGroupNonstick', groupNonstickToggler, { makeNonstick: true }],
 		['removeFromGroupDirective', groupRemover, {}],
 		['ungroupByName', groupUngroupper, {}],
@@ -250,16 +247,6 @@ describe('compiler input revision', () => {
 		expect(state.compilerInputRevision).toBe(2);
 		dispatch('deleteGroup', { codeBlock: block });
 		expect(state.compilerInputRevision).toBe(2);
-	});
-
-	it('advances when removing a memory connection, but not when there is none', () => {
-		memoryConnectionRemover(store, events);
-		block.code = ['module main', 'float value &other:output', 'moduleEnd'];
-		dispatch('removeConnections', { codeBlock: block });
-		expect(block.code[1]).toBe('float value');
-		expect(state.compilerInputRevision).toBe(1);
-		dispatch('removeConnections', { codeBlock: block });
-		expect(state.compilerInputRevision).toBe(1);
 	});
 
 	it('advances for regenerated environment constants and ignores identical regeneration', () => {

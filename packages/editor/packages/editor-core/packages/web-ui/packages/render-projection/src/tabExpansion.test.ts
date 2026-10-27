@@ -7,7 +7,7 @@ describe('tabExpansion', () => {
 	});
 
 	it('expands characters and syntax colors to the same visual columns', () => {
-		expect(expandLineToCells('a\tb', [4])).toEqual([97, '\t', 32, 32, 98]);
+		expect(expandLineToCells('a\tb', [4])).toEqual([97, 9, 32, 32, 98]);
 		expect(expandLineColorsToCells('a\tb', ['code', 'tab', 'code'], [4])).toEqual([
 			'code',
 			'tab',

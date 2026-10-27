@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import type { WebUiRenderData } from '@8f4e/web-ui-render-projection';
 import type { DrawContext } from '../../drawContext';
@@ -8,15 +9,10 @@ import drawEntryOutlines from './drawEntryOutlines';
 import drawSelectedOutline from './drawSelectedOutline';
 import drawShapeDeclarations from './drawShapeDeclarations';
 import drawAssertions from './widgets/assertions';
-import drawBars from './widgets/bars';
 import drawBlockHighlights from './widgets/blockHighlights';
 import drawConnectors from './widgets/connectors';
-import drawCrossfades from './widgets/crossfades';
-import drawDebuggers from './widgets/debuggers';
 import drawErrorMessages from './widgets/errorMessages';
 import drawInfoPanels from './widgets/infoPanels';
-import drawMeters from './widgets/meters';
-import drawPlotters from './widgets/plotters';
 
 const corner = '+';
 
@@ -27,12 +23,6 @@ export default function drawModules(
 	renderData: WebUiRenderData,
 	drawers?: CodeBlockDrawerRegistry
 ): void {
-	const spriteLookups = state.spriteLookups;
-
-	if (!spriteLookups) {
-		return;
-	}
-
 	const { x, y } = state.viewport;
 
 	const offsetX = -x;
@@ -52,55 +42,49 @@ export default function drawModules(
 		) {
 			engine.startGroup(codeBlock.x, codeBlock.y);
 			if (codeBlock === state.codeBlockRendering.draggedCodeBlock) {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.surfaceRaised1, codeBlock.width, codeBlock.height);
+				engine.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
 			} else if (codeBlock.disabled) {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.surfaceRaised1, codeBlock.width, codeBlock.height);
+				engine.drawFill(0, 0, PALETTE_INDICES.surfaceSubdued, codeBlock.width, codeBlock.height);
 			} else {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.surfaceBase, codeBlock.width, codeBlock.height);
+				engine.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
 			}
 
-			drawBlockHighlights(engine, state, codeBlock);
+			drawBlockHighlights(engine, codeBlock);
 
 			if (state.featureFlags.codeLineSelection && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
-				engine.drawSprite(
-					0,
-					codeBlock.cursor.y,
-					spriteLookups.fillColors.primarySoft,
-					codeBlock.width,
-					state.viewport.hGrid
-				);
+				engine.drawFill(0, codeBlock.cursor.y, PALETTE_INDICES.primarySoft, codeBlock.width, state.viewport.hGrid);
 			}
 
-			const cornerFont =
+			const cornerColor =
 				state.codeBlockRendering.selectedCodeBlock === codeBlock
-					? spriteLookups.fontSecondaryBase
-					: spriteLookups.fontInkBase;
+					? PALETTE_INDICES.secondaryBase
+					: PALETTE_INDICES.inkBase;
 
-			engine.drawText(0, 0, corner, cornerFont);
-			engine.drawText(codeBlock.width - state.viewport.vGrid, 0, corner, cornerFont);
-			engine.drawText(0, codeBlock.height - state.viewport.hGrid, corner, cornerFont);
+			engine.drawText(0, 0, corner, cornerColor);
+			engine.drawText(codeBlock.width - state.viewport.vGrid, 0, corner, cornerColor);
+			engine.drawText(0, codeBlock.height - state.viewport.hGrid, corner, cornerColor);
 			engine.drawText(
 				codeBlock.width - state.viewport.vGrid,
 				codeBlock.height - state.viewport.hGrid,
 				corner,
-				cornerFont
+				cornerColor
 			);
 
 			for (let i = 0; i < codeCells.length; i++) {
 				engine.drawResolvedText(state.viewport.vGrid, state.viewport.hGrid * i, codeCells[i]);
 			}
 
-			drawShapeDeclarations(engine, state, codeBlock);
+			drawShapeDeclarations(engine, codeBlock);
 
 			if (state.featureFlags.editing && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				engine.drawText(
 					codeBlock.cursor.x,
 					codeBlock.cursor.y,
 					'_',
-					codeBlock.disabled ? spriteLookups.fontInkFaint : spriteLookups.fontInkBase
+					codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase
 				);
 			}
-			drawAssertions(engine, state, codeBlock);
+			drawAssertions(engine, codeBlock);
 
 			if (state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				drawSelectedOutline(engine, state, codeBlock.width, codeBlock.height);
@@ -108,13 +92,8 @@ export default function drawModules(
 
 			drawErrorMessages(engine, state, codeBlock);
 			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
-			drawCrossfades(engine, state, codeBlock, memoryViews);
 			drawConnectors(engine, state, codeBlock, memoryViews);
-			drawBars(engine, state, codeBlock, memoryViews);
-			drawMeters(engine, state, codeBlock, memoryViews);
-			drawPlotters(engine, state, codeBlock, memoryViews);
 			drawInfoPanels(engine, state, codeBlock);
-			drawDebuggers(engine, state, codeBlock, memoryViews);
 			drawers?.drawCodeBlockOverlay({ draw: engine, state, codeBlock, memoryViews });
 
 			engine.endGroup();

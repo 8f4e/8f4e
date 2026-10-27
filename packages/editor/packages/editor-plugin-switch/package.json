@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-switch",
-  "version": "0.1.3",
+  "version": "0.1.7",
   "private": true,
   "description": "Switch widget plugin for the 8f4e editor",
   "type": "module",
@@ -17,6 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "@8f4e/editor-core": "*",
+    "@8f4e/editor-palette": "*",
     "@8f4e/editor-state": "*",
     "@8f4e/editor-state-types": "*"
   },

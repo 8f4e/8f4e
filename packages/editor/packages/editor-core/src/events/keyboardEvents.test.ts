@@ -80,19 +80,6 @@ describe('keyboardEvents mode switching', () => {
 		} as unknown as StateManager<State>;
 	});
 
-	it.each(['ctrlKey', 'metaKey'] as const)('saves the project with %s+S', modifier => {
-		const cleanup = keyboardEvents(inputTarget as unknown as HTMLElement, events, store);
-		const event = createKeyboardEventLike('S');
-		Object.assign(event, { [modifier]: true });
-
-		inputTarget.emit('keydown', event);
-
-		expect(events.dispatch).toHaveBeenCalledWith('saveProject');
-		expect(events.dispatch).not.toHaveBeenCalledWith('saveSession');
-		expect(event.preventDefault).toHaveBeenCalledOnce();
-		cleanup();
-	});
-
 	it('enters edit mode when e is pressed in view mode', () => {
 		const cleanup = keyboardEvents(inputTarget as unknown as HTMLElement, events, store);
 		const event = createKeyboardEventLike('e');

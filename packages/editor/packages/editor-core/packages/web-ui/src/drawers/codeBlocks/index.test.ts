@@ -1,7 +1,7 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { WebUiRenderData } from '@8f4e/web-ui-render-projection';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createSpriteIdLookupMock } from '../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../drawContext';
 import type { MemoryViews } from '../../types';
 import { createCodeBlockDrawerRegistry } from '../registry';
@@ -26,6 +26,8 @@ function createMockEngine(): Engine {
 		startGroup: vi.fn(),
 		endGroup: vi.fn(),
 		drawSprite: vi.fn(),
+		drawFill: vi.fn(),
+		drawCharacter: vi.fn(),
 		drawText: vi.fn(),
 		drawResolvedText: vi.fn(),
 	} as unknown as Engine;
@@ -36,7 +38,6 @@ describe('drawModules', () => {
 		const visible = createMockCodeBlock({ width: 96, height: 64, x: 16, y: 16 });
 		const offscreen = createMockCodeBlock({ creationIndex: 1, x: 10000 });
 		const state = createMockState({
-			spriteLookups: { fillColors: createSpriteIdLookupMock(), fontInkBase: createSpriteIdLookupMock() } as never,
 			codeBlockRendering: { codeBlocks: [visible, offscreen] },
 		});
 		const engine = createMockEngine();
@@ -73,11 +74,6 @@ describe('drawModules', () => {
 		const otherBlock = createMockCodeBlock({ creationIndex: 1, x: 160, width: 96, height: 64 });
 		const state = createMockState({
 			editorMode,
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontInkBase: createSpriteIdLookupMock(),
-				fontSecondaryBase: createSpriteIdLookupMock(),
-			} as never,
 			codeBlockRendering: {
 				codeBlocks: [selectedBlock, otherBlock],
 				selectedCodeBlock: selectedBlock,
@@ -112,16 +108,15 @@ describe('drawModules', () => {
 		const block = createMockCodeBlock({ creationIndex: 4, width: 100, height: 64 });
 		block.widgets.assertions = [{ lineNumber: 2, passed: true, x: 8, y: 32, width: 8, height: 16 }];
 		const state = createMockState({
-			spriteLookups: { fillColors: createSpriteIdLookupMock(), fontInkBase: createSpriteIdLookupMock() } as never,
 			codeBlockRendering: { codeBlocks: [block] },
 		});
 		const engine = createMockEngine();
 		const renderData: WebUiRenderData = { codeBlocks: new Map([[4, { codeCells: [[1], [2], [3]] as never }]]) };
 		drawModules(engine, state, createMemoryViews(), renderData);
-		const sprites = vi.mocked(engine.drawSprite);
-		const markerSprite = state.spriteLookups!.fillColors.positiveBase;
+		const sprites = vi.mocked(engine.drawFill);
+		const markerSprite = PALETTE_INDICES.positiveBase;
 		const markerIndex = sprites.mock.calls.findIndex(call => call[2] === markerSprite);
-		expect(sprites).toHaveBeenCalledWith(8, 32, 'positiveBase', 8, 16);
+		expect(sprites).toHaveBeenCalledWith(8, 32, PALETTE_INDICES.positiveBase, 8, 16);
 		expect(sprites.mock.invocationCallOrder[markerIndex]).toBeGreaterThan(
 			vi.mocked(engine.drawResolvedText).mock.invocationCallOrder.at(-1)!
 		);
@@ -129,11 +124,6 @@ describe('drawModules', () => {
 	it('draws resolved code cells from projected render data', () => {
 		const block = createMockCodeBlock({ creationIndex: 4, width: 100, height: 50 });
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontInkBase: createSpriteIdLookupMock(),
-				fontSecondaryBase: createSpriteIdLookupMock(),
-			} as never,
 			codeBlockRendering: { codeBlocks: [block] },
 		});
 		const engine = createMockEngine();
@@ -152,10 +142,6 @@ describe('drawModules', () => {
 
 	it('draws precomputed entry outlines before rendering code blocks', () => {
 		const state = createMockState({
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontInkBase: createSpriteIdLookupMock(),
-			} as never,
 			codeBlockRendering: {
 				codeBlocks: [],
 				entryOutlines: [
@@ -177,43 +163,15 @@ describe('drawModules', () => {
 
 		drawModules(engine, state, createMemoryViews(), emptyRenderData);
 
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenNthCalledWith(
-			1,
-			8,
-			16,
-			'strokeBase',
-			96,
-			1
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenNthCalledWith(
-			2,
-			8,
-			95,
-			'strokeBase',
-			96,
-			1
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenNthCalledWith(
-			3,
-			8,
-			16,
-			'strokeBase',
-			1,
-			80
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenNthCalledWith(
-			4,
-			103,
-			16,
-			'strokeBase',
-			1,
-			80
-		);
+		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(1, 8, 16, PALETTE_INDICES.strokeBase, 96, 1);
+		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(2, 8, 95, PALETTE_INDICES.strokeBase, 96, 1);
+		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(3, 8, 16, PALETTE_INDICES.strokeBase, 1, 80);
+		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(4, 103, 16, PALETTE_INDICES.strokeBase, 1, 80);
 		expect((engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText).toHaveBeenCalledWith(
 			16,
 			16,
 			'main',
-			state.spriteLookups?.fontInkBase
+			PALETTE_INDICES.inkStrong
 		);
 	});
 
@@ -225,9 +183,6 @@ describe('drawModules', () => {
 			height: 80,
 		});
 		const state = createMockState({
-			spriteLookups: {
-				fontPrimaryBase: createSpriteIdLookupMock(),
-			} as never,
 			codeBlockRendering: {
 				codeBlocks: [offscreenBlock],
 			},

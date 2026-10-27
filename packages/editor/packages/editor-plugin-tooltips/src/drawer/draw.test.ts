@@ -1,8 +1,9 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { MemoryViews } from '@8f4e/web-ui';
-import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../__tests__/rendering';
+import { describe, expect, it, vi } from 'vitest';
+import { createDrawContextMock } from '../__tests__/rendering';
 import { createEmptyTooltipState } from '../state/layout';
 import type { TooltipState } from '../types';
 import drawTooltip, { getTooltipAnimationOffset } from './draw';
@@ -35,7 +36,7 @@ describe('selected line tooltip animation', () => {
 
 	it('renders an invalid marker instead of dereferencing a negative pointer', () => {
 		const codeBlock = createMockCodeBlock();
-		const highlightFont = createSpriteIdLookupMock();
+		const highlightFont = PALETTE_INDICES.inverseAccent;
 		const state = createMockState({
 			compiler: {
 				memoryPlan: {
@@ -52,10 +53,6 @@ describe('selected line tooltip animation', () => {
 			} as never,
 			featureFlags: { codeLineSelection: true },
 			codeBlockRendering: { selectedCodeBlock: codeBlock },
-			spriteLookups: {
-				fillColors: { inverseSurface: 'inverseSurface' },
-				fontInverseAccent: highlightFont,
-			} as never,
 		});
 		const tooltip: TooltipState = {
 			...createEmptyTooltipState(),
@@ -93,11 +90,7 @@ describe('selected line tooltip animation', () => {
 
 		drawTooltip(engine, state, codeBlock, memoryViews, tooltip);
 
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			8,
-			16,
-			'?'.charCodeAt(0)
-		);
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(8, 16, '?'.charCodeAt(0), expect.any(Number));
 	});
 });
 
@@ -115,10 +108,10 @@ function createMemoryViews({ int32 = [] }: { int32?: number[] } = {}): MemoryVie
 
 function createTooltipColors(
 	line: string,
-	defaultLookup: object,
-	transitions: Array<[number, object]>
-): Array<object | undefined> {
-	const colors: Array<object | undefined> = new Array(line.length).fill(undefined);
+	defaultLookup: number,
+	transitions: Array<[number, number]>
+): Array<number | undefined> {
+	const colors: Array<number | undefined> = new Array(line.length).fill(undefined);
 	colors[0] = defaultLookup;
 
 	transitions.forEach(([index, lookup]) => {
@@ -159,10 +152,8 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 
 describe('tooltip drawing', () => {
 	it('draws tooltip text next to the selected line', () => {
-		const fillColors = createSpriteIdLookupMock();
-		const fontInkBase = createSpriteIdLookupMock();
-		const fontInverseAccent = createSpriteIdLookupMock();
-		const fontInverseInk = createSpriteIdLookupMock();
+		const fontInverseAccent = PALETTE_INDICES.inverseAccent;
+		const fontInverseInk = PALETTE_INDICES.inverseInk;
 		const block = createMockCodeBlock({
 			width: 100,
 			height: 80,
@@ -174,15 +165,6 @@ describe('tooltip drawing', () => {
 			},
 		});
 		const state = createMockState({
-			spriteLookups: {
-				fillColors,
-				fontInkBase,
-				fontSecondaryBase: createSpriteIdLookupMock(),
-				fontInkFaint: createSpriteIdLookupMock(),
-				fontMutedBase: createSpriteIdLookupMock(),
-				fontInverseAccent,
-				fontInverseInk,
-			} as never,
 			codeBlockRendering: {
 				codeBlocks: [block],
 				selectedCodeBlock: block,
@@ -234,50 +216,14 @@ describe('tooltip drawing', () => {
 
 		drawTooltip(engine, state, block, createMemoryViews(), tooltip);
 
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-192,
-			16,
-			'inverseSurface',
-			184,
-			64
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-120,
-			48,
-			'negativeSoft',
-			48,
-			16
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-184,
-			16,
-			'a'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-184,
-			32,
-			'A'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-184,
-			48,
-			'b'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-128,
-			48,
-			'['.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-184,
-			64,
-			'a'.charCodeAt(0)
-		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			-128,
-			64,
-			'['.charCodeAt(0)
-		);
+		expect(vi.mocked(engine.drawFill)).toHaveBeenCalledWith(-192, 16, PALETTE_INDICES.inverseSurface, 184, 64);
+		expect(vi.mocked(engine.drawFill)).toHaveBeenCalledWith(-120, 48, PALETTE_INDICES.negativeSoft, 48, 16);
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-184, 16, 'a'.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-184, 32, 'A'.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-184, 48, 'b'.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-128, 48, '['.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-184, 64, 'a'.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-128, 64, '['.charCodeAt(0), expect.any(Number));
 	});
 
 	it('draws live memory declaration values from tooltip metadata', () => {
@@ -323,15 +269,6 @@ describe('tooltip drawing', () => {
 					moduleList: [],
 				},
 			},
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontSecondaryBase: createSpriteIdLookupMock(),
-				fontInkBase: createSpriteIdLookupMock(),
-				fontInkFaint: createSpriteIdLookupMock(),
-				fontMutedBase: createSpriteIdLookupMock(),
-				fontInverseAccent: createSpriteIdLookupMock(),
-				fontInverseInk: createSpriteIdLookupMock(),
-			} as never,
 			codeBlockRendering: {
 				codeBlocks: [block],
 				selectedCodeBlock: block,
@@ -360,13 +297,13 @@ describe('tooltip drawing', () => {
 					x: -168 + 'address: '.length * 8,
 					y: 16 + 16,
 					source: { kind: 'memoryAddress', moduleId: 'test', memoryId: 'pointer' },
-					color: createSpriteIdLookupMock(),
+					color: PALETTE_INDICES.inverseAccent,
 				},
 				{
 					x: -168 + 'value: '.length * 8,
 					y: 16 + 2 * 16,
 					source: { kind: 'memoryValue', moduleId: 'test', memoryId: 'pointer', elementIndex: 0 },
-					color: createSpriteIdLookupMock(),
+					color: PALETTE_INDICES.inverseAccent,
 				},
 				{
 					x: -168 + 'deref: '.length * 8,
@@ -381,7 +318,7 @@ describe('tooltip drawing', () => {
 							isUnsigned: false,
 						},
 					},
-					color: createSpriteIdLookupMock(),
+					color: PALETTE_INDICES.inverseAccent,
 				},
 			],
 		};
@@ -389,30 +326,35 @@ describe('tooltip drawing', () => {
 
 		drawTooltip(engine, state, block, createMemoryViews({ int32: [0, 0, 20, 0, 0, 123] }), tooltip);
 
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(
 			expect.any(Number),
 			expect.any(Number),
-			'a'.charCodeAt(0)
+			'a'.charCodeAt(0),
+			expect.any(Number)
 		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(
 			expect.any(Number),
 			expect.any(Number),
-			'v'.charCodeAt(0)
+			'v'.charCodeAt(0),
+			expect.any(Number)
 		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(
 			expect.any(Number),
 			expect.any(Number),
-			'2'.charCodeAt(0)
+			'2'.charCodeAt(0),
+			expect.any(Number)
 		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(
 			expect.any(Number),
 			expect.any(Number),
-			'd'.charCodeAt(0)
+			'd'.charCodeAt(0),
+			expect.any(Number)
 		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
+		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(
 			expect.any(Number),
 			expect.any(Number),
-			'1'.charCodeAt(0)
+			'1'.charCodeAt(0),
+			expect.any(Number)
 		);
 	});
 });

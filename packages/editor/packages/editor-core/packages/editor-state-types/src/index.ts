@@ -9,19 +9,13 @@ import type {
 	MemoryAction as CompilerMemoryAction,
 	ProjectObjectModel,
 } from '@8f4e/language-spec';
-import type { SpriteIdLookups } from '@8f4e/sprite-generator';
 import type { AssertionResult } from './features/assertions/types';
 import type { BinaryAsset } from './features/binary-assets/types';
 import type {
-	ArrayBars,
-	ArrayMeter,
-	ArrayPlotter,
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockRendering,
 	CodeBlockType,
-	Crossfade,
-	Debugger,
 	InfoPanel,
 	Input,
 	MemoryIdentifier,
@@ -74,9 +68,6 @@ import type {
 // Re-export code-editing types
 // Re-export project-import types
 export type {
-	ArrayBars,
-	ArrayMeter,
-	ArrayPlotter,
 	AssertionResult,
 	BinaryAsset,
 	CodeBlockEntryOutline,
@@ -90,8 +81,6 @@ export type {
 	ConsoleState,
 	ContextMenu,
 	ContextMenuItem,
-	Crossfade,
-	Debugger,
 	DialogButton,
 	DialogButtonState,
 	DialogContent,
@@ -202,9 +191,6 @@ export interface Callbacks {
 	importProject?: () => Promise<ProjectObjectModel | null>;
 	/** Called for unrelated project replacements, including successful disk imports; excluded for undo/redo. */
 	projectLoaded?: (project: ProjectObjectModel) => void;
-	saveProject?: (data: string, fileName: string) => Promise<void>;
-	exportProject?: (data: string, fileName: string) => Promise<void>;
-	exportBinaryCode?: (fileName: string) => Promise<void>;
 	getStorageQuota?: () => Promise<{ usedBytes: number; totalBytes: number }>;
 
 	// Memory manipulation callback
@@ -272,7 +258,6 @@ export interface State {
 	compiler: Compiler;
 	codeBlockRendering: CodeBlockRendering;
 	contextMenu: ContextMenu;
-	spriteLookups?: SpriteIdLookups;
 	/** Arbitrary key/value records rendered by `; @info <id>` directives. */
 	info: InfoState;
 	callbacks: Callbacks;

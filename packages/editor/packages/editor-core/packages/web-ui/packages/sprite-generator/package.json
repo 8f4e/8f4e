@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/sprite-generator",
-  "version": "2.0.23",
+  "version": "2.0.27",
   "private": true,
   "description": "8f4e sprite generator package",
   "type": "module",
@@ -24,10 +24,10 @@
   },
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
-    "@8f4e/editor-palette": "*",
     "glugglugglug": "*"
   },
   "devDependencies": {
+    "@8f4e/editor-palette": "*",
     "@8f4e/examples": "*",
     "vite": "7.3.7"
   }

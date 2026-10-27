@@ -31,11 +31,18 @@ export const ALIASES = [
 	'surfaceRaised1',
 	'surfaceRaised2',
 	'surfaceRaised3',
+	'surfaceSubdued',
+	'surfaceOverlay',
+	'accentSurface',
+	'inkStrong',
 	'inkFaint',
+	'mutedSoft',
+	'secondarySoft',
 	'secondaryReadable',
 	'primarySoft',
 	'primaryStrong',
 	'inkOn',
+	'negativeSurface',
 	'negativeOn',
 	'strokeStrong',
 	'lightBase',
@@ -53,13 +60,12 @@ export const ALIASES = [
 	'inverseAccent',
 	'positiveSoft',
 	'negativeSoft',
-	'darkOverlay',
+	'scrim',
 	'darkOverlaySoft',
 	'primaryOverlay',
 	'transparent',
 ] as const;
 export type PaletteToken = ShadeToken | OpacityToken | (typeof ALIASES)[number];
-// Extra opacity swatches are fill-only; duplicating full fonts for them exceeds the renderer's lookup budget.
 export const PALETTE_TOKENS: readonly PaletteToken[] = [
 	...BASE_COLORS.flatMap(base => SHADES.map(shade => `${base}${shade}` as ShadeToken)),
 	...ALIASES,

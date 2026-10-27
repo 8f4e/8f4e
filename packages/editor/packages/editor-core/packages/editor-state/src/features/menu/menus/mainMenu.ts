@@ -62,7 +62,9 @@ export const mainMenu = (state: State): ContextMenuItem[] => [
 		payload: { menu: 'favoritesMenu' },
 		close: false,
 	},
-	{ divider: true },
+	...((state.featureFlags.editing && state.featureFlags.projectCreation) || state.featureFlags.projectOpening
+		? [{ divider: true }]
+		: []),
 	...(state.featureFlags.editing && state.featureFlags.projectCreation
 		? [{ title: 'New Project', action: 'new', close: true }]
 		: []),
@@ -79,14 +81,4 @@ export const mainMenu = (state: State): ContextMenuItem[] => [
 				},
 			]
 		: []),
-	...((state.featureFlags.editing && state.featureFlags.projectCreation) || state.featureFlags.projectOpening
-		? [{ divider: true }]
-		: []),
-	{ title: 'Export Project', action: 'exportProject', close: true, disabled: !state.callbacks.exportProject },
-	{
-		title: 'Export WebAssembly',
-		action: 'exportWasm',
-		close: true,
-		disabled: !state.callbacks.exportBinaryCode,
-	},
 ];

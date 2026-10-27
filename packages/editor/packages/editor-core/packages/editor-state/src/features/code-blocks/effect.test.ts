@@ -11,28 +11,6 @@ import entryOutlines from './features/entryOutlines/effect';
 import parsedDirectivesUpdater from './features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
 
-function createFontIds() {
-	return new Proxy(
-		{ 63: 63 },
-		{
-			get: (target, key) => {
-				const characterCode = Number(key);
-				return Number.isNaN(characterCode) ? Reflect.get(target, key) : characterCode;
-			},
-		}
-	);
-}
-
-function createSpriteLookups() {
-	return {
-		fillColors: {},
-		fontSecondaryBase: createFontIds(),
-		fontInkBase: createFontIds(),
-		fontInkFaint: createFontIds(),
-		fontMutedBase: createFontIds(),
-	} as never;
-}
-
 describe('code block layout readiness', () => {
 	it('runs widget callbacks with current block dimensions, row gaps, and cursor coordinates', () => {
 		const block = createMockCodeBlock({
@@ -189,7 +167,6 @@ describe('code block rendering home directive', () => {
 				...EMPTY_DEFAULT_PROJECT,
 				code: ['pass env'],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -231,7 +208,6 @@ describe('code block rendering home directive', () => {
 					},
 				],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -266,7 +242,6 @@ describe('code block rendering home directive', () => {
 					},
 				],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -315,7 +290,7 @@ group checks
 ; @pos -20 -10
 groupEnd
 entryEnd`);
-		const state = createMockState({ initialProjectState: project, spriteLookups: createSpriteLookups() });
+		const state = createMockState({ initialProjectState: project });
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 		codeBlockRenderingEffect(store, events, directiveDefinitions);
@@ -370,7 +345,6 @@ entryEnd`);
 					},
 				],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -416,7 +390,6 @@ entryEnd`);
 				vGrid: 8,
 				hGrid: 16,
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -457,7 +430,6 @@ entryEnd`);
 				vGrid: 8,
 				hGrid: 16,
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -499,7 +471,6 @@ entryEnd`);
 				codeBlocks: [selectedBlock],
 				selectedCodeBlock: selectedBlock,
 			},
-			spriteLookups: createSpriteLookups(),
 			viewport: {
 				x: 0,
 				y: 0,
@@ -557,7 +528,6 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 				codeBlocks,
 				selectedCodeBlock: normalA,
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -600,7 +570,6 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 				codeBlocks,
 				selectedCodeBlock: topB,
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();

@@ -4,7 +4,7 @@ import type { AssertionResult } from '@8f4e/editor-state-types';
 import type { AssertionSite } from '@8f4e/language-spec';
 import { runTests } from '@8f4e/test-runner';
 import { describe, expect, it } from 'vitest';
-import convertGraphicDataToProjectStructure from '../../../project-export/serializeCodeBlocks';
+import convertGraphicDataToProjectStructure from '../../../../pureHelpers/projectSerialization/serializeCodeBlocks';
 import buildDisplayModel from '../../buildDisplayModel';
 import deriveAssertionMarkers from './deriveAssertionMarkers';
 

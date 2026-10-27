@@ -69,7 +69,7 @@ can differ from the selection. Contributions appear in registration order after 
 existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
 Use `menus.registerItem('mainMenu', provider)` for the background menu. Its providers receive `{ state }`, and
 contributions appear in registration order after the built-in items. Main-menu contributions are rebuilt when the
-menu opens or is revisited, just like block-menu contributions.
+menu opens or is revisited, just like block-menu contributions. A divider separates the contributed items when present.
 
 Register widget directives with `directives.register(definition)`, using the existing `EditorDirectiveDefinition`
 contract from `@8f4e/editor-state-types`. The core owns generic source parsing, directive matching, and the block
@@ -84,7 +84,7 @@ Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer rece
 the host applies viewport translation and visibility checks. Drawers run in registration order after error messages
 and before built-in controls. Register overlays with `drawers.registerCodeBlockOverlay(drawer)` to draw after all
 built-in block widgets, using the same context and coordinates. Each slot preserves registration order. Use the
-current state's sprite lookups, which change with the font or color scheme.
+drawing surface's text/fill primitives and shared numeric palette indices.
 `@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
 disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
 
@@ -99,16 +99,32 @@ data in a per-instance WeakMap. Buttons write their on value while pressed and t
 The wave plugin owns `@wave`, `@wave2`, and `@wave4`, including their layout space, typed samples, playheads, and drawing.
 The piano plugin owns `@piano`, key geometry, runtime note toggling, drawing, and its save-to-code menu action.
 The slider plugin owns `@slider`, its geometry, drag interaction, live drawing, and save-to-code menu action.
+Meter, plot, and bars plugins own their typed-memory visualization and layout. Crossfade owns its float-memory
+interaction and drawer. Watch and stack own separate inline value overlays; their factories receive a
+`prefersReducedMotion` function from the host. None of these features adds fields to core code-block state.
 The screenshot plugin owns the main-menu action, temporary overlay visibility, PNG encoding, and browser file saving.
+The project-export plugin owns project Save/Export actions, its main-menu item, and the Cmd/Ctrl+S listener on its
+injected `inputTarget`. Its save/export functions come from the browser host. The WebAssembly-export plugin owns
+its main-menu item and action, with file writing supplied by the host.
 The execution-toggle plugin owns the Skip/Unskip menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
 layout, animation, and overlay drawing, with its state private to each installation. Group execution toggling and
 nested block shading remain built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
 
+The favorite-toggle plugin owns Favorite/Unfavorite editing and its block-menu item. Favorite directive derivation
+and Jump to navigation remain in core. The memory-connection-removal plugin owns its block-menu item, enabled
+state, and source transformation for disconnecting intermodular memory defaults. Both receive the clicked block
+through their action payload and respect edit mode; their menu entries disappear when the plugins are omitted.
+The public `removeDirective` helper edits generic directive comments without coupling core to either action.
+
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
-and compiled-function lookup helpers. Its `/memory` entry
+tab-aware text measurement, module identity, and compiled-function lookup helpers. Its `/memory` entry
 exports memory scope, identifier, element-count, and typed-value resolution, plus `getMemoryDefaultEdits` for rewriting
 resolved memory defaults in their source modules. Each group of values is edited together, even across module owners.
 Plugins use these public exports rather than importing core files.
+`serializeToProject`, `serializeProjectTo8f4e`, and `getExportBaseName` provide shared project serialization and naming;
+`logError` records failures in the editor console. These helpers, filename configuration, and session autosaving
+remain available independently of the export plugins.
+Serialization lives under `pureHelpers/projectSerialization`; filename configuration belongs to `features/editor-config`.
 
 ## Project loading
 

@@ -12,10 +12,12 @@ const storeState: {
 	globalEditorDirectives: Record<string, unknown>;
 	editorConfig: Record<string, unknown>;
 	info: Record<string, unknown>;
+	viewport: { hGrid: number; vGrid: number };
 } = {
 	globalEditorDirectives: {},
 	editorConfig: {},
 	info: {},
+	viewport: { hGrid: 16, vGrid: 8 },
 };
 
 const store = {
@@ -37,7 +39,7 @@ const store = {
 
 const view = {
 	resize: vi.fn(() => true),
-	loadSpriteAtlas: vi.fn(),
+	loadFontAtlas: vi.fn(),
 	pauseRendering: vi.fn(),
 	releaseRenderingResources: vi.fn(),
 	resumeRendering: vi.fn(),
@@ -48,7 +50,6 @@ const view = {
 
 const renderProjection = {
 	getSnapshot: vi.fn(() => ({ codeBlocks: new Map() })),
-	refresh: vi.fn(),
 	dispose: vi.fn(),
 };
 
@@ -73,13 +74,8 @@ vi.mock('@8f4e/web-ui', async importOriginal => ({
 vi.mock('@8f4e/sprite-generator', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/sprite-generator')>()),
 	default: vi.fn(async () => ({
-		spriteAtlas: {
-			image: {} as OffscreenCanvas,
-			lookup: {},
-			spriteIdentifiers: {},
-		},
-		characterWidth: 8,
-		characterHeight: 16,
+		image: { width: 128, height: 144, data: new Uint8Array(128 * 144) },
+		grid: { cellWidth: 8, cellHeight: 16, columns: 16, cellCount: 129 },
 	})),
 }));
 
@@ -110,11 +106,11 @@ describe('editor init', () => {
 			const { default: init } = await import('./index');
 			const { default: initState } = await import('@8f4e/editor-state');
 			const { default: initView } = await import('@8f4e/web-ui');
-			const { default: generateSprite } = await import('@8f4e/sprite-generator');
+			const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
 			const actualState = await vi.importActual<typeof import('@8f4e/editor-state')>('@8f4e/editor-state');
 			vi.mocked(initState).mockImplementationOnce(actualState.default);
 			const error = new Error(`${stage} unavailable`);
-			if (stage === 'sprites') vi.mocked(generateSprite).mockRejectedValueOnce(error);
+			if (stage === 'sprites') vi.mocked(loadFontAtlas).mockRejectedValueOnce(error);
 			else vi.mocked(initView).mockRejectedValueOnce(error);
 			const cleanup = vi.fn();
 			const setup = vi.fn(() => cleanup);
@@ -168,7 +164,7 @@ describe('editor init', () => {
 			plugins[0].setup.mock.invocationCallOrder[0]
 		);
 		expect(plugins[0].setup.mock.invocationCallOrder[0]).toBeLessThan(events.dispatch.mock.invocationCallOrder[0]);
-		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![5]!.drawers!;
+		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![6]!.drawers!;
 		expect(rendererDrawers).toBe(plugins[0].setup.mock.calls[0][0].drawers);
 		const drawContext = {} as Parameters<typeof rendererDrawers.drawCodeBlock>[0];
 		rendererDrawers.drawCodeBlock(drawContext);
@@ -424,7 +420,7 @@ describe('editor init', () => {
 		});
 
 		const viewCall = vi.mocked(initView).mock.calls.at(-1)!;
-		const viewOptions = viewCall[5]!;
+		const viewOptions = viewCall[6]!;
 		const initStateOptions = vi.mocked(initState).mock.calls.at(-1)![1];
 		expect(viewCall[1]).toBe(renderProjection);
 		viewOptions.onRenderStats?.({

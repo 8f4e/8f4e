@@ -5,7 +5,7 @@ export { createASTCache } from './cache';
 import { hashSource } from './cache';
 import { mainTokenizerLoop } from './mainTokenizerLoop';
 
-export { parseLine } from './parseLine';
+export { parseInstructionTokens, parseLine } from './parseLine';
 export { parseProjectConstantNamespacePassLine } from './parseProjectConstantNamespacePassLine';
 export { parseProjectMemoryInitializerLine } from './parseProjectMemoryInitializerLine';
 

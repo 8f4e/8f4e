@@ -3,7 +3,7 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
-import convertGraphicDataToProjectStructure from '../../../project-export/serializeCodeBlocks';
+import convertGraphicDataToProjectStructure from '../../../../pureHelpers/projectSerialization/serializeCodeBlocks';
 import groupCopier from '../group/copier/effect';
 import codeBlockCreator from './effect';
 

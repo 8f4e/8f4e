@@ -1,10 +1,11 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
+import loadFontAtlas from '@8f4e/sprite-generator';
 import init from '@8f4e/web-ui';
 import { deriveCodeBlockCodeCells, type WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
-import createMockSpriteData from './utils/createMockSpriteData';
 import createMockStateWithColors from './utils/createMockStateWithColors';
 
 test('assertions cover line numbers without covering instructions', async () => {
@@ -63,12 +64,19 @@ test('assertions cover line numbers without covering instructions', async () => 
 			codeBlocks: new Map(
 				state.codeBlockRendering.codeBlocks.map(block => [
 					block.creationIndex,
-					{ codeCells: deriveCodeBlockCodeCells(block, state.spriteLookups!) },
+					{ codeCells: deriveCodeBlockCodeCells(block) },
 				])
 			),
 		}),
 	};
-	const renderer = await init(state, renderData, canvas, createMockMemoryViews(), await createMockSpriteData(state));
+	const renderer = await init(
+		state,
+		renderData,
+		canvas,
+		createMockMemoryViews(),
+		await loadFontAtlas(state.editorConfig.font),
+		resolvePalette(state.editorConfig.color)
+	);
 	try {
 		renderer.pauseRendering();
 		renderer.renderFrame();
@@ -112,12 +120,17 @@ test('assertion failures show expected and received values', async () => {
 	state.codeBlockRendering.codeBlocks = [block];
 	const renderData: WebUiRenderDataSource = {
 		getSnapshot: () => ({
-			codeBlocks: new Map([
-				[block.creationIndex, { codeCells: deriveCodeBlockCodeCells(block, state.spriteLookups!) }],
-			]),
+			codeBlocks: new Map([[block.creationIndex, { codeCells: deriveCodeBlockCodeCells(block) }]]),
 		}),
 	};
-	const renderer = await init(state, renderData, canvas, createMockMemoryViews(), await createMockSpriteData(state));
+	const renderer = await init(
+		state,
+		renderData,
+		canvas,
+		createMockMemoryViews(),
+		await loadFontAtlas(state.editorConfig.font),
+		resolvePalette(state.editorConfig.color)
+	);
 	try {
 		renderer.pauseRendering();
 		renderer.renderFrame();

@@ -1,4 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { createSwitchDirective, type SwitchWidget } from './directive';
 
@@ -9,18 +10,16 @@ export const switchPlugin: EditorPlugin = {
 		const widgets = new WeakMap<CodeBlockGraphicData, SwitchWidget[]>();
 		const unregisterDirective = directives.register(createSwitchDirective(widgets));
 		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
-			const sprites = state.spriteLookups;
-			if (!sprites) return;
 			for (const control of widgets.get(codeBlock) ?? []) {
 				const value = memoryViews.int32[control.allocationUnitAddress] || 0;
 				if (value === control.onValue || value === control.offValue) {
 					const isOn = value === control.onValue;
 					const knobX = control.x + state.viewport.vGrid * (isOn ? 2 : 1);
-					draw.drawSprite(control.x, control.y, sprites.fillColors.primaryDark2, control.width, control.height);
-					draw.drawSprite(knobX, control.y, sprites.fillColors.inkBase, state.viewport.vGrid, control.height);
-					draw.drawText(control.x, control.y, isOn ? '[ |]' : '[| ]', sprites.fontInkOn);
+					draw.drawFill(control.x, control.y, PALETTE_INDICES.accentSurface, control.width, control.height);
+					draw.drawFill(knobX, control.y, PALETTE_INDICES.lightBase, state.viewport.vGrid, control.height);
+					draw.drawText(control.x, control.y, isOn ? '[ |]' : '[| ]', PALETTE_INDICES.darkBase);
 				} else {
-					draw.drawText(control.x, control.y, '[__]', sprites.fontSecondaryBase);
+					draw.drawText(control.x, control.y, '[__]', PALETTE_INDICES.secondaryBase);
 				}
 			}
 		});

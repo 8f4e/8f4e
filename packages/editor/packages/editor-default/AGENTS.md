@@ -5,8 +5,10 @@
 - Export composition APIs without mounting as an import side effect.
 - Compose the standard plugin set here and expose host overrides through `plugins`; keep feature logic in its
   plugin package and generic plugin installation in editor-core.
-- Construct the standard set with `createDefaultEditorPlugins({ canvas, renderFrame })` per mounted editor. Inject
-  browser dependencies into plugin factories here; render callbacks run after initialization.
+- Construct the standard set with `createDefaultEditorPlugins` per mounted editor, supplying the canvas, render
+  callback, project save/export callbacks, and WebAssembly export callback. Render callbacks run after initialization.
+- Keep one project file service shared by Open, Save, and Export so imported handles and Save As destinations stay
+  associated with the editor. Pass file-writing callbacks to plugin factories, not core state.
 - Keep generic editor behavior in `@8f4e/editor-core` and website/deployment concerns in `@8f4e/editor-website`.
 - Run `npx nx run @8f4e/editor-default:build|test|typecheck` after changing this package.
 - The Vite build uses standard TypeScript and asset handling; project-authored GLSL effects are not supported.
@@ -16,3 +18,8 @@
 - Example module metadata comes from file paths without loading source text. Keep existing filename-based slugs,
   titles, and categories; reject duplicate slugs. Modules load as local lazy chunks and ship with each host's build.
 - Keep `@8f4e/examples` as a dependency so its generators run before discovery and its sources affect build caching.
+
+- Compose meter, plot, bars, crossfade, watch, and stack with the default plugin set. Supply watch/stack factories
+  with a live reduced-motion preference from the browser; install their overlays before tooltips.
+- Include `toggleFavoritePlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Core does
+  not install these editing actions or their menus.

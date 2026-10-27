@@ -1,6 +1,7 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
-import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../__tests__/rendering';
+import { describe, expect, it, vi } from 'vitest';
+import { createDrawContextMock } from '../__tests__/rendering';
 import type { ButtonWidget } from '../types';
 import drawButton from './drawButton';
 
@@ -18,10 +19,6 @@ const control: ButtonWidget = {
 function createTestState() {
 	return createMockState({
 		viewport: { vGrid: 8, hGrid: 16 },
-		spriteLookups: {
-			fillColors: createSpriteIdLookupMock(),
-			fontInkOn: createSpriteIdLookupMock(),
-		} as never,
 	});
 }
 
@@ -32,13 +29,13 @@ describe('drawButton', () => {
 
 		drawButton(engine, state, control, false);
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
+		const drawSprite = vi.mocked(engine.drawFill);
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 		expect(drawSprite.mock.calls).toEqual([
-			[10, 20, 'primaryDark2', 32, 16],
-			[18, 20, 'inkBase', 8, 16],
+			[10, 20, PALETTE_INDICES.accentSurface, 32, 16],
+			[18, 20, PALETTE_INDICES.lightBase, 8, 16],
 		]);
-		expect(drawText).toHaveBeenCalledWith(10, 20, '[| ]', state.spriteLookups?.fontInkOn);
+		expect(drawText).toHaveBeenCalledWith(10, 20, '[| ]', PALETTE_INDICES.darkBase);
 	});
 
 	it('moves the knob fill and vertical bar to the on position', () => {
@@ -47,12 +44,12 @@ describe('drawButton', () => {
 
 		drawButton(engine, state, control, true);
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
+		const drawSprite = vi.mocked(engine.drawFill);
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 		expect(drawSprite.mock.calls).toEqual([
-			[10, 20, 'primaryDark2', 32, 16],
-			[26, 20, 'inkBase', 8, 16],
+			[10, 20, PALETTE_INDICES.accentSurface, 32, 16],
+			[26, 20, PALETTE_INDICES.lightBase, 8, 16],
 		]);
-		expect(drawText).toHaveBeenCalledWith(10, 20, '[ |]', state.spriteLookups?.fontInkOn);
+		expect(drawText).toHaveBeenCalledWith(10, 20, '[ |]', PALETTE_INDICES.darkBase);
 	});
 });

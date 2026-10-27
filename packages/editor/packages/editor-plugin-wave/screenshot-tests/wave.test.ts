@@ -1,6 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import { resolvePalette } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import generateSprite from '@8f4e/sprite-generator';
+import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
@@ -57,12 +58,19 @@ entryEnd`);
 	for (let index = 0; index < 64; index++)
 		memoryViews.float32[memory.samples.allocationUnitAddress + index] = Math.sin((index * Math.PI * 4) / 63);
 	memoryViews.int32[memory.playhead.allocationUnitAddress] = memory.samples.byteAddress + 40 * 4;
-	const spriteData = await generateSprite({ font: state.editorConfig.font, palette: state.editorConfig.color });
+	const spriteData = await loadFontAtlas(state.editorConfig.font);
 	const projection = createWebUiRenderProjection(store, events);
-	const renderer = await initView(state, projection, canvas, memoryViews, spriteData, { drawers });
+	const renderer = await initView(
+		state,
+		projection,
+		canvas,
+		memoryViews,
+		spriteData,
+		resolvePalette(state.editorConfig.color),
+		{ drawers }
+	);
 	renderer.pauseRendering();
 	events.dispatch('spriteSheetRerendered');
-	projection.refresh();
 	try {
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();

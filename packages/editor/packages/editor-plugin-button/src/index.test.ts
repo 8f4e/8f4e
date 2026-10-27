@@ -1,9 +1,10 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
-import { createDrawContextMock, createSpriteIdLookupMock } from './__tests__/rendering';
+import { createDrawContextMock } from './__tests__/rendering';
 import { buttonPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
@@ -47,15 +48,10 @@ async function setup(code = source, installed = true, name = 'controls') {
 	state.compiler.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
-	state.spriteLookups = {
-		fillColors: createSpriteIdLookupMock(),
-		fontInkOn: createSpriteIdLookupMock(),
-		fontSecondaryBase: createSpriteIdLookupMock(),
-	} as never;
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
-		vi.mocked(draw.drawSprite).mockClear();
+		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawText).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
@@ -77,17 +73,17 @@ describe('button plugin', () => {
 		const test = await setup();
 		test.render();
 		const x = test.codeBlock.width - 32;
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, x, 32, 'primaryDark2', 32, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', test.state.spriteLookups!.fontInkOn);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, x, 32, PALETTE_INDICES.accentSurface, 32, 16);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', PALETTE_INDICES.darkBase);
 		test.press();
 		test.render();
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(2, x + 16, 32, 'inkBase', 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', test.state.spriteLookups!.fontInkOn);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 16, 32, PALETTE_INDICES.lightBase, 8, 16);
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', PALETTE_INDICES.darkBase);
 		const address = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		test.memoryViews.int32[address] = 7;
 		test.render();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[__]', test.state.spriteLookups!.fontSecondaryBase);
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
+		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[__]', PALETTE_INDICES.secondaryBase);
 	});
 
 	it.each([true, false])('presses and releases through pointer events with editing=%s', async editing => {
@@ -108,21 +104,11 @@ describe('button plugin', () => {
 		const address = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		test.memoryViews.float32[address] = 0.1;
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(
-			expect.any(Number),
-			32,
-			'[| ]',
-			test.state.spriteLookups!.fontInkOn
-		);
+		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[| ]', PALETTE_INDICES.darkBase);
 		test.press();
 		test.render();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0.9, false);
-		expect(test.draw.drawText).toHaveBeenCalledWith(
-			expect.any(Number),
-			32,
-			'[ |]',
-			test.state.spriteLookups!.fontInkOn
-		);
+		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[ |]', PALETTE_INDICES.darkBase);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0.1, false);
 	});
@@ -152,7 +138,7 @@ describe('button plugin', () => {
 		test.write.mockClear();
 		test.press();
 		test.render();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
 	});
 
@@ -162,7 +148,14 @@ describe('button plugin', () => {
 		test.state.viewport.hGrid = 20;
 		test.events.dispatch('spriteSheetRerendered');
 		test.render();
-		expect(test.draw.drawSprite).toHaveBeenNthCalledWith(1, test.codeBlock.width - 40, 40, 'primaryDark2', 40, 20);
+		expect(test.draw.drawFill).toHaveBeenNthCalledWith(
+			1,
+			test.codeBlock.width - 40,
+			40,
+			PALETTE_INDICES.accentSurface,
+			40,
+			20
+		);
 		test.press();
 		expect(test.write).toHaveBeenCalledOnce();
 	});
@@ -235,7 +228,7 @@ describe('button plugin', () => {
 		test.write.mockClear();
 		test.press();
 		test.render();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
 	});
 
@@ -245,7 +238,7 @@ describe('button plugin', () => {
 			const test = await setup(['module controls', 'int gate 0', line, 'moduleEnd']);
 			test.render();
 			test.press();
-			expect(test.draw.drawSprite).not.toHaveBeenCalled();
+			expect(test.draw.drawFill).not.toHaveBeenCalled();
 			expect(test.write).not.toHaveBeenCalled();
 		}
 	);
@@ -260,7 +253,7 @@ describe('button plugin', () => {
 		test.release();
 		test.render();
 		expect(test.write).not.toHaveBeenCalled();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});
 
 	it('releases a held button and unregisters its listeners, directive, and drawer on disposal', async () => {
@@ -273,7 +266,7 @@ describe('button plugin', () => {
 		test.release();
 		test.render();
 		expect(test.write).not.toHaveBeenCalled();
-		expect(test.draw.drawSprite).not.toHaveBeenCalled();
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});
 
 	it('keeps button data and held state independent across editors', async () => {
@@ -285,11 +278,6 @@ describe('button plugin', () => {
 		first.dispose();
 		second.press();
 		second.render();
-		expect(second.draw.drawText).toHaveBeenCalledWith(
-			expect.any(Number),
-			32,
-			'[ |]',
-			second.state.spriteLookups!.fontInkOn
-		);
+		expect(second.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[ |]', PALETTE_INDICES.darkBase);
 	});
 });

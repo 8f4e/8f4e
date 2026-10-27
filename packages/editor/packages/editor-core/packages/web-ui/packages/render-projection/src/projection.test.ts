@@ -1,9 +1,13 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { SpriteIdLookups } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
+import type { SpriteId } from 'glugglugglug';
 import { describe, expect, it, vi } from 'vitest';
 import createWebUiRenderProjection from './projection';
+import { createSpriteCell } from './spriteCell';
+
+const cell = (id: number, color: number) => createSpriteCell(id as SpriteId, color);
 
 describe('createWebUiRenderProjection', () => {
 	it('subscribes beside editor-state and publishes render data by runtime id', () => {
@@ -21,18 +25,8 @@ describe('createWebUiRenderProjection', () => {
 			},
 			gaps: new Map(),
 		});
-		const font = new Proxy({ 63: 63 }, { get: (target, key) => target[Number(key) as 63] ?? Number(key) });
 		const state = createMockState({
 			codeBlockRendering: { codeBlocks: [block] },
-			spriteLookups: {
-				fontInkBase: font,
-				fontInkFaint: font,
-				fontMutedBase: font,
-				fontTertiaryBase: font,
-				fontPrimaryBase: font,
-				fontPrimaryStrong: font,
-				fontSecondaryBase: font,
-			} as SpriteIdLookups,
 		});
 		const subscriptions = new Map<string, () => void>();
 		const store = {
@@ -44,9 +38,11 @@ describe('createWebUiRenderProjection', () => {
 
 		const projection = createWebUiRenderProjection(store, events);
 
-		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells[0]?.at(-1)).toBe(120);
+		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells[0]?.at(-1)).toEqual(
+			cell(120, PALETTE_INDICES.inkBase)
+		);
 		expect(store.subscribe).toHaveBeenCalledWith('codeBlockRendering', expect.any(Function));
-		expect(events.on).toHaveBeenCalledWith('spriteSheetRerendered', expect.any(Function));
+		expect(events.on).toHaveBeenCalledWith('runtimeInitialized', expect.any(Function));
 
 		block.code = ['y'];
 		block.displayModel = {
@@ -56,10 +52,17 @@ describe('createWebUiRenderProjection', () => {
 			isCollapsed: false,
 		};
 		subscriptions.get('codeBlockRendering')?.();
-		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells[0]?.at(-1)).toBe(121);
+		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells[0]?.at(-1)).toEqual(
+			cell(121, PALETTE_INDICES.inkBase)
+		);
+
+		block.gaps = new Map([[0, { size: 2 }]]);
+		const fontChanged = vi.mocked(events.on).mock.calls.find(([name]) => name === 'spriteSheetRerendered')?.[1];
+		fontChanged?.({});
+		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells).toHaveLength(3);
 
 		projection.dispose();
 		expect(store.unsubscribe).toHaveBeenCalledWith('codeBlockRendering', expect.any(Function));
-		expect(events.off).toHaveBeenCalledWith('spriteSheetRerendered', expect.any(Function));
+		expect(events.off).toHaveBeenCalledWith('runtimeInitialized', expect.any(Function));
 	});
 });

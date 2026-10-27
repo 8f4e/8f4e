@@ -1,8 +1,8 @@
-import { createMockState } from '@8f4e/editor-state-testing';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { DrawContext as Engine, MemoryViews } from '@8f4e/web-ui';
-import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../__tests__/rendering';
+import { describe, expect, it, vi } from 'vitest';
+import { createDrawContextMock } from '../__tests__/rendering';
 import type { PianoKeyboard } from '../types';
 import { drawPianoKeyboards } from './draw';
 
@@ -95,85 +95,49 @@ function createPianoKeyboard(overrides: Partial<PianoKeyboard> = {}): PianoKeybo
 describe('drawPianoKeyboards', () => {
 	it('draws piano keys as fill-color rectangles', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			viewport: {
-				vGrid: 1,
-				hGrid: 4,
-			},
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontInkBase: createSpriteIdLookupMock(),
-				fontDarkOverlaySoft: createSpriteIdLookupMock(),
-				fontPrimaryOverlay: createSpriteIdLookupMock(),
-			} as never,
-		});
 		const keyboards = [createPianoKeyboard()];
 
-		drawPianoKeyboards(engine, state, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 49] }));
+		drawPianoKeyboards(engine, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 49] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
+		const drawSprite = vi.mocked(engine.drawFill);
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 
 		expect(engine.startGroup).toHaveBeenCalledWith(2, 3);
-		expect(drawSprite).toHaveBeenCalledWith(0, 4, 'lightBase', 2, 20);
-		expect(drawSprite).toHaveBeenCalledWith(2, 4, 'darkBase', 2, 12);
-		expect(drawSprite).toHaveBeenCalledWith(2, 16, 'lightBase', 2, 8);
-		expect(drawSprite).toHaveBeenCalledWith(2.75, 16, 'darkBase', 0.5, 8);
-		expect(drawSprite).toHaveBeenCalledWith(4, 4, 'lightBase', 2, 20);
-		expect(drawText).toHaveBeenCalledWith(0, 4, ';;', state.spriteLookups?.fontDarkOverlaySoft);
-		expect(drawText).toHaveBeenCalledWith(0, 8, ';;', state.spriteLookups?.fontDarkOverlaySoft);
-		expect(drawText).toHaveBeenCalledWith(0, 12, ';;', state.spriteLookups?.fontDarkOverlaySoft);
-		expect(drawText).toHaveBeenCalledWith(0, 16, ';;', state.spriteLookups?.fontDarkOverlaySoft);
-		expect(drawText).toHaveBeenCalledWith(0, 20, ';;', state.spriteLookups?.fontDarkOverlaySoft);
-		expect(drawText).toHaveBeenCalledWith(2, 4, ';;', state.spriteLookups?.fontPrimaryOverlay);
-		expect(drawText).toHaveBeenCalledWith(2, 8, ';;', state.spriteLookups?.fontPrimaryOverlay);
-		expect(drawText).toHaveBeenCalledWith(2, 12, ';;', state.spriteLookups?.fontPrimaryOverlay);
+		expect(drawSprite).toHaveBeenCalledWith(0, 4, PALETTE_INDICES.lightBase, 2, 20);
+		expect(drawSprite).toHaveBeenCalledWith(2, 4, PALETTE_INDICES.darkBase, 2, 12);
+		expect(drawSprite).toHaveBeenCalledWith(2, 16, PALETTE_INDICES.lightBase, 2, 8);
+		expect(drawSprite).toHaveBeenCalledWith(2.75, 16, PALETTE_INDICES.darkBase, 0.5, 8);
+		expect(drawSprite).toHaveBeenCalledWith(4, 4, PALETTE_INDICES.lightBase, 2, 20);
+		expect(drawText).toHaveBeenCalledWith(0, 4, ';;', PALETTE_INDICES.darkOverlaySoft);
+		expect(drawText).toHaveBeenCalledWith(0, 8, ';;', PALETTE_INDICES.darkOverlaySoft);
+		expect(drawText).toHaveBeenCalledWith(0, 12, ';;', PALETTE_INDICES.darkOverlaySoft);
+		expect(drawText).toHaveBeenCalledWith(0, 16, ';;', PALETTE_INDICES.darkOverlaySoft);
+		expect(drawText).toHaveBeenCalledWith(0, 20, ';;', PALETTE_INDICES.darkOverlaySoft);
+		expect(drawText).toHaveBeenCalledWith(2, 4, ';;', PALETTE_INDICES.primaryOverlay);
+		expect(drawText).toHaveBeenCalledWith(2, 8, ';;', PALETTE_INDICES.primaryOverlay);
+		expect(drawText).toHaveBeenCalledWith(2, 12, ';;', PALETTE_INDICES.primaryOverlay);
 		expect(drawText).not.toHaveBeenCalledWith(2, 16, ';;');
 		expect(drawText).not.toHaveBeenCalledWith(2, 20, ';;');
 	});
 
 	it('does not draw pressed overlays when runtime memory has no pressed count', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			viewport: {
-				vGrid: 1,
-				hGrid: 4,
-			},
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontInkBase: createSpriteIdLookupMock(),
-				fontDarkOverlaySoft: createSpriteIdLookupMock(),
-				fontPrimaryOverlay: createSpriteIdLookupMock(),
-			} as never,
-		});
 		const keyboards = [createPianoKeyboard()];
 
-		drawPianoKeyboards(engine, state, keyboards, createMemoryViews({ int32: [0, 0, 0, 0, 0, 0] }));
+		drawPianoKeyboards(engine, keyboards, createMemoryViews({ int32: [0, 0, 0, 0, 0, 0] }));
 
-		const drawSprite = (engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite;
+		const drawSprite = vi.mocked(engine.drawFill);
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 
-		expect(drawSprite).toHaveBeenCalledWith(4, 4, 'lightBase', 2, 20);
+		expect(drawSprite).toHaveBeenCalledWith(4, 4, PALETTE_INDICES.lightBase, 2, 20);
 		expect(drawText).not.toHaveBeenCalledWith(expect.any(Number), expect.any(Number), ';;');
 	});
 
 	it('draws duplicate runtime notes directly without normalizing pressed keys', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			viewport: {
-				vGrid: 1,
-				hGrid: 4,
-			},
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontInkBase: createSpriteIdLookupMock(),
-				fontDarkOverlaySoft: createSpriteIdLookupMock(),
-				fontPrimaryOverlay: createSpriteIdLookupMock(),
-			} as never,
-		});
 		const keyboards = [createPianoKeyboard()];
 
-		drawPianoKeyboards(engine, state, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 48] }));
+		drawPianoKeyboards(engine, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 48] }));
 
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 		const overlayCalls = drawText.mock.calls.filter(call => call[2] === ';;');
