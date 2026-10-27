@@ -1,6 +1,5 @@
 import type { PaletteIndex } from '@8f4e/editor-palette';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { Plot } from '../types';
 
@@ -78,20 +77,12 @@ function drawDensePlot(
 	}
 }
 
-export default function drawPlot(
-	engine: DrawContext,
-	state: State,
-	codeBlock: CodeBlockGraphicData,
-	plots: Plot[],
-	memoryViews: MemoryViews
-): void {
+export default function drawPlot(engine: DrawContext, plots: Plot[], memoryViews: MemoryViews): void {
 	const colors = PALETTE_INDICES;
 
-	const maxPlotterWidth = codeBlock.width - state.viewport.hGrid * 2;
-	const plotHeight = state.viewport.hGrid * 8;
 	const pointHeight = 1;
 
-	for (const { x, y, startAddress, baseSampleShift, length, valueType, maxValue, minValue } of plots) {
+	for (const { x, y, width, height, startAddress, baseSampleShift, length, valueType, maxValue, minValue } of plots) {
 		engine.startGroup(x, y);
 
 		const baseValueIndex =
@@ -107,13 +98,13 @@ export default function drawPlot(
 			engine.endGroup();
 			continue;
 		}
-		const sampleCount = Math.min(arrayLength, maxPlotterWidth);
+		const sampleCount = Math.min(arrayLength, width);
 		const valueRange = maxValue - minValue;
-		const columnWidth = Math.max(1, Math.floor(maxPlotterWidth / Math.max(sampleCount, 1)));
-		const isDense = arrayLength > maxPlotterWidth;
-		const plotWidth = isDense ? maxPlotterWidth : sampleCount * columnWidth;
+		const columnWidth = Math.max(1, Math.floor(width / Math.max(sampleCount, 1)));
+		const isDense = arrayLength > width;
+		const plotWidth = isDense ? width : sampleCount * columnWidth;
 
-		engine.drawFill(0, 0, colors.darkSurface, plotWidth, plotHeight);
+		engine.drawFill(0, 0, colors.darkSurface, plotWidth, height);
 
 		if (isDense) {
 			drawDensePlot(
@@ -121,8 +112,8 @@ export default function drawPlot(
 				values,
 				baseValueIndex,
 				arrayLength,
-				maxPlotterWidth,
-				plotHeight,
+				width,
+				height,
 				pointHeight,
 				minValue,
 				maxValue,
@@ -136,7 +127,7 @@ export default function drawPlot(
 				baseValueIndex,
 				sampleCount,
 				columnWidth,
-				plotHeight,
+				height,
 				pointHeight,
 				minValue,
 				valueRange,

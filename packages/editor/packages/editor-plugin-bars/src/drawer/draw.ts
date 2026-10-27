@@ -15,26 +15,17 @@ function valueToBarHeight(value: number, minValue: number, inverseValueRange: nu
 	return Math.round(normalized * height);
 }
 
-function getBaseValueIndex(bars: Bars, memoryViews: MemoryViews): number {
-	if (bars.staticBaseValueIndex !== undefined) {
-		return bars.staticBaseValueIndex;
-	}
-
-	const { startAddress, baseSampleShift } = bars;
-	const address = startAddress.showAddress
-		? startAddress.memory.byteAddress
-		: memoryViews.int32[startAddress.memory.allocationUnitAddress + startAddress.bufferPointer];
-	return address >> baseSampleShift;
-}
-
 export default function drawBars(engine: DrawContext, displays: Bars[], memoryViews: MemoryViews): void {
 	const colors = PALETTE_INDICES;
 
 	for (const bars of displays) {
-		const { x, y, width, height, length, valueType, minValue, inverseValueRange, staticColumnLayout } = bars;
+		const { x, y, width, height, startAddress, baseSampleShift, length, valueType, minValue, inverseValueRange } = bars;
 		engine.startGroup(x, y);
 
-		const baseValueIndex = getBaseValueIndex(bars, memoryViews);
+		const baseValueIndex =
+			(startAddress.showAddress
+				? startAddress.memory.byteAddress
+				: memoryViews.int32[startAddress.memory.allocationUnitAddress + startAddress.bufferPointer]) >> baseSampleShift;
 		const values = memoryViews[valueType];
 		const arrayLength =
 			typeof length === 'number'
@@ -48,25 +39,15 @@ export default function drawBars(engine: DrawContext, displays: Bars[], memoryVi
 			continue;
 		}
 
-		const columnLayout =
-			staticColumnLayout && typeof length === 'number'
-				? staticColumnLayout
-				: Array.from({ length: Math.min(arrayLength, width) }, (_, column) => {
-						const columnCount = Math.min(arrayLength, width);
-						const columnWidth = Math.max(1, Math.floor(width / Math.max(columnCount, 1)));
-						const sliceStart = Math.floor((column / columnCount) * arrayLength);
-						return {
-							x: column * columnWidth,
-							width: columnWidth,
-							sliceStart,
-							sliceEnd: Math.max(sliceStart + 1, Math.floor(((column + 1) / columnCount) * arrayLength)),
-						};
-					});
+		const columnCount = Math.min(arrayLength, width);
+		const columnWidth = Math.max(1, Math.floor(width / Math.max(columnCount, 1)));
 
-		for (const column of columnLayout) {
+		for (let column = 0; column < columnCount; column++) {
+			const sliceStart = Math.floor((column / columnCount) * arrayLength);
+			const sliceEnd = Math.max(sliceStart + 1, Math.floor(((column + 1) / columnCount) * arrayLength));
 			let sliceMax = Number.NEGATIVE_INFINITY;
 
-			for (let index = column.sliceStart; index < column.sliceEnd; index++) {
+			for (let index = sliceStart; index < sliceEnd; index++) {
 				sliceMax = Math.max(sliceMax, values[baseValueIndex + index]);
 			}
 
@@ -75,9 +56,9 @@ export default function drawBars(engine: DrawContext, displays: Bars[], memoryVi
 				continue;
 			}
 
-			const barX = column.x;
+			const barX = column * columnWidth;
 			const barY = height - barHeight;
-			engine.drawFill(barX, barY, colors.detailBase, column.width, barHeight);
+			engine.drawFill(barX, barY, colors.detailBase, columnWidth, barHeight);
 		}
 
 		engine.endGroup();

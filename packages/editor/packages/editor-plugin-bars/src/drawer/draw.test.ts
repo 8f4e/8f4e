@@ -29,13 +29,6 @@ function createBarsWidget(overrides: Partial<Bars> = {}): Bars {
 		height: 8,
 		minValue: 0,
 		inverseValueRange: 1,
-		staticBaseValueIndex: 0,
-		staticColumnLayout: [
-			{ x: 0, width: 2, sliceStart: 0, sliceEnd: 1 },
-			{ x: 2, width: 2, sliceStart: 1, sliceEnd: 2 },
-			{ x: 4, width: 2, sliceStart: 2, sliceEnd: 3 },
-			{ x: 6, width: 2, sliceStart: 3, sliceEnd: 4 },
-		],
 		startAddress: {
 			showAddress: true,
 			bufferPointer: 0,
@@ -68,12 +61,6 @@ describe('drawBars', () => {
 		const values: Bars[] = [
 			createBarsWidget({
 				width: 4,
-				staticColumnLayout: [
-					{ x: 0, width: 1, sliceStart: 0, sliceEnd: 2 },
-					{ x: 1, width: 1, sliceStart: 2, sliceEnd: 4 },
-					{ x: 2, width: 1, sliceStart: 4, sliceEnd: 6 },
-					{ x: 3, width: 1, sliceStart: 6, sliceEnd: 8 },
-				],
 				length: 8,
 			}),
 		];

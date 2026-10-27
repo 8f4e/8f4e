@@ -1,5 +1,4 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { DrawContext as Engine, MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { createMemory } from '../__tests__/memory';
@@ -26,17 +25,12 @@ function createMockEngine(): Engine {
 describe('drawPlotters', () => {
 	it('renders one sample per point for short arrays', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			viewport: {
-				hGrid: 4,
-				vGrid: 8,
-			},
-		});
-		const codeBlock = createMockCodeBlock({ width: 20 });
 		const values: Plot[] = [
 			{
 				x: 0,
 				y: 0,
+				width: 12,
+				height: 32,
 				startAddress: {
 					showAddress: true,
 					bufferPointer: 0,
@@ -50,7 +44,7 @@ describe('drawPlotters', () => {
 			},
 		];
 
-		drawPlotters(engine, state, codeBlock, values, createMemoryViews({ int8: [0, 1, 2, 3] }));
+		drawPlotters(engine, values, createMemoryViews({ int8: [0, 1, 2, 3] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 12, 32);
@@ -62,17 +56,12 @@ describe('drawPlotters', () => {
 
 	it('matches sparse background width to the rendered trace width', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			viewport: {
-				hGrid: 4,
-				vGrid: 8,
-			},
-		});
-		const codeBlock = createMockCodeBlock({ width: 21 });
 		const values: Plot[] = [
 			{
 				x: 0,
 				y: 0,
+				width: 13,
+				height: 32,
 				startAddress: {
 					showAddress: true,
 					bufferPointer: 0,
@@ -86,7 +75,7 @@ describe('drawPlotters', () => {
 			},
 		];
 
-		drawPlotters(engine, state, codeBlock, values, createMemoryViews({ int8: [0, 1, 2, 3] }));
+		drawPlotters(engine, values, createMemoryViews({ int8: [0, 1, 2, 3] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 12, 32);
@@ -95,17 +84,12 @@ describe('drawPlotters', () => {
 
 	it('renders dense arrays as per-column min/max envelopes instead of truncating', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			viewport: {
-				hGrid: 4,
-				vGrid: 8,
-			},
-		});
-		const codeBlock = createMockCodeBlock({ width: 20 });
 		const values: Plot[] = [
 			{
 				x: 0,
 				y: 0,
+				width: 12,
+				height: 32,
 				startAddress: {
 					showAddress: true,
 					bufferPointer: 0,
@@ -120,7 +104,7 @@ describe('drawPlotters', () => {
 		];
 
 		const samples = Array.from({ length: 24 }, (_, index) => (index % 2 === 0 ? 0 : 10));
-		drawPlotters(engine, state, codeBlock, values, createMemoryViews({ int8: samples }));
+		drawPlotters(engine, values, createMemoryViews({ int8: samples }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		const traceCalls = drawSprite.mock.calls.filter((call: unknown[]) => call[2] === PALETTE_INDICES.onDarkAccent);

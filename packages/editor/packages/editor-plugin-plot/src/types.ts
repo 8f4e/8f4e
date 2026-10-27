@@ -3,6 +3,8 @@ import type { MemoryIdentifier, TypedValueKind } from '@8f4e/editor-state-types'
 export interface Plot {
 	x: number;
 	y: number;
+	width: number;
+	height: number;
 	minValue: number;
 	maxValue: number;
 	startAddress: MemoryIdentifier;

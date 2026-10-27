@@ -7,12 +7,18 @@ import type { StackLabel } from './types';
 export function createStackPlugin({ prefersReducedMotion }: { prefersReducedMotion: () => boolean }): EditorPlugin {
 	return {
 		id: 'stack',
-		setup: ({ store, directives, drawers }) => {
-			const state = store.getState();
+		setup: ({ directives, drawers }) => {
 			const labelsByBlock = new WeakMap<CodeBlockGraphicData, StackLabel[]>();
 			const unregisterDirective = directives.register(createStackDirective(labelsByBlock));
-			const unregisterDrawer = drawers.registerCodeBlockOverlay(({ draw, codeBlock, memoryViews }) => {
-				drawStack(draw, state, labelsByBlock.get(codeBlock) ?? [], performance.now(), prefersReducedMotion());
+			const unregisterDrawer = drawers.registerCodeBlockOverlay(({ draw, state, codeBlock }) => {
+				drawStack(
+					draw,
+					state.viewport.vGrid,
+					state.viewport.hGrid,
+					labelsByBlock.get(codeBlock) ?? [],
+					performance.now(),
+					prefersReducedMotion()
+				);
 			});
 			return () => {
 				unregisterDrawer();

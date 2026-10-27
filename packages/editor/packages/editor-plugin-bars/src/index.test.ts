@@ -31,6 +31,7 @@ describe('bars plugin', () => {
 		const test = await setup(barsPlugin, [
 			'module audio',
 			'int8[] samples 4 0 1 2 3',
+			'int8[] alternate 4 3 2 1 0',
 			'int8* pointer &samples',
 			'int length 4',
 			'; @bars pointer length 0 3',
@@ -38,9 +39,13 @@ describe('bars plugin', () => {
 		]);
 		test.render();
 		const before = vi.mocked(test.draw.drawFill).mock.calls.length;
-		test.memoryViews.int32[test.compiled.memoryPlan.modules.audio.memory.length.allocationUnitAddress] = 1;
+		const { memory } = test.compiled.memoryPlan.modules.audio;
+		test.memoryViews.int32[memory.pointer.allocationUnitAddress] = memory.alternate.byteAddress;
+		test.memoryViews.int32[memory.length.allocationUnitAddress] = 1;
 		test.render();
 		expect(vi.mocked(test.draw.drawFill).mock.calls.length).toBeLessThan(before);
+		const bars = vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.detailBase);
+		expect(bars).toEqual([[0, 0, PALETTE_INDICES.detailBase, expect.any(Number), test.state.viewport.hGrid * 8]]);
 	});
 	it('resolves arrays exposed by a project group', async () => {
 		const test = await setup(barsPlugin, exposedSource);

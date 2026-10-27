@@ -36,6 +36,8 @@ export function createPlotDirective(plotsByBlock: WeakMap<CodeBlockGraphicData, 
 					plotsByBlock.get(graphicData)!.push({
 						x: (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
 						y: (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
+						width: graphicData.width - state.viewport.hGrid * 2,
+						height: state.viewport.hGrid * 8,
 						startAddress,
 						baseSampleShift: valueSpec.baseSampleShift,
 						length,

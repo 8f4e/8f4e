@@ -7,13 +7,6 @@ export interface Bars {
 	y: number;
 	minValue: number;
 	inverseValueRange: number;
-	staticBaseValueIndex?: number;
-	staticColumnLayout?: Array<{
-		x: number;
-		width: number;
-		sliceStart: number;
-		sliceEnd: number;
-	}>;
 	startAddress: MemoryIdentifier;
 	baseSampleShift: 0 | 1 | 2 | 3;
 	length: number | MemoryIdentifier;

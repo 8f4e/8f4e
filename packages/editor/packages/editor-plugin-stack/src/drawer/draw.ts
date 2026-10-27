@@ -1,5 +1,4 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '@8f4e/web-ui';
 import type { StackLabel } from '../types';
 
@@ -17,14 +16,14 @@ function getAnimationProgress(now: number, reducedMotion: boolean): number {
 
 function drawBracketedValue(
 	engine: DrawContext,
-	state: State,
+	vGrid: number,
+	hGrid: number,
 	x: number,
 	y: number,
 	value: string,
 	now: number,
 	reducedMotion: boolean
 ): void {
-	const { vGrid, hGrid } = state.viewport;
 	const animationProgress = getAnimationProgress(now, reducedMotion);
 	const bracketOffset = vGrid * MAX_BRACKET_OFFSET_IN_CELLS * animationProgress;
 	const bracketScale = 1 + (MAX_BRACKET_SCALE - 1) * animationProgress;
@@ -37,18 +36,19 @@ function drawBracketedValue(
 	const color = PALETTE_INDICES.inkBase;
 
 	engine.drawCharacter(leftBracketX, bracketY, 91, color, bracketWidth, bracketHeight);
-	engine.drawText(x + state.viewport.vGrid, y, value, PALETTE_INDICES.secondaryBase);
+	engine.drawText(x + vGrid, y, value, PALETTE_INDICES.secondaryBase);
 	engine.drawCharacter(rightBracketX, bracketY, 93, color, bracketWidth, bracketHeight);
 }
 
 export default function drawStack(
 	engine: DrawContext,
-	state: State,
+	vGrid: number,
+	hGrid: number,
 	values: StackLabel[],
 	now: number,
 	reducedMotion: boolean
 ): void {
 	for (const { x, y, text } of values) {
-		drawBracketedValue(engine, state, x, y, text, now, reducedMotion);
+		drawBracketedValue(engine, vGrid, hGrid, x, y, text, now, reducedMotion);
 	}
 }
