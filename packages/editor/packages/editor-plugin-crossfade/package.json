@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-crossfade",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Crossfade directive plugin for the 8f4e editor",
   "type": "module",
