@@ -4,8 +4,8 @@ priority: Medium
 effort: 2-4h
 created: 2026-05-18
 issue: https://github.com/8f4e/8f4e/issues/656
-status: Open
-completed: null
+status: Completed
+completed: 2026-10-26
 ---
 
 # TODO: Tighten runtime browser API typing

@@ -10,6 +10,7 @@ import type {
 } from '@8f4e/editor-core';
 import { resolveSchemaConfigRoot } from '@8f4e/editor-core';
 import type { StateManager } from '@8f4e/state-manager';
+import type { WebWorkerHostMessage, WebWorkerRuntimeMessage } from './messages';
 
 const WEB_WORKER_EDITOR_CONFIG: EditorConfigSchemaContribution = {
 	root: 'workerRuntime',
@@ -52,7 +53,7 @@ export function webWorkerRuntimeFactory(
 	const state = store.getState();
 	let worker: Worker | undefined;
 
-	async function onWorkerMessage({ data }: MessageEvent) {
+	async function onWorkerMessage({ data }: MessageEvent<WebWorkerRuntimeMessage>) {
 		switch (data.type) {
 			case 'initialized':
 				events.dispatch('runtimeInitialized');
@@ -79,7 +80,7 @@ export function webWorkerRuntimeFactory(
 			return;
 		}
 		const config = getWebWorkerRuntimeConfig(state.editorConfig);
-		worker.postMessage({
+		const message: WebWorkerHostMessage = {
 			type: 'init',
 			payload: {
 				memoryRef: memory,
@@ -87,7 +88,8 @@ export function webWorkerRuntimeFactory(
 				sampleRate: config.sampleRate,
 				codeBuffer: getCodeBuffer(),
 			},
-		});
+		};
+		worker.postMessage(message);
 	}
 
 	worker = new WorkerConstructor();

@@ -38,7 +38,6 @@ Active todo files are listed below.
 | 390 | Add compiler passive data inputs for array initialization | 🟡 | 1-2d | 2026-05-04 | The compiler now uses passive data segments to restore declared initial memory, but every segment is still derived from source-level memory declarations and compiler-owned inter... |
 | 398 | Add compiler peephole arithmetic strength reduction | 🟡 | 1-2 days | 2026-05-12 | The compiler now has compile-time folding and stack-level integer metadata, but runtime arithmetic codegen still emits direct WebAssembly arithmetic operations even when the top... |
 | 400 | Add serial input editor environment plugin | 🟡 | 1-2d | 2026-05-13 | Add a Web Serial editor environment plugin with `@info serial`, fixed-size `@serialIn` framing, and `@serialInCallback` fanout to exported 8f4e functions. |
-| 401 | Tighten runtime browser API typing | 🟡 | 2-4h | 2026-05-18 | Browser runtime packages cross platform-specific API boundaries and currently rely on broad `any` casts and `@ts-expect-error` comments in production runtime code. |
 | 426 | Decide compiler broad type splitting strategy | 🟡 | 2-4h | 2026-05-26 | Decide migration boundaries for broad language-spec shapes such as `DataStructure`, `LocalBinding`, `CompilationContext`, `MapBlockState`, `CollectedNamespace`, and address-bearing constants before implementing more type splits. |
 | 427 | Add depth-aware pointer metadata query dereferencing | 🟡 | 2-4h | 2026-05-27 | `sizeof(**ptr)` and `max(**ptr)` should carry explicit dereference depth and resolve against double-pointer metadata instead of targeting a literal `*ptr` identifier. |
 | 429 | Unify metadata query argument shape | 🟡 | 2-4h | 2026-05-27 | Replace per-helper metadata query reference kinds with one structured query shape carrying query kind, target scope, and dereference depth. |
@@ -87,6 +86,7 @@ Active todo files are listed below.
 
 | ID | Title | Completed | Notes |
 | ---- | ----- | --------- | ----- |
+| 401 | Tighten runtime browser API typing | 2026-10-26 | Narrow Web Audio adapter types and shared runtime message unions replace production `any` and `@ts-expect-error` escapes. |
 | 510 | Use glyph masks and a GPU color palette | 2026-10-26 | R8 masks and stable GPU palette indices replace colored font copies; the default atlas drops from 4 MiB to 96 KiB while retaining 20-byte instances. |
 | 511 | Compose input and output icons at runtime | 2026-10-26 | Inputs and six-state outputs use shared font/fill sprites; prerendered connectors are removed, with visual and rendering-cost checks recorded. |
 | 509 | Rebuild editor colors from a small base palette | 2026-10-26 | Shared configurable accents, predefined shades and opacity, and generic core/plugin sprite lookups replace feature-specific colors. |
