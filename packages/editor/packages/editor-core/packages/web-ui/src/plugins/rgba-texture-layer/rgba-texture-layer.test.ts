@@ -29,7 +29,7 @@ describe('RGBA overlay', () => {
 		expect(hooks.postDraw).toHaveLength(1);
 		hooks.postDraw[0](gl);
 		expect(callback).toHaveBeenCalledOnce();
-		expect(gl.uniform2f).toHaveBeenCalledWith(expect.objectContaining({ name: 'u_resolution' }), 320, 200);
+		expect(gl.uniform2f).toHaveBeenCalledWith(expect.objectContaining({ name: 'u_pixelToClip' }), 2 / 320, -2 / 200);
 		expect(gl.uniform4f).toHaveBeenCalledWith(expect.objectContaining({ name: 'u_rectangle' }), 10, 20, 30, 40);
 		expect(gl.drawArrays).toHaveBeenCalledWith(gl.TRIANGLE_STRIP, 0, 4);
 		layer.destroy();

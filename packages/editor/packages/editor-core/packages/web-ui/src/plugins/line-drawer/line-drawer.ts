@@ -28,7 +28,7 @@ export class LineDrawer {
 	private readonly program: WebGLProgram;
 	private readonly buffer: WebGLBuffer;
 	private readonly vertexArray: WebGLVertexArrayObject;
-	private readonly resolutionLocation: WebGLUniformLocation;
+	private readonly pixelToClipLocation: WebGLUniformLocation;
 	private gpuCapacity: number;
 	private destroyed = false;
 
@@ -58,7 +58,7 @@ export class LineDrawer {
 		this.program = resources.program;
 		this.buffer = resources.buffer;
 		this.vertexArray = resources.vertexArray;
-		this.resolutionLocation = resources.resolutionLocation;
+		this.pixelToClipLocation = resources.pixelToClipLocation;
 
 		const gl = this.gl;
 		gl.bindVertexArray(this.vertexArray);
@@ -138,7 +138,7 @@ export class LineDrawer {
 			gl.bufferData(gl.ARRAY_BUFFER, this.gpuCapacity * LINE_INSTANCE_BYTE_STRIDE, gl.DYNAMIC_DRAW);
 		}
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.lines.fullBytes, 0, this.lines.usedByteLength);
-		gl.uniform2f(this.resolutionLocation, gl.drawingBufferWidth, gl.drawingBufferHeight);
+		gl.uniform2f(this.pixelToClipLocation, 2 / gl.drawingBufferWidth, -2 / gl.drawingBufferHeight);
 		gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.lines.count);
 	}
 }
@@ -153,7 +153,7 @@ function createLineResources(gl: WebGL2RenderingContext): {
 	program: WebGLProgram;
 	buffer: WebGLBuffer;
 	vertexArray: WebGLVertexArrayObject;
-	resolutionLocation: WebGLUniformLocation;
+	pixelToClipLocation: WebGLUniformLocation;
 } {
 	const program = createProgram(gl, lineVertexShaderSource, lineFragmentShaderSource, 'line');
 	let buffer: WebGLBuffer | null = null;
@@ -165,7 +165,7 @@ function createLineResources(gl: WebGL2RenderingContext): {
 			program,
 			buffer,
 			vertexArray,
-			resolutionLocation: requireUniform(gl, program, 'u_resolution'),
+			pixelToClipLocation: requireUniform(gl, program, 'u_pixelToClip'),
 		};
 	} catch (error) {
 		if (buffer) {
