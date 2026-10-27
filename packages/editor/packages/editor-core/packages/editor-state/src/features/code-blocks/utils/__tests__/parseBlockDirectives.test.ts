@@ -21,8 +21,8 @@ describe('parseBlockDirectives', () => {
 	});
 
 	it('should parse unknown editor directive names', () => {
-		expect(parseBlockDirectives(['; @midi'])).toEqual([
-			{ prefix: '@', name: 'midi', args: [], sourceLineIndex: 0, sourceLine: '; @midi', isTrailing: false },
+		expect(parseBlockDirectives(['; @custom'])).toEqual([
+			{ prefix: '@', name: 'custom', args: [], sourceLineIndex: 0, sourceLine: '; @custom', isTrailing: false },
 		]);
 	});
 

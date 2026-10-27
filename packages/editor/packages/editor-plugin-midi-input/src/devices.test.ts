@@ -1,223 +1,114 @@
 import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createMidiAccess, createMidiInput, createMidiOutput } from './__tests__/midi';
 import createMidiDeviceManager from './devices';
 
-interface MIDIPortMock {
-	id?: string;
-	manufacturer?: string | null;
-	name?: string | null;
-	state?: string;
-}
-
-interface MIDIAccessMock {
-	inputs: Map<string, MIDIPortMock>;
-	outputs: Map<string, MIDIPortMock>;
-	onstatechange: ((event: unknown) => void) | null;
-	addEventListener: ReturnType<typeof vi.fn>;
-	removeEventListener: ReturnType<typeof vi.fn>;
-	dispatchStateChange: (event?: unknown) => void;
-}
-
-function createMIDIAccessMock({
-	inputs = new Map(),
-	outputs = new Map(),
-	onstatechange = null,
-}: Partial<Pick<MIDIAccessMock, 'inputs' | 'outputs' | 'onstatechange'>> = {}): MIDIAccessMock {
-	const stateChangeListeners = new Set<(event: unknown) => void>();
-	const access: MIDIAccessMock = {
-		inputs,
-		outputs,
-		onstatechange,
-		addEventListener: vi.fn((type: string, listener: (event: unknown) => void) => {
-			if (type === 'statechange') {
-				stateChangeListeners.add(listener);
-			}
-		}),
-		removeEventListener: vi.fn((type: string, listener: (event: unknown) => void) => {
-			if (type === 'statechange') {
-				stateChangeListeners.delete(listener);
-			}
-		}),
-		dispatchStateChange: (event = {}) => {
-			access.onstatechange?.(event);
-			for (const listener of stateChangeListeners) {
-				listener(event);
-			}
-		},
-	};
-
-	return access;
-}
+afterEach(() => vi.restoreAllMocks());
 
 function createStore() {
-	return createStateManager(
-		createMockState({
-			info: {},
-		})
-	);
-}
-
-async function flushPromises(): Promise<void> {
-	await Promise.resolve();
-	await Promise.resolve();
+	return createStateManager(createMockState({ info: {} }));
 }
 
 describe('createMidiDeviceManager', () => {
 	it('commits an empty MIDI device list when Web MIDI is unavailable', () => {
 		const store = createStore();
-		const manager = createMidiDeviceManager({ store, navigator: {} as Navigator });
-
+		const manager = createMidiDeviceManager({ store, navigator: {} as Navigator, onPortsChanged: vi.fn() });
 		expect(store.getState().info.midi).toEqual({});
-
 		manager.dispose();
-
 		expect(store.getState().info.midi).toBeUndefined();
 	});
 
-	it('commits available MIDI devices into state.info.midi', async () => {
+	it('publishes devices and preserves their indexes across disconnects and reconnects', async () => {
 		const store = createStore();
-		const access = createMIDIAccessMock({
-			inputs: new Map([
-				[
-					'input-a',
-					{
-						id: '-1710537465',
-						manufacturer: 'Acme',
-						name: 'Keys',
-						state: 'connected',
-					},
-				],
-			]),
-			outputs: new Map([
-				[
-					'output-a',
-					{
-						id: 'output-a',
-						manufacturer: 'Acme',
-						name: 'Synth',
-						state: 'connected',
-					},
-				],
-			]),
-		});
-		const requestMIDIAccess = vi.fn(async () => access as unknown as MIDIAccess);
+		const midi = createMidiAccess();
+		const keys = createMidiInput('-1710537465', 'Keys');
+		midi.inputs.set(keys.input.id, keys.input);
+		midi.outputs.set('output-a', createMidiOutput('output-a', 'Synth'));
+		const requestMIDIAccess = vi.fn(async () => midi.access);
+		const onPortsChanged = vi.fn();
 		const manager = createMidiDeviceManager({
 			store,
 			navigator: { requestMIDIAccess } as unknown as Navigator,
+			onPortsChanged,
 		});
-
 		expect(store.getState().info.midi).toEqual({});
-
-		await flushPromises();
-
-		expect(requestMIDIAccess).toHaveBeenCalledTimes(1);
-		expect(store.getState().info.midi).toEqual({
-			'0': 'Keys (in)',
-			'1': 'Synth (out)',
-		});
-		expect(manager.getInputPort('0')).toBe(access.inputs.get('input-a'));
-		expect(manager.getInputPort('-1710537465')).toBeUndefined();
+		await vi.waitFor(() => expect(onPortsChanged).toHaveBeenCalledOnce());
+		expect(requestMIDIAccess).toHaveBeenCalledOnce();
+		expect(store.getState().info.midi).toEqual({ '0': 'Keys (in)', '1': 'Synth (out)' });
+		expect(manager.getInputPort('0')).toBe(keys.input);
+		expect(manager.getInputPort(keys.input.id)).toBeUndefined();
 		expect(manager.getInputPort('1')).toBeUndefined();
 
-		access.inputs.set('input-b', {
-			id: 'input-b',
-			name: 'Pads',
-			state: 'connected',
-		});
-		access.outputs.set('output-b', {
-			id: 'output-b',
-			name: 'Disconnected output',
-			state: 'disconnected',
-		});
-		access.dispatchStateChange();
+		const pads = createMidiInput('input-b', 'Pads');
+		midi.inputs.set(pads.input.id, pads.input);
+		midi.outputs.set('output-b', createMidiOutput('output-b', 'Disconnected output', 'disconnected'));
+		midi.change();
+		expect(store.getState().info.midi).toEqual({ '0': 'Keys (in)', '1': 'Synth (out)', '2': 'Pads (in)' });
+		expect(manager.getInputPort('2')).toBe(pads.input);
 
-		expect(store.getState().info.midi).toEqual({
-			'0': 'Keys (in)',
-			'1': 'Synth (out)',
-			'2': 'Pads (in)',
-		});
-		expect(manager.getInputPort('2')).toBe(access.inputs.get('input-b'));
-
-		access.inputs.get('input-a')!.state = 'disconnected';
-		access.dispatchStateChange();
-
-		expect(store.getState().info.midi).toEqual({
-			'1': 'Synth (out)',
-			'2': 'Pads (in)',
-		});
+		keys.setState('disconnected');
+		midi.change();
+		expect(store.getState().info.midi).toEqual({ '1': 'Synth (out)', '2': 'Pads (in)' });
 		expect(manager.getInputPort('0')).toBeUndefined();
-		expect(manager.getInputPort('2')).toBe(access.inputs.get('input-b'));
+		expect(manager.getInputPort('2')).toBe(pads.input);
 
-		access.inputs.get('input-a')!.state = 'connected';
-		access.dispatchStateChange();
-
-		expect(store.getState().info.midi).toEqual({
-			'0': 'Keys (in)',
-			'1': 'Synth (out)',
-			'2': 'Pads (in)',
-		});
-		expect(manager.getInputPort('0')).toBe(access.inputs.get('input-a'));
-
+		keys.setState('connected');
+		midi.change();
+		expect(store.getState().info.midi).toEqual({ '0': 'Keys (in)', '1': 'Synth (out)', '2': 'Pads (in)' });
+		expect(manager.getInputPort('0')).toBe(keys.input);
 		manager.dispose();
-
 		expect(store.getState().info.midi).toBeUndefined();
 	});
 
 	it('leaves an existing MIDI statechange property handler untouched', async () => {
 		const store = createStore();
-		const previousStateChangeHandler = vi.fn();
-		const access = createMIDIAccessMock({
-			onstatechange: previousStateChangeHandler,
-		});
+		const midi = createMidiAccess();
+		const previousHandler = vi.fn();
+		midi.access.onstatechange = previousHandler;
+		const onPortsChanged = vi.fn();
 		const manager = createMidiDeviceManager({
 			store,
-			navigator: {
-				requestMIDIAccess: vi.fn(async () => access as unknown as MIDIAccess),
-			} as unknown as Navigator,
+			navigator: { requestMIDIAccess: async () => midi.access } as Navigator,
+			onPortsChanged,
 		});
-
-		await flushPromises();
-		access.dispatchStateChange('state-change');
-
-		expect(previousStateChangeHandler).toHaveBeenCalledWith('state-change');
-		expect(access.onstatechange).toBe(previousStateChangeHandler);
-
+		await vi.waitFor(() => expect(onPortsChanged).toHaveBeenCalledOnce());
+		const event = midi.change();
+		expect(previousHandler).toHaveBeenCalledWith(event);
+		expect(midi.access.onstatechange).toBe(previousHandler);
 		manager.dispose();
-
-		expect(access.onstatechange).toBe(previousStateChangeHandler);
+		expect(midi.access.onstatechange).toBe(previousHandler);
 	});
 
-	it('keeps another manager subscribed when managers sharing MIDI access are disposed out of order', async () => {
+	it('keeps another manager subscribed when shared MIDI access is disposed out of order', async () => {
 		const firstStore = createStore();
 		const secondStore = createStore();
-		const access = createMIDIAccessMock();
-		const navigator = {
-			requestMIDIAccess: vi.fn(async () => access as unknown as MIDIAccess),
-		} as unknown as Navigator;
-		const first = createMidiDeviceManager({ store: firstStore, navigator });
-		const second = createMidiDeviceManager({ store: secondStore, navigator });
-
-		await flushPromises();
-		access.inputs.set('input-a', { id: 'input-a', name: 'Keys', state: 'connected' });
-		access.dispatchStateChange();
-
+		const midi = createMidiAccess();
+		const add = vi.spyOn(midi.access, 'addEventListener');
+		const remove = vi.spyOn(midi.access, 'removeEventListener');
+		const navigator = { requestMIDIAccess: async () => midi.access } as Navigator;
+		const firstChanged = vi.fn();
+		const secondChanged = vi.fn();
+		const first = createMidiDeviceManager({ store: firstStore, navigator, onPortsChanged: firstChanged });
+		const second = createMidiDeviceManager({ store: secondStore, navigator, onPortsChanged: secondChanged });
+		await vi.waitFor(() => {
+			expect(firstChanged).toHaveBeenCalledOnce();
+			expect(secondChanged).toHaveBeenCalledOnce();
+		});
+		const keys = createMidiInput('input-a', 'Keys');
+		midi.inputs.set(keys.input.id, keys.input);
+		midi.change();
 		expect(firstStore.getState().info.midi).toEqual({ '0': 'Keys (in)' });
 		expect(secondStore.getState().info.midi).toEqual({ '0': 'Keys (in)' });
 
 		first.dispose();
-		access.inputs.set('input-b', { id: 'input-b', name: 'Pads', state: 'connected' });
-		access.dispatchStateChange();
-
+		const pads = createMidiInput('input-b', 'Pads');
+		midi.inputs.set(pads.input.id, pads.input);
+		midi.change();
 		expect(firstStore.getState().info.midi).toBeUndefined();
-		expect(secondStore.getState().info.midi).toEqual({
-			'0': 'Keys (in)',
-			'1': 'Pads (in)',
-		});
-
+		expect(secondStore.getState().info.midi).toEqual({ '0': 'Keys (in)', '1': 'Pads (in)' });
 		second.dispose();
-
-		expect(access.addEventListener).toHaveBeenCalledTimes(2);
-		expect(access.removeEventListener).toHaveBeenCalledTimes(2);
+		expect(add).toHaveBeenCalledTimes(2);
+		expect(remove).toHaveBeenCalledTimes(2);
 	});
 });

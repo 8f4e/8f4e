@@ -67,7 +67,7 @@ export default function createMidiDeviceManager({
 }: {
 	store: EditorPluginContext['store'];
 	navigator: Navigator;
-	onPortsChanged?: () => void;
+	onPortsChanged: () => void;
 }) {
 	const requestMIDIAccess = navigator.requestMIDIAccess;
 	const portRegistry: MidiPortRegistry = {
@@ -87,11 +87,7 @@ export default function createMidiDeviceManager({
 		}
 
 		setMidiInfo(createMidiInfo(midiAccess, portRegistry));
-		onPortsChanged?.();
-	}
-
-	function onStateChange(): void {
-		updateMidiInfo();
+		onPortsChanged();
 	}
 
 	if (typeof requestMIDIAccess !== 'function') {
@@ -115,13 +111,13 @@ export default function createMidiDeviceManager({
 			}
 
 			midiAccess = access;
-			access.addEventListener('statechange', onStateChange);
+			access.addEventListener('statechange', updateMidiInfo);
 			updateMidiInfo();
 		})
 		.catch(() => {
 			if (!disposed) {
 				setMidiInfo({});
-				onPortsChanged?.();
+				onPortsChanged();
 			}
 		});
 
@@ -129,7 +125,7 @@ export default function createMidiDeviceManager({
 		getInputPort: (port: string) => portRegistry.inputsByIndex.get(port),
 		dispose: () => {
 			disposed = true;
-			midiAccess?.removeEventListener('statechange', onStateChange);
+			midiAccess?.removeEventListener('statechange', updateMidiInfo);
 			portRegistry.inputsByIndex.clear();
 			portRegistry.indexesByKey.clear();
 			setMidiInfo(undefined);

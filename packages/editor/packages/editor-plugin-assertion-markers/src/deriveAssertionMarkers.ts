@@ -25,7 +25,6 @@ export default function deriveAssertionMarkers(codeBlock: CodeBlockGraphicData, 
 		if (displayRow === undefined || codeBlock.displayModel.lines[displayRow].isPlaceholder) return [];
 		return [
 			{
-				lineNumber: site.lineNumber,
 				passed,
 				x: state.viewport.vGrid,
 				y: gapCalculator(displayRow, codeBlock.gaps) * state.viewport.hGrid,

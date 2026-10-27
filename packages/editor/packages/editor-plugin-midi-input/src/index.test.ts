@@ -3,6 +3,7 @@ import initState from '@8f4e/editor-state';
 import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
 import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createMidiAccess, createMidiInput } from './__tests__/midi';
 import { createMidiInputPlugin } from './index';
 
 const SOURCE = `8f4e/v1
@@ -34,20 +35,11 @@ push velocity
 store
 functionEnd`;
 
-function createMidiAccess() {
-	const input = Object.assign(new EventTarget(), {
-		id: 'keys',
-		name: 'Keys',
-		state: 'connected',
-	}) as unknown as MIDIInput;
-	const inputs = new Map([['keys', input]]);
-	const access = Object.assign(new EventTarget(), { inputs, outputs: new Map() }) as unknown as MIDIAccess;
-	const send = (bytes: number[]) => {
-		const event = new Event('midimessage');
-		Object.defineProperty(event, 'data', { value: new Uint8Array(bytes) });
-		input.dispatchEvent(event);
-	};
-	return { access, input, inputs, send };
+function createMidiFixture() {
+	const midi = createMidiAccess();
+	const keys = createMidiInput();
+	midi.inputs.set(keys.input.id, keys.input);
+	return { ...midi, ...keys };
 }
 
 const cleanups: Array<() => void> = [];
@@ -56,7 +48,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-async function setup({ requestMIDIAccess = vi.fn(async () => createMidiAccess().access), source = SOURCE } = {}) {
+async function setup({ requestMIDIAccess = vi.fn(async () => createMidiFixture().access), source = SOURCE } = {}) {
 	const project = parseProjectSource(source);
 	const compiled = await compileProject(project, { disableSharedMemory: true });
 	let memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
@@ -98,7 +90,7 @@ async function setup({ requestMIDIAccess = vi.fn(async () => createMidiAccess().
 
 describe('MIDI input plugin', () => {
 	it('requests access only when configured, invokes real compiled callbacks, and rebinds after compilation', async () => {
-		const midi = createMidiAccess();
+		const midi = createMidiFixture();
 		const add = vi.spyOn(midi.input, 'addEventListener');
 		const requestMIDIAccess = vi.fn(async () => midi.access);
 		const editor = await setup({ requestMIDIAccess });
@@ -128,20 +120,18 @@ describe('MIDI input plugin', () => {
 	});
 
 	it('does not attach to MIDI access that arrives after config removal or disposal', async () => {
-		const midi = createMidiAccess();
+		const midi = createMidiFixture();
 		const add = vi.spyOn(midi.access, 'addEventListener');
 		let finish!: (access: MIDIAccess) => void;
-		const requestMIDIAccess = vi.fn(
-			() =>
-				new Promise<MIDIAccess>(resolve => {
-					finish = resolve;
-				})
-		);
+		const access = new Promise<MIDIAccess>(resolve => {
+			finish = resolve;
+		});
+		const requestMIDIAccess = vi.fn(() => access);
 		const editor = await setup({ requestMIDIAccess });
 		editor.store.set('editorConfig.midi', undefined);
 		editor.dispose();
 		finish(midi.access);
-		await Promise.resolve();
+		await access;
 		expect(add).not.toHaveBeenCalled();
 		expect(editor.store.getState().info.midi).toBeUndefined();
 		expect(editor.store.getState().editorConfigSchemaContributions.midi).toBeUndefined();

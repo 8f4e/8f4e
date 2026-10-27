@@ -67,8 +67,8 @@ describe('assertion marker derivation', () => {
 		const result = await runTests(compiled);
 		state.assertionResults = result.assertions;
 		expect(deriveAssertionMarkers(block, state)).toEqual([
-			{ lineNumber: 2, passed: true, x: 8, y: 32, width: 16, height: 16 },
-			{ lineNumber: 9, passed: true, x: 8, y: 144, width: 16, height: 16 },
+			{ passed: true, x: 8, y: 32, width: 16, height: 16 },
+			{ passed: true, x: 8, y: 144, width: 16, height: 16 },
 		]);
 	});
 	it('aggregates repeated calls with failure taking precedence', () => {
@@ -83,8 +83,8 @@ describe('assertion marker derivation', () => {
 			invocation(passedSite, true),
 		];
 		expect(deriveAssertionMarkers(block, state)).toEqual([
-			{ lineNumber: 2, passed: false, x: 8, y: 32, width: 16, height: 16 },
-			{ lineNumber: 4, passed: true, x: 8, y: 64, width: 16, height: 16 },
+			{ passed: false, x: 8, y: 32, width: 16, height: 16 },
+			{ passed: true, x: 8, y: 64, width: 16, height: 16 },
 		]);
 	});
 
@@ -108,9 +108,7 @@ describe('assertion marker derivation', () => {
 		state.assertionResults = [invocation(site()), invocation(site({ siteId: 1, lineNumber: 4 }))];
 		block.displayModel.sourceLineIndexToDisplayRow[4] = undefined;
 		block.gaps.set(1, { size: 3 });
-		expect(deriveAssertionMarkers(block, state)).toEqual([
-			{ lineNumber: 2, passed: true, x: 8, y: 80, width: 16, height: 16 },
-		]);
+		expect(deriveAssertionMarkers(block, state)).toEqual([{ passed: true, x: 8, y: 80, width: 16, height: 16 }]);
 		block.displayModel = createMockCodeBlock({ code }).displayModel;
 		expect(deriveAssertionMarkers(block, state)).toHaveLength(2);
 	});
