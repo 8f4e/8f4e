@@ -8,7 +8,7 @@ import type {
 	RuntimeRegistry,
 	State,
 } from '@8f4e/editor-state-types';
-import generateSprite from '@8f4e/sprite-generator';
+import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, {
 	createCodeBlockDrawerRegistry,
 	type MemoryViews,
@@ -36,7 +36,6 @@ import pointerEvents from './events/pointerEvents';
 import { createMemoryViewManager, type MemoryRef } from './memoryViewManager';
 import { type EditorPlugin, installEditorPlugins } from './plugins';
 import { createSpriteSheetManager } from './spriteSheetManager';
-import { updateStateWithSpriteData } from './updateStateWithSpriteData';
 import {
 	resolveWebUiOverlayConfig,
 	WEB_UI_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID,
@@ -80,7 +79,6 @@ export type { EventDispatcher } from './events';
 export type { MemoryRef } from './memoryViewManager';
 export type { EditorPlugin, EditorPluginContext } from './plugins';
 // Re-export helper functions
-export { updateStateWithSpriteData } from './updateStateWithSpriteData';
 
 export interface Editor {
 	resize: (width: number, height: number) => void;
@@ -234,8 +232,10 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			})
 		);
 
-		// Generate sprite data before initializing the view that installs and resolves the atlas.
-		const spriteData = await generateSprite({ font: state.editorConfig.font });
+		// Load the selected font before initializing the view.
+		const fontAtlas = await loadFontAtlas(state.editorConfig.font);
+		state.viewport.hGrid = fontAtlas.grid.cellHeight;
+		state.viewport.vGrid = fontAtlas.grid.cellWidth;
 
 		const renderProjection = createWebUiRenderProjection(store, events);
 		cleanups.push(() => renderProjection.dispose());
@@ -246,7 +246,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			renderProjection,
 			canvas,
 			memoryViews,
-			spriteData,
+			fontAtlas,
 			resolvePalette(state.editorConfig.color),
 			{
 				drawers,
@@ -256,10 +256,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				getMemory: () => currentMemoryRef,
 				onRenderStats: stats => {
 					store.set('info.graphics', toGraphicsInfoRecord(stats));
-				},
-				onSpriteAtlasChanged: (spriteLookups, spriteData) => {
-					updateStateWithSpriteData(state, spriteData, spriteLookups);
-					renderProjection.refresh();
 				},
 			}
 		);

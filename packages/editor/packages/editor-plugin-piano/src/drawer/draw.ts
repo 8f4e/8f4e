@@ -1,5 +1,4 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { State } from '@8f4e/editor-state-types';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { PianoKeyboard, PianoKeyboardKey } from '../types';
 
@@ -31,16 +30,7 @@ function drawRuntimePressedKeys(
 	}
 }
 
-export function drawPianoKeyboards(
-	engine: DrawContext,
-	state: State,
-	keyboards: PianoKeyboard[],
-	memoryViews: MemoryViews
-): void {
-	if (!state.spriteLookups) {
-		return;
-	}
-
+export function drawPianoKeyboards(engine: DrawContext, keyboards: PianoKeyboard[], memoryViews: MemoryViews): void {
 	for (const {
 		x,
 		y,

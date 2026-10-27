@@ -1,7 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import { createMockSpriteLookups } from '@8f4e/editor-state-testing';
 import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
@@ -48,7 +47,6 @@ async function setup(code = source, installed = true, name = 'audio') {
 	state.compiler.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
-	state.spriteLookups = createMockSpriteLookups() as never;
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {

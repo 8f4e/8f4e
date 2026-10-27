@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
 import { createDrawContextMock } from '../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../drawContext';
@@ -21,12 +21,9 @@ describe('drawShapeDeclarations', () => {
 				],
 			},
 		});
-		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
-		});
 		const engine = createMockEngine();
 
-		drawShapeDeclarations(engine, state, block);
+		drawShapeDeclarations(engine, block);
 
 		expect(engine.drawText).toHaveBeenCalledWith(24, 32, 'float* input', fontInkBase);
 		expect(engine.drawText).toHaveBeenCalledWith(24, 48, 'float output', fontInkBase);
@@ -34,12 +31,9 @@ describe('drawShapeDeclarations', () => {
 
 	it('skips drawing when there are no precomputed labels', () => {
 		const block = createMockCodeBlock();
-		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
-		});
 		const engine = createMockEngine();
 
-		drawShapeDeclarations(engine, state, block);
+		drawShapeDeclarations(engine, block);
 
 		expect(engine.drawText).not.toHaveBeenCalled();
 	});

@@ -53,10 +53,6 @@ export default function drawDebuggers(
 	now = performance.now(),
 	reducedMotion = reducedMotionMediaQuery?.matches ?? false
 ): void {
-	if (!state.spriteLookups) {
-		return;
-	}
-
 	if (memoryViews.int32.length === 0) {
 		return;
 	}

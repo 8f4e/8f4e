@@ -5,7 +5,7 @@ import type { DrawContext } from '../drawContext';
 export default function drawContextMenu(engine: DrawContext, state: State): void {
 	const { open, items, x, y, highlightedItem, itemWidth } = state.contextMenu;
 
-	if (!open || !state.spriteLookups) {
+	if (!open) {
 		return;
 	}
 

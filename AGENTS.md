@@ -12,9 +12,10 @@
 - Editor colors: `@8f4e/editor-palette` owns the pure base palette and predefined shades. Configure only shared base
   colors; core and plugin drawers select generic palette tokens. Shades are uploaded as premultiplied colors in a GPU
   uniform buffer (up to 256 entries); the sprite atlas contains color-independent R8 binary visibility masks.
-- Rendering plugins: web-ui owns the procedural background, line drawer, and RGBA texture layer under `src/plugins/`.
-  Glugglugglug owns sprite rendering and generic render hooks. The sprite generator supplies font-specific dot geometry
-  and a uniform grid of glyph/fill cells; background patterns do not occupy the sprite atlas. Sprite IDs are row-major cell indices; the renderer derives source
+- Rendering plugins: web-ui owns the procedural background, its font-specific dot settings, the line drawer, and RGBA texture layer under `src/plugins/`.
+  Glugglugglug owns sprite rendering and generic render hooks. The sprite generator supplies only a uniform grid of
+  glyph/fill masks; background patterns do not occupy the sprite atlas. Glyph IDs are ASCII codes 0–127 and fill is 128;
+  editor state carries no sprite lookup tables. The renderer derives source
   coordinates from grid dimensions without a rectangle lookup texture.
 - Packages (Nx workspaces): `packages/*` plus nested libs (e.g., `editor`, `compiler`,
   `editor/packages/editor-core/packages/web-ui/packages/glugglugglug`). Each builds to its own `dist/` directory

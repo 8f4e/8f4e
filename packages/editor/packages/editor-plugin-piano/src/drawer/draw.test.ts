@@ -1,5 +1,4 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { DrawContext as Engine, MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
@@ -96,16 +95,9 @@ function createPianoKeyboard(overrides: Partial<PianoKeyboard> = {}): PianoKeybo
 describe('drawPianoKeyboards', () => {
 	it('draws piano keys as fill-color rectangles', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			viewport: {
-				vGrid: 1,
-				hGrid: 4,
-			},
-			spriteLookups: createMockSpriteLookups() as never,
-		});
 		const keyboards = [createPianoKeyboard()];
 
-		drawPianoKeyboards(engine, state, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 49] }));
+		drawPianoKeyboards(engine, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 49] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
@@ -130,16 +122,9 @@ describe('drawPianoKeyboards', () => {
 
 	it('does not draw pressed overlays when runtime memory has no pressed count', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			viewport: {
-				vGrid: 1,
-				hGrid: 4,
-			},
-			spriteLookups: createMockSpriteLookups() as never,
-		});
 		const keyboards = [createPianoKeyboard()];
 
-		drawPianoKeyboards(engine, state, keyboards, createMemoryViews({ int32: [0, 0, 0, 0, 0, 0] }));
+		drawPianoKeyboards(engine, keyboards, createMemoryViews({ int32: [0, 0, 0, 0, 0, 0] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
@@ -150,16 +135,9 @@ describe('drawPianoKeyboards', () => {
 
 	it('draws duplicate runtime notes directly without normalizing pressed keys', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			viewport: {
-				vGrid: 1,
-				hGrid: 4,
-			},
-			spriteLookups: createMockSpriteLookups() as never,
-		});
 		const keyboards = [createPianoKeyboard()];
 
-		drawPianoKeyboards(engine, state, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 48] }));
+		drawPianoKeyboards(engine, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 48] }));
 
 		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
 		const overlayCalls = drawText.mock.calls.filter(call => call[2] === ';;');

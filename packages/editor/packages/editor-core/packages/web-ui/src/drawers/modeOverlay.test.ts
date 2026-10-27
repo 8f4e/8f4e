@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, type vi } from 'vitest';
 import { createDrawContextMock } from '../__tests__/rendering';
 import type { DrawContext as Engine } from '../drawContext';
@@ -17,7 +17,6 @@ describe('drawModeOverlay', () => {
 				modeToggling: true,
 			},
 			editorMode: 'view',
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 
 		drawModeOverlay(engine, state);
@@ -37,7 +36,6 @@ describe('drawModeOverlay', () => {
 				modeToggling: true,
 			},
 			editorMode: 'edit',
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 
 		drawModeOverlay(engine, state);
@@ -58,7 +56,6 @@ describe('drawModeOverlay', () => {
 				modeToggling: true,
 			},
 			editorMode: 'view',
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 
 		drawModeOverlay(engine, state);

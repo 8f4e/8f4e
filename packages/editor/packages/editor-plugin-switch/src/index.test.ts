@@ -1,7 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import { createMockSpriteLookups } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { createCodeBlockDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -74,7 +73,6 @@ async function setup(code = source, installed = true) {
 	state.compiler.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
-	state.spriteLookups = createMockSpriteLookups() as never;
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	const address = compiled.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 	const draw = {

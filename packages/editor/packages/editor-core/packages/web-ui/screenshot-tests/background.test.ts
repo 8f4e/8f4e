@@ -1,8 +1,9 @@
 import { PALETTE_INDICES, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
-import generateSprite, { FONT_NAMES, type SpriteData } from '@8f4e/sprite-generator';
+import loadFontAtlas, { FONT_NAMES, type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import BackgroundRenderer from '../src/plugins/background';
+import { BACKGROUND_DOTS } from '../src/plugins/background/dot-settings';
 
 function palette(base: number[], even: number[], odd: number[]): Uint8Array {
 	const bytes = new Uint8Array(256 * 4);
@@ -40,20 +41,23 @@ function createScene() {
 		gl.blendFunc(gl.ZERO, gl.ZERO);
 	});
 	const background = new BackgroundRenderer(engine);
-	let font: SpriteData;
+	let font: Font;
+	let grid: FontAtlas['grid'];
 	let bytes: Uint8Array;
 	return {
-		install(data: SpriteData, colors = toPaletteBytes(resolvePalette())) {
-			font = data;
+		install(data: FontAtlas, colors = toPaletteBytes(resolvePalette()), name: Font = 'ibmvga8x16') {
+			font = name;
+			grid = data.grid;
 			bytes = colors;
-			engine.setSpriteAtlas(data.spriteAtlas.image, data.spriteAtlas.grid);
+			engine.setSpriteAtlas(data.image, data.grid);
 			engine.setPalette(bytes);
-			background.setFont(data);
+			background.setFont(font, grid);
 			background.setPalette(bytes);
 		},
 		check(width: number, height: number) {
 			engine.resize(width, height);
-			const { characterWidth: cellWidth, characterHeight: cellHeight, backgroundDot: dot } = font;
+			const { cellWidth, cellHeight } = grid;
+			const dot = BACKGROUND_DOTS[font];
 			const columns = Array.from({ length: width }, (_, x) => {
 				const local = x % cellWidth;
 				return local >= dot.x && local < dot.x + dot.size ? 1 + (Math.floor(x / cellWidth) % 2) : 0;
@@ -99,7 +103,7 @@ function createScene() {
 test.each(FONT_NAMES)('draws correctly positioned alternating dots for %s', async font => {
 	const scene = createScene();
 	try {
-		scene.install(await generateSprite({ font }), palette([17, 31, 47, 128], [211, 41, 3, 128], [7, 137, 239, 64]));
+		scene.install(await loadFontAtlas(font), palette([17, 31, 47, 128], [211, 41, 3, 128], [7, 137, 239, 64]), font);
 		scene.check(129, 97);
 	} finally {
 		scene.destroy();
@@ -125,7 +129,7 @@ test.each([
 ])('composites the $name background over transparent and opaque content', async ({ config, width, height }) => {
 	const scene = createScene();
 	try {
-		scene.install(await generateSprite(), toPaletteBytes(resolvePalette(config)));
+		scene.install(await loadFontAtlas(), toPaletteBytes(resolvePalette(config)));
 		scene.check(width, height);
 	} finally {
 		scene.destroy();
@@ -142,7 +146,7 @@ const transparencyCases: Array<[string, number[], number[], number[]]> = [
 test.each(transparencyCases)('handles a background with %s', async (_name, base, even, odd) => {
 	const scene = createScene();
 	try {
-		scene.install(await generateSprite(), palette(base, even, odd));
+		scene.install(await loadFontAtlas(), palette(base, even, odd));
 		scene.check(33, 35);
 	} finally {
 		scene.destroy();
@@ -152,9 +156,9 @@ test.each(transparencyCases)('handles a background with %s', async (_name, base,
 test('updates font, palette, and viewport and survives rendering-memory restoration', async () => {
 	const scene = createScene();
 	try {
-		scene.install(await generateSprite());
+		scene.install(await loadFontAtlas());
 		scene.check(129, 97);
-		scene.install(await generateSprite({ font: 'spleen5x8' }), toPaletteBytes(resolvePalette({ canvas: '#182030' })));
+		scene.install(await loadFontAtlas('spleen5x8'), toPaletteBytes(resolvePalette({ canvas: '#182030' })), 'spleen5x8');
 		scene.check(321, 197);
 		scene.restore();
 		scene.check(211, 143);

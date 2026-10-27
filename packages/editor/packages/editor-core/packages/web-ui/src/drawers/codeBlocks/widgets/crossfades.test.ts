@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import type { Crossfade } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../../../__tests__/rendering';
@@ -43,13 +43,6 @@ function createCrossfadeWidget(overrides: Partial<Crossfade> = {}): Crossfade {
 describe('drawCrossfades', () => {
 	it('draws only the knob when the crossfade is centered', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			viewport: {
-				vGrid: 2,
-				hGrid: 8,
-			},
-			spriteLookups: createMockSpriteLookups() as never,
-		});
 		const codeBlock = createMockCodeBlock({
 			name: 'test-block',
 			widgets: {
@@ -57,7 +50,7 @@ describe('drawCrossfades', () => {
 			} as never,
 		});
 
-		drawCrossfades(engine, state, codeBlock, createMemoryViews({ float32: [0, 0] }));
+		drawCrossfades(engine, codeBlock, createMemoryViews({ float32: [0, 0] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.surfaceRaised2, 10, 8);
@@ -66,13 +59,6 @@ describe('drawCrossfades', () => {
 
 	it('draws a fill rectangle from the center to the left knob position', () => {
 		const engine = createMockEngine();
-		const state = createMockState({
-			viewport: {
-				vGrid: 2,
-				hGrid: 8,
-			},
-			spriteLookups: createMockSpriteLookups() as never,
-		});
 		const codeBlock = createMockCodeBlock({
 			name: 'test-block',
 			widgets: {
@@ -80,7 +66,7 @@ describe('drawCrossfades', () => {
 			} as never,
 		});
 
-		drawCrossfades(engine, state, codeBlock, createMemoryViews({ float32: [1, 0] }));
+		drawCrossfades(engine, codeBlock, createMemoryViews({ float32: [1, 0] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
 		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.surfaceRaised2, 10, 8);

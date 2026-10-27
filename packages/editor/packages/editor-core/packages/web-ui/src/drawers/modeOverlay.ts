@@ -6,10 +6,6 @@ const EDIT_MODE_HINT = "You're in edit mode, press ESC to enter view mode";
 const VIEW_MODE_HINT = "You're in view mode, press e to edit";
 
 export default function drawModeOverlay(engine: DrawContext, state: State): void {
-	if (!state.spriteLookups) {
-		return;
-	}
-
 	if (!state.featureFlags.modeOverlay || !state.featureFlags.modeToggling) {
 		return;
 	}

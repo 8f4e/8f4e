@@ -1,7 +1,8 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { SpriteData } from '@8f4e/sprite-generator';
-import type { RenderHook, RenderPluginHost } from 'glugglugglug';
+import type { Font } from '@8f4e/sprite-generator';
+import type { RenderHook, RenderPluginHost, SpriteAtlasGrid } from 'glugglugglug';
 import { createProgram, prepareRenderPass, removeHook, requireResource, requireUniform } from '../webgl';
+import { BACKGROUND_DOTS } from './dot-settings';
 import { fragmentShaderSource, vertexShaderSource } from './shaders';
 
 /** Draws the editor's base and alternating dots without atlas masks or per-dot instance data. */
@@ -38,11 +39,11 @@ export default class BackgroundRenderer {
 		host.hooks.preDraw.push(this.drawHook);
 	}
 
-	setFont({
-		characterWidth,
-		characterHeight,
-		backgroundDot,
-	}: Pick<SpriteData, 'characterWidth' | 'characterHeight' | 'backgroundDot'>): void {
+	setFont(
+		font: Font,
+		{ cellWidth: characterWidth, cellHeight: characterHeight }: Pick<SpriteAtlasGrid, 'cellWidth' | 'cellHeight'>
+	): void {
+		const backgroundDot = BACKGROUND_DOTS[font];
 		this.inversePatternWidth = 1 / (characterWidth * 2);
 		this.inversePatternHeight = 1 / characterHeight;
 		this.dotBounds.set([

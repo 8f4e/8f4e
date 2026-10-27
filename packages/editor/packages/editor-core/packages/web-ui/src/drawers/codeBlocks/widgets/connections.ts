@@ -14,10 +14,6 @@ export default function drawConnections(
 	state: State,
 	memoryViews: MemoryViews
 ): void {
-	if (!state.spriteLookups) {
-		return;
-	}
-
 	for (const codeBlock of state.codeBlockRendering.codeBlocks) {
 		const isSelected = codeBlock === state.codeBlockRendering.selectedCodeBlock;
 

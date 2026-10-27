@@ -145,13 +145,7 @@ export default function drawTooltip(
 	memoryViews: MemoryViews,
 	tooltip: TooltipState
 ): void {
-	const spriteLookups = state.spriteLookups;
-
-	if (
-		!spriteLookups ||
-		!state.featureFlags.codeLineSelection ||
-		state.codeBlockRendering.selectedCodeBlock !== codeBlock
-	) {
+	if (!state.featureFlags.codeLineSelection || state.codeBlockRendering.selectedCodeBlock !== codeBlock) {
 		return;
 	}
 

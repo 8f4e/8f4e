@@ -50,10 +50,6 @@ function drawWaveform(
 }
 
 export default function drawWaves(engine: DrawContext, state: State, waves: Wave[], memoryViews: MemoryViews): void {
-	if (!state.spriteLookups) {
-		return;
-	}
-
 	const colors = PALETTE_INDICES;
 
 	for (const {

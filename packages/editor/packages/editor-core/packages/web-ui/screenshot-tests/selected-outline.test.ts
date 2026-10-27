@@ -1,11 +1,11 @@
 import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
+import loadFontAtlas from '@8f4e/sprite-generator';
 import init from '@8f4e/web-ui';
 import { deriveCodeBlockCodeCells, type WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { expect, test, vi } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
-import createMockSpriteData from './utils/createMockSpriteData';
 import createMockStateWithColors from './utils/createMockStateWithColors';
 
 test.each(['view', 'edit'] as const)('selected outline in %s mode', async editorMode => {
@@ -30,9 +30,7 @@ test.each(['view', 'edit'] as const)('selected outline in %s mode', async editor
 	state.codeBlockRendering.selectedCodeBlock = block;
 	const renderData: WebUiRenderDataSource = {
 		getSnapshot: () => ({
-			codeBlocks: new Map([
-				[block.creationIndex, { codeCells: deriveCodeBlockCodeCells(block, state.spriteLookups!) }],
-			]),
+			codeBlocks: new Map([[block.creationIndex, { codeCells: deriveCodeBlockCodeCells(block) }]]),
 		}),
 	};
 	const renderer = await init(
@@ -40,7 +38,7 @@ test.each(['view', 'edit'] as const)('selected outline in %s mode', async editor
 		renderData,
 		canvas,
 		createMockMemoryViews(),
-		await createMockSpriteData(state),
+		await loadFontAtlas(state.editorConfig.font),
 		resolvePalette(state.editorConfig.color)
 	);
 	renderer.pauseRendering();

@@ -18,7 +18,7 @@ Adding it should follow the existing sprite-generator font pipeline instead of i
 
 - committed source glyph data under `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/`
 - generated base64 bitmap metadata under each font's `generated/` directory
-- a `Font` union and `FONT_DEFINITIONS` entry so editor config can select it
+- a shared font catalog entry so editor config can select it
 - third-party font attribution and license tracking
 
 ## Proposed Solution
@@ -30,7 +30,7 @@ High-level approach:
 - Pull the current upstream PixelCode release/source from `https://github.com/qwerasd205/PixelCode`.
 - Confirm the available source format in the upstream `dist/` or `src/` directories.
 - Convert the ASCII glyphs into the sprite-generator source format used by the existing fonts.
-- Configure the background dot position and rectangle size in the font definition; connectors use ordinary bracket/star characters and the shared fill mask.
+- Configure background dot placement in web-ui's `src/plugins/background/dot-settings.ts`; connectors use ordinary bracket/star characters and the shared fill mask.
 - Generate the git-ignored bitmap metadata with the existing sprite-generator tooling.
 - Register the font in the sprite-generator public font list and lazy metadata loader.
 - Update third-party font documentation and commit the OFL license text.
@@ -46,12 +46,12 @@ High-level approach:
 ### Step 2: Add sprite-generator font sources
 
 - Add `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/pixelcode/ascii.ts`.
-- Run the existing bitmap generation tool so `generated/ascii.ts` is created.
+- Run the existing bitmap generation tool so `src/generated/<font>.ts` is created.
 
 ### Step 3: Register the font
 
-- Add `pixelcode` to the `Font` type and `FONT_NAMES`.
-- Add a `FONT_DEFINITIONS.pixelcode` entry in `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/index.ts`.
+- Add `pixelcode` to the font catalog; `Font` and `FONT_NAMES` are derived from it.
+- Add a `FONTS.pixelcode` entry in `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/catalog.ts`.
 - Add test fixture coverage for the new font configuration.
 
 ### Step 4: Document attribution
@@ -69,9 +69,9 @@ High-level approach:
 ## Validation Checkpoints
 
 - `rg -n "pixelcode|PixelCode|Pixel Code" packages/editor docs/todos`
-- `npx nx run sprite-generator:test`
-- `npx nx run sprite-generator:typecheck`
-- `npx nx run sprite-generator:test:screenshot`
+- `npx nx run @8f4e/sprite-generator:test`
+- `npx nx run @8f4e/sprite-generator:typecheck`
+- `npx nx run @8f4e/sprite-generator:test:screenshot`
 
 ## Success Criteria
 
@@ -84,9 +84,8 @@ High-level approach:
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/pixelcode/` - new font source and generated bitmap metadata.
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/types.ts` - font id registration.
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/index.ts` - font definition and lazy metadata loader.
+- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/pixelcode/` - new font source.
+- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/catalog.ts` - font dimensions, lazy payload import, and derived font-name types.
 - `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tests/` - fixture and font selection coverage.
 - `packages/editor/THIRD_PARTY_FONTS.md` - upstream attribution.
 - `packages/editor/licenses/` - PixelCode OFL license text.

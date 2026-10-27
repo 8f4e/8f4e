@@ -1,9 +1,7 @@
-import generateSprite from '@8f4e/sprite-generator';
+import loadFontAtlas from '@8f4e/sprite-generator';
 
 const canvas = document.getElementById('test-canvas') as HTMLCanvasElement;
-const {
-	spriteAtlas: { image },
-} = await generateSprite({ font: 'ibmvga8x16' });
+const { image } = await loadFontAtlas('ibmvga8x16');
 canvas.width = image.width;
 canvas.height = image.height;
 const pixels = new Uint8ClampedArray(image.width * image.height * 4);

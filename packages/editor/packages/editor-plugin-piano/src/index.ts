@@ -16,7 +16,7 @@ export const pianoPlugin: EditorPlugin = {
 		const keyboardsByBlock = new WeakMap<CodeBlockGraphicData, PianoKeyboard[]>();
 		const unregisterDirective = directives.register(createPianoDirective(keyboardsByBlock));
 		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
-			drawPianoKeyboards(draw, state, keyboardsByBlock.get(codeBlock) ?? [], memoryViews);
+			drawPianoKeyboards(draw, keyboardsByBlock.get(codeBlock) ?? [], memoryViews);
 		});
 		const unregisterInteraction = registerPianoInteraction(state, events, keyboardsByBlock);
 		const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {

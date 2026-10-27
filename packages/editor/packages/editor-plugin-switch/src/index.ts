@@ -10,8 +10,6 @@ export const switchPlugin: EditorPlugin = {
 		const widgets = new WeakMap<CodeBlockGraphicData, SwitchWidget[]>();
 		const unregisterDirective = directives.register(createSwitchDirective(widgets));
 		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
-			const sprites = state.spriteLookups;
-			if (!sprites) return;
 			for (const control of widgets.get(codeBlock) ?? []) {
 				const value = memoryViews.int32[control.allocationUnitAddress] || 0;
 				if (value === control.onValue || value === control.offValue) {

@@ -85,30 +85,6 @@ const entries = (opfsRoot as unknown as {
 - Some security-focused IT environments disable WebAssembly entirely due to perceived exploit risk
 **Recommendation**: Critical API - provide clear error messaging if not supported
 
-### Canvas.convertToBlob() & OffscreenCanvas
-**Risk Level**: 🟡 **Medium**
-**Browser Support**: Canvas.convertToBlob (Chrome 50+, Firefox 19+, Safari 12+), OffscreenCanvas (Chrome 69+, Firefox 105+, Safari 16.4+)
-
-**Usage Locations**:
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/visual-testing/index.ts`: `canvas.convertToBlob()`
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/index.ts`: `window.OffscreenCanvas` feature detection
-
-**Context**: Canvas operations and off-main-thread rendering
-**Compatibility Issues**:
-- OffscreenCanvas has more limited support than regular Canvas
-- convertToBlob behavior may vary across browsers
-- OffscreenCanvas not available in older browsers
-**Recommendation**: Feature detection implemented for OffscreenCanvas, test convertToBlob across browsers
-
-```typescript
-// Current pattern in codebase
-if (window.OffscreenCanvas) {
-  // Use OffscreenCanvas for better performance
-} else {
-  // Fallback to regular Canvas
-}
-```
-
 ### MediaDevices.getUserMedia()
 **Risk Level**: 🟡 **Medium**
 **Browser Support**: Chrome 53+, Firefox 36+, Safari 11+
@@ -168,7 +144,6 @@ if (window.OffscreenCanvas) {
 
 **Usage Locations**:
 - `src/storage-callbacks.ts`: File download functionality
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/visual-testing/index.ts`: Image blob handling
 
 **Context**: Creating downloadable files and object URLs
 **Considerations**: Memory cleanup (URL.revokeObjectURL), size limits
@@ -205,6 +180,11 @@ if (window.OffscreenCanvas) {
 
 **Context**: Standard DOM manipulation and canvas rendering
 **Considerations**: Performance differences across browsers
+
+Font atlas generation expands packed font rows directly into a binary `Uint8Array` mask, which the WebGL renderer
+uploads as an R8 texture. It requires no `OffscreenCanvas`, canvas feature detection, or `convertToBlob()` step.
+Canvas 2D remains in sprite-generator's `screenshot-tests/test-cases/` for displaying mask previews; it is not part
+of the production font-loading path. The former `visual-testing/index.ts` usage locations no longer exist.
 
 ## Browser Compatibility Strategy Recommendations
 

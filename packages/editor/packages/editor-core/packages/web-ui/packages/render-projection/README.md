@@ -5,13 +5,13 @@ moves repeatable preparation work out of the frame hot path while keeping editor
 concerns.
 
 The projection is a disposable read model, not a second source of truth. Its data can always be rebuilt from the
-current editor state and rendering resources.
+current editor state.
 
 ```text
 editor-state ──changes──▶ web-ui-render-projection ──snapshot──▶ web-ui
                                    ▲
                                    │
-                         sprite and lifecycle events
+                         runtime lifecycle events
 ```
 
 The default editor package is the composition root. It creates editor-state and the web UI render projection as sibling
@@ -25,7 +25,7 @@ state or rendering resources change can happen earlier, including:
 - syntax highlighting;
 - tab expansion into visual cells;
 - line-number preparation and conversion of collapsed placeholders into render cells;
-- character and font lookup resolution into sprite IDs;
+- ASCII glyph ID selection and unsupported-character fallback;
 - disabled-code font selection; and
 - insertion of blank rows for editor-owned logical gaps.
 
@@ -62,7 +62,7 @@ candidate for the render projection.
 
 `createWebUiRenderProjection(store, events)` creates a projection controller that:
 
-1. reads the current editor state and sprite lookups;
+1. reads the current editor state;
 2. subscribes to relevant state changes and lifecycle events;
 3. derives a new `WebUiRenderData` snapshot outside the renderer;
 4. exposes the current snapshot through `getSnapshot()`; and
@@ -119,6 +119,7 @@ npx nx run @8f4e/web-ui-render-projection:build
 ```
 
 Palette-only updates retain the same shape IDs and stable token indices, so the cached cells remain valid without
-rebuilding the projection. Font changes replace the shared glyph table and refresh projected cells.
+rebuilding the projection. Glyph IDs remain fixed across font changes. The font-change event refreshes projected rows after editor-state
+recalculates font-dependent layout and plugin-created logical gaps; it does not resolve a new glyph table.
 Pre-resolved cells store shape and color together in one unsigned 32-bit number. This retains numeric cell storage
 and avoids allocating a separate array or object for every glyph when the projection refreshes.

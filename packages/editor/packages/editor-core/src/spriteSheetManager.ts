@@ -1,11 +1,11 @@
 import { type ResolvedPalette, resolvePalette } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import generateSprite, { type SpriteData } from '@8f4e/sprite-generator';
+import loadFontAtlas, { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
 import type { EventDispatcher } from './events';
 
 type SpriteSheetView = {
-	loadSpriteAtlas: (spriteData: SpriteData) => void;
+	loadFontAtlas: (fontAtlas: FontAtlas, font: Font) => void;
 	loadPalette: (palette: ResolvedPalette) => void;
 };
 
@@ -22,14 +22,15 @@ export function createSpriteSheetManager(
 	let generation = 0;
 	const rerenderSpriteSheet = async () => {
 		const currentGeneration = ++generation;
-		const spriteData = await generateSprite({
-			font: state.editorConfig.font,
-		});
+		const font = state.editorConfig.font ?? DEFAULT_FONT;
+		const fontAtlas = await loadFontAtlas(font);
 		if (disposed || currentGeneration !== generation) {
 			return;
 		}
 
-		view.loadSpriteAtlas(spriteData);
+		state.viewport.hGrid = fontAtlas.grid.cellHeight;
+		state.viewport.vGrid = fontAtlas.grid.cellWidth;
+		view.loadFontAtlas(fontAtlas, font);
 
 		events.dispatch('spriteSheetRerendered');
 	};

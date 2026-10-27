@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { WebUiRenderData } from '@8f4e/web-ui-render-projection';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DrawContext as Engine } from '../../drawContext';
@@ -38,7 +38,6 @@ describe('drawModules', () => {
 		const visible = createMockCodeBlock({ width: 96, height: 64, x: 16, y: 16 });
 		const offscreen = createMockCodeBlock({ creationIndex: 1, x: 10000 });
 		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
 			codeBlockRendering: { codeBlocks: [visible, offscreen] },
 		});
 		const engine = createMockEngine();
@@ -75,7 +74,6 @@ describe('drawModules', () => {
 		const otherBlock = createMockCodeBlock({ creationIndex: 1, x: 160, width: 96, height: 64 });
 		const state = createMockState({
 			editorMode,
-			spriteLookups: createMockSpriteLookups() as never,
 			codeBlockRendering: {
 				codeBlocks: [selectedBlock, otherBlock],
 				selectedCodeBlock: selectedBlock,
@@ -110,7 +108,6 @@ describe('drawModules', () => {
 		const block = createMockCodeBlock({ creationIndex: 4, width: 100, height: 64 });
 		block.widgets.assertions = [{ lineNumber: 2, passed: true, x: 8, y: 32, width: 8, height: 16 }];
 		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
 			codeBlockRendering: { codeBlocks: [block] },
 		});
 		const engine = createMockEngine();
@@ -127,7 +124,6 @@ describe('drawModules', () => {
 	it('draws resolved code cells from projected render data', () => {
 		const block = createMockCodeBlock({ creationIndex: 4, width: 100, height: 50 });
 		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
 			codeBlockRendering: { codeBlocks: [block] },
 		});
 		const engine = createMockEngine();
@@ -146,7 +142,6 @@ describe('drawModules', () => {
 
 	it('draws precomputed entry outlines before rendering code blocks', () => {
 		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
 			codeBlockRendering: {
 				codeBlocks: [],
 				entryOutlines: [
@@ -188,7 +183,6 @@ describe('drawModules', () => {
 			height: 80,
 		});
 		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
 			codeBlockRendering: {
 				codeBlocks: [offscreenBlock],
 			},

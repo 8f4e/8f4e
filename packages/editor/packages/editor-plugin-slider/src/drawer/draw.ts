@@ -6,10 +6,6 @@ import type { Slider } from '../types';
 const HANDLE_LABEL = '|';
 
 export function drawSliders(engine: DrawContext, state: State, sliders: Slider[], memoryViews: MemoryViews): void {
-	if (!state.spriteLookups) {
-		return;
-	}
-
 	for (const { x, y, width, height, allocationUnitAddress, byteAddress, isInteger, isFloat64, min, max } of sliders) {
 		const value = isInteger
 			? memoryViews.int32[allocationUnitAddress]

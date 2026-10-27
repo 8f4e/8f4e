@@ -2,7 +2,7 @@
 export function writeGlyph(
 	data: Uint8Array,
 	stride: number,
-	font: readonly number[],
+	font: ArrayLike<number>,
 	code: number,
 	width: number,
 	height: number,

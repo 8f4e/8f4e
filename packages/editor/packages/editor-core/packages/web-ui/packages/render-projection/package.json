@@ -29,7 +29,8 @@
     "@8f4e/language-spec": "*",
     "@8f4e/sprite-generator": "*",
     "@8f4e/state-manager": "*",
-    "@8f4e/tokenizer": "*"
+    "@8f4e/tokenizer": "*",
+    "glugglugglug": "*"
   },
   "devDependencies": {
     "@8f4e/editor-state-testing": "*",

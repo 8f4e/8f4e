@@ -1,4 +1,3 @@
-import { createMockSpriteLookups } from '@8f4e/editor-state-testing';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type Mock, vi } from 'vitest';
@@ -11,10 +10,6 @@ import { directiveDefinitions } from './features/directives/registry';
 import entryOutlines from './features/entryOutlines/effect';
 import parsedDirectivesUpdater from './features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
-
-function createSpriteLookups() {
-	return createMockSpriteLookups() as never;
-}
 
 describe('code block layout readiness', () => {
 	it('runs widget callbacks with current block dimensions, row gaps, and cursor coordinates', () => {
@@ -172,7 +167,6 @@ describe('code block rendering home directive', () => {
 				...EMPTY_DEFAULT_PROJECT,
 				code: ['pass env'],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -214,7 +208,6 @@ describe('code block rendering home directive', () => {
 					},
 				],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -249,7 +242,6 @@ describe('code block rendering home directive', () => {
 					},
 				],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -298,7 +290,7 @@ group checks
 ; @pos -20 -10
 groupEnd
 entryEnd`);
-		const state = createMockState({ initialProjectState: project, spriteLookups: createSpriteLookups() });
+		const state = createMockState({ initialProjectState: project });
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 		codeBlockRenderingEffect(store, events, directiveDefinitions);
@@ -353,7 +345,6 @@ entryEnd`);
 					},
 				],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -399,7 +390,6 @@ entryEnd`);
 				vGrid: 8,
 				hGrid: 16,
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -440,7 +430,6 @@ entryEnd`);
 				vGrid: 8,
 				hGrid: 16,
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -482,7 +471,6 @@ entryEnd`);
 				codeBlocks: [selectedBlock],
 				selectedCodeBlock: selectedBlock,
 			},
-			spriteLookups: createSpriteLookups(),
 			viewport: {
 				x: 0,
 				y: 0,
@@ -540,7 +528,6 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 				codeBlocks,
 				selectedCodeBlock: normalA,
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -583,7 +570,6 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 				codeBlocks,
 				selectedCodeBlock: topB,
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();

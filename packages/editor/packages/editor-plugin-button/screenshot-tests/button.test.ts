@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import generateSprite from '@8f4e/sprite-generator';
+import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
@@ -69,7 +69,7 @@ entryEnd`);
 		float64: new Float64Array(buffer),
 	};
 	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.on.allocationUnitAddress] = 1;
-	const spriteData = await generateSprite({ font: state.editorConfig.font });
+	const spriteData = await loadFontAtlas(state.editorConfig.font);
 	const projection = createWebUiRenderProjection(store, events);
 	const renderer = await initView(
 		state,
@@ -82,7 +82,6 @@ entryEnd`);
 	);
 	renderer.pauseRendering();
 	events.dispatch('spriteSheetRerendered');
-	projection.refresh();
 	try {
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();

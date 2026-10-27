@@ -1,11 +1,11 @@
 import { PALETTE_INDICES, PALETTE_TOKENS, resolvePalette } from '@8f4e/editor-palette';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
+import loadFontAtlas from '@8f4e/sprite-generator';
 import init from '@8f4e/web-ui';
 import type { CodeBlockRenderData, WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
-import createMockSpriteData from './utils/createMockSpriteData';
 import createMockStateWithColors from './utils/createMockStateWithColors';
 import resolveFixtureCodeCells from './utils/resolveFixtureCodeCells';
 
@@ -40,20 +40,17 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 	state.viewport.height = canvas.height;
 	const codeBlocks = new Map<number, CodeBlockRenderData>();
 	const renderData: WebUiRenderDataSource = { getSnapshot: () => ({ codeBlocks }) };
-	const spriteData = await createMockSpriteData(state);
+	const spriteData = await loadFontAtlas(state.editorConfig.font);
 	const palette = resolvePalette(state.editorConfig.color);
 	const renderer = await init(state, renderData, canvas, createMockMemoryViews(), spriteData, palette);
 	try {
 		renderer.pauseRendering();
-		expect(state.spriteLookups).toBeDefined();
-		const lookups = state.spriteLookups!;
+
 		const characterLines = Array.from({ length: 8 }, (_, row) =>
 			Array.from({ length: 16 }, (_, column) => String.fromCharCode(row * 16 + column)).join('')
 		);
 		for (const [index, token] of tokens.entries()) {
 			const fontName = `font${token[0].toUpperCase()}${token.slice(1)}` as `font${Capitalize<typeof token>}`;
-			const font = lookups.font;
-			expect(font, `Missing palette font ${fontName}`).toBeDefined();
 			const codeLines = ['', fontName, ...characterLines, ''];
 			const block = createMockCodeBlock({
 				creationIndex: index,
@@ -72,7 +69,7 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 				color: r + g + b > 1.5 ? 'black' : 'white',
 			});
 			state.codeBlockRendering.codeBlocks.push(block);
-			codeBlocks.set(index, { codeCells: resolveFixtureCodeCells(codeLines, font, PALETTE_INDICES[token]) });
+			codeBlocks.set(index, { codeCells: resolveFixtureCodeCells(codeLines, PALETTE_INDICES[token]) });
 		}
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot(`font-colors-${page}`);

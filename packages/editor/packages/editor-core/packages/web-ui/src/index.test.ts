@@ -151,20 +151,14 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 	};
 }
 
-function createSpriteData(cellIndex = 0, characterWidth = 8, characterHeight = 16) {
+function createFontAtlas(characterWidth = 8, characterHeight = 16) {
 	return {
-		spriteAtlas: {
-			image: {
-				width: characterWidth * 16,
-				height: characterHeight * 9,
-				data: new Uint8Array(characterWidth * 16 * characterHeight * 9),
-			},
-			grid: { cellWidth: characterWidth, cellHeight: characterHeight, columns: 16, cellCount: 129 },
-			sprites: { fill: cellIndex, font: { 63: cellIndex } },
+		image: {
+			width: characterWidth * 16,
+			height: characterHeight * 9,
+			data: new Uint8Array(characterWidth * 16 * characterHeight * 9),
 		},
-		characterWidth,
-		characterHeight,
-		backgroundDot: { x: 3, y: 7, size: 2 },
+		grid: { cellWidth: characterWidth, cellHeight: characterHeight, columns: 16, cellCount: 129 },
 	};
 }
 
@@ -194,7 +188,7 @@ describe('web-ui init', () => {
 			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
-			createSpriteData(),
+			createFontAtlas(),
 			resolvePalette(state.editorConfig.color)
 		);
 
@@ -228,7 +222,7 @@ describe('web-ui init', () => {
 			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
-			createSpriteData(),
+			createFontAtlas(),
 			resolvePalette(state.editorConfig.color)
 		);
 		view.renderFrame();
@@ -253,7 +247,7 @@ describe('web-ui init', () => {
 			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
-			createSpriteData(),
+			createFontAtlas(),
 			resolvePalette(state.editorConfig.color),
 			{
 				overlayTexture: {
@@ -292,7 +286,7 @@ describe('web-ui init', () => {
 			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
-			createSpriteData(),
+			createFontAtlas(),
 			resolvePalette(state.editorConfig.color)
 		);
 
@@ -321,7 +315,7 @@ describe('web-ui init', () => {
 			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
-			createSpriteData(),
+			createFontAtlas(),
 			resolvePalette(state.editorConfig.color)
 		);
 		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
@@ -361,7 +355,7 @@ describe('web-ui init', () => {
 			renderData,
 			canvas,
 			memoryViews,
-			createSpriteData(),
+			createFontAtlas(),
 			resolvePalette(state.editorConfig.color)
 		);
 
@@ -401,27 +395,27 @@ describe('web-ui init', () => {
 			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
-			createSpriteData(),
+			createFontAtlas(),
 			resolvePalette(state.editorConfig.color)
 		);
 		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
 		const backgroundPaletteUploads = mocks.background.setPalette.mock.calls.length;
 		const wireUpdates = mocks.resolveWireColors.mock.calls.length;
-		view.loadSpriteAtlas(createSpriteData());
+		view.loadFontAtlas(createFontAtlas(), 'ibmvga8x16');
 		expect(mocks.engine.setPalette).toHaveBeenCalledTimes(paletteUploads);
 		expect(mocks.background.setPalette).toHaveBeenCalledTimes(backgroundPaletteUploads);
 		expect(mocks.resolveWireColors).toHaveBeenCalledTimes(wireUpdates);
-		const lookup = state.spriteLookups;
+
 		const installCount = mocks.engine.setSpriteAtlas.mock.calls.length;
 		const palette = resolvePalette({ primary: '#00ff00' });
 		view.loadPalette(palette);
 		expect(mocks.background.setPalette).toHaveBeenCalledWith(mocks.engine.setPalette.mock.calls.at(-1)?.[0]);
 		expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(installCount);
-		expect(state.spriteLookups).toBe(lookup);
+
 		expect(mocks.resolveWireColors).toHaveBeenLastCalledWith(palette);
 	});
 
-	it('installs cell indices and grid metrics when the atlas is replaced', async () => {
+	it('updates font dimensions and background settings when the atlas is replaced', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = {
@@ -439,16 +433,16 @@ describe('web-ui init', () => {
 			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
-			createSpriteData(7, 8, 16),
+			createFontAtlas(8, 16),
 			resolvePalette(state.editorConfig.color)
 		);
-		expect(state.spriteLookups?.fill).toBe(7);
-		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 16, vGrid: 8 }));
 
-		view.loadSpriteAtlas(createSpriteData(42, 10, 18));
-		expect(mocks.background.setFont).toHaveBeenLastCalledWith(createSpriteData(42, 10, 18));
-		expect(state.spriteLookups?.fill).toBe(42);
-		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 18, vGrid: 10 }));
+		view.loadFontAtlas(createFontAtlas(10, 18), 'terminus10x18');
+		expect(mocks.background.setFont).toHaveBeenLastCalledWith('terminus10x18', createFontAtlas(10, 18).grid);
+		expect(mocks.engine.setSpriteAtlas).toHaveBeenLastCalledWith(
+			createFontAtlas(10, 18).image,
+			createFontAtlas(10, 18).grid
+		);
 	});
 
 	it('emits render stats at the configured frame interval', async () => {
@@ -475,7 +469,7 @@ describe('web-ui init', () => {
 			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
-			createSpriteData(),
+			createFontAtlas(),
 			resolvePalette(state.editorConfig.color),
 			{
 				onRenderStats,
@@ -552,7 +546,7 @@ describe('web-ui init', () => {
 			renderData,
 			canvas,
 			memoryViews,
-			createSpriteData(),
+			createFontAtlas(),
 			resolvePalette(state.editorConfig.color),
 			{
 				getCodeBuffer: () => codeBuffer,

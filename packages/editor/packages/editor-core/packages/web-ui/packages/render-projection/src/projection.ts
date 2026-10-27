@@ -1,7 +1,7 @@
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { SpriteCell } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
 import deriveCodeBlockCodeCells from './deriveCodeBlockCodeCells';
+import type { SpriteCell } from './spriteCell';
 
 export interface CodeBlockRenderData {
 	codeCells: Array<Array<SpriteCell | null>>;
@@ -16,7 +16,6 @@ export interface WebUiRenderDataSource {
 }
 
 export interface WebUiRenderProjection extends WebUiRenderDataSource {
-	refresh: () => void;
 	dispose: () => void;
 }
 
@@ -27,30 +26,25 @@ export default function createWebUiRenderProjection(
 	let snapshot: WebUiRenderData = { codeBlocks: new Map() };
 	const refresh = () => {
 		const state = store.getState();
-		const spriteLookups = state.spriteLookups;
-		if (!spriteLookups) {
-			snapshot = { codeBlocks: new Map() };
-			return;
-		}
 		snapshot = {
 			codeBlocks: new Map(
 				state.codeBlockRendering.codeBlocks.map(block => [
 					block.creationIndex,
-					{ codeCells: deriveCodeBlockCodeCells(block, spriteLookups) },
+					{ codeCells: deriveCodeBlockCodeCells(block) },
 				])
 			),
 		};
 	};
 
-	const selectors = ['codeBlockRendering', 'spriteLookups', 'codeErrors', 'info'] as const;
+	const selectors = ['codeBlockRendering', 'codeErrors', 'info'] as const;
 	for (const selector of selectors) store.subscribe(selector, refresh);
+	// Font changes can change plugin-created logical gaps even though glyph IDs stay fixed.
 	const eventNames = ['runtimeInitialized', 'spriteSheetRerendered'] as const;
 	for (const eventName of eventNames) events.on(eventName, refresh);
 	refresh();
 
 	return {
 		getSnapshot: () => snapshot,
-		refresh,
 		dispose: () => {
 			for (const selector of selectors) store.unsubscribe(selector, refresh);
 			for (const eventName of eventNames) events.off(eventName, refresh);

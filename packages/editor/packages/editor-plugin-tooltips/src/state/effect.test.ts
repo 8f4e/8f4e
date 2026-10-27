@@ -1,10 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import {
-	createMockCodeBlock,
-	createMockEventDispatcher,
-	createMockSpriteLookups,
-	createMockState,
-} from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import { createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -221,7 +216,6 @@ describe('tooltip effect', () => {
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
 			},
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 		const store = createStateManager(state);
 

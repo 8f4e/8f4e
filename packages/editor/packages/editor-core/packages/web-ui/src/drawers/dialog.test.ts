@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../__tests__/rendering';
 import drawDialog from './dialog';
@@ -36,7 +36,6 @@ describe('drawDialog', () => {
 				vGrid: 8,
 				hGrid: 16,
 			},
-			spriteLookups: createMockSpriteLookups() as never,
 		});
 
 		drawDialog(engine, state);

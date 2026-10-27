@@ -1,8 +1,8 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import type { CodeBlockDisplayModel, CodeBlockType } from '@8f4e/editor-state-types';
-import type { SpriteCell, SpriteIdLookups } from '@8f4e/sprite-generator';
 import getLineNumberPrefix from './getLineNumberPrefix';
 import resolveCodeCells from './resolveCodeCells';
+import type { SpriteCell } from './spriteCell';
 import highlightSyntax from './syntax-highlighting/highlightSyntax';
 import { expandLineColorsToCells, expandLineToCells, getTabStopsByLine } from './tabExpansion';
 
@@ -16,10 +16,7 @@ export interface CodeBlockRenderSource {
 	gaps: ReadonlyMap<number, { size: number }>;
 }
 
-export default function deriveCodeBlockCodeCells(
-	block: CodeBlockRenderSource,
-	spriteLookups: SpriteIdLookups
-): Array<Array<SpriteCell | null>> {
+export default function deriveCodeBlockCodeCells(block: CodeBlockRenderSource): Array<Array<SpriteCell | null>> {
 	const tabStopsByLine = getTabStopsByLine(block.code);
 	const characters = block.displayModel.lines.map(({ text, sourceLineIndex, isPlaceholder }, displayRow) => {
 		const prefix = getLineNumberPrefix(displayRow, block.lineNumberColumnWidth, text, isPlaceholder ?? false);
@@ -60,8 +57,7 @@ export default function deriveCodeBlockCodeCells(
 		characters,
 		colors,
 		PALETTE_INDICES.inkBase,
-		block.disabled ? PALETTE_INDICES.inkFaint : undefined,
-		spriteLookups.font
+		block.disabled ? PALETTE_INDICES.inkFaint : undefined
 	);
 	for (const [row, gap] of [...block.gaps].sort(([left], [right]) => right - left)) {
 		codeCells.splice(row + 1, 0, ...Array.from({ length: gap.size }, () => []));

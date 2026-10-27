@@ -4,7 +4,7 @@ This package provides a web-based UI renderer for the editor. It renders from th
 web UI render data, and memory views, treating them as immutable inputs. It is designed to be
 replaceable by renderers for other platforms.
 
-Rendering is backed by `glugglugglug`. Sprite names are resolved to dense numeric IDs when the atlas is generated, so
+Rendering is backed by `glugglugglug`. Glyph IDs are ASCII character codes 0–127 and fill is 128, so
 per-frame drawers submit positions, sizes, shared shape IDs, and numeric palette indices. WebAssembly RGBA frames are
 drawn above the sprites and connection lines. A procedural dotted background runs before the sprite pass.
 
@@ -28,7 +28,7 @@ until the image dimensions change; memory release deletes the texture and the ne
 
 ## API
 
-### `init(state, renderData, canvas, memoryViews, spriteData, palette, options?)`
+### `init(state, renderData, canvas, memoryViews, fontAtlas, palette, options?)`
 
 Initializes the web UI renderer.
 
@@ -38,7 +38,7 @@ Initializes the web UI renderer.
 - `renderData: WebUiRenderDataSource` - Precalculated, web-specific graphic data
 - `canvas: HTMLCanvasElement` - The canvas element to render to
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
-- `spriteData: SpriteData` - Pre-generated numeric atlas data from `@8f4e/sprite-generator`
+- `fontAtlas: FontAtlas` - Cached font masks and grid dimensions from `@8f4e/sprite-generator`
 - `palette: ResolvedPalette` - Initial theme resolved separately by `@8f4e/editor-palette`
 - `options.onRenderStats` - Optional callback for sampled render statistics
 - `options.renderStatsIntervalFrames` - Optional frame interval for `onRenderStats` (defaults to 60)
@@ -46,8 +46,8 @@ Initializes the web UI renderer.
 **Returns:** An object with methods to control the renderer:
 
 - `resize(width, height)` - Resize the canvas
-- `loadSpriteAtlas(spriteData)` - Replace font masks and derived drawing data
-- `loadPalette(palette)` - Update GPU colors and wire colors without rebuilding masks or lookups
+- `loadFontAtlas(fontAtlas, font)` - Replace font masks and derived drawing data
+- `loadPalette(palette)` - Update GPU colors and wire colors without rebuilding masks
 - `renderFrame()` - Draw one frame on demand
 - `destroy()` - Release renderer and plugin resources
 
@@ -66,15 +66,13 @@ interface RenderStats {
 }
 ```
 
-### `SpriteData`
+### `FontAtlas`
 
-Type exported by `@8f4e/sprite-generator` representing sprite sheet data:
+Type exported by `@8f4e/sprite-generator` representing a font atlas:
 ```typescript
-interface SpriteData {
-  spriteAtlas: SpriteAtlas;
-  characterWidth: number;
-  characterHeight: number;
-  backgroundDot: { readonly x: number; readonly y: number; readonly size: number };
+interface FontAtlas {
+  image: SpriteAtlasImage;
+  grid: SpriteAtlasGrid;
 }
 ```
 
@@ -82,11 +80,13 @@ interface SpriteData {
 
 The web-ui package reads from the editor state and render projection but does **not** mutate either. The nested
 `@8f4e/web-ui-render-projection` package subscribes to editor state changes and precalculates code-cell shape IDs and palette indices.
-Atlas and font changes are explicit and are applied through `loadSpriteAtlas()`. Theme-only changes use `loadPalette()` and retain the atlas and projected glyph IDs. Wire colors are refreshed from
-the same resolved palette. `DrawContext.drawFill()` uses the shared fill mask, `drawText()` uses the shared glyph table,
+Atlas and font changes are explicit and are applied through `loadFontAtlas()`. Theme-only changes use `loadPalette()` and retain the atlas and projected glyph IDs. Wire colors are refreshed from
+the same resolved palette. `DrawContext.drawFill()` uses the shared fill mask, `drawText()` uses fixed ASCII glyph IDs,
 and both accept an explicit palette index. The renderer prepares up to 256 palette colors as premultiplied float32
 values in a 4 KiB uniform buffer, while `loadPalette()` continues accepting the resolved editor palette.
-Font changes reinstall the glyph table and update character metrics.
+The editor installs font grid dimensions into state before initializing or updating the view.
+Font changes replace the masks and update drawing metrics. Dot positions and sizes live beside the background plugin
+in `src/plugins/background/dot-settings.ts`; no background settings come from the font atlas.
 
 Input `[ ]` and output `[*]` connectors are composed at runtime from the shared fill and font sprites. Both use a
 three-cell `surfaceRaised2` background; input brackets use `primaryBase`, and output brackets use `secondaryBase`.

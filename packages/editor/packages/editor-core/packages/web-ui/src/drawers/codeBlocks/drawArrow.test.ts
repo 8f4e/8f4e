@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockSpriteLookups, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../drawContext';
@@ -13,7 +13,6 @@ describe('drawArrow', () => {
 	it('renders ASCII characters for off-screen directions', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: createMockSpriteLookups() as never,
 			viewport: {
 				width: 1024,
 				height: 768,

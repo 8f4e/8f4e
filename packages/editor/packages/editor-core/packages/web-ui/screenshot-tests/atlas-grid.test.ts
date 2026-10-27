@@ -1,4 +1,4 @@
-import generateSprite, { FONT_NAMES } from '@8f4e/sprite-generator';
+import loadFontAtlas, { FONT_NAMES, getGlyphSpriteId } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 
@@ -15,9 +15,9 @@ for (const font of FONT_NAMES) {
 		engine.setPalette(new Uint8Array(colors.flat()));
 		try {
 			// Replacing a different font on the same renderer also changes the grid uniforms.
-			const previous = await generateSprite({ font: 'spleen16x32' });
-			engine.setSpriteAtlas(previous.spriteAtlas.image, previous.spriteAtlas.grid);
-			const { spriteAtlas } = await generateSprite({ font });
+			const previous = await loadFontAtlas('spleen16x32');
+			engine.setSpriteAtlas(previous.image, previous.grid);
+			const spriteAtlas = await loadFontAtlas(font);
 			const { image, grid } = spriteAtlas;
 			engine.setSpriteAtlas(image, grid);
 			engine.resize(image.width + 3, image.height + 5);
@@ -35,14 +35,7 @@ for (const font of FONT_NAMES) {
 			commands.push([-3, 2, 87, 1, grid.cellWidth * 2, grid.cellHeight * 2]);
 			commands.push([image.width - 2, 1, 128, 1, 13, 7]);
 			commands.push([3, image.height - 2, 128, 0, 9, 11]);
-			commands.push([
-				2,
-				3,
-				spriteAtlas.sprites.font[1000] ?? spriteAtlas.sprites.font[63],
-				1,
-				grid.cellWidth,
-				grid.cellHeight,
-			]);
+			commands.push([2, 3, getGlyphSpriteId(1000), 1, grid.cellWidth, grid.cellHeight]);
 			commands.push([0, 0, 128, 2, canvas.width, canvas.height]);
 			const expected = (destinationAlpha: number) => {
 				const pixels = new Uint8Array(canvas.width * canvas.height * 4);
