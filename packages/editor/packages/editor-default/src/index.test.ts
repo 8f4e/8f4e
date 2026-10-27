@@ -2,7 +2,7 @@ import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mountDefaultEditor } from './index';
 import { exportBinaryCode } from './storage-callbacks';
 
@@ -36,7 +36,11 @@ vi.mock('./storage-callbacks', () => ({
 }));
 
 describe('default editor plugins', () => {
-	beforeEach(() => vi.clearAllMocks());
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.stubGlobal('window', { matchMedia: vi.fn(() => ({ matches: false })) });
+	});
+	afterEach(() => vi.unstubAllGlobals());
 
 	it('composes the standard plugins and injects the mounted canvas and render callback', async () => {
 		const renderFrame = vi.fn();
@@ -55,6 +59,12 @@ describe('default editor plugins', () => {
 			'wave',
 			'piano',
 			'slider',
+			'meter',
+			'plot',
+			'bars',
+			'crossfade',
+			'watch',
+			'stack',
 			'tooltips',
 			'project-export',
 			'wasm-export',

@@ -9,15 +9,10 @@ import drawEntryOutlines from './drawEntryOutlines';
 import drawSelectedOutline from './drawSelectedOutline';
 import drawShapeDeclarations from './drawShapeDeclarations';
 import drawAssertions from './widgets/assertions';
-import drawBars from './widgets/bars';
 import drawBlockHighlights from './widgets/blockHighlights';
 import drawConnectors from './widgets/connectors';
-import drawCrossfades from './widgets/crossfades';
-import drawDebuggers from './widgets/debuggers';
 import drawErrorMessages from './widgets/errorMessages';
 import drawInfoPanels from './widgets/infoPanels';
-import drawMeters from './widgets/meters';
-import drawPlotters from './widgets/plotters';
 
 const corner = '+';
 
@@ -97,13 +92,8 @@ export default function drawModules(
 
 			drawErrorMessages(engine, state, codeBlock);
 			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
-			drawCrossfades(engine, codeBlock, memoryViews);
 			drawConnectors(engine, state, codeBlock, memoryViews);
-			drawBars(engine, codeBlock, memoryViews);
-			drawMeters(engine, codeBlock, memoryViews);
-			drawPlotters(engine, state, codeBlock, memoryViews);
 			drawInfoPanels(engine, state, codeBlock);
-			drawDebuggers(engine, state, codeBlock, memoryViews);
 			drawers?.drawCodeBlockOverlay({ draw: engine, state, codeBlock, memoryViews });
 
 			engine.endGroup();

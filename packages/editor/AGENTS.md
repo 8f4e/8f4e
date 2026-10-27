@@ -12,6 +12,7 @@
   `@8f4e/editor-plugin-wave`, piano keyboards in `@8f4e/editor-plugin-piano`, sliders in `@8f4e/editor-plugin-slider`,
   selected-line tooltips in `@8f4e/editor-plugin-tooltips`, browser screenshots in `@8f4e/editor-plugin-screenshot`,
   project Save/Export in `@8f4e/editor-plugin-project-export`, and WebAssembly export in `@8f4e/editor-plugin-wasm-export`.
+  Meter, plot, bars, crossfade, watch, and stack each live in their matching `editor-plugin-<name>` packages.
   Plugin contracts and installation live in `editor-core`,
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   The standard plugin set is composed in `editor-default`.

@@ -29,6 +29,9 @@
 - Plugins own their registrations, listeners, private widget data, and disposal. Do not add automatic tracking.
 - Keep browser resources out of the shared plugin context. Browser plugins receive instance dependencies through
   factories composed by the browser host. `Editor.renderFrame()` provides generic immediate rendering.
+
+- Meter, plot, bars, crossfade, watch, and stack own their data and drawers in plugin packages. Keep memory scope,
+  typed-value resolution, tab layout, and compiler lookups generic and available through public helper exports.
 - Keep project serialization under editor-state's `pureHelpers/projectSerialization`, filename configuration under
   `features/editor-config`, and session persistence as its own core feature.
   Project-file and WebAssembly export actions, menus, and the save shortcut belong to their plugins.

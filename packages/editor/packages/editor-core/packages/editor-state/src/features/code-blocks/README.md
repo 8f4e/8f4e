@@ -12,12 +12,12 @@ Manages the lifecycle of code blocks in the editor: creation, selection, drag op
 - **Graphics Derivation**: Computes visual properties (position, size, color) from block data
 - **Block Widgets**: Derives interactive elements from code annotations:
   - Inputs/Outputs for audio routing
-  - Debuggers for runtime inspection
-  - Plotters for visualization
 
 Switch, button, and waveform features are provided by `@8f4e/editor-plugin-switch`, `@8f4e/editor-plugin-button`, and
 `@8f4e/editor-plugin-wave`, included in `@8f4e/editor-default`. Their plugins own derived data and drawing through the
-[plugin API](../../../../../README.md#plugins), with switch and button plugins also owning their interactions.
+[plugin API](../../../../../README.md#plugins), with switch and button plugins also owning their interactions. Meter, plot, bars, watch, stack, crossfade, piano, and
+slider also live in their own `@8f4e/editor-plugin-<name>` packages. Core carries no derived data or drawers for these
+features; the default composition selects and installs them.
 
 ## Block Types
 
@@ -38,11 +38,9 @@ This feature contains several subfeatures under `features/` that handle specific
 - `blockHighlights` - Visual highlighting for selected/hovered blocks
 - `assertions` - Derives assertion result rectangles from `state.assertionResults` into `widgets.assertions`
 - `blockTypeUpdater` - Automatic block type detection and updates
-- `arrayPlotters` - Visualization of runtime array data
 - `codeBlockCreator` - Block creation logic
 - `codeBlockDragger` - Drag and drop operations
 - `codeBlockNavigation` - Keyboard navigation between blocks
-- `debuggers` - Runtime debugging overlays
 - `codeBlockRendering` - Visual properties computation
 - `inputs` - Audio input routing
 - `outputs` - Audio output routing
@@ -98,8 +96,8 @@ canonical. Local module declarations and group exposures remain distinct even wh
 Widgets, connectors, and other code-block consumers use `getCodeBlockMemoryScope` to convert graphical blocks at the
 editor boundary. Configuration and renderer consumers construct scopes from their known project paths or canonical
 module IDs. `resolveMemoryTarget` handles target lookup using these explicit scopes, and `resolveMemoryIdentifier`
-adds address operators, dereferencing, indexing, and display formats. The resolvers accept no graphical blocks or
-implicit string scopes.
+adds address operators, dereferencing, and indexing. The watch plugin owns binary/hex formatting prefixes and
+end-address display syntax. The resolvers accept no graphical blocks or implicit string scopes.
 
 ## References
 

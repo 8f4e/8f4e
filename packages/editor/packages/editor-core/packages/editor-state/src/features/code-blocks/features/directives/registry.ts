@@ -10,21 +10,15 @@ import type {
 } from '@8f4e/editor-state-types';
 import buildDisplayModel from '../../buildDisplayModel';
 import alwaysOnTopDirective from './alwaysOnTop/plugin';
-import barsDirective from './bars/plugin';
-import crossfadeDirective from './crossfade/plugin';
 import disabledDirective from './disabled/plugin';
 import favoriteDirective from './favorite/plugin';
 import groupDirective from './group/plugin';
 import hideDirective from './hide/plugin';
 import homeDirective from './home/plugin';
 import infoDirective from './info/plugin';
-import meterDirective from './meter/plugin';
-import plotDirective from './plot/plugin';
-import stackDirective from './stack/plugin';
 import { normalizeEditorDirectiveRecords } from './utils';
 import { createVerticalSpaceAfterSourceLineAdder } from './verticalSpaceAfterSourceLine';
 import viewportDirective from './viewport/plugin';
-import watchDirective from './watch/plugin';
 
 export type {
 	DirectiveBlockState,
@@ -34,12 +28,6 @@ export type {
 } from '@8f4e/editor-state-types';
 
 export const directiveDefinitions: EditorDirectiveDefinition[] = [
-	meterDirective,
-	barsDirective,
-	plotDirective,
-	crossfadeDirective,
-	watchDirective,
-	stackDirective,
 	infoDirective,
 	disabledDirective,
 	homeDirective,

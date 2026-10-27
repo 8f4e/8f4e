@@ -19,7 +19,7 @@ This keeps memory churn low and gives the garbage collector less work during int
 
 ## Precomputed Values
 
-- Precompute lookup tables at module scope for stable conversions. For example, `formatDebuggerValue.ts` builds `HEX_BYTE_LOOKUP` once instead of rebuilding hex strings from scratch for every byte on every frame.
+- Precompute lookup tables at module scope for stable conversions. For example, `formatWatchValue.ts` in `@8f4e/editor-plugin-watch` builds `HEX_BYTE_LOOKUP` once instead of rebuilding hex strings from scratch for every byte on every frame.
 - Precompute geometry before rendering. Built-in widgets can store it in graphic data; plugins keep it in private models. For example, the piano plugin draws precomputed key geometry and pressed-overlay rows.
 - Precompute repeated layout measurements in widget data. For example, info panel widgets carry `keyColumnWidth` so the drawer does not scan every info record once to measure keys and again to render rows.
 

@@ -1,13 +1,19 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
+import { barsPlugin } from '@8f4e/editor-plugin-bars';
 import { buttonPlugin } from '@8f4e/editor-plugin-button';
+import { crossfadePlugin } from '@8f4e/editor-plugin-crossfade';
+import { meterPlugin } from '@8f4e/editor-plugin-meter';
 import { pianoPlugin } from '@8f4e/editor-plugin-piano';
+import { plotPlugin } from '@8f4e/editor-plugin-plot';
 import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { sliderPlugin } from '@8f4e/editor-plugin-slider';
+import { createStackPlugin } from '@8f4e/editor-plugin-stack';
 import { switchPlugin } from '@8f4e/editor-plugin-switch';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
 import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
+import { createWatchPlugin } from '@8f4e/editor-plugin-watch';
 import { wavePlugin } from '@8f4e/editor-plugin-wave';
 import { createCompilerService } from './compiler-callback';
 import { getListOfModules, getModule, getModuleDependencies } from './examples/moduleRegistry';
@@ -27,6 +33,8 @@ export function createDefaultEditorPlugins(options: {
 	exportProject: (text: string, fileName: string) => Promise<void>;
 	exportBinaryCode: (fileName: string) => Promise<void>;
 }): NonNullable<EditorOptions['plugins']> {
+	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+	const prefersReducedMotion = () => motionPreference.matches;
 	return [
 		toggleSkipExecutionPlugin,
 		switchPlugin,
@@ -34,6 +42,12 @@ export function createDefaultEditorPlugins(options: {
 		wavePlugin,
 		pianoPlugin,
 		sliderPlugin,
+		meterPlugin,
+		plotPlugin,
+		barsPlugin,
+		crossfadePlugin,
+		createWatchPlugin({ prefersReducedMotion }),
+		createStackPlugin({ prefersReducedMotion }),
 		tooltipsPlugin,
 		createProjectExportPlugin({
 			inputTarget: options.canvas,

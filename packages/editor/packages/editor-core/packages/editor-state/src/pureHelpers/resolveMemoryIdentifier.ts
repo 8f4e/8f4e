@@ -51,24 +51,8 @@ export default function resolveMemoryIdentifier(
 	}
 
 	let showAddress = false;
-	let showEndAddress = false;
 	let operator: '&' | '*' | undefined;
 	let bufferPointer = 0;
-	let displayFormat: 'decimal' | 'binary' | 'hex' = 'decimal';
-
-	if (memoryIdentifier.startsWith('0b')) {
-		displayFormat = 'binary';
-		memoryIdentifier = memoryIdentifier.substring(2);
-	} else if (memoryIdentifier.startsWith('0x')) {
-		displayFormat = 'hex';
-		memoryIdentifier = memoryIdentifier.substring(2);
-	}
-
-	if (memoryIdentifier.endsWith('&')) {
-		operator = '&';
-		showEndAddress = true;
-		memoryIdentifier = memoryIdentifier.slice(0, -1);
-	}
 
 	if (memoryIdentifier.startsWith('&')) {
 		operator = '&';
@@ -102,9 +86,7 @@ export default function resolveMemoryIdentifier(
 	return {
 		target,
 		showAddress,
-		showEndAddress,
 		memory,
 		bufferPointer,
-		displayFormat,
 	};
 }

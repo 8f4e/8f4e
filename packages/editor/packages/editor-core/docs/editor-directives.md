@@ -1,6 +1,7 @@
 # Editor Directives
 
-This document defines editor-only directives for code blocks.
+This document defines editor-only directives for code blocks. Core owns generic directive parsing and layout;
+`@8f4e/editor-default` installs the optional feature plugins documented here.
 
 ## Directive Syntax
 
@@ -164,6 +165,8 @@ Supported `font` values:
 
 ### `@watch`
 
+Provided by `@8f4e/editor-plugin-watch`.
+
 Show a runtime debugger value for a memory id.
 
 ```txt
@@ -195,6 +198,8 @@ These modifiers can be combined when they make sense. For example:
 
 ### `@stack`
 
+Provided by `@8f4e/editor-plugin-stack`.
+
 Show the compiler's `stackAfter` analysis at a source location. A trailing directive shows the stack after the
 instruction on the same line. A standalone directive shows the stack after the preceding compiled instruction.
 
@@ -220,6 +225,8 @@ Use `@s` as a shorthand alias for `@stack`.
 
 ### `@plot`
 
+Provided by `@8f4e/editor-plugin-plot`.
+
 Draw a plot over a typed pointer range. The first argument provides the start pointer and element type metadata. Use a
 plain pointer memory or `&buffer` for direct buffer memory. The second argument is always the element count. You can
 optionally provide an explicit min/max range override.
@@ -238,6 +245,8 @@ Range detection:
 
 ### `@bars`
 
+Provided by `@8f4e/editor-plugin-bars`.
+
 Draw vertical bars over a typed pointer range. It uses the same pointer, element-count, and optional range arguments as
 `@plot`.
 
@@ -247,6 +256,8 @@ Draw vertical bars over a typed pointer range. It uses the same pointer, element
 ```
 
 ### `@meter`
+
+Provided by `@8f4e/editor-plugin-meter`.
 
 Render a horizontal level meter from a typed scalar value. The first argument is the typed value source to read. You can
 optionally provide an explicit min/max range override.
@@ -306,6 +317,8 @@ defaults. References to other modules or group aliases update the original backi
 inside nested groups. The public exposure lines remain unchanged.
 
 ### `@crossfade`
+
+Provided by `@8f4e/editor-plugin-crossfade`.
 
 Render a center-origin crossfade control that writes to two float memory addresses. The left address is driven when the
 knob moves left, and the right address is driven when the knob moves right.

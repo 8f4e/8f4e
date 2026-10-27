@@ -1,0 +1,102 @@
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import type { EditorPlugin } from '@8f4e/editor-core';
+import initState from '@8f4e/editor-state';
+import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { afterEach, vi } from 'vitest';
+import { createEvents } from './events';
+import { createDrawContextMock } from './rendering';
+
+const cleanups: Array<() => void> = [];
+afterEach(() => {
+	while (cleanups.length) cleanups.pop()!();
+	vi.restoreAllMocks();
+});
+
+export async function setup(
+	plugin: EditorPlugin,
+	source: string[],
+	{
+		installed = true,
+		mode = 'edit',
+		name = 'audio',
+		drawers = createCodeBlockDrawerRegistry(),
+	}: {
+		installed?: boolean;
+		mode?: 'edit' | 'view';
+		name?: string;
+		drawers?: ReturnType<typeof createCodeBlockDrawerRegistry>;
+	} = {}
+) {
+	const text =
+		source[0] === '8f4e/v1' ? source.join('\n') : ['8f4e/v1', 'entry main', ...source, 'entryEnd'].join('\n');
+	const project = parseProjectSource(text);
+	const compiled = await compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+	const pages = Math.max(1, Math.ceil(compiled.requiredMemoryBytes / 65536));
+	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
+	(instance.exports.initDefaults as CallableFunction)();
+	const memoryViews: MemoryViews = {
+		int8: new Int8Array(memory.buffer),
+		uint8: new Uint8Array(memory.buffer),
+		int16: new Int16Array(memory.buffer),
+		uint16: new Uint16Array(memory.buffer),
+		int32: new Int32Array(memory.buffer),
+		float32: new Float32Array(memory.buffer),
+		float64: new Float64Array(memory.buffer),
+	};
+	const events = createEvents();
+	const setWordInMemory = vi.fn((address: number, value: number, isInteger: boolean) => {
+		memoryViews[isInteger ? 'int32' : 'float32'][address] = value;
+	});
+	const store = initState(events, {
+		runtimeRegistry: {},
+		initialEditorMode: mode,
+		callbacks: {
+			loadSession: async () => null,
+			getWordFromMemory: address => memoryViews.int32[address],
+			setWordInMemory,
+		},
+	});
+	const state = store.getState();
+	const dispose = installed
+		? plugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers })
+		: () => {};
+	cleanups.push(() => {
+		dispose();
+		store.dispose();
+	});
+	state.compiler.memoryPlan = compiled.memoryPlan;
+	state.compiler.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
+	state.compiler.compiledModules = compiled.compiledModules;
+	state.compiler.compiledFunctions = compiled.compiledFunctions;
+	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
+	events.dispatch('loadProject', { project });
+	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
+	store.set('codeBlockRendering.codeBlocks', [block]);
+	const draw = createDrawContextMock();
+	const render = () => {
+		vi.mocked(draw.drawFill).mockClear();
+		vi.mocked(draw.drawText).mockClear();
+		vi.mocked(draw.drawCharacter).mockClear();
+		vi.mocked(draw.startGroup).mockClear();
+		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
+		drawers.drawCodeBlockOverlay({ draw, state, codeBlock: block, memoryViews });
+	};
+	const update = (code: string[]) => {
+		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);
+		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', code);
+	};
+	return {
+		store,
+		state,
+		block,
+		events,
+		draw,
+		render,
+		update,
+		memoryViews,
+		compiled,
+		dispose,
+		setWordInMemory,
+	};
+}
