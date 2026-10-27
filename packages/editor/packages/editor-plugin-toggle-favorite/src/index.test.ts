@@ -1,5 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initState, { serializeToProject } from '@8f4e/editor-state';
+import initState from '@8f4e/editor-state';
 import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
@@ -51,19 +51,25 @@ afterEach(() => {
 
 describe('toggle favorite plugin', () => {
 	it.each([
-		['module target', 'moduleEnd'],
-		['function target', 'functionEnd'],
-		['note target', 'noteEnd'],
-		['constants target', 'constantsEnd'],
-		['includes', 'includesEnd'],
-		['group target', 'groupEnd'],
-	])('inserts after the %s header and publishes the source edit', (...code) => {
+		['modules', 'module target', 'moduleEnd'],
+		['functions', 'function target', 'functionEnd'],
+		['notes', 'note target', 'noteEnd'],
+		['constants', 'constants target', 'constantsEnd'],
+		['includes', 'includes', 'includesEnd'],
+		['groups', 'group target', 'groupEnd'],
+	])('inserts and saves the favorite directive in %s', (collection, ...code) => {
 		const test = setup(code);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		expect(test.block.code.slice(0, 2)).toEqual([code[0], '; @favorite']);
 		expect(test.block.isFavorite).toBe(true);
 		expect(test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(test.block);
-		expect(test.saveSession).toHaveBeenCalledWith(serializeToProject(test.state));
+		expect(test.saveSession).toHaveBeenCalledWith(
+			expect.objectContaining({
+				[collection]: expect.arrayContaining([
+					expect.objectContaining({ code: expect.arrayContaining([code[0], '; @favorite', code[1]]) }),
+				]),
+			})
+		);
 	});
 
 	it('removes every favorite directive while keeping other directives and source', () => {
