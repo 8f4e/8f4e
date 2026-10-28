@@ -35,5 +35,7 @@
   `createSessionPersistencePlugin({ storage, storageKey, restoreOnStartup })` in the default set. Disable only session
   restoration when an explicit initial URL exists. Keep autosaving active while that URL is pending.
 - The plugins own URL fetching and storage serialization. Do not restore session/URL callbacks in core or host wrappers.
+- Forward onInitialProjectLoaded/onInitialProjectLoadError to the URL plugin's factory callbacks. Without a URL,
+  notify success after editor initialization. Mounting must not wait for fetching; callbacks may precede mount resolution.
 - Test URL/session startup coordination in `src/startup.integration.test.ts` using the real default plugin composition.
   Keep each startup plugin's own tests independent of the other plugin.

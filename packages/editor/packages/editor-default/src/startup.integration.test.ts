@@ -30,12 +30,16 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 	const store = initState(events, { callbacks: {}, runtimeRegistry: {}, initialEditorMode: 'edit' });
 	const drawers = createCodeBlockDrawerRegistry();
 	const disposers: Array<() => void> = [];
+	const onInitialProjectLoaded = vi.fn();
+	const onInitialProjectLoadError = vi.fn();
 	try {
 		const plugins = createDefaultEditorPlugins({
 			canvas,
 			storage: storage as Storage,
 			storageKey: 'session',
 			initialProjectUrl: 'https://example.com/project.8f4e',
+			onInitialProjectLoaded,
+			onInitialProjectLoadError,
 			showOpenMenuItem: false,
 			renderFrame: () => {},
 			getMemory: () => null,
@@ -49,8 +53,11 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 		expect(fetch).toHaveBeenCalledWith('https://example.com/project.8f4e', { cache: 'no-store' });
 		expect(storage.getItem).not.toHaveBeenCalled();
 		expect(JSON.parse(saved).modules).toEqual([]);
+		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
 		finish(new Response(source));
 		await vi.waitFor(() => expect(JSON.parse(saved).modules[0]?.code).toContain('module remote'));
+		expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
+		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
 		expect(store.getState().codeBlockRendering.codeBlocks.some(block => block.name === 'oldSession')).toBe(false);
 	} finally {
 		while (disposers.length) disposers.pop()!();

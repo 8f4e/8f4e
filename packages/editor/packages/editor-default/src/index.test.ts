@@ -100,6 +100,8 @@ describe('default editor plugins', () => {
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl: undefined,
+			onLoaded: undefined,
+			onError: undefined,
 		});
 		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
 			storage: expect.anything(),
@@ -130,19 +132,53 @@ describe('default editor plugins', () => {
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const storage = {} as Storage;
 		const initialProjectUrl = 'https://example.com/project.8f4e';
+		const onInitialProjectLoaded = vi.fn();
+		const onInitialProjectLoadError = vi.fn();
 		const editor = await mountDefaultEditor(canvas, {
 			storage,
 			storageNamespace: 'custom',
 			initialProjectUrl,
+			onInitialProjectLoaded,
+			onInitialProjectLoadError,
 			showOpenMenuItem: false,
 		});
-		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({ fetch: globalThis.fetch, initialProjectUrl });
+		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
+			fetch: globalThis.fetch,
+			initialProjectUrl,
+			onLoaded: onInitialProjectLoaded,
+			onError: onInitialProjectLoadError,
+		});
+		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
+		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
 		expect(createProjectFilesPlugin).toHaveBeenCalledWith({ inputTarget: canvas, showOpenMenuItem: false });
 		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
 			storage,
 			storageKey: 'project_custom',
 			restoreOnStartup: false,
 		});
+		editor.dispose();
+	});
+
+	it('reports initialized content without a URL once editor initialization finishes', async () => {
+		let finish!: (editor: Editor) => void;
+		vi.mocked(initEditor).mockReturnValueOnce(
+			new Promise(resolve => {
+				finish = resolve;
+			})
+		);
+		const onInitialProjectLoaded = vi.fn();
+		const onInitialProjectLoadError = vi.fn();
+		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
+		const mounting = mountDefaultEditor(canvas, {
+			storage: {} as Storage,
+			onInitialProjectLoaded,
+			onInitialProjectLoadError,
+		});
+		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
+		finish({ dispose: vi.fn() } as Editor);
+		const editor = await mounting;
+		expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
+		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
 		editor.dispose();
 	});
 

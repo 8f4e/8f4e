@@ -6,9 +6,13 @@ import type { ProjectObjectModel } from '@8f4e/language-spec';
 export function createProjectUrlLoaderPlugin({
 	fetch,
 	initialProjectUrl,
+	onLoaded,
+	onError,
 }: {
 	fetch: typeof globalThis.fetch;
 	initialProjectUrl?: string;
+	onLoaded?: () => void;
+	onError?: (error: unknown) => void;
 }): EditorPlugin {
 	return {
 		id: 'project-url-loader',
@@ -26,9 +30,12 @@ export function createProjectUrlLoaderPlugin({
 				} catch (error) {
 					if (disposed) return;
 					logError(store.getState(), `Failed to load project from ${initialProjectUrl}: ${String(error)}`);
-					project = EMPTY_DEFAULT_PROJECT;
+					events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
+					onError?.(error);
+					return;
 				}
 				events.dispatch('loadProject', { project });
+				onLoaded?.();
 			};
 			events.on('init', loadInitialProject);
 			return () => {

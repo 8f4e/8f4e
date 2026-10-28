@@ -38,6 +38,15 @@ The session-persistence plugin uses its storage namespace. The default namespace
 Hosts may also provide a custom `Storage` implementation or an
 `initialProjectUrl`; interpreting page URLs remains the host's responsibility.
 
+Use `onInitialProjectLoaded()` to reveal installed initial content and `onInitialProjectLoadError(error)` to report
+a failed initial URL request or parse. With no URL, the success callback runs after editor initialization and synchronous
+session restoration. With a URL, the standard URL-loader plugin supplies the notification. A valid empty project counts
+as success; compilation and asset loading continue independently.
+
+Callbacks can run before the mount promise resolves. Mounting itself finishes after editor initialization while a URL
+request may still be pending, so hosts can dispose that editor when navigating elsewhere. Custom plugin compositions
+provide their own asynchronous loading notifications.
+
 The default composition includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
 `@8f4e/editor-plugin-toggle-favorite` for Favorite/Unfavorite editing,
 `@8f4e/editor-plugin-remove-memory-connections` for disconnecting intermodular memory defaults,

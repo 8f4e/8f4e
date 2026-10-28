@@ -155,10 +155,12 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 			canvas.tabIndex = 0;
 			canvas.setAttribute('aria-label', `${item.project.title} editor`);
 			item.frame.prepend(canvas);
+			let failed = false;
 			const showError = (error: unknown) => {
 				if (disposed || currentRevision !== revision) {
 					return;
 				}
+				failed = true;
 				releaseEditor();
 				item.status.hidden = false;
 				item.status.textContent = 'This project could not be loaded.';
@@ -169,6 +171,16 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 				item.status.append(retryButton);
 				console.error('Failed to load gallery project:', error);
 			};
+			const reveal = () => {
+				if (disposed || failed || currentRevision !== revision) return;
+				window.clearTimeout(loadTimeout);
+				revealFrame = window.requestAnimationFrame(() => {
+					if (disposed || failed || currentRevision !== revision) return;
+					canvas.classList.add('editor-ready');
+					item.status.hidden = true;
+				});
+			};
+			loadTimeout = window.setTimeout(() => showError(new Error('Project loading timed out')), 30_000);
 			try {
 				const editor = await mountDefaultEditor(canvas, {
 					sharedAudioContext,
@@ -180,38 +192,17 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 					showOpenMenuItem: false,
 					initialEditorMode: 'edit',
 					initialProjectUrl: item.projectUrl,
+					onInitialProjectLoaded: reveal,
+					onInitialProjectLoadError: showError,
 					storage: window.sessionStorage,
 					storageNamespace: `8f4e-${storageNamespace}-${item.project.id}`,
 				});
-				if (disposed || currentRevision !== revision) {
+				if (disposed || failed || currentRevision !== revision) {
 					editor.dispose();
 					canvas.remove();
 					return;
 				}
 				activeEditor = editor;
-				loadTimeout = window.setTimeout(() => showError(new Error('Project loading timed out')), 30_000);
-				const reveal = () => {
-					if (disposed || currentRevision !== revision) {
-						return;
-					}
-					const project = editor.state.initialProjectState;
-					if (
-						!project ||
-						(project.modules.length === 0 &&
-							project.functions.length === 0 &&
-							project.groups.length === 0 &&
-							project.notes.length === 0)
-					) {
-						revealFrame = window.requestAnimationFrame(reveal);
-						return;
-					}
-					window.clearTimeout(loadTimeout);
-					revealFrame = window.requestAnimationFrame(() => {
-						canvas.classList.add('editor-ready');
-						item.status.hidden = true;
-					});
-				};
-				reveal();
 			} catch (error) {
 				showError(error);
 			}

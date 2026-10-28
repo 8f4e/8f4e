@@ -38,6 +38,8 @@ export function createDefaultEditorPlugins(options: {
 	storage: Storage;
 	storageKey: string;
 	initialProjectUrl?: string;
+	onInitialProjectLoaded?: () => void;
+	onInitialProjectLoadError?: (error: unknown) => void;
 	renderFrame: () => void;
 	showOpenMenuItem: boolean;
 	getMemory: () => WebAssembly.Memory | null;
@@ -46,7 +48,12 @@ export function createDefaultEditorPlugins(options: {
 	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
-		createProjectUrlLoaderPlugin({ fetch: globalThis.fetch, initialProjectUrl: options.initialProjectUrl }),
+		createProjectUrlLoaderPlugin({
+			fetch: globalThis.fetch,
+			initialProjectUrl: options.initialProjectUrl,
+			onLoaded: options.onInitialProjectLoaded,
+			onError: options.onInitialProjectLoadError,
+		}),
 		createSessionPersistencePlugin({
 			storage: options.storage,
 			storageKey: options.storageKey,
@@ -97,6 +104,10 @@ export interface DefaultEditorMountOptions {
 	featureFlags?: EditorOptions['featureFlags'];
 	initialEditorMode?: EditorOptions['initialEditorMode'];
 	initialProjectUrl?: string;
+	/** Initial source is installed; compilation and asset loading continue independently. */
+	onInitialProjectLoaded?: () => void;
+	/** The initial URL request or source parsing failed. */
+	onInitialProjectLoadError?: (error: unknown) => void;
 	/** Show Open From Disk in the project-files plugin menu. */
 	showOpenMenuItem?: boolean;
 	storage?: Storage;
@@ -112,6 +123,8 @@ export async function mountDefaultEditor(
 		featureFlags,
 		initialEditorMode,
 		initialProjectUrl,
+		onInitialProjectLoaded,
+		onInitialProjectLoadError,
 		showOpenMenuItem = true,
 		storage = localStorage,
 		storageNamespace = DEFAULT_STORAGE_NAMESPACE,
@@ -128,6 +141,8 @@ export async function mountDefaultEditor(
 					storage,
 					storageKey: `project_${storageNamespace}`,
 					initialProjectUrl,
+					onInitialProjectLoaded,
+					onInitialProjectLoadError,
 					renderFrame: () => editor.renderFrame(),
 					showOpenMenuItem,
 					getMemory: compilerService.getMemory,
@@ -146,6 +161,7 @@ export async function mountDefaultEditor(
 		compilerService.dispose();
 		throw error;
 	}
+	if (!initialProjectUrl) onInitialProjectLoaded?.();
 
 	return {
 		...editor,

@@ -4,6 +4,10 @@
 controls the canvas size. Homepage editors leave wheel scrolling to the surrounding document and start in edit mode
 with mode switching disabled.
 
+`src/homepage.ts` exports `mountHomepageEditors`, which owns the homepage editors, visibility observers, and disposal;
+`src/main.ts` mounts it. The homepage reveals canvases through the default editor's initial-project completion callback
+and displays a reload message when URL loading fails.
+
 From the workspace root:
 
 ```bash
@@ -47,10 +51,13 @@ to the default desktop selection or the collapsed mobile list.
 Selecting a different example creates a fresh editor and disposes the previous instance. Mounts are serialized to
 handle rapid selections, and each example uses its own session storage namespace. The gallery editor captures wheel
 gestures for panning; scrolling over the example list scrolls the document. A link opens the example in the full editor.
-The loading indicator stays visible while the editor contains its empty startup project. The gallery reveals the
-canvas once fetched project content arrives; requests that leave it empty reach the 30-second timeout and offer a retry.
+The loading indicator stays visible until the initial-project completion callback arrives. Successful empty projects
+are revealed too. A load-error callback offers a retry immediately; a 30-second timeout handles stalled initialization
+or fetching. Switching examples disposes the previous editor without waiting for its fetch. The gallery does not inspect
+project contents or poll editor state to infer completion.
 
-The browser integration test mounts the real default editor with a delayed project response to verify this startup path.
+Browser integration tests cover both website views with delayed responses, empty projects, failure/retry, early
+callbacks, and switching examples while a fetch is pending.
 
 ## Compiler test gallery
 
