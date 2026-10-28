@@ -17,22 +17,27 @@ export type RuntimeEnvConstantsContributor = (editorConfig: EditorConfig) => str
 export type RuntimeValueMap = Record<string, unknown>;
 export type RuntimeValuesByRuntimeId = Record<string, RuntimeValueMap>;
 
-/**
- * Runtime registry entry describing a runtime implementation.
- */
-export interface RuntimeRegistryEntry {
+/** Observable runtime metadata, without executable dependencies. */
+export interface RuntimeMetadata {
 	/** Unique identifier for this runtime (e.g., 'WebWorkerRuntime') */
 	id: string;
 	/** Optional editor-config schema contribution advertised by this runtime. */
 	editorConfigSchema?: EditorConfigSchemaContribution;
+}
+
+/** Executable dependencies supplied directly to the runtime coordinator. */
+export interface RuntimeRegistryEntry extends RuntimeMetadata {
 	/** Runtime-owned contribution to the auto-generated `constants env` block */
 	getEnvConstants?: RuntimeEnvConstantsContributor;
 	/** Factory function that creates the runtime instance */
 	factory: RuntimeFactory;
 }
 
-/**
- * Runtime registry mapping runtime IDs to their registry entries.
- * Used to configure available runtimes and their schemas at editor initialization.
- */
-export type RuntimeRegistry = Record<string, RuntimeRegistryEntry>;
+/** Lazy implementations advertise their configuration before their code is loaded. */
+export interface LazyRuntimeRegistryEntry extends RuntimeMetadata {
+	load: () => Promise<RuntimeRegistryEntry>;
+}
+
+/** Runtime implementations supplied at initialization, outside observable state. */
+export type RuntimeRegistry = Record<string, RuntimeRegistryEntry | LazyRuntimeRegistryEntry>;
+export type RuntimeMetadataRegistry = Record<string, RuntimeMetadata>;

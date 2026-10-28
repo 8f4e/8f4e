@@ -1,84 +1,21 @@
 # Runtime Feature
 
-## Purpose
+The runtime coordinator owns executable runtime definitions, lazy loading, and instance lifecycle. The host supplies
+`Options.runtimeRegistry` directly during initialization. Editor state contains only runtime metadata in
+`state.runtimeRegistry`: IDs and optional configuration schemas.
 
-Manages the lifecycle of runtime instances that execute compiled 8f4e programs. Handles runtime selection from editor config, initialization, destruction, and recreation when the selected runtime changes.
+A registry entry supplies either a `factory(store, events)` returning a disposer, or a lazy `load()` returning a full
+runtime definition. Lazy entries advertise a permissive configuration schema before loading. The coordinator caches
+loaded definitions per editor, publishes the full schema on completion, and triggers configuration revalidation.
+Factories, loaders, in-flight promises, and active-runtime disposers stay outside observable state.
 
-## Key Behaviors
+`state.editorConfig.runtime` selects a registered runtime; no runtime starts without an explicit selection. Switching
+stops the old runtime before starting the new one. Initialization waits while compilation is in progress, and late
+loads cannot start an obsolete selection or publish state after disposal. Failed loads can be retried on a later
+selection or compilation.
 
-- **Runtime Registry**: Looks up runtime factories from `state.runtimeRegistry` at project root
-- **Runtime Selection**: Determines which runtime to use from `state.editorConfig.runtime`
-- **Lifecycle Management**: Creates and destroys runtime instances as needed
-- **Runtime Switching**: Recreates runtime when the selected runtime changes
-- **No Default Runtime**: Does not initialize a runtime unless `state.editorConfig.runtime` names a registered runtime
-- **Initialization Locking**: Prevents concurrent initialization attempts
+Runtime definitions may provide `getEnvConstants(editorConfig)`. The coordinator evaluates it when configuration or
+the loaded definition changes and publishes source lines through `state.envConstantContributions.runtime`. The generic
+auto-env-constants feature consumes those lines without calling runtime implementations.
 
-## Runtime Registry
-
-The runtime registry is located at the project root level (not in editor-state):
-
-```typescript
-state.runtimeRegistry = {
-	AudioWorkletRuntime: { factory: audioWorkletRuntimeFactory },
-	WebWorkerRuntime: { factory: webWorkerRuntimeFactory },
-};
-```
-
-The keys in `state.runtimeRegistry` are the runtime IDs used by `; @config runtime <runtimeId>`, so those
-strings must match exactly. Each entry contains a `factory` function that creates and returns a destroyer function.
-
-## Runtime Lifecycle
-
-1. **Initialization**: Triggered when compilation completes and runtime needs to change
-2. **Destruction**: Previous runtime is destroyed before creating new one
-3. **Factory Call**: Runtime factory is invoked with `(store, events)` parameters
-4. **Destroyer Storage**: Factory returns a cleanup function for later destruction
-
-## Events & Callbacks
-
-### State Subscriptions
-
-- Subscribes to `compiler.isCompiling` becoming `false` to trigger runtime initialization
-
-### Events Dispatched
-
-- Dispatches events as needed for runtime coordination (implementation-specific)
-
-### State Touched
-
-- `state.runtimeRegistry` - Registry of available runtime factories
-- `state.editorConfig.runtime` - Selected runtime id
-
-## Integration Points
-
-- **Editor Config**: Runtime selection comes from `; @config runtime <runtimeId>`
-- **Program Compiler**: Runtime initialization waits for compilation to complete
-- **Runtime Factories**: External runtime implementations register themselves in the registry
-
-## Runtime Factory Contract
-
-```typescript
-type RuntimeFactory = (store: StateManager<State>, events: EventDispatcher) => () => void;
-runtime; // Returns destroyer function
-```
-
-## Logging
-
-Runtime lifecycle events are logged:
-
-- "Requesting runtime: {runtime}"
-- "Loaded runtime from registry: {runtime}"
-- "Destroying runtime: {runtime}"
-- "Successfully initialized runtime: {runtime}"
-
-## References
-
-- Runtime registry is defined at project root initialization
-
-## Notes & Limitations
-
-- Only one runtime can be active at a time
-- Runtime switching requires destroying previous runtime completely
-- Initialization is locked to prevent race conditions
-- Missing or unknown runtime selections leave the editor without an active runtime
-- Runtime factories must be registered before runtime feature initializes
+Runtime result and diagnostic data remain observable, including test results and AudioWorklet buffer-size reporting.

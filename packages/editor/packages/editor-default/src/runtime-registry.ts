@@ -1,6 +1,6 @@
 import type {
 	EditorConfigSchemaContribution,
-	JSONSchemaLike,
+	LazyRuntimeRegistryEntry,
 	RuntimeRegistry,
 	RuntimeRegistryEntry,
 } from '@8f4e/editor-core';
@@ -8,57 +8,17 @@ import type { CompilerService } from './compiler-callback';
 
 type CompilerArtifacts = Pick<CompilerService, 'getCodeBuffer' | 'getMemory' | 'getAssertionSites'>;
 
-/**
- * Creates a lazy runtime registry entry that defers loading the runtime implementation and schema
- * until the runtime is first selected. Uses a cached Promise per registry entry for idempotent, race-safe
- * loading. Once loaded, the full schema replaces the stub and config is revalidated.
- */
+/** Advertises a schema before loading; the runtime coordinator owns loading and publication. */
 function createLazyRuntimeEntry(
 	id: string,
 	editorConfigSchema: EditorConfigSchemaContribution | undefined,
-	loader: () => Promise<RuntimeRegistryEntry>
-): RuntimeRegistryEntry {
-	let loadPromise: Promise<RuntimeRegistryEntry> | null = null;
-
-	// Minimal permissive stub schema used until the real schema is loaded.
-	// No additionalProperties constraint so valid contributed properties are not rejected before the full schema arrives.
-	const stubSchema: JSONSchemaLike = {
-		type: 'object',
-	};
-
-	const entry: RuntimeRegistryEntry = {
+	load: () => Promise<RuntimeRegistryEntry>
+): LazyRuntimeRegistryEntry {
+	return {
 		id,
-		editorConfigSchema: editorConfigSchema && {
-			...editorConfigSchema,
-			schema: stubSchema,
-		},
-		factory: (store, events) => {
-			let destroyed = false;
-			let destroy: (() => void) | null = null;
-
-			if (!loadPromise) {
-				loadPromise = loader();
-			}
-
-			loadPromise.then(loadedEntry => {
-				entry.editorConfigSchema = loadedEntry.editorConfigSchema;
-				entry.getEnvConstants = loadedEntry.getEnvConstants;
-				store.set('runtimeRegistry', { ...store.getState().runtimeRegistry });
-				if (!destroyed) {
-					destroy = loadedEntry.factory(store, events);
-				}
-			});
-
-			return () => {
-				destroyed = true;
-				if (destroy) {
-					destroy();
-				}
-			};
-		},
+		editorConfigSchema: editorConfigSchema && { ...editorConfigSchema, schema: { type: 'object' } },
+		load,
 	};
-
-	return entry;
 }
 
 /**

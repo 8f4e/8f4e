@@ -4,7 +4,7 @@ import initView, { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import { setup } from '../src/__tests__/setup';
-import { crossfadePlugin } from '../src/index';
+import { createCrossfadePlugin } from '../src/index';
 
 test('crossfade plugin renders its directive', async () => {
 	const canvas = document.createElement('canvas');
@@ -14,7 +14,7 @@ test('crossfade plugin renders its directive', async () => {
 	document.body.append(canvas);
 	const drawers = createCodeBlockDrawerRegistry();
 	const test = await setup(
-		crossfadePlugin,
+		createCrossfadePlugin,
 		[
 			'module audio',
 			'; @pos 4 3',

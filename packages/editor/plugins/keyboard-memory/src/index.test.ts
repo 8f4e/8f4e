@@ -35,14 +35,17 @@ entryEnd`
 	});
 	const store = initState(events, {
 		runtimeRegistry: {},
-		callbacks: { setWordInMemory },
+		callbacks: {},
 	});
 	store.set('compiler.compiledModules', compiled.compiledModules);
 	store.set('compiler.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
 	store.set('compiler.memoryPlan', compiled.memoryPlan);
 	store.set('compiler.projectMemoryExposuresByGroupPath', compiled.projectMemoryExposuresByGroupPath);
 	const inputTarget = new EventTarget();
-	const dispose = createKeyboardMemoryPlugin({ inputTarget: inputTarget as HTMLElement }).setup({
+	const dispose = createKeyboardMemoryPlugin({
+		inputTarget: inputTarget as HTMLElement,
+		writeMemory: setWordInMemory,
+	}).setup({
 		store,
 		events,
 		menus: store.menus,

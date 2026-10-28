@@ -10,3 +10,5 @@
 - Run `npx nx run @8f4e/editor-plugin-switch:build|test|typecheck` after changes.
 - Run `npx nx run @8f4e/editor-plugin-switch:test:screenshot` for its browser rendering test.
 - Cover actual state derivation, memory toggling, drawing, source updates, cleanup, and instance isolation.
+
+- Receive a required `writeMemory(address, value, isInteger)` through the plugin factory. Do not route writes through editor state. The injected writer must use the current memory after recompilation or growth.

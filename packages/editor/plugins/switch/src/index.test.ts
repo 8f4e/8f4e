@@ -4,7 +4,7 @@ import initState from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { createCodeBlockDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { switchPlugin } from './index';
+import { createSwitchPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 const source = ['module controls', 'int gate 0', '; @switch &gate', 'moduleEnd'];
@@ -48,12 +48,11 @@ async function setup(code = source, installed = true) {
 		initialEditorMode: 'edit',
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
-			setWordInMemory: write,
 		},
 	});
 	const drawers = createCodeBlockDrawerRegistry();
 	const disposePlugin = installed
-		? switchPlugin.setup({
+		? createSwitchPlugin({ writeMemory: write }).setup({
 				store,
 				events,
 				menus: store.menus,

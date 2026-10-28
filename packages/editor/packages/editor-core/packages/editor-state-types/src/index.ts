@@ -3,11 +3,7 @@
  * Shared feature types are re-exported here for editor consumers.
  */
 
-import type {
-	CompileProjectOptions,
-	MemoryAction as CompilerMemoryAction,
-	ProjectObjectModel,
-} from '@8f4e/language-spec';
+import type { CompileOptions, MemoryAction as CompilerMemoryAction, ProjectObjectModel } from '@8f4e/language-spec';
 import type { AssertionResult } from './features/assertions/types';
 import type {
 	CodeBlockEntryOutline,
@@ -36,6 +32,7 @@ import type { CompilationResult, Compiler } from './features/program-compiler/ty
 import type {
 	RuntimeEnvConstantsContributor,
 	RuntimeFactory,
+	RuntimeMetadataRegistry,
 	RuntimeRegistry,
 	RuntimeRegistryEntry,
 	RuntimeValuesByRuntimeId,
@@ -103,6 +100,7 @@ export type {
 	ResolvedGlobalEditorDirectives,
 	RuntimeEnvConstantsContributor,
 	RuntimeFactory,
+	RuntimeMetadataRegistry,
 	RuntimeRegistry,
 	RuntimeRegistryEntry,
 	RuntimeValuesByRuntimeId,
@@ -160,12 +158,9 @@ export type EditorMode = 'view' | 'edit';
 // Callbacks interface contains all callback functions (top-level public API)
 export interface Callbacks {
 	// Compilation callback
-	compileCode?: (project: ProjectObjectModel, compilerOptions: CompileProjectOptions) => Promise<CompilationResult>;
-	resolveInclude?: (includeId: string) => Promise<string | undefined>;
+	compileCode?: (project: ProjectObjectModel, compilerOptions: CompileOptions) => Promise<CompilationResult>;
 
 	// Memory manipulation callback
-	setWordInMemory?: (allocationUnitAddress: number, value: number, isInteger: boolean) => void;
-
 	getWordFromMemory?: (allocationUnitAddress: number) => number;
 
 	// Clipboard callbacks
@@ -248,8 +243,8 @@ export interface State {
 	runtime: {
 		values: RuntimeValuesByRuntimeId;
 	};
-	/** Runtime registry for available runtime implementations */
-	runtimeRegistry: RuntimeRegistry;
+	/** Data-only metadata for available runtimes; implementations are initialization dependencies. */
+	runtimeRegistry: RuntimeMetadataRegistry;
 	/** Resolved global editor directives from `; @<name>` comments */
 	globalEditorDirectives: ResolvedGlobalEditorDirectives;
 	codeErrors: {

@@ -3,22 +3,22 @@ import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
 import { barsPlugin } from '@8f4e/editor-plugin-bars';
 import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
-import { buttonPlugin } from '@8f4e/editor-plugin-button';
-import { crossfadePlugin } from '@8f4e/editor-plugin-crossfade';
+import { createButtonPlugin } from '@8f4e/editor-plugin-button';
+import { createCrossfadePlugin } from '@8f4e/editor-plugin-crossfade';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { meterPlugin } from '@8f4e/editor-plugin-meter';
 import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
-import { pianoPlugin } from '@8f4e/editor-plugin-piano';
+import { createPianoPlugin } from '@8f4e/editor-plugin-piano';
 import { plotPlugin } from '@8f4e/editor-plugin-plot';
 import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { removeMemoryConnectionsPlugin } from '@8f4e/editor-plugin-remove-memory-connections';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
-import { sliderPlugin } from '@8f4e/editor-plugin-slider';
+import { createSliderPlugin } from '@8f4e/editor-plugin-slider';
 import { createStackPlugin } from '@8f4e/editor-plugin-stack';
-import { switchPlugin } from '@8f4e/editor-plugin-switch';
+import { createSwitchPlugin } from '@8f4e/editor-plugin-switch';
 import { toggleFavoritePlugin } from '@8f4e/editor-plugin-toggle-favorite';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
 import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
@@ -43,6 +43,7 @@ export function createDefaultEditorPlugins(options: {
 	renderFrame: () => void;
 	showOpenMenuItem: boolean;
 	getMemory: () => WebAssembly.Memory | null;
+	writeMemory: (address: number, value: number, isInteger: boolean) => void;
 	getCodeBuffer: () => Uint8Array;
 }): NonNullable<EditorOptions['plugins']> {
 	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -61,7 +62,7 @@ export function createDefaultEditorPlugins(options: {
 		}),
 		createExampleModulesPlugin({ sources: exampleModuleSources }),
 		assertionMarkersPlugin,
-		createKeyboardMemoryPlugin({ inputTarget: options.canvas }),
+		createKeyboardMemoryPlugin({ inputTarget: options.canvas, writeMemory: options.writeMemory }),
 		createMidiInputPlugin({
 			navigator: options.canvas.ownerDocument.defaultView!.navigator,
 			getMemory: options.getMemory,
@@ -76,15 +77,15 @@ export function createDefaultEditorPlugins(options: {
 		toggleSkipExecutionPlugin,
 		toggleFavoritePlugin,
 		removeMemoryConnectionsPlugin,
-		switchPlugin,
-		buttonPlugin,
+		createSwitchPlugin({ writeMemory: options.writeMemory }),
+		createButtonPlugin({ writeMemory: options.writeMemory }),
 		wavePlugin,
-		pianoPlugin,
-		sliderPlugin,
+		createPianoPlugin({ writeMemory: options.writeMemory }),
+		createSliderPlugin({ writeMemory: options.writeMemory }),
 		meterPlugin,
 		plotPlugin,
 		barsPlugin,
-		crossfadePlugin,
+		createCrossfadePlugin({ writeMemory: options.writeMemory }),
 		createWatchPlugin({ prefersReducedMotion }),
 		createStackPlugin({ prefersReducedMotion }),
 		tooltipsPlugin,
@@ -130,7 +131,7 @@ export async function mountDefaultEditor(
 		storageNamespace = DEFAULT_STORAGE_NAMESPACE,
 	}: DefaultEditorMountOptions = {}
 ): Promise<DefaultEditorInstance> {
-	const compilerService = createCompilerService();
+	const compilerService = createCompilerService({ resolveInclude: resolveStdlibInclude });
 	let editor: Editor;
 	try {
 		editor = await initEditor(canvas, {
@@ -146,6 +147,7 @@ export async function mountDefaultEditor(
 					renderFrame: () => editor.renderFrame(),
 					showOpenMenuItem,
 					getMemory: compilerService.getMemory,
+					writeMemory: compilerService.writeMemory,
 					getCodeBuffer: compilerService.getCodeBuffer,
 				}),
 			captureWheel,
@@ -153,7 +155,6 @@ export async function mountDefaultEditor(
 			initialEditorMode,
 			runtimeRegistry: createRuntimeRegistry(compilerService, sharedAudioContext),
 			callbacks: {
-				resolveInclude: resolveStdlibInclude,
 				compileCode: (input, compilerOptions) => compilerService.compileCode(input, compilerOptions, editor),
 			},
 		});

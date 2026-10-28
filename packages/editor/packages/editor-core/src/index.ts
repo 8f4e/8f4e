@@ -54,10 +54,13 @@ export type {
 	FeatureFlags,
 	FeatureFlagsConfig,
 	JSONSchemaLike,
+	LazyRuntimeRegistryEntry,
 	MenuGenerator,
 	Options,
 	ParsedDirectiveRecord,
 	RuntimeFactory,
+	RuntimeMetadata,
+	RuntimeMetadataRegistry,
 	RuntimeRegistry,
 	RuntimeRegistryEntry,
 	RuntimeValuesByRuntimeId,
@@ -93,7 +96,7 @@ export interface EditorOptions {
 	featureFlags?: Partial<State['featureFlags']>;
 	/** Mode used when the editor is initialized. */
 	initialEditorMode?: EditorMode;
-	callbacks: Omit<Callbacks, 'getWordFromMemory' | 'setWordInMemory' | 'readClipboardText' | 'writeClipboardText'>;
+	callbacks: Omit<Callbacks, 'getWordFromMemory' | 'readClipboardText' | 'writeClipboardText'>;
 	runtimeRegistry: RuntimeRegistry;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 	renderStatsIntervalFrames?: number;
@@ -172,13 +175,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 					: undefined,
 				getWordFromMemory: (allocationUnitAddress: number) => {
 					return memoryViews.int32[allocationUnitAddress] || 0;
-				},
-				setWordInMemory: (allocationUnitAddress: number, value: number, isInteger: boolean) => {
-					if (isInteger) {
-						memoryViews.int32[allocationUnitAddress] = value;
-						return;
-					}
-					memoryViews.float32[allocationUnitAddress] = value;
 				},
 				readClipboardText: async () => {
 					return await navigator.clipboard.readText();

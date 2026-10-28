@@ -13,7 +13,9 @@ afterEach(() => {
 });
 
 export async function setup(
-	plugin: EditorPlugin,
+	createPlugin: (options: {
+		writeMemory: (address: number, value: number, isInteger: boolean) => void;
+	}) => EditorPlugin,
 	source: string[],
 	{
 		installed = true,
@@ -53,12 +55,17 @@ export async function setup(
 		initialEditorMode: mode,
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
-			setWordInMemory,
 		},
 	});
 	const state = store.getState();
 	const dispose = installed
-		? plugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers })
+		? createPlugin({ writeMemory: setWordInMemory }).setup({
+				store,
+				events,
+				menus: store.menus,
+				directives: store.directives,
+				drawers,
+			})
 		: () => {};
 	cleanups.push(() => {
 		dispose();

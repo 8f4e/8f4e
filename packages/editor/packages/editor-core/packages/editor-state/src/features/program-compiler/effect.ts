@@ -47,10 +47,7 @@ export default function compiler(store: StateManager<State>): () => void {
 				includeStackAnalysis: true,
 				enableAssertions: hasTestEntry(project),
 			};
-			const result = await state.callbacks.compileCode(project, {
-				...compilerOptions,
-				...(state.callbacks.resolveInclude ? { resolveInclude: state.callbacks.resolveInclude } : {}),
-			});
+			const result = await state.callbacks.compileCode(project, compilerOptions);
 			if (disposed) {
 				return;
 			}

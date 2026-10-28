@@ -1,6 +1,6 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import type { PianoKeyboard } from '../types';
 import { registerPianoInteraction } from './interaction';
 
@@ -10,19 +10,20 @@ describe('piano interaction', () => {
 	let mockState: State;
 	let onCallbacks: Map<string, (...args: unknown[]) => void>;
 	let memoryStore: Map<number, number>;
+	let writeMemory: Mock<(address: number, value: number, isInteger: boolean) => void>;
 
 	beforeEach(() => {
 		keyboardsByBlock = new WeakMap();
 		onCallbacks = new Map();
 		memoryStore = new Map();
+		writeMemory = vi.fn((address: number, value: number) => {
+			memoryStore.set(address, value);
+		});
 
 		mockState = createMockState({
 			viewport: { vGrid: 10, hGrid: 20, x: 0, y: 0 },
 			callbacks: {
 				getWordFromMemory: vi.fn((allocationUnitAddress: number) => memoryStore.get(allocationUnitAddress) ?? 0),
-				setWordInMemory: vi.fn((allocationUnitAddress: number, value: number) => {
-					memoryStore.set(allocationUnitAddress, value);
-				}),
 			},
 		});
 
@@ -95,7 +96,7 @@ describe('piano interaction', () => {
 	}
 
 	it('registers event listeners on initialization', () => {
-		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock);
+		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock, writeMemory);
 
 		expect(mockEvents.on).toHaveBeenCalledWith('codeBlockPointerDown', expect.any(Function));
 
@@ -103,7 +104,7 @@ describe('piano interaction', () => {
 	});
 
 	it('unregisters event listeners on cleanup', () => {
-		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock);
+		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock, writeMemory);
 		cleanup();
 
 		expect(mockEvents.off).toHaveBeenCalledWith('codeBlockPointerDown', expect.any(Function));
@@ -112,14 +113,14 @@ describe('piano interaction', () => {
 	it('adds a clicked note directly to runtime memory without editing code', () => {
 		const codeBlock = createCodeBlockWithPiano();
 		const originalCode = [...codeBlock.code];
-		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock);
+		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock, writeMemory);
 
 		clickKey(codeBlock, 2);
 
 		expect(memoryStore.get(5)).toBe(50);
-		expect(mockState.callbacks.setWordInMemory).toHaveBeenCalledWith(5, 50, true);
+		expect(writeMemory).toHaveBeenCalledWith(5, 50, true);
 		expect(memoryStore.get(20)).toBe(1);
-		expect(mockState.callbacks.setWordInMemory).toHaveBeenLastCalledWith(20, 1, true);
+		expect(writeMemory).toHaveBeenLastCalledWith(20, 1, true);
 		expect(codeBlock.code).toEqual(originalCode);
 
 		cleanup();
@@ -131,7 +132,7 @@ describe('piano interaction', () => {
 		memoryStore.set(5, 48);
 		memoryStore.set(6, 50);
 		memoryStore.set(7, 52);
-		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock);
+		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock, writeMemory);
 
 		clickKey(codeBlock, 2);
 
@@ -144,7 +145,7 @@ describe('piano interaction', () => {
 
 	it('reads current runtime memory on each click', () => {
 		const codeBlock = createCodeBlockWithPiano();
-		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock);
+		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock, writeMemory);
 
 		clickKey(codeBlock, 2);
 		clickKey(codeBlock, 4);
@@ -163,7 +164,7 @@ describe('piano interaction', () => {
 		memoryStore.set(20, 2);
 		memoryStore.set(5, 36);
 		memoryStore.set(6, 84);
-		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock);
+		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock, writeMemory);
 
 		clickKey(codeBlock, 2);
 
@@ -179,11 +180,11 @@ describe('piano interaction', () => {
 		keyboardsByBlock.get(codeBlock)![0].pressedKeysListMemory.numberOfElements = 1;
 		memoryStore.set(20, 1);
 		memoryStore.set(5, 36);
-		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock);
+		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock, writeMemory);
 
 		clickKey(codeBlock, 2);
 
-		expect(mockState.callbacks.setWordInMemory).not.toHaveBeenCalled();
+		expect(writeMemory).not.toHaveBeenCalled();
 		cleanup();
 	});
 
@@ -192,7 +193,7 @@ describe('piano interaction', () => {
 		keyboardsByBlock.get(codeBlock)![0].pressedKeysListMemory.numberOfElements = 1;
 		memoryStore.set(20, 1);
 		memoryStore.set(5, 50);
-		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock);
+		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock, writeMemory);
 
 		clickKey(codeBlock, 2);
 
@@ -200,10 +201,10 @@ describe('piano interaction', () => {
 		cleanup();
 	});
 
-	it.each(['getWordFromMemory', 'setWordInMemory'] as const)('ignores clicks without %s', callback => {
+	it('ignores clicks without a memory reader', () => {
 		const codeBlock = createCodeBlockWithPiano();
-		mockState.callbacks[callback] = undefined;
-		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock);
+		mockState.callbacks.getWordFromMemory = undefined;
+		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock, writeMemory);
 
 		clickKey(codeBlock, 2);
 

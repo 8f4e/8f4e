@@ -13,7 +13,8 @@ function clamp(value: number, min: number, max: number): number {
 export function registerCrossfadeInteraction(
 	state: State,
 	events: EventDispatcher,
-	crossfadesByBlock: WeakMap<CodeBlockGraphicData, Crossfade[]>
+	crossfadesByBlock: WeakMap<CodeBlockGraphicData, Crossfade[]>,
+	writeMemory: (address: number, value: number, isInteger: boolean) => void
 ): () => void {
 	let activeCrossfade: ActiveCrossfade | null = null;
 
@@ -24,8 +25,8 @@ export function registerCrossfadeInteraction(
 		const leftValue = (1 - position) / 2;
 		const rightValue = (1 + position) / 2;
 
-		state.callbacks.setWordInMemory?.(crossfade.leftWordAddress, leftValue, false);
-		state.callbacks.setWordInMemory?.(crossfade.rightWordAddress, rightValue, false);
+		writeMemory(crossfade.leftWordAddress, leftValue, false);
+		writeMemory(crossfade.rightWordAddress, rightValue, false);
 	};
 
 	const onCodeBlockPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {

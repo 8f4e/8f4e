@@ -29,7 +29,8 @@ function getClickedKeyOffset(
 export function registerPianoInteraction(
 	state: State,
 	events: EventDispatcher,
-	keyboardsByBlock: WeakMap<CodeBlockGraphicData, PianoKeyboard[]>
+	keyboardsByBlock: WeakMap<CodeBlockGraphicData, PianoKeyboard[]>,
+	writeMemory: (address: number, value: number, isInteger: boolean) => void
 ): () => void {
 	const onCodeBlockPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
 		const keyboard = keyboardsByBlock
@@ -51,8 +52,8 @@ export function registerPianoInteraction(
 			return;
 		}
 
-		const { getWordFromMemory, setWordInMemory } = state.callbacks;
-		if (!getWordFromMemory || !setWordInMemory) {
+		const { getWordFromMemory } = state.callbacks;
+		if (!getWordFromMemory) {
 			return;
 		}
 
@@ -69,10 +70,10 @@ export function registerPianoInteraction(
 
 		let index = 0;
 		for (const note of pressedKeys) {
-			setWordInMemory(keyboard.pressedKeysListMemory.allocationUnitAddress + index, note, true);
+			writeMemory(keyboard.pressedKeysListMemory.allocationUnitAddress + index, note, true);
 			index += 1;
 		}
-		setWordInMemory(keyboard.pressedKeyCountMemory.allocationUnitAddress, pressedKeys.size, true);
+		writeMemory(keyboard.pressedKeyCountMemory.allocationUnitAddress, pressedKeys.size, true);
 	};
 
 	events.on('codeBlockPointerDown', onCodeBlockPointerDown);

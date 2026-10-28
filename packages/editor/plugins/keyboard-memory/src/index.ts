@@ -3,7 +3,13 @@ import { resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import { getKeyboardMemoryConfig, keyboardEditorConfigSchemaContribution } from './config';
 import eventCodeToUsbHidUsageId from './eventCodeToUsbHidUsageId';
 
-export function createKeyboardMemoryPlugin({ inputTarget }: { inputTarget: HTMLElement }): EditorPlugin {
+export function createKeyboardMemoryPlugin({
+	inputTarget,
+	writeMemory,
+}: {
+	inputTarget: HTMLElement;
+	writeMemory: (address: number, value: number, isInteger: boolean) => void;
+}): EditorPlugin {
 	return {
 		id: 'keyboard-memory',
 		setup: ({ store }) => {
@@ -13,7 +19,7 @@ export function createKeyboardMemoryPlugin({ inputTarget }: { inputTarget: HTMLE
 			function write(memoryId: string | undefined, value: number): void {
 				const state = store.getState();
 				const memory = resolveMemoryTarget(state, { kind: 'project', groupPath: '' }, memoryId)?.memory;
-				if (memory) state.callbacks.setWordInMemory?.(memory.allocationUnitAddress, value, true);
+				if (memory) writeMemory(memory.allocationUnitAddress, value, true);
 			}
 
 			function publish(): void {

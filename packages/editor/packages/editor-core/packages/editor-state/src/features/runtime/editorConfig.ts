@@ -1,8 +1,8 @@
 import type {
 	EditorConfigSchemaContributionRegistry,
 	EditorConfigValidator,
-	RuntimeRegistry,
-	RuntimeRegistryEntry,
+	RuntimeMetadata,
+	RuntimeMetadataRegistry,
 	State,
 } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
@@ -10,13 +10,13 @@ import { formatDidYouMeanSuffix } from '../global-editor-directives/suggestions'
 
 export const RUNTIME_SELECTION_CONFIG_PATH = 'runtime';
 
-function isRegisteredRuntimeId(runtimeRegistry: RuntimeRegistry, runtimeId: string): boolean {
+function isRegisteredRuntimeId(runtimeRegistry: RuntimeMetadataRegistry, runtimeId: string): boolean {
 	return Object.hasOwn(runtimeRegistry, runtimeId);
 }
 
 export function resolveSelectedRuntimeId(
 	requestedRuntimeId: string | undefined,
-	runtimeRegistry: RuntimeRegistry
+	runtimeRegistry: RuntimeMetadataRegistry
 ): string | undefined {
 	if (requestedRuntimeId && isRegisteredRuntimeId(runtimeRegistry, requestedRuntimeId)) {
 		return requestedRuntimeId;
@@ -27,15 +27,15 @@ export function resolveSelectedRuntimeId(
 
 export function getSelectedRuntimeEntry(
 	requestedRuntimeId: string | undefined,
-	runtimeRegistry: RuntimeRegistry
-): RuntimeRegistryEntry | undefined {
+	runtimeRegistry: RuntimeMetadataRegistry
+): RuntimeMetadata | undefined {
 	const resolvedRuntimeId = resolveSelectedRuntimeId(requestedRuntimeId, runtimeRegistry);
 	return resolvedRuntimeId ? runtimeRegistry[resolvedRuntimeId] : undefined;
 }
 
 export function collectRuntimeEditorConfigSchemaContributions(
 	requestedRuntimeId: string | undefined,
-	runtimeRegistry: RuntimeRegistry
+	runtimeRegistry: RuntimeMetadataRegistry
 ): EditorConfigSchemaContributionRegistry {
 	const contributions: EditorConfigSchemaContributionRegistry = {};
 	const selectedEntry = getSelectedRuntimeEntry(requestedRuntimeId, runtimeRegistry);

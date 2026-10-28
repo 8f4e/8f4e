@@ -9,7 +9,8 @@ interface ActiveSlider {
 export function registerSliderInteraction(
 	state: State,
 	events: EventDispatcher,
-	slidersByBlock: WeakMap<CodeBlockGraphicData, Slider[]>
+	slidersByBlock: WeakMap<CodeBlockGraphicData, Slider[]>,
+	writeMemory: (address: number, value: number, isInteger: boolean) => void
 ): () => void {
 	let activeSlider: ActiveSlider | null = null;
 
@@ -31,7 +32,7 @@ export function registerSliderInteraction(
 			(slider.step !== undefined && !Number.isInteger(slider.step));
 		const shouldWriteInteger = slider.isInteger && !hasFloatRange;
 
-		state.callbacks.setWordInMemory?.(slider.allocationUnitAddress, value, shouldWriteInteger);
+		writeMemory(slider.allocationUnitAddress, value, shouldWriteInteger);
 	};
 
 	const onCodeBlockPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {

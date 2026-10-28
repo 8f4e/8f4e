@@ -53,7 +53,6 @@ export async function setup(
 		initialEditorMode: mode,
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
-			setWordInMemory,
 		},
 	});
 	const state = store.getState();

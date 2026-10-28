@@ -28,7 +28,7 @@
   not install these editing actions or their menus.
 - Compose `createBinaryAssetsPlugin({ getMemoryBytes })` with a getter for the compiler service's current memory.
   Fetching, caching, binary metadata, loading UI, and generated asset constants remain inside the plugin.
-- Include `assertionMarkersPlugin`, `createKeyboardMemoryPlugin({ inputTarget: canvas })`, and
+- Include `assertionMarkersPlugin`, `createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory })`, and
   `createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })` in the standard set. Use the canvas's browser
   navigator and live compiler getters. MIDI owns WASM instantiation and caching; core has no separate environment-plugin system.
 - Include `createProjectUrlLoaderPlugin({ fetch, initialProjectUrl })` and
@@ -39,3 +39,7 @@
   notify success after editor initialization. Mounting must not wait for fetching; callbacks may precede mount resolution.
 - Test URL/session startup coordination in `src/startup.integration.test.ts` using the real default plugin composition.
   Keep each startup plugin's own tests independent of the other plugin.
+
+- Configure `resolveInclude` when creating the compiler service. Editor state does not forward a resolver.
+- Supply the compiler service's live `writeMemory` to button, switch, slider, piano, crossfade, and keyboard-memory factories. Core has no memory-write callback.
+- Supply lazy runtime loaders as registry dependencies. Loading, caching, and disposal belong to the runtime coordinator; state holds IDs/schemas and derived constant source only.

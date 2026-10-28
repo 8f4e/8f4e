@@ -4,9 +4,9 @@
 The default editor installs it; editor-core installs no plugins automatically.
 
 ```ts
-import { crossfadePlugin } from '@8f4e/editor-plugin-crossfade';
+import { createCrossfadePlugin } from '@8f4e/editor-plugin-crossfade';
 
-const plugin = crossfadePlugin;
+const plugin = createCrossfadePlugin({ writeMemory });
 ```
 
 Pass the plugin in the editor's `plugins` array. Core retains generic comment parsing, block layout, memory resolution,
@@ -26,3 +26,5 @@ npx nx run @8f4e/editor-plugin-crossfade:test
 npx nx run @8f4e/editor-plugin-crossfade:typecheck
 npx nx run @8f4e/editor-plugin-crossfade:test:screenshot
 ```
+
+The host supplies `writeMemory(address, value, isInteger)` to the factory. It must write to the current compiler memory, including after memory replacement or growth. Core pointer reads remain available through editor state.

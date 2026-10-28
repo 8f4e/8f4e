@@ -80,7 +80,7 @@ export default function init(
 		callbacks: options.callbacks,
 		editorMode: initialEditorMode,
 		featureFlags,
-		runtimeRegistry: options.runtimeRegistry,
+		runtimeRegistry: {},
 		editorConfigSchemaContributions: options.editorConfigSchemaContributions ?? {},
 	};
 
@@ -95,7 +95,7 @@ export default function init(
 	// Menus must consume pointer events before code blocks and viewport interactions.
 	registerEffect(contextMenu(store, events, menus));
 
-	registerEffect(runtime(store, events));
+	registerEffect(runtime(store, events, options.runtimeRegistry));
 	registerEffect(editorMode(store, events));
 	registerEffect(projectLoading(store, events));
 	registerEffect(codeBlockDragger(store, events));

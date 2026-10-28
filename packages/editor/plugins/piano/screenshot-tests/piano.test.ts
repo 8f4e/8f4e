@@ -6,7 +6,7 @@ import initView, { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
-import { pianoPlugin } from '../src/index';
+import { createPianoPlugin } from '../src/index';
 
 test('piano plugin draws both octaves and runtime pressed notes', async () => {
 	const canvas = document.createElement('canvas');
@@ -32,7 +32,13 @@ entryEnd`);
 		callbacks: {},
 	});
 	const drawers = createCodeBlockDrawerRegistry();
-	const disposePlugin = pianoPlugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers });
+	const disposePlugin = createPianoPlugin({ writeMemory: () => {} }).setup({
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		drawers,
+	});
 	const state = store.getState();
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;

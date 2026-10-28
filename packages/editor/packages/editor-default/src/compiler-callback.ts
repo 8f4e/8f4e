@@ -4,7 +4,7 @@ import CompilerWorker from '@8f4e/compiler-worker?worker';
 import type { CompilationResult, Editor } from '@8f4e/editor-core';
 import type {
 	AssertionSite,
-	CompileProjectOptions,
+	CompileOptions,
 	CompilerDiagnostic,
 	ProjectIncludeResolver,
 	ProjectObjectModel,
@@ -13,22 +13,28 @@ import type {
 export interface CompilerService {
 	compileCode: (
 		project: ProjectObjectModel,
-		compilerOptions: CompileProjectOptions,
+		compilerOptions: CompileOptions,
 		editor: Editor
 	) => Promise<CompilationResult>;
 	getMemory: () => WebAssembly.Memory | null;
+	writeMemory: (allocationUnitAddress: number, value: number, isInteger: boolean) => void;
 	getCodeBuffer: () => Uint8Array;
 	getAssertionSites: () => AssertionSite[] | undefined;
 	dispose: () => void;
 }
 
-export function createCompilerService(createWorker: () => Worker = () => new CompilerWorker()): CompilerService {
+export function createCompilerService({
+	resolveInclude,
+	createWorker = () => new CompilerWorker(),
+}: {
+	resolveInclude?: ProjectIncludeResolver;
+	createWorker?: () => Worker;
+} = {}): CompilerService {
 	let compilerWorker: Worker | null = null;
 	let memoryRef: WebAssembly.Memory | null = null;
 	let codeBuffer: Uint8Array = new Uint8Array();
 	let assertionSites: AssertionSite[] | undefined;
 	let nextCompilationId = 0;
-	let includeResolver: ProjectIncludeResolver | undefined;
 	let disposed = false;
 	const pendingCompilations = new Map<
 		number,
@@ -47,7 +53,7 @@ export function createCompilerService(createWorker: () => Worker = () => new Com
 				type: 'resolveIncludeResult',
 				payload: {
 					requestId: request.payload.requestId,
-					source: await includeResolver?.(request.payload.includeId),
+					source: await resolveInclude?.(request.payload.includeId),
 				},
 			};
 		} catch (error) {
@@ -78,9 +84,7 @@ export function createCompilerService(createWorker: () => Worker = () => new Com
 	return {
 		async compileCode(project, compilerOptions, editor) {
 			assertionSites = undefined;
-			const { resolveInclude, ...serializableCompilerOptions } = compilerOptions;
 			const worker = getCompilerWorker();
-			includeResolver = resolveInclude;
 			const compilationId = nextCompilationId++;
 
 			return new Promise((resolve, reject) => {
@@ -130,12 +134,17 @@ export function createCompilerService(createWorker: () => Worker = () => new Com
 					compilationId,
 					payload: {
 						project,
-						compilerOptions: serializableCompilerOptions,
+						compilerOptions,
 					},
 				});
 			});
 		},
 		getMemory: () => memoryRef,
+		writeMemory: (address, value, isInteger) => {
+			if (!memoryRef) return;
+			if (isInteger) new Int32Array(memoryRef.buffer)[address] = value;
+			else new Float32Array(memoryRef.buffer)[address] = value;
+		},
 		getCodeBuffer: () => codeBuffer,
 		getAssertionSites: () => assertionSites,
 		dispose: () => {
