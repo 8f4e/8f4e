@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/constant-resolver",
-  "version": "5.0.12",
+  "version": "5.0.13",
   "private": true,
   "description": "8f4e compiler constant resolution pass",
   "type": "module",
