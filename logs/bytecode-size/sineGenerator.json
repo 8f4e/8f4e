@@ -832,5 +832,11 @@
 		"version": "7.0.13",
 		"benchmark": "sineGenerator.8f4e",
 		"emittedBytes": 499
+	},
+	{
+		"commit": "9aa44ec4d3ad4662d770e8cda83c54b277a29c3c",
+		"version": "7.0.14",
+		"benchmark": "sineGenerator.8f4e",
+		"emittedBytes": 499
 	}
 ]
