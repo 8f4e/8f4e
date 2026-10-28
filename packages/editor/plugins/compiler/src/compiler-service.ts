@@ -1,9 +1,9 @@
 import { serializeDiagnostic } from '@8f4e/compiler';
 import type { ResolveIncludeRequestMessage, ResolveIncludeResultMessage } from '@8f4e/compiler-worker';
 import CompilerWorker from '@8f4e/compiler-worker?worker';
-import type { CompilationResult } from '@8f4e/editor-core';
 import type {
 	AssertionSite,
+	CompileAndUpdateMemoryResult,
 	CompileOptions,
 	CompilerDiagnostic,
 	ProjectIncludeResolver,
@@ -14,8 +14,8 @@ export interface CompilerService {
 	compileCode: (
 		project: ProjectObjectModel,
 		compilerOptions: CompileOptions,
-		isCurrent?: () => boolean
-	) => Promise<CompilationResult>;
+		isCurrent: () => boolean
+	) => Promise<CompileAndUpdateMemoryResult>;
 	getMemory: () => WebAssembly.Memory | null;
 	writeMemory: (allocationUnitAddress: number, value: number, isInteger: boolean) => void;
 	getCodeBuffer: () => Uint8Array;
@@ -43,13 +43,12 @@ export function createCompilerService({
 	let assertionSites: AssertionSite[] | undefined;
 	let nextCompilationId = 0;
 	let disposed = false;
-	const pendingCompilations = new Map<
-		number,
-		{
-			handleMessage: (event: MessageEvent) => void;
-			reject: (error: Error) => void;
-		}
-	>();
+	let pendingCompilation:
+		| {
+				handleMessage: (event: MessageEvent) => void;
+				reject: (error: Error) => void;
+		  }
+		| undefined;
 
 	async function handleIncludeRequest({ data }: MessageEvent): Promise<void> {
 		if (data.type !== 'resolveInclude') return;
@@ -89,7 +88,8 @@ export function createCompilerService({
 	}
 
 	return {
-		async compileCode(project, compilerOptions, isCurrent = () => true) {
+		// The scheduling effect owns serialization and permits one outstanding request.
+		async compileCode(project, compilerOptions, isCurrent) {
 			assertionSites = undefined;
 			const worker = getCompilerWorker();
 			const compilationId = nextCompilationId++;
@@ -100,36 +100,24 @@ export function createCompilerService({
 					switch (data.type) {
 						case 'success':
 							worker.removeEventListener('message', handleMessage);
-							pendingCompilations.delete(compilationId);
-							if (compilationId === nextCompilationId - 1 && isCurrent()) {
+							pendingCompilation = undefined;
+							if (isCurrent()) {
 								memoryRef = data.payload.memoryRef;
 								codeBuffer = data.payload.codeBuffer;
 								assertionSites = data.payload.assertionSites;
 							}
 
-							resolve({
-								memoryRef: data.payload.memoryRef,
-								compiledModules: data.payload.compiledModules,
-								memoryPlan: data.payload.memoryPlan,
-								memoryDefaultsByModuleId: data.payload.memoryDefaultsByModuleId,
-								projectMemoryExposuresByGroupPath: data.payload.projectMemoryExposuresByGroupPath,
-								codeBuffer: data.payload.codeBuffer,
-								requiredMemoryBytes: data.payload.requiredMemoryBytes,
-								allocatedMemoryBytes: data.payload.allocatedMemoryBytes,
-								astCacheStats: data.payload.astCacheStats,
-								memoryAction: data.payload.memoryAction,
-								compiledFunctions: data.payload.compiledFunctions,
-							});
+							resolve(data.payload);
 							break;
 						case 'compilationError':
 							worker.removeEventListener('message', handleMessage);
-							pendingCompilations.delete(compilationId);
+							pendingCompilation = undefined;
 							reject(data.payload as CompilerDiagnostic);
 							break;
 					}
 				};
 
-				pendingCompilations.set(compilationId, { handleMessage, reject });
+				pendingCompilation = { handleMessage, reject };
 				worker.addEventListener('message', handleMessage);
 
 				worker.postMessage({
@@ -163,11 +151,12 @@ export function createCompilerService({
 			assertionSites = undefined;
 			writeViews = undefined;
 			const disposalError = new Error('Compiler service has been disposed');
-			for (const { handleMessage, reject } of pendingCompilations.values()) {
+			if (pendingCompilation) {
+				const { handleMessage, reject } = pendingCompilation;
 				compilerWorker?.removeEventListener('message', handleMessage);
 				reject(disposalError);
 			}
-			pendingCompilations.clear();
+			pendingCompilation = undefined;
 			compilerWorker?.removeEventListener('message', handleIncludeRequest);
 			compilerWorker?.terminate();
 			compilerWorker = null;

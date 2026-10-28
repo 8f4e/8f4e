@@ -58,5 +58,6 @@
 - Memory writes belong to injected plugin factory dependencies. Keep `getWordFromMemory` for core pointer dereferencing; do not restore a state-level write callback.
 
 - Core emits `compilationInputChanged` after its compiler input revision advances. Compilation scheduling and worker ownership belong to `editor-plugin-compiler`; do not restore a compile callback or built-in compiler effect.
-- Consume accepted `compilationSucceeded` results to update memory views and renderer artifacts before metadata consumers react. Dispatch `dispose` before plugin cleanup so core runtimes stop before compiler resources are released. Drain cleanup stacks even when a disposer throws.
+- `EditorOptions` has no public callbacks bag. Construct internal memory, clipboard, and animation callbacks in core.
+- Consume accepted `compilationSucceeded` program artifacts (`memoryRef` and `codeBuffer`) to update memory views and renderer artifacts before metadata consumers react. Dispatch `dispose` before plugin cleanup so core runtimes stop before compiler resources are released. Drain cleanup stacks even when a disposer throws.
 - Render environment-constant contributions uniformly. The `runtime` contributor has no special formatting or ordering.

@@ -49,7 +49,6 @@ function setup(
 
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
-	vi.useRealTimers();
 });
 
 describe('remove memory connections plugin', () => {
@@ -103,14 +102,11 @@ describe('remove memory connections plugin', () => {
 		expect(test.state.compilerInputRevision).toBe(revision);
 	});
 
-	it('schedules compilation with the disconnected source', async () => {
-		vi.useFakeTimers();
+	it('announces changed inputs with the disconnected source', () => {
 		const test = setup();
-		await vi.advanceTimersByTimeAsync(1000);
 		const changed = vi.fn(() => [...test.block.code]);
 		test.events.on('compilationInputChanged', changed);
 		test.events.dispatch('removeConnections', { codeBlock: test.block });
-		await vi.advanceTimersByTimeAsync(1000);
 		expect(changed).toHaveBeenCalledOnce();
 		expect(changed.mock.results[0].value).toEqual(test.block.code);
 	});

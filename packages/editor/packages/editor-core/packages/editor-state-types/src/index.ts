@@ -28,7 +28,7 @@ import type {
 import type { ResolvedGlobalEditorDirectives } from './features/global-editor-directives/types';
 import type { ConsoleState, LogMessage } from './features/logger/types';
 import type { ContextMenu, ContextMenuItem, MenuGenerator, MenuStackEntry } from './features/menu/types';
-import type { CompilationResult, Compiler } from './features/program-compiler/types';
+import type { Compiler } from './features/program-compiler/types';
 import type {
 	RuntimeEnvConstantsContributor,
 	RuntimeFactory,
@@ -68,7 +68,6 @@ export type {
 	CodeBlockRendering,
 	CodeBlockType,
 	CodeError,
-	CompilationResult,
 	Compiler,
 	CompilerMemoryAction as MemoryAction,
 	ConsoleState,

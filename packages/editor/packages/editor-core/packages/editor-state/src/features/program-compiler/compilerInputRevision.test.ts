@@ -50,7 +50,6 @@ describe('compiler input revision', () => {
 	}
 
 	beforeEach(() => {
-		vi.useFakeTimers();
 		state = createMockState();
 		onInputChanged = vi.fn();
 		store = createStateManager(state);
@@ -72,7 +71,6 @@ describe('compiler input revision', () => {
 		disposePublisher();
 		store.dispose();
 		vi.restoreAllMocks();
-		vi.useRealTimers();
 	});
 
 	it('starts at zero', () => {
@@ -114,7 +112,7 @@ describe('compiler input revision', () => {
 		expect(state.compilerInputRevision).toBe(0);
 	});
 
-	it('ignores mouse selection, line selection, caret movement, and block navigation', async () => {
+	it('ignores mouse selection, line selection, caret movement, and block navigation', () => {
 		rendering(store, events);
 		codeBlockDragger(store, events);
 		codeBlockNavigation(store, events);
@@ -130,15 +128,13 @@ describe('compiler input revision', () => {
 		dispatch('navigateCodeBlock', { direction: 'right' });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(target);
 		expect(state.compilerInputRevision).toBe(0);
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).not.toHaveBeenCalled();
 
 		dispatch('insertText', { text: ';' });
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 	});
 
-	it('ignores dragging even though it saves a position directive in source', async () => {
+	it('ignores dragging even though it saves a position directive in source', () => {
 		store.set(
 			'editorConfigValidators.example',
 			createSchemaEditorConfigValidator({ root: 'example', schema: { type: 'integer' } })
@@ -161,7 +157,6 @@ describe('compiler input revision', () => {
 		expect(state.editorConfig.example).toBe(120);
 		expect(resolveSpy).not.toHaveBeenCalled();
 		expect(state.compilerInputRevision).toBe(0);
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).not.toHaveBeenCalled();
 	});
 
@@ -188,7 +183,7 @@ describe('compiler input revision', () => {
 		['toggleGroupNonstick', groupNonstickToggler, { makeNonstick: true }],
 		['removeFromGroupDirective', groupRemover, {}],
 		['ungroupByName', groupUngroupper, {}],
-	])('ignores editor metadata changes from %s', async (eventName, effect, payload) => {
+	])('ignores editor metadata changes from %s', (eventName, effect, payload) => {
 		block.groupName = 'audio';
 		block.code.splice(1, 0, '; @group audio');
 		const originalCode = [...block.code];
@@ -196,7 +191,6 @@ describe('compiler input revision', () => {
 		dispatch(eventName, { codeBlock: block, ...payload });
 		expect(block.code).not.toEqual(originalCode);
 		expect(state.compilerInputRevision).toBe(0);
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).not.toHaveBeenCalled();
 	});
 
@@ -204,25 +198,20 @@ describe('compiler input revision', () => {
 		codeBlockCreator(store, events);
 		await dispatchAsync('createCodeBlock', { x: 100, y: 100, blockType: 'module' });
 		expect(state.compilerInputRevision).toBe(1);
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
 		expect(block.disabled).toBe(true);
 		expect(state.compilerInputRevision).toBe(2);
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).toHaveBeenCalledTimes(2);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
 		expect(block.disabled).toBe(false);
 		expect(state.compilerInputRevision).toBe(3);
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).toHaveBeenCalledTimes(3);
 		dispatch('deleteCodeBlock', { codeBlock: block });
 		expect(state.compilerInputRevision).toBe(4);
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).toHaveBeenCalledTimes(4);
 		dispatch('deleteCodeBlock', { codeBlock: block });
 		expect(state.compilerInputRevision).toBe(4);
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).toHaveBeenCalledTimes(4);
 	});
 
@@ -280,7 +269,7 @@ describe('compiler input revision', () => {
 		expect(state.compilerInputRevision).toBe(1);
 	});
 
-	it('announces project loading, undo, and redo without requiring a selected block', async () => {
+	it('announces project loading, undo, and redo without requiring a selected block', () => {
 		state.featureFlags.historyTracking = true;
 		projectLoading(store, events);
 		rendering(store, events);
@@ -288,18 +277,15 @@ describe('compiler input revision', () => {
 		dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT } });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		expect(state.compilerInputRevision).toBe(1);
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 
 		state.historyStack.push({ ...EMPTY_DEFAULT_PROJECT });
 		dispatch('undo');
 		expect(state.compilerInputRevision).toBe(2);
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).toHaveBeenCalledTimes(2);
 
 		dispatch('redo');
 		expect(state.compilerInputRevision).toBe(3);
-		await vi.advanceTimersByTimeAsync(500);
 		expect(onInputChanged).toHaveBeenCalledTimes(3);
 	});
 });

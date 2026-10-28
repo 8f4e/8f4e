@@ -24,7 +24,6 @@ test('restores a retained project in a new editor instance', async () => {
 				'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote retained\n; @pos 3 3\nRetained across editor instances.\nnoteEnd'
 			),
 			initialEditorMode: 'edit',
-			callbacks: {},
 			runtimeRegistry: {},
 			plugins: [createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true })],
 		});
@@ -32,7 +31,6 @@ test('restores a retained project in a new editor instance', async () => {
 		editor.dispose();
 		editor = await initEditor(canvas, {
 			initialEditorMode: 'edit',
-			callbacks: {},
 			runtimeRegistry: {},
 			plugins: [createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true })],
 		});

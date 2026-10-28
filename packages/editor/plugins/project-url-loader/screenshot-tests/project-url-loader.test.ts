@@ -16,7 +16,6 @@ test('loads an initial project URL after generic editor startup', async () => {
 	try {
 		editor = await initEditor(canvas, {
 			initialEditorMode: 'edit',
-			callbacks: {},
 			runtimeRegistry: {},
 			plugins: [createProjectUrlLoaderPlugin({ fetch, initialProjectUrl: 'https://example.com/project.8f4e' })],
 		});

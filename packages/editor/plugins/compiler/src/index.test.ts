@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import type { CompilationResult, EditorPluginContext } from '@8f4e/editor-core';
+import type { EditorPluginContext, ProgramArtifacts } from '@8f4e/editor-core';
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSuccessMessage, FakeWorker } from './__tests__/helpers';
@@ -71,7 +71,7 @@ describe('compiler plugin', () => {
 		const memory = new WebAssembly.Memory({ initial: 1 });
 		const codeBuffer = new Uint8Array([1, 2]);
 		const order: string[] = [];
-		test.events.on('compilationSucceeded', (result: CompilationResult) => {
+		test.events.on('compilationSucceeded', (result: ProgramArtifacts) => {
 			expect(test.compiler.getMemory()).toBe(result.memoryRef);
 			expect(test.compiler.getCodeBuffer()).toBe(result.codeBuffer);
 			order.push('rendering');

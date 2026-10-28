@@ -63,7 +63,6 @@ function createContext(code = ['module test', '', 'moduleEnd']) {
 describe('toggle skip execution plugin', () => {
 	afterEach(() => {
 		while (cleanups.length) cleanups.pop()!();
-		vi.useRealTimers();
 	});
 
 	it('inserts the directive, publishes the source edit, and advances the compiler revision', () => {
@@ -191,8 +190,7 @@ describe('toggle skip execution plugin', () => {
 		}
 	});
 
-	it('works through editor initialization and schedules compilation of the updated source', async () => {
-		vi.useFakeTimers();
+	it('announces updated inputs through editor initialization', () => {
 		const events = createEvents();
 		const changed = vi.fn();
 		events.on('compilationInputChanged', changed);
@@ -206,7 +204,6 @@ describe('toggle skip execution plugin', () => {
 			store.getState().codeBlockRendering.rootCodeBlocks.push(block);
 			changed.mockImplementation(() => [...block.code]);
 			events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
-			await vi.advanceTimersByTimeAsync(1000);
 			expect(changed).toHaveBeenCalledOnce();
 			expect(changed.mock.results[0].value).toContain('#skipExecution');
 		} finally {

@@ -155,7 +155,6 @@ export async function mountDefaultEditor(
 		featureFlags,
 		initialEditorMode,
 		runtimeRegistry: createRuntimeRegistry(compiler, sharedAudioContext),
-		callbacks: {},
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 

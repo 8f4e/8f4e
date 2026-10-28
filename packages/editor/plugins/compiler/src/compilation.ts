@@ -6,23 +6,20 @@ import { WASM_MEMORY_PAGE_SIZE } from '@8f4e/language-spec';
 import { hasTestEntry } from '@8f4e/test-runner';
 import type { CompilerService } from './compiler-service';
 import debounceTrailing from './debounce-trailing';
-import { DEFAULT_RECOMPILE_DEBOUNCE_DELAY, registerRecompileDebounceDelayEditorConfigValidator } from './editor-config';
+import { compilerEditorConfigSchemaContribution, getRecompileDebounceDelay } from './editor-config';
 
 export default function installCompilation(
 	{ store, events }: Pick<EditorPluginContext, 'store' | 'events'>,
 	compileCode: CompilerService['compileCode']
 ): () => void {
 	const state = store.getState();
-	registerRecompileDebounceDelayEditorConfigValidator(store);
+	store.set('editorConfigSchemaContributions.compiler', compilerEditorConfigSchemaContribution);
 	let disposed = false;
 	let inputGeneration = 0;
 	let compiling = false;
 	let compileQueued = false;
 
-	const scheduleRecompile = debounceTrailing(
-		compileProject,
-		() => state.editorConfig.recompileDebounceDelay ?? DEFAULT_RECOMPILE_DEBOUNCE_DELAY
-	);
+	const scheduleRecompile = debounceTrailing(compileProject, () => getRecompileDebounceDelay(state.editorConfig));
 
 	function setCompilerInfo(partial: InfoRecord): void {
 		store.set('info.compiler', {
@@ -70,7 +67,7 @@ export default function installCompilation(
 			const memoryReinitialized = result.memoryAction.action === 'recreated';
 
 			// Publish rendering artifacts before metadata subscriptions or runtimes can react.
-			events.dispatch('compilationSucceeded', result);
+			events.dispatch('compilationSucceeded', { memoryRef: result.memoryRef, codeBuffer: result.codeBuffer });
 			store.set('compiler.compiledFunctions', result.compiledFunctions);
 			store.set('compiler.compiledModules', result.compiledModules);
 			store.set('compiler.projectMemoryExposuresByGroupPath', result.projectMemoryExposuresByGroupPath);
@@ -143,8 +140,8 @@ export default function installCompilation(
 		disposed = true;
 		scheduleRecompile.cancel();
 		events.off('compilationInputChanged', onInputChanged);
-		const validators = { ...state.editorConfigValidators };
-		delete validators.recompileDebounceDelay;
-		store.set('editorConfigValidators', validators);
+		const schemas = { ...state.editorConfigSchemaContributions };
+		delete schemas.compiler;
+		store.set('editorConfigSchemaContributions', schemas);
 	};
 }

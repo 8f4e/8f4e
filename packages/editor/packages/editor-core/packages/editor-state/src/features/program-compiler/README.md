@@ -28,7 +28,7 @@ plugin is installed.
 - `state.info.compiler` contains compilation duration, bytecode size, memory usage, and cache statistics.
 - `state.codeErrors.compilationErrors` contains diagnostics mapped to project blocks and source lines.
 
-The plugin updates its live artifact handles and emits `compilationSucceeded` with `CompilationResult` before
+The plugin updates its live artifact handles and emits `compilationSucceeded` with `ProgramArtifacts` (`memoryRef` and `codeBuffer`) before
 publishing metadata and runtime readiness. Core consumes that event to refresh memory views and renderer artifacts.
 `memoryAction` distinguishes recreated and reused memory. The binary-assets plugin observes new memory plans and
 reloads its retained bytes into current targets. Editor state stores no binary asset metadata.

@@ -24,7 +24,6 @@ export interface EditorConfigObject {
 export interface EditorConfig extends EditorConfigObject {
 	font?: Font;
 	runtime?: string;
-	recompileDebounceDelay?: number;
 	color?: EditorConfigObject;
 	export?: EditorConfigObject & {
 		fileName?: string;

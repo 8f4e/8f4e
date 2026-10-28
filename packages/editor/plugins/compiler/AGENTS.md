@@ -3,10 +3,14 @@
 - Export `createCompilerPlugin({ resolveInclude, createWorker })`, returning `plugin` plus stable `getMemory`,
   `getCodeBuffer`, `getAssertionSites`, and `writeMemory` handles. Construct once per editor; install before dependents.
 - Own scheduling, worker transport, include requests, accepted artifacts, diagnostics, statistics, memory-write views,
-  and the recompile debounce validator here. Core must not invoke a compiler callback or install a compilation effect.
+  and the recompile debounce schema contribution here. Core must not invoke a compiler callback or install a compilation effect.
 - Listen to `compilationInputChanged`, emitted by core after its input revision advances. Read the latest project tree
   after debouncing, using public serialization helpers. Keep worker creation lazy.
 - Run only one worker compilation at a time; coalesce edits received in flight and respect the latest debounce interval.
+- Contribute the integer `recompileDebounceDelay` config schema through `editorConfigSchemaContributions.compiler`.
+  Keep its typing and default in this package; use the shared directive validation and parsing mechanism.
+- The internal worker adapter requires an explicit current-input check and returns the canonical language-spec result.
+  Core receives only `ProgramArtifacts` for rendering; do not reconstruct the old core compiler-result interface.
 - Check input generation before accepting results in both the worker adapter and publication effect, including changes
   during debounce. Publish handles and the `compilationSucceeded` rendering event before metadata and runtime readiness.
 - Cancel scheduling before rejecting pending requests and terminating the worker. Release every owned registration;

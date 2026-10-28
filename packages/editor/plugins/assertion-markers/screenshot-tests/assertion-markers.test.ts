@@ -21,7 +21,6 @@ async function setup(source: string) {
 	const editor: Editor = await initEditor(canvas, {
 		runtimeRegistry: {},
 		initialProject: parseProjectSource(source),
-		callbacks: {},
 		plugins: [
 			assertionMarkersPlugin,
 			{

@@ -1,8 +1,6 @@
 import { resolvePalette } from '@8f4e/editor-palette';
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type {
-	Callbacks,
-	CompilationResult,
 	EditorConfigSchemaContributionRegistry,
 	EditorMode,
 	InfoRecord,
@@ -44,7 +42,6 @@ export {
 export type {
 	CodeBlockGraphicData,
 	CodeError,
-	CompilationResult,
 	EditorConfig,
 	EditorConfigSchemaContribution,
 	EditorConfigSchemaContributionRegistry,
@@ -73,6 +70,12 @@ export type { EventDispatcher } from './events';
 export type { EditorPlugin, EditorPluginContext } from './plugins';
 // Re-export helper functions
 
+/** Accepted program data needed by memory views and the renderer. */
+export interface ProgramArtifacts {
+	memoryRef: WebAssembly.Memory;
+	codeBuffer: Uint8Array;
+}
+
 export interface Editor {
 	resize: (width: number, height: number) => void;
 	/** Render the current state immediately. */
@@ -96,7 +99,6 @@ export interface EditorOptions {
 	featureFlags?: Partial<State['featureFlags']>;
 	/** Mode used when the editor is initialized. */
 	initialEditorMode?: EditorMode;
-	callbacks: Omit<Callbacks, 'getWordFromMemory' | 'readClipboardText' | 'writeClipboardText'>;
 	runtimeRegistry: RuntimeRegistry;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 	renderStatsIntervalFrames?: number;
@@ -157,7 +159,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		cleanups.push(() => events.dispose());
 		let currentMemoryRef: WebAssembly.Memory | null = null;
 		let currentCodeBuffer = new Uint8Array();
-		const onCompilationSucceeded = (result: CompilationResult) => {
+		const onCompilationSucceeded = (result: ProgramArtifacts) => {
 			currentMemoryRef = result.memoryRef;
 			updateMemoryViews(result.memoryRef);
 			currentCodeBuffer = new Uint8Array(result.codeBuffer);
@@ -175,7 +177,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			...options,
 			editorConfigSchemaContributions,
 			callbacks: {
-				...options.callbacks,
 				getWordFromMemory: (allocationUnitAddress: number) => {
 					return memoryViews.int32[allocationUnitAddress] || 0;
 				},

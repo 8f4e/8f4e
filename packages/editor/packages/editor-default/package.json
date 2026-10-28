@@ -24,11 +24,9 @@
   },
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
-    "@8f4e/compiler": "*",
     "@8f4e/editor-core": "*",
     "@8f4e/editor-plugin-toggle-skip-execution": "*",
     "@8f4e/examples": "*",
-    "@8f4e/language-spec": "*",
     "@8f4e/runtime-audio-worklet": "*",
     "@8f4e/runtime-test-runner": "*",
     "@8f4e/runtime-web-worker": "*",
@@ -66,6 +64,7 @@
     "vite": "7.3.7",
     "vitest": "4.1.7",
     "@8f4e/editor-state": "*",
-    "@8f4e/web-ui": "*"
+    "@8f4e/web-ui": "*",
+    "@8f4e/compiler": "*"
   }
 }

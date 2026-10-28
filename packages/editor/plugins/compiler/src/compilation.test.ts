@@ -5,7 +5,7 @@ import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import compilerEffect from './compilation';
 import type { CompilerService } from './compiler-service';
-import { recompileDebounceDelayEditorConfigValidator } from './editor-config';
+import { compilerEditorConfigSchemaContribution } from './editor-config';
 
 describe('compilation scheduling and publication', () => {
 	let mockState: State;
@@ -278,10 +278,10 @@ describe('compilation scheduling and publication', () => {
 		);
 	});
 
-	it('registers the recompile debounce delay editor config validator', () => {
+	it('contributes the compiler config schema', () => {
 		cleanup = compilerEffect({ store, events }, mockCompileCode);
 
-		expect(mockState.editorConfigValidators.recompileDebounceDelay).toBe(recompileDebounceDelayEditorConfigValidator);
+		expect(mockState.editorConfigSchemaContributions.compiler).toBe(compilerEditorConfigSchemaContribution);
 	});
 
 	it('cancels a scheduled compilation when disposed', async () => {

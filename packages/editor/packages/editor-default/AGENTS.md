@@ -45,6 +45,6 @@
 - Supply the compiler plugin's live `writeMemory` to button, switch, slider, piano, crossfade, and keyboard-memory factories. Core has no memory-write callback.
 - Supply lazy runtime loaders as registry dependencies. Loading, caching, and disposal belong to the runtime coordinator; state holds IDs/schemas and derived constant source only.
 
-- The compiler plugin publishes the narrow compilation result, including `memoryRef`, without taking an editor argument. Core owns memory-view updates. Derive bytecode size from `codeBuffer.byteLength`; do not restore unused status flags.
+- The compiler plugin publishes `ProgramArtifacts` (`memoryRef` and `codeBuffer`) for core rendering, without taking an editor argument. The full compilation result stays inside the plugin. Core owns memory-view updates. Derive bytecode size from `codeBuffer.byteLength`; do not restore unused status flags.
 
 - Cached memory-write views belong to the compiler plugin. Pass its writer directly rather than allocating views in the host.

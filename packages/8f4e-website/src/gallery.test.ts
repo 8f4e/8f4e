@@ -83,7 +83,8 @@ test('reveals a successfully loaded empty project', async () => {
 });
 
 test('compiles a loaded project through the compiler plugin and refreshes editor memory views', async () => {
-	const view = setup({ compiled: async () => new Response(source) });
+	const configuredSource = source.replace('int value 1', '; @config recompileDebounceDelay 10\nint value 1');
+	const view = setup({ compiled: async () => new Response(configuredSource) });
 	const editor = await view.mounted();
 	await vi.waitFor(
 		() =>
@@ -91,6 +92,8 @@ test('compiles a loaded project through the compiler plugin and refreshes editor
 		{ timeout: 10000 }
 	);
 	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
+	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(editor.state.editorConfig.recompileDebounceDelay).toBe(10);
 	expect(editor.state.compiler.isCompiling).toBe(false);
 	expect(editor.state.info.compiler?.wasmByteCodeBytes).toBeGreaterThan(0);
 	expect(editor.getMemoryViews().int32.byteLength).toBeGreaterThan(0);

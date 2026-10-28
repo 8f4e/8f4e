@@ -76,16 +76,16 @@ describe('editor config validators', () => {
 
 	it('uses validator parse hooks to store typed config values', () => {
 		const typedRegistry: EditorConfigValidatorRegistry = {
-			recompileDebounceDelay: {
-				knownPaths: ['recompileDebounceDelay'],
-				matches: path => path === 'recompileDebounceDelay',
-				validate: configEntry => (Number.isInteger(Number(configEntry.value)) ? undefined : 'invalid delay'),
+			exampleCount: {
+				knownPaths: ['exampleCount'],
+				matches: path => path === 'exampleCount',
+				validate: configEntry => (Number.isInteger(Number(configEntry.value)) ? undefined : 'invalid count'),
 				parse: configEntry => Number(configEntry.value),
 			},
 		};
 
-		expect(resolveEditorConfigEntries([entry('recompileDebounceDelay', '120')], typedRegistry)).toEqual({
-			recompileDebounceDelay: 120,
+		expect(resolveEditorConfigEntries([entry('exampleCount', '120')], typedRegistry)).toEqual({
+			exampleCount: 120,
 		});
 	});
 });

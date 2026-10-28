@@ -74,20 +74,18 @@ describe('toggle favorite plugin', () => {
 		expect(test.block.isFavorite).toBe(true);
 	});
 
-	it('updates the timestamp without scheduling compilation for metadata changes', async () => {
+	it('updates the timestamp without announcing changed compilation inputs', async () => {
 		vi.useFakeTimers();
 		const test = setup();
-		await vi.advanceTimersByTimeAsync(1000);
-		const compileCode = vi.fn();
-		test.events.on('compilationInputChanged', compileCode);
+		const onInputChanged = vi.fn();
+		test.events.on('compilationInputChanged', onInputChanged);
 		const revision = test.state.compilerInputRevision;
 		const lastUpdated = test.block.lastUpdated;
 		await vi.advanceTimersByTimeAsync(10);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		expect(test.block.lastUpdated).toBeGreaterThan(lastUpdated);
 		expect(test.state.compilerInputRevision).toBe(revision);
-		await vi.advanceTimersByTimeAsync(1000);
-		expect(compileCode).not.toHaveBeenCalled();
+		expect(onInputChanged).not.toHaveBeenCalled();
 	});
 
 	it('uses the clicked block and updates the menu label after toggling', async () => {

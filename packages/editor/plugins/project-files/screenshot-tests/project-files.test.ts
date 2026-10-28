@@ -37,7 +37,6 @@ noteEnd`;
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
 			initialProject: parseProjectSource(source),
-			callbacks: {},
 			plugins: [createProjectFilesPlugin({ inputTarget: canvas })],
 		});
 		const state = editor.state;

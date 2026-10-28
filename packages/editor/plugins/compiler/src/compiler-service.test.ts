@@ -1,4 +1,4 @@
-import type { ProjectObjectModel } from '@8f4e/language-spec';
+import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSuccessMessage, FakeWorker } from './__tests__/helpers';
 import { createCompilerService } from './compiler-service';
@@ -37,7 +37,7 @@ describe('compiler service', () => {
 			expect(int32Allocations).not.toHaveBeenCalled();
 			expect(float32Allocations).not.toHaveBeenCalled();
 			const first = new WebAssembly.Memory({ initial: 1, maximum: 2, shared });
-			const compile = service.compileCode({} as ProjectObjectModel, {});
+			const compile = service.compileCode(EMPTY_DEFAULT_PROJECT, {}, () => true);
 			worker.emitMessage(createSuccessMessage(new Uint8Array(), first));
 			await compile;
 			for (let i = 0; i < 100; i++) {
@@ -58,7 +58,7 @@ describe('compiler service', () => {
 			expect(new NativeInt32Array(first.buffer)[16384]).toBe(42);
 			expect(new NativeFloat32Array(first.buffer)[16385]).toBe(0.25);
 			const second = new WebAssembly.Memory({ initial: 1, maximum: 1, shared });
-			const recompile = service.compileCode({} as ProjectObjectModel, {});
+			const recompile = service.compileCode(EMPTY_DEFAULT_PROJECT, {}, () => true);
 			worker.emitMessage(createSuccessMessage(new Uint8Array(), second, 1));
 			await recompile;
 			for (let i = 0; i < 100; i++) {
@@ -80,7 +80,7 @@ describe('compiler service', () => {
 		const service = createCompilerService({ createWorker: () => worker as unknown as Worker });
 		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 		const codeBuffer = new Uint8Array([1]);
-		const first = service.compileCode({} as ProjectObjectModel, {});
+		const first = service.compileCode(EMPTY_DEFAULT_PROJECT, {}, () => true);
 		expect(service.getAssertionSites()).toBeUndefined();
 		worker.emitMessage(createSuccessMessage(codeBuffer, memory));
 		expect(await first).toMatchObject({ codeBuffer, memoryRef: memory });
@@ -88,7 +88,7 @@ describe('compiler service', () => {
 		expect(service.getCodeBuffer()).toBe(codeBuffer);
 		expect(service.getMemory()).toBe(memory);
 
-		const second = service.compileCode({} as ProjectObjectModel, {});
+		const second = service.compileCode(EMPTY_DEFAULT_PROJECT, {}, () => true);
 		expect(service.getAssertionSites()).toBeUndefined();
 		worker.emitMessage({ type: 'compilationError', compilationId: 1, payload: { message: 'syntax error' } });
 		await expect(second).rejects.toMatchObject({ message: 'syntax error' });
@@ -96,28 +96,25 @@ describe('compiler service', () => {
 		service.dispose();
 	});
 
-	it('keeps code, memory, and assertion sites from the latest compilation', async () => {
+	it('returns the canonical worker result without publishing artifacts from obsolete inputs', async () => {
 		const worker = new FakeWorker();
 		const service = createCompilerService({ createWorker: () => worker as unknown as Worker });
-		const memory = new WebAssembly.Memory({ initial: 1 });
-		const first = service.compileCode({} as ProjectObjectModel, {});
-		const second = service.compileCode({} as ProjectObjectModel, {});
-		const codeBuffer = new Uint8Array([2]);
-		worker.emitMessage(createSuccessMessage(codeBuffer, memory, 1));
-		await second;
-		const current = service.getAssertionSites();
-		worker.emitMessage(createSuccessMessage(new Uint8Array([1]), new WebAssembly.Memory({ initial: 1 }), 0));
-		await first;
-		expect(service.getAssertionSites()).toBe(current);
-		expect(service.getCodeBuffer()).toBe(codeBuffer);
-		expect(service.getMemory()).toBe(memory);
+		let current = true;
+		const compilation = service.compileCode(EMPTY_DEFAULT_PROJECT, {}, () => current);
+		current = false;
+		const success = createSuccessMessage(new Uint8Array([1]), new WebAssembly.Memory({ initial: 1 }));
+		worker.emitMessage(success);
+		expect(await compilation).toBe(success.payload);
+		expect(service.getMemory()).toBeNull();
+		expect(service.getCodeBuffer()).toHaveLength(0);
+		expect(service.getAssertionSites()).toBeUndefined();
 		service.dispose();
 	});
 
 	it('does not expose assertion sites when assertions are disabled', async () => {
 		const worker = new FakeWorker();
 		const service = createCompilerService({ createWorker: () => worker as unknown as Worker });
-		const compilation = service.compileCode({} as ProjectObjectModel, {});
+		const compilation = service.compileCode(EMPTY_DEFAULT_PROJECT, {}, () => true);
 		const success = createSuccessMessage(new Uint8Array([1]), new WebAssembly.Memory({ initial: 1 }));
 		worker.emitMessage({ ...success, payload: { ...success.payload, assertionSites: undefined } });
 		await compilation;
@@ -138,10 +135,10 @@ describe('compiler service', () => {
 		const secondMemory = new WebAssembly.Memory({ initial: 1 });
 		const firstCodeBuffer = new Uint8Array([1, 2, 3]);
 		const secondCodeBuffer = new Uint8Array([4, 5]);
-		const project = {} as ProjectObjectModel;
+		const project = EMPTY_DEFAULT_PROJECT;
 
-		const firstCompilation = firstService.compileCode(project, {});
-		const secondCompilation = secondService.compileCode(project, {});
+		const firstCompilation = firstService.compileCode(project, {}, () => true);
+		const secondCompilation = secondService.compileCode(project, {}, () => true);
 
 		expect(workers).toHaveLength(2);
 
@@ -185,16 +182,16 @@ describe('compiler service', () => {
 		const service = createCompilerService({ createWorker: () => worker as unknown as Worker });
 		service.dispose();
 
-		await expect(service.compileCode({} as ProjectObjectModel, {})).rejects.toThrow(
+		await expect(service.compileCode(EMPTY_DEFAULT_PROJECT, {}, () => true)).rejects.toThrow(
 			'Compiler service has been disposed'
 		);
 		expect(worker.terminate).not.toHaveBeenCalled();
 	});
 
-	it('rejects pending compilations when disposed', async () => {
+	it('rejects the pending compilation when disposed', async () => {
 		const worker = new FakeWorker();
 		const service = createCompilerService({ createWorker: () => worker as unknown as Worker });
-		const compilation = service.compileCode({} as ProjectObjectModel, {});
+		const compilation = service.compileCode(EMPTY_DEFAULT_PROJECT, {}, () => true);
 
 		service.dispose();
 

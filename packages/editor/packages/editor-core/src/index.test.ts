@@ -1,6 +1,6 @@
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CompilationResult } from './index';
+import type { ProgramArtifacts } from './index';
 import type { EditorPluginContext } from './plugins';
 
 const events = {
@@ -103,7 +103,6 @@ describe('editor init', () => {
 		const releaseCompiler = vi.fn();
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
 			runtimeRegistry: {},
-			callbacks: {},
 			plugins: [{ id: 'compiler', setup: () => releaseCompiler }],
 		});
 		editor.dispose();
@@ -118,14 +117,14 @@ describe('editor init', () => {
 		const { default: initView } = await import('@8f4e/web-ui');
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
 			runtimeRegistry: {},
-			callbacks: {},
 		});
 		const renderer = vi.mocked(initView).mock.calls.at(-1)![6]!;
 		const accept = events.on.mock.calls.find(([name]) => name === 'compilationSucceeded')![1];
 		const memoryRef = new WebAssembly.Memory({ initial: 1 });
 		new Int32Array(memoryRef.buffer)[1] = 22;
 		const codeBuffer = new Uint8Array([2]);
-		accept({ memoryRef, codeBuffer } as CompilationResult);
+		const artifacts: ProgramArtifacts = { memoryRef, codeBuffer };
+		accept(artifacts);
 		expect(editor.getMemoryViews().int32[1]).toBe(22);
 		expect(renderer.getMemory?.()).toBe(memoryRef);
 		expect(renderer.getCodeBuffer?.()).toEqual(codeBuffer);
@@ -158,7 +157,6 @@ describe('editor init', () => {
 				init(canvas, {
 					plugins: [{ id: 'startup-cleanup', setup }],
 					runtimeRegistry: {},
-					callbacks: {},
 				})
 			).rejects.toBe(error);
 			expect(setup).toHaveBeenCalledOnce();
@@ -183,7 +181,6 @@ describe('editor init', () => {
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
 			plugins,
 			runtimeRegistry: {},
-			callbacks: {},
 		});
 		expect(plugins[0].setup).toHaveBeenCalledWith({
 			store,
@@ -242,7 +239,6 @@ describe('editor init', () => {
 					factory: () => () => {},
 				},
 			},
-			callbacks: {},
 		});
 
 		expect(events.dispatch.mock.calls.slice(0, 3)).toEqual([
@@ -260,7 +256,6 @@ describe('editor init', () => {
 		const project = { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code: ['note initial', 'noteEnd'] }] };
 		await init({ width: 640, height: 480 } as HTMLCanvasElement, {
 			initialProject: project,
-			callbacks: {},
 			runtimeRegistry: {},
 		});
 		const load = events.dispatch.mock.calls.findIndex(([name]) => name === 'loadProject');
@@ -274,7 +269,6 @@ describe('editor init', () => {
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {
 			runtimeRegistry: {},
-			callbacks: {},
 		});
 
 		editor.pauseRendering();
@@ -291,7 +285,6 @@ describe('editor init', () => {
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {
 			runtimeRegistry: {},
-			callbacks: {},
 		});
 
 		view.resize.mockReturnValueOnce(false);
@@ -336,7 +329,6 @@ describe('editor init', () => {
 					factory: () => () => {},
 				},
 			},
-			callbacks: {},
 		});
 
 		expect(observe).toHaveBeenCalledWith(canvas);
@@ -382,7 +374,6 @@ describe('editor init', () => {
 					factory: () => () => {},
 				},
 			},
-			callbacks: {},
 		});
 
 		expect(canvas.tabIndex).toBe(0);
@@ -397,7 +388,6 @@ describe('editor init', () => {
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {
 			runtimeRegistry: {},
-			callbacks: {},
 		});
 		const overlaySubscription = store.subscribe.mock.calls.find(([path]) => path === 'editorConfig.webUI')?.[1];
 
@@ -417,7 +407,6 @@ describe('editor init', () => {
 		const { default: init } = await import('./index');
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
 			runtimeRegistry: {},
-			callbacks: {},
 		});
 		view.renderFrame.mockClear();
 
@@ -447,7 +436,6 @@ describe('editor init', () => {
 				width: 1,
 				height: 1,
 			},
-			callbacks: {},
 		});
 
 		const viewCall = vi.mocked(initView).mock.calls.at(-1)!;
