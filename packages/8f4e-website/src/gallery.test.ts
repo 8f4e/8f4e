@@ -1,5 +1,5 @@
 import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
-import type { WebMcpTool } from '@8f4e/editor-webmcp';
+import type { WebMcpProjectSnapshot, WebMcpTool } from '@8f4e/editor-webmcp';
 import { afterEach, expect, test, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { mountGallery } from './gallery';
@@ -189,15 +189,18 @@ test('exposes the loaded project through site tools and saves undoable source ed
 	canvas.style.width = '900px';
 	canvas.style.height = '480px';
 	editor.resize(900, 480);
-	const before = (await tools.get('get_project')!.execute({})) as ReturnType<
-		DefaultEditorInstance['editing']['getSnapshot']
-	>;
-	const target = before.blocks.find(block => block.name === 'galleryExample')!;
+	const before = (await tools.get('get_project')!.execute({})) as WebMcpProjectSnapshot;
+	const target = before.blocks.find(block => block.code.startsWith('module galleryExample\n'))!;
 	expect(target).toBeDefined();
+	const metadata = await tools.get('get_block_metadata')!.execute({ blockId: target.blockId });
+	expect(metadata).toMatchObject({
+		revision: before.revision,
+		block: { name: 'galleryExample', type: 'module', entry: 'main' },
+	});
 	const changed = (await tools.get('apply_edits')!.execute({
 		expectedRevision: before.revision,
 		edits: [
-			{ type: 'update', blockId: target.blockId, code: ['module galleryExample', 'int value 17', 'moduleEnd'] },
+			{ type: 'update', blockId: target.blockId, code: 'module galleryExample\nint value 17\nmoduleEnd' },
 			{ type: 'move', blockId: target.blockId, x: 0, y: 14 },
 		],
 	})) as { revision: string };
@@ -217,9 +220,7 @@ test('replaces site tools on project selection and rejects retained calls and sn
 	});
 	await view.mounted();
 	await vi.waitFor(() => expect(tools.has('get_diagnostics')).toBe(true));
-	const before = (await tools.get('get_project')!.execute({})) as ReturnType<
-		DefaultEditorInstance['editing']['getSnapshot']
-	>;
+	const before = (await tools.get('get_project')!.execute({})) as WebMcpProjectSnapshot;
 	const retained = tools.get('apply_edits')!;
 	view.gallery.querySelector<HTMLButtonElement>('#example-second')!.click();
 	expect(tools.size).toBe(0);
@@ -233,5 +234,5 @@ test('replaces site tools on project selection and rejects retained calls and sn
 		error: { code: 'stale_revision' },
 	});
 	expect(editor.editing.getSnapshot().project.modules[0].code[0]).toBe('module secondExample');
-	expect(tools.size).toBe(5);
+	expect(tools.size).toBe(6);
 });

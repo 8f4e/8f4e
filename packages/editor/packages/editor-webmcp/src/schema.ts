@@ -1,4 +1,4 @@
-const code = { type: 'array', minItems: 1, items: { type: 'string', pattern: '^[^\\r\\n]*$' } };
+const code = { type: 'string', description: 'Complete source of the block, with newline characters between lines.' };
 const position = { type: 'integer' };
 const blockId = { type: 'string', description: 'Opaque blockId from get_project at the expected revision.' };
 const entry = { type: 'string', minLength: 1, pattern: '^\\S+$' };
@@ -11,6 +11,7 @@ const object = (properties: Record<string, unknown>, required: string[]) => ({
 });
 
 export const emptySchema = object({}, []);
+export const metadataSchema = object({ blockId }, ['blockId']);
 export const revisionSchema = object({ expectedRevision: { type: 'string' } }, ['expectedRevision']);
 export const editsSchema = object(
 	{

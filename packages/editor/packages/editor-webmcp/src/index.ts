@@ -1,5 +1,22 @@
-import type { Editor, EditorEdit } from '@8f4e/editor-core';
-import { editsSchema, emptySchema, revisionSchema } from './schema.js';
+import type { Editor, EditorEdit, EditorProjectSnapshot } from '@8f4e/editor-core';
+import { editsSchema, emptySchema, metadataSchema, revisionSchema } from './schema.js';
+
+export type WebMcpProjectSnapshot = Pick<EditorProjectSnapshot, 'revision' | 'editable' | 'canUndo' | 'canRedo'> & {
+	blocks: Array<{ blockId: string; code: string }>;
+};
+
+function readEdits(input: unknown): EditorEdit[] {
+	if (!Array.isArray(input)) throw new Error('edits must be an array');
+	return input.map(value => {
+		if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid edit');
+		const edit = value as Record<string, unknown>;
+		if (edit.type === 'insert' || edit.type === 'update') {
+			if (typeof edit.code !== 'string') throw new Error('code must be a source string');
+			return { ...edit, code: edit.code.split(/\r\n|\n|\r/) } as EditorEdit;
+		}
+		return edit as EditorEdit;
+	});
+}
 
 /** Structural types keep the experimental browser API out of editor-core and global DOM typings. */
 export interface WebMcpTool {
@@ -104,24 +121,56 @@ export function createEditorWebMcp({
 		tool(
 			'get_project',
 			'Read the open 8f4e project',
-			'Read the bound editor project, source lines, block handles, grid positions, and opaque revision. Read again after editing or opening another project.',
+			'Read source strings and block handles for the bound editor, with its opaque revision and editing/history availability. Use get_block_metadata when scope, entry, or layout details are needed. Read again after editing or opening another project.',
 			emptySchema,
 			true,
 			input => {
 				request(input, []);
-				return editing.getSnapshot();
+				const snapshot = editing.getSnapshot();
+				return {
+					revision: snapshot.revision,
+					editable: snapshot.editable,
+					canUndo: snapshot.canUndo,
+					canRedo: snapshot.canRedo,
+					blocks: snapshot.blocks.map(block => ({ blockId: block.blockId, code: block.code.join('\n') })),
+				} satisfies WebMcpProjectSnapshot;
+			}
+		),
+		tool(
+			'get_block_metadata',
+			'Read 8f4e block metadata',
+			"Read a current block's project group path, execution entry, type, name, and grid position. Source is provided by get_project. The result includes the current revision.",
+			metadataSchema,
+			true,
+			input => {
+				const args = request(input, ['blockId']);
+				if (typeof args.blockId !== 'string') throw new Error('blockId from get_project is required');
+				const snapshot = editing.getSnapshot();
+				const block = snapshot.blocks.find(block => block.blockId === args.blockId);
+				if (!block)
+					return {
+						error: {
+							code: 'block_not_found',
+							message: 'Read get_project for a current blockId',
+							revision: snapshot.revision,
+						},
+					};
+				const { code: _code, ...metadata } = block;
+				return { revision: snapshot.revision, block: metadata };
 			}
 		),
 		tool(
 			'apply_edits',
 			'Edit the open 8f4e project',
-			'Apply one atomic undoable batch of insert, update, move, or delete operations. Requires the latest get_project revision. Positions are grid coordinates; insert defaults to the root project and entry main. Compilation errors are reported separately.',
+			'Apply one atomic undoable batch of insert, update, move, or delete operations. Insert/update code is a complete source string. Requires the latest get_project revision. Positions are grid coordinates; insert defaults to the root project and entry main. Compilation errors are reported separately.',
 			editsSchema,
 			false,
 			input => {
 				const args = writeRequest(input, ['expectedRevision', 'edits']);
-				if (!('edits' in args) || !Array.isArray(args.edits)) throw new Error('edits must be an array');
-				return editing.applyEdits({ expectedRevision: args.expectedRevision, edits: args.edits as EditorEdit[] });
+				return editing.applyEdits({
+					expectedRevision: args.expectedRevision,
+					edits: readEdits('edits' in args ? args.edits : undefined),
+				});
 			}
 		),
 		...(['undo', 'redo'] as const).map(action =>

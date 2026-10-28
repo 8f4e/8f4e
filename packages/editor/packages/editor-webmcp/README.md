@@ -33,7 +33,8 @@ One active bridge is allowed per document. It keeps the supplied editor referenc
 
 | Tool | Arguments | Result |
 | --- | --- | --- |
-| `get_project` | `{}` | Detached project, source blocks and opaque handles, grid positions, revision, editability, and history availability. |
+| `get_project` | `{}` | Blocks as `{ blockId, code }` with source strings, plus one project revision, editability, and history availability. |
+| `get_block_metadata` | `{ blockId }` | Current revision and the block's group path, execution entry, type, name, and grid position. |
 | `apply_edits` | `{ expectedRevision, edits }` | New revision and handles of inserted blocks. The complete batch is validated before application and creates one undo step. |
 | `undo` / `redo` | `{ expectedRevision }` | New revision after one history step. |
 | `get_diagnostics` | `{}` | Project revision, compiler input revision, and diagnostics from the optional host-provided read handle. |
@@ -45,19 +46,21 @@ Read `get_project` before writing. Its opaque revision belongs to that editor in
 Supported edit shapes:
 
 ```ts
-{ type: 'insert', code: ['module counter', 'int value 0', 'moduleEnd'], x: 10, y: 20, entry: 'main' }
-{ type: 'update', blockId, code: ['module counter', 'int value 1', 'moduleEnd'] }
+{ type: 'insert', code: 'module counter\nint value 0\nmoduleEnd', x: 10, y: 20, entry: 'main' }
+{ type: 'update', blockId, code: 'module counter\nint value 1\nmoduleEnd' }
 { type: 'move', blockId, x: 30, y: 20 }
 { type: 'delete', blockId }
 ```
 
-Each `code` value is a nonempty array of individual source lines. Positions use integer grid coordinates. Inserts default to `(0, 0)`, the root project, and entry `main` for modules. Supply `projectPath` from the snapshot to insert inside an existing project group. An update preserves a block's position unless its source specifies `; @pos`. Module updates may also supply `entry`.
+Each `code` value is a source string. The bridge joins source lines for reads and splits incoming source on line endings for edits, preserving blank lines, indentation, and trailing newlines. Positions use integer grid coordinates. Inserts default to `(0, 0)`, the root project, and entry `main` for modules. Fetch block metadata when group scope or execution context is needed; supply its `projectPath` to insert inside that project group. An update preserves a block's position unless its source specifies `; @pos`. Module updates may also supply `entry`.
 
 Block handles distinguish duplicate block IDs in nested project scopes. Treat them as opaque and refresh them after editing. Group blocks can be moved, deleted, or have their source updated while retaining the group name; creating or renaming project groups is not part of this command surface. Whole-project loading stays separate and continues through the existing editor UI and host startup paths.
 
 ## Public editor API
 
 The same operations are available without WebMCP through `editor.editing.getSnapshot()`, `applyEdits({ expectedRevision, edits })`, `undo({ expectedRevision })`, and `redo({ expectedRevision })`.
+
+The editor API retains its complete structured snapshot, including the canonical project, all block metadata, and source as line arrays. Agent-specific filtering and string conversion belong only to this bridge. `get_project` omits the duplicate canonical project and keeps block metadata in the separate lookup tool.
 
 Writes respect edit mode and follow existing project restoration, derived layout, autosave, and compilation mechanisms. They preserve the viewed project group and viewport for edit batches and do not dispatch `loadProject`, so in-project edits keep browser file associations. Invalid batches leave project content and undo history unchanged. Source edits may produce ordinary compiler diagnostics.
 

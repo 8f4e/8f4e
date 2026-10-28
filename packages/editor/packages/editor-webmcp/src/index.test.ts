@@ -11,7 +11,37 @@ function setup() {
 		});
 	});
 	const document = { modelContext: { registerTool } } as unknown as Document;
-	const snapshot = { revision: 'editor-one:1', compilerInputRevision: 1 } as EditorProjectSnapshot;
+	const code = ['module counter', '; @pos 10 20', 'int value 0', 'moduleEnd'];
+	const snapshot: EditorProjectSnapshot = {
+		revision: 'editor-one:1',
+		compilerInputRevision: 1,
+		project: {
+			code: [],
+			modules: [{ id: 7, entry: 'main', code }],
+			functions: [],
+			constants: [],
+			prototypes: [],
+			includes: [],
+			notes: [],
+			unknown: [],
+			groups: [],
+		},
+		blocks: [
+			{
+				blockId: 'counter-handle',
+				projectPath: '',
+				type: 'module',
+				name: 'counter',
+				code,
+				x: 10,
+				y: 20,
+				entry: 'main',
+			},
+		],
+		editable: true,
+		canUndo: false,
+		canRedo: false,
+	};
 	const editing: EditorEditingHandle = {
 		getSnapshot: vi.fn(() => snapshot),
 		applyEdits: vi.fn(() => ({ revision: 'editor-one:2', createdBlockIds: [] })),
@@ -22,6 +52,36 @@ function setup() {
 }
 
 describe('single-editor WebMCP bridge', () => {
+	it('returns metadata on demand while leaving the editor snapshot complete', async () => {
+		const view = setup();
+		const before = structuredClone(view.snapshot);
+		const bridge = createEditorWebMcp({ document: view.document, editor: { editing: view.editing } });
+		await bridge.ready;
+		expect(await view.tools.get('get_block_metadata')!.execute({ blockId: 'counter-handle' })).toEqual({
+			revision: 'editor-one:1',
+			block: {
+				blockId: 'counter-handle',
+				projectPath: '',
+				type: 'module',
+				name: 'counter',
+				x: 10,
+				y: 20,
+				entry: 'main',
+			},
+		});
+		expect(await view.tools.get('get_block_metadata')!.execute({ blockId: 'missing' })).toMatchObject({
+			error: { code: 'block_not_found' },
+		});
+		expect(
+			await view.tools.get('apply_edits')!.execute({
+				expectedRevision: 'editor-one:1',
+				edits: [{ type: 'update', blockId: 'counter-handle', code: ['old array format'] }],
+			})
+		).toMatchObject({ error: { code: 'invalid_request' } });
+		expect(view.editing.applyEdits).not.toHaveBeenCalled();
+		expect(view.snapshot).toEqual(before);
+		bridge.dispose();
+	});
 	it('delegates to the supplied editing handle and returns revisioned compiler diagnostics', async () => {
 		const view = setup();
 		const bridge = createEditorWebMcp({
@@ -30,11 +90,28 @@ describe('single-editor WebMCP bridge', () => {
 			getDiagnostics: () => ({ status: 'pending', completedRevision: null }),
 		});
 		await bridge.ready;
-		expect([...view.tools.keys()]).toEqual(['get_project', 'apply_edits', 'undo', 'redo', 'get_diagnostics']);
-		expect(await view.tools.get('get_project')!.execute({})).toBe(view.snapshot);
-		const edits = [{ type: 'insert', code: ['module new', 'moduleEnd'] }];
+		expect([...view.tools.keys()]).toEqual([
+			'get_project',
+			'get_block_metadata',
+			'apply_edits',
+			'undo',
+			'redo',
+			'get_diagnostics',
+		]);
+		expect(await view.tools.get('get_project')!.execute({})).toEqual({
+			revision: 'editor-one:1',
+			editable: true,
+			canUndo: false,
+			canRedo: false,
+			blocks: [{ blockId: 'counter-handle', code: view.snapshot.blocks[0].code.join('\n') }],
+		});
+		expect(view.snapshot.project.modules[0].code).toEqual(view.snapshot.blocks[0].code);
+		const edits = [{ type: 'insert', code: 'module new\n\n\tpush 1\r\nmoduleEnd\n' }];
 		await view.tools.get('apply_edits')!.execute({ expectedRevision: 'editor-one:1', edits });
-		expect(view.editing.applyEdits).toHaveBeenCalledWith({ expectedRevision: 'editor-one:1', edits });
+		expect(view.editing.applyEdits).toHaveBeenCalledWith({
+			expectedRevision: 'editor-one:1',
+			edits: [{ type: 'insert', code: ['module new', '', '\tpush 1', 'moduleEnd', ''] }],
+		});
 		expect(await view.tools.get('get_diagnostics')!.execute({})).toEqual({
 			revision: 'editor-one:1',
 			compilerInputRevision: 1,
@@ -62,7 +139,7 @@ describe('single-editor WebMCP bridge', () => {
 			error: { code: 'disposed' },
 		});
 		expect(view.editing.applyEdits).not.toHaveBeenCalled();
-		expect(view.tools.size).toBe(4);
+		expect(view.tools.size).toBe(5);
 		second.dispose();
 	});
 
