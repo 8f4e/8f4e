@@ -107,12 +107,12 @@ describe('remove memory connections plugin', () => {
 		vi.useFakeTimers();
 		const test = setup();
 		await vi.advanceTimersByTimeAsync(1000);
-		const compileCode = vi.fn().mockRejectedValue({ message: 'Test diagnostic', line: { lineNumber: 0 }, context: {} });
-		test.state.callbacks.compileCode = compileCode;
+		const changed = vi.fn(() => [...test.block.code]);
+		test.events.on('compilationInputChanged', changed);
 		test.events.dispatch('removeConnections', { codeBlock: test.block });
 		await vi.advanceTimersByTimeAsync(1000);
-		expect(compileCode).toHaveBeenCalledOnce();
-		expect(compileCode.mock.calls[0][0].modules[0].code).toEqual(test.block.code);
+		expect(changed).toHaveBeenCalledOnce();
+		expect(changed.mock.results[0].value).toEqual(test.block.code);
 	});
 
 	it('hides the action and does not edit in view mode', async () => {

@@ -2,6 +2,7 @@ import { resolvePalette } from '@8f4e/editor-palette';
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type {
 	Callbacks,
+	CompilationResult,
 	EditorConfigSchemaContributionRegistry,
 	EditorMode,
 	InfoRecord,
@@ -18,6 +19,7 @@ import initView, {
 } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 
+import { disposeAll } from './disposeAll';
 import initEvents from './events';
 import keyboardEvents from './events/keyboardEvents';
 import pointerEvents from './events/pointerEvents';
@@ -131,10 +133,13 @@ function toGraphicsInfoRecord(stats: RenderStats): InfoRecord {
 
 export default async function init(canvas: HTMLCanvasElement, options: EditorOptions): Promise<Editor> {
 	const cleanups: Array<() => void> = [];
+	let beforeDispose = () => {};
+	let disposed = false;
 	const dispose = () => {
-		while (cleanups.length) {
-			cleanups.pop()!();
-		}
+		if (disposed) return;
+		disposed = true;
+		cleanups.push(beforeDispose);
+		disposeAll(cleanups);
 	};
 	try {
 		const initialTabIndex = canvas.tabIndex;
@@ -148,13 +153,19 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 
 		const { memoryViews, updateMemoryViews } = createMemoryViewManager(new ArrayBuffer(0));
 		const events = initEvents();
+		beforeDispose = () => events.dispatch('dispose');
 		cleanups.push(() => events.dispose());
 		let currentMemoryRef: WebAssembly.Memory | null = null;
 		let currentCodeBuffer = new Uint8Array();
-		let latestCompilationId = 0;
+		const onCompilationSucceeded = (result: CompilationResult) => {
+			currentMemoryRef = result.memoryRef;
+			updateMemoryViews(result.memoryRef);
+			currentCodeBuffer = new Uint8Array(result.codeBuffer);
+		};
+		events.on('compilationSucceeded', onCompilationSucceeded);
+		cleanups.push(() => events.off('compilationSucceeded', onCompilationSucceeded));
 		let store: ReturnType<typeof initState>;
 		let view: Awaited<ReturnType<typeof initView>>;
-		const compileCode = options.callbacks.compileCode;
 		const editorConfigSchemaContributions: EditorConfigSchemaContributionRegistry = {
 			[WEB_UI_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID]: webUiEditorConfigSchemaContribution,
 			...options.editorConfigSchemaContributions,
@@ -165,18 +176,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			editorConfigSchemaContributions,
 			callbacks: {
 				...options.callbacks,
-				compileCode: compileCode
-					? async (input, compilerOptions) => {
-							const compilationId = ++latestCompilationId;
-							const result = await compileCode(input, compilerOptions);
-							if (compilationId === latestCompilationId) {
-								currentMemoryRef = result.memoryRef;
-								updateMemoryViews(result.memoryRef);
-								currentCodeBuffer = new Uint8Array(result.codeBuffer);
-							}
-							return result;
-						}
-					: undefined,
 				getWordFromMemory: (allocationUnitAddress: number) => {
 					return memoryViews.int32[allocationUnitAddress] || 0;
 				},

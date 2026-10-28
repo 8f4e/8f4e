@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
 import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
@@ -6,6 +7,25 @@ import runtimeEffect from '../effect';
 
 describe('Runtime System', () => {
 	describe('Runtime lifecycle integration', () => {
+		it('stops the runtime on editor disposal before plugin teardown and ignores repeated cleanup', () => {
+			const destroy = vi.fn();
+			const state = createMockState({ editorConfig: { runtime: 'Worker' } });
+			const store = createStateManager(state);
+			const emitter = new EventEmitter();
+			const events = {
+				on: emitter.on.bind(emitter),
+				off: emitter.off.bind(emitter),
+				dispatch: emitter.emit.bind(emitter),
+			};
+			const cleanup = runtimeEffect(store, events, { Worker: { id: 'Worker', factory: () => destroy } });
+			store.set('compiler.isCompiling', true);
+			store.set('compiler.isCompiling', false);
+			events.dispatch('dispose');
+			expect(destroy).toHaveBeenCalledOnce();
+			cleanup();
+			expect(destroy).toHaveBeenCalledOnce();
+			store.dispose();
+		});
 		it('should destroy previous runtime when runtime type changes without changeRuntime event', async () => {
 			const audioDestroyer = vi.fn();
 			const webWorkerDestroyer = vi.fn();

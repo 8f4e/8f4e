@@ -82,6 +82,20 @@ test('reveals a successfully loaded empty project', async () => {
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 });
 
+test('compiles a loaded project through the compiler plugin and refreshes editor memory views', async () => {
+	const view = setup({ compiled: async () => new Response(source) });
+	const editor = await view.mounted();
+	await vi.waitFor(
+		() =>
+			expect(Object.keys(editor.state.compiler.compiledModules).some(id => id.includes('galleryExample'))).toBe(true),
+		{ timeout: 10000 }
+	);
+	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
+	expect(editor.state.compiler.isCompiling).toBe(false);
+	expect(editor.state.info.compiler?.wasmByteCodeBytes).toBeGreaterThan(0);
+	expect(editor.getMemoryViews().int32.byteLength).toBeGreaterThan(0);
+});
+
 test('reports a failed request immediately and loads the project when retried', async () => {
 	let requests = 0;
 	const view = setup({

@@ -79,7 +79,7 @@ describe('toggle favorite plugin', () => {
 		const test = setup();
 		await vi.advanceTimersByTimeAsync(1000);
 		const compileCode = vi.fn();
-		test.state.callbacks.compileCode = compileCode;
+		test.events.on('compilationInputChanged', compileCode);
 		const revision = test.state.compilerInputRevision;
 		const lastUpdated = test.block.lastUpdated;
 		await vi.advanceTimersByTimeAsync(10);

@@ -1,7 +1,7 @@
 # Default Editor
 
 `@8f4e/editor-default` is the standard 8f4e editor composition. It connects `@8f4e/editor-core` to the compiler
-worker, runtime implementations, standard library, example source discovery, and startup policy.
+plugin, runtime implementations, standard library, example source discovery, and startup policy.
 
 The package exports `mountDefaultEditor(canvas, options)`. It does not mount itself when imported, so websites and
 other browser hosts control when and where the editor starts.
@@ -47,7 +47,7 @@ Callbacks can run before the mount promise resolves. Mounting itself finishes af
 request may still be pending, so hosts can dispose that editor when navigating elsewhere. Custom plugin compositions
 provide their own asynchronous loading notifications.
 
-The default composition includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
+The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
 `@8f4e/editor-plugin-toggle-favorite` for Favorite/Unfavorite editing,
 `@8f4e/editor-plugin-remove-memory-connections` for disconnecting intermodular memory defaults,
 `@8f4e/editor-plugin-switch` for the switch widget, `@8f4e/editor-plugin-button` for momentary buttons,
@@ -63,7 +63,7 @@ The render callback runs from plugin actions after initialization. The shared pl
 browser resources; browser dependencies are supplied to plugin factories by this composition.
 Meter, plot, bars, crossfade, watch, and stack are also optional plugins in this standard set. Watch and stack receive
 a live reduced-motion preference from the browser host and keep their animation and data inside their installations.
-The `plugins` option replaces the default set: pass `[]` to omit plugins, or a custom array to select and extend it.
+The `plugins` option replaces the default feature set: pass `[]` to omit feature plugins, or a custom array to select and extend it. The compiler remains installed first. Use `initEditor` from editor-core for a composition without a compiler or with a different compiler plugin.
 Each editor installs and disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).
 
 `@8f4e/editor-plugin-binary-assets` is also included. It owns binary asset configuration, fetching, caching, memory
@@ -121,6 +121,6 @@ npx nx run @8f4e/editor-default:test
 npx nx run @8f4e/editor-default:typecheck
 ```
 
-The compiler service receives the stdlib include resolver when it is created; editor state does not forward include-loading callbacks. Button, switch, slider, piano, crossfade, and keyboard-memory factories receive the service's live `writeMemory` function directly. Runtime loaders and factories remain initialization dependencies owned by the runtime coordinator; state holds data-only runtime metadata and derived environment-constant source.
+The compiler plugin receives the stdlib include resolver when it is created; editor state does not forward compiler or include-loading callbacks. Button, switch, slider, piano, crossfade, and keyboard-memory factories receive the compiler plugin's live `writeMemory` function directly. Runtime loaders and factories remain initialization dependencies owned by the runtime coordinator; state holds data-only runtime metadata and derived environment-constant source.
 
-Compilation returns memory and bytecode to core, which updates its own views. The compiler service has no editor dependency. Worker results carry current artifacts and memory actions without redundant byte-size or instance-reset flags.
+Core announces input changes through `compilationInputChanged`. The compiler plugin owns debouncing, worker communication, stale-result rejection, diagnostics, and statistics. It emits accepted memory and bytecode through `compilationSucceeded`, which core consumes to update its views before dependent features and runtimes react to metadata. Editor disposal stops runtimes before releasing plugins; the compiler then cancels scheduling and terminates its worker after dependent plugins have shut down. Worker results carry current artifacts and memory actions without redundant byte-size or instance-reset flags.

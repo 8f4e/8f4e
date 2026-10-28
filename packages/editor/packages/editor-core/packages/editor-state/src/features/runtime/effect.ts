@@ -126,13 +126,16 @@ export default function runtime(
 	store.subscribe('editorConfig.runtime', onSelectionChanged);
 	store.subscribe('editorConfig', syncEnvConstants);
 
-	return () => {
+	function dispose(): void {
 		if (disposed) return;
 		disposed = true;
 		++generation;
 		store.unsubscribe('compiler.isCompiling', syncRuntime);
 		store.unsubscribe('editorConfig.runtime', onSelectionChanged);
 		store.unsubscribe('editorConfig', syncEnvConstants);
+		events.off('dispose', dispose);
 		destroyRuntime?.();
-	};
+	}
+	events.on('dispose', dispose);
+	return dispose;
 }

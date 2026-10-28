@@ -3,7 +3,7 @@
  * Shared feature types are re-exported here for editor consumers.
  */
 
-import type { CompileOptions, MemoryAction as CompilerMemoryAction, ProjectObjectModel } from '@8f4e/language-spec';
+import type { MemoryAction as CompilerMemoryAction, ProjectObjectModel } from '@8f4e/language-spec';
 import type { AssertionResult } from './features/assertions/types';
 import type {
 	CodeBlockEntryOutline,
@@ -157,9 +157,6 @@ export type EditorMode = 'view' | 'edit';
 
 // Callbacks interface contains all callback functions (top-level public API)
 export interface Callbacks {
-	// Compilation callback
-	compileCode?: (project: ProjectObjectModel, compilerOptions: CompileOptions) => Promise<CompilationResult>;
-
 	// Memory manipulation callback
 	getWordFromMemory?: (allocationUnitAddress: number) => number;
 

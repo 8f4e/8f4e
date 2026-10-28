@@ -25,7 +25,6 @@
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
     "@8f4e/compiler": "*",
-    "@8f4e/compiler-worker": "*",
     "@8f4e/editor-core": "*",
     "@8f4e/editor-plugin-toggle-skip-execution": "*",
     "@8f4e/examples": "*",
@@ -57,7 +56,8 @@
     "@8f4e/editor-plugin-keyboard-memory": "*",
     "@8f4e/editor-plugin-example-modules": "*",
     "@8f4e/editor-plugin-session-persistence": "*",
-    "@8f4e/editor-plugin-project-url-loader": "*"
+    "@8f4e/editor-plugin-project-url-loader": "*",
+    "@8f4e/editor-plugin-compiler": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

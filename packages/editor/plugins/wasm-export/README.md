@@ -3,7 +3,7 @@
 `@8f4e/editor-plugin-wasm-export` owns Export WebAssembly, WASM Blob creation, and browser file writing.
 
 ```ts
-createWasmExportPlugin({ document: canvas.ownerDocument, getCodeBuffer: compilerService.getCodeBuffer });
+createWasmExportPlugin({ document: canvas.ownerDocument, getCodeBuffer: compiler.getCodeBuffer });
 ```
 
 The factory receives browser resources and a getter for the current compiled bytes. Each `exportWasm` action snapshots

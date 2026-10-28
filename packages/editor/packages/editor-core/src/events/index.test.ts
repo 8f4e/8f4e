@@ -2,6 +2,15 @@ import { describe, expect, it, vi } from 'vitest';
 import createEventDispatcher from './index';
 
 describe('event dispatcher', () => {
+	it('delivers disposal to every listener when a listener unregisters itself', () => {
+		const events = createEventDispatcher();
+		const first = () => events.off('dispose', first);
+		const second = vi.fn();
+		events.on('dispose', first);
+		events.on('dispose', second);
+		events.dispatch('dispose');
+		expect(second).toHaveBeenCalledOnce();
+	});
 	it('runs capture listeners before ordinary listeners while preserving registration order in each phase', () => {
 		const events = createEventDispatcher();
 		const calls: string[] = [];

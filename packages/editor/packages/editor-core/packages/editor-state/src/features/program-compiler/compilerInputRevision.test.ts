@@ -19,19 +19,20 @@ import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpd
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
 import codeEditing from '../code-editing/effect';
 import historyTracking from '../edit-history/effect';
+import { createSchemaEditorConfigValidator } from '../editor-config/schemaValidator';
 import globalEditorDirectivesEffect from '../global-editor-directives/effect';
 import * as globalDirectiveRegistry from '../global-editor-directives/registry';
 import projectLoading from '../project-loading/effect';
 import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
-import compilerEffect from './effect';
+import publishCompilationInputChanges from './inputChanges';
 
 describe('compiler input revision', () => {
 	let state: State;
 	let store: ReturnType<typeof createStateManager<State>>;
 	let events: EventDispatcher;
 	let block: ReturnType<typeof createMockCodeBlock>;
-	let compileCode: ReturnType<typeof vi.fn>;
-	let disposeCompiler: () => void;
+	let onInputChanged: ReturnType<typeof vi.fn>;
+	let disposePublisher: () => void;
 
 	function dispatch(name: string, payload: unknown = {}): void {
 		for (const [eventName, handler] of vi.mocked(events.on).mock.calls) {
@@ -51,12 +52,12 @@ describe('compiler input revision', () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
 		state = createMockState();
-		compileCode = vi.fn().mockRejectedValue({ message: 'Probe diagnostic', line: { lineNumber: 0 }, context: {} });
-		state.callbacks.compileCode = compileCode;
+		onInputChanged = vi.fn();
 		store = createStateManager(state);
-		disposeCompiler = compilerEffect(store);
 		events = createMockEventDispatcherWithVitest();
 		events.dispatch = vi.fn(dispatch);
+		disposePublisher = publishCompilationInputChanges(store, events);
+		events.on('compilationInputChanged', onInputChanged);
 		block = createMockCodeBlock({
 			name: 'main',
 			code: ['module main', 'push 1', 'drop', 'moduleEnd'],
@@ -68,7 +69,7 @@ describe('compiler input revision', () => {
 	});
 
 	afterEach(() => {
-		disposeCompiler();
+		disposePublisher();
 		store.dispose();
 		vi.restoreAllMocks();
 		vi.useRealTimers();
@@ -130,15 +131,19 @@ describe('compiler input revision', () => {
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(target);
 		expect(state.compilerInputRevision).toBe(0);
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).not.toHaveBeenCalled();
+		expect(onInputChanged).not.toHaveBeenCalled();
 
 		dispatch('insertText', { text: ';' });
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).toHaveBeenCalledTimes(1);
+		expect(onInputChanged).toHaveBeenCalledTimes(1);
 	});
 
 	it('ignores dragging even though it saves a position directive in source', async () => {
-		block.code.splice(1, 0, '; @pos 0 0', '; @config recompileDebounceDelay 120');
+		store.set(
+			'editorConfigValidators.example',
+			createSchemaEditorConfigValidator({ root: 'example', schema: { type: 'integer' } })
+		);
+		block.code.splice(1, 0, '; @pos 0 0', '; @config example 120');
 		parsedDirectivesUpdater(store);
 		globalEditorDirectivesEffect(store);
 		rendering(store, events);
@@ -153,11 +158,11 @@ describe('compiler input revision', () => {
 		expect(block.parsedDirectives).toContainEqual(expect.objectContaining({ name: 'pos', args: ['2', '2'] }));
 		expect(block.gridX).toBe(2);
 		expect(block.gridY).toBe(2);
-		expect(state.editorConfig.recompileDebounceDelay).toBe(120);
+		expect(state.editorConfig.example).toBe(120);
 		expect(resolveSpy).not.toHaveBeenCalled();
 		expect(state.compilerInputRevision).toBe(0);
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).not.toHaveBeenCalled();
+		expect(onInputChanged).not.toHaveBeenCalled();
 	});
 
 	it('advances once for a mixed group execution toggle and leaves already skipped blocks unchanged', () => {
@@ -192,33 +197,33 @@ describe('compiler input revision', () => {
 		expect(block.code).not.toEqual(originalCode);
 		expect(state.compilerInputRevision).toBe(0);
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).not.toHaveBeenCalled();
+		expect(onInputChanged).not.toHaveBeenCalled();
 	});
 
-	it('recompiles after adding, disabling, enabling, and deleting a block', async () => {
+	it('announces changes after adding, disabling, enabling, and deleting a block', async () => {
 		codeBlockCreator(store, events);
 		await dispatchAsync('createCodeBlock', { x: 100, y: 100, blockType: 'module' });
 		expect(state.compilerInputRevision).toBe(1);
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).toHaveBeenCalledTimes(1);
+		expect(onInputChanged).toHaveBeenCalledTimes(1);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
 		expect(block.disabled).toBe(true);
 		expect(state.compilerInputRevision).toBe(2);
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).toHaveBeenCalledTimes(2);
+		expect(onInputChanged).toHaveBeenCalledTimes(2);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
 		expect(block.disabled).toBe(false);
 		expect(state.compilerInputRevision).toBe(3);
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).toHaveBeenCalledTimes(3);
+		expect(onInputChanged).toHaveBeenCalledTimes(3);
 		dispatch('deleteCodeBlock', { codeBlock: block });
 		expect(state.compilerInputRevision).toBe(4);
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).toHaveBeenCalledTimes(4);
+		expect(onInputChanged).toHaveBeenCalledTimes(4);
 		dispatch('deleteCodeBlock', { codeBlock: block });
 		expect(state.compilerInputRevision).toBe(4);
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).toHaveBeenCalledTimes(4);
+		expect(onInputChanged).toHaveBeenCalledTimes(4);
 	});
 
 	it('advances once for pasting several blocks and ignores an empty paste', () => {
@@ -275,7 +280,7 @@ describe('compiler input revision', () => {
 		expect(state.compilerInputRevision).toBe(1);
 	});
 
-	it('recompiles on project loading, undo, and redo without requiring a selected block', async () => {
+	it('announces project loading, undo, and redo without requiring a selected block', async () => {
 		state.featureFlags.historyTracking = true;
 		projectLoading(store, events);
 		rendering(store, events);
@@ -284,17 +289,17 @@ describe('compiler input revision', () => {
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		expect(state.compilerInputRevision).toBe(1);
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).toHaveBeenCalledTimes(1);
+		expect(onInputChanged).toHaveBeenCalledTimes(1);
 
 		state.historyStack.push({ ...EMPTY_DEFAULT_PROJECT });
 		dispatch('undo');
 		expect(state.compilerInputRevision).toBe(2);
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).toHaveBeenCalledTimes(2);
+		expect(onInputChanged).toHaveBeenCalledTimes(2);
 
 		dispatch('redo');
 		expect(state.compilerInputRevision).toBe(3);
 		await vi.advanceTimersByTimeAsync(500);
-		expect(compileCode).toHaveBeenCalledTimes(3);
+		expect(onInputChanged).toHaveBeenCalledTimes(3);
 	});
 });

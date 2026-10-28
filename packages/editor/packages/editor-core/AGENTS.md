@@ -57,5 +57,6 @@
 - Runtime factories and lazy loaders are initialization dependencies passed directly to the runtime coordinator. `state.runtimeRegistry` contains IDs and schemas only. Publish runtime-derived constants through `envConstantContributions.runtime`.
 - Memory writes belong to injected plugin factory dependencies. Keep `getWordFromMemory` for core pointer dereferencing; do not restore a state-level write callback.
 
-- Compile callbacks return current memory in `CompilationResult.memoryRef`; core updates views and renderer artifacts from the newest result. Do not pass an `Editor` to compiler services.
+- Core emits `compilationInputChanged` after its compiler input revision advances. Compilation scheduling and worker ownership belong to `editor-plugin-compiler`; do not restore a compile callback or built-in compiler effect.
+- Consume accepted `compilationSucceeded` results to update memory views and renderer artifacts before metadata consumers react. Dispatch `dispose` before plugin cleanup so core runtimes stop before compiler resources are released. Drain cleanup stacks even when a disposer throws.
 - Render environment-constant contributions uniformly. The `runtime` contributor has no special formatting or ordering.

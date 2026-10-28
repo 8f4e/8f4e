@@ -11,7 +11,11 @@ import type {
 } from '@8f4e/language-spec';
 
 export interface CompilerService {
-	compileCode: (project: ProjectObjectModel, compilerOptions: CompileOptions) => Promise<CompilationResult>;
+	compileCode: (
+		project: ProjectObjectModel,
+		compilerOptions: CompileOptions,
+		isCurrent?: () => boolean
+	) => Promise<CompilationResult>;
 	getMemory: () => WebAssembly.Memory | null;
 	writeMemory: (allocationUnitAddress: number, value: number, isInteger: boolean) => void;
 	getCodeBuffer: () => Uint8Array;
@@ -85,7 +89,7 @@ export function createCompilerService({
 	}
 
 	return {
-		async compileCode(project, compilerOptions) {
+		async compileCode(project, compilerOptions, isCurrent = () => true) {
 			assertionSites = undefined;
 			const worker = getCompilerWorker();
 			const compilationId = nextCompilationId++;
@@ -97,7 +101,7 @@ export function createCompilerService({
 						case 'success':
 							worker.removeEventListener('message', handleMessage);
 							pendingCompilations.delete(compilationId);
-							if (compilationId === nextCompilationId - 1) {
+							if (compilationId === nextCompilationId - 1 && isCurrent()) {
 								memoryRef = data.payload.memoryRef;
 								codeBuffer = data.payload.codeBuffer;
 								assertionSites = data.payload.assertionSites;
@@ -157,6 +161,7 @@ export function createCompilerService({
 
 			disposed = true;
 			assertionSites = undefined;
+			writeViews = undefined;
 			const disposalError = new Error('Compiler service has been disposed');
 			for (const { handleMessage, reject } of pendingCompilations.values()) {
 				compilerWorker?.removeEventListener('message', handleMessage);

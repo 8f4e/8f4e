@@ -35,7 +35,7 @@ import font from './features/font/effect';
 import globalEditorDirectivesEffect from './features/global-editor-directives/effect';
 import contextMenu from './features/menu/effect';
 import createMenuRegistry from './features/menu/registry';
-import compiler from './features/program-compiler/effect';
+import publishCompilationInputChanges from './features/program-compiler/inputChanges';
 import projectLoading from './features/project-loading/effect';
 import runtime from './features/runtime/effect';
 import viewport from './features/viewport/effect';
@@ -112,9 +112,9 @@ export default function init(
 	registerEffect(projectGroupNavigation(store, events));
 	registerEffect(parsedDirectivesUpdater(store));
 	registerEffect(autoEnvConstants(store)); // Must run after codeBlockCreator to ensure env block is created
-	registerEffect(blockTypeUpdater(store)); // Must run before compiler to classify blocks first
+	registerEffect(blockTypeUpdater(store)); // Classify blocks before announcing compiler input changes
 	registerEffect(globalEditorDirectivesEffect(store));
-	registerEffect(compiler(store));
+	registerEffect(publishCompilationInputChanges(store, events));
 	registerEffect(codeBlockRendering(store, events, directives.definitions));
 	registerEffect(viewportDirectiveEffect(store, events));
 	registerEffect(entryOutlines(store));
@@ -154,7 +154,7 @@ export { default as setSkipExecution } from './features/code-blocks/utils/setSki
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
 export { default as gapCalculator } from './features/code-editing/gapCalculator';
 export { getTabStopsByLine, getVisualLineWidth } from './features/code-editing/tabLayout';
-export { error as logError } from './features/logger/logger';
+export { error as logError, log as logMessage } from './features/logger/logger';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
 // Export EMPTY_DEFAULT_PROJECT as a value
 export { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
@@ -163,6 +163,7 @@ export { default as centerViewportOnCodeBlock } from './features/viewport/center
 export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';
 // Export project serialization helpers
 export { default as getExportBaseName } from './pureHelpers/getExportBaseName';
+export { default as serializeCodeBlocksToProject } from './pureHelpers/projectSerialization/serializeCodeBlocks';
 export { serializeProjectTo8f4e } from './pureHelpers/projectSerialization/serializeTo8f4e';
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
 export {

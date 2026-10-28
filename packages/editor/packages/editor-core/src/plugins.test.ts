@@ -115,6 +115,27 @@ describe('editor plugins', () => {
 		context.store.dispose();
 	});
 
+	it('releases earlier plugins when a dependent plugin cleanup throws', () => {
+		const context = createContext();
+		const releaseCompiler = vi.fn();
+		const dispose = installEditorPlugins(
+			[
+				{ id: 'compiler', setup: () => releaseCompiler },
+				{
+					id: 'dependent',
+					setup: () => () => {
+						throw new Error('Cleanup failed');
+					},
+				},
+			],
+			context
+		);
+		expect(dispose).toThrow('Cleanup failed');
+		expect(releaseCompiler).toHaveBeenCalledOnce();
+		dispose();
+		context.store.dispose();
+	});
+
 	it('keeps contributions private to each editor instance', () => {
 		const first = createContext();
 		const second = createContext();
