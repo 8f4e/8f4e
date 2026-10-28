@@ -1,14 +1,12 @@
 import { documentation, examples, helpText } from './generated/catalog.js';
 import { normalizeSearch } from './reference-text.js';
 import type { ExampleKind } from './reference-types.js';
+import { toolError } from './tool.js';
 
 const pageSize = 20;
 const documentationByTopic = new Map(documentation.map(entry => [entry.topic, entry]));
 const examplesByPath = new Map(examples.map(entry => [`${entry.kind}:${entry.path}`, entry]));
 
-function error(code: string, message: string): never {
-	throw Object.assign(new Error(message), { code });
-}
 function queryWords(query: unknown): string[] {
 	if (typeof query !== 'string') throw new Error('query must be a string; use an empty string to browse');
 	return normalizeSearch(query).split(' ').filter(Boolean);
@@ -50,7 +48,7 @@ export function searchDocs(query: unknown, offset: unknown = 0) {
 export async function getDocs(topic: unknown): Promise<string> {
 	if (typeof topic !== 'string') throw new Error('topic must be a topic returned by search_docs');
 	const entry = documentationByTopic.get(topic);
-	if (!entry) return error('documentation_not_found', 'Unknown documentation topic; use search_docs to find one');
+	if (!entry) return toolError('documentation_not_found', 'Unknown documentation topic; use search_docs to find one');
 	const lines = (await entry.load()).split('\n');
 	return entry.ranges.map(([start, end]) => lines.slice(start, end).join('\n')).join('\n\n');
 }
@@ -74,6 +72,6 @@ export async function getExample(kind: unknown, path: unknown): Promise<string> 
 	const selectedKind = exampleKind(kind);
 	if (typeof path !== 'string') throw new Error('path must be a path returned by search_examples');
 	const entry = examplesByPath.get(`${selectedKind}:${path}`);
-	if (!entry) return error('example_not_found', 'Unknown example; use search_examples to find its kind and path');
+	if (!entry) return toolError('example_not_found', 'Unknown example; use search_examples to find its kind and path');
 	return entry.load();
 }

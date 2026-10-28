@@ -121,6 +121,10 @@ The public API throws `EditorEditingError` with `code`, `message`, and, when ava
 
 ## Development
 
+`src/index.ts` owns browser support detection, registration, and disposal. Named tool definitions keep their schemas and handlers together in `src/editor-tools.ts` and `src/reference-tools.ts`; `src/tool.ts` handles argument envelopes, cancellation, and errors. The editor tool family owns current-group targeting and the revision baseline. Reference tools have no editor binding.
+
+The content generator uses pure analysis in `scripts/catalog.ts` and shared Markdown scanning in `scripts/markdown.ts`. `scripts/generate-content.ts` loads the source collections and writes the catalog and lazy content modules. Catalog fixture tests run with the unit suite alongside the bundled-content and public-tool checks.
+
 - `npx nx run @8f4e/editor-webmcp:build`
 - `npx nx run @8f4e/editor-webmcp:test`
 - `npx nx run @8f4e/editor-webmcp:typecheck`
