@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/sub-program",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "private": true,
   "description": "Compilation pipeline for one closed 8f4e sub-program",
   "type": "module",
