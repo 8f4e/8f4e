@@ -1,9 +1,9 @@
 import type { Editor, EditorEdit, EditorProjectSnapshot } from '@8f4e/editor-core';
 import { editsSchema, emptySchema, metadataSchema, revisionSchema } from './schema.js';
+import { createSourceView, type SourceView } from './source-view.js';
 
-export type WebMcpProjectSnapshot = Pick<EditorProjectSnapshot, 'revision' | 'editable' | 'canUndo' | 'canRedo'> & {
-	blocks: Array<{ blockId: string; code: string }>;
-};
+export type WebMcpProjectSnapshot = Pick<EditorProjectSnapshot, 'revision' | 'editable' | 'canUndo' | 'canRedo'> &
+	SourceView;
 
 function readEdits(input: unknown): EditorEdit[] {
 	if (!Array.isArray(input)) throw new Error('edits must be an array');
@@ -121,7 +121,7 @@ export function createEditorWebMcp({
 		tool(
 			'get_project',
 			'Read the open 8f4e project',
-			'Read source strings and block handles for the bound editor, with its opaque revision and editing/history availability. Use get_block_metadata when scope, entry, or layout details are needed. Read again after editing or opening another project.',
+			'Read exactly the root level as one 8f4e code string. Child group declarations are shown without their contents; use expand_group with the group blockId to read inside one group. One-based inclusive source ranges identify editable blocks. Read again after editing or opening another project.',
 			emptySchema,
 			true,
 			input => {
@@ -132,7 +132,27 @@ export function createEditorWebMcp({
 					editable: snapshot.editable,
 					canUndo: snapshot.canUndo,
 					canRedo: snapshot.canRedo,
-					blocks: snapshot.blocks.map(({ blockId, block }) => ({ blockId, code: block.code.join('\n') })),
+					...createSourceView(snapshot),
+				} satisfies WebMcpProjectSnapshot;
+			}
+		),
+		tool(
+			'expand_group',
+			'Read one level inside an 8f4e group',
+			'Read the chosen group as one 8f4e code string, including its own declarations and immediate blocks. Nested groups remain unexpanded; call expand_group again with their blockId to inspect them. This does not change the editor viewport or selection.',
+			metadataSchema,
+			true,
+			input => {
+				const args = request(input, ['blockId']);
+				if (typeof args.blockId !== 'string')
+					throw new Error('A group blockId from the latest source view is required');
+				const snapshot = editing.getSnapshot();
+				return {
+					revision: snapshot.revision,
+					editable: snapshot.editable,
+					canUndo: snapshot.canUndo,
+					canRedo: snapshot.canRedo,
+					...createSourceView(snapshot, args.blockId),
 				} satisfies WebMcpProjectSnapshot;
 			}
 		),

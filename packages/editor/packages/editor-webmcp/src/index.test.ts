@@ -98,6 +98,7 @@ describe('single-editor WebMCP bridge', () => {
 		await bridge.ready;
 		expect([...view.tools.keys()]).toEqual([
 			'get_project',
+			'expand_group',
 			'get_block_metadata',
 			'apply_edits',
 			'undo',
@@ -109,7 +110,9 @@ describe('single-editor WebMCP bridge', () => {
 			editable: true,
 			canUndo: false,
 			canRedo: false,
-			blocks: [{ blockId: 'counter-handle', code: view.snapshot.blocks[0].block.code.join('\n') }],
+			code: '8f4e/v1\n\nentry main\n\n' + view.snapshot.blocks[0].block.code.join('\n') + '\nentryEnd',
+			projectPath: '',
+			blocks: [{ blockId: 'counter-handle', startLine: 5, endLine: 8 }],
 		});
 		expect(view.snapshot.project.modules[0].code).toEqual(view.snapshot.blocks[0].block.code);
 		const edits = [{ type: 'insert', code: 'module new\n\n\tpush 1\r\nmoduleEnd\n' }];
@@ -145,7 +148,7 @@ describe('single-editor WebMCP bridge', () => {
 			error: { code: 'disposed' },
 		});
 		expect(view.editing.applyEdits).not.toHaveBeenCalled();
-		expect(view.tools.size).toBe(5);
+		expect(view.tools.size).toBe(6);
 		second.dispose();
 	});
 

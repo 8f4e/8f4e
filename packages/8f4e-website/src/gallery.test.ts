@@ -174,6 +174,32 @@ function siteTools() {
 	return tools;
 }
 
+test('reads one source level at a time and expands a chosen nested group without navigating the editor', async () => {
+	const tools = siteTools();
+	const grouped =
+		'8f4e/v1\nentry main\nmodule root\nmoduleEnd\ngroup audio\nmodule oscillator\nmoduleEnd\ngroup voices\nmodule deepSecret\nmoduleEnd\ngroupEnd\ngroupEnd\nentryEnd';
+	const view = setup({ grouped: async () => new Response(grouped) });
+	const editor = await view.mounted();
+	await vi.waitFor(() => expect(tools.has('get_diagnostics')).toBe(true));
+	const visibleBlocks = editor.state.codeBlockRendering.codeBlocks;
+	const root = (await tools.get('get_project')!.execute({})) as WebMcpProjectSnapshot;
+	expect(root.code).toContain('module root');
+	expect(root.code).toContain('group audio');
+	expect(root.code).not.toContain('module oscillator');
+	const audio = root.blocks.find(block => root.code.split('\n')[block.startLine - 1] === 'group audio')!;
+	const expanded = (await tools.get('expand_group')!.execute({ blockId: audio.blockId })) as WebMcpProjectSnapshot;
+	expect(expanded.projectPath).toBe('audio');
+	expect(expanded.code).toContain('module oscillator');
+	expect(expanded.code).toContain('group voices');
+	expect(expanded.code).not.toContain('deepSecret');
+	const voices = expanded.blocks.find(block => expanded.code.split('\n')[block.startLine - 1] === 'group voices')!;
+	const nested = (await tools.get('expand_group')!.execute({ blockId: voices.blockId })) as WebMcpProjectSnapshot;
+	expect(nested.projectPath).toBe('audio/voices');
+	expect(nested.code).toContain('module deepSecret');
+	expect(editor.state.codeBlockRendering.codeBlocks).toBe(visibleBlocks);
+	expect(nested.revision).toBe(root.revision);
+});
+
 test('exposes the loaded project through site tools and saves undoable source edits', async () => {
 	const tools = siteTools();
 	let finish!: (response: Response) => void;
@@ -190,7 +216,7 @@ test('exposes the loaded project through site tools and saves undoable source ed
 	canvas.style.height = '480px';
 	editor.resize(900, 480);
 	const before = (await tools.get('get_project')!.execute({})) as WebMcpProjectSnapshot;
-	const target = before.blocks.find(block => block.code.startsWith('module galleryExample\n'))!;
+	const target = before.blocks.find(block => before.code.split('\n')[block.startLine - 1] === 'module galleryExample')!;
 	expect(target).toBeDefined();
 	const metadata = await tools.get('get_block_metadata')!.execute({ blockId: target.blockId });
 	expect(metadata).toMatchObject({
@@ -234,5 +260,5 @@ test('replaces site tools on project selection and rejects retained calls and sn
 		error: { code: 'stale_revision' },
 	});
 	expect(editor.editing.getSnapshot().project.modules[0].code[0]).toBe('module secondExample');
-	expect(tools.size).toBe(6);
+	expect(tools.size).toBe(7);
 });

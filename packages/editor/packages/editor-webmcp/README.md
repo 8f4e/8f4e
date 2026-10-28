@@ -33,7 +33,8 @@ One active bridge is allowed per document. It keeps the supplied editor referenc
 
 | Tool | Arguments | Result |
 | --- | --- | --- |
-| `get_project` | `{}` | Blocks as `{ blockId, code }` with source strings, plus one project revision, editability, and history availability. |
+| `get_project` | `{}` | The root level as one 8f4e `code` string, with revision, editability, history availability, and a block-handle line-range index. Child groups contain only their own declarations, not their children. |
+| `expand_group` | `{ blockId }` | The selected group's own source and immediate blocks as one 8f4e `code` string. Deeper groups remain unexpanded. Includes its project path, revision, and immediate block ranges. |
 | `get_block_metadata` | `{ blockId }` | Current revision and the block's group path, execution entry, type, name, and grid position. |
 | `apply_edits` | `{ expectedRevision, edits }` | New revision and handles of inserted blocks. The complete batch is validated before application and creates one undo step. |
 | `undo` / `redo` | `{ expectedRevision }` | New revision after one history step. |
@@ -41,7 +42,9 @@ One active bridge is allowed per document. It keeps the supplied editor referenc
 
 `get_diagnostics` is registered only when the host supplies `getDiagnostics`. The compiler plugin owns that handle. Its `status` is `pending`, `compiling`, `ready`, or `disposed`; `completedRevision` identifies the compiler input that produced a final result. Pending compilations do not expose errors from a previous input as current errors.
 
-Read `get_project` before writing. Its opaque revision belongs to that editor instance; a snapshot from a previous gallery selection is rejected even if the replacement has identical source. Revisions also change after persisted source/layout changes, undo/redo, or project loading. On `stale_revision`, read the current project and reconsider the edits before retrying.
+Read `get_project` before writing. To inspect a child group, pass its handle to `expand_group`; repeat for a deeper group of your choice. Both tools return one source level at a time, not a recursive project dump. `get_project` includes the `8f4e/v1` header and root entry wrappers; `expand_group` includes the selected group's wrapper and immediate contents. Group declarations retain their own directives and exposure lines while their descendants remain hidden until explicitly requested. These are inspection views rather than recursive file exports, and unfinished source can be read without export-gate validation. Neither tool changes the editor's viewport or selected group.
+
+The `blocks` array contains only `{ blockId, startLine, endLine }` entries for blocks directly shown in that code string. Ranges are one-based and inclusive, letting agents associate source with editing handles without receiving a second copy of its code. The revision belongs to the entire editor instance; a snapshot from a previous gallery selection is rejected even if the replacement has identical source. Revisions also change after persisted source/layout changes, undo/redo, or project loading. On `stale_revision`, refresh the relevant source view and reconsider the edits before retrying.
 
 Supported edit shapes:
 
@@ -60,7 +63,7 @@ Block handles distinguish duplicate block IDs in nested project scopes. Treat th
 
 The same operations are available without WebMCP through `editor.editing.getSnapshot()`, `applyEdits({ expectedRevision, edits })`, `undo({ expectedRevision })`, and `redo({ expectedRevision })`.
 
-The editor API retains its complete structured snapshot, including the canonical project and source as line arrays. Its `blocks` entries are `{ blockId, block }`, where `block` is a detached copy of the existing `CodeBlockGraphicData` model, including its rendering data and derived values. Maps and connections between blocks are preserved by the snapshot; it is not a separate JSON-oriented block model. Source remains authoritative for code-derived properties. Agent-specific filtering and string conversion belong only to this bridge. `get_project` omits the duplicate canonical project and keeps block metadata in the separate lookup tool.
+The editor API retains its complete structured snapshot, including the canonical project and source as line arrays. Its `blocks` entries are `{ blockId, block }`, where `block` is a detached copy of the existing `CodeBlockGraphicData` model, including its rendering data and derived values. Maps and connections between blocks are preserved by the snapshot; it is not a separate JSON-oriented block model. Source remains authoritative for code-derived properties. Agent-specific filtering, one-level traversal, and string conversion belong only to this bridge. Source views omit the duplicate canonical project and keep block metadata in the separate lookup tool.
 
 Writes respect edit mode and follow existing project restoration, derived layout, autosave, and compilation mechanisms. They preserve the viewed project group and viewport for edit batches and do not dispatch `loadProject`, so in-project edits keep browser file associations. Invalid batches leave project content and undo history unchanged. Source edits may produce ordinary compiler diagnostics.
 

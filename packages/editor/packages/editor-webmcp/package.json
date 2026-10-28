@@ -9,6 +9,6 @@
   "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
   "sideEffects": false,
   "license": "MIT",
-  "dependencies": { "@8f4e/editor-core": "*" },
+  "dependencies": { "@8f4e/editor-core": "*", "@8f4e/language-spec": "*" },
   "devDependencies": { "@8f4e/config": "*", "@8f4e/editor-state-testing": "*", "vitest": "4.1.7" }
 }

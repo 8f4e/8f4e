@@ -1,6 +1,9 @@
 const code = { type: 'string', description: 'Complete source of the block, with newline characters between lines.' };
 const position = { type: 'integer' };
-const blockId = { type: 'string', description: 'Opaque blockId from get_project at the expected revision.' };
+const blockId = {
+	type: 'string',
+	description: 'Opaque blockId from the latest get_project or expand_group source view.',
+};
 const entry = { type: 'string', minLength: 1, pattern: '^\\S+$' };
 
 const object = (properties: Record<string, unknown>, required: string[]) => ({
@@ -15,7 +18,10 @@ export const metadataSchema = object({ blockId }, ['blockId']);
 export const revisionSchema = object({ expectedRevision: { type: 'string' } }, ['expectedRevision']);
 export const editsSchema = object(
 	{
-		expectedRevision: { type: 'string', description: 'Opaque revision from the latest get_project result.' },
+		expectedRevision: {
+			type: 'string',
+			description: 'Opaque revision from the latest get_project or expand_group result.',
+		},
 		edits: {
 			type: 'array',
 			minItems: 1,
