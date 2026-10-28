@@ -4,11 +4,15 @@ priority: Medium
 effort: 1-2d
 created: 2026-10-18
 issue: null
-status: Open
-completed: null
+status: Cancelled
+completed: 2026-10-28
 ---
 
 # TODO: Explore WebMCP tools for inspecting and editing projects
+
+## Resolution
+
+Superseded and archived on 2026-10-28 by [TODO 210: Expose editor editing handles and add an external WebMCP adapter](../210-add-editor-editing-handles-and-webmcp-adapter.md). The reopened TODO defines public editor editing handles and a separate page-owned adapter that receives editor references and shares one tool set across multiple independent editors. The research proposal below is retained as history; implementation remains open in TODO 210.
 
 ## Problem Description
 

@@ -95,7 +95,7 @@ Key requirements:
 ## Related Items
 
 - **Related**: `docs/todos/241-load-project-from-query-param-url.md`
-- **Related**: `docs/todos/archived/210-add-webmcp-mcp-server-integration-editor.md`
+- **Related**: [TODO 210: Expose editor editing handles and add an external WebMCP adapter](210-add-editor-editing-handles-and-webmcp-adapter.md)
 
 ## Notes
 

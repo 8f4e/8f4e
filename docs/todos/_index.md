@@ -22,6 +22,7 @@ Active todo files are listed below.
 | 048 | Add 2D Engine Visual Regression Tests | 🟡 | 6-8 hours | 2025-08-28 | The 2D engine package currently lacks visual regression testing, which means: |
 | 058 | Research C/C++ WebAssembly Runtimes on Linux with ALSA Audio Support | 🟡 | 4-6 days | 2025-09-11 | The 8f4e project requires a native C/C++ runtime for Linux systems with ALSA audio integration to complement the existing browser-based WebAssembly runtimes. Currently, the proj... |
 | 064 | Research WebAssembly Runtimes for ARM Microcontroller Support | 🟡 | 3-5 days | 2025-09-10 | The 8f4e project currently supports browser-based WebAssembly runtimes (WebWorker and AudioWorklet) but lacks native runtimes for embedded ARM microcontrollers. To implement the... |
+| 210 | Expose editor editing handles and add an external WebMCP adapter | 🟡 | 2-4d | 2026-02-07 | Expose typed editing handles and let a page-owned WebMCP adapter target independent editor instances supplied by the host. |
 | 240 | Add row-align context-menu action with fixed spacing | 🟡 | 4-8h | 2026-02-18 | There is no quick layout action to arrange multiple related code blocks into a clean horizontal row while keeping their relative left-to-right order. |
 | 291 | Add int64 support across compiler, runtime, and docs | 🟡 | 2-4d | 2026-03-09 | The language already has dedicated `float64` support, including 64-bit memory allocation and type-aware compiler paths, but there is no equivalent `int64` support. |
 | 297 | Add url editor directive for clickable links | 🟡 | 4-8h | 2026-03-12 | The editor currently has no directive for attaching a clickable external link to a code block. |
@@ -63,7 +64,6 @@ Active todo files are listed below.
 | 500 | Keep planned memory and its source together | 🟡 | 4-8h | 2026-10-14 | Attach effective source information to each planned declaration, removing parallel arrays and positional source lookups. |
 | 501 | Preserve known pointee counts of one | 🟡 | 1-2h | 2026-10-16 | Retain proven single-element pointee counts so count(*pointer) resolves correctly while unknown counts remain errors. |
 | 502 | Add browser-driven accessibility color-scheme overrides | 🟡 | 2-4d | 2026-10-18 | Add tested alternative editor palettes selected automatically from supported browser contrast and forced-color preferences. |
-| 503 | Explore WebMCP tools for inspecting and editing projects | 🟡 | 1-2d | 2026-10-18 | Research and prototype a safe browser-agent command surface for semantic project inspection and code-block changes. |
 | 504 | Add a color-theme contrast audit tool | 🟡 | 1-2d | 2026-10-21 | Measure critical foreground/background pairs in resolved editor themes and report contrast failures, including alpha compositing. |
 | 505 | Add an initial editor mode directive | 🟡 | 4-8h | 2026-10-21 | Let projects request edit or view mode at load time while preserving host-level mode policy and later user mode changes. |
 | 506 | Add an inline sample browser directive | 🟡 | TBD | 2026-10-22 | Render a folder/file browser inside a code block and update a bound binary asset URL when a sample is selected. |
@@ -88,6 +88,7 @@ Active todo files are listed below.
 
 | ID | Title | Completed | Notes |
 | ---- | ----- | --------- | ----- |
+| 503 | Explore WebMCP tools for inspecting and editing projects | 2026-10-28 | Superseded; reopened TODO 210 defines public editing handles and an external page-owned WebMCP adapter. |
 | 401 | Tighten runtime browser API typing | 2026-10-26 | Narrow Web Audio adapter types and shared runtime message unions replace production `any` and `@ts-expect-error` escapes. |
 | 510 | Use glyph masks and a GPU color palette | 2026-10-26 | R8 masks and stable GPU palette indices replace colored font copies; the default atlas drops from 4 MiB to 96 KiB while retaining 20-byte instances. |
 | 511 | Compose input and output icons at runtime | 2026-10-26 | Inputs and six-state outputs use shared font/fill sprites; prerendered connectors are removed, with visual and rendering-cost checks recorded. |
