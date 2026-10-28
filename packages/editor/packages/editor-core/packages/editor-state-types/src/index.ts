@@ -63,7 +63,7 @@ import type {
 // Re-export runtime types
 // Re-export logger types
 // Re-export code-editing types
-// Re-export project-import types
+// Re-export project types
 export type {
 	AssertionResult,
 	CodeBlockEntryOutline,
@@ -144,7 +144,6 @@ export interface FeatureFlags {
 	offscreenBlockArrows: boolean;
 
 	/** Enable/disable the menu action that opens projects from disk */
-	projectOpening: boolean;
 
 	/** Enable/disable the menu action that creates a new project */
 	projectCreation: boolean;
@@ -163,12 +162,6 @@ export interface Callbacks {
 	// Compilation callback
 	compileCode?: (project: ProjectObjectModel, compilerOptions: CompileProjectOptions) => Promise<CompilationResult>;
 	resolveInclude?: (includeId: string) => Promise<string | undefined>;
-
-	// File handling callbacks
-	/** Returns null when the picker is cancelled. */
-	importProject?: () => Promise<ProjectObjectModel | null>;
-	/** Called for unrelated project replacements, including successful disk imports; excluded for undo/redo. */
-	projectLoaded?: (project: ProjectObjectModel) => void;
 
 	// Memory manipulation callback
 	setWordInMemory?: (allocationUnitAddress: number, value: number, isInteger: boolean) => void;

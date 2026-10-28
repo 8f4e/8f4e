@@ -8,7 +8,7 @@ import createMenuRegistry from './registry';
 
 describe('contextMenu effect', () => {
 	it.each([false, true])('separates main-menu contributions without trailing dividers: %s', async contributed => {
-		const state = createMockState({ featureFlags: { projectCreation: false, projectOpening: false } });
+		const state = createMockState({ featureFlags: { projectCreation: false } });
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 		const items = createMenuRegistry();

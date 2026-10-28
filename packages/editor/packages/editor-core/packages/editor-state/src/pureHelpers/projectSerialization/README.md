@@ -27,7 +27,7 @@ history snapshots, and project files, regardless of their names.
 
 `serializeToProject(state)` collects the root code-block tree. `serializeProjectTo8f4e(project)` formats that
 model as canonical source and rejects incomplete block syntax. Both helpers are public exports from editor-state.
-The project-export plugin owns the file actions and shortcut; the browser host supplies file writing.
+The project-files plugin owns disk actions, the save shortcut, file associations, and browser file writing.
 
 The [session persistence plugin](../../../../../../../plugins/session-persistence/README.md) uses these helpers and saves project
 objects independently of file exports.
@@ -84,7 +84,7 @@ collections. Compilation recursively composes those collections into one program
 
 - [`serializeToProject.ts`](./serializeToProject.ts) - Session JSON structure serialization
 - [`serializeTo8f4e.ts`](./serializeTo8f4e.ts) - `.8f4e` file serialization
-- [Project import](../../features/project-import/README.md)
+- [Project import](../../features/project-loading/README.md)
 
 ## Notes & Limitations
 

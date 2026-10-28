@@ -1,8 +1,8 @@
 {
-  "name": "@8f4e/editor-plugin-project-export",
-  "version": "0.1.1",
+  "name": "@8f4e/editor-plugin-project-files",
+  "version": "0.0.0",
   "private": true,
-  "description": "Project Save and Export plugin for the 8f4e editor",
+  "description": "Project Open, Save, and Export plugin for the 8f4e editor",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,13 +17,14 @@
   "license": "MIT",
   "dependencies": {
     "@8f4e/editor-core": "*",
-    "@8f4e/editor-state": "*"
+    "@8f4e/editor-state": "*",
+    "@8f4e/compiler": "*",
+    "@8f4e/language-spec": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/web-ui": "*",
     "vitest": "4.1.7",
-    "@8f4e/compiler": "*",
     "@vitest/browser-playwright": "4.1.7",
     "@vitest/browser": "4.1.7",
     "@8f4e/editor-state-testing": "*"

@@ -14,7 +14,6 @@ export const defaultFeatureFlags: FeatureFlags = {
 	modeOverlay: true,
 	historyTracking: true,
 	offscreenBlockArrows: true,
-	projectOpening: true,
 	projectCreation: true,
 };
 

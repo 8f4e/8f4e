@@ -33,7 +33,7 @@ drawing buffer and UI automatically. Wheel input pans the editor and prevents pa
 hosts can pass `captureWheel: false` to leave scrolling to the page.
 
 Each mounted editor owns its compiler worker, compiled memory and code-buffer state, and lazy runtime registry.
-It also owns persistence callbacks for its storage namespace. The default namespace is `editor`, which uses the
+The session-persistence plugin uses its storage namespace. The default namespace is `editor`, which uses the
 `project_editor` key. Hosts mounting multiple editors should pass a stable, unique namespace for each editor.
 Hosts may also provide a custom `Storage` implementation or an
 `initialProjectUrl`; interpreting page URLs remains the host's responsibility.
@@ -46,10 +46,10 @@ The default composition includes `@8f4e/editor-plugin-toggle-skip-execution` for
 `@8f4e/editor-plugin-slider` for sliders,
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
-`@8f4e/editor-plugin-project-export` for project Save/Export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
-`createDefaultEditorPlugins({ canvas, renderFrame, saveProject, exportProject, exportBinaryCode, getMemory, getCodeBuffer })` constructs this
-plugin set with resources for one editor. Project save/export callbacks share the file service used by Open;
-the WebAssembly callback reads the compiler's current code buffer when invoked.
+`@8f4e/editor-plugin-project-files` for project Open/Save/Export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
+`createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer })`
+constructs this plugin set with resources for one editor. The project-files plugin derives browser resources from the
+canvas; WebAssembly export receives its document and a live compiler-byte getter. There is no host file service.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
 browser resources; browser dependencies are supplied to plugin factories by this composition.
 Meter, plot, bars, crossfade, watch, and stack are also optional plugins in this standard set. Watch and stack receive
@@ -81,7 +81,7 @@ Omitting either plugin also omits that feature. Neither requires a session or UR
 An explicit `initialProjectUrl` takes precedence on the first load. Without one, the editor restores the saved
 session. With neither, it starts with an empty project and does not fetch an example project registry. Browse examples in the
 [examples gallery](https://8f4e.com/examples/); its links open projects by URL. The editor's menu supports opening
-projects from disk and adding built-in modules.
+projects from disk and adding built-in modules. Set `showOpenMenuItem: false` to hide Open From Disk in embedded editors.
 
 Built-in modules and standard-library includes ship as lazy source chunks with the host's build. The default editor
 passes its discovered module loaders to `createExampleModulesPlugin({ sources })`. That plugin derives the catalog
@@ -89,7 +89,7 @@ from paths without loading module text, owns the menu and source cache, and inse
 dependencies. Omitting it removes the module browser. Standard-library include resolution remains in the host.
 
 Code changes automatically save a recovery session to browser storage. With the editor canvas focused, `Cmd+S`
-or `Ctrl+S` saves canonical `.8f4e` source to disk through the project-export plugin. In browsers supporting the File System Access API in a secure
+or `Ctrl+S` saves canonical `.8f4e` source to disk through the project-files plugin. In browsers supporting the File System Access API in a secure
 context, the first Save chooses a destination and later saves reuse it. Opening a project from disk associates the
 selected file with the editor; the first Save can ask for write permission. The Export Project menu action acts as
 Save As: it chooses a destination and makes that file the target of later saves.

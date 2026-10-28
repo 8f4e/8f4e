@@ -182,7 +182,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			modeToggling: true,
 			modeOverlay: true,
 			offscreenBlockArrows: true,
-			projectOpening: true,
 			projectCreation: true,
 		},
 		editorMode: 'edit',

@@ -6,9 +6,10 @@
 - Compose the standard plugin set here and expose host overrides through `plugins`; keep feature logic in its
   plugin package and generic plugin installation in editor-core.
 - Construct the standard set with `createDefaultEditorPlugins` per mounted editor, supplying the canvas, render
-  callback, project save/export callbacks, and WebAssembly export callback. Render callbacks run after initialization.
-- Keep one project file service shared by Open, Save, and Export so imported handles and Save As destinations stay
-  associated with the editor. Pass file-writing callbacks to plugin factories, not core state.
+  callback, storage settings, Open menu visibility, and compiler getters. Render callbacks run after initialization.
+- Compose `createProjectFilesPlugin({ inputTarget: canvas, showOpenMenuItem })` for Open, Save, and Export. It owns
+  file handles and all browser file operations. Compose `createWasmExportPlugin({ document, getCodeBuffer })` for WASM
+  files. Do not add a host file service or file callbacks in core.
 - Keep generic editor behavior in `@8f4e/editor-core` and website/deployment concerns in `@8f4e/editor-website`.
 - Run `npx nx run @8f4e/editor-default:build|test|typecheck` after changing this package.
 - The Vite build uses standard TypeScript and asset handling; project-authored GLSL effects are not supported.

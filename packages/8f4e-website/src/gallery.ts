@@ -175,9 +175,9 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 					captureWheel: true,
 					featureFlags: {
 						projectCreation: false,
-						projectOpening: false,
 						...featureFlags,
 					},
+					showOpenMenuItem: false,
 					initialEditorMode: 'edit',
 					initialProjectUrl: item.projectUrl,
 					storage: window.sessionStorage,

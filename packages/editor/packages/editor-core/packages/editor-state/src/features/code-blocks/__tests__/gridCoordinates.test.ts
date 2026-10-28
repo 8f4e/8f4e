@@ -186,7 +186,7 @@ describe('Grid Coordinates Integration', () => {
 			expect(serialized.gridCoordinates.x).toBe(12);
 			expect(serialized.gridCoordinates.y).toBe(8);
 
-			// Simulate import with different font (from projectImport.ts)
+			// Simulate import with different font (from projectLoading.ts)
 			const newVGrid = 6;
 			const newHGrid = 10;
 			const importedBlock = createMockCodeBlock({

@@ -85,8 +85,8 @@ function mountEditor(canvas: HTMLCanvasElement, index: number): Promise<DefaultE
 		featureFlags: {
 			modeToggling: false,
 			projectCreation: false,
-			projectOpening: false,
 		},
+		showOpenMenuItem: false,
 		initialEditorMode: 'edit',
 		initialProjectUrl: canvas.dataset.projectPath ? getExampleProjectUrl(canvas.dataset.projectPath) : undefined,
 		storage: window.localStorage,

@@ -1,6 +1,6 @@
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
-import { EMPTY_DEFAULT_PROJECT } from './features/project-import/emptyDefaultProject';
+import { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
 import animateViewport from './features/viewport/animateViewport';
 import initState from './index';
 import { createMockCodeBlock } from './pureHelpers/testingUtils/testUtils';

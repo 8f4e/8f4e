@@ -34,7 +34,9 @@
   typed-value resolution, tab layout, and compiler lookups generic and available through public helper exports.
 - Keep project serialization under editor-state's `pureHelpers/projectSerialization`, filename configuration under
   `features/editor-config`. Session persistence belongs to its plugin.
-  Project-file and WebAssembly export actions, menus, and the save shortcut belong to their plugins.
+  Project Open/Save/Export, browser file access, and file associations belong to the project-files plugin; WASM file
+  writing belongs to the wasm-export plugin. Keep file callbacks and association flags out of core. Undo/redo restore
+  snapshots within the current project; unrelated replacements dispatch loadProject.
 - Favorite toggling and memory-connection removal belong to their plugins, including menu labels and availability.
   Favorite directive derivation and navigation stay in core. Export shared directive editing through public helpers.
 - Binary assets belong to `editor-plugin-binary-assets`, including their schema, fetching/cache, private state, dialog,

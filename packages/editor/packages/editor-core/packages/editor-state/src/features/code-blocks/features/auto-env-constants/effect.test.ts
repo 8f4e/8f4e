@@ -2,7 +2,7 @@ import type { CodeBlockGraphicData, EditorConfig, State } from '@8f4e/editor-sta
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, test } from 'vitest';
-import { EMPTY_DEFAULT_PROJECT } from '~/features/project-import/emptyDefaultProject';
+import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
 
 import createDefaultState from '~/pureHelpers/state/createDefaultState';
 import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';

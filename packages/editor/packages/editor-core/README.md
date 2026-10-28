@@ -120,9 +120,9 @@ Meter, plot, and bars plugins own their typed-memory visualization and layout. C
 interaction and drawer. Watch and stack own separate inline value overlays; their factories receive a
 `prefersReducedMotion` function from the host. None of these features adds fields to core code-block state.
 The screenshot plugin owns the main-menu action, temporary overlay visibility, PNG encoding, and browser file saving.
-The project-export plugin owns project Save/Export actions, its main-menu item, and the Cmd/Ctrl+S listener on its
-injected `inputTarget`. Its save/export functions come from the browser host. The WebAssembly-export plugin owns
-its main-menu item and action, with file writing supplied by the host.
+The project-files plugin owns Open From Disk, Save/Export, their menus and shortcut, browser file access, and file
+associations. Its factory receives the input element. The WebAssembly-export plugin receives a document and compiler
+byte getter, and owns WASM Blob creation and browser file writing.
 The execution-toggle plugin owns the Skip/Unskip menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
 layout, animation, and overlay drawing, with its state private to each installation. Group execution toggling and
 nested block shading remain built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
@@ -162,7 +162,8 @@ Serialization lives under `pureHelpers/projectSerialization`; filename configura
 
 Hosts can provide a compiler-owned `ProjectObjectModel` through `initialProject`, or dispatch `loadProject` with
 `{ project }` later. Core loads initial content after the first resize and emits `init` once that content is installed.
-`importProject` supplies the Open From Disk menu action; the `projectOpening` feature flag controls disk import.
+Open From Disk belongs to the project-files plugin. Core has no file callbacks or file-association flags; undo/redo
+restore snapshots directly within the current project.
 
 Session restoration and autosaving belong to `@8f4e/editor-plugin-session-persistence`. Project URL fetching and
 parsing belong to `@8f4e/editor-plugin-project-url-loader`. Both plugins use generic project loading, and their factories

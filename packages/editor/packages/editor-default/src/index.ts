@@ -11,7 +11,7 @@ import { meterPlugin } from '@8f4e/editor-plugin-meter';
 import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
 import { pianoPlugin } from '@8f4e/editor-plugin-piano';
 import { plotPlugin } from '@8f4e/editor-plugin-plot';
-import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
+import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { removeMemoryConnectionsPlugin } from '@8f4e/editor-plugin-remove-memory-connections';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
@@ -28,7 +28,6 @@ import { wavePlugin } from '@8f4e/editor-plugin-wave';
 import { createCompilerService } from './compiler-callback';
 import { createRuntimeRegistry } from './runtime-registry';
 import { resolveStdlibInclude } from './stdlib-resolver';
-import { createProjectFileCallbacks, exportBinaryCode } from './storage-callbacks';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
@@ -40,9 +39,7 @@ export function createDefaultEditorPlugins(options: {
 	storageKey: string;
 	initialProjectUrl?: string;
 	renderFrame: () => void;
-	saveProject: (text: string, fileName: string) => Promise<void>;
-	exportProject: (text: string, fileName: string) => Promise<void>;
-	exportBinaryCode: (fileName: string) => Promise<void>;
+	showOpenMenuItem: boolean;
 	getMemory: () => WebAssembly.Memory | null;
 	getCodeBuffer: () => Uint8Array;
 }): NonNullable<EditorOptions['plugins']> {
@@ -84,12 +81,8 @@ export function createDefaultEditorPlugins(options: {
 		createWatchPlugin({ prefersReducedMotion }),
 		createStackPlugin({ prefersReducedMotion }),
 		tooltipsPlugin,
-		createProjectExportPlugin({
-			inputTarget: options.canvas,
-			saveProject: options.saveProject,
-			exportProject: options.exportProject,
-		}),
-		createWasmExportPlugin({ exportBinaryCode: options.exportBinaryCode }),
+		createProjectFilesPlugin({ inputTarget: options.canvas, showOpenMenuItem: options.showOpenMenuItem }),
+		createWasmExportPlugin({ document: options.canvas.ownerDocument, getCodeBuffer: options.getCodeBuffer }),
 		createScreenshotPlugin({ canvas: options.canvas, renderFrame: options.renderFrame }),
 	];
 }
@@ -104,6 +97,8 @@ export interface DefaultEditorMountOptions {
 	featureFlags?: EditorOptions['featureFlags'];
 	initialEditorMode?: EditorOptions['initialEditorMode'];
 	initialProjectUrl?: string;
+	/** Show Open From Disk in the project-files plugin menu. */
+	showOpenMenuItem?: boolean;
 	storage?: Storage;
 	storageNamespace?: string;
 }
@@ -117,18 +112,12 @@ export async function mountDefaultEditor(
 		featureFlags,
 		initialEditorMode,
 		initialProjectUrl,
+		showOpenMenuItem = true,
 		storage = localStorage,
 		storageNamespace = DEFAULT_STORAGE_NAMESPACE,
 	}: DefaultEditorMountOptions = {}
 ): Promise<DefaultEditorInstance> {
 	const compilerService = createCompilerService();
-	const {
-		dispose: disposeProjectFiles,
-		saveProject,
-		exportProject,
-		...projectImportCallbacks
-	} = createProjectFileCallbacks();
-	const saveWasm = (fileName: string) => exportBinaryCode(fileName, compilerService.getCodeBuffer());
 	let editor: Editor;
 	try {
 		editor = await initEditor(canvas, {
@@ -140,9 +129,7 @@ export async function mountDefaultEditor(
 					storageKey: `project_${storageNamespace}`,
 					initialProjectUrl,
 					renderFrame: () => editor.renderFrame(),
-					saveProject,
-					exportProject,
-					exportBinaryCode: saveWasm,
+					showOpenMenuItem,
 					getMemory: compilerService.getMemory,
 					getCodeBuffer: compilerService.getCodeBuffer,
 				}),
@@ -153,11 +140,9 @@ export async function mountDefaultEditor(
 			callbacks: {
 				resolveInclude: resolveStdlibInclude,
 				compileCode: (input, compilerOptions) => compilerService.compileCode(input, compilerOptions, editor),
-				...projectImportCallbacks,
 			},
 		});
 	} catch (error) {
-		disposeProjectFiles();
 		compilerService.dispose();
 		throw error;
 	}
@@ -165,7 +150,6 @@ export async function mountDefaultEditor(
 	return {
 		...editor,
 		dispose: () => {
-			disposeProjectFiles();
 			try {
 				editor.dispose();
 			} finally {
