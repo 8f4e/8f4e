@@ -5,8 +5,10 @@ import blockSources from 'virtual:8f4e-sources/reference-blocks';
 import compilerDocs from 'virtual:8f4e-sources/reference-compiler';
 import editorDocs from 'virtual:8f4e-sources/reference-editor';
 import projectSources from 'virtual:8f4e-sources/reference-projects';
+import { parseProjectSource } from '@8f4e/compiler';
 import { createModuleCatalog } from '@8f4e/editor-plugin-example-modules/catalog';
 import extractPublicBlock from '@8f4e/editor-plugin-example-modules/public-block';
+import { normalizeSearch, plainMarkdown } from '../src/reference-text.js';
 import type { DocumentationEntry, ExampleEntry, ExampleKind } from '../src/reference-types.js';
 
 const packageRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -24,20 +26,48 @@ function content(source: string): string {
 	writeFileSync(join(output, file.replace(/\.js$/, '.ts')), `export default ${JSON.stringify(source)};\n`);
 	return file;
 }
-function plain(text: string): string {
-	return text
-		.replace(/[`*_#]/g, '')
-		.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-		.replace(/\s+/g, ' ')
-		.trim();
-}
 function summary(source: string): string {
-	return plain(
-		source
-			.split('\n')
-			.filter(line => line.trim() && !/^\s*(?:#|```|\|)/.test(line))
-			.join(' ')
-	).slice(0, 200);
+	const paragraph: string[] = [];
+	let fence: string | undefined;
+	let headingSeen = false;
+	for (const line of source.split('\n')) {
+		const marker = line.match(/^[ \t]{0,3}(`{3,}|~{3,})/);
+		if (marker) {
+			if (!fence) fence = marker[1][0];
+			else if (marker[1][0] === fence) fence = undefined;
+			continue;
+		}
+		if (fence) continue;
+		if (/^#{1,6}\s/.test(line)) {
+			if (headingSeen || paragraph.length) break;
+			headingSeen = true;
+			continue;
+		}
+		if (!line.trim()) {
+			if (paragraph.length) break;
+			continue;
+		}
+		paragraph.push(line);
+	}
+	const text = paragraph.length
+		? plainMarkdown(paragraph.join(' '))
+		: [...source.matchAll(/^#{1,6}\s+(.+)$/gm)]
+				.slice(1)
+				.map(match => plainMarkdown(match[1]))
+				.join(', ');
+	return text.length <= 200 ? text : `${text.slice(0, 197).replace(/\s+\S*$/, '')}…`;
+}
+function terms(source: string): string {
+	return [...new Set(normalizeSearch(plainMarkdown(source)).split(' ').filter(Boolean))].join(' ');
+}
+function commentParagraphs(code: string): string[] {
+	return code
+		.split('\n')
+		.map(line => line.match(/^[ \t]*;[ \t]?(.*)$/)?.[1] ?? '')
+		.map(line => (line.trimStart().startsWith('@') ? '' : line))
+		.join('\n')
+		.split(/\n\s*\n/)
+		.filter(paragraph => paragraph.trim());
 }
 function addDocument(topic: string, source: string) {
 	const file = content(source);
@@ -55,7 +85,7 @@ function addDocument(topic: string, source: string) {
 		if (fence) continue;
 		const match = line.match(/^(#{1,3})\s+(.+?)\s*#*$/);
 		if (!match) continue;
-		const title = plain(match[2]);
+		const title = plainMarkdown(match[2]);
 		const slug = title
 			.toLowerCase()
 			.replace(/[^\w\s-]/g, '')
@@ -65,15 +95,10 @@ function addDocument(topic: string, source: string) {
 		headings.push({ start, level: match[1].length, title, anchor: count ? `${slug}-${count}` : slug });
 	}
 	const add = (key: string, title: string, ranges: Array<[number, number]>) => {
-		const text = ranges.map(([start, end]) => lines.slice(start, end).join('\n')).join('\n\n');
-		const terms = [
-			...new Set(
-				plain(text)
-					.toLowerCase()
-					.match(/[a-z0-9]+/g) ?? []
-			),
-		].join(' ');
-		docs.push({ topic: key, title, summary: summary(text), terms, ranges, file });
+		// Search and summarize the selected section; retain enclosing rules only for full reads.
+		const [start, end] = ranges.at(-1)!;
+		const text = lines.slice(start, end).join('\n');
+		docs.push({ topic: key, title, summary: summary(text), terms: terms(text), ranges, file });
 	};
 	add(topic, headings[0]?.title ?? topic, [[0, lines.length]]);
 	const introEnd = headings.find(heading => heading.level > 1)?.start ?? lines.length;
@@ -123,17 +148,25 @@ for (const [kind, sources] of [
 		)!;
 		const source = await load();
 		const code = kind === 'block' ? extractPublicBlock(source).join('\n') : source;
-		const description = code
-			.split('\n')
-			.filter(line => /^\s*;\s+[^@\s]/.test(line))
-			.map(line => line.replace(/^\s*;\s*/, ''))
-			.join(' ');
+		const descriptions =
+			kind === 'block'
+				? commentParagraphs(code)
+				: parseProjectSource(source)
+						.notes.map(note =>
+							note.code
+								.slice(1, -1)
+								.filter(line => !/^[ \t]*;[ \t]*@/.test(line))
+								.map(line => line.replace(/^[ \t]*;[ \t]?/, ''))
+								.join('\n')
+						)
+						.filter(note => note.trim());
 		examples.push({
 			kind,
 			path,
 			title: metadata.title,
 			category: metadata.category,
-			summary: plain(description).slice(0, 200),
+			summary: summary(descriptions[0] ?? ''),
+			terms: terms(descriptions.join('\n\n')),
 			dependencies: catalog?.getDependenciesFromSource(metadata.slug, code).map(slug => paths.get(slug)!) ?? [],
 			file: content(code),
 		});

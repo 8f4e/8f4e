@@ -19,6 +19,7 @@
     "@8f4e/language-spec": "*"
   },
   "devDependencies": {
+    "@8f4e/compiler": "*",
     "@8f4e/config": "*",
     "@8f4e/editor-default": "*",
     "@8f4e/editor-plugin-example-modules": "*",

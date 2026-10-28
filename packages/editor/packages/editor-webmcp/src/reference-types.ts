@@ -23,5 +23,6 @@ export interface ExampleMatch {
 }
 
 export interface ExampleEntry extends ExampleMatch {
+	terms: string;
 	load(): Promise<string>;
 }

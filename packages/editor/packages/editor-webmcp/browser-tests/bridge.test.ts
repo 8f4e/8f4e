@@ -83,6 +83,18 @@ test('ships documentation and examples through the built bridge without changing
 	const docs = (await call('search_docs', { query: '@pos' })) as { results: Array<{ topic: string }> };
 	expect(docs.results.some(result => result.topic === 'editor/editor-directives#pos')).toBe(true);
 	expect(await call('get_docs', { topic: 'editor/editor-directives#pos' })).toContain('; @pos');
+	const slider = (await call('search_docs', { query: 'slider' })) as { results: Array<{ summary: string }> };
+	expect(slider.results[0].summary).toMatch(/^Render a slider/);
+	const pointers = (await call('search_docs', { query: 'float*' })) as {
+		results: Array<{ topic: string; summary: string }>;
+	};
+	expect(pointers.results.find(result => result.topic.endsWith('#float'))!.summary).toContain('float**');
+	const directives = (await call('search_docs', { query: '#skipExecution' })) as { results: Array<{ title: string }> };
+	expect(directives.results[0].title).toBe('#skipExecution');
+	const effects = (await call('search_examples', { query: 'distortion', kind: 'block' })) as {
+		results: Array<{ path: string; summary: string }>;
+	};
+	expect(effects.results.find(result => result.path === 'effects/bitcrusher')!.summary).toContain('quantiz');
 	const examples = (await call('search_examples', { query: 'low pass filter', kind: 'block' })) as {
 		results: Array<{ kind: string; path: string }>;
 	};

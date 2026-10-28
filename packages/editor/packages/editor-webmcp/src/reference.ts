@@ -1,13 +1,8 @@
 import { documentation, examples, helpText } from './generated/catalog.js';
+import { normalizeSearch } from './reference-text.js';
 import type { ExampleKind } from './reference-types.js';
 
 const pageSize = 20;
-const normalize = (text: string) =>
-	text
-		.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, ' ')
-		.trim();
 const documentationByTopic = new Map(documentation.map(entry => [entry.topic, entry]));
 const examplesByPath = new Map(examples.map(entry => [`${entry.kind}:${entry.path}`, entry]));
 
@@ -16,7 +11,7 @@ function error(code: string, message: string): never {
 }
 function queryWords(query: unknown): string[] {
 	if (typeof query !== 'string') throw new Error('query must be a string; use an empty string to browse');
-	return normalize(query).split(' ').filter(Boolean);
+	return normalizeSearch(query).split(' ').filter(Boolean);
 }
 function page<T>(results: T[], offset: unknown) {
 	if (typeof offset !== 'number' || !Number.isInteger(offset) || offset < 0)
@@ -28,8 +23,8 @@ function page<T>(results: T[], offset: unknown) {
 	};
 }
 function score(words: string[], title: string, text: string): number {
-	const normalizedTitle = normalize(title);
-	const haystack = `${normalizedTitle} ${normalize(text)}`;
+	const normalizedTitle = normalizeSearch(title);
+	const haystack = `${normalizedTitle} ${normalizeSearch(text)}`;
 	if (!words.every(word => haystack.includes(word))) return -1;
 	return (normalizedTitle === words.join(' ') ? 100 : 0) + words.filter(word => normalizedTitle.includes(word)).length;
 }
@@ -65,13 +60,13 @@ export function searchExamples(query: unknown, kind?: unknown, offset: unknown =
 	const filter = kind === undefined ? undefined : exampleKind(kind);
 	const matches = examples
 		.filter(entry => filter === undefined || entry.kind === filter)
-		.map(entry => ({ entry, score: score(words, entry.title, `${entry.path} ${entry.category} ${entry.summary}`) }))
+		.map(entry => ({ entry, score: score(words, entry.title, `${entry.path} ${entry.category} ${entry.terms}`) }))
 		.filter(match => match.score >= 0)
 		.sort(
 			(a, b) =>
 				b.score - a.score || a.entry.kind.localeCompare(b.entry.kind) || a.entry.path.localeCompare(b.entry.path)
 		)
-		.map(({ entry: { load: _load, ...metadata } }) => metadata);
+		.map(({ entry: { load: _load, terms: _terms, ...metadata } }) => metadata);
 	return page(matches, offset);
 }
 

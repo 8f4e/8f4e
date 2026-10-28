@@ -3,10 +3,19 @@ import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getDocs, getExample, getHelp, searchDocs, searchExamples } from './reference';
+import { normalizeSearch, plainMarkdown } from './reference-text';
 
 const examplesRoot = dirname(createRequire(import.meta.url).resolve('@8f4e/examples/package.json'));
 
 describe('bundled documentation and examples', () => {
+	it('keeps code spans literal while removing Markdown presentation wrappers', () => {
+		expect(
+			plainMarkdown('**Types:** `float*`, `float**`, `#import`, `&buffer`, `buffer[]`, `SAMPLE_RATE`, `__init__`.')
+		).toBe('Types: float*, float**, #import, &buffer, buffer[], SAMPLE_RATE, __init__.');
+		expect(normalizeSearch('float* float** #import &buffer buffer[] SAMPLE_RATE __init__')).toBe(
+			'float* float** #import &buffer buffer[] sample_rate __init__'
+		);
+	});
 	it('ships the introduction and live-editing workflow with the bridge', () => {
 		expect(getHelp()).toBe(readFileSync(new URL('../help.md', import.meta.url), 'utf8'));
 		for (const concept of ['stack', 'entry main', '; @pos', '#impure', 'search_docs', 'get_example', 'revision'])
@@ -21,7 +30,9 @@ describe('bundled documentation and examples', () => {
 		expect(await getDocs('compiler/instructions/stack')).toBe(
 			readFileSync(new URL('../../../../compiler/docs/instructions/stack.md', import.meta.url), 'utf8')
 		);
-		const skip = searchDocs('#skipExecution').results.find(result => result.title === 'skipExecution')!;
+		const skip = searchDocs('#skipExecution').results.find(
+			result => result.topic === 'compiler/directives#skipexecution'
+		)!;
 		const directive = await getDocs(skip.topic);
 		expect(directive).toContain('Compiler directives are block prologue metadata');
 		expect(directive).toContain('## Module-Scoped Directives');
@@ -30,6 +41,50 @@ describe('bundled documentation and examples', () => {
 		const pos = searchDocs('@pos').results.find(result => result.topic === 'editor/editor-directives#pos')!;
 		expect(await getDocs(pos.topic)).toContain('; @pos');
 		expect(searchDocs('pointer').total).toBeGreaterThan(0);
+	});
+
+	it('preserves pointer and compiler-directive spelling in documentation search results', () => {
+		const float = searchDocs('float*').results.find(
+			result => result.topic === 'compiler/instructions/declarations-and-locals#float'
+		)!;
+		expect(float.summary).toContain('float*');
+		expect(float.summary).toContain('float**');
+		const pointer = searchDocs('int8*').results.find(
+			result => result.topic === 'compiler/instructions/declarations-and-locals#int8'
+		)!;
+		expect(pointer.title).toBe('int8*');
+		expect(pointer.summary).toContain('int8**');
+		expect(searchDocs('#skipExecution').results[0].title).toBe('#skipExecution');
+	});
+
+	it('summarizes and indexes the matched section without inherited introductions', async () => {
+		const slider = searchDocs('slider').results[0];
+		expect(slider.summary).toMatch(/^Render a slider that writes to a memory address\./);
+		expect(slider.summary).not.toContain('Core owns');
+		expect(searchDocs('block prologue metadata').results.map(result => result.topic)).not.toContain(
+			'compiler/directives#skipexecution'
+		);
+		expect(await getDocs('compiler/directives#skipexecution')).toContain(
+			'Compiler directives are block prologue metadata'
+		);
+	});
+
+	it('finds bitcrusher through its purpose and describes projects from their explanatory notes', () => {
+		for (const query of ['distortion', 'lo-fi', 'quantization']) {
+			const effect = searchExamples(query, 'block').results.find(result => result.path === 'effects/bitcrusher')!;
+			expect(effect.summary).toContain('distortion');
+			expect(effect.summary).toContain('quantiz');
+		}
+		const sine = searchExamples('Taylor coefficients', 'block').results.find(
+			result => result.path === 'functions/math/sine'
+		)!;
+		expect(sine.summary).toMatch(/^Polynomial approximation/);
+		expect(sine.summary).not.toContain('coefficients');
+		const project = searchExamples('audio loopback', 'project').results.find(
+			result => result.path === 'audio/audioLoopback'
+		)!;
+		expect(project.summary).toMatch(/^This is a stereo loopback example/);
+		expect(project.summary).not.toContain('Auto-generated');
 	});
 
 	it('paginates the documentation catalog without gaps and reports no matches', () => {
@@ -77,6 +132,7 @@ describe('bundled documentation and examples', () => {
 					expect(match.kind).toBe(kind);
 					expect(match).not.toHaveProperty('load');
 					expect(match).not.toHaveProperty('code');
+					expect(match).not.toHaveProperty('terms');
 					paths.push(match.path);
 				}
 				offset = result.nextOffset;
