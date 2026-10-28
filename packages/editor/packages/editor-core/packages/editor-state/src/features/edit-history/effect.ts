@@ -9,7 +9,10 @@ export default function historyTracking(store: StateManager<State>, events: Even
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let restoring = false;
 	const DEBOUNCE_DELAY = 1000;
-	const cancelPendingSave = () => {
+	// Typing may have queued a history snapshot. If that timer fires after an API edit,
+	// it records the already-edited project, so the next Undo restores the same state.
+	// Cancel it before recording an explicit checkpoint or resetting project history.
+	const cancelPendingHistorySnapshot = () => {
 		if (saveTimeout) clearTimeout(saveTimeout);
 		saveTimeout = null;
 	};
@@ -22,12 +25,12 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		}
 	};
 	const applyProjectEdit = ({ project }: { project: ProjectObjectModel }) => {
-		cancelPendingSave();
+		cancelPendingHistorySnapshot();
 		if (state.featureFlags.historyTracking) saveHistory();
 		restore(project);
 	};
 	const resetHistory = () => {
-		cancelPendingSave();
+		cancelPendingHistorySnapshot();
 		state.historyStack = [];
 		state.redoStack = [];
 	};
