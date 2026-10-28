@@ -47,7 +47,7 @@ export async function setup(
 		float64: new Float64Array(memory.buffer),
 	};
 	const events = createEvents();
-	const setWordInMemory = vi.fn((address: number, value: number, isInteger: boolean) => {
+	const writeMemory = vi.fn((address: number, value: number, isInteger: boolean) => {
 		memoryViews[isInteger ? 'int32' : 'float32'][address] = value;
 	});
 	const store = initState(events, {
@@ -59,7 +59,7 @@ export async function setup(
 	});
 	const state = store.getState();
 	const dispose = installed
-		? createPlugin({ writeMemory: setWordInMemory }).setup({
+		? createPlugin({ writeMemory }).setup({
 				store,
 				events,
 				menus: store.menus,
@@ -103,6 +103,6 @@ export async function setup(
 		memoryViews,
 		compiled,
 		dispose,
-		setWordInMemory,
+		writeMemory,
 	};
 }

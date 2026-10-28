@@ -159,8 +159,9 @@ describe('autoEnvConstants', () => {
 	test('includes contributed source alongside runtime constants when creating env', () => {
 		autoEnvConstants(store);
 		store.set('envConstantContributions', {
-			runtime: state.envConstantContributions.runtime,
 			first: ['const FIRST 1'],
+			runtime: state.envConstantContributions.runtime,
+			empty: [],
 			second: ['; second provider', 'const SECOND 2'],
 		});
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
@@ -168,6 +169,11 @@ describe('autoEnvConstants', () => {
 		expect(env?.code).toEqual(
 			expect.arrayContaining(['const RUNTIME_MAGIC 50', 'const FIRST 1', '; second provider', 'const SECOND 2'])
 		);
+		expect(env?.code.filter(line => line.startsWith('const '))).toEqual([
+			'const FIRST 1',
+			'const RUNTIME_MAGIC 50',
+			'const SECOND 2',
+		]);
 	});
 
 	test('refreshes contributed constants and removes contributions without changing the env position', () => {

@@ -67,7 +67,7 @@ export default function compiler(store: StateManager<State>): () => void {
 			setCompilerInfo({
 				isCompiling: false,
 				compilationTimeMs,
-				wasmByteCodeBytes: result.byteCodeSize,
+				wasmByteCodeBytes: result.codeBuffer.byteLength,
 				requiredMemoryBytes: result.requiredMemoryBytes,
 				allocatedMemoryBytes: result.allocatedMemoryBytes,
 				allocatedPages: result.allocatedMemoryBytes / WASM_MEMORY_PAGE_SIZE,

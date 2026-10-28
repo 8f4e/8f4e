@@ -155,7 +155,7 @@ export async function mountDefaultEditor(
 			initialEditorMode,
 			runtimeRegistry: createRuntimeRegistry(compilerService, sharedAudioContext),
 			callbacks: {
-				compileCode: (input, compilerOptions) => compilerService.compileCode(input, compilerOptions, editor),
+				compileCode: compilerService.compileCode,
 			},
 		});
 	} catch (error) {

@@ -3,15 +3,12 @@
  */
 
 import type { StateManager } from '@8f4e/state-manager';
+import type { State } from '../../index';
 import type { EventDispatcher } from '../../shared/types';
 import type { EditorConfig, EditorConfigSchemaContribution } from '../editor-config/types';
 
-/**
- * Type for runtime factory function.
- * Note: Uses generic S to allow proper typing while avoiding circular dependency with State.
- * The actual State type is provided when the factory is called.
- */
-export type RuntimeFactory<S = any> = (store: StateManager<S>, events: EventDispatcher) => () => void;
+/** Creates one runtime for the editor state and returns its disposer. */
+export type RuntimeFactory = (store: StateManager<State>, events: EventDispatcher) => () => void;
 export type RuntimeEnvConstantsContributor = (editorConfig: EditorConfig) => string[];
 
 export type RuntimeValueMap = Record<string, unknown>;

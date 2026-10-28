@@ -197,10 +197,7 @@ describe('program compiler effect', () => {
 			requiredMemoryBytes: 0,
 			allocatedMemoryBytes: 65536,
 			astCacheStats: { hits: 4, misses: 2 },
-			hasWasmInstanceBeenReset: false,
 			memoryAction: { action: 'reused' },
-			initOnlyReran: false,
-			byteCodeSize: 1,
 		});
 
 		await triggerCompile();
@@ -241,10 +238,7 @@ describe('program compiler effect', () => {
 			requiredMemoryBytes: 0,
 			allocatedMemoryBytes: 65536,
 			astCacheStats: { hits: 0, misses: 0 },
-			hasWasmInstanceBeenReset: false,
 			memoryAction: { action: 'reused' },
-			initOnlyReran: false,
-			byteCodeSize: 1,
 		});
 
 		await triggerCompile();
@@ -316,10 +310,7 @@ describe('program compiler effect', () => {
 			requiredMemoryBytes: 0,
 			allocatedMemoryBytes: 65536,
 			astCacheStats: { hits: 0, misses: 0 },
-			hasWasmInstanceBeenReset: false,
 			memoryAction: { action: 'reused' },
-			initOnlyReran: false,
-			byteCodeSize: 1,
 		});
 		const includesBlock = createMockCodeBlock({
 			name: 'includes',

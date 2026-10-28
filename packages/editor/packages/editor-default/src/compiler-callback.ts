@@ -1,7 +1,7 @@
 import { serializeDiagnostic } from '@8f4e/compiler';
 import type { ResolveIncludeRequestMessage, ResolveIncludeResultMessage } from '@8f4e/compiler-worker';
 import CompilerWorker from '@8f4e/compiler-worker?worker';
-import type { CompilationResult, Editor } from '@8f4e/editor-core';
+import type { CompilationResult } from '@8f4e/editor-core';
 import type {
 	AssertionSite,
 	CompileOptions,
@@ -11,11 +11,7 @@ import type {
 } from '@8f4e/language-spec';
 
 export interface CompilerService {
-	compileCode: (
-		project: ProjectObjectModel,
-		compilerOptions: CompileOptions,
-		editor: Editor
-	) => Promise<CompilationResult>;
+	compileCode: (project: ProjectObjectModel, compilerOptions: CompileOptions) => Promise<CompilationResult>;
 	getMemory: () => WebAssembly.Memory | null;
 	writeMemory: (allocationUnitAddress: number, value: number, isInteger: boolean) => void;
 	getCodeBuffer: () => Uint8Array;
@@ -82,7 +78,7 @@ export function createCompilerService({
 	}
 
 	return {
-		async compileCode(project, compilerOptions, editor) {
+		async compileCode(project, compilerOptions) {
 			assertionSites = undefined;
 			const worker = getCompilerWorker();
 			const compilationId = nextCompilationId++;
@@ -95,14 +91,13 @@ export function createCompilerService({
 							worker.removeEventListener('message', handleMessage);
 							pendingCompilations.delete(compilationId);
 							if (compilationId === nextCompilationId - 1) {
-								memoryRef = data.payload.wasmMemory;
+								memoryRef = data.payload.memoryRef;
 								codeBuffer = data.payload.codeBuffer;
 								assertionSites = data.payload.assertionSites;
-								editor.updateMemoryViews(data.payload.wasmMemory);
 							}
 
 							resolve({
-								assertionSites: data.payload.assertionSites,
+								memoryRef: data.payload.memoryRef,
 								compiledModules: data.payload.compiledModules,
 								memoryPlan: data.payload.memoryPlan,
 								memoryDefaultsByModuleId: data.payload.memoryDefaultsByModuleId,
@@ -111,11 +106,8 @@ export function createCompilerService({
 								requiredMemoryBytes: data.payload.requiredMemoryBytes,
 								allocatedMemoryBytes: data.payload.allocatedMemoryBytes,
 								astCacheStats: data.payload.astCacheStats,
-								hasWasmInstanceBeenReset: data.payload.hasWasmInstanceBeenReset,
 								memoryAction: data.payload.memoryAction,
 								compiledFunctions: data.payload.compiledFunctions,
-								byteCodeSize: data.payload.codeBuffer.length,
-								initOnlyReran: data.payload.initOnlyReran,
 							});
 							break;
 						case 'compilationError':

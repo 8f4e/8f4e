@@ -24,9 +24,9 @@ describe('crossfade plugin', () => {
 		expect(test.memoryViews.float32[memory.wet.allocationUnitAddress]).toBe(1);
 		expect([test.block.x, test.block.y]).toEqual([beforeX, beforeY]);
 		test.events.dispatch('mouseup');
-		test.setWordInMemory.mockClear();
+		test.writeMemory.mockClear();
 		test.events.dispatch('mousemove', { ...drag, stopPropagation: false });
-		expect(test.setWordInMemory).not.toHaveBeenCalled();
+		expect(test.writeMemory).not.toHaveBeenCalled();
 	});
 	it('consumes drag movement before ordinary listeners registered earlier', async () => {
 		const onMove = vi.fn();
@@ -102,12 +102,12 @@ describe('crossfade plugin', () => {
 			y: y + 1 - first.state.viewport.y,
 		});
 		first.dispose();
-		first.setWordInMemory.mockClear();
+		first.writeMemory.mockClear();
 		first.events.dispatch('mousemove', { x: 500, y: 50, stopPropagation: false });
 		first.update(source);
 		first.render();
 		second.render();
-		expect(first.setWordInMemory).not.toHaveBeenCalled();
+		expect(first.writeMemory).not.toHaveBeenCalled();
 		expect(first.block.gaps.size).toBe(0);
 		expect(first.draw.drawFill).not.toHaveBeenCalled();
 		expect(second.draw.drawFill).toHaveBeenCalled();

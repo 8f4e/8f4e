@@ -29,10 +29,10 @@ function generateEnvConstantsBlock(state: State, existingPos?: { x: number; y: n
 	lines.push('; Changes will be overwritten');
 	lines.push('');
 
-	const { runtime = [], ...otherContributions } = state.envConstantContributions;
-	lines.push(...runtime);
-	for (const contribution of Object.values(otherContributions)) {
-		if (contribution.length > 0) lines.push('', ...contribution);
+	const contributions = Object.values(state.envConstantContributions).filter(lines => lines.length > 0);
+	for (const [index, contribution] of contributions.entries()) {
+		if (index > 0) lines.push('');
+		lines.push(...contribution);
 	}
 
 	lines.push('');

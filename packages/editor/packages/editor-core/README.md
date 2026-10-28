@@ -212,3 +212,5 @@ Select the editor font with a global editor directive:
 Supported fonts: `6x10`, `ibmvga8x16`, `terminus8x16`, `terminus8x16bold`, `terminus10x18`, `terminus10x18bold`, `kana12x13`, `terminus12x24`, `terminus12x24bold`, `spleen5x8`, `spleen6x12`, `spleen8x16`, `templeos8x8`, `spleen12x24`, `spleen16x32`.
 
 Runtime implementations are supplied through `EditorOptions.runtimeRegistry` as initialization dependencies. State exposes only runtime IDs and schemas in `state.runtimeRegistry`; lazy loaders and factories stay in the runtime coordinator. Memory-writing plugins receive a `writeMemory(address, value, isInteger)` function directly from their host.
+
+The `compileCode(project, options)` callback returns a `CompilationResult` containing current `memoryRef`, bytecode, compiler lookups, memory plans, and statistics. Core updates its memory views and renderer from the newest successful result. Compiler services do not receive an editor instance.

@@ -1,5 +1,6 @@
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CompilationResult } from './index';
 import type { EditorPluginContext } from './plugins';
 
 const events = {
@@ -97,6 +98,63 @@ vi.mock('./spriteSheetManager', () => ({
 }));
 
 describe('editor init', () => {
+	it('uses returned compilation memory and keeps the newest artifacts when results arrive out of order', async () => {
+		const { default: init } = await import('./index');
+		const { default: initState } = await import('@8f4e/editor-state');
+		const { default: initView } = await import('@8f4e/web-ui');
+		let finishFirst!: (result: CompilationResult) => void;
+		let finishSecond!: (result: CompilationResult) => void;
+		const compileCode = vi
+			.fn()
+			.mockImplementationOnce(
+				() =>
+					new Promise<CompilationResult>(resolve => {
+						finishFirst = resolve;
+					})
+			)
+			.mockImplementationOnce(
+				() =>
+					new Promise<CompilationResult>(resolve => {
+						finishSecond = resolve;
+					})
+			);
+		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
+			runtimeRegistry: {},
+			callbacks: { compileCode },
+		});
+		const compile = vi.mocked(initState).mock.calls.at(-1)![1].callbacks.compileCode!;
+		const renderer = vi.mocked(initView).mock.calls.at(-1)![6]!;
+		const first = compile(EMPTY_DEFAULT_PROJECT, {});
+		const second = compile(EMPTY_DEFAULT_PROJECT, {});
+		const firstMemory = new WebAssembly.Memory({ initial: 1 });
+		const secondMemory = new WebAssembly.Memory({ initial: 1 });
+		new Int32Array(firstMemory.buffer)[1] = 11;
+		new Int32Array(secondMemory.buffer)[1] = 22;
+		const result = (memoryRef: WebAssembly.Memory, codeBuffer: Uint8Array): CompilationResult => ({
+			memoryRef,
+			codeBuffer,
+			compiledModules: {},
+			memoryPlan: { modules: {}, moduleList: [] },
+			memoryDefaultsByModuleId: {},
+			projectMemoryExposuresByGroupPath: {},
+			requiredMemoryBytes: 0,
+			allocatedMemoryBytes: 65536,
+			astCacheStats: { hits: 0, misses: 0 },
+			memoryAction: { action: 'reused' },
+		});
+		finishSecond(result(secondMemory, new Uint8Array([2])));
+		await second;
+		expect(editor.getMemoryViews().int32[1]).toBe(22);
+		expect(renderer.getMemory?.()).toBe(secondMemory);
+		expect(renderer.getCodeBuffer?.()).toEqual(new Uint8Array([2]));
+		finishFirst(result(firstMemory, new Uint8Array([1])));
+		await first;
+		expect(editor.getMemoryViews().int32[1]).toBe(22);
+		expect(renderer.getMemory?.()).toBe(secondMemory);
+		expect(renderer.getCodeBuffer?.()).toEqual(new Uint8Array([2]));
+		editor.dispose();
+	});
+
 	it.each(['sprites', 'renderer'] as const)(
 		'disposes acquired resources when %s initialization rejects',
 		async stage => {

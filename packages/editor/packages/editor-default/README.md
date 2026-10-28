@@ -122,3 +122,5 @@ npx nx run @8f4e/editor-default:typecheck
 ```
 
 The compiler service receives the stdlib include resolver when it is created; editor state does not forward include-loading callbacks. Button, switch, slider, piano, crossfade, and keyboard-memory factories receive the service's live `writeMemory` function directly. Runtime loaders and factories remain initialization dependencies owned by the runtime coordinator; state holds data-only runtime metadata and derived environment-constant source.
+
+Compilation returns memory and bytecode to core, which updates its own views. The compiler service has no editor dependency. Worker results carry current artifacts and memory actions without redundant byte-size or instance-reset flags.

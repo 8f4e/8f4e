@@ -43,3 +43,5 @@
 - Configure `resolveInclude` when creating the compiler service. Editor state does not forward a resolver.
 - Supply the compiler service's live `writeMemory` to button, switch, slider, piano, crossfade, and keyboard-memory factories. Core has no memory-write callback.
 - Supply lazy runtime loaders as registry dependencies. Loading, caching, and disposal belong to the runtime coordinator; state holds IDs/schemas and derived constant source only.
+
+- Return the narrow editor compilation result, including `memoryRef`, without taking an editor argument. Core owns memory-view updates. Derive bytecode size from `codeBuffer.byteLength`; do not restore unused status flags.
