@@ -1,9 +1,9 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
 import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
 import { serializeToProject } from '@8f4e/editor-state';
+import { createEditorWebMcp, type WebMcpTool } from '@8f4e/editor-webmcp';
 import { afterEach, expect, test, vi } from 'vitest';
 import { page } from 'vitest/browser';
-import { createEditorWebMcp, type WebMcpTool } from '../src/index';
 
 const source = '8f4e/v1\nentry main\nmodule counter\nint value 1\nmoduleEnd\nentryEnd';
 const cleanups: Array<() => void> = [];
@@ -70,6 +70,53 @@ function siteTools() {
 	});
 	return tools;
 }
+
+test('ships documentation and examples through the built bridge without changing the editor', async () => {
+	const tools = siteTools();
+	const view = setup({ reference: async () => new Response(source) });
+	const editor = await view.mounted();
+	const call = (name: string, args = {}) => tools.get(name)!.execute(args);
+	const revision = editor.editing.getRevision();
+	const blocks = editor.state.codeBlockRendering.codeBlocks;
+	const help = (await call('get_help')) as string;
+	expect(help).toContain('stack-based programming language');
+	const docs = (await call('search_docs', { query: '@pos' })) as { results: Array<{ topic: string }> };
+	expect(docs.results.some(result => result.topic === 'editor/editor-directives#pos')).toBe(true);
+	expect(await call('get_docs', { topic: 'editor/editor-directives#pos' })).toContain('; @pos');
+	const examples = (await call('search_examples', { query: 'low pass filter', kind: 'block' })) as {
+		results: Array<{ kind: string; path: string }>;
+	};
+	const block = examples.results[0];
+	const code = await call('get_example', { kind: block.kind, path: block.path });
+	expect(code).toMatch(/^module lowPassFilter\n/);
+	expect(code).not.toContain('@public');
+	expect(await call('get_example', { kind: 'project', path: 'audio/reverbGrouped' })).toContain('groupEnd');
+	expect(editor.state.codeBlockRendering.codeBlocks).toBe(blocks);
+	expect(editor.editing.getRevision()).toBe(revision);
+	expect(await call('apply_edits', { edits: [{ operation: 'insert', code }] })).toMatchObject({
+		error: { code: 'source_required' },
+	});
+	await call('get_project');
+	expect(
+		await call('apply_edits', {
+			edits: [
+				{
+					operation: 'update',
+					type: 'module',
+					name: 'counter',
+					code: help.match(/module counter\n[\s\S]*?moduleEnd/)![0],
+				},
+				{ operation: 'insert', code },
+			],
+		})
+	).toBe('Edits applied.');
+	expect(await call('get_block', { type: 'module', name: 'lowPassFilter' })).toContain('float alpha');
+	await vi.waitFor(async () =>
+		expect(await call('get_compiler_diagnostics')).toMatchObject({
+			diagnostics: { status: 'ready', compilationErrors: [] },
+		})
+	);
+});
 
 test('navigates the editor and returns only the currently expanded source string', async () => {
 	const tools = siteTools();

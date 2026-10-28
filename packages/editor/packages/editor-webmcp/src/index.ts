@@ -1,5 +1,17 @@
 import { type CodeBlockGraphicData, type Editor, type EditorEdit, getEditorBlockId } from '@8f4e/editor-core';
-import { blockSchema, editsSchema, emptySchema, groupSchema, patchBlockSchema, updateBlockSchema } from './schema.js';
+import { getDocs, getExample, getHelp, searchDocs, searchExamples } from './reference.js';
+import {
+	blockSchema,
+	editsSchema,
+	emptySchema,
+	getDocsSchema,
+	getExampleSchema,
+	groupSchema,
+	patchBlockSchema,
+	searchDocsSchema,
+	searchExamplesSchema,
+	updateBlockSchema,
+} from './schema.js';
 import { createSourceView, getCurrentProjectPath } from './source-view.js';
 
 /** Structural types keep the experimental browser API out of editor-core and global DOM typings. */
@@ -78,7 +90,7 @@ export function createEditorWebMcp({
 	): WebMcpTool => ({
 		name,
 		title,
-		description,
+		description: readOnly ? description : `${description} If you are unfamiliar with 8f4e, start with get_help.`,
 		inputSchema: schema,
 		annotations: { readOnlyHint: readOnly, untrustedContentHint: true },
 		async execute(input, options) {
@@ -86,7 +98,12 @@ export function createEditorWebMcp({
 				return failure('disposed', 'This bridge has been disposed; read the newly opened project before editing');
 			if (options?.signal.aborted) return failure('cancelled', 'Tool execution was cancelled');
 			try {
-				return run(input);
+				const result = run(input);
+				if (!(result instanceof Promise)) return result;
+				const value = await result;
+				if (disposed) return failure('disposed', 'This bridge has been disposed');
+				if (options?.signal.aborted) return failure('cancelled', 'Tool execution was cancelled');
+				return value;
 			} catch (error) {
 				if (error instanceof Error) {
 					const details = error as Error & { code?: string };
@@ -160,6 +177,61 @@ export function createEditorWebMcp({
 		return { projectPath: getCurrentProjectPath(state), revision: editing.getRevision() };
 	};
 	const tools = [
+		tool(
+			'get_help',
+			'Learn 8f4e and its editor tools',
+			'Start here if you are unfamiliar with 8f4e. Read a language introduction, a complete small example, and how to find documentation, examples, and edit the open project.',
+			emptySchema,
+			true,
+			input => {
+				request(input, []);
+				return getHelp();
+			}
+		),
+		tool(
+			'search_docs',
+			'Search bundled 8f4e documentation',
+			'Find language concepts, instructions, compiler directives, and editor directives. Returns up to 20 topic names and summaries with total and nextOffset; use get_docs to read a topic. An empty query browses the catalog. This does not refresh the live-source revision baseline.',
+			searchDocsSchema,
+			true,
+			input => {
+				const args = request(input, ['query', 'offset']);
+				return searchDocs(args.query, args.offset);
+			}
+		),
+		tool(
+			'get_docs',
+			'Read bundled 8f4e documentation',
+			'Read a topic returned by search_docs as Markdown, including enclosing context, syntax, restrictions, and examples. This does not refresh the live-source revision baseline.',
+			getDocsSchema,
+			true,
+			input => {
+				const args = request(input, ['topic']);
+				return getDocs(args.topic);
+			}
+		),
+		tool(
+			'search_examples',
+			'Search bundled 8f4e example blocks and projects',
+			'Find reusable blocks or complete projects by name, category, or description. An empty query browses the catalog. Returns up to 20 matches with kind, path, title, category, summary, dependency block paths, total, and nextOffset. Use get_example to read source. This does not refresh the live-source revision baseline.',
+			searchExamplesSchema,
+			true,
+			input => {
+				const args = request(input, ['query', 'kind', 'offset']);
+				return searchExamples(args.query, args.kind, args.offset);
+			}
+		),
+		tool(
+			'get_example',
+			'Read an 8f4e example block or project',
+			'Return a source string for a kind and path returned by search_examples. Blocks contain their reusable public source without the library-only @public marker; fetch listed dependencies too when needed. Projects contain the entire original source, including nested groups. This does not open or insert content, navigate the editor, or refresh its revision baseline.',
+			getExampleSchema,
+			true,
+			input => {
+				const args = request(input, ['kind', 'path']);
+				return getExample(args.kind, args.path);
+			}
+		),
 		tool(
 			'get_project',
 			'Read the open 8f4e project',

@@ -92,6 +92,11 @@ describe('single-editor WebMCP bridge', () => {
 			getCompilerDiagnostics: () => ({ status: 'pending', completedRevision: null }),
 		});
 		expect([...view.tools.keys()]).toEqual([
+			'get_help',
+			'search_docs',
+			'get_docs',
+			'search_examples',
+			'get_example',
 			'get_project',
 			'get_project_metadata',
 			'expand_group',
@@ -132,6 +137,57 @@ describe('single-editor WebMCP bridge', () => {
 			expect(JSON.stringify(tool.inputSchema)).not.toMatch(/blockId|createdBlockIds|expectedRevision/);
 		expect(view.state.codeBlockRendering.rootCodeBlocks).toEqual(before);
 		bridge.dispose();
+	});
+
+	it('serves bundled reference tools without acknowledging live source changes', async () => {
+		const view = setup();
+		const { bridge, call } = await connect(view, { readSource: false });
+		const referenceCalls = [
+			['get_help', {}],
+			['search_docs', { query: 'push' }],
+			['get_docs', { topic: 'compiler/instructions/stack#push' }],
+			['search_examples', { query: 'low pass filter', kind: 'block' }],
+			['get_example', { kind: 'block', path: 'filters/lowPassFilter' }],
+		] as const;
+		const before = structuredClone(view.state.codeBlockRendering.rootCodeBlocks);
+		for (const [name, args] of referenceCalls) {
+			expect(view.tools.get(name)!.annotations.readOnlyHint).toBe(true);
+			expect(await call(name, args)).not.toHaveProperty('error');
+		}
+		expect(view.state.codeBlockRendering.rootCodeBlocks).toEqual(before);
+		expect(view.state.historyStack).toHaveLength(0);
+		expect(view.editing.getRevision).not.toHaveBeenCalled();
+		expect(view.navigation.openGroup).not.toHaveBeenCalled();
+		expect(await call('undo')).toMatchObject({ error: { code: 'source_required' } });
+		await call('get_project');
+		view.revision = 'external:2';
+		for (const [name, args] of referenceCalls) await call(name, args);
+		expect(await call('update_block', update)).toMatchObject({ error: { code: 'stale_revision' } });
+		expect(view.editing.applyEdits).not.toHaveBeenCalled();
+		expect(await call('get_docs', { topic: 'unknown' })).toMatchObject({ error: { code: 'documentation_not_found' } });
+		expect(await call('get_example', { kind: 'block', path: 'unknown' })).toMatchObject({
+			error: { code: 'example_not_found' },
+		});
+		expect(await call('search_docs', { query: '', offset: -1 })).toMatchObject({ error: { code: 'invalid_request' } });
+		expect(await call('search_examples', { query: '', kind: 'other' })).toMatchObject({
+			error: { code: 'invalid_request' },
+		});
+		expect(await call('get_help', { query: '' })).toMatchObject({ error: { code: 'invalid_request' } });
+		bridge.dispose();
+	});
+
+	it('rejects cancelled and disposed lazy reference reads', async () => {
+		const view = setup();
+		const { bridge } = await connect(view, { readSource: false });
+		const controller = new AbortController();
+		const pending = view.tools
+			.get('get_example')!
+			.execute({ kind: 'block', path: 'filters/lowPassFilter' }, { signal: controller.signal });
+		controller.abort();
+		expect(await pending).toMatchObject({ error: { code: 'cancelled' } });
+		const reading = view.tools.get('get_docs')!.execute({ topic: 'compiler/source-syntax' });
+		bridge.dispose();
+		expect(await reading).toMatchObject({ error: { code: 'disposed' } });
 	});
 
 	it('requires a successful source fetch before every kind of initial write', async () => {

@@ -1,1 +1,3 @@
 .vitest-attachments/
+src/generated/
+.content-generator/

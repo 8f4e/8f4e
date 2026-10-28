@@ -211,5 +211,5 @@ test('replaces site tools and requires a fresh source read for the replacement e
 	expect(await tools.get('get_project')!.execute({})).toContain('module secondExample');
 	expect(await tools.get('apply_edits')!.execute(args)).toBe('Edits applied.');
 	expect(editor.state.codeBlockRendering.codeBlocks.filter(block => block.blockType === 'module')).toHaveLength(0);
-	expect(tools.size).toBe(13);
+	expect(tools.size).toBe(18);
 });

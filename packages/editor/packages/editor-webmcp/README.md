@@ -33,6 +33,11 @@ One active bridge is allowed per document. It keeps the supplied editor referenc
 
 | Tool | Arguments | Result |
 | --- | --- | --- |
+| `get_help` | `{}` | Markdown introduction to 8f4e, a complete small program, and documentation, example, and editing workflows. |
+| `search_docs` | `{ query, offset? }` | Documentation topics and summaries, with `total` and `nextOffset`. An empty query browses the catalog. |
+| `get_docs` | `{ topic }` | Markdown for a topic returned by `search_docs`, including enclosing introductions and placement rules. |
+| `search_examples` | `{ query, kind?, offset? }` | Example metadata and dependency paths, with `total` and `nextOffset`. `kind` is `block` or `project`; an empty query browses the catalog. |
+| `get_example` | `{ kind, path }` | A reusable public block or a complete project as a plain source string. |
 | `get_project` | `{}` | A plain 8f4e source string for the currently expanded group or root; refreshes the bridge revision baseline. Child groups show declarations without their contents. |
 | `get_project_metadata` | `{}` | Current revision, location, editability, and undo/redo availability. |
 | `expand_group` | `{ name }` | Navigates the editor into a child group of the current level. Returns location and revision only. |
@@ -44,6 +49,22 @@ One active bridge is allowed per document. It keeps the supplied editor referenc
 | `apply_edits` | `{ edits }` | Confirmation string after one atomic undoable batch. |
 | `undo` / `redo` | `{}` | Confirmation string after one history step. |
 | `get_compiler_diagnostics` | `{}` | Project revision, compiler input revision, and diagnostics from the optional host-provided read handle. |
+
+The five reference tools are always included when the bridge registers its tools. `get_help` is the starting point for agents unfamiliar with 8f4e. Search results contain up to 20 matches; repeat the same query and optional kind with `offset: nextOffset` to continue. Use the returned topic or example kind/path for exact reads:
+
+```ts
+search_docs({ query: 'push' });
+get_docs({ topic: 'compiler/instructions/stack#push' });
+search_examples({ query: 'low pass filter', kind: 'block' });
+get_example({ kind: 'block', path: 'filters/lowPassFilter' });
+get_example({ kind: 'project', path: 'audio/reverbGrouped' });
+```
+
+Documentation topics cover the existing compiler and editor references, including source syntax, instructions, compiler directives, editor directives, configuration, and runtime concepts. Full-page topics use paths such as `compiler/source-syntax` and `editor/editor-directives`; named sections add a heading anchor. Topic reads preserve relevant enclosing introductions, such as compiler-directive prologue rules.
+
+Example searches return `kind`, `path`, `title`, `category`, `summary`, and `dependencies`. Names and categories reuse the editor's module catalog logic; summaries come from source comments when available. Block reads reuse its public-block extraction, exclude test-entry modules, and remove the library-only `@public` marker. `dependencies` lists direct references to other catalog blocks as paths that can be fetched with `get_example`; follow those blocks' dependencies as needed. Runtime-provided namespaces such as `env` are not example blocks. Project reads preserve the entire original file, including nested groups.
+
+Help, documentation, and examples are bundled with `@8f4e/editor-webmcp`. Hosts supply no reference catalog or URLs. The build imports Markdown, `.8f4em`, and `.8f4e` collections through `@8f4e/vite-plugin-sources`, generates the search catalog, and ships full content as lazy modules inside the package. Searches use the bundled index; exact document and example reads load only their requested content. These tools do not change editor state or navigation, insert or open examples, or refresh the live-source revision baseline.
 
 `get_compiler_diagnostics` is registered only when the host supplies `getCompilerDiagnostics`. The compiler plugin owns that handle. Its `status` is `pending`, `compiling`, `ready`, or `disposed`; `completedRevision` identifies the compiler input that produced a final result. Pending compilations do not expose errors from a previous input as current errors.
 
@@ -96,13 +117,14 @@ The bridge collects and formats state synchronously. It selects only the source 
 
 Writes respect edit mode and follow existing project restoration, derived layout, autosave, and compilation mechanisms. They preserve the viewed project group and viewport for edit batches and do not dispatch `loadProject`, so in-project edits keep browser file associations. Invalid batches leave project content and undo history unchanged. Source edits may produce ordinary compiler diagnostics.
 
-The public API throws `EditorEditingError` with `code`, `message`, and, when available, the current `revision`. Tools return structured errors with a code and message. Bridge errors include `source_required`, `stale_revision`, `match_not_found`, and `ambiguous_match`; editor error codes include `read_only`, `stale_revision`, `invalid_edit`, `block_not_found`, and `disposed`. Cancelled tool calls return `cancelled` before applying changes.
+The public API throws `EditorEditingError` with `code`, `message`, and, when available, the current `revision`. Tools return structured errors with a code and message. Bridge errors include `source_required`, `stale_revision`, `match_not_found`, `ambiguous_match`, `documentation_not_found`, and `example_not_found`; editor error codes include `read_only`, `stale_revision`, `invalid_edit`, `block_not_found`, and `disposed`. Cancelled tool calls return `cancelled` before applying changes. Lazy reference reads also reject cancellation or bridge disposal while their content is loading.
 
 ## Development
 
 - `npx nx run @8f4e/editor-webmcp:build`
 - `npx nx run @8f4e/editor-webmcp:test`
 - `npx nx run @8f4e/editor-webmcp:typecheck`
+- `npx nx run @8f4e/editor-webmcp:generate-content` rebuilds the bundled reference catalog and lazy source modules. Build, test, and typecheck run it automatically. Generated files under `src/generated/` and the temporary `.content-generator/` build are ignored by Git. Compiler/editor Markdown and example-package sources participate in Nx cache inputs.
 - `npx nx run @8f4e/editor-webmcp:test:browser` verifies source reads, editing commands, revisions, persistence, and history against a real editor in Chromium.
 - `npx nx run @8f4e/8f4e-website:test:browser` verifies homepage/gallery hosting and bridge replacement.
 

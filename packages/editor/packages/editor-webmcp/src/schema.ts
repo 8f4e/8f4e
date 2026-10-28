@@ -9,6 +9,19 @@ const object = (properties: Record<string, unknown>, required: string[]) => ({
 });
 
 export const emptySchema = object({}, []);
+const query = { type: 'string', description: 'Search words, or an empty string to browse the catalog.' };
+const offset = { type: 'integer', minimum: 0, description: 'Pagination offset from the previous nextOffset result.' };
+const exampleKind = { type: 'string', enum: ['block', 'project'] };
+export const searchDocsSchema = object({ query, offset }, ['query']);
+export const getDocsSchema = object(
+	{ topic: { type: 'string', description: 'Exact topic returned by search_docs.' } },
+	['topic']
+);
+export const searchExamplesSchema = object({ query, kind: exampleKind, offset }, ['query']);
+export const getExampleSchema = object(
+	{ kind: exampleKind, path: { type: 'string', description: 'Exact path returned by search_examples.' } },
+	['kind', 'path']
+);
 export const groupSchema = object(
 	{ name: { type: 'string', description: 'Name of a child group in the currently expanded group or root.' } },
 	['name']
