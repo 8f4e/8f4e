@@ -2,8 +2,8 @@
  * Types for menu feature - context menus and menu generation.
  */
 
+import type { State } from '../../index';
 import type { Position } from '../../shared/types';
-import type { CodeBlockGraphicData } from '../code-blocks/types';
 
 interface ContextMenuButton {
 	action?: string;
@@ -24,15 +24,16 @@ interface MenuItemDivider extends ContextMenuButton {
 
 export type ContextMenuItem = ContextMenuButton | MenuItemDivider;
 
-// Note: MenuGenerator uses generic S to allow proper typing while avoiding circular dependency.
-// The actual State type is provided when the generator is called.
-export type MenuGenerator<S = any> = (state: S, payload?: unknown) => ContextMenuItem[] | Promise<ContextMenuItem[]>;
+/** Generates a complete menu from current state and its caller-owned payload. */
+export type MenuGenerator<Payload = unknown> = (
+	state: State,
+	payload: Payload
+) => ContextMenuItem[] | Promise<ContextMenuItem[]>;
 
-export type MenuStackEntry =
-	| { menu: 'mainMenu' }
-	| { menu: 'favoritesMenu' }
-	| { menu: 'moduleMenu'; codeBlock: CodeBlockGraphicData }
-	| { menu: 'moduleCategoriesMenu'; path: string[] };
+export interface MenuStackEntry {
+	menu: string;
+	payload?: unknown;
+}
 
 /**
  * Context menu position is stored in editor/world coordinates so it tracks viewport movement.

@@ -34,7 +34,7 @@ import editorMode from './features/editor-mode/effect';
 import font from './features/font/effect';
 import globalEditorDirectivesEffect from './features/global-editor-directives/effect';
 import contextMenu from './features/menu/effect';
-import createMenuItemRegistry from './features/menu/itemRegistry';
+import createMenuRegistry from './features/menu/registry';
 import compiler from './features/program-compiler/effect';
 import projectImport from './features/project-import/effect';
 import runtime from './features/runtime/effect';
@@ -60,7 +60,7 @@ export default function init(
 	menus: EditorMenuRegistry;
 	directives: EditorDirectiveRegistry;
 } {
-	const menus = createMenuItemRegistry();
+	const menus = createMenuRegistry();
 	const directives = createDirectiveRegistry();
 	const initialEditorMode = options.initialEditorMode ?? (options.featureFlags?.editing ? 'edit' : 'view');
 	const featureFlags = validateFeatureFlags({
@@ -146,8 +146,12 @@ export { navigateToCodeBlockInDirection } from './features/code-blocks/features/
 export { removeDirective } from './features/code-blocks/features/directiveEditing';
 export { parseEditorDirectives } from './features/code-blocks/features/directives/utils';
 // Export helper functions
+export { default as getCodeBlockGridWidth } from './features/code-blocks/getCodeBlockGridWidth';
+export { default as getBlockType } from './features/code-blocks/utils/codeParsers/getBlockType';
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';
+export { default as getCodeBlockNameFromSource } from './features/code-blocks/utils/getCodeBlockNameFromSource';
 export { getCompiledFunctionForCodeBlock } from './features/code-blocks/utils/getCompiledFunctionForCodeBlock';
+export { parseBlockDirectives } from './features/code-blocks/utils/parseBlockDirectives';
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
 export { default as gapCalculator } from './features/code-editing/gapCalculator';

@@ -1,6 +1,6 @@
 # Default Editor Package Guidelines
 
-- This package owns the standard editor composition: compiler integration, runtime selection, the example module registry,
+- This package owns the standard editor composition: compiler integration, runtime selection, example source discovery,
   standard-library resolution, and browser persistence.
 - Export composition APIs without mounting as an import side effect.
 - Compose the standard plugin set here and expose host overrides through `plugins`; keep feature logic in its
@@ -13,10 +13,12 @@
 - Run `npx nx run @8f4e/editor-default:build|test|typecheck` after changing this package.
 - The Vite build uses standard TypeScript and asset handling; project-authored GLSL effects are not supported.
 - Stdlib and example module discovery use `@8f4e/vite-plugin-sources` in `vite.config.ts`. Resolve each source package
-  root through its exported `package.json`; keep the source collection's IDs relative to that root. The resolvers
-  import `virtual:8f4e-sources/stdlib` and `virtual:8f4e-sources/example-modules`. Tests register the same plugins.
-- Example module metadata comes from file paths without loading source text. Keep existing filename-based slugs,
-  titles, and categories; reject duplicate slugs. Modules load as local lazy chunks and ship with each host's build.
+  root through its exported `package.json`; keep collection IDs relative to their configured source root. Stdlib
+  resolution imports `virtual:8f4e-sources/stdlib`; plugin composition imports `virtual:8f4e-sources/example-modules`.
+  Tests register the same Vite plugins.
+- Discover example module sources relative to the examples package's `src/modules` directory. Pass the lazy loader
+  map to `createExampleModulesPlugin({ sources })`. Metadata, source caching, dependencies, and the menu belong to
+  that plugin; keep the default editor responsible only for discovery and composition.
 - Keep `@8f4e/examples` as a dependency so its generators run before discovery and its sources affect build caching.
 
 - Compose meter, plot, bars, crossfade, watch, and stack with the default plugin set. Supply watch/stack factories

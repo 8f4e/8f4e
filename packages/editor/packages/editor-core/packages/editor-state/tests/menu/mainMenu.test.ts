@@ -80,8 +80,8 @@ describe('menus - go home entry', () => {
 		const newNoteItem = menu.find(item => item.title === 'New Note');
 
 		expect(newNoteItem).toBeDefined();
-		expect(newNoteItem?.action).toBe('addCodeBlock');
-		expect(newNoteItem?.payload).toEqual({ isNew: true, blockType: 'note' });
+		expect(newNoteItem?.action).toBe('createCodeBlock');
+		expect(newNoteItem?.payload).toEqual({ blockType: 'note' });
 	});
 
 	it('shows "New Prototype" when editing is enabled', () => {
@@ -93,8 +93,8 @@ describe('menus - go home entry', () => {
 		const newPrototypeItem = menu.find(item => item.title === 'New Prototype');
 
 		expect(newPrototypeItem).toBeDefined();
-		expect(newPrototypeItem?.action).toBe('addCodeBlock');
-		expect(newPrototypeItem?.payload).toEqual({ isNew: true, blockType: 'prototype' });
+		expect(newPrototypeItem?.action).toBe('createCodeBlock');
+		expect(newPrototypeItem?.payload).toEqual({ blockType: 'prototype' });
 	});
 
 	it('uses "New Module" as the module creation action', () => {
@@ -106,8 +106,8 @@ describe('menus - go home entry', () => {
 		const newModuleItem = menu.find(item => item.title === 'New Module');
 
 		expect(newModuleItem).toBeDefined();
-		expect(newModuleItem?.action).toBe('addCodeBlock');
-		expect(newModuleItem?.payload).toEqual({ isNew: true, blockType: 'module' });
+		expect(newModuleItem?.action).toBe('createCodeBlock');
+		expect(newModuleItem?.payload).toEqual({ blockType: 'module' });
 	});
 
 	it('hides "New Module" when editing is disabled', () => {

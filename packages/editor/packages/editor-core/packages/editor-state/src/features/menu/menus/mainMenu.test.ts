@@ -3,12 +3,10 @@ import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { mainMenu } from './mainMenu';
 
 describe('main menu', () => {
-	it('offers disk import without an example project submenu', async () => {
+	it('offers disk import', async () => {
 		const items = await mainMenu(createMockState());
 
 		expect(items.some(item => item.action === 'importProject')).toBe(true);
-		expect(items.some(item => item.title === 'Open Project')).toBe(false);
-		expect(items.some(item => item.payload?.menu === 'moduleCategoriesMenu')).toBe(true);
 	});
 
 	it('hides project-opening actions when project opening is disabled', async () => {

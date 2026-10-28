@@ -34,7 +34,6 @@
     "@8f4e/runtime-test-runner": "*",
     "@8f4e/runtime-web-worker": "*",
     "@8f4e/stdlib": "*",
-    "@8f4e/tokenizer": "*",
     "@8f4e/editor-plugin-switch": "*",
     "@8f4e/editor-plugin-tooltips": "*",
     "@8f4e/editor-plugin-button": "*",
@@ -55,7 +54,8 @@
     "@8f4e/editor-plugin-binary-assets": "*",
     "@8f4e/editor-plugin-assertion-markers": "*",
     "@8f4e/editor-plugin-midi-input": "*",
-    "@8f4e/editor-plugin-keyboard-memory": "*"
+    "@8f4e/editor-plugin-keyboard-memory": "*",
+    "@8f4e/editor-plugin-example-modules": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

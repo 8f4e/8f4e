@@ -71,6 +71,22 @@ Use `menus.registerItem('mainMenu', provider)` for the background menu. Its prov
 contributions appear in registration order after the built-in items. Main-menu contributions are rebuilt when the
 menu opens or is revisited, just like block-menu contributions. A divider separates the contributed items when present.
 
+Register a complete submenu with `menus.registerMenu(id, (state, payload) => items)`. Generators may return an
+array or a promise and receive current state whenever the menu opens or is revisited. Open it through
+`{ action: 'openSubMenu', payload: { menu: id, payload: yourData }, close: false }`. Core stores the request, supplies
+Back navigation, and handles decoration, sizing, positioning, and clicks. Menu IDs identify one generator per editor;
+use a distinct ID for your plugin's menu and call the returned unregister function during disposal.
+The built-in block submenu also uses this request shape: `{ menu: 'moduleMenu', payload: { codeBlock } }`.
+
+Use explicit block actions through `events.dispatch`:
+
+- `createCodeBlock` receives `{ x, y, blockType }` and creates a module, function, prototype, or note template.
+- `pasteCodeBlocks` receives `{ x, y }` and reads the clipboard, including structured multi-block content.
+- `insertCodeBlock` receives `{ x, y, code }` and inserts those source lines without reading the clipboard.
+
+Coordinates are viewport pixels. Core applies unique naming, entry assignment, grid positioning, and persistence.
+Newly inserted blocks already carry their source-derived type; core keeps it current as source changes.
+
 Register widget directives with `directives.register(definition)`, using the existing `EditorDirectiveDefinition`
 contract from `@8f4e/editor-state-types`. The core owns generic source parsing, directive matching, and the block
 layout pipeline. Each definition handles its own arguments through `apply`, registers `DirectiveLayoutCallbacks`
@@ -146,7 +162,8 @@ Serialization lives under `pureHelpers/projectSerialization`; filename configura
 Hosts can provide `getProject(url)` for loading individual projects by URL and `importProject` for the Open From Disk
 menu action. The `projectOpening` feature flag controls disk import. Example project browsing belongs to the host;
 the editor no longer exposes a `getListOfProjects` callback or an example project submenu. Built-in module browsing
-continues to use `getListOfModules` and `getModule`.
+belongs to `@8f4e/editor-plugin-example-modules`, whose factory receives lazy source loaders from the host. The plugin
+owns categories, caching, public-block selection, and dependency insertion; core retains generic menus and block creation.
 
 ## Docs
 

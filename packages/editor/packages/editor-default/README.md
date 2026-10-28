@@ -1,7 +1,7 @@
 # Default Editor
 
 `@8f4e/editor-default` is the standard 8f4e editor composition. It connects `@8f4e/editor-core` to the compiler
-worker, runtime implementations, standard library, the example module registry, and browser persistence.
+worker, runtime implementations, standard library, example source discovery, and browser persistence.
 
 The package exports `mountDefaultEditor(canvas, options)`. It does not mount itself when imported, so websites and
 other browser hosts control when and where the editor starts.
@@ -77,9 +77,10 @@ the editor starts with an empty project and does not fetch an example project re
 [examples gallery](https://8f4e.com/examples/); its links open projects by URL. The editor's menu supports opening
 projects from disk and adding built-in modules.
 
-Built-in modules and standard-library includes ship as lazy source chunks with the host's build. The module menu's
-catalog is derived from source paths without loading module text. Selecting a module loads its source on demand;
-module dependencies are resolved through the same local catalog.
+Built-in modules and standard-library includes ship as lazy source chunks with the host's build. The default editor
+passes its discovered module loaders to `createExampleModulesPlugin({ sources })`. That plugin derives the catalog
+from paths without loading module text, owns the menu and source cache, and inserts selected public blocks with their
+dependencies. Omitting it removes the module browser. Standard-library include resolution remains in the host.
 
 Code changes automatically save a recovery session to browser storage. With the editor canvas focused, `Cmd+S`
 or `Ctrl+S` saves canonical `.8f4e` source to disk through the project-export plugin. In browsers supporting the File System Access API in a secure

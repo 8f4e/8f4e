@@ -27,7 +27,7 @@ describe('menus - clipboard callback disabled state', () => {
 
 			const pasteCodeBlockItem = menu.find(item => item.title === 'Paste Code Block');
 			expect(pasteCodeBlockItem).toBeDefined();
-			expect(pasteCodeBlockItem?.disabled).toBe(false);
+			expect(pasteCodeBlockItem).toMatchObject({ action: 'pasteCodeBlocks', close: true, disabled: false });
 		});
 
 		it('should not show "Paste Code Block" when editing is disabled', () => {

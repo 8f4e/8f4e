@@ -197,7 +197,7 @@ describe('compiler input revision', () => {
 
 	it('recompiles after adding, disabling, enabling, and deleting a block', async () => {
 		codeBlockCreator(store, events);
-		await dispatchAsync('addCodeBlock', { x: 100, y: 100, isNew: true, blockType: 'module' });
+		await dispatchAsync('createCodeBlock', { x: 100, y: 100, blockType: 'module' });
 		expect(state.compilerInputRevision).toBe(1);
 		await vi.advanceTimersByTimeAsync(500);
 		expect(compileCode).toHaveBeenCalledTimes(1);
