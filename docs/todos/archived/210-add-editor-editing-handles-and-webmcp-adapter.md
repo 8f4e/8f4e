@@ -40,7 +40,7 @@ editor.editing.redo();
 ```
 
 - Return a detached project snapshot and its matching revision, rather than a live mutable state object.
-- Support inserting, updating, moving, and deleting code blocks, using opaque block handles that also identify blocks within nested groups.
+- Support inserting, updating, and deleting code blocks, with positioning controlled by source `@pos` directives, using opaque block handles that also identify blocks within nested groups.
 - Validate the complete batch before changing state and apply it as one undo step. Validation covers operation shape, targets, and editor policy; source edits may produce normal compiler diagnostics.
 - Route successful edits through the existing project-change mechanisms so derived layout, rendering, autosave, and compilation remain consistent with human edits.
 - Advance an editor-local project revision for persisted changes from both human and API operations, including undo, redo, and project replacement. Compiler input revisions alone may miss layout-only edits.

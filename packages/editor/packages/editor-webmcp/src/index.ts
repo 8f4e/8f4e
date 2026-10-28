@@ -18,6 +18,16 @@ function readEdits(input: unknown): EditorEdit[] {
 	return input.map(value => {
 		if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid edit');
 		const edit = value as Record<string, unknown>;
+		const fields =
+			edit.type === 'insert'
+				? ['type', 'code', 'projectPath', 'entry']
+				: edit.type === 'update'
+					? ['type', 'blockId', 'code', 'entry']
+					: edit.type === 'delete'
+						? ['type', 'blockId']
+						: undefined;
+		if (!fields || Object.keys(edit).some(key => !fields.includes(key)))
+			throw new Error('Use insert, update, or delete with source code; position belongs in the @pos directive');
 		if (edit.type === 'insert' || edit.type === 'update') {
 			if (typeof edit.code !== 'string') throw new Error('code must be a source string');
 			return { ...edit, code: edit.code.split(/\r\n|\n|\r/) } as EditorEdit;
@@ -267,7 +277,7 @@ export function createEditorWebMcp({
 		tool(
 			'apply_edits',
 			'Edit the open 8f4e project',
-			'Apply one atomic undoable batch within the currently expanded group or root. Insert/update code is a complete source string. Requires the latest get_project revision. Inserts use the current group and default to entry main. Existing handles must belong to the current group. Positions are grid coordinates.',
+			'Apply one atomic undoable batch within the currently expanded group or root. Insert/update code is a complete source string. Requires the latest get_project revision. Inserts use the current group and default to entry main. Existing handles must belong to the current group. Set or change positions through the @pos directive in source code.',
 			editsSchema,
 			false,
 			input => {

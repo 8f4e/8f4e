@@ -195,11 +195,14 @@ describe('single-editor WebMCP bridge', () => {
 			expectedRevision: view.snapshot.revision,
 			edits: [{ type: 'update', blockId: 'child', code: ['module counter', 'moduleEnd'] }],
 		});
-		for (const type of ['update', 'move', 'delete']) {
+		for (const edit of [
+			{ type: 'update', blockId: 'counter-handle', code: 'module counter\nmoduleEnd' },
+			{ type: 'delete', blockId: 'counter-handle' },
+		]) {
 			expect(
 				await call('apply_edits', {
 					expectedRevision: view.snapshot.revision,
-					edits: [{ type, blockId: 'counter-handle', code: 'module counter\nmoduleEnd', x: 1, y: 2 }],
+					edits: [edit],
 				})
 			).toMatchObject({ error: { code: 'block_not_found' } });
 		}
@@ -234,6 +237,39 @@ describe('single-editor WebMCP bridge', () => {
 		expect(await call('go_to_parent')).toMatchObject({ projectPath: '' });
 		view.snapshot.projectPath = 'audio'; // A human can also change the shared editor location.
 		expect(await call('go_to_root')).toMatchObject({ projectPath: '' });
+		bridge.dispose();
+	});
+
+	it('accepts positioning in source and rejects separate coordinates and move operations', async () => {
+		const view = setup();
+		const bridge = createEditorWebMcp({
+			document: view.document,
+			editor: { editing: view.editing, navigation: view.navigation },
+		});
+		await bridge.ready;
+		const code = 'module counter\n; @pos -20 30\nmoduleEnd';
+		const request = (edits: unknown[]) =>
+			view.tools.get('apply_edits')!.execute({ expectedRevision: view.snapshot.revision, edits });
+		for (const edit of [
+			{ type: 'insert', code, x: 1 },
+			{ type: 'insert', code, y: 2 },
+			{ type: 'update', blockId: 'counter-handle', code, x: 1, y: 2 },
+			{ type: 'move', blockId: 'counter-handle', x: 1, y: 2 },
+		]) {
+			expect(await request([edit])).toMatchObject({ error: { code: 'invalid_request' } });
+		}
+		expect(view.editing.applyEdits).not.toHaveBeenCalled();
+		await request([
+			{ type: 'insert', code },
+			{ type: 'update', blockId: 'counter-handle', code },
+		]);
+		expect(view.editing.applyEdits).toHaveBeenCalledWith({
+			expectedRevision: view.snapshot.revision,
+			edits: [
+				{ type: 'insert', projectPath: '', code: code.split('\n') },
+				{ type: 'update', blockId: 'counter-handle', code: code.split('\n') },
+			],
+		});
 		bridge.dispose();
 	});
 

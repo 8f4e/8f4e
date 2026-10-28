@@ -2,7 +2,6 @@ import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-
 import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import parsePos from '../features/code-blocks/features/directives/pos/data';
-import upsertPos from '../features/code-blocks/features/directives/pos/upsert';
 import { hasDirective } from '../features/code-blocks/features/directives/utils';
 import { findProjectSlicePath } from '../features/code-blocks/features/projectGroupNavigation/effect';
 import getBlockType from '../features/code-blocks/utils/codeParsers/getBlockType';
@@ -106,10 +105,6 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 			invalid('code must be a nonempty array of individual source lines');
 		}
 	};
-	const validatePosition = (x: number, y: number) => {
-		if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y))
-			invalid('Positions must be safe integer grid coordinates');
-	};
 	const validateEntry = (entry: string | undefined) => {
 		if (entry !== undefined && (typeof entry !== 'string' || !/^\S+$/.test(entry)))
 			invalid('entry must be a nonempty name');
@@ -151,10 +146,8 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 					const path = edit.projectPath ?? '';
 					const slice = findSlice(draft, path);
 					if (!slice) invalid('Unknown projectPath');
-					const x = edit.x ?? 0;
-					const y = edit.y ?? 0;
-					validatePosition(x, y);
-					const code = upsertPos([...edit.code], x, y);
+					const code = [...edit.code];
+					const pos = parsePos(parseBlockDirectives(code));
 					const type = getBlockType(code);
 					if (edit.entry !== undefined && type !== 'module') invalid('Only module inserts accept an entry');
 					const block = createCodeBlockGraphicData({
@@ -162,8 +155,8 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 						code,
 						projectPath: path,
 						blockType: type,
-						gridX: x,
-						gridY: y,
+						gridX: pos?.x ?? 0,
+						gridY: pos?.y ?? 0,
 						entry: type === 'module' ? (edit.entry ?? 'main') : undefined,
 						disabled: hasDirective(code, 'disabled'),
 					});
@@ -171,18 +164,13 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 					createdBlockIds.push(blockId(block));
 					continue;
 				}
-				if (!['update', 'move', 'delete'].includes(edit.type)) invalid('Unknown edit type');
+				if (!['update', 'delete'].includes(edit.type)) invalid('Unknown edit type');
 				const target = flatten(draft).find(block => blockId(block) === edit.blockId);
 				if (!target)
 					throw new EditorEditingError('block_not_found', 'Read the project for a current blockId', revision());
 				if (edit.type === 'delete') {
 					const slice = findSlice(draft, target.projectPath)!;
 					slice.splice(slice.indexOf(target), 1);
-				} else if (edit.type === 'move') {
-					validatePosition(edit.x, edit.y);
-					target.gridX = edit.x;
-					target.gridY = edit.y;
-					target.code = upsertPos(target.code, edit.x, edit.y);
 				} else if (edit.type === 'update') {
 					validateCode(edit.code);
 					if (!target.nestedProjectCodeBlocks && edit.code.some(line => /^\s*group(?:\s|$)/.test(line)))
@@ -192,9 +180,10 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 						invalid('Keep the project group name when updating its source; edit child blocks through their handles');
 					}
 					const pos = parsePos(parseBlockDirectives(edit.code));
-					target.code = pos ? [...edit.code] : upsertPos([...edit.code], target.gridX, target.gridY);
-					target.gridX = pos?.x ?? target.gridX;
-					target.gridY = pos?.y ?? target.gridY;
+					// Source owns positioning; match project loading when @pos is missing or invalid.
+					target.code = [...edit.code];
+					target.gridX = pos?.x ?? 0;
+					target.gridY = pos?.y ?? 0;
 					target.blockType = getBlockType(target.code);
 					if (target.blockType !== 'unknown') target.isProjectScope = false;
 					target.disabled = hasDirective(target.code, 'disabled');

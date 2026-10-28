@@ -254,12 +254,23 @@ test('exposes the loaded project through site tools and saves undoable source ed
 	const changed = (await tools.get('apply_edits')!.execute({
 		expectedRevision: before.revision,
 		edits: [
-			{ type: 'update', blockId: target.blockId, code: 'module galleryExample\nint value 17\nmoduleEnd' },
-			{ type: 'move', blockId: target.blockId, x: 0, y: 14 },
+			{ type: 'update', blockId: target.blockId, code: 'module galleryExample\n; @pos 0 14\nint value 17\nmoduleEnd' },
+			{ type: 'insert', code: 'note\n; @pos 40 14\nPosition comes from source\nnoteEnd' },
 		],
 	})) as { revision: string };
 	expect(editor.editing.getSnapshot().project.modules[0].code).toContain('int value 17');
 	expect(window.sessionStorage.getItem('project_8f4e-gallery-test-bridged')).toContain('int value 17');
+	const snapshot = editor.editing.getSnapshot();
+	expect(snapshot.blocks.find(({ block }) => block.name === 'galleryExample')!.block).toMatchObject({
+		gridX: 0,
+		gridY: 14,
+	});
+	expect(snapshot.blocks.find(({ block }) => block.blockType === 'note')!.block).toMatchObject({
+		gridX: 40,
+		gridY: 14,
+		code: ['note', '; @pos 40 14', 'Position comes from source', 'noteEnd'],
+	});
+	expect(window.sessionStorage.getItem('project_8f4e-gallery-test-bridged')).toContain('@pos 40 14');
 	editor.renderFrame();
 	await page.screenshot({ element: view.panel(), path: '../.vitest-attachments/webmcp-edit.png' });
 	await tools.get('undo')!.execute({ expectedRevision: changed.revision });

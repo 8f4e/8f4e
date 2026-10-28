@@ -75,9 +75,12 @@ describe('public editor editing handle', () => {
 		const result = editing.applyEdits({
 			expectedRevision: original.revision,
 			edits: [
-				{ type: 'update', blockId: target.blockId, code: ['module original', 'int value 2', 'moduleEnd'] },
-				{ type: 'move', blockId: target.blockId, x: 30, y: 40 },
-				{ type: 'insert', code: ['note', 'Created through the public API', 'noteEnd'], x: 60, y: 40 },
+				{
+					type: 'update',
+					blockId: target.blockId,
+					code: ['module original', '; @pos 30 40', 'int value 2', 'moduleEnd'],
+				},
+				{ type: 'insert', code: ['note', '; @pos 60 40', 'Created through the public API', 'noteEnd'] },
 			],
 		});
 		const changed = editing.getSnapshot();
@@ -97,6 +100,57 @@ describe('public editor editing handle', () => {
 		expect(editing.getSnapshot().project).toEqual(changed.project);
 	});
 
+	it('derives inserted and updated positions from source, including removing @pos and undoing it', () => {
+		const { editing } = setup();
+		const code = ['module placed', '; @pos -12 34', 'moduleEnd'];
+		const inserted = editing.applyEdits({
+			expectedRevision: editing.getSnapshot().revision,
+			edits: [{ type: 'insert', code }],
+		});
+		const findPlaced = () =>
+			editing.getSnapshot().blocks.find(block => block.blockId === inserted.createdBlockIds[0])!.block;
+		expect(findPlaced()).toMatchObject({ code, gridX: -12, gridY: 34 });
+		const updatedCode = ['module placed', '; @pos 56 -78', 'moduleEnd'];
+		const updated = editing.applyEdits({
+			expectedRevision: inserted.revision,
+			edits: [{ type: 'update', blockId: inserted.createdBlockIds[0], code: updatedCode }],
+		});
+		expect(findPlaced()).toMatchObject({ code: updatedCode, gridX: 56, gridY: -78 });
+		const withoutPos = ['module placed', 'moduleEnd'];
+		const removed = editing.applyEdits({
+			expectedRevision: updated.revision,
+			edits: [{ type: 'update', blockId: inserted.createdBlockIds[0], code: withoutPos }],
+		});
+		expect(findPlaced()).toMatchObject({ code: withoutPos, gridX: 0, gridY: 0 });
+		const undone = editing.undo({ expectedRevision: removed.revision });
+		expect(findPlaced()).toMatchObject({ code: updatedCode, gridX: 56, gridY: -78 });
+		editing.redo({ expectedRevision: undone.revision });
+		expect(findPlaced()).toMatchObject({ code: withoutPos, gridX: 0, gridY: 0 });
+	});
+
+	it.each([{ directives: [] }, { directives: ['; @pos invalid 3'] }, { directives: ['; @pos 1 2', '; @pos 3 4'] }])(
+		'preserves unfinished or missing positioning source on inserts and updates: $directives',
+		({ directives }) => {
+			const { editing } = setup();
+			const code = ['module unplaced', ...directives, 'moduleEnd'];
+			const original = editing.getSnapshot();
+			const result = editing.applyEdits({
+				expectedRevision: original.revision,
+				edits: [
+					{ type: 'insert', code },
+					{ type: 'update', blockId: original.blocks[0].blockId, code },
+				],
+			});
+			for (const { block } of editing
+				.getSnapshot()
+				.blocks.filter(
+					block => block.blockId === original.blocks[0].blockId || block.blockId === result.createdBlockIds[0]
+				)) {
+				expect(block).toMatchObject({ code, gridX: 0, gridY: 0 });
+			}
+		}
+	);
+
 	it('rejects an invalid batch without applying earlier operations or changing history', () => {
 		const { editing, store, compilationChanged } = setup();
 		const before = editing.getSnapshot();
@@ -105,7 +159,7 @@ describe('public editor editing handle', () => {
 				expectedRevision: before.revision,
 				edits: [
 					{ type: 'delete', blockId: before.blocks[0].blockId },
-					{ type: 'move', blockId: 'missing', x: 0, y: 0 },
+					{ type: 'delete', blockId: 'missing' },
 				],
 			})
 		).toThrow('current blockId');

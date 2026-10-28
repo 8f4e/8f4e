@@ -56,13 +56,12 @@ The `blocks` array contains only `{ blockId, startLine, endLine }` entries for b
 Supported edit shapes:
 
 ```ts
-{ type: 'insert', code: 'module counter\nint value 0\nmoduleEnd', x: 10, y: 20, entry: 'main' }
-{ type: 'update', blockId, code: 'module counter\nint value 1\nmoduleEnd' }
-{ type: 'move', blockId, x: 30, y: 20 }
+{ type: 'insert', code: 'module counter\n; @pos 10 20\nint value 0\nmoduleEnd', entry: 'main' }
+{ type: 'update', blockId, code: 'module counter\n; @pos 30 20\nint value 1\nmoduleEnd' }
 { type: 'delete', blockId }
 ```
 
-Each `code` value is a source string. The bridge joins source lines for reads and splits incoming source on line endings for edits, preserving blank lines, indentation, and trailing newlines. Positions use integer grid coordinates. Inserts default to `(0, 0)`, the currently expanded group or root, and entry `main` for modules. An explicit `projectPath` must match the current location. An update preserves a block's position unless its source specifies `; @pos`. Module updates may also supply `entry`.
+Each `code` value is a source string. The bridge joins source lines for reads and splits incoming source on line endings for edits, preserving blank lines, indentation, and trailing newlines. Position comes from `; @pos x y` in the source. Inserts and updates preserve the supplied source, and ordinary blocks use `(0, 0)` when the directive is missing or invalid, matching project loading. Move a block by updating its `@pos` line; there are no separate coordinate inputs or move operations. Inserts use the currently expanded group or root, and default to entry `main` for modules. An explicit `projectPath` must match the current location. Module updates may also supply `entry`.
 
 Block handles distinguish duplicate block IDs in nested project scopes. Treat them as opaque and refresh them after editing. Group blocks can be moved, deleted, or have their source updated while retaining the group name; creating or renaming project groups is not part of this command surface. Whole-project loading stays separate and continues through the existing editor UI and host startup paths.
 

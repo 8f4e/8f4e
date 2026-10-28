@@ -1,5 +1,4 @@
 const code = { type: 'string', description: 'Complete source of the block, with newline characters between lines.' };
-const position = { type: 'integer' };
 const blockId = {
 	type: 'string',
 	description: 'Opaque blockId from the latest get_project source view.',
@@ -40,12 +39,8 @@ export const editsSchema = object(
 			minItems: 1,
 			items: {
 				oneOf: [
-					object(
-						{ type: { const: 'insert' }, code, x: position, y: position, projectPath: { type: 'string' }, entry },
-						['type', 'code']
-					),
+					object({ type: { const: 'insert' }, code, projectPath: { type: 'string' }, entry }, ['type', 'code']),
 					object({ type: { const: 'update' }, blockId, code, entry }, ['type', 'blockId', 'code']),
-					object({ type: { const: 'move' }, blockId, x: position, y: position }, ['type', 'blockId', 'x', 'y']),
 					object({ type: { const: 'delete' }, blockId }, ['type', 'blockId']),
 				],
 			},

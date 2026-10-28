@@ -2,9 +2,8 @@ import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 
 export type EditorEdit =
-	| { type: 'insert'; code: string[]; projectPath?: string; x?: number; y?: number; entry?: string }
+	| { type: 'insert'; code: string[]; projectPath?: string; entry?: string }
 	| { type: 'update'; blockId: string; code: string[]; entry?: string }
-	| { type: 'move'; blockId: string; x: number; y: number }
 	| { type: 'delete'; blockId: string };
 
 export interface EditorProjectSnapshot {
