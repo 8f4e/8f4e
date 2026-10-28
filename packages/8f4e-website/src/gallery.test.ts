@@ -1,5 +1,5 @@
 import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
-import type { WebMcpProjectMetadata, WebMcpTool } from '@8f4e/editor-webmcp';
+import type { WebMcpProjectMetadata, WebMcpProjectSource, WebMcpTool } from '@8f4e/editor-webmcp';
 import { afterEach, expect, test, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { mountGallery } from './gallery';
@@ -174,7 +174,7 @@ function siteTools() {
 	return tools;
 }
 
-test('navigates the editor and returns only the currently expanded source string', async () => {
+test('navigates the editor and returns the currently expanded source with its revision', async () => {
 	const tools = siteTools();
 	const grouped =
 		'8f4e/v1\nentry main\nmodule oscillator\nint value 1\nmoduleEnd\ngroup audio\nmodule oscillator\nint value 2\nmoduleEnd\ngroup voices\nmodule deepSecret\nmoduleEnd\ngroupEnd\ngroupEnd\nentryEnd';
@@ -182,30 +182,30 @@ test('navigates the editor and returns only the currently expanded source string
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(tools.has('get_diagnostics')).toBe(true));
 	const call = (name: string, args = {}) => tools.get(name)!.execute(args);
-	const rootMetadata = (await call('get_project_metadata')) as WebMcpProjectMetadata;
-	const root = await call('get_project');
-	expect(typeof root).toBe('string');
-	expect(root).toContain('int value 1');
-	expect(root).toContain('group audio');
-	expect(root).not.toContain('int value 2');
+	const root = (await call('get_project')) as WebMcpProjectSource;
+	expect(Object.keys(root).sort()).toEqual(['code', 'revision']);
+	expect(typeof root.code).toBe('string');
+	expect(root.code).toContain('int value 1');
+	expect(root.code).toContain('group audio');
+	expect(root.code).not.toContain('int value 2');
 	expect(await call('expand_group', { name: 'audio' })).toEqual({
 		projectPath: 'audio',
-		revision: rootMetadata.revision,
+		revision: root.revision,
 	});
 	expect(editor.state.codeBlockRendering.codeBlocks).toBe(
 		editor.state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'audio')!.nestedProjectCodeBlocks
 	);
 	const expandedMetadata = (await call('get_project_metadata')) as WebMcpProjectMetadata;
-	const expanded = await call('get_project');
+	const expanded = (await call('get_project')) as WebMcpProjectSource;
 	expect(expandedMetadata.projectPath).toBe('audio');
-	expect(expanded).toContain('int value 2');
-	expect(expanded).toContain('group voices');
-	expect(expanded).not.toContain('deepSecret');
+	expect(expanded.code).toContain('int value 2');
+	expect(expanded.code).toContain('group voices');
+	expect(expanded.code).not.toContain('deepSecret');
 	expect(await call('get_block', { type: 'module', name: 'oscillator' })).toContain('int value 2');
 	await call('update_block', {
 		type: 'module',
 		name: 'oscillator',
-		expectedRevision: expandedMetadata.revision,
+		expectedRevision: expanded.revision,
 		code: 'module oscillator\nint value 3\nmoduleEnd',
 	});
 	expect(editor.state.codeBlockRendering.codeBlocks.find(block => block.name === 'oscillator')!.code).toContain(
@@ -216,15 +216,17 @@ test('navigates the editor and returns only the currently expanded source string
 	);
 	await call('expand_group', { name: 'voices' });
 	expect(await call('get_project_metadata')).toMatchObject({ projectPath: 'audio/voices' });
-	expect(await call('get_project')).toContain('module deepSecret');
+	expect(await call('get_project')).toMatchObject({ code: expect.stringContaining('module deepSecret') });
 	expect(editor.state.codeBlockRendering.codeBlocks.find(block => block.name === 'deepSecret')).toBeDefined();
 	expect(await call('get_block', { type: 'module', name: 'oscillator' })).toMatchObject({
 		error: { code: 'block_not_found' },
 	});
 	await call('go_to_parent');
-	expect(await call('get_project')).toContain('int value 3');
+	expect(await call('get_project')).toMatchObject({ code: expect.stringContaining('int value 3') });
 	await call('go_to_root');
-	expect(await call('get_project')).toBe(root);
+	const rootAfter = (await call('get_project')) as WebMcpProjectSource;
+	expect(rootAfter.code).toBe(root.code);
+	expect(rootAfter.revision).not.toBe(root.revision);
 });
 
 test('targets named notes and modules through the same selectors without exposing identifiers', async () => {
@@ -262,8 +264,8 @@ test('targets named notes and modules through the same selectors without exposin
 		],
 	});
 	expect(Object.keys(result as object)).toEqual(['revision']);
-	expect(await call('get_project')).toContain('int value 4');
-	expect(await call('get_project')).not.toContain('note palette');
+	expect(await call('get_project')).toMatchObject({ code: expect.stringContaining('int value 4') });
+	expect(await call('get_project')).not.toMatchObject({ code: expect.stringContaining('note palette') });
 	expect(editor.editing.getSnapshot().project.notes[0].code).toEqual(['note colors', 'root palette', 'noteEnd']);
 	for (const tool of tools.values()) expect(JSON.stringify(tool.inputSchema)).not.toMatch(/blockId|createdBlockIds/);
 });
@@ -277,8 +279,9 @@ test('patches one source span in the current group with persistence and one-step
 	await vi.waitFor(() => expect(tools.has('get_diagnostics')).toBe(true));
 	const call = (name: string, args = {}) => tools.get(name)!.execute(args);
 	await call('expand_group', { name: 'audio' });
-	const before = (await call('get_project_metadata')) as WebMcpProjectMetadata;
+	const before = (await call('get_project')) as WebMcpProjectSource;
 	const original = (await call('get_block', { type: 'module', name: 'oscillator' })) as string;
+	expect(before.code).toContain(original);
 	const changed = (await call('patch_block', {
 		type: 'module',
 		name: 'oscillator',
@@ -324,7 +327,7 @@ test('patches one source span in the current group with persistence and one-step
 	expect(childSource().join('\n')).toBe(original.replace('float alpha 0.04', 'float alpha 0.1'));
 });
 
-test('exposes source strings through site tools and saves undoable named edits', async () => {
+test('exposes revisioned source through site tools and saves undoable named edits', async () => {
 	const tools = siteTools();
 	let finish!: (response: Response) => void;
 	const pending = new Promise<Response>(resolve => {
@@ -339,8 +342,8 @@ test('exposes source strings through site tools and saves undoable named edits',
 	canvas.style.width = '900px';
 	canvas.style.height = '480px';
 	editor.resize(900, 480);
-	const before = (await tools.get('get_project_metadata')!.execute({})) as WebMcpProjectMetadata;
-	expect(await tools.get('get_project')!.execute({})).toContain('module galleryExample');
+	const before = (await tools.get('get_project')!.execute({})) as WebMcpProjectSource;
+	expect(before.code).toContain('module galleryExample');
 	const metadata = await tools.get('get_block_metadata')!.execute({ type: 'module', name: 'galleryExample' });
 	expect(metadata).toMatchObject({
 		revision: before.revision,
@@ -386,7 +389,7 @@ test('replaces site tools on project selection and rejects retained calls and ol
 	});
 	await view.mounted();
 	await vi.waitFor(() => expect(tools.has('get_diagnostics')).toBe(true));
-	const before = (await tools.get('get_project_metadata')!.execute({})) as WebMcpProjectMetadata;
+	const before = (await tools.get('get_project')!.execute({})) as WebMcpProjectSource;
 	const retained = tools.get('apply_edits')!;
 	view.gallery.querySelector<HTMLButtonElement>('#example-second')!.click();
 	expect(tools.size).toBe(0);

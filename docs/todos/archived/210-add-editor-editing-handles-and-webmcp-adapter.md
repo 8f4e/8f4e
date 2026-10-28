@@ -63,7 +63,7 @@ Register one document-level tool set:
 
 | Tool | Purpose |
 | --- | --- |
-| `get_project` | Return only the currently expanded group or root as a plain one-level source string, without an index or block identifiers. |
+| `get_project` | Return `{ code, revision }` for the currently expanded group or root, with a one-level source string and its matching revision, without an index or block identifiers. |
 | `get_project_metadata` | Return revision, location, editability, and history information separately from source. |
 | `expand_group` / `go_to_parent` / `go_to_root` | Navigate the editor's shared view and return location only. |
 | `get_block` / `update_block` / `patch_block` | Read, replace, or patch source by type and name within the current scope. |

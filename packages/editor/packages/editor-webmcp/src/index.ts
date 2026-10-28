@@ -10,6 +10,11 @@ import {
 } from './schema.js';
 import { createSourceView } from './source-view.js';
 
+export interface WebMcpProjectSource {
+	code: string;
+	revision: string;
+}
+
 export type WebMcpProjectMetadata = Pick<
 	EditorProjectSnapshot,
 	'revision' | 'projectPath' | 'editable' | 'canUndo' | 'canRedo'
@@ -80,7 +85,7 @@ export function createEditorWebMcp({
 	const writeRequest = (input: unknown, fields: string[]): Record<string, unknown> & { expectedRevision: string } => {
 		const args = request(input, fields);
 		if (typeof args.expectedRevision !== 'string')
-			throw new Error('expectedRevision from get_project_metadata is required');
+			throw new Error('expectedRevision from get_project or get_project_metadata is required');
 		return { ...args, expectedRevision: args.expectedRevision };
 	};
 	const tool = (
@@ -164,7 +169,7 @@ export function createEditorWebMcp({
 	};
 	const checkRevision = (snapshot: EditorProjectSnapshot, expectedRevision: string) => {
 		if (expectedRevision !== snapshot.revision)
-			scopeError(snapshot, 'stale_revision', 'Read get_project and get_project_metadata again before editing');
+			scopeError(snapshot, 'stale_revision', 'Read get_project again before editing');
 	};
 	const location = () => {
 		const { projectPath, revision } = editing.getSnapshot();
@@ -174,18 +179,19 @@ export function createEditorWebMcp({
 		tool(
 			'get_project',
 			'Read the open 8f4e project',
-			'Return only the currently expanded group or root as a plain 8f4e source string. Child groups are shown as declarations without their contents. Navigate with expand_group, go_to_parent, or go_to_root, then read again. Revision and history information are available separately through get_project_metadata.',
+			'Return { code, revision } for only the currently expanded group or root. The code field is one 8f4e source string, and revision is from the same snapshot. Child groups are shown as declarations without their contents. Navigate with expand_group, go_to_parent, or go_to_root, then read again. Use revision as expectedRevision for writes; location and history information are available through get_project_metadata.',
 			emptySchema,
 			true,
 			input => {
 				request(input, []);
-				return createSourceView(editing.getSnapshot());
+				const snapshot = editing.getSnapshot();
+				return { code: createSourceView(snapshot), revision: snapshot.revision } satisfies WebMcpProjectSource;
 			}
 		),
 		tool(
 			'get_project_metadata',
 			'Read 8f4e project metadata',
-			'Read the current revision, location, editability, and undo/redo availability without source or block identifiers. Call this before reading source, then use its revision as expectedRevision for writes.',
+			'Read the current revision, location, editability, and undo/redo availability without source or block identifiers. get_project already returns source with its revision. When reading only get_block, call this first and use its revision for writes.',
 			emptySchema,
 			true,
 			input => {
@@ -255,7 +261,7 @@ export function createEditorWebMcp({
 		tool(
 			'patch_block',
 			'Patch an 8f4e block',
-			'Replace one exact occurrence of oldText with literal newText in a block identified by type and name in the currently expanded group or root. Text may span multiple lines; line endings are normalized to LF. Empty or missing matches and multiple matches are rejected. Requires the latest get_project_metadata revision and creates one undo step.',
+			'Replace one exact occurrence of oldText with literal newText in a block identified by type and name in the currently expanded group or root. Text may span multiple lines; line endings are normalized to LF. Empty or missing matches and multiple matches are rejected. Requires the latest revision from get_project or get_project_metadata and creates one undo step.',
 			patchBlockSchema,
 			false,
 			input => {
@@ -313,7 +319,7 @@ export function createEditorWebMcp({
 		tool(
 			'apply_edits',
 			'Edit the open 8f4e project',
-			'Apply one atomic undoable batch within the currently expanded group or root. Insert/update code is a complete source string. Requires the latest get_project_metadata revision. Update/delete operations identify blocks by type and name in the current scope. Inserts use the current group and default to entry main. Set or change positions through the @pos directive in source code.',
+			'Apply one atomic undoable batch within the currently expanded group or root. Insert/update code is a complete source string. Requires the latest revision from get_project or get_project_metadata. Update/delete operations identify blocks by type and name in the current scope. Inserts use the current group and default to entry main. Set or change positions through the @pos directive in source code.',
 			editsSchema,
 			false,
 			input => {
@@ -331,7 +337,7 @@ export function createEditorWebMcp({
 			tool(
 				action,
 				`${action === 'undo' ? 'Undo' : 'Redo'} an 8f4e edit`,
-				`${action === 'undo' ? 'Undo' : 'Redo'} one history step in the bound editor. Requires the latest get_project_metadata revision.`,
+				`${action === 'undo' ? 'Undo' : 'Redo'} one history step in the bound editor. Requires the latest revision from get_project or get_project_metadata.`,
 				revisionSchema,
 				false,
 				input => ({ revision: editing[action](writeRequest(input, ['expectedRevision'])).revision })

@@ -45,7 +45,7 @@ export const editsSchema = object(
 	{
 		expectedRevision: {
 			type: 'string',
-			description: 'Revision from get_project_metadata or the last successful write.',
+			description: 'Revision from get_project, get_project_metadata, or the last successful write.',
 		},
 		edits: {
 			type: 'array',

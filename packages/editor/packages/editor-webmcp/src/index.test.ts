@@ -60,7 +60,7 @@ function setup() {
 }
 
 describe('single-editor WebMCP bridge', () => {
-	it('returns only source strings and keeps metadata separate from the complete editor snapshot', async () => {
+	it('returns project source with its matching revision and keeps the editor snapshot complete', async () => {
 		const view = setup();
 		const before = structuredClone(view.snapshot);
 		const bridge = createEditorWebMcp({
@@ -85,9 +85,10 @@ describe('single-editor WebMCP bridge', () => {
 			'redo',
 			'get_diagnostics',
 		]);
-		expect(await call('get_project')).toBe(
-			'8f4e/v1\n\nentry main\n\n' + view.snapshot.blocks[0].block.code.join('\n') + '\nentryEnd'
-		);
+		expect(await call('get_project')).toEqual({
+			code: '8f4e/v1\n\nentry main\n\n' + view.snapshot.blocks[0].block.code.join('\n') + '\nentryEnd',
+			revision: view.snapshot.revision,
+		});
 		expect(await call('get_block', { type: 'module', name: 'counter' })).toBe(
 			view.snapshot.blocks[0].block.code.join('\n')
 		);
@@ -294,8 +295,11 @@ describe('single-editor WebMCP bridge', () => {
 			revision: view.snapshot.revision,
 		});
 		expect(view.navigation.openGroup).toHaveBeenCalledWith('audio');
-		expect(await call('get_project')).toContain('int value 9');
-		expect(await call('get_project')).not.toContain('rootOnly');
+		expect(await call('get_project')).toMatchObject({
+			code: expect.stringContaining('int value 9'),
+			revision: view.snapshot.revision,
+		});
+		expect(await call('get_project')).not.toMatchObject({ code: expect.stringContaining('rootOnly') });
 		expect(await call('get_project', { name: 'audio' })).toMatchObject({ error: { code: 'invalid_request' } });
 		expect(await call('get_block', { type: 'module', name: 'counter' })).toBe(child.code.join('\n'));
 		expect(await call('get_block', { type: 'note', name: 'counter' })).toBe(note.code.join('\n'));
