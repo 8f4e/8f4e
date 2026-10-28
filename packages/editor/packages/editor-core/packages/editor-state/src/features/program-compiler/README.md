@@ -1,33 +1,10 @@
-# Program Compiler Feature
+# Compilation Inputs and Published State
 
-The compiler effect converts the editor's recursive code-block tree into a `ProjectObjectModel`, invokes
-`compileCode(project, options)`, and publishes compiler metadata, diagnostics, and statistics for editor consumers.
-The compiler service returns memory and bytecode; core updates its own memory views and renderer artifacts.
+Editor state tracks compilation inputs and exposes compiler metadata for editor features. Actual compilation belongs
+to `@8f4e/editor-plugin-compiler`, which owns scheduling, its worker, include resolution, diagnostics, and statistics.
+Core has no compilation callback or built-in compilation effect.
 
-## Compilation contract
-
-The callback is asynchronous and returns `CompilationResult`: `memoryRef`, `codeBuffer`, compiled module/function
-lookups, the memory plan and defaults, project memory exposures, required/allocated memory bytes, AST cache statistics,
-and `memoryAction`. Bytecode size is derived from `codeBuffer.byteLength`.
-
-The effect supplies:
-
-```typescript
-{
-  startingMemoryAllocationUnitAddress: 0,
-  includeStackAnalysis: true,
-  enableAssertions: hasTestEntry(project),
-}
-```
-
-Assertions are enabled for an enabled `test` entry, including nested test modules or a root function exported as
-`test`. The compiler integration supplies inert assertion imports for ordinary execution. The selected test runtime
-executes tests and publishes their outcomes separately.
-
-Include loading is configured directly on the compiler service. Runtime environment constants arrive as source through
-`envConstantContributions`; the generic env-block renderer treats every contributor uniformly.
-
-## Recompilation
+## Input changes
 
 `state.compilerInputRevision` advances after source edits, block creation/deletion/paste, execution or disabled-state
 toggles, regenerated environment constants, saved control defaults, memory connection removal, and project loading.
@@ -38,10 +15,12 @@ Selection, caret movement, block/project navigation, dragging, favorites, and vi
 the revision. Call `incrementCompilerInputRevision(store)` after updating compiler inputs and their derived state.
 `selectedCodeBlockForProgrammaticEdit` refreshes programmatic edits independently of compilation scheduling.
 
-The effect observes the revision and debounces compilation for 500ms by default. Projects can override the delay with
-`; @config recompileDebounceDelay <ms>`. Disposal cancels pending work and ignores late results.
+Core's input-change publisher observes the revision and emits `compilationInputChanged`. A compiler plugin can listen
+without understanding individual editing actions. The standard compiler plugin debounces those events, serializes the
+latest code-block tree, and ignores obsolete responses. Its `recompileDebounceDelay` setting is available only when the
+plugin is installed.
 
-## Published state
+## Published state and artifacts
 
 - `state.compiler.isCompiling` indicates compilation activity.
 - `state.compiler.compiledModules` and `compiledFunctions` provide compiler lookups.
@@ -49,5 +28,10 @@ The effect observes the revision and debounces compilation for 500ms by default.
 - `state.info.compiler` contains compilation duration, bytecode size, memory usage, and cache statistics.
 - `state.codeErrors.compilationErrors` contains diagnostics mapped to project blocks and source lines.
 
+The plugin updates its live artifact handles and emits `compilationSucceeded` with `ProgramArtifacts` (`memoryRef` and `codeBuffer`) before
+publishing metadata and runtime readiness. Core consumes that event to refresh memory views and renderer artifacts.
 `memoryAction` distinguishes recreated and reused memory. The binary-assets plugin observes new memory plans and
-reloads its retained bytes into current targets. The compiler effect stores no binary asset metadata.
+reloads its retained bytes into current targets. Editor state stores no binary asset metadata.
+
+Runtime environment constants arrive as source through `envConstantContributions`; the generic env-block renderer
+treats every contributor uniformly. Runtime implementations remain dependencies of the runtime coordinator.

@@ -63,7 +63,6 @@ function createContext(code = ['module test', '', 'moduleEnd']) {
 describe('toggle skip execution plugin', () => {
 	afterEach(() => {
 		while (cleanups.length) cleanups.pop()!();
-		vi.useRealTimers();
 	});
 
 	it('inserts the directive, publishes the source edit, and advances the compiler revision', () => {
@@ -191,22 +190,22 @@ describe('toggle skip execution plugin', () => {
 		}
 	});
 
-	it('works through editor initialization and schedules compilation of the updated source', async () => {
-		vi.useFakeTimers();
+	it('announces updated inputs through editor initialization', () => {
 		const events = createEvents();
-		const compileCode = vi.fn().mockRejectedValue({ message: 'Test diagnostic', line: { lineNumber: 0 }, context: {} });
+		const changed = vi.fn();
+		events.on('compilationInputChanged', changed);
 		const { store, dispose } = setupState(events, {
-			callbacks: { compileCode },
+			callbacks: {},
 			runtimeRegistry: {},
 			initialEditorMode: 'edit',
 		});
 		try {
 			const block = createMockCodeBlock({ code: ['module test', 'moduleEnd'], blockType: 'module', entry: 'main' });
 			store.getState().codeBlockRendering.rootCodeBlocks.push(block);
+			changed.mockImplementation(() => [...block.code]);
 			events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
-			await vi.advanceTimersByTimeAsync(1000);
-			expect(compileCode).toHaveBeenCalledOnce();
-			expect(compileCode.mock.calls[0][0].modules[0].code).toContain('#skipExecution');
+			expect(changed).toHaveBeenCalledOnce();
+			expect(changed.mock.results[0].value).toContain('#skipExecution');
 		} finally {
 			dispose();
 		}

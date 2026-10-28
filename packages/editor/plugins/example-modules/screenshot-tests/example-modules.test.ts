@@ -48,7 +48,6 @@ functionEnd float`,
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
 			initialProject: parseProjectSource(source),
-			callbacks: {},
 			plugins: [createExampleModulesPlugin({ sources })],
 		});
 		const state = editor.state;

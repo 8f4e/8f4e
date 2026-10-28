@@ -1,6 +1,7 @@
 import type { EditorDirectiveRegistry, EditorMenuRegistry, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import type { EditorDrawerRegistry } from '@8f4e/web-ui';
+import { disposeAll } from './disposeAll';
 
 export interface EditorPluginContext {
 	store: Omit<StateManager<State>, 'dispose'>;
@@ -19,9 +20,7 @@ export interface EditorPlugin {
 
 export function installEditorPlugins(plugins: readonly EditorPlugin[], context: EditorPluginContext): () => void {
 	const cleanups: Array<() => void> = [];
-	const dispose = () => {
-		while (cleanups.length) cleanups.pop()!();
-	};
+	const dispose = () => disposeAll(cleanups);
 	try {
 		for (const plugin of plugins) cleanups.push(plugin.setup(context));
 	} catch (error) {

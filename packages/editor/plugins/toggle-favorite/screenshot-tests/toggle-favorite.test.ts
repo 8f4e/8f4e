@@ -26,7 +26,6 @@ entryEnd`;
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
 			initialProject: parseProjectSource(source),
-			callbacks: {},
 			plugins: [toggleFavoritePlugin],
 		});
 		const state = editor.state;

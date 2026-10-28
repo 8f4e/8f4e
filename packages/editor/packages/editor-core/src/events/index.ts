@@ -39,7 +39,7 @@ export default function events(): DisposableEventDispatcher {
 			return console.warn('No subscription to event type:', type);
 		}
 		for (const handlers of [subscriptions[type].capture, subscriptions[type].normal]) {
-			for (const handler of handlers) {
+			for (const handler of [...handlers]) {
 				if (eventObject && (eventObject as EventObject).stopPropagation) return;
 				handler(eventObject);
 			}

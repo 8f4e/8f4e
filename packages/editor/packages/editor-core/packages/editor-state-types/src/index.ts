@@ -3,7 +3,7 @@
  * Shared feature types are re-exported here for editor consumers.
  */
 
-import type { CompileOptions, MemoryAction as CompilerMemoryAction, ProjectObjectModel } from '@8f4e/language-spec';
+import type { MemoryAction as CompilerMemoryAction, ProjectObjectModel } from '@8f4e/language-spec';
 import type { AssertionResult } from './features/assertions/types';
 import type {
 	CodeBlockEntryOutline,
@@ -28,7 +28,7 @@ import type {
 import type { ResolvedGlobalEditorDirectives } from './features/global-editor-directives/types';
 import type { ConsoleState, LogMessage } from './features/logger/types';
 import type { ContextMenu, ContextMenuItem, MenuGenerator, MenuStackEntry } from './features/menu/types';
-import type { CompilationResult, Compiler } from './features/program-compiler/types';
+import type { Compiler } from './features/program-compiler/types';
 import type {
 	RuntimeEnvConstantsContributor,
 	RuntimeFactory,
@@ -68,7 +68,6 @@ export type {
 	CodeBlockRendering,
 	CodeBlockType,
 	CodeError,
-	CompilationResult,
 	Compiler,
 	CompilerMemoryAction as MemoryAction,
 	ConsoleState,
@@ -157,9 +156,6 @@ export type EditorMode = 'view' | 'edit';
 
 // Callbacks interface contains all callback functions (top-level public API)
 export interface Callbacks {
-	// Compilation callback
-	compileCode?: (project: ProjectObjectModel, compilerOptions: CompileOptions) => Promise<CompilationResult>;
-
 	// Memory manipulation callback
 	getWordFromMemory?: (allocationUnitAddress: number) => number;
 

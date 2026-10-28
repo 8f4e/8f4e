@@ -26,7 +26,7 @@
   with a live reduced-motion preference from the browser; install their overlays before tooltips.
 - Include `toggleFavoritePlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Core does
   not install these editing actions or their menus.
-- Compose `createBinaryAssetsPlugin({ getMemoryBytes })` with a getter for the compiler service's current memory.
+- Compose `createBinaryAssetsPlugin({ getMemoryBytes })` with a getter for the compiler plugin's current memory.
   Fetching, caching, binary metadata, loading UI, and generated asset constants remain inside the plugin.
 - Include `assertionMarkersPlugin`, `createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory })`, and
   `createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })` in the standard set. Use the canvas's browser
@@ -40,10 +40,11 @@
 - Test URL/session startup coordination in `src/startup.integration.test.ts` using the real default plugin composition.
   Keep each startup plugin's own tests independent of the other plugin.
 
-- Configure `resolveInclude` when creating the compiler service. Editor state does not forward a resolver.
-- Supply the compiler service's live `writeMemory` to button, switch, slider, piano, crossfade, and keyboard-memory factories. Core has no memory-write callback.
+- Construct `createCompilerPlugin({ resolveInclude })` before the feature plugins and runtime registry. Always prepend its `plugin`, including for custom feature arrays and `plugins: []`. Editor state forwards neither a compiler callback nor a resolver.
+- The compiler plugin owns scheduling, worker lifetime, artifacts, diagnostics, and statistics. Return the core editor directly; do not wrap disposal to terminate a separate host compiler service.
+- Supply the compiler plugin's live `writeMemory` to button, switch, slider, piano, crossfade, and keyboard-memory factories. Core has no memory-write callback.
 - Supply lazy runtime loaders as registry dependencies. Loading, caching, and disposal belong to the runtime coordinator; state holds IDs/schemas and derived constant source only.
 
-- Return the narrow editor compilation result, including `memoryRef`, without taking an editor argument. Core owns memory-view updates. Derive bytecode size from `codeBuffer.byteLength`; do not restore unused status flags.
+- The compiler plugin publishes `ProgramArtifacts` (`memoryRef` and `codeBuffer`) for core rendering, without taking an editor argument. The full compilation result stays inside the plugin. Core owns memory-view updates. Derive bytecode size from `codeBuffer.byteLength`; do not restore unused status flags.
 
-- Cache memory-write typed-array views per compiler service and refresh only when the backing buffer changes, including shared/unshared memory growth. Repeated control writes must not allocate new views.
+- Cached memory-write views belong to the compiler plugin. Pass its writer directly rather than allocating views in the host.

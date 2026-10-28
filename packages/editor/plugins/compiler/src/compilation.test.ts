@@ -1,19 +1,24 @@
+import { EventEmitter } from 'node:events';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
-import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
-import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
-import { recompileDebounceDelayEditorConfigValidator } from './editorConfig';
-import compilerEffect from './effect';
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import compilerEffect from './compilation';
+import type { CompilerService } from './compiler-service';
+import { compilerEditorConfigSchemaContribution } from './editor-config';
 
-describe('program compiler effect', () => {
+describe('compilation scheduling and publication', () => {
 	let mockState: State;
 	let store: ReturnType<typeof createStateManager<State>>;
-	let mockCompileCode: MockInstance;
+	let mockCompileCode: Mock<CompilerService['compileCode']>;
+	let events: { on: EventEmitter['on']; off: EventEmitter['off']; dispatch: EventEmitter['emit'] };
+	let cleanup: () => void;
 
 	beforeEach(() => {
 		vi.useFakeTimers();
+		cleanup = () => {};
 
-		mockCompileCode = vi.fn().mockRejectedValue({
+		mockCompileCode = vi.fn<CompilerService['compileCode']>().mockRejectedValue({
 			message: 'Memory access is not allowed in pure functions. (19)',
 			line: { lineNumber: 2 },
 			context: {
@@ -23,11 +28,9 @@ describe('program compiler effect', () => {
 			},
 		});
 
-		mockState = createMockState({
-			callbacks: {
-				compileCode: mockCompileCode,
-			},
-		});
+		mockState = createMockState();
+		const emitter = new EventEmitter();
+		events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 
 		const helperBlock = createMockCodeBlock({
 			name: 'helper',
@@ -42,37 +45,41 @@ describe('program compiler effect', () => {
 	});
 
 	afterEach(() => {
+		cleanup?.();
 		store.dispose();
 		vi.clearAllTimers();
 		vi.useRealTimers();
 	});
 
 	async function triggerCompile(delayMs = 500): Promise<void> {
-		compilerEffect(store);
-		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
+		cleanup = compilerEffect({ store, events }, mockCompileCode);
+		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(delayMs);
 	}
 
-	it('subscribes only to the compiler input revision', () => {
+	it('listens for compilation input changes without subscribing to editing state', () => {
 		const subscribeSpy = vi.spyOn(store, 'subscribe');
-		compilerEffect(store);
-		expect(subscribeSpy).toHaveBeenCalledExactlyOnceWith('compilerInputRevision', expect.any(Function));
+		const on = vi.spyOn(events, 'on');
+		cleanup = compilerEffect({ store, events }, mockCompileCode);
+		expect(subscribeSpy).not.toHaveBeenCalled();
+		expect(on).toHaveBeenCalledWith('compilationInputChanged', expect.any(Function));
 	});
 
 	it('debounces multiple revisions and compiles the current project independently of selection', async () => {
-		compilerEffect(store);
-		store.set('compilerInputRevision', 1);
+		cleanup = compilerEffect({ store, events }, mockCompileCode);
+		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(300);
 		const block = mockState.codeBlockRendering.rootCodeBlocks[0];
 		block.code = ['function helper', 'push 2', 'functionEnd'];
-		store.set('compilerInputRevision', 2);
+		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(499);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 		await vi.advanceTimersByTimeAsync(1);
 		expect(mockCompileCode).toHaveBeenCalledTimes(1);
 		expect(mockCompileCode).toHaveBeenCalledWith(
 			expect.objectContaining({ functions: [expect.objectContaining({ code: block.code })] }),
-			expect.anything()
+			expect.anything(),
+			expect.any(Function)
 		);
 	});
 
@@ -90,7 +97,8 @@ describe('program compiler effect', () => {
 
 		expect(mockCompileCode).toHaveBeenCalledWith(
 			expect.anything(),
-			expect.objectContaining({ enableAssertions: !disabled })
+			expect.objectContaining({ enableAssertions: !disabled }),
+			expect.any(Function)
 		);
 	});
 
@@ -113,7 +121,8 @@ describe('program compiler effect', () => {
 
 		expect(mockCompileCode).toHaveBeenCalledWith(
 			expect.anything(),
-			expect.objectContaining({ enableAssertions: true })
+			expect.objectContaining({ enableAssertions: true }),
+			expect.any(Function)
 		);
 	});
 
@@ -133,7 +142,8 @@ describe('program compiler effect', () => {
 
 		expect(mockCompileCode).toHaveBeenCalledWith(
 			expect.anything(),
-			expect.objectContaining({ enableAssertions: enabled })
+			expect.objectContaining({ enableAssertions: enabled }),
+			expect.any(Function)
 		);
 	});
 
@@ -191,6 +201,10 @@ describe('program compiler effect', () => {
 
 	it('stores compilation stats in state.info.compiler from successful compilation results', async () => {
 		mockCompileCode.mockResolvedValue({
+			memoryRef: new WebAssembly.Memory({ initial: 1 }),
+			memoryPlan: { modules: {}, moduleList: [] },
+			memoryDefaultsByModuleId: {},
+			projectMemoryExposuresByGroupPath: {},
 			codeBuffer: new Uint8Array([0x00]),
 			compiledModules: {},
 			compiledFunctions: {},
@@ -213,7 +227,8 @@ describe('program compiler effect', () => {
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,
 				enableAssertions: false,
-			}
+			},
+			expect.any(Function)
 		);
 		expect(mockState.info.compiler).toMatchObject({
 			isCompiling: false,
@@ -232,6 +247,10 @@ describe('program compiler effect', () => {
 	it('includes stack analysis when code line selection is disabled', async () => {
 		mockState.featureFlags.codeLineSelection = false;
 		mockCompileCode.mockResolvedValue({
+			memoryRef: new WebAssembly.Memory({ initial: 1 }),
+			memoryPlan: { modules: {}, moduleList: [] },
+			memoryDefaultsByModuleId: {},
+			projectMemoryExposuresByGroupPath: {},
 			codeBuffer: new Uint8Array([0x00]),
 			compiledModules: {},
 			compiledFunctions: {},
@@ -254,33 +273,34 @@ describe('program compiler effect', () => {
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,
 				enableAssertions: false,
-			}
+			},
+			expect.any(Function)
 		);
 	});
 
-	it('registers the recompile debounce delay editor config validator', () => {
-		compilerEffect(store);
+	it('contributes the compiler config schema', () => {
+		cleanup = compilerEffect({ store, events }, mockCompileCode);
 
-		expect(mockState.editorConfigValidators.recompileDebounceDelay).toBe(recompileDebounceDelayEditorConfigValidator);
+		expect(mockState.editorConfigSchemaContributions.compiler).toBe(compilerEditorConfigSchemaContribution);
 	});
 
 	it('cancels a scheduled compilation when disposed', async () => {
-		const dispose = compilerEffect(store);
-		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
+		const dispose = compilerEffect({ store, events }, mockCompileCode);
+		events.dispatch('compilationInputChanged');
 		dispose();
-		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
+		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(mockCompileCode).not.toHaveBeenCalled();
 	});
 
-	it('clears diagnostics without starting compilation when the callback is absent', async () => {
-		mockState.callbacks.compileCode = undefined;
-		mockState.codeErrors.compilationErrors = [{ lineNumber: 1, codeBlockId: 0, message: 'Previous error' }];
+	it('reports worker startup failures without requiring a structured compiler diagnostic', async () => {
+		mockCompileCode.mockRejectedValue(new Error('Worker unavailable'));
 		await triggerCompile();
-		expect(mockState.codeErrors.compilationErrors).toEqual([]);
+		expect(mockState.codeErrors.compilationErrors).toEqual([
+			expect.objectContaining({ lineNumber: 0, codeBlockId: -1, message: 'Worker unavailable' }),
+		]);
 		expect(mockState.compiler.isCompiling).toBe(false);
-		expect(mockCompileCode).not.toHaveBeenCalled();
 	});
 
 	it('ignores a compilation failure that arrives after disposal', async () => {
@@ -291,8 +311,8 @@ describe('program compiler effect', () => {
 					rejectCompilation = reject;
 				})
 		);
-		const dispose = compilerEffect(store);
-		store.set('compilerInputRevision', 1);
+		const dispose = compilerEffect({ store, events }, mockCompileCode);
+		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(500);
 		expect(mockCompileCode).toHaveBeenCalledTimes(1);
 		dispose();
@@ -302,8 +322,12 @@ describe('program compiler effect', () => {
 		expect(setSpy).not.toHaveBeenCalled();
 	});
 
-	it('passes the includes collection to the compiler callback', async () => {
+	it('passes the includes collection to the compiler worker adapter', async () => {
 		mockCompileCode.mockResolvedValue({
+			memoryRef: new WebAssembly.Memory({ initial: 1 }),
+			memoryPlan: { modules: {}, moduleList: [] },
+			memoryDefaultsByModuleId: {},
+			projectMemoryExposuresByGroupPath: {},
 			codeBuffer: new Uint8Array([0x00]),
 			compiledModules: {},
 			compiledFunctions: {},
@@ -332,14 +356,15 @@ describe('program compiler effect', () => {
 			expect.objectContaining({
 				includes: [expect.objectContaining({ id: 10, code: includesBlock.code })],
 			}),
-			expect.not.objectContaining({ resolveInclude: expect.anything() })
+			expect.not.objectContaining({ resolveInclude: expect.anything() }),
+			expect.any(Function)
 		);
 	});
 
 	it('uses the configured recompile debounce delay', async () => {
 		mockState.editorConfig.recompileDebounceDelay = 120;
-		compilerEffect(store);
-		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
+		cleanup = compilerEffect({ store, events }, mockCompileCode);
+		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(119);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 
@@ -348,8 +373,8 @@ describe('program compiler effect', () => {
 	});
 
 	it('uses the default recompile debounce delay when the config value is absent', async () => {
-		compilerEffect(store);
-		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
+		cleanup = compilerEffect({ store, events }, mockCompileCode);
+		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(499);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 

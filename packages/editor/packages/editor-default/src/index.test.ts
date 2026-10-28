@@ -46,8 +46,13 @@ vi.mock('@8f4e/editor-plugin-project-files', () => ({
 vi.mock('@8f4e/editor-plugin-wasm-export', () => ({
 	createWasmExportPlugin: vi.fn(() => ({ id: 'wasm-export', setup: () => () => {} })),
 }));
-vi.mock('./compiler-callback', () => ({
-	createCompilerService: () => ({ dispose: vi.fn(), getCodeBuffer, getMemory, writeMemory }),
+vi.mock('@8f4e/editor-plugin-compiler', () => ({
+	createCompilerPlugin: vi.fn(() => ({
+		plugin: { id: 'compiler', setup: () => () => {} },
+		getCodeBuffer,
+		getMemory,
+		writeMemory,
+	})),
 }));
 vi.mock('./runtime-registry', () => ({ createRuntimeRegistry: () => ({}) }));
 
@@ -71,6 +76,7 @@ describe('default editor plugins', () => {
 				.mock.calls.at(-1)?.[1]
 				.plugins?.map(plugin => plugin.id)
 		).toEqual([
+			'compiler',
 			'project-url-loader',
 			'session-persistence',
 			'example-modules',
@@ -183,14 +189,17 @@ describe('default editor plugins', () => {
 		editor.dispose();
 	});
 
-	it('lets hosts replace the plugin set or omit plugins', async () => {
+	it('keeps the compiler first when hosts replace or omit feature plugins', async () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
 		const plugins = [{ id: 'custom', setup: vi.fn(() => () => {}) }];
 		const editor = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage, plugins });
-		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toBe(plugins);
+		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toEqual([
+			expect.objectContaining({ id: 'compiler' }),
+			...plugins,
+		]);
 		editor.dispose();
 		const withoutPlugins = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage, plugins: [] });
-		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toEqual([]);
+		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toEqual([expect.objectContaining({ id: 'compiler' })]);
 		expect(createSessionPersistencePlugin).not.toHaveBeenCalled();
 		expect(createProjectUrlLoaderPlugin).not.toHaveBeenCalled();
 		expect(createExampleModulesPlugin).not.toHaveBeenCalled();

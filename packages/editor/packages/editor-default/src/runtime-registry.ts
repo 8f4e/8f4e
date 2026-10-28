@@ -4,9 +4,12 @@ import type {
 	RuntimeRegistry,
 	RuntimeRegistryEntry,
 } from '@8f4e/editor-core';
-import type { CompilerService } from './compiler-callback';
+import type { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 
-type CompilerArtifacts = Pick<CompilerService, 'getCodeBuffer' | 'getMemory' | 'getAssertionSites'>;
+type CompilerArtifacts = Pick<
+	ReturnType<typeof createCompilerPlugin>,
+	'getCodeBuffer' | 'getMemory' | 'getAssertionSites'
+>;
 
 /** Advertises a schema before loading; the runtime coordinator owns loading and publication. */
 function createLazyRuntimeEntry(

@@ -46,7 +46,6 @@ entryEnd`);
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
 			initialProject: project,
-			callbacks: {},
 			plugins: [
 				{
 					...plugin,

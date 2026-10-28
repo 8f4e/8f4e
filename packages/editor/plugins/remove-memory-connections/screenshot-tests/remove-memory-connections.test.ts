@@ -26,7 +26,6 @@ entryEnd`;
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
 			initialProject: parseProjectSource(source),
-			callbacks: {},
 			plugins: [removeMemoryConnectionsPlugin],
 		});
 		const state = editor.state;

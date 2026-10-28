@@ -42,6 +42,7 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 			onInitialProjectLoadError,
 			showOpenMenuItem: false,
 			renderFrame: () => {},
+			writeMemory: () => {},
 			getMemory: () => null,
 			getCodeBuffer: () => new Uint8Array(),
 		});

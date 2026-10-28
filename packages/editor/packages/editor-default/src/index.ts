@@ -4,6 +4,7 @@ import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
 import { barsPlugin } from '@8f4e/editor-plugin-bars';
 import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { createButtonPlugin } from '@8f4e/editor-plugin-button';
+import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createCrossfadePlugin } from '@8f4e/editor-plugin-crossfade';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
@@ -25,7 +26,6 @@ import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
 import { createWatchPlugin } from '@8f4e/editor-plugin-watch';
 import { wavePlugin } from '@8f4e/editor-plugin-wave';
-import { createCompilerService } from './compiler-callback';
 import { createRuntimeRegistry } from './runtime-registry';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
@@ -96,7 +96,7 @@ export function createDefaultEditorPlugins(options: {
 }
 
 export interface DefaultEditorMountOptions {
-	/** Replaces the default plugin set. Pass an empty array to omit all plugins. */
+	/** Replaces the default feature plugins. The compiler is always installed first. */
 	plugins?: EditorOptions['plugins'];
 	/** Borrow this context when its sample rate matches the project. The host owns its lifetime. */
 	sharedAudioContext?: AudioContext;
@@ -131,12 +131,12 @@ export async function mountDefaultEditor(
 		storageNamespace = DEFAULT_STORAGE_NAMESPACE,
 	}: DefaultEditorMountOptions = {}
 ): Promise<DefaultEditorInstance> {
-	const compilerService = createCompilerService({ resolveInclude: resolveStdlibInclude });
+	const compiler = createCompilerPlugin({ resolveInclude: resolveStdlibInclude });
 	let editor: Editor;
-	try {
-		editor = await initEditor(canvas, {
-			plugins:
-				plugins ??
+	editor = await initEditor(canvas, {
+		plugins: [
+			compiler.plugin,
+			...(plugins ??
 				createDefaultEditorPlugins({
 					canvas,
 					storage,
@@ -146,32 +146,17 @@ export async function mountDefaultEditor(
 					onInitialProjectLoadError,
 					renderFrame: () => editor.renderFrame(),
 					showOpenMenuItem,
-					getMemory: compilerService.getMemory,
-					writeMemory: compilerService.writeMemory,
-					getCodeBuffer: compilerService.getCodeBuffer,
-				}),
-			captureWheel,
-			featureFlags,
-			initialEditorMode,
-			runtimeRegistry: createRuntimeRegistry(compilerService, sharedAudioContext),
-			callbacks: {
-				compileCode: compilerService.compileCode,
-			},
-		});
-	} catch (error) {
-		compilerService.dispose();
-		throw error;
-	}
+					getMemory: compiler.getMemory,
+					writeMemory: compiler.writeMemory,
+					getCodeBuffer: compiler.getCodeBuffer,
+				})),
+		],
+		captureWheel,
+		featureFlags,
+		initialEditorMode,
+		runtimeRegistry: createRuntimeRegistry(compiler, sharedAudioContext),
+	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 
-	return {
-		...editor,
-		dispose: () => {
-			try {
-				editor.dispose();
-			} finally {
-				compilerService.dispose();
-			}
-		},
-	};
+	return editor;
 }

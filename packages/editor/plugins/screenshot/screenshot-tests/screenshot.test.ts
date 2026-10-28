@@ -38,7 +38,6 @@ noteEnd`);
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
 			initialProject: project,
-			callbacks: {},
 			plugins: [createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })],
 		});
 		await vi.waitFor(() =>
