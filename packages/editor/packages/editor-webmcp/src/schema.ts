@@ -18,15 +18,11 @@ const blockType = {
 	enum: ['module', 'function', 'constants', 'prototype', 'includes', 'note', 'unknown', 'group', 'project'],
 };
 export const blockSchema = object({ type: blockType, name: { type: 'string' } }, ['type', 'name']);
-export const updateBlockSchema = object(
-	{ type: blockType, name: { type: 'string' }, code, expectedRevision: { type: 'string' } },
-	['type', 'name', 'code', 'expectedRevision']
-);
+export const updateBlockSchema = object({ type: blockType, name: { type: 'string' }, code }, ['type', 'name', 'code']);
 export const patchBlockSchema = object(
 	{
 		type: blockType,
 		name: { type: 'string' },
-		expectedRevision: { type: 'string' },
 		oldText: {
 			type: 'string',
 			minLength: 1,
@@ -38,15 +34,10 @@ export const patchBlockSchema = object(
 			description: 'Literal replacement text. May contain multiple lines or be empty to remove the match.',
 		},
 	},
-	['type', 'name', 'expectedRevision', 'oldText', 'newText']
+	['type', 'name', 'oldText', 'newText']
 );
-export const revisionSchema = object({ expectedRevision: { type: 'string' } }, ['expectedRevision']);
 export const editsSchema = object(
 	{
-		expectedRevision: {
-			type: 'string',
-			description: 'Revision from get_project, get_project_metadata, or the last successful write.',
-		},
 		edits: {
 			type: 'array',
 			minItems: 1,
@@ -68,5 +59,5 @@ export const editsSchema = object(
 			},
 		},
 	},
-	['expectedRevision', 'edits']
+	['edits']
 );

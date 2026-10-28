@@ -49,27 +49,56 @@ function setup() {
 		canUndo: false,
 		canRedo: false,
 	};
+	let version = 1;
+	const advance = () => {
+		version += 7; // The bridge must use the returned token rather than assuming a single increment.
+		snapshot.revision = `editor-one:${version}`;
+		return { revision: snapshot.revision, createdBlockIds: ['private-created-handle'] };
+	};
 	const editing: EditorEditingHandle = {
 		getSnapshot: vi.fn(() => snapshot),
-		applyEdits: vi.fn(() => ({ revision: 'editor-one:2', createdBlockIds: [] })),
-		undo: vi.fn(() => ({ revision: 'editor-one:3', createdBlockIds: [] })),
-		redo: vi.fn(() => ({ revision: 'editor-one:4', createdBlockIds: [] })),
+		applyEdits: vi.fn(advance),
+		undo: vi.fn(advance),
+		redo: vi.fn(advance),
 	};
 	const navigation = { openGroup: vi.fn(), goToParentGroup: vi.fn(), goToRoot: vi.fn() };
 	return { tools, registerTool, document, editing, navigation, snapshot };
 }
 
+async function connect(
+	view: ReturnType<typeof setup>,
+	options: { readSource?: boolean; getDiagnostics?: () => unknown } = {}
+) {
+	const bridge = createEditorWebMcp({
+		document: view.document,
+		editor: { editing: view.editing, navigation: view.navigation },
+		getDiagnostics: options.getDiagnostics,
+	});
+	await bridge.ready;
+	const call = (name: string, args: object = {}) => view.tools.get(name)!.execute(args);
+	if (options.readSource !== false) await call('get_project');
+	return { bridge, call };
+}
+
+const update = { type: 'module', name: 'counter', code: 'module counter\nint value 3\nmoduleEnd' };
+const patch = { type: 'module', name: 'counter', oldText: 'int value 0', newText: 'int value 3' };
+const batch = { edits: [{ operation: 'insert', code: 'note colors\nnoteEnd' }] };
+const writes = [
+	['update_block', update],
+	['patch_block', patch],
+	['apply_edits', batch],
+	['undo', {}],
+	['redo', {}],
+] as const;
+
 describe('single-editor WebMCP bridge', () => {
-	it('returns project source with its matching revision and keeps the editor snapshot complete', async () => {
+	it('returns source strings and leaves revisions out of tool inputs', async () => {
 		const view = setup();
 		const before = structuredClone(view.snapshot);
-		const bridge = createEditorWebMcp({
-			document: view.document,
-			editor: { editing: view.editing, navigation: view.navigation },
+		const { bridge, call } = await connect(view, {
+			readSource: false,
 			getDiagnostics: () => ({ status: 'pending', completedRevision: null }),
 		});
-		await bridge.ready;
-		const call = (name: string, args = {}) => view.tools.get(name)!.execute(args);
 		expect([...view.tools.keys()]).toEqual([
 			'get_project',
 			'get_project_metadata',
@@ -85,10 +114,9 @@ describe('single-editor WebMCP bridge', () => {
 			'redo',
 			'get_diagnostics',
 		]);
-		expect(await call('get_project')).toEqual({
-			code: '8f4e/v1\n\nentry main\n\n' + view.snapshot.blocks[0].block.code.join('\n') + '\nentryEnd',
-			revision: view.snapshot.revision,
-		});
+		expect(await call('get_project')).toBe(
+			'8f4e/v1\n\nentry main\n\n' + view.snapshot.blocks[0].block.code.join('\n') + '\nentryEnd'
+		);
 		expect(await call('get_block', { type: 'module', name: 'counter' })).toBe(
 			view.snapshot.blocks[0].block.code.join('\n')
 		);
@@ -108,41 +136,130 @@ describe('single-editor WebMCP bridge', () => {
 			compilerInputRevision: 1,
 			diagnostics: { status: 'pending', completedRevision: null },
 		});
-		for (const tool of view.tools.values()) {
-			expect(JSON.stringify(tool.inputSchema)).not.toMatch(/blockId|createdBlockIds/);
-		}
+		for (const tool of view.tools.values())
+			expect(JSON.stringify(tool.inputSchema)).not.toMatch(/blockId|createdBlockIds|expectedRevision/);
 		expect(view.snapshot).toEqual(before);
 		bridge.dispose();
 	});
 
-	it('resolves all batch targets by type and name and returns no editor identifiers', async () => {
+	it('requires a successful source fetch before every kind of initial write', async () => {
 		const view = setup();
-		vi.mocked(view.editing.applyEdits).mockReturnValue({
-			revision: 'editor-one:2',
-			createdBlockIds: ['private-created-handle'],
+		const { bridge, call } = await connect(view, { readSource: false, getDiagnostics: () => ({ status: 'ready' }) });
+		await call('get_project_metadata');
+		await call('get_block_metadata', { type: 'module', name: 'counter' });
+		await call('get_diagnostics');
+		await call('go_to_root');
+		await call('go_to_parent');
+		expect(await call('get_block', { type: 'module', name: 'missing' })).toMatchObject({
+			error: { code: 'block_not_found' },
 		});
-		const bridge = createEditorWebMcp({
-			document: view.document,
-			editor: { editing: view.editing, navigation: view.navigation },
+		expect(await call('get_project', { name: 'root' })).toMatchObject({ error: { code: 'invalid_request' } });
+		for (const [name, args] of writes)
+			expect(await call(name, args)).toMatchObject({ error: { code: 'source_required' } });
+		expect(view.editing.applyEdits).not.toHaveBeenCalled();
+		expect(view.editing.undo).not.toHaveBeenCalled();
+		expect(view.editing.redo).not.toHaveBeenCalled();
+		await call('get_block', { type: 'module', name: 'counter' });
+		expect(await call('update_block', update)).toBe('Block updated.');
+		bridge.dispose();
+	});
+
+	it('advances its baseline after consecutive edits and history actions using exact result tokens', async () => {
+		const view = setup();
+		const { bridge, call } = await connect(view);
+		for (const [name, args] of writes) expect(typeof (await call(name, args))).toBe('string');
+		expect(vi.mocked(view.editing.applyEdits).mock.calls.map(([request]) => request.expectedRevision)).toEqual([
+			'editor-one:1',
+			'editor-one:8',
+			'editor-one:15',
+		]);
+		expect(view.editing.undo).toHaveBeenCalledWith({ expectedRevision: 'editor-one:22' });
+		expect(view.editing.redo).toHaveBeenCalledWith({ expectedRevision: 'editor-one:29' });
+		bridge.dispose();
+	});
+
+	it.each(['get_project', 'get_block'])(
+		'requires a source re-fetch after external changes, recovering through %s',
+		async sourceTool => {
+			const view = setup();
+			const { bridge, call } = await connect(view, { getDiagnostics: () => ({ status: 'ready' }) });
+			await call('update_block', update);
+			view.snapshot.revision = 'external-editor:80';
+			view.snapshot.blocks[0].block.code[2] = 'int value 9';
+			const changedSource = structuredClone(view.snapshot);
+			for (const [name, args] of writes)
+				expect(await call(name, args)).toMatchObject({
+					error: { code: 'stale_revision', message: expect.stringContaining('Re-fetch') },
+				});
+			await call('get_project_metadata');
+			await call('get_block_metadata', { type: 'module', name: 'counter' });
+			await call('get_diagnostics');
+			await call('go_to_root');
+			await call('go_to_parent');
+			await call('get_block', { type: 'module', name: 'missing' });
+			await call('get_project', { name: 'root' });
+			expect(await call('update_block', update)).toMatchObject({ error: { code: 'stale_revision' } });
+			expect(view.editing.applyEdits).toHaveBeenCalledTimes(1);
+			expect(view.editing.undo).not.toHaveBeenCalled();
+			expect(view.editing.redo).not.toHaveBeenCalled();
+			expect(view.snapshot).toEqual(changedSource);
+			expect(await call(sourceTool, sourceTool === 'get_block' ? { type: 'module', name: 'counter' } : {})).toContain(
+				'int value 9'
+			);
+			expect(await call('update_block', update)).toBe('Block updated.');
+			expect(view.editing.applyEdits).toHaveBeenLastCalledWith({
+				expectedRevision: 'external-editor:80',
+				edits: [{ type: 'update', blockId: 'counter-handle', code: update.code.split('\n') }],
+			});
+			bridge.dispose();
+		}
+	);
+
+	it('does not advance its baseline on failed writes and preserves the core revision guard', async () => {
+		const view = setup();
+		const { bridge, call } = await connect(view);
+		vi.mocked(view.editing.applyEdits).mockImplementationOnce(() => {
+			throw Object.assign(new Error('View mode'), { code: 'read_only' });
 		});
-		await bridge.ready;
-		const result = await view.tools.get('apply_edits')!.execute({
-			expectedRevision: view.snapshot.revision,
-			edits: [
-				{ operation: 'insert', code: 'note colors\n\nhello\r\nnoteEnd\n' },
-				{
-					operation: 'update',
-					type: 'module',
-					name: 'counter',
-					code: 'module renamed\n; @pos -20 30\nmoduleEnd',
-					entry: 'secondary',
-				},
-				{ operation: 'delete', type: 'module', name: 'counter' },
-			],
+		expect(await call('update_block', update)).toMatchObject({ error: { code: 'read_only' } });
+		expect(await call('update_block', update)).toBe('Block updated.');
+		vi.mocked(view.editing.applyEdits).mockImplementationOnce(() => {
+			view.snapshot.revision = 'external-editor:99';
+			throw Object.assign(new Error('Changed during command'), {
+				code: 'stale_revision',
+				revision: view.snapshot.revision,
+			});
 		});
-		expect(result).toEqual({ revision: 'editor-one:2' });
+		expect(await call('update_block', update)).toEqual({
+			error: { code: 'stale_revision', message: expect.stringContaining('Re-fetch') },
+		});
+		expect(await call('update_block', update)).toMatchObject({ error: { code: 'stale_revision' } });
+		expect(view.editing.applyEdits).toHaveBeenCalledTimes(3);
+		await call('get_project');
+		expect(await call('update_block', update)).toBe('Block updated.');
+		bridge.dispose();
+	});
+
+	it('resolves batch targets by type and name and returns a simple confirmation', async () => {
+		const view = setup();
+		const { bridge, call } = await connect(view);
+		expect(
+			await call('apply_edits', {
+				edits: [
+					{ operation: 'insert', code: 'note colors\n\nhello\r\nnoteEnd\n' },
+					{
+						operation: 'update',
+						type: 'module',
+						name: 'counter',
+						code: 'module renamed\n; @pos -20 30\nmoduleEnd',
+						entry: 'secondary',
+					},
+					{ operation: 'delete', type: 'module', name: 'counter' },
+				],
+			})
+		).toBe('Edits applied.');
 		expect(view.editing.applyEdits).toHaveBeenCalledWith({
-			expectedRevision: view.snapshot.revision,
+			expectedRevision: 'editor-one:1',
 			edits: [
 				{ type: 'insert', projectPath: '', code: ['note colors', '', 'hello', 'noteEnd', ''] },
 				{
@@ -153,20 +270,6 @@ describe('single-editor WebMCP bridge', () => {
 				},
 				{ type: 'delete', blockId: 'counter-handle' },
 			],
-		});
-		expect(
-			await view.tools.get('update_block')!.execute({
-				type: 'module',
-				name: 'counter',
-				expectedRevision: view.snapshot.revision,
-				code: 'module counter\nmoduleEnd',
-			})
-		).toEqual({ revision: 'editor-one:2' });
-		expect(await view.tools.get('undo')!.execute({ expectedRevision: view.snapshot.revision })).toEqual({
-			revision: 'editor-one:3',
-		});
-		expect(await view.tools.get('redo')!.execute({ expectedRevision: view.snapshot.revision })).toEqual({
-			revision: 'editor-one:4',
 		});
 		bridge.dispose();
 	});
@@ -185,58 +288,36 @@ describe('single-editor WebMCP bridge', () => {
 		{ oldText: 'int value 0\n', newText: '', expected: ['module counter', '; @pos 10 20', 'moduleEnd'] },
 	])('patches one literal source span and preserves the rest: $oldText', async ({ oldText, newText, expected }) => {
 		const view = setup();
-		const before = structuredClone(view.snapshot);
-		const bridge = createEditorWebMcp({
-			document: view.document,
-			editor: { editing: view.editing, navigation: view.navigation },
-		});
-		await bridge.ready;
-		expect(
-			await view.tools
-				.get('patch_block')!
-				.execute({ type: 'module', name: 'counter', expectedRevision: view.snapshot.revision, oldText, newText })
-		).toEqual({ revision: 'editor-one:2' });
+		const before = structuredClone(view.snapshot.blocks);
+		const { bridge, call } = await connect(view);
+		expect(await call('patch_block', { type: 'module', name: 'counter', oldText, newText })).toBe('Block patched.');
 		expect(view.editing.applyEdits).toHaveBeenCalledExactlyOnceWith({
-			expectedRevision: view.snapshot.revision,
+			expectedRevision: 'editor-one:1',
 			edits: [{ type: 'update', blockId: 'counter-handle', code: expected }],
 		});
-		expect(view.snapshot).toEqual(before);
+		expect(view.snapshot.blocks).toEqual(before);
 		expect(view.tools.get('patch_block')!.annotations.readOnlyHint).toBe(false);
 		bridge.dispose();
 	});
 
-	it('rejects invalid, missing, ambiguous, and stale patches without applying edits', async () => {
+	it('rejects invalid, missing, and ambiguous patches without applying edits', async () => {
 		const view = setup();
-		const bridge = createEditorWebMcp({
-			document: view.document,
-			editor: { editing: view.editing, navigation: view.navigation },
-		});
-		await bridge.ready;
-		const patch = (args: object) =>
-			view.tools.get('patch_block')!.execute({
-				type: 'module',
-				name: 'counter',
-				expectedRevision: view.snapshot.revision,
-				oldText: 'int value 0',
-				newText: 'int value 3',
-				...args,
-			});
+		const { bridge, call } = await connect(view);
 		for (const args of [
 			{ oldText: '' },
 			{ oldText: null },
 			{ newText: null },
 			{ blockId: 'counter-handle' },
 			{ projectPath: '' },
-		]) {
-			expect(await patch(args)).toMatchObject({ error: { code: 'invalid_request' } });
-		}
-		expect(await patch({ oldText: 'absent source' })).toMatchObject({
-			error: { code: 'match_not_found', revision: view.snapshot.revision },
+			{ expectedRevision: 'old' },
+		])
+			expect(await call('patch_block', { ...patch, ...args })).toMatchObject({ error: { code: 'invalid_request' } });
+		expect(await call('patch_block', { ...patch, oldText: 'absent source' })).toMatchObject({
+			error: { code: 'match_not_found' },
 		});
 		view.snapshot.blocks[0].block.code = ['module counter', '; aaa', 'moduleEnd'];
-		expect(await patch({ oldText: 'aa' })).toMatchObject({ error: { code: 'ambiguous_match' } });
-		expect(await patch({ oldText: 'module' })).toMatchObject({ error: { code: 'ambiguous_match' } });
-		expect(await patch({ expectedRevision: 'old' })).toMatchObject({ error: { code: 'stale_revision' } });
+		for (const oldText of ['aa', 'module'])
+			expect(await call('patch_block', { ...patch, oldText })).toMatchObject({ error: { code: 'ambiguous_match' } });
 		expect(view.editing.applyEdits).not.toHaveBeenCalled();
 		bridge.dispose();
 	});
@@ -284,76 +365,42 @@ describe('single-editor WebMCP bridge', () => {
 		view.navigation.goToRoot.mockImplementation(() => {
 			view.snapshot.projectPath = '';
 		});
-		const bridge = createEditorWebMcp({
-			document: view.document,
-			editor: { editing: view.editing, navigation: view.navigation },
-		});
-		await bridge.ready;
-		const call = (name: string, args = {}) => view.tools.get(name)!.execute(args);
-		expect(await call('expand_group', { name: 'audio' })).toEqual({
-			projectPath: 'audio',
-			revision: view.snapshot.revision,
-		});
+		const { bridge, call } = await connect(view);
+		await call('expand_group', { name: 'audio' });
 		expect(view.navigation.openGroup).toHaveBeenCalledWith('audio');
-		expect(await call('get_project')).toMatchObject({
-			code: expect.stringContaining('int value 9'),
-			revision: view.snapshot.revision,
-		});
-		expect(await call('get_project')).not.toMatchObject({ code: expect.stringContaining('rootOnly') });
-		expect(await call('get_project', { name: 'audio' })).toMatchObject({ error: { code: 'invalid_request' } });
+		expect(await call('get_project')).toContain('int value 9');
+		expect(await call('get_project')).not.toContain('rootOnly');
 		expect(await call('get_block', { type: 'module', name: 'counter' })).toBe(child.code.join('\n'));
 		expect(await call('get_block', { type: 'note', name: 'counter' })).toBe(note.code.join('\n'));
-		await call('update_block', {
-			type: 'module',
-			name: 'counter',
-			expectedRevision: view.snapshot.revision,
-			code: 'module counter\nmoduleEnd',
-		});
+		await call('patch_block', { ...patch, oldText: 'int value 9' });
 		expect(view.editing.applyEdits).toHaveBeenLastCalledWith({
-			expectedRevision: view.snapshot.revision,
-			edits: [{ type: 'update', blockId: 'child', code: ['module counter', 'moduleEnd'] }],
-		});
-		await call('patch_block', {
-			type: 'module',
-			name: 'counter',
-			expectedRevision: view.snapshot.revision,
-			oldText: 'int value 9',
-			newText: 'int value 10',
-		});
-		expect(view.editing.applyEdits).toHaveBeenLastCalledWith({
-			expectedRevision: view.snapshot.revision,
-			edits: [{ type: 'update', blockId: 'child', code: ['module counter', 'int value 10', 'moduleEnd'] }],
+			expectedRevision: 'editor-one:1',
+			edits: [{ type: 'update', blockId: 'child', code: ['module counter', 'int value 3', 'moduleEnd'] }],
 		});
 		await call('apply_edits', {
-			expectedRevision: view.snapshot.revision,
 			edits: [
 				{ operation: 'delete', type: 'note', name: 'counter' },
 				{ operation: 'insert', code: 'note colors\nnoteEnd' },
 			],
 		});
 		expect(view.editing.applyEdits).toHaveBeenLastCalledWith({
-			expectedRevision: view.snapshot.revision,
+			expectedRevision: 'editor-one:8',
 			edits: [
 				{ type: 'delete', blockId: 'note' },
 				{ type: 'insert', projectPath: 'audio', code: ['note colors', 'noteEnd'] },
 			],
 		});
-		for (const tool of ['get_block', 'get_block_metadata', 'update_block', 'patch_block']) {
-			expect(
-				await call(tool, {
-					type: 'module',
-					name: 'rootOnly',
-					...(tool === 'update_block' ? { code: '', expectedRevision: view.snapshot.revision } : {}),
-					...(tool === 'patch_block'
-						? { oldText: 'int value 9', newText: 'int value 10', expectedRevision: view.snapshot.revision }
-						: {}),
-				})
-			).toMatchObject({ error: { code: 'block_not_found' } });
-		}
+		const argsFor = (tool: string, name: string) => ({
+			type: 'module',
+			name,
+			...(tool === 'update_block' ? { code: update.code } : {}),
+			...(tool === 'patch_block' ? { oldText: 'int value 9', newText: 'int value 10' } : {}),
+		});
+		for (const tool of ['get_block', 'get_block_metadata', 'update_block', 'patch_block'])
+			expect(await call(tool, argsFor(tool, 'rootOnly'))).toMatchObject({ error: { code: 'block_not_found' } });
 		vi.mocked(view.editing.applyEdits).mockClear();
 		expect(
 			await call('apply_edits', {
-				expectedRevision: view.snapshot.revision,
 				edits: [
 					{ operation: 'update', type: 'module', name: 'counter', code: child.code.join('\n') },
 					{ operation: 'delete', type: 'module', name: 'rootOnly' },
@@ -362,109 +409,71 @@ describe('single-editor WebMCP bridge', () => {
 		).toMatchObject({ error: { code: 'block_not_found' } });
 		expect(view.editing.applyEdits).not.toHaveBeenCalled();
 		view.snapshot.blocks.push({ blockId: 'duplicate', block: structuredClone(child) });
-		for (const tool of ['get_block', 'get_block_metadata', 'update_block', 'patch_block']) {
-			expect(
-				await call(tool, {
-					type: 'module',
-					name: 'counter',
-					...(tool === 'update_block' ? { code: '', expectedRevision: view.snapshot.revision } : {}),
-					...(tool === 'patch_block'
-						? { oldText: 'int value 9', newText: 'int value 10', expectedRevision: view.snapshot.revision }
-						: {}),
-				})
-			).toMatchObject({ error: { code: 'ambiguous_block' } });
-		}
+		for (const tool of ['get_block', 'get_block_metadata', 'update_block', 'patch_block'])
+			expect(await call(tool, argsFor(tool, 'counter'))).toMatchObject({ error: { code: 'ambiguous_block' } });
 		expect(
-			await call('apply_edits', {
-				expectedRevision: view.snapshot.revision,
-				edits: [{ operation: 'delete', type: 'module', name: 'counter' }],
-			})
+			await call('apply_edits', { edits: [{ operation: 'delete', type: 'module', name: 'counter' }] })
 		).toMatchObject({ error: { code: 'ambiguous_block' } });
-		expect(
-			await call('update_block', { type: 'module', name: 'counter', expectedRevision: 'old', code: '' })
-		).toMatchObject({ error: { code: 'stale_revision' } });
-		expect(await call('go_to_parent')).toMatchObject({ projectPath: '' });
-		view.snapshot.projectPath = 'audio';
-		expect(await call('go_to_root')).toMatchObject({ projectPath: '' });
 		bridge.dispose();
 	});
 
-	it('rejects identifiers, separate coordinates, and invalid edit shapes before changing anything', async () => {
+	it('rejects identifiers, coordinates, routing arguments, and caller-supplied revisions', async () => {
 		const view = setup();
-		const bridge = createEditorWebMcp({
-			document: view.document,
-			editor: { editing: view.editing, navigation: view.navigation },
-		});
-		await bridge.ready;
-		const code = 'module counter\n; @pos -20 30\nmoduleEnd';
+		const { bridge, call } = await connect(view);
+		for (const [name, args] of writes)
+			expect(await call(name, { ...args, expectedRevision: view.snapshot.revision })).toMatchObject({
+				error: { code: 'invalid_request' },
+			});
 		for (const edits of [
 			[],
-			[{ operation: 'insert', code, x: 1 }],
-			[{ operation: 'insert', code, y: 2 }],
-			[{ operation: 'insert', code, projectPath: '' }],
+			[{ operation: 'insert', code: update.code, x: 1 }],
+			[{ operation: 'insert', code: update.code, y: 2 }],
+			[{ operation: 'insert', code: update.code, projectPath: '' }],
 			[{ operation: 'update', type: 'module', name: 'counter', code: ['old array format'] }],
-			[{ operation: 'update', type: 'module', name: 'counter', code, blockId: 'counter-handle' }],
 			[{ operation: 'delete', blockId: 'counter-handle' }],
 			[{ operation: 'move', type: 'module', name: 'counter', x: 1, y: 2 }],
-		]) {
-			expect(
-				await view.tools.get('apply_edits')!.execute({ expectedRevision: view.snapshot.revision, edits })
-			).toMatchObject({ error: { code: 'invalid_request' } });
-		}
-		expect(await view.tools.get('get_block_metadata')!.execute({ blockId: 'counter-handle' })).toMatchObject({
+		])
+			expect(await call('apply_edits', { edits })).toMatchObject({ error: { code: 'invalid_request' } });
+		expect(await call('get_block_metadata', { blockId: 'counter-handle' })).toMatchObject({
 			error: { code: 'invalid_request' },
 		});
+		expect(await call('undo', { editorId: 'other' })).toMatchObject({ error: { code: 'invalid_request' } });
 		expect(view.editing.applyEdits).not.toHaveBeenCalled();
 		bridge.dispose();
 	});
 
-	it('rejects a second bridge and prevents retained tools from reaching a replacement editor', async () => {
+	it('does not share its source baseline with a replacement bridge or retained tools', async () => {
 		const view = setup();
-		const first = createEditorWebMcp({
-			document: view.document,
-			editor: { editing: view.editing, navigation: view.navigation },
-		});
-		await first.ready;
+		const first = await connect(view);
 		const retained = view.tools.get('apply_edits')!;
 		expect(() =>
 			createEditorWebMcp({ document: view.document, editor: { editing: view.editing, navigation: view.navigation } })
 		).toThrow('Only one');
-		first.dispose();
-		first.dispose();
-		const second = createEditorWebMcp({
-			document: view.document,
-			editor: { editing: view.editing, navigation: view.navigation },
-		});
-		await second.ready;
-		expect(await retained.execute({ expectedRevision: 'editor-one:1', edits: [] })).toMatchObject({
-			error: { code: 'disposed' },
-		});
-		expect(view.editing.applyEdits).not.toHaveBeenCalled();
-		expect(view.tools.size).toBe(12);
-		second.dispose();
+		first.bridge.dispose();
+		first.bridge.dispose();
+		const second = await connect(view, { readSource: false });
+		expect(await retained.execute(batch)).toMatchObject({ error: { code: 'disposed' } });
+		await second.call('get_project_metadata');
+		expect(await second.call('apply_edits', batch)).toMatchObject({ error: { code: 'source_required' } });
+		await second.call('get_project');
+		expect(await second.call('apply_edits', batch)).toBe('Edits applied.');
+		second.bridge.dispose();
 	});
 
-	it('returns structured errors and rejects cancelled calls or editor routing arguments', async () => {
+	it('rejects cancelled source reads and writes without refreshing its baseline', async () => {
 		const view = setup();
-		const bridge = createEditorWebMcp({
-			document: view.document,
-			editor: { editing: view.editing, navigation: view.navigation },
-		});
-		await bridge.ready;
+		const { bridge, call } = await connect(view, { readSource: false });
 		const controller = new AbortController();
 		controller.abort();
-		expect(
-			await view.tools.get('undo')!.execute({ expectedRevision: 'editor-one:1' }, { signal: controller.signal })
-		).toMatchObject({ error: { code: 'cancelled' } });
-		expect(
-			await view.tools.get('undo')!.execute({ expectedRevision: 'editor-one:1', editorId: 'other' })
-		).toMatchObject({ error: { code: 'invalid_request' } });
-		vi.mocked(view.editing.undo).mockImplementation(() => {
-			throw Object.assign(new Error('Outdated project'), { code: 'stale_revision', revision: 'editor-two:1' });
+		expect(await view.tools.get('get_project')!.execute({}, { signal: controller.signal })).toMatchObject({
+			error: { code: 'cancelled' },
 		});
-		expect(await view.tools.get('undo')!.execute({ expectedRevision: 'editor-one:1' })).toEqual({
-			error: { code: 'stale_revision', message: 'Outdated project', revision: 'editor-two:1' },
+		expect(await call('undo')).toMatchObject({ error: { code: 'source_required' } });
+		await call('get_project');
+		expect(await view.tools.get('undo')!.execute({}, { signal: controller.signal })).toMatchObject({
+			error: { code: 'cancelled' },
 		});
+		expect(view.editing.undo).not.toHaveBeenCalled();
 		bridge.dispose();
 	});
 

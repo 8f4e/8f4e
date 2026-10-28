@@ -1,19 +1,6 @@
 import type { Editor, EditorEdit, EditorProjectSnapshot } from '@8f4e/editor-core';
-import {
-	blockSchema,
-	editsSchema,
-	emptySchema,
-	groupSchema,
-	patchBlockSchema,
-	revisionSchema,
-	updateBlockSchema,
-} from './schema.js';
+import { blockSchema, editsSchema, emptySchema, groupSchema, patchBlockSchema, updateBlockSchema } from './schema.js';
 import { createSourceView } from './source-view.js';
-
-export interface WebMcpProjectSource {
-	code: string;
-	revision: string;
-}
 
 export type WebMcpProjectMetadata = Pick<
 	EditorProjectSnapshot,
@@ -42,6 +29,8 @@ export interface EditorWebMcpBridge {
 }
 
 const activeDocuments = new WeakSet<Document>();
+const sourceChangedMessage =
+	'The project changed since your last source fetch or successful edit. Re-fetch with get_project or get_block before writing.';
 
 export function createEditorWebMcp({
 	document,
@@ -64,6 +53,7 @@ export function createEditorWebMcp({
 	const editing = editor.editing;
 	const navigation = editor.navigation;
 	let disposed = false;
+	let observedRevision: string | undefined;
 	const dispose = () => {
 		if (disposed) return;
 		disposed = true;
@@ -81,12 +71,6 @@ export function createEditorWebMcp({
 			throw new Error('Invalid tool arguments');
 		}
 		return input as Record<string, unknown>;
-	};
-	const writeRequest = (input: unknown, fields: string[]): Record<string, unknown> & { expectedRevision: string } => {
-		const args = request(input, fields);
-		if (typeof args.expectedRevision !== 'string')
-			throw new Error('expectedRevision from get_project or get_project_metadata is required');
-		return { ...args, expectedRevision: args.expectedRevision };
 	};
 	const tool = (
 		name: string,
@@ -109,12 +93,11 @@ export function createEditorWebMcp({
 				return run(input);
 			} catch (error) {
 				if (error instanceof Error) {
-					const details = error as Error & { code?: string; revision?: string };
+					const details = error as Error & { code?: string };
 					return {
 						error: {
 							code: details.code ?? 'invalid_request',
-							message: details.message,
-							...(details.revision ? { revision: details.revision } : {}),
+							message: details.code === 'stale_revision' ? sourceChangedMessage : details.message,
 						},
 					};
 				}
@@ -167,9 +150,16 @@ export function createEditorWebMcp({
 				: { type: 'update', blockId: target!.blockId, ...source };
 		});
 	};
-	const checkRevision = (snapshot: EditorProjectSnapshot, expectedRevision: string) => {
-		if (expectedRevision !== snapshot.revision)
-			scopeError(snapshot, 'stale_revision', 'Read get_project again before editing');
+	const checkRevision = (snapshot: EditorProjectSnapshot) => {
+		if (observedRevision === undefined)
+			scopeError(snapshot, 'source_required', 'Fetch source with get_project or get_block before writing.');
+		if (observedRevision !== snapshot.revision) scopeError(snapshot, 'stale_revision', sourceChangedMessage);
+	};
+	const applyEdits = (snapshot: EditorProjectSnapshot, edits: EditorEdit[], message: string) => {
+		const result = editing.applyEdits({ expectedRevision: snapshot.revision, edits });
+		// Record the actual result token: one edit can advance the editor revision several times.
+		observedRevision = result.revision;
+		return message;
 	};
 	const location = () => {
 		const { projectPath, revision } = editing.getSnapshot();
@@ -179,19 +169,21 @@ export function createEditorWebMcp({
 		tool(
 			'get_project',
 			'Read the open 8f4e project',
-			'Return { code, revision } for only the currently expanded group or root. The code field is one 8f4e source string, and revision is from the same snapshot. Child groups are shown as declarations without their contents. Navigate with expand_group, go_to_parent, or go_to_root, then read again. Use revision as expectedRevision for writes; location and history information are available through get_project_metadata.',
+			'Return only the currently expanded group or root as one 8f4e source string. A successful source fetch refreshes the bridge revision baseline for writes. Child groups are shown as declarations without their contents. Navigate with expand_group, go_to_parent, or go_to_root, then read again. Location and history information are available through get_project_metadata; metadata reads do not refresh the write baseline.',
 			emptySchema,
 			true,
 			input => {
 				request(input, []);
 				const snapshot = editing.getSnapshot();
-				return { code: createSourceView(snapshot), revision: snapshot.revision } satisfies WebMcpProjectSource;
+				const source = createSourceView(snapshot);
+				observedRevision = snapshot.revision;
+				return source;
 			}
 		),
 		tool(
 			'get_project_metadata',
 			'Read 8f4e project metadata',
-			'Read the current revision, location, editability, and undo/redo availability without source or block identifiers. get_project already returns source with its revision. When reading only get_block, call this first and use its revision for writes.',
+			'Read the current revision, location, editability, and undo/redo availability without source or block identifiers. This does not acknowledge source changes or refresh the bridge revision baseline; fetch source with get_project or get_block before writing.',
 			emptySchema,
 			true,
 			input => {
@@ -231,43 +223,45 @@ export function createEditorWebMcp({
 		tool(
 			'get_block',
 			'Read an 8f4e block',
-			'Read a block by its type and name only within the currently expanded group or root. Returns its source as a string. Duplicate matches produce an ambiguous_block error.',
+			'Read a block by its type and name only within the currently expanded group or root. Returns its source as a string and refreshes the bridge revision baseline for writes. Duplicate matches produce an ambiguous_block error.',
 			blockSchema,
 			true,
 			input => {
 				const args = request(input, ['type', 'name']);
 				const snapshot = editing.getSnapshot();
 				const target = namedBlock(snapshot, args.type, args.name);
-				return target.block.code.join('\n');
+				const source = target.block.code.join('\n');
+				observedRevision = snapshot.revision;
+				return source;
 			}
 		),
 		tool(
 			'update_block',
 			'Update an 8f4e block',
-			'Replace the source of a block identified by type and name only within the currently expanded group or root. Requires the latest revision and creates one undo step.',
+			'Replace the source of a block identified by type and name only within the currently expanded group or root. Requires a prior source fetch and creates one undo step. External changes block writes until source is fetched again; consecutive bridge edits work without re-fetching.',
 			updateBlockSchema,
 			false,
 			input => {
-				const args = writeRequest(input, ['type', 'name', 'code', 'expectedRevision']);
+				const args = request(input, ['type', 'name', 'code']);
 				const snapshot = editing.getSnapshot();
-				checkRevision(snapshot, args.expectedRevision);
-				const result = editing.applyEdits({
-					expectedRevision: args.expectedRevision,
-					edits: readEdits([{ operation: 'update', type: args.type, name: args.name, code: args.code }], snapshot),
-				});
-				return { revision: result.revision };
+				checkRevision(snapshot);
+				return applyEdits(
+					snapshot,
+					readEdits([{ operation: 'update', type: args.type, name: args.name, code: args.code }], snapshot),
+					'Block updated.'
+				);
 			}
 		),
 		tool(
 			'patch_block',
 			'Patch an 8f4e block',
-			'Replace one exact occurrence of oldText with literal newText in a block identified by type and name in the currently expanded group or root. Text may span multiple lines; line endings are normalized to LF. Empty or missing matches and multiple matches are rejected. Requires the latest revision from get_project or get_project_metadata and creates one undo step.',
+			'Replace one exact occurrence of oldText with literal newText in a block identified by type and name in the currently expanded group or root. Text may span multiple lines; line endings are normalized to LF. Empty or missing matches and multiple matches are rejected. Requires a prior source fetch and creates one undo step. External changes require source to be fetched again; successful bridge edits advance the baseline automatically.',
 			patchBlockSchema,
 			false,
 			input => {
-				const args = writeRequest(input, ['type', 'name', 'expectedRevision', 'oldText', 'newText']);
+				const args = request(input, ['type', 'name', 'oldText', 'newText']);
 				const snapshot = editing.getSnapshot();
-				checkRevision(snapshot, args.expectedRevision);
+				checkRevision(snapshot);
 				if (typeof args.oldText !== 'string' || args.oldText.length === 0 || typeof args.newText !== 'string')
 					throw new Error('oldText must be a nonempty string and newText must be a string');
 				const target = namedBlock(snapshot, args.type, args.name);
@@ -285,11 +279,11 @@ export function createEditorWebMcp({
 					);
 				// Slice explicitly so replacement text such as $& is always literal.
 				const code = source.slice(0, start) + newText + source.slice(start + oldText.length);
-				const result = editing.applyEdits({
-					expectedRevision: args.expectedRevision,
-					edits: [{ type: 'update', blockId: target.blockId, code: code.split('\n') }],
-				});
-				return { revision: result.revision };
+				return applyEdits(
+					snapshot,
+					[{ type: 'update', blockId: target.blockId, code: code.split('\n') }],
+					'Block patched.'
+				);
 			}
 		),
 		tool(
@@ -319,28 +313,31 @@ export function createEditorWebMcp({
 		tool(
 			'apply_edits',
 			'Edit the open 8f4e project',
-			'Apply one atomic undoable batch within the currently expanded group or root. Insert/update code is a complete source string. Requires the latest revision from get_project or get_project_metadata. Update/delete operations identify blocks by type and name in the current scope. Inserts use the current group and default to entry main. Set or change positions through the @pos directive in source code.',
+			'Apply one atomic undoable batch within the currently expanded group or root. Insert/update code is a complete source string. Requires a prior source fetch; the bridge tracks revisions and rejects writes after external changes until source is fetched again. Update/delete operations identify blocks by type and name in the current scope. Inserts use the current group and default to entry main. Set or change positions through the @pos directive in source code.',
 			editsSchema,
 			false,
 			input => {
-				const args = writeRequest(input, ['expectedRevision', 'edits']);
+				const args = request(input, ['edits']);
 				const snapshot = editing.getSnapshot();
-				checkRevision(snapshot, args.expectedRevision);
-				const result = editing.applyEdits({
-					expectedRevision: args.expectedRevision,
-					edits: readEdits(args.edits, snapshot),
-				});
-				return { revision: result.revision };
+				checkRevision(snapshot);
+				return applyEdits(snapshot, readEdits(args.edits, snapshot), 'Edits applied.');
 			}
 		),
 		...(['undo', 'redo'] as const).map(action =>
 			tool(
 				action,
 				`${action === 'undo' ? 'Undo' : 'Redo'} an 8f4e edit`,
-				`${action === 'undo' ? 'Undo' : 'Redo'} one history step in the bound editor. Requires the latest revision from get_project or get_project_metadata.`,
-				revisionSchema,
+				`${action === 'undo' ? 'Undo' : 'Redo'} one history step in the bound editor. Requires a prior source fetch; the bridge tracks revisions and rejects writes after external changes until source is fetched again.`,
+				emptySchema,
 				false,
-				input => ({ revision: editing[action](writeRequest(input, ['expectedRevision'])).revision })
+				input => {
+					request(input, []);
+					const snapshot = editing.getSnapshot();
+					checkRevision(snapshot);
+					const result = editing[action]({ expectedRevision: snapshot.revision });
+					observedRevision = result.revision;
+					return action === 'undo' ? 'Undo complete.' : 'Redo complete.';
+				}
 			)
 		),
 	];

@@ -63,13 +63,13 @@ Register one document-level tool set:
 
 | Tool | Purpose |
 | --- | --- |
-| `get_project` | Return `{ code, revision }` for the currently expanded group or root, with a one-level source string and its matching revision, without an index or block identifiers. |
+| `get_project` | Return a plain one-level source string for the currently expanded group or root and record its revision internally, without an index or block identifiers. |
 | `get_project_metadata` | Return revision, location, editability, and history information separately from source. |
 | `expand_group` / `go_to_parent` / `go_to_root` | Navigate the editor's shared view and return location only. |
 | `get_block` / `update_block` / `patch_block` | Read, replace, or patch source by type and name within the current scope. |
 | `get_block_metadata` | Fetch metadata by source type and name in the current scope on demand. |
-| `apply_edits` | Apply a validated batch within the current scope at an expected revision, targeting blocks by source type and name. |
-| `undo` / `redo` | Operate on the bound editor's history, with expected-revision checks. |
+| `apply_edits` | Apply a validated batch within the current scope, targeting blocks by source type and name. The bridge supplies its tracked revision. |
+| `undo` / `redo` | Operate on the bound editor's history, with revisions checked and tracked by the bridge. |
 | `get_diagnostics` | Return current compiler diagnostics and the revision they describe, when a diagnostic handle is supplied. |
 
 The editor reference is required at construction and stays fixed for the bridge's lifetime. Tools take no `editorId` argument, and there is no editor registry, discovery tool, or add/remove-editor API. Focus changes never retarget calls. Allow only one active bridge per document so the page exposes one unambiguous tool set.
