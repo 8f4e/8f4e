@@ -9,6 +9,7 @@ From the workspace root:
 ```bash
 npx nx run @8f4e/8f4e-website:dev
 npx nx run @8f4e/8f4e-website:build
+npx nx run @8f4e/8f4e-website:test:browser
 npm --prefix tools/project-preview run generate-gallery-previews
 npx nx run @8f4e/8f4e-website:serve
 ```
@@ -46,7 +47,10 @@ to the default desktop selection or the collapsed mobile list.
 Selecting a different example creates a fresh editor and disposes the previous instance. Mounts are serialized to
 handle rapid selections, and each example uses its own session storage namespace. The gallery editor captures wheel
 gestures for panning; scrolling over the example list scrolls the document. A link opens the example in the full editor.
-Loading failures offer a retry.
+The loading indicator stays visible while the editor contains its empty startup project. The gallery reveals the
+canvas once fetched project content arrives; requests that leave it empty reach the 30-second timeout and offer a retry.
+
+The browser integration test mounts the real default editor with a delayed project response to verify this startup path.
 
 ## Compiler test gallery
 

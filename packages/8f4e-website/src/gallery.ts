@@ -195,12 +195,14 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 						return;
 					}
 					const project = editor.state.initialProjectState;
-					if (!project) {
+					if (
+						!project ||
+						(project.modules.length === 0 &&
+							project.functions.length === 0 &&
+							project.groups.length === 0 &&
+							project.notes.length === 0)
+					) {
 						revealFrame = window.requestAnimationFrame(reveal);
-						return;
-					}
-					if (project.modules.length === 0 && project.functions.length === 0 && project.groups.length === 0) {
-						showError(new Error('Project is empty'));
 						return;
 					}
 					window.clearTimeout(loadTimeout);

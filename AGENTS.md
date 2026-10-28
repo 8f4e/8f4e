@@ -43,6 +43,7 @@
 - `npx nx run @8f4e/editor-website:build`: Builds the default composition and website production bundle.
 - `npx nx run @8f4e/8f4e-website:dev`: Starts the example product website on `http://localhost:3001`.
 - `npx nx run @8f4e/8f4e-website:build`: Builds the example product website and its editor dependencies.
+- `npx nx run @8f4e/8f4e-website:test:browser`: Runs gallery browser integration tests with the default editor.
 - `npm --prefix tools/project-preview run generate-gallery-previews`: Regenerates 64×64 GIF icons for the example
   and compiler test galleries with the standalone npm tool.
 - `npx nx run @8f4e/release:check --parallel=2`: Runs release builds and metrics in parallel with
