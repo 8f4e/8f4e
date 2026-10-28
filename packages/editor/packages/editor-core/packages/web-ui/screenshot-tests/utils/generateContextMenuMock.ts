@@ -7,18 +7,15 @@ export default function generateContextMenuMock(): ContextMenu {
 		items: [
 			{
 				title: '.................... New Module',
-				action: 'addCodeBlock',
+				action: 'createCodeBlock',
 				payload: {
-					isNew: true,
+					blockType: 'module',
 				},
 				close: true,
 			},
 			{
 				title: '.............. Paste Code Block',
-				action: 'addCodeBlock',
-				payload: {
-					isPaste: true,
-				},
+				action: 'pasteCodeBlocks',
 				close: true,
 			},
 			{

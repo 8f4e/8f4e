@@ -53,7 +53,10 @@ This feature contains several subfeatures under `features/` that handle specific
 
 ### Key Events
 
-- Block creation, deletion, and selection events
+- `createCodeBlock({ x, y, blockType })`: create a template of the requested type
+- `pasteCodeBlocks({ x, y })`: read and insert clipboard content, including multiple blocks
+- `insertCodeBlock({ x, y, code })`: insert supplied source lines
+- Block deletion and selection events
 - Drag start/update/end events
 - Block type update events
 

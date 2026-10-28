@@ -98,9 +98,7 @@ function incrementCodeBlockName(name: string) {
 function incrementCodeBlockNameUntilUnique(state: State, blockType: RenameableCodeBlockType, blockName: string) {
 	while (
 		state.codeBlockRendering.codeBlocks.some(
-			codeBlock =>
-				(codeBlock.blockType === blockType || codeBlock.code[0]?.trim().startsWith(`${blockType} `)) &&
-				codeBlock.name === blockName
+			codeBlock => codeBlock.blockType === blockType && codeBlock.name === blockName
 		)
 	) {
 		blockName = incrementCodeBlockName(blockName);
@@ -121,68 +119,36 @@ function getUniqueEntryName(state: State): string {
 	return entryName;
 }
 
-function getEntryNameForNewModule(state: State, x: number, y: number, newEntry?: boolean): string {
-	return newEntry
-		? getUniqueEntryName(state)
-		: (findEntryNameAtPosition(state.codeBlockRendering.entryOutlines, x, y) ?? getUniqueEntryName(state));
+function getEntryNameForInsertedModule(state: State, x: number, y: number): string {
+	return findEntryNameAtPosition(state.codeBlockRendering.entryOutlines, x, y) ?? getUniqueEntryName(state);
 }
 
 export default function codeBlockCreator(store: StateManager<State>, events: EventDispatcher): void {
 	const state = store.getState();
-	async function onAddCodeBlock({
-		x,
-		y,
-		isNew,
-		blockType,
-		newEntry,
-		code = [''],
-	}: {
-		x: number;
-		y: number;
-		isNew: boolean;
-		blockType?: NewCodeBlockType;
-		newEntry?: boolean;
-		code?: string[];
-	}) {
-		if (!state.featureFlags.editing) {
+	function onCreateCodeBlock({ x, y, blockType }: { x: number; y: number; blockType: NewCodeBlockType }): void {
+		const block = documentBlockInstructionByType[blockType];
+		const name = blockType === noteBlock.type ? '' : ' ' + getRandomCodeBlockName();
+		onInsertCodeBlock({ x, y, code: [block.start + name, '', '', block.end] });
+	}
+
+	async function onPasteCodeBlocks({ x, y }: { x: number; y: number }): Promise<void> {
+		if (!state.featureFlags.editing || !state.callbacks.readClipboardText) return;
+		let clipboardText: string;
+		try {
+			clipboardText = await state.callbacks.readClipboardText();
+		} catch {
 			return;
 		}
-
-		const hasExplicitCode = code.length > 1 || (code.length === 1 && code[0].trim().length > 0);
-
-		if (isNew && !hasExplicitCode) {
-			if (blockType === functionBlock.type) {
-				code = [functionBlock.start + ' ' + getRandomCodeBlockName(), '', '', functionBlock.end];
-			} else if (blockType === prototypeBlock.type) {
-				code = [prototypeBlock.start + ' ' + getRandomCodeBlockName(), '', '', prototypeBlock.end];
-			} else if (blockType === noteBlock.type) {
-				code = [noteBlock.start, '', '', noteBlock.end];
-			} else {
-				code = [moduleBlock.start + ' ' + getRandomCodeBlockName(), '', '', moduleBlock.end];
-			}
-		} else if (code.length < 2) {
-			// If no callback is provided, fail silently
-			if (!state.callbacks.readClipboardText) {
-				return;
-			}
-
-			try {
-				const clipboardText = await state.callbacks.readClipboardText();
-				const parsedData = parseClipboardData(clipboardText);
-
-				if (parsedData.type === 'multi') {
-					// Multi-block paste
-					pasteMultipleBlocks(store, { x, y, blocks: parsedData.blocks });
-					return;
-				} else {
-					// Single-block paste
-					code = parsedData.text.split('\n');
-				}
-			} catch {
-				// Fail silently if clipboard read fails
-				return;
-			}
+		const parsedData = parseClipboardData(clipboardText);
+		if (parsedData.type === 'multi') {
+			pasteMultipleBlocks(store, { x, y, blocks: parsedData.blocks });
+		} else {
+			onInsertCodeBlock({ x, y, code: parsedData.text.split('\n') });
 		}
+	}
+
+	function onInsertCodeBlock({ x, y, code }: { x: number; y: number; code: string[] }): void {
+		if (!state.featureFlags.editing) return;
 
 		const sourceBlockType = getBlockType(code);
 		const blockName = getCodeBlockNameFromSource(code);
@@ -225,7 +191,7 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 		code = upsertPos(code, gridX, gridY);
 		const entry =
 			sourceBlockType === moduleBlock.type && blockName
-				? getEntryNameForNewModule(state, pixelX, pixelY, newEntry)
+				? getEntryNameForInsertedModule(state, pixelX, pixelY)
 				: undefined;
 
 		const codeBlock: CodeBlockGraphicData = createCodeBlockGraphicData({
@@ -241,7 +207,7 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 			lineNumberColumnWidth: 2,
 			lastUpdated: Date.now(),
 			creationIndex,
-			blockType: 'unknown', // Will be updated by blockTypeUpdater effect
+			blockType: sourceBlockType,
 			entry,
 			projectPath,
 			disabled: false,
@@ -303,7 +269,9 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 		incrementCompilerInputRevision(store);
 	}
 
-	events.on('addCodeBlock', onAddCodeBlock);
+	events.on('createCodeBlock', onCreateCodeBlock);
+	events.on('pasteCodeBlocks', onPasteCodeBlocks);
+	events.on('insertCodeBlock', onInsertCodeBlock);
 	events.on('copyCodeBlock', onCopyCodeBlock);
 	events.on('deleteCodeBlock', onDeleteCodeBlock);
 	events.on('toggleCodeBlockDisabled', onToggleCodeBlockDisabled);

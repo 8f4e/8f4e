@@ -119,7 +119,7 @@ describe('example modules plugin', () => {
 
 	it('does not confuse a dependency with a different block type of the same name', async () => {
 		const test = setup();
-		test.events.dispatch('addCodeBlock', { code: ['module dep', 'moduleEnd'], x: 400, y: 100, isNew: false });
+		test.events.dispatch('insertCodeBlock', { code: ['module dep', 'moduleEnd'], x: 400, y: 100 });
 		await test.addModule();
 		expect(
 			test.state.codeBlockRendering.codeBlocks.filter(block => block.name === 'dep').map(block => block.blockType)
@@ -172,7 +172,7 @@ describe('example modules plugin', () => {
 			if (installed) test.disposePlugin();
 			test.events.dispatch('contextmenu', { x: 100, y: 112 });
 			await vi.waitFor(() =>
-				expect(test.state.contextMenu.items.some(item => item.action === 'addCodeBlock')).toBe(true)
+				expect(test.state.contextMenu.items.some(item => item.action === 'createCodeBlock')).toBe(true)
 			);
 			expect(test.state.contextMenu.items.some(item => item.payload?.menu === EXAMPLE_MODULES_MENU)).toBe(false);
 			test.events.dispatch(ADD_EXAMPLE_MODULE, { slug: 'target', x: 100, y: 112 });

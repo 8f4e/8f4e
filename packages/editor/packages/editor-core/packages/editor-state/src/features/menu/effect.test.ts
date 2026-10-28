@@ -46,7 +46,7 @@ describe('contextMenu effect', () => {
 		expect(state.contextMenu.items[1].title).toContain('Page 1');
 		await onMenuBack();
 		expect(state.contextMenu.items.some(item => item.action === 'menuBack')).toBe(false);
-		expect(state.contextMenu.items.some(item => item.action === 'addCodeBlock')).toBe(true);
+		expect(state.contextMenu.items.some(item => item.action === 'createCodeBlock')).toBe(true);
 		unregister();
 		cleanup();
 		store.dispose();

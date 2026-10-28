@@ -36,7 +36,7 @@ export function createExampleModulesPlugin({
 				const source = await catalog.getModule(slug);
 				if (disposed || !state.featureFlags.editing) return;
 				const code = extractPublicBlockFromModuleSource(source);
-				events.dispatch('addCodeBlock', { code, x, y, isNew: false });
+				events.dispatch('insertCodeBlock', { code, x, y });
 				const gap = 4;
 				const vGrid = state.viewport.vGrid;
 				let gridX = Math.round((state.viewport.x + x) / vGrid) + getCodeBlockGridWidth(code) + gap;
@@ -52,15 +52,12 @@ export function createExampleModulesPlugin({
 					const dependencyCode = extractPublicBlockFromModuleSource(dependencySource);
 					const name = getCodeBlockNameFromSource(dependencyCode);
 					const type = getBlockType(dependencyCode);
-					if (
-						state.codeBlockRendering.codeBlocks.some(block => block.name === name && getBlockType(block.code) === type)
-					)
+					if (state.codeBlockRendering.codeBlocks.some(block => block.name === name && block.blockType === type))
 						continue;
-					events.dispatch('addCodeBlock', {
+					events.dispatch('insertCodeBlock', {
 						code: dependencyCode,
 						x: gridX * vGrid - state.viewport.x,
 						y,
-						isNew: false,
 					});
 					gridX += getCodeBlockGridWidth(dependencyCode) + gap;
 				}

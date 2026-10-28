@@ -78,6 +78,15 @@ Back navigation, and handles decoration, sizing, positioning, and clicks. Menu I
 use a distinct ID for your plugin's menu and call the returned unregister function during disposal.
 The built-in block submenu also uses this request shape: `{ menu: 'moduleMenu', payload: { codeBlock } }`.
 
+Use explicit block actions through `events.dispatch`:
+
+- `createCodeBlock` receives `{ x, y, blockType }` and creates a module, function, prototype, or note template.
+- `pasteCodeBlocks` receives `{ x, y }` and reads the clipboard, including structured multi-block content.
+- `insertCodeBlock` receives `{ x, y, code }` and inserts those source lines without reading the clipboard.
+
+Coordinates are viewport pixels. Core applies unique naming, entry assignment, grid positioning, and persistence.
+Newly inserted blocks already carry their source-derived type; core keeps it current as source changes.
+
 Register widget directives with `directives.register(definition)`, using the existing `EditorDirectiveDefinition`
 contract from `@8f4e/editor-state-types`. The core owns generic source parsing, directive matching, and the block
 layout pipeline. Each definition handles its own arguments through `apply`, registers `DirectiveLayoutCallbacks`
