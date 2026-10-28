@@ -14,19 +14,19 @@ completed: null
 
 Browser agents need a semantic way to inspect and edit the same live 8f4e project that a person sees on the canvas. The returned editor instance exposes state and rendering controls, but editing operations remain internal. Writing directly to that state would bypass derived layout, undo history, persistence notifications, and compilation scheduling.
 
-A webpage can mount several independent editors. Those editors do not know about one another, while the host webpage already holds their instance references. Registering WebMCP separately inside each editor plugin would duplicate tool registrations and put page-level coordination inside editor instances.
+A webpage can mount several independent editors. The host webpage already holds their instance references and should explicitly choose one editor to expose to browser agents. Binding the tools to that editor avoids ambiguity about which project a tool call will read or change.
 
 ## Proposed Solution
 
-Expose a transport-independent editing handle on each editor instance. Add a separate, page-owned WebMCP adapter that receives editor references from the host and delegates tool calls to those handles.
+Expose a transport-independent editing handle on each editor instance. Add a separate, page-owned WebMCP adapter that receives exactly one editor reference from the host and delegates every tool call to that editor's handles.
 
 Responsibilities:
 
 - **Editor**: Own project reads, validated editing commands, revisions, undo/redo, and the existing consequences of editing.
-- **WebMCP adapter**: Register one tool set, resolve explicit editor IDs, validate tool arguments, and call public editor handles.
-- **Host webpage**: Construct the adapter, register editor instances with meaningful IDs and optional labels, and manage their lifetimes.
+- **WebMCP adapter**: Register one tool set bound to the supplied editor, validate tool arguments, and call its public handles.
+- **Host webpage**: Choose the editor to expose, pass its reference when constructing the adapter, and manage both lifetimes.
 
-The adapter is an external JavaScript library running in the webpage, proposed as `@8f4e/editor-webmcp`. It is not an editor plugin or a separate MCP server process. Editor-core has no WebMCP dependency and editors remain unaware of one another.
+The adapter is an external JavaScript library running in the webpage, proposed as `@8f4e/editor-webmcp`. It is not an editor plugin or a separate MCP server process. Editor-core has no WebMCP dependency. A page may contain other editors, but the bridge exposes only the chosen instance.
 
 ### Public editing handle
 
@@ -53,18 +53,9 @@ editor.editing.redo();
 Illustrative host composition:
 
 ```ts
-const bridge = createEditorWebMcp({ document });
-
-const unregisterSynth = bridge.addEditor({
-	id: 'synth',
-	label: 'Synthesizer',
+const bridge = createEditorWebMcp({
+	document,
 	editor: synthEditor,
-});
-
-const unregisterSequencer = bridge.addEditor({
-	id: 'sequencer',
-	label: 'Sequencer',
-	editor: sequencerEditor,
 });
 ```
 
@@ -72,15 +63,14 @@ Register one document-level tool set:
 
 | Tool | Purpose |
 | --- | --- |
-| `list_editors` | List registered editor IDs, labels, and project summaries. |
-| `get_project` | Return the selected editor's project snapshot and revision. |
-| `apply_edits` | Apply a validated batch to an explicit editor ID and expected revision. |
-| `undo` / `redo` | Operate on the selected editor's history, with expected-revision checks. |
+| `get_project` | Return the bound editor's project snapshot and revision. |
+| `apply_edits` | Apply a validated batch to the bound editor at an expected revision. |
+| `undo` / `redo` | Operate on the bound editor's history, with expected-revision checks. |
 | `get_diagnostics` | Return current compiler diagnostics and the revision they describe, when a diagnostic handle is supplied. |
 
-Every editor-specific tool requires `editorId`. Focus can provide context but must not silently retarget a call. IDs remain stable for a registration; duplicate IDs are rejected. Calls must not switch to a replacement registration if an editor is removed while work is pending.
+The editor reference is required at construction and stays fixed for the bridge's lifetime. Tools take no `editorId` argument, and there is no editor registry, discovery tool, or add/remove-editor API. Focus changes never retarget calls. Allow only one active bridge per document so the page exposes one unambiguous tool set.
 
-The host unregisters an editor before disposing it. Removing an instance does not remove other instances or the shared tools; disposing the bridge removes its tool registrations and listeners without disposing host-owned editors. Calls to missing or removed editors return explicit errors.
+The host disposes the bridge before disposing its editor. Bridge disposal removes its tool registrations and listeners without disposing the host-owned editor. Calls after bridge or editor disposal return explicit errors. To expose a different editor, the host must dispose the old bridge and construct a new one; pending calls remain tied to the original editor and cannot affect its replacement.
 
 Compiler diagnostics remain owned by the compiler plugin. Supply a separate read handle through host composition if needed; do not move compiler ownership into core or expose compiler internals through mutable state. Associate asynchronous results with the project revision they describe.
 
@@ -95,16 +85,16 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 
 ### Step 2: Build the external adapter
 
-- Add `@8f4e/editor-webmcp` as a separate package with explicit document and editor-reference inputs.
-- Implement editor registration, removal, ID lookup, and cleanup. Keep the registry out of editor-core and the editor plugin context.
+- Add `@8f4e/editor-webmcp` as a separate package requiring a document and exactly one editor reference at construction.
+- Implement fixed editor binding and cleanup, rejecting a second active bridge for the same document. Keep the adapter outside editor-core and the editor plugin context.
 - Register imperative tools through `document.modelContext.registerTool` in the top-level page, with narrow schemas and accurate read-only annotations.
 - Feature-detect WebMCP. Installing the optional adapter in an unsupported browser must leave normal editing operational.
-- Add structured results that report target editor, revision, created handles, and validation failures.
+- Add structured results that report revision, created handles, and validation failures for the bound editor.
 
 ### Step 3: Compose and verify browser workflows
 
-- Wire the adapter at a webpage host that owns editor references. Keep automatic mounting and registration out of the default editor's import path.
-- Exercise both a single editor and a page with two independent editors, including dynamic removal and re-registration.
+- Wire the adapter at a webpage host that supplies its chosen editor reference. Keep automatic mounting and registration out of the default editor's import path.
+- Exercise a single editor and a page with additional unbridged editors, verifying that every tool call stays bound to the chosen editor even when another editor receives focus.
 - Supply compiler diagnostic read handles from the default composition where required, preserving compiler-plugin ownership.
 - Document host setup, supported browser-agent configurations, cleanup responsibilities, and draft API limitations.
 
@@ -113,8 +103,8 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 - Run editor-core and editor-default tests and typechecks through their Nx targets after public API and composition changes.
 - Add and run build, test, and typecheck targets for the adapter package through Nx.
 - Verify batch rollback on validation failure, one-step undo/redo, stale-revision rejection after both human and API edits, derived layout, autosave notifications, and compilation scheduling.
-- Verify two editors share one tool set while keeping project state, revisions, history, diagnostics, and cleanup independent.
-- Verify missing editors, disposed handles, duplicate IDs, adapter disposal, and unsupported WebMCP behavior.
+- Verify tools read and change only the bound editor's project, revision, history, and diagnostics, leaving additional editors unaffected.
+- Verify a required editor reference, rejection of a second active bridge in the same document, disposed handles, bridge replacement, adapter disposal, and unsupported WebMCP behavior.
 - Manually inspect and edit a live project through WebMCP in a supported built-in browser. Verify top-level registration for hosts that embed editor canvases.
 
 ## Success Criteria
@@ -122,10 +112,10 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 - [ ] Returned editor instances expose a typed editing handle independent of WebMCP.
 - [ ] Project snapshots and block handles support semantic reads and edits without exposing raw mutable state as a write API.
 - [ ] Validated batches preserve editor behavior, create one undo step, and reject stale writes without partial changes.
-- [ ] A separate adapter accepts host-provided editor references and registers one tool set for the page.
-- [ ] Multiple editors require no awareness of one another and are targeted explicitly by ID.
-- [ ] Agent-driven edits and diagnostics can be verified against the correct editor and revision.
-- [ ] Registration and disposal preserve the lifetimes of unrelated editors and host-owned resources.
+- [ ] A separate adapter accepts exactly one host-provided editor reference and registers one tool set for the page.
+- [ ] Every tool stays bound to that editor, without an editor registry, ID routing, or focus-based selection.
+- [ ] Agent-driven edits and diagnostics can be verified against the bound editor's project revision.
+- [ ] Bridge disposal and replacement preserve host-owned resources and cannot redirect pending calls to another editor.
 - [ ] Browsers without WebMCP retain normal editor behavior, and setup and limitations are documented.
 
 ## Affected Components
@@ -134,7 +124,7 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 - `packages/editor/packages/editor-core/packages/editor-state/` - Existing edit operations, project serialization, change notifications, revisions, and history.
 - `packages/editor/packages/editor-webmcp/` - Proposed external WebMCP adapter package.
 - `packages/editor/plugins/compiler/` and `packages/editor/packages/editor-default/` - Optional live diagnostic handles and host composition.
-- `packages/editor/packages/editor-website/` and `packages/8f4e-website/` - Page-level registration and single/multiple-editor verification.
+- `packages/editor/packages/editor-website/` and `packages/8f4e-website/` - Page-level composition and verification that only the chosen editor is exposed.
 
 ## Risks & Considerations
 
@@ -157,7 +147,8 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 ## Notes
 
 - Originally created on 2026-02-07; cancelled and archived by request on 2026-05-12.
-- Reopened on 2026-10-28 with a replacement plan: expose editor editing handles, then add a page-owned external WebMCP adapter that receives editor references. This replaces the original editor-integrated MCP server spike and consolidates TODO 503.
+- Reopened on 2026-10-28 with a replacement plan: expose editor editing handles, then add a page-owned external WebMCP adapter. This replaces the original editor-integrated MCP server spike and consolidates TODO 503.
+- Revised on 2026-10-28 to bind the external adapter to exactly one editor instance. The host chooses that editor at construction; multi-editor registration and routing are outside the plan.
 
 ## Archive Instructions
 
