@@ -21,7 +21,7 @@ import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import initEvents from './events';
 import keyboardEvents from './events/keyboardEvents';
 import pointerEvents from './events/pointerEvents';
-import { createMemoryViewManager, type MemoryRef } from './memoryViewManager';
+import { createMemoryViewManager } from './memoryViewManager';
 import { type EditorPlugin, installEditorPlugins } from './plugins';
 import { createSpriteSheetManager } from './spriteSheetManager';
 import {
@@ -54,10 +54,13 @@ export type {
 	FeatureFlags,
 	FeatureFlagsConfig,
 	JSONSchemaLike,
+	LazyRuntimeRegistryEntry,
 	MenuGenerator,
 	Options,
 	ParsedDirectiveRecord,
 	RuntimeFactory,
+	RuntimeMetadata,
+	RuntimeMetadataRegistry,
 	RuntimeRegistry,
 	RuntimeRegistryEntry,
 	RuntimeValuesByRuntimeId,
@@ -65,7 +68,6 @@ export type {
 } from '@8f4e/editor-state-types';
 export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from '@8f4e/web-ui';
 export type { EventDispatcher } from './events';
-export type { MemoryRef } from './memoryViewManager';
 export type { EditorPlugin, EditorPluginContext } from './plugins';
 // Re-export helper functions
 
@@ -77,7 +79,6 @@ export interface Editor {
 	/** Releases reloadable GPU resources and the canvas drawing buffer. */
 	releaseRenderingResources: () => void;
 	resumeRendering: () => void;
-	updateMemoryViews: (memoryRef: MemoryRef) => void;
 	getMemoryViews: () => MemoryViews;
 	dispose: () => void;
 	state: State;
@@ -93,7 +94,7 @@ export interface EditorOptions {
 	featureFlags?: Partial<State['featureFlags']>;
 	/** Mode used when the editor is initialized. */
 	initialEditorMode?: EditorMode;
-	callbacks: Omit<Callbacks, 'getWordFromMemory' | 'setWordInMemory' | 'readClipboardText' | 'writeClipboardText'>;
+	callbacks: Omit<Callbacks, 'getWordFromMemory' | 'readClipboardText' | 'writeClipboardText'>;
 	runtimeRegistry: RuntimeRegistry;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 	renderStatsIntervalFrames?: number;
@@ -150,6 +151,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		cleanups.push(() => events.dispose());
 		let currentMemoryRef: WebAssembly.Memory | null = null;
 		let currentCodeBuffer = new Uint8Array();
+		let latestCompilationId = 0;
 		let store: ReturnType<typeof initState>;
 		let view: Awaited<ReturnType<typeof initView>>;
 		const compileCode = options.callbacks.compileCode;
@@ -165,20 +167,18 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				...options.callbacks,
 				compileCode: compileCode
 					? async (input, compilerOptions) => {
+							const compilationId = ++latestCompilationId;
 							const result = await compileCode(input, compilerOptions);
-							currentCodeBuffer = new Uint8Array(result.codeBuffer);
+							if (compilationId === latestCompilationId) {
+								currentMemoryRef = result.memoryRef;
+								updateMemoryViews(result.memoryRef);
+								currentCodeBuffer = new Uint8Array(result.codeBuffer);
+							}
 							return result;
 						}
 					: undefined,
 				getWordFromMemory: (allocationUnitAddress: number) => {
 					return memoryViews.int32[allocationUnitAddress] || 0;
-				},
-				setWordInMemory: (allocationUnitAddress: number, value: number, isInteger: boolean) => {
-					if (isInteger) {
-						memoryViews.int32[allocationUnitAddress] = value;
-						return;
-					}
-					memoryViews.float32[allocationUnitAddress] = value;
 				},
 				readClipboardText: async () => {
 					return await navigator.clipboard.readText();
@@ -279,10 +279,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			pauseRendering: () => view.pauseRendering(),
 			releaseRenderingResources: () => view.releaseRenderingResources(),
 			resumeRendering: () => view.resumeRendering(),
-			updateMemoryViews: (memoryRef: MemoryRef) => {
-				currentMemoryRef = memoryRef instanceof WebAssembly.Memory ? memoryRef : null;
-				updateMemoryViews(memoryRef);
-			},
 			getMemoryViews: () => memoryViews,
 			dispose,
 			state,

@@ -53,3 +53,9 @@
   `editor-plugin-project-url-loader`. Core owns no storage, quota, session callbacks, or URL fetch callbacks.
 - `EditorOptions.initialProject` provides generic initial content. Load it (or an empty project) after the first
   resize, then dispatch `init` so installed plugins can perform their own startup work.
+
+- Runtime factories and lazy loaders are initialization dependencies passed directly to the runtime coordinator. `state.runtimeRegistry` contains IDs and schemas only. Publish runtime-derived constants through `envConstantContributions.runtime`.
+- Memory writes belong to injected plugin factory dependencies. Keep `getWordFromMemory` for core pointer dereferencing; do not restore a state-level write callback.
+
+- Compile callbacks return current memory in `CompilationResult.memoryRef`; core updates views and renderer artifacts from the newest result. Do not pass an `Editor` to compiler services.
+- Render environment-constant contributions uniformly. The `runtime` contributor has no special formatting or ordering.

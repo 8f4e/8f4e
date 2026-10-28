@@ -47,10 +47,7 @@ export default function compiler(store: StateManager<State>): () => void {
 				includeStackAnalysis: true,
 				enableAssertions: hasTestEntry(project),
 			};
-			const result = await state.callbacks.compileCode(project, {
-				...compilerOptions,
-				...(state.callbacks.resolveInclude ? { resolveInclude: state.callbacks.resolveInclude } : {}),
-			});
+			const result = await state.callbacks.compileCode(project, compilerOptions);
 			if (disposed) {
 				return;
 			}
@@ -70,7 +67,7 @@ export default function compiler(store: StateManager<State>): () => void {
 			setCompilerInfo({
 				isCompiling: false,
 				compilationTimeMs,
-				wasmByteCodeBytes: result.byteCodeSize,
+				wasmByteCodeBytes: result.codeBuffer.byteLength,
 				requiredMemoryBytes: result.requiredMemoryBytes,
 				allocatedMemoryBytes: result.allocatedMemoryBytes,
 				allocatedPages: result.allocatedMemoryBytes / WASM_MEMORY_PAGE_SIZE,

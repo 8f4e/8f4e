@@ -17,7 +17,6 @@ const runtimeRegistry = {
 			defaults: { sampleRate: 60 },
 			schema: { type: 'object', properties: { sampleRate: { type: 'number', minimum: 1 } } },
 		},
-		factory: () => () => {},
 	},
 	AudioWorkletRuntime: {
 		id: 'AudioWorkletRuntime',
@@ -26,7 +25,6 @@ const runtimeRegistry = {
 			defaults: { sampleRate: 44100 },
 			schema: { type: 'object', properties: { sampleRate: { type: 'number', minimum: 1 } } },
 		},
-		factory: () => () => {},
 	},
 };
 

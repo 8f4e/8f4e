@@ -1,34 +1,43 @@
 import { serializeDiagnostic } from '@8f4e/compiler';
 import type { ResolveIncludeRequestMessage, ResolveIncludeResultMessage } from '@8f4e/compiler-worker';
 import CompilerWorker from '@8f4e/compiler-worker?worker';
-import type { CompilationResult, Editor } from '@8f4e/editor-core';
+import type { CompilationResult } from '@8f4e/editor-core';
 import type {
 	AssertionSite,
-	CompileProjectOptions,
+	CompileOptions,
 	CompilerDiagnostic,
 	ProjectIncludeResolver,
 	ProjectObjectModel,
 } from '@8f4e/language-spec';
 
 export interface CompilerService {
-	compileCode: (
-		project: ProjectObjectModel,
-		compilerOptions: CompileProjectOptions,
-		editor: Editor
-	) => Promise<CompilationResult>;
+	compileCode: (project: ProjectObjectModel, compilerOptions: CompileOptions) => Promise<CompilationResult>;
 	getMemory: () => WebAssembly.Memory | null;
+	writeMemory: (allocationUnitAddress: number, value: number, isInteger: boolean) => void;
 	getCodeBuffer: () => Uint8Array;
 	getAssertionSites: () => AssertionSite[] | undefined;
 	dispose: () => void;
 }
 
-export function createCompilerService(createWorker: () => Worker = () => new CompilerWorker()): CompilerService {
+export function createCompilerService({
+	resolveInclude,
+	createWorker = () => new CompilerWorker(),
+}: {
+	resolveInclude?: ProjectIncludeResolver;
+	createWorker?: () => Worker;
+} = {}): CompilerService {
 	let compilerWorker: Worker | null = null;
 	let memoryRef: WebAssembly.Memory | null = null;
+	let writeViews:
+		| {
+				buffer: ArrayBufferLike;
+				int32: Int32Array;
+				float32: Float32Array;
+		  }
+		| undefined;
 	let codeBuffer: Uint8Array = new Uint8Array();
 	let assertionSites: AssertionSite[] | undefined;
 	let nextCompilationId = 0;
-	let includeResolver: ProjectIncludeResolver | undefined;
 	let disposed = false;
 	const pendingCompilations = new Map<
 		number,
@@ -47,7 +56,7 @@ export function createCompilerService(createWorker: () => Worker = () => new Com
 				type: 'resolveIncludeResult',
 				payload: {
 					requestId: request.payload.requestId,
-					source: await includeResolver?.(request.payload.includeId),
+					source: await resolveInclude?.(request.payload.includeId),
 				},
 			};
 		} catch (error) {
@@ -76,11 +85,9 @@ export function createCompilerService(createWorker: () => Worker = () => new Com
 	}
 
 	return {
-		async compileCode(project, compilerOptions, editor) {
+		async compileCode(project, compilerOptions) {
 			assertionSites = undefined;
-			const { resolveInclude, ...serializableCompilerOptions } = compilerOptions;
 			const worker = getCompilerWorker();
-			includeResolver = resolveInclude;
 			const compilationId = nextCompilationId++;
 
 			return new Promise((resolve, reject) => {
@@ -91,14 +98,13 @@ export function createCompilerService(createWorker: () => Worker = () => new Com
 							worker.removeEventListener('message', handleMessage);
 							pendingCompilations.delete(compilationId);
 							if (compilationId === nextCompilationId - 1) {
-								memoryRef = data.payload.wasmMemory;
+								memoryRef = data.payload.memoryRef;
 								codeBuffer = data.payload.codeBuffer;
 								assertionSites = data.payload.assertionSites;
-								editor.updateMemoryViews(data.payload.wasmMemory);
 							}
 
 							resolve({
-								assertionSites: data.payload.assertionSites,
+								memoryRef: data.payload.memoryRef,
 								compiledModules: data.payload.compiledModules,
 								memoryPlan: data.payload.memoryPlan,
 								memoryDefaultsByModuleId: data.payload.memoryDefaultsByModuleId,
@@ -107,11 +113,8 @@ export function createCompilerService(createWorker: () => Worker = () => new Com
 								requiredMemoryBytes: data.payload.requiredMemoryBytes,
 								allocatedMemoryBytes: data.payload.allocatedMemoryBytes,
 								astCacheStats: data.payload.astCacheStats,
-								hasWasmInstanceBeenReset: data.payload.hasWasmInstanceBeenReset,
 								memoryAction: data.payload.memoryAction,
 								compiledFunctions: data.payload.compiledFunctions,
-								byteCodeSize: data.payload.codeBuffer.length,
-								initOnlyReran: data.payload.initOnlyReran,
 							});
 							break;
 						case 'compilationError':
@@ -130,12 +133,21 @@ export function createCompilerService(createWorker: () => Worker = () => new Com
 					compilationId,
 					payload: {
 						project,
-						compilerOptions: serializableCompilerOptions,
+						compilerOptions,
 					},
 				});
 			});
 		},
 		getMemory: () => memoryRef,
+		writeMemory: (address, value, isInteger) => {
+			if (!memoryRef) return;
+			const buffer = memoryRef.buffer;
+			if (!writeViews || writeViews.buffer !== buffer) {
+				writeViews = { buffer, int32: new Int32Array(buffer), float32: new Float32Array(buffer) };
+			}
+			if (isInteger) writeViews.int32[address] = value;
+			else writeViews.float32[address] = value;
+		},
 		getCodeBuffer: () => codeBuffer,
 		getAssertionSites: () => assertionSites,
 		dispose: () => {

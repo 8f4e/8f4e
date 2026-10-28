@@ -12,3 +12,5 @@
 - Run `npx nx run @8f4e/editor-plugin-piano:build|test|typecheck` after changes.
 - Run `npx nx run @8f4e/editor-plugin-piano:test:screenshot` for browser rendering tests.
 - Cover real pointer events, runtime memory, exposed addresses, saving, source edits, cleanup, and editor isolation.
+
+- Receive a required `writeMemory(address, value, isInteger)` through the plugin factory. Do not route writes through editor state. The injected writer must use the current memory after recompilation or growth.

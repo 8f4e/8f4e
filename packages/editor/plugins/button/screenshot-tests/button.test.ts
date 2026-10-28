@@ -6,7 +6,7 @@ import initView, { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
-import { buttonPlugin } from '../src/index';
+import { createButtonPlugin } from '../src/index';
 
 test('button plugin draws off and on values', async () => {
 	const canvas = document.createElement('canvas');
@@ -31,7 +31,7 @@ entryEnd`);
 		callbacks: {},
 	});
 	const drawers = createCodeBlockDrawerRegistry();
-	const disposePlugin = buttonPlugin.setup({
+	const disposePlugin = createButtonPlugin({ writeMemory: () => {} }).setup({
 		store,
 		events,
 		menus: store.menus,

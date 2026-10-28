@@ -4,14 +4,15 @@ import type { ButtonWidget } from '../types';
 export function registerButtonInteraction(
 	state: State,
 	events: EventDispatcher,
-	buttonsByBlock: WeakMap<CodeBlockGraphicData, ButtonWidget[]>
+	buttonsByBlock: WeakMap<CodeBlockGraphicData, ButtonWidget[]>,
+	writeMemory: (address: number, value: number, isInteger: boolean) => void
 ): () => void {
 	let pressedButton: ButtonWidget | undefined;
 	const release = () => {
 		if (!pressedButton) return;
 		const button = pressedButton;
 		pressedButton = undefined;
-		state.callbacks.setWordInMemory?.(button.allocationUnitAddress, button.offValue, button.isInteger);
+		writeMemory(button.allocationUnitAddress, button.offValue, button.isInteger);
 	};
 	const onPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
 		pressedButton = buttonsByBlock
@@ -24,11 +25,7 @@ export function registerButtonInteraction(
 					y <= codeBlock.y + button.y + button.height - state.viewport.y
 			);
 		if (!pressedButton) return;
-		state.callbacks.setWordInMemory?.(
-			pressedButton.allocationUnitAddress,
-			pressedButton.onValue,
-			pressedButton.isInteger
-		);
+		writeMemory(pressedButton.allocationUnitAddress, pressedButton.onValue, pressedButton.isInteger);
 	};
 	events.on('codeBlockPointerDown', onPointerDown);
 	events.on('mouseup', release);

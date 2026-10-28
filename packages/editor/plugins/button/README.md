@@ -4,9 +4,9 @@
 The values default to `0` and `1`. Pressing a button writes its on value; releasing the pointer writes its off value.
 
 ```ts
-import { buttonPlugin } from '@8f4e/editor-plugin-button';
+import { createButtonPlugin } from '@8f4e/editor-plugin-button';
 
-const editor = await initEditor(canvas, { ...options, plugins: [buttonPlugin] });
+const editor = await initEditor(canvas, { ...options, plugins: [createButtonPlugin({ writeMemory })] });
 ```
 
 The default editor includes this plugin. It owns argument handling, memory resolution, geometry, drawing, and
@@ -27,3 +27,5 @@ npx nx run @8f4e/editor-plugin-button:test
 npx nx run @8f4e/editor-plugin-button:typecheck
 npx nx run @8f4e/editor-plugin-button:test:screenshot
 ```
+
+The host supplies `writeMemory(address, value, isInteger)` to the factory. It must write to the current compiler memory, including after memory replacement or growth. Core pointer reads remain available through editor state.

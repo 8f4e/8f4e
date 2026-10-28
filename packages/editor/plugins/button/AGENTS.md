@@ -12,3 +12,5 @@
 - Run `npx nx run @8f4e/editor-plugin-button:build|test|typecheck` after changes.
 - Run `npx nx run @8f4e/editor-plugin-button:test:screenshot` for browser rendering tests.
 - Cover actual pointer events, memory writes, layout, source changes, group exposures, cleanup, and editor isolation.
+
+- Receive a required `writeMemory(address, value, isInteger)` through the plugin factory. Do not route writes through editor state. The injected writer must use the current memory after recompilation or growth.

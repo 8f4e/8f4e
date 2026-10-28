@@ -1,6 +1,5 @@
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { EventDispatcher, RuntimeRegistry, RuntimeRegistryEntry, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-
 import { error, log } from '../logger/logger';
 import {
 	collectRuntimeEditorConfigSchemaContributions,
@@ -8,109 +7,132 @@ import {
 	resolveSelectedRuntimeId,
 } from './editorConfig';
 
-export default function runtime(store: StateManager<State>, events: EventDispatcher): () => void {
-	registerRuntimeSelectionEditorConfigValidator(store);
-
+/** Owns runtime implementations and loading; state receives metadata and derived source only. */
+export default function runtime(
+	store: StateManager<State>,
+	events: EventDispatcher,
+	registry: RuntimeRegistry
+): () => void {
 	const state = store.getState();
-
-	let runtimeDestroyer: null | (() => void) = null;
-	let onlineRuntime: null | string = null;
-	let isInitializing = false;
+	const loaded = new Map<string, RuntimeRegistryEntry>();
+	const loading = new Map<string, Promise<RuntimeRegistryEntry>>();
+	let destroyRuntime: (() => void) | undefined;
+	let onlineRuntime: string | undefined;
+	let initializingRuntime: string | undefined;
+	let generation = 0;
 	let disposed = false;
 
-	async function initOrDestroyOrUpdateRuntime() {
-		if (disposed || isInitializing) {
-			log(state, 'Runtime is already initializing, skipping...', 'Runtime');
-			return;
-		}
+	store.set(
+		'runtimeRegistry',
+		Object.fromEntries(
+			Object.entries(registry).map(([id, entry]) => [
+				id,
+				{ id: entry.id, editorConfigSchema: entry.editorConfigSchema },
+			])
+		)
+	);
+	registerRuntimeSelectionEditorConfigValidator(store);
 
-		const selectedRuntimeId = resolveSelectedRuntimeId(state.editorConfig.runtime, state.runtimeRegistry);
-		const nextRuntimeId = selectedRuntimeId ?? null;
-
-		if (onlineRuntime === nextRuntimeId) {
-			return;
-		}
-
-		isInitializing = true;
-
-		try {
-			if (runtimeDestroyer) {
-				log(state, `Destroying runtime: ${onlineRuntime}`, 'Runtime');
-				runtimeDestroyer();
-				runtimeDestroyer = null;
-				onlineRuntime = null;
-			}
-
-			if (!selectedRuntimeId) {
-				onlineRuntime = null;
-				return;
-			}
-
-			const selectedRuntimeEntry = state.runtimeRegistry[selectedRuntimeId];
-			log(state, `Requesting runtime: ${selectedRuntimeId}`, 'Runtime');
-
-			const runtimeFactory = selectedRuntimeEntry.factory;
-			log(state, `Loaded runtime from registry: ${selectedRuntimeId}`, 'Runtime');
-
-			if (typeof runtimeFactory !== 'function') {
-				throw new Error(`Runtime ${selectedRuntimeId} did not return a valid factory function`);
-			}
-
-			runtimeDestroyer = runtimeFactory(store, events);
-			onlineRuntime = selectedRuntimeId;
-			log(state, `Successfully initialized runtime: ${selectedRuntimeId}`, 'Runtime');
-		} catch (err) {
-			console.error('Failed to initialize runtime:', err);
-			error(state, `Failed to initialize runtime: ${err instanceof Error ? err.message : 'Unknown error'}`);
-			throw new Error(
-				`Failed to load runtime ${selectedRuntimeId}: ${err instanceof Error ? err.message : 'Unknown error'}`
-			);
-		} finally {
-			isInitializing = false;
-		}
-	}
-
-	function syncRuntimeEditorConfigSchemaContributions() {
-		const retainedContributions = Object.fromEntries(
+	function syncSchemas() {
+		const retained = Object.fromEntries(
 			Object.entries(state.editorConfigSchemaContributions).filter(([id]) => !id.startsWith('runtime:'))
 		);
-
 		store.set('editorConfigSchemaContributions', {
-			...retainedContributions,
+			...retained,
 			...collectRuntimeEditorConfigSchemaContributions(state.editorConfig.runtime, state.runtimeRegistry),
 		});
 	}
 
-	function onRuntimeSelectionChanged() {
-		if (disposed) {
-			return;
+	function syncEnvConstants() {
+		const id = resolveSelectedRuntimeId(state.editorConfig.runtime, state.runtimeRegistry);
+		const entry = id ? (loaded.get(id) ?? registry[id]) : undefined;
+		const lines = entry && 'factory' in entry ? (entry.getEnvConstants?.(state.editorConfig) ?? []) : [];
+		const previous = state.envConstantContributions.runtime ?? [];
+		if (lines.length !== previous.length || lines.some((line, index) => line !== previous[index])) {
+			store.set('envConstantContributions.runtime', lines);
 		}
-
-		syncRuntimeEditorConfigSchemaContributions();
-
-		if (state.compiler.isCompiling) {
-			return;
-		}
-
-		void initOrDestroyOrUpdateRuntime();
 	}
 
-	syncRuntimeEditorConfigSchemaContributions();
-	store.subscribeToValue('compiler.isCompiling', false, initOrDestroyOrUpdateRuntime);
-	store.subscribe('editorConfig.runtime', onRuntimeSelectionChanged);
-	store.subscribe('runtimeRegistry', onRuntimeSelectionChanged);
+	function syncRuntime() {
+		if (disposed) return;
+		const id = resolveSelectedRuntimeId(state.editorConfig.runtime, state.runtimeRegistry);
+		if (state.compiler.isCompiling) return;
+		if (id && (onlineRuntime === id || initializingRuntime === id)) return;
 
-	return () => {
-		if (disposed) {
-			return;
+		const request = ++generation;
+		initializingRuntime = undefined;
+		destroyRuntime?.();
+		destroyRuntime = undefined;
+		onlineRuntime = undefined;
+		if (!id) return;
+
+		function start(entry: RuntimeRegistryEntry) {
+			if (disposed || request !== generation) return;
+			initializingRuntime = undefined;
+			if (state.compiler.isCompiling || state.editorConfig.runtime !== id) return;
+			destroyRuntime = entry.factory(store, events);
+			onlineRuntime = id;
+			log(state, `Successfully initialized runtime: ${id}`, 'Runtime');
 		}
 
+		function failed(reason: unknown) {
+			if (disposed || request !== generation) return;
+			initializingRuntime = undefined;
+			error(state, `Failed to initialize runtime ${id}: ${reason instanceof Error ? reason.message : String(reason)}`);
+		}
+
+		try {
+			const entry = loaded.get(id) ?? registry[id];
+			if ('factory' in entry) {
+				start(entry);
+				return;
+			}
+			initializingRuntime = id;
+			let promise = loading.get(id);
+			if (!promise) {
+				promise = entry.load();
+				loading.set(id, promise);
+			}
+			void promise
+				.then(implementation => {
+					if (disposed) return;
+					loaded.set(id, implementation);
+					store.set('runtimeRegistry', {
+						...state.runtimeRegistry,
+						[id]: { id: implementation.id, editorConfigSchema: implementation.editorConfigSchema },
+					});
+					syncSchemas();
+					syncEnvConstants();
+					start(implementation);
+				})
+				.catch(reason => {
+					loading.delete(id);
+					failed(reason);
+				});
+		} catch (reason) {
+			failed(reason);
+		}
+	}
+
+	function onSelectionChanged() {
+		syncSchemas();
+		syncEnvConstants();
+		syncRuntime();
+	}
+
+	syncSchemas();
+	syncEnvConstants();
+	store.subscribe('compiler.isCompiling', syncRuntime);
+	store.subscribe('editorConfig.runtime', onSelectionChanged);
+	store.subscribe('editorConfig', syncEnvConstants);
+
+	return () => {
+		if (disposed) return;
 		disposed = true;
-		store.unsubscribe('compiler.isCompiling', initOrDestroyOrUpdateRuntime);
-		store.unsubscribe('editorConfig.runtime', onRuntimeSelectionChanged);
-		store.unsubscribe('runtimeRegistry', onRuntimeSelectionChanged);
-		runtimeDestroyer?.();
-		runtimeDestroyer = null;
-		onlineRuntime = null;
+		++generation;
+		store.unsubscribe('compiler.isCompiling', syncRuntime);
+		store.unsubscribe('editorConfig.runtime', onSelectionChanged);
+		store.unsubscribe('editorConfig', syncEnvConstants);
+		destroyRuntime?.();
 	};
 }

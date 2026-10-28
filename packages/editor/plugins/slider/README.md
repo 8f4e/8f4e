@@ -11,9 +11,9 @@ values within the range. Each slider adds two rows below its directive and fills
 Clicks and drags update runtime memory; the handle reads live memory on each frame.
 
 ```ts
-import { sliderPlugin } from '@8f4e/editor-plugin-slider';
+import { createSliderPlugin } from '@8f4e/editor-plugin-slider';
 
-const editor = await initEditor(canvas, { ...options, plugins: [sliderPlugin] });
+const editor = await initEditor(canvas, { ...options, plugins: [createSliderPlugin({ writeMemory })] });
 ```
 
 The default editor includes this plugin. Each installation owns its slider geometry and memory bindings in a private
@@ -30,3 +30,5 @@ npx nx run @8f4e/editor-plugin-slider:test
 npx nx run @8f4e/editor-plugin-slider:typecheck
 npx nx run @8f4e/editor-plugin-slider:test:screenshot
 ```
+
+The host supplies `writeMemory(address, value, isInteger)` to the factory. It must write to the current compiler memory, including after memory replacement or growth. Core pointer reads remain available through editor state.

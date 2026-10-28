@@ -2,12 +2,12 @@ import type { EditorPlugin } from '@8f4e/editor-core';
 import { describe, expect, it, vi } from 'vitest';
 import { exposedSource } from './__tests__/exposed-source';
 import { setup } from './__tests__/setup';
-import { crossfadePlugin } from './index';
+import { createCrossfadePlugin } from './index';
 
 const source = ['module audio', 'float dry 0.25', 'float wet 0.75', '; @crossfade &dry &wet', 'moduleEnd'];
 describe('crossfade plugin', () => {
 	it.each(['view', 'edit'] as const)('drags through pointer events in %s mode without moving the block', async mode => {
-		const test = await setup(crossfadePlugin, source, { mode });
+		const test = await setup(createCrossfadePlugin, source, { mode });
 		test.render();
 		const [localX, localY] = vi.mocked(test.draw.startGroup).mock.calls[0];
 		const { x: beforeX, y: beforeY } = test.block;
@@ -24,23 +24,23 @@ describe('crossfade plugin', () => {
 		expect(test.memoryViews.float32[memory.wet.allocationUnitAddress]).toBe(1);
 		expect([test.block.x, test.block.y]).toEqual([beforeX, beforeY]);
 		test.events.dispatch('mouseup');
-		test.setWordInMemory.mockClear();
+		test.writeMemory.mockClear();
 		test.events.dispatch('mousemove', { ...drag, stopPropagation: false });
-		expect(test.setWordInMemory).not.toHaveBeenCalled();
+		expect(test.writeMemory).not.toHaveBeenCalled();
 	});
 	it('consumes drag movement before ordinary listeners registered earlier', async () => {
 		const onMove = vi.fn();
-		const plugin: EditorPlugin = {
+		const plugin = (options: Parameters<typeof createCrossfadePlugin>[0]): EditorPlugin => ({
 			id: 'crossfade-with-ordinary-listener',
 			setup: context => {
 				context.events.on('mousemove', onMove);
-				const dispose = crossfadePlugin.setup(context);
+				const dispose = createCrossfadePlugin(options).setup(context);
 				return () => {
 					dispose();
 					context.events.off('mousemove', onMove);
 				};
 			},
-		};
+		});
 		const test = await setup(plugin, source);
 		test.render();
 		const [localX, localY] = vi.mocked(test.draw.startGroup).mock.calls[0];
@@ -54,7 +54,7 @@ describe('crossfade plugin', () => {
 		expect(onMove).toHaveBeenCalledOnce();
 	});
 	it('writes to the backing addresses of exposed project-group memory', async () => {
-		const test = await setup(crossfadePlugin, exposedSource);
+		const test = await setup(createCrossfadePlugin, exposedSource);
 		test.render();
 		const [x, y] = vi.mocked(test.draw.startGroup).mock.calls[0];
 		test.events.dispatch('codeBlockPointerDown', {
@@ -67,7 +67,7 @@ describe('crossfade plugin', () => {
 		expect(test.memoryViews.float32[memory.wet.allocationUnitAddress]).toBe(0);
 	});
 	it('drops invalid references and rejects unsupported memory types', async () => {
-		const test = await setup(crossfadePlugin, source);
+		const test = await setup(createCrossfadePlugin, source);
 		for (const code of [
 			['module audio', '; @crossfade &dry &missing', 'moduleEnd'],
 			['module audio', '; @crossfade &dry &dry', 'moduleEnd'],
@@ -77,7 +77,7 @@ describe('crossfade plugin', () => {
 			if (code[1].includes('missing')) expect(test.draw.drawFill).not.toHaveBeenCalled();
 			else expect(test.draw.drawFill).toHaveBeenCalled();
 		}
-		const integer = await setup(crossfadePlugin, [
+		const integer = await setup(createCrossfadePlugin, [
 			'module audio',
 			'int dry 0',
 			'float wet 0',
@@ -88,12 +88,12 @@ describe('crossfade plugin', () => {
 		expect(integer.draw.drawFill).not.toHaveBeenCalled();
 	});
 	it('is optional, releases active interactions, and keeps editors independent', async () => {
-		const omitted = await setup(crossfadePlugin, source, { installed: false });
+		const omitted = await setup(createCrossfadePlugin, source, { installed: false });
 		omitted.render();
 		expect(omitted.block.gaps.size).toBe(0);
 		expect(omitted.draw.drawFill).not.toHaveBeenCalled();
-		const first = await setup(crossfadePlugin, source);
-		const second = await setup(crossfadePlugin, source);
+		const first = await setup(createCrossfadePlugin, source);
+		const second = await setup(createCrossfadePlugin, source);
 		first.render();
 		const [x, y] = vi.mocked(first.draw.startGroup).mock.calls[0];
 		first.events.dispatch('codeBlockPointerDown', {
@@ -102,12 +102,12 @@ describe('crossfade plugin', () => {
 			y: y + 1 - first.state.viewport.y,
 		});
 		first.dispose();
-		first.setWordInMemory.mockClear();
+		first.writeMemory.mockClear();
 		first.events.dispatch('mousemove', { x: 500, y: 50, stopPropagation: false });
 		first.update(source);
 		first.render();
 		second.render();
-		expect(first.setWordInMemory).not.toHaveBeenCalled();
+		expect(first.writeMemory).not.toHaveBeenCalled();
 		expect(first.block.gaps.size).toBe(0);
 		expect(first.draw.drawFill).not.toHaveBeenCalled();
 		expect(second.draw.drawFill).toHaveBeenCalled();

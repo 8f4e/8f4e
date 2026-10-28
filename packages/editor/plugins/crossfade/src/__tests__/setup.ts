@@ -13,7 +13,9 @@ afterEach(() => {
 });
 
 export async function setup(
-	plugin: EditorPlugin,
+	createPlugin: (options: {
+		writeMemory: (address: number, value: number, isInteger: boolean) => void;
+	}) => EditorPlugin,
 	source: string[],
 	{
 		installed = true,
@@ -45,7 +47,7 @@ export async function setup(
 		float64: new Float64Array(memory.buffer),
 	};
 	const events = createEvents();
-	const setWordInMemory = vi.fn((address: number, value: number, isInteger: boolean) => {
+	const writeMemory = vi.fn((address: number, value: number, isInteger: boolean) => {
 		memoryViews[isInteger ? 'int32' : 'float32'][address] = value;
 	});
 	const store = initState(events, {
@@ -53,12 +55,17 @@ export async function setup(
 		initialEditorMode: mode,
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
-			setWordInMemory,
 		},
 	});
 	const state = store.getState();
 	const dispose = installed
-		? plugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers })
+		? createPlugin({ writeMemory }).setup({
+				store,
+				events,
+				menus: store.menus,
+				directives: store.directives,
+				drawers,
+			})
 		: () => {};
 	cleanups.push(() => {
 		dispose();
@@ -96,6 +103,6 @@ export async function setup(
 		memoryViews,
 		compiled,
 		dispose,
-		setWordInMemory,
+		writeMemory,
 	};
 }

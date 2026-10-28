@@ -1,11 +1,12 @@
-import type { CodeBlockGraphicData, EditorConfig, State } from '@8f4e/editor-state-types';
+import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
+import type { CodeBlockGraphicData, EditorConfig, RuntimeRegistry, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, test } from 'vitest';
 import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
-
 import createDefaultState from '~/pureHelpers/state/createDefaultState';
 import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
+import runtimeEffect from '../../../runtime/effect';
 import autoEnvConstants from './effect';
 
 const AUTO_ENV_BLOCK_NAME = 'env';
@@ -22,6 +23,19 @@ function getTestRuntimeEnvConstants(editorConfig: EditorConfig) {
 			: 50;
 	return [`const RUNTIME_MAGIC ${magicNumber}`];
 }
+
+const runtimeRegistry: RuntimeRegistry = {
+	WebWorkerRuntime: {
+		id: 'WebWorkerRuntime',
+		getEnvConstants: getTestRuntimeEnvConstants,
+		factory: () => () => {},
+	},
+	SecondaryRuntime: {
+		id: 'SecondaryRuntime',
+		getEnvConstants: config => [...getTestRuntimeEnvConstants(config), 'const RUNTIME_EXTRA 128'],
+		factory: () => () => {},
+	},
+};
 
 function createGraphicEnvBlock(code: string[], overrides: Partial<CodeBlockGraphicData> = {}): CodeBlockGraphicData {
 	return createMockCodeBlock({
@@ -45,18 +59,6 @@ describe('autoEnvConstants', () => {
 	beforeEach(() => {
 		const baseState = {
 			...createDefaultState(),
-			runtimeRegistry: {
-				WebWorkerRuntime: {
-					id: 'WebWorkerRuntime',
-					editorConfigSchema: {
-						root: 'testRuntime',
-						defaults: { magicNumber: 50 },
-						schema: { type: 'object', properties: { magicNumber: { type: 'number' } } },
-					},
-					getEnvConstants: editorConfig => getTestRuntimeEnvConstants(editorConfig),
-					factory: () => () => {},
-				},
-			},
 			editorConfig: {
 				...createDefaultState().editorConfig,
 				runtime: 'WebWorkerRuntime',
@@ -67,6 +69,7 @@ describe('autoEnvConstants', () => {
 		};
 		store = createStateManager<State>(baseState);
 		state = store.getState();
+		runtimeEffect(store, createMockEventDispatcher(), runtimeRegistry);
 	});
 
 	test('should create env constants block when project is loaded', () => {
@@ -115,18 +118,6 @@ describe('autoEnvConstants', () => {
 		const envBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
 		expect(envBlock?.code).not.toContain('const RUNTIME_EXTRA 128');
 
-		store.set('runtimeRegistry', {
-			SecondaryRuntime: {
-				id: 'SecondaryRuntime',
-				editorConfigSchema: {
-					root: 'secondaryRuntime',
-					defaults: { magicNumber: 77 },
-					schema: { type: 'object', properties: { magicNumber: { type: 'number' } } },
-				},
-				getEnvConstants: editorConfig => [...getTestRuntimeEnvConstants(editorConfig), 'const RUNTIME_EXTRA 128'],
-				factory: () => () => {},
-			},
-		});
 		store.set('editorConfig.runtime', 'SecondaryRuntime');
 		store.set('initialProjectState', { ...PROJECT_WITH_CODE_BLOCK });
 
@@ -169,6 +160,8 @@ describe('autoEnvConstants', () => {
 		autoEnvConstants(store);
 		store.set('envConstantContributions', {
 			first: ['const FIRST 1'],
+			runtime: state.envConstantContributions.runtime,
+			empty: [],
 			second: ['; second provider', 'const SECOND 2'],
 		});
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
@@ -176,6 +169,11 @@ describe('autoEnvConstants', () => {
 		expect(env?.code).toEqual(
 			expect.arrayContaining(['const RUNTIME_MAGIC 50', 'const FIRST 1', '; second provider', 'const SECOND 2'])
 		);
+		expect(env?.code.filter(line => line.startsWith('const '))).toEqual([
+			'const FIRST 1',
+			'const RUNTIME_MAGIC 50',
+			'const SECOND 2',
+		]);
 	});
 
 	test('refreshes contributed constants and removes contributions without changing the env position', () => {
@@ -198,7 +196,7 @@ describe('autoEnvConstants', () => {
 		const env = state.codeBlockRendering.codeBlocks[0];
 		expect(env.code).toContain('const PROVIDED 42');
 		expect(env.code).toContain('; @pos 7 9');
-		store.set('envConstantContributions', {});
+		store.set('envConstantContributions', { runtime: state.envConstantContributions.runtime });
 		expect(env.code).not.toContain('const PROVIDED 42');
 		expect(env.code).toContain('; @pos 7 9');
 	});

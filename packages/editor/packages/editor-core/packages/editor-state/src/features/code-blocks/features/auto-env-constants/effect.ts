@@ -2,7 +2,6 @@ import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { ProjectBlock } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
-import { getSelectedRuntimeEntry } from '../../../runtime/editorConfig';
 import parsePos from '../directives/pos/data';
 
 const AUTO_ENV_CONSTANTS_BLOCK_NAME = 'env';
@@ -30,11 +29,10 @@ function generateEnvConstantsBlock(state: State, existingPos?: { x: number; y: n
 	lines.push('; Changes will be overwritten');
 	lines.push('');
 
-	const runtimeEntry = getSelectedRuntimeEntry(state.editorConfig.runtime, state.runtimeRegistry);
-	lines.push(...(runtimeEntry?.getEnvConstants?.(state.editorConfig) ?? []));
-
-	for (const contribution of Object.values(state.envConstantContributions)) {
-		if (contribution.length > 0) lines.push('', ...contribution);
+	const contributions = Object.values(state.envConstantContributions).filter(lines => lines.length > 0);
+	for (const [index, contribution] of contributions.entries()) {
+		if (index > 0) lines.push('');
+		lines.push(...contribution);
 	}
 
 	lines.push('');
@@ -135,11 +133,10 @@ export default function autoEnvConstants(store: StateManager<State>): void {
 	// Ensure env block exists when project is loaded
 	store.subscribe('initialProjectState', ensureEnvBlockInProject);
 
-	// Update env block code in codeBlockRendering.codeBlocks when editor config, runtime registry, change.
+	// Update env block code in codeBlockRendering.codeBlocks when contributed environment constants change.
 	// This avoids the infinite loop caused by modifying initialProjectState.
 	store.subscribe('codeBlockRendering.selectedCodeBlock.code', updateEnvConstantsBlockInCodeBlockRendering);
 	store.subscribe('codeBlockRendering.codeBlocks', updateEnvConstantsBlockInCodeBlockRendering);
 	store.subscribe('editorConfig', updateEnvConstantsBlockInCodeBlockRendering);
-	store.subscribe('runtimeRegistry', updateEnvConstantsBlockInCodeBlockRendering);
 	store.subscribe('envConstantContributions', updateEnvConstantsBlockInCodeBlockRendering);
 }

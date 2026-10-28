@@ -56,7 +56,7 @@ The default composition includes `@8f4e/editor-plugin-toggle-skip-execution` for
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
 `@8f4e/editor-plugin-project-files` for project Open/Save/Export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
-`createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer })`
+`createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
 constructs this plugin set with resources for one editor. The project-files plugin derives browser resources from the
 canvas; WebAssembly export receives its document and a live compiler-byte getter. There is no host file service.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
@@ -72,7 +72,7 @@ bytes, so memory replacement and growth are visible to the plugin without sharin
 
 The standard set includes `@8f4e/editor-plugin-assertion-markers` for executed assertion indicators,
 `@8f4e/editor-plugin-keyboard-memory` for keyboard-to-memory input, and `@8f4e/editor-plugin-midi-input` for MIDI
-discovery and callbacks. Keyboard input receives the mounted canvas. MIDI receives that canvas's navigator and
+discovery and callbacks. Keyboard input receives the mounted canvas and a live memory writer. MIDI receives that canvas's navigator and
 live compiler memory/bytecode getters, and owns its WASM instance and export cache. MIDI access is requested only
 when the project has MIDI configuration. Omitting these plugins also omits their schemas and input listeners.
 
@@ -120,3 +120,7 @@ npx nx run @8f4e/editor-default:build
 npx nx run @8f4e/editor-default:test
 npx nx run @8f4e/editor-default:typecheck
 ```
+
+The compiler service receives the stdlib include resolver when it is created; editor state does not forward include-loading callbacks. Button, switch, slider, piano, crossfade, and keyboard-memory factories receive the service's live `writeMemory` function directly. Runtime loaders and factories remain initialization dependencies owned by the runtime coordinator; state holds data-only runtime metadata and derived environment-constant source.
+
+Compilation returns memory and bytecode to core, which updates its own views. The compiler service has no editor dependency. Worker results carry current artifacts and memory actions without redundant byte-size or instance-reset flags.

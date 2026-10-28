@@ -30,19 +30,22 @@ entryEnd`
 	const compiled = await compileProject(project, { disableSharedMemory: true });
 	const memory = new Int32Array(65536 / 4);
 	const events = createMockEventDispatcher();
-	const setWordInMemory = vi.fn((address: number, value: number) => {
+	const writeMemory = vi.fn((address: number, value: number) => {
 		memory[address] = value;
 	});
 	const store = initState(events, {
 		runtimeRegistry: {},
-		callbacks: { setWordInMemory },
+		callbacks: {},
 	});
 	store.set('compiler.compiledModules', compiled.compiledModules);
 	store.set('compiler.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
 	store.set('compiler.memoryPlan', compiled.memoryPlan);
 	store.set('compiler.projectMemoryExposuresByGroupPath', compiled.projectMemoryExposuresByGroupPath);
 	const inputTarget = new EventTarget();
-	const dispose = createKeyboardMemoryPlugin({ inputTarget: inputTarget as HTMLElement }).setup({
+	const dispose = createKeyboardMemoryPlugin({
+		inputTarget: inputTarget as HTMLElement,
+		writeMemory,
+	}).setup({
 		store,
 		events,
 		menus: store.menus,
@@ -62,7 +65,7 @@ entryEnd`
 		store,
 		inputTarget,
 		emit,
-		setWordInMemory,
+		writeMemory,
 		code: () => memory[declarations.code.allocationUnitAddress],
 		pressed: () => memory[declarations.pressed.allocationUnitAddress],
 		dispose: () => {
@@ -99,11 +102,11 @@ describe('keyboard-to-memory input', () => {
 		editor.dispose();
 		expect(editor.pressed()).toBe(0);
 		expect(editor.store.getState().editorConfigSchemaContributions.keyboard).toBeUndefined();
-		editor.setWordInMemory.mockClear();
+		editor.writeMemory.mockClear();
 		editor.emit('keydown', 'KeyC');
 		editor.emit('keyup', 'KeyC');
 		editor.emit('blur');
-		expect(editor.setWordInMemory).not.toHaveBeenCalled();
+		expect(editor.writeMemory).not.toHaveBeenCalled();
 	});
 
 	it('keeps held keys when unrelated editor configuration changes', async () => {
@@ -126,12 +129,12 @@ describe('keyboard-to-memory input', () => {
 	it('uses current targets and ignores absent configuration or unresolved memory', async () => {
 		const editor = await setup();
 		editor.store.set('editorConfig.keyboard', { keyPressedMemory: 'missing:pressed' });
-		editor.setWordInMemory.mockClear();
+		editor.writeMemory.mockClear();
 		editor.emit('keydown', 'KeyA');
-		expect(editor.setWordInMemory).not.toHaveBeenCalled();
+		expect(editor.writeMemory).not.toHaveBeenCalled();
 		editor.store.set('editorConfig.keyboard', undefined);
 		editor.emit('keydown', 'KeyB');
-		expect(editor.setWordInMemory).not.toHaveBeenCalled();
+		expect(editor.writeMemory).not.toHaveBeenCalled();
 		editor.dispose();
 	});
 

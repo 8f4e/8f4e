@@ -1,6 +1,6 @@
 # Keyboard-to-Memory Input Plugin
 
-`@8f4e/editor-plugin-keyboard-memory` exports `createKeyboardMemoryPlugin({ inputTarget })`. The browser host supplies
+`@8f4e/editor-plugin-keyboard-memory` exports `createKeyboardMemoryPlugin({ inputTarget, writeMemory })`. The browser host supplies
 the editor's canvas as the input target; the returned plugin uses the regular browser-independent setup context.
 
 The plugin contributes these configuration paths:
@@ -19,3 +19,5 @@ Held-key tracking is private to each installation. The plugin owns its configura
 still handles keyboard input for normal editing and navigation.
 
 Verify with `npx nx run @8f4e/editor-plugin-keyboard-memory:build|test|typecheck`.
+
+The host injects `writeMemory(address, value, isInteger)` directly. The writer must follow current compiler memory after replacement or growth.

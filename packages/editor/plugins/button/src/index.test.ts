@@ -5,7 +5,7 @@ import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
-import { buttonPlugin } from './index';
+import { createButtonPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 const source = ['module controls', 'int gate 0', '; @button &gate', 'moduleEnd'];
@@ -31,11 +31,17 @@ async function setup(code = source, installed = true, name = 'controls') {
 	const store = initState(events, {
 		runtimeRegistry: {},
 		initialEditorMode: 'edit',
-		callbacks: { setWordInMemory: write },
+		callbacks: {},
 	});
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed
-		? buttonPlugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers })
+		? createButtonPlugin({ writeMemory: write }).setup({
+				store,
+				events,
+				menus: store.menus,
+				directives: store.directives,
+				drawers,
+			})
 		: () => {};
 	cleanups.push(() => {
 		dispose();

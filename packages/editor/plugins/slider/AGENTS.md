@@ -13,3 +13,5 @@
 - Run `npx nx run @8f4e/editor-plugin-slider:build|test|typecheck` after changes.
 - Run `npx nx run @8f4e/editor-plugin-slider:test:screenshot` for browser rendering tests.
 - Cover actual pointer events, live memory, ranges and steps, aliases, source edits, saving, cleanup, and isolation.
+
+- Receive a required `writeMemory(address, value, isInteger)` through the plugin factory. Do not route writes through editor state. The injected writer must use the current memory after recompilation or growth.

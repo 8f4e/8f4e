@@ -3,9 +3,10 @@
  */
 
 import type {
-	CompileAndUpdateMemoryResult,
+	ASTCacheStats,
 	CompiledFunctionLookup,
 	CompiledModuleLookup,
+	MemoryAction,
 	MemoryDefaults,
 	MemoryLayoutPlan,
 	ProjectMemoryExposuresByGroupPath,
@@ -26,6 +27,16 @@ export interface Compiler {
 /**
  * Result of a compilation operation.
  */
-export interface CompilationResult extends Omit<CompileAndUpdateMemoryResult, 'memoryRef'> {
-	byteCodeSize: number;
+export interface CompilationResult {
+	codeBuffer: Uint8Array;
+	memoryRef: WebAssembly.Memory;
+	compiledModules: CompiledModuleLookup;
+	compiledFunctions?: CompiledFunctionLookup;
+	memoryPlan: MemoryLayoutPlan;
+	memoryDefaultsByModuleId: Record<string, MemoryDefaults>;
+	projectMemoryExposuresByGroupPath: ProjectMemoryExposuresByGroupPath;
+	requiredMemoryBytes: number;
+	allocatedMemoryBytes: number;
+	astCacheStats: ASTCacheStats;
+	memoryAction: MemoryAction;
 }

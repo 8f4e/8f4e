@@ -12,8 +12,9 @@ import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mountDefaultEditor } from './index';
 
-const { getCodeBuffer, getMemory } = vi.hoisted(() => ({
+const { getCodeBuffer, getMemory, writeMemory } = vi.hoisted(() => ({
 	getCodeBuffer: vi.fn(() => new Uint8Array()),
+	writeMemory: vi.fn(),
 	getMemory: vi.fn<() => WebAssembly.Memory | null>(() => null),
 }));
 
@@ -46,7 +47,7 @@ vi.mock('@8f4e/editor-plugin-wasm-export', () => ({
 	createWasmExportPlugin: vi.fn(() => ({ id: 'wasm-export', setup: () => () => {} })),
 }));
 vi.mock('./compiler-callback', () => ({
-	createCompilerService: () => ({ dispose: vi.fn(), getCodeBuffer, getMemory }),
+	createCompilerService: () => ({ dispose: vi.fn(), getCodeBuffer, getMemory, writeMemory }),
 }));
 vi.mock('./runtime-registry', () => ({ createRuntimeRegistry: () => ({}) }));
 
@@ -109,7 +110,7 @@ describe('default editor plugins', () => {
 			restoreOnStartup: true,
 		});
 		expect(createExampleModulesPlugin).toHaveBeenCalledWith({ sources: exampleModuleSources });
-		expect(createKeyboardMemoryPlugin).toHaveBeenCalledWith({ inputTarget: canvas });
+		expect(createKeyboardMemoryPlugin).toHaveBeenCalledWith({ inputTarget: canvas, writeMemory });
 		expect(createMidiInputPlugin).toHaveBeenCalledWith({ navigator: window.navigator, getMemory, getCodeBuffer });
 		expect(getBytes()).toBeUndefined();
 		const memory = new WebAssembly.Memory({ initial: 1 });

@@ -114,7 +114,6 @@ export function createMockEventDispatcher(): EventDispatcher {
 }
 
 export function createMockState(overrides: StateOverrides = {}): State {
-	const mockRuntimeFactory = () => () => {};
 	const workerRuntimeDefaults = { sampleRate: 50 } as const;
 	const rootCodeBlocks: CodeBlockGraphicData[] = [];
 
@@ -139,7 +138,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 					defaults: workerRuntimeDefaults,
 					schema: { type: 'object', properties: {} },
 				},
-				factory: mockRuntimeFactory,
 			},
 		},
 		codeBlockRendering: {

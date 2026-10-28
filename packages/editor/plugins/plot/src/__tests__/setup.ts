@@ -45,15 +45,11 @@ export async function setup(
 		float64: new Float64Array(memory.buffer),
 	};
 	const events = createEvents();
-	const setWordInMemory = vi.fn((address: number, value: number, isInteger: boolean) => {
-		memoryViews[isInteger ? 'int32' : 'float32'][address] = value;
-	});
 	const store = initState(events, {
 		runtimeRegistry: {},
 		initialEditorMode: mode,
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
-			setWordInMemory,
 		},
 	});
 	const state = store.getState();
@@ -96,6 +92,5 @@ export async function setup(
 		memoryViews,
 		compiled,
 		dispose,
-		setWordInMemory,
 	};
 }

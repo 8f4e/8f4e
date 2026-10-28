@@ -6,7 +6,7 @@ import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
-import { switchPlugin } from '../src/index';
+import { createSwitchPlugin } from '../src/index';
 
 test('switch plugin draws off and on values', async () => {
 	const canvas = document.createElement('canvas');
@@ -31,7 +31,7 @@ entryEnd`);
 		callbacks: {},
 	});
 	const drawers = createCodeBlockDrawerRegistry();
-	const disposePlugin = switchPlugin.setup({
+	const disposePlugin = createSwitchPlugin({ writeMemory: () => {} }).setup({
 		store,
 		events,
 		menus: store.menus,

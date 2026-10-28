@@ -62,7 +62,6 @@ moduleEnd
 
 		expect(exportKeys).toContain('init');
 		expect(firstResult.compiledModules.setup.executionEntryName).toBe('init');
-		expect(firstResult.initOnlyReran).toBe(false);
 		expect(firstResult.astCacheStats).toEqual({ hits: 0, misses: 1 });
 		expect(memoryView[addresses.base]).toBe(1);
 		expect(memoryView[addresses.derived]).toBe(0);
@@ -70,7 +69,6 @@ moduleEnd
 		const secondResult = await compileAndUpdateMemory(createInput(createModules(10), 'init'), compilerOptions);
 		const updatedMemory = new Int32Array(secondResult.memoryRef.buffer);
 
-		expect(secondResult.initOnlyReran).toBe(false);
 		expect(secondResult.astCacheStats).toEqual({ hits: 0, misses: 2 });
 		expect(updatedMemory[addresses.base]).toBe(10);
 		expect(updatedMemory[addresses.derived]).toBe(0);
@@ -120,7 +118,6 @@ moduleEnd`.split('\n'),
 		const addresses = getAddresses(firstResult);
 		const memoryView = new Int32Array(firstResult.memoryRef.buffer);
 
-		expect(firstResult.initOnlyReran).toBe(false);
 		expect(memoryView[addresses.base]).toBe(3);
 		expect(memoryView[addresses.derived]).toBe(0);
 
@@ -129,7 +126,6 @@ moduleEnd`.split('\n'),
 		const secondResult = await compileAndUpdateMemory(createInput(createModules(3), 'init'), compilerOptions);
 		const secondMemory = new Int32Array(secondResult.memoryRef.buffer);
 
-		expect(secondResult.initOnlyReran).toBe(false);
 		expect(secondResult.astCacheStats).toEqual({ hits: 1, misses: 1 });
 		expect(secondMemory[addresses.base]).toBe(5);
 		expect(secondMemory[addresses.derived]).toBe(0);
@@ -202,7 +198,6 @@ describe('compileAndUpdateMemory narrow integer incremental patching', () => {
 		const values = second.memoryPlan.modules.mymod!.memory.values!;
 
 		expect(second.memoryAction).toEqual({ action: 'reused' });
-		expect(second.initOnlyReran).toBe(false);
 		expect(Array.from(new Uint8Array(second.memoryRef.buffer, values.byteAddress, values.elementByteLength))).toEqual([
 			0xf9, 0x80, 0x7f, 0x05,
 		]);

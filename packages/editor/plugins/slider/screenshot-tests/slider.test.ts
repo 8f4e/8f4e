@@ -6,7 +6,7 @@ import initView, { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
-import { sliderPlugin } from '../src/index';
+import { createSliderPlugin } from '../src/index';
 
 test('slider plugin draws minimum middle and maximum values', async () => {
 	const canvas = document.createElement('canvas');
@@ -34,7 +34,7 @@ entryEnd`);
 		callbacks: {},
 	});
 	const drawers = createCodeBlockDrawerRegistry();
-	const disposePlugin = sliderPlugin.setup({
+	const disposePlugin = createSliderPlugin({ writeMemory: () => {} }).setup({
 		store,
 		events,
 		menus: store.menus,

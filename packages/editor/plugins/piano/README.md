@@ -13,9 +13,9 @@ The keyboard adds six rows below its directive and requests enough block width f
 that note in the runtime array and updates the active count. Runtime memory also drives the pressed-note highlights.
 
 ```ts
-import { pianoPlugin } from '@8f4e/editor-plugin-piano';
+import { createPianoPlugin } from '@8f4e/editor-plugin-piano';
 
-const editor = await initEditor(canvas, { ...options, plugins: [pianoPlugin] });
+const editor = await initEditor(canvas, { ...options, plugins: [createPianoPlugin({ writeMemory })] });
 ```
 
 The default editor includes this plugin. Each installation keeps keyboard geometry and resolved memory in a private
@@ -32,3 +32,5 @@ npx nx run @8f4e/editor-plugin-piano:test
 npx nx run @8f4e/editor-plugin-piano:typecheck
 npx nx run @8f4e/editor-plugin-piano:test:screenshot
 ```
+
+The host supplies `writeMemory(address, value, isInteger)` to the factory. It must write to the current compiler memory, including after memory replacement or growth. Core pointer reads remain available through editor state.

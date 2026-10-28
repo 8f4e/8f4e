@@ -5,7 +5,7 @@ import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
-import { pianoPlugin } from './index';
+import { createPianoPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 const source = ['module controls', 'int[] notes 4', 'int count 0', '; @piano &notes &count 48', 'moduleEnd'];
@@ -33,12 +33,17 @@ async function setup(code = source, installed = true, name = 'controls') {
 		initialEditorMode: 'edit',
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
-			setWordInMemory: write,
 		},
 	});
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed
-		? pianoPlugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers })
+		? createPianoPlugin({ writeMemory: write }).setup({
+				store,
+				events,
+				menus: store.menus,
+				directives: store.directives,
+				drawers,
+			})
 		: () => {};
 	cleanups.push(() => {
 		dispose();

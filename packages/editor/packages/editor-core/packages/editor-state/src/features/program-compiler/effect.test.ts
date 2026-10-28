@@ -197,10 +197,7 @@ describe('program compiler effect', () => {
 			requiredMemoryBytes: 0,
 			allocatedMemoryBytes: 65536,
 			astCacheStats: { hits: 4, misses: 2 },
-			hasWasmInstanceBeenReset: false,
 			memoryAction: { action: 'reused' },
-			initOnlyReran: false,
-			byteCodeSize: 1,
 		});
 
 		await triggerCompile();
@@ -241,10 +238,7 @@ describe('program compiler effect', () => {
 			requiredMemoryBytes: 0,
 			allocatedMemoryBytes: 65536,
 			astCacheStats: { hits: 0, misses: 0 },
-			hasWasmInstanceBeenReset: false,
 			memoryAction: { action: 'reused' },
-			initOnlyReran: false,
-			byteCodeSize: 1,
 		});
 
 		await triggerCompile();
@@ -308,7 +302,7 @@ describe('program compiler effect', () => {
 		expect(setSpy).not.toHaveBeenCalled();
 	});
 
-	it('passes the includes collection and resolver to the compiler callback', async () => {
+	it('passes the includes collection to the compiler callback', async () => {
 		mockCompileCode.mockResolvedValue({
 			codeBuffer: new Uint8Array([0x00]),
 			compiledModules: {},
@@ -316,27 +310,7 @@ describe('program compiler effect', () => {
 			requiredMemoryBytes: 0,
 			allocatedMemoryBytes: 65536,
 			astCacheStats: { hits: 0, misses: 0 },
-			hasWasmInstanceBeenReset: false,
 			memoryAction: { action: 'reused' },
-			initOnlyReran: false,
-			byteCodeSize: 1,
-		});
-		mockState.callbacks.resolveInclude = vi.fn(async includeId => {
-			if (includeId === 'std/events/risingEdge') {
-				return ['function risingEdge', '#export', 'functionEnd int'].join('\n');
-			}
-			if (includeId === 'std/memory/wrapPointer') {
-				return [
-					'function wrapPointer',
-					'#export',
-					'functionEnd int*',
-					'',
-					'function wrapPointer',
-					'#export',
-					'functionEnd float*',
-				].join('\n');
-			}
-			return undefined;
 		});
 		const includesBlock = createMockCodeBlock({
 			name: 'includes',
@@ -358,7 +332,7 @@ describe('program compiler effect', () => {
 			expect.objectContaining({
 				includes: [expect.objectContaining({ id: 10, code: includesBlock.code })],
 			}),
-			expect.objectContaining({ resolveInclude: mockState.callbacks.resolveInclude })
+			expect.not.objectContaining({ resolveInclude: expect.anything() })
 		);
 	});
 

@@ -72,7 +72,6 @@ describe('globalEditorDirectivesEffect', () => {
 			runtimeRegistry: {
 				WebWorkerRuntime: {
 					id: 'WebWorkerRuntime',
-					factory: runtimeFactory,
 				},
 			},
 			codeBlockRendering: {
@@ -83,7 +82,7 @@ describe('globalEditorDirectivesEffect', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		await runtimeEffect(store, events);
+		await runtimeEffect(store, events, { WebWorkerRuntime: { id: 'WebWorkerRuntime', factory: runtimeFactory } });
 		globalEditorDirectivesEffect(store);
 		store.set('codeBlockRendering.codeBlocks', rootCodeBlocks);
 		await new Promise(resolve => setTimeout(resolve, 0));
