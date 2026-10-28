@@ -36,15 +36,6 @@ describe('project URL loader plugin', () => {
 		expect(test.fetch).not.toHaveBeenCalled();
 	});
 
-	it.each([url, url + '?version=2'])('loads a project on demand without changing its URL: %s', async projectUrl => {
-		const test = setup();
-		test.events.dispatch('loadProjectByUrl', { projectUrl });
-		await vi.waitFor(() =>
-			expect(test.state.codeBlockRendering.codeBlocks.some(block => block.name === 'remote')).toBe(true)
-		);
-		expect(test.fetch).toHaveBeenCalledWith(projectUrl, { cache: 'no-store' });
-	});
-
 	it.each([
 		['HTTP failure', () => Promise.resolve(new Response('Not found', { status: 404 }))],
 		['invalid source', () => Promise.resolve(new Response('invalid project'))],
@@ -59,11 +50,10 @@ describe('project URL loader plugin', () => {
 		expect(test.state.initialProjectState).toMatchObject({ modules: [], notes: [], groups: [] });
 	});
 
-	it('removes its startup and explicit-load listeners on disposal', () => {
+	it('removes its startup listener on disposal', () => {
 		const test = setup(undefined, url);
 		test.disposePlugin();
 		test.events.dispatch('init');
-		test.events.dispatch('loadProjectByUrl', { projectUrl: url });
 		expect(test.fetch).not.toHaveBeenCalled();
 	});
 
@@ -72,8 +62,11 @@ describe('project URL loader plugin', () => {
 		const pending = new Promise<Response>(resolve => {
 			finish = resolve;
 		});
-		const test = setup(vi.fn<typeof globalThis.fetch>(() => pending));
-		const loading = test.dispatchAsync('loadProjectByUrl', { projectUrl: url });
+		const test = setup(
+			vi.fn<typeof globalThis.fetch>(() => pending),
+			url
+		);
+		const loading = test.dispatchAsync('init');
 		test.disposePlugin();
 		finish(new Response(source));
 		await loading;

@@ -15,18 +15,6 @@ export function createSessionPersistencePlugin({
 		id: 'session-persistence',
 		setup: ({ store, events }) => {
 			const state = store.getState();
-			let savedProject: ProjectObjectModel | null = null;
-			if (restoreOnStartup) {
-				try {
-					const saved = storage.getItem(storageKey);
-					if (saved !== null) savedProject = JSON.parse(saved);
-				} catch (error) {
-					logError(state, `Failed to restore editor session: ${String(error)}`);
-				}
-			}
-			const restore = () => {
-				if (savedProject !== null) events.dispatch('loadProject', { project: savedProject });
-			};
 			const save = () => {
 				const saved = JSON.stringify(serializeToProject(state));
 				try {
@@ -35,17 +23,28 @@ export function createSessionPersistencePlugin({
 					logError(state, `Failed to save editor session: ${String(error)}`);
 				}
 			};
-			store.subscribe('codeBlockRendering.codeBlocks', save);
-			store.subscribe('codeBlockRendering.selectedCodeBlock.code', save);
-			store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', save);
-			events.on('init', restore);
-			events.on('saveSession', save);
+			const initialize = () => {
+				let project: ProjectObjectModel | null = null;
+				if (restoreOnStartup) {
+					try {
+						const saved = storage.getItem(storageKey);
+						if (saved !== null) project = JSON.parse(saved);
+					} catch (error) {
+						logError(state, `Failed to restore editor session: ${String(error)}`);
+					}
+				}
+				if (project !== null) events.dispatch('loadProject', { project });
+				store.subscribe('codeBlockRendering.codeBlocks', save);
+				store.subscribe('codeBlockRendering.selectedCodeBlock.code', save);
+				store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', save);
+				save();
+			};
+			events.on('init', initialize);
 			return () => {
+				events.off('init', initialize);
 				store.unsubscribe('codeBlockRendering.codeBlocks', save);
 				store.unsubscribe('codeBlockRendering.selectedCodeBlock.code', save);
 				store.unsubscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', save);
-				events.off('init', restore);
-				events.off('saveSession', save);
 			};
 		},
 	};

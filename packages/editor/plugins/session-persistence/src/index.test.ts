@@ -1,7 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { setupPlugins } from './__tests__/setup';
+import { setupPlugin } from './__tests__/setup';
 import { createSessionPersistencePlugin } from './index';
 
 const cleanups: Array<() => void> = [];
@@ -18,7 +18,7 @@ function createStorage() {
 	};
 }
 function setup(storage = createStorage(), restoreOnStartup = true, storageKey = 'session') {
-	const test = setupPlugins([createSessionPersistencePlugin({ storage, storageKey, restoreOnStartup })]);
+	const test = setupPlugin(createSessionPersistencePlugin({ storage, storageKey, restoreOnStartup }));
 	cleanups.push(test.dispose);
 	const boot = () => {
 		test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
@@ -31,15 +31,18 @@ afterEach(() => {
 });
 
 describe('session persistence plugin', () => {
-	it('captures the stored session before generic startup initializes an empty project', () => {
+	it('restores on init before starting autosaves', () => {
 		const storage = createStorage();
 		storage.setItem('session', JSON.stringify(project));
+		storage.setItem.mockClear();
 		const test = setup(storage);
 		test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
-		expect(JSON.parse(storage.getItem('session')!).modules).toEqual([]);
+		expect(storage.getItem).not.toHaveBeenCalled();
+		expect(storage.setItem).not.toHaveBeenCalled();
 		test.events.dispatch('init');
 		expect(test.state.codeBlockRendering.codeBlocks.some(block => block.name === 'retained')).toBe(true);
 		expect(JSON.parse(storage.getItem('session')!).modules[0].code).toContain('module retained');
+		expect(storage.setItem).toHaveBeenCalledOnce();
 	});
 
 	it('keeps an empty project when no session exists', () => {
@@ -89,7 +92,6 @@ describe('session persistence plugin', () => {
 		test.events.dispatch('loadProject', { project: grouped });
 		const group = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'voice')!;
 		test.store.set('codeBlockRendering.codeBlocks', group.nestedProjectCodeBlocks!);
-		test.events.dispatch('saveSession');
 		expect(JSON.parse(test.storage.getItem('session')!).groups[0].name).toBe('voice');
 	});
 
@@ -105,7 +107,6 @@ describe('session persistence plugin', () => {
 		first.disposePlugin();
 		storage.setItem.mockClear();
 		first.store.set('codeBlockRendering.codeBlocks', []);
-		first.events.dispatch('saveSession');
 		first.events.dispatch('init');
 		expect(storage.setItem).not.toHaveBeenCalled();
 		second.events.dispatch('loadProject', { project });

@@ -14,7 +14,7 @@ export function setupPlugin(plugin: EditorPlugin) {
 		directives: store.directives,
 		drawers: createCodeBlockDrawerRegistry(),
 	});
-	const dispatchAsync = async (name: string, payload: unknown) => {
+	const dispatchAsync = async (name: string, payload?: unknown) => {
 		await Promise.all(emitter.listeners(name).map(listener => listener(payload)));
 	};
 	return {
