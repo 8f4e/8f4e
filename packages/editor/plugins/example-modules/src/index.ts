@@ -40,7 +40,7 @@ export function createExampleModulesPlugin({
 				const gap = 4;
 				const vGrid = state.viewport.vGrid;
 				let gridX = Math.round((state.viewport.x + x) / vGrid) + getCodeBlockGridWidth(code) + gap;
-				for (const dependency of await catalog.getModuleDependencies(slug)) {
+				for (const dependency of catalog.getDependenciesFromSource(slug, source)) {
 					let dependencySource: string;
 					try {
 						dependencySource = await catalog.getModule(dependency);

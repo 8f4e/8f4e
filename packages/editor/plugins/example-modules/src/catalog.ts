@@ -45,7 +45,6 @@ export function createModuleCatalog(sources: ReadonlyMap<string, () => Promise<s
 				.join('/'),
 		});
 	}
-	modules.sort((left, right) => left.slug.localeCompare(right.slug));
 	async function getModule(slug: string): Promise<string> {
 		const cached = loadedSources.get(slug);
 		if (cached !== undefined) return cached;
@@ -53,10 +52,8 @@ export function createModuleCatalog(sources: ReadonlyMap<string, () => Promise<s
 		loadedSources.set(slug, source);
 		return source;
 	}
-	async function getModuleDependencies(slug: string): Promise<string[]> {
-		return extractUseDependencies(await getModule(slug)).filter(
-			dependency => dependency !== slug && loaders.has(dependency)
-		);
+	function getDependenciesFromSource(slug: string, source: string): string[] {
+		return extractUseDependencies(source).filter(dependency => dependency !== slug && loaders.has(dependency));
 	}
-	return { modules, getModule, getModuleDependencies };
+	return { modules, getModule, getDependenciesFromSource };
 }
