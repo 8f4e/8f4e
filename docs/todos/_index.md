@@ -82,6 +82,7 @@ Active todo files are listed below.
 | 466 | Add Scientifica font to the editor | 🟢 | 4-8h | 2026-07-30 | Import Scientifica's regular 11-pixel BDF face into the sprite-generator pipeline and expose the condensed font through editor configuration. |
 | 515 | Share editor plugin test setup | 🟢 | TBD | 2026-10-27 | Explore shared setup for compiled projects, memory, editor lifecycle, and drawing; decide the scope and API later. |
 | 516 | Separate browser-dependent plugin lists | 🟢 | TBD | 2026-10-27 | Expose separate plugins and browserPlugins lists in browser composition while sharing the plugin contract and lifecycle. |
+| 518 | Investigate optional editing locks for agent sessions | 🟢 | TBD | 2026-10-28 | Evaluate whether temporary agent editing sessions improve on revision checks, including takeover, timeout, revocation, and project-switch behavior. |
 
 ## Completed TODOs
 
