@@ -7,7 +7,8 @@
   its own package named `@8f4e/editor-plugin-<feature>`. Keep plugin directories short and package names explicit.
 - `@8f4e/editor-core` is the minimal reusable editor.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
-- `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, examples, and storage.
+- `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, example source discovery,
+  and storage.
 - `@8f4e/editor-website` is the thin deployable Vite host for the default composition.
 - `@8f4e/editor-plugin-toggle-skip-execution` owns the optional single-module execution toggle. The switch widget
   lives in `@8f4e/editor-plugin-switch`, momentary buttons in `@8f4e/editor-plugin-button`, waveforms in
@@ -24,6 +25,8 @@
   Plugin contracts and installation live in `editor-core`,
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   The standard plugin set is composed in `editor-default`.
+  `editor-plugin-example-modules` owns built-in module menus, catalog metadata, lazy source caching, public-block
+  selection, and dependency insertion. The default editor supplies source loaders; core owns generic submenu registration.
 
 ## Build, Test, Dev
 
@@ -38,6 +41,8 @@
   `npx nx run @8f4e/editor-plugin-screenshot:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-project-export:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-wasm-export:build|test|typecheck`.
+- Verify example module browsing with `npx nx run @8f4e/editor-plugin-example-modules:build|test|typecheck` and
+  `npx nx run @8f4e/editor-plugin-example-modules:test:screenshot`.
 - Start the website with `npx nx run @8f4e/editor-website:dev`.
 - Verify binary assets with `npx nx run @8f4e/editor-plugin-binary-assets:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-binary-assets:test:screenshot`.

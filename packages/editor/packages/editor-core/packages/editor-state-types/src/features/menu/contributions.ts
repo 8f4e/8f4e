@@ -1,6 +1,6 @@
-import type { CodeBlockGraphicData, ContextMenuItem, State } from '../../index';
+import type { CodeBlockGraphicData, ContextMenuItem, MenuGenerator, State } from '../../index';
 
-interface EditorMenuContexts {
+interface EditorMenuItemContexts {
 	mainMenu: { state: State };
 	moduleMenu: {
 		state: State;
@@ -9,13 +9,15 @@ interface EditorMenuContexts {
 	};
 }
 
-export type EditorMenuId = keyof EditorMenuContexts;
-export type EditorMenuItemContext<Menu extends EditorMenuId> = EditorMenuContexts[Menu];
-export type EditorMenuItemProvider<Menu extends EditorMenuId> = (
+export type EditorMenuItemSlot = keyof EditorMenuItemContexts;
+export type EditorMenuItemContext<Menu extends EditorMenuItemSlot> = EditorMenuItemContexts[Menu];
+export type EditorMenuItemProvider<Menu extends EditorMenuItemSlot> = (
 	context: EditorMenuItemContext<Menu>
 ) => ContextMenuItem | undefined;
 
 export interface EditorMenuRegistry {
+	/** Register a complete menu; open it with openSubMenu and a matching menu ID and payload. */
+	registerMenu: <Payload = unknown>(menu: string, generator: MenuGenerator<Payload>) => () => void;
 	/** Derive an item each time the menu opens; return undefined to omit it. */
-	registerItem: <Menu extends EditorMenuId>(menu: Menu, provider: EditorMenuItemProvider<Menu>) => () => void;
+	registerItem: <Menu extends EditorMenuItemSlot>(menu: Menu, provider: EditorMenuItemProvider<Menu>) => () => void;
 }

@@ -1,5 +1,7 @@
+import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
+import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
 import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
@@ -22,6 +24,9 @@ const { projectFiles, getCodeBuffer, getMemory } = vi.hoisted(() => ({
 }));
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('@8f4e/editor-plugin-example-modules', () => ({
+	createExampleModulesPlugin: vi.fn(() => ({ id: 'example-modules', setup: () => () => {} })),
+}));
 vi.mock('@8f4e/editor-plugin-keyboard-memory', () => ({
 	createKeyboardMemoryPlugin: vi.fn(() => ({ id: 'keyboard-memory', setup: () => () => {} })),
 }));
@@ -70,6 +75,7 @@ describe('default editor plugins', () => {
 				.mock.calls.at(-1)?.[1]
 				.plugins?.map(plugin => plugin.id)
 		).toEqual([
+			'example-modules',
 			'assertion-markers',
 			'keyboard-memory',
 			'midi-input',
@@ -94,6 +100,7 @@ describe('default editor plugins', () => {
 			'screenshot',
 		]);
 		const getBytes = vi.mocked(createBinaryAssetsPlugin).mock.calls[0][0].getMemoryBytes;
+		expect(createExampleModulesPlugin).toHaveBeenCalledWith({ sources: exampleModuleSources });
 		expect(createKeyboardMemoryPlugin).toHaveBeenCalledWith({ inputTarget: canvas });
 		expect(createMidiInputPlugin).toHaveBeenCalledWith({ navigator: window.navigator, getMemory, getCodeBuffer });
 		expect(getBytes()).toBeUndefined();
@@ -132,6 +139,7 @@ describe('default editor plugins', () => {
 		editor.dispose();
 		const withoutPlugins = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage, plugins: [] });
 		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toEqual([]);
+		expect(createExampleModulesPlugin).not.toHaveBeenCalled();
 		expect(createBinaryAssetsPlugin).not.toHaveBeenCalled();
 		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();
 		expect(createMidiInputPlugin).not.toHaveBeenCalled();

@@ -1,9 +1,11 @@
+import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
 import { barsPlugin } from '@8f4e/editor-plugin-bars';
 import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { buttonPlugin } from '@8f4e/editor-plugin-button';
 import { crossfadePlugin } from '@8f4e/editor-plugin-crossfade';
+import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { meterPlugin } from '@8f4e/editor-plugin-meter';
 import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
@@ -22,7 +24,6 @@ import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
 import { createWatchPlugin } from '@8f4e/editor-plugin-watch';
 import { wavePlugin } from '@8f4e/editor-plugin-wave';
 import { createCompilerService } from './compiler-callback';
-import { getListOfModules, getModule, getModuleDependencies } from './examples/moduleRegistry';
 import { getProject } from './get-project';
 import { createRuntimeRegistry } from './runtime-registry';
 import { resolveStdlibInclude } from './stdlib-resolver';
@@ -44,6 +45,7 @@ export function createDefaultEditorPlugins(options: {
 	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
+		createExampleModulesPlugin({ sources: exampleModuleSources }),
 		assertionMarkersPlugin,
 		createKeyboardMemoryPlugin({ inputTarget: options.canvas }),
 		createMidiInputPlugin({
@@ -137,9 +139,6 @@ export async function mountDefaultEditor(
 			initialEditorMode,
 			runtimeRegistry: createRuntimeRegistry(compilerService, sharedAudioContext),
 			callbacks: {
-				getListOfModules,
-				getModule,
-				getModuleDependencies,
 				getProject,
 				resolveInclude: resolveStdlibInclude,
 				compileCode: (input, compilerOptions) => compilerService.compileCode(input, compilerOptions, editor),

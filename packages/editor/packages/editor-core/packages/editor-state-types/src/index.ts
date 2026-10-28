@@ -161,18 +161,7 @@ export type EditorMode = 'view' | 'edit';
 
 // Callbacks interface contains all callback functions (top-level public API)
 export interface Callbacks {
-	// Module and project loading callbacks
-	getListOfModules?: () => Promise<
-		Array<{
-			slug: string;
-			title: string;
-			description?: string;
-			category: string;
-			dependencies?: string[];
-		}>
-	>;
-	getModule?: (slug: string) => Promise<string>;
-	getModuleDependencies?: (slug: string) => Promise<string[]>;
+	// Project loading callback
 	getProject?: (url: string) => Promise<string>;
 
 	// Compilation callback
@@ -229,9 +218,9 @@ export interface Callbacks {
 
 // Options interface for editor initialization (top-level public API)
 export type {
-	EditorMenuId,
 	EditorMenuItemContext,
 	EditorMenuItemProvider,
+	EditorMenuItemSlot,
 	EditorMenuRegistry,
 } from './features/menu/contributions';
 

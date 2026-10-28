@@ -37,13 +37,6 @@ export const mainMenu = (state: State): ContextMenuItem[] => [
 					close: true,
 					disabled: !state.callbacks.readClipboardText,
 				},
-				{
-					title: 'Add Built-in Module',
-					action: 'openSubMenu',
-					payload: { menu: 'moduleCategoriesMenu', path: [] },
-					close: false,
-					disabled: !state.callbacks.getListOfModules,
-				},
 			]
 		: []),
 	...(state.featureFlags.editing ? [{ divider: true }] : []),

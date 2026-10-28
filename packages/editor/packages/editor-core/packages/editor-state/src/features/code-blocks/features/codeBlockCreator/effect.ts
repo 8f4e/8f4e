@@ -15,8 +15,6 @@ import upsertPos from '../directives/pos/upsert';
 import { hasDirective } from '../directives/utils';
 import findEntryNameAtPosition from '../entryOutlines/findEntryNameAtPosition';
 import { findProjectSlicePath } from '../projectGroupNavigation/effect';
-import extractPublicBlockFromModuleSource from './extractPublicBlockFromModuleSource';
-import { insertDependencies } from './insertDependencies';
 import { pasteMultipleBlocks } from './pasteMultipleBlocks';
 
 type NewCodeBlockType = Extract<DocumentBlockType, 'module' | 'function' | 'note' | 'prototype'>;
@@ -305,45 +303,6 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 		incrementCompilerInputRevision(store);
 	}
 
-	async function onAddCodeBlockBySlug({
-		codeBlockSlug,
-		x,
-		y,
-	}: {
-		codeBlockSlug: string;
-		x: number;
-		y: number;
-	}): Promise<void> {
-		if (!state.callbacks.getModule) {
-			console.warn('No getCodeBlock callback provided');
-			return;
-		}
-
-		// Load the requested module
-		const requestedModuleCodeText = await state.callbacks.getModule(codeBlockSlug);
-
-		// Add the requested module at the clicked position
-		const requestedCode = extractPublicBlockFromModuleSource(requestedModuleCodeText);
-		onAddCodeBlock({ code: requestedCode, x, y, isNew: false });
-
-		// If the module has dependencies, insert them to the right
-		const dependencies = state.callbacks.getModuleDependencies
-			? await state.callbacks.getModuleDependencies(codeBlockSlug)
-			: [];
-		if (dependencies.length > 0) {
-			await insertDependencies({
-				dependencies,
-				getModule: state.callbacks.getModule,
-				requestedModuleCode: requestedCode,
-				clickX: x,
-				clickY: y,
-				state,
-				onAddCodeBlock,
-			});
-		}
-	}
-
-	events.on('addCodeBlockBySlug', onAddCodeBlockBySlug);
 	events.on('addCodeBlock', onAddCodeBlock);
 	events.on('copyCodeBlock', onCopyCodeBlock);
 	events.on('deleteCodeBlock', onDeleteCodeBlock);

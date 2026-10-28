@@ -44,3 +44,6 @@
   inline assertion error messages in core. Do not add marker fields to `CodeBlockGraphicData`.
 - Keyboard-to-memory and MIDI input belong to their plugin packages. The default host supplies their browser and
   compiler resources through factories; core owns no input-specific schemas, WASM export services, or environment-plugin manager.
+- Example module browsing and loading belong to `editor-plugin-example-modules`. Core exposes complete menu
+  registration with opaque payloads and generic source parsing/measurement helpers. Keep category trees, module
+  catalogs, public-block selection, and dependency insertion out of core; plugins dispatch `addCodeBlock`.

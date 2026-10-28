@@ -21,7 +21,7 @@ const storeState: {
 };
 
 const store = {
-	menus: { registerItem: vi.fn(() => () => {}) },
+	menus: { registerItem: vi.fn(() => () => {}), registerMenu: vi.fn(() => () => {}) },
 	directives: { register: vi.fn(() => () => {}) },
 	getState: vi.fn(() => storeState),
 	set: vi.fn((path: string, value: unknown) => {

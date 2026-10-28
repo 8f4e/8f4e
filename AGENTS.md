@@ -26,10 +26,10 @@
   aliases like `@8f4e/editor-default` and `@8f4e/editor-core`.
 - Docs and assets: `docs/`, selected files copied via Vite static-copy.
 - Example builds generate module sources without precompiling project WASM files. The default editor discovers
-  `.8f4em` sources through `@8f4e/vite-plugin-sources`, derives its module catalog from file paths, and loads source
-  chunks on demand. Modules ship with the website builds. The product website owns the project catalog and bundles
-  `.8f4e` project sources as downloadable assets. Both consumers depend on `@8f4e/examples` so source changes are
-  included in build cache inputs and dependency watches.
+  `.8f4em` sources through `@8f4e/vite-plugin-sources` and supplies lazy loaders to the example-modules plugin,
+  which derives its catalog from paths and loads source chunks on demand. Modules ship with the website builds.
+  The product website owns the project catalog and bundles `.8f4e` project sources as downloadable assets. Both
+  consumers depend on `@8f4e/examples` so source changes are included in build cache inputs and dependency watches.
 - Nested `AGENTS.md` files exist in some packages to provide package-specific guidance; they extend (and may override) this root file for their scope.
 
 ## Agent Skills

@@ -22,10 +22,10 @@ export default function generateContextMenuMock(): ContextMenu {
 				close: true,
 			},
 			{
-				title: '......... Add Built-in Module >',
+				title: '................. More Actions >',
 				action: 'openSubMenu',
 				payload: {
-					menu: 'moduleCategoriesMenu',
+					menu: 'moreActionsMenu',
 				},
 				close: false,
 				disabled: false,
