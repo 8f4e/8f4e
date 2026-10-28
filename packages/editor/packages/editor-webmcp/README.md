@@ -33,43 +33,46 @@ One active bridge is allowed per document. It keeps the supplied editor referenc
 
 | Tool | Arguments | Result |
 | --- | --- | --- |
-| `get_project` | `{}` | Only the currently expanded group or root as one 8f4e `code` string, with revision, location, editability, history availability, and a block-handle line-range index. Child groups show declarations without their contents. |
+| `get_project` | `{}` | A plain 8f4e source string for only the currently expanded group or root. Child groups show declarations without their contents. |
+| `get_project_metadata` | `{}` | Current revision, location, editability, and undo/redo availability. |
 | `expand_group` | `{ name }` | Navigates the editor into a child group of the current level. Returns location and revision only. |
 | `go_to_parent` / `go_to_root` | `{}` | Navigates the editor to the parent or root. Returns location and revision only. |
-| `get_block` | `{ type, name }` | Source string of a block in the currently expanded group or root, plus location and revision. |
+| `get_block` | `{ type, name }` | A plain source string for the matching block in the current group or root. |
 | `update_block` | `{ type, name, code, expectedRevision }` | Replaces that block's source in the current scope and returns the new revision. |
-| `get_block_metadata` | `{ blockId }` | Current revision and the block's group path, execution entry, type, name, and grid position. |
-| `apply_edits` | `{ expectedRevision, edits }` | New revision and handles of inserted blocks. The complete batch is validated before application and creates one undo step. |
+| `get_block_metadata` | `{ type, name }` | Current revision and the block's group path, execution entry, type, name, and grid position. |
+| `apply_edits` | `{ expectedRevision, edits }` | New revision after one atomic undoable batch. |
 | `undo` / `redo` | `{ expectedRevision }` | New revision after one history step. |
 | `get_diagnostics` | `{}` | Project revision, compiler input revision, and diagnostics from the optional host-provided read handle. |
 
 `get_diagnostics` is registered only when the host supplies `getDiagnostics`. The compiler plugin owns that handle. Its `status` is `pending`, `compiling`, `ready`, or `disposed`; `completedRevision` identifies the compiler input that produced a final result. Pending compilations do not expose errors from a previous input as current errors.
 
-Read `get_project` before writing. It always reads the editor's current location and takes no group selector. To inspect a child group, navigate with `expand_group({ name })`, then call `get_project` again. Use `go_to_parent` or `go_to_root` to leave a group. Navigation changes the same editor view the user sees and returns no source. Human navigation also changes the scope used by subsequent tools.
+`get_project` returns the source string itself, without a JSON envelope, block index, identifiers, or line ranges. It always reads the editor's current location and takes no group selector. To inspect a child group, navigate with `expand_group({ name })`, then call `get_project` again. Use `go_to_parent` or `go_to_root` to leave a group. Navigation changes the same editor view the user sees and returns no source. Human navigation also changes the scope used by subsequent tools.
 
-Each read contains exactly one level. At the root it includes the `8f4e/v1` header and entry wrappers; inside a group it includes that group's wrapper and immediate blocks. Child group declarations retain their directives and exposure lines, with descendants hidden. These inspection views support unfinished source without export validation.
+Each project read contains exactly one level. At the root it includes the `8f4e/v1` header and entry wrappers; inside a group it includes that group's wrapper and immediate blocks. Child group declarations retain their directives and exposure lines, with descendants hidden. These inspection views support unfinished source without export validation.
 
-`get_block` and `update_block` resolve both type and name within the currently expanded group or root. They never search other groups. Duplicate matches in the current scope return `ambiguous_block`; use the source view's handles for disambiguation through `apply_edits`. Metadata lookup and batch edits also accept only handles in the current scope. Navigation itself does not change the source revision.
+All block-targeting tools use the same `{ type, name }` selector, such as `{ type: 'note', name: 'colors' }` for `note colors` or `{ type: 'module', name: 'oscillator' }` for `module oscillator`. Names come from source declarations. For an unnamed block use an empty name. Selectors resolve only within the currently expanded group or root. Multiple matches return `ambiguous_block` without applying edits; name blocks uniquely in source before targeting one. Tools do not accept or return editor block identifiers.
 
-The `blocks` array contains only `{ blockId, startLine, endLine }` entries for blocks directly shown in that code string. Ranges are one-based and inclusive, letting agents associate source with editing handles without receiving a second copy of its code. The revision belongs to the entire editor instance; a snapshot from a previous gallery selection is rejected even if the replacement has identical source. Revisions also change after persisted source/layout changes, undo/redo, or project loading. On `stale_revision`, refresh the relevant source view and reconsider the edits before retrying.
+Before writing, call `get_project_metadata`, then read the relevant source with `get_project` or `get_block`, and use that metadata revision as `expectedRevision`. This ordering ensures a source change between the metadata read and the edit produces `stale_revision`. The revision belongs to the entire editor instance, so revisions from a previous gallery selection are rejected even if the replacement has identical source. Persisted source/layout changes, undo/redo, and project loading advance it. Navigation itself does not. On `stale_revision`, repeat the reads and reconsider the edit.
 
-Supported edit shapes:
+Supported batch edit shapes use `operation` for the action and `type` for the source block type:
 
 ```ts
-{ type: 'insert', code: 'module counter\n; @pos 10 20\nint value 0\nmoduleEnd', entry: 'main' }
-{ type: 'update', blockId, code: 'module counter\n; @pos 30 20\nint value 1\nmoduleEnd' }
-{ type: 'delete', blockId }
+{ operation: 'insert', code: 'module oscillator\n; @pos 10 20\nint value 0\nmoduleEnd', entry: 'main' }
+{ operation: 'update', type: 'module', name: 'oscillator', code: 'module oscillator\n; @pos 30 20\nint value 1\nmoduleEnd' }
+{ operation: 'delete', type: 'note', name: 'colors' }
 ```
 
-Each `code` value is a source string. The bridge joins source lines for reads and splits incoming source on line endings for edits, preserving blank lines, indentation, and trailing newlines. Position comes from `; @pos x y` in the source. Inserts and updates preserve the supplied source, and ordinary blocks use `(0, 0)` when the directive is missing or invalid, matching project loading. Move a block by updating its `@pos` line; there are no separate coordinate inputs or move operations. Inserts use the currently expanded group or root, and default to entry `main` for modules. An explicit `projectPath` must match the current location. Module updates may also supply `entry`.
+Batch selectors resolve against the source before the batch is applied. The complete batch is validated before changing the editor, and all operations form one undo step. Write results contain only `{ revision }`; inserted names are already present in the submitted source.
 
-Block handles distinguish duplicate block IDs in nested project scopes. Treat them as opaque and refresh them after editing. Group blocks can be moved, deleted, or have their source updated while retaining the group name; creating or renaming project groups is not part of this command surface. Whole-project loading stays separate and continues through the existing editor UI and host startup paths.
+Each `code` value is a source string. The bridge joins source lines for reads and splits incoming source on line endings for edits, preserving blank lines, indentation, and trailing newlines. Position comes from `; @pos x y` in the source. Inserts and updates preserve the supplied source, and ordinary blocks use `(0, 0)` when the directive is missing or invalid, matching project loading. Move a block by updating its `@pos` line; there are no separate coordinate inputs or move operations. Inserts always use the current group or root, and default to entry `main` for modules. Batch module updates may also supply `entry`.
+
+Group blocks can be moved, deleted, or have their source updated while retaining the group name; creating or renaming project groups is not part of this command surface. Whole-project loading stays separate and continues through the existing editor UI and host startup paths.
 
 ## Public editor API
 
 The same editing operations are available without WebMCP through `editor.editing.getSnapshot()`, `applyEdits({ expectedRevision, edits })`, `undo({ expectedRevision })`, and `redo({ expectedRevision })`. `editor.navigation.openGroup(blockId)`, `goToParentGroup()`, and `goToRoot()` control the shared editor view. Snapshots expose its current `projectPath` (empty at the root). The general editing API can address any project scope; the WebMCP bridge restricts its tools to the currently displayed scope.
 
-The editor API retains its complete structured snapshot, including the canonical project and source as line arrays. Its `blocks` entries are `{ blockId, block }`, where `block` is a detached copy of the existing `CodeBlockGraphicData` model, including its rendering data and derived values. Maps and connections between blocks are preserved by the snapshot; it is not a separate JSON-oriented block model. Source remains authoritative for code-derived properties. Agent-specific filtering, one-level traversal, and string conversion belong only to this bridge. Source views omit the duplicate canonical project and keep block metadata in the separate lookup tool.
+The editor API retains its complete structured snapshot, including the canonical project and source as line arrays. Its `blocks` entries are `{ blockId, block }`, where `block` is a detached copy of the existing `CodeBlockGraphicData` model, including its rendering data and derived values. Maps and connections between blocks are preserved by the snapshot; it is not a separate JSON-oriented block model. Source remains authoritative for code-derived properties. Agent-specific filtering, one-level traversal, and string conversion belong only to this bridge. Source reads expose only source strings. The bridge resolves source-level selectors to internal editor handles, strips editor identifiers from results, and keeps metadata in dedicated tools.
 
 Writes respect edit mode and follow existing project restoration, derived layout, autosave, and compilation mechanisms. They preserve the viewed project group and viewport for edit batches and do not dispatch `loadProject`, so in-project edits keep browser file associations. Invalid batches leave project content and undo history unchanged. Source edits may produce ordinary compiler diagnostics.
 

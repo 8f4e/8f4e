@@ -1,40 +1,11 @@
 import type { Editor, EditorEdit, EditorProjectSnapshot } from '@8f4e/editor-core';
-import {
-	blockSchema,
-	editsSchema,
-	emptySchema,
-	groupSchema,
-	metadataSchema,
-	revisionSchema,
-	updateBlockSchema,
-} from './schema.js';
-import { createSourceView, type SourceView } from './source-view.js';
+import { blockSchema, editsSchema, emptySchema, groupSchema, revisionSchema, updateBlockSchema } from './schema.js';
+import { createSourceView } from './source-view.js';
 
-export type WebMcpProjectSnapshot = Pick<EditorProjectSnapshot, 'revision' | 'editable' | 'canUndo' | 'canRedo'> &
-	SourceView;
-
-function readEdits(input: unknown): EditorEdit[] {
-	if (!Array.isArray(input)) throw new Error('edits must be an array');
-	return input.map(value => {
-		if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid edit');
-		const edit = value as Record<string, unknown>;
-		const fields =
-			edit.type === 'insert'
-				? ['type', 'code', 'projectPath', 'entry']
-				: edit.type === 'update'
-					? ['type', 'blockId', 'code', 'entry']
-					: edit.type === 'delete'
-						? ['type', 'blockId']
-						: undefined;
-		if (!fields || Object.keys(edit).some(key => !fields.includes(key)))
-			throw new Error('Use insert, update, or delete with source code; position belongs in the @pos directive');
-		if (edit.type === 'insert' || edit.type === 'update') {
-			if (typeof edit.code !== 'string') throw new Error('code must be a source string');
-			return { ...edit, code: edit.code.split(/\r\n|\n|\r/) } as EditorEdit;
-		}
-		return edit as EditorEdit;
-	});
-}
+export type WebMcpProjectMetadata = Pick<
+	EditorProjectSnapshot,
+	'revision' | 'projectPath' | 'editable' | 'canUndo' | 'canRedo'
+>;
 
 /** Structural types keep the experimental browser API out of editor-core and global DOM typings. */
 export interface WebMcpTool {
@@ -100,7 +71,8 @@ export function createEditorWebMcp({
 	};
 	const writeRequest = (input: unknown, fields: string[]): Record<string, unknown> & { expectedRevision: string } => {
 		const args = request(input, fields);
-		if (typeof args.expectedRevision !== 'string') throw new Error('expectedRevision from get_project is required');
+		if (typeof args.expectedRevision !== 'string')
+			throw new Error('expectedRevision from get_project_metadata is required');
 		return { ...args, expectedRevision: args.expectedRevision };
 	};
 	const tool = (
@@ -144,12 +116,6 @@ export function createEditorWebMcp({
 	const scopeError = (snapshot: EditorProjectSnapshot, code: string, message: string): never => {
 		throw Object.assign(new Error(message), { code, revision: snapshot.revision });
 	};
-	const currentBlock = (snapshot: EditorProjectSnapshot, id: unknown) => {
-		const target = scopedBlocks(snapshot).find(block => block.blockId === id);
-		if (!target)
-			return scopeError(snapshot, 'block_not_found', 'The block must be in the currently expanded group or root');
-		return target;
-	};
 	const namedBlock = (snapshot: EditorProjectSnapshot, type: unknown, name: unknown) => {
 		if (typeof type !== 'string' || typeof name !== 'string') throw new Error('Block type and name are required');
 		const matches = scopedBlocks(snapshot).filter(target => blockType(target) === type && target.block.name === name);
@@ -159,13 +125,38 @@ export function createEditorWebMcp({
 			return scopeError(
 				snapshot,
 				'ambiguous_block',
-				'Multiple blocks have this type and name in the current scope; use source handles to disambiguate'
+				'Multiple blocks have this type and name in the current scope; give them unique source names before targeting one'
 			);
 		return matches[0];
 	};
+	const readEdits = (input: unknown, snapshot: EditorProjectSnapshot): EditorEdit[] => {
+		if (!Array.isArray(input) || input.length === 0) throw new Error('Provide at least one edit');
+		return input.map(value => {
+			const operation = request(value, ['operation', 'type', 'name', 'code', 'entry']).operation;
+			if (operation !== 'insert' && operation !== 'update' && operation !== 'delete')
+				throw new Error('Use insert, update, or delete operations; position belongs in the @pos directive');
+			const fields =
+				operation === 'insert'
+					? ['operation', 'code', 'entry']
+					: operation === 'update'
+						? ['operation', 'type', 'name', 'code', 'entry']
+						: ['operation', 'type', 'name'];
+			const args = request(value, fields);
+			const target = operation === 'insert' ? undefined : namedBlock(snapshot, args.type, args.name);
+			if (operation === 'delete') return { type: 'delete', blockId: target!.blockId };
+			if (typeof args.code !== 'string') throw new Error('code must be a source string');
+			const source = {
+				code: args.code.split(/\r\n|\n|\r/),
+				...('entry' in args ? { entry: args.entry as string } : {}),
+			};
+			return operation === 'insert'
+				? { type: 'insert', projectPath: snapshot.projectPath, ...source }
+				: { type: 'update', blockId: target!.blockId, ...source };
+		});
+	};
 	const checkRevision = (snapshot: EditorProjectSnapshot, expectedRevision: string) => {
 		if (expectedRevision !== snapshot.revision)
-			scopeError(snapshot, 'stale_revision', 'Read get_project again before editing');
+			scopeError(snapshot, 'stale_revision', 'Read get_project and get_project_metadata again before editing');
 	};
 	const location = () => {
 		const { projectPath, revision } = editing.getSnapshot();
@@ -175,19 +166,24 @@ export function createEditorWebMcp({
 		tool(
 			'get_project',
 			'Read the open 8f4e project',
-			'Read only the currently expanded group or root as one 8f4e code string. Child groups are shown as declarations without their contents. Navigate with expand_group, go_to_parent, or go_to_root, then read again. One-based inclusive source ranges identify editable blocks.',
+			'Return only the currently expanded group or root as a plain 8f4e source string. Child groups are shown as declarations without their contents. Navigate with expand_group, go_to_parent, or go_to_root, then read again. Revision and history information are available separately through get_project_metadata.',
 			emptySchema,
 			true,
 			input => {
 				request(input, []);
-				const snapshot = editing.getSnapshot();
-				return {
-					revision: snapshot.revision,
-					editable: snapshot.editable,
-					canUndo: snapshot.canUndo,
-					canRedo: snapshot.canRedo,
-					...createSourceView(snapshot),
-				} satisfies WebMcpProjectSnapshot;
+				return createSourceView(editing.getSnapshot());
+			}
+		),
+		tool(
+			'get_project_metadata',
+			'Read 8f4e project metadata',
+			'Read the current revision, location, editability, and undo/redo availability without source or block identifiers. Call this before reading source, then use its revision as expectedRevision for writes.',
+			emptySchema,
+			true,
+			input => {
+				request(input, []);
+				const { revision, projectPath, editable, canUndo, canRedo } = editing.getSnapshot();
+				return { revision, projectPath, editable, canUndo, canRedo } satisfies WebMcpProjectMetadata;
 			}
 		),
 		tool(
@@ -228,7 +224,7 @@ export function createEditorWebMcp({
 				const args = request(input, ['type', 'name']);
 				const snapshot = editing.getSnapshot();
 				const target = namedBlock(snapshot, args.type, args.name);
-				return { revision: snapshot.revision, projectPath: snapshot.projectPath, code: target.block.code.join('\n') };
+				return target.block.code.join('\n');
 			}
 		),
 		tool(
@@ -241,29 +237,27 @@ export function createEditorWebMcp({
 				const args = writeRequest(input, ['type', 'name', 'code', 'expectedRevision']);
 				const snapshot = editing.getSnapshot();
 				checkRevision(snapshot, args.expectedRevision);
-				const target = namedBlock(snapshot, args.type, args.name);
-				return editing.applyEdits({
+				const result = editing.applyEdits({
 					expectedRevision: args.expectedRevision,
-					edits: readEdits([{ type: 'update', blockId: target.blockId, code: args.code }]),
+					edits: readEdits([{ operation: 'update', type: args.type, name: args.name, code: args.code }], snapshot),
 				});
+				return { revision: result.revision };
 			}
 		),
 		tool(
 			'get_block_metadata',
 			'Read 8f4e block metadata',
 			"Read a current block's project group path, execution entry, type, name, and grid position. Source is provided by get_project. The result includes the current revision.",
-			metadataSchema,
+			blockSchema,
 			true,
 			input => {
-				const args = request(input, ['blockId']);
-				if (typeof args.blockId !== 'string') throw new Error('blockId from get_project is required');
+				const args = request(input, ['type', 'name']);
 				const snapshot = editing.getSnapshot();
-				const target = currentBlock(snapshot, args.blockId);
-				const { blockId, block } = target;
+				const target = namedBlock(snapshot, args.type, args.name);
+				const { block } = target;
 				return {
 					revision: snapshot.revision,
 					block: {
-						blockId,
 						projectPath: block.projectPath,
 						type: block.nestedProjectCodeBlocks ? 'group' : block.isProjectScope ? 'project' : block.blockType,
 						name: block.name,
@@ -277,36 +271,28 @@ export function createEditorWebMcp({
 		tool(
 			'apply_edits',
 			'Edit the open 8f4e project',
-			'Apply one atomic undoable batch within the currently expanded group or root. Insert/update code is a complete source string. Requires the latest get_project revision. Inserts use the current group and default to entry main. Existing handles must belong to the current group. Set or change positions through the @pos directive in source code.',
+			'Apply one atomic undoable batch within the currently expanded group or root. Insert/update code is a complete source string. Requires the latest get_project_metadata revision. Update/delete operations identify blocks by type and name in the current scope. Inserts use the current group and default to entry main. Set or change positions through the @pos directive in source code.',
 			editsSchema,
 			false,
 			input => {
 				const args = writeRequest(input, ['expectedRevision', 'edits']);
 				const snapshot = editing.getSnapshot();
 				checkRevision(snapshot, args.expectedRevision);
-				const edits = readEdits(args.edits).map(edit => {
-					if (edit.type === 'insert') {
-						if (edit.projectPath !== undefined && edit.projectPath !== snapshot.projectPath)
-							throw new Error('Inserts must target the currently expanded group or root');
-						return { ...edit, projectPath: snapshot.projectPath };
-					}
-					currentBlock(snapshot, edit.blockId);
-					return edit;
-				});
-				return editing.applyEdits({
+				const result = editing.applyEdits({
 					expectedRevision: args.expectedRevision,
-					edits,
+					edits: readEdits(args.edits, snapshot),
 				});
+				return { revision: result.revision };
 			}
 		),
 		...(['undo', 'redo'] as const).map(action =>
 			tool(
 				action,
 				`${action === 'undo' ? 'Undo' : 'Redo'} an 8f4e edit`,
-				`${action === 'undo' ? 'Undo' : 'Redo'} one history step in the bound editor. Requires the latest get_project revision.`,
+				`${action === 'undo' ? 'Undo' : 'Redo'} one history step in the bound editor. Requires the latest get_project_metadata revision.`,
 				revisionSchema,
 				false,
-				input => editing[action](writeRequest(input, ['expectedRevision']))
+				input => ({ revision: editing[action](writeRequest(input, ['expectedRevision'])).revision })
 			)
 		),
 	];

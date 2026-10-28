@@ -1,8 +1,4 @@
 const code = { type: 'string', description: 'Complete source of the block, with newline characters between lines.' };
-const blockId = {
-	type: 'string',
-	description: 'Opaque blockId from the latest get_project source view.',
-};
 const entry = { type: 'string', minLength: 1, pattern: '^\\S+$' };
 
 const object = (properties: Record<string, unknown>, required: string[]) => ({
@@ -13,7 +9,6 @@ const object = (properties: Record<string, unknown>, required: string[]) => ({
 });
 
 export const emptySchema = object({}, []);
-export const metadataSchema = object({ blockId }, ['blockId']);
 export const groupSchema = object(
 	{ name: { type: 'string', description: 'Name of a child group in the currently expanded group or root.' } },
 	['name']
@@ -32,16 +27,25 @@ export const editsSchema = object(
 	{
 		expectedRevision: {
 			type: 'string',
-			description: 'Opaque revision from the latest get_project result.',
+			description: 'Revision from get_project_metadata or the last successful write.',
 		},
 		edits: {
 			type: 'array',
 			minItems: 1,
 			items: {
 				oneOf: [
-					object({ type: { const: 'insert' }, code, projectPath: { type: 'string' }, entry }, ['type', 'code']),
-					object({ type: { const: 'update' }, blockId, code, entry }, ['type', 'blockId', 'code']),
-					object({ type: { const: 'delete' }, blockId }, ['type', 'blockId']),
+					object({ operation: { const: 'insert' }, code, entry }, ['operation', 'code']),
+					object({ operation: { const: 'update' }, type: blockType, name: { type: 'string' }, code, entry }, [
+						'operation',
+						'type',
+						'name',
+						'code',
+					]),
+					object({ operation: { const: 'delete' }, type: blockType, name: { type: 'string' } }, [
+						'operation',
+						'type',
+						'name',
+					]),
 				],
 			},
 		},

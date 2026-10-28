@@ -63,11 +63,12 @@ Register one document-level tool set:
 
 | Tool | Purpose |
 | --- | --- |
-| `get_project` | Return only the currently expanded group or root as a one-level source string and revision. |
+| `get_project` | Return only the currently expanded group or root as a plain one-level source string, without an index or block identifiers. |
+| `get_project_metadata` | Return revision, location, editability, and history information separately from source. |
 | `expand_group` / `go_to_parent` / `go_to_root` | Navigate the editor's shared view and return location only. |
 | `get_block` / `update_block` | Read or replace source by type and name within the current scope. |
-| `get_block_metadata` | Fetch metadata for a block in the current scope on demand. |
-| `apply_edits` | Apply a validated batch within the current scope at an expected revision. |
+| `get_block_metadata` | Fetch metadata by source type and name in the current scope on demand. |
+| `apply_edits` | Apply a validated batch within the current scope at an expected revision, targeting blocks by source type and name. |
 | `undo` / `redo` | Operate on the bound editor's history, with expected-revision checks. |
 | `get_diagnostics` | Return current compiler diagnostics and the revision they describe, when a diagnostic handle is supplied. |
 

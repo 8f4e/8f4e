@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, EditorProjectSnapshot } from '@8f4e/editor-core';
+import type { EditorProjectSnapshot } from '@8f4e/editor-core';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
 import { createSourceView } from './source-view';
@@ -41,57 +41,35 @@ function fixture() {
 	return { snapshot, audio, voices, root };
 }
 
-function assertRanges(
-	view: ReturnType<typeof createSourceView>,
-	blocks: Array<{ blockId: string; block: CodeBlockGraphicData }>
-) {
-	for (const range of view.blocks) {
-		const block = blocks.find(block => block.blockId === range.blockId)!.block;
-		expect(
-			view.code
-				.split('\n')
-				.slice(range.startLine - 1, range.endLine)
-				.join('\n')
-		).toBe(block.code.join('\n'));
-	}
-}
-
 describe('one-level 8f4e source views', () => {
 	it('renders root entries and group shells without exposing any descendants', () => {
 		const { snapshot } = fixture();
 		const view = createSourceView(snapshot);
-		expect(view.code).toBe(
+		expect(view).toBe(
 			'8f4e/v1\n\nentry main\n\ngroup audio\nexpose oscillator:value\ngroupEnd\n\nmodule rootModule\nint value 1\nmoduleEnd\nentryEnd'
 		);
-		expect(view.blocks.map(block => block.blockId)).toEqual(['handle-0', 'handle-4']);
-		expect(view.code).not.toContain('module oscillator');
-		expect(view.code).not.toContain('group voices');
-		assertRanges(view, snapshot.blocks);
+		expect(view).not.toContain('module oscillator');
+		expect(view).not.toContain('group voices');
 	});
 
 	it('reads only the currently expanded group, including nested group shells', () => {
 		const { snapshot } = fixture();
 		snapshot.projectPath = 'audio';
 		const view = createSourceView(snapshot);
-		expect(view.projectPath).toBe('audio');
-		expect(view.code).toBe(
+		expect(view).toBe(
 			'group audio\nexpose oscillator:value\n\nmodule oscillator\nint value 1\nmoduleEnd\n\ngroup voices\n; voice settings\ngroupEnd\ngroupEnd'
 		);
-		expect(view.blocks.map(block => block.blockId)).toEqual(['handle-1', 'handle-2']);
-		expect(view.code).not.toContain('deepSecret');
-		assertRanges(view, snapshot.blocks);
+		expect(view).not.toContain('deepSecret');
 		snapshot.projectPath = 'audio/voices';
 		const nested = createSourceView(snapshot);
-		expect(nested.projectPath).toBe('audio/voices');
-		expect(nested.code).toContain('module deepSecret');
-		expect(nested.code).not.toContain('module oscillator');
-		assertRanges(nested, snapshot.blocks);
+		expect(nested).toContain('module deepSecret');
+		expect(nested).not.toContain('module oscillator');
 	});
 
 	it('reads unfinished code without export validation and rejects an unavailable current scope', () => {
 		const { snapshot, root } = fixture();
 		root.code = ['module unfinished', 'push'];
-		expect(createSourceView(snapshot).code).toContain('module unfinished\npush');
+		expect(createSourceView(snapshot)).toContain('module unfinished\npush');
 		snapshot.projectPath = 'missing';
 		expect(() => createSourceView(snapshot)).toThrow('currently expanded group is unavailable');
 	});
@@ -108,11 +86,10 @@ describe('one-level 8f4e source views', () => {
 		});
 		snapshot.blocks.push({ blockId: 'scope', block: scope });
 		const view = createSourceView(snapshot);
-		expect(view.code).toContain('pass shared\n\n; root comment');
-		expect(view.code).toContain('entry main\n');
-		expect(view.code).toContain('entry secondary\n');
+		expect(view).toContain('pass shared\n\n; root comment');
+		expect(view).toContain('entry main\n');
+		expect(view).toContain('entry secondary\n');
 		snapshot.projectPath = 'audio';
-		expect(createSourceView(snapshot).code).toBe(audio.code.join('\n'));
-		assertRanges(view, snapshot.blocks);
+		expect(createSourceView(snapshot)).toBe(audio.code.join('\n'));
 	});
 });

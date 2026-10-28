@@ -60,49 +60,19 @@ function setup() {
 }
 
 describe('single-editor WebMCP bridge', () => {
-	it('returns metadata on demand while leaving the editor snapshot complete', async () => {
+	it('returns only source strings and keeps metadata separate from the complete editor snapshot', async () => {
 		const view = setup();
 		const before = structuredClone(view.snapshot);
-		const bridge = createEditorWebMcp({
-			document: view.document,
-			editor: { editing: view.editing, navigation: view.navigation },
-		});
-		await bridge.ready;
-		expect(await view.tools.get('get_block_metadata')!.execute({ blockId: 'counter-handle' })).toEqual({
-			revision: 'editor-one:1',
-			block: {
-				blockId: 'counter-handle',
-				projectPath: '',
-				type: 'module',
-				name: 'counter',
-				x: 10,
-				y: 20,
-				entry: 'main',
-			},
-		});
-		expect(await view.tools.get('get_block_metadata')!.execute({ blockId: 'missing' })).toMatchObject({
-			error: { code: 'block_not_found' },
-		});
-		expect(
-			await view.tools.get('apply_edits')!.execute({
-				expectedRevision: 'editor-one:1',
-				edits: [{ type: 'update', blockId: 'counter-handle', code: ['old array format'] }],
-			})
-		).toMatchObject({ error: { code: 'invalid_request' } });
-		expect(view.editing.applyEdits).not.toHaveBeenCalled();
-		expect(view.snapshot).toEqual(before);
-		bridge.dispose();
-	});
-	it('delegates to the supplied editing handle and returns revisioned compiler diagnostics', async () => {
-		const view = setup();
 		const bridge = createEditorWebMcp({
 			document: view.document,
 			editor: { editing: view.editing, navigation: view.navigation },
 			getDiagnostics: () => ({ status: 'pending', completedRevision: null }),
 		});
 		await bridge.ready;
+		const call = (name: string, args = {}) => view.tools.get(name)!.execute(args);
 		expect([...view.tools.keys()]).toEqual([
 			'get_project',
+			'get_project_metadata',
 			'expand_group',
 			'go_to_parent',
 			'go_to_root',
@@ -114,34 +84,92 @@ describe('single-editor WebMCP bridge', () => {
 			'redo',
 			'get_diagnostics',
 		]);
-		expect(await view.tools.get('get_project')!.execute({})).toEqual({
+		expect(await call('get_project')).toBe(
+			'8f4e/v1\n\nentry main\n\n' + view.snapshot.blocks[0].block.code.join('\n') + '\nentryEnd'
+		);
+		expect(await call('get_block', { type: 'module', name: 'counter' })).toBe(
+			view.snapshot.blocks[0].block.code.join('\n')
+		);
+		expect(await call('get_project_metadata')).toEqual({
 			revision: 'editor-one:1',
+			projectPath: '',
 			editable: true,
 			canUndo: false,
 			canRedo: false,
-			code: '8f4e/v1\n\nentry main\n\n' + view.snapshot.blocks[0].block.code.join('\n') + '\nentryEnd',
-			projectPath: '',
-			blocks: [{ blockId: 'counter-handle', startLine: 5, endLine: 8 }],
 		});
-		expect(view.snapshot.project.modules[0].code).toEqual(view.snapshot.blocks[0].block.code);
-		const edits = [{ type: 'insert', code: 'module new\n\n\tpush 1\r\nmoduleEnd\n' }];
-		await view.tools.get('apply_edits')!.execute({ expectedRevision: 'editor-one:1', edits });
-		expect(view.editing.applyEdits).toHaveBeenCalledWith({
-			expectedRevision: 'editor-one:1',
-			edits: [{ type: 'insert', projectPath: '', code: ['module new', '', '\tpush 1', 'moduleEnd', ''] }],
+		expect(await call('get_block_metadata', { type: 'module', name: 'counter' })).toEqual({
+			revision: 'editor-one:1',
+			block: { projectPath: '', type: 'module', name: 'counter', x: 10, y: 20, entry: 'main' },
 		});
-		expect(await view.tools.get('get_diagnostics')!.execute({})).toEqual({
+		expect(await call('get_diagnostics')).toEqual({
 			revision: 'editor-one:1',
 			compilerInputRevision: 1,
 			diagnostics: { status: 'pending', completedRevision: null },
 		});
-		expect(view.tools.get('get_project')!.annotations.readOnlyHint).toBe(true);
-		expect(view.tools.get('apply_edits')!.annotations.readOnlyHint).toBe(false);
+		for (const tool of view.tools.values()) {
+			expect(JSON.stringify(tool.inputSchema)).not.toMatch(/blockId|createdBlockIds/);
+		}
+		expect(view.snapshot).toEqual(before);
 		bridge.dispose();
-		expect(view.tools.size).toBe(0);
 	});
 
-	it('shares the current editor scope for navigation, named reads, updates, and batches', async () => {
+	it('resolves all batch targets by type and name and returns no editor identifiers', async () => {
+		const view = setup();
+		vi.mocked(view.editing.applyEdits).mockReturnValue({
+			revision: 'editor-one:2',
+			createdBlockIds: ['private-created-handle'],
+		});
+		const bridge = createEditorWebMcp({
+			document: view.document,
+			editor: { editing: view.editing, navigation: view.navigation },
+		});
+		await bridge.ready;
+		const result = await view.tools.get('apply_edits')!.execute({
+			expectedRevision: view.snapshot.revision,
+			edits: [
+				{ operation: 'insert', code: 'note colors\n\nhello\r\nnoteEnd\n' },
+				{
+					operation: 'update',
+					type: 'module',
+					name: 'counter',
+					code: 'module renamed\n; @pos -20 30\nmoduleEnd',
+					entry: 'secondary',
+				},
+				{ operation: 'delete', type: 'module', name: 'counter' },
+			],
+		});
+		expect(result).toEqual({ revision: 'editor-one:2' });
+		expect(view.editing.applyEdits).toHaveBeenCalledWith({
+			expectedRevision: view.snapshot.revision,
+			edits: [
+				{ type: 'insert', projectPath: '', code: ['note colors', '', 'hello', 'noteEnd', ''] },
+				{
+					type: 'update',
+					blockId: 'counter-handle',
+					code: ['module renamed', '; @pos -20 30', 'moduleEnd'],
+					entry: 'secondary',
+				},
+				{ type: 'delete', blockId: 'counter-handle' },
+			],
+		});
+		expect(
+			await view.tools.get('update_block')!.execute({
+				type: 'module',
+				name: 'counter',
+				expectedRevision: view.snapshot.revision,
+				code: 'module counter\nmoduleEnd',
+			})
+		).toEqual({ revision: 'editor-one:2' });
+		expect(await view.tools.get('undo')!.execute({ expectedRevision: view.snapshot.revision })).toEqual({
+			revision: 'editor-one:3',
+		});
+		expect(await view.tools.get('redo')!.execute({ expectedRevision: view.snapshot.revision })).toEqual({
+			revision: 'editor-one:4',
+		});
+		bridge.dispose();
+	});
+
+	it('uses the current editor scope for every named block operation', async () => {
 		const view = setup();
 		const child = createMockCodeBlock({
 			projectPath: 'audio',
@@ -149,13 +177,32 @@ describe('single-editor WebMCP bridge', () => {
 			blockType: 'module',
 			code: ['module counter', 'int value 9', 'moduleEnd'],
 		});
+		const note = createMockCodeBlock({
+			projectPath: 'audio',
+			name: 'counter',
+			blockType: 'note',
+			code: ['note counter', 'colors', 'noteEnd'],
+		});
 		const group = createMockCodeBlock({
 			projectPath: '',
 			name: 'audio',
 			code: ['group audio', 'groupEnd'],
-			nestedProjectCodeBlocks: [child],
+			nestedProjectCodeBlocks: [child, note],
 		});
-		view.snapshot.blocks.push({ blockId: 'audio', block: group }, { blockId: 'child', block: child });
+		view.snapshot.blocks.push(
+			{ blockId: 'audio', block: group },
+			{ blockId: 'child', block: child },
+			{ blockId: 'note', block: note },
+			{
+				blockId: 'root-only',
+				block: createMockCodeBlock({
+					projectPath: '',
+					name: 'rootOnly',
+					blockType: 'module',
+					code: ['module rootOnly', 'moduleEnd'],
+				}),
+			}
+		);
 		view.navigation.openGroup.mockImplementation(() => {
 			view.snapshot.projectPath = 'audio';
 		});
@@ -171,20 +218,16 @@ describe('single-editor WebMCP bridge', () => {
 		});
 		await bridge.ready;
 		const call = (name: string, args = {}) => view.tools.get(name)!.execute(args);
-		expect(await call('get_block', { type: 'module', name: 'counter' })).toMatchObject({
-			code: view.snapshot.blocks[0].block.code.join('\n'),
-		});
 		expect(await call('expand_group', { name: 'audio' })).toEqual({
 			projectPath: 'audio',
 			revision: view.snapshot.revision,
 		});
 		expect(view.navigation.openGroup).toHaveBeenCalledWith('audio');
-		expect(await call('get_project')).toMatchObject({
-			projectPath: 'audio',
-			blocks: [{ blockId: 'child', startLine: 3, endLine: 5 }],
-		});
+		expect(await call('get_project')).toContain('int value 9');
+		expect(await call('get_project')).not.toContain('rootOnly');
 		expect(await call('get_project', { name: 'audio' })).toMatchObject({ error: { code: 'invalid_request' } });
-		expect(await call('get_block', { type: 'module', name: 'counter' })).toMatchObject({ code: child.code.join('\n') });
+		expect(await call('get_block', { type: 'module', name: 'counter' })).toBe(child.code.join('\n'));
+		expect(await call('get_block', { type: 'note', name: 'counter' })).toBe(note.code.join('\n'));
 		await call('update_block', {
 			type: 'module',
 			name: 'counter',
@@ -195,52 +238,66 @@ describe('single-editor WebMCP bridge', () => {
 			expectedRevision: view.snapshot.revision,
 			edits: [{ type: 'update', blockId: 'child', code: ['module counter', 'moduleEnd'] }],
 		});
-		for (const edit of [
-			{ type: 'update', blockId: 'counter-handle', code: 'module counter\nmoduleEnd' },
-			{ type: 'delete', blockId: 'counter-handle' },
-		]) {
-			expect(
-				await call('apply_edits', {
-					expectedRevision: view.snapshot.revision,
-					edits: [edit],
-				})
-			).toMatchObject({ error: { code: 'block_not_found' } });
-		}
-		expect(await call('get_block_metadata', { blockId: 'counter-handle' })).toMatchObject({
-			error: { code: 'block_not_found' },
-		});
-		expect(
-			await call('apply_edits', {
-				expectedRevision: view.snapshot.revision,
-				edits: [{ type: 'insert', projectPath: '', code: 'note\nnoteEnd' }],
-			})
-		).toMatchObject({ error: { code: 'invalid_request' } });
 		await call('apply_edits', {
 			expectedRevision: view.snapshot.revision,
-			edits: [{ type: 'insert', code: 'note\nnoteEnd' }],
+			edits: [
+				{ operation: 'delete', type: 'note', name: 'counter' },
+				{ operation: 'insert', code: 'note colors\nnoteEnd' },
+			],
 		});
 		expect(view.editing.applyEdits).toHaveBeenLastCalledWith({
 			expectedRevision: view.snapshot.revision,
-			edits: [{ type: 'insert', projectPath: 'audio', code: ['note', 'noteEnd'] }],
+			edits: [
+				{ type: 'delete', blockId: 'note' },
+				{ type: 'insert', projectPath: 'audio', code: ['note colors', 'noteEnd'] },
+			],
 		});
-		expect(await call('expand_group', { name: 'audio' })).toMatchObject({ error: { code: 'block_not_found' } });
-		expect(await call('get_block', { type: 'function', name: 'counter' })).toMatchObject({
-			error: { code: 'block_not_found' },
-		});
-		view.snapshot.blocks.push({ blockId: 'duplicate', block: structuredClone(child) });
-		expect(await call('get_block', { type: 'module', name: 'counter' })).toMatchObject({
-			error: { code: 'ambiguous_block' },
-		});
+		for (const tool of ['get_block', 'get_block_metadata', 'update_block']) {
+			expect(
+				await call(tool, {
+					type: 'module',
+					name: 'rootOnly',
+					...(tool === 'update_block' ? { code: '', expectedRevision: view.snapshot.revision } : {}),
+				})
+			).toMatchObject({ error: { code: 'block_not_found' } });
+		}
+		vi.mocked(view.editing.applyEdits).mockClear();
 		expect(
-			await call('update_block', { type: 'module', name: 'counter', expectedRevision: 'outdated', code: '' })
+			await call('apply_edits', {
+				expectedRevision: view.snapshot.revision,
+				edits: [
+					{ operation: 'update', type: 'module', name: 'counter', code: child.code.join('\n') },
+					{ operation: 'delete', type: 'module', name: 'rootOnly' },
+				],
+			})
+		).toMatchObject({ error: { code: 'block_not_found' } });
+		expect(view.editing.applyEdits).not.toHaveBeenCalled();
+		view.snapshot.blocks.push({ blockId: 'duplicate', block: structuredClone(child) });
+		for (const tool of ['get_block', 'get_block_metadata', 'update_block']) {
+			expect(
+				await call(tool, {
+					type: 'module',
+					name: 'counter',
+					...(tool === 'update_block' ? { code: '', expectedRevision: view.snapshot.revision } : {}),
+				})
+			).toMatchObject({ error: { code: 'ambiguous_block' } });
+		}
+		expect(
+			await call('apply_edits', {
+				expectedRevision: view.snapshot.revision,
+				edits: [{ operation: 'delete', type: 'module', name: 'counter' }],
+			})
+		).toMatchObject({ error: { code: 'ambiguous_block' } });
+		expect(
+			await call('update_block', { type: 'module', name: 'counter', expectedRevision: 'old', code: '' })
 		).toMatchObject({ error: { code: 'stale_revision' } });
 		expect(await call('go_to_parent')).toMatchObject({ projectPath: '' });
-		view.snapshot.projectPath = 'audio'; // A human can also change the shared editor location.
+		view.snapshot.projectPath = 'audio';
 		expect(await call('go_to_root')).toMatchObject({ projectPath: '' });
 		bridge.dispose();
 	});
 
-	it('accepts positioning in source and rejects separate coordinates and move operations', async () => {
+	it('rejects identifiers, separate coordinates, and invalid edit shapes before changing anything', async () => {
 		const view = setup();
 		const bridge = createEditorWebMcp({
 			document: view.document,
@@ -248,28 +305,24 @@ describe('single-editor WebMCP bridge', () => {
 		});
 		await bridge.ready;
 		const code = 'module counter\n; @pos -20 30\nmoduleEnd';
-		const request = (edits: unknown[]) =>
-			view.tools.get('apply_edits')!.execute({ expectedRevision: view.snapshot.revision, edits });
-		for (const edit of [
-			{ type: 'insert', code, x: 1 },
-			{ type: 'insert', code, y: 2 },
-			{ type: 'update', blockId: 'counter-handle', code, x: 1, y: 2 },
-			{ type: 'move', blockId: 'counter-handle', x: 1, y: 2 },
+		for (const edits of [
+			[],
+			[{ operation: 'insert', code, x: 1 }],
+			[{ operation: 'insert', code, y: 2 }],
+			[{ operation: 'insert', code, projectPath: '' }],
+			[{ operation: 'update', type: 'module', name: 'counter', code: ['old array format'] }],
+			[{ operation: 'update', type: 'module', name: 'counter', code, blockId: 'counter-handle' }],
+			[{ operation: 'delete', blockId: 'counter-handle' }],
+			[{ operation: 'move', type: 'module', name: 'counter', x: 1, y: 2 }],
 		]) {
-			expect(await request([edit])).toMatchObject({ error: { code: 'invalid_request' } });
+			expect(
+				await view.tools.get('apply_edits')!.execute({ expectedRevision: view.snapshot.revision, edits })
+			).toMatchObject({ error: { code: 'invalid_request' } });
 		}
-		expect(view.editing.applyEdits).not.toHaveBeenCalled();
-		await request([
-			{ type: 'insert', code },
-			{ type: 'update', blockId: 'counter-handle', code },
-		]);
-		expect(view.editing.applyEdits).toHaveBeenCalledWith({
-			expectedRevision: view.snapshot.revision,
-			edits: [
-				{ type: 'insert', projectPath: '', code: code.split('\n') },
-				{ type: 'update', blockId: 'counter-handle', code: code.split('\n') },
-			],
+		expect(await view.tools.get('get_block_metadata')!.execute({ blockId: 'counter-handle' })).toMatchObject({
+			error: { code: 'invalid_request' },
 		});
+		expect(view.editing.applyEdits).not.toHaveBeenCalled();
 		bridge.dispose();
 	});
 
@@ -295,7 +348,7 @@ describe('single-editor WebMCP bridge', () => {
 			error: { code: 'disposed' },
 		});
 		expect(view.editing.applyEdits).not.toHaveBeenCalled();
-		expect(view.tools.size).toBe(10);
+		expect(view.tools.size).toBe(11);
 		second.dispose();
 	});
 
