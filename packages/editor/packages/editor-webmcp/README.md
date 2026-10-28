@@ -60,7 +60,7 @@ Block handles distinguish duplicate block IDs in nested project scopes. Treat th
 
 The same operations are available without WebMCP through `editor.editing.getSnapshot()`, `applyEdits({ expectedRevision, edits })`, `undo({ expectedRevision })`, and `redo({ expectedRevision })`.
 
-The editor API retains its complete structured snapshot, including the canonical project, all block metadata, and source as line arrays. Agent-specific filtering and string conversion belong only to this bridge. `get_project` omits the duplicate canonical project and keeps block metadata in the separate lookup tool.
+The editor API retains its complete structured snapshot, including the canonical project and source as line arrays. Its `blocks` entries are `{ blockId, block }`, where `block` is a detached copy of the existing `CodeBlockGraphicData` model, including its rendering data and derived values. Maps and connections between blocks are preserved by the snapshot; it is not a separate JSON-oriented block model. Source remains authoritative for code-derived properties. Agent-specific filtering and string conversion belong only to this bridge. `get_project` omits the duplicate canonical project and keeps block metadata in the separate lookup tool.
 
 Writes respect edit mode and follow existing project restoration, derived layout, autosave, and compilation mechanisms. They preserve the viewed project group and viewport for edit batches and do not dispatch `loadProject`, so in-project edits keep browser file associations. Invalid batches leave project content and undo history unchanged. Source edits may produce ordinary compiler diagnostics.
 

@@ -122,16 +122,12 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 				revision: revision(),
 				compilerInputRevision: state.compilerInputRevision,
 				project: structuredClone(serializeToProject(state)),
-				blocks: flatten(state.codeBlockRendering.rootCodeBlocks).map(block => ({
-					blockId: blockId(block),
-					projectPath: block.projectPath,
-					type: block.nestedProjectCodeBlocks ? 'group' : block.isProjectScope ? 'project' : block.blockType,
-					name: block.name,
-					code: [...block.code],
-					x: block.gridX,
-					y: block.gridY,
-					...(block.entry === undefined ? {} : { entry: block.entry }),
-				})),
+				blocks: structuredClone(
+					flatten(state.codeBlockRendering.rootCodeBlocks).map(block => ({
+						blockId: blockId(block),
+						block,
+					}))
+				),
 				editable: Boolean(state.featureFlags.editing),
 				canUndo: state.historyStack.length > 0,
 				canRedo: state.redoStack.length > 0,

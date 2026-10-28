@@ -1,4 +1,5 @@
 import type { EditorEditingHandle, EditorProjectSnapshot } from '@8f4e/editor-core';
+import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import { createEditorWebMcp, type WebMcpTool } from './index';
 
@@ -29,13 +30,18 @@ function setup() {
 		blocks: [
 			{
 				blockId: 'counter-handle',
-				projectPath: '',
-				type: 'module',
-				name: 'counter',
-				code,
-				x: 10,
-				y: 20,
-				entry: 'main',
+				block: createMockCodeBlock({
+					creationIndex: 7,
+					projectPath: '',
+					blockType: 'module',
+					name: 'counter',
+					code,
+					gridX: 10,
+					gridY: 20,
+					x: 80,
+					y: 320,
+					entry: 'main',
+				}),
 			},
 		],
 		editable: true,
@@ -103,9 +109,9 @@ describe('single-editor WebMCP bridge', () => {
 			editable: true,
 			canUndo: false,
 			canRedo: false,
-			blocks: [{ blockId: 'counter-handle', code: view.snapshot.blocks[0].code.join('\n') }],
+			blocks: [{ blockId: 'counter-handle', code: view.snapshot.blocks[0].block.code.join('\n') }],
 		});
-		expect(view.snapshot.project.modules[0].code).toEqual(view.snapshot.blocks[0].code);
+		expect(view.snapshot.project.modules[0].code).toEqual(view.snapshot.blocks[0].block.code);
 		const edits = [{ type: 'insert', code: 'module new\n\n\tpush 1\r\nmoduleEnd\n' }];
 		await view.tools.get('apply_edits')!.execute({ expectedRevision: 'editor-one:1', edits });
 		expect(view.editing.applyEdits).toHaveBeenCalledWith({

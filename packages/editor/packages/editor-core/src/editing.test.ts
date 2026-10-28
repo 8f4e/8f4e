@@ -30,12 +30,36 @@ function setup(
 }
 
 describe('public editor editing handle', () => {
+	it('returns the full existing block model as a detached graph, including Maps and wire references', () => {
+		const { editing, store } = setup();
+		const live = store.getState().codeBlockRendering.rootCodeBlocks.find(block => block.name === 'original')!;
+		live.gaps.set(0, { size: 2 });
+		live.widgets.inputs.push({
+			codeBlock: live,
+			width: 1,
+			height: 1,
+			x: 0,
+			y: 0,
+			wireX: 0,
+			wireY: 0,
+			id: 'self',
+			allocationUnitAddress: 0,
+		});
+		const { block } = editing.getSnapshot().blocks.find(({ block }) => block.name === 'original')!;
+		expect(block).not.toBe(live);
+		expect(block).toEqual(live);
+		expect(block.widgets.inputs[0].codeBlock).toBe(block);
+		block.gaps.get(0)!.size = 99;
+		block.widgets.inputs[0].codeBlock.code[0] = 'changed snapshot';
+		expect(live.gaps.get(0)!.size).toBe(2);
+		expect(live.code[0]).toBe('module original');
+	});
 	it('returns detached source snapshots and uses one undo step for a coordinated edit batch', () => {
 		const { editing, store, events, compilationChanged } = setup();
 		const original = editing.getSnapshot();
-		const target = original.blocks.find(block => block.name === 'original')!;
+		const target = original.blocks.find(({ block }) => block.name === 'original')!;
 		original.project.modules[0].code[1] = 'corrupt';
-		target.code[1] = 'corrupt';
+		target.block.code[1] = 'corrupt';
 		expect(editing.getSnapshot().project.modules[0].code[1]).toBe('int value 1');
 		const load = vi.fn();
 		events.on('loadProject', load);
@@ -51,7 +75,9 @@ describe('public editor editing handle', () => {
 		});
 		const changed = editing.getSnapshot();
 		expect(changed.project.modules[0].code).toContain('int value 2');
-		expect(changed.blocks.find(block => block.blockId === target.blockId)).toMatchObject({ x: 30, y: 40 });
+		expect(changed.blocks.find(block => block.blockId === target.blockId)).toMatchObject({
+			block: { gridX: 30, gridY: 40 },
+		});
 		expect(changed.blocks.some(block => block.blockId === result.createdBlockIds[0])).toBe(true);
 		expect(store.getState().historyStack).toHaveLength(1);
 		expect(store.getState().viewport).toMatchObject({ x: 124, y: 256 });
@@ -121,12 +147,12 @@ describe('public editor editing handle', () => {
 		const group = store.getState().codeBlockRendering.rootCodeBlocks.find(block => block.name === 'voice')!;
 		events.dispatch('openProjectGroup', { codeBlock: group });
 		const snapshot = editing.getSnapshot();
-		const inner = snapshot.blocks.find(block => block.name === 'inner')!;
+		const inner = snapshot.blocks.find(({ block }) => block.name === 'inner')!;
 		editing.applyEdits({
 			expectedRevision: snapshot.revision,
 			edits: [
 				{ type: 'update', blockId: inner.blockId, code: ['module updatedInner', 'moduleEnd'] },
-				{ type: 'insert', projectPath: inner.projectPath, code: ['module added', 'moduleEnd'] },
+				{ type: 'insert', projectPath: inner.block.projectPath, code: ['module added', 'moduleEnd'] },
 			],
 		});
 		const after = editing.getSnapshot();

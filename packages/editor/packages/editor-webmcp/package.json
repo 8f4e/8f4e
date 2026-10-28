@@ -10,5 +10,5 @@
   "sideEffects": false,
   "license": "MIT",
   "dependencies": { "@8f4e/editor-core": "*" },
-  "devDependencies": { "@8f4e/config": "*", "vitest": "4.1.7" }
+  "devDependencies": { "@8f4e/config": "*", "@8f4e/editor-state-testing": "*", "vitest": "4.1.7" }
 }

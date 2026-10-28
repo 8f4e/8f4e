@@ -1,4 +1,4 @@
-import type { CodeBlockType } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 
 export type EditorEdit =
@@ -7,24 +7,13 @@ export type EditorEdit =
 	| { type: 'move'; blockId: string; x: number; y: number }
 	| { type: 'delete'; blockId: string };
 
-export interface EditorBlockSnapshot {
-	/** Opaque handle valid in this editor at the snapshot's revision. */
-	blockId: string;
-	projectPath: string;
-	type: CodeBlockType | 'group' | 'project';
-	name: string;
-	code: string[];
-	x: number;
-	y: number;
-	entry?: string;
-}
-
 export interface EditorProjectSnapshot {
 	/** Opaque token: revisions from different editor instances cannot be interchanged. */
 	revision: string;
 	compilerInputRevision: number;
 	project: ProjectObjectModel;
-	blocks: EditorBlockSnapshot[];
+	/** Detached copies of existing editor blocks, paired with opaque edit handles. */
+	blocks: Array<{ blockId: string; block: CodeBlockGraphicData }>;
 	editable: boolean;
 	canUndo: boolean;
 	canRedo: boolean;

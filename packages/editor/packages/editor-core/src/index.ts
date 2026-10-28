@@ -35,7 +35,6 @@ import {
 } from './webUiConfig';
 
 export type {
-	EditorBlockSnapshot,
 	EditorEdit,
 	EditorEditingHandle,
 	EditorEditResult,

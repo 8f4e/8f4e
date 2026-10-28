@@ -132,7 +132,7 @@ export function createEditorWebMcp({
 					editable: snapshot.editable,
 					canUndo: snapshot.canUndo,
 					canRedo: snapshot.canRedo,
-					blocks: snapshot.blocks.map(block => ({ blockId: block.blockId, code: block.code.join('\n') })),
+					blocks: snapshot.blocks.map(({ blockId, block }) => ({ blockId, code: block.code.join('\n') })),
 				} satisfies WebMcpProjectSnapshot;
 			}
 		),
@@ -146,8 +146,8 @@ export function createEditorWebMcp({
 				const args = request(input, ['blockId']);
 				if (typeof args.blockId !== 'string') throw new Error('blockId from get_project is required');
 				const snapshot = editing.getSnapshot();
-				const block = snapshot.blocks.find(block => block.blockId === args.blockId);
-				if (!block)
+				const target = snapshot.blocks.find(block => block.blockId === args.blockId);
+				if (!target)
 					return {
 						error: {
 							code: 'block_not_found',
@@ -155,8 +155,19 @@ export function createEditorWebMcp({
 							revision: snapshot.revision,
 						},
 					};
-				const { code: _code, ...metadata } = block;
-				return { revision: snapshot.revision, block: metadata };
+				const { blockId, block } = target;
+				return {
+					revision: snapshot.revision,
+					block: {
+						blockId,
+						projectPath: block.projectPath,
+						type: block.nestedProjectCodeBlocks ? 'group' : block.isProjectScope ? 'project' : block.blockType,
+						name: block.name,
+						x: block.gridX,
+						y: block.gridY,
+						...(block.entry === undefined ? {} : { entry: block.entry }),
+					},
+				};
 			}
 		),
 		tool(
