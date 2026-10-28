@@ -20,7 +20,8 @@ async function setup(source: string) {
 	let store!: EditorPluginContext['store'];
 	const editor: Editor = await initEditor(canvas, {
 		runtimeRegistry: {},
-		callbacks: { loadSession: async () => parseProjectSource(source) },
+		initialProject: parseProjectSource(source),
+		callbacks: {},
 		plugins: [
 			assertionMarkersPlugin,
 			{

@@ -6,7 +6,7 @@ import { type EditorPlugin, installEditorPlugins } from './plugins';
 
 function createContext() {
 	const events = createMockEventDispatcher();
-	const store = initState(events, { callbacks: { loadSession: async () => null }, runtimeRegistry: {} });
+	const store = initState(events, { callbacks: {}, runtimeRegistry: {} });
 	return { store, events, menus: store.menus, directives: store.directives, drawers: createCodeBlockDrawerRegistry() };
 }
 

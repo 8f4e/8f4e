@@ -2,7 +2,7 @@ import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '../../pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '../../pureHelpers/testingUtils/vitestTestUtils';
-import { EMPTY_DEFAULT_PROJECT } from '../project-import/emptyDefaultProject';
+import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
 import historyTracking from './effect';
 
 describe('history tracking effect', () => {
@@ -14,24 +14,19 @@ describe('history tracking effect', () => {
 		vi.useRealTimers();
 	});
 
-	it('preserves the file association when undoing and redoing project snapshots', () => {
+	it('restores undo and redo snapshots within the current project', () => {
 		const state = createMockState({ featureFlags: { historyTracking: true } });
 		state.historyStack.push(EMPTY_DEFAULT_PROJECT);
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 		const dispose = historyTracking(store, events);
-		const undo = vi.mocked(events.on).mock.calls.find(call => call[0] === 'undo')![1];
-		const redo = vi.mocked(events.on).mock.calls.find(call => call[0] === 'redo')![1];
-		undo(undefined);
-		expect(events.dispatch).toHaveBeenCalledWith('loadProject', {
-			project: EMPTY_DEFAULT_PROJECT,
-			preserveFileAssociation: true,
-		});
-		redo(undefined);
-		expect(events.dispatch).toHaveBeenLastCalledWith('loadProject', {
-			project: expect.any(Object),
-			preserveFileAssociation: true,
-		});
+		vi.mocked(events.on).mock.calls.find(([name]) => name === 'undo')![1](undefined);
+		expect(state.initialProjectState).toBe(EMPTY_DEFAULT_PROJECT);
+		expect(state.redoStack).toHaveLength(1);
+		const redoSnapshot = state.redoStack[0];
+		vi.mocked(events.on).mock.calls.find(([name]) => name === 'redo')![1](undefined);
+		expect(state.initialProjectState).toBe(redoSnapshot);
+		expect(state.historyStack).toHaveLength(1);
 		dispose?.();
 	});
 

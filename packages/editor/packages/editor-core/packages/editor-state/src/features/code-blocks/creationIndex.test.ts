@@ -2,8 +2,8 @@ import type { State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance } from 'vitest';
-import projectImport from '~/features/project-import/effect';
-import { EMPTY_DEFAULT_PROJECT } from '~/features/project-import/emptyDefaultProject';
+import projectLoading from '~/features/project-loading/effect';
+import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
 import convertGraphicDataToProjectStructure from '~/pureHelpers/projectSerialization/serializeCodeBlocks';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
@@ -98,9 +98,9 @@ describe('creationIndex', () => {
 		});
 	});
 
-	describe('projectImport', () => {
+	describe('projectLoading', () => {
 		it('should assign creationIndex to code blocks when loading a project', () => {
-			projectImport(store, mockEvents);
+			projectLoading(store, mockEvents);
 			codeBlockRendering(store, mockEvents, directiveDefinitions);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
@@ -128,7 +128,7 @@ describe('creationIndex', () => {
 		});
 
 		it('should reset creationIndex counter when loading a new project', () => {
-			projectImport(store, mockEvents);
+			projectLoading(store, mockEvents);
 			codeBlockRendering(store, mockEvents, directiveDefinitions);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;

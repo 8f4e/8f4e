@@ -47,7 +47,8 @@ functionEnd float`,
 		editor = await initEditor(canvas, {
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
-			callbacks: { loadSession: async () => parseProjectSource(source) },
+			initialProject: parseProjectSource(source),
+			callbacks: {},
 			plugins: [createExampleModulesPlugin({ sources })],
 		});
 		const state = editor.state;

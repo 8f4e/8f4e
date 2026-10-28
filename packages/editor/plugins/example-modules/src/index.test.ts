@@ -26,9 +26,9 @@ function setup({
 } = {}) {
 	const events = createEvents();
 	const on = vi.spyOn(events, 'on');
-	const saveSession = vi.fn(async () => {});
+
 	const store = initState(events, {
-		callbacks: { loadSession: async () => null, saveSession },
+		callbacks: {},
 		runtimeRegistry: {},
 		initialEditorMode: mode,
 	});
@@ -51,7 +51,7 @@ function setup({
 	const state = store.getState();
 	const addModule = (slug = 'target', x = 100, y = 112) =>
 		on.mock.calls.find(([name]) => name === ADD_EXAMPLE_MODULE)![1]({ slug, x, y });
-	return { events, state, store, disposePlugin, sources, saveSession, addModule };
+	return { events, state, store, disposePlugin, sources, addModule };
 }
 
 afterEach(() => {
@@ -102,7 +102,6 @@ describe('example modules plugin', () => {
 			target.gridX + getCodeBlockGridWidth(mainCode.split('\n').filter(line => line !== '; @public')) + 4
 		);
 		expect(dep.gridY).toBe(target.gridY);
-		expect(test.saveSession).toHaveBeenCalled();
 	});
 
 	it('skips existing dependencies and lets core rename repeated module insertions', async () => {

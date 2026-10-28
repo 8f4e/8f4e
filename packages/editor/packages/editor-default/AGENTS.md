@@ -1,14 +1,15 @@
 # Default Editor Package Guidelines
 
 - This package owns the standard editor composition: compiler integration, runtime selection, example source discovery,
-  standard-library resolution, and browser persistence.
+  standard-library resolution, and startup policy.
 - Export composition APIs without mounting as an import side effect.
 - Compose the standard plugin set here and expose host overrides through `plugins`; keep feature logic in its
   plugin package and generic plugin installation in editor-core.
 - Construct the standard set with `createDefaultEditorPlugins` per mounted editor, supplying the canvas, render
-  callback, project save/export callbacks, and WebAssembly export callback. Render callbacks run after initialization.
-- Keep one project file service shared by Open, Save, and Export so imported handles and Save As destinations stay
-  associated with the editor. Pass file-writing callbacks to plugin factories, not core state.
+  callback, storage settings, Open menu visibility, and compiler getters. Render callbacks run after initialization.
+- Compose `createProjectFilesPlugin({ inputTarget: canvas, showOpenMenuItem })` for Open, Save, and Export. It owns
+  file handles and all browser file operations. Compose `createWasmExportPlugin({ document, getCodeBuffer })` for WASM
+  files. Do not add a host file service or file callbacks in core.
 - Keep generic editor behavior in `@8f4e/editor-core` and website/deployment concerns in `@8f4e/editor-website`.
 - Run `npx nx run @8f4e/editor-default:build|test|typecheck` after changing this package.
 - The Vite build uses standard TypeScript and asset handling; project-authored GLSL effects are not supported.
@@ -30,3 +31,11 @@
 - Include `assertionMarkersPlugin`, `createKeyboardMemoryPlugin({ inputTarget: canvas })`, and
   `createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })` in the standard set. Use the canvas's browser
   navigator and live compiler getters. MIDI owns WASM instantiation and caching; core has no separate environment-plugin system.
+- Include `createProjectUrlLoaderPlugin({ fetch, initialProjectUrl })` and
+  `createSessionPersistencePlugin({ storage, storageKey, restoreOnStartup })` in the default set. Disable only session
+  restoration when an explicit initial URL exists. Keep autosaving active while that URL is pending.
+- The plugins own URL fetching and storage serialization. Do not restore session/URL callbacks in core or host wrappers.
+- Forward onInitialProjectLoaded/onInitialProjectLoadError to the URL plugin's factory callbacks. Without a URL,
+  notify success after editor initialization. Mounting must not wait for fetching; callbacks may precede mount resolution.
+- Test URL/session startup coordination in `src/startup.integration.test.ts` using the real default plugin composition.
+  Keep each startup plugin's own tests independent of the other plugin.

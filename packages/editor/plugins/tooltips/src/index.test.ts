@@ -25,7 +25,7 @@ entryEnd`);
 	const store = initState(events, {
 		initialEditorMode: 'edit',
 		runtimeRegistry: {},
-		callbacks: { loadSession: async () => null },
+		callbacks: {},
 	});
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed

@@ -1,6 +1,6 @@
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
-import { EMPTY_DEFAULT_PROJECT } from './features/project-import/emptyDefaultProject';
+import { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
 import animateViewport from './features/viewport/animateViewport';
 import initState from './index';
 import { createMockCodeBlock } from './pureHelpers/testingUtils/testUtils';
@@ -13,7 +13,6 @@ describe('editor state lifecycle', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
 			callbacks: {
-				loadSession: async () => null,
 				requestAnimationFrame: callback => {
 					frames.push(callback);
 					return frames.length;
@@ -39,7 +38,7 @@ describe('editor state lifecycle', () => {
 	it('initializes the requested editor mode and synchronizes editing', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
-			callbacks: { loadSession: async () => null },
+			callbacks: {},
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
 		});
@@ -53,7 +52,7 @@ describe('editor state lifecycle', () => {
 	it('keeps configuration notes in their project and clears them when an empty project is loaded', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
-			callbacks: { loadSession: async () => null },
+			callbacks: {},
 			runtimeRegistry: {},
 		});
 		const code = ['note local.editorConfig', '; @config font terminus8x16', 'noteEnd'];
@@ -80,7 +79,7 @@ describe('editor state lifecycle', () => {
 		const runtimeFactory = vi.fn(() => runtimeDestroyer);
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
-			callbacks: { loadSession: async () => null },
+			callbacks: {},
 			runtimeRegistry: {
 				TestRuntime: {
 					id: 'TestRuntime',
@@ -120,9 +119,7 @@ describe('editor state lifecycle', () => {
 				},
 			};
 			const store = initState(events, {
-				callbacks: {
-					loadSession: async () => null,
-				},
+				callbacks: {},
 				initialEditorMode: 'edit',
 				runtimeRegistry: {},
 			});

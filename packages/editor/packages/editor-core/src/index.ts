@@ -1,5 +1,5 @@
 import { resolvePalette } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
+import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type {
 	Callbacks,
 	EditorConfigSchemaContributionRegistry,
@@ -8,6 +8,7 @@ import type {
 	RuntimeRegistry,
 	State,
 } from '@8f4e/editor-state-types';
+import type { ProjectObjectModel } from '@8f4e/language-spec';
 import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, {
 	createCodeBlockDrawerRegistry,
@@ -83,7 +84,9 @@ export interface Editor {
 }
 
 export interface EditorOptions {
-	/** Trusted plugins, installed before rendering, initialization, and session loading. */
+	/** Initial project content; defaults to an empty project. */
+	initialProject?: ProjectObjectModel;
+	/** Trusted plugins, installed before rendering, initialization, and initial project loading. */
 	plugins?: readonly EditorPlugin[];
 	/** Capture wheel gestures for viewport panning. Disable this for editors embedded in scrolling pages. */
 	captureWheel?: boolean;
@@ -265,10 +268,10 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			: null;
 		if (resizeObserver) cleanups.push(() => resizeObserver.disconnect());
 
-		events.dispatch('init');
 		resize(initialCanvasSize.width, initialCanvasSize.height);
 		resizeObserver?.observe(canvas);
-		events.dispatch('loadSession');
+		events.dispatch('loadProject', { project: options.initialProject ?? EMPTY_DEFAULT_PROJECT });
+		events.dispatch('init');
 
 		return {
 			resize,

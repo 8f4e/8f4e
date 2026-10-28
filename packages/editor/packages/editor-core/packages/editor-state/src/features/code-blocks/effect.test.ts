@@ -1,7 +1,7 @@
 import { parseProjectSource } from '@8f4e/project-preparser';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type Mock, vi } from 'vitest';
-import { EMPTY_DEFAULT_PROJECT } from '~/features/project-import/emptyDefaultProject';
+import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';

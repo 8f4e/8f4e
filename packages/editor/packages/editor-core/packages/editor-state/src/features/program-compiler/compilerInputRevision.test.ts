@@ -21,8 +21,8 @@ import codeEditing from '../code-editing/effect';
 import historyTracking from '../edit-history/effect';
 import globalEditorDirectivesEffect from '../global-editor-directives/effect';
 import * as globalDirectiveRegistry from '../global-editor-directives/registry';
-import projectImport from '../project-import/effect';
-import { EMPTY_DEFAULT_PROJECT } from '../project-import/emptyDefaultProject';
+import projectLoading from '../project-loading/effect';
+import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
 import compilerEffect from './effect';
 
 describe('compiler input revision', () => {
@@ -277,7 +277,7 @@ describe('compiler input revision', () => {
 
 	it('recompiles on project loading, undo, and redo without requiring a selected block', async () => {
 		state.featureFlags.historyTracking = true;
-		projectImport(store, events);
+		projectLoading(store, events);
 		rendering(store, events);
 		historyTracking(store, events);
 		dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT } });

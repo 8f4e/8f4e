@@ -31,7 +31,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	const store = initState(events, {
 		runtimeRegistry: {},
 		initialEditorMode: 'edit',
-		callbacks: { loadSession: async () => null, setWordInMemory: write },
+		callbacks: { setWordInMemory: write },
 	});
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed

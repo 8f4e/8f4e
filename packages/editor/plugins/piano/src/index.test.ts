@@ -32,7 +32,6 @@ async function setup(code = source, installed = true, name = 'controls') {
 		runtimeRegistry: {},
 		initialEditorMode: 'edit',
 		callbacks: {
-			loadSession: async () => null,
 			getWordFromMemory: address => memoryViews.int32[address],
 			setWordInMemory: write,
 		},

@@ -52,7 +52,7 @@ invalidate redo history.
 ## Affected Components
 
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/edit-history/effect.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/session-persistence/effect.ts`
+- `packages/editor/plugins/session-persistence/src/index.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-editing/effect.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/` source and metadata updates
 - `packages/editor/packages/editor-core/packages/editor-state-types/src/index.ts` and state defaults/test helpers

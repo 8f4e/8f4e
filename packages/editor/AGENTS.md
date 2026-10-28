@@ -8,13 +8,13 @@
 - `@8f4e/editor-core` is the minimal reusable editor.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, example source discovery,
-  and storage.
+  and startup policy.
 - `@8f4e/editor-website` is the thin deployable Vite host for the default composition.
 - `@8f4e/editor-plugin-toggle-skip-execution` owns the optional single-module execution toggle. The switch widget
   lives in `@8f4e/editor-plugin-switch`, momentary buttons in `@8f4e/editor-plugin-button`, waveforms in
   `@8f4e/editor-plugin-wave`, piano keyboards in `@8f4e/editor-plugin-piano`, sliders in `@8f4e/editor-plugin-slider`,
   selected-line tooltips in `@8f4e/editor-plugin-tooltips`, browser screenshots in `@8f4e/editor-plugin-screenshot`,
-  project Save/Export in `@8f4e/editor-plugin-project-export`, and WebAssembly export in `@8f4e/editor-plugin-wasm-export`.
+  project Open/Save/Export and browser file access in `@8f4e/editor-plugin-project-files`, and WebAssembly export in `@8f4e/editor-plugin-wasm-export`.
   Meter, plot, bars, crossfade, watch, and stack each live in their matching `editor-plugin-<name>` packages.
   Favorite editing lives in `editor-plugin-toggle-favorite`, and memory-default disconnection in
   `editor-plugin-remove-memory-connections`. Favorite navigation and directive derivation remain core features.
@@ -24,6 +24,8 @@
   contract; there is no separate environment-plugin manager. Assertion results and inline diagnostics remain core.
   Plugin contracts and installation live in `editor-core`,
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
+  Session restoration/autosaving and project URL loading live in `editor-plugin-session-persistence` and
+  `editor-plugin-project-url-loader`. The default host supplies storage/fetch and chooses initial URL priority.
   The standard plugin set is composed in `editor-default`.
   `editor-plugin-example-modules` owns built-in module menus, catalog metadata, lazy source caching, public-block
   selection, and dependency insertion. The default editor supplies source loaders; core owns generic submenu registration.
@@ -39,10 +41,13 @@
   `npx nx run @8f4e/editor-plugin-piano:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-slider:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-screenshot:build|test|typecheck`, or
-  `npx nx run @8f4e/editor-plugin-project-export:build|test|typecheck`, or
+  `npx nx run @8f4e/editor-plugin-project-files:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-wasm-export:build|test|typecheck`.
 - Verify example module browsing with `npx nx run @8f4e/editor-plugin-example-modules:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-example-modules:test:screenshot`.
+- Verify startup plugins with
+  `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-session-persistence,@8f4e/editor-plugin-project-url-loader`.
+  Both have `test:screenshot` targets for their real editor startup paths.
 - Start the website with `npx nx run @8f4e/editor-website:dev`.
 - Verify binary assets with `npx nx run @8f4e/editor-plugin-binary-assets:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-binary-assets:test:screenshot`.

@@ -47,7 +47,7 @@
     "@8f4e/editor-plugin-crossfade": "*",
     "@8f4e/editor-plugin-stack": "*",
     "@8f4e/editor-plugin-bars": "*",
-    "@8f4e/editor-plugin-project-export": "*",
+    "@8f4e/editor-plugin-project-files": "*",
     "@8f4e/editor-plugin-wasm-export": "*",
     "@8f4e/editor-plugin-toggle-favorite": "*",
     "@8f4e/editor-plugin-remove-memory-connections": "*",
@@ -55,13 +55,17 @@
     "@8f4e/editor-plugin-assertion-markers": "*",
     "@8f4e/editor-plugin-midi-input": "*",
     "@8f4e/editor-plugin-keyboard-memory": "*",
-    "@8f4e/editor-plugin-example-modules": "*"
+    "@8f4e/editor-plugin-example-modules": "*",
+    "@8f4e/editor-plugin-session-persistence": "*",
+    "@8f4e/editor-plugin-project-url-loader": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/vite-plugin-sources": "*",
     "@types/node": "24.13.2",
     "vite": "7.3.7",
-    "vitest": "4.1.7"
+    "vitest": "4.1.7",
+    "@8f4e/editor-state": "*",
+    "@8f4e/web-ui": "*"
   }
 }

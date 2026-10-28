@@ -4,26 +4,26 @@ import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
-import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
+import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
+import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
+import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mountDefaultEditor } from './index';
-import { exportBinaryCode } from './storage-callbacks';
 
-const { projectFiles, getCodeBuffer, getMemory } = vi.hoisted(() => ({
-	projectFiles: {
-		dispose: vi.fn(),
-		importProject: vi.fn(),
-		projectLoaded: vi.fn(),
-		saveProject: vi.fn(),
-		exportProject: vi.fn(),
-	},
+const { getCodeBuffer, getMemory } = vi.hoisted(() => ({
 	getCodeBuffer: vi.fn(() => new Uint8Array()),
 	getMemory: vi.fn<() => WebAssembly.Memory | null>(() => null),
 }));
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('@8f4e/editor-plugin-session-persistence', () => ({
+	createSessionPersistencePlugin: vi.fn(() => ({ id: 'session-persistence', setup: () => () => {} })),
+}));
+vi.mock('@8f4e/editor-plugin-project-url-loader', () => ({
+	createProjectUrlLoaderPlugin: vi.fn(() => ({ id: 'project-url-loader', setup: () => () => {} })),
+}));
 vi.mock('@8f4e/editor-plugin-example-modules', () => ({
 	createExampleModulesPlugin: vi.fn(() => ({ id: 'example-modules', setup: () => () => {} })),
 }));
@@ -39,8 +39,8 @@ vi.mock('@8f4e/editor-plugin-binary-assets', () => ({
 vi.mock('@8f4e/editor-plugin-screenshot', () => ({
 	createScreenshotPlugin: vi.fn(() => ({ id: 'screenshot', setup: () => () => {} })),
 }));
-vi.mock('@8f4e/editor-plugin-project-export', () => ({
-	createProjectExportPlugin: vi.fn(() => ({ id: 'project-export', setup: () => () => {} })),
+vi.mock('@8f4e/editor-plugin-project-files', () => ({
+	createProjectFilesPlugin: vi.fn(() => ({ id: 'project-files', setup: () => () => {} })),
 }));
 vi.mock('@8f4e/editor-plugin-wasm-export', () => ({
 	createWasmExportPlugin: vi.fn(() => ({ id: 'wasm-export', setup: () => () => {} })),
@@ -49,11 +49,6 @@ vi.mock('./compiler-callback', () => ({
 	createCompilerService: () => ({ dispose: vi.fn(), getCodeBuffer, getMemory }),
 }));
 vi.mock('./runtime-registry', () => ({ createRuntimeRegistry: () => ({}) }));
-vi.mock('./storage-callbacks', () => ({
-	createStorageCallbacks: () => ({}),
-	createProjectFileCallbacks: () => projectFiles,
-	exportBinaryCode: vi.fn(),
-}));
 
 describe('default editor plugins', () => {
 	beforeEach(() => {
@@ -75,6 +70,8 @@ describe('default editor plugins', () => {
 				.mock.calls.at(-1)?.[1]
 				.plugins?.map(plugin => plugin.id)
 		).toEqual([
+			'project-url-loader',
+			'session-persistence',
 			'example-modules',
 			'assertion-markers',
 			'keyboard-memory',
@@ -95,11 +92,22 @@ describe('default editor plugins', () => {
 			'watch',
 			'stack',
 			'tooltips',
-			'project-export',
+			'project-files',
 			'wasm-export',
 			'screenshot',
 		]);
 		const getBytes = vi.mocked(createBinaryAssetsPlugin).mock.calls[0][0].getMemoryBytes;
+		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
+			fetch: globalThis.fetch,
+			initialProjectUrl: undefined,
+			onLoaded: undefined,
+			onError: undefined,
+		});
+		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
+			storage: expect.anything(),
+			storageKey: 'project_editor',
+			restoreOnStartup: true,
+		});
 		expect(createExampleModulesPlugin).toHaveBeenCalledWith({ sources: exampleModuleSources });
 		expect(createKeyboardMemoryPlugin).toHaveBeenCalledWith({ inputTarget: canvas });
 		expect(createMidiInputPlugin).toHaveBeenCalledWith({ navigator: window.navigator, getMemory, getCodeBuffer });
@@ -111,23 +119,66 @@ describe('default editor plugins', () => {
 		expect(getBytes()?.byteLength).toBe(memory.buffer.byteLength);
 		const options = vi.mocked(createScreenshotPlugin).mock.calls[0][0];
 		expect(options.canvas).toBe(canvas);
-		expect(createProjectExportPlugin).toHaveBeenCalledWith({
-			inputTarget: canvas,
-			saveProject: projectFiles.saveProject,
-			exportProject: projectFiles.exportProject,
-		});
-		const coreCallbacks = vi.mocked(initEditor).mock.calls.at(-1)![1].callbacks;
-		expect(coreCallbacks.importProject).toBe(projectFiles.importProject);
-		expect(coreCallbacks.projectLoaded).toBe(projectFiles.projectLoaded);
-		for (const name of ['saveProject', 'exportProject', 'exportBinaryCode'])
-			expect(coreCallbacks).not.toHaveProperty(name);
-		const bytes = new Uint8Array([0, 97, 115, 109]);
-		getCodeBuffer.mockReturnValue(bytes);
-		await vi.mocked(createWasmExportPlugin).mock.calls[0][0].exportBinaryCode('current.wasm');
-		expect(exportBinaryCode).toHaveBeenCalledWith('current.wasm', bytes);
+		expect(createProjectFilesPlugin).toHaveBeenCalledWith({ inputTarget: canvas, showOpenMenuItem: true });
+		expect(createWasmExportPlugin).toHaveBeenCalledWith({ document: canvas.ownerDocument, getCodeBuffer });
 		expect(renderFrame).not.toHaveBeenCalled();
 		options.renderFrame();
 		expect(renderFrame).toHaveBeenCalledOnce();
+		editor.dispose();
+	});
+
+	it('gives an explicit initial URL priority over session restoration', async () => {
+		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
+		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
+		const storage = {} as Storage;
+		const initialProjectUrl = 'https://example.com/project.8f4e';
+		const onInitialProjectLoaded = vi.fn();
+		const onInitialProjectLoadError = vi.fn();
+		const editor = await mountDefaultEditor(canvas, {
+			storage,
+			storageNamespace: 'custom',
+			initialProjectUrl,
+			onInitialProjectLoaded,
+			onInitialProjectLoadError,
+			showOpenMenuItem: false,
+		});
+		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
+			fetch: globalThis.fetch,
+			initialProjectUrl,
+			onLoaded: onInitialProjectLoaded,
+			onError: onInitialProjectLoadError,
+		});
+		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
+		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
+		expect(createProjectFilesPlugin).toHaveBeenCalledWith({ inputTarget: canvas, showOpenMenuItem: false });
+		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
+			storage,
+			storageKey: 'project_custom',
+			restoreOnStartup: false,
+		});
+		editor.dispose();
+	});
+
+	it('reports initialized content without a URL once editor initialization finishes', async () => {
+		let finish!: (editor: Editor) => void;
+		vi.mocked(initEditor).mockReturnValueOnce(
+			new Promise(resolve => {
+				finish = resolve;
+			})
+		);
+		const onInitialProjectLoaded = vi.fn();
+		const onInitialProjectLoadError = vi.fn();
+		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
+		const mounting = mountDefaultEditor(canvas, {
+			storage: {} as Storage,
+			onInitialProjectLoaded,
+			onInitialProjectLoadError,
+		});
+		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
+		finish({ dispose: vi.fn() } as Editor);
+		const editor = await mounting;
+		expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
+		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
 		editor.dispose();
 	});
 
@@ -139,12 +190,14 @@ describe('default editor plugins', () => {
 		editor.dispose();
 		const withoutPlugins = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage, plugins: [] });
 		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toEqual([]);
+		expect(createSessionPersistencePlugin).not.toHaveBeenCalled();
+		expect(createProjectUrlLoaderPlugin).not.toHaveBeenCalled();
 		expect(createExampleModulesPlugin).not.toHaveBeenCalled();
 		expect(createBinaryAssetsPlugin).not.toHaveBeenCalled();
 		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();
 		expect(createMidiInputPlugin).not.toHaveBeenCalled();
 		expect(createScreenshotPlugin).not.toHaveBeenCalled();
-		expect(createProjectExportPlugin).not.toHaveBeenCalled();
+		expect(createProjectFilesPlugin).not.toHaveBeenCalled();
 		expect(createWasmExportPlugin).not.toHaveBeenCalled();
 		withoutPlugins.dispose();
 	});

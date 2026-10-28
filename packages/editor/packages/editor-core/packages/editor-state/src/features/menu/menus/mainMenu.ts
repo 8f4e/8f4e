@@ -54,23 +54,8 @@ export const mainMenu = (state: State): ContextMenuItem[] => [
 		payload: { menu: 'favoritesMenu' },
 		close: false,
 	},
-	...((state.featureFlags.editing && state.featureFlags.projectCreation) || state.featureFlags.projectOpening
-		? [{ divider: true }]
-		: []),
+	...(state.featureFlags.editing && state.featureFlags.projectCreation ? [{ divider: true }] : []),
 	...(state.featureFlags.editing && state.featureFlags.projectCreation
 		? [{ title: 'New Project', action: 'new', close: true }]
-		: []),
-	...(state.featureFlags.editing && state.featureFlags.projectCreation && state.featureFlags.projectOpening
-		? [{ divider: true }]
-		: []),
-	...(state.featureFlags.projectOpening
-		? [
-				{
-					title: 'Open From Disk',
-					action: 'importProject',
-					close: true,
-					disabled: !state.callbacks.importProject,
-				},
-			]
 		: []),
 ];

@@ -45,7 +45,8 @@ entryEnd`);
 		editor = await initEditor(canvas, {
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
-			callbacks: { loadSession: async () => project },
+			initialProject: project,
+			callbacks: {},
 			plugins: [
 				{
 					...plugin,

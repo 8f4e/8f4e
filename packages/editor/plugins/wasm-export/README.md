@@ -1,16 +1,17 @@
 # WebAssembly Export Plugin
 
-`@8f4e/editor-plugin-wasm-export` adds **Export WebAssembly** to the main menu and handles `exportWasm` actions.
+`@8f4e/editor-plugin-wasm-export` owns Export WebAssembly, WASM Blob creation, and browser file writing.
 
 ```ts
-createWasmExportPlugin({
-	exportBinaryCode: fileName => saveWasm(fileName, compilerService.getCodeBuffer()),
-});
+createWasmExportPlugin({ document: canvas.ownerDocument, getCodeBuffer: compilerService.getCodeBuffer });
 ```
 
-The host callback receives the configured export filename with a `.wasm` extension, defaulting to `project.wasm`.
-The default editor supplies a callback that reads the current compiled bytes and opens the browser save picker or
-downloads the file. The plugin owns its menu contribution, action handler, and cleanup. It requires no input element
-and does not serialize project source.
+The factory receives browser resources and a getter for the current compiled bytes. Each `exportWasm` action snapshots
+those bytes and uses the shared export filename configuration, defaulting to `project.wasm`. The picker opens during
+the user gesture. Browsers without it download the Blob through an object URL. Picker cancellation cancels the action;
+write failures abort the writable stream and are reported in the editor console.
+
+The plugin owns its menu contribution, action handler, and cleanup. It does not serialize source or share project file
+associations. Its browser dependencies are supplied through the factory; the shared plugin contract is unchanged.
 
 Validate with `npx nx run @8f4e/editor-plugin-wasm-export:build|test|typecheck`.

@@ -1,7 +1,6 @@
 /**
  * Central type re-exports for editor-state.
- * This file now acts as a barrel, importing types from feature-specific modules
- * and re-exporting them for backward compatibility and public API stability.
+ * Shared feature types are re-exported here for editor consumers.
  */
 
 import type {
@@ -64,7 +63,7 @@ import type {
 // Re-export runtime types
 // Re-export logger types
 // Re-export code-editing types
-// Re-export project-import types
+// Re-export project types
 export type {
 	AssertionResult,
 	CodeBlockEntryOutline,
@@ -145,7 +144,6 @@ export interface FeatureFlags {
 	offscreenBlockArrows: boolean;
 
 	/** Enable/disable the menu action that opens projects from disk */
-	projectOpening: boolean;
 
 	/** Enable/disable the menu action that creates a new project */
 	projectCreation: boolean;
@@ -161,23 +159,9 @@ export type EditorMode = 'view' | 'edit';
 
 // Callbacks interface contains all callback functions (top-level public API)
 export interface Callbacks {
-	// Project loading callback
-	getProject?: (url: string) => Promise<string>;
-
 	// Compilation callback
 	compileCode?: (project: ProjectObjectModel, compilerOptions: CompileProjectOptions) => Promise<CompilationResult>;
 	resolveInclude?: (includeId: string) => Promise<string | undefined>;
-
-	// Session storage callbacks
-	loadSession: () => Promise<ProjectObjectModel | null>;
-	saveSession?: (project: ProjectObjectModel) => Promise<void>;
-
-	// File handling callbacks
-	/** Returns null when the picker is cancelled. */
-	importProject?: () => Promise<ProjectObjectModel | null>;
-	/** Called for unrelated project replacements, including successful disk imports; excluded for undo/redo. */
-	projectLoaded?: (project: ProjectObjectModel) => void;
-	getStorageQuota?: () => Promise<{ usedBytes: number; totalBytes: number }>;
 
 	// Memory manipulation callback
 	setWordInMemory?: (allocationUnitAddress: number, value: number, isInteger: boolean) => void;
@@ -255,7 +239,6 @@ export interface State {
 	historyStack: ProjectObjectModel[];
 	initialProjectState?: ProjectObjectModel;
 	redoStack: ProjectObjectModel[];
-	storageQuota: { usedBytes: number; totalBytes: number };
 	/** Source lines contributed to the generated environment constants block, keyed by contributor. */
 	envConstantContributions: Record<string, string[]>;
 	/** Console state for internal logging */

@@ -36,9 +36,8 @@ import globalEditorDirectivesEffect from './features/global-editor-directives/ef
 import contextMenu from './features/menu/effect';
 import createMenuRegistry from './features/menu/registry';
 import compiler from './features/program-compiler/effect';
-import projectImport from './features/project-import/effect';
+import projectLoading from './features/project-loading/effect';
 import runtime from './features/runtime/effect';
-import sessionPersistence from './features/session-persistence/effect';
 import viewport from './features/viewport/effect';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
@@ -92,14 +91,13 @@ export default function init(
 	registerEffect(color(store));
 	registerEffect(registerEditorConfigSchemaContributionsValidator(store));
 	registerExportFileNameEditorConfigValidator(store);
-	registerEffect(sessionPersistence(store, events));
 	registerEffect(dialog(store, events));
 	// Menus must consume pointer events before code blocks and viewport interactions.
 	registerEffect(contextMenu(store, events, menus));
 
 	registerEffect(runtime(store, events));
 	registerEffect(editorMode(store, events));
-	registerEffect(projectImport(store, events));
+	registerEffect(projectLoading(store, events));
 	registerEffect(codeBlockDragger(store, events));
 	registerEffect(codeBlockNavigation(store, events));
 	registerEffect(viewport(store, events));
@@ -159,7 +157,7 @@ export { getTabStopsByLine, getVisualLineWidth } from './features/code-editing/t
 export { error as logError } from './features/logger/logger';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
 // Export EMPTY_DEFAULT_PROJECT as a value
-export { EMPTY_DEFAULT_PROJECT } from './features/project-import/emptyDefaultProject';
+export { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
 export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';

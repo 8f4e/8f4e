@@ -30,7 +30,7 @@ async function setup(code = source, installed = true, name = 'audio') {
 	const store = initState(events, {
 		runtimeRegistry: {},
 		initialEditorMode: 'edit',
-		callbacks: { loadSession: async () => null },
+		callbacks: {},
 	});
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed
