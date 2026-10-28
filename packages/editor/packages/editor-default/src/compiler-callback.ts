@@ -28,6 +28,13 @@ export function createCompilerService({
 } = {}): CompilerService {
 	let compilerWorker: Worker | null = null;
 	let memoryRef: WebAssembly.Memory | null = null;
+	let writeViews:
+		| {
+				buffer: ArrayBufferLike;
+				int32: Int32Array;
+				float32: Float32Array;
+		  }
+		| undefined;
 	let codeBuffer: Uint8Array = new Uint8Array();
 	let assertionSites: AssertionSite[] | undefined;
 	let nextCompilationId = 0;
@@ -134,8 +141,12 @@ export function createCompilerService({
 		getMemory: () => memoryRef,
 		writeMemory: (address, value, isInteger) => {
 			if (!memoryRef) return;
-			if (isInteger) new Int32Array(memoryRef.buffer)[address] = value;
-			else new Float32Array(memoryRef.buffer)[address] = value;
+			const buffer = memoryRef.buffer;
+			if (!writeViews || writeViews.buffer !== buffer) {
+				writeViews = { buffer, int32: new Int32Array(buffer), float32: new Float32Array(buffer) };
+			}
+			if (isInteger) writeViews.int32[address] = value;
+			else writeViews.float32[address] = value;
 		},
 		getCodeBuffer: () => codeBuffer,
 		getAssertionSites: () => assertionSites,

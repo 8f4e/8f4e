@@ -45,3 +45,5 @@
 - Supply lazy runtime loaders as registry dependencies. Loading, caching, and disposal belong to the runtime coordinator; state holds IDs/schemas and derived constant source only.
 
 - Return the narrow editor compilation result, including `memoryRef`, without taking an editor argument. Core owns memory-view updates. Derive bytecode size from `codeBuffer.byteLength`; do not restore unused status flags.
+
+- Cache memory-write typed-array views per compiler service and refresh only when the backing buffer changes, including shared/unshared memory growth. Repeated control writes must not allocate new views.
