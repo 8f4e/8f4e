@@ -68,10 +68,10 @@ the config ownership checked after extraction, for future architectural discussi
   compiler releases its worker. Ordering is part of the integration contract, while core's plugin installer and
   disposal event remain generic.
 
-- **Shared source-model contract.** [Project serialization](../../packages/editor/packages/editor-core/packages/editor-state/src/pureHelpers/projectSerialization/serializeToProject.ts)
+- **Shared source-model contract (intentional).** [Project serialization](../../packages/editor/packages/editor-core/packages/editor-state/src/pureHelpers/projectSerialization/serializeToProject.ts)
   and loading use `ProjectObjectModel` from `@8f4e/language-spec`. The compiler plugin consumes that same model through
-  the public serialization helper. This is a shared input-language contract used by persistence and history too;
-  changing the source model can affect both sides independently of changes to compiler results.
+  the public serialization helper. Keep this shared input-language contract: the editor is built for the 8f4e compiler,
+  and persistence and history use the same model. A separate editor source model is not planned.
 
 - **Already-extracted metadata consumers.** [Tooltips](../../packages/editor/plugins/tooltips/src/state/effect.ts)
   and the [stack widget](../../packages/editor/plugins/stack/src/state/directive.ts) read compiler facts through editor
@@ -84,9 +84,9 @@ the config ownership checked after extraction, for future architectural discussi
   memory lookup helpers. Injected capabilities could make these dependencies explicit without adding compiler services
   to the shared editor plugin context.
 
-- **Test-only package dependency.** [editor-state's package manifest](../../packages/editor/packages/editor-core/packages/editor-state/package.json)
-  still declares `@8f4e/compiler` as a production dependency, although its remaining imports are in tests. Moving it to
-  development dependencies is a separate small cleanup.
+- **Test-only package dependency (resolved).** [editor-state's package manifest](../../packages/editor/packages/editor-core/packages/editor-state/package.json)
+  declares `@8f4e/compiler` in development dependencies. Its remaining imports are in tests; production source uses
+  `ProjectObjectModel` from `@8f4e/language-spec`.
 
 Tokenizer and project-source parsing dependencies are language support; they are separate from the compiled-result
 and compilation-lifecycle dependencies listed above. Core has no production TypeScript imports of `@8f4e/compiler`,
