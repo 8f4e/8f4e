@@ -22,6 +22,24 @@ export const updateBlockSchema = object(
 	{ type: blockType, name: { type: 'string' }, code, expectedRevision: { type: 'string' } },
 	['type', 'name', 'code', 'expectedRevision']
 );
+export const patchBlockSchema = object(
+	{
+		type: blockType,
+		name: { type: 'string' },
+		expectedRevision: { type: 'string' },
+		oldText: {
+			type: 'string',
+			minLength: 1,
+			description:
+				'Exact source text to replace. Must occur exactly once in this block; include surrounding context if needed.',
+		},
+		newText: {
+			type: 'string',
+			description: 'Literal replacement text. May contain multiple lines or be empty to remove the match.',
+		},
+	},
+	['type', 'name', 'expectedRevision', 'oldText', 'newText']
+);
 export const revisionSchema = object({ expectedRevision: { type: 'string' } }, ['expectedRevision']);
 export const editsSchema = object(
 	{

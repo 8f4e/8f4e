@@ -268,6 +268,62 @@ test('targets named notes and modules through the same selectors without exposin
 	for (const tool of tools.values()) expect(JSON.stringify(tool.inputSchema)).not.toMatch(/blockId|createdBlockIds/);
 });
 
+test('patches one source span in the current group with persistence and one-step undo/redo', async () => {
+	const tools = siteTools();
+	const grouped =
+		'8f4e/v1\nentry main\nmodule oscillator\nfloat alpha 0.04\nmoduleEnd\ngroup audio\nmodule oscillator\n; @pos 10 4\nfloat alpha 0.04\npush alpha\ndrop\npush alpha\ndrop\nmoduleEnd\ngroupEnd\nentryEnd';
+	const view = setup({ patched: async () => new Response(grouped) });
+	const editor = await view.mounted();
+	await vi.waitFor(() => expect(tools.has('get_diagnostics')).toBe(true));
+	const call = (name: string, args = {}) => tools.get(name)!.execute(args);
+	await call('expand_group', { name: 'audio' });
+	const before = (await call('get_project_metadata')) as WebMcpProjectMetadata;
+	const original = (await call('get_block', { type: 'module', name: 'oscillator' })) as string;
+	const changed = (await call('patch_block', {
+		type: 'module',
+		name: 'oscillator',
+		expectedRevision: before.revision,
+		oldText: 'float alpha 0.04',
+		newText: 'float alpha 0.1',
+	})) as { revision: string };
+	expect(Object.keys(changed)).toEqual(['revision']);
+	expect(changed.revision).not.toBe(before.revision);
+	expect(await call('get_block', { type: 'module', name: 'oscillator' })).toBe(
+		original.replace('float alpha 0.04', 'float alpha 0.1')
+	);
+	const childSource = () =>
+		editor.editing.getSnapshot().project.groups.find(group => group.name === 'audio')!.modules[0].code;
+	expect(editor.editing.getSnapshot().project.modules[0].code).toContain('float alpha 0.04');
+	expect(await call('get_project_metadata')).toMatchObject({ projectPath: 'audio' });
+	expect(window.sessionStorage.getItem('project_8f4e-gallery-test-patched')).toContain('float alpha 0.1');
+	const project = editor.editing.getSnapshot().project;
+	const historyLength = editor.state.historyStack.length;
+	for (const [args, error] of [
+		[{ expectedRevision: changed.revision, oldText: 'float alpha 0.04' }, 'match_not_found'],
+		[{ expectedRevision: changed.revision, oldText: 'push alpha' }, 'ambiguous_match'],
+		[{ expectedRevision: before.revision, oldText: 'float alpha 0.1' }, 'stale_revision'],
+	] as const) {
+		expect(
+			await call('patch_block', { type: 'module', name: 'oscillator', newText: 'float alpha 0.2', ...args })
+		).toMatchObject({ error: { code: error } });
+	}
+	expect(editor.editing.getSnapshot().project).toEqual(project);
+	expect(editor.state.historyStack).toHaveLength(historyLength);
+	await vi.waitFor(async () =>
+		expect(await call('get_diagnostics')).toMatchObject({ diagnostics: { status: 'ready', compilationErrors: [] } })
+	);
+	const canvas = view.panel().querySelector('canvas')!;
+	canvas.style.width = '900px';
+	canvas.style.height = '480px';
+	editor.resize(900, 480);
+	editor.renderFrame();
+	await page.screenshot({ element: view.panel(), path: '../.vitest-attachments/webmcp-patch.png' });
+	const undone = (await call('undo', { expectedRevision: changed.revision })) as { revision: string };
+	expect(childSource().join('\n')).toBe(original);
+	await call('redo', { expectedRevision: undone.revision });
+	expect(childSource().join('\n')).toBe(original.replace('float alpha 0.04', 'float alpha 0.1'));
+});
+
 test('exposes source strings through site tools and saves undoable named edits', async () => {
 	const tools = siteTools();
 	let finish!: (response: Response) => void;
@@ -344,5 +400,5 @@ test('replaces site tools on project selection and rejects retained calls and ol
 		error: { code: 'stale_revision' },
 	});
 	expect(editor.editing.getSnapshot().project.modules[0].code[0]).toBe('module secondExample');
-	expect(tools.size).toBe(12);
+	expect(tools.size).toBe(13);
 });

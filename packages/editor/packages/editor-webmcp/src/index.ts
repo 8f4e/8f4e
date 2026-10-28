@@ -1,5 +1,13 @@
 import type { Editor, EditorEdit, EditorProjectSnapshot } from '@8f4e/editor-core';
-import { blockSchema, editsSchema, emptySchema, groupSchema, revisionSchema, updateBlockSchema } from './schema.js';
+import {
+	blockSchema,
+	editsSchema,
+	emptySchema,
+	groupSchema,
+	patchBlockSchema,
+	revisionSchema,
+	updateBlockSchema,
+} from './schema.js';
 import { createSourceView } from './source-view.js';
 
 export type WebMcpProjectMetadata = Pick<
@@ -240,6 +248,40 @@ export function createEditorWebMcp({
 				const result = editing.applyEdits({
 					expectedRevision: args.expectedRevision,
 					edits: readEdits([{ operation: 'update', type: args.type, name: args.name, code: args.code }], snapshot),
+				});
+				return { revision: result.revision };
+			}
+		),
+		tool(
+			'patch_block',
+			'Patch an 8f4e block',
+			'Replace one exact occurrence of oldText with literal newText in a block identified by type and name in the currently expanded group or root. Text may span multiple lines; line endings are normalized to LF. Empty or missing matches and multiple matches are rejected. Requires the latest get_project_metadata revision and creates one undo step.',
+			patchBlockSchema,
+			false,
+			input => {
+				const args = writeRequest(input, ['type', 'name', 'expectedRevision', 'oldText', 'newText']);
+				const snapshot = editing.getSnapshot();
+				checkRevision(snapshot, args.expectedRevision);
+				if (typeof args.oldText !== 'string' || args.oldText.length === 0 || typeof args.newText !== 'string')
+					throw new Error('oldText must be a nonempty string and newText must be a string');
+				const target = namedBlock(snapshot, args.type, args.name);
+				const source = target.block.code.join('\n');
+				const oldText = args.oldText.replace(/\r\n|\r/g, '\n');
+				const newText = args.newText.replace(/\r\n|\r/g, '\n');
+				const start = source.indexOf(oldText);
+				if (start === -1)
+					return scopeError(snapshot, 'match_not_found', 'oldText does not occur in this block; read its source again');
+				if (source.indexOf(oldText, start + 1) !== -1)
+					return scopeError(
+						snapshot,
+						'ambiguous_match',
+						'oldText occurs more than once; include more surrounding source to identify one match'
+					);
+				// Slice explicitly so replacement text such as $& is always literal.
+				const code = source.slice(0, start) + newText + source.slice(start + oldText.length);
+				const result = editing.applyEdits({
+					expectedRevision: args.expectedRevision,
+					edits: [{ type: 'update', blockId: target.blockId, code: code.split('\n') }],
 				});
 				return { revision: result.revision };
 			}

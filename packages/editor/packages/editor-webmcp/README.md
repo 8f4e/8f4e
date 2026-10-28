@@ -39,6 +39,7 @@ One active bridge is allowed per document. It keeps the supplied editor referenc
 | `go_to_parent` / `go_to_root` | `{}` | Navigates the editor to the parent or root. Returns location and revision only. |
 | `get_block` | `{ type, name }` | A plain source string for the matching block in the current group or root. |
 | `update_block` | `{ type, name, code, expectedRevision }` | Replaces that block's source in the current scope and returns the new revision. |
+| `patch_block` | `{ type, name, oldText, newText, expectedRevision }` | Replaces exactly one matching source span in the current scope and returns the new revision. |
 | `get_block_metadata` | `{ type, name }` | Current revision and the block's group path, execution entry, type, name, and grid position. |
 | `apply_edits` | `{ expectedRevision, edits }` | New revision after one atomic undoable batch. |
 | `undo` / `redo` | `{ expectedRevision }` | New revision after one history step. |
@@ -53,6 +54,20 @@ Each project read contains exactly one level. At the root it includes the `8f4e/
 All block-targeting tools use the same `{ type, name }` selector, such as `{ type: 'note', name: 'colors' }` for `note colors` or `{ type: 'module', name: 'oscillator' }` for `module oscillator`. Names come from source declarations. For an unnamed block use an empty name. Selectors resolve only within the currently expanded group or root. Multiple matches return `ambiguous_block` without applying edits; name blocks uniquely in source before targeting one. Tools do not accept or return editor block identifiers.
 
 Before writing, call `get_project_metadata`, then read the relevant source with `get_project` or `get_block`, and use that metadata revision as `expectedRevision`. This ordering ensures a source change between the metadata read and the edit produces `stale_revision`. The revision belongs to the entire editor instance, so revisions from a previous gallery selection are rejected even if the replacement has identical source. Persisted source/layout changes, undo/redo, and project loading advance it. Navigation itself does not. On `stale_revision`, repeat the reads and reconsider the edit.
+
+Use `patch_block` to change part of a block without resending the complete source:
+
+```ts
+patch_block({
+  type: 'module',
+  name: 'lowPassFilter',
+  expectedRevision: revision,
+  oldText: 'float alpha 0.04',
+  newText: 'float alpha 0.1',
+});
+```
+
+`oldText` must be nonempty and occur exactly once in the selected block. A missing match returns `match_not_found`; multiple matches, including overlapping occurrences, return `ambiguous_match`. Include surrounding source to make the match unique. Matching and replacement are literal, with CRLF/CR line endings normalized to LF. Text may span multiple lines, and an empty `newText` removes the matched span. The patch uses the existing validated update command, preserves all source outside the match, and creates one undo step. Invalid matches or stale revisions leave content and history unchanged. Group source restrictions still apply.
 
 Supported batch edit shapes use `operation` for the action and `type` for the source block type:
 
