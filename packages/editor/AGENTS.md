@@ -11,6 +11,8 @@
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, example source discovery,
   and startup policy.
 - `@8f4e/editor-website` is the thin deployable Vite host for the default composition.
+- `@8f4e/editor-webmcp` is an external, page-owned adapter bound to one editor's public editing handle. Hosts own its registration and dispose it before replacing the editor; it is not an editor plugin.
+- The bridge bundles its help, compiler/editor documentation, and example catalogs using `@8f4e/vite-plugin-sources` at build time. Its `generate-content` target prepares the search index and lazy content modules before build/test/typecheck; hosts need no content configuration.
 - `@8f4e/editor-plugin-toggle-skip-execution` owns the optional single-module execution toggle. The switch widget
   lives in `@8f4e/editor-plugin-switch`, momentary buttons in `@8f4e/editor-plugin-button`, waveforms in
   `@8f4e/editor-plugin-wave`, piano keyboards in `@8f4e/editor-plugin-piano`, sliders in `@8f4e/editor-plugin-slider`,
@@ -50,6 +52,7 @@
   `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-session-persistence,@8f4e/editor-plugin-project-url-loader`.
   Both have `test:screenshot` targets for their real editor startup paths.
 - Start the website with `npx nx run @8f4e/editor-website:dev`.
+- Verify the WebMCP adapter with `npx nx run @8f4e/editor-webmcp:build|test|typecheck` and its real-editor browser suite with `npx nx run @8f4e/editor-webmcp:test:browser`. Verify gallery loading and bridge switching with `npx nx run @8f4e/8f4e-website:test:browser`.
 - Verify binary assets with `npx nx run @8f4e/editor-plugin-binary-assets:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-binary-assets:test:screenshot`.
 - Verify assertion markers and input plugins with

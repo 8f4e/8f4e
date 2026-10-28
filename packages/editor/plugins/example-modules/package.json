@@ -10,6 +10,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./catalog": {
+      "types": "./dist/catalog.d.ts",
+      "default": "./dist/catalog.js"
+    },
+    "./public-block": {
+      "types": "./dist/extractPublicBlockFromModuleSource.d.ts",
+      "default": "./dist/extractPublicBlockFromModuleSource.js"
     }
   },
   "sideEffects": false,

@@ -4,6 +4,7 @@
 - Editor product: the reusable default composition lives in `packages/editor/packages/editor-default/`; the thin
   Vite website lives in `packages/editor/packages/editor-website/`.
 - Compiler integration lives in `packages/editor/plugins/compiler/` (`@8f4e/editor-plugin-compiler`). The default editor constructs and installs it first and injects its live handles into dependent plugins and runtimes. Core emits input-change events and consumes accepted artifacts.
+- WebMCP lives in `packages/editor/packages/editor-webmcp/` as an external page-owned adapter bound to one editor's public `editing` handle. The editor website and example/test galleries compose it; gallery project switches dispose and recreate the bridge.
 - Optional editor features live in `packages/editor/plugins/<feature>/` as independent npm/Nx packages named
   `@8f4e/editor-plugin-<feature>`.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`
@@ -44,7 +45,10 @@
 - `npx nx run @8f4e/editor-website:build`: Builds the default composition and website production bundle.
 - `npx nx run @8f4e/8f4e-website:dev`: Starts the example product website on `http://localhost:3001`.
 - `npx nx run @8f4e/8f4e-website:build`: Builds the example product website and its editor dependencies.
-- `npx nx run @8f4e/8f4e-website:test:browser`: Runs homepage and gallery browser integration tests with the default editor.
+- `npx nx run @8f4e/8f4e-website:test:browser`: Runs homepage and gallery lifecycle integration tests with the default editor.
+- `npx nx run @8f4e/editor-webmcp:test:browser`: Runs real-editor WebMCP source, editing, revision, persistence, and history integration tests.
+- `npx nx run @8f4e/editor-webmcp:build|test|typecheck`: Verify the external single-editor WebMCP adapter.
+- `npx nx run @8f4e/editor-webmcp:generate-content`: Rebuild its bundled help/docs/example catalog through Vite source collections; build/test/typecheck run this automatically.
 - `npm --prefix tools/project-preview run generate-gallery-previews`: Regenerates 64×64 GIF icons for the example
   and compiler test galleries with the standalone npm tool.
 - `npx nx run @8f4e/release:check --parallel=2`: Runs release builds and metrics in parallel with

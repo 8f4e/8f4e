@@ -95,7 +95,7 @@ Key requirements:
 ## Related Items
 
 - **Related**: `docs/todos/241-load-project-from-query-param-url.md`
-- **Related**: [TODO 210: Expose editor editing handles and add an external WebMCP adapter](210-add-editor-editing-handles-and-webmcp-adapter.md)
+- **Related**: [TODO 210: Expose editor editing handles and add an external WebMCP adapter](archived/210-add-editor-editing-handles-and-webmcp-adapter.md)
 
 ## Notes
 

@@ -4,8 +4,8 @@ priority: Medium
 effort: 2-4d
 created: 2026-02-07
 issue: null
-status: Open
-completed: null
+status: Completed
+completed: 2026-10-28
 ---
 
 # TODO: Expose editor editing handles and add an external WebMCP adapter
@@ -33,14 +33,15 @@ The adapter is an external JavaScript library running in the webpage, proposed a
 Proposed shape on the returned `Editor` instance:
 
 ```ts
-editor.editing.getSnapshot(); // { project, revision }
+editor.state; // Existing live editor internals
+editor.editing.getRevision(); // Opaque project revision
 editor.editing.applyEdits({ expectedRevision, edits });
 editor.editing.undo();
 editor.editing.redo();
 ```
 
-- Return a detached project snapshot and its matching revision, rather than a live mutable state object.
-- Support inserting, updating, moving, and deleting code blocks, using opaque block handles that also identify blocks within nested groups.
+- Expose existing editor state directly for consumer-selected reads and a separate revision getter. Keep changes behind validated commands.
+- Support inserting, updating, and deleting code blocks, with positioning controlled by source `@pos` directives, using opaque block handles that also identify blocks within nested groups.
 - Validate the complete batch before changing state and apply it as one undo step. Validation covers operation shape, targets, and editor policy; source edits may produce normal compiler diagnostics.
 - Route successful edits through the existing project-change mechanisms so derived layout, rendering, autosave, and compilation remain consistent with human edits.
 - Advance an editor-local project revision for persisted changes from both human and API operations, including undo, redo, and project replacement. Compiler input revisions alone may miss layout-only edits.
@@ -63,10 +64,14 @@ Register one document-level tool set:
 
 | Tool | Purpose |
 | --- | --- |
-| `get_project` | Return the bound editor's project snapshot and revision. |
-| `apply_edits` | Apply a validated batch to the bound editor at an expected revision. |
-| `undo` / `redo` | Operate on the bound editor's history, with expected-revision checks. |
-| `get_diagnostics` | Return current compiler diagnostics and the revision they describe, when a diagnostic handle is supplied. |
+| `get_project` | Return a plain one-level source string for the currently expanded group or root and record its revision internally, without an index or block identifiers. |
+| `get_project_metadata` | Return revision, location, editability, and history information separately from source. |
+| `expand_group` / `go_to_parent` / `go_to_root` | Navigate the editor's shared view and return location only. |
+| `get_block` / `update_block` / `patch_block` | Read, replace, or patch source by type and name within the current scope. |
+| `get_block_metadata` | Fetch metadata by source type and name in the current scope on demand. |
+| `apply_edits` | Apply a validated batch within the current scope, targeting blocks by source type and name. The bridge supplies its tracked revision. |
+| `undo` / `redo` | Operate on the bound editor's history, with revisions checked and tracked by the bridge. |
+| `get_compiler_diagnostics` | Return current compiler diagnostics and the revision they describe, when a diagnostic handle is supplied. |
 
 The editor reference is required at construction and stays fixed for the bridge's lifetime. Tools take no `editorId` argument, and there is no editor registry, discovery tool, or add/remove-editor API. Focus changes never retarget calls. Allow only one active bridge per document so the page exposes one unambiguous tool set.
 
@@ -78,7 +83,7 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 
 ### Step 1: Expose editor editing handles
 
-- Define typed snapshots, block handles, edit batches, results, and expected-revision failures in the public editor API.
+- Expose existing state for reads, an opaque revision getter, block handles, edit batches, results, and expected-revision failures in the public editor API.
 - Reuse editor-state editing behavior behind those commands, including history grouping, project-change notifications, and derived-state refreshes.
 - Specify edit-mode restrictions and behavior after disposal.
 - Keep whole-project loading distinct from editing. Use the current project serialization model rather than introducing another source representation.
@@ -89,7 +94,7 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 - Implement fixed editor binding and cleanup, rejecting a second active bridge for the same document. Keep the adapter outside editor-core and the editor plugin context.
 - Register imperative tools through `document.modelContext.registerTool` in the top-level page, with narrow schemas and accurate read-only annotations.
 - Feature-detect WebMCP. Installing the optional adapter in an unsupported browser must leave normal editing operational.
-- Add structured results that report revision, created handles, and validation failures for the bound editor.
+- Format source reads as strings, keep revision tracking inside the bridge, and return validation failures for the bound editor without exposing internal block handles.
 
 ### Step 3: Compose and verify browser workflows
 
@@ -109,14 +114,14 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 
 ## Success Criteria
 
-- [ ] Returned editor instances expose a typed editing handle independent of WebMCP.
-- [ ] Project snapshots and block handles support semantic reads and edits without exposing raw mutable state as a write API.
-- [ ] Validated batches preserve editor behavior, create one undo step, and reject stale writes without partial changes.
-- [ ] A separate adapter accepts exactly one host-provided editor reference and registers one tool set for the page.
-- [ ] Every tool stays bound to that editor, without an editor registry, ID routing, or focus-based selection.
-- [ ] Agent-driven edits and diagnostics can be verified against the bound editor's project revision.
-- [ ] Bridge disposal and replacement preserve host-owned resources and cannot redirect pending calls to another editor.
-- [ ] Browsers without WebMCP retain normal editor behavior, and setup and limitations are documented.
+- [x] Returned editor instances expose a typed editing handle independent of WebMCP.
+- [x] Consumers read `editor.state` and `editing.getRevision()` directly and use validated commands for writes, resolving internal block handles from state when needed.
+- [x] Validated batches preserve editor behavior, create one undo step, and reject stale writes without partial changes.
+- [x] A separate adapter accepts exactly one host-provided editor reference and registers one tool set for the page.
+- [x] Every tool stays bound to that editor, without an editor registry, ID routing, or focus-based selection.
+- [x] Agent-driven edits and diagnostics can be verified against the bound editor's project revision.
+- [x] Bridge disposal and replacement preserve host-owned resources and cannot redirect pending calls to another editor.
+- [x] Browsers without WebMCP retain normal editor behavior, and setup and limitations are documented.
 
 ## Affected Components
 
@@ -135,8 +140,8 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 
 ## Related Items
 
-- [TODO 492: Trigger autosave and history only on project changes](492-trigger-autosave-and-history-only-on-project-changes.md) - Coordinate project-change and revision semantics.
-- [TODO 503: Explore WebMCP tools for inspecting and editing projects](archived/503-explore-webmcp-editor-tools.md) - Superseded by this implementation plan.
+- [TODO 492: Trigger autosave and history only on project changes](../492-trigger-autosave-and-history-only-on-project-changes.md) - Coordinate project-change and revision semantics.
+- [TODO 503: Explore WebMCP tools for inspecting and editing projects](503-explore-webmcp-editor-tools.md) - Superseded by this implementation plan.
 
 ## References
 
@@ -149,6 +154,9 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 - Originally created on 2026-02-07; cancelled and archived by request on 2026-05-12.
 - Reopened on 2026-10-28 with a replacement plan: expose editor editing handles, then add a page-owned external WebMCP adapter. This replaces the original editor-integrated MCP server spike and consolidates TODO 503.
 - Revised on 2026-10-28 to bind the external adapter to exactly one editor instance. The host chooses that editor at construction; multi-editor registration and routing are outside the plan.
+- Implemented on 2026-10-28. The editor website and both galleries compose the external adapter; gallery selection disposes the previous bridge and binds a new one after the selected project loads. See [API and host setup](../../../packages/editor/packages/editor-webmcp/README.md).
+- Source reads expose only the currently expanded group or root. Navigation tools change the shared editor view without returning source; block reads and writes resolve within that current scope. The public editor API exposes live state, a revision getter, and general editing/navigation handles.
+- Native site tools were verified in the app's built-in browser: project reads, temporary source insertion, compiler diagnostics, undo, gallery project switching, stale-revision rejection, and compiler fixture inspection. Temporary source changes were undone.
 
 ## Archive Instructions
 

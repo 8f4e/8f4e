@@ -42,6 +42,14 @@ import viewport from './features/viewport/effect';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
 
+export type {
+	EditorEdit,
+	EditorEditingHandle,
+	EditorEditResult,
+	EditorNavigationHandle,
+} from './editing';
+
+export { createEditorEditingHandle, EditorEditingError, getEditorBlockId } from './editing';
 export {
 	collectSchemaConfigPaths,
 	createSchemaEditorConfigValidator,

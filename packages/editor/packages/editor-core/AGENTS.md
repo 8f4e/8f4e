@@ -26,6 +26,8 @@
 ## Plugins
 - Install plugins in editor-core so one setup receives state, event, menu, directive, and drawer services.
 - Keep generic directive parsing and layout in editor-state, and generic drawing hooks in web-ui.
+- Expose revision tracking and validated commands through `Editor.editing`, and shared project view navigation through `Editor.navigation`. Consumers read the existing `Editor.state` directly and use `editing.getRevision()` to track source changes. Validate edit batches before applying them as one undo step, and retain revision checks across human edits, history changes, and project replacement. WebMCP remains in its external adapter package.
+- Do not add a parallel project snapshot API. Consumers can use `getEditorBlockId(block)` to target existing validated commands with blocks read from state. Keep code authoritative for derived properties and avoid a parallel, hand-picked block metadata model. Agent-specific projections belong in the external WebMCP bridge. Editing commands accept source with `@pos` directives; derive positions from code without overriding or injecting coordinate directives.
 - Plugins own their registrations, listeners, private widget data, and disposal. Do not add automatic tracking.
 - Keep browser resources out of the shared plugin context. Browser plugins receive instance dependencies through
   factories composed by the browser host. `Editor.renderFrame()` provides generic immediate rendering.

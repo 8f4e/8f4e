@@ -1,4 +1,5 @@
 import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
+import type { WebMcpTool } from '@8f4e/editor-webmcp';
 import { afterEach, expect, test, vi } from 'vitest';
 import { mountGallery } from './gallery';
 
@@ -149,4 +150,66 @@ test('switches examples without waiting for the previous fetch and ignores its l
 	expect(view.panel('second').querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 	expect(view.panel('second').querySelector('canvas')?.classList.contains('editor-ready')).toBe(true);
 	expect(view.panel('first').querySelector('canvas')).toBeNull();
+});
+
+function siteTools() {
+	const original = Object.getOwnPropertyDescriptor(document, 'modelContext');
+	const tools = new Map<string, WebMcpTool>();
+	Object.defineProperty(document, 'modelContext', {
+		configurable: true,
+		value: {
+			registerTool(tool: WebMcpTool, { signal }: { signal: AbortSignal }) {
+				tools.set(tool.name, tool);
+				signal.addEventListener('abort', () => {
+					if (tools.get(tool.name) === tool) tools.delete(tool.name);
+				});
+			},
+		},
+	});
+	cleanups.push(() => {
+		if (original) Object.defineProperty(document, 'modelContext', original);
+		else Reflect.deleteProperty(document, 'modelContext');
+	});
+	return tools;
+}
+
+test('registers site tools only after the selected project has loaded', async () => {
+	const tools = siteTools();
+	let finish!: (response: Response) => void;
+	const pending = new Promise<Response>(resolve => {
+		finish = resolve;
+	});
+	const view = setup({ bridged: () => pending });
+	await view.mounted();
+	expect(tools.size).toBe(0);
+	finish(new Response(source));
+	await vi.waitFor(() => expect(tools.has('get_compiler_diagnostics')).toBe(true));
+	expect(await tools.get('get_project')!.execute({})).toContain('module galleryExample');
+});
+
+test('replaces site tools and requires a fresh source read for the replacement editor', async () => {
+	const tools = siteTools();
+	const view = setup({
+		first: async () => new Response(source),
+		second: async () => new Response(source.replace('galleryExample', 'secondExample')),
+	});
+	await view.mounted();
+	await vi.waitFor(() => expect(tools.has('get_compiler_diagnostics')).toBe(true));
+	await tools.get('get_project')!.execute({});
+	const retained = tools.get('apply_edits')!;
+	view.gallery.querySelector<HTMLButtonElement>('#example-second')!.click();
+	expect(tools.size).toBe(0);
+	const editor = await view.mounted(1);
+	await vi.waitFor(() => expect(tools.has('get_compiler_diagnostics')).toBe(true));
+	const args = { edits: [{ operation: 'delete', type: 'module', name: 'secondExample' }] };
+	expect(await retained.execute(args)).toMatchObject({ error: { code: 'disposed' } });
+	await tools.get('get_project_metadata')!.execute({});
+	expect(await tools.get('apply_edits')!.execute(args)).toMatchObject({ error: { code: 'source_required' } });
+	expect(editor.state.codeBlockRendering.codeBlocks.find(block => block.blockType === 'module')!.code[0]).toBe(
+		'module secondExample'
+	);
+	expect(await tools.get('get_project')!.execute({})).toContain('module secondExample');
+	expect(await tools.get('apply_edits')!.execute(args)).toBe('Edits applied.');
+	expect(editor.state.codeBlockRendering.codeBlocks.filter(block => block.blockType === 'module')).toHaveLength(0);
+	expect(tools.size).toBe(18);
 });

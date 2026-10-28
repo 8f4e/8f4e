@@ -93,4 +93,5 @@ export default function projectGroupNavigation(store: StateManager<State>, event
 
 	events.on<OpenProjectGroupEvent>('openProjectGroup', onOpenProjectGroup);
 	events.on('goToParentProjectGroup', onGoToParentProjectGroup);
+	events.on('goToRootProjectGroup', () => showProjectSlice(state.codeBlockRendering.rootCodeBlocks));
 }
