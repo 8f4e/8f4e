@@ -32,11 +32,11 @@ function setup() {
 	const advance = () => {
 		version += 7; // The bridge must use the returned token rather than assuming a single increment.
 		currentRevision = `editor-one:${version}`;
-		return { revision: currentRevision, createdBlockIds: ['private-created-handle'] };
+		return { revision: currentRevision };
 	};
 	const editing: EditorEditingHandle = {
 		getRevision: vi.fn(() => currentRevision),
-		applyEdits: vi.fn(advance),
+		applyEdits: vi.fn(() => ({ ...advance(), createdBlockIds: ['private-created-handle'] })),
 		undo: vi.fn(advance),
 		redo: vi.fn(advance),
 	};

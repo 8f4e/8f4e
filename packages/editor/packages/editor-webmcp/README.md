@@ -90,6 +90,8 @@ Group blocks can be moved, deleted, or have their source updated while retaining
 
 Consumers read the existing internals directly through `editor.state`. `editor.editing.getRevision()` returns the current opaque project revision without constructing or cloning a project snapshot. The editor exposes validated `applyEdits({ expectedRevision, edits })`, `undo({ expectedRevision })`, and `redo({ expectedRevision })` commands. Use `getEditorBlockId(block)` from `@8f4e/editor-core` for command targets read from state. `editor.navigation.openGroup(blockId)`, `goToParentGroup()`, and `goToRoot()` control the shared editor view. The general editing API can address any project scope; the bridge resolves type/name selectors within the current live block slice.
 
+`applyEdits` returns `{ revision, createdBlockIds }`. `undo` and `redo` return `{ revision }`.
+
 The bridge collects and formats state synchronously. It selects only the source or metadata required by each tool and converts source line arrays to strings. Code remains authoritative for derived properties. Consumers retaining data across asynchronous work can copy the specific data they need; there is no separate `EditorProjectSnapshot` model or automatic full-graph clone.
 
 Writes respect edit mode and follow existing project restoration, derived layout, autosave, and compilation mechanisms. They preserve the viewed project group and viewport for edit batches and do not dispatch `loadProject`, so in-project edits keep browser file associations. Invalid batches leave project content and undo history unchanged. Source edits may produce ordinary compiler diagnostics.

@@ -196,13 +196,13 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 			checkWrite(expectedRevision);
 			events.dispatch('undo');
 			syncRevision();
-			return { revision: revision(), createdBlockIds: [] };
+			return { revision: revision() };
 		},
 		redo({ expectedRevision }) {
 			checkWrite(expectedRevision);
 			events.dispatch('redo');
 			syncRevision();
-			return { revision: revision(), createdBlockIds: [] };
+			return { revision: revision() };
 		},
 	};
 	const navigation: EditorNavigationHandle = {
