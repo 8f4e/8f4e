@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/tokenizer",
-  "version": "3.0.12",
+  "version": "3.0.13",
   "private": true,
   "description": "8f4e source-to-AST parser package",
   "type": "module",
