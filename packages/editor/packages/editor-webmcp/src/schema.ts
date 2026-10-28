@@ -2,7 +2,7 @@ const code = { type: 'string', description: 'Complete source of the block, with 
 const position = { type: 'integer' };
 const blockId = {
 	type: 'string',
-	description: 'Opaque blockId from the latest get_project or expand_group source view.',
+	description: 'Opaque blockId from the latest get_project source view.',
 };
 const entry = { type: 'string', minLength: 1, pattern: '^\\S+$' };
 
@@ -15,12 +15,25 @@ const object = (properties: Record<string, unknown>, required: string[]) => ({
 
 export const emptySchema = object({}, []);
 export const metadataSchema = object({ blockId }, ['blockId']);
+export const groupSchema = object(
+	{ name: { type: 'string', description: 'Name of a child group in the currently expanded group or root.' } },
+	['name']
+);
+const blockType = {
+	type: 'string',
+	enum: ['module', 'function', 'constants', 'prototype', 'includes', 'note', 'unknown', 'group', 'project'],
+};
+export const blockSchema = object({ type: blockType, name: { type: 'string' } }, ['type', 'name']);
+export const updateBlockSchema = object(
+	{ type: blockType, name: { type: 'string' }, code, expectedRevision: { type: 'string' } },
+	['type', 'name', 'code', 'expectedRevision']
+);
 export const revisionSchema = object({ expectedRevision: { type: 'string' } }, ['expectedRevision']);
 export const editsSchema = object(
 	{
 		expectedRevision: {
 			type: 'string',
-			description: 'Opaque revision from the latest get_project or expand_group result.',
+			description: 'Opaque revision from the latest get_project result.',
 		},
 		edits: {
 			type: 'array',

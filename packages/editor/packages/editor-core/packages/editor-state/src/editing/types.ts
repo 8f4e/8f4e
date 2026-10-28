@@ -8,6 +8,8 @@ export type EditorEdit =
 	| { type: 'delete'; blockId: string };
 
 export interface EditorProjectSnapshot {
+	/** Project slice currently displayed by the editor; empty at the root. */
+	projectPath: string;
 	/** Opaque token: revisions from different editor instances cannot be interchanged. */
 	revision: string;
 	compilerInputRevision: number;
@@ -29,6 +31,12 @@ export interface EditorEditingHandle {
 	applyEdits(request: { expectedRevision: string; edits: readonly EditorEdit[] }): EditorEditResult;
 	undo(request: { expectedRevision: string }): EditorEditResult;
 	redo(request: { expectedRevision: string }): EditorEditResult;
+}
+
+export interface EditorNavigationHandle {
+	openGroup(blockId: string): void;
+	goToParentGroup(): void;
+	goToRoot(): void;
 }
 
 export class EditorEditingError extends Error {

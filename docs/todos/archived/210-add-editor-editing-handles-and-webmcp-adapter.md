@@ -63,8 +63,11 @@ Register one document-level tool set:
 
 | Tool | Purpose |
 | --- | --- |
-| `get_project` | Return the bound editor's project snapshot and revision. |
-| `apply_edits` | Apply a validated batch to the bound editor at an expected revision. |
+| `get_project` | Return only the currently expanded group or root as a one-level source string and revision. |
+| `expand_group` / `go_to_parent` / `go_to_root` | Navigate the editor's shared view and return location only. |
+| `get_block` / `update_block` | Read or replace source by type and name within the current scope. |
+| `get_block_metadata` | Fetch metadata for a block in the current scope on demand. |
+| `apply_edits` | Apply a validated batch within the current scope at an expected revision. |
 | `undo` / `redo` | Operate on the bound editor's history, with expected-revision checks. |
 | `get_diagnostics` | Return current compiler diagnostics and the revision they describe, when a diagnostic handle is supplied. |
 
@@ -150,6 +153,7 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 - Reopened on 2026-10-28 with a replacement plan: expose editor editing handles, then add a page-owned external WebMCP adapter. This replaces the original editor-integrated MCP server spike and consolidates TODO 503.
 - Revised on 2026-10-28 to bind the external adapter to exactly one editor instance. The host chooses that editor at construction; multi-editor registration and routing are outside the plan.
 - Implemented on 2026-10-28. The editor website and both galleries compose the external adapter; gallery selection disposes the previous bridge and binds a new one after the selected project loads. See [API and host setup](../../../packages/editor/packages/editor-webmcp/README.md).
+- Source reads expose only the currently expanded group or root. Navigation tools change the shared editor view without returning source; block reads and writes resolve within that current scope. The public editor API retains complete snapshots and general editing/navigation handles.
 - Native site tools were verified in the app's built-in browser: project reads, temporary source insertion, compiler diagnostics, undo, gallery project switching, stale-revision rejection, and compiler fixture inspection. Temporary source changes were undone.
 
 ## Archive Instructions

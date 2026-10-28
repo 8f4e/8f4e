@@ -26,7 +26,14 @@ function setup(
 		store.dispose();
 		events.dispose();
 	});
-	return { store, events, editing: editing.handle, dispose: editing.dispose, compilationChanged };
+	return {
+		store,
+		events,
+		editing: editing.handle,
+		navigation: editing.navigation,
+		dispose: editing.dispose,
+		compilationChanged,
+	};
 }
 
 describe('public editor editing handle', () => {
@@ -159,6 +166,52 @@ describe('public editor editing handle', () => {
 		expect(after.project.modules[0].code[0]).toBe('module outer');
 		expect(after.project.groups[0].modules.map(block => block.code[0])).toContain('module updatedInner');
 		expect(store.getState().codeBlockRendering.codeBlocks.some(block => block.name === 'added')).toBe(true);
+	});
+
+	it('navigates the shared editor view without changing source revisions', () => {
+		const project = structuredClone(EMPTY_DEFAULT_PROJECT);
+		const child = {
+			...structuredClone(EMPTY_DEFAULT_PROJECT),
+			name: 'child',
+			entry: 'main',
+			code: ['group child', 'groupEnd'],
+		};
+		project.groups = [
+			{
+				...structuredClone(EMPTY_DEFAULT_PROJECT),
+				name: 'parent',
+				entry: 'main',
+				code: ['group parent', 'groupEnd'],
+				groups: [child],
+			},
+		];
+		const { editing, navigation, store, dispose } = setup(project);
+		const root = editing.getSnapshot();
+		const parent = root.blocks.find(({ block }) => block.name === 'parent')!;
+		const nested = root.blocks.find(({ block }) => block.name === 'child')!;
+		expect(root.projectPath).toBe('');
+		expect(() => navigation.openGroup('missing')).toThrow('current group blockId');
+		navigation.openGroup(nested.blockId);
+		expect(editing.getSnapshot().projectPath).toBe('parent/child');
+		navigation.goToRoot();
+		navigation.openGroup(parent.blockId);
+		expect(editing.getSnapshot().projectPath).toBe('parent');
+		expect(store.getState().codeBlockRendering.codeBlocks[0].name).toBe('child');
+		navigation.openGroup(nested.blockId);
+		expect(editing.getSnapshot().projectPath).toBe('parent/child');
+		navigation.goToParentGroup();
+		expect(editing.getSnapshot().projectPath).toBe('parent');
+		navigation.openGroup(nested.blockId);
+		navigation.goToRoot();
+		navigation.goToParentGroup();
+		expect(editing.getSnapshot().projectPath).toBe('');
+		expect(editing.getSnapshot().revision).toBe(root.revision);
+		dispose();
+		expect(() => navigation.goToRoot()).toThrow('disposed');
+		const ordinary = setup();
+		expect(() => ordinary.navigation.openGroup(ordinary.editing.getSnapshot().blocks[0].blockId)).toThrow(
+			'not a project group'
+		);
 	});
 
 	it('reports read-only and disposed handles, and does not retain history from a replaced project', () => {

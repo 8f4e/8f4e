@@ -174,30 +174,58 @@ function siteTools() {
 	return tools;
 }
 
-test('reads one source level at a time and expands a chosen nested group without navigating the editor', async () => {
+test('navigates the editor and reads or edits only the currently expanded source level', async () => {
 	const tools = siteTools();
 	const grouped =
-		'8f4e/v1\nentry main\nmodule root\nmoduleEnd\ngroup audio\nmodule oscillator\nmoduleEnd\ngroup voices\nmodule deepSecret\nmoduleEnd\ngroupEnd\ngroupEnd\nentryEnd';
+		'8f4e/v1\nentry main\nmodule oscillator\nint value 1\nmoduleEnd\ngroup audio\nmodule oscillator\nint value 2\nmoduleEnd\ngroup voices\nmodule deepSecret\nmoduleEnd\ngroupEnd\ngroupEnd\nentryEnd';
 	const view = setup({ grouped: async () => new Response(grouped) });
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(tools.has('get_diagnostics')).toBe(true));
-	const visibleBlocks = editor.state.codeBlockRendering.codeBlocks;
-	const root = (await tools.get('get_project')!.execute({})) as WebMcpProjectSnapshot;
-	expect(root.code).toContain('module root');
+	const call = (name: string, args = {}) => tools.get(name)!.execute(args);
+	const root = (await call('get_project')) as WebMcpProjectSnapshot;
+	expect(root.projectPath).toBe('');
+	expect(root.code).toContain('int value 1');
 	expect(root.code).toContain('group audio');
-	expect(root.code).not.toContain('module oscillator');
-	const audio = root.blocks.find(block => root.code.split('\n')[block.startLine - 1] === 'group audio')!;
-	const expanded = (await tools.get('expand_group')!.execute({ blockId: audio.blockId })) as WebMcpProjectSnapshot;
+	expect(root.code).not.toContain('int value 2');
+	expect(await call('expand_group', { name: 'audio' })).toEqual({ projectPath: 'audio', revision: root.revision });
+	expect(editor.state.codeBlockRendering.codeBlocks).toBe(
+		editor.state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'audio')!.nestedProjectCodeBlocks
+	);
+	const expanded = (await call('get_project')) as WebMcpProjectSnapshot;
 	expect(expanded.projectPath).toBe('audio');
-	expect(expanded.code).toContain('module oscillator');
+	expect(expanded.code).toContain('int value 2');
 	expect(expanded.code).toContain('group voices');
 	expect(expanded.code).not.toContain('deepSecret');
-	const voices = expanded.blocks.find(block => expanded.code.split('\n')[block.startLine - 1] === 'group voices')!;
-	const nested = (await tools.get('expand_group')!.execute({ blockId: voices.blockId })) as WebMcpProjectSnapshot;
+	expect(await call('get_block', { type: 'module', name: 'oscillator' })).toMatchObject({
+		code: expect.stringContaining('int value 2'),
+	});
+	await call('update_block', {
+		type: 'module',
+		name: 'oscillator',
+		expectedRevision: expanded.revision,
+		code: 'module oscillator\nint value 3\nmoduleEnd',
+	});
+	expect(editor.state.codeBlockRendering.codeBlocks.find(block => block.name === 'oscillator')!.code).toContain(
+		'int value 3'
+	);
+	expect(editor.state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'oscillator')!.code).toContain(
+		'int value 1'
+	);
+	await call('expand_group', { name: 'voices' });
+	const nested = (await call('get_project')) as WebMcpProjectSnapshot;
 	expect(nested.projectPath).toBe('audio/voices');
 	expect(nested.code).toContain('module deepSecret');
-	expect(editor.state.codeBlockRendering.codeBlocks).toBe(visibleBlocks);
-	expect(nested.revision).toBe(root.revision);
+	expect(editor.state.codeBlockRendering.codeBlocks.find(block => block.name === 'deepSecret')).toBeDefined();
+	expect(await call('get_block', { type: 'module', name: 'oscillator' })).toMatchObject({
+		error: { code: 'block_not_found' },
+	});
+	await call('go_to_parent');
+	expect(await call('get_project')).toMatchObject({
+		projectPath: 'audio',
+		code: expect.stringContaining('int value 3'),
+	});
+	await call('go_to_root');
+	expect(await call('get_project')).toMatchObject({ projectPath: '', code: root.code });
 });
 
 test('exposes the loaded project through site tools and saves undoable source edits', async () => {
@@ -260,5 +288,5 @@ test('replaces site tools on project selection and rejects retained calls and sn
 		error: { code: 'stale_revision' },
 	});
 	expect(editor.editing.getSnapshot().project.modules[0].code[0]).toBe('module secondExample');
-	expect(tools.size).toBe(7);
+	expect(tools.size).toBe(11);
 });

@@ -9,14 +9,18 @@ export interface SourceView {
 }
 
 /** Read partial editor source without the file exporter's syntax validation or recursive expansion. */
-export function createSourceView(snapshot: EditorProjectSnapshot, groupId?: string): SourceView {
+export function createSourceView(snapshot: EditorProjectSnapshot): SourceView {
 	const handles = new Map(snapshot.blocks.map(({ blockId, block }) => [block, blockId]));
-	const group = groupId === undefined ? undefined : snapshot.blocks.find(item => item.blockId === groupId)?.block;
-	if (groupId !== undefined && !group)
-		throw Object.assign(new Error('Read get_project for a current group blockId'), { code: 'block_not_found' });
-	if (group && group.nestedProjectCodeBlocks === undefined)
-		throw Object.assign(new Error('The selected block is not a project group'), { code: 'not_a_group' });
-	const projectPath = group ? createChildProjectGroupPath(group.projectPath, group.name) : '';
+	const projectPath = snapshot.projectPath;
+	const group =
+		projectPath === ''
+			? undefined
+			: snapshot.blocks.find(
+					({ block }) =>
+						block.nestedProjectCodeBlocks !== undefined &&
+						createChildProjectGroupPath(block.projectPath, block.name) === projectPath
+				)?.block;
+	if (projectPath !== '' && !group) throw new Error('The currently expanded group is unavailable');
 	const directBlocks = group
 		? group.nestedProjectCodeBlocks!
 		: snapshot.blocks.filter(({ block }) => block.projectPath === '').map(({ block }) => block);

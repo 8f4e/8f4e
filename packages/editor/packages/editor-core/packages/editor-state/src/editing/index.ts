@@ -12,7 +12,7 @@ import { parseBlockDirectives } from '../features/code-blocks/utils/parseBlockDi
 import updateViewport from '../features/viewport/updateViewport';
 import serializeCodeBlocks from '../pureHelpers/projectSerialization/serializeCodeBlocks';
 import serializeToProject from '../pureHelpers/projectSerialization/serializeToProject';
-import { type EditorEdit, EditorEditingError, type EditorEditingHandle } from './types';
+import { type EditorEdit, EditorEditingError, type EditorEditingHandle, type EditorNavigationHandle } from './types';
 
 export * from './types';
 
@@ -121,6 +121,8 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 			return {
 				revision: revision(),
 				compilerInputRevision: state.compilerInputRevision,
+				projectPath:
+					findProjectSlicePath(state.codeBlockRendering.rootCodeBlocks, state.codeBlockRendering.codeBlocks) ?? '',
 				project: structuredClone(serializeToProject(state)),
 				blocks: structuredClone(
 					flatten(state.codeBlockRendering.rootCodeBlocks).map(block => ({
@@ -227,5 +229,24 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 			return { revision: revision(), createdBlockIds: [] };
 		},
 	};
-	return { handle, dispose };
+	const navigation: EditorNavigationHandle = {
+		openGroup(id) {
+			assertAlive();
+			const block = flatten(state.codeBlockRendering.rootCodeBlocks).find(block => blockId(block) === id);
+			if (!block)
+				throw new EditorEditingError('block_not_found', 'Read getSnapshot for a current group blockId', revision());
+			if (block.nestedProjectCodeBlocks === undefined)
+				throw new EditorEditingError('invalid_edit', 'The selected block is not a project group', revision());
+			events.dispatch('openProjectGroup', { codeBlock: block });
+		},
+		goToParentGroup() {
+			assertAlive();
+			events.dispatch('goToParentProjectGroup');
+		},
+		goToRoot() {
+			assertAlive();
+			events.dispatch('goToRootProjectGroup');
+		},
+	};
+	return { handle, navigation, dispose };
 }

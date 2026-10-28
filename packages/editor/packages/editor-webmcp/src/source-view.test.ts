@@ -35,6 +35,7 @@ function fixture() {
 	const all = [audio, direct, voices, deep, root];
 	const snapshot = {
 		revision: 'test:1',
+		projectPath: '',
 		blocks: all.map(block => ({ blockId: `handle-${block.creationIndex}`, block })),
 	} as EditorProjectSnapshot;
 	return { snapshot, audio, voices, root };
@@ -68,9 +69,10 @@ describe('one-level 8f4e source views', () => {
 		assertRanges(view, snapshot.blocks);
 	});
 
-	it('expands only the chosen group and lets a nested group be fetched separately', () => {
+	it('reads only the currently expanded group, including nested group shells', () => {
 		const { snapshot } = fixture();
-		const view = createSourceView(snapshot, 'handle-0');
+		snapshot.projectPath = 'audio';
+		const view = createSourceView(snapshot);
 		expect(view.projectPath).toBe('audio');
 		expect(view.code).toBe(
 			'group audio\nexpose oscillator:value\n\nmodule oscillator\nint value 1\nmoduleEnd\n\ngroup voices\n; voice settings\ngroupEnd\ngroupEnd'
@@ -78,19 +80,20 @@ describe('one-level 8f4e source views', () => {
 		expect(view.blocks.map(block => block.blockId)).toEqual(['handle-1', 'handle-2']);
 		expect(view.code).not.toContain('deepSecret');
 		assertRanges(view, snapshot.blocks);
-		const nested = createSourceView(snapshot, 'handle-2');
+		snapshot.projectPath = 'audio/voices';
+		const nested = createSourceView(snapshot);
 		expect(nested.projectPath).toBe('audio/voices');
 		expect(nested.code).toContain('module deepSecret');
 		expect(nested.code).not.toContain('module oscillator');
 		assertRanges(nested, snapshot.blocks);
 	});
 
-	it('reads unfinished code without export validation and rejects unknown or non-group handles', () => {
+	it('reads unfinished code without export validation and rejects an unavailable current scope', () => {
 		const { snapshot, root } = fixture();
 		root.code = ['module unfinished', 'push'];
 		expect(createSourceView(snapshot).code).toContain('module unfinished\npush');
-		expect(() => createSourceView(snapshot, 'missing')).toThrow('current group blockId');
-		expect(() => createSourceView(snapshot, 'handle-4')).toThrow('not a project group');
+		snapshot.projectPath = 'missing';
+		expect(() => createSourceView(snapshot)).toThrow('currently expanded group is unavailable');
 	});
 
 	it('preserves root-owned source, entry boundaries, blank lines, and empty group shells', () => {
@@ -108,7 +111,8 @@ describe('one-level 8f4e source views', () => {
 		expect(view.code).toContain('pass shared\n\n; root comment');
 		expect(view.code).toContain('entry main\n');
 		expect(view.code).toContain('entry secondary\n');
-		expect(createSourceView(snapshot, 'handle-0').code).toBe(audio.code.join('\n'));
+		snapshot.projectPath = 'audio';
+		expect(createSourceView(snapshot).code).toBe(audio.code.join('\n'));
 		assertRanges(view, snapshot.blocks);
 	});
 });

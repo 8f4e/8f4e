@@ -46,6 +46,7 @@ export type {
 	EditorEdit,
 	EditorEditingHandle,
 	EditorEditResult,
+	EditorNavigationHandle,
 	EditorProjectSnapshot,
 } from './editing';
 

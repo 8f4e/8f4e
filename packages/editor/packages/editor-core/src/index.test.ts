@@ -66,7 +66,7 @@ vi.mock('@8f4e/web-ui-render-projection', () => ({
 vi.mock('@8f4e/editor-state', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/editor-state')>()),
 	default: vi.fn(() => store),
-	createEditorEditingHandle: vi.fn(() => ({ handle: {}, dispose: vi.fn() })),
+	createEditorEditingHandle: vi.fn(() => ({ handle: {}, navigation: {}, dispose: vi.fn() })),
 }));
 
 vi.mock('@8f4e/web-ui', async importOriginal => ({
