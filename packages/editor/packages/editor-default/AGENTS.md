@@ -48,3 +48,4 @@
 - The compiler plugin publishes `ProgramArtifacts` (`memoryRef` and `codeBuffer`) for core rendering, without taking an editor argument. The full compilation result stays inside the plugin. Core owns memory-view updates. Derive bytecode size from `codeBuffer.byteLength`; do not restore unused status flags.
 
 - Cached memory-write views belong to the compiler plugin. Pass its writer directly rather than allocating views in the host.
+- Expose the compiler plugin's stable `getDiagnostics` read handle on the returned core editor. Webpage hosts may pass it to their external WebMCP bridge; mounting the default editor does not register site tools.

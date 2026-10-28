@@ -1,6 +1,6 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import { logMessage, serializeCodeBlocksToProject } from '@8f4e/editor-state';
-import type { InfoRecord } from '@8f4e/editor-state-types';
+import type { CodeError, InfoRecord } from '@8f4e/editor-state-types';
 import type { CompilerDiagnostic } from '@8f4e/language-spec';
 import { WASM_MEMORY_PAGE_SIZE } from '@8f4e/language-spec';
 import { hasTestEntry } from '@8f4e/test-runner';
@@ -8,16 +8,26 @@ import type { CompilerService } from './compiler-service';
 import debounceTrailing from './debounce-trailing';
 import { compilerEditorConfigSchemaContribution, getRecompileDebounceDelay } from './editor-config';
 
+export interface CompilerDiagnostics {
+	inputRevision: number;
+	completedRevision: number | null;
+	status: 'pending' | 'compiling' | 'ready' | 'disposed';
+	compilationErrors: CodeError[];
+	editorDirectiveErrors: CodeError[];
+}
+
 export default function installCompilation(
 	{ store, events }: Pick<EditorPluginContext, 'store' | 'events'>,
 	compileCode: CompilerService['compileCode']
-): () => void {
+) {
 	const state = store.getState();
 	store.set('editorConfigSchemaContributions.compiler', compilerEditorConfigSchemaContribution);
 	let disposed = false;
 	let inputGeneration = 0;
 	let compiling = false;
 	let compileQueued = false;
+	let completedRevision: number | null = null;
+	let diagnosticsCurrent = false;
 
 	const scheduleRecompile = debounceTrailing(compileProject, () => getRecompileDebounceDelay(state.editorConfig));
 
@@ -42,6 +52,7 @@ export default function installCompilation(
 		store.set('codeErrors.compilationErrors', []);
 
 		const generation = inputGeneration;
+		const revision = state.compilerInputRevision;
 		const isCurrent = () => !disposed && generation === inputGeneration;
 		const compilationStart = performance.now();
 
@@ -87,6 +98,8 @@ export default function installCompilation(
 				memoryReinitialized,
 			});
 			store.set('codeErrors.compilationErrors', []);
+			completedRevision = revision;
+			diagnosticsCurrent = true;
 
 			if (memoryReinitialized) {
 				logMessage(state, 'WASM Memory instance was (re)created', 'Compiler');
@@ -117,6 +130,8 @@ export default function installCompilation(
 					message: diagnostic?.message || String(error) || 'Compilation failed',
 				},
 			]);
+			completedRevision = revision;
+			diagnosticsCurrent = true;
 		} finally {
 			compiling = false;
 			if (compileQueued && !disposed) {
@@ -129,13 +144,14 @@ export default function installCompilation(
 	function onInputChanged(): void {
 		if (disposed) return;
 		++inputGeneration;
+		diagnosticsCurrent = false;
 		compileQueued = false;
 		scheduleRecompile();
 	}
 
 	events.on('compilationInputChanged', onInputChanged);
 
-	return () => {
+	const dispose = () => {
 		if (disposed) return;
 		disposed = true;
 		scheduleRecompile.cancel();
@@ -144,4 +160,21 @@ export default function installCompilation(
 		delete schemas.compiler;
 		store.set('editorConfigSchemaContributions', schemas);
 	};
+	const getDiagnostics = (): CompilerDiagnostics => ({
+		inputRevision: state.compilerInputRevision,
+		completedRevision,
+		status: disposed
+			? 'disposed'
+			: compiling
+				? 'compiling'
+				: diagnosticsCurrent && completedRevision === state.compilerInputRevision
+					? 'ready'
+					: 'pending',
+		compilationErrors:
+			diagnosticsCurrent && completedRevision === state.compilerInputRevision
+				? structuredClone(state.codeErrors.compilationErrors)
+				: [],
+		editorDirectiveErrors: structuredClone(state.codeErrors.editorDirectiveErrors),
+	});
+	return { dispose, getDiagnostics };
 }

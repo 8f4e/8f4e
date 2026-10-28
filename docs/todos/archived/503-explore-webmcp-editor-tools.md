@@ -12,7 +12,7 @@ completed: 2026-10-28
 
 ## Resolution
 
-Superseded and archived on 2026-10-28 by [TODO 210: Expose editor editing handles and add an external WebMCP adapter](../210-add-editor-editing-handles-and-webmcp-adapter.md). The reopened TODO defines public editor editing handles and a separate page-owned adapter bound to exactly one host-provided editor instance. The research proposal below is retained as history; implementation remains open in TODO 210.
+Superseded and archived on 2026-10-28 by [TODO 210: Expose editor editing handles and add an external WebMCP adapter](210-add-editor-editing-handles-and-webmcp-adapter.md). TODO 210 implemented public editor editing handles and a separate page-owned adapter bound to exactly one host-provided editor instance. The research proposal below is retained as history.
 
 ## Problem Description
 

@@ -1,4 +1,5 @@
 import { type DefaultEditorInstance, type DefaultEditorMountOptions, mountDefaultEditor } from '@8f4e/editor-default';
+import { createEditorWebMcp, type EditorWebMcpBridge } from '@8f4e/editor-webmcp';
 import { getProjectId, withProjectId } from './gallery-url';
 import { sharedAudioContext } from './shared-audio-context';
 
@@ -30,6 +31,7 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 	const mobileLayout = window.matchMedia('(max-width: 800px)');
 	let activeId: string | null = null;
 	let activeEditor: DefaultEditorInstance | undefined;
+	let activeBridge: EditorWebMcpBridge | undefined;
 	let mountQueue = Promise.resolve();
 	let revision = 0;
 	let revealFrame = 0;
@@ -119,6 +121,8 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 	function releaseEditor(): void {
 		window.cancelAnimationFrame(revealFrame);
 		window.clearTimeout(loadTimeout);
+		activeBridge?.dispose();
+		activeBridge = undefined;
 		activeEditor?.dispose();
 		activeEditor = undefined;
 		for (const item of items) {
@@ -156,6 +160,17 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 			canvas.setAttribute('aria-label', `${item.project.title} editor`);
 			item.frame.prepend(canvas);
 			let failed = false;
+			let loaded = false;
+			let mountedEditor: DefaultEditorInstance | undefined;
+			const connectBridge = () => {
+				if (!loaded || !mountedEditor || activeBridge || disposed || failed || currentRevision !== revision) return;
+				activeBridge = createEditorWebMcp({
+					document,
+					editor: mountedEditor,
+					getDiagnostics: mountedEditor.getDiagnostics,
+				});
+				void activeBridge.ready.catch(error => console.error('Failed to register gallery site tools:', error));
+			};
 			const showError = (error: unknown) => {
 				if (disposed || currentRevision !== revision) {
 					return;
@@ -173,6 +188,8 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 			};
 			const reveal = () => {
 				if (disposed || failed || currentRevision !== revision) return;
+				loaded = true;
+				connectBridge();
 				window.clearTimeout(loadTimeout);
 				revealFrame = window.requestAnimationFrame(() => {
 					if (disposed || failed || currentRevision !== revision) return;
@@ -203,6 +220,8 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 					return;
 				}
 				activeEditor = editor;
+				mountedEditor = editor;
+				connectBridge();
 			} catch (error) {
 				showError(error);
 			}

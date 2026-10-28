@@ -26,6 +26,7 @@
 ## Plugins
 - Install plugins in editor-core so one setup receives state, event, menu, directive, and drawer services.
 - Keep generic directive parsing and layout in editor-state, and generic drawing hooks in web-ui.
+- Expose transport-independent reads and commands through `Editor.editing`. Validate edit batches before applying them as one undo step, and retain revision checks across human edits, history changes, and project replacement. WebMCP remains in its external adapter package.
 - Plugins own their registrations, listeners, private widget data, and disposal. Do not add automatic tracking.
 - Keep browser resources out of the shared plugin context. Browser plugins receive instance dependencies through
   factories composed by the browser host. `Editor.renderFrame()` provides generic immediate rendering.

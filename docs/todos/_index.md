@@ -22,7 +22,6 @@ Active todo files are listed below.
 | 048 | Add 2D Engine Visual Regression Tests | 🟡 | 6-8 hours | 2025-08-28 | The 2D engine package currently lacks visual regression testing, which means: |
 | 058 | Research C/C++ WebAssembly Runtimes on Linux with ALSA Audio Support | 🟡 | 4-6 days | 2025-09-11 | The 8f4e project requires a native C/C++ runtime for Linux systems with ALSA audio integration to complement the existing browser-based WebAssembly runtimes. Currently, the proj... |
 | 064 | Research WebAssembly Runtimes for ARM Microcontroller Support | 🟡 | 3-5 days | 2025-09-10 | The 8f4e project currently supports browser-based WebAssembly runtimes (WebWorker and AudioWorklet) but lacks native runtimes for embedded ARM microcontrollers. To implement the... |
-| 210 | Expose editor editing handles and add an external WebMCP adapter | 🟡 | 2-4d | 2026-02-07 | Expose typed editing handles and bind an external page-owned WebMCP adapter to exactly one host-provided editor instance. |
 | 240 | Add row-align context-menu action with fixed spacing | 🟡 | 4-8h | 2026-02-18 | There is no quick layout action to arrange multiple related code blocks into a clean horizontal row while keeping their relative left-to-right order. |
 | 291 | Add int64 support across compiler, runtime, and docs | 🟡 | 2-4d | 2026-03-09 | The language already has dedicated `float64` support, including 64-bit memory allocation and type-aware compiler paths, but there is no equivalent `int64` support. |
 | 297 | Add url editor directive for clickable links | 🟡 | 4-8h | 2026-03-12 | The editor currently has no directive for attaching a clickable external link to a code block. |
@@ -88,6 +87,7 @@ Active todo files are listed below.
 
 | ID | Title | Completed | Notes |
 | ---- | ----- | --------- | ----- |
+| 210 | Expose editor editing handles and add an external WebMCP adapter | 2026-10-28 | Public atomic editing handles and an external single-editor bridge; both websites bind site tools to the current project, with browser switching and native tool verification. |
 | 503 | Explore WebMCP tools for inspecting and editing projects | 2026-10-28 | Superseded; reopened TODO 210 defines public editing handles and an external page-owned WebMCP adapter. |
 | 401 | Tighten runtime browser API typing | 2026-10-26 | Narrow Web Audio adapter types and shared runtime message unions replace production `any` and `@ts-expect-error` escapes. |
 | 510 | Use glyph masks and a GPU color palette | 2026-10-26 | R8 masks and stable GPU palette indices replace colored font copies; the default atlas drops from 4 MiB to 96 KiB while retaining 20-byte instances. |

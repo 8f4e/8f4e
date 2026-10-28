@@ -1,0 +1,14 @@
+{
+  "name": "@8f4e/editor-webmcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Single-editor WebMCP adapter for 8f4e webpage hosts",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "sideEffects": false,
+  "license": "MIT",
+  "dependencies": { "@8f4e/editor-core": "*" },
+  "devDependencies": { "@8f4e/config": "*", "vitest": "4.1.7" }
+}

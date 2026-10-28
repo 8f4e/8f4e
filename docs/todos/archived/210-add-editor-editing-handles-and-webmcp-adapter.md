@@ -4,8 +4,8 @@ priority: Medium
 effort: 2-4d
 created: 2026-02-07
 issue: null
-status: Open
-completed: null
+status: Completed
+completed: 2026-10-28
 ---
 
 # TODO: Expose editor editing handles and add an external WebMCP adapter
@@ -109,14 +109,14 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 
 ## Success Criteria
 
-- [ ] Returned editor instances expose a typed editing handle independent of WebMCP.
-- [ ] Project snapshots and block handles support semantic reads and edits without exposing raw mutable state as a write API.
-- [ ] Validated batches preserve editor behavior, create one undo step, and reject stale writes without partial changes.
-- [ ] A separate adapter accepts exactly one host-provided editor reference and registers one tool set for the page.
-- [ ] Every tool stays bound to that editor, without an editor registry, ID routing, or focus-based selection.
-- [ ] Agent-driven edits and diagnostics can be verified against the bound editor's project revision.
-- [ ] Bridge disposal and replacement preserve host-owned resources and cannot redirect pending calls to another editor.
-- [ ] Browsers without WebMCP retain normal editor behavior, and setup and limitations are documented.
+- [x] Returned editor instances expose a typed editing handle independent of WebMCP.
+- [x] Project snapshots and block handles support semantic reads and edits without exposing raw mutable state as a write API.
+- [x] Validated batches preserve editor behavior, create one undo step, and reject stale writes without partial changes.
+- [x] A separate adapter accepts exactly one host-provided editor reference and registers one tool set for the page.
+- [x] Every tool stays bound to that editor, without an editor registry, ID routing, or focus-based selection.
+- [x] Agent-driven edits and diagnostics can be verified against the bound editor's project revision.
+- [x] Bridge disposal and replacement preserve host-owned resources and cannot redirect pending calls to another editor.
+- [x] Browsers without WebMCP retain normal editor behavior, and setup and limitations are documented.
 
 ## Affected Components
 
@@ -135,8 +135,8 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 
 ## Related Items
 
-- [TODO 492: Trigger autosave and history only on project changes](492-trigger-autosave-and-history-only-on-project-changes.md) - Coordinate project-change and revision semantics.
-- [TODO 503: Explore WebMCP tools for inspecting and editing projects](archived/503-explore-webmcp-editor-tools.md) - Superseded by this implementation plan.
+- [TODO 492: Trigger autosave and history only on project changes](../492-trigger-autosave-and-history-only-on-project-changes.md) - Coordinate project-change and revision semantics.
+- [TODO 503: Explore WebMCP tools for inspecting and editing projects](503-explore-webmcp-editor-tools.md) - Superseded by this implementation plan.
 
 ## References
 
@@ -149,6 +149,8 @@ Compiler diagnostics remain owned by the compiler plugin. Supply a separate read
 - Originally created on 2026-02-07; cancelled and archived by request on 2026-05-12.
 - Reopened on 2026-10-28 with a replacement plan: expose editor editing handles, then add a page-owned external WebMCP adapter. This replaces the original editor-integrated MCP server spike and consolidates TODO 503.
 - Revised on 2026-10-28 to bind the external adapter to exactly one editor instance. The host chooses that editor at construction; multi-editor registration and routing are outside the plan.
+- Implemented on 2026-10-28. The editor website and both galleries compose the external adapter; gallery selection disposes the previous bridge and binds a new one after the selected project loads. See [API and host setup](../../../packages/editor/packages/editor-webmcp/README.md).
+- Native site tools were verified in the app's built-in browser: project reads, temporary source insertion, compiler diagnostics, undo, gallery project switching, stale-revision rejection, and compiler fixture inspection. Temporary source changes were undone.
 
 ## Archive Instructions
 

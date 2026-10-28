@@ -4,7 +4,7 @@ import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
 import { barsPlugin } from '@8f4e/editor-plugin-bars';
 import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { createButtonPlugin } from '@8f4e/editor-plugin-button';
-import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
+import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createCrossfadePlugin } from '@8f4e/editor-plugin-crossfade';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
@@ -31,7 +31,7 @@ import { resolveStdlibInclude } from './stdlib-resolver';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
-export type DefaultEditorInstance = Editor;
+export type DefaultEditorInstance = Editor & { getDiagnostics: () => CompilerDiagnostics | null };
 
 export function createDefaultEditorPlugins(options: {
 	canvas: HTMLCanvasElement;
@@ -158,5 +158,5 @@ export async function mountDefaultEditor(
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 
-	return editor;
+	return Object.assign(editor, { getDiagnostics: compiler.getDiagnostics });
 }

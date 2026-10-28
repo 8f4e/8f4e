@@ -1,5 +1,7 @@
 import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
+import type { WebMcpTool } from '@8f4e/editor-webmcp';
 import { afterEach, expect, test, vi } from 'vitest';
+import { page } from 'vitest/browser';
 import { mountGallery } from './gallery';
 
 vi.mock('@8f4e/editor-default', { spy: true });
@@ -149,4 +151,87 @@ test('switches examples without waiting for the previous fetch and ignores its l
 	expect(view.panel('second').querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 	expect(view.panel('second').querySelector('canvas')?.classList.contains('editor-ready')).toBe(true);
 	expect(view.panel('first').querySelector('canvas')).toBeNull();
+});
+
+function siteTools() {
+	const original = Object.getOwnPropertyDescriptor(document, 'modelContext');
+	const tools = new Map<string, WebMcpTool>();
+	Object.defineProperty(document, 'modelContext', {
+		configurable: true,
+		value: {
+			registerTool(tool: WebMcpTool, { signal }: { signal: AbortSignal }) {
+				tools.set(tool.name, tool);
+				signal.addEventListener('abort', () => {
+					if (tools.get(tool.name) === tool) tools.delete(tool.name);
+				});
+			},
+		},
+	});
+	cleanups.push(() => {
+		if (original) Object.defineProperty(document, 'modelContext', original);
+		else Reflect.deleteProperty(document, 'modelContext');
+	});
+	return tools;
+}
+
+test('exposes the loaded project through site tools and saves undoable source edits', async () => {
+	const tools = siteTools();
+	let finish!: (response: Response) => void;
+	const pending = new Promise<Response>(resolve => {
+		finish = resolve;
+	});
+	const view = setup({ bridged: () => pending });
+	const editor = await view.mounted();
+	expect(tools.size).toBe(0);
+	finish(new Response(source));
+	await vi.waitFor(() => expect(tools.has('get_diagnostics')).toBe(true));
+	const canvas = view.panel().querySelector('canvas')!;
+	canvas.style.width = '900px';
+	canvas.style.height = '480px';
+	editor.resize(900, 480);
+	const before = (await tools.get('get_project')!.execute({})) as ReturnType<
+		DefaultEditorInstance['editing']['getSnapshot']
+	>;
+	const target = before.blocks.find(block => block.name === 'galleryExample')!;
+	expect(target).toBeDefined();
+	const changed = (await tools.get('apply_edits')!.execute({
+		expectedRevision: before.revision,
+		edits: [
+			{ type: 'update', blockId: target.blockId, code: ['module galleryExample', 'int value 17', 'moduleEnd'] },
+			{ type: 'move', blockId: target.blockId, x: 0, y: 14 },
+		],
+	})) as { revision: string };
+	expect(editor.editing.getSnapshot().project.modules[0].code).toContain('int value 17');
+	expect(window.sessionStorage.getItem('project_8f4e-gallery-test-bridged')).toContain('int value 17');
+	editor.renderFrame();
+	await page.screenshot({ element: view.panel(), path: '../.vitest-attachments/webmcp-edit.png' });
+	await tools.get('undo')!.execute({ expectedRevision: changed.revision });
+	expect(editor.editing.getSnapshot().project.modules[0].code).toContain('int value 1');
+});
+
+test('replaces site tools on project selection and rejects retained calls and snapshots from the previous project', async () => {
+	const tools = siteTools();
+	const view = setup({
+		first: async () => new Response(source),
+		second: async () => new Response(source.replace('galleryExample', 'secondExample')),
+	});
+	await view.mounted();
+	await vi.waitFor(() => expect(tools.has('get_diagnostics')).toBe(true));
+	const before = (await tools.get('get_project')!.execute({})) as ReturnType<
+		DefaultEditorInstance['editing']['getSnapshot']
+	>;
+	const retained = tools.get('apply_edits')!;
+	view.gallery.querySelector<HTMLButtonElement>('#example-second')!.click();
+	expect(tools.size).toBe(0);
+	const editor = await view.mounted(1);
+	await vi.waitFor(() => expect(tools.has('get_diagnostics')).toBe(true));
+	const edits = [{ type: 'delete', blockId: before.blocks[0].blockId }];
+	expect(await retained.execute({ expectedRevision: before.revision, edits })).toMatchObject({
+		error: { code: 'disposed' },
+	});
+	expect(await tools.get('apply_edits')!.execute({ expectedRevision: before.revision, edits })).toMatchObject({
+		error: { code: 'stale_revision' },
+	});
+	expect(editor.editing.getSnapshot().project.modules[0].code[0]).toBe('module secondExample');
+	expect(tools.size).toBe(5);
 });

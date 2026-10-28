@@ -1,5 +1,9 @@
 import { resolvePalette } from '@8f4e/editor-palette';
-import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import initState, {
+	createEditorEditingHandle,
+	type EditorEditingHandle,
+	EMPTY_DEFAULT_PROJECT,
+} from '@8f4e/editor-state';
 import type {
 	EditorConfigSchemaContributionRegistry,
 	EditorMode,
@@ -30,9 +34,17 @@ import {
 	webUiEditorConfigSchemaContribution,
 } from './webUiConfig';
 
+export type {
+	EditorBlockSnapshot,
+	EditorEdit,
+	EditorEditingHandle,
+	EditorEditResult,
+	EditorProjectSnapshot,
+} from '@8f4e/editor-state';
 export {
 	collectSchemaConfigPaths,
 	createSchemaEditorConfigValidator,
+	EditorEditingError,
 	getSchemaForConfigPath,
 	parseSchemaConfigValue,
 	resolveSchemaConfigRoot,
@@ -77,6 +89,7 @@ export interface ProgramArtifacts {
 }
 
 export interface Editor {
+	editing: EditorEditingHandle;
 	resize: (width: number, height: number) => void;
 	/** Render the current state immediately. */
 	renderFrame: () => void;
@@ -191,6 +204,8 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			},
 		});
 		cleanups.push(() => store.dispose());
+		const editing = createEditorEditingHandle(store, events);
+		cleanups.push(editing.dispose);
 		const drawers = createCodeBlockDrawerRegistry();
 		cleanups.push(
 			installEditorPlugins(options.plugins ?? [], {
@@ -274,6 +289,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		events.dispatch('init');
 
 		return {
+			editing: editing.handle,
 			resize,
 			renderFrame: () => view.renderFrame(),
 			pauseRendering: () => view.pauseRendering(),

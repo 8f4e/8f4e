@@ -1,7 +1,8 @@
 # Compiler Plugin
 
 - Export `createCompilerPlugin({ resolveInclude, createWorker })`, returning `plugin` plus stable `getMemory`,
-  `getCodeBuffer`, `getAssertionSites`, and `writeMemory` handles. Construct once per editor; install before dependents.
+  `getCodeBuffer`, `getAssertionSites`, `getDiagnostics`, and `writeMemory` handles. Construct once per editor; install before dependents.
+- Diagnostic reads are detached and identify the current input revision, completed revision, and readiness. Do not present previous-input compiler errors as current while a new compilation is pending.
 - Own scheduling, worker transport, include requests, accepted artifacts, diagnostics, statistics, memory-write views,
   and the recompile debounce schema contribution here. Core must not invoke a compiler callback or install a compilation effect.
 - Listen to `compilationInputChanged`, emitted by core after its input revision advances. Read the latest project tree

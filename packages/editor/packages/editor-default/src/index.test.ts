@@ -52,6 +52,7 @@ vi.mock('@8f4e/editor-plugin-compiler', () => ({
 		getCodeBuffer,
 		getMemory,
 		writeMemory,
+		getDiagnostics: vi.fn(() => null),
 	})),
 }));
 vi.mock('./runtime-registry', () => ({ createRuntimeRegistry: () => ({}) }));

@@ -91,6 +91,30 @@ describe('compiler plugin', () => {
 		expect(test.store.getState().info.compiler).toMatchObject({ wasmByteCodeBytes: 2, isCompiling: false });
 	});
 
+	it('reports which input produced diagnostics and does not present old errors as current during debounce', async () => {
+		const test = setup();
+		await startCompilation(test);
+		expect(test.compiler.getDiagnostics()).toMatchObject({ status: 'compiling', completedRevision: null });
+		test.worker.emitMessage({
+			type: 'compilationError',
+			compilationId: 0,
+			payload: { message: 'Invalid source', line: { lineNumber: 1 }, context: {} },
+		});
+		await vi.advanceTimersByTimeAsync(0);
+		const current = test.compiler.getDiagnostics()!;
+		expect(current.status).toBe('ready');
+		expect(current.completedRevision).toBe(current.inputRevision);
+		expect(current.compilationErrors[0].message).toBe('Invalid source');
+		current.compilationErrors[0].message = 'mutated';
+		expect(test.compiler.getDiagnostics()!.compilationErrors[0].message).toBe('Invalid source');
+		test.events.dispatch('compilationInputChanged');
+		expect(test.compiler.getDiagnostics()).toMatchObject({ status: 'pending', compilationErrors: [] });
+		test.store.set('compilerInputRevision', test.store.getState().compilerInputRevision + 1);
+		expect(test.compiler.getDiagnostics()).toMatchObject({ status: 'pending', compilationErrors: [] });
+		test.dispose();
+		expect(test.compiler.getDiagnostics()).toMatchObject({ status: 'disposed' });
+	});
+
 	it('rejects an obsolete result even while the next compilation is still being debounced', async () => {
 		const test = setup();
 		await startCompilation(test);

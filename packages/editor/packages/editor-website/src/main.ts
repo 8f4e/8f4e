@@ -1,4 +1,5 @@
 import { mountDefaultEditor } from '@8f4e/editor-default';
+import { createEditorWebMcp } from '@8f4e/editor-webmcp';
 
 const canvas = document.querySelector<HTMLCanvasElement>('#glcanvas');
 
@@ -20,5 +21,10 @@ const editor = await mountDefaultEditor(canvas, {
 	storageNamespace: 'editor',
 });
 Object.assign(window, { state: editor.state });
+const bridge = createEditorWebMcp({ document, editor, getDiagnostics: editor.getDiagnostics });
+void bridge.ready.catch(error => console.error('Failed to register editor site tools:', error));
 
-import.meta.hot?.dispose(() => editor.dispose());
+import.meta.hot?.dispose(() => {
+	bridge.dispose();
+	editor.dispose();
+});
