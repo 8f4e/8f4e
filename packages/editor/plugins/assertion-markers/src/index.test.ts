@@ -10,7 +10,7 @@ describe('assertion markers plugin', () => {
 	it('draws current results and layout, and unregisters its drawer on disposal', () => {
 		const drawers = createCodeBlockDrawerRegistry();
 		const events = createMockEventDispatcher();
-		const store = initState(events, { runtimeRegistry: {}, callbacks: { loadSession: async () => null } });
+		const store = initState(events, { runtimeRegistry: {}, callbacks: {} });
 		const dispose = assertionMarkersPlugin.setup({
 			store,
 			events,

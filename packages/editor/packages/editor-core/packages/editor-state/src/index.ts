@@ -38,7 +38,6 @@ import createMenuRegistry from './features/menu/registry';
 import compiler from './features/program-compiler/effect';
 import projectImport from './features/project-import/effect';
 import runtime from './features/runtime/effect';
-import sessionPersistence from './features/session-persistence/effect';
 import viewport from './features/viewport/effect';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
@@ -92,7 +91,6 @@ export default function init(
 	registerEffect(color(store));
 	registerEffect(registerEditorConfigSchemaContributionsValidator(store));
 	registerExportFileNameEditorConfigValidator(store);
-	registerEffect(sessionPersistence(store, events));
 	registerEffect(dialog(store, events));
 	// Menus must consume pointer events before code blocks and viewport interactions.
 	registerEffect(contextMenu(store, events, menus));

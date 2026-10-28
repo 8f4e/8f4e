@@ -50,7 +50,7 @@ function setupState(events: EventDispatcher, options: Options, installed = true)
 function createContext(code = ['module test', '', 'moduleEnd']) {
 	const events = createEvents();
 	const { store, dispose } = setupState(events, {
-		callbacks: { loadSession: async () => null },
+		callbacks: {},
 		runtimeRegistry: {},
 		initialEditorMode: 'edit',
 	});
@@ -127,7 +127,7 @@ describe('toggle skip execution plugin', () => {
 			const { store, dispose } = setupState(
 				events,
 				{
-					callbacks: { loadSession: async () => null },
+					callbacks: {},
 					runtimeRegistry: {},
 					initialEditorMode: 'edit',
 				},
@@ -151,7 +151,7 @@ describe('toggle skip execution plugin', () => {
 	it('opens the clicked block menu and toggles that block through the menu action', async () => {
 		const events = createEvents();
 		const { store, dispose } = setupState(events, {
-			callbacks: { loadSession: async () => null },
+			callbacks: {},
 			runtimeRegistry: {},
 			initialEditorMode: 'edit',
 		});
@@ -196,7 +196,7 @@ describe('toggle skip execution plugin', () => {
 		const events = createEvents();
 		const compileCode = vi.fn().mockRejectedValue({ message: 'Test diagnostic', line: { lineNumber: 0 }, context: {} });
 		const { store, dispose } = setupState(events, {
-			callbacks: { loadSession: async () => null, compileCode },
+			callbacks: { compileCode },
 			runtimeRegistry: {},
 			initialEditorMode: 'edit',
 		});
@@ -216,7 +216,7 @@ describe('toggle skip execution plugin', () => {
 		const firstEvents = createEvents();
 		const secondEvents = createEvents();
 		const options = {
-			callbacks: { loadSession: async () => null },
+			callbacks: {},
 			runtimeRegistry: {},
 			initialEditorMode: 'edit' as const,
 		};

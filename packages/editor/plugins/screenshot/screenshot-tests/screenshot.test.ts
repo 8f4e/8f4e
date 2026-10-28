@@ -37,7 +37,8 @@ noteEnd`);
 		editor = await initEditor(canvas, {
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
-			callbacks: { loadSession: async () => project },
+			initialProject: project,
+			callbacks: {},
 			plugins: [createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })],
 		});
 		await vi.waitFor(() =>

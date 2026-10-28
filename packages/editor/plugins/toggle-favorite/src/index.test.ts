@@ -9,9 +9,9 @@ const cleanups: Array<() => void> = [];
 
 function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'edit' | 'view' = 'edit') {
 	const events = createEvents();
-	const saveSession = vi.fn().mockResolvedValue(undefined);
+
 	const store = initState(events, {
-		callbacks: { loadSession: async () => null, saveSession },
+		callbacks: {},
 		runtimeRegistry: {},
 		initialEditorMode: mode,
 	});
@@ -36,12 +36,12 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 	});
 	const state = store.getState();
 	const block = state.codeBlockRendering.rootCodeBlocks.find(candidate => candidate.code.includes(code[0]))!;
-	saveSession.mockClear();
+
 	const openMenu = async () => {
 		events.dispatch('contextmenu', { x: block.x + 8, y: block.y + 8 });
 		await Promise.resolve();
 	};
-	return { store, state, events, block, saveSession, disposePlugin, openMenu };
+	return { store, state, events, block, disposePlugin, openMenu };
 }
 
 afterEach(() => {
@@ -51,25 +51,18 @@ afterEach(() => {
 
 describe('toggle favorite plugin', () => {
 	it.each([
-		['modules', 'module target', 'moduleEnd'],
-		['functions', 'function target', 'functionEnd'],
-		['notes', 'note target', 'noteEnd'],
-		['constants', 'constants target', 'constantsEnd'],
-		['includes', 'includes', 'includesEnd'],
-		['groups', 'group target', 'groupEnd'],
-	])('inserts and saves the favorite directive in %s', (collection, ...code) => {
+		['module target', 'moduleEnd'],
+		['function target', 'functionEnd'],
+		['note target', 'noteEnd'],
+		['constants target', 'constantsEnd'],
+		['includes', 'includesEnd'],
+		['group target', 'groupEnd'],
+	])('inserts the favorite directive in %s', (...code) => {
 		const test = setup(code);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		expect(test.block.code.slice(0, 2)).toEqual([code[0], '; @favorite']);
 		expect(test.block.isFavorite).toBe(true);
 		expect(test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(test.block);
-		expect(test.saveSession).toHaveBeenCalledWith(
-			expect.objectContaining({
-				[collection]: expect.arrayContaining([
-					expect.objectContaining({ code: expect.arrayContaining([code[0], '; @favorite', code[1]]) }),
-				]),
-			})
-		);
 	});
 
 	it('removes every favorite directive while keeping other directives and source', () => {
@@ -135,7 +128,6 @@ describe('toggle favorite plugin', () => {
 		expect(test.state.contextMenu.items.some(item => item.action === 'toggleFavoriteDirective')).toBe(false);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		expect(test.block.code).toEqual(code);
-		expect(test.saveSession).not.toHaveBeenCalled();
 	});
 
 	it.each([false, true])('has no menu or handler when omitted or disposed: installed=%s', async installed => {
@@ -145,7 +137,6 @@ describe('toggle favorite plugin', () => {
 		expect(test.state.contextMenu.items.some(item => item.action === 'toggleFavoriteDirective')).toBe(false);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		expect(test.block.isFavorite).toBe(false);
-		expect(test.saveSession).not.toHaveBeenCalled();
 	});
 
 	it('isolates registrations and edits between editor instances', () => {

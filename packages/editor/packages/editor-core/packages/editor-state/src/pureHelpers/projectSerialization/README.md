@@ -6,14 +6,14 @@ Shared conversion between live editor blocks, the canonical project model, and `
 
 ## Key Behaviors
 
-- **Session Object Serialization**: `serializeToProject` converts editor code blocks to `ProjectObjectModel`
+- **Project Object Serialization**: `serializeToProject` converts editor code blocks to `ProjectObjectModel`
 - **Consumers**: Compilation, undo/redo, session persistence, and optional file-export plugins
 - **Source Serialization**: Formats the canonical project model as `.8f4e` text
 - **Pure Helpers**: No event handlers, subscriptions, or plugin installation
 
 ## Export
 
-### Session JSON Serialization (`serializeToProject`)
+### Project Object Serialization (`serializeToProject`)
 
 `serializeToProject` creates the compiler-owned `ProjectObjectModel` used for session saving, history, and live
 compilation. It is not a separate editor schema and it is not the exported `.8f4e` file format.
@@ -29,7 +29,7 @@ history snapshots, and project files, regardless of their names.
 model as canonical source and rejects incomplete block syntax. Both helpers are public exports from editor-state.
 The project-export plugin owns the file actions and shortcut; the browser host supplies file writing.
 
-The [session persistence feature](../../features/session-persistence/effect.ts) uses these helpers and saves project
+The [session persistence plugin](../../../../../../../plugins/session-persistence/README.md) uses these helpers and saves project
 objects independently of file exports.
 WebAssembly export belongs to `@8f4e/editor-plugin-wasm-export` and uses compiled bytes rather than source serialization.
 

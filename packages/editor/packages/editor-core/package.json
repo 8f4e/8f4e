@@ -30,7 +30,8 @@
     "@8f4e/sprite-generator": "*",
     "@8f4e/state-manager": "*",
     "@8f4e/web-ui": "*",
-    "@8f4e/web-ui-render-projection": "*"
+    "@8f4e/web-ui-render-projection": "*",
+    "@8f4e/language-spec": "*"
   },
   "devDependencies": {
     "@8f4e/editor-state-testing": "*",

@@ -5,7 +5,9 @@ import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules'
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
 import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
+import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
+import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mountDefaultEditor } from './index';
@@ -24,6 +26,12 @@ const { projectFiles, getCodeBuffer, getMemory } = vi.hoisted(() => ({
 }));
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('@8f4e/editor-plugin-session-persistence', () => ({
+	createSessionPersistencePlugin: vi.fn(() => ({ id: 'session-persistence', setup: () => () => {} })),
+}));
+vi.mock('@8f4e/editor-plugin-project-url-loader', () => ({
+	createProjectUrlLoaderPlugin: vi.fn(() => ({ id: 'project-url-loader', setup: () => () => {} })),
+}));
 vi.mock('@8f4e/editor-plugin-example-modules', () => ({
 	createExampleModulesPlugin: vi.fn(() => ({ id: 'example-modules', setup: () => () => {} })),
 }));
@@ -50,7 +58,6 @@ vi.mock('./compiler-callback', () => ({
 }));
 vi.mock('./runtime-registry', () => ({ createRuntimeRegistry: () => ({}) }));
 vi.mock('./storage-callbacks', () => ({
-	createStorageCallbacks: () => ({}),
 	createProjectFileCallbacks: () => projectFiles,
 	exportBinaryCode: vi.fn(),
 }));
@@ -75,6 +82,8 @@ describe('default editor plugins', () => {
 				.mock.calls.at(-1)?.[1]
 				.plugins?.map(plugin => plugin.id)
 		).toEqual([
+			'project-url-loader',
+			'session-persistence',
 			'example-modules',
 			'assertion-markers',
 			'keyboard-memory',
@@ -100,6 +109,15 @@ describe('default editor plugins', () => {
 			'screenshot',
 		]);
 		const getBytes = vi.mocked(createBinaryAssetsPlugin).mock.calls[0][0].getMemoryBytes;
+		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
+			fetch: globalThis.fetch,
+			initialProjectUrl: undefined,
+		});
+		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
+			storage: expect.anything(),
+			storageKey: 'project_editor',
+			restoreOnStartup: true,
+		});
 		expect(createExampleModulesPlugin).toHaveBeenCalledWith({ sources: exampleModuleSources });
 		expect(createKeyboardMemoryPlugin).toHaveBeenCalledWith({ inputTarget: canvas });
 		expect(createMidiInputPlugin).toHaveBeenCalledWith({ navigator: window.navigator, getMemory, getCodeBuffer });
@@ -131,6 +149,21 @@ describe('default editor plugins', () => {
 		editor.dispose();
 	});
 
+	it('gives an explicit initial URL priority over session restoration', async () => {
+		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
+		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
+		const storage = {} as Storage;
+		const initialProjectUrl = 'https://example.com/project.8f4e';
+		const editor = await mountDefaultEditor(canvas, { storage, storageNamespace: 'custom', initialProjectUrl });
+		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({ fetch: globalThis.fetch, initialProjectUrl });
+		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
+			storage,
+			storageKey: 'project_custom',
+			restoreOnStartup: false,
+		});
+		editor.dispose();
+	});
+
 	it('lets hosts replace the plugin set or omit plugins', async () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
 		const plugins = [{ id: 'custom', setup: vi.fn(() => () => {}) }];
@@ -139,6 +172,8 @@ describe('default editor plugins', () => {
 		editor.dispose();
 		const withoutPlugins = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage, plugins: [] });
 		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toEqual([]);
+		expect(createSessionPersistencePlugin).not.toHaveBeenCalled();
+		expect(createProjectUrlLoaderPlugin).not.toHaveBeenCalled();
 		expect(createExampleModulesPlugin).not.toHaveBeenCalled();
 		expect(createBinaryAssetsPlugin).not.toHaveBeenCalled();
 		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();

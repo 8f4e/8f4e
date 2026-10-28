@@ -25,7 +25,8 @@ noteEnd`;
 		editor = await initEditor(canvas, {
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
-			callbacks: { loadSession: async () => parseProjectSource(source) },
+			initialProject: parseProjectSource(source),
+			callbacks: {},
 			plugins: [createProjectExportPlugin({ inputTarget: canvas, saveProject, exportProject })],
 		});
 		const state = editor.state;

@@ -18,10 +18,6 @@ function createMockFunction<T extends (...args: unknown[]) => unknown>(): T {
 	return (() => {}) as T;
 }
 
-function createMockAsyncFunction<T>(returnValue: T): () => Promise<T> {
-	return async () => returnValue;
-}
-
 export function createMockCodeBlock(
 	options: Partial<CodeBlockGraphicData> & { cursorY?: number } = {}
 ): CodeBlockGraphicData {
@@ -134,9 +130,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			memoryDefaultsByModuleId: {},
 			projectMemoryExposuresByGroupPath: {},
 		},
-		callbacks: {
-			loadSession: createMockAsyncFunction(null),
-		},
+		callbacks: {},
 		runtimeRegistry: {
 			WebWorkerRuntime: {
 				id: 'WebWorkerRuntime',
@@ -197,7 +191,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		editorConfigSchemaContributions: {},
 		historyStack: [],
 		redoStack: [],
-		storageQuota: { usedBytes: 0, totalBytes: 0 },
 		envConstantContributions: {},
 		codeErrors: {
 			compilationErrors: [],

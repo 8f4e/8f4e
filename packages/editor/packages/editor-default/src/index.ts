@@ -12,8 +12,10 @@ import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
 import { pianoPlugin } from '@8f4e/editor-plugin-piano';
 import { plotPlugin } from '@8f4e/editor-plugin-plot';
 import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
+import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { removeMemoryConnectionsPlugin } from '@8f4e/editor-plugin-remove-memory-connections';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
+import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import { sliderPlugin } from '@8f4e/editor-plugin-slider';
 import { createStackPlugin } from '@8f4e/editor-plugin-stack';
 import { switchPlugin } from '@8f4e/editor-plugin-switch';
@@ -24,10 +26,9 @@ import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
 import { createWatchPlugin } from '@8f4e/editor-plugin-watch';
 import { wavePlugin } from '@8f4e/editor-plugin-wave';
 import { createCompilerService } from './compiler-callback';
-import { getProject } from './get-project';
 import { createRuntimeRegistry } from './runtime-registry';
 import { resolveStdlibInclude } from './stdlib-resolver';
-import { createProjectFileCallbacks, createStorageCallbacks, exportBinaryCode } from './storage-callbacks';
+import { createProjectFileCallbacks, exportBinaryCode } from './storage-callbacks';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
@@ -35,6 +36,9 @@ export type DefaultEditorInstance = Editor;
 
 export function createDefaultEditorPlugins(options: {
 	canvas: HTMLCanvasElement;
+	storage: Storage;
+	storageKey: string;
+	initialProjectUrl?: string;
 	renderFrame: () => void;
 	saveProject: (text: string, fileName: string) => Promise<void>;
 	exportProject: (text: string, fileName: string) => Promise<void>;
@@ -45,6 +49,12 @@ export function createDefaultEditorPlugins(options: {
 	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
+		createProjectUrlLoaderPlugin({ fetch: globalThis.fetch, initialProjectUrl: options.initialProjectUrl }),
+		createSessionPersistencePlugin({
+			storage: options.storage,
+			storageKey: options.storageKey,
+			restoreOnStartup: !options.initialProjectUrl,
+		}),
 		createExampleModulesPlugin({ sources: exampleModuleSources }),
 		assertionMarkersPlugin,
 		createKeyboardMemoryPlugin({ inputTarget: options.canvas }),
@@ -112,7 +122,6 @@ export async function mountDefaultEditor(
 	}: DefaultEditorMountOptions = {}
 ): Promise<DefaultEditorInstance> {
 	const compilerService = createCompilerService();
-	const storageCallbacks = createStorageCallbacks({ storage, storageNamespace, initialProjectUrl });
 	const {
 		dispose: disposeProjectFiles,
 		saveProject,
@@ -127,6 +136,9 @@ export async function mountDefaultEditor(
 				plugins ??
 				createDefaultEditorPlugins({
 					canvas,
+					storage,
+					storageKey: `project_${storageNamespace}`,
+					initialProjectUrl,
 					renderFrame: () => editor.renderFrame(),
 					saveProject,
 					exportProject,
@@ -139,10 +151,8 @@ export async function mountDefaultEditor(
 			initialEditorMode,
 			runtimeRegistry: createRuntimeRegistry(compilerService, sharedAudioContext),
 			callbacks: {
-				getProject,
 				resolveInclude: resolveStdlibInclude,
 				compileCode: (input, compilerOptions) => compilerService.compileCode(input, compilerOptions, editor),
-				...storageCallbacks,
 				...projectImportCallbacks,
 			},
 		});

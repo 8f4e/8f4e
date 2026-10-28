@@ -35,22 +35,6 @@ describe('projectImport', () => {
 			const loadProjectCall = onCalls.find(call => call[0] === 'loadProject');
 			expect(loadProjectCall).toBeDefined();
 		});
-
-		it('should register loadProjectByUrl event handler', () => {
-			projectImport(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const loadProjectByUrlCall = onCalls.find(call => call[0] === 'loadProjectByUrl');
-			expect(loadProjectByUrlCall).toBeDefined();
-		});
-
-		it('should register loadSession event handler', () => {
-			projectImport(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const loadSessionCall = onCalls.find(call => call[0] === 'loadSession');
-			expect(loadSessionCall).toBeDefined();
-		});
 	});
 
 	it('starts a new empty project and clears the previous file association', () => {
@@ -81,54 +65,6 @@ describe('projectImport', () => {
 		await handler();
 		expect(mockState.initialProjectState).toBe(original);
 		expect(mockState.callbacks.projectLoaded).not.toHaveBeenCalled();
-	});
-
-	describe('Initial session loading', () => {
-		it('should load empty project when loadSession callback is absent', async () => {
-			projectImport(store, mockEvents);
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const loadSessionCall = onCalls.find(call => call[0] === 'loadSession');
-			const loadSessionCallback = loadSessionCall![1];
-			await loadSessionCallback();
-
-			expect(mockState.initialProjectState).toEqual(EMPTY_DEFAULT_PROJECT);
-		});
-
-		it('should load session from callback when provided', async () => {
-			const mockProject: ProjectObjectModel = {
-				...EMPTY_DEFAULT_PROJECT,
-			};
-			mockState.callbacks.loadSession = vi.fn().mockResolvedValue(mockProject);
-
-			projectImport(store, mockEvents);
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const loadSessionCall = onCalls.find(call => call[0] === 'loadSession');
-			const loadSessionCallback = loadSessionCall![1];
-			await loadSessionCallback();
-
-			// Give time for promises to resolve
-			await new Promise(resolve => setTimeout(resolve, 10));
-
-			expect(mockState.callbacks.loadSession).toHaveBeenCalled();
-		});
-
-		it('should handle loadSession errors gracefully', async () => {
-			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-			mockState.callbacks.loadSession = vi.fn().mockRejectedValue(new Error('Storage error'));
-
-			projectImport(store, mockEvents);
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const loadSessionCall = onCalls.find(call => call[0] === 'loadSession');
-			const loadSessionCallback = loadSessionCall![1];
-			await loadSessionCallback();
-
-			// Give time for promises to resolve
-			await new Promise(resolve => setTimeout(resolve, 10));
-
-			expect(consoleWarnSpy).toHaveBeenCalledWith('Failed to load project from storage:', expect.any(Error));
-
-			consoleWarnSpy.mockRestore();
-		});
 	});
 
 	describe('loadProject', () => {
@@ -230,68 +166,6 @@ describe('projectImport', () => {
 			await new Promise(resolve => setTimeout(resolve, 10));
 
 			expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to load project from file:', expect.any(Error));
-
-			consoleErrorSpy.mockRestore();
-		});
-	});
-
-	describe('loadProjectByUrl', () => {
-		it('should load project by url using callback', async () => {
-			const mock8f4eText = '8f4e/v1\n\nentry main\nmodule counter\n\nmoduleEnd\nentryEnd';
-
-			mockState.callbacks.getProject = vi.fn().mockResolvedValue(mock8f4eText);
-			projectImport(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const loadProjectByUrlCall = onCalls.find(call => call[0] === 'loadProjectByUrl');
-			const loadProjectByUrlCallback = loadProjectByUrlCall![1];
-
-			await loadProjectByUrlCallback({
-				projectUrl: 'https://static.8f4e.com/example-projects/audioBuffer.8f4e',
-			});
-
-			expect(mockState.callbacks.getProject).toHaveBeenCalledWith(
-				'https://static.8f4e.com/example-projects/audioBuffer.8f4e'
-			);
-
-			expect(mockState.initialProjectState.modules).toHaveLength(1);
-		});
-
-		it('should warn when no getProject callback is provided', async () => {
-			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-
-			mockState.callbacks.getProject = undefined;
-			projectImport(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const loadProjectByUrlCall = onCalls.find(call => call[0] === 'loadProjectByUrl');
-			const loadProjectByUrlCallback = loadProjectByUrlCall![1];
-
-			await loadProjectByUrlCallback({
-				projectUrl: 'https://static.8f4e.com/example-projects/audioBuffer.8f4e',
-			});
-
-			expect(consoleWarnSpy).toHaveBeenCalledWith('No getProject callback provided');
-
-			consoleWarnSpy.mockRestore();
-		});
-
-		it('should handle parse errors gracefully and load default project', async () => {
-			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-
-			mockState.callbacks.getProject = vi.fn().mockResolvedValue('invalid .8f4e content');
-			projectImport(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const loadProjectByUrlCall = onCalls.find(call => call[0] === 'loadProjectByUrl');
-			const loadProjectByUrlCallback = loadProjectByUrlCall![1];
-
-			await loadProjectByUrlCallback({
-				projectUrl: 'https://static.8f4e.com/example-projects/audioBuffer.8f4e',
-			});
-
-			expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to load project by url:', expect.any(Error));
-			expect(mockState.initialProjectState).toEqual(EMPTY_DEFAULT_PROJECT);
 
 			consoleErrorSpy.mockRestore();
 		});

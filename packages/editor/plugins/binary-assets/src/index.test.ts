@@ -25,7 +25,7 @@ const fetchMock = vi.fn<typeof fetch>();
 async function setup({ source = SOURCE, installed = true, withMemory = true, compile = true } = {}) {
 	const events = createEvents();
 	const store = initState(events, {
-		callbacks: { loadSession: async () => null },
+		callbacks: {},
 		runtimeRegistry: {},
 		initialEditorMode: 'edit',
 	});

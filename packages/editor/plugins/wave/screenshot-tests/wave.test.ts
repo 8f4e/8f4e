@@ -30,7 +30,7 @@ entryEnd`);
 	const store = initState(events, {
 		initialEditorMode: 'edit',
 		runtimeRegistry: {},
-		callbacks: { loadSession: async () => null },
+		callbacks: {},
 	});
 	const drawers = createCodeBlockDrawerRegistry();
 	const disposePlugin = wavePlugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers });

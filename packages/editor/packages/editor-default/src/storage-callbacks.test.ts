@@ -1,95 +1,12 @@
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createProjectFileCallbacks, createStorageCallbacks } from './storage-callbacks';
+import { createProjectFileCallbacks } from './storage-callbacks';
 
-const { parseProjectSource, getProject } = vi.hoisted(() => ({
+const { parseProjectSource } = vi.hoisted(() => ({
 	parseProjectSource: vi.fn(),
-	getProject: vi.fn(),
 }));
 
 vi.mock('@8f4e/compiler', () => ({ parseProjectSource }));
-vi.mock('./get-project', () => ({ getProject }));
-
-function createMemoryStorage(): Storage {
-	const values = new Map<string, string>();
-
-	return {
-		get length() {
-			return values.size;
-		},
-		clear: () => values.clear(),
-		getItem: key => values.get(key) ?? null,
-		key: index => Array.from(values.keys())[index] ?? null,
-		removeItem: key => values.delete(key),
-		setItem: (key, value) => values.set(key, value),
-	};
-}
-
-describe('storage callbacks', () => {
-	beforeEach(() => {
-		parseProjectSource.mockReset();
-		getProject.mockReset();
-	});
-
-	it('starts an empty session without fetching an example project', async () => {
-		const callbacks = createStorageCallbacks({ storage: createMemoryStorage(), storageNamespace: 'editor' });
-
-		expect(await callbacks.loadSession()).toBeNull();
-		expect(getProject).not.toHaveBeenCalled();
-		expect(parseProjectSource).not.toHaveBeenCalled();
-	});
-
-	it('returns to an empty session after an initial URL when nothing has been saved', async () => {
-		const project = { modules: [] } as unknown as ProjectObjectModel;
-		getProject.mockResolvedValue('project source');
-		parseProjectSource.mockReturnValue(project);
-		const callbacks = createStorageCallbacks({
-			storage: createMemoryStorage(),
-			storageNamespace: 'editor',
-			initialProjectUrl: 'https://example.com/project.8f4e',
-		});
-
-		expect(await callbacks.loadSession()).toBe(project);
-		expect(await callbacks.loadSession()).toBeNull();
-		expect(getProject).toHaveBeenCalledOnce();
-	});
-
-	it('isolates projects by namespace', async () => {
-		const storage = createMemoryStorage();
-		const first = createStorageCallbacks({ storage, storageNamespace: 'first' });
-		const second = createStorageCallbacks({ storage, storageNamespace: 'second' });
-		const firstProject = { title: 'First' } as unknown as ProjectObjectModel;
-		const secondProject = { title: 'Second' } as unknown as ProjectObjectModel;
-
-		await first.saveSession(firstProject);
-		await second.saveSession(secondProject);
-
-		expect(storage.getItem('project_first')).toBe(JSON.stringify(firstProject));
-		expect(storage.getItem('project_second')).toBe(JSON.stringify(secondProject));
-		expect(await first.loadSession()).toEqual(firstProject);
-		expect(await second.loadSession()).toEqual(secondProject);
-	});
-
-	it('uses an initial project URL once before falling back to persisted state', async () => {
-		const storage = createMemoryStorage();
-		const persistedProject = { title: 'Persisted' } as unknown as ProjectObjectModel;
-		const initialProject = { title: 'Initial' } as unknown as ProjectObjectModel;
-		storage.setItem('project_editor', JSON.stringify(persistedProject));
-		getProject.mockResolvedValue('initial project source');
-		parseProjectSource.mockReturnValue(initialProject);
-		const callbacks = createStorageCallbacks({
-			storage,
-			storageNamespace: 'editor',
-			initialProjectUrl: 'https://example.com/initial.8f4e',
-		});
-
-		expect(await callbacks.loadSession()).toBe(initialProject);
-		expect(await callbacks.loadSession()).toEqual(persistedProject);
-		expect(getProject).toHaveBeenCalledOnce();
-		expect(getProject).toHaveBeenCalledWith('https://example.com/initial.8f4e');
-		expect(parseProjectSource).toHaveBeenCalledWith('initial project source');
-	});
-});
 
 function deferred<T>() {
 	let resolve!: (value: T) => void;

@@ -1,7 +1,7 @@
 # Default Editor Package Guidelines
 
 - This package owns the standard editor composition: compiler integration, runtime selection, example source discovery,
-  standard-library resolution, and browser persistence.
+  standard-library resolution, and startup policy.
 - Export composition APIs without mounting as an import side effect.
 - Compose the standard plugin set here and expose host overrides through `plugins`; keep feature logic in its
   plugin package and generic plugin installation in editor-core.
@@ -30,3 +30,7 @@
 - Include `assertionMarkersPlugin`, `createKeyboardMemoryPlugin({ inputTarget: canvas })`, and
   `createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })` in the standard set. Use the canvas's browser
   navigator and live compiler getters. MIDI owns WASM instantiation and caching; core has no separate environment-plugin system.
+- Include `createProjectUrlLoaderPlugin({ fetch, initialProjectUrl })` and
+  `createSessionPersistencePlugin({ storage, storageKey, restoreOnStartup })` in the default set. Disable only session
+  restoration when an explicit initial URL exists. Keep autosaving active while that URL is pending.
+- The plugins own URL fetching and storage serialization. Do not restore session/URL callbacks in core or host wrappers.

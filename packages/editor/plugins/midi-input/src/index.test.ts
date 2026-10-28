@@ -53,7 +53,7 @@ async function setup({ requestMIDIAccess = vi.fn(async () => createMidiFixture()
 	const compiled = await compileProject(project, { disableSharedMemory: true });
 	let memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
 	const events = createMockEventDispatcher();
-	const store = initState(events, { runtimeRegistry: {}, callbacks: { loadSession: async () => null } });
+	const store = initState(events, { runtimeRegistry: {}, callbacks: {} });
 	let newCode = new Uint8Array(compiled.codeBuffer);
 	const dispose = createMidiInputPlugin({
 		navigator: { requestMIDIAccess } as unknown as Navigator,

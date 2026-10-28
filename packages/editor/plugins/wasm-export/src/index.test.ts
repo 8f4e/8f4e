@@ -8,7 +8,7 @@ const cleanups: Array<() => void> = [];
 function setup(installed = true, initialEditorMode: 'view' | 'edit' = 'edit') {
 	const events = createEvents();
 	const store = initState(events, {
-		callbacks: { loadSession: async () => null },
+		callbacks: {},
 		runtimeRegistry: {},
 		initialEditorMode,
 	});

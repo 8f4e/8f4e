@@ -55,7 +55,9 @@
     "@8f4e/editor-plugin-assertion-markers": "*",
     "@8f4e/editor-plugin-midi-input": "*",
     "@8f4e/editor-plugin-keyboard-memory": "*",
-    "@8f4e/editor-plugin-example-modules": "*"
+    "@8f4e/editor-plugin-example-modules": "*",
+    "@8f4e/editor-plugin-session-persistence": "*",
+    "@8f4e/editor-plugin-project-url-loader": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

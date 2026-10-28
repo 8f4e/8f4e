@@ -55,7 +55,6 @@ export default function createDefaultState() {
 		editorConfigSchemaContributions: {},
 		historyStack: [],
 		redoStack: [],
-		storageQuota: { usedBytes: 0, totalBytes: 0 },
 		envConstantContributions: {},
 		codeErrors: {
 			compilationErrors: [],

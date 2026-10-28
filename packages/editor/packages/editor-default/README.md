@@ -1,7 +1,7 @@
 # Default Editor
 
 `@8f4e/editor-default` is the standard 8f4e editor composition. It connects `@8f4e/editor-core` to the compiler
-worker, runtime implementations, standard library, example source discovery, and browser persistence.
+worker, runtime implementations, standard library, example source discovery, and startup policy.
 
 The package exports `mountDefaultEditor(canvas, options)`. It does not mount itself when imported, so websites and
 other browser hosts control when and where the editor starts.
@@ -72,8 +72,14 @@ enabled test entry, it executes tests once after successful compilation or recom
 memory and publishing results under `state.runtime.values.TestRuntime`. See the
 [test runtime](../runtime-test-runner/README.md) for scheduling and memory ownership.
 
-An explicit `initialProjectUrl` takes precedence on the first load, followed by the saved session. With neither,
-the editor starts with an empty project and does not fetch an example project registry. Browse examples in the
+The default plugin set includes project URL loading and session persistence. It passes `fetch` and the optional
+`initialProjectUrl` to the URL loader, and storage, a namespaced key, and `restoreOnStartup: !initialProjectUrl` to
+session persistence. Explicit URL loading disables only restoration; autosaving continues while fetching. An empty
+session may therefore be saved before the URL resolves, and remains if the load fails or the editor closes early.
+Omitting either plugin also omits that feature. Neither requires a session or URL callback in core.
+
+An explicit `initialProjectUrl` takes precedence on the first load. Without one, the editor restores the saved
+session. With neither, it starts with an empty project and does not fetch an example project registry. Browse examples in the
 [examples gallery](https://8f4e.com/examples/); its links open projects by URL. The editor's menu supports opening
 projects from disk and adding built-in modules.
 

@@ -52,7 +52,6 @@ export async function setup(
 		runtimeRegistry: {},
 		initialEditorMode: mode,
 		callbacks: {
-			loadSession: async () => null,
 			getWordFromMemory: address => memoryViews.int32[address],
 			setWordInMemory,
 		},

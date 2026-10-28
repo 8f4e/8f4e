@@ -47,7 +47,6 @@ async function setup(code = source, installed = true) {
 		runtimeRegistry: {},
 		initialEditorMode: 'edit',
 		callbacks: {
-			loadSession: async () => null,
 			getWordFromMemory: address => memoryViews.int32[address],
 			setWordInMemory: write,
 		},

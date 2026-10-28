@@ -1,4 +1,3 @@
-import { parseProjectSource } from '@8f4e/compiler';
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
@@ -7,41 +6,6 @@ import { error, warn } from '../logger/logger';
 
 export default function projectImport(store: StateManager<State>, events: EventDispatcher): void {
 	const state = store.getState();
-
-	function onLoadSession() {
-		if (!state.callbacks.loadSession) {
-			loadProject({ project: EMPTY_DEFAULT_PROJECT });
-			return;
-		}
-
-		state.callbacks
-			.loadSession()
-			.then(localProject => {
-				loadProject({ project: localProject ?? EMPTY_DEFAULT_PROJECT });
-			})
-			.catch(err => {
-				console.warn('Failed to load project from storage:', err);
-				warn(state, 'Failed to load project from storage');
-				loadProject({ project: EMPTY_DEFAULT_PROJECT });
-			});
-	}
-
-	async function loadProjectByUrl({ projectUrl }: { projectUrl: string }) {
-		if (!state.callbacks.getProject) {
-			console.warn('No getProject callback provided');
-			warn(state, 'No getProject callback provided');
-			return;
-		}
-		try {
-			const projectText = await state.callbacks.getProject(projectUrl);
-			const project = parseProjectSource(projectText);
-			loadProject({ project });
-		} catch (err) {
-			console.error('Failed to load project by url:', err);
-			error(state, 'Failed to load project by url');
-			loadProject({ project: EMPTY_DEFAULT_PROJECT });
-		}
-	}
 
 	function loadProject({
 		project: newProject,
@@ -79,6 +43,4 @@ export default function projectImport(store: StateManager<State>, events: EventD
 	events.on('new', () => loadProject({ project: EMPTY_DEFAULT_PROJECT }));
 	events.on('importProject', onImportProject);
 	events.on('loadProject', loadProject);
-	events.on('loadProjectByUrl', loadProjectByUrl);
-	events.on('loadSession', onLoadSession);
 }

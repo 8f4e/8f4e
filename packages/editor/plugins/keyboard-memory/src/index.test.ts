@@ -35,7 +35,7 @@ entryEnd`
 	});
 	const store = initState(events, {
 		runtimeRegistry: {},
-		callbacks: { loadSession: async () => null, setWordInMemory },
+		callbacks: { setWordInMemory },
 	});
 	store.set('compiler.compiledModules', compiled.compiledModules);
 	store.set('compiler.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);

@@ -1,49 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
-import { getProject } from './get-project';
-
-interface StorageCallbacksOptions {
-	storage: Storage;
-	storageNamespace: string;
-	initialProjectUrl?: string;
-}
-
-export function createStorageCallbacks({ storage, storageNamespace, initialProjectUrl }: StorageCallbacksOptions) {
-	const projectStorageKey = `project_${storageNamespace}`;
-	let pendingInitialProjectUrl = initialProjectUrl;
-
-	return {
-		async loadSession(): Promise<ProjectObjectModel | null> {
-			try {
-				const projectUrl = pendingInitialProjectUrl;
-				pendingInitialProjectUrl = undefined;
-				if (projectUrl) {
-					console.log('Loading initial project:', projectUrl);
-					return parseProjectSource(await getProject(projectUrl));
-				}
-
-				const stored = storage.getItem(projectStorageKey);
-				if (stored) {
-					console.log(`Loading project from storage namespace "${storageNamespace}"`);
-					return JSON.parse(stored);
-				}
-
-				return null;
-			} catch (error) {
-				console.error('Failed to load editor session:', error);
-				return null;
-			}
-		},
-		async saveSession(project: ProjectObjectModel): Promise<void> {
-			try {
-				storage.setItem(projectStorageKey, JSON.stringify(project));
-			} catch (error) {
-				console.error('Failed to save project to storage:', error);
-				throw error;
-			}
-		},
-	};
-}
 
 interface WritableProjectFile {
 	write: (data: Blob) => Promise<void>;

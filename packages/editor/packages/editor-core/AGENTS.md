@@ -33,7 +33,7 @@
 - Meter, plot, bars, crossfade, watch, and stack own their data and drawers in plugin packages. Keep memory scope,
   typed-value resolution, tab layout, and compiler lookups generic and available through public helper exports.
 - Keep project serialization under editor-state's `pureHelpers/projectSerialization`, filename configuration under
-  `features/editor-config`, and session persistence as its own core feature.
+  `features/editor-config`. Session persistence belongs to its plugin.
   Project-file and WebAssembly export actions, menus, and the save shortcut belong to their plugins.
 - Favorite toggling and memory-connection removal belong to their plugins, including menu labels and availability.
   Favorite directive derivation and navigation stay in core. Export shared directive editing through public helpers.
@@ -47,3 +47,7 @@
 - Example module browsing and loading belong to `editor-plugin-example-modules`. Core exposes complete menu
   registration with opaque payloads and generic source parsing/measurement helpers. Keep category trees, module
   catalogs, public-block selection, and dependency insertion out of core; plugins dispatch `insertCodeBlock`.
+- Session persistence and project URL loading belong to `editor-plugin-session-persistence` and
+  `editor-plugin-project-url-loader`. Core owns no storage, quota, session callbacks, or URL fetch callbacks.
+- `EditorOptions.initialProject` provides generic initial content. Load it (or an empty project) after the first
+  resize, then dispatch `init` so installed plugins can perform their own startup work.

@@ -10,9 +10,9 @@ const cleanups: Array<() => void> = [];
 
 function setup(installed = true, initialEditorMode: 'view' | 'edit' = 'edit') {
 	const events = createEvents();
-	const saveSession = vi.fn().mockResolvedValue(undefined);
+
 	const store = initState(events, {
-		callbacks: { loadSession: async () => null, saveSession },
+		callbacks: {},
 		runtimeRegistry: {},
 		initialEditorMode,
 	});
@@ -62,7 +62,7 @@ function setup(installed = true, initialEditorMode: 'view' | 'edit' = 'edit') {
 		inputTarget,
 		saveProject,
 		exportProject,
-		saveSession,
+
 		disposePlugin,
 		keydown,
 		openMenu,
@@ -88,7 +88,6 @@ describe('project export plugin', () => {
 		expect(test.exportProject).toHaveBeenCalledWith(expect.stringContaining('int value 1'), 'project.8f4e');
 		expect(parseProjectSource(test.exportProject.mock.calls[0][0]).modules[0].code).toEqual(test.block.code);
 		expect(test.saveProject).not.toHaveBeenCalled();
-		expect(test.saveSession).not.toHaveBeenCalled();
 	});
 
 	it.each([
@@ -106,7 +105,6 @@ describe('project export plugin', () => {
 			expect(test.saveProject).toHaveBeenCalledOnce();
 			expect(test.saveProject).toHaveBeenCalledWith(expect.stringContaining('int value 42'), 'project.8f4e');
 			expect(test.exportProject).not.toHaveBeenCalled();
-			expect(test.saveSession).not.toHaveBeenCalled();
 		}
 	);
 

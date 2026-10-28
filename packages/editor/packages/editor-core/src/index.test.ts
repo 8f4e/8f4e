@@ -1,3 +1,4 @@
+import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EditorPluginContext } from './plugins';
 
@@ -61,7 +62,8 @@ vi.mock('@8f4e/web-ui-render-projection', () => ({
 	createWebUiRenderProjection: vi.fn(() => renderProjection),
 }));
 
-vi.mock('@8f4e/editor-state', () => ({
+vi.mock('@8f4e/editor-state', async importOriginal => ({
+	...(await importOriginal<typeof import('@8f4e/editor-state')>()),
 	default: vi.fn(() => store),
 }));
 
@@ -120,7 +122,7 @@ describe('editor init', () => {
 				init(canvas, {
 					plugins: [{ id: 'startup-cleanup', setup }],
 					runtimeRegistry: {},
-					callbacks: { loadSession: async () => null },
+					callbacks: {},
 				})
 			).rejects.toBe(error);
 			expect(setup).toHaveBeenCalledOnce();
@@ -145,7 +147,7 @@ describe('editor init', () => {
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
 			plugins,
 			runtimeRegistry: {},
-			callbacks: { loadSession: async () => null },
+			callbacks: {},
 		});
 		expect(plugins[0].setup).toHaveBeenCalledWith({
 			store,
@@ -193,7 +195,7 @@ describe('editor init', () => {
 		storeState.info = {};
 	});
 
-	it('sizes the viewport before loading the session', async () => {
+	it('sizes the viewport before loading initial project content', async () => {
 		const { default: init } = await import('./index');
 		const canvas = { width: 300, height: 150, clientWidth: 640, clientHeight: 480 } as HTMLCanvasElement;
 
@@ -204,19 +206,31 @@ describe('editor init', () => {
 					factory: () => () => {},
 				},
 			},
-			callbacks: {
-				loadSession: async () => null,
-			},
+			callbacks: {},
 		});
 
 		expect(events.dispatch.mock.calls.slice(0, 3)).toEqual([
-			['init'],
 			['resize', { canvasWidth: 640, canvasHeight: 480 }],
-			['loadSession'],
+			['loadProject', { project: EMPTY_DEFAULT_PROJECT }],
+			['init'],
 		]);
 		expect(view.resize).toHaveBeenCalledWith(640, 480);
 		expect(view.renderFrame).toHaveBeenCalledOnce();
 		expect(view.resize.mock.invocationCallOrder[0]).toBeLessThan(view.renderFrame.mock.invocationCallOrder[0]);
+	});
+
+	it('loads an explicitly supplied initial project before the initialization hook', async () => {
+		const { default: init } = await import('./index');
+		const project = { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code: ['note initial', 'noteEnd'] }] };
+		await init({ width: 640, height: 480 } as HTMLCanvasElement, {
+			initialProject: project,
+			callbacks: {},
+			runtimeRegistry: {},
+		});
+		const load = events.dispatch.mock.calls.findIndex(([name]) => name === 'loadProject');
+		const ready = events.dispatch.mock.calls.findIndex(([name]) => name === 'init');
+		expect(events.dispatch.mock.calls[load][1]).toEqual({ project });
+		expect(load).toBeLessThan(ready);
 	});
 
 	it('exposes rendering lifecycle controls for this editor instance', async () => {
@@ -224,7 +238,7 @@ describe('editor init', () => {
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {
 			runtimeRegistry: {},
-			callbacks: { loadSession: async () => null },
+			callbacks: {},
 		});
 
 		editor.pauseRendering();
@@ -241,7 +255,7 @@ describe('editor init', () => {
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {
 			runtimeRegistry: {},
-			callbacks: { loadSession: async () => null },
+			callbacks: {},
 		});
 
 		view.resize.mockReturnValueOnce(false);
@@ -286,9 +300,7 @@ describe('editor init', () => {
 					factory: () => () => {},
 				},
 			},
-			callbacks: {
-				loadSession: async () => null,
-			},
+			callbacks: {},
 		});
 
 		expect(observe).toHaveBeenCalledWith(canvas);
@@ -334,9 +346,7 @@ describe('editor init', () => {
 					factory: () => () => {},
 				},
 			},
-			callbacks: {
-				loadSession: async () => null,
-			},
+			callbacks: {},
 		});
 
 		expect(canvas.tabIndex).toBe(0);
@@ -351,7 +361,7 @@ describe('editor init', () => {
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {
 			runtimeRegistry: {},
-			callbacks: { loadSession: async () => null },
+			callbacks: {},
 		});
 		const overlaySubscription = store.subscribe.mock.calls.find(([path]) => path === 'editorConfig.webUI')?.[1];
 
@@ -371,7 +381,7 @@ describe('editor init', () => {
 		const { default: init } = await import('./index');
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
 			runtimeRegistry: {},
-			callbacks: { loadSession: async () => null },
+			callbacks: {},
 		});
 		view.renderFrame.mockClear();
 
@@ -401,9 +411,7 @@ describe('editor init', () => {
 				width: 1,
 				height: 1,
 			},
-			callbacks: {
-				loadSession: async () => null,
-			},
+			callbacks: {},
 		});
 
 		const viewCall = vi.mocked(initView).mock.calls.at(-1)!;

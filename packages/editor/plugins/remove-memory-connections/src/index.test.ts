@@ -13,9 +13,9 @@ function setup(
 	mode: 'edit' | 'view' = 'edit'
 ) {
 	const events = createEvents();
-	const saveSession = vi.fn().mockResolvedValue(undefined);
+
 	const store = initState(events, {
-		callbacks: { loadSession: async () => null, saveSession },
+		callbacks: {},
 		runtimeRegistry: {},
 		initialEditorMode: mode,
 	});
@@ -39,12 +39,12 @@ function setup(
 	});
 	const state = store.getState();
 	const block = state.codeBlockRendering.rootCodeBlocks.find(candidate => candidate.name === 'target')!;
-	saveSession.mockClear();
+
 	const openMenu = async () => {
 		events.dispatch('contextmenu', { x: block.x + 8, y: block.y + 8 });
 		await Promise.resolve();
 	};
-	return { store, state, events, block, saveSession, disposePlugin, openMenu };
+	return { store, state, events, block, disposePlugin, openMenu };
 }
 
 afterEach(() => {
@@ -65,10 +65,9 @@ describe('remove memory connections plugin', () => {
 		expect(test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(test.block);
 		expect(test.state.compilerInputRevision).toBe(revision + 1);
 		expect(sources).toEqual([test.block.code]);
-		expect(test.saveSession).toHaveBeenCalledOnce();
+
 		test.events.dispatch('removeConnections', { codeBlock: test.block });
 		expect(test.state.compilerInputRevision).toBe(revision + 1);
-		expect(test.saveSession).toHaveBeenCalledOnce();
 	});
 
 	it('targets the clicked block through the menu and disables the action after removal', async () => {
@@ -102,7 +101,6 @@ describe('remove memory connections plugin', () => {
 		test.events.dispatch('removeConnections', { codeBlock: test.block });
 		expect(test.block.code).toEqual(code);
 		expect(test.state.compilerInputRevision).toBe(revision);
-		expect(test.saveSession).not.toHaveBeenCalled();
 	});
 
 	it('schedules compilation with the disconnected source', async () => {
@@ -136,7 +134,6 @@ describe('remove memory connections plugin', () => {
 		expect(test.state.contextMenu.items.some(item => item.action === 'removeConnections')).toBe(false);
 		test.events.dispatch('removeConnections', { codeBlock: test.block });
 		expect(test.block.code).toEqual(code);
-		expect(test.saveSession).not.toHaveBeenCalled();
 	});
 
 	it('keeps actions isolated between editor instances', () => {

@@ -47,8 +47,9 @@ const editor = await initEditor(canvas, {
 ```
 
 A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, drawers })` function.
-Editor-core installs plugins in array order after core state effects, before rendering starts and before the `init`
-and `loadSession` events. Setup runs separately for each editor instance; allocate instance data inside setup.
+Editor-core installs plugins in array order after core state effects, before rendering and initial project loading.
+Core first resizes and loads `options.initialProject` (or an empty project), then emits
+`init`. Setup runs separately for each editor instance; allocate instance data inside setup.
 Plugins receive the existing state manager and event dispatcher directly. Store disposal belongs to the editor and
 is excluded from the plugin context type. This is a trusted extension interface.
 
@@ -153,17 +154,21 @@ exports memory scope, identifier, element-count, and typed-value resolution, plu
 resolved memory defaults in their source modules. Each group of values is edited together, even across module owners.
 Plugins use these public exports rather than importing core files.
 `serializeToProject`, `serializeProjectTo8f4e`, and `getExportBaseName` provide shared project serialization and naming;
-`logError` records failures in the editor console. These helpers, filename configuration, and session autosaving
-remain available independently of the export plugins.
+`logError` records failures in the editor console. These helpers and filename configuration remain available
+independently of the export and persistence plugins.
 Serialization lives under `pureHelpers/projectSerialization`; filename configuration belongs to `features/editor-config`.
 
 ## Project loading
 
-Hosts can provide `getProject(url)` for loading individual projects by URL and `importProject` for the Open From Disk
-menu action. The `projectOpening` feature flag controls disk import. Example project browsing belongs to the host;
-the editor no longer exposes a `getListOfProjects` callback or an example project submenu. Built-in module browsing
-belongs to `@8f4e/editor-plugin-example-modules`, whose factory receives lazy source loaders from the host. The plugin
-owns categories, caching, public-block selection, and dependency insertion; core retains generic menus and block creation.
+Hosts can provide a compiler-owned `ProjectObjectModel` through `initialProject`, or dispatch `loadProject` with
+`{ project }` later. Core loads initial content after the first resize and emits `init` once that content is installed.
+`importProject` supplies the Open From Disk menu action; the `projectOpening` feature flag controls disk import.
+
+Session restoration and autosaving belong to `@8f4e/editor-plugin-session-persistence`. Project URL fetching and
+parsing belong to `@8f4e/editor-plugin-project-url-loader`. Both plugins use generic project loading, and their factories
+receive storage or fetch from the host. Core has no session callbacks, storage quota state, or URL fetching callback.
+Example project browsing belongs to the host. Built-in module browsing belongs to `@8f4e/editor-plugin-example-modules`,
+whose factory receives lazy source loaders. Core retains generic menus and block creation.
 
 ## Docs
 

@@ -25,7 +25,8 @@ entryEnd`;
 		editor = await initEditor(canvas, {
 			initialEditorMode: 'edit',
 			runtimeRegistry: {},
-			callbacks: { loadSession: async () => parseProjectSource(source) },
+			initialProject: parseProjectSource(source),
+			callbacks: {},
 			plugins: [toggleFavoritePlugin],
 		});
 		const state = editor.state;
