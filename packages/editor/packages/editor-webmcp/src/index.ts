@@ -1,11 +1,6 @@
-import type { Editor, EditorEdit, EditorProjectSnapshot } from '@8f4e/editor-core';
+import { type CodeBlockGraphicData, type Editor, type EditorEdit, getEditorBlockId } from '@8f4e/editor-core';
 import { blockSchema, editsSchema, emptySchema, groupSchema, patchBlockSchema, updateBlockSchema } from './schema.js';
-import { createSourceView } from './source-view.js';
-
-export type WebMcpProjectMetadata = Pick<
-	EditorProjectSnapshot,
-	'revision' | 'projectPath' | 'editable' | 'canUndo' | 'canRedo'
->;
+import { createSourceView, getCurrentProjectPath } from './source-view.js';
 
 /** Structural types keep the experimental browser API out of editor-core and global DOM typings. */
 export interface WebMcpTool {
@@ -35,11 +30,11 @@ const sourceChangedMessage =
 export function createEditorWebMcp({
 	document,
 	editor,
-	getDiagnostics,
+	getCompilerDiagnostics,
 }: {
 	document: Document;
-	editor: Pick<Editor, 'editing' | 'navigation'>;
-	getDiagnostics?: () => unknown;
+	editor: Pick<Editor, 'editing' | 'navigation' | 'state'>;
+	getCompilerDiagnostics?: () => unknown;
 }): EditorWebMcpBridge {
 	if (!editor?.editing || !editor.navigation)
 		throw new Error('A single editor with editing and navigation handles is required');
@@ -52,6 +47,7 @@ export function createEditorWebMcp({
 	const controller = new AbortController();
 	const editing = editor.editing;
 	const navigation = editor.navigation;
+	const state = editor.state;
 	let disposed = false;
 	let observedRevision: string | undefined;
 	const dispose = () => {
@@ -105,27 +101,26 @@ export function createEditorWebMcp({
 			}
 		},
 	});
-	const scopedBlocks = (snapshot: EditorProjectSnapshot) =>
-		snapshot.blocks.filter(({ block }) => block.projectPath === snapshot.projectPath);
-	const blockType = ({ block }: EditorProjectSnapshot['blocks'][number]) =>
+	const blockType = (block: CodeBlockGraphicData) =>
 		block.nestedProjectCodeBlocks !== undefined ? 'group' : block.isProjectScope ? 'project' : block.blockType;
-	const scopeError = (snapshot: EditorProjectSnapshot, code: string, message: string): never => {
-		throw Object.assign(new Error(message), { code, revision: snapshot.revision });
+	const toolError = (code: string, message: string): never => {
+		throw Object.assign(new Error(message), { code });
 	};
-	const namedBlock = (snapshot: EditorProjectSnapshot, type: unknown, name: unknown) => {
+	const namedBlock = (type: unknown, name: unknown) => {
 		if (typeof type !== 'string' || typeof name !== 'string') throw new Error('Block type and name are required');
-		const matches = scopedBlocks(snapshot).filter(target => blockType(target) === type && target.block.name === name);
+		const matches = state.codeBlockRendering.codeBlocks.filter(
+			block => blockType(block) === type && block.name === name
+		);
 		if (matches.length === 0)
-			return scopeError(snapshot, 'block_not_found', 'No matching block in the currently expanded group or root');
+			return toolError('block_not_found', 'No matching block in the currently expanded group or root');
 		if (matches.length > 1)
-			return scopeError(
-				snapshot,
+			return toolError(
 				'ambiguous_block',
 				'Multiple blocks have this type and name in the current scope; give them unique source names before targeting one'
 			);
 		return matches[0];
 	};
-	const readEdits = (input: unknown, snapshot: EditorProjectSnapshot): EditorEdit[] => {
+	const readEdits = (input: unknown): EditorEdit[] => {
 		if (!Array.isArray(input) || input.length === 0) throw new Error('Provide at least one edit');
 		return input.map(value => {
 			const operation = request(value, ['operation', 'type', 'name', 'code', 'entry']).operation;
@@ -138,32 +133,31 @@ export function createEditorWebMcp({
 						? ['operation', 'type', 'name', 'code', 'entry']
 						: ['operation', 'type', 'name'];
 			const args = request(value, fields);
-			const target = operation === 'insert' ? undefined : namedBlock(snapshot, args.type, args.name);
-			if (operation === 'delete') return { type: 'delete', blockId: target!.blockId };
+			const target = operation === 'insert' ? undefined : namedBlock(args.type, args.name);
+			if (operation === 'delete') return { type: 'delete', blockId: getEditorBlockId(target!) };
 			if (typeof args.code !== 'string') throw new Error('code must be a source string');
 			const source = {
 				code: args.code.split(/\r\n|\n|\r/),
 				...('entry' in args ? { entry: args.entry as string } : {}),
 			};
 			return operation === 'insert'
-				? { type: 'insert', projectPath: snapshot.projectPath, ...source }
-				: { type: 'update', blockId: target!.blockId, ...source };
+				? { type: 'insert', projectPath: getCurrentProjectPath(state), ...source }
+				: { type: 'update', blockId: getEditorBlockId(target!), ...source };
 		});
 	};
-	const checkRevision = (snapshot: EditorProjectSnapshot) => {
+	const checkRevision = (revision: string) => {
 		if (observedRevision === undefined)
-			scopeError(snapshot, 'source_required', 'Fetch source with get_project or get_block before writing.');
-		if (observedRevision !== snapshot.revision) scopeError(snapshot, 'stale_revision', sourceChangedMessage);
+			toolError('source_required', 'Fetch source with get_project or get_block before writing.');
+		if (observedRevision !== revision) toolError('stale_revision', sourceChangedMessage);
 	};
-	const applyEdits = (snapshot: EditorProjectSnapshot, edits: EditorEdit[], message: string) => {
-		const result = editing.applyEdits({ expectedRevision: snapshot.revision, edits });
+	const applyEdits = (revision: string, edits: EditorEdit[], message: string) => {
+		const result = editing.applyEdits({ expectedRevision: revision, edits });
 		// Record the actual result token: one edit can advance the editor revision several times.
 		observedRevision = result.revision;
 		return message;
 	};
 	const location = () => {
-		const { projectPath, revision } = editing.getSnapshot();
-		return { projectPath, revision };
+		return { projectPath: getCurrentProjectPath(state), revision: editing.getRevision() };
 	};
 	const tools = [
 		tool(
@@ -174,9 +168,9 @@ export function createEditorWebMcp({
 			true,
 			input => {
 				request(input, []);
-				const snapshot = editing.getSnapshot();
-				const source = createSourceView(snapshot);
-				observedRevision = snapshot.revision;
+				const revision = editing.getRevision();
+				const source = createSourceView(state);
+				observedRevision = revision;
 				return source;
 			}
 		),
@@ -188,8 +182,13 @@ export function createEditorWebMcp({
 			true,
 			input => {
 				request(input, []);
-				const { revision, projectPath, editable, canUndo, canRedo } = editing.getSnapshot();
-				return { revision, projectPath, editable, canUndo, canRedo } satisfies WebMcpProjectMetadata;
+				return {
+					revision: editing.getRevision(),
+					projectPath: getCurrentProjectPath(state),
+					editable: Boolean(state.featureFlags.editing),
+					canUndo: state.historyStack.length > 0,
+					canRedo: state.redoStack.length > 0,
+				};
 			}
 		),
 		tool(
@@ -200,8 +199,8 @@ export function createEditorWebMcp({
 			false,
 			input => {
 				const args = request(input, ['name']);
-				const target = namedBlock(editing.getSnapshot(), 'group', args.name);
-				navigation.openGroup(target.blockId);
+				const target = namedBlock('group', args.name);
+				navigation.openGroup(getEditorBlockId(target));
 				return location();
 			}
 		),
@@ -228,10 +227,10 @@ export function createEditorWebMcp({
 			true,
 			input => {
 				const args = request(input, ['type', 'name']);
-				const snapshot = editing.getSnapshot();
-				const target = namedBlock(snapshot, args.type, args.name);
-				const source = target.block.code.join('\n');
-				observedRevision = snapshot.revision;
+				const revision = editing.getRevision();
+				const target = namedBlock(args.type, args.name);
+				const source = target.code.join('\n');
+				observedRevision = revision;
 				return source;
 			}
 		),
@@ -243,11 +242,11 @@ export function createEditorWebMcp({
 			false,
 			input => {
 				const args = request(input, ['type', 'name', 'code']);
-				const snapshot = editing.getSnapshot();
-				checkRevision(snapshot);
+				const revision = editing.getRevision();
+				checkRevision(revision);
 				return applyEdits(
-					snapshot,
-					readEdits([{ operation: 'update', type: args.type, name: args.name, code: args.code }], snapshot),
+					revision,
+					readEdits([{ operation: 'update', type: args.type, name: args.name, code: args.code }]),
 					'Block updated.'
 				);
 			}
@@ -260,28 +259,27 @@ export function createEditorWebMcp({
 			false,
 			input => {
 				const args = request(input, ['type', 'name', 'oldText', 'newText']);
-				const snapshot = editing.getSnapshot();
-				checkRevision(snapshot);
+				const revision = editing.getRevision();
+				checkRevision(revision);
 				if (typeof args.oldText !== 'string' || args.oldText.length === 0 || typeof args.newText !== 'string')
 					throw new Error('oldText must be a nonempty string and newText must be a string');
-				const target = namedBlock(snapshot, args.type, args.name);
-				const source = target.block.code.join('\n');
+				const target = namedBlock(args.type, args.name);
+				const source = target.code.join('\n');
 				const oldText = args.oldText.replace(/\r\n|\r/g, '\n');
 				const newText = args.newText.replace(/\r\n|\r/g, '\n');
 				const start = source.indexOf(oldText);
 				if (start === -1)
-					return scopeError(snapshot, 'match_not_found', 'oldText does not occur in this block; read its source again');
+					return toolError('match_not_found', 'oldText does not occur in this block; read its source again');
 				if (source.indexOf(oldText, start + 1) !== -1)
-					return scopeError(
-						snapshot,
+					return toolError(
 						'ambiguous_match',
 						'oldText occurs more than once; include more surrounding source to identify one match'
 					);
 				// Slice explicitly so replacement text such as $& is always literal.
 				const code = source.slice(0, start) + newText + source.slice(start + oldText.length);
 				return applyEdits(
-					snapshot,
-					[{ type: 'update', blockId: target.blockId, code: code.split('\n') }],
+					revision,
+					[{ type: 'update', blockId: getEditorBlockId(target), code: code.split('\n') }],
 					'Block patched.'
 				);
 			}
@@ -294,11 +292,10 @@ export function createEditorWebMcp({
 			true,
 			input => {
 				const args = request(input, ['type', 'name']);
-				const snapshot = editing.getSnapshot();
-				const target = namedBlock(snapshot, args.type, args.name);
-				const { block } = target;
+				const revision = editing.getRevision();
+				const block = namedBlock(args.type, args.name);
 				return {
-					revision: snapshot.revision,
+					revision,
 					block: {
 						projectPath: block.projectPath,
 						type: block.nestedProjectCodeBlocks ? 'group' : block.isProjectScope ? 'project' : block.blockType,
@@ -318,9 +315,9 @@ export function createEditorWebMcp({
 			false,
 			input => {
 				const args = request(input, ['edits']);
-				const snapshot = editing.getSnapshot();
-				checkRevision(snapshot);
-				return applyEdits(snapshot, readEdits(args.edits, snapshot), 'Edits applied.');
+				const revision = editing.getRevision();
+				checkRevision(revision);
+				return applyEdits(revision, readEdits(args.edits), 'Edits applied.');
 			}
 		),
 		...(['undo', 'redo'] as const).map(action =>
@@ -332,30 +329,30 @@ export function createEditorWebMcp({
 				false,
 				input => {
 					request(input, []);
-					const snapshot = editing.getSnapshot();
-					checkRevision(snapshot);
-					const result = editing[action]({ expectedRevision: snapshot.revision });
+					const revision = editing.getRevision();
+					checkRevision(revision);
+					const result = editing[action]({ expectedRevision: revision });
 					observedRevision = result.revision;
 					return action === 'undo' ? 'Undo complete.' : 'Redo complete.';
 				}
 			)
 		),
 	];
-	if (getDiagnostics)
+	if (getCompilerDiagnostics)
 		tools.push(
 			tool(
-				'get_diagnostics',
-				'Read 8f4e diagnostics',
-				'Read compiler and editor diagnostics for the bound project. pending or compiling results are not final; completedRevision identifies the compiler input that produced the errors.',
+				'get_compiler_diagnostics',
+				'Read 8f4e compiler diagnostics',
+				'Read compiler and editor-directive diagnostics for the bound project. pending or compiling results are not final; completedRevision identifies the compiler input that produced the errors.',
 				emptySchema,
 				true,
 				input => {
 					request(input, []);
-					const snapshot = editing.getSnapshot();
+					const revision = editing.getRevision();
 					return {
-						revision: snapshot.revision,
-						compilerInputRevision: snapshot.compilerInputRevision,
-						diagnostics: getDiagnostics(),
+						revision,
+						compilerInputRevision: state.compilerInputRevision,
+						diagnostics: getCompilerDiagnostics(),
 					};
 				}
 			)

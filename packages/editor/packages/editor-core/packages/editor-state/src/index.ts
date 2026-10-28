@@ -47,10 +47,9 @@ export type {
 	EditorEditingHandle,
 	EditorEditResult,
 	EditorNavigationHandle,
-	EditorProjectSnapshot,
 } from './editing';
 
-export { createEditorEditingHandle, EditorEditingError } from './editing';
+export { createEditorEditingHandle, EditorEditingError, getEditorBlockId } from './editing';
 export {
 	collectSchemaConfigPaths,
 	createSchemaEditorConfigValidator,

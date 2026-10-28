@@ -40,12 +40,12 @@ export type {
 	EditorEditingHandle,
 	EditorEditResult,
 	EditorNavigationHandle,
-	EditorProjectSnapshot,
 } from '@8f4e/editor-state';
 export {
 	collectSchemaConfigPaths,
 	createSchemaEditorConfigValidator,
 	EditorEditingError,
+	getEditorBlockId,
 	getSchemaForConfigPath,
 	parseSchemaConfigValue,
 	resolveSchemaConfigRoot,

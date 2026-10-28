@@ -1,21 +1,30 @@
-import type { CodeBlockGraphicData, EditorProjectSnapshot } from '@8f4e/editor-core';
+import type { CodeBlockGraphicData, Editor } from '@8f4e/editor-core';
 import { createChildProjectGroupPath } from '@8f4e/language-spec';
 
-/** Read partial editor source without the file exporter's syntax validation or recursive expansion. */
-export function createSourceView(snapshot: EditorProjectSnapshot): string {
-	const projectPath = snapshot.projectPath;
-	const group =
-		projectPath === ''
-			? undefined
-			: snapshot.blocks.find(
-					({ block }) =>
-						block.nestedProjectCodeBlocks !== undefined &&
-						createChildProjectGroupPath(block.projectPath, block.name) === projectPath
-				)?.block;
-	if (projectPath !== '' && !group) throw new Error('The currently expanded group is unavailable');
-	const directBlocks = group
-		? group.nestedProjectCodeBlocks!
-		: snapshot.blocks.filter(({ block }) => block.projectPath === '').map(({ block }) => block);
+function currentGroup(state: Editor['state']): CodeBlockGraphicData | undefined {
+	const { rootCodeBlocks, codeBlocks } = state.codeBlockRendering;
+	if (rootCodeBlocks === codeBlocks) return undefined;
+	const find = (blocks: CodeBlockGraphicData[]): CodeBlockGraphicData | undefined => {
+		for (const block of blocks) {
+			if (block.nestedProjectCodeBlocks === codeBlocks) return block;
+			const found = block.nestedProjectCodeBlocks && find(block.nestedProjectCodeBlocks);
+			if (found) return found;
+		}
+	};
+	const group = find(rootCodeBlocks);
+	if (!group) throw new Error('The currently expanded group is unavailable');
+	return group;
+}
+
+export function getCurrentProjectPath(state: Editor['state']): string {
+	const group = currentGroup(state);
+	return group ? createChildProjectGroupPath(group.projectPath, group.name) : '';
+}
+
+/** Read one source level synchronously from the live editor, without recursive file export. */
+export function createSourceView(state: Editor['state']): string {
+	const group = currentGroup(state);
+	const directBlocks = state.codeBlockRendering.codeBlocks;
 	const ordered = [...directBlocks].sort(
 		(a, b) => a.gridX - b.gridX || a.gridY - b.gridY || a.creationIndex - b.creationIndex
 	);

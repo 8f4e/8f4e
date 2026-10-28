@@ -29,7 +29,9 @@ function copyBlocks(blocks: CodeBlockGraphicData[]): CodeBlockGraphicData[] {
 	}));
 }
 
-const blockId = (block: CodeBlockGraphicData): string => JSON.stringify([block.projectPath, block.creationIndex]);
+/** Command handle for a block read directly from editor state. */
+export const getEditorBlockId = (block: CodeBlockGraphicData): string =>
+	JSON.stringify([block.projectPath, block.creationIndex]);
 let nextEditorInstance = 0;
 
 function findSlice(blocks: CodeBlockGraphicData[], path: string, currentPath = ''): CodeBlockGraphicData[] | undefined {
@@ -84,7 +86,7 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 		assertAlive();
 		syncRevision();
 		if (expectedRevision !== revision()) {
-			throw new EditorEditingError('stale_revision', 'Read getSnapshot again before editing', revision());
+			throw new EditorEditingError('stale_revision', 'Read state and getRevision again before editing', revision());
 		}
 		if (!state.featureFlags.editing)
 			throw new EditorEditingError(
@@ -110,25 +112,10 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 			invalid('entry must be a nonempty name');
 	};
 	const handle: EditorEditingHandle = {
-		getSnapshot() {
+		getRevision() {
 			assertAlive();
 			syncRevision();
-			return {
-				revision: revision(),
-				compilerInputRevision: state.compilerInputRevision,
-				projectPath:
-					findProjectSlicePath(state.codeBlockRendering.rootCodeBlocks, state.codeBlockRendering.codeBlocks) ?? '',
-				project: structuredClone(serializeToProject(state)),
-				blocks: structuredClone(
-					flatten(state.codeBlockRendering.rootCodeBlocks).map(block => ({
-						blockId: blockId(block),
-						block,
-					}))
-				),
-				editable: Boolean(state.featureFlags.editing),
-				canUndo: state.historyStack.length > 0,
-				canRedo: state.redoStack.length > 0,
-			};
+			return revision();
 		},
 		applyEdits({ expectedRevision, edits }) {
 			checkWrite(expectedRevision);
@@ -161,11 +148,11 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 						disabled: hasDirective(code, 'disabled'),
 					});
 					slice!.push(block);
-					createdBlockIds.push(blockId(block));
+					createdBlockIds.push(getEditorBlockId(block));
 					continue;
 				}
 				if (!['update', 'delete'].includes(edit.type)) invalid('Unknown edit type');
-				const target = flatten(draft).find(block => blockId(block) === edit.blockId);
+				const target = flatten(draft).find(block => getEditorBlockId(block) === edit.blockId);
 				if (!target)
 					throw new EditorEditingError('block_not_found', 'Read the project for a current blockId', revision());
 				if (edit.type === 'delete') {
@@ -221,9 +208,8 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 	const navigation: EditorNavigationHandle = {
 		openGroup(id) {
 			assertAlive();
-			const block = flatten(state.codeBlockRendering.rootCodeBlocks).find(block => blockId(block) === id);
-			if (!block)
-				throw new EditorEditingError('block_not_found', 'Read getSnapshot for a current group blockId', revision());
+			const block = flatten(state.codeBlockRendering.rootCodeBlocks).find(block => getEditorBlockId(block) === id);
+			if (!block) throw new EditorEditingError('block_not_found', 'Read state for a current group blockId', revision());
 			if (block.nestedProjectCodeBlocks === undefined)
 				throw new EditorEditingError('invalid_edit', 'The selected block is not a project group', revision());
 			events.dispatch('openProjectGroup', { codeBlock: block });

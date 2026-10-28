@@ -167,7 +167,7 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 				activeBridge = createEditorWebMcp({
 					document,
 					editor: mountedEditor,
-					getDiagnostics: mountedEditor.getDiagnostics,
+					getCompilerDiagnostics: mountedEditor.getCompilerDiagnostics,
 				});
 				void activeBridge.ready.catch(error => console.error('Failed to register gallery site tools:', error));
 			};

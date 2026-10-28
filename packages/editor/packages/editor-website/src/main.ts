@@ -21,7 +21,7 @@ const editor = await mountDefaultEditor(canvas, {
 	storageNamespace: 'editor',
 });
 Object.assign(window, { state: editor.state });
-const bridge = createEditorWebMcp({ document, editor, getDiagnostics: editor.getDiagnostics });
+const bridge = createEditorWebMcp({ document, editor, getCompilerDiagnostics: editor.getCompilerDiagnostics });
 void bridge.ready.catch(error => console.error('Failed to register editor site tools:', error));
 
 import.meta.hot?.dispose(() => {

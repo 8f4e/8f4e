@@ -1,24 +1,7 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import type { ProjectObjectModel } from '@8f4e/language-spec';
-
 export type EditorEdit =
 	| { type: 'insert'; code: string[]; projectPath?: string; entry?: string }
 	| { type: 'update'; blockId: string; code: string[]; entry?: string }
 	| { type: 'delete'; blockId: string };
-
-export interface EditorProjectSnapshot {
-	/** Project slice currently displayed by the editor; empty at the root. */
-	projectPath: string;
-	/** Opaque token: revisions from different editor instances cannot be interchanged. */
-	revision: string;
-	compilerInputRevision: number;
-	project: ProjectObjectModel;
-	/** Detached copies of existing editor blocks, paired with opaque edit handles. */
-	blocks: Array<{ blockId: string; block: CodeBlockGraphicData }>;
-	editable: boolean;
-	canUndo: boolean;
-	canRedo: boolean;
-}
 
 export interface EditorEditResult {
 	revision: string;
@@ -26,7 +9,8 @@ export interface EditorEditResult {
 }
 
 export interface EditorEditingHandle {
-	getSnapshot(): EditorProjectSnapshot;
+	/** Opaque project token for validating writes after reading editor.state. */
+	getRevision(): string;
 	applyEdits(request: { expectedRevision: string; edits: readonly EditorEdit[] }): EditorEditResult;
 	undo(request: { expectedRevision: string }): EditorEditResult;
 	redo(request: { expectedRevision: string }): EditorEditResult;

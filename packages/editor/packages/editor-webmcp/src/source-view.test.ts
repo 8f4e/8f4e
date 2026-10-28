@@ -1,5 +1,4 @@
-import type { EditorProjectSnapshot } from '@8f4e/editor-core';
-import { createMockCodeBlock } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
 import { createSourceView } from './source-view';
 
@@ -32,19 +31,16 @@ function fixture() {
 		nestedProjectCodeBlocks: [direct, voices],
 	});
 	const root = module('rootModule', '', 4);
-	const all = [audio, direct, voices, deep, root];
-	const snapshot = {
-		revision: 'test:1',
-		projectPath: '',
-		blocks: all.map(block => ({ blockId: `handle-${block.creationIndex}`, block })),
-	} as EditorProjectSnapshot;
-	return { snapshot, audio, voices, root };
+	const state = createMockState();
+	state.codeBlockRendering.rootCodeBlocks = [audio, root];
+	state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
+	return { state, audio, voices, root };
 }
 
 describe('one-level 8f4e source views', () => {
 	it('renders root entries and group shells without exposing any descendants', () => {
-		const { snapshot } = fixture();
-		const view = createSourceView(snapshot);
+		const { state } = fixture();
+		const view = createSourceView(state);
 		expect(view).toBe(
 			'8f4e/v1\n\nentry main\n\ngroup audio\nexpose oscillator:value\ngroupEnd\n\nmodule rootModule\nint value 1\nmoduleEnd\nentryEnd'
 		);
@@ -53,29 +49,29 @@ describe('one-level 8f4e source views', () => {
 	});
 
 	it('reads only the currently expanded group, including nested group shells', () => {
-		const { snapshot } = fixture();
-		snapshot.projectPath = 'audio';
-		const view = createSourceView(snapshot);
+		const { state, audio, voices } = fixture();
+		state.codeBlockRendering.codeBlocks = audio.nestedProjectCodeBlocks!;
+		const view = createSourceView(state);
 		expect(view).toBe(
 			'group audio\nexpose oscillator:value\n\nmodule oscillator\nint value 1\nmoduleEnd\n\ngroup voices\n; voice settings\ngroupEnd\ngroupEnd'
 		);
 		expect(view).not.toContain('deepSecret');
-		snapshot.projectPath = 'audio/voices';
-		const nested = createSourceView(snapshot);
+		state.codeBlockRendering.codeBlocks = voices.nestedProjectCodeBlocks!;
+		const nested = createSourceView(state);
 		expect(nested).toContain('module deepSecret');
 		expect(nested).not.toContain('module oscillator');
 	});
 
 	it('reads unfinished code without export validation and rejects an unavailable current scope', () => {
-		const { snapshot, root } = fixture();
+		const { state, root } = fixture();
 		root.code = ['module unfinished', 'push'];
-		expect(createSourceView(snapshot)).toContain('module unfinished\npush');
-		snapshot.projectPath = 'missing';
-		expect(() => createSourceView(snapshot)).toThrow('currently expanded group is unavailable');
+		expect(createSourceView(state)).toContain('module unfinished\npush');
+		state.codeBlockRendering.codeBlocks = [];
+		expect(() => createSourceView(state)).toThrow('currently expanded group is unavailable');
 	});
 
 	it('preserves root-owned source, entry boundaries, blank lines, and empty group shells', () => {
-		const { snapshot, audio, root } = fixture();
+		const { state, audio, root } = fixture();
 		audio.nestedProjectCodeBlocks = [];
 		root.entry = 'secondary';
 		const scope = createMockCodeBlock({
@@ -84,12 +80,12 @@ describe('one-level 8f4e source views', () => {
 			code: ['pass shared', '', '; root comment'],
 			creationIndex: 5,
 		});
-		snapshot.blocks.push({ blockId: 'scope', block: scope });
-		const view = createSourceView(snapshot);
+		state.codeBlockRendering.rootCodeBlocks.push(scope);
+		const view = createSourceView(state);
 		expect(view).toContain('pass shared\n\n; root comment');
 		expect(view).toContain('entry main\n');
 		expect(view).toContain('entry secondary\n');
-		snapshot.projectPath = 'audio';
-		expect(createSourceView(snapshot)).toBe(audio.code.join('\n'));
+		state.codeBlockRendering.codeBlocks = audio.nestedProjectCodeBlocks!;
+		expect(createSourceView(state)).toBe(audio.code.join('\n'));
 	});
 });

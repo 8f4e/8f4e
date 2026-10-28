@@ -45,7 +45,8 @@
 - `npx nx run @8f4e/editor-website:build`: Builds the default composition and website production bundle.
 - `npx nx run @8f4e/8f4e-website:dev`: Starts the example product website on `http://localhost:3001`.
 - `npx nx run @8f4e/8f4e-website:build`: Builds the example product website and its editor dependencies.
-- `npx nx run @8f4e/8f4e-website:test:browser`: Runs homepage and gallery browser integration tests with the default editor.
+- `npx nx run @8f4e/8f4e-website:test:browser`: Runs homepage and gallery lifecycle integration tests with the default editor.
+- `npx nx run @8f4e/editor-webmcp:test:browser`: Runs real-editor WebMCP source, editing, revision, persistence, and history integration tests.
 - `npx nx run @8f4e/editor-webmcp:build|test|typecheck`: Verify the external single-editor WebMCP adapter.
 - `npm --prefix tools/project-preview run generate-gallery-previews`: Regenerates 64×64 GIF icons for the example
   and compiler test galleries with the standalone npm tool.

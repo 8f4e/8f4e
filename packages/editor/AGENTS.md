@@ -51,7 +51,7 @@
   `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-session-persistence,@8f4e/editor-plugin-project-url-loader`.
   Both have `test:screenshot` targets for their real editor startup paths.
 - Start the website with `npx nx run @8f4e/editor-website:dev`.
-- Verify the WebMCP adapter with `npx nx run @8f4e/editor-webmcp:build|test|typecheck` and gallery switching with `npx nx run @8f4e/8f4e-website:test:browser`.
+- Verify the WebMCP adapter with `npx nx run @8f4e/editor-webmcp:build|test|typecheck` and its real-editor browser suite with `npx nx run @8f4e/editor-webmcp:test:browser`. Verify gallery loading and bridge switching with `npx nx run @8f4e/8f4e-website:test:browser`.
 - Verify binary assets with `npx nx run @8f4e/editor-plugin-binary-assets:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-binary-assets:test:screenshot`.
 - Verify assertion markers and input plugins with

@@ -10,7 +10,7 @@ const editor = await mountDefaultEditor(canvas, { initialEditorMode: 'edit' });
 const bridge = createEditorWebMcp({
 	document: canvas.ownerDocument,
 	editor,
-	getDiagnostics: editor.getDiagnostics,
+	getCompilerDiagnostics: editor.getCompilerDiagnostics,
 });
 await bridge.ready;
 
@@ -43,9 +43,9 @@ One active bridge is allowed per document. It keeps the supplied editor referenc
 | `get_block_metadata` | `{ type, name }` | Current revision and the block's group path, execution entry, type, name, and grid position. |
 | `apply_edits` | `{ edits }` | Confirmation string after one atomic undoable batch. |
 | `undo` / `redo` | `{}` | Confirmation string after one history step. |
-| `get_diagnostics` | `{}` | Project revision, compiler input revision, and diagnostics from the optional host-provided read handle. |
+| `get_compiler_diagnostics` | `{}` | Project revision, compiler input revision, and diagnostics from the optional host-provided read handle. |
 
-`get_diagnostics` is registered only when the host supplies `getDiagnostics`. The compiler plugin owns that handle. Its `status` is `pending`, `compiling`, `ready`, or `disposed`; `completedRevision` identifies the compiler input that produced a final result. Pending compilations do not expose errors from a previous input as current errors.
+`get_compiler_diagnostics` is registered only when the host supplies `getCompilerDiagnostics`. The compiler plugin owns that handle. Its `status` is `pending`, `compiling`, `ready`, or `disposed`; `completedRevision` identifies the compiler input that produced a final result. Pending compilations do not expose errors from a previous input as current errors.
 
 `get_project` returns the source string directly, with no envelope, block index, identifiers, or line ranges. It always reads the editor's current location and takes no group selector. To inspect a child group, navigate with `expand_group({ name })`, then call `get_project` again. Use `go_to_parent` or `go_to_root` to leave a group. Navigation changes the same editor view the user sees and returns no source. Human navigation also changes the scope used by subsequent tools.
 
@@ -88,9 +88,9 @@ Group blocks can be moved, deleted, or have their source updated while retaining
 
 ## Public editor API
 
-The same editing operations are available without WebMCP through `editor.editing.getSnapshot()`, `applyEdits({ expectedRevision, edits })`, `undo({ expectedRevision })`, and `redo({ expectedRevision })`. `editor.navigation.openGroup(blockId)`, `goToParentGroup()`, and `goToRoot()` control the shared editor view. Snapshots expose its current `projectPath` (empty at the root). The general editing API can address any project scope; the WebMCP bridge restricts its tools to the currently displayed scope.
+Consumers read the existing internals directly through `editor.state`. `editor.editing.getRevision()` returns the current opaque project revision without constructing or cloning a project snapshot. The editor exposes validated `applyEdits({ expectedRevision, edits })`, `undo({ expectedRevision })`, and `redo({ expectedRevision })` commands. Use `getEditorBlockId(block)` from `@8f4e/editor-core` for command targets read from state. `editor.navigation.openGroup(blockId)`, `goToParentGroup()`, and `goToRoot()` control the shared editor view. The general editing API can address any project scope; the bridge resolves type/name selectors within the current live block slice.
 
-The editor API retains its complete structured snapshot, including the canonical project and source as line arrays. Its `blocks` entries are `{ blockId, block }`, where `block` is a detached copy of the existing `CodeBlockGraphicData` model, including its rendering data and derived values. Maps and connections between blocks are preserved by the snapshot; it is not a separate JSON-oriented block model. Source remains authoritative for code-derived properties. Agent-specific filtering, one-level traversal, and string conversion belong only to this bridge. `get_project` and `get_block` return source strings and keep revision bookkeeping inside the bridge. The bridge resolves source-level selectors to internal editor handles, strips editor identifiers from results, and keeps metadata in dedicated tools.
+The bridge collects and formats state synchronously. It selects only the source or metadata required by each tool and converts source line arrays to strings. Code remains authoritative for derived properties. Consumers retaining data across asynchronous work can copy the specific data they need; there is no separate `EditorProjectSnapshot` model or automatic full-graph clone.
 
 Writes respect edit mode and follow existing project restoration, derived layout, autosave, and compilation mechanisms. They preserve the viewed project group and viewport for edit batches and do not dispatch `loadProject`, so in-project edits keep browser file associations. Invalid batches leave project content and undo history unchanged. Source edits may produce ordinary compiler diagnostics.
 
@@ -101,7 +101,8 @@ The public API throws `EditorEditingError` with `code`, `message`, and, when ava
 - `npx nx run @8f4e/editor-webmcp:build`
 - `npx nx run @8f4e/editor-webmcp:test`
 - `npx nx run @8f4e/editor-webmcp:typecheck`
-- `npx nx run @8f4e/8f4e-website:test:browser` verifies real editor edits, persistence, and bridge replacement in Chromium.
+- `npx nx run @8f4e/editor-webmcp:test:browser` verifies source reads, editing commands, revisions, persistence, and history against a real editor in Chromium.
+- `npx nx run @8f4e/8f4e-website:test:browser` verifies homepage/gallery hosting and bridge replacement.
 
 The browser tests supply an imperative WebMCP registry so these integration checks also run on Chromium versions that do not expose the experimental API. Native site-tool discovery additionally depends on browser/agent availability and permissions.
 

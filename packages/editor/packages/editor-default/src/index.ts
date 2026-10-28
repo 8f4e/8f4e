@@ -31,7 +31,7 @@ import { resolveStdlibInclude } from './stdlib-resolver';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
-export type DefaultEditorInstance = Editor & { getDiagnostics: () => CompilerDiagnostics | null };
+export type DefaultEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
 
 export function createDefaultEditorPlugins(options: {
 	canvas: HTMLCanvasElement;
@@ -158,5 +158,5 @@ export async function mountDefaultEditor(
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 
-	return Object.assign(editor, { getDiagnostics: compiler.getDiagnostics });
+	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
 }

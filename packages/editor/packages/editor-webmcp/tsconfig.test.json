@@ -1,5 +1,19 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": { "noEmit": true, "types": ["vitest/globals", "node"] },
-  "exclude": ["node_modules", "dist"]
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [
+      "vitest/globals",
+      "node"
+    ],
+    "rootDir": "."
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "include": [
+    "src/**/*.ts",
+    "browser-tests/**/*.ts"
+  ]
 }
