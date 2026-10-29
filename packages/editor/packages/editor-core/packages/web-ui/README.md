@@ -30,6 +30,7 @@ until the image dimensions change; memory release deletes the texture and the ne
 ### Wire rasterization
 
 Wires follow a Bresenham staircase with one pixel per column for shallow angles or per row for steep angles.
+Thickness must be a positive integer number of pixels; fractional and non-positive widths throw a `RangeError`.
 Selected wires expand the staircase along its minor axis. Both endpoints snap to the nearest pixel and are included;
 reversing the endpoints preserves the same pixels. The comparison below enlarges pixels 3×, with the previous
 rectangle coverage on the left and Bresenham rendering on the right.

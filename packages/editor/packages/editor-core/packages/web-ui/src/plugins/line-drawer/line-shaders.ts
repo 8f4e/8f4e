@@ -38,7 +38,7 @@ export const lineVertexShaderSource = `#version 300 es
 		delta = end - start;
 		v_start = start;
 		v_delta = delta;
-		v_thickness = max(1, int(floor(a_thickness + 0.5)));
+		v_thickness = int(a_thickness);
 		v_xMajor = xMajor ? 1 : 0;
 
 		// Keep the quad narrow while covering every staircase pixel and both endpoints.

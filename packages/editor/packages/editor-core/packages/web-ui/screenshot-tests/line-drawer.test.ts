@@ -1,75 +1,76 @@
 import { Engine } from 'glugglugglug';
-import { expect, test } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { LineDrawer } from '../src/plugins/line-drawer';
 
 type Point = readonly [number, number];
 
-test('Bresenham wires match an integer reference in every octant, including clipping and highlighted widths', () => {
-	const canvas = document.createElement('canvas');
-	canvas.width = 32;
-	canvas.height = 32;
-	const engine = new Engine(canvas);
-	const lines = new LineDrawer(engine);
-	const endpoints: Point[] = [
-		[28, 16],
-		[28, 20],
-		[28, 22],
-		[28, 27],
-		[28, 28],
-		[27, 28],
-		[22, 28],
-		[20, 28],
-		[16, 28],
-		[12, 28],
-		[4, 28],
-		[4, 20],
-		[4, 16],
-		[4, 12],
-		[4, 4],
-		[12, 4],
-		[16, 4],
-		[20, 4],
-		[28, 4],
-		[28, 12],
-		[16, 16],
-	];
-	const cases: Array<readonly [Point, Point]> = endpoints.map(end => [[16, 16], end]);
-	cases.push(
-		[
-			[-12, -4],
-			[45, 31],
-		],
-		[
-			[12.4, 8.6],
-			[26.6, 21.4],
-		],
-		[
-			[-40_000, -20_000],
-			[40_000, 20_000],
-		]
-	);
-	try {
-		for (const [start, end] of cases) {
-			for (const thickness of [1, 2, 3]) {
-				const expected = rasterizeReference(start, end, thickness, canvas.width, canvas.height);
-				for (const [from, to] of [
-					[start, end],
-					[end, start],
-				]) {
-					engine.renderFrame(() => lines.drawLine(...from, ...to, thickness, [1, 1, 1, 1]));
-					const actual = new Uint8Array(canvas.width * canvas.height * 4);
-					engine.gl.readPixels(0, 0, canvas.width, canvas.height, engine.gl.RGBA, engine.gl.UNSIGNED_BYTE, actual);
-					expect(occupiedPixels(actual, canvas.width), `${from} to ${to}, width ${thickness}`).toEqual(
-						occupiedPixels(expected, canvas.width)
-					);
-				}
-			}
-		}
-		expect(engine.gl.getError()).toBe(engine.gl.NO_ERROR);
-	} finally {
+describe('Bresenham wires', () => {
+	let canvas: HTMLCanvasElement;
+	let engine: Engine;
+	let lines: LineDrawer;
+
+	beforeAll(() => {
+		canvas = document.createElement('canvas');
+		canvas.width = 32;
+		canvas.height = 32;
+		engine = new Engine(canvas);
+		lines = new LineDrawer(engine);
+	});
+
+	afterAll(() => {
 		lines.destroy();
 		engine.destroy();
-	}
+	});
+
+	const endpoints: Array<[name: string, end: Point]> = [
+		['horizontal right', [28, 16]],
+		['shallow down-right', [28, 20]],
+		['half-slope down-right', [28, 22]],
+		['near-diagonal down-right', [28, 27]],
+		['diagonal down-right', [28, 28]],
+		['near-diagonal steep down-right', [27, 28]],
+		['double-slope down-right', [22, 28]],
+		['steep down-right', [20, 28]],
+		['vertical down', [16, 28]],
+		['steep down-left', [12, 28]],
+		['diagonal down-left', [4, 28]],
+		['shallow down-left', [4, 20]],
+		['horizontal left', [4, 16]],
+		['shallow up-left', [4, 12]],
+		['diagonal up-left', [4, 4]],
+		['steep up-left', [12, 4]],
+		['vertical up', [16, 4]],
+		['steep up-right', [20, 4]],
+		['diagonal up-right', [28, 4]],
+		['shallow up-right', [28, 12]],
+		['coincident endpoints', [16, 16]],
+	];
+	const cases: Array<{ name: string; from: Point; to: Point }> = endpoints.map(([name, to]) => ({
+		name,
+		from: [16, 16],
+		to,
+	}));
+	cases.push(
+		{ name: 'clipped endpoints', from: [-12, -4], to: [45, 31] },
+		{ name: 'fractional endpoints', from: [12.4, 8.6], to: [26.6, 21.4] },
+		{ name: 'large offscreen endpoints', from: [-40_000, -20_000], to: [40_000, 20_000] }
+	);
+
+	describe.each(cases)('$name', ({ from, to }) => {
+		test.each(
+			[1, 2, 3].flatMap(thickness => [
+				{ direction: 'forward', thickness, from, to },
+				{ direction: 'reversed', thickness, from: to, to: from },
+			])
+		)('$direction with width $thickness matches the integer reference', ({ from, to, thickness }) => {
+			const expected = rasterizeReference(from, to, thickness, canvas.width, canvas.height);
+			engine.renderFrame(() => lines.drawLine(...from, ...to, thickness, [1, 1, 1, 1]));
+			const actual = new Uint8Array(canvas.width * canvas.height * 4);
+			engine.gl.readPixels(0, 0, canvas.width, canvas.height, engine.gl.RGBA, engine.gl.UNSIGNED_BYTE, actual);
+			expect(occupiedPixels(actual, canvas.width)).toEqual(occupiedPixels(expected, canvas.width));
+			expect(engine.gl.getError()).toBe(engine.gl.NO_ERROR);
+		});
+	});
 });
 
 function occupiedPixels(pixels: Uint8Array, width: number): string[] {

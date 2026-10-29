@@ -1,9 +1,4 @@
-export const LINE_INSTANCE_BYTE_STRIDE = 24;
-
-const FLOAT_BYTES = Float32Array.BYTES_PER_ELEMENT;
-const COLOR_BYTE_OFFSET = 5 * FLOAT_BYTES;
-
-type LineColorComponents = readonly [red: number, green: number, blue: number, alpha: number];
+import { LINE_INSTANCE_BYTE_STRIDE, LINE_INSTANCE_LAYOUT, type LineColor } from './line-instance';
 
 /** Stores compact line instances in reusable CPU memory. */
 export class LineInstanceBuffer {
@@ -53,21 +48,21 @@ export class LineInstanceBuffer {
 	 * @param y1 - Starting Y coordinate in canvas pixels.
 	 * @param x2 - Ending X coordinate in canvas pixels.
 	 * @param y2 - Ending Y coordinate in canvas pixels.
-	 * @param thickness - Full line thickness in canvas pixels.
+	 * @param thickness - Positive integer thickness in canvas pixels.
 	 * @param color - Red, green, blue, and alpha components in the range 0 to 1.
 	 */
-	append(x1: number, y1: number, x2: number, y2: number, thickness: number, color: LineColorComponents): void {
+	append(x1: number, y1: number, x2: number, y2: number, thickness: number, color: LineColor): void {
 		this.ensureCapacity(this._count + 1);
 		const offset = this._count * LINE_INSTANCE_BYTE_STRIDE;
-		this.view.setFloat32(offset, x1, true);
-		this.view.setFloat32(offset + FLOAT_BYTES, y1, true);
-		this.view.setFloat32(offset + 2 * FLOAT_BYTES, x2, true);
-		this.view.setFloat32(offset + 3 * FLOAT_BYTES, y2, true);
-		this.view.setFloat32(offset + 4 * FLOAT_BYTES, thickness, true);
-		this.bytes[offset + COLOR_BYTE_OFFSET] = Math.round(color[0] * 255);
-		this.bytes[offset + COLOR_BYTE_OFFSET + 1] = Math.round(color[1] * 255);
-		this.bytes[offset + COLOR_BYTE_OFFSET + 2] = Math.round(color[2] * 255);
-		this.bytes[offset + COLOR_BYTE_OFFSET + 3] = Math.round(color[3] * 255);
+		this.view.setFloat32(offset + LINE_INSTANCE_LAYOUT.x1, x1, true);
+		this.view.setFloat32(offset + LINE_INSTANCE_LAYOUT.y1, y1, true);
+		this.view.setFloat32(offset + LINE_INSTANCE_LAYOUT.x2, x2, true);
+		this.view.setFloat32(offset + LINE_INSTANCE_LAYOUT.y2, y2, true);
+		this.view.setFloat32(offset + LINE_INSTANCE_LAYOUT.thickness, thickness, true);
+		this.bytes[offset + LINE_INSTANCE_LAYOUT.color] = Math.round(color[0] * 255);
+		this.bytes[offset + LINE_INSTANCE_LAYOUT.color + 1] = Math.round(color[1] * 255);
+		this.bytes[offset + LINE_INSTANCE_LAYOUT.color + 2] = Math.round(color[2] * 255);
+		this.bytes[offset + LINE_INSTANCE_LAYOUT.color + 3] = Math.round(color[3] * 255);
 		this._count += 1;
 	}
 

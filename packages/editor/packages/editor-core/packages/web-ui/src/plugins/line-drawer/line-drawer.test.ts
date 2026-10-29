@@ -1,13 +1,27 @@
-import type { RenderHooks } from 'glugglugglug';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { createPluginHost } from '../__tests__/fake-webgl';
 import { LineDrawer } from './line-drawer';
-import { LINE_INSTANCE_BYTE_STRIDE } from './line-instance-buffer';
-
-type FakeWebGl = ReturnType<typeof createFakeWebGl>;
+import { LINE_INSTANCE_BYTE_STRIDE } from './line-instance';
 
 describe('LineDrawer', () => {
+	it.each([0, -1, 0.5, 1.5, NaN, Infinity, -Infinity])(
+		'rejects invalid pixel thickness %s before queuing',
+		thickness => {
+			const { gl, hooks } = createPluginHost();
+			const lines = new LineDrawer({ gl, hooks });
+
+			hooks.preDraw[0](gl);
+			expect(() => lines.drawLine(0, 0, 10, 10, thickness, [1, 1, 1, 1])).toThrow(
+				new RangeError('thickness must be a positive integer number of pixels.')
+			);
+			hooks.postDraw[0](gl);
+			expect(gl.bufferSubData).not.toHaveBeenCalled();
+			expect(gl.drawArraysInstanced).not.toHaveBeenCalled();
+		}
+	);
+
 	it('attaches to both frame hooks and draws compact ordered line instances once', () => {
-		const { gl, hooks } = createHost();
+		const { gl, hooks } = createPluginHost();
 		const lines = new LineDrawer({ gl, hooks }, { initialCapacity: 1 });
 		expect(hooks.preDraw).toHaveLength(1);
 		expect(hooks.postDraw).toHaveLength(1);
@@ -34,7 +48,7 @@ describe('LineDrawer', () => {
 	});
 
 	it('resets its write cursor at the start of every frame', () => {
-		const { gl, hooks } = createHost();
+		const { gl, hooks } = createPluginHost();
 		const lines = new LineDrawer({ gl, hooks });
 
 		hooks.preDraw[0](gl);
@@ -51,7 +65,7 @@ describe('LineDrawer', () => {
 	});
 
 	it('releases dynamic buffer storage and reallocates it on the next non-empty frame', () => {
-		const { gl, hooks } = createHost();
+		const { gl, hooks } = createPluginHost();
 		const lines = new LineDrawer({ gl, hooks }, { initialCapacity: 2 });
 		gl.bufferData.mockClear();
 
@@ -70,7 +84,7 @@ describe('LineDrawer', () => {
 	});
 
 	it('reuses upload views and limits used ranges after growth, empty frames, and memory release', () => {
-		const { gl, hooks } = createHost();
+		const { gl, hooks } = createPluginHost();
 		const lines = new LineDrawer({ gl, hooks }, { initialCapacity: 1 });
 		const render = (count: number): Uint8Array | undefined => {
 			gl.bufferSubData.mockClear();
@@ -100,7 +114,7 @@ describe('LineDrawer', () => {
 	});
 
 	it('detaches and deletes only its own resources idempotently', () => {
-		const { gl, hooks } = createHost();
+		const { gl, hooks } = createPluginHost();
 		const lines = new LineDrawer({ gl, hooks });
 
 		lines.destroy();
@@ -113,77 +127,3 @@ describe('LineDrawer', () => {
 		expect(gl.deleteProgram).toHaveBeenCalledOnce();
 	});
 });
-
-/** Creates a hook host backed by a focused fake WebGL2 context. */
-function createHost(): { gl: FakeWebGl; hooks: RenderHooks } {
-	return {
-		gl: createFakeWebGl(),
-		hooks: { preDraw: [], postDraw: [] },
-	};
-}
-
-/** Creates the WebGL2 surface used by the line-plugin unit tests. */
-function createFakeWebGl() {
-	let resourceId = 0;
-	/** Returns one distinguishable fake GPU resource. */
-	const resource = (kind: string) => ({ kind, id: ++resourceId });
-	return {
-		drawingBufferWidth: 320,
-		drawingBufferHeight: 200,
-		VERTEX_SHADER: 0x8b31,
-		FRAGMENT_SHADER: 0x8b30,
-		COMPILE_STATUS: 0x8b81,
-		LINK_STATUS: 0x8b82,
-		ARRAY_BUFFER: 0x8892,
-		DYNAMIC_DRAW: 0x88e8,
-		FLOAT: 0x1406,
-		UNSIGNED_BYTE: 0x1401,
-		FRAMEBUFFER: 0x8d40,
-		BLEND: 0x0be2,
-		SCISSOR_TEST: 0x0c11,
-		DEPTH_TEST: 0x0b71,
-		STENCIL_TEST: 0x0b90,
-		CULL_FACE: 0x0b44,
-		RASTERIZER_DISCARD: 0x8c89,
-		FUNC_ADD: 0x8006,
-		ONE: 1,
-		ONE_MINUS_SRC_ALPHA: 0x0303,
-		TRIANGLE_STRIP: 0x0005,
-		createShader: vi.fn(() => resource('shader')),
-		shaderSource: vi.fn(),
-		compileShader: vi.fn(),
-		getShaderParameter: vi.fn(() => true),
-		getShaderInfoLog: vi.fn(() => null),
-		deleteShader: vi.fn(),
-		createProgram: vi.fn(() => resource('program')),
-		attachShader: vi.fn(),
-		linkProgram: vi.fn(),
-		getProgramParameter: vi.fn(() => true),
-		getProgramInfoLog: vi.fn(() => null),
-		deleteProgram: vi.fn(),
-		createBuffer: vi.fn(() => resource('buffer')),
-		deleteBuffer: vi.fn(),
-		createVertexArray: vi.fn(() => resource('vertex-array')),
-		deleteVertexArray: vi.fn(),
-		getUniformLocation: vi.fn((_program: unknown, name: string) => ({ name })),
-		useProgram: vi.fn(),
-		bindVertexArray: vi.fn(),
-		bindBuffer: vi.fn(),
-		bufferData: vi.fn(),
-		bufferSubData: vi.fn(),
-		enableVertexAttribArray: vi.fn(),
-		vertexAttribPointer: vi.fn(),
-		vertexAttribDivisor: vi.fn(),
-		bindFramebuffer: vi.fn(),
-		viewport: vi.fn(),
-		enable: vi.fn(),
-		disable: vi.fn(),
-		blendEquation: vi.fn(),
-		blendFunc: vi.fn(),
-		colorMask: vi.fn(),
-		uniform2f: vi.fn(),
-		drawArraysInstanced: vi.fn(),
-	} as unknown as WebGL2RenderingContext & {
-		[key: string]: ReturnType<typeof vi.fn> | number;
-	};
-}
