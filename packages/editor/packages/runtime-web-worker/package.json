@@ -11,9 +11,9 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./runtime-def": {
-      "types": "./dist/runtimeDef.d.ts",
-      "default": "./dist/runtimeDef.js"
+    "./messages": {
+      "types": "./dist/messages.d.ts",
+      "default": "./dist/messages.js"
     }
   },
   "sideEffects": false,
@@ -31,11 +31,6 @@
     "@8f4e/test-runner": "*"
   },
   "devDependencies": {
-    "@8f4e/editor-state-testing": "*",
     "@types/node": "24.13.2"
-  },
-  "peerDependencies": {
-    "@8f4e/editor-core": "*",
-    "@8f4e/state-manager": "*"
   }
 }

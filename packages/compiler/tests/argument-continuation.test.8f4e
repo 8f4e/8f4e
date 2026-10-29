@@ -11,7 +11,7 @@ constantsEnd
 
 note
 ; @pos 15 38
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Continuation lines append one
 argument to the previous

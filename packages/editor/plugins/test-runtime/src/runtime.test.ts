@@ -1,11 +1,11 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { EventDispatcher } from '@8f4e/editor-core';
 import { createMockState } from '@8f4e/editor-state-testing';
+import { executeTests } from '@8f4e/runtime-test-runner/execute-tests';
+import type { TestRunResult, TestRuntimeProgram } from '@8f4e/runtime-test-runner/types';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { executeTests } from './executeTests';
-import { createTestRuntimeDef } from './runtimeDef';
-import type { TestRunResult, TestRuntimeProgram } from './types';
+import { createTestRuntimePlugin } from './index';
 
 class FakeWorker {
 	static instances: FakeWorker[] = [];
@@ -36,17 +36,17 @@ function setup(initialProgram?: TestRuntimeProgram, isCompiling = false) {
 	const state = createMockState({
 		compiler: { isCompiling },
 		assertionResults: [],
-		runtime: { values: { other: { retained: true } } },
+		info: { other: { retained: true } },
+		editorConfig: { testRuntime: { enabled: true } },
 	});
 	const store = createStateManager(state);
 	const events = { dispatch: vi.fn() } as unknown as EventDispatcher;
-	const definition = createTestRuntimeDef(
-		() => program?.codeBuffer ?? new Uint8Array(),
-		() => program?.memory ?? null,
-		() => program?.assertionSites,
-		FakeWorker as unknown as new () => Worker
-	);
-	const dispose = definition.factory(store, events);
+	const dispose = createTestRuntimePlugin({
+		getCodeBuffer: () => program?.codeBuffer ?? new Uint8Array(),
+		getMemory: () => program?.memory ?? null,
+		getAssertionSites: () => program?.assertionSites,
+		Worker: FakeWorker as unknown as new () => Worker,
+	}).setup({ store, events } as unknown as import('@8f4e/editor-core').EditorPluginContext);
 	return {
 		state,
 		store,
@@ -92,7 +92,7 @@ describe('TestRuntime lifecycle', () => {
 		expect(state.assertionResults).toEqual([
 			{ site: assertion.site, passed: false, message: 'Assertion failed: expected nonzero, received 0' },
 		]);
-		expect(state.runtime.values.TestRuntime).toMatchObject(result);
+		expect(state.info.testRuntime).toMatchObject(result);
 		store.set('compiler.isCompiling', true);
 		expect(state.assertionResults).toEqual([]);
 		store.set('compiler.isCompiling', false);
@@ -141,8 +141,8 @@ entryEnd`),
 		expect(firstWorker.postMessage).toHaveBeenCalledExactlyOnceWith(firstProgram);
 		firstWorker.emit(passed());
 		expect(firstWorker.terminate).toHaveBeenCalledOnce();
-		expect(state.runtime.values.TestRuntime).toMatchObject({ status: 'passed', assertionSites: [] });
-		expect(state.runtime.values.other).toEqual({ retained: true });
+		expect(state.info.testRuntime).toMatchObject({ status: 'passed', assertionSites: [] });
+		expect(state.info.other).toEqual({ retained: true });
 		setProgram();
 		store.set('compiler.isCompiling', true);
 		const secondProgram = createProgram();
@@ -161,7 +161,7 @@ entryEnd`),
 		expect(FakeWorker.instances).toHaveLength(0);
 		store.set('compiler.isCompiling', false);
 		expect(FakeWorker.instances).toHaveLength(0);
-		expect(state.runtime.values.TestRuntime).toEqual({ status: 'idle' });
+		expect(state.info.testRuntime).toEqual({ status: 'idle' });
 		dispose();
 	});
 
@@ -175,7 +175,7 @@ entryEnd`),
 		setProgram(createProgram());
 		store.set('compiler.isCompiling', false);
 		oldListener({ data: passed() } as MessageEvent<TestRunResult>);
-		expect(state.runtime.values.TestRuntime).toMatchObject({ status: 'running' });
+		expect(state.info.testRuntime).toMatchObject({ status: 'running' });
 		dispose();
 	});
 
@@ -184,14 +184,14 @@ entryEnd`),
 		const { store, state, events, setProgram, dispose } = setup(createProgram());
 		const worker = FakeWorker.instances[0];
 		worker.emit({ status: 'error', error: 'integer divide by zero' });
-		expect(state.runtime.values.TestRuntime).toMatchObject({ status: 'error' });
+		expect(state.info.testRuntime).toMatchObject({ status: 'error' });
 		expect(state.assertionResults).toEqual([]);
-		expect(events.dispatch).toHaveBeenCalledWith('runtimeInitialized');
+		expect(events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
 		dispose();
 		setProgram(createProgram());
 		store.set('compiler.isCompiling', false);
 		expect(FakeWorker.instances).toHaveLength(1);
-		expect(state.runtime.values.TestRuntime).toEqual({ status: 'idle' });
+		expect(state.info.testRuntime).toEqual({ status: 'idle' });
 	});
 
 	it('reports worker loading errors and terminates the failed worker', () => {
@@ -199,7 +199,7 @@ entryEnd`),
 		const { state, dispose } = setup(createProgram());
 		const worker = FakeWorker.instances[0];
 		worker.onerror!({ message: 'Worker script failed to load' } as ErrorEvent);
-		expect(state.runtime.values.TestRuntime).toMatchObject({
+		expect(state.info.testRuntime).toMatchObject({
 			status: 'error',
 			error: 'Worker script failed to load',
 		});

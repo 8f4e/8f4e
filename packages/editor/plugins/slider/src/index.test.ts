@@ -29,7 +29,6 @@ async function setup(code = source, installed = true, name = 'controls') {
 		else memoryViews.float32[address] = value;
 	});
 	const store = initState(events, {
-		runtimeRegistry: {},
 		initialEditorMode: 'edit',
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],

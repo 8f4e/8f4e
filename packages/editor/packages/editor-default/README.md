@@ -32,7 +32,7 @@ The host controls the canvas's layout dimensions with CSS. The editor observes t
 drawing buffer and UI automatically. Wheel input pans the editor and prevents page scrolling by default; embedded
 hosts can pass `captureWheel: false` to leave scrolling to the page.
 
-Each mounted editor owns its compiler worker, compiled memory and code-buffer state, and lazy runtime registry.
+Each mounted editor owns its compiler worker, compiled memory and code-buffer state, and lazy plugin installations.
 The session-persistence plugin uses its storage namespace. The default namespace is `editor`, which uses the
 `project_editor` key. Hosts mounting multiple editors should pass a stable, unique namespace for each editor.
 Hosts may also provide a custom `Storage` implementation or an
@@ -85,10 +85,10 @@ discovery and callbacks. Keyboard input receives the mounted canvas and a live m
 live compiler memory/bytecode getters, and owns its WASM instance and export cache. MIDI access is requested only
 when the project has MIDI configuration. Omitting these plugins also omits their schemas and input listeners.
 
-The runtime registry includes `TestRuntime`, selected with `; @config runtime TestRuntime`. For projects with an
+The lazy test-runtime plugin is enabled with `; @config testRuntime.enabled true`. For projects with an
 enabled test entry, it executes tests once after successful compilation or recompilation, using the editor's current
-memory and publishing results under `state.runtime.values.TestRuntime`. See the
-[test runtime](../runtime-test-runner/README.md) for scheduling and memory ownership.
+memory and publishing results under `state.info.testRuntime`. See the
+[test runtime plugin](../../plugins/test-runtime/README.md) for scheduling and memory ownership.
 
 The default plugin set includes project URL loading and session persistence. It passes `fetch` and the optional
 `initialProjectUrl` to the URL loader, and storage, a namespaced key, and `restoreOnStartup: !initialProjectUrl` to
@@ -130,6 +130,21 @@ npx nx run @8f4e/editor-default:test
 npx nx run @8f4e/editor-default:typecheck
 ```
 
-The compiler plugin receives the stdlib include resolver when it is created; editor state does not forward compiler or include-loading callbacks. Button, switch, slider, piano, crossfade, and keyboard-memory factories receive the compiler plugin's live `writeMemory` function directly. Runtime loaders and factories remain initialization dependencies owned by the runtime coordinator; state holds data-only runtime metadata and derived environment-constant source.
+The compiler plugin receives the stdlib include resolver when it is created; editor state does not forward compiler or include-loading callbacks. Button, switch, slider, piano, crossfade, and keyboard-memory factories receive the compiler plugin's live `writeMemory` function directly. Audio, worker, and test runtime plugins load through the ordinary lazy registry and own independent execution lifecycles.
 
-The public editor API has no callbacks bag. Core announces input changes through `compilationInputChanged`. The compiler plugin owns debouncing, worker communication, stale-result rejection, diagnostics, and statistics. It contributes the `recompileDebounceDelay` directive schema through the shared config mechanism and emits accepted memory and bytecode through `compilationSucceeded`, which core consumes to update its views before dependent features and runtimes react to metadata. Editor disposal stops runtimes before releasing plugins; the compiler then cancels scheduling and terminates its worker after dependent plugins have shut down. Worker results carry current artifacts and memory actions without redundant byte-size or instance-reset flags.
+The public editor API has no callbacks bag. Core announces input changes through `compilationInputChanged`. The compiler plugin owns debouncing, worker communication, stale-result rejection, diagnostics, and statistics. It contributes the `recompileDebounceDelay` directive schema through the shared config mechanism and emits accepted memory and bytecode through `compilationSucceeded`, which core consumes to update its views before dependent features and runtimes react to metadata. Runtime plugins release their resources during plugin disposal; the compiler then cancels scheduling and terminates its worker after dependent plugins have shut down. Worker results carry current artifacts and memory actions without redundant byte-size or instance-reset flags.
+
+Runtime plugins activate from `audioRuntime`, `workerRuntime`, or `testRuntime` configuration roots. Each has an
+`enabled` setting, defaulting to false; several may be enabled together. The host injects live compiler getters and
+browser resources when importing each plugin. Their fixed info namespaces match their config roots.
+
+```text
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRateConstantName SAMPLE_RATE
+; @config workerRuntime.enabled true
+; @config workerRuntime.sampleRateConstantName CONTROL_RATE
+```
+
+Audio's buffer-size constant name is configured with `audioRuntime.bufferSizeConstantName` (default
+`AUDIO_BUFFER_SIZE`). The sample-rate default is `SAMPLE_RATE` for each runtime; use different names when enabling
+both. There is no runtime registry option or exclusive runtime selection in core.

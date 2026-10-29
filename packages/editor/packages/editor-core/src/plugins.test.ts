@@ -6,7 +6,7 @@ import { type EditorPlugin, installEditorPlugins } from './plugins';
 
 function createContext() {
 	const events = createMockEventDispatcher();
-	const store = initState(events, { callbacks: {}, runtimeRegistry: {} });
+	const store = initState(events, { callbacks: {} });
 	return {
 		store,
 		events,

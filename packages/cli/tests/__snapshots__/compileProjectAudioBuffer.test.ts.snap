@@ -1952,7 +1952,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
       "code": [
         "note",
         "; @pos -120 0",
-        "; @config runtime AudioWorkletRuntime",
+        "; @config audioRuntime.enabled true",
         "; @config audioRuntime.sampleRate 48000",
         "; @config audioRuntime.audioOutBufferLAddress audioout:buffer",
         "; @config audioRuntime.audioOutBufferRAddress audioout:buffer",

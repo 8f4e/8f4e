@@ -1,0 +1,31 @@
+{
+  "name": "@8f4e/editor-plugin-test-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "test runtime plugin for the 8f4e editor",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "dependencies": {
+    "@8f4e/editor-core": "*",
+    "@8f4e/runtime-test-runner": "*",
+    "@8f4e/test-runner": "*",
+    "@8f4e/language-spec": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "@8f4e/editor-state-testing": "*",
+    "@8f4e/compiler": "*",
+    "vitest": "4.1.7",
+    "@8f4e/state-manager": "*"
+  }
+}

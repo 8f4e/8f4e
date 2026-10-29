@@ -36,7 +36,6 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 	});
 	const store = initState(events, {
 		callbacks: { readClipboardText: async () => clipboard, writeClipboardText },
-		runtimeRegistry: {},
 		initialEditorMode: mode,
 	});
 	const disposePlugin = installed

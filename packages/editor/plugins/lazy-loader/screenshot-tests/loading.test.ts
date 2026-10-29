@@ -34,7 +34,6 @@ test.each(['project load', 'manual scan'] as const)('loads and renders plot thro
 	let context!: EditorPluginContext;
 	try {
 		editor = await initEditor(canvas, {
-			runtimeRegistry: {},
 			initialEditorMode: 'edit',
 			initialProject:
 				trigger === 'project load'

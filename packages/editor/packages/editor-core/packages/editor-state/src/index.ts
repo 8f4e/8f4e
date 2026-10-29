@@ -34,7 +34,6 @@ import createMenuRegistry from './features/menu/registry';
 import publishCompilationInputChanges from './features/program-compiler/inputChanges';
 import projectLoading from './features/project-loading/effect';
 import projectOperations from './features/project-operations/effect';
-import runtime from './features/runtime/effect';
 import viewport from './features/viewport/effect';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
@@ -89,7 +88,6 @@ export default function init(
 		callbacks: options.callbacks,
 		editorMode: initialEditorMode,
 		featureFlags,
-		runtimeRegistry: {},
 		editorConfigSchemaContributions: options.editorConfigSchemaContributions ?? {},
 	};
 
@@ -104,7 +102,6 @@ export default function init(
 	// Menus must consume pointer events before code blocks and viewport interactions.
 	registerEffect(contextMenu(store, events, menus));
 
-	registerEffect(runtime(store, events, options.runtimeRegistry));
 	registerEffect(editorMode(store, events));
 	registerEffect(projectLoading(store, events));
 	registerEffect(codeBlockDragger(store, events));

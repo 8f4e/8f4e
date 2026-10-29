@@ -42,7 +42,7 @@ describe('createWebUiRenderProjection', () => {
 			cell(120, PALETTE_INDICES.inkBase)
 		);
 		expect(store.subscribe).toHaveBeenCalledWith('codeBlockRendering', expect.any(Function));
-		expect(events.on).toHaveBeenCalledWith('runtimeInitialized', expect.any(Function));
+		expect(events.on).toHaveBeenCalledWith('memoryValuesChanged', expect.any(Function));
 
 		block.code = ['y'];
 		block.displayModel = {
@@ -68,7 +68,7 @@ describe('createWebUiRenderProjection', () => {
 
 		projection.dispose();
 		expect(store.unsubscribe).toHaveBeenCalledWith('codeBlockRendering', expect.any(Function));
-		expect(events.off).toHaveBeenCalledWith('runtimeInitialized', expect.any(Function));
+		expect(events.off).toHaveBeenCalledWith('memoryValuesChanged', expect.any(Function));
 		expect(events.off).toHaveBeenCalledWith('codeBlockLayoutsChanged', expect.any(Function));
 	});
 });

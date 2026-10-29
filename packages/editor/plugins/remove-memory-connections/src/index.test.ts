@@ -16,7 +16,6 @@ function setup(
 
 	const store = initState(events, {
 		callbacks: {},
-		runtimeRegistry: {},
 		initialEditorMode: mode,
 	});
 	const disposePlugin = installed

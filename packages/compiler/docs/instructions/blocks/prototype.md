@@ -34,7 +34,7 @@ orders and the final comparison demonstrates independent storage.
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 noteEnd
 
 prototype oscillatorState
@@ -98,7 +98,7 @@ wins behavior.
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 noteEnd
 
 prototype baryon

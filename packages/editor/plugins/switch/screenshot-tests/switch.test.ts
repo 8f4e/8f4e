@@ -27,7 +27,6 @@ entryEnd`);
 	const events = createMockEventDispatcher();
 	const store = initState(events, {
 		initialEditorMode: 'edit',
-		runtimeRegistry: {},
 		callbacks: {},
 	});
 	const drawers = createCodeBlockDrawerRegistry();

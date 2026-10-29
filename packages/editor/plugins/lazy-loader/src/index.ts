@@ -2,7 +2,7 @@ import type { EditorPlugin } from '@8f4e/editor-core';
 import { logError, serializeToProject } from '@8f4e/editor-state';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 
-export { hasDirective } from './hasDirective';
+export { hasConfig, hasDirective } from './hasDirective';
 
 export interface LazyEditorPlugin {
 	id: string;

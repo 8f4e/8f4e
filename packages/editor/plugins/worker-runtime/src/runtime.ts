@@ -1,27 +1,26 @@
-// Import the types from the editor
-// Note: Worker import is done at runtime by the host, not here
-
 import type {
 	EditorConfig,
 	EditorConfigSchemaContribution,
+	EditorPluginContext,
 	EventDispatcher,
-	RuntimeRegistryEntry,
-	State,
 } from '@8f4e/editor-core';
 import { resolveSchemaConfigRoot } from '@8f4e/editor-core';
-import type { StateManager } from '@8f4e/state-manager';
-import type { WebWorkerHostMessage, WebWorkerRuntimeMessage } from './messages';
+import type { WebWorkerHostMessage, WebWorkerRuntimeMessage } from '@8f4e/runtime-web-worker/messages';
 
-const WEB_WORKER_EDITOR_CONFIG: EditorConfigSchemaContribution = {
+export const WEB_WORKER_EDITOR_CONFIG: EditorConfigSchemaContribution = {
 	root: 'workerRuntime',
 	defaults: {
+		enabled: false,
 		entry: 'main',
 		sampleRate: 50,
+		sampleRateConstantName: 'SAMPLE_RATE',
 	},
 	schema: {
 		type: 'object',
 		properties: {
+			enabled: { type: 'boolean' },
 			entry: { type: 'string' },
+			sampleRateConstantName: { type: 'string' },
 			sampleRate: { type: 'number', minimum: 1 },
 		},
 		additionalProperties: false,
@@ -29,22 +28,21 @@ const WEB_WORKER_EDITOR_CONFIG: EditorConfigSchemaContribution = {
 };
 
 interface WebWorkerRuntimeConfig {
+	enabled: boolean;
+	sampleRateConstantName: string;
 	entry: string;
 	sampleRate: number;
 }
 
-function getWebWorkerRuntimeConfig(editorConfig: EditorConfig): WebWorkerRuntimeConfig {
+export function getWebWorkerRuntimeConfig(editorConfig: EditorConfig): WebWorkerRuntimeConfig {
 	const config = resolveSchemaConfigRoot(WEB_WORKER_EDITOR_CONFIG, editorConfig);
 
-	return {
-		entry: typeof config.entry === 'string' && config.entry ? config.entry : 'main',
-		sampleRate: typeof config.sampleRate === 'number' ? config.sampleRate : 50,
-	};
+	return config as unknown as WebWorkerRuntimeConfig;
 }
 
 // WebWorker Runtime Factory
-export function webWorkerRuntimeFactory(
-	store: StateManager<State>,
+export function startWorkerRuntime(
+	store: EditorPluginContext['store'],
 	events: EventDispatcher,
 	getCodeBuffer: () => Uint8Array,
 	getMemory: () => WebAssembly.Memory | null,
@@ -56,16 +54,10 @@ export function webWorkerRuntimeFactory(
 	async function onWorkerMessage({ data }: MessageEvent<WebWorkerRuntimeMessage>) {
 		switch (data.type) {
 			case 'initialized':
-				events.dispatch('runtimeInitialized');
+				events.dispatch('memoryValuesChanged');
 				break;
 			case 'stats':
-				{
-					const runtimeInfo = state.info.runtime ?? (state.info.runtime = {});
-					runtimeInfo.timerPrecisionPercentage = data.payload.timerPrecisionPercentage;
-					runtimeInfo.timeToExecuteLoopMs = data.payload.timeToExecuteLoopMs;
-					runtimeInfo.timerDriftMs = data.payload.timerDriftMs;
-					runtimeInfo.timerExpectedIntervalTimeMs = data.payload.timerExpectedIntervalTimeMs;
-				}
+				store.set('info.workerRuntime', { ...data.payload });
 				break;
 		}
 	}
@@ -108,24 +100,5 @@ export function webWorkerRuntimeFactory(
 			worker.terminate();
 			worker = undefined;
 		}
-	};
-}
-
-/**
- * Create a runtime definition with injected callbacks.
- * This allows the host to provide getCodeBuffer and getMemory implementations.
- */
-export function createWebWorkerRuntimeDef(
-	getCodeBuffer: () => Uint8Array,
-	getMemory: () => WebAssembly.Memory | null,
-	WorkerConstructor: new () => Worker
-): RuntimeRegistryEntry {
-	return {
-		id: 'WebWorkerRuntime',
-		editorConfigSchema: WEB_WORKER_EDITOR_CONFIG,
-		getEnvConstants: editorConfig => [`const SAMPLE_RATE ${getWebWorkerRuntimeConfig(editorConfig).sampleRate}`],
-		factory: (store: StateManager<State>, events: EventDispatcher) => {
-			return webWorkerRuntimeFactory(store, events, getCodeBuffer, getMemory, WorkerConstructor);
-		},
 	};
 }

@@ -40,7 +40,7 @@ function setup({
 	showOpenMenuItem?: boolean;
 } = {}) {
 	const events = createEvents();
-	const store = initState(events, { callbacks: {}, runtimeRegistry: {}, initialEditorMode: mode });
+	const store = initState(events, { callbacks: {}, initialEditorMode: mode });
 	const state = store.getState();
 	const handle = createHandle();
 	const browserWindow = {

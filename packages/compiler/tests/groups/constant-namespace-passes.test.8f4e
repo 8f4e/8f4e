@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Constant namespaces must be passed at each group boundary.
 Modules, functions, prototypes, and derived constants can use them.

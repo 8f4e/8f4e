@@ -2,7 +2,7 @@
 
 note
 ; @pos 2 2
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 ensureNonZero preserves fallback
 precision for both float widths.

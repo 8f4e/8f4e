@@ -3,23 +3,9 @@ import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
 
-import { createWebWorkerRuntimeDef, webWorkerRuntimeFactory } from './runtimeDef';
+import { startWorkerRuntime } from './runtime';
 
 describe('WebWorker runtime config', () => {
-	it('defaults to the main entry and requires a positive sample rate', () => {
-		const runtimeDef = createWebWorkerRuntimeDef(
-			() => new Uint8Array(),
-			() => null,
-			class {} as unknown as new () => Worker
-		);
-
-		expect(runtimeDef.editorConfigSchema?.defaults).toMatchObject({ entry: 'main' });
-		expect(runtimeDef.editorConfigSchema?.schema.properties).toMatchObject({
-			entry: { type: 'string' },
-			sampleRate: { type: 'number', minimum: 1 },
-		});
-	});
-
 	it.each([
 		[undefined, 'main'],
 		['alternate', 'alternate'],
@@ -46,7 +32,7 @@ describe('WebWorker runtime config', () => {
 			compiler: { isCompiling: false },
 			info: {},
 		});
-		const cleanup = webWorkerRuntimeFactory(
+		const cleanup = startWorkerRuntime(
 			createStateManager(state),
 			{ dispatch: vi.fn() } as unknown as EventDispatcher,
 			() => new Uint8Array([1, 2, 3]),
@@ -80,7 +66,7 @@ describe('WebWorker runtime config', () => {
 		}
 		const state = createMockState({ compiler: { isCompiling: false }, info: {} });
 		const events = { dispatch: vi.fn() } as unknown as EventDispatcher;
-		const cleanup = webWorkerRuntimeFactory(
+		const cleanup = startWorkerRuntime(
 			createStateManager(state),
 			events,
 			() => new Uint8Array(),
@@ -98,8 +84,8 @@ describe('WebWorker runtime config', () => {
 		onMessage?.({ data: { type: 'stats', payload: stats } });
 		onMessage?.({ data: { type: 'compilationError', payload: new Error('failed') } });
 
-		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('runtimeInitialized');
-		expect(state.info.runtime).toEqual(stats);
+		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('memoryValuesChanged');
+		expect(state.info.workerRuntime).toEqual(stats);
 
 		cleanup();
 	});

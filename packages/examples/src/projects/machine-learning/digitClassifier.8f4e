@@ -65,7 +65,7 @@ note
 ; Each neuron exposes its fixed-weight multiplies,
 ; sums, biases, sigmoid activation, and connections.
 
-; @config runtime WebWorkerRuntime
+; @config workerRuntime.enabled true
 noteEnd
 
 note

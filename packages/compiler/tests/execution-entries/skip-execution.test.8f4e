@@ -29,7 +29,7 @@ constantsEnd
 
 note
 ; @pos 58 7
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 #skipExecution keeps a module
 compiled and initialized, but

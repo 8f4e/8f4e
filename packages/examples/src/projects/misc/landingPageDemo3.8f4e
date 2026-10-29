@@ -12,7 +12,7 @@ constantsEnd
 
 note
 ; @pos -170 -11
-; @config runtime WebWorkerRuntime
+; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 1
 ; @config export.fileName landingPageDemo3
 ; @config color.canvas #609

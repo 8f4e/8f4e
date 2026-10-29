@@ -417,7 +417,7 @@ export default function codeBlockRendering(
 
 	events.on<CodeBlockPointerDownEvent>('codeBlockPointerDown', onCodeBlockPointerDown);
 	events.on<CodeBlockPointerDownEvent>('codeBlockPointerDown', ({ codeBlock }) => refreshBlockLayouts([codeBlock]));
-	events.on('runtimeInitialized', updateAllBlockDerivedState);
+	events.on('memoryValuesChanged', updateAllBlockDerivedState);
 	events.on('codeBlockLayoutContributionsChanged', ({ codeBlock }: { codeBlock?: CodeBlockGraphicData }) => {
 		if (codeBlock) {
 			if (state.codeBlockRendering.codeBlocks.includes(codeBlock)) refreshBlockLayouts([codeBlock]);

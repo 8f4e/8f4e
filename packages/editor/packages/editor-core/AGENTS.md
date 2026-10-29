@@ -79,10 +79,18 @@
 - `EditorOptions.initialProject` provides generic initial content. Load it (or an empty project) after the first
   resize, then dispatch `init` so installed plugins can perform their own startup work.
 
-- Runtime factories and lazy loaders are initialization dependencies passed directly to the runtime coordinator. `state.runtimeRegistry` contains IDs and schemas only. Publish runtime-derived constants through `envConstantContributions.runtime`.
 - Memory writes belong to injected plugin factory dependencies. Keep `getWordFromMemory` for core pointer dereferencing; do not restore a state-level write callback.
 
 - Core emits `compilationInputChanged` after its compiler input revision advances. Compilation scheduling and worker ownership belong to `editor-plugin-compiler`; do not restore a compile callback or built-in compiler effect.
 - `EditorOptions` has no public callbacks bag. Construct internal memory, clipboard, and animation callbacks in core.
-- Consume accepted `compilationSucceeded` program artifacts (`memoryRef` and `codeBuffer`) to update memory views and renderer artifacts before metadata consumers react. Dispatch `dispose` before plugin cleanup so core runtimes stop before compiler resources are released. Drain cleanup stacks even when a disposer throws.
-- Render environment-constant contributions uniformly. The `runtime` contributor has no special formatting or ordering.
+- Consume accepted `compilationSucceeded` program artifacts (`memoryRef` and `codeBuffer`) to update memory views and renderer artifacts before metadata consumers react. Dispose plugins in reverse installation order so execution plugins stop before compiler resources are released. Drain cleanup stacks even when a disposer throws.
+- Render environment-constant contributions uniformly; each plugin owns its contribution key.
+
+- Audio, worker, and test execution are ordinary lazy plugins in `packages/editor/plugins/audio-runtime`,
+  `worker-runtime`, and `test-runtime`. The default editor matches their raw `@config` roots before their schemas load.
+  Each owns `enabled` (default false), schema registration, compiler readiness, execution, and cleanup. They may run
+  together against shared compiler memory. Keep worker/worklet execution code in the existing runtime packages.
+- Runtime constant names are configured with `sampleRateConstantName` (default `SAMPLE_RATE`) and audio's
+  `bufferSizeConstantName` (default `AUDIO_BUFFER_SIZE`). Each contributes under its own environment key. Keep info
+  namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
+  selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.

@@ -67,9 +67,6 @@ export default function createDefaultState() {
 		},
 		globalEditorDirectives: {},
 		assertionResults: [],
-		runtime: {
-			values: {},
-		},
 		dialog: {
 			id: '',
 			text: '',

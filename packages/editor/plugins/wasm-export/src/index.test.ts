@@ -7,7 +7,7 @@ import { createWasmExportPlugin } from './index';
 const cleanups: Array<() => void> = [];
 function setup(installed = true, mode: 'view' | 'edit' = 'edit') {
 	const events = createEvents();
-	const store = initState(events, { callbacks: {}, runtimeRegistry: {}, initialEditorMode: mode });
+	const store = initState(events, { callbacks: {}, initialEditorMode: mode });
 	const writable = {
 		write: vi.fn().mockResolvedValue(undefined),
 		close: vi.fn().mockResolvedValue(undefined),

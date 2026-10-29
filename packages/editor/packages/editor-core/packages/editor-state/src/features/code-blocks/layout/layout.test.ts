@@ -11,7 +11,7 @@ afterEach(() => {
 function setup() {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, runtimeRegistry: {}, initialEditorMode: 'edit' });
+	const store = initState(events, { callbacks: {}, initialEditorMode: 'edit' });
 	cleanups.push(store.dispose);
 	events.dispatch('loadProject', {
 		project: parseProjectSource('8f4e/v1\nentry main\nmodule audio\n; space\nmoduleEnd\nentryEnd'),

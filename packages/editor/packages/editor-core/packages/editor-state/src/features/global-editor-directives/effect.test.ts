@@ -1,10 +1,8 @@
 import createStateManager from '@8f4e/state-manager';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
-import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import { createSchemaEditorConfigValidator } from '../editor-config/schemaValidator';
-import runtimeEffect from '../runtime/effect';
 import globalEditorDirectivesEffect from './effect';
 
 describe('globalEditorDirectivesEffect', () => {
@@ -58,52 +56,24 @@ describe('globalEditorDirectivesEffect', () => {
 		store.dispose();
 	});
 
-	it('keeps the runtime alive when the rendered project-group slice changes', async () => {
-		const destroyRuntime = vi.fn();
-		const runtimeFactory = vi.fn(() => destroyRuntime);
+	it('resolves configuration from the root tree while navigating project groups', () => {
 		const nestedCodeBlocks = [createMockCodeBlock({ code: ['module nested', 'moduleEnd'] })];
 		const rootCodeBlocks = [
-			createMockCodeBlock({
-				code: ['module projectConfig', '; @config runtime WebWorkerRuntime', 'moduleEnd'],
-			}),
-			createMockCodeBlock({
-				code: ['group nested', 'groupEnd'],
-				nestedProjectCodeBlocks: nestedCodeBlocks,
-			}),
+			createMockCodeBlock({ code: ['note config', '; @config font ibmvga8x16', 'noteEnd'] }),
+			createMockCodeBlock({ code: ['group nested', 'groupEnd'], nestedProjectCodeBlocks: nestedCodeBlocks }),
 		];
-		const state = createMockState({
-			runtimeRegistry: {
-				WebWorkerRuntime: {
-					id: 'WebWorkerRuntime',
-				},
-			},
-			codeBlockRendering: {
-				rootCodeBlocks,
-				codeBlocks: rootCodeBlocks,
-			},
-		});
+		const state = createMockState({ codeBlockRendering: { rootCodeBlocks, codeBlocks: rootCodeBlocks } });
 		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-
-		await runtimeEffect(store, events, { WebWorkerRuntime: { id: 'WebWorkerRuntime', factory: runtimeFactory } });
+		store.set(
+			'editorConfigValidators.font',
+			createSchemaEditorConfigValidator({ root: 'font', schema: { type: 'string' } })
+		);
+		parsedDirectivesUpdater(store);
 		globalEditorDirectivesEffect(store);
 		store.set('codeBlockRendering.codeBlocks', rootCodeBlocks);
-		await new Promise(resolve => setTimeout(resolve, 0));
-
-		expect(state.editorConfig.runtime).toBe('WebWorkerRuntime');
-		expect(runtimeFactory).toHaveBeenCalledTimes(1);
-
+		expect(state.editorConfig.font).toBe('ibmvga8x16');
 		store.set('codeBlockRendering.codeBlocks', nestedCodeBlocks);
-		await new Promise(resolve => setTimeout(resolve, 0));
-
-		expect(state.editorConfig.runtime).toBe('WebWorkerRuntime');
-		expect(runtimeFactory).toHaveBeenCalledTimes(1);
-		expect(destroyRuntime).not.toHaveBeenCalled();
-
-		store.set('codeBlockRendering.codeBlocks', rootCodeBlocks);
-		await new Promise(resolve => setTimeout(resolve, 0));
-
-		expect(runtimeFactory).toHaveBeenCalledTimes(1);
-		expect(destroyRuntime).not.toHaveBeenCalled();
+		expect(state.editorConfig.font).toBe('ibmvga8x16');
+		store.dispose();
 	});
 });

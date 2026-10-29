@@ -1,4 +1,4 @@
-// Message protocol shared by the host runtime (runtimeDef.ts) and the worker (index.ts).
+// Message protocol shared by the editor runtime plugin and the worker (index.ts).
 
 /** Messages posted by the host to the worker. */
 export type WebWorkerHostMessage = {

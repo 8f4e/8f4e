@@ -1,0 +1,44 @@
+{
+  "name": "@8f4e/editor-plugin-test-runtime",
+  "sourceRoot": "src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit -p tsconfig.test.json",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "^build"
+      ]
+    }
+  },
+  "tags": [
+    "type:library",
+    "scope:editor"
+  ]
+}

@@ -31,7 +31,7 @@
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   `editor-plugin-lazy-loader` scans project signals on replacement or a manual menu action, installs matching plugins,
   and disposes them with the editor. The default editor's lightweight registry dynamically imports plot, wave,
-  meter, bars, switch, button, piano, slider, and crossfade for their directives; other default plugins remain fixed.
+  meter, bars, switch, button, piano, slider, and crossfade for their directives, plus runtime plugins for their config roots.
   Core provides independent layout contributions and subscriptions; directive parsing and layout remain separate.
   Session restoration/autosaving and project URL loading live in `editor-plugin-session-persistence` and
   `editor-plugin-project-url-loader`. The default host supplies storage/fetch and chooses initial URL priority.
@@ -89,3 +89,12 @@
 
 - Include test notes and explain any package-boundary changes.
 - Add screenshots or GIFs when editor behavior or appearance changes.
+
+- Audio, worker, and test execution are ordinary lazy plugins in `packages/editor/plugins/audio-runtime`,
+  `worker-runtime`, and `test-runtime`. The default editor matches their raw `@config` roots before their schemas load.
+  Each owns `enabled` (default false), schema registration, compiler readiness, execution, and cleanup. They may run
+  together against shared compiler memory. Keep worker/worklet execution code in the existing runtime packages.
+- Runtime constant names are configured with `sampleRateConstantName` (default `SAMPLE_RATE`) and audio's
+  `bufferSizeConstantName` (default `AUDIO_BUFFER_SIZE`). Each contributes under its own environment key. Keep info
+  namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
+  selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.

@@ -11,12 +11,12 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./runtime-def": {
-      "types": "./dist/runtimeDef.d.ts",
-      "default": "./dist/runtimeDef.js"
-    },
     "./worklet": {
       "default": "./dist/worklet/index.js"
+    },
+    "./messages": {
+      "types": "./dist/messages.d.ts",
+      "default": "./dist/messages.js"
     }
   },
   "sideEffects": false,
@@ -33,11 +33,5 @@
   "dependencies": {
     "@8f4e/test-runner": "*"
   },
-  "devDependencies": {
-    "@8f4e/editor-state-testing": "*"
-  },
-  "peerDependencies": {
-    "@8f4e/editor-core": "*",
-    "@8f4e/state-manager": "*"
-  }
+  "devDependencies": {}
 }

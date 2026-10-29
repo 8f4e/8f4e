@@ -5,13 +5,7 @@ import initState, {
 	type EditorNavigationHandle,
 	EMPTY_DEFAULT_PROJECT,
 } from '@8f4e/editor-state';
-import type {
-	EditorConfigSchemaContributionRegistry,
-	EditorMode,
-	InfoRecord,
-	RuntimeRegistry,
-	State,
-} from '@8f4e/editor-state-types';
+import type { EditorConfigSchemaContributionRegistry, EditorMode, InfoRecord, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, {
@@ -66,16 +60,9 @@ export type {
 	FeatureFlags,
 	FeatureFlagsConfig,
 	JSONSchemaLike,
-	LazyRuntimeRegistryEntry,
 	MenuGenerator,
 	Options,
 	ParsedDirectiveRecord,
-	RuntimeFactory,
-	RuntimeMetadata,
-	RuntimeMetadataRegistry,
-	RuntimeRegistry,
-	RuntimeRegistryEntry,
-	RuntimeValuesByRuntimeId,
 	State,
 } from '@8f4e/editor-state-types';
 export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from '@8f4e/web-ui';
@@ -114,7 +101,6 @@ export interface EditorOptions {
 	featureFlags?: Partial<State['featureFlags']>;
 	/** Mode used when the editor is initialized. */
 	initialEditorMode?: EditorMode;
-	runtimeRegistry: RuntimeRegistry;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 	renderStatsIntervalFrames?: number;
 	overlayTexture?: WebUiOptions['overlayTexture'];

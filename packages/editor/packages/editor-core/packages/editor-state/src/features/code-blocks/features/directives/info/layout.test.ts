@@ -12,7 +12,7 @@ afterEach(() => {
 function setup(info: Record<string, unknown>) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, runtimeRegistry: {} });
+	const store = initState(events, { callbacks: {} });
 	cleanups.push(store.dispose);
 	store.set('info.foo', info);
 	events.dispatch('loadProject', {

@@ -2,32 +2,7 @@ import type { EventDispatcher, State } from '@8f4e/editor-core';
 import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-	audioWorkletRuntimeFactory,
-	createAudioWorkletRuntimeDef,
-	getAudioInputBuffers,
-	getAudioOutputBuffers,
-} from './runtimeDef';
-import { storeAudioWorkletRuntimeValues } from './runtimeValues';
-
-describe('storeAudioWorkletRuntimeValues', () => {
-	it('merges AudioWorklet runtime values into editor state', () => {
-		const state = createMockState({
-			runtime: {
-				values: {},
-			},
-		});
-		const store = createStateManager(state);
-
-		storeAudioWorkletRuntimeValues(store, state, { audioBufferSize: 128 });
-		storeAudioWorkletRuntimeValues(store, state, { sampleRate: 48000 });
-
-		expect(state.runtime.values.AudioWorkletRuntime).toEqual({
-			audioBufferSize: 128,
-			sampleRate: 48000,
-		});
-	});
-});
+import { getAudioInputBuffers, getAudioOutputBuffers, startAudioRuntime } from './runtime';
 
 describe('AudioWorklet context lifetime', () => {
 	class MockContext {
@@ -112,13 +87,16 @@ describe('AudioWorklet context lifetime', () => {
 			off: vi.fn((name: string) => handlers.delete(name)),
 			dispatch: vi.fn(),
 		} as unknown as EventDispatcher;
-		const cleanup = audioWorkletRuntimeFactory(
+		const cleanup = startAudioRuntime(
 			store,
 			events,
 			() => new Uint8Array(),
 			() => new WebAssembly.Memory({ initial: 1 }),
 			'worklet.js',
-			sharedAudioContext
+			sharedAudioContext as unknown as AudioContext,
+			globalThis.AudioContext,
+			globalThis.AudioWorkletNode,
+			globalThis.navigator
 		);
 		cleanups.push(cleanup);
 		return {
@@ -267,8 +245,8 @@ describe('AudioWorklet context lifetime', () => {
 		port.onmessage({ data: { type: 'initialized', payload: { sampleRate: 48000 } } });
 		port.onmessage({ data: { type: 'runtimeValues', payload: { audioBufferSize: 128 } } });
 
-		expect(editor.events.dispatch).toHaveBeenCalledWith('runtimeInitialized', { sampleRate: 48000 });
-		expect(editor.store.getState().runtime.values.AudioWorkletRuntime).toEqual({ audioBufferSize: 128 });
+		expect(editor.events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
+		expect(editor.store.getState().info.audioRuntime).toEqual({ audioBufferSize: 128, sampleRate: 48000 });
 	});
 
 	it('allows a failed worklet load to be retried without closing the shared context', async () => {
@@ -320,7 +298,7 @@ describe('AudioWorklet runtime config', () => {
 							id: memoryId,
 							numberOfElements: 1,
 							elementWordSize: 4,
-							type: 'int',
+							type: 'int' as const,
 							byteAddress: memoryData.allocationUnitAddress * 4,
 							elementByteLength: 4,
 							allocationUnitCount: 1,
@@ -378,41 +356,6 @@ describe('AudioWorklet runtime config', () => {
 		});
 	}
 
-	it('contributes the default entry and audio buffer address config fields', () => {
-		const runtimeDef = createAudioWorkletRuntimeDef(
-			() => new Uint8Array(),
-			() => null,
-			'worklet.js'
-		);
-
-		expect(runtimeDef.editorConfigSchema?.defaults).toMatchObject({ entry: 'buffer' });
-		expect(runtimeDef.editorConfigSchema?.schema.properties).toMatchObject({
-			entry: { type: 'string' },
-			sampleRate: { type: 'number', minimum: 1 },
-			audioOutBufferLAddress: {
-				format: 'memory-address',
-				anyOf: [
-					{ type: 'integer', minimum: 0 },
-					{ type: 'string', pattern: '^[^:\\s]+:[^:\\s]+$' },
-				],
-			},
-			audioOutBufferRAddress: {
-				format: 'memory-address',
-				anyOf: [
-					{ type: 'integer', minimum: 0 },
-					{ type: 'string', pattern: '^[^:\\s]+:[^:\\s]+$' },
-				],
-			},
-			audioInBufferLAddress: {
-				format: 'memory-address',
-				anyOf: [
-					{ type: 'integer', minimum: 0 },
-					{ type: 'string', pattern: '^[^:\\s]+:[^:\\s]+$' },
-				],
-			},
-		});
-	});
-
 	it('builds stereo output and mono input routes from audio runtime config', () => {
 		const state = createState();
 
@@ -432,12 +375,16 @@ describe('AudioWorklet runtime config', () => {
 			dispatch: vi.fn(),
 		};
 
-		const cleanup = audioWorkletRuntimeFactory(
+		const cleanup = startAudioRuntime(
 			store,
 			events,
 			() => new Uint8Array(),
 			() => null,
-			'worklet.js'
+			'worklet.js',
+			undefined,
+			globalThis.AudioContext,
+			globalThis.AudioWorkletNode,
+			globalThis.navigator
 		);
 
 		expect(events.dispatch).toHaveBeenCalledWith('addDialog', {

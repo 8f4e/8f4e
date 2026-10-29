@@ -12,7 +12,6 @@ import { createButtonPlugin } from '@8f4e/editor-plugin-button';
 
 const compiler = createCompilerPlugin({ resolveInclude });
 const editor = await initEditor(canvas, {
-    runtimeRegistry: {},
     plugins: [compiler.plugin, createButtonPlugin({ writeMemory: compiler.writeMemory })],
 });
 ```
@@ -52,7 +51,7 @@ compilations retain the previous memory and bytecode and publish the diagnostic 
 ## Lifecycle
 
 Editor initialization installs plugins before loading initial content. On editor disposal, core sends `dispose` to
-stop its runtime coordinator before releasing plugins. Plugins are released in reverse installation order, so dependent
+dispose execution plugins before releasing compiler resources. Plugins are released in reverse installation order, so dependent
 feature plugins shut down before the compiler. Compiler cleanup removes its event listener and configuration schema,
 cancels the debounce, ignores late results, rejects pending worker requests, and terminates its worker. Cleanup also
 runs after initialization failures and when another plugin's disposer throws.

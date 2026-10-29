@@ -10,7 +10,6 @@ function setup(installed = true, initialEditorMode: 'edit' | 'view' = 'edit') {
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
-		runtimeRegistry: {},
 		initialEditorMode,
 	});
 	const state = store.getState();

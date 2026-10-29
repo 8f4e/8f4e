@@ -39,7 +39,7 @@ constantsEnd
 
 note
 ; @pos 16 22
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Entries compile into
 independent exported

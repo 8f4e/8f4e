@@ -3,13 +3,13 @@
 ## Project Structure & Module Organization
 - Editor product: the reusable default composition lives in `packages/editor/packages/editor-default/`; the thin
   Vite website lives in `packages/editor/packages/editor-website/`.
-- Compiler integration lives in `packages/editor/plugins/compiler/` (`@8f4e/editor-plugin-compiler`). The default editor constructs and installs it first and injects its live handles into dependent plugins and runtimes. Core emits input-change events and consumes accepted artifacts.
+- Compiler integration lives in `packages/editor/plugins/compiler/` (`@8f4e/editor-plugin-compiler`). The default editor constructs and installs it first and injects its live handles into dependent plugins, including runtimes. Core emits input-change events and consumes accepted artifacts.
 - WebMCP lives in `packages/editor/packages/editor-webmcp/` as an external page-owned adapter bound to one editor's public `editing` handle. The editor website and example/test galleries compose it; gallery project switches dispose and recreate the bridge.
 - Optional editor features live in `packages/editor/plugins/<feature>/` as independent npm/Nx packages named
   `@8f4e/editor-plugin-<feature>`.
 - `editor-plugin-lazy-loader` scans project signals on replacement and a manual menu action. The default editor
   keeps lazy signals and dynamic imports in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano,
-  slider, and crossfade. Other default plugins remain fixed.
+  slider, crossfade, and the audio/worker/test runtimes. Other default plugins remain fixed.
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
   selection, and paste collision renaming. Nested language-level project groups remain core project structure.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`
@@ -132,3 +132,12 @@ Choose errors by detection phase:
 - For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
 
 <!-- nx configuration end-->
+
+- Audio, worker, and test execution are ordinary lazy plugins in `packages/editor/plugins/audio-runtime`,
+  `worker-runtime`, and `test-runtime`. The default editor matches their raw `@config` roots before their schemas load.
+  Each owns `enabled` (default false), schema registration, compiler readiness, execution, and cleanup. They may run
+  together against shared compiler memory. Keep worker/worklet execution code in the existing runtime packages.
+- Runtime constant names are configured with `sampleRateConstantName` (default `SAMPLE_RATE`) and audio's
+  `bufferSizeConstantName` (default `AUDIO_BUFFER_SIZE`). Each contributes under its own environment key. Keep info
+  namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
+  selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.

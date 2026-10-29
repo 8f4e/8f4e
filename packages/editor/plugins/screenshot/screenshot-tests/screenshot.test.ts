@@ -36,7 +36,6 @@ noteEnd`);
 	try {
 		editor = await initEditor(canvas, {
 			initialEditorMode: 'edit',
-			runtimeRegistry: {},
 			initialProject: project,
 			plugins: [createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })],
 		});

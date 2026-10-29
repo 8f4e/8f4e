@@ -1,0 +1,28 @@
+{
+  "name": "@8f4e/editor-plugin-worker-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "worker runtime plugin for the 8f4e editor",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "dependencies": {
+    "@8f4e/editor-core": "*",
+    "@8f4e/runtime-web-worker": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "@8f4e/editor-state-testing": "*",
+    "vitest": "4.1.7",
+    "@8f4e/state-manager": "*"
+  }
+}

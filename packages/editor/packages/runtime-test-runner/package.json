@@ -11,9 +11,13 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./runtime-def": {
-      "types": "./dist/runtimeDef.d.ts",
-      "default": "./dist/runtimeDef.js"
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
+    },
+    "./execute-tests": {
+      "types": "./dist/executeTests.d.ts",
+      "default": "./dist/executeTests.js"
     }
   },
   "sideEffects": false,
@@ -27,12 +31,7 @@
     "@8f4e/language-spec": "*",
     "@8f4e/test-runner": "*"
   },
-  "peerDependencies": {
-    "@8f4e/editor-core": "*",
-    "@8f4e/state-manager": "*"
-  },
   "devDependencies": {
-    "@8f4e/editor-state-testing": "*",
     "@8f4e/compiler": "*",
     "@8f4e/config": "*",
     "@types/node": "24.13.2",

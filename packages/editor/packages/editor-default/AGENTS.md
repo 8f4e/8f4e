@@ -1,6 +1,6 @@
 # Default Editor Package Guidelines
 
-- This package owns the standard editor composition: compiler integration, runtime selection, example source discovery,
+- This package owns the standard editor composition: compiler integration, runtime plugin composition, example source discovery,
   standard-library resolution, and startup policy.
 - Export composition APIs without mounting as an import side effect.
 - Compose the standard plugin set here and expose host overrides through `plugins`; keep feature logic in its
@@ -24,10 +24,10 @@
 
 - Compose watch and stack with the fixed default plugin set. Supply their factories
   with a live reduced-motion preference from the browser; install their overlays before tooltips.
-- Compose `createLazyPluginLoaderPlugin(createLazyPluginRegistry({ writeMemory }))` for optional signal-driven plugins.
+- Compose `createLazyPluginLoaderPlugin` with the per-editor `createLazyPluginRegistry` for optional signal-driven plugins.
   Keep its per-editor registry in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano, slider,
   and crossfade. Match all three wave directives: `wave`, `wave2`, and `wave4`. Import implementations and construct
-  their factories only inside `load()`, using the supplied live memory writer.
+  their factories only inside `load()`, using the supplied live memory writer. Supply runtime imports with compiler artifact getters, the canvas browser window, and the optional shared AudioContext.
   Mounting and initial project notifications do not wait for lazy plugin imports. The loader owns project-load scans,
   its manual scan menu, late installation, and disposal; core keeps the ordinary plugin contract.
 - Include `toggleFavoritePlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Core does
@@ -48,12 +48,20 @@
 - Test URL/session startup coordination in `src/startup.integration.test.ts` using the real default plugin composition.
   Keep each startup plugin's own tests independent of the other plugin.
 
-- Construct `createCompilerPlugin({ resolveInclude })` before the feature plugins and runtime registry. Always prepend its `plugin`, including for custom feature arrays and `plugins: []`. Editor state forwards neither a compiler callback nor a resolver.
+- Construct `createCompilerPlugin({ resolveInclude })` before the feature plugins. Always prepend its `plugin`, including for custom feature arrays and `plugins: []`. Editor state forwards neither a compiler callback nor a resolver.
 - The compiler plugin owns scheduling, worker lifetime, artifacts, diagnostics, and statistics. Return the core editor directly; do not wrap disposal to terminate a separate host compiler service.
 - Supply the compiler plugin's live `writeMemory` to button, switch, slider, piano, crossfade, and keyboard-memory factories. Core has no memory-write callback.
-- Supply lazy runtime loaders as registry dependencies. Loading, caching, and disposal belong to the runtime coordinator; state holds IDs/schemas and derived constant source only.
 
 - The compiler plugin publishes `ProgramArtifacts` (`memoryRef` and `codeBuffer`) for core rendering, without taking an editor argument. The full compilation result stays inside the plugin. Core owns memory-view updates. Derive bytecode size from `codeBuffer.byteLength`; do not restore unused status flags.
 
 - Cached memory-write views belong to the compiler plugin. Pass its writer directly rather than allocating views in the host.
 - Expose the compiler plugin's stable diagnostic read handle as `getCompilerDiagnostics` on the returned core editor. Webpage hosts may pass it to their external WebMCP bridge; mounting the default editor does not register site tools.
+
+- Audio, worker, and test execution are ordinary lazy plugins in `packages/editor/plugins/audio-runtime`,
+  `worker-runtime`, and `test-runtime`. The default editor matches their raw `@config` roots before their schemas load.
+  Each owns `enabled` (default false), schema registration, compiler readiness, execution, and cleanup. They may run
+  together against shared compiler memory. Keep worker/worklet execution code in the existing runtime packages.
+- Runtime constant names are configured with `sampleRateConstantName` (default `SAMPLE_RATE`) and audio's
+  `bufferSizeConstantName` (default `AUDIO_BUFFER_SIZE`). Each contributes under its own environment key. Keep info
+  namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
+  selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.

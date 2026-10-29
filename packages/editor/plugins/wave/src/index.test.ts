@@ -28,7 +28,6 @@ async function setup(code = source, installed = true, name = 'audio') {
 	};
 	const events = createEvents();
 	const store = initState(events, {
-		runtimeRegistry: {},
 		initialEditorMode: 'edit',
 		callbacks: {},
 	});
@@ -211,13 +210,13 @@ describe('wave plugin', () => {
 			allocationUnitAddress: memory.samples.allocationUnitAddress + 16,
 		};
 		test.memoryViews.float32[memory.samples.allocationUnitAddress] = -1;
-		test.events.dispatch('runtimeInitialized');
+		test.events.dispatch('memoryValuesChanged');
 		test.render();
 		expect(
 			vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase)[0][1]
 		).toBe(31);
 		delete memory.samples;
-		test.events.dispatch('runtimeInitialized');
+		test.events.dispatch('memoryValuesChanged');
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});

@@ -1,4 +1,4 @@
-// Message protocol shared by the host runtime (runtimeDef.ts) and the AudioWorklet processor (index.ts).
+// Message protocol shared by the editor runtime plugin and the AudioWorklet processor (index.ts).
 // Type-only, so the worklet bundle stays dependency-free.
 
 export interface AudioOutputBufferRoute {

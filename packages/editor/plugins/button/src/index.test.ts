@@ -29,7 +29,6 @@ async function setup(code = source, installed = true, name = 'controls') {
 		else memoryViews.float32[address] = value;
 	});
 	const store = initState(events, {
-		runtimeRegistry: {},
 		initialEditorMode: 'edit',
 		callbacks: {},
 	});
@@ -226,12 +225,12 @@ describe('button plugin', () => {
 		const memory = test.state.compiler.memoryPlan.modules.controls.memory;
 		const address = memory.gate.allocationUnitAddress + 4;
 		memory.gate = { ...memory.gate, allocationUnitAddress: address };
-		test.events.dispatch('runtimeInitialized');
+		test.events.dispatch('memoryValuesChanged');
 		test.press();
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0, true);
 		delete memory.gate;
-		test.events.dispatch('runtimeInitialized');
+		test.events.dispatch('memoryValuesChanged');
 		test.write.mockClear();
 		test.press();
 		test.render();

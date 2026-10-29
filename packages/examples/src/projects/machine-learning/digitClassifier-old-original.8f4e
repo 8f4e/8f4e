@@ -59,7 +59,7 @@ note
 ; sigmoid activations, and connections remain
 ; visible in the editor.
 
-; @config runtime WebWorkerRuntime
+; @config workerRuntime.enabled true
 noteEnd
 
 note
