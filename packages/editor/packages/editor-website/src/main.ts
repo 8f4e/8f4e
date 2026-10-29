@@ -1,5 +1,5 @@
 import { mountDefaultEditor } from '@8f4e/editor-default';
-import { createEditorWebMcp } from '@8f4e/editor-webmcp';
+import type { EditorWebMcpBridge } from '@8f4e/editor-webmcp';
 
 const canvas = document.querySelector<HTMLCanvasElement>('#glcanvas');
 
@@ -21,10 +21,19 @@ const editor = await mountDefaultEditor(canvas, {
 	storageNamespace: 'editor',
 });
 Object.assign(window, { state: editor.state });
-const bridge = createEditorWebMcp({ document, editor, getCompilerDiagnostics: editor.getCompilerDiagnostics });
-void bridge.ready.catch(error => console.error('Failed to register editor site tools:', error));
+let bridge: EditorWebMcpBridge | undefined;
+let disposed = false;
 
 import.meta.hot?.dispose(() => {
-	bridge.dispose();
+	disposed = true;
+	bridge?.dispose();
 	editor.dispose();
 });
+
+void import('@8f4e/editor-webmcp')
+	.then(({ createEditorWebMcp }) => {
+		if (disposed) return;
+		bridge = createEditorWebMcp({ document, editor, getCompilerDiagnostics: editor.getCompilerDiagnostics });
+		return bridge.ready;
+	})
+	.catch(error => console.error('Failed to load editor site tools:', error));
