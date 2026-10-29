@@ -2413,5 +2413,20 @@
 			"gzip": 168083,
 			"brotli": 135768
 		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-10-29T16:42:58.925Z",
+		"commit": "35bc607f034247595fa0664b3f2ce6e566a3ff58",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.0.21",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.0.21",
+		"bytes": {
+			"raw": 633325,
+			"gzip": 161390,
+			"brotli": 130893
+		}
 	}
 ]
