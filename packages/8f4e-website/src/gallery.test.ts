@@ -5,7 +5,7 @@ import { mountGallery } from './gallery';
 
 vi.mock('@8f4e/editor-minimal', { spy: true });
 
-const source = '8f4e/v1\nentry main\nmodule galleryExample\nint value 1\nmoduleEnd\nentryEnd';
+const source = '8f4e/v1\nentry main\nmodule galleryExample ; @mode edit\nint value 1\nmoduleEnd\nentryEnd';
 const cleanups: Array<() => void> = [];
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
@@ -70,7 +70,7 @@ test('keeps the editor mounted while a project fetch is pending and reveals it o
 	finish(new Response(source));
 	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
 	expect(status.hidden).toBe(true);
-	expect(editor.state.initialProjectState?.modules[0].code).toContain('module galleryExample');
+	expect(editor.state.initialProjectState?.modules[0].code).toContain('module galleryExample ; @mode edit');
 });
 
 test('reveals a successfully loaded empty project', async () => {
@@ -329,7 +329,7 @@ test('replaces site tools and requires a fresh source read for the replacement e
 	await tools.get('get_project_metadata')!.execute({});
 	expect(await tools.get('apply_edits')!.execute(args)).toMatchObject({ error: { code: 'source_required' } });
 	expect(editor.state.codeBlockRendering.codeBlocks.find(block => block.blockType === 'module')!.code[0]).toBe(
-		'module secondExample'
+		'module secondExample ; @mode edit'
 	);
 	expect(await tools.get('get_project')!.execute({})).toContain('module secondExample');
 	expect(await tools.get('apply_edits')!.execute(args)).toBe('Edits applied.');

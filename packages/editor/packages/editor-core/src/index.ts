@@ -5,7 +5,7 @@ import initState, {
 	type EditorNavigationHandle,
 	EMPTY_DEFAULT_PROJECT,
 } from '@8f4e/editor-state';
-import type { EditorConfigSchemaContributionRegistry, EditorMode, InfoRecord, State } from '@8f4e/editor-state-types';
+import type { EditorConfigSchemaContributionRegistry, InfoRecord, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, {
@@ -99,8 +99,6 @@ export interface EditorOptions {
 	/** Capture wheel gestures for viewport panning. Disable this for editors embedded in scrolling pages. */
 	captureWheel?: boolean;
 	featureFlags?: Partial<State['featureFlags']>;
-	/** Mode used when the editor is initialized. */
-	initialEditorMode?: EditorMode;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 	renderStatsIntervalFrames?: number;
 	overlayTexture?: WebUiOptions['overlayTexture'];

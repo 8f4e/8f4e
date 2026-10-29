@@ -20,7 +20,6 @@ export interface MinimalEditorMountOptions {
 	/** Capture wheel gestures for viewport panning. Disable this in scrolling pages. */
 	captureWheel?: boolean;
 	featureFlags?: EditorOptions['featureFlags'];
-	initialEditorMode?: EditorOptions['initialEditorMode'];
 	initialProjectUrl?: string;
 	/** Initial source is installed; compilation and plugin loading continue independently. */
 	onInitialProjectLoaded?: () => void;
@@ -33,7 +32,6 @@ export async function mountMinimalEditor(
 		sharedAudioContext,
 		captureWheel,
 		featureFlags,
-		initialEditorMode = 'edit',
 		initialProjectUrl,
 		onInitialProjectLoaded,
 		onInitialProjectLoadError,
@@ -80,7 +78,6 @@ export async function mountMinimalEditor(
 		],
 		captureWheel,
 		featureFlags: { projectCreation: false, ...featureFlags },
-		initialEditorMode,
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });

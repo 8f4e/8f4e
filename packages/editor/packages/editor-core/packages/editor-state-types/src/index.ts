@@ -186,8 +186,6 @@ export type {
 
 export interface Options {
 	featureFlags?: FeatureFlagsConfig;
-	/** Mode used when the editor is initialized. */
-	initialEditorMode?: EditorMode;
 	callbacks: Callbacks;
 	/** Optional host-provided schema contributions for project-level editor config. */
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;

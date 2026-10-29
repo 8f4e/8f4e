@@ -29,9 +29,9 @@ async function setup(code = source, installed = true, name = 'controls') {
 		else memoryViews.float32[address] = value;
 	});
 	const store = initState(events, {
-		initialEditorMode: 'edit',
 		callbacks: {},
 	});
+	events.dispatch('enterEditMode');
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed
 		? createButtonPlugin({ writeMemory: write }).setup({

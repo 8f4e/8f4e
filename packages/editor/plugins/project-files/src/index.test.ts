@@ -40,7 +40,8 @@ function setup({
 	showOpenMenuItem?: boolean;
 } = {}) {
 	const events = createEvents();
-	const store = initState(events, { callbacks: {}, initialEditorMode: mode });
+	const store = initState(events, { callbacks: {} });
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const handle = createHandle();
 	const browserWindow = {
@@ -70,6 +71,7 @@ function setup({
 		store.dispose();
 	});
 	events.dispatch('loadProject', { project: parseProjectSource(source) });
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const setCode = (comment: string) => {
 		state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'test')!.code = [
 			'module test',

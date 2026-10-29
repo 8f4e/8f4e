@@ -1,5 +1,6 @@
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
+import applyEditorMode from './applyEditorMode';
 
 export default function editorMode(store: StateManager<State>, events: EventDispatcher): void {
 	const state = store.getState();
@@ -9,9 +10,7 @@ export default function editorMode(store: StateManager<State>, events: EventDisp
 			return;
 		}
 
-		store.set('editorMode', 'edit');
-		store.set('featureFlags.editing', true);
-		store.set('featureFlags.codeLineSelection', true);
+		applyEditorMode(store, 'edit');
 	}
 
 	function exitToViewMode(): void {
@@ -19,9 +18,7 @@ export default function editorMode(store: StateManager<State>, events: EventDisp
 			return;
 		}
 
-		store.set('editorMode', 'view');
-		store.set('featureFlags.editing', false);
-		store.set('featureFlags.codeLineSelection', true);
+		applyEditorMode(store, 'view');
 	}
 
 	events.on('enterEditMode', enterEditMode);

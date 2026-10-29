@@ -22,6 +22,7 @@ constantsEnd
 
 note
 ; @pos -171 -5
+; @mode edit
 ; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 50
 ; @config workerRuntime.entry buffer

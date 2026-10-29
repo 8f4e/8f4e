@@ -14,10 +14,12 @@ const source = '8f4e/v1\nentry main\nmodule audio\nint gate 0 ; @future first\nm
 function setup(projectSource = source) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, initialEditorMode: 'edit' });
+	const store = initState(events, { callbacks: {} });
+	events.dispatch('enterEditMode');
 	cleanups.push(store.dispose);
 	const load = (text: string) => events.dispatch('loadProject', { project: parseProjectSource(text) });
 	load(projectSource);
+	events.dispatch('enterEditMode');
 	const state = store.getState();
 	const audio = () => state.codeBlockRendering.codeBlocks.find(block => block.name === 'audio')!;
 	return { store, state, events, load, audio };

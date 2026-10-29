@@ -69,10 +69,9 @@ export default function init(
 	const layout = createLayoutRegistry(codeBlock =>
 		events.dispatch('codeBlockLayoutContributionsChanged', { codeBlock })
 	);
-	const initialEditorMode = options.initialEditorMode ?? (options.featureFlags?.editing ? 'edit' : 'view');
 	const featureFlags = validateFeatureFlags({
 		...options.featureFlags,
-		editing: initialEditorMode === 'edit',
+		editing: false,
 	});
 	type EffectCleanup = () => void;
 	const effectCleanups: EffectCleanup[] = [];
@@ -86,7 +85,6 @@ export default function init(
 	const baseState = {
 		...createDefaultState(),
 		callbacks: options.callbacks,
-		editorMode: initialEditorMode,
 		featureFlags,
 		editorConfigSchemaContributions: options.editorConfigSchemaContributions ?? {},
 	};

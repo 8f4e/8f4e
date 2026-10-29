@@ -1,6 +1,7 @@
 import type { ProjectChange, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
+import applyEditorMode from '../editor-mode/applyEditorMode';
 
 type ProjectStore = Pick<StateManager<State>, 'getState' | 'set'>;
 const restoring = new WeakSet<State>();
@@ -23,6 +24,7 @@ export function restoreProject(
 	restoring.add(state);
 	try {
 		store.set('initialProjectState', project);
+		if (kind === 'replace') applyEditorMode(store, state.globalEditorDirectives.mode ?? 'view');
 	} finally {
 		if (!nested) restoring.delete(state);
 	}

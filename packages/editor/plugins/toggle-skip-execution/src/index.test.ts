@@ -52,8 +52,8 @@ function createContext(code = ['module test', '', 'moduleEnd']) {
 	const events = createEvents();
 	const { store, dispose } = setupState(events, {
 		callbacks: {},
-		initialEditorMode: 'edit',
 	});
+	events.dispatch('enterEditMode');
 	const state = store.getState();
 	const codeBlock = createMockCodeBlock({ code, blockType: 'module', entry: 'main', lastUpdated: 1000 });
 	state.codeBlockRendering.rootCodeBlocks.push(codeBlock);
@@ -131,10 +131,10 @@ describe('toggle skip execution plugin', () => {
 				events,
 				{
 					callbacks: {},
-					initialEditorMode: 'edit',
 				},
 				installed
 			);
+			events.dispatch('enterEditMode');
 			try {
 				const code = blockType === 'module' ? ['module test', 'moduleEnd'] : ['note test', 'noteEnd'];
 				const block = createMockCodeBlock({ code, blockType, entry: 'main' });
@@ -154,8 +154,8 @@ describe('toggle skip execution plugin', () => {
 		const events = createEvents();
 		const { store, dispose } = setupState(events, {
 			callbacks: {},
-			initialEditorMode: 'edit',
 		});
+		events.dispatch('enterEditMode');
 		try {
 			const block = createMockCodeBlock({ code: ['module target', 'moduleEnd'], blockType: 'module', entry: 'main' });
 			const selected = createMockCodeBlock({
@@ -198,8 +198,8 @@ describe('toggle skip execution plugin', () => {
 		events.on('compilationInputChanged', changed);
 		const { store, dispose } = setupState(events, {
 			callbacks: {},
-			initialEditorMode: 'edit',
 		});
+		events.dispatch('enterEditMode');
 		try {
 			const block = createMockCodeBlock({ code: ['module test', 'moduleEnd'], blockType: 'module', entry: 'main' });
 			store.getState().codeBlockRendering.rootCodeBlocks.push(block);
@@ -217,10 +217,11 @@ describe('toggle skip execution plugin', () => {
 		const secondEvents = createEvents();
 		const options = {
 			callbacks: {},
-			initialEditorMode: 'edit' as const,
 		};
 		const { store: first, dispose: disposeFirst } = setupState(firstEvents, options);
+		firstEvents.dispatch('enterEditMode');
 		const { store: second, dispose: disposeSecond } = setupState(secondEvents, options);
+		secondEvents.dispatch('enterEditMode');
 		const block = createMockCodeBlock({ code: ['module test', 'moduleEnd'], blockType: 'module', entry: 'main' });
 		firstEvents.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
 		expect(first.getState().compilerInputRevision).toBe(1);

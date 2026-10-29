@@ -26,9 +26,10 @@ entryEnd`);
 	const compiled = await compileProject(project, { disableSharedMemory: true });
 	const events = createMockEventDispatcher();
 	const store = initState(events, {
-		initialEditorMode: 'edit',
 		callbacks: {},
 	});
+	store.set('editorMode', 'edit');
+	store.set('featureFlags.editing', true);
 	const drawers = createCodeBlockDrawerRegistry();
 	const disposePlugin = createSwitchPlugin({ writeMemory: () => {} }).setup({
 		store,

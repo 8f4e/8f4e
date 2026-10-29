@@ -27,7 +27,8 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 	}) as HTMLCanvasElement;
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, initialEditorMode: 'edit' });
+	const store = initState(events, { callbacks: {} });
+	events.dispatch('enterEditMode');
 	const drawers = createCodeBlockDrawerRegistry();
 	const disposers: Array<() => void> = [];
 	const onInitialProjectLoaded = vi.fn();

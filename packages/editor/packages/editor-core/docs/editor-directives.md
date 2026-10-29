@@ -75,6 +75,27 @@ pointers are inputs, and non-pointers are outputs. Aliases allocate no additiona
 
 ## Supported Directives
 
+### `@mode`
+
+Select the initial editor mode for the whole project. Put exactly one declaration in any project block, including a
+block inside a nested group:
+
+```txt
+note editor
+; @mode edit
+noteEnd
+```
+
+The argument must be `edit` or `view`. Missing, invalid, or duplicate declarations start the project in view mode;
+invalid arguments and duplicates produce editor-directive diagnostics. The compiler ignores this metadata.
+
+The editor applies the mode once when loading or replacing a project, before announcing that the loaded project is
+ready. Later source edits, configuration changes, navigation, and undo/redo do not change the active mode. Loading
+another project resolves its own declaration independently. Mode changes do not create edits or history entries.
+
+The host's `modeToggling` feature flag controls user mode-switching controls. Disabling it still allows the directive
+to choose the initial mode. There is no host initial-mode option or feature-flag fallback.
+
 ### `@public`
 
 Mark the block exported by a `.8f4em` module file when it is imported from the editor module library.

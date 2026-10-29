@@ -51,11 +51,11 @@ export async function setup(
 		memoryViews[isInteger ? 'int32' : 'float32'][address] = value;
 	});
 	const store = initState(events, {
-		initialEditorMode: mode,
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
 		},
 	});
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const dispose = installed
 		? createPlugin({ writeMemory }).setup({
@@ -77,6 +77,7 @@ export async function setup(
 	state.compiler.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	events.dispatch('loadProject', { project });
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	store.set('codeBlockRendering.codeBlocks', [block]);
 	const draw = createDrawContextMock();

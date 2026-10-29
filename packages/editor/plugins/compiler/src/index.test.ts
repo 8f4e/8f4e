@@ -10,7 +10,8 @@ const disposers: Array<() => void> = [];
 function setup() {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, initialEditorMode: 'edit' });
+	const store = initState(events, { callbacks: {} });
+	events.dispatch('enterEditMode');
 	const worker = new FakeWorker();
 	const createWorker = vi.fn(() => worker as unknown as Worker);
 	const compiler = createCompilerPlugin({ createWorker });

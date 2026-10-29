@@ -29,8 +29,8 @@ function setup({
 
 	const store = initState(events, {
 		callbacks: {},
-		initialEditorMode: mode,
 	});
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const disposePlugin = installed
 		? createExampleModulesPlugin({ sources }).setup({
 				store,
@@ -48,6 +48,7 @@ function setup({
 	events.dispatch('loadProject', {
 		project: parseProjectSource('8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd'),
 	});
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const addModule = (slug = 'target', x = 100, y = 112) =>
 		on.mock.calls.find(([name]) => name === ADD_EXAMPLE_MODULE)![1]({ slug, x, y });

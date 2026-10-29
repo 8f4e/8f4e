@@ -22,9 +22,11 @@ function setup(
 	const events = initEvents();
 	const compilationChanged = vi.fn();
 	events.on('compilationInputChanged', compilationChanged);
-	const store = initState(events, { initialEditorMode: 'edit', callbacks: {} });
+	const store = initState(events, { callbacks: {} });
+	events.dispatch('enterEditMode');
 	const editing = createEditorEditingHandle(store, events);
 	events.dispatch('loadProject', { project });
+	events.dispatch('enterEditMode');
 	compilationChanged.mockClear();
 	cleanups.push(() => {
 		editing.dispose();

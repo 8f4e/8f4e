@@ -13,7 +13,6 @@ test('contributes group menus and drag behavior through the real editor', async 
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
-			initialEditorMode: 'edit',
 			plugins: [groupingPlugin],
 			initialProject: parseProjectSource(`8f4e/v1
 constants env
@@ -32,6 +31,7 @@ int value 2
 moduleEnd
 entryEnd`),
 		});
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		editor.pauseRendering();
 		const state = editor.state;
 		const first = state.codeBlockRendering.codeBlocks.find(block => block.name === 'source')!;

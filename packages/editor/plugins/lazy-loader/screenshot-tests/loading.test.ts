@@ -34,7 +34,6 @@ test.each(['project load', 'manual scan'] as const)('loads and renders plot thro
 	let context!: EditorPluginContext;
 	try {
 		editor = await initEditor(canvas, {
-			initialEditorMode: 'edit',
 			initialProject:
 				trigger === 'project load'
 					? project
@@ -60,6 +59,7 @@ test.each(['project load', 'manual scan'] as const)('loads and renders plot thro
 				createLazyPluginLoaderPlugin([{ id: 'plot', matches: project => hasDirective(project, 'plot'), load }]),
 			],
 		});
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		editor.pauseRendering();
 		const block = editor.state.codeBlockRendering.codeBlocks.find(block => block.name === 'audio')!;
 		if (trigger === 'manual scan') {

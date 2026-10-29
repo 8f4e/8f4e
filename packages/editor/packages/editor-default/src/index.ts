@@ -99,7 +99,6 @@ export interface DefaultEditorMountOptions {
 	/** Capture wheel gestures for viewport panning. Disable this for editors embedded in scrolling pages. */
 	captureWheel?: boolean;
 	featureFlags?: EditorOptions['featureFlags'];
-	initialEditorMode?: EditorOptions['initialEditorMode'];
 	initialProjectUrl?: string;
 	/** Initial source is installed; compilation and asset loading continue independently. */
 	onInitialProjectLoaded?: () => void;
@@ -118,7 +117,6 @@ export async function mountDefaultEditor(
 		sharedAudioContext,
 		captureWheel,
 		featureFlags,
-		initialEditorMode,
 		initialProjectUrl,
 		onInitialProjectLoaded,
 		onInitialProjectLoadError,
@@ -151,7 +149,6 @@ export async function mountDefaultEditor(
 		],
 		captureWheel,
 		featureFlags,
-		initialEditorMode,
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 

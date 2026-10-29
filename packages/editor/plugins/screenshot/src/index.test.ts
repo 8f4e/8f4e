@@ -6,12 +6,12 @@ import { createScreenshotPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 
-function setup(installed = true, initialEditorMode: 'edit' | 'view' = 'edit') {
+function setup(installed = true, mode: 'edit' | 'view' = 'edit') {
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
-		initialEditorMode,
 	});
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const blob = new Blob(['png'], { type: 'image/png' });
 	const writable = { write: vi.fn().mockResolvedValue(undefined), close: vi.fn().mockResolvedValue(undefined) };

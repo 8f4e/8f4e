@@ -36,8 +36,8 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 	});
 	const store = initState(events, {
 		callbacks: { readClipboardText: async () => clipboard, writeClipboardText },
-		initialEditorMode: mode,
 	});
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const disposePlugin = installed
 		? groupingPlugin.setup({
 				store,
@@ -49,6 +49,7 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 			})
 		: () => {};
 	events.dispatch('loadProject', { project: parseProjectSource(code) });
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const block = (name: string) => state.codeBlockRendering.codeBlocks.find(candidate => candidate.name === name)!;
 	const openMenu = async (target: CodeBlockGraphicData = block('first')) => {

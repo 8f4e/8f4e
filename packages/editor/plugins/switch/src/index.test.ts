@@ -44,11 +44,11 @@ async function setup(code = source, installed = true) {
 		else memoryViews.float32[address] = value;
 	});
 	const store = initState(events, {
-		initialEditorMode: 'edit',
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
 		},
 	});
+	events.dispatch('enterEditMode');
 	const drawers = createCodeBlockDrawerRegistry();
 	const disposePlugin = installed
 		? createSwitchPlugin({ writeMemory: write }).setup({

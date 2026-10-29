@@ -26,8 +26,8 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
-		initialEditorMode: 'edit',
 	});
+	events.dispatch('enterEditMode');
 	const memory = new Uint8Array(65536);
 	const getMemoryBytes = vi.fn<() => Uint8Array | undefined>(() => (withMemory ? memory : undefined));
 	const disposePlugin = installed
@@ -46,6 +46,7 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 	});
 	const project = parseProjectSource(source);
 	events.dispatch('loadProject', { project });
+	events.dispatch('enterEditMode');
 	if (compile) {
 		const compiled = await compileProject(project, { disableSharedMemory: true });
 		store.set('compiler.compiledModules', compiled.compiledModules);

@@ -23,10 +23,10 @@ entryEnd`;
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
-			initialEditorMode: 'edit',
 			initialProject: parseProjectSource(source),
 			plugins: [removeMemoryConnectionsPlugin],
 		});
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		const state = editor.state;
 		await vi.waitFor(() =>
 			expect(state.codeBlockRendering.codeBlocks.some(block => block.name === 'target')).toBe(true)

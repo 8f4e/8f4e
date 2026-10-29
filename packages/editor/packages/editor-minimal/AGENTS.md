@@ -2,7 +2,8 @@
 
 - Own the embedded composition for the product homepage and example/test galleries. Build directly on editor-core;
   do not import editor-default or its built-in module catalog.
-- Keep live editing and runtime controls available. Start in edit mode and disable project creation by default.
+- Keep live editing and runtime controls available. Let the project's `@mode` directive select its initial mode
+  (view by default), and disable project creation by default.
   Hosts own wheel capture, mode-toggle preferences, page URLs, loading UI, visibility, and WebMCP registration.
 - Construct the compiler first and inject its live handles into dependent plugin factories. Return the core editor
   with its compiler diagnostic getter; plugin disposal owns compiler, input, and runtime cleanup.

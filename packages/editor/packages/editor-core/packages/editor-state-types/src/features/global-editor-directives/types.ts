@@ -4,6 +4,7 @@
  */
 
 import type { ProjectModuleId } from '@8f4e/language-spec';
+import type { EditorMode } from '../../index';
 import type { CodeError } from '../../shared/types';
 import type { CodeBlockType } from '../code-blocks/types';
 import type { EditorConfigEntry } from '../editor-config/types';
@@ -15,6 +16,8 @@ export interface ParsedGlobalEditorDirective {
 }
 
 export interface ResolvedGlobalEditorDirectives {
+	/** Initial mode applied once when replacing the project. */
+	mode?: EditorMode;
 	/** Source entries for config validation/error reporting */
 	configEntries?: EditorConfigEntry[];
 }
