@@ -25,7 +25,6 @@ export function registerWaveLayout(
 				? [
 						{
 							data,
-							sourceLineIndex: directive.sourceLineIndex,
 							heightRows: heights[directive.name as keyof typeof heights],
 						},
 					]
@@ -33,7 +32,7 @@ export function registerWaveLayout(
 		});
 		contribution.update(codeBlock, {
 			verticalSpaceAfterSourceLine: items.map(item => ({
-				sourceLineIndex: item.sourceLineIndex,
+				sourceLineIndex: item.data.lineNumber,
 				heightInRows: item.heightRows,
 			})),
 		});

@@ -23,11 +23,15 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 			const activate = async (entry: LazyEditorPlugin) => {
 				pending.add(entry.id);
 				try {
-					const plugin = await entry.load();
+					let plugin: EditorPlugin;
+					try {
+						plugin = await entry.load();
+					} catch (error) {
+						if (!disposed) logError(store.getState(), `Failed to load plugin ${entry.id}: ${String(error)}`);
+						return;
+					}
 					if (disposed) return;
 					installed.set(entry.id, plugin.setup(context));
-				} catch (error) {
-					if (!disposed) logError(store.getState(), `Failed to load plugin ${entry.id}: ${String(error)}`);
 				} finally {
 					pending.delete(entry.id);
 				}

@@ -11,10 +11,10 @@ export function registerButtonLayout(
 	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
 		const items = parseEditorDirectives(graphicData.code, [{ name: 'button' }]).flatMap(directive => {
 			const data = createButtonDirectiveData(directive.args, directive.sourceLineIndex);
-			return data ? [{ data, sourceLineIndex: directive.sourceLineIndex }] : [];
+			return data ? [data] : [];
 		});
 		buttonsByBlock.set(graphicData, []);
-		items.forEach(({ data }) => {
+		items.forEach(data => {
 			const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(graphicData), data.id)?.memory;
 			if (!memory) return;
 			const row = graphicData.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;

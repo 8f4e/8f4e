@@ -12,13 +12,13 @@ export function registerCrossfadeLayout(
 	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
 		const items = parseEditorDirectives(graphicData.code, [{ name: 'crossfade' }]).flatMap(directive => {
 			const data = createCrossfadeDirectiveData(directive.args, directive.sourceLineIndex);
-			return data ? [{ data, sourceLineIndex: directive.sourceLineIndex }] : [];
+			return data ? [data] : [];
 		});
 		contribution.update(graphicData, {
-			verticalSpaceAfterSourceLine: items.map(item => ({ sourceLineIndex: item.sourceLineIndex, heightInRows: 2 })),
+			verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.lineNumber, heightInRows: 2 })),
 		});
 		crossfadesByBlock.set(graphicData, []);
-		items.forEach(({ data }) => {
+		items.forEach(data => {
 			const scope = getCodeBlockMemoryScope(graphicData);
 			const leftMemory = resolveMemoryIdentifier(state, scope, data.leftMemoryId);
 			const rightMemory = resolveMemoryIdentifier(state, scope, data.rightMemoryId);

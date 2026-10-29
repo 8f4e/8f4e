@@ -17,13 +17,13 @@ export function registerPlotLayout(
 	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
 		const items = parseEditorDirectives(graphicData.code, [{ name: 'plot' }]).flatMap(directive => {
 			const data = createPlotDirectiveData(directive.args, directive.sourceLineIndex);
-			return data ? [{ data, sourceLineIndex: directive.sourceLineIndex }] : [];
+			return data ? [data] : [];
 		});
 		contribution.update(graphicData, {
-			verticalSpaceAfterSourceLine: items.map(item => ({ sourceLineIndex: item.sourceLineIndex, heightInRows: 8 })),
+			verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.lineNumber, heightInRows: 8 })),
 		});
 		plotsByBlock.set(graphicData, []);
-		items.forEach(({ data }) => {
+		items.forEach(data => {
 			const scope = getCodeBlockMemoryScope(graphicData);
 			const startAddress = resolveMemoryIdentifier(state, scope, data.startAddressMemoryId);
 			const length = resolveElementCount(data.length, scope, state);

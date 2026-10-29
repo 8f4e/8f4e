@@ -5,7 +5,7 @@ import type { SliderDirectiveData } from '../helpers/data';
 import { createSliderDirectiveData } from '../helpers/data';
 import type { Slider } from '../types';
 
-export function resolveSliderLayout(
+function resolveSliderLayout(
 	slider: SliderDirectiveData,
 	graphicData: CodeBlockGraphicData,
 	state: State,

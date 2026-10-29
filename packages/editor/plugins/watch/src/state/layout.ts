@@ -13,10 +13,10 @@ export function registerWatchLayout(
 			{ name: 'watch', allowTrailingComment: true, aliases: ['w'] },
 		]).flatMap(directive => {
 			const data = createWatchDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine);
-			return data ? [{ data, sourceLineIndex: directive.sourceLineIndex }] : [];
+			return data ? [data] : [];
 		});
 		watchesByBlock.set(graphicData, []);
-		items.forEach(({ data }) => {
+		items.forEach(data => {
 			const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(graphicData), data.memoryId);
 			if (!memory) {
 				return;

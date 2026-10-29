@@ -11,6 +11,7 @@
   and explicit cleanup. Ignore import completion after disposal. Layout recalculation belongs to the independent
   layout service, never to the loader or directive registry.
 - Plugins install in completion order. There is no dependency resolver, unloading policy, or async setup contract.
+- Log and retry import failures only. Setup errors propagate through activation under the trusted-plugin contract.
 - Run `npx nx run @8f4e/editor-plugin-lazy-loader:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-lazy-loader:test:screenshot`.
 - Browser tests use a real editor and dynamically imported plot. Keep plot-specific rendering details in plot's tests.

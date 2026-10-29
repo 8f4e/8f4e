@@ -43,7 +43,7 @@ function createPianoKeyboardKeys(
 	});
 }
 
-export function resolvePianoLayout(
+function resolvePianoLayout(
 	pianoKeyboard: PianoDirectiveData,
 	graphicData: CodeBlockGraphicData,
 	state: State,

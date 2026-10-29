@@ -20,14 +20,14 @@ export function registerMeterLayout(
 		const items = parseEditorDirectives(graphicData.code, [{ name: 'meter', allowTrailingComment: true }]).flatMap(
 			directive => {
 				const data = createMeterDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine);
-				return data ? [{ data, sourceLineIndex: directive.sourceLineIndex }] : [];
+				return data ? [data] : [];
 			}
 		);
 		contribution.update(graphicData, {
-			verticalSpaceAfterSourceLine: items.map(item => ({ sourceLineIndex: item.sourceLineIndex, heightInRows: 1 })),
+			verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.lineNumber, heightInRows: 1 })),
 		});
 		metersByBlock.set(graphicData, []);
-		items.forEach(({ data }) => {
+		items.forEach(data => {
 			const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(graphicData), data.memoryId);
 			const valueSpec = memory ? resolveDirectOrPointerTypedValueSpec(memory) : undefined;
 

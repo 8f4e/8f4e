@@ -42,7 +42,8 @@ does not unload it. Entries install in import-completion order; keep order-depen
 Modules may be shared by JavaScript's import cache; setup and cleanup remain separate for every editor. The loader
 calls each plugin's ordinary `setup(context)` and owns its returned disposer. Plugins continue to own their listeners
 and registrations. Editor disposal prevents pending imports from installing and releases installed plugins in reverse
-installation order. Import/setup failures are reported in the editor log; another scan can retry.
+installation order. Import failures are reported in the editor log; another scan can retry. Setup errors propagate
+through the asynchronous activation, following the trusted-plugin error contract.
 
 Verify from the workspace root:
 

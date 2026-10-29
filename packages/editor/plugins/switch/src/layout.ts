@@ -21,10 +21,10 @@ export function registerSwitchLayout(
 	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
 		const items = parseEditorDirectives(graphicData.code, [{ name: 'switch' }]).flatMap(directive => {
 			const data = createSwitchDirectiveData(directive.args, directive.sourceLineIndex);
-			return data ? [{ data, sourceLineIndex: directive.sourceLineIndex }] : [];
+			return data ? [data] : [];
 		});
 		widgets.set(graphicData, []);
-		items.forEach(({ data }) => {
+		items.forEach(data => {
 			const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(graphicData), data.id)?.memory;
 			if (!memory) return;
 			const row = graphicData.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
