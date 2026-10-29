@@ -59,6 +59,11 @@ project contents or poll editor state to infer completion.
 Browser integration tests cover both website views with delayed responses, empty projects, failure/retry, early
 callbacks, and switching examples while a fetch is pending.
 
+The galleries dynamically import their WebMCP bridge after the selected editor has mounted and its project source
+has loaded. The bridge and its search catalog stay outside the initial script graph. Editors can be revealed and
+replaced while that import is pending; a late import connects only to the current editor. Bridge loading or
+registration failures are logged independently of project loading.
+
 ## Compiler test gallery
 
 The `/tests/` page discovers `packages/compiler/tests/**/*.test.8f4e` through the Vite glob in `src/tests/projects.ts`.

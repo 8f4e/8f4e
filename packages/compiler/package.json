@@ -28,6 +28,7 @@
     "@8f4e/program-composer": "*",
     "@8f4e/project-preparser": "*",
     "@8f4e/sub-program": "*",
+    "@8f4e/tokenizer": "*",
     "@8f4e/wasm-codegen": "*"
   },
   "devDependencies": {

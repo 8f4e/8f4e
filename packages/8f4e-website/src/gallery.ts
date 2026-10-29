@@ -1,5 +1,5 @@
 import { type DefaultEditorInstance, type DefaultEditorMountOptions, mountDefaultEditor } from '@8f4e/editor-default';
-import { createEditorWebMcp, type EditorWebMcpBridge } from '@8f4e/editor-webmcp';
+import type { EditorWebMcpBridge } from '@8f4e/editor-webmcp';
 import { getProjectId, withProjectId } from './gallery-url';
 import { sharedAudioContext } from './shared-audio-context';
 
@@ -162,14 +162,23 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 			let failed = false;
 			let loaded = false;
 			let mountedEditor: DefaultEditorInstance | undefined;
-			const connectBridge = () => {
-				if (!loaded || !mountedEditor || activeBridge || disposed || failed || currentRevision !== revision) return;
-				activeBridge = createEditorWebMcp({
-					document,
-					editor: mountedEditor,
-					getCompilerDiagnostics: mountedEditor.getCompilerDiagnostics,
-				});
-				void activeBridge.ready.catch(error => console.error('Failed to register gallery site tools:', error));
+			let bridgeStarted = false;
+			const connectBridge = async () => {
+				if (!loaded || !mountedEditor || bridgeStarted || disposed || failed || currentRevision !== revision) return;
+				bridgeStarted = true;
+				const editor = mountedEditor;
+				try {
+					const { createEditorWebMcp } = await import('@8f4e/editor-webmcp');
+					if (disposed || failed || currentRevision !== revision) return;
+					activeBridge = createEditorWebMcp({
+						document,
+						editor,
+						getCompilerDiagnostics: editor.getCompilerDiagnostics,
+					});
+					await activeBridge.ready;
+				} catch (error) {
+					console.error('Failed to load gallery site tools:', error);
+				}
 			};
 			const showError = (error: unknown) => {
 				if (disposed || currentRevision !== revision) {
@@ -189,7 +198,7 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 			const reveal = () => {
 				if (disposed || failed || currentRevision !== revision) return;
 				loaded = true;
-				connectBridge();
+				void connectBridge();
 				window.clearTimeout(loadTimeout);
 				revealFrame = window.requestAnimationFrame(() => {
 					if (disposed || failed || currentRevision !== revision) return;
@@ -221,7 +230,7 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 				}
 				activeEditor = editor;
 				mountedEditor = editor;
-				connectBridge();
+				void connectBridge();
 			} catch (error) {
 				showError(error);
 			}
