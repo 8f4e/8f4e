@@ -31,7 +31,7 @@
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   `editor-plugin-lazy-loader` scans project signals on replacement or a manual menu action, installs matching plugins,
   and disposes them with the editor. The default editor's lightweight registry dynamically imports plot for `@plot`;
-  other default plugins remain fixed. Core provides generic layout refresh for late directives.
+  other default plugins remain fixed. Core provides independent layout contributions and subscriptions; directive parsing and layout remain separate.
   Session restoration/autosaving and project URL loading live in `editor-plugin-session-persistence` and
   `editor-plugin-project-url-loader`. The default host supplies storage/fetch and chooses initial URL priority.
   The standard plugin set is composed in `editor-default`.

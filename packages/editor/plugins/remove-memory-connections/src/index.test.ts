@@ -25,6 +25,7 @@ function setup(
 				events,
 				menus: store.menus,
 				directives: store.directives,
+				layout: store.layout,
 				drawers: createCodeBlockDrawerRegistry(),
 			})
 		: () => {};

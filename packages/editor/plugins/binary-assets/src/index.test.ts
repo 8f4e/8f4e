@@ -37,6 +37,7 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 				events,
 				menus: store.menus,
 				directives: store.directives,
+				layout: store.layout,
 				drawers: createCodeBlockDrawerRegistry(),
 			})
 		: () => {};

@@ -20,6 +20,7 @@ it('loads plot from the default registry after session restoration', async () =>
 		events,
 		menus: store.menus,
 		directives: store.directives,
+		layout: store.layout,
 		drawers: createCodeBlockDrawerRegistry(),
 	};
 	const disposeSession = createSessionPersistencePlugin({

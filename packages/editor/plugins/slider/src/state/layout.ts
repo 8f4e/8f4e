@@ -1,19 +1,14 @@
-import { gapCalculator } from '@8f4e/editor-state';
+import { gapCalculator, parseEditorDirectives } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
-import type {
-	CodeBlockGraphicData,
-	DirectiveDerivedState,
-	DirectiveLayoutCallbacks,
-	State,
-} from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import type { SliderDirectiveData } from '../helpers/data';
+import { createSliderDirectiveData } from '../helpers/data';
 import type { Slider } from '../types';
 
-function resolveSliderDirectiveWidget(
+export function resolveSliderLayout(
 	slider: SliderDirectiveData,
 	graphicData: CodeBlockGraphicData,
 	state: State,
-	directiveState: DirectiveDerivedState,
 	sliders: Slider[]
 ): void {
 	if (!graphicData.name) {
@@ -30,7 +25,7 @@ function resolveSliderDirectiveWidget(
 	const max = slider.max ?? (memory.memory.isInteger ? 127 : 1);
 
 	const displayRow =
-		directiveState.displayModel.sourceLineIndexToDisplayRow[slider.sourceLineIndex] ?? slider.sourceLineIndex;
+		graphicData.displayModel.sourceLineIndexToDisplayRow[slider.sourceLineIndex] ?? slider.sourceLineIndex;
 
 	sliders.push({
 		moduleId: memory.target.moduleId,
@@ -49,13 +44,25 @@ function resolveSliderDirectiveWidget(
 	});
 }
 
-export function createSliderDirectiveLayoutCallbacks(
-	slider: SliderDirectiveData,
+export function registerSliderLayout(
+	layout: EditorLayoutRegistry,
 	slidersByBlock: WeakMap<CodeBlockGraphicData, Slider[]>
-): DirectiveLayoutCallbacks {
-	return {
-		onBlockLayoutReady: (graphicData, state, directiveState) => {
-			resolveSliderDirectiveWidget(slider, graphicData, state, directiveState, slidersByBlock.get(graphicData)!);
-		},
+): () => void {
+	const contribution = layout.createContribution();
+	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
+		const items = parseEditorDirectives(codeBlock.code, [{ name: 'slider' }]).flatMap(directive => {
+			const data = createSliderDirectiveData(directive.args, directive.sourceLineIndex);
+			return data ? [data] : [];
+		});
+		contribution.update(codeBlock, {
+			verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.sourceLineIndex, heightInRows: 2 })),
+		});
+		const widgets: Slider[] = [];
+		slidersByBlock.set(codeBlock, widgets);
+		for (const data of items) resolveSliderLayout(data, codeBlock, state, widgets);
+	});
+	return () => {
+		unsubscribe();
+		contribution.dispose();
 	};
 }

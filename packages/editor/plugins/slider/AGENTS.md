@@ -5,10 +5,10 @@
   `src/helpers/`. Keep tests beside their implementations.
 - Export an `EditorPlugin` without installation as an import side effect. Editor-default selects the standard plugins.
 - Keep slider data in a per-instance `slidersByBlock` WeakMap; do not attach it to core state.
-- Use `addVerticalSpaceAfterSourceLine`, `onBlockLayoutReady`, and public memory APIs. Generic parsing and declaration
+- Use owned layout contributions, `layout.subscribe`, and public memory APIs. Generic parsing and declaration
   editing remain in core.
 - Consume active drags with a capture listener so viewport panning and block dragging do not run for slider moves.
-- Own every directive, drawer, menu, and event registration. Return an explicit disposer.
+- Own every layout, drawer, menu, and event registration. Return an explicit disposer.
 - Save default-value edits through `applyCodeBlockSourceEdits` with `affectsCompilation: true`, including edits to
   multiple backing owners in one operation. Do not publish a second project or compiler change.
 - Select shared base-palette shades; do not add feature-specific configurable colors.
@@ -17,3 +17,6 @@
 - Cover actual pointer events, live memory, ranges and steps, aliases, source edits, saving, cleanup, and isolation.
 
 - Receive a required `writeMemory(address, value, isInteger)` through the plugin factory. Do not route writes through editor state. The injected writer must use the current memory after recompilation or growth.
+
+- Keep layout independent of directive registration. Read source through `parseEditorDirectives`; own contribution
+  updates and `layout.subscribe` geometry. Unsubscribe before disposing requests. Do not attach layout to directive drafts.

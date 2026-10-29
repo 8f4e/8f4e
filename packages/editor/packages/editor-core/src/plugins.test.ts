@@ -7,7 +7,14 @@ import { type EditorPlugin, installEditorPlugins } from './plugins';
 function createContext() {
 	const events = createMockEventDispatcher();
 	const store = initState(events, { callbacks: {}, runtimeRegistry: {} });
-	return { store, events, menus: store.menus, directives: store.directives, drawers: createCodeBlockDrawerRegistry() };
+	return {
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		drawers: createCodeBlockDrawerRegistry(),
+	};
 }
 
 describe('editor plugins', () => {

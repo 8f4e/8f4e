@@ -10,8 +10,10 @@ import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
 import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
+import { directiveDefinitions } from '../code-blocks/features/directives/registry';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
+import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import codeEditing from '../code-editing/effect';
 import historyTracking from '../edit-history/effect';
 import { createSchemaEditorConfigValidator } from '../editor-config/schemaValidator';
@@ -108,7 +110,12 @@ describe('compiler input revision', () => {
 	});
 
 	it('ignores mouse selection, line selection, caret movement, and block navigation', () => {
-		rendering(store, events);
+		rendering(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		codeBlockDragger(store, events);
 		codeBlockNavigation(store, events);
 		codeEditing(store, events);
@@ -137,7 +144,12 @@ describe('compiler input revision', () => {
 		block.code.splice(1, 0, '; @pos 0 0', '; @config example 120');
 		parsedDirectivesUpdater(store);
 		globalEditorDirectivesEffect(store);
-		rendering(store, events);
+		rendering(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		codeBlockDragger(store, events);
 		store.set('codeBlockRendering.codeBlocks', state.codeBlockRendering.codeBlocks);
 		dispatch('mousedown', { x: 32, y: 8 });
@@ -217,7 +229,12 @@ describe('compiler input revision', () => {
 	it('announces project loading, undo, and redo without requiring a selected block', () => {
 		state.featureFlags.historyTracking = true;
 		projectLoading(store, events);
-		rendering(store, events);
+		rendering(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		historyTracking(store, events);
 		dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT } });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();

@@ -1,8 +1,8 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { drawButtons } from './drawer/draw';
-import { createButtonDirective } from './state/directive';
 import { registerButtonInteraction } from './state/interaction';
+import { registerButtonLayout } from './state/layout';
 import type { ButtonWidget } from './types';
 
 export function createButtonPlugin({
@@ -12,10 +12,10 @@ export function createButtonPlugin({
 }): EditorPlugin {
 	return {
 		id: 'button',
-		setup: ({ store, events, directives, drawers }) => {
+		setup: ({ store, events, layout, drawers }) => {
 			const state = store.getState();
 			const buttonsByBlock = new WeakMap<CodeBlockGraphicData, ButtonWidget[]>();
-			const unregisterDirective = directives.register(createButtonDirective(buttonsByBlock));
+			const unregisterLayout = registerButtonLayout(layout, buttonsByBlock);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawButtons(draw, state, buttonsByBlock.get(codeBlock) ?? [], memoryViews);
 			});
@@ -23,7 +23,7 @@ export function createButtonPlugin({
 			return () => {
 				unregisterInteraction();
 				unregisterDrawer();
-				unregisterDirective();
+				unregisterLayout();
 			};
 		},
 	};

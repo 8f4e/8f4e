@@ -215,6 +215,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				events,
 				menus: store.menus,
 				directives: store.directives,
+				layout: store.layout,
 				drawers,
 			})
 		);

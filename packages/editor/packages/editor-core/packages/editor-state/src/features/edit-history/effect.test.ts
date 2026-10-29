@@ -7,7 +7,9 @@ import rendering from '../code-blocks/effect';
 import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
 import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
+import { directiveDefinitions } from '../code-blocks/features/directives/registry';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
+import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import codeEditing from '../code-editing/effect';
 import globalEditorDirectivesEffect from '../global-editor-directives/effect';
 import projectImport from '../project-loading/effect';
@@ -89,7 +91,12 @@ describe('history tracking with real project mutations', () => {
 		state.codeBlockRendering.selectedCodeBlock = block;
 		projectImport(store, events);
 		parsedDirectivesUpdater(store);
-		rendering(store, events);
+		rendering(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		historyTracking(store, events);
 	});
 

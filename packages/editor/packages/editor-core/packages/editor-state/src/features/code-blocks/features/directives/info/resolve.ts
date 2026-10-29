@@ -1,17 +1,11 @@
-import type { DirectiveDerivedState, DirectiveLayoutCallbacks } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import gapCalculator from '~/features/code-editing/gapCalculator';
 import type { InfoDirectiveData } from './data';
 import type { InfoLayout } from './entries';
 
-type DirectiveLayoutResolver = NonNullable<DirectiveLayoutCallbacks['onBlockLayoutReady']>;
+const rowCountsByGraphicData = new WeakMap<CodeBlockGraphicData, Map<string, number>>();
 
-const rowCountsByGraphicData = new WeakMap<Parameters<DirectiveLayoutResolver>[0], Map<string, number>>();
-
-function trackInfoRowCount(
-	info: InfoDirectiveData,
-	layout: InfoLayout,
-	graphicData: Parameters<DirectiveLayoutResolver>[0]
-): void {
+function trackInfoRowCount(info: InfoDirectiveData, layout: InfoLayout, graphicData: CodeBlockGraphicData): void {
 	let rowCounts = rowCountsByGraphicData.get(graphicData);
 	if (!rowCounts) {
 		rowCounts = new Map<string, number>();
@@ -26,18 +20,18 @@ function trackInfoRowCount(
 	rowCounts.set(info.id, layout.rowCount);
 }
 
-function resolveInfoDirectiveWidget(
+export function updateInfoPanel(
 	info: InfoDirectiveData,
 	layout: InfoLayout,
-	graphicData: Parameters<DirectiveLayoutResolver>[0],
-	state: Parameters<DirectiveLayoutResolver>[1],
-	directiveState: DirectiveDerivedState
+	graphicData: CodeBlockGraphicData,
+	state: State
 ): void {
+	trackInfoRowCount(info, layout, graphicData);
 	if (layout.rowCount === 0) {
 		return;
 	}
 
-	const displayRow = directiveState.displayModel.sourceLineIndexToDisplayRow[info.lineNumber] ?? info.lineNumber;
+	const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[info.lineNumber] ?? info.lineNumber;
 	const x = (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	const width = Math.max(state.viewport.vGrid, graphicData.width - x);
 
@@ -50,24 +44,4 @@ function resolveInfoDirectiveWidget(
 		rowCount: layout.rowCount,
 		keyColumnWidth: layout.keyColumnWidth,
 	});
-}
-
-export function createInfoDirectiveLayoutCallbacks(
-	info: InfoDirectiveData,
-	layout: InfoLayout
-): DirectiveLayoutCallbacks {
-	return {
-		beforeGraphicDataWidthCalculation: graphicData => {
-			trackInfoRowCount(info, layout, graphicData);
-			if (layout.maxEntryWidth > 0) {
-				graphicData.minGridWidth = Math.max(
-					graphicData.minGridWidth ?? 0,
-					layout.maxEntryWidth + graphicData.lineNumberColumnWidth + 3
-				);
-			}
-		},
-		onBlockLayoutReady: (graphicData, state, directiveState) => {
-			resolveInfoDirectiveWidget(info, layout, graphicData, state, directiveState);
-		},
-	};
 }

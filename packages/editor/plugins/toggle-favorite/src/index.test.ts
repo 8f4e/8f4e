@@ -21,6 +21,7 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 				events,
 				menus: store.menus,
 				directives: store.directives,
+				layout: store.layout,
 				drawers: createCodeBlockDrawerRegistry(),
 			})
 		: () => {};

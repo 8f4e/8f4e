@@ -42,6 +42,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 				events,
 				menus: store.menus,
 				directives: store.directives,
+				layout: store.layout,
 				drawers,
 			})
 		: () => {};
@@ -346,7 +347,7 @@ describe('piano plugin', () => {
 		expect(bare.codeBlock.gaps.size).toBe(0);
 		expect(await bare.menuItems()).toEqual([]);
 	});
-	it('unregisters drawing, interaction, menu actions, and directive layout on disposal', async () => {
+	it('unregisters drawing, interaction, menu actions, and layout contributions on disposal', async () => {
 		const test = await setup();
 		test.dispose();
 		test.render();

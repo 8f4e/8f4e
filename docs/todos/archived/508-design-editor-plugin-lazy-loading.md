@@ -29,8 +29,8 @@ loads. Nested groups participate. The **Load plugins used by project** menu acti
 pasting, module insertion, and history changes do not scan automatically.
 
 Imports run in the background without delaying mount or project-load notifications. Loaded plugins use the existing
-synchronous setup contract, then `refreshCodeBlockLayouts` rederives the current slice and rendered source without
-source edits or compilation. Plugins installed late must read current state rather than expect startup events to replay.
+synchronous setup contract. Independent layout contributions automatically rederive the current slice and rendered
+source when their requests change, without source edits or compilation. The loader has no layout refresh policy. Plugins installed late must read current state rather than expect startup events to replay.
 
 Overlapping scans share pending imports per editor. Requested plugins remain installed until editor disposal,
 including if the project changes during import. Entries install as imports complete; order-dependent plugins stay

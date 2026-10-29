@@ -20,7 +20,7 @@ References use the public editor-state memory helpers, including memory exposed 
 When the element count comes from runtime memory, a zero or negative count draws no samples. Layout space remains
 allocated by the directive so subsequent source lines stay in place.
 
-Cleanup unregisters the directive and drawer. Omit the plugin to remove its behavior and layout space.
+Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.
 
 ```sh
 npx nx run @8f4e/editor-plugin-plot:build

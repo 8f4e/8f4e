@@ -25,6 +25,7 @@ const storeState: {
 const store = {
 	menus: { registerItem: vi.fn(() => () => {}), registerMenu: vi.fn(() => () => {}) },
 	directives: { register: vi.fn(() => () => {}) },
+	layout: { createContribution: vi.fn(), subscribe: vi.fn(() => () => {}) },
 	getState: vi.fn(() => storeState),
 	set: vi.fn((path: string, value: unknown) => {
 		if (path === 'info.graphics') {
@@ -188,6 +189,7 @@ describe('editor init', () => {
 			events,
 			menus: store.menus,
 			directives: store.directives,
+			layout: store.layout,
 			drawers: expect.objectContaining({ registerCodeBlockDrawer: expect.any(Function) }),
 		});
 		expect(vi.mocked(initState).mock.invocationCallOrder.at(-1)).toBeLessThan(

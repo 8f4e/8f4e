@@ -8,7 +8,8 @@
 - Match the current serialized root project, including nested groups. Reuse core's generic directive parser in
   `hasDirective`; do not import the matched plugin to discover its signals.
 - Keep loaded plugins until editor disposal. Deduplicate pending imports per editor; retain ordinary plugin setup
-  and explicit cleanup. Ignore import completion after disposal and refresh core layout after successful setup.
+  and explicit cleanup. Ignore import completion after disposal. Layout recalculation belongs to the independent
+  layout service, never to the loader or directive registry.
 - Plugins install in completion order. There is no dependency resolver, unloading policy, or async setup contract.
 - Run `npx nx run @8f4e/editor-plugin-lazy-loader:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-lazy-loader:test:screenshot`.

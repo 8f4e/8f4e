@@ -62,13 +62,13 @@ describe('createWebUiRenderProjection', () => {
 		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells).toHaveLength(3);
 
 		block.gaps = new Map([[0, { size: 4 }]]);
-		const layoutRefreshed = vi.mocked(events.on).mock.calls.find(([name]) => name === 'refreshCodeBlockLayouts')?.[1];
+		const layoutRefreshed = vi.mocked(events.on).mock.calls.find(([name]) => name === 'codeBlockLayoutsChanged')?.[1];
 		layoutRefreshed?.({});
 		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells).toHaveLength(5);
 
 		projection.dispose();
 		expect(store.unsubscribe).toHaveBeenCalledWith('codeBlockRendering', expect.any(Function));
 		expect(events.off).toHaveBeenCalledWith('runtimeInitialized', expect.any(Function));
-		expect(events.off).toHaveBeenCalledWith('refreshCodeBlockLayouts', expect.any(Function));
+		expect(events.off).toHaveBeenCalledWith('codeBlockLayoutsChanged', expect.any(Function));
 	});
 });

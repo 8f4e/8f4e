@@ -1,12 +1,9 @@
 import { parseEditorDirectives } from '@8f4e/editor-state';
 import { describe, expect, it } from 'vitest';
-import { createPlotDirective } from '../state/directive';
 import { createPlotDirectiveData } from './data';
 
-const plotDirective = createPlotDirective(new WeakMap());
-
 function parsePlotDirectiveData(code: string[]) {
-	return parseEditorDirectives(code, [plotDirective]).map(directive =>
+	return parseEditorDirectives(code, [{ name: 'plot' }]).map(directive =>
 		createPlotDirectiveData(directive.args, directive.sourceLineIndex)
 	);
 }

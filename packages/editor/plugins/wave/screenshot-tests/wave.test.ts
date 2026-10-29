@@ -33,7 +33,14 @@ entryEnd`);
 		callbacks: {},
 	});
 	const drawers = createCodeBlockDrawerRegistry();
-	const disposePlugin = wavePlugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers });
+	const disposePlugin = wavePlugin.setup({
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		drawers,
+	});
 	const state = store.getState();
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;

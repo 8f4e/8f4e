@@ -1,7 +1,17 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 
-import { deriveDirectiveState, runBeforeGraphicDataWidthCalculation, runBlockLayoutReady } from '../registry';
+import { createLayoutRegistry } from '../../../layout/registry';
+import registerInfoLayout from './layout';
+
+function refreshInfo(graphicData: ReturnType<typeof createMockCodeBlock>, state: ReturnType<typeof createMockState>) {
+	const layout = createLayoutRegistry(() => {});
+	registerInfoLayout(layout);
+	return () => {
+		layout.publish({ codeBlock: graphicData, state });
+		graphicData.minGridWidth = layout.getContribution(graphicData).minGridWidth;
+	};
+}
 
 function createInfoBlock(overrides: Parameters<typeof createMockCodeBlock>[0] = {}) {
 	const code = overrides.code ?? ['module foo', '; @info foo', 'moduleEnd'];
@@ -40,10 +50,7 @@ describe('info directive widget resolution', () => {
 			lineNumberColumnWidth: 1,
 			gaps: new Map([[1, { size: 3 }]]),
 		});
-		const directiveState = deriveDirectiveState(graphicData.code, graphicData.parsedDirectives, { state });
-
-		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState);
-		runBlockLayoutReady(graphicData, state, directiveState);
+		refreshInfo(graphicData, state)();
 
 		expect(graphicData.widgets.infoPanels).toEqual([
 			{
@@ -72,9 +79,7 @@ describe('info directive widget resolution', () => {
 			lineNumberColumnWidth: 1,
 			gaps: new Map([[1, { size: 1 }]]),
 		});
-		const directiveState = deriveDirectiveState(graphicData.code, graphicData.parsedDirectives, { state });
-
-		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState);
+		refreshInfo(graphicData, state)();
 
 		expect(graphicData.minGridWidth).toBe(17);
 	});
@@ -93,16 +98,15 @@ describe('info directive widget resolution', () => {
 		});
 		const dateNow = vi.spyOn(Date, 'now').mockReturnValue(2000);
 
-		let directiveState = deriveDirectiveState(graphicData.code, graphicData.parsedDirectives, { state });
-		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState);
+		const refresh = refreshInfo(graphicData, state);
+		refresh();
 		expect(graphicData.lastUpdated).toBe(1000);
 
 		state.info.foo = {
 			a: 1,
 			b: 2,
 		};
-		directiveState = deriveDirectiveState(graphicData.code, graphicData.parsedDirectives, { state });
-		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState);
+		refresh();
 
 		expect(graphicData.lastUpdated).toBe(2000);
 		dateNow.mockRestore();
@@ -122,14 +126,13 @@ describe('info directive widget resolution', () => {
 		});
 		const dateNow = vi.spyOn(Date, 'now').mockReturnValue(2000);
 
-		let directiveState = deriveDirectiveState(graphicData.code, graphicData.parsedDirectives, { state });
-		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState);
+		const refresh = refreshInfo(graphicData, state);
+		refresh();
 
 		state.info.foo = {
 			a: 2,
 		};
-		directiveState = deriveDirectiveState(graphicData.code, graphicData.parsedDirectives, { state });
-		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState);
+		refresh();
 
 		expect(graphicData.lastUpdated).toBe(1000);
 		expect(dateNow).not.toHaveBeenCalled();

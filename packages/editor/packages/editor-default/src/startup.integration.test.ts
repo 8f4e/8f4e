@@ -47,7 +47,9 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 			getCodeBuffer: () => new Uint8Array(),
 		});
 		for (const plugin of plugins) {
-			disposers.push(plugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers }));
+			disposers.push(
+				plugin.setup({ store, events, menus: store.menus, directives: store.directives, layout: store.layout, drawers })
+			);
 		}
 		events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 		events.dispatch('init');

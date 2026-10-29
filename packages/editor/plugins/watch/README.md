@@ -23,7 +23,7 @@ the memory reference. Formatting choices remain private to watch.
 
 The browser host supplies `prefersReducedMotion: () => boolean` to the factory. The plugin reads it when drawing; it does not access browser globals.
 
-Cleanup unregisters the directive and drawer. Omit the plugin to remove its behavior and layout space.
+Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.
 
 ```sh
 npx nx run @8f4e/editor-plugin-watch:build

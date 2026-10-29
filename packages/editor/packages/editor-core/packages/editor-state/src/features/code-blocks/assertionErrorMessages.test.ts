@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import codeBlockRendering from './effect';
 import { directiveDefinitions } from './features/directives/registry';
 import parsedDirectivesUpdater from './features/parsedDirectivesUpdater/effect';
+import { createLayoutRegistry } from './layout/registry';
 
 function setup() {
 	const block = createMockCodeBlock({
@@ -37,7 +38,12 @@ describe('assertion error messages', () => {
 	it('shows failure values inline once per site and clears messages and gaps on restart', () => {
 		const { store, state, block, result } = setup();
 		block.code = ['module checks', 'push 10', 'assertEqual 9', 'push 0', 'assert', 'moduleEnd'];
-		codeBlockRendering(store, createMockEventDispatcher(), directiveDefinitions);
+		codeBlockRendering(
+			store,
+			createMockEventDispatcher(),
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		const failure = {
 			...result[0],
 			site: { ...result[0].site, instruction: 'assertEqual' as const },
@@ -79,7 +85,12 @@ describe('assertion error messages', () => {
 		block.projectPath = 'nested';
 		state.codeBlockRendering.codeBlocks = [];
 		parsedDirectivesUpdater(store);
-		codeBlockRendering(store, createMockEventDispatcher(), directiveDefinitions);
+		codeBlockRendering(
+			store,
+			createMockEventDispatcher(),
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		const failure = {
 			...result[0],
 			site: { ...result[0].site, projectGroupPath: 'nested' },

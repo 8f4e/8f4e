@@ -1,15 +1,15 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import drawWatch from './drawer/draw';
-import { createWatchDirective } from './state/directive';
+import { registerWatchLayout } from './state/layout';
 import type { WatchValue } from './types';
 
 export function createWatchPlugin({ prefersReducedMotion }: { prefersReducedMotion: () => boolean }): EditorPlugin {
 	return {
 		id: 'watch',
-		setup: ({ directives, drawers }) => {
+		setup: ({ layout, drawers }) => {
 			const watchesByBlock = new WeakMap<CodeBlockGraphicData, WatchValue[]>();
-			const unregisterDirective = directives.register(createWatchDirective(watchesByBlock));
+			const unregisterLayout = registerWatchLayout(layout, watchesByBlock);
 			const unregisterDrawer = drawers.registerCodeBlockOverlay(({ draw, state, codeBlock, memoryViews }) => {
 				drawWatch(
 					draw,
@@ -23,7 +23,7 @@ export function createWatchPlugin({ prefersReducedMotion }: { prefersReducedMoti
 			});
 			return () => {
 				unregisterDrawer();
-				unregisterDirective();
+				unregisterLayout();
 			};
 		},
 	};

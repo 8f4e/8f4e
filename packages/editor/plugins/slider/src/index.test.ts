@@ -42,6 +42,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 				events,
 				menus: store.menus,
 				directives: store.directives,
+				layout: store.layout,
 				drawers,
 			})
 		: () => {};

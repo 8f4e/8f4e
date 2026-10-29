@@ -1,11 +1,9 @@
 import { parseEditorDirectives } from '@8f4e/editor-state';
 import { describe, expect, it } from 'vitest';
-import { createWatchDirective } from '../state/directive';
 import { createWatchDirectiveData } from './data';
 
-const watchDirective = createWatchDirective(new WeakMap());
 function parseWatchDirectiveData(code: string[]) {
-	return parseEditorDirectives(code, [watchDirective])
+	return parseEditorDirectives(code, [{ name: 'watch', aliases: ['w'], allowTrailingComment: true }])
 		.map(directive => createWatchDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine))
 		.filter(result => result !== undefined);
 }

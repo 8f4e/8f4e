@@ -66,14 +66,18 @@ describe('lazy plugin loader', () => {
 		const { registration, plugin } = entry();
 		const pending = deferred<EditorPlugin>();
 		registration.load = vi.fn(() => pending.promise);
-		plugin.setup = vi.fn(({ directives }: EditorPluginContext) =>
-			directives.register({
-				name: 'custom',
-				apply: (directive, draft) => {
-					draft.addVerticalSpaceAfterSourceLine({ sourceLineIndex: directive.sourceLineIndex, heightInRows: 3 });
-				},
-			})
-		);
+		plugin.setup = vi.fn(({ layout }: EditorPluginContext) => {
+			const contribution = layout.createContribution();
+			const unsubscribe = layout.subscribe(({ codeBlock }) =>
+				contribution.update(codeBlock, {
+					verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 3 }],
+				})
+			);
+			return () => {
+				unsubscribe();
+				contribution.dispose();
+			};
+		});
 		const editor = setup([registration], matchingSource);
 		editor.events.dispatch('loadPluginsUsedByProject');
 		editor.load(matchingSource.replace('audio', 'replacement'));

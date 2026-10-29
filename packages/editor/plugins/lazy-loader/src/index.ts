@@ -26,7 +26,6 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 					const plugin = await entry.load();
 					if (disposed) return;
 					installed.set(entry.id, plugin.setup(context));
-					events.dispatch('refreshCodeBlockLayouts');
 				} catch (error) {
 					if (!disposed) logError(store.getState(), `Failed to load plugin ${entry.id}: ${String(error)}`);
 				} finally {

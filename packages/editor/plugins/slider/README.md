@@ -21,7 +21,7 @@ The default editor includes this plugin. Each installation owns its slider geome
 The **Save slider values to code** menu action updates the original declaration defaults, including references through
 group aliases, and preserves inline comments. Runtime dragging leaves source text unchanged.
 
-Disposal removes the directive, drawer, menu action, and event listeners. Generic parsing, layout, memory resolution,
+Disposal removes layout subscriptions/contributions, the drawer, menu action, and event listeners. Generic parsing, layout, memory resolution,
 and declaration editing remain in core.
 
 ```bash

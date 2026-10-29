@@ -1,12 +1,9 @@
 import { parseEditorDirectives } from '@8f4e/editor-state';
 import { describe, expect, it } from 'vitest';
-import { createCrossfadeDirective } from '../state/directive';
 import { createCrossfadeDirectiveData } from './data';
 
-const crossfadeDirective = createCrossfadeDirective(new WeakMap());
-
 function parseCrossfadeDirectiveData(code: string[]) {
-	return parseEditorDirectives(code, [crossfadeDirective]).map(directive =>
+	return parseEditorDirectives(code, [{ name: 'crossfade' }]).map(directive =>
 		createCrossfadeDirectiveData(directive.args, directive.sourceLineIndex)
 	);
 }

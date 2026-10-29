@@ -1,27 +1,20 @@
 import type { MemoryDefaults, PlannedMemoryDeclaration, ValidatedModuleAST } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { createMockState } from '../../../pureHelpers/testingUtils/testUtils';
-import type { DirectiveDerivedState } from '../features/directives/registry';
-import {
-	createVerticalSpaceAfterSourceLineAdder,
-	getVerticalSpaceAfterSourceLineRequests,
-} from '../features/directives/verticalSpaceAfterSourceLine';
 import gaps from '../gaps';
+import type { BlockLayoutDraft } from '../layout/types';
 import { createCodeBlockGraphicData } from '../utils/createCodeBlockGraphicData';
 import shape, { updateShapeDeclarations } from './updateGraphicData';
 
-function createDirectiveState(): DirectiveDerivedState {
+function createLayoutDraft(): BlockLayoutDraft {
 	return {
-		blockState: { disabled: false, isHome: false, isFavorite: false },
-		displayState: {},
 		displayModel: {
 			lines: [],
 			displayRowToSourceLineIndex: [],
 			sourceLineIndexToDisplayRow: [],
 			isCollapsed: false,
 		},
-		addVerticalSpaceAfterSourceLine: createVerticalSpaceAfterSourceLineAdder(),
-		layoutCallbacks: [],
+		verticalSpaceAfterSourceLine: [],
 	};
 }
 
@@ -125,11 +118,11 @@ describe('shape', () => {
 				...createCompilerReports(createInheritedMemory(4)),
 			},
 		});
-		const directiveState = createDirectiveState();
+		const blockLayout = createLayoutDraft();
 
-		shape(module, state, directiveState);
+		shape(module, state, blockLayout);
 
-		expect(getVerticalSpaceAfterSourceLineRequests(directiveState)).toEqual([{ sourceLineIndex: 1, heightInRows: 4 }]);
+		expect(blockLayout.verticalSpaceAfterSourceLine).toEqual([{ sourceLineIndex: 1, heightInRows: 4 }]);
 	});
 
 	it('skips modules without compiler-reported shape expansions', () => {
@@ -142,11 +135,11 @@ describe('shape', () => {
 				...createCompilerReports(),
 			},
 		});
-		const directiveState = createDirectiveState();
+		const blockLayout = createLayoutDraft();
 
-		shape(module, state, directiveState);
+		shape(module, state, blockLayout);
 
-		expect(getVerticalSpaceAfterSourceLineRequests(directiveState)).toEqual([]);
+		expect(blockLayout.verticalSpaceAfterSourceLine).toEqual([]);
 	});
 
 	it('precomputes inherited declaration labels after gaps are applied', () => {
@@ -184,8 +177,8 @@ describe('shape', () => {
 				),
 			},
 		});
-		const directiveState = {
-			...createDirectiveState(),
+		const blockLayout = {
+			...createLayoutDraft(),
 			displayModel: {
 				lines: [
 					{ sourceLineIndex: 0, text: 'module filterA' },
@@ -199,11 +192,11 @@ describe('shape', () => {
 			},
 		};
 
-		directiveState.addVerticalSpaceAfterSourceLine({ sourceLineIndex: 1, heightInRows: 2 });
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 2 });
 
-		shape(module, state, directiveState);
-		gaps(module, directiveState);
-		updateShapeDeclarations(module, state, directiveState);
+		shape(module, state, blockLayout);
+		gaps(module, blockLayout);
+		updateShapeDeclarations(module, state, blockLayout);
 
 		expect(module.widgets.shapeDeclarations).toEqual([
 			{ x: 24, y: 80, text: 'float* input' },

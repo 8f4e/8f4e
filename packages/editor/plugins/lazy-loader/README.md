@@ -31,8 +31,8 @@ URL loads, and session restoration. It contributes **Load plugins used by projec
 new signal. Those edits do not automatically scan.
 
 Imports run in the background. Editor mounting and project-load notifications do not wait for them; plots appear
-when their implementation arrives. After setup, the loader dispatches core's `refreshCodeBlockLayouts` event to
-refresh layout and rendered source without editing the project or triggering compilation. Plugins installed late
+when their implementation arrives. Plugins own independent layout contributions and subscriptions. Submitting a changed
+contribution automatically recalculates layout and rendered source without editing the project or triggering compilation. Plugins installed late
 must initialize from the current state rather than depend on an earlier startup or compilation event being replayed.
 
 Each entry installs once per editor. Overlapping scans share its pending load. Once requested, a plugin still installs
