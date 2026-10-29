@@ -8,7 +8,7 @@ Copy group, Delete group, Remove from group, Ungroup, Make Group Sticky/Nonstick
 group. Group execution toggling applies to modules. The single-module execution-toggle plugin is independent.
 
 Blocks in a sticky group drag together; Alt drags only the clicked block. Nonstick groups reverse this behavior.
-Membership uses the first valid standalone `@group` directive, read from core's generic parsed directive records
+Membership uses the first valid `@group` directive in a standalone or trailing comment, matched from core's cached records
 when an action runs. The plugin adds no membership fields or caches to core state.
 Actions operate on the currently visible project slice. Copy preserves creation order, relative positions, and
 recursively owned project blocks. Pasting gives each incoming group an available name while keeping its members

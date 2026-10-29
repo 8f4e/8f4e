@@ -1,4 +1,4 @@
-import { gapCalculator, getTabStopsByLine, getVisualLineWidth, parseEditorDirectives } from '@8f4e/editor-state';
+import { gapCalculator, getTabStopsByLine, getVisualLineWidth, matchEditorDirectives } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createWatchDirectiveData } from '../helpers/data';
@@ -9,12 +9,12 @@ export function registerWatchLayout(
 	watchesByBlock: WeakMap<CodeBlockGraphicData, WatchValue[]>
 ): () => void {
 	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
-		const items = parseEditorDirectives(graphicData.code, [
-			{ name: 'watch', allowTrailingComment: true, aliases: ['w'] },
-		]).flatMap(directive => {
-			const data = createWatchDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine);
-			return data ? [data] : [];
-		});
+		const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'watch', aliases: ['w'] }]).flatMap(
+			directive => {
+				const data = createWatchDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine);
+				return data ? [data] : [];
+			}
+		);
 		watchesByBlock.set(graphicData, []);
 		items.forEach(data => {
 			const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(graphicData), data.memoryId);

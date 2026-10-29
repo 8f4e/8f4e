@@ -13,5 +13,5 @@
 - Run `npx nx run @8f4e/editor-plugin-wave:test:screenshot` for browser rendering tests.
 - Cover all height variants, sample types, pointer/count sources, exposed memory, source edits, cleanup, and isolation.
 
-- Keep layout independent of directive registration. Read source through `parseEditorDirectives`; own contribution
+- Keep layout independent of directive registration. Match cached `codeBlock.parsedDirectives` through `matchEditorDirectives`; own contribution
   updates and `layout.subscribe` geometry. Unsubscribe before disposing requests. Do not attach layout to directive drafts.

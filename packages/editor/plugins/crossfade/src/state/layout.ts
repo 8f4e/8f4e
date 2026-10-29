@@ -1,4 +1,4 @@
-import { gapCalculator, parseEditorDirectives } from '@8f4e/editor-state';
+import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createCrossfadeDirectiveData } from '../helpers/data';
@@ -10,7 +10,7 @@ export function registerCrossfadeLayout(
 ): () => void {
 	const contribution = layout.createContribution();
 	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
-		const items = parseEditorDirectives(graphicData.code, [{ name: 'crossfade' }]).flatMap(directive => {
+		const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'crossfade' }]).flatMap(directive => {
 			const data = createCrossfadeDirectiveData(directive.args, directive.sourceLineIndex);
 			return data ? [data] : [];
 		});

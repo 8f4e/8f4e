@@ -1,4 +1,4 @@
-import type { EditorDirectiveDefinition, ParsedDirectiveRecord, ParsedEditorDirective } from '@8f4e/editor-state-types';
+import type { EditorDirectiveDefinition, ParsedDirectiveRecord } from '@8f4e/editor-state-types';
 
 export interface DirectiveComment {
 	name: string;
@@ -107,12 +107,6 @@ export function parseDirectiveRecords(code: string[]): ParsedDirectiveRecord[] {
 	return records;
 }
 
-export function parseDirectiveComments(line: string): DirectiveComment[] {
-	return parseDirectiveLineRecords(line).flatMap(parsed =>
-		parsed.isTrailing ? [] : [{ name: parsed.name, args: parsed.args }]
-	);
-}
-
 export function serializeDirectiveComments(directives: DirectiveComment[]): string | undefined {
 	if (directives.length === 0) {
 		return undefined;
@@ -125,28 +119,22 @@ export function serializeDirectiveComments(directives: DirectiveComment[]): stri
 
 export function createDirectiveDefinition(
 	name: string,
-	apply: NonNullable<EditorDirectiveDefinition['apply']>,
-	options: Pick<EditorDirectiveDefinition, 'aliases' | 'allowTrailingComment'> = {}
+	apply: NonNullable<EditorDirectiveDefinition['apply']>
 ): EditorDirectiveDefinition {
 	return {
 		name,
-		...options,
 		apply,
 	};
 }
 
 /**
- * Shared alias-normalization helper. Filters `ParsedDirectiveRecord[]` to
- * editor (`@`) directives only, resolves aliases to canonical definition names, and
- * applies the `allowTrailingComment` gate for trailing records.
- *
- * Both `parseEditorDirectives` and `deriveDirectiveState` delegate to this so
- * alias normalization lives in exactly one place.
+ * Selects matching records and resolves aliases to canonical directive names.
+ * Preserves source order, duplicates, and source context without reparsing source.
  */
-export function normalizeEditorDirectiveRecords(
-	records: ParsedDirectiveRecord[],
-	definitions: EditorDirectiveDefinition[]
-): ParsedEditorDirective[] {
+export function matchEditorDirectives(
+	records: readonly ParsedDirectiveRecord[],
+	definitions: readonly Pick<EditorDirectiveDefinition, 'name' | 'aliases'>[]
+): ParsedDirectiveRecord[] {
 	const definitionEntries = definitions.flatMap(definition =>
 		[definition.name, ...(definition.aliases ?? [])].map(name => [name, definition] as const)
 	);
@@ -158,28 +146,10 @@ export function normalizeEditorDirectiveRecords(
 			return [];
 		}
 
-		if (record.isTrailing && !definition.allowTrailingComment) {
-			return [];
-		}
-
-		return [
-			{
-				name: definition.name,
-				sourceLineIndex: record.sourceLineIndex,
-				args: record.args,
-				sourceLine: record.sourceLine,
-			},
-		];
+		return [{ ...record, name: definition.name }];
 	});
 }
 
-export function parseEditorDirectives(
-	code: string[],
-	definitions: EditorDirectiveDefinition[]
-): ParsedEditorDirective[] {
-	return normalizeEditorDirectiveRecords(parseDirectiveRecords(code), definitions);
-}
-
 export function hasDirective(code: string[], name: string): boolean {
-	return code.some(line => parseDirectiveComments(line).some(directive => directive.name === name));
+	return parseDirectiveRecords(code).some(directive => directive.name === name);
 }

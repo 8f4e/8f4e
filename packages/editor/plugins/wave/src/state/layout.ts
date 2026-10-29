@@ -1,4 +1,4 @@
-import { gapCalculator, parseEditorDirectives } from '@8f4e/editor-state';
+import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
 	resolveElementCount,
@@ -16,8 +16,8 @@ export function registerWaveLayout(
 	const contribution = layout.createContribution();
 	const heights = { wave: 2, wave2: 4, wave4: 8 };
 	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
-		const items = parseEditorDirectives(
-			codeBlock.code,
+		const items = matchEditorDirectives(
+			codeBlock.parsedDirectives,
 			Object.keys(heights).map(name => ({ name }))
 		).flatMap(directive => {
 			const data = createWaveDirectiveData(directive.args, directive.sourceLineIndex);

@@ -25,6 +25,9 @@ including nested groups. They can inspect source, configuration, or other projec
 uses core's generic directive parser across every source category and nested group; it does not require the directive
 implementation to be installed. Presence triggers loading; the loaded plugin owns argument validation.
 
+Signal detection parses the serialized whole-project snapshot, including groups outside the visible editor slice.
+Once installed, directive plugins consume core's cached `codeBlock.parsedDirectives` through `matchEditorDirectives`.
+
 The loader scans the current project during setup and after completed project replacements, including file opens,
 URL loads, and session restoration. It contributes **Load plugins used by project** to the background menu, dispatching
 `loadPluginsUsedByProject`. Use that action after typing, pasting, adding example modules, or undo/redo introduces a

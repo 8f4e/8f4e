@@ -10,7 +10,7 @@ Editor directives should be owned by the directive itself.
 
 That means each directive should keep its:
 
-- parsing
+- argument interpretation
 - derived code-block contributions
 - directive-specific tests
 
@@ -71,11 +71,18 @@ directiveEditing/
 Each directive folder should contain its own semantic logic. Avoid putting directive-specific logic back into `registry.ts`. Source rewriting belongs in `directiveEditing/`.
 
 Optional directive interpretation belongs in editor plugin packages. Generic parsing remains in core. Plugins can
-use `parseEditorDirectives(code, [{ name, aliases, allowTrailingComment }])` without registering a directive handler.
+use `matchEditorDirectives(codeBlock.parsedDirectives, [{ name, aliases }])` without registering a directive handler.
+Core keeps these records current when source changes, including directives whose plugins are not installed.
+The matcher selects names, normalizes aliases, and preserves source order, duplicates, and source context
+(`sourceLineIndex`, `sourceLine`, and `isTrailing`). It does not scan source or interpret feature arguments.
+
+Use `parseBlockDirectives(code)` for source that has not entered the editor, such as incoming modules, clipboard
+batches, or the lazy loader's whole-project snapshot. Live-block consumers must reuse `parsedDirectives`.
+Directive subscriptions are deferred; plugins can consume cached records from their existing subscriptions.
 
 ## Directive and Layout Flow
 
-1. Core parses source and derives block/display semantics from its directive definitions.
+1. Core parses source into cached records when source changes and derives block/display semantics from its directive definitions.
 2. Core calculates dimensions, display rows, source-line gaps, and cursor coordinates using independent layout requests.
 3. Layout subscribers receive the calculated block and current state. A plugin can read directives or other inputs,
    update its requests, and derive private widget geometry.
@@ -95,7 +102,8 @@ import { removeDirective, upsertDirective, updateDirectiveArgs } from '../direct
 
 ### `removeDirective(code, name)`
 
-Removes all lines containing a directive with the given name.
+Removes every matching directive, preserving other directives and any instruction before a trailing comment.
+A standalone comment line is removed when it has no remaining directives.
 
 ```ts
 // Remove all ; @group lines
@@ -189,12 +197,15 @@ handles the common syntax:
 ```txt
 ; @directiveName argument1 argument2 ...
 ; @directiveName argument1 @otherDirective
+int value 0 ; @directiveName argument1
 ```
 
 Multiple directives may share one comment line. Shared syntax utilities parse
 one directive record per `@name` token, and source-editing helpers must preserve
 unrelated directives on the same line.
 
+Standalone and trailing comments share the same syntax for every directive. Placement is never an opt-in rule.
+Plugins may use source context for feature-specific interpretation, such as inferring a watch target from a declaration.
 Directives should not re-parse their own comment syntax.
 
 Use the shared argument validators in
@@ -238,8 +249,8 @@ across owners; minimum widths combine by maximum. Core maps source lines to disp
 
 Subscribe with `layout.subscribe(({ codeBlock, state }) => { ... })`. The callback runs for the current visible blocks
 immediately and whenever their layout is calculated, including source, font, metadata, and contribution changes.
-Dimensions, display rows, gaps, and cursor coordinates are current. Read source through the generic parser if your
-feature uses directives; other features can derive their requests from different inputs.
+Dimensions, display rows, gaps, cursor coordinates, and cached directive records are current. Match records through
+`matchEditorDirectives` if your feature uses directives; other features can derive requests from different inputs.
 
 Subscribers may replace their own requests. An unchanged value is a no-op; changed values cause another calculation
 before rendering. Keep geometry in a private map shared by drawing and hit testing. Coordinates are relative to the

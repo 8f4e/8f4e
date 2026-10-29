@@ -6,5 +6,5 @@
 - Return an explicit disposer for every layout, drawer, and interaction listener.
 - Run `npx nx run @8f4e/editor-plugin-meter:build|test|typecheck` and `npx nx run @8f4e/editor-plugin-meter:test:screenshot`.
 
-- Keep layout independent of directive registration. Read source through `parseEditorDirectives`; own contribution
+- Keep layout independent of directive registration. Match cached `codeBlock.parsedDirectives` through `matchEditorDirectives`; own contribution
   updates and `layout.subscribe` geometry. Unsubscribe before disposing requests. Do not attach layout to directive drafts.

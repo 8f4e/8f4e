@@ -1,12 +1,6 @@
 import type { ViewportBlockAlignment } from '../../../viewport/blockAlignment';
 import type { CodeBlockDisplayModel } from '../../buildDisplayModel';
-
-export interface ParsedEditorDirective {
-	name: string;
-	sourceLineIndex: number;
-	args: string[];
-	sourceLine?: string;
-}
+import type { ParsedDirectiveRecord } from '../../types';
 
 export type ViewportAnchor = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
@@ -43,8 +37,7 @@ export interface DirectiveDeriveOptions {
 export interface EditorDirectiveDefinition {
 	name: string;
 	aliases?: string[];
-	allowTrailingComment?: boolean;
-	apply?: (directive: ParsedEditorDirective, draft: DirectiveDerivedStateDraft) => void;
+	apply?: (directive: ParsedDirectiveRecord, draft: DirectiveDerivedStateDraft) => void;
 }
 
 export interface EditorDirectiveRegistry {

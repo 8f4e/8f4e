@@ -1,7 +1,7 @@
 # Switch Plugin
 
 - Own the switch directive's arguments, memory resolution, click behavior, and drawer here.
-- Keep generic directive parsing and layout in editor-state. Register the switch handler through `directives.register`.
+- Keep generic directive parsing and layout in editor-state. Interpret cached directive records in this plugin.
 - Export an `EditorPlugin` without installing it as an import side effect. Editor-default selects the standard plugins.
 - Keep switch widget data inside setup, scoped to one editor instance. Use public workspace APIs.
 - Derive widget geometry through `layout.subscribe` and share it between the drawer and click hit-testing.
@@ -13,5 +13,5 @@
 
 - Receive a required `writeMemory(address, value, isInteger)` through the plugin factory. Do not route writes through editor state. The injected writer must use the current memory after recompilation or growth.
 
-- Keep layout independent of directive registration. Read source through `parseEditorDirectives`; own contribution
+- Keep layout independent of directive registration. Match cached `codeBlock.parsedDirectives` through `matchEditorDirectives`; own contribution
   updates and `layout.subscribe` geometry. Unsubscribe before disposing requests. Do not attach layout to directive drafts.

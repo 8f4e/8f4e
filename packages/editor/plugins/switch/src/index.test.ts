@@ -216,8 +216,16 @@ describe('switch plugin', () => {
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});
 
-	it.each(['; @switch &missing', '; @switch &gate bad', 'int extra 0 ; @switch &gate'])(
-		'creates no widget for unresolved, invalid, or unsupported trailing directives: %s',
+	it('draws and toggles a switch in a trailing comment', async () => {
+		const test = await setup(['module controls', 'int gate 0', 'int extra 0 ; @switch &gate', 'moduleEnd']);
+		test.render();
+		expect(test.draw.drawText).toHaveBeenCalledWith(test.codeBlock.width - 32, 32, '[| ]', PALETTE_INDICES.darkBase);
+		test.press();
+		expect(test.write).toHaveBeenLastCalledWith(test.address, 1, true);
+	});
+
+	it.each(['; @switch &missing', '; @switch &gate bad'])(
+		'creates no widget for unresolved or invalid directives: %s',
 		async line => {
 			const test = await setup(['module controls', 'int gate 0', line, 'moduleEnd']);
 			test.render();

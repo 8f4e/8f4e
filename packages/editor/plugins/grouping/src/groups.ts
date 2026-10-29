@@ -1,3 +1,4 @@
+import { matchEditorDirectives } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, ParsedDirectiveRecord, State } from '@8f4e/editor-state-types';
 
 export interface Group {
@@ -6,7 +7,7 @@ export interface Group {
 }
 
 export function getGroup(directives: ParsedDirectiveRecord[]): Group | undefined {
-	const directive = directives.find(record => record.name === 'group' && !record.isTrailing && record.args[0]);
+	const directive = matchEditorDirectives(directives, [{ name: 'group' }]).find(record => record.args[0]);
 	return directive ? { name: directive.args[0], nonstick: directive.args[1] === 'nonstick' } : undefined;
 }
 

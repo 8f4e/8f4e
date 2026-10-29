@@ -157,7 +157,7 @@ export {
 	updateDirectiveArgs,
 	upsertDirective,
 } from './features/code-blocks/features/directiveEditing';
-export { parseEditorDirectives } from './features/code-blocks/features/directives/utils';
+export { matchEditorDirectives } from './features/code-blocks/features/directives/utils';
 export { default as getCodeBlockGridWidth } from './features/code-blocks/getCodeBlockGridWidth';
 export { applyCodeBlockSourceEdits } from './features/code-blocks/sourceEdits';
 export { default as getBlockType } from './features/code-blocks/utils/codeParsers/getBlockType';

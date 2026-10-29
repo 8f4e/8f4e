@@ -1,6 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
 import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
@@ -83,6 +83,25 @@ entryEnd`);
 	try {
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();
+		applyCodeBlockSourceEdits(
+			store,
+			[
+				{
+					codeBlock,
+					code: [
+						'module controls',
+						'int off 0',
+						'int on 1',
+						'push 0 ; @switch &off',
+						'drop ; @switch &on',
+						'moduleEnd',
+					],
+				},
+			],
+			{ affectsCompilation: false }
+		);
+		renderer.renderFrame();
+		await expect(canvas).toMatchScreenshot('trailing-switches');
 	} finally {
 		renderer.destroy();
 		projection.dispose();

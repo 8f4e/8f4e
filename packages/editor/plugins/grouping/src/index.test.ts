@@ -40,12 +40,41 @@ describe('grouping plugin', () => {
 
 	it.each([
 		['; @group', false],
-		['int ignored 0 ; @group audio', false],
+		['int value 0 ; @group audio', true],
 		['; @group audio nonstick @favorite', true],
 		['; @group\n; @group audio', true],
 	])('derives group membership through generic directive parsing: %s', async (directive, grouped) => {
 		const test = setup({ code: source.replace('; @group audio', directive) });
 		expect((await test.openMenu()).some(item => item.action === 'copyGroupBlocks')).toBe(grouped);
+	});
+
+	it('copies, drags, and edits groups defined in trailing comments without removing instructions', async () => {
+		const test = setup({ code: source.replaceAll(/; @group audio\n(int value \d)/g, '$1 ; @group audio') });
+		const first = test.block('first');
+		const second = test.block('second');
+		const items = await test.openMenu();
+		const index = items.findIndex(item => item.action === 'copyGroupBlocks');
+		expect(index).toBeGreaterThanOrEqual(0);
+		const pointer = {
+			x: test.state.contextMenu.x - test.state.viewport.x + 8,
+			y: test.state.contextMenu.y - test.state.viewport.y + index * test.state.viewport.hGrid + 8,
+		};
+		test.events.dispatch('mousemove', { ...pointer });
+		test.events.dispatch('mousedown', { ...pointer });
+		test.events.dispatch('mouseup', { ...pointer });
+		expect(test.state.contextMenu.open).toBe(false);
+		const copied = JSON.parse(test.writeClipboardText.mock.calls[0][0]);
+		expect(copied.map((block: { code: string[] }) => block.code[0])).toEqual(['module first', 'module second']);
+		const secondX = second.x;
+		test.drag(first);
+		expect(second.x).toBe(secondX + test.state.viewport.vGrid);
+		test.events.dispatch('setGroupNonstick', { codeBlock: first, makeNonstick: true });
+		expect(first.code).toContain('int value 1 ; @group audio nonstick');
+		expect(second.code).toContain('int value 2 ; @group audio nonstick');
+		test.events.dispatch('removeFromGroupDirective', { codeBlock: first });
+		expect(first.code).toContain('int value 1');
+		expect(first.parsedDirectives.some(record => record.name === 'group')).toBe(false);
+		expect(second.code).toContain('int value 2 ; @group audio nonstick');
 	});
 
 	it('uses the first valid directive and refreshes membership after source edits', () => {
@@ -115,7 +144,8 @@ describe('grouping plugin', () => {
 			const test = setup({ installed });
 			if (installed) test.disposePlugin();
 			expect((await test.openMenu()).some(item => item.action === 'copyGroupBlocks')).toBe(false);
-			test.events.dispatch('closeMenu');
+			test.events.dispatch('mousemove', { x: -1, y: -1 });
+			test.events.dispatch('mousedown', { x: -1, y: -1 });
 			const first = test.block('first');
 			const secondX = test.block('second').x;
 			test.drag(first);
