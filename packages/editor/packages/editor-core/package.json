@@ -35,6 +35,6 @@
   },
   "devDependencies": {
     "@8f4e/editor-state-testing": "*",
-    "vite": "7.3.7"
+    "vite": "8.3.5"
   }
 }
