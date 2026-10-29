@@ -27,7 +27,7 @@
     "@8f4e/editor-state-testing": "*",
     "@8f4e/examples": "*",
     "@8f4e/vite-plugin-sources": "*",
-    "@vitest/browser": "4.1.7",
+    "@vitest/browser": "4.1.10",
     "@vitest/browser-playwright": "4.1.7",
     "vitest": "4.1.7"
   }
