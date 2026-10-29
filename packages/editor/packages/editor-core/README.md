@@ -186,8 +186,9 @@ Plugins can contribute source to the generated `env` constants block with
 `store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines contributed lines and recompiles when generated source changes. Each plugin removes its own contribution key
 when disposed. The registry contains source lines only; feature metadata stays private to its owner.
 
-`@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
-tab-aware text measurement, module identity, and compiled-function lookup helpers. Its `/memory` entry
+`@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value and info-value
+formatting, tab-aware text measurement, module identity, and compiled-function lookup helpers. Info layout and drawing
+share `isRenderableInfoValue` and `formatInfoValue`. Its `/memory` entry
 exports memory scope, identifier, element-count, and typed-value resolution, plus `getMemoryDefaultEdits` for rewriting
 resolved memory defaults in their source modules. Each group of values is edited together, even across module owners.
 Plugins use these public exports rather than importing core files.

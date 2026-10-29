@@ -187,4 +187,5 @@ export {
 	parseFiniteNumber,
 	parseInteger,
 } from './shared/editorDirectiveArgumentTypes';
+export { formatInfoValue, isRenderableInfoValue } from './shared/formatInfoValue';
 export { formatKnownStackValue } from './shared/formatKnownStackValue';

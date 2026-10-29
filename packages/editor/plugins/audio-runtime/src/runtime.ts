@@ -19,23 +19,17 @@ export const AUDIO_BUFFER_SIZE = 128;
 const AUDIO_PERMISSION_TEXT =
 	"This project uses AudioWorklet for audio playback and requires your permission to start. Select Allow to start the program, or choose to do nothing; then the program won't start.";
 
-/** Reuse an AudioContext’s loaded worklet modules across editor instances. */
+/** Reuse the worklet module across editor instances sharing an AudioContext. */
+const workletModules = new WeakMap<AudioContext, Promise<void>>();
 
-const workletModules = new WeakMap<AudioContext, Map<string, Promise<void>>>();
-
-function loadWorklet(context: AudioContext, url: string): Promise<void> {
-	let modules = workletModules.get(context);
-	if (!modules) {
-		modules = new Map();
-		workletModules.set(context, modules);
-	}
-	let loading = modules.get(url);
+function loadWorklet(context: AudioContext): Promise<void> {
+	let loading = workletModules.get(context);
 	if (!loading) {
-		loading = context.audioWorklet.addModule(url).catch(error => {
-			modules.delete(url);
+		loading = context.audioWorklet.addModule(audioWorkletUrl).catch(error => {
+			workletModules.delete(context);
 			throw error;
 		});
-		modules.set(url, loading);
+		workletModules.set(context, loading);
 	}
 	return loading;
 }
@@ -95,8 +89,7 @@ function getSampleRate(editorConfig: EditorConfig): number {
 	return resolveSchemaConfigRoot(AUDIO_WORKLET_EDITOR_CONFIG, editorConfig).sampleRate as number;
 }
 
-function getAudioOutputBuffers(state: State): AudioOutputBufferRoute[] {
-	const config = getAudioWorkletRuntimeConfig(state);
+function getAudioOutputBuffers(config: AudioWorkletRuntimeConfig): AudioOutputBufferRoute[] {
 	const leftAddress = config.audioOutBufferLAddress;
 	const rightAddress = config.audioOutBufferRAddress;
 	const buffers: AudioOutputBufferRoute[] = [];
@@ -112,8 +105,7 @@ function getAudioOutputBuffers(state: State): AudioOutputBufferRoute[] {
 	return buffers;
 }
 
-function getAudioInputBuffers(state: State): AudioInputBufferRoute[] {
-	const config = getAudioWorkletRuntimeConfig(state);
+function getAudioInputBuffers(config: AudioWorkletRuntimeConfig): AudioInputBufferRoute[] {
 	const leftAddress = config.audioInBufferLAddress;
 
 	return leftAddress === undefined ? [] : [{ audioBufferWordAddress: leftAddress, input: 0, channel: 0 }];
@@ -190,8 +182,8 @@ export function startAudioRuntime(
 			memoryRef: memory,
 			codeBuffer: getCodeBuffer(),
 			bufferExportName: config.entry,
-			audioOutputBuffers: getAudioOutputBuffers(state),
-			audioInputBuffers: getAudioInputBuffers(state),
+			audioOutputBuffers: getAudioOutputBuffers(config),
+			audioInputBuffers: getAudioInputBuffers(config),
 		});
 	}
 
@@ -257,7 +249,7 @@ export function startAudioRuntime(
 			// Resume synchronously in the Allow handler, before loading the worklet can consume the user gesture.
 			await Promise.all([
 				audioContext.state === 'running' ? Promise.resolve() : audioContext.resume(),
-				loadWorklet(audioContext, audioWorkletUrl),
+				loadWorklet(audioContext),
 			]);
 			if (disposed || currentGeneration !== generation) {
 				return;

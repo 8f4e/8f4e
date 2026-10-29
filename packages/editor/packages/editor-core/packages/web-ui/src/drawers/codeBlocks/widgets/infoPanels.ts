@@ -1,27 +1,7 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { formatInfoValue, isRenderableInfoValue } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, InfoRecord, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../../drawContext';
-
-function isRenderableInfoValue(value: unknown): value is string | number | boolean {
-	return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
-}
-
-function formatInfoValue(value: string | number | boolean): string {
-	if (typeof value === 'string') {
-		return value;
-	}
-
-	if (typeof value === 'boolean') {
-		return String(value);
-	}
-
-	if (!Number.isFinite(value) || Number.isInteger(value)) {
-		return String(value);
-	}
-
-	const roundedValue = Math.round(value * 10000) / 10000;
-	return String(Object.is(roundedValue, -0) ? 0 : roundedValue);
-}
 
 function truncateToCells(value: string, maxCells: number): string {
 	if (maxCells <= 0) {
