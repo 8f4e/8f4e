@@ -88,13 +88,38 @@ Use explicit block actions through `events.dispatch`:
 Coordinates are viewport pixels. Core applies unique naming, entry assignment, grid positioning, and persistence.
 Newly inserted blocks already carry their source-derived type; core keeps it current as source changes.
 
-Register widget directives with `directives.register(definition)`, using the existing `EditorDirectiveDefinition`
-contract from `@8f4e/editor-state-types`. The core owns generic source parsing, directive matching, and the block
-layout pipeline. Each definition handles its own arguments through `apply`, registers `DirectiveLayoutCallbacks`
-in `draft.layoutCallbacks`, and can clear its derived data through `clearDerivedBlockData`. These callbacks use
-`onBlockLayoutReady` to derive geometry after the block's dimensions, display rows, gaps, and cursor coordinates are
-current. Registrations are local to each editor. Install them in setup before the initial project loads; there is
-no runtime plugin installation API.
+Directive handling and layout are independent services. `directives.register(definition)` contributes block or
+source-display behavior through `apply`; core owns generic syntax parsing. A plugin can read parsed directives with
+`parseEditorDirectives(code, definitions)` from `@8f4e/editor-state` without registering behavior in the directive registry.
+
+Use `layout.createContribution()` for a plugin-owned set of block layout requests:
+
+```ts
+const contribution = layout.createContribution();
+contribution.update(codeBlock, {
+	verticalSpaceAfterSourceLine: [{ sourceLineIndex: 2, heightInRows: 8 }],
+	minGridWidth: 40,
+});
+const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
+	// Recalculate requests from current source/state, or derive drawing and hit-test geometry.
+	// Width, height, display rows, gaps, and cursor coordinates are current.
+});
+```
+
+Requests are values, independent of directives. Space requests use zero-based source lines and editor rows. Requests
+after the same line add together; minimum widths combine by maximum, in editor columns. Core maps source lines to
+display rows and skips hidden lines. Each update replaces this contribution's complete request for that block.
+`contribution.remove(codeBlock)` clears one block, and `contribution.dispose()` removes the owner's requests.
+
+`layout.subscribe(listener)` immediately reports the visible blocks and reports them again when core calculates their
+layout, including source, compiler metadata, info, font, and contribution changes. It returns an unsubscribe function.
+Subscribers may update their requests; core finishes pending recalculations synchronously before notifying the render
+projection. An unchanged submission is a no-op, allowing requests derived in subscriptions to settle without recursive
+refresh loops. Keep widget data private and use the final geometry for both drawing and hit testing.
+
+Subscribe and dispose explicitly. Unsubscribe before disposing a contribution so your callback cannot resubmit it.
+Contribution changes preserve source, selection, project revision, and compiler input revision. Hidden project slices
+use their requests when opened. The lazy loader only imports and installs plugins; it has no layout refresh policy.
 
 Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
 `{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;

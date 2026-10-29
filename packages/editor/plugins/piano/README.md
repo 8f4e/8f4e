@@ -19,7 +19,7 @@ const editor = await initEditor(canvas, { ...options, plugins: [createPianoPlugi
 ```
 
 The default editor includes this plugin. Each installation keeps keyboard geometry and resolved memory in a private
-`keyboardsByBlock` map. The plugin registers its directive, layout callbacks, drawer, pointer listener, and
+`keyboardsByBlock` map. The plugin owns layout contributions, a layout subscription, drawer, pointer listener, and
 **Save piano values to code** context-menu action. Saving updates the notes and count together in their original
 declarations, including when they belong to different modules. Sliders have their own save action.
 

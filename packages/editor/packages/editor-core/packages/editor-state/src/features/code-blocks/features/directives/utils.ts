@@ -126,7 +126,7 @@ export function serializeDirectiveComments(directives: DirectiveComment[]): stri
 export function createDirectiveDefinition(
 	name: string,
 	apply: NonNullable<EditorDirectiveDefinition['apply']>,
-	options: Pick<EditorDirectiveDefinition, 'aliases' | 'allowTrailingComment' | 'clearDerivedBlockData'> = {}
+	options: Pick<EditorDirectiveDefinition, 'aliases' | 'allowTrailingComment'> = {}
 ): EditorDirectiveDefinition {
 	return {
 		name,

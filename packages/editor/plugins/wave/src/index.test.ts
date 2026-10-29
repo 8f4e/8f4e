@@ -34,7 +34,14 @@ async function setup(code = source, installed = true, name = 'audio') {
 	});
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed
-		? wavePlugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers })
+		? wavePlugin.setup({
+				store,
+				events,
+				menus: store.menus,
+				directives: store.directives,
+				layout: store.layout,
+				drawers,
+			})
 		: () => {};
 	cleanups.push(() => {
 		dispose();

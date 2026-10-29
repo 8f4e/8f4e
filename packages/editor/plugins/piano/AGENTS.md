@@ -5,9 +5,9 @@
   in `src/helpers/`. Keep tests beside their implementations.
 - Export an `EditorPlugin` without installation as an import side effect. Editor-default selects the standard plugins.
 - Keep keyboard data in a per-instance `keyboardsByBlock` WeakMap. Do not attach piano models to core state.
-- Use `addVerticalSpaceAfterSourceLine` and `onBlockLayoutReady` for layout, and public memory APIs for resolution and
+- Use owned layout contributions and `layout.subscribe`, with public memory APIs for resolution and
   generic declaration edits. Keep syntax parsing and source ownership routing in core.
-- Own the save menu action and every directive, drawer, and event registration; return an explicit disposer.
+- Own the save menu action and every layout, drawer, and event registration; return an explicit disposer.
 - Save default-value edits through `applyCodeBlockSourceEdits` with `affectsCompilation: true`, including edits to
   multiple backing owners in one operation. Do not publish a second project or compiler change.
 - Use the shared palette catalog for fills and text; keep shade choices local to this plugin.
@@ -16,3 +16,6 @@
 - Cover real pointer events, runtime memory, exposed addresses, saving, source edits, cleanup, and editor isolation.
 
 - Receive a required `writeMemory(address, value, isInteger)` through the plugin factory. Do not route writes through editor state. The injected writer must use the current memory after recompilation or growth.
+
+- Keep layout independent of directive registration. Read source through `parseEditorDirectives`; own contribution
+  updates and `layout.subscribe` geometry. Unsubscribe before disposing requests. Do not attach layout to directive drafts.

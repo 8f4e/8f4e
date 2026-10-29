@@ -1,27 +1,20 @@
 import { type CompiledFunction, createFunctionId, type ValidatedFunctionAST } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { createMockState } from '../../../pureHelpers/testingUtils/testUtils';
-import type { DirectiveDerivedState } from '../features/directives/registry';
-import {
-	createVerticalSpaceAfterSourceLineAdder,
-	getVerticalSpaceAfterSourceLineRequests,
-} from '../features/directives/verticalSpaceAfterSourceLine';
 import gaps from '../gaps';
+import type { BlockLayoutDraft } from '../layout/types';
 import { createCodeBlockGraphicData } from '../utils/createCodeBlockGraphicData';
 import paramShape, { updateParamShapeDeclarations } from './updateGraphicData';
 
-function createDirectiveState(): DirectiveDerivedState {
+function createLayoutDraft(): BlockLayoutDraft {
 	return {
-		blockState: { disabled: false, isHome: false, isFavorite: false },
-		displayState: {},
 		displayModel: {
 			lines: [],
 			displayRowToSourceLineIndex: [],
 			sourceLineIndexToDisplayRow: [],
 			isCollapsed: false,
 		},
-		addVerticalSpaceAfterSourceLine: createVerticalSpaceAfterSourceLineAdder(),
-		layoutCallbacks: [],
+		verticalSpaceAfterSourceLine: [],
 	};
 }
 
@@ -92,8 +85,8 @@ describe('paramShape', () => {
 				},
 			},
 		});
-		const directiveState = {
-			...createDirectiveState(),
+		const blockLayout = {
+			...createLayoutDraft(),
 			displayModel: {
 				lines: [
 					{ sourceLineIndex: 0, text: 'function foo' },
@@ -108,13 +101,13 @@ describe('paramShape', () => {
 			},
 		};
 
-		directiveState.addVerticalSpaceAfterSourceLine({ sourceLineIndex: 1, heightInRows: 1 });
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 1 });
 
-		paramShape(func, state, directiveState);
-		gaps(func, directiveState);
-		updateParamShapeDeclarations(func, state, directiveState);
+		paramShape(func, state, blockLayout);
+		gaps(func, blockLayout);
+		updateParamShapeDeclarations(func, state, blockLayout);
 
-		expect(getVerticalSpaceAfterSourceLineRequests(directiveState)).toEqual([
+		expect(blockLayout.verticalSpaceAfterSourceLine).toEqual([
 			{ sourceLineIndex: 1, heightInRows: 1 },
 			{ sourceLineIndex: 2, heightInRows: 2 },
 		]);

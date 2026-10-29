@@ -18,7 +18,7 @@ and drawing hooks. Feature data lives in a WeakMap created by each installation 
 
 References use the public editor-state memory helpers, including memory exposed by project groups.
 
-Cleanup unregisters the directive and drawer. Omit the plugin to remove its behavior and layout space.
+Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.
 
 ```sh
 npx nx run @8f4e/editor-plugin-bars:build

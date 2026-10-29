@@ -1,12 +1,9 @@
 import { parseEditorDirectives } from '@8f4e/editor-state';
 import { describe, expect, it } from 'vitest';
-import { createBarsDirective } from '../state/directive';
 import { createBarsDirectiveData } from './data';
 
-const barsDirective = createBarsDirective(new WeakMap());
-
 function parseBarsDirectiveData(code: string[]) {
-	return parseEditorDirectives(code, [barsDirective]).map(directive =>
+	return parseEditorDirectives(code, [{ name: 'bars' }]).map(directive =>
 		createBarsDirectiveData(directive.args, directive.sourceLineIndex)
 	);
 }

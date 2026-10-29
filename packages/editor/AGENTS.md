@@ -29,6 +29,9 @@
   contract; there is no separate environment-plugin manager. Assertion results and inline diagnostics remain core.
   Plugin contracts and installation live in `editor-core`,
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
+  `editor-plugin-lazy-loader` scans project signals on replacement or a manual menu action, installs matching plugins,
+  and disposes them with the editor. The default editor's lightweight registry dynamically imports plot for `@plot`;
+  other default plugins remain fixed. Core provides independent layout contributions and subscriptions; directive parsing and layout remain separate.
   Session restoration/autosaving and project URL loading live in `editor-plugin-session-persistence` and
   `editor-plugin-project-url-loader`. The default host supplies storage/fetch and chooses initial URL priority.
   The standard plugin set is composed in `editor-default`.
@@ -65,6 +68,8 @@
   Each also has a `test:screenshot` target for its canvas menu interaction.
 - Verify visual grouping with `npx nx run @8f4e/editor-plugin-grouping:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-grouping:test:screenshot`.
+- Verify lazy plugin loading with `npx nx run @8f4e/editor-plugin-lazy-loader:build|test|typecheck` and
+  `npx nx run @8f4e/editor-plugin-lazy-loader:test:screenshot`.
 - Build or preview it with `npx nx run @8f4e/editor-website:build|serve`.
 - Ensure dependency packages are built before relying on workspace aliases in the website.
 

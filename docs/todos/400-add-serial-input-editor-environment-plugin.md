@@ -199,4 +199,4 @@ Responsibilities:
 
 - **Related**: `docs/todos/archived/396-add-midi-input-editor-environment-plugin.md`
 - **Related**: `docs/todos/archived/395-add-exported-8f4e-functions.md`
-- **Related**: `docs/todos/508-design-editor-plugin-lazy-loading.md`
+- **Related**: `docs/todos/archived/508-design-editor-plugin-lazy-loading.md`

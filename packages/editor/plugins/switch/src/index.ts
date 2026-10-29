@@ -1,7 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import { createSwitchDirective, type SwitchWidget } from './directive';
+import { registerSwitchLayout, type SwitchWidget } from './layout';
 
 export function createSwitchPlugin({
 	writeMemory,
@@ -10,10 +10,10 @@ export function createSwitchPlugin({
 }): EditorPlugin {
 	return {
 		id: 'switch',
-		setup: ({ store, events, directives, drawers }) => {
+		setup: ({ store, events, layout, drawers }) => {
 			const state = store.getState();
 			const widgets = new WeakMap<CodeBlockGraphicData, SwitchWidget[]>();
-			const unregisterDirective = directives.register(createSwitchDirective(widgets));
+			const unregisterLayout = registerSwitchLayout(layout, widgets);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				for (const control of widgets.get(codeBlock) ?? []) {
 					const value = memoryViews.int32[control.allocationUnitAddress] || 0;
@@ -50,7 +50,7 @@ export function createSwitchPlugin({
 			return () => {
 				events.off('codeBlockPointerDown', onPointerDown);
 				unregisterDrawer();
-				unregisterDirective();
+				unregisterLayout();
 			};
 		},
 	};

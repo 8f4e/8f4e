@@ -6,7 +6,7 @@ import { expect, it, vi } from 'vitest';
 import { createDefaultEditorPlugins } from './index';
 
 it('prioritizes the initial URL over the saved session and keeps autosaving while fetching', async () => {
-	const source = '8f4e/v1\nentry main\nmodule remote\nmoduleEnd\nentryEnd';
+	const source = '8f4e/v1\nentry main\nmodule remote\nint[] points 4\n; @plot &points 4\nmoduleEnd\nentryEnd';
 	let saved = JSON.stringify(parseProjectSource('8f4e/v1\nentry main\nmodule oldSession\nmoduleEnd\nentryEnd'));
 	const storage = {
 		getItem: vi.fn(() => saved),
@@ -47,7 +47,9 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 			getCodeBuffer: () => new Uint8Array(),
 		});
 		for (const plugin of plugins) {
-			disposers.push(plugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers }));
+			disposers.push(
+				plugin.setup({ store, events, menus: store.menus, directives: store.directives, layout: store.layout, drawers })
+			);
 		}
 		events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 		events.dispatch('init');
@@ -57,6 +59,14 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
 		finish(new Response(source));
 		await vi.waitFor(() => expect(JSON.parse(saved).modules[0]?.code).toContain('module remote'));
+		await vi.waitFor(() =>
+			expect(
+				store
+					.getState()
+					.codeBlockRendering.codeBlocks.find(block => block.name === 'remote')
+					?.gaps.get(2)?.size
+			).toBe(8)
+		);
 		expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
 		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
 		expect(store.getState().codeBlockRendering.codeBlocks.some(block => block.name === 'oldSession')).toBe(false);

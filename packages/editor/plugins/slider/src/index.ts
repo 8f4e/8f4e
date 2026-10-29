@@ -3,8 +3,8 @@ import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { drawSliders } from './drawer/draw';
 import { getSliderDefaultEdits } from './helpers/saveDefaults';
-import { createSliderDirective } from './state/directive';
 import { registerSliderInteraction } from './state/interaction';
+import { registerSliderLayout } from './state/layout';
 import type { Slider } from './types';
 
 const saveAction = 'saveSliderValuesToCode';
@@ -16,10 +16,10 @@ export function createSliderPlugin({
 }): EditorPlugin {
 	return {
 		id: 'slider',
-		setup: ({ store, events, menus, directives, drawers }) => {
+		setup: ({ store, events, menus, layout, drawers }) => {
 			const state = store.getState();
 			const slidersByBlock = new WeakMap<CodeBlockGraphicData, Slider[]>();
-			const unregisterDirective = directives.register(createSliderDirective(slidersByBlock));
+			const unregisterLayout = registerSliderLayout(layout, slidersByBlock);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawSliders(draw, state, slidersByBlock.get(codeBlock) ?? [], memoryViews);
 			});
@@ -49,7 +49,7 @@ export function createSliderPlugin({
 				unregisterMenuItem();
 				unregisterInteraction();
 				unregisterDrawer();
-				unregisterDirective();
+				unregisterLayout();
 			};
 		},
 	};

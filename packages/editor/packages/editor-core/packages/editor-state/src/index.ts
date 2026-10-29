@@ -1,5 +1,6 @@
 import type {
 	EditorDirectiveRegistry,
+	EditorLayoutRegistry,
 	EditorMenuRegistry,
 	EventDispatcher,
 	Options,
@@ -12,11 +13,13 @@ import blockTypeUpdater from './features/code-blocks/features/blockTypeUpdater/e
 import codeBlockCreator from './features/code-blocks/features/codeBlockCreator/effect';
 import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
+import registerInfoLayout from './features/code-blocks/features/directives/info/layout';
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
 import parsedDirectivesUpdater from './features/code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
+import { createLayoutRegistry } from './features/code-blocks/layout/registry';
 import codeEditing from './features/code-editing/effect';
 import color from './features/color/effect';
 import dialog from './features/dialog/effect';
@@ -60,9 +63,13 @@ export default function init(
 ): StateManager<State> & {
 	menus: EditorMenuRegistry;
 	directives: EditorDirectiveRegistry;
+	layout: EditorLayoutRegistry;
 } {
 	const menus = createMenuRegistry();
 	const directives = createDirectiveRegistry();
+	const layout = createLayoutRegistry(codeBlock =>
+		events.dispatch('codeBlockLayoutContributionsChanged', { codeBlock })
+	);
 	const initialEditorMode = options.initialEditorMode ?? (options.featureFlags?.editing ? 'edit' : 'view');
 	const featureFlags = validateFeatureFlags({
 		...options.featureFlags,
@@ -110,7 +117,8 @@ export default function init(
 	registerEffect(blockTypeUpdater(store)); // Classify blocks before announcing compiler input changes
 	registerEffect(globalEditorDirectivesEffect(store));
 	registerEffect(publishCompilationInputChanges(store, events));
-	registerEffect(codeBlockRendering(store, events, directives.definitions));
+	registerEffect(codeBlockRendering(store, events, directives.definitions, layout));
+	registerEffect(registerInfoLayout(layout));
 	registerEffect(viewportDirectiveEffect(store, events));
 	registerEffect(entryOutlines(store));
 	registerEffect(codeEditing(store, events));
@@ -132,6 +140,7 @@ export default function init(
 		...store,
 		menus,
 		directives,
+		layout,
 		dispose,
 	};
 }

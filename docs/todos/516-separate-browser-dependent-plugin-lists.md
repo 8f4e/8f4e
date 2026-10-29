@@ -61,7 +61,7 @@ can be considered separately from the initial composition change.
 
 ## Related Items
 
-- [TODO 508: Design lazy loading for editor plugins](508-design-editor-plugin-lazy-loading.md)
+- [TODO 508: Design lazy loading for editor plugins](archived/508-design-editor-plugin-lazy-loading.md)
 
 ## References
 

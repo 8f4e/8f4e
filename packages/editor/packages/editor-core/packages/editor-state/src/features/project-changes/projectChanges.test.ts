@@ -10,8 +10,10 @@ import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
 import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
+import { directiveDefinitions } from '../code-blocks/features/directives/registry';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
+import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import codeEditing from '../code-editing/effect';
 import globalEditorDirectivesEffect from '../global-editor-directives/effect';
 import projectImport from '../project-loading/effect';
@@ -86,7 +88,12 @@ describe('project revision', () => {
 	});
 
 	it('ignores mouse selection, line selection, caret movement, and block navigation', () => {
-		rendering(store, events);
+		rendering(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		codeBlockDragger(store, events);
 		codeBlockNavigation(store, events);
 		codeEditing(store, events);
@@ -106,7 +113,12 @@ describe('project revision', () => {
 		block.code.splice(1, 0, '; @pos 0 0');
 		parsedDirectivesUpdater(store);
 		globalEditorDirectivesEffect(store);
-		rendering(store, events);
+		rendering(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		codeBlockDragger(store, events);
 		store.set('codeBlockRendering.codeBlocks', state.codeBlockRendering.codeBlocks);
 		dispatch('mousedown', { x: 32, y: 8 });
@@ -169,7 +181,12 @@ describe('project revision', () => {
 
 	it('publishes project replacement separately from the compiler signal', () => {
 		projectImport(store, events);
-		rendering(store, events);
+		rendering(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT } });
 		expect(state.projectChange).toEqual({ revision: 1, kind: 'replace' });
 		expect(state.compilerInputRevision).toBe(1);

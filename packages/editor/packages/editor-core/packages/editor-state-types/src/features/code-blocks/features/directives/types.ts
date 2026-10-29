@@ -1,4 +1,3 @@
-import type { CodeBlockGraphicData, State } from '../../../../index';
 import type { ViewportBlockAlignment } from '../../../viewport/blockAlignment';
 import type { CodeBlockDisplayModel } from '../../buildDisplayModel';
 
@@ -7,11 +6,6 @@ export interface ParsedEditorDirective {
 	sourceLineIndex: number;
 	args: string[];
 	sourceLine?: string;
-}
-
-export interface VerticalSpaceAfterSourceLine {
-	sourceLineIndex: number;
-	heightInRows: number;
 }
 
 export type ViewportAnchor = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
@@ -32,40 +26,24 @@ export interface DirectiveDisplayState {
 	hideAfterSourceLineIndex?: number;
 }
 
-export interface DirectiveLayoutCallbacks {
-	beforeGraphicDataWidthCalculation?: (
-		graphicData: CodeBlockGraphicData,
-		state: State,
-		directiveState: DirectiveDerivedState
-	) => void;
-	/** Run after block dimensions, display rows, gaps, and cursor coordinates are current. */
-	onBlockLayoutReady?: (graphicData: CodeBlockGraphicData, state: State, directiveState: DirectiveDerivedState) => void;
-}
-
 export interface DirectiveDerivedState {
 	blockState: DirectiveBlockState;
 	displayState: DirectiveDisplayState;
 	displayModel: CodeBlockDisplayModel;
-	/** Add vertical space below a zero-based source line. Heights are measured in editor rows. */
-	addVerticalSpaceAfterSourceLine: (space: VerticalSpaceAfterSourceLine) => void;
-	layoutCallbacks: DirectiveLayoutCallbacks[];
 }
 
 export interface DirectiveDerivedStateDraft extends DirectiveDerivedState {
 	sourceCode: string[];
-	state?: State;
 }
 
 export interface DirectiveDeriveOptions {
 	isExpandedForEditing?: boolean;
-	state?: State;
 }
 
 export interface EditorDirectiveDefinition {
 	name: string;
 	aliases?: string[];
 	allowTrailingComment?: boolean;
-	clearDerivedBlockData?: (graphicData: CodeBlockGraphicData) => void;
 	apply?: (directive: ParsedEditorDirective, draft: DirectiveDerivedStateDraft) => void;
 }
 

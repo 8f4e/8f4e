@@ -39,7 +39,7 @@ export default function createWebUiRenderProjection(
 	const selectors = ['codeBlockRendering', 'codeErrors', 'info', 'assertionResults', 'compiler.isCompiling'] as const;
 	for (const selector of selectors) store.subscribe(selector, refresh);
 	// Font changes can change plugin-created logical gaps even though glyph IDs stay fixed.
-	const eventNames = ['runtimeInitialized', 'spriteSheetRerendered'] as const;
+	const eventNames = ['runtimeInitialized', 'spriteSheetRerendered', 'codeBlockLayoutsChanged'] as const;
 	for (const eventName of eventNames) events.on(eventName, refresh);
 	refresh();
 

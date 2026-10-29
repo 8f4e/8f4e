@@ -5,6 +5,8 @@ import { createEditorEditingHandle, getEditorBlockId } from '../../editing';
 import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
 import { createMockCodeBlock, createMockState } from '../../pureHelpers/testingUtils/testUtils';
 import rendering from '../code-blocks/effect';
+import { directiveDefinitions } from '../code-blocks/features/directives/registry';
+import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import projectOperations from './effect';
 
 const cleanups: Array<() => void> = [];
@@ -22,7 +24,12 @@ function setup() {
 	const store = createStateManager(state);
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	rendering(store, events);
+	rendering(
+		store,
+		events,
+		directiveDefinitions,
+		createLayoutRegistry(() => {})
+	);
 	const disposeOperations = projectOperations(store, events);
 	const editing = createEditorEditingHandle(store, events);
 	cleanups.push(() => {

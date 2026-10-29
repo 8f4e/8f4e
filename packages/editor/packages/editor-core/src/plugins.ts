@@ -1,4 +1,10 @@
-import type { EditorDirectiveRegistry, EditorMenuRegistry, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	EditorDirectiveRegistry,
+	EditorLayoutRegistry,
+	EditorMenuRegistry,
+	EventDispatcher,
+	State,
+} from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import type { EditorDrawerRegistry } from '@8f4e/web-ui';
 import { disposeAll } from './disposeAll';
@@ -8,6 +14,7 @@ export interface EditorPluginContext {
 	events: EventDispatcher;
 	menus: EditorMenuRegistry;
 	directives: EditorDirectiveRegistry;
+	layout: EditorLayoutRegistry;
 	drawers: EditorDrawerRegistry;
 }
 

@@ -66,7 +66,6 @@ Active todo files are listed below.
 | 504 | Add a color-theme contrast audit tool | 🟡 | 1-2d | 2026-10-21 | Measure critical foreground/background pairs in resolved editor themes and report contrast failures, including alpha compositing. |
 | 505 | Add an initial editor mode directive | 🟡 | 4-8h | 2026-10-21 | Let projects request edit or view mode at load time while preserving host-level mode policy and later user mode changes. |
 | 506 | Add an inline sample browser directive | 🟡 | TBD | 2026-10-22 | Render a folder/file browser inside a code block and update a bound binary asset URL when a sample is selected. |
-| 508 | Design lazy loading for editor plugins | 🟡 | TBD | 2026-10-26 | Work out plugin discovery, asynchronous activation, readiness, and per-editor cleanup while measuring initial-bundle savings. |
 | 512 | Investigate integer sprite instance packing | 🟡 | TBD | 2026-10-26 | Evaluate a 12-byte integer sprite layout against the 20-byte baseline, checking coordinate limits, code complexity, and measured CPU/GPU costs. |
 | 513 | Benchmark fixed-grid glyph addressing | 🟡 | TBD | 2026-10-26 | Compare calculated glyph rectangles with the GPU rectangle lookup, verifying equivalent rendering and measured gains before restricting the atlas layout. |
 | 514 | Investigate viewport culling for code text | 🟡 | TBD | 2026-10-26 | Determine visible text row and column ranges before sprite submission, preserving partial glyphs and layout while measuring traversal, upload, and CPU/GPU savings. |
@@ -88,6 +87,7 @@ Active todo files are listed below.
 
 | ID | Title | Completed | Notes |
 | ---- | ----- | --------- | ----- |
+| 508 | Design lazy loading for editor plugins | 2026-10-29 | Project-signal registry and ordinary loader plugin; plot imports on demand, with manual rescanning, late layout refresh, and per-editor cleanup. |
 | 210 | Expose editor editing handles and add an external WebMCP adapter | 2026-10-28 | Public atomic editing handles and an external single-editor bridge; both websites bind site tools to the current project, with browser switching and native tool verification. |
 | 503 | Explore WebMCP tools for inspecting and editing projects | 2026-10-28 | Superseded; reopened TODO 210 defines public editing handles and an external page-owned WebMCP adapter. |
 | 401 | Tighten runtime browser API typing | 2026-10-26 | Narrow Web Audio adapter types and shared runtime message unions replace production `any` and `@ts-expect-error` escapes. |

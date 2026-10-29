@@ -16,6 +16,7 @@ describe('assertion markers plugin', () => {
 			events,
 			menus: store.menus,
 			directives: store.directives,
+			layout: store.layout,
 			drawers,
 		});
 		const codeBlock = createMockCodeBlock({

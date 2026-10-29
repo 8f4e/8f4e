@@ -1,15 +1,15 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import drawStack from './drawer/draw';
-import { createStackDirective } from './state/directive';
+import { registerStackLayout } from './state/layout';
 import type { StackLabel } from './types';
 
 export function createStackPlugin({ prefersReducedMotion }: { prefersReducedMotion: () => boolean }): EditorPlugin {
 	return {
 		id: 'stack',
-		setup: ({ directives, drawers }) => {
+		setup: ({ layout, drawers }) => {
 			const labelsByBlock = new WeakMap<CodeBlockGraphicData, StackLabel[]>();
-			const unregisterDirective = directives.register(createStackDirective(labelsByBlock));
+			const unregisterLayout = registerStackLayout(layout, labelsByBlock);
 			const unregisterDrawer = drawers.registerCodeBlockOverlay(({ draw, state, codeBlock }) => {
 				drawStack(
 					draw,
@@ -22,7 +22,7 @@ export function createStackPlugin({ prefersReducedMotion }: { prefersReducedMoti
 			});
 			return () => {
 				unregisterDrawer();
-				unregisterDirective();
+				unregisterLayout();
 			};
 		},
 	};

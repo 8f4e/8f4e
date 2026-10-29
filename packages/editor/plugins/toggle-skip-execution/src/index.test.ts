@@ -36,6 +36,7 @@ function setupState(events: EventDispatcher, options: Options, installed = true)
 				events,
 				menus: store.menus,
 				directives: store.directives,
+				layout: store.layout,
 				drawers: createCodeBlockDrawerRegistry(),
 			})
 		: () => {};

@@ -1,6 +1,6 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import gapCalculator from '../../code-editing/gapCalculator';
-import type { DirectiveDerivedState } from '../features/directives/registry';
+import type { BlockLayoutDraft } from '../layout/types';
 import { type CompiledFunction, getCompiledFunctionForCodeBlock } from '../utils/getCompiledFunctionForCodeBlock';
 
 function getParamShapeLabelsByLineNumber(compiledFunction: CompiledFunction): Map<number, string[]> {
@@ -19,7 +19,7 @@ function getParamShapeLabelsByLineNumber(compiledFunction: CompiledFunction): Ma
 export default function paramShape(
 	graphicData: CodeBlockGraphicData,
 	state: State,
-	directiveState: DirectiveDerivedState
+	blockLayout: BlockLayoutDraft
 ): void {
 	if (graphicData.disabled || graphicData.blockType !== 'function') {
 		return;
@@ -35,7 +35,7 @@ export default function paramShape(
 			continue;
 		}
 
-		directiveState.addVerticalSpaceAfterSourceLine({
+		blockLayout.verticalSpaceAfterSourceLine.push({
 			sourceLineIndex: lineNumber,
 			heightInRows: labels.length,
 		});
@@ -45,7 +45,7 @@ export default function paramShape(
 export function updateParamShapeDeclarations(
 	graphicData: CodeBlockGraphicData,
 	state: State,
-	directiveState: DirectiveDerivedState
+	blockLayout: BlockLayoutDraft
 ): void {
 	if (graphicData.disabled || graphicData.blockType !== 'function') {
 		return;
@@ -58,7 +58,7 @@ export function updateParamShapeDeclarations(
 
 	const textX = (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	for (const [lineNumber, labels] of getParamShapeLabelsByLineNumber(compiledFunction)) {
-		const displayRow = directiveState.displayModel.sourceLineIndexToDisplayRow[lineNumber];
+		const displayRow = blockLayout.displayModel.sourceLineIndexToDisplayRow[lineNumber];
 		if (displayRow === undefined) {
 			continue;
 		}

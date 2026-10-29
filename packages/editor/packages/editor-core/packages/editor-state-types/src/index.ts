@@ -263,6 +263,7 @@ export interface State {
 
 export type * from './features/code-blocks/buildDisplayModel';
 export type * from './features/code-blocks/features/directives/types';
+export type * from './features/code-blocks/layout';
 export type * from './features/code-blocks/types';
 export type * from './features/code-blocks/utils/types';
 export type * from './features/code-editing/types';

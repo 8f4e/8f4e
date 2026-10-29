@@ -54,7 +54,7 @@ export async function setup(
 	});
 	const state = store.getState();
 	const dispose = installed
-		? plugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers })
+		? plugin.setup({ store, events, menus: store.menus, directives: store.directives, layout: store.layout, drawers })
 		: () => {};
 	cleanups.push(() => {
 		dispose();

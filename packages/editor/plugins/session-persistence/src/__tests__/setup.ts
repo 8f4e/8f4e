@@ -12,6 +12,7 @@ export function setupPlugin(plugin: EditorPlugin) {
 		events,
 		menus: store.menus,
 		directives: store.directives,
+		layout: store.layout,
 		drawers: createCodeBlockDrawerRegistry(),
 	});
 	return {

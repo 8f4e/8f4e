@@ -29,7 +29,14 @@ entryEnd`);
 	});
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed
-		? tooltipsPlugin.setup({ store, events, menus: store.menus, directives: store.directives, drawers })
+		? tooltipsPlugin.setup({
+				store,
+				events,
+				menus: store.menus,
+				directives: store.directives,
+				layout: store.layout,
+				drawers,
+			})
 		: () => {};
 	cleanups.push(() => {
 		dispose();

@@ -56,7 +56,8 @@
     "@8f4e/editor-plugin-example-modules": "*",
     "@8f4e/editor-plugin-session-persistence": "*",
     "@8f4e/editor-plugin-project-url-loader": "*",
-    "@8f4e/editor-plugin-compiler": "*"
+    "@8f4e/editor-plugin-compiler": "*",
+    "@8f4e/editor-plugin-lazy-loader": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

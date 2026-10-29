@@ -62,8 +62,13 @@ constructs this plugin set with resources for one editor. The project-files plug
 canvas; WebAssembly export receives its document and a live compiler-byte getter. There is no host file service.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
 browser resources; browser dependencies are supplied to plugin factories by this composition.
-Meter, plot, bars, crossfade, watch, and stack are also optional plugins in this standard set. Watch and stack receive
+Meter, bars, crossfade, watch, and stack are also optional plugins in this standard set. Watch and stack receive
 a live reduced-motion preference from the browser host and keep their animation and data inside their installations.
+Plot is loaded on demand by `@8f4e/editor-plugin-lazy-loader`. The separate registry in `src/lazy-plugins.ts` matches
+`@plot` through generic directive parsing and dynamically imports its implementation. The loader scans on project
+replacement, including URL and session loads. After adding a directive through editing, use **Load plugins used by
+project** in the background menu. Imports finish in the background; mounting and initial-project notifications do not
+wait for them. A loaded plugin stays installed until editor disposal. See the [loader contract](../../plugins/lazy-loader/README.md).
 The `plugins` option replaces the default feature set: pass `[]` to omit feature plugins, or a custom array to select and extend it. The compiler remains installed first. Use `initEditor` from editor-core for a composition without a compiler or with a different compiler plugin.
 Each editor installs and disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).
 

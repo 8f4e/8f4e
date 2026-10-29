@@ -24,7 +24,7 @@
 - PRs: add screenshots/gifs for UI changes, include test notes, link issues.
 
 ## Plugins
-- Install plugins in editor-core so one setup receives state, event, menu, directive, and drawer services.
+- Install plugins in editor-core so one setup receives state, event, menu, directive, layout, and drawer services.
 - Keep generic directive parsing and layout in editor-state, and generic drawing hooks in web-ui.
 - Expose revision tracking and validated commands through `Editor.editing`, and shared project view navigation through `Editor.navigation`. Consumers read the existing `Editor.state` directly and use `editing.getRevision()` to track source changes. Validate edit batches before applying them as one undo step, and retain revision checks across human edits, history changes, and project replacement. WebMCP remains in its external adapter package.
 - Keep API revisions, history, and session persistence on `state.projectChange`, with one revision and operation kind.
@@ -40,6 +40,11 @@
   or generic key-sorting adapters.
 - Do not add a parallel project snapshot API. Consumers can use `getEditorBlockId(block)` to target existing validated commands with blocks read from state. Keep code authoritative for derived properties and avoid a parallel, hand-picked block metadata model. Agent-specific projections belong in the external WebMCP bridge. Editing commands accept source with `@pos` directives; derive positions from code without overriding or injecting coordinate directives.
 - Plugins own their registrations, listeners, private widget data, and disposal. Do not add automatic tracking.
+- Keep lazy loading policy in `editor-plugin-lazy-loader` and feature signals/imports in host registries. Late
+  layout contributions use the independent `layout` service, with owned update/remove/dispose handles and layout
+  subscriptions. Changed requests automatically rederive affected visible blocks without source changes, project
+  revisions, or compilation. Unchanged values are no-ops; callbacks can update requests and settle synchronously.
+  Keep all layout requests/callbacks out of directive drafts, and layout refresh policy out of the lazy loader.
 - Use `applyCodeBlockSourceEdits(store, edits, { affectsCompilation })` for plugin source-edit batches and
   `deleteCodeBlocks(store, blocks)` for removing blocks from the current slice. These helpers own refreshes,
   deleted-block reference cleanup, and one completed project/compiler notification. Callers own edit-mode policy;

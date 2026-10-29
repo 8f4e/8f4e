@@ -1,12 +1,10 @@
 import type {
-	CodeBlockGraphicData,
 	DirectiveDerivedState,
 	DirectiveDerivedStateDraft,
 	DirectiveDeriveOptions,
 	EditorDirectiveDefinition,
 	EditorDirectiveRegistry,
 	ParsedDirectiveRecord,
-	State,
 } from '@8f4e/editor-state-types';
 import buildDisplayModel from '../../buildDisplayModel';
 import alwaysOnTopDirective from './alwaysOnTop/plugin';
@@ -14,9 +12,7 @@ import disabledDirective from './disabled/plugin';
 import favoriteDirective from './favorite/plugin';
 import hideDirective from './hide/plugin';
 import homeDirective from './home/plugin';
-import infoDirective from './info/plugin';
 import { normalizeEditorDirectiveRecords } from './utils';
-import { createVerticalSpaceAfterSourceLineAdder } from './verticalSpaceAfterSourceLine';
 import viewportDirective from './viewport/plugin';
 
 export type {
@@ -27,7 +23,6 @@ export type {
 } from '@8f4e/editor-state-types';
 
 export const directiveDefinitions: EditorDirectiveDefinition[] = [
-	infoDirective,
 	disabledDirective,
 	homeDirective,
 	favoriteDirective,
@@ -66,9 +61,6 @@ export function deriveDirectiveState(
 		},
 		displayState: {},
 		displayModel: buildDisplayModel(code),
-		addVerticalSpaceAfterSourceLine: createVerticalSpaceAfterSourceLineAdder(),
-		layoutCallbacks: [],
-		state: options.state,
 	};
 
 	for (const directive of directives) {
@@ -83,33 +75,5 @@ export function deriveDirectiveState(
 			...draft.displayState,
 			isExpandedForEditing: options.isExpandedForEditing,
 		}),
-		addVerticalSpaceAfterSourceLine: draft.addVerticalSpaceAfterSourceLine,
-		layoutCallbacks: draft.layoutCallbacks,
 	};
-}
-
-export function runBlockLayoutReady(
-	graphicData: CodeBlockGraphicData,
-	state: State,
-	directiveState: DirectiveDerivedState
-): void {
-	directiveState.layoutCallbacks.forEach(callbacks => {
-		callbacks.onBlockLayoutReady?.(graphicData, state, directiveState);
-	});
-}
-
-export function runBeforeGraphicDataWidthCalculation(
-	graphicData: CodeBlockGraphicData,
-	state: State,
-	directiveState: DirectiveDerivedState,
-	definitions: EditorDirectiveDefinition[] = directiveDefinitions
-): void {
-	delete graphicData.minGridWidth;
-	definitions.forEach(definition => {
-		definition.clearDerivedBlockData?.(graphicData);
-	});
-
-	directiveState.layoutCallbacks.forEach(callbacks => {
-		callbacks.beforeGraphicDataWidthCalculation?.(graphicData, state, directiveState);
-	});
 }

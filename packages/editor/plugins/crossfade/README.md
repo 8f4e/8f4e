@@ -18,7 +18,7 @@ and drawing hooks. Feature data lives in a WeakMap created by each installation 
 
 Crossfades write float32 values to both targets while dragging and consume movement before block or viewport dragging.
 
-Cleanup unregisters the directive and drawer and releases pointer listeners. Omit the plugin to remove its behavior and layout space.
+Cleanup releases layout subscriptions/contributions and the drawer and releases pointer listeners. Omit the plugin to remove its behavior and layout space.
 
 ```sh
 npx nx run @8f4e/editor-plugin-crossfade:build

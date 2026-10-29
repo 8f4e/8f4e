@@ -62,6 +62,8 @@ This feature contains several subfeatures under `features/` that handle specific
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
 - `transformPastedCodeBlocks({ blocks })`: synchronously replace an incoming clipboard batch before insertion
+- `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal contribution invalidation; rederives affected visible blocks
+- `codeBlockLayoutsChanged()`: announces completed layout calculations to rendering and viewport anchoring
 - Block deletion and selection events
 - Drag start/update/end events
 - Block type update events
@@ -113,3 +115,11 @@ end-address display syntax. The resolvers accept no graphical blocks or implicit
 - See `utils/` for block manipulation helpers
 - See `features/` subdirectories for detailed subfeature implementations
 - See `../../../../../docs/editor-directives.md` for editor-only directive syntax (`; @...`) and supported directives
+
+## Layout Contributions
+
+The independent `store.layout` service owns contributions and subscriptions. Plugins submit complete space/minimum-width
+requests through `createContribution().update(block, value)` and subscribe to calculated blocks with `layout.subscribe`.
+A subscription can update its own requests; unchanged values do not trigger another calculation. Core processes changed
+requests synchronously and refreshes rendered text after layouts settle. Directive drafts contain only block/display
+semantics. Generic parsing remains available independently through `parseEditorDirectives`.

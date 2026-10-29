@@ -35,6 +35,7 @@ function setup(installed = true, initialEditorMode: 'edit' | 'view' = 'edit') {
 				events,
 				menus: store.menus,
 				directives: store.directives,
+				layout: store.layout,
 				drawers: createCodeBlockDrawerRegistry(),
 			})
 		: () => {};
