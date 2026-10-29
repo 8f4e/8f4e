@@ -18,7 +18,7 @@ const editingActions = [
 	'alignGroupBlocksInRow',
 	'removeFromGroupDirective',
 	'ungroupByName',
-	'toggleGroupNonstick',
+	'setGroupNonstick',
 	'deleteGroup',
 ];
 
@@ -31,10 +31,10 @@ describe('grouping plugin', () => {
 			expect(items.find(item => item.action === action)?.payload?.codeBlock).toBe(test.block('first'));
 		}
 		expect(items.find(item => item.action === 'ungroupByName')?.title).toContain('Ungroup "audio"');
-		test.events.dispatch('toggleGroupNonstick', { codeBlock: test.block('first'), makeNonstick: true });
+		test.events.dispatch('setGroupNonstick', { codeBlock: test.block('first'), makeNonstick: true });
 		test.events.dispatch('toggleGroupSkipExecutionDirective', { codeBlock: test.block('first') });
 		const updated = await test.openMenu();
-		expect(updated.find(item => item.action === 'toggleGroupNonstick')?.title).toContain('Make Group Sticky');
+		expect(updated.find(item => item.action === 'setGroupNonstick')?.title).toContain('Make Group Sticky');
 		expect(updated.find(item => item.action === 'toggleGroupSkipExecutionDirective')?.title).toContain('Unskip group');
 	});
 
@@ -181,7 +181,7 @@ describe('grouping plugin', () => {
 		expect(test.state.projectChange.revision).toBe(revision + 1);
 	});
 
-	it.each(['removeFromGroupDirective', 'ungroupByName', 'toggleGroupNonstick'])(
+	it.each(['removeFromGroupDirective', 'ungroupByName', 'setGroupNonstick'])(
 		'publishes one metadata edit and no compiler change: %s',
 		action => {
 			const test = setup();
@@ -195,7 +195,7 @@ describe('grouping plugin', () => {
 			expect(test.state.projectChange.revision).toBe(revision + 1);
 			if (action === 'removeFromGroupDirective') expect(test.block('second').code).toContain('; @group audio');
 			if (action === 'ungroupByName') expect(test.block('second').code).not.toContain('; @group audio');
-			if (action === 'toggleGroupNonstick') {
+			if (action === 'setGroupNonstick') {
 				expect(test.block('second').code).toContain('; @group audio nonstick');
 				test.events.dispatch(action, { codeBlock: first, makeNonstick: false });
 				expect(test.block('second').code).toContain('; @group audio');
@@ -257,7 +257,7 @@ describe('grouping plugin', () => {
 		expect(test.state.projectChange.revision).toBe(revision + 1);
 	});
 
-	it.each(['deleteGroup', 'toggleGroupNonstick', 'ungroupByName', 'alignGroupBlocksInRow'])(
+	it.each(['deleteGroup', 'setGroupNonstick', 'ungroupByName', 'alignGroupBlocksInRow'])(
 		'records one undo step for the entire operation and restores membership on redo: %s',
 		async action => {
 			vi.useFakeTimers();

@@ -136,6 +136,8 @@ export default function init(
 	};
 }
 
+// Export helper functions
+export { deleteCodeBlocks } from './features/code-blocks/deleteCodeBlocks';
 export type { ClipboardCodeBlock } from './features/code-blocks/features/clipboard/clipboardUtils';
 export { serializeCodeBlocksToClipboard } from './features/code-blocks/features/clipboard/clipboardUtils';
 export type { TransformPastedCodeBlocksEvent } from './features/code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
@@ -147,9 +149,8 @@ export {
 	upsertDirective,
 } from './features/code-blocks/features/directiveEditing';
 export { parseEditorDirectives } from './features/code-blocks/features/directives/utils';
-// Export helper functions
 export { default as getCodeBlockGridWidth } from './features/code-blocks/getCodeBlockGridWidth';
-export { default as replaceCodeBlocksInPlace } from './features/code-blocks/replaceCodeBlocksInPlace';
+export { applyCodeBlockSourceEdits } from './features/code-blocks/sourceEdits';
 export { default as getBlockType } from './features/code-blocks/utils/codeParsers/getBlockType';
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';
 export { default as getCodeBlockNameFromSource } from './features/code-blocks/utils/getCodeBlockNameFromSource';

@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { publishProjectChange, removeDirective } from '@8f4e/editor-state';
+import { applyCodeBlockSourceEdits, removeDirective } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { getProjectOpenerKeyword } from '@8f4e/project-preparser';
 
@@ -9,15 +9,12 @@ export const toggleFavoritePlugin: EditorPlugin = {
 		const onToggle = ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
 			if (!store.getState().featureFlags.editing) return;
 
-			if (codeBlock.isFavorite) {
-				codeBlock.code = removeDirective(codeBlock.code, 'favorite');
-			} else {
+			const code = codeBlock.isFavorite ? removeDirective(codeBlock.code, 'favorite') : [...codeBlock.code];
+			if (!codeBlock.isFavorite) {
 				const headerIndex = codeBlock.code.findIndex(line => getProjectOpenerKeyword(line.trim()) !== null);
-				codeBlock.code.splice(headerIndex + 1, 0, '; @favorite');
+				code.splice(headerIndex + 1, 0, '; @favorite');
 			}
-			codeBlock.lastUpdated = Date.now();
-			store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', codeBlock);
-			publishProjectChange(store);
+			applyCodeBlockSourceEdits(store, [{ codeBlock, code }], { affectsCompilation: false });
 		};
 
 		events.on('toggleFavoriteDirective', onToggle);

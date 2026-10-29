@@ -43,7 +43,7 @@ export function registerGroupMenus({ store, menus }: EditorPluginContext): () =>
 		const allNonstick = getGroupBlocks(state, codeBlock).every(block => getGroup(block.parsedDirectives)!.nonstick);
 		return {
 			title: allNonstick ? 'Make Group Sticky' : 'Make Group Nonstick',
-			action: 'toggleGroupNonstick',
+			action: 'setGroupNonstick',
 			payload: { codeBlock, makeNonstick: !allNonstick },
 			close: true,
 		};

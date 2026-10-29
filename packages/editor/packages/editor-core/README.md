@@ -177,8 +177,13 @@ API revisions, history, and session persistence share `state.projectChange`, a r
 editor-handle identity. Reading a revision does not serialize the project. Loads invalidate existing tokens even
 when the new source is identical, and undo/redo advance the revision when restoring earlier content.
 
-Source-mutating plugin actions call `publishProjectChange(store)` from `@8f4e/editor-state` once after all source
-and derived state updates are complete. This includes persisted metadata such as positions, favorites, and grouping.
+Source-mutating plugin actions use `applyCodeBlockSourceEdits(store, edits, { affectsCompilation })` from
+`@8f4e/editor-state`. Each edit supplies `{ codeBlock, code }` with the replacement source array. The helper skips
+unchanged source, refreshes changed blocks, and publishes one project change after the whole batch. Set
+`affectsCompilation: false` for metadata such as positions, favorites, and grouping; use `true` for compiler inputs.
+`deleteCodeBlocks(store, blocks)` removes blocks from the visible project slice in place, clears references to
+deleted blocks, and publishes one project and compiler-input change. Both helpers return whether anything changed.
+Callers own edit-mode checks and source transformations; they do not separately publish the same operation.
 Selection, navigation, and no-op actions do not publish. History batches ordinary edits and gives validated API
 batches an immediate undo step; persistence saves each completed change.
 
@@ -188,8 +193,9 @@ drafts leave pending history and revisions untouched.
 
 Core project-loading, API operations, and history helpers publish `checkpoint`, `restore`, or `replace` changes after
 snapshot restoration and generated constants have settled. Consumers can read `editor.state` and use the editing handle for
-validated writes. Plugins implementing source mutations must publish their completed operation; direct state writes
-alone do not announce a revision. `compilerInputRevision` remains a separate signal for compilation inputs.
+validated writes. Core mutation paths outside these helpers call `publishProjectChange(store)` after their completed
+operation; direct state writes alone do not announce a revision. `compilerInputRevision` remains a separate signal
+for compilation inputs.
 
 ## Project loading
 

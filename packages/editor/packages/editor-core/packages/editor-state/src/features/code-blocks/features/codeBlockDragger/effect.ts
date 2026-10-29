@@ -1,8 +1,8 @@
 import type { CodeBlockGraphicData, EventDispatcher, InternalMouseEvent, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import { publishProjectChange } from '../../../project-changes';
 import { bringCodeBlockToFrontWithinPartition } from '../../partitionCodeBlocksByAlwaysOnTop';
 import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
+import { applyCodeBlockSourceEdits } from '../../sourceEdits';
 import findCodeBlockAtViewportCoordinates from '../../utils/finders/findCodeBlockAtViewportCoordinates';
 import upsertPos from '../directives/pos/upsert';
 import { worldPositionToAnchoredPos } from '../directives/viewport/resolve';
@@ -120,7 +120,7 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		const deltaX = snapX - primaryBlock.x;
 		const deltaY = snapY - primaryBlock.y;
 
-		let positionChanged = false;
+		const edits: { codeBlock: CodeBlockGraphicData; code: string[] }[] = [];
 
 		// Snap all blocks in drag set to grid using the same pixel delta
 		for (const block of dragSet) {
@@ -159,18 +159,10 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 
 			block.gridX = gridX;
 			block.gridY = gridY;
-			block.lastUpdated = Date.now();
-			const updatedCode = upsertPos(block.code, gridX, gridY);
-			if (updatedCode.length !== block.code.length || updatedCode.some((line, index) => line !== block.code[index])) {
-				positionChanged = true;
-			}
-			block.code = updatedCode;
-			store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);
+			edits.push({ codeBlock: block, code: upsertPos(block.code, gridX, gridY) });
 		}
 
-		if (positionChanged) {
-			publishProjectChange(store);
-		}
+		applyCodeBlockSourceEdits(store, edits, { affectsCompilation: false });
 
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 		dragSet = [];

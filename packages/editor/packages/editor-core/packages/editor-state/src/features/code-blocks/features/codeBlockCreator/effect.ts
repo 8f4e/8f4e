@@ -5,8 +5,10 @@ import type { StateManager } from '@8f4e/state-manager';
 import { instructionParser } from '@8f4e/tokenizer';
 import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
 import { publishProjectChange } from '../../../project-changes';
+import { deleteCodeBlocks } from '../../deleteCodeBlocks';
 import { insertCodeBlockRespectingAlwaysOnTop } from '../../partitionCodeBlocksByAlwaysOnTop';
 import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
+import { applyCodeBlockSourceEdits } from '../../sourceEdits';
 import getBlockType from '../../utils/codeParsers/getBlockType';
 import { createCodeBlockGraphicData } from '../../utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from '../../utils/getCodeBlockNameFromSource';
@@ -229,17 +231,7 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 			return;
 		}
 
-		const codeBlocks = state.codeBlockRendering.codeBlocks;
-		const codeBlockExists = codeBlocks.includes(codeBlock);
-		replaceCodeBlocksInPlace(
-			codeBlocks,
-			codeBlocks.filter(block => block !== codeBlock)
-		);
-		store.set('codeBlockRendering.codeBlocks', codeBlocks);
-		if (codeBlockExists) {
-			incrementCompilerInputRevision(store);
-			publishProjectChange(store);
-		}
+		deleteCodeBlocks(store, [codeBlock]);
 	}
 
 	function onCopyCodeBlock({ codeBlock }: { codeBlock: CodeBlockGraphicData }): void {
@@ -263,14 +255,9 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 
 		// Toggle disabled state by upserting/removing @disabled directive
 		const newDisabledState = !codeBlock.disabled;
-		codeBlock.code = upsertDisabled(codeBlock.code, newDisabledState);
+		const code = upsertDisabled(codeBlock.code, newDisabledState);
 		codeBlock.disabled = newDisabledState;
-		// Update lastUpdated to invalidate cache
-		codeBlock.lastUpdated = Date.now();
-		// Use selectedCodeBlockForProgrammaticEdit to trigger graphics update
-		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', codeBlock);
-		incrementCompilerInputRevision(store);
-		publishProjectChange(store);
+		applyCodeBlockSourceEdits(store, [{ codeBlock, code }], { affectsCompilation: true });
 	}
 
 	events.on('createCodeBlock', onCreateCodeBlock);

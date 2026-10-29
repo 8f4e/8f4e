@@ -17,6 +17,8 @@ together; child project slices retain their independent grouping names.
 The plugin registers menu items and event listeners and explicitly unregisters them when disposed.
 It receives no browser resources. Copy uses the editor's clipboard callback and its generic clipboard serializer.
 Core handles generic source parsing, movement, snapping, insertion, history, and project changes.
+Group edits use core's source-edit and deletion helpers to refresh affected blocks and announce each operation once.
+The `setGroupNonstick` action receives `{ codeBlock, makeNonstick }` and applies that requested mode to the group.
 
 Nested language-level project groups (`group … groupEnd`) remain core project structure, including their navigation
 and memory scopes. They can participate in visual grouping like other blocks.
