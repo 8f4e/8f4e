@@ -1,33 +1,25 @@
 import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
-import { barsPlugin } from '@8f4e/editor-plugin-bars';
 import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
-import { createButtonPlugin } from '@8f4e/editor-plugin-button';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
-import { createCrossfadePlugin } from '@8f4e/editor-plugin-crossfade';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { groupingPlugin } from '@8f4e/editor-plugin-grouping';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { meterPlugin } from '@8f4e/editor-plugin-meter';
 import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
-import { createPianoPlugin } from '@8f4e/editor-plugin-piano';
 import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { removeMemoryConnectionsPlugin } from '@8f4e/editor-plugin-remove-memory-connections';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
-import { createSliderPlugin } from '@8f4e/editor-plugin-slider';
 import { createStackPlugin } from '@8f4e/editor-plugin-stack';
-import { createSwitchPlugin } from '@8f4e/editor-plugin-switch';
 import { toggleFavoritePlugin } from '@8f4e/editor-plugin-toggle-favorite';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
 import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
 import { createWatchPlugin } from '@8f4e/editor-plugin-watch';
-import { wavePlugin } from '@8f4e/editor-plugin-wave';
-import { lazyPlugins } from './lazy-plugins';
+import { createLazyPlugins } from './lazy-plugins';
 import { createRuntimeRegistry } from './runtime-registry';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
@@ -80,15 +72,7 @@ export function createDefaultEditorPlugins(options: {
 		groupingPlugin,
 		toggleFavoritePlugin,
 		removeMemoryConnectionsPlugin,
-		createSwitchPlugin({ writeMemory: options.writeMemory }),
-		createButtonPlugin({ writeMemory: options.writeMemory }),
-		wavePlugin,
-		createPianoPlugin({ writeMemory: options.writeMemory }),
-		createSliderPlugin({ writeMemory: options.writeMemory }),
-		meterPlugin,
-		createLazyPluginLoaderPlugin(lazyPlugins),
-		barsPlugin,
-		createCrossfadePlugin({ writeMemory: options.writeMemory }),
+		createLazyPluginLoaderPlugin(createLazyPlugins({ writeMemory: options.writeMemory })),
 		createWatchPlugin({ prefersReducedMotion }),
 		createStackPlugin({ prefersReducedMotion }),
 		tooltipsPlugin,

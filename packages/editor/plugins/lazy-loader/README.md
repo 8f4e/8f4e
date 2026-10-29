@@ -16,8 +16,9 @@ const loader = createLazyPluginLoaderPlugin([
 ]);
 ```
 
-Pass the loader alongside fixed plugins when constructing the editor. The default editor includes this loader with
-plot as its first lazy entry; its other plugins remain fixed.
+Pass the loader alongside fixed plugins when constructing the editor. The default editor uses it for plot, wave,
+meter, bars, switch, button, piano, slider, and crossfade. Its registry supplies the editor's live memory writer to
+control factories after their implementations load. Other default plugins remain fixed.
 
 Each `LazyEditorPlugin` entry contains `id`, `matches(project)`, and `load(): Promise<EditorPlugin>`. Keep IDs unique
 within the registry and keep implementation imports inside `load`. Matchers receive the current canonical project,

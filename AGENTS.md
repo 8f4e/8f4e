@@ -8,7 +8,8 @@
 - Optional editor features live in `packages/editor/plugins/<feature>/` as independent npm/Nx packages named
   `@8f4e/editor-plugin-<feature>`.
 - `editor-plugin-lazy-loader` scans project signals on replacement and a manual menu action. The default editor
-  keeps lazy signals and dynamic imports in `src/lazy-plugins.ts`; plot is the first lazy plugin, with others fixed.
+  keeps lazy signals and dynamic imports in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano,
+  slider, and crossfade. Other default plugins remain fixed.
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
   selection, and paste collision renaming. Nested language-level project groups remain core project structure.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`
