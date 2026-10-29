@@ -14,55 +14,6 @@ import { resolveStdlibInclude } from './stdlib-resolver';
 
 export type MinimalEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
 
-function createMinimalEditorPlugins(options: {
-	canvas: HTMLCanvasElement;
-	initialProjectUrl?: string;
-	onInitialProjectLoaded?: () => void;
-	onInitialProjectLoadError?: (error: unknown) => void;
-	getMemory: () => WebAssembly.Memory | null;
-	writeMemory: (address: number, value: number, isInteger: boolean) => void;
-	getCodeBuffer: () => Uint8Array;
-	getAssertionSites: ReturnType<typeof createCompilerPlugin>['getAssertionSites'];
-	sharedAudioContext?: AudioContext;
-}): NonNullable<EditorOptions['plugins']> {
-	const browserWindow = options.canvas.ownerDocument.defaultView!;
-	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
-	const prefersReducedMotion = () => motionPreference.matches;
-	return [
-		createProjectUrlLoaderPlugin({
-			fetch: globalThis.fetch,
-			initialProjectUrl: options.initialProjectUrl,
-			onLoaded: options.onInitialProjectLoaded,
-			onError: options.onInitialProjectLoadError,
-		}),
-		assertionMarkersPlugin,
-		createKeyboardMemoryPlugin({ inputTarget: options.canvas, writeMemory: options.writeMemory }),
-		createMidiInputPlugin({
-			navigator: browserWindow.navigator,
-			getMemory: options.getMemory,
-			getCodeBuffer: options.getCodeBuffer,
-		}),
-		createBinaryAssetsPlugin({
-			getMemoryBytes: () => {
-				const memory = options.getMemory();
-				return memory ? new Uint8Array(memory.buffer) : undefined;
-			},
-		}),
-		createLazyPluginLoaderPlugin(
-			createLazyPluginRegistry({
-				writeMemory: options.writeMemory,
-				getMemory: options.getMemory,
-				getCodeBuffer: options.getCodeBuffer,
-				getAssertionSites: options.getAssertionSites,
-				sharedAudioContext: options.sharedAudioContext,
-			})
-		),
-		createWatchPlugin({ prefersReducedMotion }),
-		createStackPlugin({ prefersReducedMotion }),
-		tooltipsPlugin,
-	];
-}
-
 export interface MinimalEditorMountOptions {
 	/** Borrow this context when its sample rate matches the project. The host owns its lifetime. */
 	sharedAudioContext?: AudioContext;
@@ -89,20 +40,43 @@ export async function mountMinimalEditor(
 	}: MinimalEditorMountOptions = {}
 ): Promise<MinimalEditorInstance> {
 	const compiler = createCompilerPlugin({ resolveInclude: resolveStdlibInclude });
+	const browserWindow = canvas.ownerDocument.defaultView!;
+	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
+	const prefersReducedMotion = () => motionPreference.matches;
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
-			...createMinimalEditorPlugins({
-				canvas,
+			createProjectUrlLoaderPlugin({
+				fetch: globalThis.fetch,
 				initialProjectUrl,
-				onInitialProjectLoaded,
-				onInitialProjectLoadError,
-				getMemory: compiler.getMemory,
-				writeMemory: compiler.writeMemory,
-				getCodeBuffer: compiler.getCodeBuffer,
-				getAssertionSites: compiler.getAssertionSites,
-				sharedAudioContext,
+				onLoaded: onInitialProjectLoaded,
+				onError: onInitialProjectLoadError,
 			}),
+			assertionMarkersPlugin,
+			createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory: compiler.writeMemory }),
+			createMidiInputPlugin({
+				navigator: browserWindow.navigator,
+				getMemory: compiler.getMemory,
+				getCodeBuffer: compiler.getCodeBuffer,
+			}),
+			createBinaryAssetsPlugin({
+				getMemoryBytes: () => {
+					const memory = compiler.getMemory();
+					return memory ? new Uint8Array(memory.buffer) : undefined;
+				},
+			}),
+			createLazyPluginLoaderPlugin(
+				createLazyPluginRegistry({
+					writeMemory: compiler.writeMemory,
+					getMemory: compiler.getMemory,
+					getCodeBuffer: compiler.getCodeBuffer,
+					getAssertionSites: compiler.getAssertionSites,
+					sharedAudioContext,
+				})
+			),
+			createWatchPlugin({ prefersReducedMotion }),
+			createStackPlugin({ prefersReducedMotion }),
+			tooltipsPlugin,
 		],
 		captureWheel,
 		featureFlags: { projectCreation: false, ...featureFlags },
