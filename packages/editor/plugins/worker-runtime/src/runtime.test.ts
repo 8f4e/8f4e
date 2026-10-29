@@ -1,9 +1,11 @@
 import type { EventDispatcher } from '@8f4e/editor-core';
 import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { startWorkerRuntime } from './runtime';
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe('WebWorker runtime config', () => {
 	it.each([
@@ -32,12 +34,12 @@ describe('WebWorker runtime config', () => {
 			compiler: { isCompiling: false },
 			info: {},
 		});
+		vi.stubGlobal('Worker', MockWorker);
 		const cleanup = startWorkerRuntime(
 			createStateManager(state),
 			{ dispatch: vi.fn() } as unknown as EventDispatcher,
 			() => new Uint8Array([1, 2, 3]),
-			() => new WebAssembly.Memory({ initial: 1 }),
-			MockWorker as unknown as new () => Worker
+			() => new WebAssembly.Memory({ initial: 1 })
 		);
 		const [worker] = workers;
 
@@ -66,12 +68,12 @@ describe('WebWorker runtime config', () => {
 		}
 		const state = createMockState({ compiler: { isCompiling: false }, info: {} });
 		const events = { dispatch: vi.fn() } as unknown as EventDispatcher;
+		vi.stubGlobal('Worker', MockWorker);
 		const cleanup = startWorkerRuntime(
 			createStateManager(state),
 			events,
 			() => new Uint8Array(),
-			() => new WebAssembly.Memory({ initial: 1 }),
-			MockWorker as unknown as new () => Worker
+			() => new WebAssembly.Memory({ initial: 1 })
 		);
 		const stats = {
 			timerPrecisionPercentage: 99,

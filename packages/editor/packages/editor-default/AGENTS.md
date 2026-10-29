@@ -27,7 +27,7 @@
 - Compose `createLazyPluginLoaderPlugin` with the per-editor `createLazyPluginRegistry` for optional signal-driven plugins.
   Keep its per-editor registry in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano, slider,
   and crossfade. Match all three wave directives: `wave`, `wave2`, and `wave4`. Import implementations and construct
-  their factories only inside `load()`, using the supplied live memory writer. Supply runtime imports with compiler artifact getters, the canvas browser window, and the optional shared AudioContext.
+  their factories only inside `load()`, using the supplied live memory writer. Supply runtime plugins with compiler artifact getters and the optional shared AudioContext. Each runtime plugin imports its own worker/worklet assets and owns browser API use.
   Mounting and initial project notifications do not wait for lazy plugin imports. The loader owns project-load scans,
   its manual scan menu, late installation, and disposal; core keeps the ordinary plugin contract.
 - Include `toggleFavoritePlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Core does

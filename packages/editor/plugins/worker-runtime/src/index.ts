@@ -4,11 +4,9 @@ import { getWebWorkerRuntimeConfig, startWorkerRuntime, WEB_WORKER_EDITOR_CONFIG
 export function createWorkerRuntimePlugin({
 	getCodeBuffer,
 	getMemory,
-	Worker: WorkerConstructor,
 }: {
 	getCodeBuffer: () => Uint8Array;
 	getMemory: () => WebAssembly.Memory | null;
-	Worker: new () => Worker;
 }): EditorPlugin {
 	return {
 		id: 'worker-runtime',
@@ -28,7 +26,7 @@ export function createWorkerRuntimePlugin({
 					return;
 				}
 				if (!stop && !state.compiler.isCompiling && getMemory())
-					stop = startWorkerRuntime(store, events, getCodeBuffer, getMemory, WorkerConstructor);
+					stop = startWorkerRuntime(store, events, getCodeBuffer, getMemory);
 			}
 			store.subscribe('editorConfig.workerRuntime', sync);
 			store.subscribe('compiler.isCompiling', sync);

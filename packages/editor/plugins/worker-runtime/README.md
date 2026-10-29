@@ -22,6 +22,7 @@ The plugin contributes `SAMPLE_RATE` by default. Set `workerRuntime.sampleRateCo
 Concurrent runtimes should use distinct constant names. Contributions are ordinary source in `constants env`;
 the compiler handles conflicting declarations. Statistics are published under the fixed `info.workerRuntime` namespace.
 
-The host supplies the Worker constructor and current compiler memory and bytecode getters.
+The host supplies current compiler memory and bytecode getters. The plugin imports the worker entry from the
+separate `@8f4e/runtime-web-worker` execution package using Vite's `?worker` asset handling and owns its workers.
 
 Validate with `npx nx run @8f4e/editor-plugin-worker-runtime:build|test|typecheck`.

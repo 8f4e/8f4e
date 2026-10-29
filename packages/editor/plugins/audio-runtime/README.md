@@ -24,7 +24,8 @@ the compiler handles conflicting declarations. Statistics are published under th
 
 Audio also contributes `AUDIO_BUFFER_SIZE` (128); configure its name with `audioRuntime.bufferSizeConstantName`.
 Output/input buffers use `audioOutBufferLAddress`, `audioOutBufferRAddress`, and `audioInBufferLAddress` under
-`audioRuntime`. The host supplies browser constructors, navigator, worklet URL, compiler getters, and an optional shared
-AudioContext. A borrowed context is never closed. Audio and microphone permission flow belongs to this plugin.
+`audioRuntime`. The host supplies compiler getters and an optional shared AudioContext. A borrowed context is never
+closed. The plugin imports the worklet URL from the separate `@8f4e/runtime-audio-worklet` execution package using
+Vite's `?url` asset handling. It owns browser API use, audio and microphone permissions, and resource cleanup.
 
 Validate with `npx nx run @8f4e/editor-plugin-audio-runtime:build|test|typecheck`.

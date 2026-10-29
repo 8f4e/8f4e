@@ -80,7 +80,6 @@ export function createDefaultEditorPlugins(options: {
 				getCodeBuffer: options.getCodeBuffer,
 				getAssertionSites: options.getAssertionSites,
 				sharedAudioContext: options.sharedAudioContext,
-				browser: options.canvas.ownerDocument.defaultView!,
 			})
 		),
 		createWatchPlugin({ prefersReducedMotion }),

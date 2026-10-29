@@ -6,6 +6,7 @@ import type {
 } from '@8f4e/editor-core';
 import { resolveSchemaConfigRoot } from '@8f4e/editor-core';
 import type { WebWorkerHostMessage, WebWorkerRuntimeMessage } from '@8f4e/runtime-web-worker/messages';
+import WorkerConstructor from '@8f4e/runtime-web-worker?worker';
 
 export const WEB_WORKER_EDITOR_CONFIG: EditorConfigSchemaContribution = {
 	root: 'workerRuntime',
@@ -45,8 +46,7 @@ export function startWorkerRuntime(
 	store: EditorPluginContext['store'],
 	events: EventDispatcher,
 	getCodeBuffer: () => Uint8Array,
-	getMemory: () => WebAssembly.Memory | null,
-	WorkerConstructor: new () => Worker
+	getMemory: () => WebAssembly.Memory | null
 ) {
 	const state = store.getState();
 	let worker: Worker | undefined;

@@ -11,6 +11,7 @@ import type {
 	AudioOutputBufferRoute,
 	AudioWorkletRuntimeMessage,
 } from '@8f4e/runtime-audio-worklet/messages';
+import audioWorkletUrl from '@8f4e/runtime-audio-worklet/worklet?url';
 
 const AUDIO_PERMISSION_DIALOG_ID = 'audio-worklet-permission';
 const GRANT_AUDIO_PERMISSION_ACTION = 'grantAudioPermission';
@@ -128,11 +129,7 @@ export function startAudioRuntime(
 	events: EventDispatcher,
 	getCodeBuffer: () => Uint8Array,
 	getMemory: () => WebAssembly.Memory | null,
-	audioWorkletUrl: string,
-	sharedAudioContext: AudioContext | undefined,
-	AudioContextConstructor: typeof AudioContext,
-	AudioWorkletNodeConstructor: typeof AudioWorkletNode,
-	navigator: Navigator
+	sharedAudioContext?: AudioContext
 ) {
 	const state = store.getState();
 	let audioContext: AudioContext | null = null;
@@ -253,7 +250,7 @@ export function startAudioRuntime(
 		try {
 			audioContext = getSharedAudioContext() ?? null;
 			if (!audioContext) {
-				audioContext = new AudioContextConstructor({
+				audioContext = new AudioContext({
 					sampleRate: getSampleRate(state.editorConfig),
 					latencyHint: 'interactive',
 				});
@@ -267,7 +264,7 @@ export function startAudioRuntime(
 			if (disposed || currentGeneration !== generation) {
 				return;
 			}
-			audioWorklet = new AudioWorkletNodeConstructor(audioContext, 'worklet', {
+			audioWorklet = new AudioWorkletNode(audioContext, 'worklet', {
 				outputChannelCount: [2],
 				numberOfOutputs: 1,
 				numberOfInputs: 1, // Specify the number of inputs

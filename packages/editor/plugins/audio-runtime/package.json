@@ -23,6 +23,7 @@
     "@8f4e/config": "*",
     "@8f4e/editor-state-testing": "*",
     "vitest": "4.1.7",
-    "@8f4e/state-manager": "*"
+    "@8f4e/state-manager": "*",
+    "vite": "7.3.7"
   }
 }

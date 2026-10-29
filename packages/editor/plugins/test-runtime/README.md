@@ -11,8 +11,9 @@ The plugin registers its schema on setup and initializes from current configurat
 run alongside other runtimes, sharing the compiler's memory. Disabling it stops its own execution. A loaded plugin
 stays installed until editor disposal; configuration introduced by editing uses **Load plugins used by project**.
 
-The host supplies the test Worker constructor and live memory, bytecode, and assertion-site getters. The plugin runs
-the compiled test entry once per successful compilation, publishes status and results to `info.testRuntime`, and
+The host supplies live memory, bytecode, and assertion-site getters. The plugin imports the worker entry from the
+separate `@8f4e/runtime-test-runner` execution package using Vite's `?worker` asset handling. It runs the compiled test
+entry once per successful compilation, publishes status and results to `info.testRuntime`, and
 publishes executed sites and formatted failure messages through core's generic `assertionResults`. It terminates
 superseded workers and clears assertion markers on disable, recompilation, and disposal.
 

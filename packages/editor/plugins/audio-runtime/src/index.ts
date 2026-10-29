@@ -9,19 +9,11 @@ import {
 export function createAudioRuntimePlugin({
 	getCodeBuffer,
 	getMemory,
-	audioWorkletUrl,
 	sharedAudioContext,
-	AudioContext: AudioContextConstructor,
-	AudioWorkletNode: AudioWorkletNodeConstructor,
-	navigator,
 }: {
 	getCodeBuffer: () => Uint8Array;
 	getMemory: () => WebAssembly.Memory | null;
-	audioWorkletUrl: string;
 	sharedAudioContext?: AudioContext;
-	AudioContext: typeof globalThis.AudioContext;
-	AudioWorkletNode: typeof globalThis.AudioWorkletNode;
-	navigator: Navigator;
 }): EditorPlugin {
 	return {
 		id: 'audio-runtime',
@@ -46,17 +38,7 @@ export function createAudioRuntimePlugin({
 					return;
 				}
 				if (!stop && !state.compiler.isCompiling && getMemory())
-					stop = startAudioRuntime(
-						store,
-						events,
-						getCodeBuffer,
-						getMemory,
-						audioWorkletUrl,
-						sharedAudioContext,
-						AudioContextConstructor,
-						AudioWorkletNodeConstructor,
-						navigator
-					);
+					stop = startAudioRuntime(store, events, getCodeBuffer, getMemory, sharedAudioContext);
 			}
 			store.subscribe('editorConfig.audioRuntime', sync);
 			store.subscribe('compiler.isCompiling', sync);

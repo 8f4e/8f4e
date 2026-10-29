@@ -9,6 +9,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 const cleanups: Array<() => void> = [];
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
+	vi.unstubAllGlobals();
 });
 
 function setup() {
@@ -48,20 +49,19 @@ function setup() {
 		removeEventListener: vi.fn(),
 		close: vi.fn(),
 	};
+	vi.stubGlobal('Worker', FakeWorker);
+	vi.stubGlobal('AudioContext', class {});
+	vi.stubGlobal('AudioWorkletNode', FakeWorklet);
+	vi.stubGlobal('navigator', {});
 	const context = { store, events } as EditorPluginContext;
 	const disposeAudio = createAudioRuntimePlugin({
 		getMemory: () => memory,
 		getCodeBuffer: () => new Uint8Array([1]),
-		audioWorkletUrl: 'worklet.js',
 		sharedAudioContext: audioContext as unknown as AudioContext,
-		AudioContext: class {} as unknown as typeof AudioContext,
-		AudioWorkletNode: FakeWorklet as unknown as typeof AudioWorkletNode,
-		navigator: {} as Navigator,
 	}).setup(context);
 	const disposeWorker = createWorkerRuntimePlugin({
 		getMemory: () => memory,
 		getCodeBuffer: () => new Uint8Array([1]),
-		Worker: FakeWorker as unknown as new () => Worker,
 	}).setup(context);
 	cleanups.push(() => {
 		disposeWorker();

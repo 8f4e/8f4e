@@ -1,6 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import type { AssertionSite } from '@8f4e/language-spec';
 import type { TestRunResult } from '@8f4e/runtime-test-runner/types';
+import WorkerConstructor from '@8f4e/runtime-test-runner?worker';
 import { formatAssertionExpectation, formatTestFailures } from '@8f4e/test-runner';
 import type { TestRuntimeState } from './types';
 
@@ -8,12 +9,10 @@ export function createTestRuntimePlugin({
 	getCodeBuffer,
 	getMemory,
 	getAssertionSites,
-	Worker: WorkerConstructor,
 }: {
 	getCodeBuffer: () => Uint8Array;
 	getMemory: () => WebAssembly.Memory | null;
 	getAssertionSites: () => AssertionSite[] | undefined;
-	Worker: new () => Worker;
 }): EditorPlugin {
 	return {
 		id: 'test-runtime',

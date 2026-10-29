@@ -32,6 +32,7 @@ function createProgram(): TestRuntimeProgram {
 
 function setup(initialProgram?: TestRuntimeProgram, isCompiling = false) {
 	FakeWorker.instances = [];
+	vi.stubGlobal('Worker', FakeWorker);
 	let program = initialProgram;
 	const state = createMockState({
 		compiler: { isCompiling },
@@ -45,7 +46,6 @@ function setup(initialProgram?: TestRuntimeProgram, isCompiling = false) {
 		getCodeBuffer: () => program?.codeBuffer ?? new Uint8Array(),
 		getMemory: () => program?.memory ?? null,
 		getAssertionSites: () => program?.assertionSites,
-		Worker: FakeWorker as unknown as new () => Worker,
 	}).setup({ store, events } as unknown as import('@8f4e/editor-core').EditorPluginContext);
 	return {
 		state,
@@ -67,6 +67,7 @@ const passed = (): TestRunResult => ({
 describe('TestRuntime lifecycle', () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
+		vi.unstubAllGlobals();
 	});
 
 	it('publishes source sites, outcomes, and failure details and clears them on restart and disposal', () => {

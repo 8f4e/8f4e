@@ -92,11 +92,7 @@ describe('AudioWorklet context lifetime', () => {
 			events,
 			() => new Uint8Array(),
 			() => new WebAssembly.Memory({ initial: 1 }),
-			'worklet.js',
-			sharedAudioContext as unknown as AudioContext,
-			globalThis.AudioContext,
-			globalThis.AudioWorkletNode,
-			globalThis.navigator
+			sharedAudioContext as unknown as AudioContext
 		);
 		cleanups.push(cleanup);
 		return {
@@ -379,12 +375,7 @@ describe('AudioWorklet runtime config', () => {
 			store,
 			events,
 			() => new Uint8Array(),
-			() => null,
-			'worklet.js',
-			undefined,
-			globalThis.AudioContext,
-			globalThis.AudioWorkletNode,
-			globalThis.navigator
+			() => null
 		);
 
 		expect(events.dispatch).toHaveBeenCalledWith('addDialog', {

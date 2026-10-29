@@ -61,7 +61,8 @@ stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG
 constructs this plugin set with resources for one editor. The project-files plugin derives browser resources from the
 canvas; WebAssembly export receives its document and a live compiler-byte getter. There is no host file service.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
-browser resources; browser dependencies are supplied to plugin factories by this composition.
+browser resources. This composition supplies resources tied to the host, while browser plugins can own their
+browser API use.
 Meter, bars, crossfade, watch, and stack are also optional plugins in this standard set. Watch and stack remain fixed
 and register their overlays before tooltips. They receive a live reduced-motion preference from the browser host
 and keep their animation and data inside their installations.
@@ -136,7 +137,8 @@ The public editor API has no callbacks bag. Core announces input changes through
 
 Runtime plugins activate from `audioRuntime`, `workerRuntime`, or `testRuntime` configuration roots. Each has an
 `enabled` setting, defaulting to false; several may be enabled together. The host injects live compiler getters and
-browser resources when importing each plugin. Their fixed info namespaces match their config roots.
+an optional shared AudioContext. Each plugin imports its own worker/worklet assets from the separate execution
+packages and owns browser API use and resource cleanup. Their fixed info namespaces match their config roots.
 
 ```text
 ; @config audioRuntime.enabled true

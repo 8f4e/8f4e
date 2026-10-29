@@ -51,7 +51,6 @@ function restoreSession(directive: string) {
 		getMemory: () => null,
 		getCodeBuffer: () => new Uint8Array(),
 		getAssertionSites: () => undefined,
-		browser: {} as Window & typeof globalThis,
 	}).map(entry => ({
 		...entry,
 		load: vi.fn(entry.load),
