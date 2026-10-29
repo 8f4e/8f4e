@@ -14,7 +14,6 @@ test('contributes group menus and drag behavior through the real editor', async 
 	try {
 		editor = await initEditor(canvas, {
 			initialEditorMode: 'edit',
-			runtimeRegistry: {},
 			plugins: [groupingPlugin],
 			initialProject: parseProjectSource(`8f4e/v1
 constants env

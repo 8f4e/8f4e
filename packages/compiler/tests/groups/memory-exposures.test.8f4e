@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Nested group memory exposures resolve pointer defaults and metadata queries.
 Aliases use the backing declaration's type without allocating additional storage.

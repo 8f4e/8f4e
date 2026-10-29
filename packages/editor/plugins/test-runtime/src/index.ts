@@ -1,28 +1,39 @@
-import type { EventDispatcher, RuntimeRegistryEntry, State } from '@8f4e/editor-core';
+import type { EditorPlugin } from '@8f4e/editor-core';
 import type { AssertionSite } from '@8f4e/language-spec';
-import type { StateManager } from '@8f4e/state-manager';
+import type { TestRunResult } from '@8f4e/runtime-test-runner/types';
+import WorkerConstructor from '@8f4e/runtime-test-runner?worker';
 import { formatAssertionExpectation, formatTestFailures } from '@8f4e/test-runner';
-import type { TestRunResult, TestRuntimeState } from './types';
 
-const TEST_RUNTIME_ID = 'TestRuntime';
-
-export function createTestRuntimeDef(
-	getCodeBuffer: () => Uint8Array,
-	getMemory: () => WebAssembly.Memory | null,
-	getAssertionSites: () => AssertionSite[] | undefined,
-	WorkerConstructor: new () => Worker
-): RuntimeRegistryEntry {
+export function createTestRuntimePlugin({
+	getCodeBuffer,
+	getMemory,
+	getAssertionSites,
+}: {
+	getCodeBuffer: () => Uint8Array;
+	getMemory: () => WebAssembly.Memory | null;
+	getAssertionSites: () => AssertionSite[] | undefined;
+}): EditorPlugin {
 	return {
-		id: TEST_RUNTIME_ID,
-		factory: (store: StateManager<State>, events: EventDispatcher) => {
+		id: 'test-runtime',
+		setup: ({ store, events }) => {
 			const state = store.getState();
 			let worker: Worker | undefined;
 
-			function publish(result: TestRuntimeState) {
-				store.set('runtime.values', { ...state.runtime.values, [TEST_RUNTIME_ID]: result });
+			function publish(result: TestRunResult | { status: 'idle' | 'running' }) {
+				const completed = result.status === 'passed' || result.status === 'failed';
+				store.set(
+					'info.testRuntime',
+					completed
+						? {
+								status: result.status,
+								assertionCount: result.assertions.length,
+								failureCount: result.failures.length,
+							}
+						: result
+				);
 				store.set(
 					'assertionResults',
-					result.status === 'passed' || result.status === 'failed'
+					completed
 						? result.assertions.map(assertion => ({
 								site: assertion.site,
 								passed: assertion.passed,
@@ -38,7 +49,10 @@ export function createTestRuntimeDef(
 			}
 
 			function syncCompilation() {
-				if (state.compiler.isCompiling) {
+				if (
+					!(state.editorConfig.testRuntime as { enabled?: boolean } | undefined)?.enabled ||
+					state.compiler.isCompiling
+				) {
 					stopWorker();
 					publish({ status: 'idle' });
 					return;
@@ -53,29 +67,40 @@ export function createTestRuntimeDef(
 				stopWorker();
 				const currentWorker = new WorkerConstructor();
 				worker = currentWorker;
-				publish({ status: 'running', assertionSites });
+				publish({ status: 'running' });
 
 				const finish = (data: TestRunResult) => {
 					if (worker !== currentWorker) return;
 					stopWorker();
-					publish({ ...data, assertionSites });
+					publish(data);
 					if (data.status === 'error') console.error('[TestRuntime]', data.error);
 					else if (data.status === 'failed') console.error('[TestRuntime]', formatTestFailures(data.failures));
 					else console.info(`[TestRuntime] ${data.assertions.length} assertions passed`);
-					events.dispatch('runtimeInitialized');
+					events.dispatch('memoryValuesChanged');
 				};
 				currentWorker.onmessage = ({ data }: MessageEvent<TestRunResult>) => finish(data);
 				currentWorker.onerror = event => finish({ status: 'error', error: event.message });
 				currentWorker.postMessage({ codeBuffer: getCodeBuffer(), memory, assertionSites });
 			}
 
+			store.set('editorConfigSchemaContributions.testRuntime', {
+				root: 'testRuntime',
+				defaults: { enabled: false },
+				schema: { type: 'object', properties: { enabled: { type: 'boolean' } }, additionalProperties: false },
+			});
 			store.subscribe('compiler.isCompiling', syncCompilation);
+			store.subscribe('editorConfig.testRuntime', syncCompilation);
+
 			syncCompilation();
 
 			return () => {
 				store.unsubscribe('compiler.isCompiling', syncCompilation);
+				store.unsubscribe('editorConfig.testRuntime', syncCompilation);
 				stopWorker();
 				publish({ status: 'idle' });
+				const schemas = { ...state.editorConfigSchemaContributions };
+				delete schemas.testRuntime;
+				store.set('editorConfigSchemaContributions', schemas);
 			};
 		},
 	};

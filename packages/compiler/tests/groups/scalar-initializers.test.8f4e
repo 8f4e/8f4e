@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Group initializers override scalar defaults using the backing declaration's storage type.
 Numbers share ordinary declaration conversion, inherited defaults, and initialization timing.

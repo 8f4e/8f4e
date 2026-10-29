@@ -44,20 +44,16 @@ describe('@config directive', () => {
 
 	it('records the current module for config entries', () => {
 		const result = resolveGlobalEditorDirectives([
-			createParsedBlock(
-				['module audioout', '; @config audioRuntime.audioOutBufferLAddress buffer', 'moduleEnd'],
-				'audioout',
-				'audio'
-			),
+			createParsedBlock(['module example', '; @config custom.target buffer', 'moduleEnd'], 'example', 'outer'),
 		]);
 
 		expect(result.resolved.configEntries).toEqual([
 			{
-				path: 'audioRuntime.audioOutBufferLAddress',
+				path: 'custom.target',
 				value: 'buffer',
 				sourceLineIndex: 1,
 				codeBlockId: 0,
-				moduleId: 'audio/audioout',
+				moduleId: 'outer/example',
 			},
 		]);
 		expect(result.errors).toEqual([]);

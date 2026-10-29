@@ -32,7 +32,7 @@ function restoreSession(directive: string) {
 	const storage = { getItem: () => JSON.stringify(project), setItem: vi.fn() };
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, runtimeRegistry: {} });
+	const store = initState(events, { callbacks: {} });
 	const context = {
 		store,
 		events,
@@ -46,7 +46,12 @@ function restoreSession(directive: string) {
 		storageKey: 'session',
 		restoreOnStartup: true,
 	}).setup(context);
-	const entries = createLazyPluginRegistry({ writeMemory: () => {} }).map(entry => ({
+	const entries = createLazyPluginRegistry({
+		writeMemory: () => {},
+		getMemory: () => null,
+		getCodeBuffer: () => new Uint8Array(),
+		getAssertionSites: () => undefined,
+	}).map(entry => ({
 		...entry,
 		load: vi.fn(entry.load),
 	}));

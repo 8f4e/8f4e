@@ -1,50 +1,35 @@
-// Import the types from the editor
-// Note: audioWorkletUrl is imported at runtime by the host, not here
-
 import type {
 	EditorConfig,
 	EditorConfigSchemaContribution,
+	EditorPluginContext,
 	EventDispatcher,
-	RuntimeRegistryEntry,
 	State,
 } from '@8f4e/editor-core';
 import { resolveSchemaConfigRoot } from '@8f4e/editor-core';
-import type { StateManager } from '@8f4e/state-manager';
-import type { AudioInputBufferRoute, AudioOutputBufferRoute, AudioWorkletRuntimeMessage } from './messages';
-import {
-	type AudioContextLike,
-	type AudioNodeLike,
-	type AudioWorkletNodeLike,
-	browserAudioPlatform,
-	type MediaStreamLike,
-	type MediaStreamTrackLike,
-} from './platform';
-import { AUDIO_WORKLET_RUNTIME_ID, storeAudioWorkletRuntimeValues } from './runtimeValues';
+import type {
+	AudioInputBufferRoute,
+	AudioOutputBufferRoute,
+	AudioWorkletRuntimeMessage,
+} from '@8f4e/runtime-audio-worklet/messages';
+import audioWorkletUrl from '@8f4e/runtime-audio-worklet/worklet?url';
 
 const AUDIO_PERMISSION_DIALOG_ID = 'audio-worklet-permission';
 const GRANT_AUDIO_PERMISSION_ACTION = 'grantAudioPermission';
-const AUDIO_BUFFER_SIZE = 128;
+export const AUDIO_BUFFER_SIZE = 128;
 const AUDIO_PERMISSION_TEXT =
 	"This project uses AudioWorklet for audio playback and requires your permission to start. Select Allow to start the program, or choose to do nothing; then the program won't start.";
 
-/** Host audio context shared with the runtime; it is used like an owned context but never closed. */
-export type SharedAudioContext = AudioContextLike;
+/** Reuse the worklet module across editor instances sharing an AudioContext. */
+const workletModules = new WeakMap<AudioContext, Promise<void>>();
 
-const workletModules = new WeakMap<SharedAudioContext, Map<string, Promise<void>>>();
-
-function loadWorklet(context: SharedAudioContext, url: string): Promise<void> {
-	let modules = workletModules.get(context);
-	if (!modules) {
-		modules = new Map();
-		workletModules.set(context, modules);
-	}
-	let loading = modules.get(url);
+function loadWorklet(context: AudioContext): Promise<void> {
+	let loading = workletModules.get(context);
 	if (!loading) {
-		loading = context.audioWorklet.addModule(url).catch(error => {
-			modules.delete(url);
+		loading = context.audioWorklet.addModule(audioWorkletUrl).catch(error => {
+			workletModules.delete(context);
 			throw error;
 		});
-		modules.set(url, loading);
+		workletModules.set(context, loading);
 	}
 	return loading;
 }
@@ -56,16 +41,22 @@ const AUDIO_BUFFER_ADDRESS_SCHEMA = {
 	],
 };
 
-const AUDIO_WORKLET_EDITOR_CONFIG: EditorConfigSchemaContribution = {
+export const AUDIO_WORKLET_EDITOR_CONFIG: EditorConfigSchemaContribution = {
 	root: 'audioRuntime',
 	defaults: {
+		enabled: false,
 		entry: 'buffer',
 		sampleRate: 48000,
+		sampleRateConstantName: 'SAMPLE_RATE',
+		bufferSizeConstantName: 'AUDIO_BUFFER_SIZE',
 	},
 	schema: {
 		type: 'object',
 		properties: {
+			enabled: { type: 'boolean' },
 			entry: { type: 'string' },
+			sampleRateConstantName: { type: 'string' },
+			bufferSizeConstantName: { type: 'string' },
 			sampleRate: { type: 'number', minimum: 1 },
 			audioOutBufferLAddress: AUDIO_BUFFER_ADDRESS_SCHEMA,
 			audioOutBufferRAddress: AUDIO_BUFFER_ADDRESS_SCHEMA,
@@ -76,6 +67,9 @@ const AUDIO_WORKLET_EDITOR_CONFIG: EditorConfigSchemaContribution = {
 };
 
 interface AudioWorkletRuntimeConfig {
+	enabled: boolean;
+	sampleRateConstantName: string;
+	bufferSizeConstantName: string;
 	entry: string;
 	sampleRate: number;
 	audioOutBufferLAddress?: number;
@@ -83,35 +77,19 @@ interface AudioWorkletRuntimeConfig {
 	audioInBufferLAddress?: number;
 }
 
-type AudioBufferConfigKey = 'audioOutBufferLAddress' | 'audioOutBufferRAddress' | 'audioInBufferLAddress';
-
-function getAudioWorkletRuntimeConfig(state: State): AudioWorkletRuntimeConfig {
-	const config = resolveSchemaConfigRoot(AUDIO_WORKLET_EDITOR_CONFIG, state.editorConfig, state) as Record<
-		string,
-		unknown
-	>;
-
-	return {
-		entry: typeof config.entry === 'string' && config.entry ? config.entry : 'buffer',
-		sampleRate: typeof config.sampleRate === 'number' ? config.sampleRate : 48000,
-		audioOutBufferLAddress: getAudioBufferConfigValue(config, 'audioOutBufferLAddress'),
-		audioOutBufferRAddress: getAudioBufferConfigValue(config, 'audioOutBufferRAddress'),
-		audioInBufferLAddress: getAudioBufferConfigValue(config, 'audioInBufferLAddress'),
-	};
-}
-
-function getAudioBufferConfigValue(config: Record<string, unknown>, key: AudioBufferConfigKey): number | undefined {
-	const value = config[key];
-	return typeof value === 'number' ? value : undefined;
+export function getAudioWorkletRuntimeConfig(state: State): AudioWorkletRuntimeConfig {
+	return resolveSchemaConfigRoot(
+		AUDIO_WORKLET_EDITOR_CONFIG,
+		state.editorConfig,
+		state
+	) as unknown as AudioWorkletRuntimeConfig;
 }
 
 function getSampleRate(editorConfig: EditorConfig): number {
-	const config = resolveSchemaConfigRoot(AUDIO_WORKLET_EDITOR_CONFIG, editorConfig);
-	return typeof config.sampleRate === 'number' ? config.sampleRate : 48000;
+	return resolveSchemaConfigRoot(AUDIO_WORKLET_EDITOR_CONFIG, editorConfig).sampleRate as number;
 }
 
-export function getAudioOutputBuffers(state: State): AudioOutputBufferRoute[] {
-	const config = getAudioWorkletRuntimeConfig(state);
+function getAudioOutputBuffers(config: AudioWorkletRuntimeConfig): AudioOutputBufferRoute[] {
 	const leftAddress = config.audioOutBufferLAddress;
 	const rightAddress = config.audioOutBufferRAddress;
 	const buffers: AudioOutputBufferRoute[] = [];
@@ -127,8 +105,7 @@ export function getAudioOutputBuffers(state: State): AudioOutputBufferRoute[] {
 	return buffers;
 }
 
-export function getAudioInputBuffers(state: State): AudioInputBufferRoute[] {
-	const config = getAudioWorkletRuntimeConfig(state);
+function getAudioInputBuffers(config: AudioWorkletRuntimeConfig): AudioInputBufferRoute[] {
 	const leftAddress = config.audioInBufferLAddress;
 
 	return leftAddress === undefined ? [] : [{ audioBufferWordAddress: leftAddress, input: 0, channel: 0 }];
@@ -139,19 +116,18 @@ function hasAudioInputBufferConfig(editorConfig: EditorConfig): boolean {
 }
 
 // AudioWorklet Runtime Factory
-export function audioWorkletRuntimeFactory(
-	store: StateManager<State>,
+export function startAudioRuntime(
+	store: EditorPluginContext['store'],
 	events: EventDispatcher,
 	getCodeBuffer: () => Uint8Array,
 	getMemory: () => WebAssembly.Memory | null,
-	audioWorkletUrl: string,
-	sharedAudioContext?: SharedAudioContext
+	sharedAudioContext?: AudioContext
 ) {
 	const state = store.getState();
-	let audioContext: AudioContextLike | null = null;
-	let audioWorklet: AudioWorkletNodeLike | null = null;
-	let mediaStream: MediaStreamLike | null = null;
-	let mediaStreamSource: AudioNodeLike | null = null;
+	let audioContext: AudioContext | null = null;
+	let audioWorklet: AudioWorkletNode | null = null;
+	let mediaStream: MediaStream | null = null;
+	let mediaStreamSource: MediaStreamAudioSourceNode | null = null;
 	let disposed = false;
 	/**
 	 * Identifies the current audio initialization attempt. Incremented when initialization
@@ -200,17 +176,15 @@ export function audioWorkletRuntimeFactory(
 			return;
 		}
 
-		if (audioWorklet) {
-			const config = getAudioWorkletRuntimeConfig(state);
-			audioWorklet.port.postMessage({
-				type: 'init',
-				memoryRef: memory,
-				codeBuffer: getCodeBuffer(),
-				bufferExportName: config.entry,
-				audioOutputBuffers: getAudioOutputBuffers(state),
-				audioInputBuffers: getAudioInputBuffers(state),
-			});
-		}
+		const config = getAudioWorkletRuntimeConfig(state);
+		audioWorklet.port.postMessage({
+			type: 'init',
+			memoryRef: memory,
+			codeBuffer: getCodeBuffer(),
+			bufferExportName: config.entry,
+			audioOutputBuffers: getAudioOutputBuffers(config),
+			audioInputBuffers: getAudioInputBuffers(config),
+		});
 	}
 
 	async function syncAudioInputSource() {
@@ -226,7 +200,7 @@ export function audioWorkletRuntimeFactory(
 			}
 
 			if (mediaStream) {
-				mediaStream.getTracks().forEach((track: MediaStreamTrackLike) => track.stop());
+				mediaStream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
 				mediaStream = null;
 			}
 			return;
@@ -237,7 +211,7 @@ export function audioWorkletRuntimeFactory(
 		}
 
 		try {
-			const stream = await browserAudioPlatform.getUserMedia({
+			const stream = await navigator.mediaDevices.getUserMedia({
 				audio: {
 					echoCancellation: false,
 					noiseSuppression: false,
@@ -245,7 +219,7 @@ export function audioWorkletRuntimeFactory(
 				},
 			});
 			if (disposed || revision !== inputRevision) {
-				stream.getTracks().forEach((track: MediaStreamTrackLike) => track.stop());
+				stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
 				return;
 			}
 			mediaStream = stream;
@@ -266,7 +240,7 @@ export function audioWorkletRuntimeFactory(
 		try {
 			audioContext = getSharedAudioContext() ?? null;
 			if (!audioContext) {
-				audioContext = browserAudioPlatform.createAudioContext({
+				audioContext = new AudioContext({
 					sampleRate: getSampleRate(state.editorConfig),
 					latencyHint: 'interactive',
 				});
@@ -275,12 +249,12 @@ export function audioWorkletRuntimeFactory(
 			// Resume synchronously in the Allow handler, before loading the worklet can consume the user gesture.
 			await Promise.all([
 				audioContext.state === 'running' ? Promise.resolve() : audioContext.resume(),
-				loadWorklet(audioContext, audioWorkletUrl),
+				loadWorklet(audioContext),
 			]);
 			if (disposed || currentGeneration !== generation) {
 				return;
 			}
-			audioWorklet = browserAudioPlatform.createAudioWorkletNode(audioContext, 'worklet', {
+			audioWorklet = new AudioWorkletNode(audioContext, 'worklet', {
 				outputChannelCount: [2],
 				numberOfOutputs: 1,
 				numberOfInputs: 1, // Specify the number of inputs
@@ -291,10 +265,11 @@ export function audioWorkletRuntimeFactory(
 			audioWorklet.port.onmessage = ({ data }: { data: AudioWorkletRuntimeMessage }) => {
 				switch (data.type) {
 					case 'initialized':
-						events.dispatch('runtimeInitialized', data.payload);
+						store.set('info.audioRuntime', { ...state.info.audioRuntime, ...data.payload });
+						events.dispatch('memoryValuesChanged');
 						break;
 					case 'runtimeValues':
-						storeAudioWorkletRuntimeValues(store, state, data.payload);
+						store.set('info.audioRuntime', { ...state.info.audioRuntime, ...data.payload });
 						break;
 				}
 			};
@@ -331,7 +306,7 @@ export function audioWorkletRuntimeFactory(
 		}
 
 		if (mediaStream) {
-			mediaStream.getTracks().forEach((track: MediaStreamTrackLike) => track.stop());
+			mediaStream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
 			mediaStream = null;
 		}
 
@@ -392,28 +367,5 @@ export function audioWorkletRuntimeFactory(
 
 		tearDownAudioContext();
 		hideAudioPermissionDialog();
-	};
-}
-
-/**
- * Create a runtime definition with injected callbacks.
- * This allows the host to provide getCodeBuffer and getMemory implementations.
- */
-export function createAudioWorkletRuntimeDef(
-	getCodeBuffer: () => Uint8Array,
-	getMemory: () => WebAssembly.Memory | null,
-	audioWorkletUrl: string,
-	sharedAudioContext?: SharedAudioContext
-): RuntimeRegistryEntry {
-	return {
-		id: AUDIO_WORKLET_RUNTIME_ID,
-		editorConfigSchema: AUDIO_WORKLET_EDITOR_CONFIG,
-		getEnvConstants: editorConfig => [
-			`const SAMPLE_RATE ${getSampleRate(editorConfig)}`,
-			`const AUDIO_BUFFER_SIZE ${AUDIO_BUFFER_SIZE}`,
-		],
-		factory: (store: StateManager<State>, events: EventDispatcher) => {
-			return audioWorkletRuntimeFactory(store, events, getCodeBuffer, getMemory, audioWorkletUrl, sharedAudioContext);
-		},
 	};
 }

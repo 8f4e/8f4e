@@ -36,10 +36,8 @@ the config ownership checked after extraction, for future architectural discussi
   consumers would still leave this indirect path. This depends on compiled memory metadata rather than ownership of a
   compiler setting.
 
-- **Runtime lifecycle.** Core's [runtime coordinator](../../packages/editor/packages/editor-core/packages/editor-state/src/features/runtime/effect.ts)
-  gates startup on `compiler.isCompiling`. The web-worker, audio-worklet, and test runtime definitions also subscribe
-  to that field, despite receiving memory and bytecode getters through their factories. This is a compilation-readiness
-  dependency beyond consuming the accepted result.
+- **Runtime lifecycle.** The audio, worker, and test runtime plugins subscribe to `compiler.isCompiling` and receive
+  live memory/bytecode getters. Their readiness dependency is outside core's ordinary plugin installation.
 
 - **Diagnostics and assertions.** Core owns a `compilationErrors` bucket and assertion results containing compiler
   assertion-site types. [Error-message derivation](../../packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/deriveErrorMessages.ts)

@@ -193,7 +193,7 @@ store
 moduleEnd
 module projectConfig
 ; @pos -131 1
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
 ; @config export.fileName audioBuffer

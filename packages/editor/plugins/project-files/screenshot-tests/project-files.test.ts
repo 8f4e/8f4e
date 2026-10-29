@@ -35,7 +35,6 @@ noteEnd`;
 	try {
 		editor = await initEditor(canvas, {
 			initialEditorMode: 'edit',
-			runtimeRegistry: {},
 			initialProject: parseProjectSource(source),
 			plugins: [createProjectFilesPlugin({ inputTarget: canvas })],
 		});

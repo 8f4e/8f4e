@@ -20,7 +20,6 @@ describe('editor state lifecycle', () => {
 				cancelAnimationFrame,
 			},
 			initialEditorMode: editorMode,
-			runtimeRegistry: {},
 		});
 		const state = store.getState();
 		animateViewport(state, 80, 160, events);
@@ -40,7 +39,6 @@ describe('editor state lifecycle', () => {
 		const store = initState(events, {
 			callbacks: {},
 			initialEditorMode: 'edit',
-			runtimeRegistry: {},
 		});
 
 		expect(store.getState().editorMode).toBe('edit');
@@ -53,7 +51,6 @@ describe('editor state lifecycle', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
 			callbacks: {},
-			runtimeRegistry: {},
 		});
 		const code = ['note local.editorConfig', '; @config font terminus8x16', 'noteEnd'];
 
@@ -74,29 +71,6 @@ describe('editor state lifecycle', () => {
 		store.dispose();
 	});
 
-	it('disposes initialized effects and their active runtime exactly once', async () => {
-		const runtimeDestroyer = vi.fn();
-		const runtimeFactory = vi.fn(() => runtimeDestroyer);
-		const events = createMockEventDispatcherWithVitest();
-		const store = initState(events, {
-			callbacks: {},
-			runtimeRegistry: {
-				TestRuntime: {
-					id: 'TestRuntime',
-					factory: runtimeFactory,
-				},
-			},
-		});
-
-		store.getState().editorConfig.runtime = 'TestRuntime';
-		store.set('compiler.isCompiling', false);
-		await Promise.resolve();
-		store.dispose();
-		store.dispose();
-
-		expect(runtimeFactory).toHaveBeenCalledOnce();
-		expect(runtimeDestroyer).toHaveBeenCalledOnce();
-	});
 	it.each([0, Infinity])(
 		'consumes a menu click before dispatching to a code block (highlighted item: %s)',
 		highlightedItem => {
@@ -121,7 +95,6 @@ describe('editor state lifecycle', () => {
 			const store = initState(events, {
 				callbacks: {},
 				initialEditorMode: 'edit',
-				runtimeRegistry: {},
 			});
 			const state = store.getState();
 			const codeBlock = createMockCodeBlock({

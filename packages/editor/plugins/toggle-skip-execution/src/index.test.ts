@@ -52,7 +52,6 @@ function createContext(code = ['module test', '', 'moduleEnd']) {
 	const events = createEvents();
 	const { store, dispose } = setupState(events, {
 		callbacks: {},
-		runtimeRegistry: {},
 		initialEditorMode: 'edit',
 	});
 	const state = store.getState();
@@ -132,7 +131,6 @@ describe('toggle skip execution plugin', () => {
 				events,
 				{
 					callbacks: {},
-					runtimeRegistry: {},
 					initialEditorMode: 'edit',
 				},
 				installed
@@ -156,7 +154,6 @@ describe('toggle skip execution plugin', () => {
 		const events = createEvents();
 		const { store, dispose } = setupState(events, {
 			callbacks: {},
-			runtimeRegistry: {},
 			initialEditorMode: 'edit',
 		});
 		try {
@@ -201,7 +198,6 @@ describe('toggle skip execution plugin', () => {
 		events.on('compilationInputChanged', changed);
 		const { store, dispose } = setupState(events, {
 			callbacks: {},
-			runtimeRegistry: {},
 			initialEditorMode: 'edit',
 		});
 		try {
@@ -221,7 +217,6 @@ describe('toggle skip execution plugin', () => {
 		const secondEvents = createEvents();
 		const options = {
 			callbacks: {},
-			runtimeRegistry: {},
 			initialEditorMode: 'edit' as const,
 		};
 		const { store: first, dispose: disposeFirst } = setupState(firstEvents, options);

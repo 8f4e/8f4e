@@ -26,7 +26,6 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
-		runtimeRegistry: {},
 		initialEditorMode: 'edit',
 	});
 	const memory = new Uint8Array(65536);

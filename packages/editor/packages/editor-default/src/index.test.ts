@@ -53,9 +53,9 @@ vi.mock('@8f4e/editor-plugin-compiler', () => ({
 		getMemory,
 		writeMemory,
 		getDiagnostics: vi.fn(() => null),
+		getAssertionSites: vi.fn(() => undefined),
 	})),
 }));
-vi.mock('./runtime-registry', () => ({ createRuntimeRegistry: () => ({}) }));
 
 describe('default editor plugins', () => {
 	beforeEach(() => {

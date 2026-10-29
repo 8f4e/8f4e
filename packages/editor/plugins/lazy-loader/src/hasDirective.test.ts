@@ -2,9 +2,27 @@ import { parseProjectSource } from '@8f4e/compiler';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import { hasDirective } from './hasDirective';
+import { hasConfig, hasDirective } from './hasDirective';
 
 describe('project directive signals', () => {
+	it('matches raw config roots in nested projects before plugin schemas are installed', () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+group nested
+note settings
+; @config customSettings.enabled true
+; @config customSettingsExtra.enabled true
+noteEnd
+groupEnd
+entryEnd`);
+		expect(hasConfig(project, 'customSettings')).toBe(true);
+		expect(hasConfig(project, 'custom')).toBe(false);
+		expect(hasConfig(project, 'otherSettings')).toBe(false);
+		expect(
+			hasConfig({ ...EMPTY_DEFAULT_PROJECT, code: ['; @config customSettings.enabled false'] }, 'customSettings')
+		).toBe(true);
+	});
+
 	it.each(['modules', 'functions', 'constants', 'prototypes', 'includes', 'notes', 'unknown'] as const)(
 		'scans %s source without requiring an installed directive',
 		kind => {

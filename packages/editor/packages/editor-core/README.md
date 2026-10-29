@@ -183,12 +183,12 @@ memory loading, the loading dialog, and generated asset-size constants. Its fact
 runtime memory bytes; the shared plugin context carries no browser resources or binary asset fields.
 
 Plugins can contribute source to the generated `env` constants block with
-`store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines these lines with the selected
-runtime's constants and recompiles when generated source changes. Each plugin removes its own contribution key
+`store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines contributed lines and recompiles when generated source changes. Each plugin removes its own contribution key
 when disposed. The registry contains source lines only; feature metadata stays private to its owner.
 
-`@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
-tab-aware text measurement, module identity, and compiled-function lookup helpers. Its `/memory` entry
+`@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value and info-value
+formatting, tab-aware text measurement, module identity, and compiled-function lookup helpers. Info layout and drawing
+share `isRenderableInfoValue` and `formatInfoValue`. Its `/memory` entry
 exports memory scope, identifier, element-count, and typed-value resolution, plus `getMemoryDefaultEdits` for rewriting
 resolved memory defaults in their source modules. Each group of values is edited together, even across module owners.
 Plugins use these public exports rather than importing core files.
@@ -248,7 +248,7 @@ whose factory receives lazy source loaders. Core retains generic menus and block
 Configure editor settings with `; @config <path> <value>`.
 
 - Global editor directives control editor presentation settings like `font` and color overrides.
-- `; @config runtime <runtimeId>` controls the runtime backend for the project.
+- Runtime plugins own their independent `audioRuntime.enabled`, `workerRuntime.enabled`, and `testRuntime.enabled` settings.
 - Extensions can contribute schema-backed config roots; runtime packages use this for paths like `; @config audioRuntime.sampleRate 48000` and `; @config audioRuntime.audioOutBufferLAddress audioout:buffer`.
 - `; @config export.fileName <value>` controls the base file name used by editor export actions.
 - `; @config color.<path> <value>` controls base palette colors.
@@ -279,6 +279,8 @@ Select the editor font with a global editor directive:
 
 Supported fonts: `6x10`, `ibmvga8x16`, `terminus8x16`, `terminus8x16bold`, `terminus10x18`, `terminus10x18bold`, `kana12x13`, `terminus12x24`, `terminus12x24bold`, `spleen5x8`, `spleen6x12`, `spleen8x16`, `templeos8x8`, `spleen12x24`, `spleen16x32`.
 
-Runtime implementations are supplied through `EditorOptions.runtimeRegistry` as initialization dependencies. State exposes only runtime IDs and schemas in `state.runtimeRegistry`; lazy loaders and factories stay in the runtime coordinator. Memory-writing plugins receive a `writeMemory(address, value, isInteger)` function directly from their host.
+Runtime execution belongs to ordinary browser plugins. Each receives compiler getters through its factory, imports its own worker/worklet assets, contributes schemas and constants, and publishes its own info namespace. The audio plugin can borrow a host-supplied AudioContext. Runtimes can run concurrently; core owns no execution registry or selector. Memory-writing plugins receive a `writeMemory(address, value, isInteger)` function directly from their host.
 
-Core emits `compilationInputChanged` after compilation inputs change. Install `@8f4e/editor-plugin-compiler` to schedule compilation and publish diagnostics, compiler metadata, and statistics. Core consumes its `compilationSucceeded` event with `ProgramArtifacts` (`memoryRef` and `codeBuffer`) to update memory views and renderer artifacts. Public editor options no longer expose a callbacks bag; core constructs its internal browser callbacks. The compiler factory returns stable artifact getters and a memory writer for dependent plugins and runtime factories; core has no compile callback. Core dispatches `dispose` before plugin teardown so the runtime coordinator stops before its compiler resources are released.
+Core emits `compilationInputChanged` after compilation inputs change. Install `@8f4e/editor-plugin-compiler` to schedule compilation and publish diagnostics, compiler metadata, and statistics. Core consumes its `compilationSucceeded` event with `ProgramArtifacts` (`memoryRef` and `codeBuffer`) to update memory views and renderer artifacts. Public editor options no longer expose a callbacks bag; core constructs its internal browser callbacks. The compiler factory returns stable artifact getters and a memory writer for dependent feature and runtime plugins; core has no compile callback. Plugins dispose in reverse installation order, releasing runtime resources before their compiler dependency.
+
+Plugins dispatch `memoryValuesChanged` when external execution changes memory, so core can refresh derived layout and rendering.

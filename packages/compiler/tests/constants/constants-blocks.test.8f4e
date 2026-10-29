@@ -28,7 +28,7 @@ const HALF SAMPLE_RATE/12000
 constantsEnd
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Constants blocks should import
 into modules through use

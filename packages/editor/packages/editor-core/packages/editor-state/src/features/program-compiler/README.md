@@ -34,4 +34,4 @@ publishing metadata and runtime readiness. Core consumes that event to refresh m
 reloads its retained bytes into current targets. Editor state stores no binary asset metadata.
 
 Runtime environment constants arrive as source through `envConstantContributions`; the generic env-block renderer
-treats every contributor uniformly. Runtime implementations remain dependencies of the runtime coordinator.
+treats every contributor uniformly. Runtime plugins receive compiler artifact getters through their factories.

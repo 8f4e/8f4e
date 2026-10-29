@@ -28,7 +28,7 @@ constantsEnd
 
 note
 ; @pos -102 -95
-; @config runtime WebWorkerRuntime
+; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 10
 ; @config export.fileName xorProblem
 ; @config color.canvas #d9dee9

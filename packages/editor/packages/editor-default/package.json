@@ -28,9 +28,6 @@
     "@8f4e/editor-plugin-toggle-skip-execution": "*",
     "@8f4e/editor-plugin-grouping": "*",
     "@8f4e/examples": "*",
-    "@8f4e/runtime-audio-worklet": "*",
-    "@8f4e/runtime-test-runner": "*",
-    "@8f4e/runtime-web-worker": "*",
     "@8f4e/stdlib": "*",
     "@8f4e/editor-plugin-switch": "*",
     "@8f4e/editor-plugin-tooltips": "*",
@@ -57,7 +54,11 @@
     "@8f4e/editor-plugin-session-persistence": "*",
     "@8f4e/editor-plugin-project-url-loader": "*",
     "@8f4e/editor-plugin-compiler": "*",
-    "@8f4e/editor-plugin-lazy-loader": "*"
+    "@8f4e/editor-plugin-lazy-loader": "*",
+    "@8f4e/editor-plugin-worker-runtime": "*",
+    "@8f4e/editor-plugin-audio-runtime": "*",
+    "@8f4e/editor-plugin-test-runtime": "*",
+    "@8f4e/language-spec": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

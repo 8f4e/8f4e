@@ -46,7 +46,6 @@ export async function setup(
 	};
 	const events = createEvents();
 	const store = initState(events, {
-		runtimeRegistry: {},
 		initialEditorMode: mode,
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],

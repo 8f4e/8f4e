@@ -14,7 +14,7 @@ const source = '8f4e/v1\nentry main\nmodule audio\nint gate 0 ; @future first\nm
 function setup(projectSource = source) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, runtimeRegistry: {}, initialEditorMode: 'edit' });
+	const store = initState(events, { callbacks: {}, initialEditorMode: 'edit' });
 	cleanups.push(store.dispose);
 	const load = (text: string) => events.dispatch('loadProject', { project: parseProjectSource(text) });
 	load(projectSource);

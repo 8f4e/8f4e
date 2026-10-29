@@ -22,7 +22,7 @@ constantsEnd
 
 note
 ; @pos -171 -5
-; @config runtime WebWorkerRuntime
+; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 50
 ; @config workerRuntime.entry buffer
 ; @config export.fileName landingPageDemo4

@@ -23,7 +23,7 @@ constantsEnd
 
 note
 ; @pos -126 6
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioInBufferLAddress audioin:buffer
 ; @config audioRuntime.audioOutBufferLAddress audiooutL:buffer

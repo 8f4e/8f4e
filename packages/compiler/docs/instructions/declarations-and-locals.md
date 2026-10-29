@@ -223,7 +223,7 @@ This complete example can be compiled and run by the test runner without reading
 
 ```text
 8f4e/v1
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 entry test
 module values

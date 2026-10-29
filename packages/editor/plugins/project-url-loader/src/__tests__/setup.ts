@@ -6,7 +6,7 @@ import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
 export function setupPlugin(plugin: EditorPlugin) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, runtimeRegistry: {}, initialEditorMode: 'edit' });
+	const store = initState(events, { callbacks: {}, initialEditorMode: 'edit' });
 	const disposePlugin = plugin.setup({
 		store,
 		events,

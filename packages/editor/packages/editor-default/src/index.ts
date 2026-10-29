@@ -20,7 +20,6 @@ import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
 import { createWatchPlugin } from '@8f4e/editor-plugin-watch';
 import { createLazyPluginRegistry } from './lazy-plugins';
-import { createRuntimeRegistry } from './runtime-registry';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
@@ -39,6 +38,8 @@ export function createDefaultEditorPlugins(options: {
 	getMemory: () => WebAssembly.Memory | null;
 	writeMemory: (address: number, value: number, isInteger: boolean) => void;
 	getCodeBuffer: () => Uint8Array;
+	getAssertionSites: ReturnType<typeof createCompilerPlugin>['getAssertionSites'];
+	sharedAudioContext?: AudioContext;
 }): NonNullable<EditorOptions['plugins']> {
 	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
@@ -72,7 +73,15 @@ export function createDefaultEditorPlugins(options: {
 		groupingPlugin,
 		toggleFavoritePlugin,
 		removeMemoryConnectionsPlugin,
-		createLazyPluginLoaderPlugin(createLazyPluginRegistry({ writeMemory: options.writeMemory })),
+		createLazyPluginLoaderPlugin(
+			createLazyPluginRegistry({
+				writeMemory: options.writeMemory,
+				getMemory: options.getMemory,
+				getCodeBuffer: options.getCodeBuffer,
+				getAssertionSites: options.getAssertionSites,
+				sharedAudioContext: options.sharedAudioContext,
+			})
+		),
 		createWatchPlugin({ prefersReducedMotion }),
 		createStackPlugin({ prefersReducedMotion }),
 		tooltipsPlugin,
@@ -136,12 +145,13 @@ export async function mountDefaultEditor(
 					getMemory: compiler.getMemory,
 					writeMemory: compiler.writeMemory,
 					getCodeBuffer: compiler.getCodeBuffer,
+					getAssertionSites: compiler.getAssertionSites,
+					sharedAudioContext,
 				})),
 		],
 		captureWheel,
 		featureFlags,
 		initialEditorMode,
-		runtimeRegistry: createRuntimeRegistry(compiler, sharedAudioContext),
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 

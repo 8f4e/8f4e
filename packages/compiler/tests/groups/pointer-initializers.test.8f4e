@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Group initializers set exposed pointer defaults before child modules execute. Address sources use the immediate parent,
 and sibling group exposures can supply source addresses. Pointers inherited from a shape can also be initialized.

@@ -22,7 +22,7 @@ function setup(
 	const events = initEvents();
 	const compilationChanged = vi.fn();
 	events.on('compilationInputChanged', compilationChanged);
-	const store = initState(events, { runtimeRegistry: {}, initialEditorMode: 'edit', callbacks: {} });
+	const store = initState(events, { initialEditorMode: 'edit', callbacks: {} });
 	const editing = createEditorEditingHandle(store, events);
 	events.dispatch('loadProject', { project });
 	compilationChanged.mockClear();

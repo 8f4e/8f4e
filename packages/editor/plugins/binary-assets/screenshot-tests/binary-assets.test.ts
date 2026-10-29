@@ -44,7 +44,6 @@ entryEnd`);
 	try {
 		editor = await initEditor(canvas, {
 			initialEditorMode: 'edit',
-			runtimeRegistry: {},
 			initialProject: project,
 			plugins: [
 				{

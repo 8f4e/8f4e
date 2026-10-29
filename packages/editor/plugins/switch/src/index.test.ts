@@ -44,7 +44,6 @@ async function setup(code = source, installed = true) {
 		else memoryViews.float32[address] = value;
 	});
 	const store = initState(events, {
-		runtimeRegistry: {},
 		initialEditorMode: 'edit',
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
@@ -207,11 +206,11 @@ describe('switch plugin', () => {
 		const test = await setup();
 		const memory = test.state.compiler.memoryPlan.modules.controls.memory;
 		memory.gate = { ...memory.gate, allocationUnitAddress: test.address + 4 };
-		test.events.dispatch('runtimeInitialized');
+		test.events.dispatch('memoryValuesChanged');
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address + 4, 1, true);
 		delete memory.gate;
-		test.events.dispatch('runtimeInitialized');
+		test.events.dispatch('memoryValuesChanged');
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});

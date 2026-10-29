@@ -29,14 +29,6 @@ import type { ResolvedGlobalEditorDirectives } from './features/global-editor-di
 import type { ConsoleState, LogMessage } from './features/logger/types';
 import type { ContextMenu, ContextMenuItem, MenuGenerator, MenuStackEntry } from './features/menu/types';
 import type { Compiler } from './features/program-compiler/types';
-import type {
-	RuntimeEnvConstantsContributor,
-	RuntimeFactory,
-	RuntimeMetadataRegistry,
-	RuntimeRegistry,
-	RuntimeRegistryEntry,
-	RuntimeValuesByRuntimeId,
-} from './features/runtime/types';
 import type { ProjectViewport, Viewport, ViewportAnimation } from './features/viewport/types';
 import type {
 	CodeError,
@@ -57,7 +49,6 @@ import type {
 // Re-export program-language spec
 // Re-export dialog types
 // Re-export global-editor-directives types
-// Re-export runtime types
 // Re-export logger types
 // Re-export code-editing types
 // Re-export project types
@@ -97,12 +88,6 @@ export type {
 	Position,
 	ProjectViewport,
 	ResolvedGlobalEditorDirectives,
-	RuntimeEnvConstantsContributor,
-	RuntimeFactory,
-	RuntimeMetadataRegistry,
-	RuntimeRegistry,
-	RuntimeRegistryEntry,
-	RuntimeValuesByRuntimeId,
 	Size,
 	TypedValueKind,
 };
@@ -204,10 +189,6 @@ export interface Options {
 	/** Mode used when the editor is initialized. */
 	initialEditorMode?: EditorMode;
 	callbacks: Callbacks;
-	/**
-	 * Runtime registry mapping runtime IDs to runtime implementations.
-	 */
-	runtimeRegistry: RuntimeRegistry;
 	/** Optional host-provided schema contributions for project-level editor config. */
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 }
@@ -242,13 +223,8 @@ export interface State {
 	envConstantContributions: Record<string, string[]>;
 	/** Console state for internal logging */
 	console: ConsoleState;
-	/** Executed assertion outcomes published by the active runtime for editor rendering. */
+	/** Executed assertion outcomes published by plugins for editor rendering. */
 	assertionResults: AssertionResult[];
-	runtime: {
-		values: RuntimeValuesByRuntimeId;
-	};
-	/** Data-only metadata for available runtimes; implementations are initialization dependencies. */
-	runtimeRegistry: RuntimeMetadataRegistry;
 	/** Resolved global editor directives from `; @<name>` comments */
 	globalEditorDirectives: ResolvedGlobalEditorDirectives;
 	codeErrors: {
@@ -278,7 +254,6 @@ export type * from './features/global-editor-directives/types';
 export type * from './features/logger/types';
 export type * from './features/menu/types';
 export type * from './features/program-compiler/types';
-export type * from './features/runtime/types';
 export type * from './features/viewport/blockAlignment';
 export type * from './features/viewport/types';
 export type * from './shared/types';

@@ -19,7 +19,6 @@ async function setup(source: string) {
 	document.body.appendChild(canvas);
 	let store!: EditorPluginContext['store'];
 	const editor: Editor = await initEditor(canvas, {
-		runtimeRegistry: {},
 		initialProject: parseProjectSource(source),
 		plugins: [
 			assertionMarkersPlugin,

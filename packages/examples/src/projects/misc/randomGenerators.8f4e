@@ -12,7 +12,7 @@ constantsEnd
 
 note
 ; @pos -164 -20
-; @config runtime WebWorkerRuntime
+; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 50
 ; @config export.fileName randomGenerators
 ; @config color.canvas #090b16

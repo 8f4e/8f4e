@@ -34,7 +34,6 @@ entryEnd`
 		memory[address] = value;
 	});
 	const store = initState(events, {
-		runtimeRegistry: {},
 		callbacks: {},
 	});
 	store.set('compiler.compiledModules', compiled.compiledModules);

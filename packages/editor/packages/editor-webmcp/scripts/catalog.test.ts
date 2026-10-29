@@ -67,7 +67,7 @@ describe('reference catalog analysis', () => {
 
 	it('describes projects from notes while preserving source and allowing identical filenames in different categories', () => {
 		const source =
-			'8f4e/v1\nnote\n; @pos 3 4\n; @config runtime TestRuntime\nnoteEnd\nnote\n; Explain an audio effect.\nnoteEnd\n';
+			'8f4e/v1\nnote\n; @pos 3 4\n; @config testRuntime.enabled true\nnoteEnd\nnote\n; Explain an audio effect.\nnoteEnd\n';
 		const entries = analyzeExamples(
 			'project',
 			new Map([

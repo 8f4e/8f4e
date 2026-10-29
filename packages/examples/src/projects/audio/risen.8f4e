@@ -309,7 +309,7 @@ note
 ; @pos -242 -4
 ; Project config
 
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress shofar:buffer
 ; @config audioRuntime.audioOutBufferRAddress shofar:buffer

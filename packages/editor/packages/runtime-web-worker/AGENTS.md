@@ -16,3 +16,5 @@
 
 ## Commits & PRs
 - Commits: `runtime-web-worker: <change>`; PRs describe protocol changes.
+
+- Page-side editor integration and lifecycle tests live in `packages/editor/plugins/worker-runtime`. This package owns execution code and its message protocol.

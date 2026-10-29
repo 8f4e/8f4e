@@ -114,7 +114,6 @@ export function createMockEventDispatcher(): EventDispatcher {
 }
 
 export function createMockState(overrides: StateOverrides = {}): State {
-	const workerRuntimeDefaults = { sampleRate: 50 } as const;
 	const rootCodeBlocks: CodeBlockGraphicData[] = [];
 
 	const defaults: State = {
@@ -131,16 +130,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			projectMemoryExposuresByGroupPath: {},
 		},
 		callbacks: {},
-		runtimeRegistry: {
-			WebWorkerRuntime: {
-				id: 'WebWorkerRuntime',
-				editorConfigSchema: {
-					root: 'workerRuntime',
-					defaults: workerRuntimeDefaults,
-					schema: { type: 'object', properties: {} },
-				},
-			},
-		},
 		codeBlockRendering: {
 			rootCodeBlocks,
 			codeBlocks: rootCodeBlocks,
@@ -199,9 +188,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			maxLogs: 100,
 		},
 		assertionResults: [],
-		runtime: {
-			values: {},
-		},
 		globalEditorDirectives: {},
 		dialog: {
 			id: '',

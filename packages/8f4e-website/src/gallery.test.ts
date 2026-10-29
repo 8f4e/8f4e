@@ -83,6 +83,45 @@ test('reveals a successfully loaded empty project', async () => {
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 });
 
+test('loads and runs worker and test runtime plugins together through the default composition', async () => {
+	const view = setup({
+		runtimes: async () =>
+			new Response(`8f4e/v1
+note settings
+; @config recompileDebounceDelay 10
+; @config workerRuntime.enabled true
+; @config workerRuntime.sampleRateConstantName CONTROL_RATE
+; @config testRuntime.enabled true
+noteEnd
+entry main
+module counter
+int count 0
+push &count
+push count
+push 1
+add
+store
+moduleEnd
+entryEnd
+entry test
+module checks
+push 1
+assert
+moduleEnd
+entryEnd`),
+	});
+	const editor = await view.mounted();
+	await vi.waitFor(
+		() => expect(editor.state.info.testRuntime).toEqual({ status: 'passed', assertionCount: 1, failureCount: 0 }),
+		{ timeout: 10000 }
+	);
+	const memory = editor.state.compiler.memoryPlan.modules.counter.memory.count;
+	await vi.waitFor(() => expect(editor.getMemoryViews().int32[memory.allocationUnitAddress]).toBeGreaterThan(2));
+	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
+	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(editor.state.envConstantContributions.workerRuntime).toEqual(['const CONTROL_RATE 50']);
+});
+
 test('compiles a loaded project through the compiler plugin and refreshes editor memory views', async () => {
 	const configuredSource = source.replace('int value 1', '; @config recompileDebounceDelay 10\nint value 1');
 	const view = setup({ compiled: async () => new Response(configuredSource) });

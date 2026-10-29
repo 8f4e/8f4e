@@ -114,7 +114,7 @@ Examples:
 
 ```txt
 ; @config font ibmvga8x16
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config export.fileName samplePlayer
 ; @config color.ink #cccccc
 ; @config color.surface #101820
@@ -881,41 +881,26 @@ Set the base file name used by editor export actions.
 ; @config export.fileName samplePlayer
 ```
 
-### Runtime
+### Runtime plugins
 
-Select the runtime host the editor should load for the project.
-
-```txt
-; @config runtime <runtimeId>
-```
-
-- `runtimeId` must be a known runtime id such as `WebWorkerRuntime` or `AudioWorkletRuntime`
-- Duplicate declarations use normal config last-write-wins behavior
-- If no runtime is configured, the editor does not load a runtime
-- Unknown runtime ids produce an editor error and no runtime is loaded
-
-**Example**:
+Audio, worker, and test runtimes are independently enabled plugins:
 
 ```txt
-; @config runtime AudioWorkletRuntime
-```
-
-Extensions may also contribute schema-backed config paths mounted at their own root. Runtime packages use this for
-paths such as:
-
-```txt
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRateConstantName SAMPLE_RATE
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.entry buffer
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
+; @config workerRuntime.enabled true
+; @config workerRuntime.sampleRateConstantName CONTROL_RATE
 ; @config workerRuntime.sampleRate 50
 ; @config workerRuntime.entry main
+; @config testRuntime.enabled true
 ```
 
-`audioRuntime.entry` selects the exported entry called for each audio processing block and defaults to `buffer`.
-`workerRuntime.entry` selects the exported entry called at the configured worker sample rate and defaults to `main`.
-
-These roots are owned by their contributing package, not by the editor config type.
-
-The main-thread runtime has been removed. For existing projects, replace `; @config runtime MainThreadRuntime`
-with `; @config runtime WebWorkerRuntime` and rename `mainThreadRuntime.sampleRate` to `workerRuntime.sampleRate`,
-keeping the same rate. Projects using the removed runtime id produce an editor error until updated.
+The audio entry defaults to `buffer` and the worker entry to `main`. Each runtime's `enabled` default is false.
+Both contribute a sample-rate constant named `SAMPLE_RATE` by default; use their `sampleRateConstantName` settings
+when running them together. Audio also contributes `AUDIO_BUFFER_SIZE`, configurable through
+`audioRuntime.bufferSizeConstantName`. Info namespaces are fixed: `audioRuntime`, `workerRuntime`, and `testRuntime`.
+The default editor lazily imports these plugins when their configuration roots appear. New roots introduced by
+editing use **Load plugins used by project**. Each plugin owns its schema and cleanup.
