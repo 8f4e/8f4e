@@ -17,6 +17,7 @@ export default defineConfig(
 			'@8f4e/test-runner',
 			'@8f4e/sprite-generator',
 			'glugglugglug',
+			'glugglugglug/utils',
 		],
 	})
 );

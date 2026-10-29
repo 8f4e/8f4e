@@ -17,6 +17,7 @@ This file extends the repository-level guidance for `packages/compiler`.
 
 ## Commands and Style
 
+- Keep compiler stage dependencies external in library bundles so consumers share their implementations and error classes.
 - Use Nx from the repository root: `npx nx run @8f4e/compiler:build|test|typecheck|lint`.
 - TypeScript is strict. Use Biome for formatting, linting, and import organization.
 - Update intentional snapshots with `npx nx run @8f4e/compiler:test --update`.
