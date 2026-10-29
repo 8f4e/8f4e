@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-remove-memory-connections",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "State plugin for removing intermodular memory defaults in the 8f4e editor",
   "type": "module",

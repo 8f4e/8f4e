@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-switch",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "private": true,
   "description": "Switch widget plugin for the 8f4e editor",
   "type": "module",

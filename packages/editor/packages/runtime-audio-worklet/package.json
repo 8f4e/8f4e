@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/runtime-audio-worklet",
-  "version": "3.0.20",
+  "version": "3.0.21",
   "private": true,
   "description": "8f4e audio worklet runtime package",
   "type": "module",
