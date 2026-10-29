@@ -1,4 +1,4 @@
-import { gapCalculator, parseEditorDirectives } from '@8f4e/editor-state';
+import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
 	resolveElementCount,
@@ -15,7 +15,7 @@ export function registerBarsLayout(
 ): () => void {
 	const contribution = layout.createContribution();
 	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
-		const items = parseEditorDirectives(graphicData.code, [{ name: 'bars' }]).flatMap(directive => {
+		const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'bars' }]).flatMap(directive => {
 			const data = createBarsDirectiveData(directive.args, directive.sourceLineIndex);
 			return data ? [data] : [];
 		});

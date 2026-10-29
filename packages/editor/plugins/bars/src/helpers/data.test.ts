@@ -1,9 +1,9 @@
-import { parseEditorDirectives } from '@8f4e/editor-state';
+import { matchEditorDirectives, parseBlockDirectives } from '@8f4e/editor-state';
 import { describe, expect, it } from 'vitest';
 import { createBarsDirectiveData } from './data';
 
 function parseBarsDirectiveData(code: string[]) {
-	return parseEditorDirectives(code, [{ name: 'bars' }]).map(directive =>
+	return matchEditorDirectives(parseBlockDirectives(code), [{ name: 'bars' }]).map(directive =>
 		createBarsDirectiveData(directive.args, directive.sourceLineIndex)
 	);
 }

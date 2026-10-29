@@ -1,5 +1,5 @@
 import type { EditorPlugin, EditorPluginContext } from '@8f4e/editor-core';
-import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import { applyCodeBlockSourceEdits, matchEditorDirectives } from '@8f4e/editor-state';
 import { describe, expect, it, vi } from 'vitest';
 import { emptySource, matchingSource, setup } from './__tests__/editor';
 import { hasDirective, type LazyEditorPlugin } from './index';
@@ -70,7 +70,9 @@ describe('lazy plugin loader', () => {
 			const contribution = layout.createContribution();
 			const unsubscribe = layout.subscribe(({ codeBlock }) =>
 				contribution.update(codeBlock, {
-					verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 3 }],
+					verticalSpaceAfterSourceLine: matchEditorDirectives(codeBlock.parsedDirectives, [{ name: 'custom' }]).map(
+						directive => ({ sourceLineIndex: directive.sourceLineIndex, heightInRows: 3 })
+					),
 				})
 			);
 			return () => {

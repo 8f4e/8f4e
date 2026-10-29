@@ -12,13 +12,12 @@ import disabledDirective from './disabled/plugin';
 import favoriteDirective from './favorite/plugin';
 import hideDirective from './hide/plugin';
 import homeDirective from './home/plugin';
-import { normalizeEditorDirectiveRecords } from './utils';
+import { matchEditorDirectives } from './utils';
 import viewportDirective from './viewport/plugin';
 
 export type {
 	DirectiveBlockState,
 	DirectiveDerivedState,
-	ParsedEditorDirective,
 	ViewportAnchor,
 } from '@8f4e/editor-state-types';
 
@@ -51,7 +50,7 @@ export function deriveDirectiveState(
 	options: DirectiveDeriveOptions = {},
 	definitions: EditorDirectiveDefinition[] = directiveDefinitions
 ): DirectiveDerivedState {
-	const directives = normalizeEditorDirectiveRecords(parsedDirectives, definitions);
+	const directives = matchEditorDirectives(parsedDirectives, definitions);
 	const draft: DirectiveDerivedStateDraft = {
 		sourceCode: code,
 		blockState: {

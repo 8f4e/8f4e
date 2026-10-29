@@ -2,13 +2,11 @@ import type { EditorDirectiveDefinition } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 import { parseBlockDirectives } from '../../utils/parseBlockDirectives';
 import { createDirectiveRegistry, deriveDirectiveState, directiveDefinitions } from './registry';
-import { parseEditorDirectives } from './utils';
 
 const contributedDirectives: EditorDirectiveDefinition[] = [
 	{
 		name: 'inlineDisplay',
 		aliases: ['inline'],
-		allowTrailingComment: true,
 		apply: (_, draft) => {
 			draft.blockState.isFavorite = true;
 		},
@@ -38,27 +36,6 @@ describe('directive registry', () => {
 		expect(deriveDirectiveState(code, records, {}, second.definitions).blockState.disabled).toBe(false);
 		unregister();
 		expect(deriveDirectiveState(code, records, {}, first.definitions).blockState.disabled).toBe(false);
-	});
-
-	it('parses registered directives and permits trailing comments only when enabled', () => {
-		expect(
-			parseEditorDirectives(
-				['; @rowDisplay 2', 'int value 1 ; @inlineDisplay', 'int value 1 ; @rowDisplay 2'],
-				definitions
-			)
-		).toEqual([
-			{ name: 'rowDisplay', sourceLineIndex: 0, args: ['2'], sourceLine: '; @rowDisplay 2' },
-			{ name: 'inlineDisplay', sourceLineIndex: 1, args: [], sourceLine: 'int value 1 ; @inlineDisplay' },
-		]);
-	});
-
-	it('parses chained directives from a single full-line comment', () => {
-		const result = parseEditorDirectives(['; @home @favorite'], directiveDefinitions);
-
-		expect(result).toEqual([
-			{ name: 'home', sourceLineIndex: 0, args: [], sourceLine: '; @home @favorite' },
-			{ name: 'favorite', sourceLineIndex: 0, args: [], sourceLine: '; @home @favorite' },
-		]);
 	});
 
 	it('derives block state and display rows', () => {
@@ -116,12 +93,11 @@ describe('directive registry', () => {
 		expect(result.displayModel.isCollapsed).toBe(false);
 	});
 
-	it('normalizes aliases and trailing records consistently in parsing and derivation', () => {
-		const code = ['int value 1 ; @inline', 'int other 1 ; @rowDisplay 3'];
-		const parsed = parseEditorDirectives(code, definitions);
+	it('applies standalone and trailing directives and aliases uniformly', () => {
+		const code = ['; @inline', 'int other 1 ; @rowDisplay 3 @home @favorite'];
 		const derived = deriveDirectiveState(code, parseBlockDirectives(code), {}, definitions);
-		expect(parsed.map(directive => directive.name)).toEqual(['inlineDisplay']);
 		expect(derived.blockState.isFavorite).toBe(true);
-		expect(derived.blockState.disabled).toBe(false);
+		expect(derived.blockState.disabled).toBe(true);
+		expect(derived.blockState.isHome).toBe(true);
 	});
 });

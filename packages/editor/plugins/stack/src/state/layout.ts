@@ -4,7 +4,7 @@ import {
 	getCompiledFunctionForCodeBlock,
 	getTabStopsByLine,
 	getVisualLineWidth,
-	parseEditorDirectives,
+	matchEditorDirectives,
 } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
@@ -46,9 +46,9 @@ export function registerStackLayout(
 	labelsByBlock: WeakMap<CodeBlockGraphicData, StackLabel[]>
 ): () => void {
 	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
-		const items = parseEditorDirectives(graphicData.code, [
-			{ name: 'stack', allowTrailingComment: true, aliases: ['s'] },
-		]).filter(directive => directive.args.length === 0);
+		const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'stack', aliases: ['s'] }]).filter(
+			directive => directive.args.length === 0
+		);
 		labelsByBlock.set(graphicData, []);
 		items.forEach(directive => {
 			const stackAnalysisLines = getStackAnalysisLines(graphicData, state);
@@ -59,7 +59,7 @@ export function registerStackLayout(
 			const stackAnalysisLine = findStackAnalysisLine(
 				stackAnalysisLines,
 				directive.sourceLineIndex,
-				!/^\s*;/.test(directive.sourceLine ?? '')
+				directive.isTrailing
 			);
 			if (!stackAnalysisLine) {
 				return;

@@ -1,4 +1,4 @@
-import { gapCalculator, parseEditorDirectives } from '@8f4e/editor-state';
+import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import type { PianoDirectiveData } from '../helpers/data';
@@ -118,7 +118,7 @@ export function registerPianoLayout(
 ): () => void {
 	const contribution = layout.createContribution();
 	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
-		const items = parseEditorDirectives(codeBlock.code, [{ name: 'piano' }]).flatMap(directive => {
+		const items = matchEditorDirectives(codeBlock.parsedDirectives, [{ name: 'piano' }]).flatMap(directive => {
 			const data = createPianoDirectiveData(directive.args, directive.sourceLineIndex);
 			return data ? [data] : [];
 		});

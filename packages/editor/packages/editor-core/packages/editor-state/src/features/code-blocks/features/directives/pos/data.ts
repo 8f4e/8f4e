@@ -1,4 +1,4 @@
-import type { EditorDirectiveDefinition, ParsedDirectiveRecord, ParsedEditorDirective } from '@8f4e/editor-state-types';
+import type { EditorDirectiveDefinition, ParsedDirectiveRecord } from '@8f4e/editor-state-types';
 
 export interface PosParseResult {
 	x: number;
@@ -18,7 +18,7 @@ const posDirectivePlugin: EditorDirectiveDefinition = {
 	name: 'pos',
 };
 
-export function createPosDirectiveData(directive: ParsedEditorDirective): PosParseResult | undefined {
+export function createPosDirectiveData(directive: ParsedDirectiveRecord): PosParseResult | undefined {
 	if (directive.args.length !== 2) {
 		return undefined;
 	}

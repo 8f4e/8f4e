@@ -78,4 +78,12 @@ describe('removeDirective', () => {
 		const result = removeDirective(code, 'custom');
 		expect(result).toEqual(['module test', '; @favorite', 'moduleEnd']);
 	});
+
+	it('removes a trailing directive without removing the instruction', () => {
+		expect(removeDirective(['  int gate 0 ; @favorite'], 'favorite')).toEqual(['  int gate 0']);
+	});
+
+	it('preserves neighboring trailing directives and the instruction', () => {
+		expect(removeDirective(['int gate 0 ; @favorite @watch'], 'favorite')).toEqual(['int gate 0 ; @watch']);
+	});
 });

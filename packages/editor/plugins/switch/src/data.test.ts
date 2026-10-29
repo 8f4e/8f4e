@@ -1,11 +1,11 @@
-import { parseEditorDirectives } from '@8f4e/editor-state';
+import { matchEditorDirectives, parseBlockDirectives } from '@8f4e/editor-state';
 import { describe, expect, it } from 'vitest';
 import { createSwitchDirectiveData } from './data';
 
 const switchDirective = { name: 'switch' };
 
 function parseSwitchDirectiveData(code: string[]) {
-	return parseEditorDirectives(code, [switchDirective])
+	return matchEditorDirectives(parseBlockDirectives(code), [switchDirective])
 		.map(directive => createSwitchDirectiveData(directive.args, directive.sourceLineIndex))
 		.filter(result => result !== undefined);
 }

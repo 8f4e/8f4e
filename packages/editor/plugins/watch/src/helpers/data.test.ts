@@ -1,9 +1,9 @@
-import { parseEditorDirectives } from '@8f4e/editor-state';
+import { matchEditorDirectives, parseBlockDirectives } from '@8f4e/editor-state';
 import { describe, expect, it } from 'vitest';
 import { createWatchDirectiveData } from './data';
 
 function parseWatchDirectiveData(code: string[]) {
-	return parseEditorDirectives(code, [{ name: 'watch', aliases: ['w'], allowTrailingComment: true }])
+	return matchEditorDirectives(parseBlockDirectives(code), [{ name: 'watch', aliases: ['w'] }])
 		.map(directive => createWatchDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine))
 		.filter(result => result !== undefined);
 }

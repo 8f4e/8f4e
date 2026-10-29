@@ -5,10 +5,11 @@ This document defines editor-only directives for code blocks. Core owns generic 
 
 ## Directive Syntax
 
-Editor directives use comment lines in this form:
+Editor directives work in standalone comments and trailing comments on instruction lines:
 
 ```txt
 ; @<directive> <args...>
+int gate 0 ; @<directive> <args...>
 ```
 
 You can also chain multiple directives in one comment line:
@@ -17,7 +18,9 @@ You can also chain multiple directives in one comment line:
 ; @pos 1 2 @favorite
 ```
 
-When directives are chained, parsing starts a new directive at the next `@name` token.
+When directives are chained, parsing starts a new directive at the next `@name` token. Every directive supports
+both comment positions. Argument rules belong to each feature; declaration-based argument inference is described
+where supported, such as `@watch` and `@meter`.
 
 Examples:
 

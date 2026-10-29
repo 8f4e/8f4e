@@ -1,4 +1,4 @@
-import { gapCalculator, parseEditorDirectives } from '@8f4e/editor-state';
+import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
 	resolveDirectOrPointerTypedValueSpec,
@@ -17,12 +17,10 @@ export function registerMeterLayout(
 ): () => void {
 	const contribution = layout.createContribution();
 	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
-		const items = parseEditorDirectives(graphicData.code, [{ name: 'meter', allowTrailingComment: true }]).flatMap(
-			directive => {
-				const data = createMeterDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine);
-				return data ? [data] : [];
-			}
-		);
+		const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'meter' }]).flatMap(directive => {
+			const data = createMeterDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine);
+			return data ? [data] : [];
+		});
 		contribution.update(graphicData, {
 			verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.lineNumber, heightInRows: 1 })),
 		});

@@ -1,9 +1,9 @@
-import { parseEditorDirectives } from '@8f4e/editor-state';
+import { matchEditorDirectives, parseBlockDirectives } from '@8f4e/editor-state';
 import { describe, expect, it } from 'vitest';
 import { createPlotDirectiveData } from './data';
 
 function parsePlotDirectiveData(code: string[]) {
-	return parseEditorDirectives(code, [{ name: 'plot' }]).map(directive =>
+	return matchEditorDirectives(parseBlockDirectives(code), [{ name: 'plot' }]).map(directive =>
 		createPlotDirectiveData(directive.args, directive.sourceLineIndex)
 	);
 }

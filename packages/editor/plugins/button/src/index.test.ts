@@ -239,7 +239,18 @@ describe('button plugin', () => {
 		expect(test.write).not.toHaveBeenCalled();
 	});
 
-	it.each(['; @button &missing', '; @button &gate bad', 'int extra 0 ; @button &gate'])(
+	it('draws, presses, and releases a button in a trailing comment', async () => {
+		const test = await setup(['module controls', 'int gate 0', 'int extra 0 ; @button &gate', 'moduleEnd']);
+		const address = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
+		test.render();
+		expect(test.draw.drawText).toHaveBeenCalledWith(test.codeBlock.width - 32, 32, '[| ]', PALETTE_INDICES.darkBase);
+		test.press();
+		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);
+		test.release();
+		expect(test.write).toHaveBeenLastCalledWith(address, 0, true);
+	});
+
+	it.each(['; @button &missing', '; @button &gate bad'])(
 		'creates no button for an unresolved or invalid directive: %s',
 		async line => {
 			const test = await setup(['module controls', 'int gate 0', line, 'moduleEnd']);

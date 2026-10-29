@@ -7,5 +7,5 @@
 - Receive the reduced-motion preference through the factory; keep browser globals in the host.
 - Run `npx nx run @8f4e/editor-plugin-stack:build|test|typecheck` and `npx nx run @8f4e/editor-plugin-stack:test:screenshot`.
 
-- Keep layout independent of directive registration. Read source through `parseEditorDirectives`; own contribution
+- Keep layout independent of directive registration. Match cached `codeBlock.parsedDirectives` through `matchEditorDirectives`; own contribution
   updates and `layout.subscribe` geometry. Unsubscribe before disposing requests. Do not attach layout to directive drafts.
