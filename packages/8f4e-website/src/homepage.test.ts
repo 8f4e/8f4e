@@ -1,9 +1,9 @@
-import { mountDefaultEditor } from '@8f4e/editor-default';
+import { mountMinimalEditor } from '@8f4e/editor-minimal';
 import { afterEach, expect, test, vi } from 'vitest';
 import { getExampleProjectUrl } from './example-projects';
 import { mountHomepageEditors } from './homepage';
 
-vi.mock('@8f4e/editor-default', { spy: true });
+vi.mock('@8f4e/editor-minimal', { spy: true });
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -31,7 +31,6 @@ function setup(response?: () => Promise<Response>) {
 			input === url ? response() : fetch(input, options)
 		);
 	}
-	window.localStorage.removeItem('project_8f4e-website');
 	frame.append(canvas);
 	row.append(frame);
 	document.body.append(row);
@@ -39,11 +38,10 @@ function setup(response?: () => Promise<Response>) {
 	cleanups.push(() => {
 		dispose();
 		row.remove();
-		window.localStorage.removeItem('project_8f4e-website');
 	});
 	const mounted = async () => {
-		await vi.waitFor(() => expect(mountDefaultEditor).toHaveBeenCalledOnce());
-		return await vi.mocked(mountDefaultEditor).mock.results[0].value;
+		await vi.waitFor(() => expect(mountMinimalEditor).toHaveBeenCalledOnce());
+		return await vi.mocked(mountMinimalEditor).mock.results[0].value;
 	};
 	return { canvas, frame, mounted };
 }
@@ -71,8 +69,9 @@ test('reports URL loading failures on the homepage without revealing an empty ed
 	expect(view.canvas.classList.contains('editor-ready')).toBe(false);
 });
 
-test('reveals initialized session content when no project URL is supplied', async () => {
+test('reveals an initialized empty editor when no project URL is supplied', async () => {
 	const view = setup();
-	await view.mounted();
+	const editor = await view.mounted();
 	await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
+	expect(editor.state.initialProjectState.modules).toEqual([]);
 });

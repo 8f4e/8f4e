@@ -6,6 +6,10 @@ plugin, runtime implementations, standard library, example source discovery, and
 The package exports `mountDefaultEditor(canvas, options)`. It does not mount itself when imported, so websites and
 other browser hosts control when and where the editor starts.
 
+For embedded examples, compiler tests, and landing-page demos, use
+[`@8f4e/editor-minimal`](../editor-minimal/README.md). It keeps live editing, runtime controls, and visualizations
+and starts each mount fresh, with a smaller feature set and no session storage.
+
 ```ts
 import { mountDefaultEditor } from '@8f4e/editor-default';
 

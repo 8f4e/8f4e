@@ -1,9 +1,9 @@
-import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
+import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
 import type { WebMcpTool } from '@8f4e/editor-webmcp';
 import { afterEach, expect, test, vi } from 'vitest';
 import { mountGallery } from './gallery';
 
-vi.mock('@8f4e/editor-default', { spy: true });
+vi.mock('@8f4e/editor-minimal', { spy: true });
 
 const source = '8f4e/v1\nentry main\nmodule galleryExample\nint value 1\nmoduleEnd\nentryEnd';
 const cleanups: Array<() => void> = [];
@@ -27,7 +27,6 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 	document.body.append(gallery);
 	const dispose = mountGallery({
 		title: 'Examples',
-		storageNamespace: 'gallery-test',
 		categories: [
 			{
 				path: 'test',
@@ -47,12 +46,11 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 		dispose();
 		gallery.remove();
 		window.history.replaceState(null, '', originalUrl);
-		for (const id of ids) window.sessionStorage.removeItem(`project_8f4e-gallery-test-${id}`);
 	});
 	const panel = (id = ids[0]) => gallery.querySelector<HTMLElement>(`#panel-${id}`)!;
-	const mounted = async (index = 0): Promise<DefaultEditorInstance> => {
-		await vi.waitFor(() => expect(mountDefaultEditor).toHaveBeenCalledTimes(index + 1));
-		return await vi.mocked(mountDefaultEditor).mock.results[index].value;
+	const mounted = async (index = 0): Promise<MinimalEditorInstance> => {
+		await vi.waitFor(() => expect(mountMinimalEditor).toHaveBeenCalledTimes(index + 1));
+		return await vi.mocked(mountMinimalEditor).mock.results[index].value;
 	};
 	return { gallery, panel, mounted };
 }
@@ -83,7 +81,33 @@ test('reveals a successfully loaded empty project', async () => {
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 });
 
-test('loads and runs worker and test runtime plugins together through the default composition', async () => {
+test('keeps live editing available with the minimal project menu', async () => {
+	const view = setup({ minimal: async () => new Response(source.replace('int value 1', '; @pos 4 10\nint value 1')) });
+	const editor = await view.mounted();
+	const canvas = view.panel().querySelector('canvas')!;
+	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
+	canvas.style.width = '640px';
+	canvas.style.height = '400px';
+	await vi.waitFor(() => expect(editor.state.viewport.width).toBe(640));
+	await vi.waitFor(() => expect(editor.state.compiler.compiledModules.galleryExample).toBeDefined());
+	expect(editor.state.featureFlags.editing).toBe(true);
+	expect(editor.state.featureFlags.projectCreation).toBe(false);
+	const rect = canvas.getBoundingClientRect();
+	canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: rect.x + 600, clientY: rect.y + 100, bubbles: true }));
+	await vi.waitFor(() =>
+		expect(editor.state.contextMenu.items.some(item => item.action === 'createCodeBlock')).toBe(true)
+	);
+	const menu = editor.state.contextMenu.items;
+	for (const action of ['importProject', 'exportProject', 'exportWasm', 'exportCanvasScreenshot']) {
+		expect(menu.some(item => item.action === action)).toBe(false);
+	}
+	expect(menu.some(item => item.title === 'Add Built-in Module')).toBe(false);
+	editor.pauseRendering();
+	editor.renderFrame();
+	await expect(canvas).toMatchScreenshot('minimal-project-menu');
+});
+
+test('loads and runs worker and test runtime plugins together through the minimal composition', async () => {
 	const view = setup({
 		runtimes: async () =>
 			new Response(`8f4e/v1
@@ -219,9 +243,9 @@ test('reports a failed request immediately and loads the project when retried', 
 
 test('disposes an editor when loading fails before its mount promise resolves', async () => {
 	const dispose = vi.fn();
-	vi.mocked(mountDefaultEditor).mockImplementationOnce(async (_canvas, options) => {
+	vi.mocked(mountMinimalEditor).mockImplementationOnce(async (_canvas, options) => {
 		options?.onInitialProjectLoadError?.(new Error('Offline'));
-		return { dispose } as unknown as DefaultEditorInstance;
+		return { dispose } as unknown as MinimalEditorInstance;
 	});
 	const view = setup({ early: async () => new Response(source) });
 	await view.mounted();

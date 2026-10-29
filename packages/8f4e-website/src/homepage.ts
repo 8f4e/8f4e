@@ -1,4 +1,4 @@
-import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
+import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
 import { getExampleProjectUrl } from './example-projects';
 import { sharedAudioContext } from './shared-audio-context';
 
@@ -9,11 +9,11 @@ export function mountHomepageEditors(): () => void {
 	}
 
 	const renderingReleaseDelayMs = 2_000;
-	const editorByCanvas = new Map<HTMLCanvasElement, DefaultEditorInstance>();
-	const editorMountPromiseByCanvas = new Map<HTMLCanvasElement, Promise<DefaultEditorInstance>>();
+	const editorByCanvas = new Map<HTMLCanvasElement, MinimalEditorInstance>();
+	const editorMountPromiseByCanvas = new Map<HTMLCanvasElement, Promise<MinimalEditorInstance>>();
 	const renderingReleaseTimeoutByCanvas = new Map<HTMLCanvasElement, number>();
 	const revealAnimationFrameByCanvas = new Map<HTMLCanvasElement, number>();
-	const editors: DefaultEditorInstance[] = [];
+	const editors: MinimalEditorInstance[] = [];
 	let disposed = false;
 
 	function syncEditors(): void {
@@ -70,26 +70,21 @@ export function mountHomepageEditors(): () => void {
 		}
 	});
 
-	function mountEditor(canvas: HTMLCanvasElement, index: number): Promise<DefaultEditorInstance> {
+	function mountEditor(canvas: HTMLCanvasElement, index: number): Promise<MinimalEditorInstance> {
 		const pendingMount = editorMountPromiseByCanvas.get(canvas);
 		if (pendingMount) {
 			return pendingMount;
 		}
 
-		const mountPromise = mountDefaultEditor(canvas, {
+		const mountPromise = mountMinimalEditor(canvas, {
 			sharedAudioContext,
 			captureWheel: false,
 			featureFlags: {
 				modeToggling: false,
-				projectCreation: false,
 			},
-			showOpenMenuItem: false,
-			initialEditorMode: 'edit',
 			initialProjectUrl: canvas.dataset.projectPath ? getExampleProjectUrl(canvas.dataset.projectPath) : undefined,
 			onInitialProjectLoaded: () => revealEditorAfterProjectLoad(canvas),
 			onInitialProjectLoadError: error => showProjectLoadError(canvas, error),
-			storage: window.localStorage,
-			storageNamespace: index === 0 ? '8f4e-website' : `8f4e-website-${index + 1}`,
 		})
 			.then(editor => {
 				if (disposed) {
