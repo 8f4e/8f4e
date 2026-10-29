@@ -29,9 +29,9 @@ entryEnd`);
 	const compiled = await compileProject(project, { disableSharedMemory: true });
 	const events = createEvents();
 	const store = initState(events, {
-		initialEditorMode: 'edit',
 		callbacks: {},
 	});
+	store.set('editorMode', 'edit');
 	const drawers = createCodeBlockDrawerRegistry();
 	const disposePlugin = createSliderPlugin({ writeMemory: () => {} }).setup({
 		store,

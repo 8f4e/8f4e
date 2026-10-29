@@ -26,22 +26,22 @@ export function registerGroupActions({ store, events }: EditorPluginContext): ()
 		state.callbacks.writeClipboardText(text).catch(() => {});
 	};
 	const onDelete = ({ codeBlock }: BlockAction) => {
-		if (!state.featureFlags.editing) return;
+		if (state.editorMode !== 'edit') return;
 		deleteCodeBlocks(store, members(codeBlock));
 	};
 	const onRemove = ({ codeBlock }: BlockAction) => {
-		if (!state.featureFlags.editing || !getGroup(codeBlock.parsedDirectives)) return;
+		if (state.editorMode !== 'edit' || !getGroup(codeBlock.parsedDirectives)) return;
 		applyCodeBlockSourceEdits(store, [{ codeBlock, code: removeDirective(codeBlock.code, 'group') }], {
 			affectsCompilation: false,
 		});
 	};
 	const onUngroup = ({ codeBlock }: BlockAction) => {
-		if (!state.featureFlags.editing) return;
+		if (state.editorMode !== 'edit') return;
 		const edits = members(codeBlock).map(block => ({ codeBlock: block, code: removeDirective(block.code, 'group') }));
 		applyCodeBlockSourceEdits(store, edits, { affectsCompilation: false });
 	};
 	const onSetNonstick = ({ codeBlock, makeNonstick }: BlockAction & { makeNonstick: boolean }) => {
-		if (!state.featureFlags.editing) return;
+		if (state.editorMode !== 'edit') return;
 		const edits = members(codeBlock).map(block => ({
 			codeBlock: block,
 			code: updateDirectiveArgs(block.code, 'group', args => {
@@ -52,14 +52,14 @@ export function registerGroupActions({ store, events }: EditorPluginContext): ()
 		applyCodeBlockSourceEdits(store, edits, { affectsCompilation: false });
 	};
 	const onSkip = ({ codeBlock }: BlockAction) => {
-		if (!state.featureFlags.editing) return;
+		if (state.editorMode !== 'edit') return;
 		const blocks = members(codeBlock).filter(block => block.blockType === 'module');
 		const allSkipped = blocks.every(block => block.code.some(isSkipExecutionDirective));
 		const edits = blocks.map(block => ({ codeBlock: block, code: setSkipExecution(block.code, !allSkipped).code }));
 		applyCodeBlockSourceEdits(store, edits, { affectsCompilation: true });
 	};
 	const onAlign = ({ codeBlock }: BlockAction) => {
-		if (!state.featureFlags.editing) return;
+		if (state.editorMode !== 'edit') return;
 		const blocks = members(codeBlock).sort((a, b) => a.gridX - b.gridX);
 		if (blocks.length < 2) return;
 		const [first, ...remaining] = blocks;

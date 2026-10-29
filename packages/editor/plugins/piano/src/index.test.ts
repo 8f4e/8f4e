@@ -29,11 +29,11 @@ async function setup(code = source, installed = true, name = 'controls') {
 		else memoryViews.float32[address] = value;
 	});
 	const store = initState(events, {
-		initialEditorMode: 'edit',
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
 		},
 	});
+	events.dispatch('enterEditMode');
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed
 		? createPianoPlugin({ writeMemory: write }).setup({
@@ -290,11 +290,11 @@ describe('piano plugin', () => {
 	it('hides saving in view mode and disables saving without memory access', async () => {
 		const test = await setup();
 		test.press(0);
-		test.state.featureFlags.editing = false;
+		test.state.editorMode = 'view';
 		expect(await test.menuItems()).toEqual([]);
 		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
-		test.state.featureFlags.editing = true;
+		test.state.editorMode = 'edit';
 		test.state.callbacks.getWordFromMemory = undefined;
 		expect((await test.menuItems())[0].disabled).toBe(true);
 	});

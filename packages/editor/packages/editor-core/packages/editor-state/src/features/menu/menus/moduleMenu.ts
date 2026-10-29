@@ -37,7 +37,7 @@ export const moduleMenu = (
 					},
 				]
 			: []),
-		...(state.featureFlags.editing
+		...(state.editorMode === 'edit'
 			? [
 					{
 						title: `Delete ${blockLabel}`,

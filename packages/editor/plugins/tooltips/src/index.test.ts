@@ -23,9 +23,9 @@ entryEnd`);
 	const compiled = await compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
 	const events = createEvents();
 	const store = initState(events, {
-		initialEditorMode: 'edit',
 		callbacks: {},
 	});
+	events.dispatch('enterEditMode');
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed
 		? tooltipsPlugin.setup({

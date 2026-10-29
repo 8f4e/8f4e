@@ -18,7 +18,8 @@ function setup() {
 	});
 	const blocks = [block];
 	const state = createMockState({
-		featureFlags: { editing: true, historyTracking: true },
+		editorMode: 'edit',
+		featureFlags: { historyTracking: true },
 		codeBlockRendering: { rootCodeBlocks: blocks, codeBlocks: blocks },
 	});
 	const store = createStateManager(state);

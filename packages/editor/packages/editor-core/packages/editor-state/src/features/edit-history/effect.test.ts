@@ -196,6 +196,7 @@ describe('history tracking with real project mutations', () => {
 			modules: [{ id: 7, code: ['module other', 'moduleEnd'], entry: 'other' }],
 		};
 		dispatch('loadProject', { project: otherProject });
+		store.set('editorMode', 'edit');
 		await vi.advanceTimersByTimeAsync(2000);
 
 		// The pending edit to the previous project produced no history entry.
@@ -238,6 +239,7 @@ describe('history tracking with real project mutations', () => {
 		});
 		const loaded = state.codeBlockRendering.codeBlocks[0];
 		globalEditorDirectivesEffect(store);
+		store.set('editorMode', 'edit');
 		codeBlockDragger(store, events);
 		store.set('codeBlockRendering.codeBlocks', state.codeBlockRendering.codeBlocks);
 		const compilerRevisionAfterLoad = state.compilerInputRevision;

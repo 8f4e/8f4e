@@ -7,7 +7,7 @@ export const removeMemoryConnectionsPlugin: EditorPlugin = {
 	id: 'remove-memory-connections',
 	setup: ({ store, events, menus }) => {
 		const onRemove = ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
-			if (!store.getState().featureFlags.editing) return;
+			if (store.getState().editorMode !== 'edit') return;
 			const code = removeIntermodularMemoryConnectionsFromCode(codeBlock.code);
 			if (!code) return;
 
@@ -16,7 +16,7 @@ export const removeMemoryConnectionsPlugin: EditorPlugin = {
 
 		events.on('removeConnections', onRemove);
 		const unregisterMenu = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-			if (!state.featureFlags.editing) return;
+			if (state.editorMode !== 'edit') return;
 			return {
 				title: 'Remove connections',
 				action: 'removeConnections',

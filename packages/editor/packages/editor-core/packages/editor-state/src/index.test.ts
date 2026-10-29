@@ -19,8 +19,8 @@ describe('editor state lifecycle', () => {
 				},
 				cancelAnimationFrame,
 			},
-			initialEditorMode: editorMode,
 		});
+		store.set('editorMode', editorMode);
 		const state = store.getState();
 		animateViewport(state, 80, 160, events);
 		expect(state.viewportAnimation.active).toBe(true);
@@ -34,15 +34,14 @@ describe('editor state lifecycle', () => {
 		expect(state.viewport.y).toBe(0);
 	});
 
-	it('initializes the requested editor mode and synchronizes editing', () => {
+	it('starts in view mode before a project is loaded', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
 			callbacks: {},
-			initialEditorMode: 'edit',
 		});
 
-		expect(store.getState().editorMode).toBe('edit');
-		expect(store.getState().featureFlags.editing).toBe(true);
+		expect(store.getState().editorMode).toBe('view');
+		expect(store.getState().featureFlags).not.toHaveProperty('editing');
 
 		store.dispose();
 	});
@@ -94,8 +93,8 @@ describe('editor state lifecycle', () => {
 			};
 			const store = initState(events, {
 				callbacks: {},
-				initialEditorMode: 'edit',
 			});
+			events.dispatch('enterEditMode');
 			const state = store.getState();
 			const codeBlock = createMockCodeBlock({
 				x: 0,

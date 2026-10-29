@@ -1,7 +1,8 @@
 # Minimal Editor
 
 `@8f4e/editor-minimal` composes the core editor for embedded examples, compiler tests, and landing-page demos.
-It starts in edit mode, supports live compilation and interactive controls, and loads project source from a URL.
+It supports live compilation and interactive controls, loads project source from a URL, and uses its `@mode` directive
+to select the initial mode (view by default).
 Each mount starts fresh; it does not restore or save browser sessions.
 
 ```ts
@@ -31,8 +32,9 @@ initialization. A URL failure calls `onInitialProjectLoadError`. The host owns p
 layout, visibility management, and any WebMCP bridge.
 
 `MinimalEditorMountOptions` supports `initialProjectUrl`, the initial-project callbacks, `sharedAudioContext`,
-`captureWheel`, `featureFlags`, and `initialEditorMode`. Project creation is disabled by default. Hosts can override
-feature flags or select view mode. Core still owns ordinary editing, navigation, clipboard operations, and history.
+`captureWheel`, and `featureFlags`. Project creation is disabled by default. A project selects its initial mode with
+`; @mode edit` or `; @mode view` in a project block; without a valid, unique declaration it starts in view mode.
+Hosts can override feature flags. Core still owns ordinary editing, navigation, clipboard operations, and history.
 
 This package has its own composition and dependencies. The full `@8f4e/editor-default` composition provides session
 persistence, file and WASM exports, screenshots, built-in module browsing, and additional editing actions such as

@@ -14,7 +14,6 @@ test.each(['view', 'edit'] as const)('selected outline in %s mode', async editor
 	canvas.height = 240;
 	const state = createMockStateWithColors({ editorMode });
 	state.editorConfig.font = 'ibmvga8x16';
-	state.featureFlags.editing = editorMode === 'edit';
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
 	const block = createMockCodeBlock({

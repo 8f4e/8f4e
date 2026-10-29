@@ -17,9 +17,9 @@ describe('codeBlockDragger', () => {
 	beforeEach(() => {
 		// Initialize state
 		state = createMockState({
+			editorMode: 'edit',
 			featureFlags: {
 				moduleDragging: true,
-				editing: true,
 			},
 			codeBlockRendering: {
 				codeBlocks: [],
@@ -249,7 +249,7 @@ describe('codeBlockDragger', () => {
 		});
 
 		it('should dispatch clicks without dragging when editing is disabled', () => {
-			state.featureFlags.editing = false;
+			state.editorMode = 'view';
 
 			const blockBehind = createCodeBlockGraphicData({
 				code: ['module behind', 'moduleEnd'],

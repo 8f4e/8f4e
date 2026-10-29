@@ -75,7 +75,7 @@ export default function drawModules(
 
 			drawShapeDeclarations(engine, codeBlock);
 
-			if (state.featureFlags.editing && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
+			if (state.editorMode === 'edit' && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				engine.drawText(
 					codeBlock.cursor.x,
 					codeBlock.cursor.y,

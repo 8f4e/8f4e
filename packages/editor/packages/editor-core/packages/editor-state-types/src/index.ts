@@ -104,14 +104,11 @@ export interface FeatureFlags {
 	/** Enable/disable dragging and repositioning of code block modules */
 	moduleDragging: boolean;
 
-	/** Enable/disable selecting lines/caret positions within code blocks */
+	/** Enable/disable selecting lines/caret positions; preserved across mode changes and project replacement. */
 	codeLineSelection: boolean;
 
 	/** Enable/disable panning/scrolling of the editor viewport */
 	viewportDragging: boolean;
-
-	/** Whether the editor is currently in an edit-enabled state. */
-	editing: boolean;
 
 	/** Enable/disable keyboard switching into and out of edit mode. */
 	modeToggling: boolean;
@@ -124,8 +121,6 @@ export interface FeatureFlags {
 
 	/** Enable/disable arrows that point toward off-screen code blocks */
 	offscreenBlockArrows: boolean;
-
-	/** Enable/disable the menu action that opens projects from disk */
 
 	/** Enable/disable the menu action that creates a new project */
 	projectCreation: boolean;
@@ -186,8 +181,6 @@ export type {
 
 export interface Options {
 	featureFlags?: FeatureFlagsConfig;
-	/** Mode used when the editor is initialized. */
-	initialEditorMode?: EditorMode;
 	callbacks: Callbacks;
 	/** Optional host-provided schema contributions for project-level editor config. */
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;

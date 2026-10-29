@@ -7,7 +7,7 @@ export const toggleFavoritePlugin: EditorPlugin = {
 	id: 'toggle-favorite',
 	setup: ({ store, events, menus }) => {
 		const onToggle = ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
-			if (!store.getState().featureFlags.editing) return;
+			if (store.getState().editorMode !== 'edit') return;
 
 			const code = codeBlock.isFavorite ? removeDirective(codeBlock.code, 'favorite') : [...codeBlock.code];
 			if (!codeBlock.isFavorite) {
@@ -19,7 +19,7 @@ export const toggleFavoritePlugin: EditorPlugin = {
 
 		events.on('toggleFavoriteDirective', onToggle);
 		const unregisterMenu = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-			if (!state.featureFlags.editing) return;
+			if (state.editorMode !== 'edit') return;
 			return {
 				title: codeBlock.isFavorite ? 'Unfavorite' : 'Favorite',
 				action: 'toggleFavoriteDirective',

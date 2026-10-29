@@ -61,7 +61,6 @@ describe('menus - go home entry', () => {
 	it('shows "Jump to..." in view mode when editing is disabled', () => {
 		const mockState = createMockState({
 			editorMode: 'view',
-			featureFlags: { editing: false },
 		});
 
 		const menu = mainMenu(mockState);
@@ -113,7 +112,6 @@ describe('menus - go home entry', () => {
 	it('hides "New Module" when editing is disabled', () => {
 		const mockState = createMockState({
 			editorMode: 'view',
-			featureFlags: { editing: false },
 		});
 
 		const menu = mainMenu(mockState);

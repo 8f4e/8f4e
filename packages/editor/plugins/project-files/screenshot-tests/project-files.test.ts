@@ -34,10 +34,10 @@ noteEnd`;
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
-			initialEditorMode: 'edit',
 			initialProject: parseProjectSource(source),
 			plugins: [createProjectFilesPlugin({ inputTarget: canvas })],
 		});
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		const state = editor.state;
 		await vi.waitFor(() =>
 			expect(state.codeBlockRendering.codeBlocks.some(block => block.code.includes('note patch'))).toBe(true)
@@ -52,6 +52,8 @@ noteEnd`;
 		canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: openX, clientY: openY, bubbles: true }));
 		canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: openX, clientY: openY, bubbles: true }));
 		await vi.waitFor(() => expect(state.initialProjectState).not.toBe(original));
+		expect(state.editorMode).toBe('view');
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		canvas.focus();
 		const saveKey = new KeyboardEvent('keydown', { key: 's', metaKey: true, bubbles: true, cancelable: true });
 		canvas.dispatchEvent(saveKey);

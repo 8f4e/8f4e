@@ -9,7 +9,7 @@ export const toggleSkipExecutionPlugin: EditorPlugin = {
 	id: 'toggle-skip-execution',
 	setup: ({ store, events, menus }) => {
 		const onToggle = ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
-			if (!store.getState().featureFlags.editing) return;
+			if (store.getState().editorMode !== 'edit') return;
 
 			const skipExecution = !codeBlock.code.some(line => isSkipExecutionDirective(line));
 			const result = setSkipExecution(codeBlock.code, skipExecution);
@@ -18,7 +18,7 @@ export const toggleSkipExecutionPlugin: EditorPlugin = {
 
 		events.on(action, onToggle);
 		const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-			if (!state.featureFlags.editing || codeBlock.blockType !== 'module') return;
+			if (state.editorMode !== 'edit' || codeBlock.blockType !== 'module') return;
 			const skipped = codeBlock.code.some(line => isSkipExecutionDirective(line));
 			return {
 				title: skipped ? 'Unskip module' : 'Skip module',

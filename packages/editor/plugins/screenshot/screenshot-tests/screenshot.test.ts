@@ -35,10 +35,10 @@ noteEnd`);
 	let imageUrl: string | undefined;
 	try {
 		editor = await initEditor(canvas, {
-			initialEditorMode: 'edit',
 			initialProject: project,
 			plugins: [createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })],
 		});
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		await vi.waitFor(() =>
 			expect(editor.state.codeBlockRendering.codeBlocks.some(block => block.code.includes('note screenshot'))).toBe(
 				true

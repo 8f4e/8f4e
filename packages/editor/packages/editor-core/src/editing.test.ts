@@ -22,9 +22,11 @@ function setup(
 	const events = initEvents();
 	const compilationChanged = vi.fn();
 	events.on('compilationInputChanged', compilationChanged);
-	const store = initState(events, { initialEditorMode: 'edit', callbacks: {} });
+	const store = initState(events, { callbacks: {} });
+	events.dispatch('enterEditMode');
 	const editing = createEditorEditingHandle(store, events);
 	events.dispatch('loadProject', { project });
+	events.dispatch('enterEditMode');
 	compilationChanged.mockClear();
 	cleanups.push(() => {
 		editing.dispose();
@@ -310,9 +312,9 @@ describe('public editor editing handle', () => {
 	it('reports read-only and disposed handles, and does not retain history from a replaced project', () => {
 		const { editing, store, state, events, dispose } = setup();
 		const revision = editing.getRevision();
-		store.set('featureFlags.editing', false);
+		store.set('editorMode', 'view');
 		expect(() => editing.undo({ expectedRevision: revision })).toThrow('view mode');
-		store.set('featureFlags.editing', true);
+		store.set('editorMode', 'edit');
 		const target = state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!;
 		editing.applyEdits({
 			expectedRevision: revision,

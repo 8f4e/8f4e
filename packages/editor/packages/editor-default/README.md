@@ -15,7 +15,6 @@ import { mountDefaultEditor } from '@8f4e/editor-default';
 
 const editor = await mountDefaultEditor(canvas, {
 	captureWheel: false,
-	initialEditorMode: 'edit',
 	storageNamespace: 'editor-a',
 });
 
@@ -25,8 +24,9 @@ editor.resumeRendering();
 editor.dispose();
 ```
 
-Use `initialEditorMode: 'edit'` to start editing immediately. Set the `modeToggling` feature flag to `false` when the
-host should keep the editor in its initial mode.
+Declare `; @mode edit` or `; @mode view` in a project block to select its mode when loaded. Projects without a valid,
+unique declaration start in view mode. Set the `modeToggling` feature flag to `false` to hide the user controls for
+changing modes. The directive still selects the initial mode when these controls are disabled.
 
 `releaseRenderingResources()` pauses rendering and releases reloadable GPU textures, dynamic buffer storage, and the
 canvas drawing buffer. `resumeRendering()` restores the resources, applies the latest canvas size, and renders

@@ -22,6 +22,7 @@ function setup(storage = createStorage(), restoreOnStartup = true, storageKey = 
 	cleanups.push(test.dispose);
 	const boot = () => {
 		test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
+		test.events.dispatch('enterEditMode');
 		test.events.dispatch('init');
 	};
 	return { ...test, storage, boot };
@@ -38,6 +39,7 @@ describe('session persistence plugin', () => {
 		storage.setItem.mockClear();
 		const test = setup(storage);
 		test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
+		test.events.dispatch('enterEditMode');
 		expect(storage.getItem).not.toHaveBeenCalled();
 		expect(storage.setItem).not.toHaveBeenCalled();
 		test.events.dispatch('init');
@@ -62,6 +64,7 @@ describe('session persistence plugin', () => {
 		expect(test.state.codeBlockRendering.codeBlocks.some(block => block.name === 'retained')).toBe(false);
 		expect(storage.setItem).toHaveBeenCalledWith('session', expect.any(String));
 		test.events.dispatch('loadProject', { project });
+		test.events.dispatch('enterEditMode');
 		expect(JSON.parse(storage.getItem('session')!).modules[0].code).toContain('module retained');
 	});
 
@@ -69,6 +72,7 @@ describe('session persistence plugin', () => {
 		const test = setup();
 		test.boot();
 		test.events.dispatch('loadProject', { project });
+		test.events.dispatch('enterEditMode');
 		const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!;
 		test.store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 2;
@@ -98,6 +102,7 @@ describe('session persistence plugin', () => {
 		const test = setup();
 		test.boot();
 		test.events.dispatch('loadProject', { project });
+		test.events.dispatch('enterEditMode');
 		const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!;
 		const editing = createEditorEditingHandle(test.store, test.events);
 		cleanups.push(editing.dispose);
@@ -117,6 +122,7 @@ describe('session persistence plugin', () => {
 		const test = setup();
 		test.boot();
 		test.events.dispatch('loadProject', { project });
+		test.events.dispatch('enterEditMode');
 		const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!;
 		test.store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 2;
@@ -140,6 +146,7 @@ describe('session persistence plugin', () => {
 		const test = setup();
 		test.boot();
 		test.events.dispatch('loadProject', { project });
+		test.events.dispatch('enterEditMode');
 		const editing = createEditorEditingHandle(test.store, test.events);
 		cleanups.push(editing.dispose);
 		const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!;
@@ -175,6 +182,7 @@ describe('session persistence plugin', () => {
 
 		// Reopening identical content is a different project lifetime and invalidates old API tokens.
 		test.events.dispatch('loadProject', { project: JSON.parse(test.storage.getItem('session')!) });
+		test.events.dispatch('enterEditMode');
 		expect(editing.handle.getRevision()).not.toBe(redone.revision);
 		expect(test.state.historyStack).toHaveLength(0);
 		expect(test.state.redoStack).toHaveLength(0);
@@ -198,6 +206,7 @@ describe('session persistence plugin', () => {
 		test.events.dispatch('loadProject', {
 			project: parseProjectSource('8f4e/v1\nconstants env\nconst OBSOLETE 1\nconstantsEnd'),
 		});
+		test.events.dispatch('enterEditMode');
 		expect(changes).toHaveLength(1);
 		expect(changes[0].kind).toBe('replace');
 		expect(test.storage.setItem).toHaveBeenCalledOnce();
@@ -218,6 +227,7 @@ describe('session persistence plugin', () => {
 				constants: [{ id: 9, code: ['constants env', '; @pos 120 60', 'constantsEnd'] }],
 			},
 		});
+		test.events.dispatch('enterEditMode');
 		const editing = createEditorEditingHandle(test.store, test.events);
 		cleanups.push(editing.dispose);
 		const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!;
@@ -262,6 +272,7 @@ describe('session persistence plugin', () => {
 			'8f4e/v1\nentry main\ngroup voice\nmodule oscillator\nmoduleEnd\ngroupEnd\nentryEnd'
 		);
 		test.events.dispatch('loadProject', { project: grouped });
+		test.events.dispatch('enterEditMode');
 		const group = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'voice')!;
 		test.store.set('codeBlockRendering.codeBlocks', group.nestedProjectCodeBlocks!);
 		expect(JSON.parse(test.storage.getItem('session')!).groups[0].name).toBe('voice');
@@ -303,6 +314,7 @@ describe('session persistence plugin', () => {
 		const test = setup(storage);
 		test.boot();
 		test.events.dispatch('loadProject', { project });
+		test.events.dispatch('enterEditMode');
 		expect(test.state.codeBlockRendering.codeBlocks.some(block => block.name === 'retained')).toBe(true);
 		expect(test.state.console.logs.some(log => log.message.includes('Storage full'))).toBe(true);
 	});

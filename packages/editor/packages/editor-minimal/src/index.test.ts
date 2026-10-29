@@ -7,7 +7,7 @@ vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
 vi.mock('@8f4e/editor-plugin-compiler', { spy: true });
 afterEach(() => vi.clearAllMocks());
 
-it('starts editable without storage and reports empty-project readiness after initialization', async () => {
+it('starts without storage and reports empty-project readiness after initialization', async () => {
 	let finish!: (editor: Editor) => void;
 	vi.mocked(initEditor).mockReturnValueOnce(
 		new Promise(resolve => {
@@ -24,7 +24,6 @@ it('starts editable without storage and reports empty-project readiness after in
 	});
 	const compiler = vi.mocked(createCompilerPlugin).mock.results[0].value;
 	const options = vi.mocked(initEditor).mock.calls[0][1];
-	expect(options.initialEditorMode).toBe('edit');
 	expect(options.captureWheel).toBe(false);
 	expect(options.featureFlags).toEqual({ projectCreation: false, modeToggling: false });
 	expect(options.plugins![0]).toBe(compiler.plugin);

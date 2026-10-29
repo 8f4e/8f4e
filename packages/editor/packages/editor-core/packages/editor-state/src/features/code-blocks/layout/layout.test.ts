@@ -11,11 +11,13 @@ afterEach(() => {
 function setup() {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, initialEditorMode: 'edit' });
+	const store = initState(events, { callbacks: {} });
+	events.dispatch('enterEditMode');
 	cleanups.push(store.dispose);
 	events.dispatch('loadProject', {
 		project: parseProjectSource('8f4e/v1\nentry main\nmodule audio\n; space\nmoduleEnd\nentryEnd'),
 	});
+	events.dispatch('enterEditMode');
 	const state = store.getState();
 	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'audio')!;
 	return { store, state, block, events, layout: store.layout };

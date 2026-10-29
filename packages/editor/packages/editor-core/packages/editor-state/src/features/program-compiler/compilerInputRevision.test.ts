@@ -102,7 +102,7 @@ describe('compiler input revision', () => {
 
 	it('ignores editing actions while editing is disabled', () => {
 		codeEditing(store, events);
-		state.featureFlags.editing = false;
+		state.editorMode = 'view';
 		dispatch('insertText', { text: '2' });
 		dispatch('insertNewLine');
 		dispatch('deleteBackward');

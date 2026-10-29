@@ -12,8 +12,8 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 
 	const store = initState(events, {
 		callbacks: {},
-		initialEditorMode: mode,
 	});
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const disposePlugin = installed
 		? toggleFavoritePlugin.setup({
 				store,
@@ -34,6 +34,7 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 			`8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\n${inEntry ? 'entry main\n' : ''}${code.join('\n')}${inEntry ? '\nentryEnd' : ''}`
 		),
 	});
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const block = state.codeBlockRendering.rootCodeBlocks.find(candidate => candidate.code.includes(code[0]))!;
 

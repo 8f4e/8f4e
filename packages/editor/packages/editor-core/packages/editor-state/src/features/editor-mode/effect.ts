@@ -10,8 +10,6 @@ export default function editorMode(store: StateManager<State>, events: EventDisp
 		}
 
 		store.set('editorMode', 'edit');
-		store.set('featureFlags.editing', true);
-		store.set('featureFlags.codeLineSelection', true);
 	}
 
 	function exitToViewMode(): void {
@@ -20,8 +18,6 @@ export default function editorMode(store: StateManager<State>, events: EventDisp
 		}
 
 		store.set('editorMode', 'view');
-		store.set('featureFlags.editing', false);
-		store.set('featureFlags.codeLineSelection', true);
 	}
 
 	events.on('enterEditMode', enterEditMode);

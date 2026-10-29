@@ -122,7 +122,7 @@ export function createEditorTools(
 				return {
 					revision: editing.getRevision(),
 					projectPath: getCurrentProjectPath(state),
-					editable: Boolean(state.featureFlags.editing),
+					editable: state.editorMode === 'edit',
 					canUndo: state.historyStack.length > 0,
 					canRedo: state.redoStack.length > 0,
 				};

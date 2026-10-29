@@ -16,8 +16,8 @@ function setup(
 
 	const store = initState(events, {
 		callbacks: {},
-		initialEditorMode: mode,
 	});
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const disposePlugin = installed
 		? removeMemoryConnectionsPlugin.setup({
 				store,
@@ -37,6 +37,7 @@ function setup(
 			`8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nentry main\n${code.join('\n')}\nentryEnd`
 		),
 	});
+	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const block = state.codeBlockRendering.rootCodeBlocks.find(candidate => candidate.name === 'target')!;
 

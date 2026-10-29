@@ -132,7 +132,7 @@ describe('grouping plugin', () => {
 		const before = serializeToProject(test.state);
 		test.drag(test.block('first'));
 		expect(serializeToProject(test.state)).toEqual(before);
-		test.store.set('featureFlags.editing', true);
+		test.store.set('editorMode', 'edit');
 		test.state.featureFlags.moduleDragging = false;
 		test.drag(test.block('first'));
 		expect(serializeToProject(test.state)).toEqual(before);

@@ -1,71 +1,34 @@
+import { EventEmitter } from 'node:events';
 import { createMockState } from '@8f4e/editor-state-testing';
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { StateManager } from '@8f4e/state-manager';
-import { describe, expect, it, vi } from 'vitest';
+import createStateManager from '@8f4e/state-manager';
+import { afterEach, describe, expect, it } from 'vitest';
 import editorMode from './effect';
 
+const cleanups: Array<() => void> = [];
+afterEach(() => {
+	while (cleanups.length) cleanups.pop()!();
+});
+
 describe('editorMode', () => {
-	function setup(editorModeValue: State['editorMode'] = 'view', editing = false) {
-		const handlers = new Map<string, (() => void)[]>();
-		const state = createMockState({
-			featureFlags: {
-				editing,
-				codeLineSelection: false,
-			},
-			editorMode: editorModeValue,
-		});
-		const store = {
-			getState: () => state,
-			set: vi.fn((path: string, value: unknown) => {
-				if (path === 'editorMode') {
-					state.editorMode = value as State['editorMode'];
-				}
-				if (path === 'featureFlags.editing') {
-					state.featureFlags.editing = value as boolean;
-				}
-				if (path === 'featureFlags.codeLineSelection') {
-					state.featureFlags.codeLineSelection = value as boolean;
-				}
-			}),
-		} as unknown as StateManager<State>;
+	it.each([true, false])('preserves feature flags while switching modes (line selection: %s)', codeLineSelection => {
+		const state = createMockState({ editorMode: 'view', featureFlags: { codeLineSelection } });
+		const store = createStateManager(state);
+		cleanups.push(store.dispose);
+		const emitter = new EventEmitter();
 		const events = {
-			on: vi.fn((name: string, callback: () => void) => {
-				const group = handlers.get(name) ?? [];
-				group.push(callback);
-				handlers.set(name, group);
-			}),
-			off: vi.fn(),
-			dispatch: vi.fn(),
-		} as unknown as EventDispatcher;
-
-		editorMode(store, events);
-
-		return {
-			state,
-			store,
-			emit(name: string) {
-				handlers.get(name)?.forEach(callback => callback());
-			},
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
 		};
-	}
+		editorMode(store, events);
+		const featureFlags = { ...state.featureFlags };
 
-	it('enters edit mode from view mode', () => {
-		const { emit, state } = setup();
-
-		emit('enterEditMode');
-
+		events.dispatch('enterEditMode');
 		expect(state.editorMode).toBe('edit');
-		expect(state.featureFlags.editing).toBe(true);
-		expect(state.featureFlags.codeLineSelection).toBe(true);
-	});
+		expect(state.featureFlags).toEqual(featureFlags);
 
-	it('returns to view mode from edit mode', () => {
-		const { emit, state } = setup('edit', true);
-
-		emit('exitToViewMode');
-
+		events.dispatch('exitToViewMode');
 		expect(state.editorMode).toBe('view');
-		expect(state.featureFlags.editing).toBe(false);
-		expect(state.featureFlags.codeLineSelection).toBe(true);
+		expect(state.featureFlags).toEqual(featureFlags);
 	});
 });

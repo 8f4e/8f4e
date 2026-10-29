@@ -23,6 +23,7 @@ export function restoreProject(
 	restoring.add(state);
 	try {
 		store.set('initialProjectState', project);
+		if (kind === 'replace') store.set('editorMode', state.globalEditorDirectives.mode ?? 'view');
 	} finally {
 		if (!nested) restoring.delete(state);
 	}

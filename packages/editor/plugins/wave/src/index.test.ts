@@ -28,9 +28,9 @@ async function setup(code = source, installed = true, name = 'audio') {
 	};
 	const events = createEvents();
 	const store = initState(events, {
-		initialEditorMode: 'edit',
 		callbacks: {},
 	});
+	events.dispatch('enterEditMode');
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed
 		? wavePlugin.setup({

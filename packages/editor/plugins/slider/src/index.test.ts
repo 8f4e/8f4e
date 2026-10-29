@@ -29,11 +29,11 @@ async function setup(code = source, installed = true, name = 'controls') {
 		else memoryViews.float32[address] = value;
 	});
 	const store = initState(events, {
-		initialEditorMode: 'edit',
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
 		},
 	});
+	events.dispatch('enterEditMode');
 	const drawers = createCodeBlockDrawerRegistry();
 	const dispose = installed
 		? createSliderPlugin({ writeMemory: write }).setup({
@@ -136,7 +136,7 @@ describe('slider plugin', () => {
 		'drags through pointer events without moving blocks or viewport, editing=%s',
 		async editing => {
 			const test = await setup();
-			test.store.set('featureFlags.editing', editing);
+			test.store.set('editorMode', editing ? 'edit' : 'view');
 			const original = [...test.block.code];
 			const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
 			const blockPosition = { x: test.block.x, y: test.block.y };
@@ -268,11 +268,11 @@ describe('slider plugin', () => {
 	it('hides saving in view mode and disables it without readable memory', async () => {
 		const test = await setup();
 		test.press();
-		test.state.featureFlags.editing = false;
+		test.state.editorMode = 'view';
 		expect(await test.menuItems()).toEqual([]);
 		test.events.dispatch('saveSliderValuesToCode', { codeBlock: test.block });
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
-		test.state.featureFlags.editing = true;
+		test.state.editorMode = 'edit';
 		test.state.callbacks.getWordFromMemory = undefined;
 		expect((await test.menuItems())[0].disabled).toBe(true);
 	});

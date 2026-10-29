@@ -12,6 +12,7 @@ constantsEnd
 
 note
 ; @pos -170 -11
+; @mode edit
 ; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 1
 ; @config export.fileName landingPageDemo3

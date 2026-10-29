@@ -6,7 +6,7 @@
 import { mountDefaultEditor } from '@8f4e/editor-default';
 import { createEditorWebMcp } from '@8f4e/editor-webmcp';
 
-const editor = await mountDefaultEditor(canvas, { initialEditorMode: 'edit' });
+const editor = await mountDefaultEditor(canvas);
 const bridge = createEditorWebMcp({
 	document: canvas.ownerDocument,
 	editor,

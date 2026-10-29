@@ -74,7 +74,7 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 			bringCodeBlockToFrontWithinPartition(state.codeBlockRendering.codeBlocks, draggedCodeBlock)
 		);
 
-		if (!state.featureFlags.editing) {
+		if (state.editorMode !== 'edit') {
 			state.codeBlockRendering.draggedCodeBlock = undefined;
 			dragSet = [];
 			didDrag = false;

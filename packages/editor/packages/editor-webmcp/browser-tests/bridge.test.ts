@@ -5,7 +5,7 @@ import { createEditorWebMcp, type WebMcpTool } from '@8f4e/editor-webmcp';
 import { afterEach, expect, test, vi } from 'vitest';
 import { page } from 'vitest/browser';
 
-const source = '8f4e/v1\nentry main\nmodule counter\nint value 1\nmoduleEnd\nentryEnd';
+const source = '8f4e/v1\nentry main\nmodule counter ; @mode edit\nint value 1\nmoduleEnd\nentryEnd';
 const cleanups: Array<() => void> = [];
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
@@ -26,7 +26,6 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 	document.body.append(panel);
 	let loaded = false;
 	const pending = mountDefaultEditor(canvas, {
-		initialEditorMode: 'edit',
 		initialProjectUrl: `/webmcp-${id}.8f4e`,
 		storage: sessionStorage,
 		storageNamespace: `8f4e-webmcp-test-${id}`,
@@ -133,7 +132,7 @@ test('ships documentation and examples through the built bridge without changing
 test('navigates the editor and returns only the currently expanded source string', async () => {
 	const tools = siteTools();
 	const grouped =
-		'8f4e/v1\nentry main\nmodule oscillator\nint value 1\nmoduleEnd\ngroup audio\nmodule oscillator\nint value 2\nmoduleEnd\ngroup voices\nmodule deepSecret\nmoduleEnd\ngroupEnd\ngroupEnd\nentryEnd';
+		'8f4e/v1\nentry main\nmodule oscillator ; @mode edit\nint value 1\nmoduleEnd\ngroup audio\nmodule oscillator\nint value 2\nmoduleEnd\ngroup voices\nmodule deepSecret\nmoduleEnd\ngroupEnd\ngroupEnd\nentryEnd';
 	const view = setup({ grouped: async () => new Response(grouped) });
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(tools.has('get_compiler_diagnostics')).toBe(true));
@@ -181,7 +180,7 @@ test('navigates the editor and returns only the currently expanded source string
 test('targets named notes and modules through the same selectors without exposing identifiers', async () => {
 	const tools = siteTools();
 	const grouped =
-		'8f4e/v1\nnote colors\nroot palette\nnoteEnd\nentry main\ngroup audio\nnote colors\nvoice palette\nnoteEnd\nmodule oscillator\nint value 1\nmoduleEnd\ngroupEnd\nentryEnd';
+		'8f4e/v1\nnote colors\nroot palette\nnoteEnd\nentry main\ngroup audio\nnote colors\nvoice palette\nnoteEnd\nmodule oscillator ; @mode edit\nint value 1\nmoduleEnd\ngroupEnd\nentryEnd';
 	const view = setup({ named: async () => new Response(grouped) });
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(tools.has('get_compiler_diagnostics')).toBe(true));
@@ -217,7 +216,7 @@ test('targets named notes and modules through the same selectors without exposin
 test('patches one source span in the current group with persistence and one-step undo/redo', async () => {
 	const tools = siteTools();
 	const grouped =
-		'8f4e/v1\nentry main\nmodule oscillator\nfloat alpha 0.04\nmoduleEnd\ngroup audio\nmodule oscillator\n; @pos 10 4\nfloat alpha 0.04\npush alpha\ndrop\npush alpha\ndrop\nmoduleEnd\ngroupEnd\nentryEnd';
+		'8f4e/v1\nentry main\nmodule oscillator ; @mode edit\nfloat alpha 0.04\nmoduleEnd\ngroup audio\nmodule oscillator\n; @pos 10 4\nfloat alpha 0.04\npush alpha\ndrop\npush alpha\ndrop\nmoduleEnd\ngroupEnd\nentryEnd';
 	const view = setup({ patched: async () => new Response(grouped) });
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(tools.has('get_compiler_diagnostics')).toBe(true));

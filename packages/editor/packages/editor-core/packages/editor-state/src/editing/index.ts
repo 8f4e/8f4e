@@ -62,7 +62,7 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 		if (expectedRevision !== revision()) {
 			throw new EditorEditingError('stale_revision', 'Read state and getRevision again before editing', revision());
 		}
-		if (!state.featureFlags.editing)
+		if (state.editorMode !== 'edit')
 			throw new EditorEditingError(
 				'read_only',
 				'The editor is in view mode; switch to edit mode before editing',

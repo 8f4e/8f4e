@@ -43,7 +43,6 @@ entryEnd`);
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
-			initialEditorMode: 'edit',
 			initialProject: project,
 			plugins: [
 				{
@@ -55,6 +54,7 @@ entryEnd`);
 				},
 			],
 		});
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		await vi.waitFor(() => expect(editor!.state.dialog.id).toBe('binary-assets-loading'));
 		editor.pauseRendering();
 		editor.renderFrame();

@@ -10,9 +10,10 @@ import type {
 } from '@8f4e/editor-state-types';
 import { createProjectModuleId, type ProjectGroupPath } from '@8f4e/language-spec';
 import configDirective from './config/plugin';
+import modeDirective from './mode/plugin';
 import { parseGlobalEditorDirectives } from './utils';
 
-export const globalEditorDirectiveDefinitions: GlobalEditorDirectiveDefinition[] = [configDirective];
+export const globalEditorDirectiveDefinitions: GlobalEditorDirectiveDefinition[] = [configDirective, modeDirective];
 
 export function resolveGlobalEditorDirectives(
 	codeBlocks: {

@@ -23,14 +23,14 @@ describe('menu registry', () => {
 		const codeBlock = createMockCodeBlock({ name: 'first' });
 		const unregister = registry.registerItem('moduleMenu', ({ codeBlock }) => ({ title: codeBlock.name }));
 		registry.registerItem('moduleMenu', ({ state }) =>
-			state.featureFlags.editing ? { title: 'Edit action' } : undefined
+			state.editorMode === 'edit' ? { title: 'Edit action' } : undefined
 		);
 		expect(registry.getItems('moduleMenu', { state, codeBlock }).map(item => item.title)).toEqual([
 			'first',
 			'Edit action',
 		]);
 		codeBlock.name = 'updated';
-		state.featureFlags.editing = false;
+		state.editorMode = 'view';
 		expect(registry.getItems('moduleMenu', { state, codeBlock })).toEqual([{ title: 'updated' }]);
 		unregister();
 		unregister();
