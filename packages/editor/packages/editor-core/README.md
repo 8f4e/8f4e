@@ -157,6 +157,8 @@ Plugins use these public exports rather than importing core files.
 `logError` records failures in the editor console. These helpers and filename configuration remain available
 independently of the export and persistence plugins.
 Serialization lives under `pureHelpers/projectSerialization`; filename configuration belongs to `features/editor-config`.
+`serializeToProject` and `serializeCodeBlocksToProject` return detached models with independent source arrays throughout
+nested groups. Their fixed field order and grid/creation ordering support direct JSON comparison of canonical models.
 
 ## Project changes
 
@@ -170,8 +172,12 @@ and derived state updates are complete. This includes persisted metadata such as
 Selection, navigation, and no-op actions do not publish. History batches ordinary edits and gives validated API
 batches an immediate undo step; persistence saves each completed change.
 
-Core project-loading and history helpers publish `checkpoint`, `restore`, or `replace` changes after snapshot
-restoration and generated constants have settled. Consumers can read `editor.state` and use the editing handle for
+The project-operations effect applies validated API drafts independently of history. It emits `beforeProjectEdit`
+for a changed draft, allowing history to commit pending typing, then publishes the completed checkpoint. Unchanged
+drafts leave pending history and revisions untouched.
+
+Core project-loading, API operations, and history helpers publish `checkpoint`, `restore`, or `replace` changes after
+snapshot restoration and generated constants have settled. Consumers can read `editor.state` and use the editing handle for
 validated writes. Plugins implementing source mutations must publish their completed operation; direct state writes
 alone do not announce a revision. `compilerInputRevision` remains a separate signal for compilation inputs.
 

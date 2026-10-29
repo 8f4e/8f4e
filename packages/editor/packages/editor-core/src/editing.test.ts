@@ -63,7 +63,7 @@ describe('public editor editing handle', () => {
 				{ type: 'insert', code: ['note', '; @pos 60 40', 'Created through the public API', 'noteEnd'] },
 			],
 		});
-		const changedProject = structuredClone(serializeToProject(state));
+		const changedProject = serializeToProject(state);
 		expect(state.codeBlockRendering.codeBlocks.find(block => getEditorBlockId(block) === targetId)).toMatchObject({
 			code: ['module original', '; @pos 30 40', 'int value 2', 'moduleEnd'],
 			gridX: 30,
@@ -138,7 +138,7 @@ describe('public editor editing handle', () => {
 
 	it('rejects an invalid batch without applying earlier operations or changing history', () => {
 		const { editing, state, compilationChanged } = setup();
-		const before = structuredClone(serializeToProject(state));
+		const before = serializeToProject(state);
 		const revision = editing.getRevision();
 		const target = state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!;
 		expect(() =>

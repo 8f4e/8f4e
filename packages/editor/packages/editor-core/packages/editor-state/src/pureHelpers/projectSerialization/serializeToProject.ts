@@ -3,7 +3,7 @@ import type { ProjectObjectModel } from '@8f4e/language-spec';
 import convertGraphicDataToProjectStructure from './serializeCodeBlocks';
 
 /**
- * Serializes current runtime state to the canonical ProjectObjectModel used for session persistence and compilation.
+ * Returns detached canonical project data for history, session persistence, compilation, and project export.
  * @param state Current editor state
  * @returns Project object model ready for session persistence, compilation, or `.8f4e` conversion
  */

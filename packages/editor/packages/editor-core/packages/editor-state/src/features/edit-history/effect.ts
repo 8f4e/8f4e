@@ -8,32 +8,10 @@ import { restoreProject } from '../project-changes';
 const DEBOUNCE_DELAY = 1000;
 const HISTORY_LIMIT = 10;
 
-/**
- * Serializes a project snapshot with sorted object keys, so snapshots produced
- * by different code paths (serializer, project parser, test fixtures) compare
- * by content rather than by key insertion order.
- */
-function stableStringify(value: unknown): string {
-	if (value === null || typeof value !== 'object') {
-		return JSON.stringify(value) ?? 'null';
-	}
-
-	if (Array.isArray(value)) {
-		return `[${value.map(stableStringify).join(',')}]`;
-	}
-
-	const record = value as Record<string, unknown>;
-	const entries = Object.keys(record)
-		.filter(key => record[key] !== undefined)
-		.sort()
-		.map(key => `${JSON.stringify(key)}:${stableStringify(record[key])}`);
-	return `{${entries.join(',')}}`;
-}
-
 export default function historyTracking(store: StateManager<State>, events: EventDispatcher): () => void {
 	const state = store.getState();
-	// Serialization shares live code arrays; retain independent before/after snapshots.
-	let present = structuredClone(serializeToProject(state));
+	// Serialization returns detached snapshots that history can retain directly.
+	let present = serializeToProject(state);
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let editPending = false;
 
@@ -53,8 +31,8 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		cancelPendingEdit();
 		if (!pending) return;
 
-		const current = structuredClone(serializeToProject(state));
-		if (stableStringify(current) === stableStringify(present)) return;
+		const current = serializeToProject(state);
+		if (JSON.stringify(current) === JSON.stringify(present)) return;
 		pushHistory(present);
 		present = current;
 	}
@@ -76,14 +54,7 @@ export default function historyTracking(store: StateManager<State>, events: Even
 			pushHistory(present);
 			state.redoStack = [];
 		}
-		present = structuredClone(serializeToProject(state));
-	}
-
-	function applyProjectEdit({ project }: { project: ProjectObjectModel }) {
-		if (stableStringify(project) === stableStringify(serializeToProject(state))) return;
-		// An API batch is its own undo step, after any pending human edit.
-		commitPendingEdit();
-		restoreProject(store, project, 'checkpoint');
+		present = serializeToProject(state);
 	}
 
 	function undo() {
@@ -108,13 +79,13 @@ export default function historyTracking(store: StateManager<State>, events: Even
 	store.subscribe('projectChange', onProjectChange);
 	events.on('undo', undo);
 	events.on('redo', redo);
-	events.on('applyProjectEdit', applyProjectEdit);
+	events.on('beforeProjectEdit', commitPendingEdit);
 
 	return () => {
 		cancelPendingEdit();
 		store.unsubscribe('projectChange', onProjectChange);
 		events.off('undo', undo);
 		events.off('redo', redo);
-		events.off('applyProjectEdit', applyProjectEdit);
+		events.off('beforeProjectEdit', commitPendingEdit);
 	};
 }

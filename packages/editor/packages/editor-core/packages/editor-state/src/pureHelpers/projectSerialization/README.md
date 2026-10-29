@@ -23,6 +23,17 @@ Each known editor block is placed directly into the model's `modules`, `function
 directives remain embedded in block source. All notes belong to the project and are included in session saves,
 history snapshots, and project files, regardless of their names.
 
+### Ownership and Ordering
+
+`serializeToProject(state)` and `serializeCodeBlocksToProject(blocks)` return detached project data. Every source array
+is copied, including group wrappers, nested blocks, and project-scope code. Callers can retain or edit the returned
+model without changing live editor state, and later live edits leave previously returned models unchanged.
+
+Object fields are emitted in a fixed order. Blocks are ordered by grid X, grid Y, and creation index within each
+project slice, recursively through nested groups. Equivalent live data therefore produces identical JSON regardless
+of live-object property order or code-block array order. History and API-draft comparisons use this canonical output
+directly with `JSON.stringify`.
+
 ### `.8f4e` Project Export
 
 `serializeToProject(state)` collects the root code-block tree. `serializeProjectTo8f4e(project)` formats that
@@ -46,8 +57,8 @@ Serializes from:
 
 ## Integration Points
 
-- **Edit History**: Uses basic serialization for undo/redo snapshots
-- **Project Import**: Exported projects are loaded through project import feature
+- **Edit History**: Retains detached serialized models directly as undo/redo snapshots
+- **Project Loading**: Serialized projects are restored through the shared project operation helpers
 
 ## Project Object Model
 

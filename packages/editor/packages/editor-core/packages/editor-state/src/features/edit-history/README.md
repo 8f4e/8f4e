@@ -30,14 +30,18 @@ revision change does not create a project revision, autosave, or history entry.
 
 While an ordinary edit is pending, the committed snapshot remains the before-state. At commit, the current project
 is compared by content with that snapshot. Changed content adds one undo step; returning to the committed content
-adds none. Snapshots are deep copies because serialization can share live code arrays.
+adds none. Serialization returns detached canonical models, so history retains them directly and compares their
+JSON without additional cloning or object-key sorting.
 
-Undo and redo commit pending edits first, so an edit undone immediately can still be redone. Identical-content API
-batches leave pending edits, revisions, history, and persistence unchanged. API edits remain available when
-`featureFlags.historyTracking` is disabled, without recording history.
+Undo and redo commit pending edits first, so an edit undone immediately can still be redone. The project-operations
+effect owns `applyProjectEdit`: it compares the canonical API draft with current serialized content, emits
+`beforeProjectEdit` for changed drafts, then restores the batch as a checkpoint. History listens to the before-event
+to commit pending typing and the completed change record to retain the checkpoint. Identical-content batches emit
+neither notification, preserving pending edits, revisions, history, and persistence. Project operations apply API
+edits independently of whether the history effect is installed or `featureFlags.historyTracking` is enabled.
 
-Project loading and history use the shared `restoreProject` helper to install `initialProjectState`. It publishes a
-single change after rendering and generated environment constants have updated, suppressing intermediate edit
+Project loading, API operations, and history use the shared `restoreProject` helper to install `initialProjectState`.
+It publishes a single change after rendering and generated environment constants have updated, suppressing intermediate edit
 notifications during restoration. Undo, redo, and API batches preserve the file association within the current
 project. Unrelated replacements dispatch `loadProject` and publish a `replace` change.
 

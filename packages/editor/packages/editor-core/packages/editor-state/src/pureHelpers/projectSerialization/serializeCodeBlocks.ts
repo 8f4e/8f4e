@@ -16,7 +16,7 @@ function createEmptyProject(): ProjectObjectModel {
 	};
 }
 
-/** Converts editor-owned live blocks directly into the canonical project collections. */
+/** Returns detached project data in canonical key and grid/creation order, recursively through project groups. */
 export default function convertGraphicDataToProjectStructure(codeBlocks: CodeBlockGraphicData[]): ProjectObjectModel {
 	const project = createEmptyProject();
 	const sortedBlocks = [...codeBlocks].sort(
@@ -33,7 +33,7 @@ export default function convertGraphicDataToProjectStructure(codeBlocks: CodeBlo
 				...convertGraphicDataToProjectStructure(codeBlock.nestedProjectCodeBlocks),
 				name: codeBlock.name,
 				entry: codeBlock.entry!,
-				code: codeBlock.code,
+				code: [...codeBlock.code],
 				exposures: codeBlock.code.flatMap(line => {
 					const exposure = tryParseProjectMemoryExposureLine(line);
 					return exposure ? [exposure] : [];
@@ -44,7 +44,7 @@ export default function convertGraphicDataToProjectStructure(codeBlocks: CodeBlo
 
 		const block: ProjectBlock = {
 			id: codeBlock.creationIndex,
-			code: codeBlock.code,
+			code: [...codeBlock.code],
 			...(codeBlock.disabled ? { disabled: true } : {}),
 		};
 
