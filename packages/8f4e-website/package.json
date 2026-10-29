@@ -1,6 +1,6 @@
 {
 	"name": "@8f4e/8f4e-website",
-	"version": "0.2.19",
+	"version": "0.2.20",
 	"private": true,
 	"description": "8f4e product website",
 	"type": "module",

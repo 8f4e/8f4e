@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/memory-planner",
-  "version": "4.0.13",
+  "version": "4.0.14",
   "private": true,
   "description": "Address and size planner for 8f4e module memory declarations",
   "type": "module",
