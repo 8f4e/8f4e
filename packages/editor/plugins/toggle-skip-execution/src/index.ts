@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { incrementCompilerInputRevision, incrementProjectRevision, setSkipExecution } from '@8f4e/editor-state';
+import { incrementCompilerInputRevision, publishProjectChange, setSkipExecution } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { isSkipExecutionDirective } from '@8f4e/tokenizer';
 
@@ -19,7 +19,7 @@ export const toggleSkipExecutionPlugin: EditorPlugin = {
 			codeBlock.lastUpdated = Date.now();
 			store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', codeBlock);
 			incrementCompilerInputRevision(store);
-			incrementProjectRevision(store);
+			publishProjectChange(store);
 		};
 
 		events.on(action, onToggle);

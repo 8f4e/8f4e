@@ -161,7 +161,9 @@ describe('public editor editing handle', () => {
 		const revision = editing.getRevision();
 		const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!;
 		store.set('codeBlockRendering.selectedCodeBlock', block);
-		store.set('codeBlockRendering.selectedCodeBlock.code', ['module original', 'int value 9', 'moduleEnd']);
+		block.cursor.row = 1;
+		block.cursor.col = block.code[1].length;
+		events.dispatch('insertText', { text: '9' });
 		expect(() =>
 			editing.applyEdits({
 				expectedRevision: revision,
@@ -169,8 +171,9 @@ describe('public editor editing handle', () => {
 			})
 		).toThrow('getRevision again');
 		const sourceRevision = editing.getRevision();
-		block.code.splice(1, 0, '; @pos 7 8');
-		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);
+		events.dispatch('mousedown', { x: block.x + 8, y: block.y + 8 });
+		events.dispatch('mousemove', { movementX: 16, movementY: 32 });
+		events.dispatch('mouseup');
 		expect(editing.getRevision()).not.toBe(sourceRevision);
 		const currentRevision = editing.getRevision();
 		events.dispatch('loadProject', { project: serializeToProject(state) });

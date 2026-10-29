@@ -1,8 +1,9 @@
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { EventDispatcher, ProjectChange, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 
 import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
+import { restoreProject } from '../project-changes';
 
 const DEBOUNCE_DELAY = 1000;
 const HISTORY_LIMIT = 10;
@@ -35,7 +36,6 @@ export default function historyTracking(store: StateManager<State>, events: Even
 	let present = structuredClone(serializeToProject(state));
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let editPending = false;
-	let restoring = false;
 
 	function cancelPendingEdit() {
 		if (saveTimeout) clearTimeout(saveTimeout);
@@ -59,38 +59,31 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		present = current;
 	}
 
-	function onProjectChange() {
-		if (restoring || !state.featureFlags.historyTracking) return;
-		state.redoStack = [];
-		editPending = true;
-		if (saveTimeout) clearTimeout(saveTimeout);
-		saveTimeout = setTimeout(commitPendingEdit, DEBOUNCE_DELAY);
-	}
-
-	function restoreProject(project: ProjectObjectModel) {
-		restoring = true;
-		try {
-			store.set('initialProjectState', project);
-		} finally {
-			restoring = false;
+	function onProjectChange({ kind }: ProjectChange) {
+		if (kind === 'edit' && state.featureFlags.historyTracking) {
+			state.redoStack = [];
+			editPending = true;
+			if (saveTimeout) clearTimeout(saveTimeout);
+			saveTimeout = setTimeout(commitPendingEdit, DEBOUNCE_DELAY);
+			return;
 		}
+
+		cancelPendingEdit();
+		if (kind === 'replace') {
+			state.historyStack = [];
+			state.redoStack = [];
+		} else if (kind === 'checkpoint' && state.featureFlags.historyTracking) {
+			pushHistory(present);
+			state.redoStack = [];
+		}
+		present = structuredClone(serializeToProject(state));
 	}
 
 	function applyProjectEdit({ project }: { project: ProjectObjectModel }) {
 		if (stableStringify(project) === stableStringify(serializeToProject(state))) return;
 		// An API batch is its own undo step, after any pending human edit.
 		commitPendingEdit();
-		if (state.featureFlags.historyTracking) {
-			pushHistory(structuredClone(serializeToProject(state)));
-			state.redoStack = [];
-		}
-		restoreProject(project);
-	}
-
-	function resetHistory() {
-		cancelPendingEdit();
-		state.historyStack = [];
-		state.redoStack = [];
+		restoreProject(store, project, 'checkpoint');
 	}
 
 	function undo() {
@@ -100,7 +93,7 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		if (!previousState) return;
 		if (state.redoStack.length >= HISTORY_LIMIT) state.redoStack.shift();
 		state.redoStack.push(present);
-		restoreProject(previousState);
+		restoreProject(store, previousState, 'restore');
 	}
 
 	function redo() {
@@ -109,29 +102,19 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		const nextState = state.redoStack.pop();
 		if (!nextState) return;
 		pushHistory(present);
-		restoreProject(nextState);
+		restoreProject(store, nextState, 'restore');
 	}
 
-	function onProjectLoaded() {
-		cancelPendingEdit();
-		// Capture the rendered project, including normalized/generated blocks.
-		present = structuredClone(serializeToProject(state));
-	}
-
-	store.subscribe('projectRevision', onProjectChange);
-	store.subscribe('initialProjectState', onProjectLoaded);
+	store.subscribe('projectChange', onProjectChange);
 	events.on('undo', undo);
 	events.on('redo', redo);
 	events.on('applyProjectEdit', applyProjectEdit);
-	events.on('loadProject', resetHistory, { capture: true });
 
 	return () => {
 		cancelPendingEdit();
-		store.unsubscribe('projectRevision', onProjectChange);
-		store.unsubscribe('initialProjectState', onProjectLoaded);
+		store.unsubscribe('projectChange', onProjectChange);
 		events.off('undo', undo);
 		events.off('redo', redo);
 		events.off('applyProjectEdit', applyProjectEdit);
-		events.off('loadProject', resetHistory);
 	};
 }

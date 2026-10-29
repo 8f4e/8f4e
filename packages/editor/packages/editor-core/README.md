@@ -158,6 +158,23 @@ Plugins use these public exports rather than importing core files.
 independently of the export and persistence plugins.
 Serialization lives under `pureHelpers/projectSerialization`; filename configuration belongs to `features/editor-config`.
 
+## Project changes
+
+API revisions, history, and session persistence share `state.projectChange`, a record containing a monotonic
+`revision` and an operation `kind`. The public `editor.editing.getRevision()` token combines that revision with its
+editor-handle identity. Reading a revision does not serialize the project. Loads invalidate existing tokens even
+when the new source is identical, and undo/redo advance the revision when restoring earlier content.
+
+Source-mutating plugin actions call `publishProjectChange(store)` from `@8f4e/editor-state` once after all source
+and derived state updates are complete. This includes persisted metadata such as positions, favorites, and grouping.
+Selection, navigation, and no-op actions do not publish. History batches ordinary edits and gives validated API
+batches an immediate undo step; persistence saves each completed change.
+
+Core project-loading and history helpers publish `checkpoint`, `restore`, or `replace` changes after snapshot
+restoration and generated constants have settled. Consumers can read `editor.state` and use the editing handle for
+validated writes. Plugins implementing source mutations must publish their completed operation; direct state writes
+alone do not announce a revision. `compilerInputRevision` remains a separate signal for compilation inputs.
+
 ## Project loading
 
 Hosts can provide a compiler-owned `ProjectObjectModel` through `initialProject`, or dispatch `loadProject` with

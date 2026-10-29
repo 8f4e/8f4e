@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { incrementCompilerInputRevision, incrementProjectRevision } from '@8f4e/editor-state';
+import { incrementCompilerInputRevision, publishProjectChange } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { drawSliders } from './drawer/draw';
 import { getSliderDefaultEdits } from './helpers/saveDefaults';
@@ -48,7 +48,7 @@ export function createSliderPlugin({
 					store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', owner);
 				}
 				incrementCompilerInputRevision(store);
-				incrementProjectRevision(store);
+				publishProjectChange(store);
 			};
 			events.on(saveAction, onSave);
 			return () => {

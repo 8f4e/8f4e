@@ -241,7 +241,7 @@ describe('groupNonstickToggler', () => {
 
 		// Once for each block, then the project revision advances once for the group.
 		expect(setSpy).toHaveBeenCalledTimes(3);
-		expect(setSpy).toHaveBeenLastCalledWith('projectRevision', 1);
+		expect(setSpy).toHaveBeenLastCalledWith('projectChange', { revision: 1, kind: 'edit' });
 		expect(setSpy).toHaveBeenCalledWith('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block1);
 		expect(setSpy).toHaveBeenCalledWith('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block2);
 	});

@@ -1,6 +1,6 @@
 import type { CodeBlockGraphicData, EventDispatcher, InternalMouseEvent, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import incrementProjectRevision from '../../../program-compiler/incrementProjectRevision';
+import { publishProjectChange } from '../../../project-changes';
 import { bringCodeBlockToFrontWithinPartition } from '../../partitionCodeBlocksByAlwaysOnTop';
 import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
 import findCodeBlockAtViewportCoordinates from '../../utils/finders/findCodeBlockAtViewportCoordinates';
@@ -182,7 +182,7 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		}
 
 		if (positionChanged) {
-			incrementProjectRevision(store);
+			publishProjectChange(store);
 		}
 
 		state.codeBlockRendering.draggedCodeBlock = undefined;

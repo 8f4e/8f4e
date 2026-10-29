@@ -1,6 +1,6 @@
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import incrementProjectRevision from '../../../../program-compiler/incrementProjectRevision';
+import { publishProjectChange } from '../../../../project-changes';
 import getCodeBlockGridWidth from '../../../getCodeBlockGridWidth';
 import upsertPos from '../../directives/pos/upsert';
 import { getGroupBlocks } from '../getGroupBlocks';
@@ -84,7 +84,7 @@ export default function groupRowAligner(store: StateManager<State>, events: Even
 			moveBlock(state, block, gridX, rowGridY);
 		}
 		if (didMove) {
-			incrementProjectRevision(store);
+			publishProjectChange(store);
 		}
 	}
 

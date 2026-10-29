@@ -48,10 +48,10 @@ describe('groupRowAligner', () => {
 		expect(block2.gridY).toBe(5);
 		expect(block3.gridY).toBe(5);
 		expect(outsider.gridY).toBe(7);
-		expect(mockState.projectRevision).toBe(1);
+		expect(mockState.projectChange.revision).toBe(1);
 		expect(mockState.compilerInputRevision).toBe(0);
 		getAlignCallback()({ codeBlock: block2 });
-		expect(mockState.projectRevision).toBe(1);
+		expect(mockState.projectChange.revision).toBe(1);
 	});
 
 	it('preserves the original left-to-right order of the blocks', () => {

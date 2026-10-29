@@ -67,18 +67,18 @@ describe('project revision', () => {
 	});
 
 	it('starts at zero', () => {
-		expect(createDefaultState().projectRevision).toBe(0);
-		expect(state.projectRevision).toBe(0);
+		expect(createDefaultState().projectChange.revision).toBe(0);
+		expect(state.projectChange.revision).toBe(0);
 	});
 
 	it('advances for typing, newline insertion, and deletion', () => {
 		codeEditing(store, events);
 		dispatch('insertText', { text: '2' });
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 		dispatch('deleteBackward');
-		expect(state.projectRevision).toBe(2);
+		expect(state.projectChange.revision).toBe(2);
 		dispatch('insertNewLine');
-		expect(state.projectRevision).toBe(3);
+		expect(state.projectChange.revision).toBe(3);
 	});
 
 	it('ignores empty insertion and backspace at the start of the block', () => {
@@ -87,7 +87,7 @@ describe('project revision', () => {
 		block.cursor.col = 0;
 		dispatch('deleteBackward');
 		dispatch('insertText', { text: '' });
-		expect(state.projectRevision).toBe(0);
+		expect(state.projectChange.revision).toBe(0);
 	});
 
 	it('ignores mouse selection, line selection, caret movement, and block navigation', () => {
@@ -104,7 +104,7 @@ describe('project revision', () => {
 		dispatch('moveCaret', { direction: 'down' });
 		dispatch('navigateCodeBlock', { direction: 'right' });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(target);
-		expect(state.projectRevision).toBe(0);
+		expect(state.projectChange.revision).toBe(0);
 	});
 
 	it('advances once for a drag position commit, without advancing the compiler revision', () => {
@@ -118,7 +118,7 @@ describe('project revision', () => {
 		dispatch('mousemove', { movementX: 16, movementY: 32 });
 		dispatch('mouseup');
 		expect(block.code).toContain('; @pos 2 2');
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 		expect(state.compilerInputRevision).toBe(0);
 	});
 
@@ -133,22 +133,22 @@ describe('project revision', () => {
 		effect(store, events);
 		dispatch(eventName, { codeBlock: block, ...payload });
 		expect(block.code).not.toEqual(originalCode);
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 		expect(state.compilerInputRevision).toBe(0);
 	});
 
 	it('advances for adding, disabling, enabling, and deleting a block, but not for a repeated delete', async () => {
 		codeBlockCreator(store, events);
 		await dispatchAsync('insertCodeBlock', { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
-		expect(state.projectRevision).toBe(2);
+		expect(state.projectChange.revision).toBe(2);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
-		expect(state.projectRevision).toBe(3);
+		expect(state.projectChange.revision).toBe(3);
 		dispatch('deleteCodeBlock', { codeBlock: block });
-		expect(state.projectRevision).toBe(4);
+		expect(state.projectChange.revision).toBe(4);
 		dispatch('deleteCodeBlock', { codeBlock: block });
-		expect(state.projectRevision).toBe(4);
+		expect(state.projectChange.revision).toBe(4);
 	});
 
 	it('advances once for pasting several blocks and ignores an empty paste', () => {
@@ -158,9 +158,9 @@ describe('project revision', () => {
 		}));
 		pasteMultipleBlocks(store, { x: 0, y: 0, blocks });
 		expect(state.codeBlockRendering.codeBlocks).toHaveLength(3);
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 		pasteMultipleBlocks(store, { x: 0, y: 0, blocks: [] });
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 	});
 
 	it('advances once per group execution toggle or group deletion', () => {
@@ -170,12 +170,12 @@ describe('project revision', () => {
 		groupSkipExecutionToggler(store, events);
 		groupDeleter(store, events);
 		dispatch('toggleGroupSkipExecutionDirective', { codeBlock: block });
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 		dispatch('deleteGroup', { codeBlock: block });
 		expect(state.codeBlockRendering.codeBlocks).toHaveLength(0);
-		expect(state.projectRevision).toBe(2);
+		expect(state.projectChange.revision).toBe(2);
 		dispatch('deleteGroup', { codeBlock: block });
-		expect(state.projectRevision).toBe(2);
+		expect(state.projectChange.revision).toBe(2);
 	});
 
 	it('advances for regenerated environment constants and ignores identical regeneration', () => {
@@ -183,9 +183,9 @@ describe('project revision', () => {
 		const env = createMockCodeBlock({ name: 'env', blockType: 'constants', code: ['constants env', 'constantsEnd'] });
 		state.codeBlockRendering.codeBlocks.push(env);
 		store.set('envConstantContributions', { assets: ['const SOUND_SIZE 100'] });
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 		store.set('envConstantContributions', state.envConstantContributions);
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 	});
 
 	it('does not advance for opening and leaving a nested project, but advances for edits inside it', () => {
@@ -195,18 +195,18 @@ describe('project revision', () => {
 		codeEditing(store, events);
 		dispatch('openProjectGroup', { codeBlock: block });
 		store.set('codeBlockRendering.selectedCodeBlock', child);
-		expect(state.projectRevision).toBe(0);
+		expect(state.projectChange.revision).toBe(0);
 		dispatch('insertText', { text: ';' });
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 		dispatch('goToParentProjectGroup');
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 	});
 
-	it('does not advance on project loading, while the compiler revision does', () => {
+	it('publishes project replacement separately from the compiler signal', () => {
 		projectImport(store, events);
 		rendering(store, events);
 		dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT } });
-		expect(state.projectRevision).toBe(0);
+		expect(state.projectChange).toEqual({ revision: 1, kind: 'replace' });
 		expect(state.compilerInputRevision).toBe(1);
 	});
 });

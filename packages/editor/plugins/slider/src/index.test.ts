@@ -239,7 +239,7 @@ describe('slider plugin', () => {
 	it('saves through its menu target, publishes source edits, and advances compilation only for changes', async () => {
 		const test = await setup();
 		test.press(0.7);
-		const projectRevision = test.state.projectRevision;
+		const projectRevision = test.state.projectChange.revision;
 		const item = (await test.menuItems())[0];
 		expect(item).toMatchObject({
 			title: expect.stringContaining('Save slider values to code'),
@@ -252,11 +252,11 @@ describe('slider plugin', () => {
 		test.events.dispatch(item.action!, item.payload);
 		expect(test.block.code).toContain('float gain 0.7');
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision + 1);
-		expect(test.state.projectRevision).toBe(projectRevision + 1);
+		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
 		expect(observed).toEqual([test.block.code]);
 		test.events.dispatch(item.action!, item.payload);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision + 1);
-		expect(test.state.projectRevision).toBe(projectRevision + 1);
+		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
 	});
 	it('uses the selected block for a save action without a target', async () => {
 		const test = await setup();

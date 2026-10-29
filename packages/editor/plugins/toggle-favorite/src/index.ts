@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { incrementProjectRevision, removeDirective } from '@8f4e/editor-state';
+import { publishProjectChange, removeDirective } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { getProjectOpenerKeyword } from '@8f4e/project-preparser';
 
@@ -17,7 +17,7 @@ export const toggleFavoritePlugin: EditorPlugin = {
 			}
 			codeBlock.lastUpdated = Date.now();
 			store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', codeBlock);
-			incrementProjectRevision(store);
+			publishProjectChange(store);
 		};
 
 		events.on('toggleFavoriteDirective', onToggle);

@@ -1,6 +1,6 @@
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import incrementProjectRevision from '../../../../program-compiler/incrementProjectRevision';
+import { publishProjectChange } from '../../../../project-changes';
 import { updateDirectiveArgs } from '../../directiveEditing';
 import { getGroupBlocks } from '../getGroupBlocks';
 
@@ -62,7 +62,7 @@ export default function groupNonstickToggler(store: StateManager<State>, events:
 		}
 
 		if (codeChanged) {
-			incrementProjectRevision(store);
+			publishProjectChange(store);
 		}
 	}
 

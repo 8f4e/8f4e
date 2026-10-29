@@ -49,7 +49,7 @@ describe('history tracking effect', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const dispose = historyTracking(store, events);
 
-		store.set('projectRevision', 1);
+		store.set('projectChange', { revision: 1, kind: 'edit' });
 		dispose?.();
 		await vi.advanceTimersByTimeAsync(1000);
 
@@ -184,7 +184,7 @@ describe('history tracking with real project mutations', () => {
 	it('cancels pending work and resets the baseline when another project loads (case f)', async () => {
 		codeEditing(store, events);
 		dispatch('insertText', { text: '2' });
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 
 		const otherProject = {
 			...EMPTY_DEFAULT_PROJECT,
@@ -219,7 +219,7 @@ describe('history tracking with real project mutations', () => {
 		await vi.advanceTimersByTimeAsync(1000);
 
 		expect(block.code).toContain('; @group audio nonstick');
-		expect(state.projectRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 		expect(state.compilerInputRevision).toBe(0);
 		expect(state.historyStack).toHaveLength(1);
 
@@ -314,7 +314,7 @@ describe('history tracking with real project mutations', () => {
 		dispatch('moveCaret', { direction: 'up' });
 		await vi.advanceTimersByTimeAsync(3000);
 
-		expect(state.projectRevision).toBe(0);
+		expect(state.projectChange.revision).toBe(0);
 		expect(state.historyStack).toEqual([]);
 		expect(state.redoStack).toEqual([]);
 	});
@@ -325,7 +325,7 @@ describe('history tracking with real project mutations', () => {
 		dispatch('deleteCodeBlock', { codeBlock: stranger });
 		await vi.advanceTimersByTimeAsync(2000);
 
-		expect(state.projectRevision).toBe(0);
+		expect(state.projectChange.revision).toBe(0);
 		expect(state.historyStack).toEqual([]);
 	});
 });

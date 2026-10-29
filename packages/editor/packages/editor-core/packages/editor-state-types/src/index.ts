@@ -212,12 +212,18 @@ export interface Options {
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 }
 
+/** One completed persisted-content operation, shared by API concurrency, history, and persistence. */
+export interface ProjectChange {
+	revision: number;
+	kind: 'edit' | 'checkpoint' | 'restore' | 'replace';
+}
+
 // State interface - complete editor state tree (top-level public API)
 export interface State {
 	/** Monotonic change signal for compiler inputs; selection and visual metadata do not advance it. */
 	compilerInputRevision: number;
 	/** Monotonic change signal for persisted project content; selection, caret movement, and navigation do not advance it. */
-	projectRevision: number;
+	projectChange: ProjectChange;
 	compiler: Compiler;
 	codeBlockRendering: CodeBlockRendering;
 	contextMenu: ContextMenu;

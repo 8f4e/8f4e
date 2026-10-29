@@ -2,7 +2,7 @@ import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-
 
 import type { StateManager } from '@8f4e/state-manager';
 import incrementCompilerInputRevision from '../../../../program-compiler/incrementCompilerInputRevision';
-import incrementProjectRevision from '../../../../program-compiler/incrementProjectRevision';
+import { publishProjectChange } from '../../../../project-changes';
 import replaceCodeBlocksInPlace from '../../../replaceCodeBlocksInPlace';
 import { getGroupBlocks } from '../getGroupBlocks';
 
@@ -57,7 +57,7 @@ export default function groupDeleter(store: StateManager<State>, events: EventDi
 		store.set('codeBlockRendering.codeBlocks', state.codeBlockRendering.codeBlocks);
 		if (blocksRemoved) {
 			incrementCompilerInputRevision(store);
-			incrementProjectRevision(store);
+			publishProjectChange(store);
 		}
 	}
 

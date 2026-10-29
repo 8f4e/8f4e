@@ -80,13 +80,13 @@ describe('toggle favorite plugin', () => {
 		const onInputChanged = vi.fn();
 		test.events.on('compilationInputChanged', onInputChanged);
 		const revision = test.state.compilerInputRevision;
-		const projectRevision = test.state.projectRevision;
+		const projectRevision = test.state.projectChange.revision;
 		const lastUpdated = test.block.lastUpdated;
 		await vi.advanceTimersByTimeAsync(10);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		expect(test.block.lastUpdated).toBeGreaterThan(lastUpdated);
 		expect(test.state.compilerInputRevision).toBe(revision);
-		expect(test.state.projectRevision).toBe(projectRevision + 1);
+		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
 		expect(onInputChanged).not.toHaveBeenCalled();
 	});
 

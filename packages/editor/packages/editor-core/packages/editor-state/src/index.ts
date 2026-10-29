@@ -164,7 +164,7 @@ export { default as gapCalculator } from './features/code-editing/gapCalculator'
 export { getTabStopsByLine, getVisualLineWidth } from './features/code-editing/tabLayout';
 export { error as logError, log as logMessage } from './features/logger/logger';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
-export { default as incrementProjectRevision } from './features/program-compiler/incrementProjectRevision';
+export { publishProjectChange } from './features/project-changes';
 // Export EMPTY_DEFAULT_PROJECT as a value
 export { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';

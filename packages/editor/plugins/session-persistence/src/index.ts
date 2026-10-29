@@ -35,15 +35,13 @@ export function createSessionPersistencePlugin({
 				}
 				if (project !== null) events.dispatch('loadProject', { project });
 
-				store.subscribe('projectRevision', save);
-				store.subscribe('initialProjectState', save);
+				store.subscribe('projectChange', save);
 				save();
 			};
 			events.on('init', initialize);
 			return () => {
 				events.off('init', initialize);
-				store.unsubscribe('projectRevision', save);
-				store.unsubscribe('initialProjectState', save);
+				store.unsubscribe('projectChange', save);
 			};
 		},
 	};
