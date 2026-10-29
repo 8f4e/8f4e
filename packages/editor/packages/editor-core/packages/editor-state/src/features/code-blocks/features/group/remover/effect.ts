@@ -1,6 +1,7 @@
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 
 import type { StateManager } from '@8f4e/state-manager';
+import { publishProjectChange } from '../../../../project-changes';
 import { removeDirective } from '../../directiveEditing';
 
 /**
@@ -28,6 +29,7 @@ export default function groupRemover(store: StateManager<State>, events: EventDi
 
 			// Trigger store update to re-render only the specific code block
 			store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', codeBlock);
+			publishProjectChange(store);
 		}
 	}
 

@@ -2,6 +2,7 @@ import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-
 import type { StateManager } from '@8f4e/state-manager';
 import { isSkipExecutionDirective } from '@8f4e/tokenizer';
 import incrementCompilerInputRevision from '../../../../program-compiler/incrementCompilerInputRevision';
+import { publishProjectChange } from '../../../../project-changes';
 import setSkipExecution from '../../../utils/setSkipExecution';
 import { getGroupModuleBlocks } from '../getGroupBlocks';
 
@@ -50,6 +51,7 @@ export default function groupSkipExecutionToggler(store: StateManager<State>, ev
 		}
 		if (codeChanged) {
 			incrementCompilerInputRevision(store);
+			publishProjectChange(store);
 		}
 	}
 

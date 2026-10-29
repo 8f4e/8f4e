@@ -80,12 +80,34 @@ describe('toggle favorite plugin', () => {
 		const onInputChanged = vi.fn();
 		test.events.on('compilationInputChanged', onInputChanged);
 		const revision = test.state.compilerInputRevision;
+		const projectRevision = test.state.projectChange.revision;
 		const lastUpdated = test.block.lastUpdated;
 		await vi.advanceTimersByTimeAsync(10);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		expect(test.block.lastUpdated).toBeGreaterThan(lastUpdated);
 		expect(test.state.compilerInputRevision).toBe(revision);
+		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
 		expect(onInputChanged).not.toHaveBeenCalled();
+	});
+
+	it('keeps favorite snapshots independent of later in-place source edits', async () => {
+		vi.useFakeTimers();
+		const test = setup();
+		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
+		await vi.advanceTimersByTimeAsync(1000);
+		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
+		await vi.advanceTimersByTimeAsync(1000);
+		expect(test.state.historyStack).toHaveLength(2);
+		expect(test.state.historyStack[0].modules[0].code).not.toContain('; @favorite');
+		expect(test.state.historyStack[1].modules[0].code).toContain('; @favorite');
+		test.events.dispatch('undo');
+		expect(test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'target')!.code).toContain(
+			'; @favorite'
+		);
+		test.events.dispatch('undo');
+		expect(test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'target')!.code).not.toContain(
+			'; @favorite'
+		);
 	});
 
 	it('uses the clicked block and updates the menu label after toggling', async () => {

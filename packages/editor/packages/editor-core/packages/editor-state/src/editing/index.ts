@@ -10,7 +10,6 @@ import getCodeBlockNameFromSource from '../features/code-blocks/utils/getCodeBlo
 import { parseBlockDirectives } from '../features/code-blocks/utils/parseBlockDirectives';
 import updateViewport from '../features/viewport/updateViewport';
 import serializeCodeBlocks from '../pureHelpers/projectSerialization/serializeCodeBlocks';
-import serializeToProject from '../pureHelpers/projectSerialization/serializeToProject';
 import { type EditorEdit, EditorEditingError, type EditorEditingHandle, type EditorNavigationHandle } from './types';
 
 export * from './types';
@@ -47,44 +46,19 @@ function findSlice(blocks: CodeBlockGraphicData[], path: string, currentPath = '
 export function createEditorEditingHandle(store: StateManager<State>, events: EventDispatcher) {
 	const state = store.getState();
 	const instance = `${++nextEditorInstance}-${Math.random().toString(36).slice(2)}`;
-	let version = 0;
 	let disposed = false;
-	let fingerprint = JSON.stringify(serializeToProject(state));
-	const revision = () => `${instance}:${version}`;
+	const revision = () => `${instance}:${state.projectChange.revision}`;
 	const assertAlive = () => {
 		if (disposed) throw new EditorEditingError('disposed', 'This editor has been disposed');
 	};
-	const syncRevision = () => {
-		const next = JSON.stringify(serializeToProject(state));
-		if (next !== fingerprint) {
-			fingerprint = next;
-			version += 1;
-		}
-	};
-	const onLoad = () => {
-		syncRevision();
-		version += 1;
-	};
-	const selectors = [
-		'compilerInputRevision',
-		'codeBlockRendering.rootCodeBlocks',
-		'codeBlockRendering.codeBlocks',
-		'codeBlockRendering.selectedCodeBlock.code',
-		'codeBlockRendering.selectedCodeBlockForProgrammaticEdit',
-	] as const;
-	for (const selector of selectors) store.subscribe(selector, syncRevision);
-	events.on('loadProject', onLoad);
 	const dispose = () => {
 		if (disposed) return;
 		disposed = true;
-		for (const selector of selectors) store.unsubscribe(selector, syncRevision);
-		events.off('loadProject', onLoad);
 		events.off('dispose', dispose);
 	};
 	events.on('dispose', dispose);
 	const checkWrite = (expectedRevision: string) => {
 		assertAlive();
-		syncRevision();
 		if (expectedRevision !== revision()) {
 			throw new EditorEditingError('stale_revision', 'Read state and getRevision again before editing', revision());
 		}
@@ -114,7 +88,6 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 	const handle: EditorEditingHandle = {
 		getRevision() {
 			assertAlive();
-			syncRevision();
 			return revision();
 		},
 		applyEdits({ expectedRevision, edits }) {
@@ -189,19 +162,16 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 			const slice = findSlice(state.codeBlockRendering.rootCodeBlocks, currentPath ?? '');
 			if (slice && slice !== state.codeBlockRendering.codeBlocks) store.set('codeBlockRendering.codeBlocks', slice);
 			updateViewport(state, x, y, events);
-			syncRevision();
 			return { revision: revision(), createdBlockIds };
 		},
 		undo({ expectedRevision }) {
 			checkWrite(expectedRevision);
 			events.dispatch('undo');
-			syncRevision();
 			return { revision: revision() };
 		},
 		redo({ expectedRevision }) {
 			checkWrite(expectedRevision);
 			events.dispatch('redo');
-			syncRevision();
 			return { revision: revision() };
 		},
 	};

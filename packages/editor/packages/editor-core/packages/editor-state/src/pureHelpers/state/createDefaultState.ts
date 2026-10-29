@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, ProjectChange } from '@8f4e/editor-state-types';
 import { defaultFeatureFlags } from './featureFlags';
 
 export default function createDefaultState() {
@@ -6,6 +6,7 @@ export default function createDefaultState() {
 
 	return {
 		compilerInputRevision: 0,
+		projectChange: { revision: 0, kind: 'replace' } satisfies ProjectChange,
 		compiler: {
 			isCompiling: false,
 			compiledModules: {},

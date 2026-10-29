@@ -63,7 +63,7 @@ describe('public editor editing handle', () => {
 				{ type: 'insert', code: ['note', '; @pos 60 40', 'Created through the public API', 'noteEnd'] },
 			],
 		});
-		const changedProject = structuredClone(serializeToProject(state));
+		const changedProject = serializeToProject(state);
 		expect(state.codeBlockRendering.codeBlocks.find(block => getEditorBlockId(block) === targetId)).toMatchObject({
 			code: ['module original', '; @pos 30 40', 'int value 2', 'moduleEnd'],
 			gridX: 30,
@@ -138,7 +138,7 @@ describe('public editor editing handle', () => {
 
 	it('rejects an invalid batch without applying earlier operations or changing history', () => {
 		const { editing, state, compilationChanged } = setup();
-		const before = structuredClone(serializeToProject(state));
+		const before = serializeToProject(state);
 		const revision = editing.getRevision();
 		const target = state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!;
 		expect(() =>
@@ -161,7 +161,9 @@ describe('public editor editing handle', () => {
 		const revision = editing.getRevision();
 		const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!;
 		store.set('codeBlockRendering.selectedCodeBlock', block);
-		store.set('codeBlockRendering.selectedCodeBlock.code', ['module original', 'int value 9', 'moduleEnd']);
+		block.cursor.row = 1;
+		block.cursor.col = block.code[1].length;
+		events.dispatch('insertText', { text: '9' });
 		expect(() =>
 			editing.applyEdits({
 				expectedRevision: revision,
@@ -169,8 +171,9 @@ describe('public editor editing handle', () => {
 			})
 		).toThrow('getRevision again');
 		const sourceRevision = editing.getRevision();
-		block.code.splice(1, 0, '; @pos 7 8');
-		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);
+		events.dispatch('mousedown', { x: block.x + 8, y: block.y + 8 });
+		events.dispatch('mousemove', { movementX: 16, movementY: 32 });
+		events.dispatch('mouseup');
 		expect(editing.getRevision()).not.toBe(sourceRevision);
 		const currentRevision = editing.getRevision();
 		events.dispatch('loadProject', { project: serializeToProject(state) });
@@ -250,6 +253,58 @@ describe('public editor editing handle', () => {
 		const ordinary = setup();
 		const module = ordinary.state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!;
 		expect(() => ordinary.navigation.openGroup(getEditorBlockId(module))).toThrow('not a project group');
+	});
+
+	it('keeps pending typing and an API batch as separate undo steps without delayed duplicates', async () => {
+		vi.useFakeTimers();
+		try {
+			const { editing, state, store, events } = setup();
+			const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!;
+			store.set('codeBlockRendering.selectedCodeBlock', block);
+			block.cursor.row = 1;
+			block.cursor.col = block.code[1].length;
+			events.dispatch('insertText', { text: '2' });
+			editing.applyEdits({
+				expectedRevision: editing.getRevision(),
+				edits: [{ type: 'update', blockId: getEditorBlockId(block), code: [...block.code] }],
+			});
+			expect(state.historyStack).toHaveLength(0);
+			editing.applyEdits({
+				expectedRevision: editing.getRevision(),
+				edits: [
+					{ type: 'update', blockId: getEditorBlockId(block), code: ['module original', 'int value 3', 'moduleEnd'] },
+				],
+			});
+			await vi.advanceTimersByTimeAsync(2000);
+			expect(state.historyStack).toHaveLength(2);
+			editing.undo({ expectedRevision: editing.getRevision() });
+			expect(state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!.code).toContain(
+				'int value 12'
+			);
+			editing.undo({ expectedRevision: editing.getRevision() });
+			expect(state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!.code).toContain(
+				'int value 1'
+			);
+			editing.redo({ expectedRevision: editing.getRevision() });
+			editing.redo({ expectedRevision: editing.getRevision() });
+			expect(state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!.code).toContain(
+				'int value 3'
+			);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('applies API edits without recording history when tracking is disabled', () => {
+		const { editing, state, store } = setup();
+		store.set('featureFlags.historyTracking', false);
+		const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!;
+		editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [{ type: 'delete', blockId: getEditorBlockId(block) }],
+		});
+		expect(state.codeBlockRendering.codeBlocks.some(block => block.name === 'original')).toBe(false);
+		expect(state.historyStack).toHaveLength(0);
 	});
 
 	it('reports read-only and disposed handles, and does not retain history from a replaced project', () => {

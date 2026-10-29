@@ -1,6 +1,8 @@
 # Session Persistence Plugin
 
 - Own session restoration, JSON storage, and autosave subscriptions here.
+- Subscribe only to `state.projectChange` for completed edits, API batches, undo/redo, and project replacement.
+  Save once per notification after derived state is ready; keep change detection and revision tracking in core.
 - Export `createSessionPersistencePlugin` with inline factory dependencies. Receive storage, storageKey, and
   restoreOnStartup from the host.
 - Use the generic `init` hook and `loadProject` action. Keep project serialization and project replacement in core.

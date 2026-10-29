@@ -217,9 +217,10 @@ describe('groupSkipExecutionToggler', () => {
 
 		toggleCallback({ codeBlock: block1 });
 
-		// Update each block, then advance the compiler input revision once for the group.
-		expect(setSpy).toHaveBeenCalledTimes(3);
-		expect(setSpy).toHaveBeenLastCalledWith('compilerInputRevision', 1);
+		// Update each block, then advance the compiler input and project revisions once for the group.
+		expect(setSpy).toHaveBeenCalledTimes(4);
+		expect(setSpy).toHaveBeenCalledWith('compilerInputRevision', 1);
+		expect(setSpy).toHaveBeenLastCalledWith('projectChange', { revision: 1, kind: 'edit' });
 		expect(setSpy).toHaveBeenCalledWith('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block1);
 		expect(setSpy).toHaveBeenCalledWith('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block2);
 	});

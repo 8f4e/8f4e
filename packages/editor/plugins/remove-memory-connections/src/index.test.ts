@@ -55,6 +55,7 @@ describe('remove memory connections plugin', () => {
 	it('publishes the edited source before advancing compilation, and ignores repeated removal', () => {
 		const test = setup();
 		const revision = test.state.compilerInputRevision;
+		const projectRevision = test.state.projectChange.revision;
 		const sources: string[][] = [];
 		test.store.subscribe('compilerInputRevision', () => sources.push([...test.block.code]));
 		test.block.lastUpdated = 0;
@@ -63,10 +64,12 @@ describe('remove memory connections plugin', () => {
 		expect(test.block.lastUpdated).toBeGreaterThan(0);
 		expect(test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(test.block);
 		expect(test.state.compilerInputRevision).toBe(revision + 1);
+		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
 		expect(sources).toEqual([test.block.code]);
 
 		test.events.dispatch('removeConnections', { codeBlock: test.block });
 		expect(test.state.compilerInputRevision).toBe(revision + 1);
+		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
 	});
 
 	it('targets the clicked block through the menu and disables the action after removal', async () => {
@@ -95,11 +98,13 @@ describe('remove memory connections plugin', () => {
 		const code = ['module target', 'float value &local', 'moduleEnd'];
 		const test = setup(code);
 		const revision = test.state.compilerInputRevision;
+		const projectRevision = test.state.projectChange.revision;
 		await test.openMenu();
 		expect(test.state.contextMenu.items.find(item => item.action === 'removeConnections')?.disabled).toBe(true);
 		test.events.dispatch('removeConnections', { codeBlock: test.block });
 		expect(test.block.code).toEqual(code);
 		expect(test.state.compilerInputRevision).toBe(revision);
+		expect(test.state.projectChange.revision).toBe(projectRevision);
 	});
 
 	it('announces changed inputs with the disconnected source', () => {
@@ -115,11 +120,13 @@ describe('remove memory connections plugin', () => {
 		const test = setup(undefined, true, 'view');
 		const code = [...test.block.code];
 		const revision = test.state.compilerInputRevision;
+		const projectRevision = test.state.projectChange.revision;
 		await test.openMenu();
 		expect(test.state.contextMenu.items.some(item => item.action === 'removeConnections')).toBe(false);
 		test.events.dispatch('removeConnections', { codeBlock: test.block });
 		expect(test.block.code).toEqual(code);
 		expect(test.state.compilerInputRevision).toBe(revision);
+		expect(test.state.projectChange.revision).toBe(projectRevision);
 	});
 
 	it.each([false, true])('has no menu or handler when omitted or disposed: installed=%s', async installed => {

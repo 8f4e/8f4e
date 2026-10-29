@@ -1,5 +1,6 @@
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
+import { publishProjectChange } from '../../../../project-changes';
 import { updateDirectiveArgs } from '../../directiveEditing';
 import { getGroupBlocks } from '../getGroupBlocks';
 
@@ -33,6 +34,8 @@ export default function groupNonstickToggler(store: StateManager<State>, events:
 			return;
 		}
 
+		let codeChanged = false;
+
 		// Apply the nonstick change to all group blocks
 		for (const block of groupBlocks) {
 			// Compute updated code; updater returns args unchanged for a malformed ; @group with no group name
@@ -55,6 +58,11 @@ export default function groupNonstickToggler(store: StateManager<State>, events:
 
 			// Trigger store update to re-render the specific code block
 			store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);
+			codeChanged = true;
+		}
+
+		if (codeChanged) {
+			publishProjectChange(store);
 		}
 	}
 

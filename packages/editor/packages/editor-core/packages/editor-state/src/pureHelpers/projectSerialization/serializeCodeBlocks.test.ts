@@ -1,3 +1,4 @@
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
 import convertGraphicDataToProjectStructure from './serializeCodeBlocks';
@@ -194,5 +195,92 @@ describe('convertGraphicDataToProjectStructure', () => {
 				groups: [],
 			},
 		]);
+	});
+	it('returns independent source arrays for root scope, blocks, and nested projects', () => {
+		const scope = createMockCodeBlock({ isProjectScope: true, code: ['pass env'] });
+		const module = createMockCodeBlock({
+			blockType: 'module',
+			entry: 'main',
+			code: ['module root', 'int value 1', 'moduleEnd'],
+		});
+		const child = createMockCodeBlock({
+			blockType: 'module',
+			entry: 'main',
+			code: ['module child', 'int value 2', 'moduleEnd'],
+		});
+		const group = createMockCodeBlock({
+			name: 'voice',
+			entry: 'main',
+			code: ['group voice', 'groupEnd'],
+			nestedProjectCodeBlocks: [child],
+		});
+		const blocks = [scope, module, group];
+		const saved = convertGraphicDataToProjectStructure(blocks);
+		const other = convertGraphicDataToProjectStructure(blocks);
+
+		scope.code[0] = 'pass changed';
+		module.code[1] = 'int value 3';
+		group.code.splice(1, 0, '; @favorite');
+		child.code[1] = 'int value 4';
+		expect(saved.code).toEqual(['pass env']);
+		expect(saved.modules[0].code).toEqual(['module root', 'int value 1', 'moduleEnd']);
+		expect(saved.groups[0].code).toEqual(['group voice', 'groupEnd']);
+		expect(saved.groups[0].modules[0].code).toEqual(['module child', 'int value 2', 'moduleEnd']);
+
+		saved.code[0] = 'pass saved';
+		saved.modules[0].code[1] = 'int value 5';
+		saved.groups[0].code.splice(1, 0, '; @pos 5 6');
+		saved.groups[0].modules[0].code[1] = 'int value 6';
+		expect(scope.code).toEqual(['pass changed']);
+		expect(module.code).toEqual(['module root', 'int value 3', 'moduleEnd']);
+		expect(group.code).toEqual(['group voice', '; @favorite', 'groupEnd']);
+		expect(child.code).toEqual(['module child', 'int value 4', 'moduleEnd']);
+		expect(other.code).toEqual(['pass env']);
+		expect(other.modules[0].code[1]).toBe('int value 1');
+		expect(other.groups[0].code).toEqual(['group voice', 'groupEnd']);
+		expect(other.groups[0].modules[0].code[1]).toBe('int value 2');
+	});
+
+	it('produces identical JSON independently of live object keys and array order, including nested ties', () => {
+		const first = createMockCodeBlock({
+			blockType: 'module',
+			entry: 'main',
+			creationIndex: 1,
+			gridX: 0,
+			gridY: 0,
+			code: ['module first', 'moduleEnd'],
+		});
+		const second = createMockCodeBlock({
+			blockType: 'module',
+			entry: 'main',
+			creationIndex: 2,
+			gridX: 0,
+			gridY: 0,
+			disabled: true,
+			code: ['module second', '; @disabled', 'moduleEnd'],
+		});
+		const group = createMockCodeBlock({
+			name: 'voice',
+			entry: 'main',
+			creationIndex: 3,
+			gridX: 4,
+			gridY: 8,
+			code: ['group voice', 'expose value &first:value', 'groupEnd'],
+			nestedProjectCodeBlocks: [second, first],
+		});
+		const blocks = [second, group, first];
+		const reorder = (block: CodeBlockGraphicData): CodeBlockGraphicData =>
+			({
+				...Object.fromEntries(Object.entries(block).reverse()),
+				...(block.nestedProjectCodeBlocks === undefined
+					? {}
+					: { nestedProjectCodeBlocks: [...block.nestedProjectCodeBlocks].reverse().map(reorder) }),
+			}) as CodeBlockGraphicData;
+		const original = convertGraphicDataToProjectStructure(blocks);
+		const reordered = convertGraphicDataToProjectStructure([...blocks].reverse().map(reorder));
+
+		expect(JSON.stringify(reordered)).toBe(JSON.stringify(original));
+		expect(original.modules.map(block => block.id)).toEqual([1, 2]);
+		expect(original.groups[0].modules.map(block => block.id)).toEqual([1, 2]);
 	});
 });

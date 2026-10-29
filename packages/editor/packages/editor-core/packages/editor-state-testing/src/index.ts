@@ -119,6 +119,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 
 	const defaults: State = {
 		compilerInputRevision: 0,
+		projectChange: { revision: 0, kind: 'replace' },
 		compiler: {
 			isCompiling: false,
 			compiledModules: {},

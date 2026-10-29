@@ -2,6 +2,7 @@ import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { ProjectBlock } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
+import { publishProjectChange } from '../../../project-changes';
 import parsePos from '../directives/pos/data';
 
 const AUTO_ENV_CONSTANTS_BLOCK_NAME = 'env';
@@ -89,6 +90,7 @@ export default function autoEnvConstants(store: StateManager<State>): void {
 
 		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', targetBlock);
 		incrementCompilerInputRevision(store);
+		publishProjectChange(store);
 	}
 
 	/**

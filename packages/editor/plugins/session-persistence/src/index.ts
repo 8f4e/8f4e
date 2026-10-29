@@ -34,17 +34,14 @@ export function createSessionPersistencePlugin({
 					}
 				}
 				if (project !== null) events.dispatch('loadProject', { project });
-				store.subscribe('codeBlockRendering.codeBlocks', save);
-				store.subscribe('codeBlockRendering.selectedCodeBlock.code', save);
-				store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', save);
+
+				store.subscribe('projectChange', save);
 				save();
 			};
 			events.on('init', initialize);
 			return () => {
 				events.off('init', initialize);
-				store.unsubscribe('codeBlockRendering.codeBlocks', save);
-				store.unsubscribe('codeBlockRendering.selectedCodeBlock.code', save);
-				store.unsubscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', save);
+				store.unsubscribe('projectChange', save);
 			};
 		},
 	};

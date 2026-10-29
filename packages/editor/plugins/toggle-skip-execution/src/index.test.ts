@@ -75,10 +75,12 @@ describe('toggle skip execution plugin', () => {
 		expect(codeBlock.lastUpdated).toBeGreaterThan(1000);
 		expect(state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(codeBlock);
 		expect(state.compilerInputRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(1);
 		expect(revisions).toEqual([codeBlock.code]);
 		events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock });
 		expect(codeBlock.code).toEqual(['module test', '', 'moduleEnd']);
 		expect(state.compilerInputRevision).toBe(2);
+		expect(state.projectChange.revision).toBe(2);
 	});
 
 	it.each([['#skipExecution'], ['  #skipExecution'], ['#skipExecution  '], ['#skipExecution', '', '#skipExecution']])(
@@ -98,6 +100,7 @@ describe('toggle skip execution plugin', () => {
 		expect(context.codeBlock.code).toEqual(['module test', '', 'moduleEnd']);
 		expect(context.codeBlock.lastUpdated).toBe(1000);
 		expect(context.state.compilerInputRevision).toBe(0);
+		expect(context.state.projectChange.revision).toBe(0);
 	});
 
 	it('ignores malformed source without publishing an edit', () => {
@@ -106,6 +109,7 @@ describe('toggle skip execution plugin', () => {
 		expect(context.codeBlock.lastUpdated).toBe(1000);
 		expect(context.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBeUndefined();
 		expect(context.state.compilerInputRevision).toBe(0);
+		expect(context.state.projectChange.revision).toBe(0);
 	});
 
 	it('removes its handler when the host is disposed', () => {

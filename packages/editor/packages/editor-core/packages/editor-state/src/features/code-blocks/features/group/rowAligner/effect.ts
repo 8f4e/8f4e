@@ -1,5 +1,6 @@
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
+import { publishProjectChange } from '../../../../project-changes';
 import getCodeBlockGridWidth from '../../../getCodeBlockGridWidth';
 import upsertPos from '../../directives/pos/upsert';
 import { getGroupBlocks } from '../getGroupBlocks';
@@ -75,8 +76,15 @@ export default function groupRowAligner(store: StateManager<State>, events: Even
 			previousGridX = gridX;
 		}
 
+		let didMove = false;
 		for (const [block, gridX] of plannedPositions) {
+			if (block.gridX !== gridX || block.gridY !== rowGridY) {
+				didMove = true;
+			}
 			moveBlock(state, block, gridX, rowGridY);
+		}
+		if (didMove) {
+			publishProjectChange(store);
 		}
 	}
 

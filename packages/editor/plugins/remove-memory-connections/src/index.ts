@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { incrementCompilerInputRevision } from '@8f4e/editor-state';
+import { incrementCompilerInputRevision, publishProjectChange } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { hasIntermodularMemoryConnections, removeIntermodularMemoryConnectionsFromCode } from './removeConnections';
 
@@ -15,6 +15,7 @@ export const removeMemoryConnectionsPlugin: EditorPlugin = {
 			codeBlock.lastUpdated = Date.now();
 			store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', codeBlock);
 			incrementCompilerInputRevision(store);
+			publishProjectChange(store);
 		};
 
 		events.on('removeConnections', onRemove);

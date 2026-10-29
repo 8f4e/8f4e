@@ -37,6 +37,7 @@ import contextMenu from './features/menu/effect';
 import createMenuRegistry from './features/menu/registry';
 import publishCompilationInputChanges from './features/program-compiler/inputChanges';
 import projectLoading from './features/project-loading/effect';
+import projectOperations from './features/project-operations/effect';
 import runtime from './features/runtime/effect';
 import viewport from './features/viewport/effect';
 import createDefaultState from './pureHelpers/state/createDefaultState';
@@ -127,6 +128,7 @@ export default function init(
 	registerEffect(viewportDirectiveEffect(store, events));
 	registerEffect(entryOutlines(store));
 	registerEffect(codeEditing(store, events));
+	registerEffect(projectOperations(store, events));
 	registerEffect(historyTracking(store, events));
 
 	const onConsoleLog = (event: unknown) => {
@@ -164,6 +166,7 @@ export { default as gapCalculator } from './features/code-editing/gapCalculator'
 export { getTabStopsByLine, getVisualLineWidth } from './features/code-editing/tabLayout';
 export { error as logError, log as logMessage } from './features/logger/logger';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
+export { publishProjectChange } from './features/project-changes';
 // Export EMPTY_DEFAULT_PROJECT as a value
 export { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
