@@ -1,16 +1,16 @@
-import type { DirectiveDerivedState, DirectiveWidgetContribution } from '@8f4e/editor-state-types';
+import type { DirectiveDerivedState, DirectiveLayoutCallbacks } from '@8f4e/editor-state-types';
 import gapCalculator from '~/features/code-editing/gapCalculator';
 import type { InfoDirectiveData } from './data';
 import type { InfoLayout } from './entries';
 
-type DirectiveWidgetResolver = NonNullable<DirectiveWidgetContribution['afterGraphicDataWidthCalculation']>;
+type DirectiveLayoutResolver = NonNullable<DirectiveLayoutCallbacks['onBlockLayoutReady']>;
 
-const rowCountsByGraphicData = new WeakMap<Parameters<DirectiveWidgetResolver>[0], Map<string, number>>();
+const rowCountsByGraphicData = new WeakMap<Parameters<DirectiveLayoutResolver>[0], Map<string, number>>();
 
 function trackInfoRowCount(
 	info: InfoDirectiveData,
 	layout: InfoLayout,
-	graphicData: Parameters<DirectiveWidgetResolver>[0]
+	graphicData: Parameters<DirectiveLayoutResolver>[0]
 ): void {
 	let rowCounts = rowCountsByGraphicData.get(graphicData);
 	if (!rowCounts) {
@@ -29,15 +29,15 @@ function trackInfoRowCount(
 function resolveInfoDirectiveWidget(
 	info: InfoDirectiveData,
 	layout: InfoLayout,
-	graphicData: Parameters<DirectiveWidgetResolver>[0],
-	state: Parameters<DirectiveWidgetResolver>[1],
+	graphicData: Parameters<DirectiveLayoutResolver>[0],
+	state: Parameters<DirectiveLayoutResolver>[1],
 	directiveState: DirectiveDerivedState
 ): void {
 	if (layout.rowCount === 0) {
 		return;
 	}
 
-	const displayRow = directiveState.displayModel.rawRowToDisplayRow[info.lineNumber] ?? info.lineNumber;
+	const displayRow = directiveState.displayModel.sourceLineIndexToDisplayRow[info.lineNumber] ?? info.lineNumber;
 	const x = (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	const width = Math.max(state.viewport.vGrid, graphicData.width - x);
 
@@ -52,10 +52,10 @@ function resolveInfoDirectiveWidget(
 	});
 }
 
-export function createInfoDirectiveWidgetContribution(
+export function createInfoDirectiveLayoutCallbacks(
 	info: InfoDirectiveData,
 	layout: InfoLayout
-): DirectiveWidgetContribution {
+): DirectiveLayoutCallbacks {
 	return {
 		beforeGraphicDataWidthCalculation: graphicData => {
 			trackInfoRowCount(info, layout, graphicData);
@@ -66,7 +66,7 @@ export function createInfoDirectiveWidgetContribution(
 				);
 			}
 		},
-		afterGraphicDataWidthCalculation: (graphicData, state, directiveState) => {
+		onBlockLayoutReady: (graphicData, state, directiveState) => {
 			resolveInfoDirectiveWidget(info, layout, graphicData, state, directiveState);
 		},
 	};

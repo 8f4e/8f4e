@@ -1,6 +1,7 @@
 # Editor Directives
 
-This document defines editor-only directives for code blocks.
+This document defines editor-only directives for code blocks. Core owns generic directive parsing and layout;
+`@8f4e/editor-default` installs the optional feature plugins documented here.
 
 ## Directive Syntax
 
@@ -98,7 +99,7 @@ Supported paths:
 
 - `font` - editor font used for rendering code blocks and UI text.
 - `runtime` - runtime host loaded for the project.
-- `color.<path>` - editor color scheme override. See [Color Paths](./color-paths.md) for the full list of color paths.
+- `color.<path>` - editor base palette color. See [Color Paths](./color-paths.md) for the full list of color paths.
 - `export.fileName` - base file name used by editor export actions.
 - `bin.<id>.url` / `bin.<id>.memory` - binary asset URL and memory load target.
 - `bin.<id>.memories.<name>` - additional memory load targets for the same binary asset.
@@ -112,8 +113,8 @@ Examples:
 ; @config font ibmvga8x16
 ; @config runtime AudioWorkletRuntime
 ; @config export.fileName samplePlayer
-; @config color.text.code #cccccc
-; @config color.fill.moduleBackground rgba(0,0,0,0.9)
+; @config color.ink #cccccc
+; @config color.surface #101820
 ; @config bin.amen.url https://static.example.com/amen.pcm
 ; @config bin.amen.memory pcmPlayer:buffer
 ; @config keyboard.keyCodeMemory keyboard:keyCode
@@ -164,6 +165,8 @@ Supported `font` values:
 
 ### `@watch`
 
+Provided by `@8f4e/editor-plugin-watch`.
+
 Show a runtime debugger value for a memory id.
 
 ```txt
@@ -195,6 +198,8 @@ These modifiers can be combined when they make sense. For example:
 
 ### `@stack`
 
+Provided by `@8f4e/editor-plugin-stack`.
+
 Show the compiler's `stackAfter` analysis at a source location. A trailing directive shows the stack after the
 instruction on the same line. A standalone directive shows the stack after the preceding compiled instruction.
 
@@ -220,6 +225,8 @@ Use `@s` as a shorthand alias for `@stack`.
 
 ### `@plot`
 
+Provided by `@8f4e/editor-plugin-plot`.
+
 Draw a plot over a typed pointer range. The first argument provides the start pointer and element type metadata. Use a
 plain pointer memory or `&buffer` for direct buffer memory. The second argument is always the element count. You can
 optionally provide an explicit min/max range override.
@@ -238,6 +245,8 @@ Range detection:
 
 ### `@bars`
 
+Provided by `@8f4e/editor-plugin-bars`.
+
 Draw vertical bars over a typed pointer range. It uses the same pointer, element-count, and optional range arguments as
 `@plot`.
 
@@ -247,6 +256,8 @@ Draw vertical bars over a typed pointer range. It uses the same pointer, element
 ```
 
 ### `@meter`
+
+Provided by `@8f4e/editor-plugin-meter`.
 
 Render a horizontal level meter from a typed scalar value. The first argument is the typed value source to read. You can
 optionally provide an explicit min/max range override.
@@ -264,6 +275,9 @@ Notes:
 - red still starts at a fixed 90% of the configured range
 
 ### `@wave`
+
+Provided by `@8f4e/editor-plugin-wave`, which also provides `@wave2` and `@wave4` and is included in
+`@8f4e/editor-default`. Hosts composing the minimal editor must include this plugin to enable these directives.
 
 Draw a waveform over a typed absolute pointer range. The first argument provides the start pointer and element size metadata, the second argument is the element count, and the optional third argument is an absolute pointer in the same address space.
 
@@ -289,7 +303,7 @@ Same as `@wave`, but rendered at quadruple height.
 
 ### `@slider`
 
-Render a slider that writes to a memory address.
+Render a slider that writes to a memory address. Provided by `@8f4e/editor-plugin-slider`, included in the default editor.
 
 ```txt
 ; @slider <memoryAddress> [min] [max] [step]
@@ -298,11 +312,13 @@ Render a slider that writes to a memory address.
 
 If provided, `min`, `max`, and `step` must be finite decimal numbers, and `step` must be greater than zero.
 
-Use **Save slider and piano values to code** in the block context menu to save current runtime values as declaration
+Use **Save slider values to code** in the block context menu to save current runtime values as declaration
 defaults. References to other modules or group aliases update the original backing declarations, including declarations
 inside nested groups. The public exposure lines remain unchanged.
 
 ### `@crossfade`
+
+Provided by `@8f4e/editor-plugin-crossfade`.
 
 Render a center-origin crossfade control that writes to two float memory addresses. The left address is driven when the
 knob moves left, and the right address is driven when the knob moves right.
@@ -320,7 +336,10 @@ Notes:
 
 ### `@button`
 
-Render a momentary button that writes to a memory address.
+Provided by `@8f4e/editor-plugin-button`, which is included in `@8f4e/editor-default`. Hosts composing the minimal
+editor must include this plugin to enable the directive.
+
+Render a momentary button that writes its on value when pressed and its off value when released.
 
 ```txt
 ; @button <memoryAddress> [offValue] [onValue]
@@ -332,6 +351,9 @@ Defaults:
 - `onValue`: `1`
 
 ### `@switch`
+
+Provided by `@8f4e/editor-plugin-switch`, which is included in `@8f4e/editor-default`. Hosts composing the minimal
+editor must include this plugin to enable the directive.
 
 Render a toggle switch that reads and writes a memory address.
 
@@ -346,7 +368,7 @@ Defaults:
 
 ### `@piano`
 
-Render a piano keyboard control.
+Render a piano keyboard control. Provided by `@8f4e/editor-plugin-piano`, included in the default editor.
 
 ```txt
 ; @piano <pressedKeysListAddress> <pressedKeyCountAddress> [startingMidiNote]
@@ -356,9 +378,11 @@ Notes:
 
 - Both memory arguments are addresses because piano clicks update the pressed-key array and count directly in runtime
   memory, like sliders. Clicks leave source code and declaration defaults unchanged; note highlights reflect runtime memory.
-- Use **Save slider and piano values to code** in the block context menu to save the current notes and count into their
+- Use **Save piano values to code** in the block context menu to save the current notes and count into their
   backing declarations. This preserves array sizes and inline comments, including when aliases target different modules.
-- `pressedKeysListAddress` is used as both keyboard id and pressed-key array address.
+- `pressedKeysListAddress` must identify an `int[]` array of MIDI note numbers (32-bit integers).
+- `pressedKeyCountAddress` must identify a single `int` count. Other backing types, including `float[]` and `float64[]`
+  notes, do not create an interactive keyboard or a save action.
 - `startingMidiNote` defaults to `0`.
 - `startingMidiNote` must be a non-negative integer.
 - Every other note label has a shaded background using the theme's highlighted code line color, starting with the second
@@ -446,7 +470,8 @@ moduleEnd
 
 ### Binary Asset Config
 
-Define a named binary asset URL and load it into a memory location.
+`@8f4e/editor-plugin-binary-assets`, included by the default editor, defines named binary asset URLs and loads them
+into runtime memory. The plugin owns fetching, CacheStorage, the loading dialog, and generated size constants.
 
 ```txt
 ; @config bin.<id>.url <url>
@@ -458,7 +483,7 @@ Notes:
 - Asset size constants are auto-generated in the env block as `ASSET_<ID>_SIZE`.
 - `memory` may use a local memory id inside a module block, or a module-qualified memory id from any block.
 - Invalid paths/values are reported through config validation.
-- This is editor metadata only and does not affect compiler output.
+- Binary payloads stay outside serialized project models; generated size constants are available to compilation.
 - Assets with a `url` but no load target are not fetched.
 
 Multiple loads for one asset are supported with named load targets:

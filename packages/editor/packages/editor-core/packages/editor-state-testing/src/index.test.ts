@@ -35,7 +35,7 @@ describe('editor-state testing utilities', () => {
 					prefix: '@',
 					name: 'home',
 					args: [],
-					rawRow: 1,
+					sourceLineIndex: 1,
 					sourceLine: '; @home',
 					isTrailing: false,
 				},
@@ -47,7 +47,7 @@ describe('editor-state testing utilities', () => {
 				prefix: '@',
 				name: 'home',
 				args: [],
-				rawRow: 1,
+				sourceLineIndex: 1,
 				sourceLine: '; @home',
 				isTrailing: false,
 			},
@@ -88,7 +88,6 @@ describe('editor-state testing utilities', () => {
 		expect(state.compiler.memoryPlan).toEqual({ modules: {}, moduleList: [] });
 		expect(state.compiler.projectMemoryExposuresByGroupPath).toEqual({});
 		expect(state.compiler.memoryDefaultsByModuleId).toEqual({});
-		await expect(state.callbacks.loadSession()).resolves.toBeNull();
 		expect(state.compiler.memoryPlan.moduleList).not.toBe(other.compiler.memoryPlan.moduleList);
 		state.compiler.projectMemoryExposuresByGroupPath.root = [];
 		state.codeBlockRendering.codeBlocks.push(createMockCodeBlock());
@@ -122,14 +121,14 @@ describe('editor-state testing utilities', () => {
 	});
 
 	it('retains callback and collection overrides while preserving unrelated nested defaults', async () => {
-		const loadSession = async () => null;
+		const writeClipboardText = async (_text: string) => {};
 		const outputs = new Map();
 		const state = createMockState({
-			callbacks: { loadSession },
+			callbacks: { writeClipboardText },
 			compiler: { isCompiling: true },
 			codeBlockRendering: { outputsByWordAddress: outputs },
 		});
-		expect(state.callbacks.loadSession).toBe(loadSession);
+		expect(state.callbacks.writeClipboardText).toBe(writeClipboardText);
 		expect(state.codeBlockRendering.outputsByWordAddress).toBe(outputs);
 		expect(state.compiler.isCompiling).toBe(true);
 		expect(state.compiler.memoryPlan).toEqual({ modules: {}, moduleList: [] });

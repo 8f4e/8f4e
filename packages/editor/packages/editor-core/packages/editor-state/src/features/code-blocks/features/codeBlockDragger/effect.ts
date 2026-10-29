@@ -8,7 +8,7 @@ import upsertPos from '../directives/pos/upsert';
 import { worldPositionToAnchoredPos } from '../directives/viewport/resolve';
 import { getGroupBlocks } from '../group/getGroupBlocks';
 
-export interface CodeBlockClickEvent {
+export interface CodeBlockPointerDownEvent {
 	x: number;
 	y: number;
 	relativeX: number;
@@ -71,7 +71,7 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		const relativeX = Math.abs(x - (draggedCodeBlock.x - state.viewport.x));
 		const relativeY = Math.abs(y - (draggedCodeBlock.y - state.viewport.y));
 
-		events.dispatch<CodeBlockClickEvent>('codeBlockClick', {
+		events.dispatch<CodeBlockPointerDownEvent>('codeBlockPointerDown', {
 			x,
 			y,
 			relativeX,

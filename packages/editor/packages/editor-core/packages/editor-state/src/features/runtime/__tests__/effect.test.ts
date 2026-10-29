@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
 import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
@@ -6,30 +7,49 @@ import runtimeEffect from '../effect';
 
 describe('Runtime System', () => {
 	describe('Runtime lifecycle integration', () => {
+		it('stops the runtime on editor disposal before plugin teardown and ignores repeated cleanup', () => {
+			const destroy = vi.fn();
+			const state = createMockState({ editorConfig: { runtime: 'Worker' } });
+			const store = createStateManager(state);
+			const emitter = new EventEmitter();
+			const events = {
+				on: emitter.on.bind(emitter),
+				off: emitter.off.bind(emitter),
+				dispatch: emitter.emit.bind(emitter),
+			};
+			const cleanup = runtimeEffect(store, events, { Worker: { id: 'Worker', factory: () => destroy } });
+			store.set('compiler.isCompiling', true);
+			store.set('compiler.isCompiling', false);
+			events.dispatch('dispose');
+			expect(destroy).toHaveBeenCalledOnce();
+			cleanup();
+			expect(destroy).toHaveBeenCalledOnce();
+			store.dispose();
+		});
 		it('should destroy previous runtime when runtime type changes without changeRuntime event', async () => {
 			const audioDestroyer = vi.fn();
 			const webWorkerDestroyer = vi.fn();
 			const audioRuntimeFactory = vi.fn(() => audioDestroyer);
 			const webWorkerRuntimeFactory = vi.fn(() => webWorkerDestroyer);
 
+			const registry = {
+				AudioWorkletRuntime: {
+					id: 'AudioWorkletRuntime',
+					factory: audioRuntimeFactory,
+				},
+				WebWorkerRuntime: {
+					id: 'WebWorkerRuntime',
+					factory: webWorkerRuntimeFactory,
+				},
+			};
 			const state = createMockState({
 				editorConfig: { runtime: 'AudioWorkletRuntime' },
-				runtimeRegistry: {
-					AudioWorkletRuntime: {
-						id: 'AudioWorkletRuntime',
-						factory: audioRuntimeFactory,
-					},
-					WebWorkerRuntime: {
-						id: 'WebWorkerRuntime',
-						factory: webWorkerRuntimeFactory,
-					},
-				},
 			});
 
 			const store = createStateManager(state);
 			const events = createMockEventDispatcherWithVitest();
 
-			await runtimeEffect(store, events);
+			await runtimeEffect(store, events, registry);
 
 			store.set('compiler.isCompiling', true);
 			store.set('compiler.isCompiling', false);
@@ -60,24 +80,24 @@ describe('Runtime System', () => {
 			const audioRuntimeFactory = vi.fn(() => audioDestroyer);
 			const webWorkerRuntimeFactory = vi.fn(() => webWorkerDestroyer);
 
+			const registry = {
+				AudioWorkletRuntime: {
+					id: 'AudioWorkletRuntime',
+					factory: audioRuntimeFactory,
+				},
+				WebWorkerRuntime: {
+					id: 'WebWorkerRuntime',
+					factory: webWorkerRuntimeFactory,
+				},
+			};
 			const state = createMockState({
 				editorConfig: { runtime: 'AudioWorkletRuntime' },
-				runtimeRegistry: {
-					AudioWorkletRuntime: {
-						id: 'AudioWorkletRuntime',
-						factory: audioRuntimeFactory,
-					},
-					WebWorkerRuntime: {
-						id: 'WebWorkerRuntime',
-						factory: webWorkerRuntimeFactory,
-					},
-				},
 			});
 
 			const store = createStateManager(state);
 			const events = createMockEventDispatcherWithVitest();
 
-			await runtimeEffect(store, events);
+			await runtimeEffect(store, events, registry);
 
 			store.set('compiler.isCompiling', true);
 			store.set('compiler.isCompiling', false);
@@ -95,29 +115,29 @@ describe('Runtime System', () => {
 		});
 
 		it('should mirror runtime schema contributions into the generic editor config contribution registry', async () => {
+			const registry = {
+				AudioWorkletRuntime: {
+					id: 'AudioWorkletRuntime',
+					editorConfigSchema: {
+						root: 'audioRuntime',
+						schema: { type: 'object', properties: { sampleRate: { type: 'number' } } },
+					},
+					factory: () => () => {},
+				},
+				WebWorkerRuntime: {
+					id: 'WebWorkerRuntime',
+					editorConfigSchema: {
+						root: 'workerRuntime',
+						schema: { type: 'object', properties: { sampleRate: { type: 'number' } } },
+					},
+					factory: () => () => {},
+				},
+			};
 			const state = createMockState({
 				editorConfigSchemaContributions: {
 					host: {
 						root: 'hostSettings',
 						schema: { type: 'object', properties: { enabled: { type: 'boolean' } } },
-					},
-				},
-				runtimeRegistry: {
-					AudioWorkletRuntime: {
-						id: 'AudioWorkletRuntime',
-						editorConfigSchema: {
-							root: 'audioRuntime',
-							schema: { type: 'object', properties: { sampleRate: { type: 'number' } } },
-						},
-						factory: () => () => {},
-					},
-					WebWorkerRuntime: {
-						id: 'WebWorkerRuntime',
-						editorConfigSchema: {
-							root: 'workerRuntime',
-							schema: { type: 'object', properties: { sampleRate: { type: 'number' } } },
-						},
-						factory: () => () => {},
 					},
 				},
 				editorConfig: { runtime: 'WebWorkerRuntime' },
@@ -126,7 +146,7 @@ describe('Runtime System', () => {
 			const store = createStateManager(state);
 			const events = createMockEventDispatcherWithVitest();
 
-			await runtimeEffect(store, events);
+			await runtimeEffect(store, events, registry);
 
 			expect(Object.keys(store.getState().editorConfigSchemaContributions)).toEqual([
 				'host',
@@ -137,19 +157,18 @@ describe('Runtime System', () => {
 
 		it('should not initialize a runtime when no runtime is selected', async () => {
 			const webWorkerRuntimeFactory = vi.fn(() => () => {});
-			const state = createMockState({
-				runtimeRegistry: {
-					WebWorkerRuntime: {
-						id: 'WebWorkerRuntime',
-						factory: webWorkerRuntimeFactory,
-					},
+			const registry = {
+				WebWorkerRuntime: {
+					id: 'WebWorkerRuntime',
+					factory: webWorkerRuntimeFactory,
 				},
-			});
+			};
+			const state = createMockState({});
 
 			const store = createStateManager(state);
 			const events = createMockEventDispatcherWithVitest();
 
-			await runtimeEffect(store, events);
+			await runtimeEffect(store, events, registry);
 
 			store.set('compiler.isCompiling', true);
 			store.set('compiler.isCompiling', false);
@@ -161,22 +180,22 @@ describe('Runtime System', () => {
 		it('destroys the active runtime and stops reacting after disposal', async () => {
 			const audioDestroyer = vi.fn();
 			const webWorkerRuntimeFactory = vi.fn(() => () => {});
+			const registry = {
+				AudioWorkletRuntime: {
+					id: 'AudioWorkletRuntime',
+					factory: vi.fn(() => audioDestroyer),
+				},
+				WebWorkerRuntime: {
+					id: 'WebWorkerRuntime',
+					factory: webWorkerRuntimeFactory,
+				},
+			};
 			const state = createMockState({
 				editorConfig: { runtime: 'AudioWorkletRuntime' },
-				runtimeRegistry: {
-					AudioWorkletRuntime: {
-						id: 'AudioWorkletRuntime',
-						factory: vi.fn(() => audioDestroyer),
-					},
-					WebWorkerRuntime: {
-						id: 'WebWorkerRuntime',
-						factory: webWorkerRuntimeFactory,
-					},
-				},
 			});
 			const store = createStateManager(state);
 			const events = createMockEventDispatcherWithVitest();
-			const dispose = runtimeEffect(store, events);
+			const dispose = runtimeEffect(store, events, registry);
 
 			store.set('compiler.isCompiling', true);
 			store.set('compiler.isCompiling', false);

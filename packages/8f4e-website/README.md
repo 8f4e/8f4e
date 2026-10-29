@@ -4,11 +4,16 @@
 controls the canvas size. Homepage editors leave wheel scrolling to the surrounding document and start in edit mode
 with mode switching disabled.
 
+`src/homepage.ts` exports `mountHomepageEditors`, which owns the homepage editors, visibility observers, and disposal;
+`src/main.ts` mounts it. The homepage reveals canvases through the default editor's initial-project completion callback
+and displays a reload message when URL loading fails.
+
 From the workspace root:
 
 ```bash
 npx nx run @8f4e/8f4e-website:dev
 npx nx run @8f4e/8f4e-website:build
+npx nx run @8f4e/8f4e-website:test:browser
 npm --prefix tools/project-preview run generate-gallery-previews
 npx nx run @8f4e/8f4e-website:serve
 ```
@@ -46,7 +51,13 @@ to the default desktop selection or the collapsed mobile list.
 Selecting a different example creates a fresh editor and disposes the previous instance. Mounts are serialized to
 handle rapid selections, and each example uses its own session storage namespace. The gallery editor captures wheel
 gestures for panning; scrolling over the example list scrolls the document. A link opens the example in the full editor.
-Loading failures offer a retry.
+The loading indicator stays visible until the initial-project completion callback arrives. Successful empty projects
+are revealed too. A load-error callback offers a retry immediately; a 30-second timeout handles stalled initialization
+or fetching. Switching examples disposes the previous editor without waiting for its fetch. The gallery does not inspect
+project contents or poll editor state to infer completion.
+
+Browser integration tests cover both website views with delayed responses, empty projects, failure/retry, early
+callbacks, and switching examples while a fetch is pending.
 
 ## Compiler test gallery
 

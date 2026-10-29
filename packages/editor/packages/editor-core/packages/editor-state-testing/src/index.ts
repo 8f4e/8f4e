@@ -18,10 +18,6 @@ function createMockFunction<T extends (...args: unknown[]) => unknown>(): T {
 	return (() => {}) as T;
 }
 
-function createMockAsyncFunction<T>(returnValue: T): () => Promise<T> {
-	return async () => returnValue;
-}
-
 export function createMockCodeBlock(
 	options: Partial<CodeBlockGraphicData> & { cursorY?: number } = {}
 ): CodeBlockGraphicData {
@@ -47,9 +43,9 @@ export function createMockCodeBlock(
 		y: cursorYValue,
 	};
 	const displayModel = {
-		lines: code.map((text, rawRow) => ({ text, rawRow })),
-		displayRowToRawRow: code.map((_, rawRow) => rawRow),
-		rawRowToDisplayRow: code.map((_, rawRow) => rawRow),
+		lines: code.map((text, sourceLineIndex) => ({ text, sourceLineIndex })),
+		displayRowToSourceLineIndex: code.map((_, sourceLineIndex) => sourceLineIndex),
+		sourceLineIndexToDisplayRow: code.map((_, sourceLineIndex) => sourceLineIndex),
 		isCollapsed: false,
 	};
 
@@ -77,20 +73,9 @@ export function createMockCodeBlock(
 		alwaysOnTop: false,
 		parsedDirectives: [],
 		widgets: {
-			assertions: [],
 			blockHighlights: [],
 			inputs: [],
 			outputs: [],
-			debuggers: [],
-			switches: [],
-			buttons: [],
-			sliders: [],
-			crossfades: [],
-			pianoKeyboards: [],
-			arrayPlotters: [],
-			arrayBars: [],
-			arrayMeters: [],
-			arrayWaves: [],
 			infoPanels: [],
 			shapeDeclarations: [],
 			errorMessages: [],
@@ -129,7 +114,6 @@ export function createMockEventDispatcher(): EventDispatcher {
 }
 
 export function createMockState(overrides: StateOverrides = {}): State {
-	const mockRuntimeFactory = () => () => {};
 	const workerRuntimeDefaults = { sampleRate: 50 } as const;
 	const rootCodeBlocks: CodeBlockGraphicData[] = [];
 
@@ -146,9 +130,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			memoryDefaultsByModuleId: {},
 			projectMemoryExposuresByGroupPath: {},
 		},
-		callbacks: {
-			loadSession: createMockAsyncFunction(null),
-		},
+		callbacks: {},
 		runtimeRegistry: {
 			WebWorkerRuntime: {
 				id: 'WebWorkerRuntime',
@@ -157,7 +139,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 					defaults: workerRuntimeDefaults,
 					schema: { type: 'object', properties: {} },
 				},
-				factory: mockRuntimeFactory,
 			},
 		},
 		codeBlockRendering: {
@@ -191,27 +172,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 				memoryReinitialized: false,
 			},
 		},
-		tooltip: {
-			text: [],
-			characters: [],
-			colors: [],
-			lineCount: 0,
-			widthChars: 0,
-			layout: {
-				horizontalPadding: 0,
-				width: 0,
-				height: 0,
-				x: 0,
-				y: 0,
-				lineX: 0,
-			},
-			highlights: [],
-			liveValues: [],
-			target: undefined,
-			animation: {
-				startedAt: undefined,
-			},
-		},
 		featureFlags: {
 			contextMenu: true,
 			moduleDragging: true,
@@ -221,7 +181,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			modeToggling: true,
 			modeOverlay: true,
 			offscreenBlockArrows: true,
-			projectOpening: true,
 			projectCreation: true,
 		},
 		editorMode: 'edit',
@@ -230,8 +189,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		editorConfigSchemaContributions: {},
 		historyStack: [],
 		redoStack: [],
-		storageQuota: { usedBytes: 0, totalBytes: 0 },
-		binaryAssets: [],
+		envConstantContributions: {},
 		codeErrors: {
 			compilationErrors: [],
 			editorDirectiveErrors: [],

@@ -24,17 +24,152 @@ Wheel input pans the editor viewport and prevents page scrolling by default. Emb
 Hosts can pause rendering without releasing memory through `pauseRendering()`. `releaseRenderingResources()` also
 releases reloadable GPU textures, dynamic buffers, and the canvas drawing buffer. `resumeRendering()` restores the
 resources and applies any canvas resize that happened while they were released.
+`renderFrame()` immediately renders the current state, including while the animation loop is paused.
 
 The editor supports view and edit modes. Selected code blocks have a continuously animated outline in both modes.
 Command+Arrow (or Control+Arrow) navigates between blocks with smooth viewport movement. Use `e` to enter edit mode
 and Escape to return to view mode when `modeToggling` is enabled.
 
+## Plugins
+
+Pass a `plugins` array to initialization. `EditorPlugin` and `EditorPluginContext` are exported by
+`@8f4e/editor-core`.
+
+```ts
+import initEditor from '@8f4e/editor-core';
+import { createSwitchPlugin } from '@8f4e/editor-plugin-switch';
+import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
+
+const editor = await initEditor(canvas, {
+	...options,
+	plugins: [toggleSkipExecutionPlugin, createSwitchPlugin({ writeMemory })],
+});
+```
+
+A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, drawers })` function.
+Editor-core installs plugins in array order after core state effects, before rendering and initial project loading.
+Core first resizes and loads `options.initialProject` (or an empty project), then emits
+`init`. Setup runs separately for each editor instance; allocate instance data inside setup.
+Plugins receive the existing state manager and event dispatcher directly. Store disposal belongs to the editor and
+is excluded from the plugin context type. This is a trusted extension interface.
+
+Setup must return a disposer that releases every resource the plugin creates, including subscriptions, listeners,
+contribution registrations, and timers. The host calls these disposers in reverse installation order while the state
+and dispatcher remain available. It does not track individual registrations. Setup and cleanup errors propagate.
+If setup throws, that plugin must unwind its partial allocations; the host disposes previously completed plugins.
+Initialization failures later in startup also dispose installed plugins.
+
+Keep browser dependencies in plugin factories rather than the shared setup context. A browser host can create
+`createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })` before initializing the editor; the
+returned plugin captures those dependencies and uses the regular setup services. The render callback runs from
+actions after initialization, once `editor` is available. Each editor receives a plugin bound to its own canvas.
+
+Register menu items with `menus.registerItem('moduleMenu', provider)`. Providers receive the current
+`{ state, codeBlock }` when the menu opens, and return a `ContextMenuItem` or `undefined` to omit it. The target block
+can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
+existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
+Use `menus.registerItem('mainMenu', provider)` for the background menu. Its providers receive `{ state }`, and
+contributions appear in registration order after the built-in items. Main-menu contributions are rebuilt when the
+menu opens or is revisited, just like block-menu contributions. A divider separates the contributed items when present.
+
+Register a complete submenu with `menus.registerMenu(id, (state, payload) => items)`. Generators may return an
+array or a promise and receive current state whenever the menu opens or is revisited. Open it through
+`{ action: 'openSubMenu', payload: { menu: id, payload: yourData }, close: false }`. Core stores the request, supplies
+Back navigation, and handles decoration, sizing, positioning, and clicks. Menu IDs identify one generator per editor;
+use a distinct ID for your plugin's menu and call the returned unregister function during disposal.
+The built-in block submenu also uses this request shape: `{ menu: 'moduleMenu', payload: { codeBlock } }`.
+
+Use explicit block actions through `events.dispatch`:
+
+- `createCodeBlock` receives `{ x, y, blockType }` and creates a module, function, prototype, or note template.
+- `pasteCodeBlocks` receives `{ x, y }` and reads the clipboard, including structured multi-block content.
+- `insertCodeBlock` receives `{ x, y, code }` and inserts those source lines without reading the clipboard.
+
+Coordinates are viewport pixels. Core applies unique naming, entry assignment, grid positioning, and persistence.
+Newly inserted blocks already carry their source-derived type; core keeps it current as source changes.
+
+Register widget directives with `directives.register(definition)`, using the existing `EditorDirectiveDefinition`
+contract from `@8f4e/editor-state-types`. The core owns generic source parsing, directive matching, and the block
+layout pipeline. Each definition handles its own arguments through `apply`, registers `DirectiveLayoutCallbacks`
+in `draft.layoutCallbacks`, and can clear its derived data through `clearDerivedBlockData`. These callbacks use
+`onBlockLayoutReady` to derive geometry after the block's dimensions, display rows, gaps, and cursor coordinates are
+current. Registrations are local to each editor. Install them in setup before the initial project loads; there is
+no runtime plugin installation API.
+
+Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
+`{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
+the host applies viewport translation and visibility checks. Drawers run in registration order after error messages
+and before built-in controls. Register overlays with `drawers.registerCodeBlockOverlay(drawer)` to draw after all
+built-in block widgets, using the same context and coordinates. Each slot preserves registration order. Use the
+drawing surface's text/fill primitives and shared numeric palette indices.
+`@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
+disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
+
+Interaction handlers can subscribe to `codeBlockPointerDown` for the start of a block press and `mouseup` for release.
+Use `events.on('mousemove', handler, { capture: true })` when a plugin must consume a drag before ordinary listeners,
+such as viewport panning. Capture listeners run first in registration order. Setting `event.stopPropagation = true`
+stops the remaining capture and ordinary listeners. Unregister with the same `events.off` call as other listeners.
+Core registers menu movement in capture before plugins, so an open menu retains priority over plugin drags.
+
+The switch and button plugins own their directives, memory resolution, interaction, and drawing. Each keeps widget
+data in a per-instance WeakMap. Buttons write their on value while pressed and their off value on release.
+The wave plugin owns `@wave`, `@wave2`, and `@wave4`, including their layout space, typed samples, playheads, and drawing.
+The piano plugin owns `@piano`, key geometry, runtime note toggling, drawing, and its save-to-code menu action.
+The slider plugin owns `@slider`, its geometry, drag interaction, live drawing, and save-to-code menu action.
+Meter, plot, and bars plugins own their typed-memory visualization and layout. Crossfade owns its float-memory
+interaction and drawer. Watch and stack own separate inline value overlays; their factories receive a
+`prefersReducedMotion` function from the host. None of these features adds fields to core code-block state.
+The screenshot plugin owns the main-menu action, temporary overlay visibility, PNG encoding, and browser file saving.
+The project-files plugin owns Open From Disk, Save/Export, their menus and shortcut, browser file access, and file
+associations. Its factory receives the input element. The WebAssembly-export plugin receives a document and compiler
+byte getter, and owns WASM Blob creation and browser file writing.
+The execution-toggle plugin owns the Skip/Unskip menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
+layout, animation, and overlay drawing, with its state private to each installation. Group execution toggling and
+nested block shading remain built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
+
+The favorite-toggle plugin owns Favorite/Unfavorite editing and its block-menu item. Favorite directive derivation
+and Jump to navigation remain in core. The memory-connection-removal plugin owns its block-menu item, enabled
+state, and source transformation for disconnecting intermodular memory defaults. Both receive the clicked block
+through their action payload and respect edit mode; their menu entries disappear when the plugins are omitted.
+The public `removeDirective` helper edits generic directive comments without coupling core to either action.
+
+The assertion-markers plugin draws runtime results over assertion line numbers using current block layout; core
+keeps the results and inline failure messages. Keyboard-to-memory input and MIDI input live in their plugin packages.
+Their factories receive the input target or navigator and compiler-resource getters from the host. Each plugin
+owns its configuration schema and cleanup. MIDI also owns its WASM instance and export cache; there is no separate
+environment-plugin manager in core.
+
+The binary-assets plugin owns `bin` configuration, browser fetching and caching, private asset bytes/metadata,
+memory loading, the loading dialog, and generated asset-size constants. Its factory receives a getter for current
+runtime memory bytes; the shared plugin context carries no browser resources or binary asset fields.
+
+Plugins can contribute source to the generated `env` constants block with
+`store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines these lines with the selected
+runtime's constants and recompiles when generated source changes. Each plugin removes its own contribution key
+when disposed. The registry contains source lines only; feature metadata stays private to its owner.
+
+`@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
+tab-aware text measurement, module identity, and compiled-function lookup helpers. Its `/memory` entry
+exports memory scope, identifier, element-count, and typed-value resolution, plus `getMemoryDefaultEdits` for rewriting
+resolved memory defaults in their source modules. Each group of values is edited together, even across module owners.
+Plugins use these public exports rather than importing core files.
+`serializeToProject`, `serializeProjectTo8f4e`, and `getExportBaseName` provide shared project serialization and naming;
+`logError` records failures in the editor console. These helpers and filename configuration remain available
+independently of the export and persistence plugins.
+Serialization lives under `pureHelpers/projectSerialization`; filename configuration belongs to `features/editor-config`.
+
 ## Project loading
 
-Hosts can provide `getProject(url)` for loading individual projects by URL and `importProject` for the Open From Disk
-menu action. The `projectOpening` feature flag controls disk import. Example project browsing belongs to the host;
-the editor no longer exposes a `getListOfProjects` callback or an example project submenu. Built-in module browsing
-continues to use `getListOfModules` and `getModule`.
+Hosts can provide a compiler-owned `ProjectObjectModel` through `initialProject`, or dispatch `loadProject` with
+`{ project }` later. Core loads initial content after the first resize and emits `init` once that content is installed.
+Open From Disk belongs to the project-files plugin. Core has no file callbacks or file-association flags; undo/redo
+restore snapshots directly within the current project.
+
+Session restoration and autosaving belong to `@8f4e/editor-plugin-session-persistence`. Project URL fetching and
+parsing belong to `@8f4e/editor-plugin-project-url-loader`. Both plugins use generic project loading, and their factories
+receive storage or fetch from the host. Core has no session callbacks, storage quota state, or URL fetching callback.
+Example project browsing belongs to the host. Built-in module browsing belongs to `@8f4e/editor-plugin-example-modules`,
+whose factory receives lazy source loaders. Core retains generic menus and block creation.
 
 ## Docs
 
@@ -48,23 +183,20 @@ Configure editor settings with `; @config <path> <value>`.
 - `; @config runtime <runtimeId>` controls the runtime backend for the project.
 - Extensions can contribute schema-backed config roots; runtime packages use this for paths like `; @config audioRuntime.sampleRate 48000` and `; @config audioRuntime.audioOutBufferLAddress audioout:buffer`.
 - `; @config export.fileName <value>` controls the base file name used by editor export actions.
-- `; @config color.<path> <value>` controls individual color scheme entries.
+- `; @config color.<path> <value>` controls base palette colors.
 - `; @config webUI.overlay.<field> <value>` configures a WebAssembly-generated RGBA texture drawn over the editor.
-- Color values should be valid color strings (for example `#101820` or `rgba(255,255,255,0.65)`).
-- Main groups are `text`, `fill`, and `icons`.
+- Base colors accept hex with optional alpha, `rgb()` / `rgba()`, and `transparent`. The palette contains `canvas`,
+  `surface`, `ink`, `muted`, `primary`, `secondary`, `tertiary`, `highlight`, `detail`, `stroke`, `positive`, `warning`,
+  and `negative`. Optional accents preserve independently authored hues and opacity.
+  All shades and fixed opacity variants are generated before atlas creation.
 
 Example color overrides:
 
 ```txt
-; @config color.fill.moduleBackground #101820
-; @config color.fill.wire rgba(255,255,255,0.65)
-; @config color.text.instruction #b388ff
-; @config color.icons.feedbackScale0 #ff0000
-; @config color.icons.feedbackScale1 #cc0033
-; @config color.icons.feedbackScale2 #990066
-; @config color.icons.feedbackScale3 #660099
-; @config color.icons.feedbackScale4 #3300cc
-; @config color.icons.feedbackScale5 #0000ff
+; @config color.canvas #660099
+; @config color.surface #1a0b24
+; @config color.ink #f6eff8
+; @config color.primary #d9a6ff
 ```
 
 - `docs/color-paths.md` - Configurable color paths for `; @config color.<path> <value>`.
@@ -78,3 +210,7 @@ Select the editor font with a global editor directive:
 ```
 
 Supported fonts: `6x10`, `ibmvga8x16`, `terminus8x16`, `terminus8x16bold`, `terminus10x18`, `terminus10x18bold`, `kana12x13`, `terminus12x24`, `terminus12x24bold`, `spleen5x8`, `spleen6x12`, `spleen8x16`, `templeos8x8`, `spleen12x24`, `spleen16x32`.
+
+Runtime implementations are supplied through `EditorOptions.runtimeRegistry` as initialization dependencies. State exposes only runtime IDs and schemas in `state.runtimeRegistry`; lazy loaders and factories stay in the runtime coordinator. Memory-writing plugins receive a `writeMemory(address, value, isInteger)` function directly from their host.
+
+Core emits `compilationInputChanged` after compilation inputs change. Install `@8f4e/editor-plugin-compiler` to schedule compilation and publish diagnostics, compiler metadata, and statistics. Core consumes its `compilationSucceeded` event with `ProgramArtifacts` (`memoryRef` and `codeBuffer`) to update memory views and renderer artifacts. Public editor options no longer expose a callbacks bag; core constructs its internal browser callbacks. The compiler factory returns stable artifact getters and a memory writer for dependent plugins and runtime factories; core has no compile callback. Core dispatches `dispose` before plugin teardown so the runtime coordinator stops before its compiler resources are released.

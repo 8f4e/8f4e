@@ -6,24 +6,7 @@
     "generate-fonts": {
       "executor": "nx:run-commands",
       "outputs": [
-        "{projectRoot}/src/fonts/attpc63008x16/generated",
-        "{projectRoot}/src/fonts/ibmvga8x16/generated",
-        "{projectRoot}/src/fonts/nix8810m168x16/generated",
-        "{projectRoot}/src/fonts/olivettithin8x16/generated",
-        "{projectRoot}/src/fonts/spleen5x8/generated",
-        "{projectRoot}/src/fonts/spleen6x12/generated",
-        "{projectRoot}/src/fonts/terminus8x16/generated",
-        "{projectRoot}/src/fonts/spleen8x16/generated",
-        "{projectRoot}/src/fonts/templeos8x8/generated",
-        "{projectRoot}/src/fonts/terminus8x16bold/generated",
-        "{projectRoot}/src/fonts/6x10/generated",
-        "{projectRoot}/src/fonts/terminus10x18/generated",
-        "{projectRoot}/src/fonts/terminus10x18bold/generated",
-        "{projectRoot}/src/fonts/kana12x13/generated",
-        "{projectRoot}/src/fonts/spleen12x24/generated",
-        "{projectRoot}/src/fonts/terminus12x24/generated",
-        "{projectRoot}/src/fonts/terminus12x24bold/generated",
-        "{projectRoot}/src/fonts/spleen16x32/generated"
+        "{projectRoot}/src/generated"
       ],
       "options": {
         "command": "node --experimental-transform-types tools/generate-font-bitmaps.mjs",
@@ -32,8 +15,13 @@
     },
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/dist"],
-      "dependsOn": ["^build", "generate-fonts"],
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "dependsOn": [
+        "^build",
+        "generate-fonts"
+      ],
       "options": {
         "command": "tsc",
         "cwd": "{projectRoot}"
@@ -41,7 +29,10 @@
     },
     "dev": {
       "executor": "nx:run-commands",
-      "dependsOn": ["^build", "generate-fonts"],
+      "dependsOn": [
+        "^build",
+        "generate-fonts"
+      ],
       "options": {
         "command": "tsc --watch",
         "cwd": "{projectRoot}"
@@ -49,8 +40,13 @@
     },
     "test": {
       "executor": "@nx/vitest:test",
-      "outputs": ["{workspaceRoot}/coverage/@8f4e/sprite-generator"],
-      "dependsOn": ["generate-fonts"],
+      "outputs": [
+        "{workspaceRoot}/coverage/@8f4e/sprite-generator"
+      ],
+      "dependsOn": [
+        "^build",
+        "generate-fonts"
+      ],
       "options": {
         "config": "{projectRoot}/vitest.config.ts",
         "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/sprite-generator"
@@ -58,7 +54,10 @@
     },
     "typecheck": {
       "executor": "nx:run-commands",
-      "dependsOn": ["^build", "generate-fonts"],
+      "dependsOn": [
+        "^build",
+        "generate-fonts"
+      ],
       "options": {
         "command": "tsc --noEmit",
         "cwd": "{projectRoot}"
@@ -66,7 +65,9 @@
     },
     "test:screenshot": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "command": "playwright test",
         "cwd": "{projectRoot}"
@@ -81,7 +82,9 @@
     },
     "test:screenshot:update": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "command": "playwright test --update-snapshots",
         "cwd": "{projectRoot}"
@@ -109,5 +112,8 @@
       }
     }
   },
-  "tags": ["type:library", "scope:graphics"]
+  "tags": [
+    "type:library",
+    "scope:graphics"
+  ]
 }

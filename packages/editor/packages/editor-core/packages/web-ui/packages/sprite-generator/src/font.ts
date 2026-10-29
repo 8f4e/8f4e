@@ -1,160 +1,18 @@
-import type { SpriteCoordinates } from 'glugglugglug';
-
-import { createAtlasLayout, TEXT_COLOR_NAMES } from './atlasLayout.ts';
-import { type ColorScheme, Command, type DrawingCommand } from './types.ts';
-
-const ASCII_START = 0;
-const ASCII_END = 127;
-
-/**
- * Builds a deduped font layout from the runtime text color map.
- *
- * Deduplication is based on exact string equality of color values. Roles that
- * share the same color string are assigned the same row index, so only one
- * atlas row is rendered per unique color. Row ordering is deterministic:
- * unique colors are assigned row indices in the order their first corresponding
- * role appears in TEXT_COLOR_NAMES.
- */
-export function buildFontLayout(colors: ColorScheme['text']): {
-	rowsByRole: Record<keyof ColorScheme['text'], number>;
-	uniqueRows: Array<{ color: string; roles: Array<keyof ColorScheme['text']> }>;
-} {
-	const colorToRow = new Map<string, number>();
-	const uniqueRows: Array<{ color: string; roles: Array<keyof ColorScheme['text']> }> = [];
-
-	for (const role of TEXT_COLOR_NAMES) {
-		const color = colors[role];
-		if (!colorToRow.has(color)) {
-			colorToRow.set(color, uniqueRows.length);
-			uniqueRows.push({ color, roles: [] });
-		}
-		uniqueRows[colorToRow.get(color)!].roles.push(role);
-	}
-
-	const rowsByRole = Object.fromEntries(TEXT_COLOR_NAMES.map(role => [role, colorToRow.get(colors[role])!])) as Record<
-		keyof ColorScheme['text'],
-		number
-	>;
-
-	return { rowsByRole, uniqueRows };
-}
-
-function forEachBit(
-	byte: number,
-	characterWidth: number,
-	callback: (isByteSet: boolean, nthBit: number) => void
+/** Copies one fixed-cell bitmap glyph into an R8 coverage array. */
+export function writeGlyph(
+	data: Uint8Array,
+	stride: number,
+	font: ArrayLike<number>,
+	code: number,
+	width: number,
+	height: number,
+	x: number,
+	y: number
 ): void {
-	for (let i = 0; i < characterWidth; i++) {
-		const mask = 1 << (characterWidth - 1 - i);
-		callback((byte & mask) !== 0, i);
+	for (let row = 0; row < height; row++) {
+		const bits = font[code * height + row];
+		for (let column = 0; column < width; column++) {
+			if ((bits & (1 << (width - 1 - column))) !== 0) data[(y + row) * stride + x + column] = 255;
+		}
 	}
 }
-
-export function drawCharacter(
-	font: number[],
-	charCode: number | string,
-	characterWidth: number,
-	characterHeight: number
-): DrawingCommand[] {
-	const commands: DrawingCommand[] = [];
-	const char = typeof charCode === 'string' ? charCode.charCodeAt(0) : charCode;
-	for (let i = 0; i < characterHeight; i++) {
-		forEachBit(font[char * characterHeight + i], characterWidth, (bit, nthBit) => {
-			if (bit) {
-				commands.push([Command.PIXEL, nthBit, i]);
-			}
-		});
-	}
-	return commands;
-}
-
-export function drawCharacterMatrix(
-	font: number[],
-	characterWidth: number,
-	characterHeight: number,
-	characterMatrix: number[][]
-): DrawingCommand[] {
-	const commands: DrawingCommand[] = [[Command.SAVE]];
-	characterMatrix.forEach(characterArray => {
-		characterArray.forEach(char => {
-			commands.push(...drawCharacter(font, char, characterWidth, characterHeight), [
-				Command.TRANSLATE,
-				characterWidth,
-				0,
-			]);
-		});
-		commands.push([Command.TRANSLATE, characterArray.length * -characterWidth, characterHeight]);
-	});
-	commands.push([Command.RESTORE]);
-	return commands;
-}
-
-function generateFont(x = 0, y = 0, font: number[], characterWidth: number, characterHeight: number): DrawingCommand[] {
-	const commands: DrawingCommand[] = [[Command.TRANSLATE, x, y]];
-
-	for (let code = ASCII_START; code <= ASCII_END; code++) {
-		commands.push(...drawCharacter(font, code, characterWidth, characterHeight), [
-			Command.TRANSLATE,
-			characterWidth,
-			0,
-		]);
-	}
-
-	commands.push([Command.RESET_TRANSFORM]);
-	return commands;
-}
-
-export default function generateFonts(
-	font: number[],
-	characterWidth: number,
-	characterHeight: number,
-	colors: ColorScheme['text']
-): DrawingCommand[] {
-	const layout = createAtlasLayout(characterWidth, characterHeight);
-	const { uniqueRows } = buildFontLayout(colors);
-
-	return [
-		[Command.RESET_TRANSFORM],
-		...uniqueRows.flatMap<DrawingCommand>(({ color }, i) => {
-			return [
-				[Command.FILL_COLOR, color],
-				...generateFont(layout.font.x, layout.font.y + characterHeight * i, font, characterWidth, characterHeight),
-			];
-		}),
-	];
-}
-
-function capitalize(word: string) {
-	return word.charAt(0).toUpperCase() + word.slice(1);
-}
-
-export type FontLookups = {
-	[key in keyof ColorScheme['text'] as `font${Capitalize<string & key>}`]: Partial<
-		Record<number | string, SpriteCoordinates>
-	>;
-};
-
-export const generateLookups = (characterWidth: number, characterHeight: number, colors: ColorScheme['text']) => {
-	const layout = createAtlasLayout(characterWidth, characterHeight);
-	const { rowsByRole } = buildFontLayout(colors);
-
-	return Object.fromEntries(
-		TEXT_COLOR_NAMES.map(colorName => {
-			const lookups: Record<number | string, SpriteCoordinates> = {};
-			const y = layout.font.y + characterHeight * rowsByRole[colorName];
-
-			for (let code = ASCII_START; code <= ASCII_END; code++) {
-				const coordinates = {
-					x: code * characterWidth + layout.font.x,
-					y,
-					spriteHeight: characterHeight,
-					spriteWidth: characterWidth,
-				};
-				lookups[code] = coordinates;
-				lookups[String.fromCharCode(code)] = coordinates;
-			}
-
-			return [`font` + capitalize(colorName), lookups];
-		})
-	) as FontLookups;
-};

@@ -1,9 +1,9 @@
+import type { PaletteToken } from '@8f4e/editor-palette';
 /**
  * Types for code-blocks feature - manages code block entities, rendering, and interactions.
  */
 
 import type { DocumentBlockType, PlannedMemoryDeclaration, ProjectGroupPath } from '@8f4e/language-spec';
-import type { FillSpriteColorName } from '@8f4e/sprite-generator';
 import type { ViewportBlockAlignment } from '../viewport/blockAlignment';
 import type { CodeBlockDisplayModel } from './buildDisplayModel';
 
@@ -44,20 +44,6 @@ export interface Output {
 	memory: PlannedMemoryDeclaration;
 }
 
-export interface Debugger {
-	width: number;
-	height: number;
-	showAddress: boolean;
-	showEndAddress: boolean;
-	x: number;
-	y: number;
-	id: string;
-	memory?: PlannedMemoryDeclaration;
-	bufferPointer: number;
-	displayFormat: 'decimal' | 'binary' | 'hex';
-	text?: string;
-}
-
 export interface InfoPanel {
 	width: number;
 	height: number;
@@ -71,177 +57,10 @@ export interface InfoPanel {
 export interface MemoryIdentifier {
 	memory: PlannedMemoryDeclaration;
 	showAddress: boolean;
-	showEndAddress: boolean;
 	bufferPointer: number;
-	displayFormat: 'decimal' | 'binary' | 'hex';
 }
-
-export interface ArrayPlotter {
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	minValue: number;
-	maxValue: number;
-	startAddress: MemoryIdentifier;
-	baseSampleShift: 0 | 1 | 2 | 3;
-	length: number | MemoryIdentifier;
-	valueType: TypedValueKind;
-}
-
-export interface ArrayBars {
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	minValue: number;
-	maxValue: number;
-	inverseValueRange: number;
-	staticBaseValueIndex?: number;
-	staticColumnLayout?: Array<{
-		x: number;
-		width: number;
-		sliceStart: number;
-		sliceEnd: number;
-	}>;
-	startAddress: MemoryIdentifier;
-	baseSampleShift: 0 | 1 | 2 | 3;
-	length: number | MemoryIdentifier;
-	valueType: TypedValueKind;
-}
-
-export interface ArrayMeter {
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	minValue: number;
-	maxValue: number;
-	isBipolar: boolean;
-	amplitudeLimit: number;
-	inverseValueRange: number;
-	greenEndX: number;
-	yellowEndX: number;
-	overloadMarkerX: number;
-	overloadMarkerWidth: number;
-	staticValueIndex?: number;
-	memory: MemoryIdentifier;
-	baseSampleShift: 0 | 1 | 2 | 3;
-	valueType: TypedValueKind;
-}
-
-export interface Switch {
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	id: string;
-	allocationUnitAddress: number;
-	isInteger: boolean;
-	offValue: number;
-	onValue: number;
-}
-
-export interface PianoKeyboard {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	keyWidth: number;
-	keyY: number;
-	keyHeight: number;
-	blackKeyHeight: number;
-	blackKeySideY: number;
-	blackKeySideHeight: number;
-	blackKeyGapXOffset: number;
-	blackKeyGapY: number;
-	blackKeyGapWidth: number;
-	blackKeyGapHeight: number;
-	lineNumber: number;
-	keys: PianoKeyboardKey[];
-	pressedKeysListMemory: PlannedMemoryDeclaration;
-	pressedNumberOfKeysMemory: PlannedMemoryDeclaration;
-	pressedKeysListModuleId: string;
-	pressedNumberOfKeysModuleId: string;
-	startingNumber: number;
-}
-
-export type PianoKeySprite = 'pianoKeyWhite' | 'pianoKeyBlack';
-export type PianoPressedOverlayFont = 'fontPianoKeyWhitePressedOverlay' | 'fontPianoKeyBlackPressedOverlay';
-
-interface PianoKeyboardKeyBase {
-	offset: number;
-	x: number;
-	label: string;
-	labelX: number;
-	labelY: number;
-	pressedOverlayX: number;
-	pressedOverlayRows: number[];
-}
-
-export interface PianoKeyboardWhiteKey extends PianoKeyboardKeyBase {
-	kind: 'white';
-	sprite: 'pianoKeyWhite';
-	pressedOverlayFont: 'fontPianoKeyWhitePressedOverlay';
-}
-
-export interface PianoKeyboardBlackKey extends PianoKeyboardKeyBase {
-	kind: 'black';
-	sprite: 'pianoKeyBlack';
-	pressedOverlayFont: 'fontPianoKeyBlackPressedOverlay';
-}
-
-export type PianoKeyboardKey = PianoKeyboardWhiteKey | PianoKeyboardBlackKey;
 
 export type TypedValueKind = 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'float32' | 'float64';
-
-export interface ArrayWave {
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	startAddress: MemoryIdentifier;
-	elementByteSize: number;
-	inverseElementByteSize: number;
-	baseSampleShift: 0 | 1 | 2 | 3;
-	length: number | MemoryIdentifier;
-	pointer?: MemoryIdentifier;
-	valueType: TypedValueKind;
-	minValue: number;
-	maxValue: number;
-	inverseValueRange: number;
-}
-
-export interface Slider {
-	/** Canonical owner of the backing declaration, including for exposed aliases. */
-	moduleId: string;
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	id: string;
-	allocationUnitAddress: number;
-	byteAddress: number;
-	isInteger: boolean;
-	isFloat64?: boolean;
-	min: number;
-	max: number;
-	step?: number;
-}
-
-export interface Crossfade {
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	leftId: string;
-	rightId: string;
-	leftWordAddress: number;
-	rightWordAddress: number;
-	handleWidth: number;
-	trackWidth: number;
-	centerX: number;
-}
 
 export interface ShapeDeclaration {
 	x: number;
@@ -263,7 +82,7 @@ export interface ParsedDirectiveRecord {
 	/** Whitespace-split arguments after the name */
 	args: string[];
 	/** Zero-based raw line index within the code block */
-	rawRow: number;
+	sourceLineIndex: number;
 	/** Original source line that contained the directive */
 	sourceLine?: string;
 	/** True when the directive appears as a trailing inline comment on a non-directive line */
@@ -285,7 +104,7 @@ export interface CodeBlockGraphicData {
 	displayModel: CodeBlockDisplayModel;
 	/** The gaps between lines */
 	gaps: Map<number, { size: number }>;
-	/** Optional minimum grid width override (e.g., for piano keyboards) */
+	/** Optional minimum grid width contributed before block layout. */
 	minGridWidth?: number;
 	cursor: {
 		/** The column of the cursor */
@@ -308,28 +127,16 @@ export interface CodeBlockGraphicData {
 	/** Pixel-space Y coordinate, computed from gridY * hGrid (where hGrid = characterHeight) */
 	y: number;
 	widgets: {
-		/** Rectangles covering executed assertion line numbers; failure takes precedence across repeated calls. */
-		assertions: Array<{ lineNumber: number; passed: boolean; x: number; y: number; width: number; height: number }>;
 		blockHighlights: Array<{
 			x: number;
 			y: number;
 			height: number;
 			width: number;
-			color: FillSpriteColorName;
+			color: PaletteToken;
 		}>;
 		inputs: Input[];
 		outputs: Output[];
-		debuggers: Debugger[];
-		arrayPlotters: ArrayPlotter[];
-		arrayBars: ArrayBars[];
-		arrayMeters: ArrayMeter[];
-		arrayWaves: ArrayWave[];
 		infoPanels: InfoPanel[];
-		switches: Switch[];
-		buttons: Switch[];
-		sliders: Slider[];
-		crossfades: Crossfade[];
-		pianoKeyboards: PianoKeyboard[];
 		shapeDeclarations: ShapeDeclaration[];
 		errorMessages: Array<{
 			message: string[];

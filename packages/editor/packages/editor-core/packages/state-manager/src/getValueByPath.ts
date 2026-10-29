@@ -1,3 +1,5 @@
+import { tokenizeSelector } from './tokenizeSelector.js';
+
 import type { Path, PathValue } from './types';
 
 /**
@@ -7,7 +9,10 @@ import type { Path, PathValue } from './types';
  * @returns The value at the path, or undefined if not found
  */
 export function getValueByPath<State, P extends Path<State>>(state: State, selector: P): PathValue<State, P> {
-	const tokens = String(selector).split('.');
+	return getValueByTokens(state, tokenizeSelector(selector)) as PathValue<State, P>;
+}
+
+export function getValueByTokens(state: unknown, tokens: readonly string[]): unknown {
 	let currentValue: unknown = state;
 
 	for (const token of tokens) {
@@ -24,5 +29,5 @@ export function getValueByPath<State, P extends Path<State>>(state: State, selec
 		}
 	}
 
-	return currentValue as PathValue<State, P>;
+	return currentValue;
 }

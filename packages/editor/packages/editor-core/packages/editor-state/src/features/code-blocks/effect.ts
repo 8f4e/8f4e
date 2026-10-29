@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorDirectiveDefinition, EventDispatcher, State } from '@8f4e/editor-state-types';
 import {
 	createChildProjectGroupPath,
 	type ProjectBlock,
@@ -15,14 +15,13 @@ import incrementCompilerInputRevision from '../program-compiler/incrementCompile
 import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';
 import updateViewport from '../viewport/updateViewport';
 import deriveErrorMessages from './deriveErrorMessages';
-import deriveAssertionMarkers from './features/assertions/deriveAssertionMarkers';
 import blockHighlights from './features/blockHighlights/updateGraphicData';
-import type { CodeBlockClickEvent } from './features/codeBlockDragger/effect';
+import type { CodeBlockPointerDownEvent } from './features/codeBlockDragger/effect';
 import parsePos from './features/directives/pos/data';
 import {
 	deriveDirectiveState,
-	runAfterGraphicDataWidthCalculation,
 	runBeforeGraphicDataWidthCalculation,
+	runBlockLayoutReady,
 } from './features/directives/registry';
 import inputs from './features/inputs/updateGraphicData';
 import outputs from './features/outputs/updateGraphicData';
@@ -36,7 +35,11 @@ import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
 import { parseBlockDirectives } from './utils/parseBlockDirectives';
 
-export default function codeBlockRendering(store: StateManager<State>, events: EventDispatcher) {
+export default function codeBlockRendering(
+	store: StateManager<State>,
+	events: EventDispatcher,
+	directives: EditorDirectiveDefinition[]
+) {
 	const state = store.getState();
 	const updateProjectSliceIdentity = (codeBlocks: CodeBlockGraphicData[], projectPath: ProjectGroupPath): void => {
 		for (const codeBlock of codeBlocks) {
@@ -52,17 +55,25 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 	const shouldExpandCodeBlockForEditing = (codeBlock: CodeBlockGraphicData): boolean =>
 		codeBlock === state.codeBlockRendering.selectedCodeBlock;
 
-	const onCodeBlockClick = ({ relativeX = 0, relativeY = 0, codeBlock }: CodeBlockClickEvent) => {
+	const onCodeBlockPointerDown = ({ relativeX = 0, relativeY = 0, codeBlock }: CodeBlockPointerDownEvent) => {
 		if (!state.featureFlags.codeLineSelection) {
 			return;
 		}
 
-		const directiveState = deriveDirectiveState(codeBlock.code, codeBlock.parsedDirectives, {
-			isExpandedForEditing: !codeBlock.isCollapsed,
-		});
+		const directiveState = deriveDirectiveState(
+			codeBlock.code,
+			codeBlock.parsedDirectives,
+			{
+				isExpandedForEditing: !codeBlock.isCollapsed,
+			},
+			directives
+		);
 		const displayModel = directiveState.displayModel;
 		const displayRow = reverseGapCalculator(Math.floor(relativeY / state.viewport.hGrid), codeBlock.gaps);
-		const row = displayModel.displayRowToRawRow[Math.min(displayRow, displayModel.displayRowToRawRow.length - 1)] ?? 0;
+		const row =
+			displayModel.displayRowToSourceLineIndex[
+				Math.min(displayRow, displayModel.displayRowToSourceLineIndex.length - 1)
+			] ?? 0;
 		const visualCol = Math.max(Math.floor(relativeX / state.viewport.vGrid) - (codeBlock.lineNumberColumnWidth + 2), 0);
 		const tabStopsByLine = getTabStopsByLine(codeBlock.code);
 		const col = getRawIndexForVisualColumn(
@@ -83,10 +94,15 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 	};
 
 	const updateBlockDerivedState = (graphicData: CodeBlockGraphicData) => {
-		const directiveState = deriveDirectiveState(graphicData.code, graphicData.parsedDirectives, {
-			isExpandedForEditing: shouldExpandCodeBlockForEditing(graphicData),
-			state,
-		});
+		const directiveState = deriveDirectiveState(
+			graphicData.code,
+			graphicData.parsedDirectives,
+			{
+				isExpandedForEditing: shouldExpandCodeBlockForEditing(graphicData),
+				state,
+			},
+			directives
+		);
 		const displayModel = directiveState.displayModel;
 		graphicData.displayModel = displayModel;
 
@@ -113,20 +129,18 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 		graphicData.widgets.errorMessages = deriveErrorMessages(graphicData, state);
 		gaps(graphicData, directiveState);
 		for (const error of graphicData.widgets.errorMessages) {
-			const displayRow = displayModel.rawRowToDisplayRow[error.lineNumber] ?? error.lineNumber;
+			const displayRow = displayModel.sourceLineIndexToDisplayRow[error.lineNumber] ?? error.lineNumber;
 			error.y = (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid;
 		}
 		updateShapeDeclarations(graphicData, state, directiveState);
 		updateParamShapeDeclarations(graphicData, state, directiveState);
-		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState);
+		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState, directives);
 
 		graphicData.width = getCodeBlockGridWidth(graphicData.code, graphicData.minGridWidth) * state.viewport.vGrid;
 
-		runAfterGraphicDataWidthCalculation(graphicData, state, directiveState);
 		outputs(graphicData, state);
 		inputs(graphicData, state);
 		blockHighlights(graphicData, state);
-		graphicData.widgets.assertions = deriveAssertionMarkers(graphicData, state);
 
 		const gapRowCount = [...graphicData.gaps.values()].reduce((total, gap) => total + gap.size, 0);
 		graphicData.height = (displayModel.lines.length + gapRowCount) * state.viewport.hGrid;
@@ -138,13 +152,14 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			) +
 				(graphicData.lineNumberColumnWidth + 2)) *
 			state.viewport.vGrid;
-		const displayRow = displayModel.rawRowToDisplayRow[graphicData.cursor.row] ?? graphicData.cursor.row;
+		const displayRow = displayModel.sourceLineIndexToDisplayRow[graphicData.cursor.row] ?? graphicData.cursor.row;
 		graphicData.cursor.y = gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid;
 		const previousAlwaysOnTop = Boolean(graphicData.alwaysOnTop);
 		graphicData.groupName = directiveState.blockState.groupName;
 		graphicData.groupNonstick = directiveState.blockState.groupNonstick;
 		graphicData.viewportAnchor = directiveState.blockState.viewportAnchor;
 		graphicData.alwaysOnTop = directiveState.blockState.alwaysOnTop ?? false;
+		runBlockLayoutReady(graphicData, state, directiveState);
 		return graphicData.alwaysOnTop !== previousAlwaysOnTop;
 	};
 
@@ -289,7 +304,7 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			const posResult = parsePos(blockParsedDirectives);
 			const gridX = posResult?.x ?? 0;
 			const gridY = posResult?.y ?? 0;
-			const directiveState = deriveDirectiveState(codeBlock.code, blockParsedDirectives);
+			const directiveState = deriveDirectiveState(codeBlock.code, blockParsedDirectives, {}, directives);
 
 			// For viewport-anchored blocks, x/y will be resolved after block derivation sets
 			// width/height; initialize to 0 here as a safe placeholder.
@@ -418,8 +433,8 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 
 	updateAllBlockDerivedState();
 
-	events.on<CodeBlockClickEvent>('codeBlockClick', onCodeBlockClick);
-	events.on<CodeBlockClickEvent>('codeBlockClick', ({ codeBlock }) => updateBlockDerivedState(codeBlock));
+	events.on<CodeBlockPointerDownEvent>('codeBlockPointerDown', onCodeBlockPointerDown);
+	events.on<CodeBlockPointerDownEvent>('codeBlockPointerDown', ({ codeBlock }) => updateBlockDerivedState(codeBlock));
 	events.on('runtimeInitialized', updateAllBlockDerivedState);
 	events.on('spriteSheetRerendered', () => {
 		recomputePixelCoordinatesAndBlockDerivedState();

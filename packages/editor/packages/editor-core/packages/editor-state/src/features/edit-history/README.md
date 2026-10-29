@@ -1,60 +1,33 @@
 # Edit History Feature
 
-## Purpose
+Undo and redo retain independent serialized project snapshots, including persisted editor metadata. Each stack holds
+up to ten entries. History stays in memory for the current project.
 
-Provides undo/redo functionality for code changes by maintaining snapshots of project state. Uses a debounced save mechanism to avoid excessive memory usage and provide smooth editing experience.
+## Project Changes
 
-## Key Behaviors
+Source and metadata mutation handlers call the public `incrementProjectRevision(store)` helper after completing an
+operation and publishing its derived state. Multi-block actions announce once; no-op actions do not announce.
+Selection, caret movement, and navigation leave `projectRevision` unchanged. Compiler scheduling separately uses
+`compilerInputRevision`, which excludes visual metadata.
 
-- **Debounced Saves**: Code changes trigger a 1-second debounced save to history stack
-- **Fixed Stack Size**: Maintains up to 10 undo states (older states are dropped)
-- **Undo/Redo Operations**: Restores previous/next project snapshots
-- **Project Serialization**: Uses serialized project format for snapshots (without compiled data)
-- **Event-Driven**: Responds to code changes and undo/redo events
+The history effect subscribes to `projectRevision`. An edit immediately invalidates redo and restarts a one-second
+debounce. While pending, the committed snapshot remains the before-state. At commit, the current project is compared
+by content with that snapshot. Changed content adds one undo step; returning to the committed content adds none.
+Snapshots are deep copies because serialization can share live code arrays.
 
-## Events & Callbacks
+## Explicit Edits and Restoration
 
-### Events Listened To
+- Undo and redo commit pending edits first, so an edit undone immediately can still be redone.
+- `applyProjectEdit` commits pending human edits and records the API batch as its own immediate undo step.
+  Identical-content batches leave history and persistence unchanged.
+  This action remains available when `featureFlags.historyTracking` is disabled, without recording history.
+- Undo, redo, and API edits restore through `initialProjectState` within the current project. They preserve the file
+  association and do not dispatch `loadProject`.
+- `initialProjectState` changes cancel pending work and rebase the committed snapshot after rendering and generated
+  blocks have updated. Restoration creates no ordinary edit entry and preserves the remaining redo stack.
+- An unrelated `loadProject` clears both stacks and pending work before replacing the project.
+- Disposal cancels pending work and removes the effect's listeners and subscriptions.
 
-- `undo` - Restores previous project state
-- `redo` - Restores next project state
-
-### Events Dispatched
-
-- `loadProject` - Triggered to load a historical snapshot
-
-### State Subscriptions
-
-- `codeBlockRendering.selectedCodeBlock.code` - Monitors code changes for history saves
-
-### State Touched
-
-- `state.historyStack` - Array of historical project states (max 10 entries)
-- `state.redoStack` - Array of redo states (max 10 entries)
-- `state.featureFlags.historyTracking` - Enable/disable flag for the feature
-
-## Integration Points
-
-- **Project Export**: Uses `serializeToProject()` to create snapshots
-- **Project Import**: Uses `loadProject` event to restore snapshots
-- **Code Editing**: Monitors code changes through state subscriptions
-
-## History Semantics
-
-- **On Code Change**: Debounces for 1 second, then saves current state to history stack
-- **On Undo**: 
-  - Saves current state to redo stack
-  - Pops and loads previous state from history stack
-  - Clears pending debounce timer
-- **On Redo**:
-  - Saves current state to history stack
-  - Pops and loads next state from redo stack
-  - Clears pending debounce timer
-
-## Notes & Limitations
-
-- History is limited to 10 entries in each direction
-- Only tracks code changes in selected blocks
-- Snapshots exclude compiled modules to reduce memory usage
-- Debounce timer is cleared on undo/redo to avoid unexpected saves
-- History is not persisted across sessions
+The session-persistence plugin subscribes to `projectRevision` for edits and `initialProjectState` for loads and
+restorations. It saves once after startup restoration, then saves completed project changes without reacting to
+selection or navigation.

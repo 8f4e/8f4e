@@ -3,7 +3,6 @@ import type { ProjectBlock } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
 import incrementProjectRevision from '../../../program-compiler/incrementProjectRevision';
-import { getSelectedRuntimeEntry } from '../../../runtime/editorConfig';
 import parsePos from '../directives/pos/data';
 
 const AUTO_ENV_CONSTANTS_BLOCK_NAME = 'env';
@@ -31,30 +30,10 @@ function generateEnvConstantsBlock(state: State, existingPos?: { x: number; y: n
 	lines.push('; Changes will be overwritten');
 	lines.push('');
 
-	const runtimeEntry = getSelectedRuntimeEntry(state.editorConfig.runtime, state.runtimeRegistry);
-	lines.push(...(runtimeEntry?.getEnvConstants?.(state.editorConfig) ?? []));
-
-	// Binary asset sizes
-	const binaryAssets = state.binaryAssets || [];
-	const assetSizeLines: string[] = [];
-	const emittedConstantNames = new Set<string>();
-	for (let i = 0; i < binaryAssets.length; i++) {
-		if (binaryAssets[i].assetByteLength !== undefined && binaryAssets[i].fileName) {
-			const assetIdentifier = (binaryAssets[i].id || `${i}`).toUpperCase();
-			const constantName = `ASSET_${assetIdentifier}_SIZE`;
-			if (emittedConstantNames.has(constantName)) {
-				continue;
-			}
-			emittedConstantNames.add(constantName);
-			assetSizeLines.push(`; '${binaryAssets[i].fileName}'`);
-			assetSizeLines.push(`const ${constantName} ${binaryAssets[i].assetByteLength}`);
-		}
-	}
-
-	if (assetSizeLines.length > 0) {
-		lines.push('');
-		lines.push('; Binary asset sizes in bytes');
-		lines.push(...assetSizeLines);
+	const contributions = Object.values(state.envConstantContributions).filter(lines => lines.length > 0);
+	for (const [index, contribution] of contributions.entries()) {
+		if (index > 0) lines.push('');
+		lines.push(...contribution);
 	}
 
 	lines.push('');
@@ -67,9 +46,9 @@ function generateEnvConstantsBlock(state: State, existingPos?: { x: number; y: n
  * Auto-managed environment constants block effect.
  *
  * This effect automatically maintains a constants block named 'env' that contains
- * environment values like contributed runtime values and binary asset sizes.
+ * environment values like contributed runtime values and contributed constants.
  * The env block is added to the project's constants collection when the project is loaded,
- * and its content is updated in codeBlockRendering.codeBlocks when contributed environment constants or binary assets change.
+ * and its content is updated in codeBlockRendering.codeBlocks when contributed environment constants change.
  *
  * @param store - State manager instance
  */
@@ -156,10 +135,10 @@ export default function autoEnvConstants(store: StateManager<State>): void {
 	// Ensure env block exists when project is loaded
 	store.subscribe('initialProjectState', ensureEnvBlockInProject);
 
-	// Update env block code in codeBlockRendering.codeBlocks when editor config, runtime registry, or binary assets change.
+	// Update env block code in codeBlockRendering.codeBlocks when contributed environment constants change.
 	// This avoids the infinite loop caused by modifying initialProjectState.
 	store.subscribe('codeBlockRendering.selectedCodeBlock.code', updateEnvConstantsBlockInCodeBlockRendering);
+	store.subscribe('codeBlockRendering.codeBlocks', updateEnvConstantsBlockInCodeBlockRendering);
 	store.subscribe('editorConfig', updateEnvConstantsBlockInCodeBlockRendering);
-	store.subscribe('runtimeRegistry', updateEnvConstantsBlockInCodeBlockRendering);
-	store.subscribe('binaryAssets', updateEnvConstantsBlockInCodeBlockRendering);
+	store.subscribe('envConstantContributions', updateEnvConstantsBlockInCodeBlockRendering);
 }

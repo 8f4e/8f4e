@@ -1,31 +1,27 @@
+import { type ResolvedPalette, toPaletteBytes } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import {
-	resolveSpriteIds,
-	type SpriteAtlas,
-	type SpriteIdentifierLookups,
-	type SpriteIdLookups,
-} from '@8f4e/sprite-generator';
+import { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
-import { Engine, LineDrawer, RgbaTextureLayer } from 'glugglugglug';
+import { Engine } from 'glugglugglug';
 import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
 import drawConnections from './drawers/codeBlocks/widgets/connections';
 import drawContextMenu from './drawers/contextMenu';
 import drawDialog from './drawers/dialog';
-import drawBackground from './drawers/drawBackground';
 import drawModeOverlay from './drawers/modeOverlay';
+import type { CodeBlockDrawerRegistry } from './drawers/registry';
 import { createWasmOverlayTextureDrawer, type WasmOverlayTextureOptions } from './drawers/wasmOverlayTexture';
+import BackgroundRenderer from './plugins/background';
+import { LineDrawer } from './plugins/line-drawer';
+import { RgbaTextureLayer } from './plugins/rgba-texture-layer';
 import type { MemoryViews } from './types';
 import { resolveWireColors } from './wire-colors';
 
+export type { DrawContext } from './drawContext';
+export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from './drawers/registry';
+export { createCodeBlockDrawerRegistry } from './drawers/registry';
 // Re-export types
 export type { MemoryViews } from './types';
-
-export interface SpriteData {
-	spriteAtlas: SpriteAtlas<SpriteIdentifierLookups>;
-	characterWidth: number;
-	characterHeight: number;
-}
 
 export interface RenderStats {
 	timeToRenderMs: number;
@@ -38,9 +34,8 @@ export interface RenderStats {
 }
 
 export interface WebUiOptions {
+	drawers?: CodeBlockDrawerRegistry;
 	onRenderStats?: (stats: RenderStats) => void;
-	/** Receives ids resolved against each installed atlas before rendering resumes. */
-	onSpriteAtlasResolved?: (spriteLookups: SpriteIdLookups, spriteData: SpriteData) => void;
 	renderStatsIntervalFrames?: number;
 	overlayTexture?: WasmOverlayTextureOptions;
 	getCodeBuffer?: () => Uint8Array;
@@ -56,11 +51,13 @@ export default async function init(
 	renderData: WebUiRenderDataSource,
 	canvas: HTMLCanvasElement,
 	memoryViews: MemoryViews,
-	spriteData: SpriteData,
+	fontAtlas: FontAtlas,
+	palette: ResolvedPalette,
 	options: WebUiOptions = {}
 ): Promise<{
 	resize: (width: number, height: number) => boolean;
-	loadSpriteAtlas: (spriteData: SpriteData) => void;
+	loadFontAtlas: (fontAtlas: FontAtlas, font: Font) => void;
+	loadPalette: (palette: ResolvedPalette) => void;
 	pauseRendering: () => void;
 	releaseRenderingResources: () => void;
 	resumeRendering: () => void;
@@ -74,8 +71,12 @@ export default async function init(
 		frameStartedAt = performance.now();
 	});
 	const lines = new LineDrawer(engine);
-	const draw = new DrawContext(engine, spriteData.characterWidth);
-	let wireColors = resolveWireColors(state.editorConfig.color);
+	const background = new BackgroundRenderer(engine);
+	const draw = new DrawContext(engine, fontAtlas.grid.cellWidth);
+	let wireColors = resolveWireColors(palette);
+	const paletteBytes = toPaletteBytes(palette);
+	engine.setPalette(paletteBytes);
+	background.setPalette(paletteBytes);
 	const renderStatsIntervalFrames = Math.max(1, Math.floor(options.renderStatsIntervalFrames ?? 60));
 	let viewportWidth = canvas.width;
 	let viewportHeight = canvas.height;
@@ -83,19 +84,13 @@ export default async function init(
 	let statsSampleStartFrameCount = 0;
 	let statsSampleStartTime = performance.now();
 
-	function installSpriteAtlas(nextSpriteData: SpriteData): void {
-		const resolver = engine.setSpriteAtlas(nextSpriteData.spriteAtlas.image, nextSpriteData.spriteAtlas.lookup);
-		const spriteLookups = resolveSpriteIds(nextSpriteData.spriteAtlas.spriteIdentifiers, resolver) as SpriteIdLookups;
-		if (options.onSpriteAtlasResolved) {
-			options.onSpriteAtlasResolved(spriteLookups, nextSpriteData);
-		} else {
-			state.spriteLookups = spriteLookups;
-			state.viewport.hGrid = nextSpriteData.characterHeight;
-			state.viewport.vGrid = nextSpriteData.characterWidth;
-		}
+	function installFontAtlas(atlas: FontAtlas, font: Font): void {
+		engine.setSpriteAtlas(atlas.image, atlas.grid);
+		background.setFont(font, atlas.grid);
+		draw.setCharacterWidth(atlas.grid.cellWidth);
 	}
 
-	installSpriteAtlas(spriteData);
+	installFontAtlas(fontAtlas, state.editorConfig.font ?? DEFAULT_FONT);
 
 	function getSampledFps(): number {
 		const now = performance.now();
@@ -175,7 +170,7 @@ export default async function init(
 			getViewportSize: () => ({ width: viewportWidth, height: viewportHeight }),
 			instantiate: options.instantiateOverlayTextureWasm,
 		});
-		overlayTextureLayer = new RgbaTextureLayer(engine, { phase: 'postDraw' });
+		overlayTextureLayer = new RgbaTextureLayer(engine);
 		overlayTextureLayer.setDrawCallback(layer => {
 			drawWasmOverlayTexture(layer);
 		});
@@ -189,8 +184,7 @@ export default async function init(
 	}
 
 	const drawFrame = () => {
-		drawBackground(draw, state);
-		drawCodeBlocks(draw, state, memoryViews, renderData.getSnapshot());
+		drawCodeBlocks(draw, state, memoryViews, renderData.getSnapshot(), options.drawers);
 		if (state.dialogStack.length === 0) {
 			drawConnections(lines, wireColors, state, memoryViews);
 		}
@@ -277,10 +271,12 @@ export default async function init(
 			engine.resize(width, height);
 			return true;
 		},
-		loadSpriteAtlas: spriteData => {
-			installSpriteAtlas(spriteData);
-			draw.setCharacterWidth(spriteData.characterWidth);
-			wireColors = resolveWireColors(state.editorConfig.color);
+		loadFontAtlas: installFontAtlas,
+		loadPalette: palette => {
+			const bytes = toPaletteBytes(palette);
+			engine.setPalette(bytes);
+			background.setPalette(bytes);
+			wireColors = resolveWireColors(palette);
 		},
 		pauseRendering,
 		releaseRenderingResources,
@@ -293,6 +289,7 @@ export default async function init(
 		destroy: () => {
 			pauseRendering();
 			lines.destroy();
+			background.destroy();
 			destroyOverlayTextureLayer();
 			engine.destroy();
 		},

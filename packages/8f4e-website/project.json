@@ -33,6 +33,14 @@
 				"cwd": "{workspaceRoot}"
 			}
 		},
+		"test:browser": {
+			"executor": "nx:run-commands",
+			"dependsOn": ["^build"],
+			"options": {
+				"command": "vitest run",
+				"cwd": "{projectRoot}"
+			}
+		},
 		"build": {
 			"executor": "nx:run-commands",
 			"outputs": ["{projectRoot}/dist"],

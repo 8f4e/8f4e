@@ -7,13 +7,13 @@ import rendering from '../code-blocks/effect';
 import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
 import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
-import favoriteToggler from '../code-blocks/features/favoriteToggler/effect';
 import groupDeleter from '../code-blocks/features/group/deleter/effect';
+import groupNonstickToggler from '../code-blocks/features/group/nonstickToggler/effect';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import codeEditing from '../code-editing/effect';
 import globalEditorDirectivesEffect from '../global-editor-directives/effect';
-import projectImport from '../project-import/effect';
-import { EMPTY_DEFAULT_PROJECT } from '../project-import/emptyDefaultProject';
+import projectImport from '../project-loading/effect';
+import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
 import historyTracking from './effect';
 
 describe('history tracking effect', () => {
@@ -25,24 +25,19 @@ describe('history tracking effect', () => {
 		vi.useRealTimers();
 	});
 
-	it('preserves the file association when undoing and redoing project snapshots', () => {
+	it('restores undo and redo snapshots within the current project', () => {
 		const state = createMockState({ featureFlags: { historyTracking: true } });
 		state.historyStack.push(EMPTY_DEFAULT_PROJECT);
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 		const dispose = historyTracking(store, events);
-		const undo = vi.mocked(events.on).mock.calls.find(call => call[0] === 'undo')![1];
-		const redo = vi.mocked(events.on).mock.calls.find(call => call[0] === 'redo')![1];
-		undo(undefined);
-		expect(events.dispatch).toHaveBeenCalledWith('loadProject', {
-			project: EMPTY_DEFAULT_PROJECT,
-			preserveFileAssociation: true,
-		});
-		redo(undefined);
-		expect(events.dispatch).toHaveBeenLastCalledWith('loadProject', {
-			project: expect.any(Object),
-			preserveFileAssociation: true,
-		});
+		vi.mocked(events.on).mock.calls.find(([name]) => name === 'undo')![1](undefined);
+		expect(state.initialProjectState).toBe(EMPTY_DEFAULT_PROJECT);
+		expect(state.redoStack).toHaveLength(1);
+		const redoSnapshot = state.redoStack[0];
+		vi.mocked(events.on).mock.calls.find(([name]) => name === 'redo')![1](undefined);
+		expect(state.initialProjectState).toBe(redoSnapshot);
+		expect(state.historyStack).toHaveLength(1);
 		dispose?.();
 	});
 
@@ -95,6 +90,7 @@ describe('history tracking with real project mutations', () => {
 		state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
 		state.codeBlockRendering.selectedCodeBlock = block;
 		projectImport(store, events);
+		parsedDirectivesUpdater(store);
 		rendering(store, events);
 		historyTracking(store, events);
 	});
@@ -212,27 +208,35 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('records a metadata-only change without advancing the compiler revision', async () => {
-		favoriteToggler(store, events);
-		dispatch('toggleFavoriteDirective', { codeBlock: block });
+		block.groupName = 'audio';
+		block.code.splice(1, 0, '; @group audio');
+		store.set('codeBlockRendering.codeBlocks', state.codeBlockRendering.codeBlocks);
+		groupNonstickToggler(store, events);
+		dispatch('toggleGroupNonstick', {
+			codeBlock: block,
+			makeNonstick: !block.code.some(line => line.includes('nonstick')),
+		});
 		await vi.advanceTimersByTimeAsync(1000);
 
-		expect(block.code).toContain('; @favorite');
+		expect(block.code).toContain('; @group audio nonstick');
 		expect(state.projectRevision).toBe(1);
 		expect(state.compilerInputRevision).toBe(0);
 		expect(state.historyStack).toHaveLength(1);
 
-		// Toggling back off is an in-place splice on the live block; the already
-		// committed snapshot must not be corrupted by it.
-		dispatch('toggleFavoriteDirective', { codeBlock: block });
+		// Later changes must leave the committed snapshots independent.
+		dispatch('toggleGroupNonstick', {
+			codeBlock: block,
+			makeNonstick: !block.code.some(line => line.includes('nonstick')),
+		});
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(2);
-		expect(state.historyStack[0].modules[0].code).not.toContain('; @favorite');
-		expect(state.historyStack[1].modules[0].code).toContain('; @favorite');
+		expect(state.historyStack[0].modules[0].code).not.toContain('; @group audio nonstick');
+		expect(state.historyStack[1].modules[0].code).toContain('; @group audio nonstick');
 
 		dispatch('undo');
-		expect(selectedBlockCode()).toContain('; @favorite');
+		expect(selectedBlockCode()).toContain('; @group audio nonstick');
 		dispatch('undo');
-		expect(selectedBlockCode()).not.toContain('; @favorite');
+		expect(selectedBlockCode()).not.toContain('; @group audio nonstick');
 	});
 
 	it('records exactly one entry for deleting a whole group', async () => {
@@ -284,7 +288,6 @@ describe('history tracking with real project mutations', () => {
 			},
 		});
 		const loaded = state.codeBlockRendering.codeBlocks[0];
-		parsedDirectivesUpdater(store);
 		globalEditorDirectivesEffect(store);
 		codeBlockDragger(store, events);
 		store.set('codeBlockRendering.codeBlocks', state.codeBlockRendering.codeBlocks);

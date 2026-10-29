@@ -16,77 +16,77 @@ const ROW_GAP_GRID_COLUMNS = 4;
  * whole alignment as a single undo step.
  */
 export default function groupRowAligner(store: StateManager<State>, events: EventDispatcher): void {
-  function moveBlock(state: State, block: CodeBlockGraphicData, gridX: number, gridY: number): void {
-    if (block.gridX === gridX && block.gridY === gridY) {
-      return;
-    }
+	function moveBlock(state: State, block: CodeBlockGraphicData, gridX: number, gridY: number): void {
+		if (block.gridX === gridX && block.gridY === gridY) {
+			return;
+		}
 
-    // Mirror the codeBlockDragger mutation so rendering, the persisted ; @pos
-    // directive, and the compiler input all pick up the new position.
-    block.gridX = gridX;
-    block.gridY = gridY;
-    block.x = gridX * state.viewport.vGrid;
-    block.y = gridY * state.viewport.hGrid;
-    block.lastUpdated = Date.now();
-    block.code = upsertPos(block.code, gridX, gridY);
-    store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);
-  }
+		// Mirror the codeBlockDragger mutation so rendering, the persisted ; @pos
+		// directive, and the compiler input all pick up the new position.
+		block.gridX = gridX;
+		block.gridY = gridY;
+		block.x = gridX * state.viewport.vGrid;
+		block.y = gridY * state.viewport.hGrid;
+		block.lastUpdated = Date.now();
+		block.code = upsertPos(block.code, gridX, gridY);
+		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);
+	}
 
-  function onAlignGroupBlocksInRow({ codeBlock }: { codeBlock: CodeBlockGraphicData }): void {
-    const state = store.getState();
+	function onAlignGroupBlocksInRow({ codeBlock }: { codeBlock: CodeBlockGraphicData }): void {
+		const state = store.getState();
 
-    if (!state.featureFlags.editing) {
-      return;
-    }
+		if (!state.featureFlags.editing) {
+			return;
+		}
 
-    // Only proceed if the code block has a group name
-    const groupName = codeBlock.groupName;
+		// Only proceed if the code block has a group name
+		const groupName = codeBlock.groupName;
 
-    if (!groupName) {
-      return;
-    }
+		if (!groupName) {
+			return;
+		}
 
-    // Find all code blocks with the same group name
-    const groupBlocks = getGroupBlocks(state.codeBlockRendering.codeBlocks, groupName);
+		// Find all code blocks with the same group name
+		const groupBlocks = getGroupBlocks(state.codeBlockRendering.codeBlocks, groupName);
 
-    if (groupBlocks.length < 2) {
-      return;
-    }
+		if (groupBlocks.length < 2) {
+			return;
+		}
 
-    // Sort by current horizontal position; the stable sort keeps the current
-    // relative order of blocks that share the same gridX.
-    const sortedBlocks = [...groupBlocks].sort((a, b) => a.gridX - b.gridX);
-    const [firstBlock, ...remainingBlocks] = sortedBlocks;
-    const rowGridY = firstBlock.gridY;
+		// Sort by current horizontal position; the stable sort keeps the current
+		// relative order of blocks that share the same gridX.
+		const sortedBlocks = [...groupBlocks].sort((a, b) => a.gridX - b.gridX);
+		const [firstBlock, ...remainingBlocks] = sortedBlocks;
+		const rowGridY = firstBlock.gridY;
 
-    // Plan every position before moving anything: widths are measured on the
-    // blocks' current code, while moving a block rewrites its code (the ; @pos
-    // directive), which would change the measured width of an already-moved neighbour.
-    // The first block anchors the row: it keeps its position and lends its gridY.
-    const plannedPositions = new Map<CodeBlockGraphicData, number>();
-    let previousBlock = firstBlock;
-    let previousGridX = firstBlock.gridX;
+		// Plan every position before moving anything: widths are measured on the
+		// blocks' current code, while moving a block rewrites its code (the ; @pos
+		// directive), which would change the measured width of an already-moved neighbour.
+		// The first block anchors the row: it keeps its position and lends its gridY.
+		const plannedPositions = new Map<CodeBlockGraphicData, number>();
+		let previousBlock = firstBlock;
+		let previousGridX = firstBlock.gridX;
 
-    for (const block of remainingBlocks) {
-      const gridX =
-        previousGridX + getCodeBlockGridWidth(previousBlock.code, previousBlock.minGridWidth) + ROW_GAP_GRID_COLUMNS;
+		for (const block of remainingBlocks) {
+			const gridX =
+				previousGridX + getCodeBlockGridWidth(previousBlock.code, previousBlock.minGridWidth) + ROW_GAP_GRID_COLUMNS;
 
-      plannedPositions.set(block, gridX);
-      previousBlock = block;
-      previousGridX = gridX;
-    }
+			plannedPositions.set(block, gridX);
+			previousBlock = block;
+			previousGridX = gridX;
+		}
 
-    let didMove = false;
-    for (const [block, gridX] of plannedPositions) {
-      if (block.gridX !== gridX || block.gridY !== rowGridY) {
-        didMove = true;
-      }
-      moveBlock(state, block, gridX, rowGridY);
-    }
-    if (didMove) {
-      incrementProjectRevision(store);
-    }
-  }
+		let didMove = false;
+		for (const [block, gridX] of plannedPositions) {
+			if (block.gridX !== gridX || block.gridY !== rowGridY) {
+				didMove = true;
+			}
+			moveBlock(state, block, gridX, rowGridY);
+		}
+		if (didMove) {
+			incrementProjectRevision(store);
+		}
+	}
 
-  events.on('alignGroupBlocksInRow', onAlignGroupBlocksInRow);
+	events.on('alignGroupBlocksInRow', onAlignGroupBlocksInRow);
 }

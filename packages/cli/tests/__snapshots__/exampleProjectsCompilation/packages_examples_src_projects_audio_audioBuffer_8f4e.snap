@@ -443,7 +443,7 @@
             }
           ]
         },
-        "projectBlockId": 203,
+        "projectBlockId": 145,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "phaseAccumulator"
@@ -834,7 +834,7 @@
             }
           ]
         },
-        "projectBlockId": 246,
+        "projectBlockId": 188,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "audioout"

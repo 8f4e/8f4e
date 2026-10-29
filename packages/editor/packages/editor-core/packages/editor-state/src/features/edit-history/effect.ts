@@ -2,7 +2,7 @@ import type { EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 
-import serializeToProject from '../project-export/serializeToProject';
+import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
 
 const DEBOUNCE_DELAY = 1000;
 const HISTORY_LIMIT = 10;
@@ -29,117 +29,101 @@ function stableStringify(value: unknown): string {
 	return `{${entries.join(',')}}`;
 }
 
-export default function historyTracking(store: StateManager<State>, events: EventDispatcher): void | (() => void) {
+export default function historyTracking(store: StateManager<State>, events: EventDispatcher): () => void {
 	const state = store.getState();
-	if (!state.featureFlags.historyTracking) {
-		return;
-	}
-
-	// The last committed snapshot. While an edit is pending, this remains the
-	// before-state; the after-state is captured when the edit commits. Snapshots
-	// are deep copies: serialization aliases the live code arrays, and in-place
-	// edits (e.g. splicing a directive line) must not leak into them.
-	let present: ProjectObjectModel = structuredClone(serializeToProject(state));
+	// Serialization shares live code arrays; retain independent before/after snapshots.
+	let present = structuredClone(serializeToProject(state));
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let editPending = false;
+	let restoring = false;
 
 	function cancelPendingEdit() {
-		if (saveTimeout) {
-			clearTimeout(saveTimeout);
-			saveTimeout = null;
-		}
+		if (saveTimeout) clearTimeout(saveTimeout);
+		saveTimeout = null;
 		editPending = false;
+	}
+
+	function pushHistory(project: ProjectObjectModel) {
+		if (state.historyStack.length >= HISTORY_LIMIT) state.historyStack.shift();
+		state.historyStack.push(project);
 	}
 
 	function commitPendingEdit() {
-		if (saveTimeout) {
-			clearTimeout(saveTimeout);
-			saveTimeout = null;
-		}
-
-		if (!editPending) {
-			return;
-		}
-		editPending = false;
+		const pending = editPending;
+		cancelPendingEdit();
+		if (!pending) return;
 
 		const current = structuredClone(serializeToProject(state));
-		if (stableStringify(current) === stableStringify(present)) {
-			return;
-		}
-
-		if (state.historyStack.length >= HISTORY_LIMIT) {
-			state.historyStack.shift();
-		}
-		state.historyStack.push(present);
+		if (stableStringify(current) === stableStringify(present)) return;
+		pushHistory(present);
 		present = current;
 	}
 
 	function onProjectChange() {
-		// A completed persisted edit invalidates the redo stack immediately,
-		// before the debounced commit runs. Selection, caret movement, and
-		// navigation never advance projectRevision, so they never reach this.
+		if (restoring || !state.featureFlags.historyTracking) return;
 		state.redoStack = [];
 		editPending = true;
-
-		if (saveTimeout) {
-			clearTimeout(saveTimeout);
-		}
+		if (saveTimeout) clearTimeout(saveTimeout);
 		saveTimeout = setTimeout(commitPendingEdit, DEBOUNCE_DELAY);
 	}
 
 	function restoreProject(project: ProjectObjectModel) {
-		events.dispatch('loadProject', { project, preserveFileAssociation: true });
-		present = structuredClone(project);
+		restoring = true;
+		try {
+			store.set('initialProjectState', project);
+		} finally {
+			restoring = false;
+		}
+	}
+
+	function applyProjectEdit({ project }: { project: ProjectObjectModel }) {
+		if (stableStringify(project) === stableStringify(serializeToProject(state))) return;
+		// An API batch is its own undo step, after any pending human edit.
+		commitPendingEdit();
+		if (state.featureFlags.historyTracking) {
+			pushHistory(structuredClone(serializeToProject(state)));
+			state.redoStack = [];
+		}
+		restoreProject(project);
+	}
+
+	function resetHistory() {
+		cancelPendingEdit();
+		state.historyStack = [];
+		state.redoStack = [];
 	}
 
 	function undo() {
-		// Commit any pending edit first, so it becomes redo-able.
+		if (!state.featureFlags.historyTracking) return;
 		commitPendingEdit();
-
 		const previousState = state.historyStack.pop();
-		if (!previousState) {
-			return;
-		}
-
-		if (state.redoStack.length >= HISTORY_LIMIT) {
-			state.redoStack.shift();
-		}
+		if (!previousState) return;
+		if (state.redoStack.length >= HISTORY_LIMIT) state.redoStack.shift();
 		state.redoStack.push(present);
 		restoreProject(previousState);
 	}
 
 	function redo() {
+		if (!state.featureFlags.historyTracking) return;
 		commitPendingEdit();
-
 		const nextState = state.redoStack.pop();
-		if (!nextState) {
-			return;
-		}
-
-		if (state.historyStack.length >= HISTORY_LIMIT) {
-			state.historyStack.shift();
-		}
-		state.historyStack.push(present);
+		if (!nextState) return;
+		pushHistory(present);
 		restoreProject(nextState);
 	}
 
-	function onProjectLoaded(project: ProjectObjectModel | undefined) {
-		if (!project) {
-			return;
-		}
-
-		// Project loads and undo/redo restorations both arrive here. Neither is
-		// an ordinary edit: pending work is cancelled and the loaded project
-		// becomes the committed baseline without a history entry of its own, and
-		// without clearing the redo stack.
+	function onProjectLoaded() {
 		cancelPendingEdit();
-		present = structuredClone(project);
+		// Capture the rendered project, including normalized/generated blocks.
+		present = structuredClone(serializeToProject(state));
 	}
 
 	store.subscribe('projectRevision', onProjectChange);
 	store.subscribe('initialProjectState', onProjectLoaded);
 	events.on('undo', undo);
 	events.on('redo', redo);
+	events.on('applyProjectEdit', applyProjectEdit);
+	events.on('loadProject', resetHistory, { capture: true });
 
 	return () => {
 		cancelPendingEdit();
@@ -147,5 +131,7 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		store.unsubscribe('initialProjectState', onProjectLoaded);
 		events.off('undo', undo);
 		events.off('redo', redo);
+		events.off('applyProjectEdit', applyProjectEdit);
+		events.off('loadProject', resetHistory);
 	};
 }

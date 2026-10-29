@@ -3,32 +3,35 @@ import { describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
-import { registerRecompileDebounceDelayEditorConfigValidator } from '../program-compiler/editorConfig';
+import { createSchemaEditorConfigValidator } from '../editor-config/schemaValidator';
 import runtimeEffect from '../runtime/effect';
 import globalEditorDirectivesEffect from './effect';
 
 describe('globalEditorDirectivesEffect', () => {
 	it('resolves changed and removed configuration through the shared programmatic edit target', () => {
-		const block = createMockCodeBlock({ code: ['note config', '; @config recompileDebounceDelay 120', 'noteEnd'] });
+		const block = createMockCodeBlock({ code: ['note config', '; @config example 120', 'noteEnd'] });
 		const blocks = [block];
 		const state = createMockState({ codeBlockRendering: { rootCodeBlocks: blocks, codeBlocks: blocks } });
 		const store = createStateManager(state);
-		registerRecompileDebounceDelayEditorConfigValidator(store);
+		store.set(
+			'editorConfigValidators.example',
+			createSchemaEditorConfigValidator({ root: 'example', schema: { type: 'integer' } })
+		);
 		parsedDirectivesUpdater(store);
 		globalEditorDirectivesEffect(store);
 		store.set('codeBlockRendering.codeBlocks', blocks);
-		expect(state.editorConfig.recompileDebounceDelay).toBe(120);
+		expect(state.editorConfig.example).toBe(120);
 
 		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);
 		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', [
 			'note config',
-			'; @config recompileDebounceDelay 200',
+			'; @config example 200',
 			'noteEnd',
 		]);
-		expect(state.editorConfig.recompileDebounceDelay).toBe(200);
+		expect(state.editorConfig.example).toBe(200);
 
 		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', ['note config', 'noteEnd']);
-		expect(state.editorConfig.recompileDebounceDelay).toBeUndefined();
+		expect(state.editorConfig.example).toBeUndefined();
 		store.dispose();
 	});
 
@@ -72,7 +75,6 @@ describe('globalEditorDirectivesEffect', () => {
 			runtimeRegistry: {
 				WebWorkerRuntime: {
 					id: 'WebWorkerRuntime',
-					factory: runtimeFactory,
 				},
 			},
 			codeBlockRendering: {
@@ -83,7 +85,7 @@ describe('globalEditorDirectivesEffect', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		await runtimeEffect(store, events);
+		await runtimeEffect(store, events, { WebWorkerRuntime: { id: 'WebWorkerRuntime', factory: runtimeFactory } });
 		globalEditorDirectivesEffect(store);
 		store.set('codeBlockRendering.codeBlocks', rootCodeBlocks);
 		await new Promise(resolve => setTimeout(resolve, 0));

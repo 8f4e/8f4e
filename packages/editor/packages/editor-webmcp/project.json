@@ -1,0 +1,88 @@
+{
+  "name": "@8f4e/editor-webmcp",
+  "sourceRoot": "src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "options": {
+        "command": "rm -rf dist && tsc",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "^build",
+        "generate-content"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build"
+      ],
+      "options": {
+        "command": "vitest run",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p tsconfig.tools.json",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "build"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "biome check --write packages/editor/packages/editor-webmcp/src packages/editor/packages/editor-webmcp/browser-tests packages/editor/packages/editor-webmcp/scripts",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "test:browser": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build"
+      ],
+      "options": {
+        "command": "vitest run --config vitest.browser.config.ts",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "generate-content": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^default"
+      ],
+      "outputs": [
+        "{projectRoot}/src/generated"
+      ],
+      "dependsOn": [
+        "^build"
+      ],
+      "options": {
+        "command": "vite build --config vite.content.config.ts && node .content-generator/generate-content.js",
+        "cwd": "{projectRoot}"
+      }
+    }
+  },
+  "tags": [
+    "type:library",
+    "scope:editor"
+  ],
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals",
+      "{workspaceRoot}/packages/compiler/docs/**/*.md",
+      "{workspaceRoot}/packages/editor/packages/editor-core/docs/**/*.md"
+    ]
+  }
+}

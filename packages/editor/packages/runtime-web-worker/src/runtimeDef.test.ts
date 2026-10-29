@@ -67,4 +67,40 @@ describe('WebWorker runtime config', () => {
 
 		cleanup();
 	});
+
+	it('handles initialized and stats messages and ignores compilation errors', () => {
+		let onMessage: ((event: { data: unknown }) => void) | undefined;
+		class MockWorker {
+			postMessage = vi.fn();
+			addEventListener = vi.fn((_type: string, listener: typeof onMessage) => {
+				onMessage = listener;
+			});
+			removeEventListener = vi.fn();
+			terminate = vi.fn();
+		}
+		const state = createMockState({ compiler: { isCompiling: false }, info: {} });
+		const events = { dispatch: vi.fn() } as unknown as EventDispatcher;
+		const cleanup = webWorkerRuntimeFactory(
+			createStateManager(state),
+			events,
+			() => new Uint8Array(),
+			() => new WebAssembly.Memory({ initial: 1 }),
+			MockWorker as unknown as new () => Worker
+		);
+		const stats = {
+			timerPrecisionPercentage: 99,
+			timeToExecuteLoopMs: 1,
+			timerDriftMs: 0.5,
+			timerExpectedIntervalTimeMs: 20,
+		};
+
+		onMessage?.({ data: { type: 'initialized', payload: {} } });
+		onMessage?.({ data: { type: 'stats', payload: stats } });
+		onMessage?.({ data: { type: 'compilationError', payload: new Error('failed') } });
+
+		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('runtimeInitialized');
+		expect(state.info.runtime).toEqual(stats);
+
+		cleanup();
+	});
 });

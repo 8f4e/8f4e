@@ -1,7 +1,7 @@
 # Default Editor
 
 `@8f4e/editor-default` is the standard 8f4e editor composition. It connects `@8f4e/editor-core` to the compiler
-worker, runtime implementations, standard library, the example module registry, and browser persistence.
+plugin, runtime implementations, standard library, example source discovery, and startup policy.
 
 The package exports `mountDefaultEditor(canvas, options)`. It does not mount itself when imported, so websites and
 other browser hosts control when and where the editor starts.
@@ -33,27 +33,72 @@ drawing buffer and UI automatically. Wheel input pans the editor and prevents pa
 hosts can pass `captureWheel: false` to leave scrolling to the page.
 
 Each mounted editor owns its compiler worker, compiled memory and code-buffer state, and lazy runtime registry.
-It also owns persistence callbacks for its storage namespace. The default namespace is `editor`, which uses the
+The session-persistence plugin uses its storage namespace. The default namespace is `editor`, which uses the
 `project_editor` key. Hosts mounting multiple editors should pass a stable, unique namespace for each editor.
 Hosts may also provide a custom `Storage` implementation or an
 `initialProjectUrl`; interpreting page URLs remains the host's responsibility.
+
+Use `onInitialProjectLoaded()` to reveal installed initial content and `onInitialProjectLoadError(error)` to report
+a failed initial URL request or parse. With no URL, the success callback runs after editor initialization and synchronous
+session restoration. With a URL, the standard URL-loader plugin supplies the notification. A valid empty project counts
+as success; compilation and asset loading continue independently.
+
+Callbacks can run before the mount promise resolves. Mounting itself finishes after editor initialization while a URL
+request may still be pending, so hosts can dispose that editor when navigating elsewhere. Custom plugin compositions
+provide their own asynchronous loading notifications.
+
+The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
+`@8f4e/editor-plugin-toggle-favorite` for Favorite/Unfavorite editing,
+`@8f4e/editor-plugin-remove-memory-connections` for disconnecting intermodular memory defaults,
+`@8f4e/editor-plugin-switch` for the switch widget, `@8f4e/editor-plugin-button` for momentary buttons,
+`@8f4e/editor-plugin-wave` for waveform displays, `@8f4e/editor-plugin-piano` for piano keyboards,
+`@8f4e/editor-plugin-slider` for sliders,
+`@8f4e/editor-plugin-tooltips` for selected-line documentation,
+stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
+`@8f4e/editor-plugin-project-files` for project Open/Save/Export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
+`createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
+constructs this plugin set with resources for one editor. The project-files plugin derives browser resources from the
+canvas; WebAssembly export receives its document and a live compiler-byte getter. There is no host file service.
+The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
+browser resources; browser dependencies are supplied to plugin factories by this composition.
+Meter, plot, bars, crossfade, watch, and stack are also optional plugins in this standard set. Watch and stack receive
+a live reduced-motion preference from the browser host and keep their animation and data inside their installations.
+The `plugins` option replaces the default feature set: pass `[]` to omit feature plugins, or a custom array to select and extend it. The compiler remains installed first. Use `initEditor` from editor-core for a composition without a compiler or with a different compiler plugin.
+Each editor installs and disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).
+
+`@8f4e/editor-plugin-binary-assets` is also included. It owns binary asset configuration, fetching, caching, memory
+copies, loading UI, and generated size constants. The default editor supplies a getter for current compiler memory
+bytes, so memory replacement and growth are visible to the plugin without sharing browser-specific context fields.
+
+The standard set includes `@8f4e/editor-plugin-assertion-markers` for executed assertion indicators,
+`@8f4e/editor-plugin-keyboard-memory` for keyboard-to-memory input, and `@8f4e/editor-plugin-midi-input` for MIDI
+discovery and callbacks. Keyboard input receives the mounted canvas and a live memory writer. MIDI receives that canvas's navigator and
+live compiler memory/bytecode getters, and owns its WASM instance and export cache. MIDI access is requested only
+when the project has MIDI configuration. Omitting these plugins also omits their schemas and input listeners.
 
 The runtime registry includes `TestRuntime`, selected with `; @config runtime TestRuntime`. For projects with an
 enabled test entry, it executes tests once after successful compilation or recompilation, using the editor's current
 memory and publishing results under `state.runtime.values.TestRuntime`. See the
 [test runtime](../runtime-test-runner/README.md) for scheduling and memory ownership.
 
-An explicit `initialProjectUrl` takes precedence on the first load, followed by the saved session. With neither,
-the editor starts with an empty project and does not fetch an example project registry. Browse examples in the
-[examples gallery](https://8f4e.com/examples/); its links open projects by URL. The editor's menu supports opening
-projects from disk and adding built-in modules.
+The default plugin set includes project URL loading and session persistence. It passes `fetch` and the optional
+`initialProjectUrl` to the URL loader, and storage, a namespaced key, and `restoreOnStartup: !initialProjectUrl` to
+session persistence. Explicit URL loading disables only restoration; autosaving continues while fetching. An empty
+session may therefore be saved before the URL resolves, and remains if the load fails or the editor closes early.
+Omitting either plugin also omits that feature. Neither requires a session or URL callback in core.
 
-Built-in modules and standard-library includes ship as lazy source chunks with the host's build. The module menu's
-catalog is derived from source paths without loading module text. Selecting a module loads its source on demand;
-module dependencies are resolved through the same local catalog.
+An explicit `initialProjectUrl` takes precedence on the first load. Without one, the editor restores the saved
+session. With neither, it starts with an empty project and does not fetch an example project registry. Browse examples in the
+[examples gallery](https://8f4e.com/examples/); its links open projects by URL. The editor's menu supports opening
+projects from disk and adding built-in modules. Set `showOpenMenuItem: false` to hide Open From Disk in embedded editors.
+
+Built-in modules and standard-library includes ship as lazy source chunks with the host's build. The default editor
+passes its discovered module loaders to `createExampleModulesPlugin({ sources })`. That plugin derives the catalog
+from paths without loading module text, owns the menu and source cache, and inserts selected public blocks with their
+dependencies. Omitting it removes the module browser. Standard-library include resolution remains in the host.
 
 Code changes automatically save a recovery session to browser storage. With the editor canvas focused, `Cmd+S`
-or `Ctrl+S` saves canonical `.8f4e` source to disk. In browsers supporting the File System Access API in a secure
+or `Ctrl+S` saves canonical `.8f4e` source to disk through the project-files plugin. In browsers supporting the File System Access API in a secure
 context, the first Save chooses a destination and later saves reuse it. Opening a project from disk associates the
 selected file with the editor; the first Save can ask for write permission. The Export Project menu action acts as
 Save As: it chooses a destination and makes that file the target of later saves.
@@ -75,3 +120,7 @@ npx nx run @8f4e/editor-default:build
 npx nx run @8f4e/editor-default:test
 npx nx run @8f4e/editor-default:typecheck
 ```
+
+The compiler plugin receives the stdlib include resolver when it is created; editor state does not forward compiler or include-loading callbacks. Button, switch, slider, piano, crossfade, and keyboard-memory factories receive the compiler plugin's live `writeMemory` function directly. Runtime loaders and factories remain initialization dependencies owned by the runtime coordinator; state holds data-only runtime metadata and derived environment-constant source.
+
+The public editor API has no callbacks bag. Core announces input changes through `compilationInputChanged`. The compiler plugin owns debouncing, worker communication, stale-result rejection, diagnostics, and statistics. It contributes the `recompileDebounceDelay` directive schema through the shared config mechanism and emits accepted memory and bytecode through `compilationSucceeded`, which core consumes to update its views before dependent features and runtimes react to metadata. Editor disposal stops runtimes before releasing plugins; the compiler then cancels scheduling and terminates its worker after dependent plugins have shut down. Worker results carry current artifacts and memory actions without redundant byte-size or instance-reset flags.

@@ -3,34 +3,18 @@
 entry main
 module cgaColors
 ; @public
-; @config color.fill.moduleBackground #0000aa
-; @config color.fill.background #00aaaa
-; @config color.fill.backgroundDots #aa00aa
-; @config color.fill.backgroundDots2 #0000aa
-; @config color.fill.highlightedCodeLine #aa00aa
-; @config color.fill.moduleBackgroundDragged #000aa
-; @config color.text.instruction #ffff55
-; @config color.text.code #ffffff
-; @config color.text.lineNumber #555555
-; @config color.text.codeComment #aaaaaa
-; @config color.text.numbers #ffffff
-; @config color.text.debugInfo #aaaaaa
-; @config color.fill.debugInfoBackground #005555
-; @config color.fill.wire rgba(255,255,255,0.6)
-; @config color.fill.wireHighlighted #ffffff
-; @config color.fill.menuItemBackground #0000aa
-; @config color.fill.menuItemBackgroundHighlighted #ffffff
-; @config color.fill.errorMessageBackground #aa0000
-; @config color.fill.dialogBackground #0000aa
-; @config color.fill.dialogDimmer #000000
-; @config color.fill.codeBlockHighlightLevel1 #000099
-; @config color.fill.codeBlockHighlightLevel2 #000088
-; @config color.fill.codeBlockHighlightLevel3 #000077
-; @config color.fill.trace #55ff55
-; @config color.fill.scanLine #55ffff
-; @config color.icons.outputConnectorBackground #0000aa
-; @config color.icons.outputConnector #ffff55
-; @config color.icons.inputConnectorBackground #0000aa
-; @config color.icons.inputConnector #55ffff
+; @config color.canvas #00aaaa
+; @config color.surface #0000aa
+; @config color.ink #ffffff
+; @config color.primary #ffff55
+; @config color.secondary #55ffff
+; @config color.positive #55ff55
+; @config color.warning #ffff55
+; @config color.negative #aa0000
+; @config color.muted #555555
+; @config color.stroke rgba(255,255,255,0.6)
+; @config color.tertiary #aaaaaa
+; @config color.highlight rgba(255,255,255,0.45)
+; @config color.detail #ffffff
 moduleEnd
 entryEnd

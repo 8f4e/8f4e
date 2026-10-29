@@ -1,16 +1,7 @@
 import type { PlannedMemoryDeclaration, PlannedMemoryModule } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import {
-	runAfterGraphicDataWidthCalculation,
-	runBeforeGraphicDataWidthCalculation,
-} from '../features/code-blocks/features/directives/registry';
 import resolveMemoryIdentifier, { getDeclarationsByByteAddress } from './resolveMemoryIdentifier';
-import {
-	createMockCodeBlock,
-	createMockState,
-	deriveDirectiveStateForMockCodeBlock,
-	findWidgetById,
-} from './testingUtils/testUtils';
+import { createMockState } from './testingUtils/testUtils';
 
 function createMemory(
 	id: string,
@@ -168,23 +159,12 @@ describe('resolveMemoryIdentifier', () => {
 		let runtimeAddress = 0;
 		state.callbacks.getWordFromMemory = () => runtimeAddress;
 
-		const block = createMockCodeBlock({
-			name: 'watcher',
-			code: ['; @watch *pointer'],
-			lineNumberColumnWidth: 2,
-			gaps: new Map(),
-		});
-		const resolveWatchWidget = () => {
-			const directiveState = deriveDirectiveStateForMockCodeBlock(block);
-			runBeforeGraphicDataWidthCalculation(block, state, directiveState);
-			runAfterGraphicDataWidthCalculation(block, state, directiveState);
-			return findWidgetById(block.widgets.debuggers, '*pointer');
-		};
+		const resolvePointer = () => resolveMemoryIdentifier(state, { kind: 'module', moduleId: 'watcher' }, '*pointer');
 
-		expect(resolveWatchWidget()?.memory).toBe(zeroTarget);
+		expect(resolvePointer()?.memory).toBe(zeroTarget);
 
 		runtimeAddress = initialTarget.byteAddress;
-		expect(resolveWatchWidget()?.memory).toBe(initialTarget);
+		expect(resolvePointer()?.memory).toBe(initialTarget);
 
 		const recompiledTarget = createMemory('recompiledTarget', 48);
 		const recompiledModule = createModule('watcher', [pointer, recompiledTarget]);
@@ -194,10 +174,10 @@ describe('resolveMemoryIdentifier', () => {
 		};
 
 		// Previous target at byteAddress 32 is no longer in the replaced memoryPlan
-		expect(resolveWatchWidget()).toBeUndefined();
+		expect(resolvePointer()).toBeUndefined();
 
 		runtimeAddress = recompiledTarget.byteAddress;
-		expect(resolveWatchWidget()?.memory).toBe(recompiledTarget);
+		expect(resolvePointer()?.memory).toBe(recompiledTarget);
 		expect(getDeclarationsByByteAddress(undefined)).toBeUndefined();
 	});
 });

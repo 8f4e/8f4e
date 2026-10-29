@@ -1,0 +1,11 @@
+{
+  "name": "@8f4e/editor-palette",
+  "sourceRoot": "src",
+  "projectType": "library",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "outputs": ["{projectRoot}/dist"], "options": { "command": "tsc", "cwd": "{projectRoot}" } },
+    "typecheck": { "executor": "nx:run-commands", "options": { "command": "tsc --noEmit", "cwd": "{projectRoot}" } },
+    "test": { "executor": "@nx/vitest:test", "options": { "config": "{projectRoot}/vitest.config.ts" } }
+  },
+  "tags": ["type:library", "scope:editor"]
+}

@@ -1,0 +1,76 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import type { DrawContext as Engine, MemoryViews } from '@8f4e/web-ui';
+import { describe, expect, it, vi } from 'vitest';
+import { createDrawContextMock } from '../__tests__/rendering';
+import type { Bars } from '../types';
+import drawBars from './draw';
+
+function createMemoryViews({ float32 = [] }: { float32?: number[] } = {}): MemoryViews {
+	return {
+		int8: new Int8Array(0),
+		int16: new Int16Array(0),
+		int32: new Int32Array(0),
+		uint8: new Uint8Array(0),
+		uint16: new Uint16Array(0),
+		float32: new Float32Array(float32),
+		float64: new Float64Array(0),
+	};
+}
+
+function createMockEngine(): Engine {
+	return createDrawContextMock();
+}
+
+function createBarsWidget(overrides: Partial<Bars> = {}): Bars {
+	return {
+		x: 0,
+		y: 0,
+		width: 8,
+		height: 8,
+		minValue: 0,
+		inverseValueRange: 1,
+		startAddress: {
+			showAddress: true,
+			bufferPointer: 0,
+			memory: { byteAddress: 0, allocationUnitAddress: 0, allocationUnitCount: 4 },
+		} as never,
+		baseSampleShift: 2,
+		length: 4,
+		valueType: 'float32',
+		...overrides,
+	};
+}
+
+describe('drawBars', () => {
+	it('renders buffer values as vertical bars', () => {
+		const engine = createMockEngine();
+		const values: Bars[] = [createBarsWidget()];
+
+		drawBars(engine, values, createMemoryViews({ float32: [0.25, 0.5, 0.75, 1] }));
+
+		const drawSprite = vi.mocked(engine.drawFill);
+		expect(drawSprite).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, 8, 8);
+		expect(drawSprite).toHaveBeenCalledWith(0, 6, PALETTE_INDICES.detailBase, 2, 2);
+		expect(drawSprite).toHaveBeenCalledWith(2, 4, PALETTE_INDICES.detailBase, 2, 4);
+		expect(drawSprite).toHaveBeenCalledWith(4, 2, PALETTE_INDICES.detailBase, 2, 6);
+		expect(drawSprite).toHaveBeenCalledWith(6, 0, PALETTE_INDICES.detailBase, 2, 8);
+	});
+
+	it('compresses dense arrays by the maximum value in each column', () => {
+		const engine = createMockEngine();
+		const values: Bars[] = [
+			createBarsWidget({
+				width: 4,
+				length: 8,
+			}),
+		];
+
+		drawBars(engine, values, createMemoryViews({ float32: [0, 0.25, 0.1, 0.5, 0.2, 0.75, 0.3, 1] }));
+
+		const drawSprite = vi.mocked(engine.drawFill);
+		expect(drawSprite).toHaveBeenCalledWith(0, 6, PALETTE_INDICES.detailBase, 1, 2);
+		expect(drawSprite).toHaveBeenCalledWith(1, 4, PALETTE_INDICES.detailBase, 1, 4);
+		expect(drawSprite).toHaveBeenCalledWith(2, 2, PALETTE_INDICES.detailBase, 1, 6);
+		expect(drawSprite).toHaveBeenCalledWith(3, 0, PALETTE_INDICES.detailBase, 1, 8);
+	});
+});

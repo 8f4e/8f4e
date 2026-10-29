@@ -1,6 +1,6 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 
-export default createDirectivePlugin('group', (directive, draft) => {
+export default createDirectiveDefinition('group', (directive, draft) => {
 	// Only process the first @group directive, matching the original parser behaviour
 	if (draft.blockState.groupName !== undefined) {
 		return;

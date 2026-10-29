@@ -1,108 +1,37 @@
-# Program Compiler Feature
+# Compilation Inputs and Published State
 
-## Purpose
+Editor state tracks compilation inputs and exposes compiler metadata for editor features. Actual compilation belongs
+to `@8f4e/editor-plugin-compiler`, which owns scheduling, its worker, include resolution, diagnostics, and statistics.
+Core has no compilation callback or built-in compilation effect.
 
-Compiles 8f4e code blocks into executable WASM bytecode. Coordinates with the compiler callback, manages compilation options, maps errors back to source blocks, and handles memory initialization.
+## Input changes
 
-## Key Behaviors
+`state.compilerInputRevision` advances after source edits, block creation/deletion/paste, execution or disabled-state
+toggles, regenerated environment constants, saved control defaults, memory connection removal, and project loading.
+Group operations and multi-block paste advance it once after updating their inputs. The revision is monotonic across
+project loads and is not stored in project files.
 
-- **Code Flattening**: Converts code blocks into separate modules and functions arrays, sorted by `creationIndex`
-- **Compiler Invocation**: Calls `compileCode` callback with source and options
-- **Compilation Options**: Sets compiler entry-point options
-- **Error Mapping**: Maps compilation errors back to specific code blocks and line numbers
-- **Memory Management**: Tracks compiler-derived memory usage and handles memory recreation events
-- **Performance Tracking**: Measures and logs compilation time
-- **Auto Compilation**: Recompiles the project when its compiler input revision advances
-- **Recompile Debounce**: Defaults to 500ms and can be configured with `; @config recompileDebounceDelay <ms>`
+Selection, caret movement, block/project navigation, dragging, favorites, and visual grouping metadata do not advance
+the revision. Call `incrementCompilerInputRevision(store)` after updating compiler inputs and their derived state.
+`selectedCodeBlockForProgrammaticEdit` refreshes programmatic edits independently of compilation scheduling.
 
-## Compiler Options
+Core's input-change publisher observes the revision and emits `compilationInputChanged`. A compiler plugin can listen
+without understanding individual editing actions. The standard compiler plugin debounces those events, serializes the
+latest code-block tree, and ignores obsolete responses. Its `recompileDebounceDelay` setting is available only when the
+plugin is installed.
 
-```typescript
-{
-  startingMemoryAllocationUnitAddress: 0,
-  includeStackAnalysis: true,
-  enableAssertions: hasTestEntry(project),
-}
-```
+## Published state and artifacts
 
-Assertions are enabled when the project contains an enabled `test` entry, including nested test modules or a root function exported as `test`. Existing editor instances provide inert assertion callbacks so compilation and normal execution continue to work; this does not execute tests or collect assertion results.
+- `state.compiler.isCompiling` indicates compilation activity.
+- `state.compiler.compiledModules` and `compiledFunctions` provide compiler lookups.
+- `state.compiler.memoryPlan`, `memoryDefaultsByModuleId`, and `projectMemoryExposuresByGroupPath` support memory consumers.
+- `state.info.compiler` contains compilation duration, bytecode size, memory usage, and cache statistics.
+- `state.codeErrors.compilationErrors` contains diagnostics mapped to project blocks and source lines.
 
-**Note**: The compiler derives the required memory size from its allocation plan and returns the effective page-rounded size. Environment constants are provided via an auto-managed `constants env` block, with runtime-owned lines contributed by the selected runtime.
+The plugin updates its live artifact handles and emits `compilationSucceeded` with `ProgramArtifacts` (`memoryRef` and `codeBuffer`) before
+publishing metadata and runtime readiness. Core consumes that event to refresh memory views and renderer artifacts.
+`memoryAction` distinguishes recreated and reused memory. The binary-assets plugin observes new memory plans and
+reloads its retained bytes into current targets. Editor state stores no binary asset metadata.
 
-## Block Type Handling
-
-- **Modules**: Includes `module` and `constants` block types
-- **Functions**: Includes `function` block types
-- **Excluded**: `note` and `unknown` blocks are not passed to WASM compiler
-
-## Subscriptions & Callbacks
-
-### Compiler input revision
-
-`state.compilerInputRevision` starts at zero and advances after source edits, block creation/deletion/paste,
-execution or disabled-state toggles, regenerated environment constants, saved control defaults, memory connection
-removal, and project loading (including undo/redo loads). Group operations and multi-block paste advance it once
-after updating all affected blocks. It remains monotonic across project loads and is not stored in project files.
-
-Selection, caret movement, block/project navigation, dragging, favorites, and visual grouping metadata do not
-advance the revision. No-op edit operations leave it unchanged. Text edits conservatively advance it without
-attempting to compare compiler output, so incomplete source and changes that affect diagnostics are covered.
-
-Call `incrementCompilerInputRevision(store)` after updating compiler inputs and their derived state. The compiler
-subscribes to this revision independently of the selected block or the target of a programmatic edit.
-
-`selectedCodeBlockForProgrammaticEdit` is the shared target for refreshing a block and saving programmatic
-updates, including drag-end position changes. Setting it does not schedule compilation; source-changing
-operations also advance the compiler input revision.
-
-### Subscriptions
-
-- `compilerInputRevision` - Schedules debounced compilation when compiler inputs change
-
-### Callbacks Used
-
-- `state.callbacks.compileCode(modules, options, functions)` - Returns compilation result with bytecode and memory info
-
-### State Touched
-
-- `state.compiler.isCompiling` - Boolean flag during compilation
-- `state.compiler.compiledModules` - Compiled module bytecode
-- `state.compiler.compiledFunctions` - Compiled function bytecode
-- `state.compiler.byteCodeSize` - Total bytecode size in bytes
-- `state.compiler.requiredMemoryBytes` - Bytes required by the compiler's static memory plan
-- `state.compiler.allocatedMemoryBytes` - Actual WebAssembly memory capacity allocated by the host
-- `state.compiler.compilationTime` - Compilation duration in ms
-- `state.compiler.lastCompilationStart` - Timestamp of compilation start
-- `state.codeErrors.compilationErrors` - Array of compilation errors
-
-## Integration Points
-
-- **Binary Assets**: Exposes memory recreation state used by the editor environment binary-assets plugin to reload assets
-- **Runtime**: Runtime selection affects environment constants
-- **Runtime**: Compiled modules are consumed by runtime implementations and editor widgets
-
-## Error Handling
-
-Compilation errors include:
-- Block ID and line number
-- Error message and type
-- Mapped from compiler output to source blocks
-
-## Memory Actions
-
-The compiler reports memory state:
-- **`recreated`**: WASM memory was newly created or resized
-- **`reused`**: Existing memory was reused
-
-When memory is recreated, `state.compiler.hasMemoryBeenReinitialized` is updated. The editor environment binary-assets plugin observes that state and reloads active assets into memory when needed.
-
-## References
-
-- Compiler callback contract: Defined in state types
-
-## Notes & Limitations
-
-- Compilation is synchronous from the effect's perspective but callback may be async
-- Blocks are compiled in `creationIndex` order
-- Memory capacity changes require runtime restart
-- Environment constants are provided via auto-managed `constants env` block
+Runtime environment constants arrive as source through `envConstantContributions`; the generic env-block renderer
+treats every contributor uniformly. Runtime implementations remain dependencies of the runtime coordinator.

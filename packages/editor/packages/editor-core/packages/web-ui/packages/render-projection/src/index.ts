@@ -8,3 +8,4 @@ export type {
 } from './projection';
 export { default as createWebUiRenderProjection } from './projection';
 export { default as resolveCodeCells } from './resolveCodeCells';
+export { createSpriteCell, type SpriteCell } from './spriteCell';

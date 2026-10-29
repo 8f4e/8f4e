@@ -35,9 +35,9 @@ export default function paramShape(
 			continue;
 		}
 
-		directiveState.layoutContributions.push({
-			rawRow: lineNumber,
-			rows: labels.length,
+		directiveState.addVerticalSpaceAfterSourceLine({
+			sourceLineIndex: lineNumber,
+			heightInRows: labels.length,
 		});
 	}
 }
@@ -58,7 +58,7 @@ export function updateParamShapeDeclarations(
 
 	const textX = (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	for (const [lineNumber, labels] of getParamShapeLabelsByLineNumber(compiledFunction)) {
-		const displayRow = directiveState.displayModel.rawRowToDisplayRow[lineNumber];
+		const displayRow = directiveState.displayModel.sourceLineIndexToDisplayRow[lineNumber];
 		if (displayRow === undefined) {
 			continue;
 		}

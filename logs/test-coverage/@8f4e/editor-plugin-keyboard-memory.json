@@ -1,0 +1,54 @@
+[
+	{
+		"commit": "5ef357dc2bd090838967cfb63d7fadeba173f426",
+		"recordedAt": "2026-10-28T12:55:20.535Z",
+		"coverage": {
+			"statements": {
+				"covered": 53,
+				"total": 53,
+				"percentage": 100
+			},
+			"branches": {
+				"covered": 19,
+				"total": 22,
+				"percentage": 86.36
+			},
+			"functions": {
+				"covered": 11,
+				"total": 11,
+				"percentage": 100
+			},
+			"lines": {
+				"covered": 47,
+				"total": 47,
+				"percentage": 100
+			}
+		}
+	},
+	{
+		"commit": "9aa44ec4d3ad4662d770e8cda83c54b277a29c3c",
+		"recordedAt": "2026-10-28T19:31:10.474Z",
+		"coverage": {
+			"statements": {
+				"covered": 53,
+				"total": 53,
+				"percentage": 100
+			},
+			"branches": {
+				"covered": 19,
+				"total": 22,
+				"percentage": 86.36
+			},
+			"functions": {
+				"covered": 11,
+				"total": 11,
+				"percentage": 100
+			},
+			"lines": {
+				"covered": 47,
+				"total": 47,
+				"percentage": 100
+			}
+		}
+	}
+]

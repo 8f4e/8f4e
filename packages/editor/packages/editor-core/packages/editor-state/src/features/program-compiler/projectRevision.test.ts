@@ -10,21 +10,17 @@ import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
 import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
-import favoriteToggler from '../code-blocks/features/favoriteToggler/effect';
 import groupDeleter from '../code-blocks/features/group/deleter/effect';
 import groupNonstickToggler from '../code-blocks/features/group/nonstickToggler/effect';
 import groupRemover from '../code-blocks/features/group/remover/effect';
 import groupSkipExecutionToggler from '../code-blocks/features/group/skipExecutionToggler/effect';
 import groupUngroupper from '../code-blocks/features/group/ungroupper/effect';
-import memoryConnectionRemover from '../code-blocks/features/memoryConnectionRemover/effect';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
-import skipExecutionToggler from '../code-blocks/features/skipExecutionToggler/effect';
-import sliderDefaultSaver from '../code-blocks/features/sliderDefaultSaver/effect';
 import codeEditing from '../code-editing/effect';
 import globalEditorDirectivesEffect from '../global-editor-directives/effect';
-import projectImport from '../project-import/effect';
-import { EMPTY_DEFAULT_PROJECT } from '../project-import/emptyDefaultProject';
+import projectImport from '../project-loading/effect';
+import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
 
 describe('project revision', () => {
 	let state: State;
@@ -127,7 +123,6 @@ describe('project revision', () => {
 	});
 
 	it.each([
-		['toggleFavoriteDirective', favoriteToggler, {}],
 		['toggleGroupNonstick', groupNonstickToggler, { makeNonstick: true }],
 		['removeFromGroupDirective', groupRemover, {}],
 		['ungroupByName', groupUngroupper, {}],
@@ -144,7 +139,7 @@ describe('project revision', () => {
 
 	it('advances for adding, disabling, enabling, and deleting a block, but not for a repeated delete', async () => {
 		codeBlockCreator(store, events);
-		await dispatchAsync('addCodeBlock', { x: 100, y: 100, isNew: true, blockType: 'module' });
+		await dispatchAsync('insertCodeBlock', { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
 		expect(state.projectRevision).toBe(1);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
 		expect(state.projectRevision).toBe(2);
@@ -183,44 +178,13 @@ describe('project revision', () => {
 		expect(state.projectRevision).toBe(2);
 	});
 
-	it('advances for execution toggles and ignores a malformed module with no change', () => {
-		skipExecutionToggler(store, events);
-		dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
-		expect(state.projectRevision).toBe(1);
-		dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
-		expect(state.projectRevision).toBe(2);
-		block.code = ['invalid'];
-		dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
-		expect(state.projectRevision).toBe(2);
-	});
-
-	it('advances when removing a memory connection, but not when there is none', () => {
-		memoryConnectionRemover(store, events);
-		block.code = ['module main', 'float value &other:output', 'moduleEnd'];
-		dispatch('removeConnections', { codeBlock: block });
-		expect(state.projectRevision).toBe(1);
-		dispatch('removeConnections', { codeBlock: block });
-		expect(state.projectRevision).toBe(1);
-	});
-
-	it('advances when saving runtime defaults, but not when defaults already match', () => {
-		sliderDefaultSaver(store, events);
-		block.code = ['module main', 'int value 1', 'moduleEnd'];
-		block.widgets.sliders = [{ moduleId: 'main', id: 'value', isInteger: true, allocationUnitAddress: 0 } as never];
-		state.callbacks.getWordFromMemory = () => 2;
-		dispatch('saveSliderValuesToCode', { codeBlock: block });
-		expect(state.projectRevision).toBe(1);
-		dispatch('saveSliderValuesToCode', { codeBlock: block });
-		expect(state.projectRevision).toBe(1);
-	});
-
 	it('advances for regenerated environment constants and ignores identical regeneration', () => {
 		autoEnvConstants(store);
 		const env = createMockCodeBlock({ name: 'env', blockType: 'constants', code: ['constants env', 'constantsEnd'] });
 		state.codeBlockRendering.codeBlocks.push(env);
-		store.set('binaryAssets', [{ id: 'sound', fileName: 'sound.wav', assetByteLength: 100 }]);
+		store.set('envConstantContributions', { assets: ['const SOUND_SIZE 100'] });
 		expect(state.projectRevision).toBe(1);
-		store.set('binaryAssets', state.binaryAssets);
+		store.set('envConstantContributions', state.envConstantContributions);
 		expect(state.projectRevision).toBe(1);
 	});
 

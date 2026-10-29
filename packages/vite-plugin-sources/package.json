@@ -1,6 +1,6 @@
 {
 	"name": "@8f4e/vite-plugin-sources",
-	"version": "0.1.7",
+	"version": "0.1.15",
 	"description": "Discover and lazily load 8f4e source collections in Vite",
 	"type": "module",
 	"main": "dist/index.js",

@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/program-composer",
-  "version": "0.2.6",
+  "version": "0.2.14",
   "private": true,
   "description": "Recursive project composition for the 8f4e compiler",
   "type": "module",

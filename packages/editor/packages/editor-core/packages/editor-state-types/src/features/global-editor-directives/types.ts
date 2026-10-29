@@ -10,7 +10,7 @@ import type { EditorConfigEntry } from '../editor-config/types';
 
 export interface ParsedGlobalEditorDirective {
 	name: string;
-	rawRow: number;
+	sourceLineIndex: number;
 	args: string[];
 }
 
@@ -25,7 +25,7 @@ export interface GlobalEditorDirectiveContext {
 	blockType?: CodeBlockType;
 }
 
-export interface GlobalEditorDirectivePlugin {
+export interface GlobalEditorDirectiveDefinition {
 	name: string;
 	apply?: (
 		directive: ParsedGlobalEditorDirective,

@@ -3,7 +3,7 @@ import type { StateManager } from '@8f4e/state-manager';
 import { isSkipExecutionDirective } from '@8f4e/tokenizer';
 import incrementCompilerInputRevision from '../../../../program-compiler/incrementCompilerInputRevision';
 import incrementProjectRevision from '../../../../program-compiler/incrementProjectRevision';
-import setSkipExecution from '../../skipExecutionToggler/setSkipExecution';
+import setSkipExecution from '../../../utils/setSkipExecution';
 import { getGroupModuleBlocks } from '../getGroupBlocks';
 
 /**

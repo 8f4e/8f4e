@@ -17,7 +17,6 @@ const runtimeRegistry = {
 			defaults: { sampleRate: 60 },
 			schema: { type: 'object', properties: { sampleRate: { type: 'number', minimum: 1 } } },
 		},
-		factory: () => () => {},
 	},
 	AudioWorkletRuntime: {
 		id: 'AudioWorkletRuntime',
@@ -26,7 +25,6 @@ const runtimeRegistry = {
 			defaults: { sampleRate: 44100 },
 			schema: { type: 'object', properties: { sampleRate: { type: 'number', minimum: 1 } } },
 		},
-		factory: () => () => {},
 	},
 };
 
@@ -67,7 +65,7 @@ describe('runtime editor config', () => {
 			validator.validate({
 				path: RUNTIME_SELECTION_CONFIG_PATH,
 				value: 'AudioWorkletRuntime',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBeUndefined();
@@ -76,7 +74,7 @@ describe('runtime editor config', () => {
 			validator.validate({
 				path: RUNTIME_SELECTION_CONFIG_PATH,
 				value: 'AudioWorkletRuntim',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toContain("Did you mean 'AudioWorkletRuntime'?");
@@ -85,7 +83,7 @@ describe('runtime editor config', () => {
 			validator.validate({
 				path: RUNTIME_SELECTION_CONFIG_PATH,
 				value: 'toString',
-				rawRow: 1,
+				sourceLineIndex: 1,
 				codeBlockId: 0,
 			})
 		).toBe("@config runtime: unknown runtime 'toString'");

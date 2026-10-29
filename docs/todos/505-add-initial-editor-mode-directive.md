@@ -106,7 +106,7 @@ line selection remain synchronized.
   registration, parsing, and diagnostics.
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/editor-mode/` - shared mode application and
   state synchronization.
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/project-import/` - one-time resolution at
+- `packages/editor/packages/editor-core/packages/editor-state/src/features/project-loading/` - one-time resolution at
   the project-load boundary.
 - `packages/editor/packages/editor-core/packages/editor-state-types/` - host-option and resolved-policy typing if the
   explicit-option distinction must be retained in state.

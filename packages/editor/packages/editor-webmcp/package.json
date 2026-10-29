@@ -1,0 +1,34 @@
+{
+  "name": "@8f4e/editor-webmcp",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Single-editor WebMCP adapter for 8f4e webpage hosts",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "license": "MIT",
+  "dependencies": {
+    "@8f4e/editor-core": "*",
+    "@8f4e/language-spec": "*"
+  },
+  "devDependencies": {
+    "@8f4e/compiler": "*",
+    "@8f4e/config": "*",
+    "@8f4e/editor-default": "*",
+    "@8f4e/editor-plugin-example-modules": "*",
+    "@8f4e/editor-state": "*",
+    "@8f4e/editor-state-testing": "*",
+    "@8f4e/examples": "*",
+    "@8f4e/vite-plugin-sources": "*",
+    "@vitest/browser": "4.1.7",
+    "@vitest/browser-playwright": "4.1.7",
+    "vitest": "4.1.7"
+  }
+}

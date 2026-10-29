@@ -1,7 +1,35 @@
+import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import { Icon } from '@8f4e/sprite-generator';
 import type { DrawContext } from '../../../drawContext';
 import type { MemoryViews } from '../../../types';
+
+const OUTPUT_COLORS = [
+	'primaryDark3',
+	'primaryDark2',
+	'primaryDark1',
+	'primaryBase',
+	'warningBase',
+	'negativeBase',
+] as const;
+
+/** Composes a connector from the shared fill and font sprites in background-to-foreground order. */
+function drawConnector(
+	engine: DrawContext,
+	x: number,
+	y: number,
+	width: number,
+	height: number,
+	background: PaletteIndex,
+	bracketColor: PaletteIndex,
+	markerColor?: PaletteIndex
+): void {
+	engine.drawFill(x, y, background, width * 3, height);
+	engine.drawCharacter(x, y, 91, bracketColor, width, height);
+	if (markerColor !== undefined) {
+		engine.drawCharacter(x + width, y, 42, markerColor, width, height);
+	}
+	engine.drawCharacter(x + width * 2, y, 93, bracketColor, width, height);
+}
 
 export default function drawConnectors(
 	engine: DrawContext,
@@ -9,9 +37,8 @@ export default function drawConnectors(
 	codeBlock: CodeBlockGraphicData,
 	memoryViews: MemoryViews
 ): void {
-	if (!state.spriteLookups) {
-		return;
-	}
+	const { vGrid: width, hGrid: height } = state.viewport;
+	const background = PALETTE_INDICES.surfaceOverlay;
 
 	for (const output of codeBlock.widgets.outputs) {
 		const { x, y, memory } = output;
@@ -33,16 +60,19 @@ export default function drawConnectors(
 			)
 		);
 
-		engine.drawSprite(
+		drawConnector(
+			engine,
 			x,
 			y,
-			state.spriteLookups.feedbackScale[scaleIndex] ?? state.spriteLookups.feedbackScale[0],
-			state.viewport.vGrid * 3,
-			state.viewport.hGrid
+			width,
+			height,
+			background,
+			PALETTE_INDICES.secondaryBase,
+			PALETTE_INDICES[OUTPUT_COLORS[scaleIndex] ?? OUTPUT_COLORS[0]]
 		);
 	}
 
 	for (const { x, y } of codeBlock.widgets.inputs) {
-		engine.drawSprite(x, y, state.spriteLookups.icons[Icon.INPUT]);
+		drawConnector(engine, x, y, width, height, background, PALETTE_INDICES.primaryBase);
 	}
 }

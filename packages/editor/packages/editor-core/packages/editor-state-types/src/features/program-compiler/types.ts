@@ -3,7 +3,6 @@
  */
 
 import type {
-	CompileAndUpdateMemoryResult,
 	CompiledFunctionLookup,
 	CompiledModuleLookup,
 	MemoryDefaults,
@@ -21,11 +20,4 @@ export interface Compiler {
 	memoryPlan: MemoryLayoutPlan;
 	memoryDefaultsByModuleId: Record<string, MemoryDefaults>;
 	projectMemoryExposuresByGroupPath: ProjectMemoryExposuresByGroupPath;
-}
-
-/**
- * Result of a compilation operation.
- */
-export interface CompilationResult extends Omit<CompileAndUpdateMemoryResult, 'memoryRef'> {
-	byteCodeSize: number;
 }

@@ -1,0 +1,67 @@
+import { parseProjectSource } from '@8f4e/compiler';
+import initEditor, { type Editor } from '@8f4e/editor-core';
+import { expect, test, vi } from 'vitest';
+import { toggleFavoritePlugin } from '../src/index';
+
+test('edits the clicked block through its contributed menu', async () => {
+	const canvas = document.createElement('canvas');
+	canvas.width = 768;
+	canvas.height = 384;
+	canvas.style.width = '768px';
+	canvas.style.height = '384px';
+	document.body.appendChild(canvas);
+	const source = `8f4e/v1
+constants env
+; @pos 120 60
+constantsEnd
+entry main
+module target
+; @pos 4 3
+int value 1
+moduleEnd
+entryEnd`;
+	let editor: Editor | undefined;
+	try {
+		editor = await initEditor(canvas, {
+			initialEditorMode: 'edit',
+			runtimeRegistry: {},
+			initialProject: parseProjectSource(source),
+			plugins: [toggleFavoritePlugin],
+		});
+		const state = editor.state;
+		await vi.waitFor(() =>
+			expect(state.codeBlockRendering.codeBlocks.some(block => block.name === 'target')).toBe(true)
+		);
+		editor.pauseRendering();
+		const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'target')!;
+		const mouse = (type: string, x: number, y: number) => {
+			const rect = canvas.getBoundingClientRect();
+			canvas.dispatchEvent(new MouseEvent(type, { clientX: rect.x + x, clientY: rect.y + y, bubbles: true }));
+		};
+		const openMenu = async () => {
+			mouse('contextmenu', block.x - state.viewport.x + 8, block.y - state.viewport.y + 8);
+			await vi.waitFor(() =>
+				expect(state.contextMenu.items.some(item => item.action === 'toggleFavoriteDirective')).toBe(true)
+			);
+		};
+		await openMenu();
+		const index = state.contextMenu.items.findIndex(item => item.action === 'toggleFavoriteDirective');
+		expect(state.contextMenu.items[index].payload?.codeBlock).toBe(block);
+		expect(state.contextMenu.items[index].title).toContain('Favorite');
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('toggle-favorite-menu');
+		const x = state.contextMenu.x - state.viewport.x + 8;
+		const y = state.contextMenu.y - state.viewport.y + index * state.viewport.hGrid + 8;
+		mouse('mousemove', x, y);
+		mouse('mousedown', x, y);
+		expect(state.contextMenu.open).toBe(false);
+		expect(block.code).toContain('; @favorite');
+		await openMenu();
+		expect(state.contextMenu.items.find(item => item.action === 'toggleFavoriteDirective')?.title).toContain(
+			'Unfavorite'
+		);
+	} finally {
+		editor?.dispose();
+		canvas.remove();
+	}
+});

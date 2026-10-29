@@ -1,41 +1,20 @@
 /**
  * Central type re-exports for editor-state.
- * This file now acts as a barrel, importing types from feature-specific modules
- * and re-exporting them for backward compatibility and public API stability.
+ * Shared feature types are re-exported here for editor consumers.
  */
 
-import type {
-	CompileProjectOptions,
-	MemoryAction as CompilerMemoryAction,
-	ProjectObjectModel,
-} from '@8f4e/language-spec';
-import type { FillSpriteColorName, SpriteFont, SpriteIdLookups } from '@8f4e/sprite-generator';
+import type { MemoryAction as CompilerMemoryAction, ProjectObjectModel } from '@8f4e/language-spec';
 import type { AssertionResult } from './features/assertions/types';
-import type { BinaryAsset } from './features/binary-assets/types';
 import type {
-	ArrayBars,
-	ArrayMeter,
-	ArrayPlotter,
-	ArrayWave,
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockRendering,
 	CodeBlockType,
-	Crossfade,
-	Debugger,
 	InfoPanel,
 	Input,
 	MemoryIdentifier,
 	Output,
 	ParsedDirectiveRecord,
-	PianoKeyboard,
-	PianoKeyboardBlackKey,
-	PianoKeyboardKey,
-	PianoKeyboardWhiteKey,
-	PianoKeySprite,
-	PianoPressedOverlayFont,
-	Slider,
-	Switch,
 	TypedValueKind,
 } from './features/code-blocks/types';
 import type { InsertTextEvent, MoveCaretEvent, NavigateCodeBlockEvent } from './features/code-editing/types';
@@ -49,10 +28,11 @@ import type {
 import type { ResolvedGlobalEditorDirectives } from './features/global-editor-directives/types';
 import type { ConsoleState, LogMessage } from './features/logger/types';
 import type { ContextMenu, ContextMenuItem, MenuGenerator, MenuStackEntry } from './features/menu/types';
-import type { CompilationResult, Compiler } from './features/program-compiler/types';
+import type { Compiler } from './features/program-compiler/types';
 import type {
 	RuntimeEnvConstantsContributor,
 	RuntimeFactory,
+	RuntimeMetadataRegistry,
 	RuntimeRegistry,
 	RuntimeRegistryEntry,
 	RuntimeValuesByRuntimeId,
@@ -61,6 +41,7 @@ import type { ProjectViewport, Viewport, ViewportAnimation } from './features/vi
 import type {
 	CodeError,
 	EventDispatcher,
+	EventSubscriptionOptions,
 	GridCoordinates,
 	InternalKeyboardEvent,
 	InternalMouseEvent,
@@ -78,34 +59,26 @@ import type {
 // Re-export global-editor-directives types
 // Re-export runtime types
 // Re-export logger types
-// Re-export binary-assets types
 // Re-export code-editing types
-// Re-export project-import types
+// Re-export project types
 export type {
-	ArrayBars,
-	ArrayMeter,
-	ArrayPlotter,
-	ArrayWave,
 	AssertionResult,
-	BinaryAsset,
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockRendering,
 	CodeBlockType,
 	CodeError,
-	CompilationResult,
 	Compiler,
 	CompilerMemoryAction as MemoryAction,
 	ConsoleState,
 	ContextMenu,
 	ContextMenuItem,
-	Crossfade,
-	Debugger,
 	DialogButton,
 	DialogButtonState,
 	DialogContent,
 	DialogState,
 	EventDispatcher,
+	EventSubscriptionOptions,
 	GridCoordinates,
 	InfoPanel,
 	Input,
@@ -121,108 +94,22 @@ export type {
 	NavigateCodeBlockEvent,
 	Output,
 	ParsedDirectiveRecord,
-	PianoKeyboard,
-	PianoKeyboardBlackKey,
-	PianoKeyboardKey,
-	PianoKeyboardWhiteKey,
-	PianoKeySprite,
-	PianoPressedOverlayFont,
 	Position,
 	ProjectViewport,
 	ResolvedGlobalEditorDirectives,
 	RuntimeEnvConstantsContributor,
 	RuntimeFactory,
+	RuntimeMetadataRegistry,
 	RuntimeRegistry,
 	RuntimeRegistryEntry,
 	RuntimeValuesByRuntimeId,
 	Size,
-	Slider,
-	Switch,
 	TypedValueKind,
 };
 
 export type InfoValue = unknown;
 export type InfoRecord = Record<string, InfoValue>;
 export type InfoState = Record<string, InfoRecord | undefined>;
-
-export type TooltipLiveValueSourceKind = 'memoryAddress' | 'memoryValue' | 'memoryDereference';
-
-export interface TooltipLiveValueMemoryFormat {
-	elementWordSize: number;
-	isInteger: boolean;
-	isUnsigned: boolean;
-}
-
-export interface TooltipMemoryAddressLiveValueSource {
-	kind: 'memoryAddress';
-	moduleId: string;
-	memoryId: string;
-}
-
-export interface TooltipMemoryValueLiveValueSource {
-	kind: 'memoryValue';
-	moduleId: string;
-	memoryId: string;
-	elementIndex?: number;
-}
-
-export interface TooltipMemoryDereferenceLiveValueSource {
-	kind: 'memoryDereference';
-	moduleId: string;
-	memoryId: string;
-	format: TooltipLiveValueMemoryFormat;
-}
-
-export type TooltipLiveValueSource =
-	| TooltipMemoryAddressLiveValueSource
-	| TooltipMemoryValueLiveValueSource
-	| TooltipMemoryDereferenceLiveValueSource;
-
-export interface TooltipLiveValue {
-	x: number;
-	y: number;
-	source: TooltipLiveValueSource;
-	color: SpriteFont | undefined;
-}
-
-export interface TooltipLayout {
-	horizontalPadding: number;
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	lineX: number;
-}
-
-export interface TooltipHighlight {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	fillColor: FillSpriteColorName;
-}
-
-export interface TooltipTarget {
-	codeBlockCreationIndex: number;
-	lineNumber: number;
-}
-
-export interface TooltipAnimation {
-	startedAt?: number;
-}
-
-export interface TooltipState {
-	text: string[];
-	characters: Array<Array<number | string>>;
-	colors: Array<Array<SpriteFont | undefined>>;
-	lineCount: number;
-	widthChars: number;
-	layout: TooltipLayout;
-	highlights: TooltipHighlight[];
-	liveValues: TooltipLiveValue[];
-	target?: TooltipTarget;
-	animation: TooltipAnimation;
-}
 
 // Feature Flags types (top-level public API)
 export interface FeatureFlags {
@@ -254,7 +141,6 @@ export interface FeatureFlags {
 	offscreenBlockArrows: boolean;
 
 	/** Enable/disable the menu action that opens projects from disk */
-	projectOpening: boolean;
 
 	/** Enable/disable the menu action that creates a new project */
 	projectCreation: boolean;
@@ -270,42 +156,7 @@ export type EditorMode = 'view' | 'edit';
 
 // Callbacks interface contains all callback functions (top-level public API)
 export interface Callbacks {
-	// Module and project loading callbacks
-	getListOfModules?: () => Promise<
-		Array<{
-			slug: string;
-			title: string;
-			description?: string;
-			category: string;
-			dependencies?: string[];
-		}>
-	>;
-	getModule?: (slug: string) => Promise<string>;
-	getModuleDependencies?: (slug: string) => Promise<string[]>;
-	getProject?: (url: string) => Promise<string>;
-
-	// Compilation callback
-	compileCode?: (project: ProjectObjectModel, compilerOptions: CompileProjectOptions) => Promise<CompilationResult>;
-	resolveInclude?: (includeId: string) => Promise<string | undefined>;
-
-	// Session storage callbacks
-	loadSession: () => Promise<ProjectObjectModel | null>;
-	saveSession?: (project: ProjectObjectModel) => Promise<void>;
-
-	// File handling callbacks
-	/** Returns null when the picker is cancelled. */
-	importProject?: () => Promise<ProjectObjectModel | null>;
-	/** Called for unrelated project replacements, including successful disk imports; excluded for undo/redo. */
-	projectLoaded?: (project: ProjectObjectModel) => void;
-	saveProject?: (data: string, fileName: string) => Promise<void>;
-	exportProject?: (data: string, fileName: string) => Promise<void>;
-	exportBinaryCode?: (fileName: string) => Promise<void>;
-	exportCanvasScreenshot?: (fileName: string) => Promise<void>;
-	getStorageQuota?: () => Promise<{ usedBytes: number; totalBytes: number }>;
-
 	// Memory manipulation callback
-	setWordInMemory?: (allocationUnitAddress: number, value: number, isInteger: boolean) => void;
-
 	getWordFromMemory?: (allocationUnitAddress: number) => number;
 
 	// Clipboard callbacks
@@ -341,6 +192,13 @@ export interface Callbacks {
 }
 
 // Options interface for editor initialization (top-level public API)
+export type {
+	EditorMenuItemContext,
+	EditorMenuItemProvider,
+	EditorMenuItemSlot,
+	EditorMenuRegistry,
+} from './features/menu/contributions';
+
 export interface Options {
 	featureFlags?: FeatureFlagsConfig;
 	/** Mode used when the editor is initialized. */
@@ -363,10 +221,8 @@ export interface State {
 	compiler: Compiler;
 	codeBlockRendering: CodeBlockRendering;
 	contextMenu: ContextMenu;
-	spriteLookups?: SpriteIdLookups;
 	/** Arbitrary key/value records rendered by `; @info <id>` directives. */
 	info: InfoState;
-	tooltip: TooltipState;
 	callbacks: Callbacks;
 	featureFlags: FeatureFlags;
 	editorMode: EditorMode;
@@ -376,8 +232,8 @@ export interface State {
 	historyStack: ProjectObjectModel[];
 	initialProjectState?: ProjectObjectModel;
 	redoStack: ProjectObjectModel[];
-	storageQuota: { usedBytes: number; totalBytes: number };
-	binaryAssets: BinaryAsset[];
+	/** Source lines contributed to the generated environment constants block, keyed by contributor. */
+	envConstantContributions: Record<string, string[]>;
 	/** Console state for internal logging */
 	console: ConsoleState;
 	/** Executed assertion outcomes published by the active runtime for editor rendering. */
@@ -385,8 +241,8 @@ export interface State {
 	runtime: {
 		values: RuntimeValuesByRuntimeId;
 	};
-	/** Runtime registry for available runtime implementations */
-	runtimeRegistry: RuntimeRegistry;
+	/** Data-only metadata for available runtimes; implementations are initialization dependencies. */
+	runtimeRegistry: RuntimeMetadataRegistry;
 	/** Resolved global editor directives from `; @<name>` comments */
 	globalEditorDirectives: ResolvedGlobalEditorDirectives;
 	codeErrors: {
@@ -399,7 +255,6 @@ export interface State {
 	viewportAnimation: ViewportAnimation;
 }
 
-export type * from './features/binary-assets/types';
 export type * from './features/code-blocks/buildDisplayModel';
 export type * from './features/code-blocks/features/directives/types';
 export type * from './features/code-blocks/types';

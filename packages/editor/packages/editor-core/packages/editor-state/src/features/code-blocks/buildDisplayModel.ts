@@ -1,17 +1,17 @@
 import type { BuildDisplayModelOptions, CodeBlockDisplayModel, DisplayLine } from '@8f4e/editor-state-types';
 
-function getVisibleRawRows(
+function getVisibleSourceLineIndices(
 	code: string[],
-	hideAfterRawRow: number | undefined,
+	hideAfterSourceLineIndex: number | undefined,
 	isExpandedForEditing: boolean
 ): number[] {
-	if (hideAfterRawRow === undefined || isExpandedForEditing) {
-		return code.map((_, rawRow) => rawRow);
+	if (hideAfterSourceLineIndex === undefined || isExpandedForEditing) {
+		return code.map((_, sourceLineIndex) => sourceLineIndex);
 	}
 
-	return code.flatMap((_, rawRow) => {
-		if (rawRow <= hideAfterRawRow) {
-			return [rawRow];
+	return code.flatMap((_, sourceLineIndex) => {
+		if (sourceLineIndex <= hideAfterSourceLineIndex) {
+			return [sourceLineIndex];
 		}
 
 		return [];
@@ -20,40 +20,40 @@ function getVisibleRawRows(
 
 function shouldShowCollapsedPlaceholder(
 	code: string[],
-	hideAfterRawRow: number | undefined,
+	hideAfterSourceLineIndex: number | undefined,
 	isExpandedForEditing: boolean
-): hideAfterRawRow is number {
-	return hideAfterRawRow !== undefined && !isExpandedForEditing && hideAfterRawRow < code.length - 1;
+): hideAfterSourceLineIndex is number {
+	return hideAfterSourceLineIndex !== undefined && !isExpandedForEditing && hideAfterSourceLineIndex < code.length - 1;
 }
 
 export default function buildDisplayModel(
 	code: string[],
-	{ hideAfterRawRow, isExpandedForEditing = false }: BuildDisplayModelOptions = {}
+	{ hideAfterSourceLineIndex, isExpandedForEditing = false }: BuildDisplayModelOptions = {}
 ): CodeBlockDisplayModel {
-	const visibleRawRows = getVisibleRawRows(code, hideAfterRawRow, isExpandedForEditing);
-	const lines: DisplayLine[] = visibleRawRows.map(rawRow => ({
-		rawRow,
-		text: code[rawRow] || '',
+	const visibleSourceLineIndices = getVisibleSourceLineIndices(code, hideAfterSourceLineIndex, isExpandedForEditing);
+	const lines: DisplayLine[] = visibleSourceLineIndices.map(sourceLineIndex => ({
+		sourceLineIndex,
+		text: code[sourceLineIndex] || '',
 	}));
 
-	if (shouldShowCollapsedPlaceholder(code, hideAfterRawRow, isExpandedForEditing)) {
+	if (shouldShowCollapsedPlaceholder(code, hideAfterSourceLineIndex, isExpandedForEditing)) {
 		lines.push({
-			rawRow: hideAfterRawRow,
+			sourceLineIndex: hideAfterSourceLineIndex,
 			text: '...',
 			isPlaceholder: true,
 		});
 	}
 
-	const displayRowToRawRow = lines.map(line => line.rawRow);
-	const rawRowToDisplayRow = code.map(() => undefined as number | undefined);
+	const displayRowToSourceLineIndex = lines.map(line => line.sourceLineIndex);
+	const sourceLineIndexToDisplayRow = code.map(() => undefined as number | undefined);
 	lines.forEach((line, displayRow) => {
-		rawRowToDisplayRow[line.rawRow] = displayRow;
+		sourceLineIndexToDisplayRow[line.sourceLineIndex] = displayRow;
 	});
 
 	return {
 		lines,
-		displayRowToRawRow,
-		rawRowToDisplayRow,
-		isCollapsed: hideAfterRawRow !== undefined && !isExpandedForEditing,
+		displayRowToSourceLineIndex,
+		sourceLineIndexToDisplayRow,
+		isCollapsed: hideAfterSourceLineIndex !== undefined && !isExpandedForEditing,
 	};
 }

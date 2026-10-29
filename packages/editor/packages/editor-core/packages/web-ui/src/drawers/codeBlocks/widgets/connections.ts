@@ -1,5 +1,5 @@
 import type { State } from '@8f4e/editor-state-types';
-import type { LineDrawer } from 'glugglugglug';
+import type { LineDrawer } from '../../../plugins/line-drawer';
 import type { MemoryViews } from '../../../types';
 import type { WireColors } from '../../../wire-colors';
 
@@ -14,10 +14,6 @@ export default function drawConnections(
 	state: State,
 	memoryViews: MemoryViews
 ): void {
-	if (!state.spriteLookups) {
-		return;
-	}
-
 	for (const codeBlock of state.codeBlockRendering.codeBlocks) {
 		const isSelected = codeBlock === state.codeBlockRendering.selectedCodeBlock;
 

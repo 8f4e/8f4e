@@ -3,7 +3,7 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
-import convertGraphicDataToProjectStructure from '../../../project-export/serializeCodeBlocks';
+import convertGraphicDataToProjectStructure from '../../../../pureHelpers/projectSerialization/serializeCodeBlocks';
 import groupCopier from '../group/copier/effect';
 import codeBlockCreator from './effect';
 
@@ -229,13 +229,13 @@ describe('codeBlockCreator - group copy/paste', () => {
 			codeBlockCreator(store, mockEvents);
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 			const copyCodeBlock = onCalls.find(call => call[0] === 'copyCodeBlock')![1];
-			const addCodeBlock = onCalls.find(call => call[0] === 'addCodeBlock')![1];
+			const pasteCodeBlocks = onCalls.find(call => call[0] === 'pasteCodeBlocks')![1];
 
 			copyCodeBlock({ codeBlock: group });
 			await new Promise(resolve => setTimeout(resolve, 0));
 			expect(JSON.parse(clipboardText)[0].nestedProjectCodeBlocks).toHaveLength(3);
 
-			await addCodeBlock({ x: 100, y: 100, isNew: false, code: [''] });
+			await pasteCodeBlocks({ x: 100, y: 100 });
 
 			expect(rootCodeBlocks).toHaveLength(2);
 			const pastedGroup = rootCodeBlocks[1];
@@ -314,11 +314,11 @@ describe('codeBlockCreator - group copy/paste', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
 			// Trigger paste at position (100, 100)
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Verify two blocks were created
 			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(2);
@@ -346,10 +346,10 @@ describe('codeBlockCreator - group copy/paste', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			expect(mockState.codeBlockRendering.codeBlocks[0].disabled).toBe(true);
 			expect(mockState.codeBlockRendering.codeBlocks[1].disabled).toBe(false);
@@ -375,10 +375,10 @@ describe('codeBlockCreator - group copy/paste', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Original block should still have "audio" at line 1
 			expect(mockState.codeBlockRendering.codeBlocks[0].code[1]).toBe('; @group audio');
@@ -411,10 +411,10 @@ describe('codeBlockCreator - group copy/paste', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// audio -> audio1, video -> video1 (now at line 2 after @pos)
 			expect(mockState.codeBlockRendering.codeBlocks[2].code[2]).toBe('; @group audio1');
@@ -431,10 +431,10 @@ describe('codeBlockCreator - group copy/paste', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Should create one block with plain text (now includes @pos)
 			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
@@ -453,10 +453,10 @@ describe('codeBlockCreator - group copy/paste', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Should fallback to single paste
 			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
@@ -480,10 +480,10 @@ describe('codeBlockCreator - group copy/paste', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Pasted blocks should have unique names
 			expect(mockState.codeBlockRendering.codeBlocks[1].name).not.toBe('foo');
@@ -512,10 +512,10 @@ describe('codeBlockCreator - group copy/paste', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			expect(mockState.codeBlockRendering.codeBlocks[1].code[0]).toBe('module foo2');
 			expect(mockState.codeBlockRendering.codeBlocks[2].code[2]).toBe('int* source &foo2:memoryItem');
@@ -534,10 +534,10 @@ describe('codeBlockCreator - group copy/paste', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Nonstick flag should be preserved (now at index 2 after @pos)
 			expect(mockState.codeBlockRendering.codeBlocks[0].code[2]).toContain('nonstick');

@@ -4,14 +4,14 @@ import type { CodeBlockDisplayModel } from '../../buildDisplayModel';
 
 export interface ParsedEditorDirective {
 	name: string;
-	rawRow: number;
+	sourceLineIndex: number;
 	args: string[];
 	sourceLine?: string;
 }
 
-export interface DirectiveLayoutContribution {
-	rawRow: number;
-	rows: number;
+export interface VerticalSpaceAfterSourceLine {
+	sourceLineIndex: number;
+	heightInRows: number;
 }
 
 export type ViewportAnchor = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
@@ -33,28 +33,26 @@ export interface DirectiveBlockState {
 }
 
 export interface DirectiveDisplayState {
-	hideAfterRawRow?: number;
+	hideAfterSourceLineIndex?: number;
 }
 
-export interface DirectiveWidgetContribution {
+export interface DirectiveLayoutCallbacks {
 	beforeGraphicDataWidthCalculation?: (
 		graphicData: CodeBlockGraphicData,
 		state: State,
 		directiveState: DirectiveDerivedState
 	) => void;
-	afterGraphicDataWidthCalculation?: (
-		graphicData: CodeBlockGraphicData,
-		state: State,
-		directiveState: DirectiveDerivedState
-	) => void;
+	/** Run after block dimensions, display rows, gaps, and cursor coordinates are current. */
+	onBlockLayoutReady?: (graphicData: CodeBlockGraphicData, state: State, directiveState: DirectiveDerivedState) => void;
 }
 
 export interface DirectiveDerivedState {
 	blockState: DirectiveBlockState;
 	displayState: DirectiveDisplayState;
 	displayModel: CodeBlockDisplayModel;
-	layoutContributions: DirectiveLayoutContribution[];
-	widgets: DirectiveWidgetContribution[];
+	/** Add vertical space below a zero-based source line. Heights are measured in editor rows. */
+	addVerticalSpaceAfterSourceLine: (space: VerticalSpaceAfterSourceLine) => void;
+	layoutCallbacks: DirectiveLayoutCallbacks[];
 }
 
 export interface DirectiveDerivedStateDraft extends DirectiveDerivedState {
@@ -67,10 +65,14 @@ export interface DirectiveDeriveOptions {
 	state?: State;
 }
 
-export interface EditorDirectivePlugin {
+export interface EditorDirectiveDefinition {
 	name: string;
 	aliases?: string[];
 	allowTrailingComment?: boolean;
-	clearGraphicData?: (graphicData: CodeBlockGraphicData) => void;
+	clearDerivedBlockData?: (graphicData: CodeBlockGraphicData) => void;
 	apply?: (directive: ParsedEditorDirective, draft: DirectiveDerivedStateDraft) => void;
+}
+
+export interface EditorDirectiveRegistry {
+	register: (directive: EditorDirectiveDefinition) => () => void;
 }

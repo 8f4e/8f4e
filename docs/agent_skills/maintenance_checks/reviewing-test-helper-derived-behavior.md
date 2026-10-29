@@ -95,7 +95,7 @@ createMockCodeBlock({
 			prefix: '@',
 			name: 'config',
 			args: ['webUI.overlay.target', 'frame:buffer'],
-			rawRow: 1,
+			sourceLineIndex: 1,
 			sourceLine: '; @config webUI.overlay.target frame:buffer',
 			isTrailing: false,
 		},

@@ -50,15 +50,8 @@ Typical structure:
 ```txt
 directives/
   registry.ts
-  types.ts
   utils.ts
   plot/
-    data.ts
-    plugin.ts
-    resolve.ts
-    data.test.ts
-    resolve.test.ts
-  wave/
     data.ts
     plugin.ts
     resolve.ts
@@ -74,15 +67,19 @@ directiveEditing/
 
 Each directive folder should contain its own semantic logic. Avoid putting directive-specific logic back into `registry.ts`. Source rewriting belongs in `directiveEditing/`.
 
+Optional directives can live in editor plugin packages. For example, `@8f4e/editor-plugin-wave` registers its definitions
+through `directives.register` and uses the same parsing and layout hooks as built-in directives.
+
 ## Directive Flow
 
 The current directive pipeline is:
 
-1. `deriveDirectiveState(code, options)` scans the block once and parses all registered directives.
+1. `deriveDirectiveState(code, parsedDirectives, options)` matches parsed directives to their registered definitions.
 2. Each directive plugin applies its own contributions to a shared draft.
 3. `codeBlockRendering` consumes the derived result.
-4. Directive-owned widget contributions optionally run `beforeGraphicDataWidthCalculation(...)` before width calculation.
-5. Directive-owned widget contributions run `afterGraphicDataWidthCalculation(...)` after width calculation.
+4. Directive layout callbacks optionally run `beforeGraphicDataWidthCalculation(...)` before width calculation.
+5. Core calculates the block's dimensions and cursor coordinates using the display rows and layout gaps.
+6. Directive layout callbacks run `onBlockLayoutReady(...)` with the completed block layout.
 
 The important boundary is:
 
@@ -134,7 +131,7 @@ code = updateDirectiveArgs(code, 'group', ([groupName]) =>
 
 The main shared types are in:
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/types.ts`
+- `packages/editor/packages/editor-core/packages/editor-state-types/src/features/code-blocks/features/directives/types.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/registry.ts`
 
 The derived directive state currently includes:
@@ -142,10 +139,10 @@ The derived directive state currently includes:
 - `blockState`
 - `displayState`
 - `displayModel`
-- `layoutContributions`
-- `widgets`
+- `addVerticalSpaceAfterSourceLine(...)`
+- `layoutCallbacks`
 
-`widgets` is intentionally generic. Do not add directive-specific buckets like `plotters`, `sliders`, or `pianos` to shared directive state.
+`layoutCallbacks` is intentionally generic. Do not add directive-specific buckets like `plotters`, `sliders`, or `pianos` to shared directive state.
 
 ## Adding a New Directive
 
@@ -220,35 +217,40 @@ Use `plugin.ts` to contribute block-level metadata such as:
 
 If a directive changes how code should be displayed, that should be modeled as a directive-owned contribution to the display model, not as a renderer hack in `codeBlockRendering`.
 
-## Layout Contributions
+## Adding Vertical Space
 
-If a directive needs extra vertical space, it should add a layout contribution from its own plugin.
-
-Example shape:
+If a directive needs extra vertical space, request it after the directive's source line:
 
 ```ts
-draft.layoutContributions.push({
-  rawRow: directive.rawRow,
-  rows: 2,
+draft.addVerticalSpaceAfterSourceLine({
+  sourceLineIndex: directive.sourceLineIndex,
+  heightInRows: 2,
 });
 ```
 
-Do not centralize directive layout rules in a global switch.
+`sourceLineIndex` is zero-based and refers to the original source code. `heightInRows` is measured in editor rows.
+Requests after the same line add together. Core stores the requests, maps source lines to display rows, and omits space
+for hidden lines. Make requests during directive application, before block layout is calculated.
 
-## Widget Contributions
+Keep directive-specific spacing rules in the directive definition.
 
-Directive-owned widgets should use generic widget contributions.
+## Layout Callbacks
 
-A widget contribution can:
+Directive-owned widgets should register callbacks through `draft.layoutCallbacks`.
+
+A layout callback can implement:
 
 - `beforeGraphicDataWidthCalculation(...)`
-- `afterGraphicDataWidthCalculation(...)`
+- `onBlockLayoutReady(...)`
 
 Use `beforeGraphicDataWidthCalculation(...)` when the directive must affect graphic data before block width is computed, for example setting `minGridWidth`.
 
-Use `afterGraphicDataWidthCalculation(...)` when the directive builds runtime/editor widgets after layout information is available.
+Use `onBlockLayoutReady(...)` to derive runtime/editor widgets from the completed block layout. The block's width,
+height, display rows, gaps, and cursor coordinates are current when it runs. Layout constraints such as minimum width
+and extra rows must be contributed before this hook. Keep derived widget geometry available to both drawing and
+hit-testing. Widget coordinates are relative to the block; viewport placement is handled separately by core.
 
-The center should only iterate widget contributions. It should not know concrete widget categories.
+Core should only run layout callbacks. It should not know concrete plugin widget categories.
 
 ## Testing
 
@@ -263,7 +265,7 @@ Prefer testing through:
 
 - `deriveDirectiveState(...)`
 - `runBeforeGraphicDataWidthCalculation(...)`
-- `runAfterGraphicDataWidthCalculation(...)`
+- `runBlockLayoutReady(...)`
 
 instead of reviving old directive-specific update entry points.
 

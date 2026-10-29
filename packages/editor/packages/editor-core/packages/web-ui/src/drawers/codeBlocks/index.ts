@@ -1,27 +1,17 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import type { WebUiRenderData } from '@8f4e/web-ui-render-projection';
 import type { DrawContext } from '../../drawContext';
 import type { MemoryViews } from '../../types';
+import type { CodeBlockDrawerRegistry } from '../registry';
 import drawArrow from './drawArrow';
 import drawEntryOutlines from './drawEntryOutlines';
-import drawSelectedLineHint from './drawSelectedLineHint';
 import drawSelectedOutline from './drawSelectedOutline';
 import drawShapeDeclarations from './drawShapeDeclarations';
-import drawAssertions from './widgets/assertions';
-import drawBars from './widgets/bars';
 import drawBlockHighlights from './widgets/blockHighlights';
-import drawButtons from './widgets/buttons';
 import drawConnectors from './widgets/connectors';
-import drawCrossfades from './widgets/crossfades';
-import drawDebuggers from './widgets/debuggers';
 import drawErrorMessages from './widgets/errorMessages';
 import drawInfoPanels from './widgets/infoPanels';
-import drawMeters from './widgets/meters';
-import drawPianoKeyboards from './widgets/pianoKeyboards';
-import drawPlotters from './widgets/plotters';
-import drawSliders from './widgets/sliders';
-import drawSwitches from './widgets/switches';
-import drawWaves from './widgets/waves';
 
 const corner = '+';
 
@@ -29,14 +19,9 @@ export default function drawModules(
 	engine: DrawContext,
 	state: State,
 	memoryViews: MemoryViews,
-	renderData: WebUiRenderData
+	renderData: WebUiRenderData,
+	drawers?: CodeBlockDrawerRegistry
 ): void {
-	const spriteLookups = state.spriteLookups;
-
-	if (!spriteLookups) {
-		return;
-	}
-
 	const { x, y } = state.viewport;
 
 	const offsetX = -x;
@@ -56,72 +41,58 @@ export default function drawModules(
 		) {
 			engine.startGroup(codeBlock.x, codeBlock.y);
 			if (codeBlock === state.codeBlockRendering.draggedCodeBlock) {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.moduleBackgroundDragged, codeBlock.width, codeBlock.height);
+				engine.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
 			} else if (codeBlock.disabled) {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.moduleBackgroundDisabled, codeBlock.width, codeBlock.height);
+				engine.drawFill(0, 0, PALETTE_INDICES.surfaceSubdued, codeBlock.width, codeBlock.height);
 			} else {
-				engine.drawSprite(0, 0, spriteLookups.fillColors.moduleBackground, codeBlock.width, codeBlock.height);
+				engine.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
 			}
 
-			drawBlockHighlights(engine, state, codeBlock);
+			drawBlockHighlights(engine, codeBlock);
 
 			if (state.featureFlags.codeLineSelection && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
-				engine.drawSprite(
-					0,
-					codeBlock.cursor.y,
-					spriteLookups.fillColors.highlightedCodeLine,
-					codeBlock.width,
-					state.viewport.hGrid
-				);
+				engine.drawFill(0, codeBlock.cursor.y, PALETTE_INDICES.primarySoft, codeBlock.width, state.viewport.hGrid);
 			}
 
-			const cornerFont =
-				state.codeBlockRendering.selectedCodeBlock === codeBlock ? spriteLookups.fontNumbers : spriteLookups.fontCode;
+			const cornerColor =
+				state.codeBlockRendering.selectedCodeBlock === codeBlock
+					? PALETTE_INDICES.secondaryBase
+					: PALETTE_INDICES.inkBase;
 
-			engine.drawText(0, 0, corner, cornerFont);
-			engine.drawText(codeBlock.width - state.viewport.vGrid, 0, corner, cornerFont);
-			engine.drawText(0, codeBlock.height - state.viewport.hGrid, corner, cornerFont);
+			engine.drawText(0, 0, corner, cornerColor);
+			engine.drawText(codeBlock.width - state.viewport.vGrid, 0, corner, cornerColor);
+			engine.drawText(0, codeBlock.height - state.viewport.hGrid, corner, cornerColor);
 			engine.drawText(
 				codeBlock.width - state.viewport.vGrid,
 				codeBlock.height - state.viewport.hGrid,
 				corner,
-				cornerFont
+				cornerColor
 			);
 
 			for (let i = 0; i < codeCells.length; i++) {
 				engine.drawResolvedText(state.viewport.vGrid, state.viewport.hGrid * i, codeCells[i]);
 			}
 
-			drawShapeDeclarations(engine, state, codeBlock);
+			drawShapeDeclarations(engine, codeBlock);
 
 			if (state.featureFlags.editing && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				engine.drawText(
 					codeBlock.cursor.x,
 					codeBlock.cursor.y,
 					'_',
-					codeBlock.disabled ? spriteLookups.fontDisabledCode : spriteLookups.fontCode
+					codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase
 				);
 			}
-			drawAssertions(engine, state, codeBlock);
 
 			if (state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				drawSelectedOutline(engine, state, codeBlock.width, codeBlock.height);
 			}
 
 			drawErrorMessages(engine, state, codeBlock);
-			drawSwitches(engine, state, codeBlock, memoryViews);
-			drawButtons(engine, state, codeBlock, memoryViews);
-			drawSliders(engine, state, codeBlock, memoryViews);
-			drawCrossfades(engine, state, codeBlock, memoryViews);
-			drawPianoKeyboards(engine, state, codeBlock, memoryViews);
+			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
 			drawConnectors(engine, state, codeBlock, memoryViews);
-			drawBars(engine, state, codeBlock, memoryViews);
-			drawMeters(engine, state, codeBlock, memoryViews);
-			drawPlotters(engine, state, codeBlock, memoryViews);
-			drawWaves(engine, state, codeBlock, memoryViews);
 			drawInfoPanels(engine, state, codeBlock);
-			drawDebuggers(engine, state, codeBlock, memoryViews);
-			drawSelectedLineHint(engine, state, codeBlock, memoryViews);
+			drawers?.drawCodeBlockOverlay({ draw: engine, state, codeBlock, memoryViews });
 
 			engine.endGroup();
 		} else if (state.featureFlags.offscreenBlockArrows) {

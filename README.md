@@ -32,24 +32,47 @@ The 8f4e project is organized as an Nx monorepo with the following package hiera
     │       │       └── <a href="./packages/compiler/packages/wasm-codegen/packages/wasm-utils/README.md">wasm-utils</a> (Low-level WebAssembly byte construction helpers)
     │       └── <a href="./packages/compiler/packages/stdlib/README.md">stdlib</a> (Standard-library include source files)
     ├── <a href="./packages/editor/README.md">editor</a> (Editor product packages)
-    │   └── packages/
-    │       ├── <a href="./packages/editor/packages/compiler-worker/README.md">compiler-worker</a> (Web Worker wrapper around the compiler for live coding)
-    │       ├── <a href="./packages/editor/packages/editor-default/README.md">editor-default</a> (Default compiler, runtime, storage, and example composition)
-    │       ├── <a href="./packages/editor/packages/editor-core/README.md">editor-core</a> (Minimal reusable editor)
-    │       │   └── packages/
-    │       │       ├── <a href="./packages/editor/packages/editor-core/packages/editor-state/README.md">editor-state</a> (Editor state management)
-    │       │       ├── editor-state-types (Shared public editor-state model types)
-    │       │       ├── <a href="./packages/editor/packages/editor-core/packages/editor-state-testing/README.md">editor-state-testing</a> (Framework-agnostic editor-state test helpers)
-    │       │       ├── <a href="./packages/editor/packages/editor-core/packages/state-manager/README.md">state-manager</a> (State manager with subscriptions)
-    │       │       └── <a href="./packages/editor/packages/editor-core/packages/web-ui/README.md">web-ui</a> (WebGL rendering for the editor interface)
-    │       │           └── packages/
-    │       │               ├── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/glugglugglug/README.md">glugglugglug</a> (2D WebGL graphics utilities)
-    │       │               ├── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/render-projection/README.md">render-projection</a> (Precalculates web UI-specific render data from editor state)
-    │       │               └── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/README.md">sprite-generator</a> (All UI graphics are generative)
-    │       ├── <a href="./packages/editor/packages/editor-website/README.md">editor-website</a> (Thin deployable website for the default editor)
-    │       ├── <a href="./packages/editor/packages/runtime-audio-worklet/README.md">runtime-audio-worklet</a> (AudioWorklet editor runtime)
-    │       ├── <a href="./packages/editor/packages/runtime-test-runner/README.md">runtime-test-runner</a> (Runs project test entries and reports assertions in the editor)
-    │       └── <a href="./packages/editor/packages/runtime-web-worker/README.md">runtime-web-worker</a> (Web Worker editor runtime)
+    │   ├── packages/
+    │   │   ├── <a href="./packages/editor/packages/compiler-worker/README.md">compiler-worker</a> (Web Worker wrapper around the compiler for live coding)
+    │   │   ├── <a href="./packages/editor/packages/editor-default/README.md">editor-default</a> (Default compiler, runtime, storage, and example composition)
+    │   │   ├── <a href="./packages/editor/packages/editor-core/README.md">editor-core</a> (Minimal reusable editor)
+    │   │   │   └── packages/
+    │   │   │       ├── <a href="./packages/editor/packages/editor-core/packages/editor-state/README.md">editor-state</a> (Editor state management)
+    │   │   │       ├── editor-state-types (Shared public editor-state model types)
+    │   │   │       ├── <a href="./packages/editor/packages/editor-core/packages/editor-state-testing/README.md">editor-state-testing</a> (Framework-agnostic editor-state test helpers)
+    │   │   │       ├── <a href="./packages/editor/packages/editor-core/packages/state-manager/README.md">state-manager</a> (State manager with subscriptions)
+    │   │   │       └── <a href="./packages/editor/packages/editor-core/packages/web-ui/README.md">web-ui</a> (WebGL rendering for the editor interface)
+    │   │   │           └── packages/
+    │   │   │               ├── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/glugglugglug/README.md">glugglugglug</a> (2D WebGL graphics utilities)
+    │   │   │               ├── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/render-projection/README.md">render-projection</a> (Precalculates web UI-specific render data from editor state)
+    │   │   │               └── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/README.md">sprite-generator</a> (All UI graphics are generative)
+    │   │   ├── <a href="./packages/editor/packages/editor-website/README.md">editor-website</a> (Thin deployable website for the default editor)
+    │   │   ├── <a href="./packages/editor/packages/runtime-audio-worklet/README.md">runtime-audio-worklet</a> (AudioWorklet editor runtime)
+    │   │   ├── <a href="./packages/editor/packages/runtime-test-runner/README.md">runtime-test-runner</a> (Runs project test entries and reports assertions in the editor)
+    │   │   └── <a href="./packages/editor/packages/runtime-web-worker/README.md">runtime-web-worker</a> (Web Worker editor runtime)
+    │   └── <a href="./packages/editor/plugins">plugins</a> (Optional editor features)
+    │       ├── <a href="./packages/editor/plugins/assertion-markers">assertion-markers</a> (Executed assertion pass/fail indicators)
+    │       ├── <a href="./packages/editor/plugins/bars">bars</a> (Live memory bar displays)
+    │       ├── <a href="./packages/editor/plugins/binary-assets">binary-assets</a> (Binary asset fetching, caching, and memory loading)
+    │       ├── <a href="./packages/editor/plugins/button">button</a> (Momentary button controls)
+    │       ├── <a href="./packages/editor/plugins/crossfade">crossfade</a> (Interactive crossfade controls)
+    │       ├── <a href="./packages/editor/plugins/keyboard-memory">keyboard-memory</a> (Keyboard-to-memory input)
+    │       ├── <a href="./packages/editor/plugins/meter">meter</a> (Live memory value meters)
+    │       ├── <a href="./packages/editor/plugins/midi-input">midi-input</a> (MIDI device discovery and input callbacks)
+    │       ├── <a href="./packages/editor/plugins/piano">piano</a> (Interactive piano keyboards)
+    │       ├── <a href="./packages/editor/plugins/plot">plot</a> (Live memory plots)
+    │       ├── <a href="./packages/editor/plugins/project-export">project-export</a> (Project Save and Export actions)
+    │       ├── <a href="./packages/editor/plugins/remove-memory-connections">remove-memory-connections</a> (Disconnects intermodular memory defaults)
+    │       ├── <a href="./packages/editor/plugins/screenshot">screenshot</a> (PNG screenshots of the editor)
+    │       ├── <a href="./packages/editor/plugins/slider">slider</a> (Interactive slider controls)
+    │       ├── <a href="./packages/editor/plugins/stack">stack</a> (Stack analysis overlays)
+    │       ├── <a href="./packages/editor/plugins/switch">switch</a> (Memory toggle controls)
+    │       ├── <a href="./packages/editor/plugins/toggle-favorite">toggle-favorite</a> (Favorite and Unfavorite editing actions)
+    │       ├── <a href="./packages/editor/plugins/toggle-skip-execution">toggle-skip-execution</a> (Single-module execution toggling)
+    │       ├── <a href="./packages/editor/plugins/tooltips">tooltips</a> (Selected-line tooltips)
+    │       ├── <a href="./packages/editor/plugins/wasm-export">wasm-export</a> (WebAssembly export action)
+    │       ├── <a href="./packages/editor/plugins/watch">watch</a> (Inline memory value overlays)
+    │       └── <a href="./packages/editor/plugins/wave">wave</a> (Live waveform displays)
     ├── <a href="./packages/examples/README.md">examples</a> (Example modules and projects)
     ├── <a href="./packages/cli/README.md">cli</a> (CLI for compiling 8f4e project files)
     ├── <a href="./packages/test-runner/README.md">test-runner</a> (Shared native assertion execution and reporting)
@@ -102,7 +125,7 @@ Thanks to everyone who has contributed to 8f4e.
 </td>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/masyarakatai"><img src="https://github.com/masyarakatai.png?size=96" width="72" alt="@masyarakatai"><br><sub><b>Masyarakat AI</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Amasyarakatai">🔀 5</a></sub>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Amasyarakatai">🔀 7</a></sub>
 </td>
 </tr>
 <tr>
@@ -129,6 +152,10 @@ Thanks to everyone who has contributed to 8f4e.
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AAaqibhafeezkhan">🔀 2</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
+<a href="https://github.com/zFl4wless"><img src="https://github.com/zFl4wless.png?size=96" width="72" alt="@zFl4wless"><br><sub><b>Noah</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AzFl4wless">🔀 2</a></sub>
+</td>
+<td align="center" valign="top" width="25%">
 <a href="https://github.com/nova-loop"><img src="https://github.com/nova-loop.png?size=96" width="72" alt="@nova-loop"><br><sub><b>nova-loop</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Anova-loop">🔀 2</a></sub>
 </td>
@@ -136,12 +163,12 @@ Thanks to everyone who has contributed to 8f4e.
 <a href="https://github.com/slopgobblercobbler"><img src="https://github.com/slopgobblercobbler.png?size=96" width="72" alt="@slopgobblercobbler"><br><sub><b>Stephen Cork</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Aslopgobblercobbler">🔀 2</a></sub>
 </td>
+</tr>
+<tr>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Abhijay-29r"><img src="https://github.com/Abhijay-29r.png?size=96" width="72" alt="@Abhijay-29r"><br><sub><b>Abhijay-29r</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AAbhijay-29r">🔀 1</a></sub>
 </td>
-</tr>
-<tr>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Anikesh348"><img src="https://github.com/Anikesh348.png?size=96" width="72" alt="@Anikesh348"><br><sub><b>Anikesh Thakur</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AAnikesh348">🔀 1</a></sub>
@@ -154,19 +181,15 @@ Thanks to everyone who has contributed to 8f4e.
 <a href="https://github.com/cjy851096"><img src="https://github.com/cjy851096.png?size=96" width="72" alt="@cjy851096"><br><sub><b>Jianyang Chen</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Acjy851096">🔀 1</a></sub>
 </td>
+</tr>
+<tr>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Khushbu677"><img src="https://github.com/Khushbu677.png?size=96" width="72" alt="@Khushbu677"><br><sub><b>Khushbu Kumari</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AKhushbu677">🔀 1</a></sub>
 </td>
-</tr>
-<tr>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/mandiau-matthias"><img src="https://github.com/mandiau-matthias.png?size=96" width="72" alt="@mandiau-matthias"><br><sub><b>mandiau-matthias</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Amandiau-matthias">🔀 1</a></sub>
-</td>
-<td align="center" valign="top" width="25%">
-<a href="https://github.com/zFl4wless"><img src="https://github.com/zFl4wless.png?size=96" width="72" alt="@zFl4wless"><br><sub><b>Noah</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AzFl4wless">🔀 1</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Prisha38"><img src="https://github.com/Prisha38.png?size=96" width="72" alt="@Prisha38"><br><sub><b>Prisha</b></sub></a><br>
@@ -179,12 +202,12 @@ Thanks to everyone who has contributed to 8f4e.
 </tr>
 <tr>
 <td align="center" valign="top" width="25%">
-<a href="https://github.com/TanmayNileshShinde"><img src="https://github.com/TanmayNileshShinde.png?size=96" width="72" alt="@TanmayNileshShinde"><br><sub><b>Tanmay Nilesh Shinde</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3ATanmayNileshShinde">🔀 1</a></sub>
+<a href="https://github.com/StavanRKhobare"><img src="https://github.com/StavanRKhobare.png?size=96" width="72" alt="@StavanRKhobare"><br><sub><b>StavanRKhobare</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AStavanRKhobare">🔀 1</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
-<a href="https://github.com/Warma10032"><img src="https://github.com/Warma10032.png?size=96" width="72" alt="@Warma10032"><br><sub><b>一只小包子</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AWarma10032">🔀 1</a></sub>
+<a href="https://github.com/TanmayNileshShinde"><img src="https://github.com/TanmayNileshShinde.png?size=96" width="72" alt="@TanmayNileshShinde"><br><sub><b>Tanmay Nilesh Shinde</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3ATanmayNileshShinde">🔀 1</a></sub>
 </td>
 </tr>
 </table>

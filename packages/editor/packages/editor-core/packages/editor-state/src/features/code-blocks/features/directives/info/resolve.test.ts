@@ -1,11 +1,7 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-	deriveDirectiveState,
-	runAfterGraphicDataWidthCalculation,
-	runBeforeGraphicDataWidthCalculation,
-} from '../registry';
+import { deriveDirectiveState, runBeforeGraphicDataWidthCalculation, runBlockLayoutReady } from '../registry';
 
 function createInfoBlock(overrides: Parameters<typeof createMockCodeBlock>[0] = {}) {
 	const code = overrides.code ?? ['module foo', '; @info foo', 'moduleEnd'];
@@ -18,7 +14,7 @@ function createInfoBlock(overrides: Parameters<typeof createMockCodeBlock>[0] = 
 				prefix: '@',
 				name: 'info',
 				args: ['foo'],
-				rawRow: 1,
+				sourceLineIndex: 1,
 				sourceLine: code[1],
 				isTrailing: false,
 			},
@@ -47,7 +43,7 @@ describe('info directive widget resolution', () => {
 		const directiveState = deriveDirectiveState(graphicData.code, graphicData.parsedDirectives, { state });
 
 		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState);
-		runAfterGraphicDataWidthCalculation(graphicData, state, directiveState);
+		runBlockLayoutReady(graphicData, state, directiveState);
 
 		expect(graphicData.widgets.infoPanels).toEqual([
 			{

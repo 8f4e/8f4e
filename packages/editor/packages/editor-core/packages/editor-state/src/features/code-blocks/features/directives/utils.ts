@@ -1,4 +1,4 @@
-import type { EditorDirectivePlugin, ParsedDirectiveRecord, ParsedEditorDirective } from '@8f4e/editor-state-types';
+import type { EditorDirectiveDefinition, ParsedDirectiveRecord, ParsedEditorDirective } from '@8f4e/editor-state-types';
 
 export interface DirectiveComment {
 	name: string;
@@ -76,8 +76,8 @@ export function parseDirectiveRecords(code: string[]): ParsedDirectiveRecord[] {
 	const records: ParsedDirectiveRecord[] = [];
 	let previousRecord: ParsedDirectiveRecord | undefined;
 
-	for (let rawRow = 0; rawRow < code.length; rawRow++) {
-		const line = code[rawRow];
+	for (let sourceLineIndex = 0; sourceLineIndex < code.length; sourceLineIndex++) {
+		const line = code[sourceLineIndex];
 		const continuationArgs = parseDirectiveContinuationArgs(line);
 		if (continuationArgs) {
 			if (previousRecord && continuationArgs.length > 0) {
@@ -90,7 +90,7 @@ export function parseDirectiveRecords(code: string[]): ParsedDirectiveRecord[] {
 			prefix: parsed.prefix,
 			name: parsed.name,
 			args: parsed.args,
-			rawRow,
+			sourceLineIndex,
 			sourceLine: line,
 			isTrailing: parsed.isTrailing,
 		}));
@@ -123,11 +123,11 @@ export function serializeDirectiveComments(directives: DirectiveComment[]): stri
 		.join(' ')}`;
 }
 
-export function createDirectivePlugin(
+export function createDirectiveDefinition(
 	name: string,
-	apply: NonNullable<EditorDirectivePlugin['apply']>,
-	options: Pick<EditorDirectivePlugin, 'aliases' | 'allowTrailingComment' | 'clearGraphicData'> = {}
-): EditorDirectivePlugin {
+	apply: NonNullable<EditorDirectiveDefinition['apply']>,
+	options: Pick<EditorDirectiveDefinition, 'aliases' | 'allowTrailingComment' | 'clearDerivedBlockData'> = {}
+): EditorDirectiveDefinition {
 	return {
 		name,
 		...options,
@@ -137,7 +137,7 @@ export function createDirectivePlugin(
 
 /**
  * Shared alias-normalization helper. Filters `ParsedDirectiveRecord[]` to
- * editor (`@`) directives only, resolves aliases to canonical plugin names, and
+ * editor (`@`) directives only, resolves aliases to canonical definition names, and
  * applies the `allowTrailingComment` gate for trailing records.
  *
  * Both `parseEditorDirectives` and `deriveDirectiveState` delegate to this so
@@ -145,27 +145,27 @@ export function createDirectivePlugin(
  */
 export function normalizeEditorDirectiveRecords(
 	records: ParsedDirectiveRecord[],
-	plugins: EditorDirectivePlugin[]
+	definitions: EditorDirectiveDefinition[]
 ): ParsedEditorDirective[] {
-	const pluginEntries = plugins.flatMap(plugin =>
-		[plugin.name, ...(plugin.aliases ?? [])].map(name => [name, plugin] as const)
+	const definitionEntries = definitions.flatMap(definition =>
+		[definition.name, ...(definition.aliases ?? [])].map(name => [name, definition] as const)
 	);
-	const pluginsByName = new Map(pluginEntries);
+	const definitionsByName = new Map(definitionEntries);
 
 	return records.flatMap(record => {
-		const plugin = pluginsByName.get(record.name);
-		if (!plugin) {
+		const definition = definitionsByName.get(record.name);
+		if (!definition) {
 			return [];
 		}
 
-		if (record.isTrailing && !plugin.allowTrailingComment) {
+		if (record.isTrailing && !definition.allowTrailingComment) {
 			return [];
 		}
 
 		return [
 			{
-				name: plugin.name,
-				rawRow: record.rawRow,
+				name: definition.name,
+				sourceLineIndex: record.sourceLineIndex,
 				args: record.args,
 				sourceLine: record.sourceLine,
 			},
@@ -173,8 +173,11 @@ export function normalizeEditorDirectiveRecords(
 	});
 }
 
-export function parseEditorDirectives(code: string[], plugins: EditorDirectivePlugin[]): ParsedEditorDirective[] {
-	return normalizeEditorDirectiveRecords(parseDirectiveRecords(code), plugins);
+export function parseEditorDirectives(
+	code: string[],
+	definitions: EditorDirectiveDefinition[]
+): ParsedEditorDirective[] {
+	return normalizeEditorDirectiveRecords(parseDirectiveRecords(code), definitions);
 }
 
 export function hasDirective(code: string[], name: string): boolean {
