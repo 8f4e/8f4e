@@ -1,12 +1,10 @@
 import type { RenderHook, RenderPluginHost } from 'glugglugglug';
 import { createProgram, prepareRenderPass, removeHook, requireResource, requireUniform } from '../webgl';
-import { LINE_INSTANCE_BYTE_STRIDE, LineInstanceBuffer } from './line-instance-buffer';
+import { LINE_INSTANCE_BYTE_STRIDE, LINE_INSTANCE_LAYOUT, type LineColor } from './line-instance';
+import { LineInstanceBuffer } from './line-instance-buffer';
 import { lineFragmentShaderSource, lineVertexShaderSource } from './line-shaders';
 
 const DEFAULT_INITIAL_CAPACITY = 1_024;
-
-/** Normalized red, green, blue, and alpha components for one line. */
-export type LineColor = readonly [red: number, green: number, blue: number, alpha: number];
 
 /** Construction options for a line-drawer plugin. */
 export type LineDrawerOptions = {
@@ -15,7 +13,7 @@ export type LineDrawerOptions = {
 };
 
 /**
- * Editor-owned render-hook plugin that batches solid pixel lines above all sprites.
+ * Editor-owned render-hook plugin that batches Bresenham pixel lines above all sprites.
  *
  * The plugin registers one pre-draw hook to reset its reusable CPU buffer and
  * one post-draw hook to upload and render the submitted lines. It owns its GPU
@@ -65,13 +63,13 @@ export class LineDrawer {
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
 		gl.bufferData(gl.ARRAY_BUFFER, this.gpuCapacity * LINE_INSTANCE_BYTE_STRIDE, gl.DYNAMIC_DRAW);
 		gl.enableVertexAttribArray(0);
-		gl.vertexAttribPointer(0, 4, gl.FLOAT, false, LINE_INSTANCE_BYTE_STRIDE, 0);
+		gl.vertexAttribPointer(0, 4, gl.FLOAT, false, LINE_INSTANCE_BYTE_STRIDE, LINE_INSTANCE_LAYOUT.x1);
 		gl.vertexAttribDivisor(0, 1);
 		gl.enableVertexAttribArray(1);
-		gl.vertexAttribPointer(1, 1, gl.FLOAT, false, LINE_INSTANCE_BYTE_STRIDE, 4 * Float32Array.BYTES_PER_ELEMENT);
+		gl.vertexAttribPointer(1, 1, gl.FLOAT, false, LINE_INSTANCE_BYTE_STRIDE, LINE_INSTANCE_LAYOUT.thickness);
 		gl.vertexAttribDivisor(1, 1);
 		gl.enableVertexAttribArray(2);
-		gl.vertexAttribPointer(2, 4, gl.UNSIGNED_BYTE, true, LINE_INSTANCE_BYTE_STRIDE, 5 * Float32Array.BYTES_PER_ELEMENT);
+		gl.vertexAttribPointer(2, 4, gl.UNSIGNED_BYTE, true, LINE_INSTANCE_BYTE_STRIDE, LINE_INSTANCE_LAYOUT.color);
 		gl.vertexAttribDivisor(2, 1);
 
 		this.hooks.preDraw.push(this.resetHook);
@@ -79,20 +77,25 @@ export class LineDrawer {
 	}
 
 	/**
-	 * Appends one unchecked line to this frame's reusable instance buffer.
+	 * Appends one line to this frame's reusable instance buffer.
 	 *
 	 * Lines are drawn in call order above every sprite. Invalid coordinates,
-	 * thicknesses, colors, or lifecycle calls are programmer errors with
-	 * unspecified consequences.
+	 * colors, or lifecycle calls are programmer errors with unspecified consequences.
+	 * Endpoints snap to the nearest pixel and are both included. Thickness must be
+	 * a positive integer and expands along the minor axis of the staircase.
 	 *
 	 * @param x1 - Starting X coordinate in canvas pixels.
 	 * @param y1 - Starting Y coordinate in canvas pixels.
 	 * @param x2 - Ending X coordinate in canvas pixels.
 	 * @param y2 - Ending Y coordinate in canvas pixels.
-	 * @param thickness - Full line thickness in canvas pixels.
+	 * @param thickness - Positive integer thickness in canvas pixels.
 	 * @param color - Normalized red, green, blue, and alpha components.
+	 * @throws RangeError when thickness is not a positive integer.
 	 */
 	drawLine(x1: number, y1: number, x2: number, y2: number, thickness: number, color: LineColor): void {
+		if (!Number.isInteger(thickness) || thickness <= 0) {
+			throw new RangeError('thickness must be a positive integer number of pixels.');
+		}
 		this.lines.append(x1, y1, x2, y2, thickness, color);
 	}
 

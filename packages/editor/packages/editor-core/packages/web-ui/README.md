@@ -14,8 +14,9 @@ depth testing must use a framebuffer with their own depth attachment.
 ## Rendering plugins
 
 Web-ui owns its rendering plugins under `src/plugins/`: `background` draws the canvas pattern, `line-drawer` batches
-connection wires, and `rgba-texture-layer` draws WebAssembly framebuffer overlays. They depend only on glugglugglug's
-`RenderPluginHost` context and hook contract. Glugglugglug owns the sprite renderer; it does not bundle these plugins.
+connection wires with a Bresenham staircase and no antialiasing, and `rgba-texture-layer` draws WebAssembly framebuffer
+overlays. They depend only on glugglugglug's `RenderPluginHost` context and hook contract. Glugglugglug owns the sprite
+renderer; it does not bundle these plugins.
 
 The plugins share shader compilation, required-uniform lookup, render-state setup, and hook removal helpers. Each
 plugin owns its resources and destruction. Web-ui initializes background and line rendering, creates texture layers
@@ -25,6 +26,16 @@ run in `postDraw`, followed by configured texture overlays.
 The background precomposes dot colors over the base when the palette changes and draws one triangle. Each RGBA
 overlay owns one texture, uses nearest filtering, and takes opacity from its pixels. Pixel uploads reuse storage
 until the image dimensions change; memory release deletes the texture and the next upload recreates it.
+
+### Wire rasterization
+
+Wires follow a Bresenham staircase with one pixel per column for shallow angles or per row for steep angles.
+Thickness must be a positive integer number of pixels; fractional and non-positive widths throw a `RangeError`.
+Selected wires expand the staircase along its minor axis. Both endpoints snap to the nearest pixel and are included;
+reversing the endpoints preserves the same pixels. The comparison below enlarges pixels 3×, with the previous
+rectangle coverage on the left and Bresenham rendering on the right.
+
+![Wire rendering before and after Bresenham rasterization](images/bresenham-comparison.png)
 
 ## API
 
