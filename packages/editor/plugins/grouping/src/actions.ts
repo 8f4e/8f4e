@@ -54,7 +54,7 @@ export function registerGroupActions({ store, events }: EditorPluginContext): ()
 		publishProjectChange(store);
 	};
 	const onRemove = ({ codeBlock }: BlockAction) => {
-		if (!state.featureFlags.editing || !getGroup(codeBlock)) return;
+		if (!state.featureFlags.editing || !getGroup(codeBlock.parsedDirectives)) return;
 		if (commitCode(codeBlock, removeDirective(codeBlock.code, 'group'))) publishProjectChange(store);
 	};
 	const onUngroup = ({ codeBlock }: BlockAction) => {

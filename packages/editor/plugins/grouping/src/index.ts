@@ -1,20 +1,19 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import type { ResolveCodeBlockDragTargetsEvent, TransformPastedCodeBlocksEvent } from '@8f4e/editor-state';
 import { registerGroupActions } from './actions';
-import { getGroup, getGroupBlocks, groupDirective } from './groups';
+import { getGroup, getGroupBlocks } from './groups';
 import { registerGroupMenus } from './menus';
 import { renamePastedGroups } from './paste';
 
 export const groupingPlugin: EditorPlugin = {
 	id: 'grouping',
 	setup: context => {
-		const { store, events, directives } = context;
+		const { store, events } = context;
 		const state = store.getState();
-		const unregisterDirective = directives.register(groupDirective);
 		const unregisterActions = registerGroupActions(context);
 		const unregisterMenu = registerGroupMenus(context);
 		const onDragTargets = (event: ResolveCodeBlockDragTargetsEvent) => {
-			const group = getGroup(event.codeBlock);
+			const group = getGroup(event.codeBlock.parsedDirectives);
 			if (group && group.nonstick === Boolean(event.altKey)) {
 				event.targets = getGroupBlocks(state, event.codeBlock);
 			}
@@ -27,7 +26,6 @@ export const groupingPlugin: EditorPlugin = {
 			events.off('transformPastedCodeBlocks', onPaste);
 			unregisterMenu();
 			unregisterActions();
-			unregisterDirective();
 		};
 	},
 };

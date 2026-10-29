@@ -1,22 +1,22 @@
 import {
 	getUniqueName,
-	parseEditorDirectives,
+	parseBlockDirectives,
 	type TransformPastedCodeBlocksEvent,
 	updateDirectiveArgs,
 } from '@8f4e/editor-state';
 import type { State } from '@8f4e/editor-state-types';
-import { getGroup, groupDirective } from './groups';
+import { getGroup } from './groups';
 
 export function renamePastedGroups(incoming: TransformPastedCodeBlocksEvent, state: State): void {
 	const existingNames = new Set(
 		state.codeBlockRendering.codeBlocks.flatMap(block => {
-			const group = getGroup(block);
+			const group = getGroup(block.parsedDirectives);
 			return group ? [group.name] : [];
 		})
 	);
 	const names = new Map<string, string>();
 	incoming.blocks = incoming.blocks.map(block => {
-		const name = parseEditorDirectives(block.code, [groupDirective]).find(record => record.args[0])?.args[0];
+		const name = getGroup(parseBlockDirectives(block.code))?.name;
 		if (!name) return block;
 		if (!names.has(name)) {
 			const uniqueName = getUniqueName(name, existingNames);

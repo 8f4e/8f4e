@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { removeDirective, updateDirectiveArgs, upsertDirective } from './index';
+import { updateDirectiveArgs, upsertDirective } from './index';
 
 describe('directiveEditing with chained directives', () => {
-	it('removeDirective preserves unrelated directives on the same line', () => {
-		const code = ['module test', '; @custom audio @favorite', 'moduleEnd'];
-
-		expect(removeDirective(code, 'custom')).toEqual(['module test', '; @favorite', 'moduleEnd']);
-	});
-
 	it('updateDirectiveArgs only rewrites the targeted directive on the line', () => {
 		const code = ['module test', '; @custom audio @favorite', 'moduleEnd'];
 

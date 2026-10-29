@@ -7,7 +7,7 @@ export function registerGroupMenus({ store, menus }: EditorPluginContext): () =>
 	const state = store.getState();
 	const registerEditingItem = (create: (block: CodeBlockGraphicData, group: Group) => ContextMenuItem | undefined) =>
 		menus.registerItem('moduleMenu', ({ codeBlock }) => {
-			const group = getGroup(codeBlock);
+			const group = getGroup(codeBlock.parsedDirectives);
 			return group && state.featureFlags.editing ? create(codeBlock, group) : undefined;
 		});
 	const unregisterSkip = registerEditingItem(codeBlock => {
@@ -40,7 +40,7 @@ export function registerGroupMenus({ store, menus }: EditorPluginContext): () =>
 		close: true,
 	}));
 	const unregisterNonstick = registerEditingItem(codeBlock => {
-		const allNonstick = getGroupBlocks(state, codeBlock).every(block => getGroup(block)!.nonstick);
+		const allNonstick = getGroupBlocks(state, codeBlock).every(block => getGroup(block.parsedDirectives)!.nonstick);
 		return {
 			title: allNonstick ? 'Make Group Sticky' : 'Make Group Nonstick',
 			action: 'toggleGroupNonstick',
@@ -55,7 +55,7 @@ export function registerGroupMenus({ store, menus }: EditorPluginContext): () =>
 		close: true,
 	}));
 	const unregisterCopy = menus.registerItem('moduleMenu', ({ codeBlock }) => {
-		if (!getGroup(codeBlock)) return;
+		if (!getGroup(codeBlock.parsedDirectives)) return;
 		return {
 			title: 'Copy group',
 			action: 'copyGroupBlocks',

@@ -14,7 +14,7 @@ Actions operate on the currently visible project slice. Copy preserves creation 
 recursively owned project blocks. Pasting gives each incoming group an available name while keeping its members
 together; child project slices retain their independent grouping names.
 
-The plugin registers a directive, menu items, and event listeners and explicitly unregisters them when disposed.
+The plugin registers menu items and event listeners and explicitly unregisters them when disposed.
 It receives no browser resources. Copy uses the editor's clipboard callback and its generic clipboard serializer.
 Core handles generic source parsing, movement, snapping, insertion, history, and project changes.
 

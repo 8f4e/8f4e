@@ -1,4 +1,4 @@
-import type { State } from '@8f4e/editor-state-types';
+import type { EventDispatcher, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
@@ -153,12 +153,29 @@ describe('codeBlockCreator - copy/paste', () => {
 
 	describe('Multi-block Paste', () => {
 		it('applies plugin source transformations before resolving names and inserting the batch', async () => {
+			const listeners = new Map<string, Array<(event: unknown) => void>>();
+			const events: EventDispatcher = {
+				on: (name, listener) => {
+					const handlers = listeners.get(name) ?? [];
+					handlers.push(listener as (event: unknown) => void);
+					listeners.set(name, handlers);
+				},
+				off: (name, listener) => {
+					listeners.set(
+						name,
+						(listeners.get(name) ?? []).filter(handler => handler !== listener)
+					);
+				},
+				dispatch: (name, payload) => {
+					for (const listener of listeners.get(name) ?? []) listener(payload);
+				},
+			};
 			mockState.callbacks.readClipboardText = async () =>
 				JSON.stringify([
 					{ code: ['module original', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } },
 					{ code: ['module second', 'moduleEnd'], gridCoordinates: { x: 5, y: 3 } },
 				]);
-			mockEvents.on<import('./pasteMultipleBlocks').TransformPastedCodeBlocksEvent>(
+			events.on<import('./pasteMultipleBlocks').TransformPastedCodeBlocksEvent>(
 				'transformPastedCodeBlocks',
 				incoming => {
 					incoming.blocks = incoming.blocks.map(block => ({
@@ -167,15 +184,14 @@ describe('codeBlockCreator - copy/paste', () => {
 					}));
 				}
 			);
-			vi.mocked(mockEvents.dispatch).mockImplementation((name, payload) => {
-				for (const [event, listener] of vi.mocked(mockEvents.on).mock.calls) {
-					if (event === name) listener(payload);
-				}
+			codeBlockCreator(store, events);
+			events.dispatch('pasteCodeBlocks', { x: 100, y: 100 });
+			await vi.waitFor(() => {
+				expect(mockState.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual([
+					'transformed',
+					'transformed2',
+				]);
 			});
-			codeBlockCreator(store, mockEvents);
-			const handler = vi.mocked(mockEvents.on).mock.calls.find(call => call[0] === 'pasteCodeBlocks')![1];
-			await handler({ x: 100, y: 100 });
-			expect(mockState.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['transformed', 'transformed2']);
 			expect(mockState.codeBlockRendering.codeBlocks.every(block => block.code.includes('; @custom data'))).toBe(true);
 			expect(mockState.projectChange.revision).toBe(1);
 		});
