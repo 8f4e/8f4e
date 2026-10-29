@@ -15,13 +15,6 @@ import codeBlockNavigation from './features/code-blocks/features/codeBlockNaviga
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
-import groupCopier from './features/code-blocks/features/group/copier/effect';
-import groupDeleter from './features/code-blocks/features/group/deleter/effect';
-import groupNonstickToggler from './features/code-blocks/features/group/nonstickToggler/effect';
-import groupRemover from './features/code-blocks/features/group/remover/effect';
-import groupRowAligner from './features/code-blocks/features/group/rowAligner/effect';
-import groupSkipExecutionToggler from './features/code-blocks/features/group/skipExecutionToggler/effect';
-import groupUngroupper from './features/code-blocks/features/group/ungroupper/effect';
 import parsedDirectivesUpdater from './features/code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
 import codeEditing from './features/code-editing/effect';
@@ -111,13 +104,6 @@ export default function init(
 	registerEffect(codeBlockNavigation(store, events));
 	registerEffect(viewport(store, events));
 	registerEffect(codeBlockCreator(store, events));
-	registerEffect(groupSkipExecutionToggler(store, events));
-	registerEffect(groupNonstickToggler(store, events));
-	registerEffect(groupCopier(store, events));
-	registerEffect(groupRemover(store, events));
-	registerEffect(groupUngroupper(store, events));
-	registerEffect(groupDeleter(store, events));
-	registerEffect(groupRowAligner(store, events));
 	registerEffect(projectGroupNavigation(store, events));
 	registerEffect(parsedDirectivesUpdater(store));
 	registerEffect(autoEnvConstants(store)); // Must run after codeBlockCreator to ensure env block is created
@@ -150,11 +136,20 @@ export default function init(
 	};
 }
 
+export type { ClipboardCodeBlock } from './features/code-blocks/features/clipboard/clipboardUtils';
+export { serializeCodeBlocksToClipboard } from './features/code-blocks/features/clipboard/clipboardUtils';
+export type { TransformPastedCodeBlocksEvent } from './features/code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
+export type { ResolveCodeBlockDragTargetsEvent } from './features/code-blocks/features/codeBlockDragger/effect';
 export { navigateToCodeBlockInDirection } from './features/code-blocks/features/codeBlockNavigation/effect';
-export { removeDirective } from './features/code-blocks/features/directiveEditing';
+export {
+	removeDirective,
+	updateDirectiveArgs,
+	upsertDirective,
+} from './features/code-blocks/features/directiveEditing';
 export { parseEditorDirectives } from './features/code-blocks/features/directives/utils';
 // Export helper functions
 export { default as getCodeBlockGridWidth } from './features/code-blocks/getCodeBlockGridWidth';
+export { default as replaceCodeBlocksInPlace } from './features/code-blocks/replaceCodeBlocksInPlace';
 export { default as getBlockType } from './features/code-blocks/utils/codeParsers/getBlockType';
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';
 export { default as getCodeBlockNameFromSource } from './features/code-blocks/utils/getCodeBlockNameFromSource';
@@ -174,6 +169,7 @@ export { default as centerViewportOnCodeBlock } from './features/viewport/center
 export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';
 // Export project serialization helpers
 export { default as getExportBaseName } from './pureHelpers/getExportBaseName';
+export { getUniqueName } from './pureHelpers/getUniqueName';
 export { default as serializeCodeBlocksToProject } from './pureHelpers/projectSerialization/serializeCodeBlocks';
 export { serializeProjectTo8f4e } from './pureHelpers/projectSerialization/serializeTo8f4e';
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';

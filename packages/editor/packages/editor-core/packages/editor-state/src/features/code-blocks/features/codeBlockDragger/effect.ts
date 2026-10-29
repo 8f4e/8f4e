@@ -6,7 +6,13 @@ import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
 import findCodeBlockAtViewportCoordinates from '../../utils/finders/findCodeBlockAtViewportCoordinates';
 import upsertPos from '../directives/pos/upsert';
 import { worldPositionToAnchoredPos } from '../directives/viewport/resolve';
-import { getGroupBlocks } from '../group/getGroupBlocks';
+
+/** Plugins may replace targets synchronously before core starts moving and snapping them. */
+export interface ResolveCodeBlockDragTargetsEvent {
+	codeBlock: CodeBlockGraphicData;
+	altKey: InternalMouseEvent['altKey'];
+	targets: CodeBlockGraphicData[];
+}
 
 export interface CodeBlockPointerDownEvent {
 	x: number;
@@ -41,32 +47,13 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		store.set('codeBlockRendering.selectedCodeBlock', state.codeBlockRendering.draggedCodeBlock);
 		didDrag = false;
 
-		// Compute drag set based on nonstick flag and modifier
-		// 1. If block is in a nonstick group and modifier is NOT held: single-block drag
-		// 2. Else if block is in a nonstick group and modifier IS held: group-drag override
-		// 3. Else if block is in a regular group (default) and modifier is NOT held: group drag
-		// 4. Else if block is in a regular group and modifier IS held: single-block override
-		// 5. Else: normal single-block drag
-		if (draggedCodeBlock.groupName) {
-			if (draggedCodeBlock.groupNonstick) {
-				// Nonstick group: single-block by default, Alt for group drag
-				if (altKey) {
-					dragSet = getGroupBlocks(state.codeBlockRendering.codeBlocks, draggedCodeBlock.groupName);
-				} else {
-					dragSet = [draggedCodeBlock];
-				}
-			} else {
-				// Regular group: group drag by default, Alt for single-block
-				if (altKey) {
-					dragSet = [draggedCodeBlock];
-				} else {
-					dragSet = getGroupBlocks(state.codeBlockRendering.codeBlocks, draggedCodeBlock.groupName);
-				}
-			}
-		} else {
-			// Single block drag (no group)
-			dragSet = [draggedCodeBlock];
-		}
+		const dragTargets: ResolveCodeBlockDragTargetsEvent = {
+			codeBlock: draggedCodeBlock,
+			altKey,
+			targets: [draggedCodeBlock],
+		};
+		events.dispatch('resolveCodeBlockDragTargets', dragTargets);
+		dragSet = dragTargets.targets;
 
 		const relativeX = Math.abs(x - (draggedCodeBlock.x - state.viewport.x));
 		const relativeY = Math.abs(y - (draggedCodeBlock.y - state.viewport.y));

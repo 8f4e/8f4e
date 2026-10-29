@@ -26,6 +26,7 @@
   "dependencies": {
     "@8f4e/editor-core": "*",
     "@8f4e/editor-plugin-toggle-skip-execution": "*",
+    "@8f4e/editor-plugin-grouping": "*",
     "@8f4e/examples": "*",
     "@8f4e/runtime-audio-worklet": "*",
     "@8f4e/runtime-test-runner": "*",

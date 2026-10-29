@@ -1,6 +1,7 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath, type ProjectGroupPath, ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
+import { getUniqueName } from '../../../../pureHelpers/getUniqueName';
 import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
 import { publishProjectChange } from '../../../project-changes';
 import { partitionCodeBlocksByAlwaysOnTop } from '../../partitionCodeBlocksByAlwaysOnTop';
@@ -12,9 +13,6 @@ import { renameInterModuleReferences } from '../../utils/renameInterModuleRefere
 import type { ClipboardCodeBlock } from '../clipboard/clipboardUtils';
 import upsertPos from '../directives/pos/upsert';
 import { hasDirective } from '../directives/utils';
-import { extractGroupName } from '../group/extractGroupName';
-import { createGroupNameMapping, getUniqueGroupName } from '../group/getUniqueGroupName';
-import { replaceGroupName } from '../group/replaceGroupName';
 import { findProjectSlicePath } from '../projectGroupNavigation/effect';
 
 /**
@@ -102,16 +100,15 @@ function createPastedCodeBlock(
 	return codeBlock;
 }
 
-/**
- * Handles pasting multiple blocks from clipboard with collision resolution and reference updating.
- * This function:
- * - Resolves name collisions for pasted blocks (including duplicates within the paste)
- * - Updates inter-module references when names change
- * - Renames group names to avoid collisions
- * - Maintains relative positioning between blocks
- */
+export interface TransformPastedCodeBlocksEvent {
+	/** Plugins replace this batch synchronously, before names and positions are resolved. */
+	blocks: ClipboardCodeBlock[];
+}
+
+/** Insert a transformed clipboard batch with unique block names and relative positions. */
 export function pasteMultipleBlocks(
 	store: StateManager<State>,
+	events: EventDispatcher,
 	{
 		x,
 		y,
@@ -135,17 +132,9 @@ export function pasteMultipleBlocks(
 	const anchorGridX = Math.round((state.viewport.x + x) / state.viewport.vGrid);
 	const anchorGridY = Math.round((state.viewport.y + y) / state.viewport.hGrid);
 
-	// Extract all group names from pasted blocks
-	const pastedGroupNames: string[] = [];
-	for (const block of blocks) {
-		const groupName = extractGroupName(block.code);
-		if (groupName) {
-			pastedGroupNames.push(groupName);
-		}
-	}
-
-	// Create group name mapping to avoid collisions
-	const groupNameMapping = createGroupNameMapping(pastedGroupNames, state.codeBlockRendering.codeBlocks);
+	const incoming: TransformPastedCodeBlocksEvent = { blocks };
+	events.dispatch('transformPastedCodeBlocks', incoming);
+	blocks = incoming.blocks;
 	const existingProjectGroupNames = new Set(
 		state.codeBlockRendering.codeBlocks
 			.filter(block => block.nestedProjectCodeBlocks !== undefined)
@@ -155,7 +144,7 @@ export function pasteMultipleBlocks(
 	for (const block of blocks) {
 		if (block.nestedProjectCodeBlocks === undefined) continue;
 		const originalName = getCodeBlockNameFromSource(block.code);
-		const newName = getUniqueGroupName(originalName, existingProjectGroupNames);
+		const newName = getUniqueName(originalName, existingProjectGroupNames);
 		projectGroupNameMapping.set(originalName, newName);
 		existingProjectGroupNames.add(newName);
 	}
@@ -248,15 +237,6 @@ export function pasteMultipleBlocks(
 			code = updateInterModuleReferences(code, simpleNameMapping);
 			code = updateInterModuleReferences(code, projectGroupNameMapping);
 		}
-
-		// Rename group if needed
-		const originalGroupName = extractGroupName(code);
-		if (originalGroupName && groupNameMapping.has(originalGroupName)) {
-			const newGroupName = groupNameMapping.get(originalGroupName)!;
-			// Replace the group name in the code
-			code = code.map(line => replaceGroupName(line, originalGroupName, newGroupName));
-		}
-
 		// Add canonical @pos directive to code
 		code = upsertPos(code, gridX, gridY);
 

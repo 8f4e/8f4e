@@ -7,6 +7,7 @@ import { createButtonPlugin } from '@8f4e/editor-plugin-button';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createCrossfadePlugin } from '@8f4e/editor-plugin-crossfade';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
+import { groupingPlugin } from '@8f4e/editor-plugin-grouping';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { meterPlugin } from '@8f4e/editor-plugin-meter';
 import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
@@ -75,6 +76,7 @@ export function createDefaultEditorPlugins(options: {
 			},
 		}),
 		toggleSkipExecutionPlugin,
+		groupingPlugin,
 		toggleFavoritePlugin,
 		removeMemoryConnectionsPlugin,
 		createSwitchPlugin({ writeMemory: options.writeMemory }),

@@ -4,10 +4,9 @@ import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest'
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import convertGraphicDataToProjectStructure from '../../../../pureHelpers/projectSerialization/serializeCodeBlocks';
-import groupCopier from '../group/copier/effect';
 import codeBlockCreator from './effect';
 
-describe('codeBlockCreator - group copy/paste', () => {
+describe('codeBlockCreator - copy/paste', () => {
 	let mockState: State;
 	let store: ReturnType<typeof createStateManager<State>>;
 	let mockEvents: ReturnType<typeof createMockEventDispatcherWithVitest>;
@@ -16,153 +15,6 @@ describe('codeBlockCreator - group copy/paste', () => {
 		mockState = createMockState();
 		store = createStateManager(mockState);
 		mockEvents = createMockEventDispatcherWithVitest();
-	});
-
-	describe('Copy Group', () => {
-		it('should serialize group blocks as JSON array with relative coordinates', async () => {
-			const mockWriteClipboard = vi.fn().mockResolvedValue(undefined);
-			mockState.callbacks.writeClipboardText = mockWriteClipboard;
-
-			const block1 = createMockCodeBlock({
-				code: ['module foo', '; @group audio', 'moduleEnd'],
-				gridX: 10,
-				gridY: 20,
-				groupName: 'audio',
-			});
-
-			const block2 = createMockCodeBlock({
-				code: ['module bar', '; @group audio', 'moduleEnd'],
-				gridX: 22,
-				gridY: 24,
-				groupName: 'audio',
-			});
-
-			mockState.codeBlockRendering.codeBlocks = [block1, block2];
-
-			groupCopier(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const copyGroupCall = onCalls.find(call => call[0] === 'copyGroupBlocks');
-			const copyGroupCallback = copyGroupCall![1];
-
-			// Trigger copy group with block1 as anchor
-			copyGroupCallback({ codeBlock: block1 });
-
-			await new Promise(resolve => setTimeout(resolve, 0));
-
-			// Verify clipboard was written with JSON array
-			expect(mockWriteClipboard).toHaveBeenCalled();
-			const clipboardContent = mockWriteClipboard.mock.calls[0][0];
-			const parsed = JSON.parse(clipboardContent);
-
-			expect(Array.isArray(parsed)).toBe(true);
-			expect(parsed).toHaveLength(2);
-
-			// block1 should be anchor (0, 0)
-			expect(parsed[0].code).toEqual(['module foo', '; @group audio', 'moduleEnd']);
-			expect(parsed[0].gridCoordinates).toEqual({ x: 0, y: 0 });
-
-			// block2 should have relative coordinates
-			expect(parsed[1].code).toEqual(['module bar', '; @group audio', 'moduleEnd']);
-			expect(parsed[1].gridCoordinates).toEqual({ x: 12, y: 4 });
-		});
-
-		it('should preserve disabled state via @disabled directive in code', async () => {
-			const mockWriteClipboard = vi.fn().mockResolvedValue(undefined);
-			mockState.callbacks.writeClipboardText = mockWriteClipboard;
-
-			const block1 = createMockCodeBlock({
-				code: ['module foo', '; @disabled', '; @group audio', 'moduleEnd'],
-				gridX: 0,
-				gridY: 0,
-				groupName: 'audio',
-				disabled: true,
-			});
-
-			mockState.codeBlockRendering.codeBlocks = [block1];
-
-			groupCopier(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const copyGroupCall = onCalls.find(call => call[0] === 'copyGroupBlocks');
-			const copyGroupCallback = copyGroupCall![1];
-
-			copyGroupCallback({ codeBlock: block1 });
-			await new Promise(resolve => setTimeout(resolve, 0));
-
-			const clipboardContent = mockWriteClipboard.mock.calls[0][0];
-			const parsed = JSON.parse(clipboardContent);
-
-			expect(parsed[0].code).toContain('; @disabled');
-			expect(parsed[0]).not.toHaveProperty('disabled');
-		});
-
-		it('should fallback to single copy when block has no group', async () => {
-			const mockWriteClipboard = vi.fn().mockResolvedValue(undefined);
-			mockState.callbacks.writeClipboardText = mockWriteClipboard;
-
-			const block1 = createMockCodeBlock({
-				code: ['module foo', 'moduleEnd'],
-				groupName: undefined,
-			});
-
-			mockState.codeBlockRendering.codeBlocks = [block1];
-
-			groupCopier(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const copyGroupCall = onCalls.find(call => call[0] === 'copyGroupBlocks');
-			const copyGroupCallback = copyGroupCall![1];
-
-			copyGroupCallback({ codeBlock: block1 });
-			await new Promise(resolve => setTimeout(resolve, 0));
-
-			// Should have written plain text, not JSON
-			const clipboardContent = mockWriteClipboard.mock.calls[0][0];
-			expect(clipboardContent).toBe('module foo\nmoduleEnd');
-		});
-
-		it('should order blocks by creation index', async () => {
-			const mockWriteClipboard = vi.fn().mockResolvedValue(undefined);
-			mockState.callbacks.writeClipboardText = mockWriteClipboard;
-
-			const block1 = createMockCodeBlock({
-				code: ['module foo', '; @group audio', 'moduleEnd'],
-				groupName: 'audio',
-				creationIndex: 2,
-			});
-
-			const block2 = createMockCodeBlock({
-				code: ['module bar', '; @group audio', 'moduleEnd'],
-				groupName: 'audio',
-				creationIndex: 1,
-			});
-
-			const block3 = createMockCodeBlock({
-				code: ['module baz', '; @group audio', 'moduleEnd'],
-				groupName: 'audio',
-				creationIndex: 3,
-			});
-
-			mockState.codeBlockRendering.codeBlocks = [block1, block2, block3];
-
-			groupCopier(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const copyGroupCall = onCalls.find(call => call[0] === 'copyGroupBlocks');
-			const copyGroupCallback = copyGroupCall![1];
-
-			copyGroupCallback({ codeBlock: block1 });
-			await new Promise(resolve => setTimeout(resolve, 0));
-
-			const clipboardContent = mockWriteClipboard.mock.calls[0][0];
-			const parsed = JSON.parse(clipboardContent);
-
-			// Should be ordered by creation index: block2, block1, block3
-			expect(parsed[0].code[0]).toBe('module bar');
-			expect(parsed[1].code[0]).toBe('module foo');
-			expect(parsed[2].code[0]).toBe('module baz');
-		});
 	});
 
 	describe('Copy project group', () => {
@@ -300,6 +152,34 @@ describe('codeBlockCreator - group copy/paste', () => {
 	});
 
 	describe('Multi-block Paste', () => {
+		it('applies plugin source transformations before resolving names and inserting the batch', async () => {
+			mockState.callbacks.readClipboardText = async () =>
+				JSON.stringify([
+					{ code: ['module original', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } },
+					{ code: ['module second', 'moduleEnd'], gridCoordinates: { x: 5, y: 3 } },
+				]);
+			mockEvents.on<import('./pasteMultipleBlocks').TransformPastedCodeBlocksEvent>(
+				'transformPastedCodeBlocks',
+				incoming => {
+					incoming.blocks = incoming.blocks.map(block => ({
+						...block,
+						code: ['module transformed', '; @custom data', 'moduleEnd'],
+					}));
+				}
+			);
+			vi.mocked(mockEvents.dispatch).mockImplementation((name, payload) => {
+				for (const [event, listener] of vi.mocked(mockEvents.on).mock.calls) {
+					if (event === name) listener(payload);
+				}
+			});
+			codeBlockCreator(store, mockEvents);
+			const handler = vi.mocked(mockEvents.on).mock.calls.find(call => call[0] === 'pasteCodeBlocks')![1];
+			await handler({ x: 100, y: 100 });
+			expect(mockState.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['transformed', 'transformed2']);
+			expect(mockState.codeBlockRendering.codeBlocks.every(block => block.code.includes('; @custom data'))).toBe(true);
+			expect(mockState.projectChange.revision).toBe(1);
+		});
+
 		it('should detect and paste valid multi-block JSON array', async () => {
 			const clipboardData = JSON.stringify([
 				{ code: ['module foo', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } },
@@ -353,73 +233,6 @@ describe('codeBlockCreator - group copy/paste', () => {
 
 			expect(mockState.codeBlockRendering.codeBlocks[0].disabled).toBe(true);
 			expect(mockState.codeBlockRendering.codeBlocks[1].disabled).toBe(false);
-		});
-
-		it('should rename colliding group names on paste', async () => {
-			// Existing block with group name "audio"
-			const existingBlock = createMockCodeBlock({
-				code: ['module existing', '; @group audio', 'moduleEnd'],
-				groupName: 'audio',
-			});
-			mockState.codeBlockRendering.codeBlocks = [existingBlock];
-
-			// Paste blocks with same group name
-			const clipboardData = JSON.stringify([
-				{ code: ['module foo', '; @group audio', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } },
-				{ code: ['module bar', '; @group audio', 'moduleEnd'], gridCoordinates: { x: 5, y: 3 } },
-			]);
-
-			const mockReadClipboard = vi.fn().mockResolvedValue(clipboardData);
-			mockState.callbacks.readClipboardText = mockReadClipboard;
-
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
-			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
-
-			await pasteCodeBlocksCallback({ x: 100, y: 100 });
-
-			// Original block should still have "audio" at line 1
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[1]).toBe('; @group audio');
-
-			// Pasted blocks should have renamed group "audio1" at line 2 (after @pos)
-			expect(mockState.codeBlockRendering.codeBlocks[1].code[2]).toBe('; @group audio1');
-			expect(mockState.codeBlockRendering.codeBlocks[2].code[2]).toBe('; @group audio1');
-		});
-
-		it('should handle multiple different group names in paste', async () => {
-			const existingBlock1 = createMockCodeBlock({
-				code: ['module existing1', '; @group audio', 'moduleEnd'],
-				groupName: 'audio',
-			});
-			const existingBlock2 = createMockCodeBlock({
-				code: ['module existing2', '; @group video', 'moduleEnd'],
-				groupName: 'video',
-			});
-			mockState.codeBlockRendering.codeBlocks = [existingBlock1, existingBlock2];
-
-			const clipboardData = JSON.stringify([
-				{ code: ['module foo', '; @group audio', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } },
-				{ code: ['module bar', '; @group video', 'moduleEnd'], gridCoordinates: { x: 5, y: 0 } },
-				{ code: ['module baz', '; @group audio', 'moduleEnd'], gridCoordinates: { x: 10, y: 0 } },
-			]);
-
-			const mockReadClipboard = vi.fn().mockResolvedValue(clipboardData);
-			mockState.callbacks.readClipboardText = mockReadClipboard;
-
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
-			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
-
-			await pasteCodeBlocksCallback({ x: 100, y: 100 });
-
-			// audio -> audio1, video -> video1 (now at line 2 after @pos)
-			expect(mockState.codeBlockRendering.codeBlocks[2].code[2]).toBe('; @group audio1');
-			expect(mockState.codeBlockRendering.codeBlocks[3].code[2]).toBe('; @group video1');
-			expect(mockState.codeBlockRendering.codeBlocks[4].code[2]).toBe('; @group audio1'); // Same as first
 		});
 
 		it('should fallback to single-block paste for invalid JSON', async () => {
@@ -522,10 +335,10 @@ describe('codeBlockCreator - group copy/paste', () => {
 			expect(mockState.codeBlockRendering.codeBlocks[2].code[3]).toBe('push count(foo2:buffer)');
 		});
 
-		it('should preserve nonstick flag in group directive', async () => {
+		it('preserves arbitrary directive source when pasting', async () => {
 			const clipboardData = JSON.stringify([
-				{ code: ['module foo', '; @group audio nonstick', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } },
-				{ code: ['module bar', '; @group audio nonstick', 'moduleEnd'], gridCoordinates: { x: 5, y: 0 } },
+				{ code: ['module foo', '; @custom audio mode', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } },
+				{ code: ['module bar', '; @custom audio mode', 'moduleEnd'], gridCoordinates: { x: 5, y: 0 } },
 			]);
 
 			const mockReadClipboard = vi.fn().mockResolvedValue(clipboardData);
@@ -539,9 +352,9 @@ describe('codeBlockCreator - group copy/paste', () => {
 
 			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
-			// Nonstick flag should be preserved (now at index 2 after @pos)
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[2]).toContain('nonstick');
-			expect(mockState.codeBlockRendering.codeBlocks[1].code[2]).toContain('nonstick');
+			// Unregistered directive source remains intact after position insertion.
+			expect(mockState.codeBlockRendering.codeBlocks[0].code[2]).toBe('; @custom audio mode');
+			expect(mockState.codeBlockRendering.codeBlocks[1].code[2]).toBe('; @custom audio mode');
 		});
 	});
 });

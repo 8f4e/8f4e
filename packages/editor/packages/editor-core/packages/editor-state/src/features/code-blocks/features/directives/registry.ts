@@ -12,7 +12,6 @@ import buildDisplayModel from '../../buildDisplayModel';
 import alwaysOnTopDirective from './alwaysOnTop/plugin';
 import disabledDirective from './disabled/plugin';
 import favoriteDirective from './favorite/plugin';
-import groupDirective from './group/plugin';
 import hideDirective from './hide/plugin';
 import homeDirective from './home/plugin';
 import infoDirective from './info/plugin';
@@ -33,7 +32,6 @@ export const directiveDefinitions: EditorDirectiveDefinition[] = [
 	homeDirective,
 	favoriteDirective,
 	hideDirective,
-	groupDirective,
 	viewportDirective,
 	alwaysOnTopDirective,
 ];

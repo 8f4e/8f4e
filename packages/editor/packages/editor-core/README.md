@@ -111,6 +111,12 @@ such as viewport panning. Capture listeners run first in registration order. Set
 stops the remaining capture and ordinary listeners. Unregister with the same `events.off` call as other listeners.
 Core registers menu movement in capture before plugins, so an open menu retains priority over plugin drags.
 
+Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets: [codeBlock] }` before a drag.
+Plugins may synchronously replace `targets`; core then moves and snaps those blocks and publishes one position edit.
+Before inserting a clipboard batch, core dispatches `transformPastedCodeBlocks` with `{ blocks }`. Plugins may
+replace that batch with transformed source, preserving the supplied input objects. Core resolves block names and
+positions afterward. `@8f4e/editor-state` exports both event payload types and the generic `ClipboardCodeBlock` type.
+
 The switch and button plugins own their directives, memory resolution, interaction, and drawing. Each keeps widget
 data in a per-instance WeakMap. Buttons write their on value while pressed and their off value on release.
 The wave plugin owns `@wave`, `@wave2`, and `@wave4`, including their layout space, typed samples, playheads, and drawing.
@@ -124,8 +130,12 @@ The project-files plugin owns Open From Disk, Save/Export, their menus and short
 associations. Its factory receives the input element. The WebAssembly-export plugin receives a document and compiler
 byte getter, and owns WASM Blob creation and browser file writing.
 The execution-toggle plugin owns the Skip/Unskip menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
-layout, animation, and overlay drawing, with its state private to each installation. Group execution toggling and
-nested block shading remain built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
+layout, animation, and overlay drawing, with its state private to each installation. Nested block shading remains
+built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
+
+The grouping plugin owns `; @group <name> [nonstick]`, private group membership, grouped dragging, paste collision
+renaming, and all visual-group menu actions, including group execution toggling. Nested language-level project
+groups (`group … groupEnd`), their navigation, and memory scopes remain in core.
 
 The favorite-toggle plugin owns Favorite/Unfavorite editing and its block-menu item. Favorite directive derivation
 and Jump to navigation remain in core. The memory-connection-removal plugin owns its block-menu item, enabled

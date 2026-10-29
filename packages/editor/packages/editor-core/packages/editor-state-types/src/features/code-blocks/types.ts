@@ -176,18 +176,6 @@ export interface CodeBlockGraphicData {
 	 */
 	disabled: boolean;
 	/**
-	 * Optional group name for the code block, derived from ; @group directive.
-	 * Blocks with the same group name move together by default during drag.
-	 */
-	groupName?: string;
-	/**
-	 * Optional flag indicating whether the group should override default grouped drag behavior.
-	 * When true, blocks in this group drag individually by default (Alt key reverses to group drag).
-	 * When false/undefined, blocks in this group drag together by default (Alt key reverses to single-block drag).
-	 * Derived from the optional 'nonstick' keyword in ; @group directive.
-	 */
-	groupNonstick?: boolean;
-	/**
 	 * When true, marks this block as the home block for initial viewport placement.
 	 * The viewport centers on the first block with isHome=true when a project loads.
 	 * Derived from ; @home directive.

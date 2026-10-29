@@ -142,7 +142,7 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 		}
 		const parsedData = parseClipboardData(clipboardText);
 		if (parsedData.type === 'multi') {
-			pasteMultipleBlocks(store, { x, y, blocks: parsedData.blocks });
+			pasteMultipleBlocks(store, events, { x, y, blocks: parsedData.blocks });
 		} else {
 			onInsertCodeBlock({ x, y, code: parsedData.text.split('\n') });
 		}

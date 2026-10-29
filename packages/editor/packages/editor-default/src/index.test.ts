@@ -86,6 +86,7 @@ describe('default editor plugins', () => {
 			'midi-input',
 			'binary-assets',
 			'toggle-skip-execution',
+			'grouping',
 			'toggle-favorite',
 			'remove-memory-connections',
 			'switch',

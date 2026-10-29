@@ -22,10 +22,6 @@ export interface DirectiveBlockState {
 	/** Effective viewport alignment for `; @home [alignment]`. Present only when the block is a valid home block. */
 	homeAlignment?: ViewportBlockAlignment;
 	isFavorite: boolean;
-	/** Group identifier set by `; @group <name> [nonstick]`. Undefined when no valid @group directive is present. */
-	groupName?: string;
-	/** When true the block may be dragged independently within its group (nonstick mode). */
-	groupNonstick?: boolean;
 	/** Viewport anchor set by `; @viewport <corner>`. When present, @pos is interpreted as inward offset from this corner. */
 	viewportAnchor?: ViewportAnchor;
 	/** When true the block is always rendered above normal blocks. Set by `; @alwaysOnTop`. */

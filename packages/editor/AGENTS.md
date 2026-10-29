@@ -21,6 +21,8 @@
   Meter, plot, bars, crossfade, watch, and stack each live in their matching `editor-plugin-<name>` packages.
   Favorite editing lives in `editor-plugin-toggle-favorite`, and memory-default disconnection in
   `editor-plugin-remove-memory-connections`. Favorite navigation and directive derivation remain core features.
+  Visual `@group` behavior lives in `editor-plugin-grouping`, including private membership, drag and paste policies,
+  and group action menus. Nested language-level project groups remain in core.
   `editor-plugin-binary-assets` owns binary fetching, caching, memory loading, dialogs, and size constants.
   Assertion marker drawing lives in `editor-plugin-assertion-markers`, keyboard-to-memory input in
   `editor-plugin-keyboard-memory`, and MIDI discovery/input in `editor-plugin-midi-input`. These use the same plugin
@@ -61,6 +63,8 @@
 - Verify the favorite and memory-connection actions with
   `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-toggle-favorite,@8f4e/editor-plugin-remove-memory-connections`.
   Each also has a `test:screenshot` target for its canvas menu interaction.
+- Verify visual grouping with `npx nx run @8f4e/editor-plugin-grouping:build|test|typecheck` and
+  `npx nx run @8f4e/editor-plugin-grouping:test:screenshot`.
 - Build or preview it with `npx nx run @8f4e/editor-website:build|serve`.
 - Ensure dependency packages are built before relying on workspace aliases in the website.
 
