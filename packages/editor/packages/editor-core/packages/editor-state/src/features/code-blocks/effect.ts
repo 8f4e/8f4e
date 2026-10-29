@@ -434,6 +434,7 @@ export default function codeBlockRendering(
 	events.on<CodeBlockPointerDownEvent>('codeBlockPointerDown', onCodeBlockPointerDown);
 	events.on<CodeBlockPointerDownEvent>('codeBlockPointerDown', ({ codeBlock }) => updateBlockDerivedState(codeBlock));
 	events.on('runtimeInitialized', updateAllBlockDerivedState);
+	events.on('refreshCodeBlockLayouts', updateAllBlockDerivedState);
 	events.on('spriteSheetRerendered', () => {
 		recomputePixelCoordinatesAndBlockDerivedState();
 		centerViewportOnSelectedOrHomeCodeBlock();

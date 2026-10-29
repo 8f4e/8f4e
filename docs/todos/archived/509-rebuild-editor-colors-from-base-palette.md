@@ -84,7 +84,7 @@ font duplication and make the full shade catalog available to text without expan
 ## Related Items
 
 - [TODO 504: Add a color-theme contrast audit tool](../504-add-color-theme-contrast-audit-tool.md)
-- [TODO 508: Design lazy loading for editor plugins](../508-design-editor-plugin-lazy-loading.md)
+- [TODO 508: Design lazy loading for editor plugins](508-design-editor-plugin-lazy-loading.md)
 
 ## References
 

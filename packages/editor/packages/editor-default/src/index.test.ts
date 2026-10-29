@@ -95,7 +95,7 @@ describe('default editor plugins', () => {
 			'piano',
 			'slider',
 			'meter',
-			'plot',
+			'lazy-loader',
 			'bars',
 			'crossfade',
 			'watch',

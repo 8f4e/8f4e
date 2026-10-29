@@ -62,6 +62,7 @@ This feature contains several subfeatures under `features/` that handle specific
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
 - `transformPastedCodeBlocks({ blocks })`: synchronously replace an incoming clipboard batch before insertion
+- `refreshCodeBlockLayouts()`: rederive the visible slice after late directive registration without a project edit
 - Block deletion and selection events
 - Drag start/update/end events
 - Block type update events

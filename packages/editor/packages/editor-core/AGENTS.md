@@ -40,6 +40,9 @@
   or generic key-sorting adapters.
 - Do not add a parallel project snapshot API. Consumers can use `getEditorBlockId(block)` to target existing validated commands with blocks read from state. Keep code authoritative for derived properties and avoid a parallel, hand-picked block metadata model. Agent-specific projections belong in the external WebMCP bridge. Editing commands accept source with `@pos` directives; derive positions from code without overriding or injecting coordinate directives.
 - Plugins own their registrations, listeners, private widget data, and disposal. Do not add automatic tracking.
+- Keep lazy loading policy in `editor-plugin-lazy-loader` and feature signals/imports in host registries. Late
+  directive installation uses `refreshCodeBlockLayouts` to rederive the visible slice and render projection without
+  source changes, project revisions, or compilation. Do not add feature-specific activation logic to core.
 - Use `applyCodeBlockSourceEdits(store, edits, { affectsCompilation })` for plugin source-edit batches and
   `deleteCodeBlocks(store, blocks)` for removing blocks from the current slice. These helpers own refreshes,
   deleted-block reference cleanup, and one completed project/compiler notification. Callers own edit-mode policy;

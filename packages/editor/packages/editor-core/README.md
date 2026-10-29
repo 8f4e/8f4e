@@ -93,8 +93,11 @@ contract from `@8f4e/editor-state-types`. The core owns generic source parsing, 
 layout pipeline. Each definition handles its own arguments through `apply`, registers `DirectiveLayoutCallbacks`
 in `draft.layoutCallbacks`, and can clear its derived data through `clearDerivedBlockData`. These callbacks use
 `onBlockLayoutReady` to derive geometry after the block's dimensions, display rows, gaps, and cursor coordinates are
-current. Registrations are local to each editor. Install them in setup before the initial project loads; there is
-no runtime plugin installation API.
+current. Registrations are local to each editor. After installing directives into an already loaded editor, dispatch
+`refreshCodeBlockLayouts` to rederive the current slice's layout and rendered source. This preserves source,
+selection, project revision, and compiler input revision. Other slices derive their layout when opened.
+The [lazy-loader plugin](../../plugins/lazy-loader/README.md) uses the ordinary setup context to install matching
+plugins after asynchronous imports; the `EditorPlugin` setup/disposal contract remains synchronous.
 
 Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
 `{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
