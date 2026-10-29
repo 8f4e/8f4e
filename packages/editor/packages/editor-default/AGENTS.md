@@ -22,10 +22,12 @@
   that plugin; keep the default editor responsible only for discovery and composition.
 - Keep `@8f4e/examples` as a dependency so its generators run before discovery and its sources affect build caching.
 
-- Compose meter, bars, crossfade, watch, and stack with the fixed default plugin set. Supply watch/stack factories
+- Compose watch and stack with the fixed default plugin set. Supply their factories
   with a live reduced-motion preference from the browser; install their overlays before tooltips.
-- Compose `createLazyPluginLoaderPlugin(lazyPlugins)` for optional signal-driven plugins. Keep its lightweight
-  registry in `src/lazy-plugins.ts`; plot is the first lazy entry. Import implementations only inside `load()`.
+- Compose `createLazyPluginLoaderPlugin(createLazyPluginRegistry({ writeMemory }))` for optional signal-driven plugins.
+  Keep its per-editor registry in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano, slider,
+  and crossfade. Match all three wave directives: `wave`, `wave2`, and `wave4`. Import implementations and construct
+  their factories only inside `load()`, using the supplied live memory writer.
   Mounting and initial project notifications do not wait for lazy plugin imports. The loader owns project-load scans,
   its manual scan menu, late installation, and disposal; core keeps the ordinary plugin contract.
 - Include `toggleFavoritePlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Core does

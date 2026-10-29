@@ -100,6 +100,66 @@ test('compiles a loaded project through the compiler plugin and refreshes editor
 	expect(editor.getMemoryViews().int32.byteLength).toBeGreaterThan(0);
 });
 
+test('loads directive plugins from a gallery project and connects their controls to compiler memory', async () => {
+	const view = setup({
+		controls: async () =>
+			new Response(`8f4e/v1
+note
+; @config recompileDebounceDelay 10
+noteEnd
+entry main
+module controls
+; @pos 4 3
+int value 0
+float left 0
+float right 0
+int[] points 4
+int[] notes 8
+int pressed 0
+; @switch &value
+; @button &value
+; @wave &points 4
+; @meter &value
+; @bars &points 4
+; @piano &notes &pressed 48
+; @slider &value 0 100 1
+; @crossfade &left &right
+moduleEnd
+entryEnd`),
+	});
+	const editor = await view.mounted();
+	await vi.waitFor(() => expect(editor.state.compiler.memoryPlan.modules.controls).toBeDefined(), { timeout: 10000 });
+	const state = editor.state;
+	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
+	await vi.waitFor(() =>
+		expect([10, 11, 12, 13, 14, 15].map(row => block.gaps.get(row)?.size)).toEqual([2, 1, 8, 6, 2, 2])
+	);
+	expect(state.codeErrors.compilationErrors).toEqual([]);
+	const canvas = view.panel().querySelector('canvas')!;
+	const address = state.compiler.memoryPlan.modules.controls.memory.value.allocationUnitAddress;
+	const press = (row: number) => {
+		const rect = canvas.getBoundingClientRect();
+		canvas.dispatchEvent(
+			new MouseEvent('mousedown', {
+				clientX: rect.x + block.x + block.width - state.viewport.x - state.viewport.vGrid,
+				clientY: rect.y + block.y + row * state.viewport.hGrid - state.viewport.y + 1,
+				buttons: 1,
+				bubbles: true,
+			})
+		);
+	};
+	press(8);
+	expect(editor.getMemoryViews().int32[address]).toBe(1);
+	canvas.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+	press(8);
+	expect(editor.getMemoryViews().int32[address]).toBe(0);
+	canvas.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+	press(9);
+	expect(editor.getMemoryViews().int32[address]).toBe(1);
+	canvas.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+	expect(editor.getMemoryViews().int32[address]).toBe(0);
+});
+
 test('reports a failed request immediately and loads the project when retried', async () => {
 	let requests = 0;
 	const view = setup({
