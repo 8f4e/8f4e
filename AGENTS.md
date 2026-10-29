@@ -15,7 +15,8 @@
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`
   compiler fixture gallery, all embedding the default editor. Its build includes `src/index.html`,
   `src/examples/index.html`, and `src/tests/index.html`. The test gallery bundles the compiler's `.test.8f4e`
-  fixtures as assets; fixture editor directives select `TestRuntime` to run assertions after compilation.
+  fixtures as assets; fixtures enable the test-runtime plugin with `@config testRuntime.enabled true` to run assertions
+  after compilation.
 - Reusable Vite source discovery lives in `packages/vite-plugin-sources/`. It exposes lazy text collections through
   `virtual:8f4e-sources/<name>`; the default editor uses it for stdlib includes and example modules.
 - Editor colors: `@8f4e/editor-palette` owns the pure base palette and predefined shades. Configure only shared base

@@ -8,8 +8,8 @@ describe('global editor directive suggestions', () => {
 	});
 
 	it('matches case-insensitively', () => {
-		expect(getDidYouMeanSuggestion('audioworkletruntime', ['AudioWorkletRuntime', 'WebWorkerRuntime'])).toBe(
-			'AudioWorkletRuntime'
+		expect(getDidYouMeanSuggestion('documentsettings', ['DocumentSettings', 'EditorSettings'])).toBe(
+			'DocumentSettings'
 		);
 	});
 
@@ -36,7 +36,7 @@ describe('global editor directive suggestions', () => {
 	});
 
 	it('skips suggestions when no candidate is close enough', () => {
-		expect(getDidYouMeanSuggestion('tiny', ['AudioWorkletRuntime', 'WebWorkerRuntime'])).toBeUndefined();
+		expect(getDidYouMeanSuggestion('tiny', ['DocumentSettings', 'EditorSettings'])).toBeUndefined();
 	});
 
 	it('formats a did-you-mean suffix when a close match exists', () => {

@@ -111,7 +111,10 @@ moduleEnd
 entryEnd`),
 	});
 	const editor = await view.mounted();
-	await vi.waitFor(() => expect(editor.state.info.testRuntime?.status).toBe('passed'), { timeout: 10000 });
+	await vi.waitFor(
+		() => expect(editor.state.info.testRuntime).toEqual({ status: 'passed', assertionCount: 1, failureCount: 0 }),
+		{ timeout: 10000 }
+	);
 	const memory = editor.state.compiler.memoryPlan.modules.counter.memory.count;
 	await vi.waitFor(() => expect(editor.getMemoryViews().int32[memory.allocationUnitAddress]).toBeGreaterThan(2));
 	expect(editor.state.codeErrors.compilationErrors).toEqual([]);

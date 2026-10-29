@@ -10,16 +10,16 @@ describe('project directive signals', () => {
 entry main
 group nested
 note settings
-; @config workerRuntime.enabled true
-; @config workerRuntimeExtra.enabled true
+; @config customSettings.enabled true
+; @config customSettingsExtra.enabled true
 noteEnd
 groupEnd
 entryEnd`);
-		expect(hasConfig(project, 'workerRuntime')).toBe(true);
-		expect(hasConfig(project, 'worker')).toBe(false);
-		expect(hasConfig(project, 'audioRuntime')).toBe(false);
+		expect(hasConfig(project, 'customSettings')).toBe(true);
+		expect(hasConfig(project, 'custom')).toBe(false);
+		expect(hasConfig(project, 'otherSettings')).toBe(false);
 		expect(
-			hasConfig({ ...EMPTY_DEFAULT_PROJECT, code: ['; @config workerRuntime.enabled false'] }, 'workerRuntime')
+			hasConfig({ ...EMPTY_DEFAULT_PROJECT, code: ['; @config customSettings.enabled false'] }, 'customSettings')
 		).toBe(true);
 	});
 

@@ -1,8 +1,9 @@
-import type { EventDispatcher, State } from '@8f4e/editor-core';
-import { createMockState } from '@8f4e/editor-state-testing';
-import createStateManager from '@8f4e/state-manager';
+import { EventEmitter } from 'node:events';
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getAudioInputBuffers, getAudioOutputBuffers, startAudioRuntime } from './runtime';
+import { createAudioRuntimePlugin } from './index';
 
 describe('AudioWorklet context lifetime', () => {
 	class MockContext {
@@ -39,13 +40,13 @@ describe('AudioWorklet context lifetime', () => {
 	let contexts: MockContext[];
 	let worklets: MockWorklet[];
 	let workletContexts: MockContext[];
-	let cleanups: (() => void)[];
+	let cleanups: Set<() => void>;
 
 	beforeEach(() => {
 		contexts = [];
 		worklets = [];
 		workletContexts = [];
-		cleanups = [];
+		cleanups = new Set();
 		vi.stubGlobal(
 			'AudioContext',
 			class extends MockContext {
@@ -73,33 +74,54 @@ describe('AudioWorklet context lifetime', () => {
 		vi.restoreAllMocks();
 	});
 
-	function mount(sharedAudioContext?: MockContext, sampleRate = 48000, input = false, entry?: string) {
-		const state = createMockState({
-			editorConfig: {
-				audioRuntime: { sampleRate, ...(input ? { audioInBufferLAddress: 0 } : {}), ...(entry ? { entry } : {}) },
-			},
-			compiler: { isCompiling: false },
-		});
-		const store = createStateManager(state);
-		const handlers = new Map<string, () => Promise<void>>();
+	function mount(sharedAudioContext?: MockContext, settings: string[] = [], modules = ['module demo', 'moduleEnd']) {
+		const emitter = new EventEmitter();
 		const events = {
-			on: vi.fn((name: string, handler: () => Promise<void>) => handlers.set(name, handler)),
-			off: vi.fn((name: string) => handlers.delete(name)),
-			dispatch: vi.fn(),
-		} as unknown as EventDispatcher;
-		const cleanup = startAudioRuntime(
+			on: vi.fn(emitter.on.bind(emitter)),
+			off: vi.fn(emitter.off.bind(emitter)),
+			dispatch: vi.fn(emitter.emit.bind(emitter)),
+		};
+		const store = initState(events, { callbacks: {} });
+		const memory = new WebAssembly.Memory({ initial: 1 });
+		const dispose = createAudioRuntimePlugin({
+			getCodeBuffer: () => new Uint8Array(),
+			getMemory: () => memory,
+			sharedAudioContext: sharedAudioContext as unknown as AudioContext,
+		}).setup({
 			store,
 			events,
-			() => new Uint8Array(),
-			() => new WebAssembly.Memory({ initial: 1 }),
-			sharedAudioContext as unknown as AudioContext
+			menus: store.menus,
+			directives: store.directives,
+			layout: store.layout,
+			drawers: createCodeBlockDrawerRegistry(),
+		});
+		const cleanup = () => {
+			cleanups.delete(cleanup);
+			dispose();
+			store.dispose();
+		};
+		cleanups.add(cleanup);
+		const code = (config: string[]) => [
+			'note settings',
+			'; @config audioRuntime.enabled true',
+			...config.map(setting => `; @config audioRuntime.${setting}`),
+			'noteEnd',
+		];
+		const project = parseProjectSource(
+			['8f4e/v1', ...code(settings), 'entry buffer', ...modules, 'entryEnd'].join('\n')
 		);
-		cleanups.push(cleanup);
+		events.dispatch('loadProject', { project });
+		const state = store.getState();
+		const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'settings')!;
 		return {
 			cleanup,
 			store,
+			state,
 			events,
-			allow: () => handlers.get('grantAudioPermission')!(),
+			project,
+			configure: (config: string[]) =>
+				applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: code(config) }], { affectsCompilation: true }),
+			allow: () => emitter.listeners('grantAudioPermission')[0]() as Promise<void>,
 		};
 	}
 
@@ -145,7 +167,7 @@ describe('AudioWorklet context lifetime', () => {
 	it('creates and closes a private context when the project needs another rate', async () => {
 		const shared = new MockContext();
 		shared.state = 'running';
-		const editor = mount(shared, 44100);
+		const editor = mount(shared, ['sampleRate 44100']);
 		expect(editor.events.dispatch).toHaveBeenCalledWith('addDialog', expect.anything());
 		await editor.allow();
 		expect(contexts[0].sampleRate).toBe(44100);
@@ -170,12 +192,12 @@ describe('AudioWorklet context lifetime', () => {
 		const shared = new MockContext();
 		const editor = mount(shared);
 		await editor.allow();
-		editor.store.set('editorConfig.audioRuntime', { sampleRate: 44100 });
+		editor.configure(['sampleRate 44100']);
 		expect(worklets[0].disconnect).toHaveBeenCalledOnce();
 		expect(shared.close).not.toHaveBeenCalled();
 		await editor.allow();
-		editor.events.dispatch = vi.fn();
-		editor.store.set('editorConfig.audioRuntime', { sampleRate: 48000 });
+		editor.events.dispatch.mockClear();
+		editor.configure(['sampleRate 48000']);
 		await vi.waitFor(() => expect(worklets).toHaveLength(3));
 		expect(contexts[0].close).toHaveBeenCalledOnce();
 		expect(workletContexts).toEqual([shared, contexts[0], shared]);
@@ -203,7 +225,7 @@ describe('AudioWorklet context lifetime', () => {
 		const stop = vi.fn();
 		const getUserMedia = vi.fn(async () => ({ getTracks: () => [{ stop }] }));
 		vi.stubGlobal('navigator', { mediaDevices: { getUserMedia } });
-		const editor = mount(shared, 48000, true);
+		const editor = mount(shared, ['audioInBufferLAddress 0']);
 
 		await editor.allow();
 
@@ -222,7 +244,7 @@ describe('AudioWorklet context lifetime', () => {
 		const microphone = Promise.withResolvers<{ getTracks: () => { stop: typeof stop }[] }>();
 		const getUserMedia = vi.fn(() => microphone.promise);
 		vi.stubGlobal('navigator', { mediaDevices: { getUserMedia } });
-		const editor = mount(shared, 48000, true);
+		const editor = mount(shared, ['audioInBufferLAddress 0']);
 		const activation = editor.allow();
 		await vi.waitFor(() => expect(getUserMedia).toHaveBeenCalledOnce());
 		editor.cleanup();
@@ -268,7 +290,7 @@ describe('AudioWorklet context lifetime', () => {
 		['alternate', 'alternate'],
 	])('initializes the worklet with configured entry %s', async (configuredEntry, expectedEntry) => {
 		const shared = new MockContext();
-		const editor = mount(shared, 48000, false, configuredEntry);
+		const editor = mount(shared, configuredEntry ? [`entry ${configuredEntry}`] : []);
 
 		await editor.allow();
 
@@ -279,116 +301,93 @@ describe('AudioWorklet context lifetime', () => {
 			})
 		);
 	});
-});
 
-describe('AudioWorklet runtime config', () => {
-	function createMemoryPlan(
-		memories: Record<string, Record<string, { allocationUnitAddress: number }>>
-	): State['compiler']['memoryPlan'] {
-		const modules = Object.fromEntries(
-			Object.entries(memories).map(([moduleId, moduleMemory], moduleIndex) => {
-				const memory = Object.fromEntries(
-					Object.entries(moduleMemory).map(([memoryId, memoryData]) => [
-						memoryId,
-						{
-							id: memoryId,
-							numberOfElements: 1,
-							elementWordSize: 4,
-							type: 'int' as const,
-							byteAddress: memoryData.allocationUnitAddress * 4,
-							elementByteLength: 4,
-							allocationUnitCount: 1,
-							allocatedByteLength: 4,
-							allocationUnitAddress: memoryData.allocationUnitAddress,
-							endByteAddress: memoryData.allocationUnitAddress * 4,
-							endAddressSafeByteLength: 4,
-							lineNumber: 1,
-							isInteger: true,
-							pointerDepth: 0,
-							isUnsigned: false,
-						},
-					])
-				);
-				return [
-					moduleId,
+	it('owns its schema and only requests audio while enabled', async () => {
+		const editor = mount(new MockContext(), ['enabled false']);
+		expect(editor.state.editorConfigSchemaContributions.audioRuntime).toBeDefined();
+		expect(editor.state.envConstantContributions.audioRuntime).toBeUndefined();
+		expect(editor.events.dispatch).not.toHaveBeenCalledWith('addDialog', expect.anything());
+		expect(worklets).toHaveLength(0);
+		editor.configure([]);
+		expect(editor.events.dispatch).toHaveBeenCalledWith('addDialog', expect.anything());
+		await editor.allow();
+		expect(worklets).toHaveLength(1);
+		editor.configure(['enabled false']);
+		expect(worklets[0].disconnect).toHaveBeenCalledOnce();
+		expect(editor.state.info.audioRuntime).toBeUndefined();
+		expect(editor.state.envConstantContributions.audioRuntime).toEqual([]);
+		editor.cleanup();
+		expect(editor.state.editorConfigSchemaContributions.audioRuntime).toBeUndefined();
+		expect(editor.state.envConstantContributions.audioRuntime).toBeUndefined();
+	});
+
+	it('defaults and replaces its contributed constant names', () => {
+		const editor = mount(new MockContext());
+		expect(editor.state.envConstantContributions.audioRuntime).toEqual([
+			'const SAMPLE_RATE 48000',
+			'const AUDIO_BUFFER_SIZE 128',
+		]);
+		editor.configure(['sampleRate 44100', 'sampleRateConstantName AUDIO_RATE', 'bufferSizeConstantName BUFFER_LENGTH']);
+		expect(editor.state.envConstantContributions.audioRuntime).toEqual([
+			'const AUDIO_RATE 44100',
+			'const BUFFER_LENGTH 128',
+		]);
+		expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	});
+
+	it('sends stereo output and mono input routes resolved from project configuration', async () => {
+		vi.stubGlobal('navigator', {
+			mediaDevices: { getUserMedia: vi.fn(async () => ({ getTracks: () => [{ stop: vi.fn() }] })) },
+		});
+		const editor = mount(
+			new MockContext(),
+			[
+				'audioOutBufferLAddress audiooutL:buffer',
+				'audioOutBufferRAddress audiooutR:buffer',
+				'audioInBufferLAddress 16',
+			],
+			['module audiooutL', 'float[] buffer 128', 'moduleEnd', 'module audiooutR', 'float[] buffer 128', 'moduleEnd']
+		);
+		const compiled = await compileProject(editor.project);
+		editor.store.set('compiler', {
+			...editor.state.compiler,
+			compiledModules: compiled.compiledModules,
+			memoryPlan: compiled.memoryPlan,
+			memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
+			projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
+		});
+		await editor.allow();
+		expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(worklets[0].port.postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: 'init',
+				audioOutputBuffers: [
 					{
-						id: moduleId,
-						lineNumber: 1,
-						byteAddress: moduleIndex * 4,
-						allocationUnitCount: Object.keys(memory).length,
-						allocatedByteLength: Object.keys(memory).length * 4,
-						endByteAddress: moduleIndex * 4,
-						endAddressSafeByteLength: 4,
-						memory,
-						declarations: Object.values(memory),
-						declarationSources: [],
+						audioBufferWordAddress: compiled.memoryPlan.modules.audiooutL.memory.buffer.allocationUnitAddress,
+						output: 0,
+						channel: 0,
 					},
-				];
+					{
+						audioBufferWordAddress: compiled.memoryPlan.modules.audiooutR.memory.buffer.allocationUnitAddress,
+						output: 0,
+						channel: 1,
+					},
+				],
+				audioInputBuffers: [{ audioBufferWordAddress: 16, input: 0, channel: 0 }],
 			})
 		);
-
-		return {
-			modules,
-			moduleList: Object.values(modules),
-		};
-	}
-
-	function createState(): State {
-		return createMockState({
-			editorConfig: {
-				audioRuntime: {
-					audioOutBufferLAddress: 'audiooutL:buffer',
-					audioOutBufferRAddress: 'audiooutR:buffer',
-					audioInBufferLAddress: '16',
-				},
-			},
-			compiler: {
-				projectMemoryExposuresByGroupPath: {},
-				memoryPlan: createMemoryPlan({
-					audiooutL: { buffer: { allocationUnitAddress: 8 } },
-					audiooutR: { buffer: { allocationUnitAddress: 24 } },
-				}),
-			},
-		});
-	}
-
-	it('builds stereo output and mono input routes from audio runtime config', () => {
-		const state = createState();
-
-		expect(getAudioOutputBuffers(state)).toEqual([
-			{ audioBufferWordAddress: 8, output: 0, channel: 0 },
-			{ audioBufferWordAddress: 24, output: 0, channel: 1 },
-		]);
-		expect(getAudioInputBuffers(state)).toEqual([{ audioBufferWordAddress: 16, input: 0, channel: 0 }]);
 	});
 
 	it('requests audio permission through an Allow dialog button', () => {
-		const state = createState();
-		const store = createStateManager(state);
-		const events: EventDispatcher = {
-			on: vi.fn(),
-			off: vi.fn(),
-			dispatch: vi.fn(),
-		};
-
-		const cleanup = startAudioRuntime(
-			store,
-			events,
-			() => new Uint8Array(),
-			() => null
-		);
-
-		expect(events.dispatch).toHaveBeenCalledWith('addDialog', {
+		const editor = mount(new MockContext());
+		expect(editor.events.dispatch).toHaveBeenCalledWith('addDialog', {
 			id: 'audio-worklet-permission',
 			title: 'Audio Permission',
 			text: "This project uses AudioWorklet for audio playback and requires your permission to start. Select Allow to start the program, or choose to do nothing; then the program won't start.",
 			buttons: [{ title: 'Allow', action: 'grantAudioPermission' }],
 		});
-		expect(events.on).toHaveBeenCalledWith('grantAudioPermission', expect.any(Function));
-		expect(events.on).not.toHaveBeenCalledWith('mousedown', expect.any(Function));
-
-		cleanup();
-
-		expect(events.off).toHaveBeenCalledWith('grantAudioPermission', expect.any(Function));
+		expect(editor.events.on).toHaveBeenCalledWith('grantAudioPermission', expect.any(Function));
+		editor.cleanup();
+		expect(editor.events.off).toHaveBeenCalledWith('grantAudioPermission', expect.any(Function));
 	});
 });

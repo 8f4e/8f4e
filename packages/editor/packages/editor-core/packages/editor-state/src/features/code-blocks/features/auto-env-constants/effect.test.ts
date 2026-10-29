@@ -92,20 +92,13 @@ describe('autoEnvConstants', () => {
 		autoEnvConstants(store);
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
 
-		// Simulate codeBlockRendering populating codeBlocks from initialProjectState
-		const envCodeBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		if (envCodeBlock) {
-			store.set('codeBlockRendering.codeBlocks', [createGraphicEnvBlock(envCodeBlock.code)]);
-		}
-
-		store.set('codeBlockRendering.codeBlocks', [createGraphicEnvBlock(envCodeBlock?.code ?? [])]);
+		// Simulate codeBlockRendering populating codeBlocks from initialProjectState.
+		const envSource = state.initialProjectState!.constants.find(block => block.code[0] === 'constants env')!;
+		store.set('codeBlockRendering.codeBlocks', [createGraphicEnvBlock(envSource.code)]);
 		store.set('envConstantContributions.provider', ['const PROVIDED 77']);
-
-		const envBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === AUTO_ENV_BLOCK_NAME);
-		const magicNumberLine = envBlock?.code.find(line => line.includes('PROVIDED'));
-		expect(magicNumberLine).toBe('const PROVIDED 77');
-		const unusedRuntimeLine = envBlock?.code.find(line => line.includes('UNUSED_PROVIDER'));
-		expect(unusedRuntimeLine).toBeUndefined();
+		expect(state.codeBlockRendering.codeBlocks[0].code.filter(line => line.startsWith('const '))).toEqual([
+			'const PROVIDED 77',
+		]);
 	});
 
 	test('includes contributed source from multiple providers when creating env', () => {
@@ -131,18 +124,7 @@ describe('autoEnvConstants', () => {
 	test('refreshes contributed constants and removes contributions without changing the env position', () => {
 		autoEnvConstants(store);
 		store.set('codeBlockRendering.codeBlocks', [
-			createGraphicEnvBlock(['constants env', '; @pos 7 9', 'constantsEnd'], {
-				parsedDirectives: [
-					{
-						prefix: '@',
-						name: 'pos',
-						args: ['7', '9'],
-						sourceLineIndex: 1,
-						sourceLine: '; @pos 7 9',
-						isTrailing: false,
-					},
-				],
-			}),
+			createGraphicEnvBlock(['constants env', '; @pos 7 9', 'constantsEnd']),
 		]);
 		store.set('envConstantContributions.example', ['const PROVIDED 42']);
 		const env = state.codeBlockRendering.codeBlocks[0];
@@ -157,14 +139,9 @@ describe('autoEnvConstants', () => {
 		autoEnvConstants(store);
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
 
-		const envCodeBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		let codeWithCustomPos: string[] = [];
-		if (envCodeBlock) {
-			codeWithCustomPos = [...envCodeBlock.code];
-			codeWithCustomPos[1] = '; @pos 12 -7';
-			store.set('codeBlockRendering.codeBlocks', [createGraphicEnvBlock(codeWithCustomPos, { gridX: 12, gridY: -7 })]);
-		}
-
+		const envCodeBlock = state.initialProjectState!.constants.find(block => block.code[0] === 'constants env')!;
+		const codeWithCustomPos = [...envCodeBlock.code];
+		codeWithCustomPos[1] = '; @pos 12 -7';
 		store.set('codeBlockRendering.codeBlocks', [createGraphicEnvBlock(codeWithCustomPos, { gridX: 12, gridY: -7 })]);
 		store.set('envConstantContributions.provider', ['const PROVIDED 77']);
 
@@ -176,13 +153,8 @@ describe('autoEnvConstants', () => {
 		autoEnvConstants(store);
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
 
-		const envCodeBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		let codeWithoutPos: string[] = [];
-		if (envCodeBlock) {
-			codeWithoutPos = envCodeBlock.code.filter(line => !line.includes('@pos'));
-			store.set('codeBlockRendering.codeBlocks', [createGraphicEnvBlock(codeWithoutPos)]);
-		}
-
+		const envCodeBlock = state.initialProjectState!.constants.find(block => block.code[0] === 'constants env')!;
+		const codeWithoutPos = envCodeBlock.code.filter(line => !line.includes('@pos'));
 		store.set('codeBlockRendering.codeBlocks', [createGraphicEnvBlock(codeWithoutPos)]);
 		store.set('envConstantContributions.provider', ['const PROVIDED 77']);
 

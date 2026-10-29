@@ -93,7 +93,7 @@ describe('TestRuntime lifecycle', () => {
 		expect(state.assertionResults).toEqual([
 			{ site: assertion.site, passed: false, message: 'Assertion failed: expected nonzero, received 0' },
 		]);
-		expect(state.info.testRuntime).toMatchObject(result);
+		expect(state.info.testRuntime).toEqual({ status: 'failed', assertionCount: 1, failureCount: 1 });
 		store.set('compiler.isCompiling', true);
 		expect(state.assertionResults).toEqual([]);
 		store.set('compiler.isCompiling', false);
@@ -142,7 +142,7 @@ entryEnd`),
 		expect(firstWorker.postMessage).toHaveBeenCalledExactlyOnceWith(firstProgram);
 		firstWorker.emit(passed());
 		expect(firstWorker.terminate).toHaveBeenCalledOnce();
-		expect(state.info.testRuntime).toMatchObject({ status: 'passed', assertionSites: [] });
+		expect(state.info.testRuntime).toEqual({ status: 'passed', assertionCount: 0, failureCount: 0 });
 		expect(state.info.other).toEqual({ retained: true });
 		setProgram();
 		store.set('compiler.isCompiling', true);

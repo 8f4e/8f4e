@@ -3,7 +3,6 @@ import type { AssertionSite } from '@8f4e/language-spec';
 import type { TestRunResult } from '@8f4e/runtime-test-runner/types';
 import WorkerConstructor from '@8f4e/runtime-test-runner?worker';
 import { formatAssertionExpectation, formatTestFailures } from '@8f4e/test-runner';
-import type { TestRuntimeState } from './types';
 
 export function createTestRuntimePlugin({
 	getCodeBuffer,
@@ -20,11 +19,21 @@ export function createTestRuntimePlugin({
 			const state = store.getState();
 			let worker: Worker | undefined;
 
-			function publish(result: TestRuntimeState) {
-				store.set('info.testRuntime', result);
+			function publish(result: TestRunResult | { status: 'idle' | 'running' }) {
+				const completed = result.status === 'passed' || result.status === 'failed';
+				store.set(
+					'info.testRuntime',
+					completed
+						? {
+								status: result.status,
+								assertionCount: result.assertions.length,
+								failureCount: result.failures.length,
+							}
+						: result
+				);
 				store.set(
 					'assertionResults',
-					result.status === 'passed' || result.status === 'failed'
+					completed
 						? result.assertions.map(assertion => ({
 								site: assertion.site,
 								passed: assertion.passed,
@@ -58,12 +67,12 @@ export function createTestRuntimePlugin({
 				stopWorker();
 				const currentWorker = new WorkerConstructor();
 				worker = currentWorker;
-				publish({ status: 'running', assertionSites });
+				publish({ status: 'running' });
 
 				const finish = (data: TestRunResult) => {
 					if (worker !== currentWorker) return;
 					stopWorker();
-					publish({ ...data, assertionSites });
+					publish(data);
 					if (data.status === 'error') console.error('[TestRuntime]', data.error);
 					else if (data.status === 'failed') console.error('[TestRuntime]', formatTestFailures(data.failures));
 					else console.info(`[TestRuntime] ${data.assertions.length} assertions passed`);

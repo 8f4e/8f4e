@@ -2,7 +2,7 @@
 
 ## Package Scope & Layout
 - Path: `packages/editor/packages/editor-core`; source in `src/`, output in `dist/`.
-- Alias: `@8f4e/editor-core`. Consumed by the default editor composition and runtime definitions.
+- Alias: `@8f4e/editor-core`. Consumed by the default editor composition and runtime plugins.
 
 ## Build, Bundle, Dev
 - From root: `npx nx run @8f4e/editor-core:build|test|typecheck`.

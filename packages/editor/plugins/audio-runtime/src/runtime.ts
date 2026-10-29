@@ -95,7 +95,7 @@ function getSampleRate(editorConfig: EditorConfig): number {
 	return resolveSchemaConfigRoot(AUDIO_WORKLET_EDITOR_CONFIG, editorConfig).sampleRate as number;
 }
 
-export function getAudioOutputBuffers(state: State): AudioOutputBufferRoute[] {
+function getAudioOutputBuffers(state: State): AudioOutputBufferRoute[] {
 	const config = getAudioWorkletRuntimeConfig(state);
 	const leftAddress = config.audioOutBufferLAddress;
 	const rightAddress = config.audioOutBufferRAddress;
@@ -112,7 +112,7 @@ export function getAudioOutputBuffers(state: State): AudioOutputBufferRoute[] {
 	return buffers;
 }
 
-export function getAudioInputBuffers(state: State): AudioInputBufferRoute[] {
+function getAudioInputBuffers(state: State): AudioInputBufferRoute[] {
 	const config = getAudioWorkletRuntimeConfig(state);
 	const leftAddress = config.audioInBufferLAddress;
 
@@ -184,17 +184,15 @@ export function startAudioRuntime(
 			return;
 		}
 
-		if (audioWorklet) {
-			const config = getAudioWorkletRuntimeConfig(state);
-			audioWorklet.port.postMessage({
-				type: 'init',
-				memoryRef: memory,
-				codeBuffer: getCodeBuffer(),
-				bufferExportName: config.entry,
-				audioOutputBuffers: getAudioOutputBuffers(state),
-				audioInputBuffers: getAudioInputBuffers(state),
-			});
-		}
+		const config = getAudioWorkletRuntimeConfig(state);
+		audioWorklet.port.postMessage({
+			type: 'init',
+			memoryRef: memory,
+			codeBuffer: getCodeBuffer(),
+			bufferExportName: config.entry,
+			audioOutputBuffers: getAudioOutputBuffers(state),
+			audioInputBuffers: getAudioInputBuffers(state),
+		});
 	}
 
 	async function syncAudioInputSource() {

@@ -6,7 +6,7 @@
 - Editor libraries and hosts live in `packages/`. Optional feature plugins live in `plugins/<feature>/`, each with
   its own package named `@8f4e/editor-plugin-<feature>`. Keep plugin directories short and package names explicit.
 - `@8f4e/editor-core` is the minimal reusable editor.
-- `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent plugins and runtime factories. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
+- `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, example source discovery,
   and startup policy.

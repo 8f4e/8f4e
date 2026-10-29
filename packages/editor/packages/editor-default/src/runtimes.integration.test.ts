@@ -127,7 +127,7 @@ it('starts both runtimes after compilation and keeps their constants and info se
 	expect(test.state.info.audioRuntime?.audioBufferSize).toBe(128);
 });
 
-it('disables and reenables a runtime independently, and replaces its contributed names', async () => {
+it('disables and reenables a runtime independently', async () => {
 	const test = setup();
 	test.compile();
 	await vi.waitFor(() => expect(test.worklets).toHaveLength(1));
@@ -135,9 +135,6 @@ it('disables and reenables a runtime independently, and replaces its contributed
 	expect(test.workers[0].terminate).toHaveBeenCalledOnce();
 	expect(test.worklets[0].disconnect).not.toHaveBeenCalled();
 	expect(test.state.envConstantContributions.workerRuntime).toEqual([]);
-	test.edit('audioRuntime.sampleRateConstantName AUDIO_RATE', 'audioRuntime.sampleRateConstantName SAMPLE_RATE');
-	expect(test.state.envConstantContributions.audioRuntime).toContain('const SAMPLE_RATE 48000');
-	expect(test.state.envConstantContributions.audioRuntime).not.toContain('const AUDIO_RATE 48000');
 	test.store.set('compiler.isCompiling', true);
 	test.edit('workerRuntime.enabled false', 'workerRuntime.enabled true');
 	expect(test.workers).toHaveLength(1);
@@ -166,30 +163,4 @@ it('removes each plugin’s resources and contributions without disposing the ot
 	expect(test.state.envConstantContributions.audioRuntime).toBeUndefined();
 	cleanups.pop();
 	test.store.dispose();
-});
-
-it('defaults contributed names and allows audio buffer-size names to be configured', () => {
-	const test = setup();
-	test.edit('; @config audioRuntime.sampleRateConstantName AUDIO_RATE', '');
-	expect(test.state.envConstantContributions.audioRuntime).toEqual([
-		'const SAMPLE_RATE 48000',
-		'const AUDIO_BUFFER_SIZE 128',
-	]);
-	const block = test.state.codeBlockRendering.codeBlocks.find(block => block.blockType === 'note')!;
-	applyCodeBlockSourceEdits(
-		test.store,
-		[
-			{
-				codeBlock: block,
-				code: [...block.code.slice(0, -1), '; @config audioRuntime.bufferSizeConstantName BUFFER_LENGTH', 'noteEnd'],
-			},
-		],
-		{ affectsCompilation: true }
-	);
-	expect(test.state.envConstantContributions.audioRuntime).toEqual([
-		'const SAMPLE_RATE 48000',
-		'const BUFFER_LENGTH 128',
-	]);
-	test.edit('; @config workerRuntime.sampleRateConstantName CONTROL_RATE', '');
-	expect(test.state.envConstantContributions.workerRuntime).toEqual(['const SAMPLE_RATE 25']);
 });

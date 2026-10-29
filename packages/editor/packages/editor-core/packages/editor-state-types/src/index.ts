@@ -223,7 +223,7 @@ export interface State {
 	envConstantContributions: Record<string, string[]>;
 	/** Console state for internal logging */
 	console: ConsoleState;
-	/** Executed assertion outcomes published by the active runtime for editor rendering. */
+	/** Executed assertion outcomes published by plugins for editor rendering. */
 	assertionResults: AssertionResult[];
 	/** Resolved global editor directives from `; @<name>` comments */
 	globalEditorDirectives: ResolvedGlobalEditorDirectives;
