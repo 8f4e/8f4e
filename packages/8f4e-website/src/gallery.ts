@@ -1,4 +1,4 @@
-import { type DefaultEditorInstance, type DefaultEditorMountOptions, mountDefaultEditor } from '@8f4e/editor-default';
+import { type MinimalEditorInstance, type MinimalEditorMountOptions, mountMinimalEditor } from '@8f4e/editor-minimal';
 import type { EditorWebMcpBridge } from '@8f4e/editor-webmcp';
 import { getProjectId, withProjectId } from './gallery-url';
 import { sharedAudioContext } from './shared-audio-context';
@@ -21,16 +21,15 @@ export interface GalleryCategory {
 interface GalleryOptions {
 	title: string;
 	categories: GalleryCategory[];
-	storageNamespace: string;
-	featureFlags?: DefaultEditorMountOptions['featureFlags'];
+	featureFlags?: MinimalEditorMountOptions['featureFlags'];
 }
 
-export function mountGallery({ title, categories, storageNamespace, featureFlags }: GalleryOptions): () => void {
+export function mountGallery({ title, categories, featureFlags }: GalleryOptions): () => void {
 	const projects = categories.flatMap(category => category.projects);
 	const gallery = document.querySelector<HTMLDivElement>('#examples-gallery')!;
 	const mobileLayout = window.matchMedia('(max-width: 800px)');
 	let activeId: string | null = null;
-	let activeEditor: DefaultEditorInstance | undefined;
+	let activeEditor: MinimalEditorInstance | undefined;
 	let activeBridge: EditorWebMcpBridge | undefined;
 	let mountQueue = Promise.resolve();
 	let revision = 0;
@@ -161,7 +160,7 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 			item.frame.prepend(canvas);
 			let failed = false;
 			let loaded = false;
-			let mountedEditor: DefaultEditorInstance | undefined;
+			let mountedEditor: MinimalEditorInstance | undefined;
 			let bridgeStarted = false;
 			const connectBridge = async () => {
 				if (!loaded || !mountedEditor || bridgeStarted || disposed || failed || currentRevision !== revision) return;
@@ -208,20 +207,13 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 			};
 			loadTimeout = window.setTimeout(() => showError(new Error('Project loading timed out')), 30_000);
 			try {
-				const editor = await mountDefaultEditor(canvas, {
+				const editor = await mountMinimalEditor(canvas, {
 					sharedAudioContext,
 					captureWheel: true,
-					featureFlags: {
-						projectCreation: false,
-						...featureFlags,
-					},
-					showOpenMenuItem: false,
-					initialEditorMode: 'edit',
+					featureFlags,
 					initialProjectUrl: item.projectUrl,
 					onInitialProjectLoaded: reveal,
 					onInitialProjectLoadError: showError,
-					storage: window.sessionStorage,
-					storageNamespace: `8f4e-${storageNamespace}-${item.project.id}`,
 				});
 				if (disposed || failed || currentRevision !== revision) {
 					editor.dispose();

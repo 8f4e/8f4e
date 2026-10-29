@@ -1,0 +1,87 @@
+import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
+import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
+import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
+import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
+import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
+import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
+import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
+import { createStackPlugin } from '@8f4e/editor-plugin-stack';
+import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
+import { createWatchPlugin } from '@8f4e/editor-plugin-watch';
+import { createLazyPluginRegistry } from './lazy-plugins';
+import { resolveStdlibInclude } from './stdlib-resolver';
+
+export type MinimalEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
+
+export interface MinimalEditorMountOptions {
+	/** Borrow this context when its sample rate matches the project. The host owns its lifetime. */
+	sharedAudioContext?: AudioContext;
+	/** Capture wheel gestures for viewport panning. Disable this in scrolling pages. */
+	captureWheel?: boolean;
+	featureFlags?: EditorOptions['featureFlags'];
+	initialEditorMode?: EditorOptions['initialEditorMode'];
+	initialProjectUrl?: string;
+	/** Initial source is installed; compilation and plugin loading continue independently. */
+	onInitialProjectLoaded?: () => void;
+	onInitialProjectLoadError?: (error: unknown) => void;
+}
+
+export async function mountMinimalEditor(
+	canvas: HTMLCanvasElement,
+	{
+		sharedAudioContext,
+		captureWheel,
+		featureFlags,
+		initialEditorMode = 'edit',
+		initialProjectUrl,
+		onInitialProjectLoaded,
+		onInitialProjectLoadError,
+	}: MinimalEditorMountOptions = {}
+): Promise<MinimalEditorInstance> {
+	const compiler = createCompilerPlugin({ resolveInclude: resolveStdlibInclude });
+	const browserWindow = canvas.ownerDocument.defaultView!;
+	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
+	const prefersReducedMotion = () => motionPreference.matches;
+	const editor = await initEditor(canvas, {
+		plugins: [
+			compiler.plugin,
+			createProjectUrlLoaderPlugin({
+				fetch: globalThis.fetch,
+				initialProjectUrl,
+				onLoaded: onInitialProjectLoaded,
+				onError: onInitialProjectLoadError,
+			}),
+			assertionMarkersPlugin,
+			createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory: compiler.writeMemory }),
+			createMidiInputPlugin({
+				navigator: browserWindow.navigator,
+				getMemory: compiler.getMemory,
+				getCodeBuffer: compiler.getCodeBuffer,
+			}),
+			createBinaryAssetsPlugin({
+				getMemoryBytes: () => {
+					const memory = compiler.getMemory();
+					return memory ? new Uint8Array(memory.buffer) : undefined;
+				},
+			}),
+			createLazyPluginLoaderPlugin(
+				createLazyPluginRegistry({
+					writeMemory: compiler.writeMemory,
+					getMemory: compiler.getMemory,
+					getCodeBuffer: compiler.getCodeBuffer,
+					getAssertionSites: compiler.getAssertionSites,
+					sharedAudioContext,
+				})
+			),
+			createWatchPlugin({ prefersReducedMotion }),
+			createStackPlugin({ prefersReducedMotion }),
+			tooltipsPlugin,
+		],
+		captureWheel,
+		featureFlags: { projectCreation: false, ...featureFlags },
+		initialEditorMode,
+	});
+	if (!initialProjectUrl) onInitialProjectLoaded?.();
+	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
+}

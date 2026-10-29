@@ -3,6 +3,8 @@
 ## Project Structure & Module Organization
 - Editor product: the reusable default composition lives in `packages/editor/packages/editor-default/`; the thin
   Vite website lives in `packages/editor/packages/editor-website/`.
+- Embedded composition: `packages/editor/packages/editor-minimal/` supplies live editing, project URL loading,
+  controls, visualizations, and runtimes for the product homepage and galleries, without session storage or authoring plugins.
 - Compiler integration lives in `packages/editor/plugins/compiler/` (`@8f4e/editor-plugin-compiler`). The default editor constructs and installs it first and injects its live handles into dependent plugins, including runtimes. Core emits input-change events and consumes accepted artifacts.
 - WebMCP lives in `packages/editor/packages/editor-webmcp/` as an external page-owned adapter bound to one editor's public `editing` handle. The editor website and example/test galleries compose it; gallery project switches dispose and recreate the bridge.
 - Optional editor features live in `packages/editor/plugins/<feature>/` as independent npm/Nx packages named
@@ -13,7 +15,7 @@
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
   selection, and paste collision renaming. Nested language-level project groups remain core project structure.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`
-  compiler fixture gallery, all embedding the default editor. Its build includes `src/index.html`,
+  compiler fixture gallery, all embedding the minimal editor. Its build includes `src/index.html`,
   `src/examples/index.html`, and `src/tests/index.html`. The test gallery bundles the compiler's `.test.8f4e`
   fixtures as assets; fixtures enable the test-runtime plugin with `@config testRuntime.enabled true` to run assertions
   after compilation.
@@ -51,7 +53,8 @@
 - `npx nx run @8f4e/editor-website:build`: Builds the default composition and website production bundle.
 - `npx nx run @8f4e/8f4e-website:dev`: Starts the example product website on `http://localhost:3001`.
 - `npx nx run @8f4e/8f4e-website:build`: Builds the example product website and its editor dependencies.
-- `npx nx run @8f4e/8f4e-website:test:browser`: Runs homepage and gallery lifecycle integration tests with the default editor.
+- `npx nx run @8f4e/editor-minimal:build|test|typecheck`: Build or verify the embedded editor composition.
+- `npx nx run @8f4e/8f4e-website:test:browser`: Runs homepage and gallery lifecycle integration tests with the minimal editor.
 - `npx nx run @8f4e/editor-webmcp:test:browser`: Runs real-editor WebMCP source, editing, revision, persistence, and history integration tests.
 - `npx nx run @8f4e/editor-webmcp:build|test|typecheck`: Verify the external single-editor WebMCP adapter.
 - `npx nx run @8f4e/editor-webmcp:generate-content`: Rebuild its bundled help/docs/example catalog through Vite source collections; build/test/typecheck run this automatically.

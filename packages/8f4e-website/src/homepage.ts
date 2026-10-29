@@ -1,4 +1,4 @@
-import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
+import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
 import { getExampleProjectUrl } from './example-projects';
 import { sharedAudioContext } from './shared-audio-context';
 
@@ -9,23 +9,11 @@ export function mountHomepageEditors(): () => void {
 	}
 
 	const renderingReleaseDelayMs = 2_000;
-	const editorByCanvas = new Map<HTMLCanvasElement, DefaultEditorInstance>();
-	const editorMountPromiseByCanvas = new Map<HTMLCanvasElement, Promise<DefaultEditorInstance>>();
+	const editorByCanvas = new Map<HTMLCanvasElement, MinimalEditorInstance>();
+	const editorMountPromiseByCanvas = new Map<HTMLCanvasElement, Promise<MinimalEditorInstance>>();
 	const renderingReleaseTimeoutByCanvas = new Map<HTMLCanvasElement, number>();
 	const revealAnimationFrameByCanvas = new Map<HTMLCanvasElement, number>();
-	const editors: DefaultEditorInstance[] = [];
 	let disposed = false;
-
-	function syncEditors(): void {
-		editors.splice(
-			0,
-			editors.length,
-			...canvases.flatMap(canvas => {
-				const editor = editorByCanvas.get(canvas);
-				return editor ? [editor] : [];
-			})
-		);
-	}
 
 	function revealEditorAfterProjectLoad(canvas: HTMLCanvasElement): void {
 		if (disposed) return;
@@ -70,26 +58,21 @@ export function mountHomepageEditors(): () => void {
 		}
 	});
 
-	function mountEditor(canvas: HTMLCanvasElement, index: number): Promise<DefaultEditorInstance> {
+	function mountEditor(canvas: HTMLCanvasElement): Promise<MinimalEditorInstance> {
 		const pendingMount = editorMountPromiseByCanvas.get(canvas);
 		if (pendingMount) {
 			return pendingMount;
 		}
 
-		const mountPromise = mountDefaultEditor(canvas, {
+		const mountPromise = mountMinimalEditor(canvas, {
 			sharedAudioContext,
 			captureWheel: false,
 			featureFlags: {
 				modeToggling: false,
-				projectCreation: false,
 			},
-			showOpenMenuItem: false,
-			initialEditorMode: 'edit',
 			initialProjectUrl: canvas.dataset.projectPath ? getExampleProjectUrl(canvas.dataset.projectPath) : undefined,
 			onInitialProjectLoaded: () => revealEditorAfterProjectLoad(canvas),
 			onInitialProjectLoadError: error => showProjectLoadError(canvas, error),
-			storage: window.localStorage,
-			storageNamespace: index === 0 ? '8f4e-website' : `8f4e-website-${index + 1}`,
 		})
 			.then(editor => {
 				if (disposed) {
@@ -98,11 +81,7 @@ export function mountHomepageEditors(): () => void {
 				}
 
 				editorByCanvas.set(canvas, editor);
-				syncEditors();
 				renderingObserver.observe(canvas);
-				if (index === 0) {
-					Object.assign(window, { editor, state: editor.state });
-				}
 				return editor;
 			})
 			.catch(error => {
@@ -114,7 +93,6 @@ export function mountHomepageEditors(): () => void {
 		return mountPromise;
 	}
 
-	const canvasIndex = new Map(canvases.map((canvas, index) => [canvas, index]));
 	const mountingObserver = new IntersectionObserver(entries => {
 		for (const entry of entries) {
 			if (!entry.isIntersecting) {
@@ -122,12 +100,7 @@ export function mountHomepageEditors(): () => void {
 			}
 
 			const canvas = entry.target as HTMLCanvasElement;
-			const index = canvasIndex.get(canvas);
-			if (index === undefined) {
-				continue;
-			}
-
-			void mountEditor(canvas, index)
+			void mountEditor(canvas)
 				.then(() => mountingObserver.unobserve(canvas))
 				.catch(error => console.error('Failed to mount editor:', error));
 		}
@@ -135,8 +108,6 @@ export function mountHomepageEditors(): () => void {
 	for (const canvas of canvases) {
 		mountingObserver.observe(canvas);
 	}
-
-	Object.assign(window, { editors });
 
 	function dispose(): void {
 		disposed = true;
@@ -150,11 +121,11 @@ export function mountHomepageEditors(): () => void {
 			window.cancelAnimationFrame(animationFrame);
 		}
 		revealAnimationFrameByCanvas.clear();
-		for (const editor of editors) {
+		for (const editor of editorByCanvas.values()) {
 			editor.dispose();
 		}
-		editors.length = 0;
 		editorByCanvas.clear();
+		editorMountPromiseByCanvas.clear();
 	}
 
 	return dispose;

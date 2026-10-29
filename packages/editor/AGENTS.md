@@ -12,6 +12,9 @@
 - External lists match exact import paths; include used dependency subpaths such as `glugglugglug/utils` explicitly.
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, example source discovery,
   and startup policy.
+- `@8f4e/editor-minimal` independently composes the embedded editor for the product homepage and galleries. Keep live
+  editing, controls, visualizations, compiler/runtime plugins, input, and URL loading. Keep session storage, built-in
+  modules, file/export/screenshot plugins, and optional authoring actions in editor-default.
 - `@8f4e/editor-website` is the thin deployable Vite host for the default composition.
 - `@8f4e/editor-webmcp` is an external, page-owned adapter bound to one editor's public editing handle. Hosts own its registration and dispose it before replacing the editor; it is not an editor plugin.
 - The bridge bundles its help, compiler/editor documentation, and example catalogs using `@8f4e/vite-plugin-sources` at build time. Its `generate-content` target prepares the search index and lazy content modules before build/test/typecheck; hosts need no content configuration.
@@ -44,6 +47,8 @@
 ## Build, Test, Dev
 
 - Build or test the composition with `npx nx run @8f4e/editor-default:build|test|typecheck`.
+- Build or verify the embedded composition with `npx nx run @8f4e/editor-minimal:build|test|typecheck` and
+  `npx nx run @8f4e/8f4e-website:test:browser`.
 - Build or verify the plugins with `npx nx run @8f4e/editor-plugin-toggle-skip-execution:build|test|typecheck` or
   `npx nx run @8f4e/editor-plugin-switch:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-tooltips:build|test|typecheck`, or
@@ -79,13 +84,13 @@
 ## Coding Style
 
 - TypeScript (ES modules). Use Biome as the fixer (`npx biome check --write <files>`).
-- Keep composition behavior in `editor-default`; keep hosting and deployment concerns in `editor-website`.
+- Keep composition behavior in `editor-default` and `editor-minimal`; keep hosting and deployment concerns in their websites.
 - Prefer workspace aliases for inter-package references.
 
 ## Testing
 
 - Vitest tests live under `src/__tests__` or alongside source as `*.test.ts`.
-- Test composition behavior in `@8f4e/editor-default`; test reusable editor behavior in `@8f4e/editor-core`.
+- Test composition behavior in `@8f4e/editor-default` and `@8f4e/editor-minimal`; test reusable editor behavior in `@8f4e/editor-core`.
 
 ## Pull Requests
 

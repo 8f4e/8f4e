@@ -1,4 +1,4 @@
-import { mountDefaultEditor } from '@8f4e/editor-default';
+import { mountMinimalEditor } from '@8f4e/editor-minimal';
 import type { WebMcpTool } from '@8f4e/editor-webmcp';
 import { expect, test, vi } from 'vitest';
 import { mountGallery } from './gallery';
@@ -11,7 +11,7 @@ const bridgeLoading = vi.hoisted(() => {
 	return { promise, finish: () => finish() };
 });
 
-vi.mock('@8f4e/editor-default', { spy: true });
+vi.mock('@8f4e/editor-minimal', { spy: true });
 vi.mock('@8f4e/editor-webmcp', async importOriginal => {
 	await bridgeLoading.promise;
 	return importOriginal();
@@ -45,7 +45,6 @@ test('reveals and switches editors while the bridge loads, then connects only th
 	document.body.append(gallery);
 	const dispose = mountGallery({
 		title: 'Examples',
-		storageNamespace: 'lazy-bridge-test',
 		categories: [
 			{
 				path: 'test',
@@ -65,14 +64,14 @@ test('reveals and switches editors while the bridge loads, then connects only th
 		await vi.waitFor(() =>
 			expect(gallery.querySelector('#panel-first canvas')?.classList.contains('editor-ready')).toBe(true)
 		);
-		expect(mountDefaultEditor).toHaveBeenCalledOnce();
+		expect(mountMinimalEditor).toHaveBeenCalledOnce();
 		expect(tools.size).toBe(0);
 		const firstCanvas = gallery.querySelector('#panel-first canvas')!;
 		gallery.querySelector<HTMLButtonElement>('#example-second')!.click();
 		await vi.waitFor(() =>
 			expect(gallery.querySelector('#panel-second canvas')?.classList.contains('editor-ready')).toBe(true)
 		);
-		expect(mountDefaultEditor).toHaveBeenCalledTimes(2);
+		expect(mountMinimalEditor).toHaveBeenCalledTimes(2);
 		expect(firstCanvas.isConnected).toBe(false);
 		expect(tools.size).toBe(0);
 		bridgeLoading.finish();
@@ -83,7 +82,6 @@ test('reveals and switches editors while the bridge loads, then connects only th
 		bridgeLoading.finish();
 		gallery.remove();
 		window.history.replaceState(null, '', originalUrl);
-		for (const id of ['first', 'second']) window.sessionStorage.removeItem(`project_8f4e-lazy-bridge-test-${id}`);
 		if (originalContext) Object.defineProperty(document, 'modelContext', originalContext);
 		else Reflect.deleteProperty(document, 'modelContext');
 		vi.restoreAllMocks();
