@@ -155,8 +155,6 @@ export default function codeBlockRendering(
 		const displayRow = displayModel.sourceLineIndexToDisplayRow[graphicData.cursor.row] ?? graphicData.cursor.row;
 		graphicData.cursor.y = gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid;
 		const previousAlwaysOnTop = Boolean(graphicData.alwaysOnTop);
-		graphicData.groupName = directiveState.blockState.groupName;
-		graphicData.groupNonstick = directiveState.blockState.groupNonstick;
 		graphicData.viewportAnchor = directiveState.blockState.viewportAnchor;
 		graphicData.alwaysOnTop = directiveState.blockState.alwaysOnTop ?? false;
 		runBlockLayoutReady(graphicData, state, directiveState);

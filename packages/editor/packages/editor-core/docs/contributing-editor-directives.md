@@ -121,11 +121,22 @@ code = upsertDirective(code, 'disabled');
 Updates the arguments of all existing directive lines with the given name. Useful when you need to modify args without changing line placement.
 
 ```ts
-// Toggle nonstick flag on ; @group directive
+// Set the requested nonstick mode on ; @group directive
 code = updateDirectiveArgs(code, 'group', ([groupName]) =>
   makeNonstick ? [groupName, 'nonstick'] : [groupName]
 );
 ```
+
+Apply replacement source through the public state helper once the action has checked edit mode:
+
+```ts
+import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+
+applyCodeBlockSourceEdits(store, [{ codeBlock, code }], { affectsCompilation: false });
+```
+
+Pass all changed owners in one batch. The helper refreshes blocks and publishes one completed project change;
+set `affectsCompilation: true` when the edit changes compiler inputs. It handles empty and unchanged batches.
 
 ## Shared Types
 

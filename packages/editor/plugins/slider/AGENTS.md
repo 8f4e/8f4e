@@ -9,6 +9,8 @@
   editing remain in core.
 - Consume active drags with a capture listener so viewport panning and block dragging do not run for slider moves.
 - Own every directive, drawer, menu, and event registration. Return an explicit disposer.
+- Save default-value edits through `applyCodeBlockSourceEdits` with `affectsCompilation: true`, including edits to
+  multiple backing owners in one operation. Do not publish a second project or compiler change.
 - Select shared base-palette shades; do not add feature-specific configurable colors.
 - Run `npx nx run @8f4e/editor-plugin-slider:build|test|typecheck` after changes.
 - Run `npx nx run @8f4e/editor-plugin-slider:test:screenshot` for browser rendering tests.

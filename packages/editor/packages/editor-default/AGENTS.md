@@ -26,6 +26,8 @@
   with a live reduced-motion preference from the browser; install their overlays before tooltips.
 - Include `toggleFavoritePlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Core does
   not install these editing actions or their menus.
+- Include `groupingPlugin` after the execution-toggle plugin. It owns editor `@group` behavior, including drag and
+  paste policies and group menus; it has no browser factory dependencies.
 - Compose `createBinaryAssetsPlugin({ getMemoryBytes })` with a getter for the compiler plugin's current memory.
   Fetching, caching, binary metadata, loading UI, and generated asset constants remain inside the plugin.
 - Include `assertionMarkersPlugin`, `createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory })`, and

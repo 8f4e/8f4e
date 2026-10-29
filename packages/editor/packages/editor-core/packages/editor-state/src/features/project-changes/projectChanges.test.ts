@@ -10,11 +10,6 @@ import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
 import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
-import groupDeleter from '../code-blocks/features/group/deleter/effect';
-import groupNonstickToggler from '../code-blocks/features/group/nonstickToggler/effect';
-import groupRemover from '../code-blocks/features/group/remover/effect';
-import groupSkipExecutionToggler from '../code-blocks/features/group/skipExecutionToggler/effect';
-import groupUngroupper from '../code-blocks/features/group/ungroupper/effect';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
 import codeEditing from '../code-editing/effect';
@@ -122,21 +117,6 @@ describe('project revision', () => {
 		expect(state.compilerInputRevision).toBe(0);
 	});
 
-	it.each([
-		['toggleGroupNonstick', groupNonstickToggler, { makeNonstick: true }],
-		['removeFromGroupDirective', groupRemover, {}],
-		['ungroupByName', groupUngroupper, {}],
-	])('advances for editor metadata changes from %s, unlike the compiler revision', (eventName, effect, payload) => {
-		block.groupName = 'audio';
-		block.code.splice(1, 0, '; @group audio');
-		const originalCode = [...block.code];
-		effect(store, events);
-		dispatch(eventName, { codeBlock: block, ...payload });
-		expect(block.code).not.toEqual(originalCode);
-		expect(state.projectChange.revision).toBe(1);
-		expect(state.compilerInputRevision).toBe(0);
-	});
-
 	it('advances for adding, disabling, enabling, and deleting a block, but not for a repeated delete', async () => {
 		codeBlockCreator(store, events);
 		await dispatchAsync('insertCodeBlock', { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
@@ -156,26 +136,11 @@ describe('project revision', () => {
 			code: [`module ${name}`, 'moduleEnd'],
 			gridCoordinates: { x: 0, y: 0 },
 		}));
-		pasteMultipleBlocks(store, { x: 0, y: 0, blocks });
+		pasteMultipleBlocks(store, events, { x: 0, y: 0, blocks });
 		expect(state.codeBlockRendering.codeBlocks).toHaveLength(3);
 		expect(state.projectChange.revision).toBe(1);
-		pasteMultipleBlocks(store, { x: 0, y: 0, blocks: [] });
+		pasteMultipleBlocks(store, events, { x: 0, y: 0, blocks: [] });
 		expect(state.projectChange.revision).toBe(1);
-	});
-
-	it('advances once per group execution toggle or group deletion', () => {
-		block.groupName = 'audio';
-		const other = createMockCodeBlock({ code: ['module other', 'moduleEnd'], blockType: 'module', groupName: 'audio' });
-		state.codeBlockRendering.codeBlocks.push(other);
-		groupSkipExecutionToggler(store, events);
-		groupDeleter(store, events);
-		dispatch('toggleGroupSkipExecutionDirective', { codeBlock: block });
-		expect(state.projectChange.revision).toBe(1);
-		dispatch('deleteGroup', { codeBlock: block });
-		expect(state.codeBlockRendering.codeBlocks).toHaveLength(0);
-		expect(state.projectChange.revision).toBe(2);
-		dispatch('deleteGroup', { codeBlock: block });
-		expect(state.projectChange.revision).toBe(2);
 	});
 
 	it('advances for regenerated environment constants and ignores identical regeneration', () => {

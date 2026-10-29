@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { incrementCompilerInputRevision, publishProjectChange } from '@8f4e/editor-state';
+import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { drawSliders } from './drawer/draw';
 import { getSliderDefaultEdits } from './helpers/saveDefaults';
@@ -41,14 +41,7 @@ export function createSliderPlugin({
 			} = {}) => {
 				if (!state.featureFlags.editing || !codeBlock) return;
 				const edits = getSliderDefaultEdits(state, slidersByBlock.get(codeBlock) ?? []);
-				if (!edits.length) return;
-				for (const { codeBlock: owner, code } of edits) {
-					owner.code = code;
-					owner.lastUpdated = Date.now();
-					store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', owner);
-				}
-				incrementCompilerInputRevision(store);
-				publishProjectChange(store);
+				applyCodeBlockSourceEdits(store, edits, { affectsCompilation: true });
 			};
 			events.on(saveAction, onSave);
 			return () => {

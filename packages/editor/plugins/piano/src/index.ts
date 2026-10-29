@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { incrementCompilerInputRevision } from '@8f4e/editor-state';
+import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { drawPianoKeyboards } from './drawer/draw';
 import { getPianoDefaultEdits } from './helpers/saveDefaults';
@@ -41,13 +41,7 @@ export function createPianoPlugin({
 			} = {}) => {
 				if (!state.featureFlags.editing || !codeBlock) return;
 				const edits = getPianoDefaultEdits(state, keyboardsByBlock.get(codeBlock) ?? []);
-				if (!edits.length) return;
-				for (const { codeBlock: owner, code } of edits) {
-					owner.code = code;
-					owner.lastUpdated = Date.now();
-					store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', owner);
-				}
-				incrementCompilerInputRevision(store);
+				applyCodeBlockSourceEdits(store, edits, { affectsCompilation: true });
 			};
 			events.on(saveAction, onSave);
 			return () => {

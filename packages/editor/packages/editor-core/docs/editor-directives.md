@@ -734,6 +734,7 @@ This block stays pinned to the top-left corner of the viewport and is always ren
 ### `@group`
 
 Assign a code block to a named group for coordinated movement.
+Provided by `@8f4e/editor-plugin-grouping`, included in the default editor.
 
 ```txt
 ; @group <groupName> [nonstick]
@@ -832,7 +833,7 @@ When you copy a group (using "Copy group" in the context menu), all blocks in th
 
 **Group Name Collision Handling:**
 
-When pasted blocks contain `@group` directives, group names are automatically renamed to avoid collisions with existing groups:
+The grouping plugin automatically renames pasted `@group` names to avoid collisions with existing visual groups:
 
 - If a group name ends with a number, that number is incremented: `audio1` → `audio2`
 - If a group name doesn't end with a number, `1` is appended: `audio` → `audio1`

@@ -40,6 +40,13 @@
   or generic key-sorting adapters.
 - Do not add a parallel project snapshot API. Consumers can use `getEditorBlockId(block)` to target existing validated commands with blocks read from state. Keep code authoritative for derived properties and avoid a parallel, hand-picked block metadata model. Agent-specific projections belong in the external WebMCP bridge. Editing commands accept source with `@pos` directives; derive positions from code without overriding or injecting coordinate directives.
 - Plugins own their registrations, listeners, private widget data, and disposal. Do not add automatic tracking.
+- Use `applyCodeBlockSourceEdits(store, edits, { affectsCompilation })` for plugin source-edit batches and
+  `deleteCodeBlocks(store, blocks)` for removing blocks from the current slice. These helpers own refreshes,
+  deleted-block reference cleanup, and one completed project/compiler notification. Callers own edit-mode policy;
+  do not publish the same operation again or mutate the live source array before passing replacement code.
+- Editor `@group` behavior belongs to `editor-plugin-grouping`, including membership, dragging policy, clipboard
+  collision handling, and all group actions/menus. Keep only generic drag-target and paste-source events in core;
+  nested language-level project groups, navigation, and memory scopes remain core-owned.
 - Keep browser resources out of the shared plugin context. Browser plugins receive instance dependencies through
   factories composed by the browser host. `Editor.renderFrame()` provides generic immediate rendering.
 

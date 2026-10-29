@@ -7,8 +7,6 @@ import rendering from '../code-blocks/effect';
 import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
 import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
-import groupDeleter from '../code-blocks/features/group/deleter/effect';
-import groupNonstickToggler from '../code-blocks/features/group/nonstickToggler/effect';
 import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import codeEditing from '../code-editing/effect';
 import globalEditorDirectivesEffect from '../global-editor-directives/effect';
@@ -207,64 +205,8 @@ describe('history tracking with real project mutations', () => {
 		expect(state.historyStack[0].modules[0].code).toEqual(['module other', 'moduleEnd']);
 	});
 
-	it('records a metadata-only change without advancing the compiler revision', async () => {
-		block.groupName = 'audio';
-		block.code.splice(1, 0, '; @group audio');
-		store.set('codeBlockRendering.codeBlocks', state.codeBlockRendering.codeBlocks);
-		groupNonstickToggler(store, events);
-		dispatch('toggleGroupNonstick', {
-			codeBlock: block,
-			makeNonstick: !block.code.some(line => line.includes('nonstick')),
-		});
-		await vi.advanceTimersByTimeAsync(1000);
-
-		expect(block.code).toContain('; @group audio nonstick');
-		expect(state.projectChange.revision).toBe(1);
-		expect(state.compilerInputRevision).toBe(0);
-		expect(state.historyStack).toHaveLength(1);
-
-		// Later changes must leave the committed snapshots independent.
-		dispatch('toggleGroupNonstick', {
-			codeBlock: block,
-			makeNonstick: !block.code.some(line => line.includes('nonstick')),
-		});
-		await vi.advanceTimersByTimeAsync(1000);
-		expect(state.historyStack).toHaveLength(2);
-		expect(state.historyStack[0].modules[0].code).not.toContain('; @group audio nonstick');
-		expect(state.historyStack[1].modules[0].code).toContain('; @group audio nonstick');
-
-		dispatch('undo');
-		expect(selectedBlockCode()).toContain('; @group audio nonstick');
-		dispatch('undo');
-		expect(selectedBlockCode()).not.toContain('; @group audio nonstick');
-	});
-
-	it('records exactly one entry for deleting a whole group', async () => {
-		const other = createMockCodeBlock({
-			code: ['module other', '; @group audio', 'moduleEnd'],
-			blockType: 'module',
-			groupName: 'audio',
-			creationIndex: 1,
-		});
-		block.groupName = 'audio';
-		block.code.splice(1, 0, '; @group audio');
-		state.codeBlockRendering.codeBlocks.push(other);
-		groupDeleter(store, events);
-
-		dispatch('deleteGroup', { codeBlock: block });
-		await vi.advanceTimersByTimeAsync(1000);
-
-		expect(state.codeBlockRendering.codeBlocks).toHaveLength(0);
-		expect(state.historyStack).toHaveLength(1);
-
-		// Deleting again is a no-op and adds nothing.
-		dispatch('deleteGroup', { codeBlock: block });
-		await vi.advanceTimersByTimeAsync(1000);
-		expect(state.historyStack).toHaveLength(1);
-	});
-
 	it('records exactly one entry for pasting several blocks, and none for an empty paste', async () => {
-		pasteMultipleBlocks(store, {
+		pasteMultipleBlocks(store, events, {
 			x: 0,
 			y: 0,
 			blocks: ['one', 'two'].map(name => ({
@@ -275,7 +217,7 @@ describe('history tracking with real project mutations', () => {
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
 
-		pasteMultipleBlocks(store, { x: 0, y: 0, blocks: [] });
+		pasteMultipleBlocks(store, events, { x: 0, y: 0, blocks: [] });
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
 	});

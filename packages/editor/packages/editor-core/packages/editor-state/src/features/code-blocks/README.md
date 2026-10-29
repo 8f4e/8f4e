@@ -24,6 +24,10 @@ Favorite/Unfavorite editing and Remove connections are provided by `@8f4e/editor
 Core still derives `isFavorite` from directives and provides favorite navigation; generic directive editing remains
 available through the public `removeDirective` helper.
 
+Visual grouping through `; @group <name> [nonstick]` belongs to `@8f4e/editor-plugin-grouping`, including group menus,
+actions, drag-target selection, and paste collision renaming. Membership stays private to that plugin. Core dispatches
+the generic `resolveCodeBlockDragTargets` and `transformPastedCodeBlocks` events before moving or inserting blocks.
+
 ## Block Types
 
 Code blocks are categorized by type, which determines compilation and rendering behavior:
@@ -56,6 +60,8 @@ This feature contains several subfeatures under `features/` that handle specific
 - `createCodeBlock({ x, y, blockType })`: create a template of the requested type
 - `pasteCodeBlocks({ x, y })`: read and insert clipboard content, including multiple blocks
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
+- `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
+- `transformPastedCodeBlocks({ blocks })`: synchronously replace an incoming clipboard batch before insertion
 - Block deletion and selection events
 - Drag start/update/end events
 - Block type update events

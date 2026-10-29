@@ -243,8 +243,9 @@ describe('piano plugin', () => {
 			71
 		);
 	});
-	it('saves notes and count through its own menu action and advances compilation once', async () => {
+	it('saves notes and count through its menu action and publishes one compiled source edit', async () => {
 		const test = await setup();
+		const projectRevision = test.state.projectChange.revision;
 		test.press(2);
 		test.press(4);
 		const item = (await test.menuItems())[0];
@@ -258,8 +259,10 @@ describe('piano plugin', () => {
 		expect(test.codeBlock.code).toContain('int[] notes 4 50 52');
 		expect(test.codeBlock.code).toContain('int count 2');
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision + 1);
+		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
 		test.events.dispatch(item.action!, item.payload);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision + 1);
+		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
 	});
 	it('uses the selected block when saving without an explicit target', async () => {
 		const test = await setup();
