@@ -90,6 +90,12 @@ export const projects = [
 		path: 'audio/keyboardController6OperatorFMSynth.8f4e',
 	},
 	{
+		id: 'formant-synth',
+		title: 'Formant synthesizer',
+		description: 'Cycle through vowel sounds with a sawtooth oscillator and three formant filters.',
+		path: 'audio/formantSynth.8f4e',
+	},
+	{
 		id: 'reverb',
 		title: 'Reverb',
 		description: 'Explore a stereo reverb built from modulated delays, diffusers and feedback paths.',
