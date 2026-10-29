@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-binary-assets",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "description": "Binary asset fetching, caching and memory loading for the 8f4e editor",
   "type": "module",
