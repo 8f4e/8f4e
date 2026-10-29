@@ -24,7 +24,7 @@
 
 - Compose watch and stack with the fixed default plugin set. Supply their factories
   with a live reduced-motion preference from the browser; install their overlays before tooltips.
-- Compose `createLazyPluginLoaderPlugin(createLazyPlugins({ writeMemory }))` for optional signal-driven plugins.
+- Compose `createLazyPluginLoaderPlugin(createLazyPluginRegistry({ writeMemory }))` for optional signal-driven plugins.
   Keep its per-editor registry in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano, slider,
   and crossfade. Match all three wave directives: `wave`, `wave2`, and `wave4`. Import implementations and construct
   their factories only inside `load()`, using the supplied live memory writer.

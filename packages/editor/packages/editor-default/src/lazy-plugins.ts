@@ -1,6 +1,6 @@
 import { hasDirective, type LazyEditorPlugin } from '@8f4e/editor-plugin-lazy-loader';
 
-export function createLazyPlugins({
+export function createLazyPluginRegistry({
 	writeMemory,
 }: {
 	writeMemory: (address: number, value: number, isInteger: boolean) => void;

@@ -19,7 +19,7 @@ import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execu
 import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
 import { createWatchPlugin } from '@8f4e/editor-plugin-watch';
-import { createLazyPlugins } from './lazy-plugins';
+import { createLazyPluginRegistry } from './lazy-plugins';
 import { createRuntimeRegistry } from './runtime-registry';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
@@ -72,7 +72,7 @@ export function createDefaultEditorPlugins(options: {
 		groupingPlugin,
 		toggleFavoritePlugin,
 		removeMemoryConnectionsPlugin,
-		createLazyPluginLoaderPlugin(createLazyPlugins({ writeMemory: options.writeMemory })),
+		createLazyPluginLoaderPlugin(createLazyPluginRegistry({ writeMemory: options.writeMemory })),
 		createWatchPlugin({ prefersReducedMotion }),
 		createStackPlugin({ prefersReducedMotion }),
 		tooltipsPlugin,

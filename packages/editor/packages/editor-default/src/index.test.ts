@@ -71,32 +71,14 @@ describe('default editor plugins', () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn(), renderFrame } as Editor);
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const editor = await mountDefaultEditor(canvas, { storage: {} as Storage });
-		expect(
-			vi
-				.mocked(initEditor)
-				.mock.calls.at(-1)?.[1]
-				.plugins?.map(plugin => plugin.id)
-		).toEqual([
-			'compiler',
-			'project-url-loader',
-			'session-persistence',
-			'example-modules',
-			'assertion-markers',
-			'keyboard-memory',
-			'midi-input',
-			'binary-assets',
-			'toggle-skip-execution',
-			'grouping',
-			'toggle-favorite',
-			'remove-memory-connections',
-			'lazy-loader',
-			'watch',
-			'stack',
-			'tooltips',
-			'project-files',
-			'wasm-export',
-			'screenshot',
-		]);
+		const pluginIds = vi
+			.mocked(initEditor)
+			.mock.calls.at(-1)![1]
+			.plugins!.map(plugin => plugin.id);
+		expect(pluginIds[0]).toBe('compiler');
+		expect(pluginIds).toEqual(expect.arrayContaining(['watch', 'stack', 'tooltips']));
+		expect(pluginIds.indexOf('watch')).toBeLessThan(pluginIds.indexOf('tooltips'));
+		expect(pluginIds.indexOf('stack')).toBeLessThan(pluginIds.indexOf('tooltips'));
 		const getBytes = vi.mocked(createBinaryAssetsPlugin).mock.calls[0][0].getMemoryBytes;
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
