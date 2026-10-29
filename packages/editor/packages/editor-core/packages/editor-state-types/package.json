@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-state-types",
-  "version": "4.0.16",
+  "version": "4.0.17",
   "private": true,
   "description": "Shared public types for the 8f4e editor state model",
   "type": "module",
