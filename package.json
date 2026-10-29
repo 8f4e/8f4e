@@ -4,7 +4,7 @@
   "description": "8f4e",
   "packageManager": "npm@11.13.0",
   "engines": {
-    "node": "24.16.0",
+    "node": "24.22.2",
     "npm": "11.13.0"
   },
   "scripts": {
@@ -27,7 +27,7 @@
     "@nx/vite": "23.3.1",
     "@playwright/test": "1.64.1",
     "@types/audioworklet": "0.0.100",
-    "@types/node": "24.13.2",
+    "@types/node": "24.19.2",
     "@types/offscreencanvas": "2019.7.3",
     "@vitest/browser": "4.1.7",
     "@vitest/browser-playwright": "4.1.7",

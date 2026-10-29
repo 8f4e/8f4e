@@ -28,7 +28,7 @@
     "@8f4e/sprite-generator": "*"
   },
   "devDependencies": {
-    "@types/node": "24.13.2",
+    "@types/node": "24.19.2",
     "vitest": "4.1.7"
   }
 }

@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@8f4e/stdlib": "*",
-    "@types/node": "24.13.2",
+    "@types/node": "24.19.2",
     "@8f4e/test-runner": "*"
   }
 }

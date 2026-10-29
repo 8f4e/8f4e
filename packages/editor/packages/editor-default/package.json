@@ -63,7 +63,7 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/vite-plugin-sources": "*",
-    "@types/node": "24.13.2",
+    "@types/node": "24.19.2",
     "vite": "7.3.7",
     "vitest": "4.1.7",
     "@8f4e/editor-state": "*",

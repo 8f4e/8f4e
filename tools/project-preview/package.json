@@ -6,7 +6,7 @@
 	"type": "module",
 	"packageManager": "npm@11.13.0",
 	"engines": {
-		"node": "24.16.0",
+		"node": "24.22.2",
 		"npm": "11.13.0"
 	},
 	"main": "dist/index.js",
@@ -47,7 +47,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.15",
-		"@types/node": "24.13.2",
+		"@types/node": "24.19.2",
 		"typescript": "6.0.3",
 		"vitest": "4.1.7"
 	}
