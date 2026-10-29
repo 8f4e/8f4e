@@ -8,6 +8,7 @@
 - `@8f4e/editor-core` is the minimal reusable editor.
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
+- Keep `@8f4e/editor-palette` external in bundled editor libraries so the final composition can share one palette module.
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, example source discovery,
   and startup policy.
 - `@8f4e/editor-website` is the thin deployable Vite host for the default composition.
