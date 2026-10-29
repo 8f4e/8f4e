@@ -15,7 +15,7 @@ export type LineDrawerOptions = {
 };
 
 /**
- * Editor-owned render-hook plugin that batches solid pixel lines above all sprites.
+ * Editor-owned render-hook plugin that batches Bresenham pixel lines above all sprites.
  *
  * The plugin registers one pre-draw hook to reset its reusable CPU buffer and
  * one post-draw hook to upload and render the submitted lines. It owns its GPU
@@ -84,6 +84,8 @@ export class LineDrawer {
 	 * Lines are drawn in call order above every sprite. Invalid coordinates,
 	 * thicknesses, colors, or lifecycle calls are programmer errors with
 	 * unspecified consequences.
+	 * Endpoints snap to the nearest pixel and are both included. Thickness rounds
+	 * to at least one pixel and expands along the minor axis of the staircase.
 	 *
 	 * @param x1 - Starting X coordinate in canvas pixels.
 	 * @param y1 - Starting Y coordinate in canvas pixels.
