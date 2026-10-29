@@ -84,7 +84,7 @@ export interface ParsedDirectiveRecord {
 	/** Zero-based raw line index within the code block */
 	sourceLineIndex: number;
 	/** Original source line that contained the directive */
-	sourceLine?: string;
+	sourceLine: string;
 	/** True when the directive appears as a trailing inline comment on a non-directive line */
 	isTrailing: boolean;
 }

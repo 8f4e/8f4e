@@ -1,50 +1,43 @@
-import { matchEditorDirectives, parseBlockDirectives } from '@8f4e/editor-state';
 import { describe, expect, it } from 'vitest';
 import { createWatchDirectiveData } from './data';
 
-function parseWatchDirectiveData(code: string[]) {
-	return matchEditorDirectives(parseBlockDirectives(code), [{ name: 'watch', aliases: ['w'] }])
-		.map(directive => createWatchDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine))
-		.filter(result => result !== undefined);
-}
-
 describe('watch directive data', () => {
 	it.each([
-		{ source: '; @watch value', memoryId: 'value', displayFormat: 'decimal', showEndAddress: false },
-		{ source: '; @w value', memoryId: 'value', displayFormat: 'decimal', showEndAddress: false },
-		{ source: '; @watch 0xvalue', memoryId: 'value', displayFormat: 'hex', showEndAddress: false },
-		{ source: '; @watch 0bvalue', memoryId: 'value', displayFormat: 'binary', showEndAddress: false },
-		{ source: '; @watch value&', memoryId: 'value', displayFormat: 'decimal', showEndAddress: true },
-		{ source: '; @watch 0x*pointer', memoryId: '*pointer', displayFormat: 'hex', showEndAddress: false },
-		{ source: '; @watch 0b*pointer&', memoryId: '*pointer', displayFormat: 'binary', showEndAddress: true },
-		{ source: '; @watch &buffer[2]', memoryId: '&buffer[2]', displayFormat: 'decimal', showEndAddress: false },
-		{ source: 'int value 7 ; @watch', memoryId: 'value', displayFormat: 'decimal', showEndAddress: false },
-		{ source: 'int value 7 ; @w', memoryId: 'value', displayFormat: 'decimal', showEndAddress: false },
-		{ source: 'int value 7 ; @watch other', memoryId: 'other', displayFormat: 'decimal', showEndAddress: false },
-		{ source: 'int value 7 ; @watch 0xother', memoryId: 'other', displayFormat: 'hex', showEndAddress: false },
-		{ source: 'int value 7 ; @watch 0x', memoryId: 'value', displayFormat: 'hex', showEndAddress: false },
-		{ source: 'int value 7 ; @watch 0b', memoryId: 'value', displayFormat: 'binary', showEndAddress: false },
-		{ source: 'int value 7 ; @watch &', memoryId: '&value', displayFormat: 'decimal', showEndAddress: false },
-		{ source: 'int value 7 ; @watch *&', memoryId: '*value', displayFormat: 'decimal', showEndAddress: true },
-		{ source: 'int value 7 ; @watch 0x[2]', memoryId: 'value[2]', displayFormat: 'hex', showEndAddress: false },
-	])('owns presentation parsing for $source', ({ source, ...expected }) => {
-		expect(parseWatchDirectiveData([source])).toEqual([{ ...expected, lineNumber: 0 }]);
+		{ target: 'value', memoryId: 'value', displayFormat: 'decimal', showEndAddress: false },
+		{ target: '0xvalue', memoryId: 'value', displayFormat: 'hex', showEndAddress: false },
+		{ target: '0bvalue', memoryId: 'value', displayFormat: 'binary', showEndAddress: false },
+		{ target: 'value&', memoryId: 'value', displayFormat: 'decimal', showEndAddress: true },
+		{ target: '0x*pointer', memoryId: '*pointer', displayFormat: 'hex', showEndAddress: false },
+		{ target: '0b*pointer&', memoryId: '*pointer', displayFormat: 'binary', showEndAddress: true },
+		{ target: '&buffer[2]', memoryId: '&buffer[2]', displayFormat: 'decimal', showEndAddress: false },
+	])('interprets presentation arguments for $target', ({ target, ...expected }) => {
+		expect(createWatchDirectiveData([target], 3)).toEqual({ ...expected, lineNumber: 3 });
 	});
+
+	it.each([
+		{ args: [], memoryId: 'value', displayFormat: 'decimal', showEndAddress: false },
+		{ args: ['other'], memoryId: 'other', displayFormat: 'decimal', showEndAddress: false },
+		{ args: ['0xother'], memoryId: 'other', displayFormat: 'hex', showEndAddress: false },
+		{ args: ['0x'], memoryId: 'value', displayFormat: 'hex', showEndAddress: false },
+		{ args: ['0b'], memoryId: 'value', displayFormat: 'binary', showEndAddress: false },
+		{ args: ['&'], memoryId: '&value', displayFormat: 'decimal', showEndAddress: false },
+		{ args: ['*&'], memoryId: '*value', displayFormat: 'decimal', showEndAddress: true },
+		{ args: ['0x[2]'], memoryId: 'value[2]', displayFormat: 'hex', showEndAddress: false },
+	])('infers a declaration target while honoring explicit arguments: $args', ({ args, ...expected }) => {
+		expect(createWatchDirectiveData(args, 4, 'int value 7 ; @watch')).toEqual({ ...expected, lineNumber: 4 });
+	});
+
 	it.each(['int 1', 'int 0', 'int', 'float', 'int*'])('infers anonymous storage for %s', declaration => {
-		expect(parseWatchDirectiveData([`${declaration} ; @watch 0x`])).toEqual([
-			{ memoryId: '__anonymous__0', lineNumber: 0, displayFormat: 'hex', showEndAddress: false },
-		]);
+		expect(createWatchDirectiveData(['0x'], 8, declaration)).toEqual({
+			memoryId: '__anonymous__8',
+			lineNumber: 8,
+			displayFormat: 'hex',
+			showEndAddress: false,
+		});
 	});
-	it('preserves source line numbers across multiple directives', () => {
-		expect(parseWatchDirectiveData(['push 1', '; @watch first', 'push 2', '; @watch 0xsecond&'])).toEqual([
-			{ memoryId: 'first', lineNumber: 1, displayFormat: 'decimal', showEndAddress: false },
-			{ memoryId: 'second', lineNumber: 3, displayFormat: 'hex', showEndAddress: true },
-		]);
+
+	it('omits a watch without an explicit or inferred target', () => {
+		expect(createWatchDirectiveData([], 0)).toBeUndefined();
+		expect(createWatchDirectiveData([], 0, 'push 1')).toBeUndefined();
 	});
-	it.each([{ code: [] }, { code: ['push 1'] }, { code: ['; @watch'] }])(
-		'omits absent or incomplete directives in $code',
-		({ code }) => {
-			expect(parseWatchDirectiveData(code)).toEqual([]);
-		}
-	);
 });

@@ -2,6 +2,7 @@
 
 - Own all editor `@group` behavior here: directive derivation, private membership, menus, actions, drag targets,
   and paste collision renaming. Keep group fields and group-aware policies out of core.
+- Match cached directive records through `matchEditorDirectives`; accept standalone and trailing comments uniformly.
 - Nested project groups are language structure owned by core. Restrict visual group operations to the current
   rendered project slice; copying a nested project group preserves its child tree.
 - Use the generic synchronous `resolveCodeBlockDragTargets` and `transformPastedCodeBlocks` events. Core owns

@@ -40,7 +40,7 @@ describe('grouping copy and paste', () => {
 		expect(test.block('pasted2').x).toBe(x + test.state.viewport.vGrid);
 	});
 
-	it('keeps available names and ignores trailing group comments', async () => {
+	it('keeps available names and renames colliding trailing group comments', async () => {
 		const test = setup();
 		await test.paste(
 			JSON.stringify([
@@ -53,7 +53,7 @@ describe('grouping copy and paste', () => {
 			])
 		);
 		expect(test.block('pasted').code).toContain('; @group fresh');
-		expect(test.block('pasted2').code).toContain('int ignored 0 ; @group audio');
+		expect(test.block('pasted2').code).toContain('int ignored 0 ; @group audio1');
 	});
 
 	it('keeps nested project groups and their child grouping independent', async () => {

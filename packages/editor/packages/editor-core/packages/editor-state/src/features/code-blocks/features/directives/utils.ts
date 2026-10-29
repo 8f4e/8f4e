@@ -119,12 +119,10 @@ export function serializeDirectiveComments(directives: DirectiveComment[]): stri
 
 export function createDirectiveDefinition(
 	name: string,
-	apply: NonNullable<EditorDirectiveDefinition['apply']>,
-	options: Pick<EditorDirectiveDefinition, 'aliases'> = {}
+	apply: NonNullable<EditorDirectiveDefinition['apply']>
 ): EditorDirectiveDefinition {
 	return {
 		name,
-		...options,
 		apply,
 	};
 }
