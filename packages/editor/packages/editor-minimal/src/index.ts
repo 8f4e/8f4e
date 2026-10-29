@@ -1,10 +1,8 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
-import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createStackPlugin } from '@8f4e/editor-plugin-stack';
 import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
@@ -52,19 +50,9 @@ export async function mountMinimalEditor(
 			}),
 			assertionMarkersPlugin,
 			createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory: compiler.writeMemory }),
-			createMidiInputPlugin({
-				navigator: browserWindow.navigator,
-				getMemory: compiler.getMemory,
-				getCodeBuffer: compiler.getCodeBuffer,
-			}),
-			createBinaryAssetsPlugin({
-				getMemoryBytes: () => {
-					const memory = compiler.getMemory();
-					return memory ? new Uint8Array(memory.buffer) : undefined;
-				},
-			}),
 			createLazyPluginLoaderPlugin(
 				createLazyPluginRegistry({
+					navigator: browserWindow.navigator,
 					writeMemory: compiler.writeMemory,
 					getMemory: compiler.getMemory,
 					getCodeBuffer: compiler.getCodeBuffer,

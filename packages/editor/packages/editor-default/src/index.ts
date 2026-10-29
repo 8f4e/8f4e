@@ -1,13 +1,11 @@
 import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
-import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { groupingPlugin } from '@8f4e/editor-plugin-grouping';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
 import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { removeMemoryConnectionsPlugin } from '@8f4e/editor-plugin-remove-memory-connections';
@@ -58,23 +56,13 @@ export function createDefaultEditorPlugins(options: {
 		createExampleModulesPlugin({ sources: exampleModuleSources }),
 		assertionMarkersPlugin,
 		createKeyboardMemoryPlugin({ inputTarget: options.canvas, writeMemory: options.writeMemory }),
-		createMidiInputPlugin({
-			navigator: options.canvas.ownerDocument.defaultView!.navigator,
-			getMemory: options.getMemory,
-			getCodeBuffer: options.getCodeBuffer,
-		}),
-		createBinaryAssetsPlugin({
-			getMemoryBytes: () => {
-				const memory = options.getMemory();
-				return memory ? new Uint8Array(memory.buffer) : undefined;
-			},
-		}),
 		toggleSkipExecutionPlugin,
 		groupingPlugin,
 		toggleFavoritePlugin,
 		removeMemoryConnectionsPlugin,
 		createLazyPluginLoaderPlugin(
 			createLazyPluginRegistry({
+				navigator: options.canvas.ownerDocument.defaultView!.navigator,
 				writeMemory: options.writeMemory,
 				getMemory: options.getMemory,
 				getCodeBuffer: options.getCodeBuffer,

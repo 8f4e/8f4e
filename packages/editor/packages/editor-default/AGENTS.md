@@ -26,7 +26,8 @@
   with a live reduced-motion preference from the browser; install their overlays before tooltips.
 - Compose `createLazyPluginLoaderPlugin` with the per-editor `createLazyPluginRegistry` for optional signal-driven plugins.
   Keep its per-editor registry in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano, slider,
-  and crossfade. Match all three wave directives: `wave`, `wave2`, and `wave4`. Import implementations and construct
+  crossfade, MIDI input, and binary assets. Match all three wave directives: `wave`, `wave2`, and `wave4`, and raw
+  `midi`/`bin` config roots before their schemas load. Import implementations and construct
   their factories only inside `load()`, using the supplied live memory writer. Supply runtime plugins with compiler artifact getters and the optional shared AudioContext. Each runtime plugin imports its own worker/worklet assets and owns browser API use.
   Mounting and initial project notifications do not wait for lazy plugin imports. The loader owns project-load scans,
   its manual scan menu, late installation, and disposal; core keeps the ordinary plugin contract.
@@ -34,11 +35,12 @@
   not install these editing actions or their menus.
 - Include `groupingPlugin` after the execution-toggle plugin. It owns editor `@group` behavior, including drag and
   paste policies and group menus; it has no browser factory dependencies.
-- Compose `createBinaryAssetsPlugin({ getMemoryBytes })` with a getter for the compiler plugin's current memory.
+- Load `createBinaryAssetsPlugin({ getMemoryBytes })` from the lazy registry with a getter for current compiler memory.
   Fetching, caching, binary metadata, loading UI, and generated asset constants remain inside the plugin.
-- Include `assertionMarkersPlugin`, `createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory })`, and
-  `createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })` in the standard set. Use the canvas's browser
-  navigator and live compiler getters. MIDI owns WASM instantiation and caching; core has no separate environment-plugin system.
+- Include `assertionMarkersPlugin` and `createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory })` in the fixed
+  standard set. Load `createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })` from the lazy registry. Supply
+  the canvas's browser navigator and live compiler getters to that registry. MIDI owns WASM instantiation and caching;
+  core has no separate environment-plugin system.
 - Include `createProjectUrlLoaderPlugin({ fetch, initialProjectUrl })` and
   `createSessionPersistencePlugin({ storage, storageKey, restoreOnStartup })` in the default set. Disable only session
   restoration when an explicit initial URL exists. Keep autosaving active while that URL is pending.

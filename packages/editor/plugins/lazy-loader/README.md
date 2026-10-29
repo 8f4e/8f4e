@@ -18,13 +18,16 @@ const loader = createLazyPluginLoaderPlugin([
 
 Pass the loader alongside fixed plugins when constructing the editor. The default editor uses it for plot, wave,
 meter, bars, switch, button, piano, slider, and crossfade. Its registry supplies the editor's live memory writer to
-control factories after their implementations load. Audio, worker, and test runtime plugins also load on demand from their configuration roots. Other default plugins remain fixed.
+control factories after their implementations load. MIDI input, binary assets, and audio/worker/test runtime plugins
+also load on demand from their configuration roots. The minimal editor uses the same signals. Other plugins remain fixed.
 
 Each `LazyEditorPlugin` entry contains `id`, `matches(project)`, and `load(): Promise<EditorPlugin>`. Keep IDs unique
 within the registry and keep implementation imports inside `load`. Matchers receive the current canonical project,
 including nested groups. They can inspect source, configuration, or other project data. `hasDirective(project, name)`
 uses core's generic directive parser across every source category and nested group; it does not require the directive
-implementation to be installed. Presence triggers loading; the loaded plugin owns argument validation.
+implementation to be installed. `hasConfig(project, root)` matches raw `@config` paths equal to the root or beginning
+with `${root}.`, so configuration can trigger loading before its schema exists. Presence triggers loading; the loaded
+plugin owns argument validation.
 
 Signal detection parses the serialized whole-project snapshot, including groups outside the visible editor slice.
 Once installed, directive plugins consume core's cached `codeBlock.parsedDirectives` through `matchEditorDirectives`.

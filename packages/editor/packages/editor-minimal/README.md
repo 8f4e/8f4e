@@ -18,10 +18,12 @@ editor.dispose();
 ```
 
 The composition installs the compiler first, with lazy standard-library include resolution. It includes project URL
-loading, binary assets, keyboard and MIDI input, assertion markers, watch and stack annotations, and tooltips.
+loading, keyboard input, assertion markers, watch and stack annotations, and tooltips.
 Plot, wave, meter, bars, switch, button, piano, slider, crossfade, and audio/worker/test runtimes load through the
-project-signal registry in `src/lazy-plugins.ts`. Control factories receive the current editor's live memory writer;
-runtime factories receive its compiler artifacts and an optional shared `AudioContext`.
+project-signal registry in `src/lazy-plugins.ts`. MIDI input and binary assets also load through that registry when
+raw `@config midi.*` or `@config bin.*` directives appear. Control factories receive the current editor's live memory
+writer; MIDI receives its browser navigator and live compiler getters, binary assets receive a current-memory getter,
+and runtime factories receive compiler artifacts and an optional shared `AudioContext`.
 
 Project loading scans for plugin signals automatically. After introducing a new directive by editing or pasting,
 use **Load plugins used by project** in the background menu. Imports and compilation finish independently of
