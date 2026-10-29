@@ -8,7 +8,7 @@ export function registerGroupMenus({ store, menus }: EditorPluginContext): () =>
 	const registerEditingItem = (create: (block: CodeBlockGraphicData, group: Group) => ContextMenuItem | undefined) =>
 		menus.registerItem('moduleMenu', ({ codeBlock }) => {
 			const group = getGroup(codeBlock.parsedDirectives);
-			return group && state.featureFlags.editing ? create(codeBlock, group) : undefined;
+			return group && state.editorMode === 'edit' ? create(codeBlock, group) : undefined;
 		});
 	const unregisterSkip = registerEditingItem(codeBlock => {
 		if (codeBlock.blockType !== 'module') return;

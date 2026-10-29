@@ -18,11 +18,4 @@ describe('feature flags', () => {
 			moduleDragging: false,
 		});
 	});
-
-	it('allows editing to be enabled explicitly', () => {
-		const featureFlags = validateFeatureFlags({ editing: true });
-
-		expect(featureFlags.editing).toBe(true);
-		expect(featureFlags.codeLineSelection).toBe(true);
-	});
 });

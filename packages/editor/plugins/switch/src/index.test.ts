@@ -116,7 +116,7 @@ describe('switch plugin', () => {
 
 	it('toggles through the state event pipeline in view mode as well as edit mode', async () => {
 		const test = await setup();
-		test.store.set('featureFlags.editing', false);
+		test.store.set('editorMode', 'view');
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, 1, true);
 		test.press();

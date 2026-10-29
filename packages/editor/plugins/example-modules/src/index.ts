@@ -21,7 +21,7 @@ export function createExampleModulesPlugin({
 				getCategoryMenuItems(categories, path)
 			);
 			const unregisterItem = menus.registerItem('mainMenu', ({ state }) =>
-				state.featureFlags.editing
+				state.editorMode === 'edit'
 					? {
 							title: 'Add Built-in Module',
 							action: 'openSubMenu',
@@ -32,9 +32,9 @@ export function createExampleModulesPlugin({
 			);
 
 			const addModule = async ({ slug, x, y }: { slug: string; x: number; y: number }) => {
-				if (!state.featureFlags.editing) return;
+				if (state.editorMode !== 'edit') return;
 				const source = await catalog.getModule(slug);
-				if (disposed || !state.featureFlags.editing) return;
+				if (disposed || state.editorMode !== 'edit') return;
 				const code = extractPublicBlockFromModuleSource(source);
 				events.dispatch('insertCodeBlock', { code, x, y });
 				const gap = 4;
@@ -48,7 +48,7 @@ export function createExampleModulesPlugin({
 						console.warn(`Failed to load dependency: ${dependency}`, error);
 						continue;
 					}
-					if (disposed || !state.featureFlags.editing) return;
+					if (disposed || state.editorMode !== 'edit') return;
 					const dependencyCode = extractPublicBlockFromModuleSource(dependencySource);
 					const name = getCodeBlockNameFromSource(dependencyCode);
 					const type = getBlockType(dependencyCode);

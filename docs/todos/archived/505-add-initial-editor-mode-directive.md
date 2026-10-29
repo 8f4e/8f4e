@@ -34,8 +34,8 @@ selects the starting mode; otherwise use view mode. Do not derive a loaded proje
 flag or retain the previous project's active mode. Invalid arguments and duplicate declarations produce diagnostics.
 
 The host's `modeToggling` flag controls user switching controls; it does not override the project's initial mode.
-Apply the resolved mode through the existing mode-transition path so mode, editing capabilities, and line selection
-stay synchronized.
+Apply the resolved mode through the existing mode-transition path so the active mode determines editing permission. Keep line-selection policy independent
+of mode changes.
 
 ## Anti-Patterns
 
@@ -62,8 +62,8 @@ stay synchronized.
 
 ### Step 3: Reuse the editor-mode transition contract
 
-- Route initial mode application through shared mode-transition logic so `editorMode`, `featureFlags.editing`, and
-  `featureFlags.codeLineSelection` stay consistent.
+- Use `editorMode` as the only source of editing permission; remove the redundant editing feature flag.
+- Preserve `featureFlags.codeLineSelection` across mode changes and project replacement.
 - Ensure loading a project while another project is open can select a new initial mode without carrying over stale
   state from the previous project.
 - Keep later keyboard or programmatic mode changes independent from the directive value.
@@ -89,7 +89,7 @@ stay synchronized.
 - [x] The host initial-mode option is removed without compatibility fallbacks.
 - [x] The directive still selects the initial mode when mode-toggling controls are disabled.
 - [x] Missing, invalid, or duplicate directives select view mode with appropriate diagnostics.
-- [x] Initial application keeps editor mode and editing-related feature flags synchronized.
+- [x] Editor mode is the only source of editing permission; feature flags remain independent.
 - [x] Later user or programmatic mode changes are not overwritten by the directive.
 - [x] Loading another project resolves its starting mode independently.
 - [x] The directive is documented in the editor directives documentation.
@@ -98,8 +98,8 @@ stay synchronized.
 
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/global-editor-directives/` - `@mode`
   registration, parsing, and diagnostics.
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/editor-mode/` - shared mode application and
-  state synchronization.
+- `packages/editor/packages/editor-core/packages/editor-state/src/features/editor-mode/` - user mode transitions that
+  preserve capability flags.
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/project-changes/` - one-time mode application
   after directive derivation and before publishing a project replacement.
 - `packages/editor/packages/editor-core/packages/editor-state-types/` - removal of the initial-mode option and typing
@@ -130,8 +130,8 @@ Completed on 2026-10-29:
 
 - Registered and validated project-global `@mode edit` and `@mode view`, including duplicate diagnostics.
 - Removed `initialEditorMode` from the core, default, and minimal editor options without compatibility fallbacks.
-- Reused shared mode-transition logic at project replacement; later source edits and history restoration preserve
-  the user's active mode.
+- Applied the resolved mode at project replacement; later source edits and history restoration preserve the user's
+  active mode. Removed redundant editing state and preserved line-selection preferences.
 - Updated composition documentation, test setup, browser fixtures, and verified screenshot references.
 - Passed Nx builds, unit tests, and typechecks across editor compositions and plugins, website and WebMCP browser
   integrations, plugin screenshot checks, and Biome checks on changed TypeScript files.

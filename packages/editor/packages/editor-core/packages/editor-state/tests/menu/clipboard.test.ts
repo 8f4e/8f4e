@@ -32,7 +32,7 @@ describe('menus - clipboard callback disabled state', () => {
 
 		it('should not show "Paste Code Block" when editing is disabled', () => {
 			const mockState = createMockState({
-				featureFlags: { editing: false },
+				editorMode: 'view',
 			});
 
 			const menu = mainMenu(mockState);

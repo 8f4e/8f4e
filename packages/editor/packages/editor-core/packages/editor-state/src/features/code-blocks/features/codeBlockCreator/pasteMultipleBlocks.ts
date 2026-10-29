@@ -121,7 +121,7 @@ export function pasteMultipleBlocks(
 ): void {
 	const state = store.getState();
 
-	if (!state.featureFlags.editing) {
+	if (state.editorMode !== 'edit') {
 		return;
 	}
 	const projectPath =

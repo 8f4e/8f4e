@@ -94,7 +94,7 @@ describe('button plugin', () => {
 
 	it.each([true, false])('presses and releases through pointer events with editing=%s', async editing => {
 		const test = await setup(['module controls', 'int gate 0', '; @button &gate', '; @pos 40 20', 'moduleEnd']);
-		test.store.set('featureFlags.editing', editing);
+		test.store.set('editorMode', editing ? 'edit' : 'view');
 		test.events.dispatch('mousedown', { ...test.point(), buttons: 1, altKey: false });
 		const address = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);

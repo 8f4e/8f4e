@@ -13,7 +13,7 @@ function setup() {
 	});
 	const document = { modelContext: { registerTool } } as unknown as Document;
 	const code = ['module counter', '; @pos 10 20', 'int value 0', 'moduleEnd'];
-	const state = createMockState({ compilerInputRevision: 1, featureFlags: { editing: true } });
+	const state = createMockState({ compilerInputRevision: 1, editorMode: 'edit' });
 	state.codeBlockRendering.rootCodeBlocks = [
 		createMockCodeBlock({
 			creationIndex: 7,
@@ -84,6 +84,19 @@ const writes = [
 ] as const;
 
 describe('single-editor WebMCP bridge', () => {
+	it('reports editability from the current editor mode', async () => {
+		const view = setup();
+		const { bridge, call } = await connect(view);
+		try {
+			view.state.editorMode = 'view';
+			expect(await call('get_project_metadata')).toMatchObject({ editable: false });
+			view.state.editorMode = 'edit';
+			expect(await call('get_project_metadata')).toMatchObject({ editable: true });
+		} finally {
+			bridge.dispose();
+		}
+	});
+
 	it('returns source strings and leaves revisions out of tool inputs', async () => {
 		const view = setup();
 		const before = structuredClone(view.state.codeBlockRendering.rootCodeBlocks);

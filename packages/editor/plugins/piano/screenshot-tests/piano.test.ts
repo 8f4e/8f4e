@@ -30,7 +30,6 @@ entryEnd`);
 		callbacks: {},
 	});
 	store.set('editorMode', 'edit');
-	store.set('featureFlags.editing', true);
 	const drawers = createCodeBlockDrawerRegistry();
 	const disposePlugin = createPianoPlugin({ writeMemory: () => {} }).setup({
 		store,

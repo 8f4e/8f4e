@@ -90,7 +90,7 @@ test('keeps live editing available with the minimal project menu', async () => {
 	canvas.style.height = '400px';
 	await vi.waitFor(() => expect(editor.state.viewport.width).toBe(640));
 	await vi.waitFor(() => expect(editor.state.compiler.compiledModules.galleryExample).toBeDefined());
-	expect(editor.state.featureFlags.editing).toBe(true);
+	expect(editor.state.editorMode).toBe('edit');
 	expect(editor.state.featureFlags.projectCreation).toBe(false);
 	const rect = canvas.getBoundingClientRect();
 	canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: rect.x + 600, clientY: rect.y + 100, bubbles: true }));

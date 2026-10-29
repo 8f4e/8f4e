@@ -25,7 +25,7 @@ export function createSliderPlugin({
 			});
 			const unregisterInteraction = registerSliderInteraction(state, events, slidersByBlock, writeMemory);
 			const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-				if (!state.featureFlags.editing || !slidersByBlock.get(codeBlock)?.length) return;
+				if (state.editorMode !== 'edit' || !slidersByBlock.get(codeBlock)?.length) return;
 				return {
 					title: 'Save slider values to code',
 					action: saveAction,
@@ -39,7 +39,7 @@ export function createSliderPlugin({
 			}: {
 				codeBlock?: CodeBlockGraphicData;
 			} = {}) => {
-				if (!state.featureFlags.editing || !codeBlock) return;
+				if (state.editorMode !== 'edit' || !codeBlock) return;
 				const edits = getSliderDefaultEdits(state, slidersByBlock.get(codeBlock) ?? []);
 				applyCodeBlockSourceEdits(store, edits, { affectsCompilation: true });
 			};

@@ -14,7 +14,7 @@ describe('module menu', () => {
 
 	it('allows contributed actions in view mode', () => {
 		const codeBlock = createMockCodeBlock();
-		const state = createMockState({ featureFlags: { editing: false } });
+		const state = createMockState({ editorMode: 'view' });
 		const item = { title: 'Read-only custom action', action: 'inspect' };
 		expect(moduleMenu(state, codeBlock, [item])).toContain(item);
 	});

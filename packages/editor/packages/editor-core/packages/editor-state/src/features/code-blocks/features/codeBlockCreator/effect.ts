@@ -135,7 +135,7 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 	}
 
 	async function onPasteCodeBlocks({ x, y }: { x: number; y: number }): Promise<void> {
-		if (!state.featureFlags.editing || !state.callbacks.readClipboardText) return;
+		if (state.editorMode !== 'edit' || !state.callbacks.readClipboardText) return;
 		let clipboardText: string;
 		try {
 			clipboardText = await state.callbacks.readClipboardText();
@@ -151,7 +151,7 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 	}
 
 	function onInsertCodeBlock({ x, y, code }: { x: number; y: number; code: string[] }): void {
-		if (!state.featureFlags.editing) return;
+		if (state.editorMode !== 'edit') return;
 
 		const sourceBlockType = getBlockType(code);
 		const blockName = getCodeBlockNameFromSource(code);
@@ -227,7 +227,7 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 	}
 
 	function onDeleteCodeBlock({ codeBlock }: { codeBlock: CodeBlockGraphicData }): void {
-		if (!state.featureFlags.editing) {
+		if (state.editorMode !== 'edit') {
 			return;
 		}
 
@@ -249,7 +249,7 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 	}
 
 	function onToggleCodeBlockDisabled({ codeBlock }: { codeBlock: CodeBlockGraphicData }): void {
-		if (!state.featureFlags.editing) {
+		if (state.editorMode !== 'edit') {
 			return;
 		}
 

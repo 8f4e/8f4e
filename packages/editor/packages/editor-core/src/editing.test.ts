@@ -312,9 +312,9 @@ describe('public editor editing handle', () => {
 	it('reports read-only and disposed handles, and does not retain history from a replaced project', () => {
 		const { editing, store, state, events, dispose } = setup();
 		const revision = editing.getRevision();
-		store.set('featureFlags.editing', false);
+		store.set('editorMode', 'view');
 		expect(() => editing.undo({ expectedRevision: revision })).toThrow('view mode');
-		store.set('featureFlags.editing', true);
+		store.set('editorMode', 'edit');
 		const target = state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!;
 		editing.applyEdits({
 			expectedRevision: revision,

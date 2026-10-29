@@ -4,7 +4,7 @@ export const mainMenu = (state: State): ContextMenuItem[] => [
 	...(state.codeBlockRendering.codeBlocks !== state.codeBlockRendering.rootCodeBlocks
 		? [{ title: 'Go back', action: 'goToParentProjectGroup', close: true }, { divider: true }]
 		: []),
-	...(state.featureFlags.editing
+	...(state.editorMode === 'edit'
 		? [
 				{
 					title: 'New Module',
@@ -38,8 +38,8 @@ export const mainMenu = (state: State): ContextMenuItem[] => [
 				},
 			]
 		: []),
-	...(state.featureFlags.editing ? [{ divider: true }] : []),
-	...(state.featureFlags.editing
+	...(state.editorMode === 'edit' ? [{ divider: true }] : []),
+	...(state.editorMode === 'edit'
 		? [
 				{
 					title: 'Go @home',
@@ -54,8 +54,8 @@ export const mainMenu = (state: State): ContextMenuItem[] => [
 		payload: { menu: 'favoritesMenu' },
 		close: false,
 	},
-	...(state.featureFlags.editing && state.featureFlags.projectCreation ? [{ divider: true }] : []),
-	...(state.featureFlags.editing && state.featureFlags.projectCreation
+	...(state.editorMode === 'edit' && state.featureFlags.projectCreation ? [{ divider: true }] : []),
+	...(state.editorMode === 'edit' && state.featureFlags.projectCreation
 		? [{ title: 'New Project', action: 'new', close: true }]
 		: []),
 ];

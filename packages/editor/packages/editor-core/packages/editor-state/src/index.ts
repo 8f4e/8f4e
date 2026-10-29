@@ -69,10 +69,7 @@ export default function init(
 	const layout = createLayoutRegistry(codeBlock =>
 		events.dispatch('codeBlockLayoutContributionsChanged', { codeBlock })
 	);
-	const featureFlags = validateFeatureFlags({
-		...options.featureFlags,
-		editing: false,
-	});
+	const featureFlags = validateFeatureFlags(options.featureFlags);
 	type EffectCleanup = () => void;
 	const effectCleanups: EffectCleanup[] = [];
 	const registerEffect = (cleanup: void | EffectCleanup): void => {

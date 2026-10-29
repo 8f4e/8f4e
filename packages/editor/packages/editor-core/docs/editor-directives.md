@@ -94,7 +94,9 @@ ready. Later source edits, configuration changes, navigation, and undo/redo do n
 another project resolves its own declaration independently. Mode changes do not create edits or history entries.
 
 The host's `modeToggling` feature flag controls user mode-switching controls. Disabling it still allows the directive
-to choose the initial mode. There is no host initial-mode option or feature-flag fallback.
+to choose the initial mode. `state.editorMode` alone determines whether source editing is allowed. Mode changes and
+project replacement preserve `codeLineSelection` and all other host feature flags. There is no host initial-mode
+option or editing feature flag.
 
 ### `@public`
 

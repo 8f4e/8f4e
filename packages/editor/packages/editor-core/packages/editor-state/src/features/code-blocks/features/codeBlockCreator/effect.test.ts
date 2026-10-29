@@ -50,7 +50,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 			['insertCodeBlock', { x: 100, y: 100, code: ['module supplied', 'moduleEnd'] }],
 			['pasteCodeBlocks', { x: 100, y: 100 }],
 		])('does not edit or read the clipboard in view mode: %s', async (action, payload) => {
-			mockState.featureFlags.editing = false;
+			mockState.editorMode = 'view';
 			const readClipboardText = vi.fn().mockResolvedValue('module clipboard\nmoduleEnd');
 			mockState.callbacks.readClipboardText = readClipboardText;
 			codeBlockCreator(store, mockEvents);
@@ -405,7 +405,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 	it('should not toggle when editing is disabled', () => {
 		const codeBlock = createMockCodeBlock({ disabled: false });
 		mockState.codeBlockRendering.codeBlocks = [codeBlock];
-		mockState.featureFlags.editing = false;
+		mockState.editorMode = 'view';
 
 		codeBlockCreator(store, mockEvents);
 

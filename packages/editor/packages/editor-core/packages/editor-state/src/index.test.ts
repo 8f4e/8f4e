@@ -38,11 +38,10 @@ describe('editor state lifecycle', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
 			callbacks: {},
-			featureFlags: { editing: true },
 		});
 
 		expect(store.getState().editorMode).toBe('view');
-		expect(store.getState().featureFlags.editing).toBe(false);
+		expect(store.getState().featureFlags).not.toHaveProperty('editing');
 
 		store.dispose();
 	});

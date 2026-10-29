@@ -9,10 +9,10 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup(modeToggling = true) {
+function setup(modeToggling = true, codeLineSelection = false) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, featureFlags: { modeToggling, codeLineSelection: false } });
+	const store = initState(events, { callbacks: {}, featureFlags: { modeToggling, codeLineSelection } });
 	cleanups.push(store.dispose);
 	const load = (source: string) => events.dispatch('loadProject', { project: parseProjectSource(source) });
 	return { store, state: store.getState(), events, load };
@@ -23,11 +23,11 @@ describe('project initial mode', () => {
 		const { state, store, load } = setup();
 		const notifications: unknown[] = [];
 		store.subscribe('projectChange', () => {
-			notifications.push([state.projectChange.kind, state.editorMode, state.featureFlags.editing]);
+			notifications.push([state.projectChange.kind, state.editorMode]);
 		});
 		load(`8f4e/v1\nnote mode\n; @mode ${mode}\nnoteEnd`);
-		expect(notifications).toEqual([['replace', mode, mode === 'edit']]);
-		expect(state.featureFlags.codeLineSelection).toBe(true);
+		expect(notifications).toEqual([['replace', mode]]);
+		expect(state.featureFlags.codeLineSelection).toBe(false);
 		expect(state.historyStack).toHaveLength(0);
 	});
 
@@ -39,7 +39,6 @@ describe('project initial mode', () => {
 			expect(state.editorMode).toBe('edit');
 			load(`8f4e/v1\nnote mode\n${declaration}\nnoteEnd`);
 			expect(state.editorMode).toBe('view');
-			expect(state.featureFlags.editing).toBe(false);
 			expect(state.codeErrors.editorDirectiveErrors).toHaveLength(declaration ? 1 : 0);
 			events.dispatch('enterEditMode');
 			events.dispatch('new');
@@ -53,6 +52,17 @@ describe('project initial mode', () => {
 		load('8f4e/v1\nentry main\ngroup child\nnote mode\n; @mode edit\nnoteEnd\ngroupEnd\nentryEnd');
 		expect(state.editorMode).toBe('edit');
 		expect(state.featureFlags.modeToggling).toBe(false);
+	});
+
+	it.each([true, false])('preserves line selection (%s) across project replacements', codeLineSelection => {
+		const { state, events, load } = setup(true, codeLineSelection);
+		for (const mode of ['edit', 'view']) {
+			load(`8f4e/v1\nnote mode\n; @mode ${mode}\nnoteEnd`);
+			expect(state.editorMode).toBe(mode);
+			expect(state.featureFlags.codeLineSelection).toBe(codeLineSelection);
+		}
+		events.dispatch('new');
+		expect(state.featureFlags.codeLineSelection).toBe(codeLineSelection);
 	});
 
 	it('keeps user mode changes through source edits, configuration updates, and undo/redo', () => {

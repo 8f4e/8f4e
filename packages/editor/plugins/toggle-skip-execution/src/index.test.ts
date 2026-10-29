@@ -95,7 +95,7 @@ describe('toggle skip execution plugin', () => {
 
 	it('does not edit source or advance the compiler revision in view mode', () => {
 		const context = createContext();
-		context.state.featureFlags.editing = false;
+		context.state.editorMode = 'view';
 		context.events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: context.codeBlock });
 		expect(context.codeBlock.code).toEqual(['module test', '', 'moduleEnd']);
 		expect(context.codeBlock.lastUpdated).toBe(1000);
@@ -183,7 +183,7 @@ describe('toggle skip execution plugin', () => {
 			expect(
 				state.contextMenu.items.find(item => item.action === 'toggleModuleSkipExecutionDirective')?.title
 			).toContain('Unskip module');
-			store.set('featureFlags.editing', false);
+			store.set('editorMode', 'view');
 			events.dispatch('contextmenu', { x: 16, y: 16 });
 			await Promise.resolve();
 			expect(state.contextMenu.items.some(item => item.action === 'toggleModuleSkipExecutionDirective')).toBe(false);

@@ -1,7 +1,7 @@
 import type { FeatureFlags, FeatureFlagsConfig } from '@8f4e/editor-state-types';
 
 /**
- * Default feature flags configuration with all features enabled.
+ * Default feature flags configuration. Editor mode is stored separately in state.editorMode.
  * Users can override these values when initializing the editor.
  */
 export const defaultFeatureFlags: FeatureFlags = {
@@ -9,7 +9,6 @@ export const defaultFeatureFlags: FeatureFlags = {
 	moduleDragging: true,
 	codeLineSelection: true,
 	viewportDragging: true,
-	editing: false,
 	modeToggling: true,
 	modeOverlay: true,
 	historyTracking: true,
