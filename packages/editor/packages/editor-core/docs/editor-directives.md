@@ -123,7 +123,8 @@ Set editor configuration values.
 
 Supported paths:
 
-- `font` - editor font used for rendering code blocks and UI text.
+- `font` - editor font used for rendering code blocks and UI text. Font changes refresh block layouts without
+  recentering the viewport.
 - `runtime` - runtime host loaded for the project.
 - `color.<path>` - editor base palette color. See [Color Paths](./color-paths.md) for the full list of color paths.
 - `export.fileName` - base file name used by editor export actions.

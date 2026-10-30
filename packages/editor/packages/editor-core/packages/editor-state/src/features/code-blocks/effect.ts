@@ -206,19 +206,6 @@ export default function codeBlockRendering(
 		refreshBlockLayouts(state.codeBlockRendering.codeBlocks);
 	};
 
-	const centerViewportOnSelectedOrHomeCodeBlock = () => {
-		const targetCodeBlock =
-			state.codeBlockRendering.selectedCodeBlock ?? state.codeBlockRendering.codeBlocks.find(block => block.isHome);
-		if (!targetCodeBlock) {
-			return;
-		}
-
-		const { x, y } = centerViewportOnCodeBlock(state.viewport, targetCodeBlock, {
-			alignment: targetCodeBlock.homeAlignment,
-		});
-		updateViewport(state, x, y, events);
-	};
-
 	const updateSelectedCodeBlock = () => {
 		const block = state.codeBlockRendering.selectedCodeBlock;
 		if (block) refreshBlockLayouts([block]);
@@ -423,10 +410,7 @@ export default function codeBlockRendering(
 			if (state.codeBlockRendering.codeBlocks.includes(codeBlock)) refreshBlockLayouts([codeBlock]);
 		} else updateAllBlockDerivedState();
 	});
-	events.on('spriteSheetRerendered', () => {
-		recomputePixelCoordinatesAndBlockDerivedState();
-		centerViewportOnSelectedOrHomeCodeBlock();
-	});
+	events.on('spriteSheetRerendered', recomputePixelCoordinatesAndBlockDerivedState);
 	store.subscribe('codeErrors', updateAllBlockDerivedState);
 	store.subscribe('assertionResults', updateAllBlockDerivedState);
 	store.subscribe('compiler.isCompiling', updateAllBlockDerivedState);
