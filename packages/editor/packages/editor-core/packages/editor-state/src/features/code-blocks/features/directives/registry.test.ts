@@ -39,7 +39,7 @@ describe('directive registry', () => {
 	});
 
 	it('derives block state and display rows', () => {
-		const code = ['module foo', '; @disabled @home @marker', '; @rowDisplay 3', 'moduleEnd'];
+		const code = ['module foo', '; @disabled @home @testDirective', '; @rowDisplay 3', 'moduleEnd'];
 		const result = deriveDirectiveState(code, parseBlockDirectives(code), {}, definitions);
 		expect(result.blockState).toEqual({ disabled: true, isHome: true, homeAlignment: 'center' });
 		expect(result.displayModel.displayRowToSourceLineIndex).toEqual([0, 1, 2, 3]);
@@ -93,7 +93,7 @@ describe('directive registry', () => {
 	});
 
 	it('applies standalone and trailing directives and aliases uniformly', () => {
-		const code = ['; @inline', 'int other 1 ; @rowDisplay 3 @home @marker'];
+		const code = ['; @inline', 'int other 1 ; @rowDisplay 3 @home @testDirective'];
 		const derived = deriveDirectiveState(code, parseBlockDirectives(code), {}, definitions);
 		expect(derived.blockState.alwaysOnTop).toBe(true);
 		expect(derived.blockState.disabled).toBe(true);

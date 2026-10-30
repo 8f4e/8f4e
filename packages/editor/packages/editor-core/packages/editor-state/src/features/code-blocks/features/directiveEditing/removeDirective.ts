@@ -9,9 +9,9 @@ import { parseDirectiveLineRecords, serializeDirectiveComments } from '../direct
  *
  * @example
  * ```typescript
- * const code = ['module test', '; @group myGroup', '; @marker', 'moduleEnd'];
+ * const code = ['module test', '; @group myGroup', '; @testDirective', 'moduleEnd'];
  * const filtered = removeDirective(code, 'group');
- * // Returns: ['module test', '; @marker', 'moduleEnd']
+ * // Returns: ['module test', '; @testDirective', 'moduleEnd']
  * ```
  */
 export function removeDirective(code: string[], name: string): string[] {

@@ -15,7 +15,7 @@ describe('highlightEditorDirective', () => {
 	});
 
 	it('supports trailing and chained editor directives', () => {
-		const line = 'push 1 ; @watch counter @marker';
+		const line = 'push 1 ; @watch counter @testDirective';
 		const colors = new Array(line.length).fill(undefined);
 		colors[7] = 'comment';
 

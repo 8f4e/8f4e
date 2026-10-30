@@ -21,9 +21,9 @@ describe('upsertPos', () => {
 	});
 
 	it('preserves other directives while upserting @pos', () => {
-		const code = ['module test', '; @group myGroup', '; @marker', 'moduleEnd'];
+		const code = ['module test', '; @group myGroup', '; @testDirective', 'moduleEnd'];
 		const result = upsertPos(code, 10, 20);
-		expect(result).toEqual(['module test', '; @pos 10 20', '; @group myGroup', '; @marker', 'moduleEnd']);
+		expect(result).toEqual(['module test', '; @pos 10 20', '; @group myGroup', '; @testDirective', 'moduleEnd']);
 	});
 
 	it('handles negative coordinates', () => {
@@ -64,13 +64,13 @@ describe('upsertPos', () => {
 	});
 
 	it('preserves exact order of other directives', () => {
-		const code = ['module test', '; @group myGroup', '; @marker', '; @pos 1 1', 'output out 1', 'moduleEnd'];
+		const code = ['module test', '; @group myGroup', '; @testDirective', '; @pos 1 1', 'output out 1', 'moduleEnd'];
 		const result = upsertPos(code, 10, 20);
 		expect(result).toEqual([
 			'module test',
 			'; @pos 10 20',
 			'; @group myGroup',
-			'; @marker',
+			'; @testDirective',
 			'output out 1',
 			'moduleEnd',
 		]);
