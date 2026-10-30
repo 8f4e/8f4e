@@ -120,14 +120,6 @@ function alignTargetBlockCursorForVerticalNavigation(
 }
 
 /**
- * Event payload for jumping to a favorite code block.
- */
-interface JumpToFavoriteCodeBlockEvent {
-	/** Primary identifier: stable runtime creationIndex */
-	creationIndex: number;
-}
-
-/**
  * Navigates to a code block in the specified direction.
  * This is a reusable helper that handles both keyboard and automated navigation.
  *
@@ -190,7 +182,11 @@ export function navigateToCodeBlockInDirection(
  * @param creationIndex - The stable runtime identifier of the target block
  * @returns {boolean} true if the block was found and jumped to, false otherwise
  */
-export function jumpToCodeBlock(store: StateManager<State>, creationIndex: number, events: EventDispatcher): boolean {
+export function jumpToCodeBlock(
+	store: Pick<StateManager<State>, 'getState' | 'set'>,
+	creationIndex: number,
+	events: EventDispatcher
+): boolean {
 	const state = store.getState();
 	const codeBlocks = state.codeBlockRendering.codeBlocks;
 
@@ -243,13 +239,6 @@ export function goHome(store: StateManager<State>, events: EventDispatcher): voi
  *
  * If no code block is selected, the effect does nothing.
  *
- * Also listens for jumpToFavoriteCodeBlock events to enable jumping to specific
- * code blocks by creationIndex. When a jumpToFavoriteCodeBlock event is received,
- * this effect will:
- * - Resolve the target block by creationIndex
- * - Select that code block
- * - Center the viewport on the newly selected block
- *
  * @param store - The editor state manager
  * @param events - The event dispatcher
  */
@@ -258,16 +247,11 @@ export default function codeBlockNavigation(store: StateManager<State>, events: 
 		navigateToCodeBlockInDirection(store, event.direction, events);
 	};
 
-	const onJumpToFavoriteCodeBlock = (event: JumpToFavoriteCodeBlockEvent) => {
-		jumpToCodeBlock(store, event.creationIndex, events);
-	};
-
 	const onGoHome = () => {
 		goHome(store, events);
 	};
 
 	// Register the abstract navigation event handler
 	events.on<NavigateCodeBlockEvent>('navigateCodeBlock', onNavigateCodeBlock);
-	events.on<JumpToFavoriteCodeBlockEvent>('jumpToFavoriteCodeBlock', onJumpToFavoriteCodeBlock);
 	events.on('goHome', onGoHome);
 }

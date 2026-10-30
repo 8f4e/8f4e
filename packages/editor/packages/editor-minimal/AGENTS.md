@@ -19,7 +19,8 @@
 - The project URL plugin owns fetching. Forward initial-project callbacks; mounting does not wait for the fetch.
   Without a URL, start empty and announce readiness after initialization.
 - Keep session storage, file/export/screenshot plugins, built-in module browsing, grouping, and optional editing
-  actions in editor-default. Add no storage options, callbacks, or compatibility wrappers here.
+  actions, including favorite navigation and editing, in editor-default. Add no storage options, callbacks, or
+  compatibility wrappers here.
 - Verify with `npx nx run @8f4e/editor-minimal:build|test|typecheck`. The product website's `test:browser` target covers
   real compiler execution, URL loading, lazy controls/runtimes, editing, bridge lifecycle, and disposal.
 

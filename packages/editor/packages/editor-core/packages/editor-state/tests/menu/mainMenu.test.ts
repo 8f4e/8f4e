@@ -30,20 +30,6 @@ describe('menus - go home entry', () => {
 		expect(menu.some(item => item.action === 'goToParentProjectGroup')).toBe(false);
 	});
 
-	it('places "Go @home" directly above "Jump to..."', () => {
-		const mockState = createMockState({
-			editorMode: 'edit',
-		});
-
-		const menu = mainMenu(mockState);
-
-		const goHomeIndex = menu.findIndex(item => item.title === 'Go @home');
-		const jumpToIndex = menu.findIndex(item => item.title === 'Jump to...');
-
-		expect(goHomeIndex).toBeGreaterThanOrEqual(0);
-		expect(jumpToIndex).toBe(goHomeIndex + 1);
-	});
-
 	it('shows "Go @home" even when no home block exists', () => {
 		const mockState = createMockState({
 			editorMode: 'edit',
@@ -54,20 +40,7 @@ describe('menus - go home entry', () => {
 
 		const goHomeItem = menu.find(item => item.title === 'Go @home');
 
-		expect(goHomeItem).toBeDefined();
-		expect(goHomeItem?.disabled).toBeUndefined();
-	});
-
-	it('shows "Jump to..." in view mode when editing is disabled', () => {
-		const mockState = createMockState({
-			editorMode: 'view',
-		});
-
-		const menu = mainMenu(mockState);
-		const jumpToItem = menu.find(item => item.title === 'Jump to...');
-
-		expect(jumpToItem).toBeDefined();
-		expect(jumpToItem?.action).toBe('openSubMenu');
+		expect(goHomeItem).toEqual({ title: 'Go @home', action: 'goHome', close: true });
 	});
 
 	it('shows "New Note" when editing is enabled', () => {

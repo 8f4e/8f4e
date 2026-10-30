@@ -97,7 +97,6 @@ export default function codeBlockRendering(
 		graphicData.disabled = directiveState.blockState.disabled;
 		graphicData.isHome = directiveState.blockState.isHome;
 		graphicData.homeAlignment = directiveState.blockState.homeAlignment;
-		graphicData.isFavorite = directiveState.blockState.isFavorite;
 		const tabStopsByLine = getTabStopsByLine(graphicData.code);
 
 		graphicData.lineNumberColumnWidth = graphicData.code.length.toString().length;
@@ -316,7 +315,6 @@ export default function codeBlockRendering(
 				disabled: codeBlock.disabled ?? directiveState.blockState.disabled,
 				isHome: directiveState.blockState.isHome,
 				homeAlignment: directiveState.blockState.homeAlignment,
-				isFavorite: directiveState.blockState.isFavorite,
 				alwaysOnTop: directiveState.blockState.alwaysOnTop ?? false,
 				viewportAnchor: directiveState.blockState.viewportAnchor,
 				parsedDirectives: blockParsedDirectives,

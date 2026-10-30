@@ -4,6 +4,7 @@ import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
+import { favoritesPlugin } from '@8f4e/editor-plugin-favorites';
 import { groupingPlugin } from '@8f4e/editor-plugin-grouping';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
@@ -13,7 +14,6 @@ import { removeMemoryConnectionsPlugin } from '@8f4e/editor-plugin-remove-memory
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import { createStackPlugin } from '@8f4e/editor-plugin-stack';
-import { toggleFavoritePlugin } from '@8f4e/editor-plugin-toggle-favorite';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
 import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
@@ -60,7 +60,7 @@ export function createDefaultEditorPlugins(options: {
 		createKeyboardMemoryPlugin({ inputTarget: options.canvas, writeMemory: options.writeMemory }),
 		toggleSkipExecutionPlugin,
 		groupingPlugin,
-		toggleFavoritePlugin,
+		favoritesPlugin,
 		removeMemoryConnectionsPlugin,
 		createLazyPluginLoaderPlugin(
 			createLazyPluginRegistry({

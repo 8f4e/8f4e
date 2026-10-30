@@ -1,9 +1,9 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { expect, test, vi } from 'vitest';
-import { toggleFavoritePlugin } from '../src/index';
+import { favoritesPlugin } from '../src/index';
 
-test('edits the clicked block through its contributed menu', async () => {
+test('edits the clicked block and navigates through its contributed menus', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
 	canvas.height = 384;
@@ -24,7 +24,7 @@ entryEnd`;
 	try {
 		editor = await initEditor(canvas, {
 			initialProject: parseProjectSource(source),
-			plugins: [toggleFavoritePlugin],
+			plugins: [favoritesPlugin],
 		});
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		const state = editor.state;
@@ -48,7 +48,7 @@ entryEnd`;
 		expect(state.contextMenu.items[index].payload?.codeBlock).toBe(block);
 		expect(state.contextMenu.items[index].title).toContain('Favorite');
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('toggle-favorite-menu');
+		await expect(canvas).toMatchScreenshot('favorites-block-menu');
 		const x = state.contextMenu.x - state.viewport.x + 8;
 		const y = state.contextMenu.y - state.viewport.y + index * state.viewport.hGrid + 8;
 		mouse('mousemove', x, y);
@@ -59,6 +59,25 @@ entryEnd`;
 		expect(state.contextMenu.items.find(item => item.action === 'toggleFavoriteDirective')?.title).toContain(
 			'Unfavorite'
 		);
+		mouse('contextmenu', 600, 300);
+		await vi.waitFor(() =>
+			expect(state.contextMenu.items.some(item => item.payload?.menu === 'favoritesMenu')).toBe(true)
+		);
+		const clickItem = (index: number) => {
+			const x = state.contextMenu.x - state.viewport.x + 8;
+			const y = state.contextMenu.y - state.viewport.y + index * state.viewport.hGrid + 8;
+			mouse('mousemove', x, y);
+			mouse('mousedown', x, y);
+		};
+		clickItem(state.contextMenu.items.findIndex(item => item.payload?.menu === 'favoritesMenu'));
+		await vi.waitFor(() =>
+			expect(state.contextMenu.items.some(item => item.payload?.creationIndex === block.creationIndex)).toBe(true)
+		);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('favorites-navigation');
+		clickItem(state.contextMenu.items.findIndex(item => item.payload?.creationIndex === block.creationIndex));
+		expect(state.contextMenu.open).toBe(false);
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
 	} finally {
 		editor?.dispose();
 		canvas.remove();

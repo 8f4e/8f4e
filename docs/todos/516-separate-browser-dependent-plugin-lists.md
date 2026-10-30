@@ -23,7 +23,7 @@ Expose separate `plugins` and `browserPlugins` lists at the browser editor's com
 
 ```ts
 mountDefaultEditor(canvas, {
-	plugins: [toggleFavoritePlugin, removeMemoryConnectionsPlugin],
+	plugins: [favoritesPlugin, removeMemoryConnectionsPlugin],
 	browserPlugins: [binaryAssetsPlugin, screenshotPlugin],
 });
 ```

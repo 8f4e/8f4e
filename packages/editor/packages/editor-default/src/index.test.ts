@@ -68,7 +68,7 @@ describe('default editor plugins', () => {
 			.mock.calls.at(-1)![1]
 			.plugins!.map(plugin => plugin.id);
 		expect(pluginIds[0]).toBe('compiler');
-		expect(pluginIds).toEqual(expect.arrayContaining(['connectors', 'watch', 'stack', 'tooltips']));
+		expect(pluginIds).toEqual(expect.arrayContaining(['connectors', 'watch', 'stack', 'tooltips', 'favorites']));
 		expect(pluginIds.indexOf('watch')).toBeLessThan(pluginIds.indexOf('tooltips'));
 		expect(pluginIds.indexOf('stack')).toBeLessThan(pluginIds.indexOf('tooltips'));
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({

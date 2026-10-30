@@ -86,16 +86,16 @@ describe('parseDirectiveLineRecords', () => {
 	});
 
 	it('parses multiple full-line directives from one comment line', () => {
-		expect(parseDirectiveLineRecords('; @pos 1 2 @favorite')).toEqual([
+		expect(parseDirectiveLineRecords('; @pos 1 2 @testDirective')).toEqual([
 			{ prefix: '@', name: 'pos', args: ['1', '2'], isTrailing: false },
-			{ prefix: '@', name: 'favorite', args: [], isTrailing: false },
+			{ prefix: '@', name: 'testDirective', args: [], isTrailing: false },
 		]);
 	});
 
 	it('parses multiple trailing directives from one inline comment', () => {
-		expect(parseDirectiveLineRecords('int foo 1 ; @watch value @favorite')).toEqual([
+		expect(parseDirectiveLineRecords('int foo 1 ; @watch value @testDirective')).toEqual([
 			{ prefix: '@', name: 'watch', args: ['value'], isTrailing: true },
-			{ prefix: '@', name: 'favorite', args: [], isTrailing: true },
+			{ prefix: '@', name: 'testDirective', args: [], isTrailing: true },
 		]);
 	});
 });
@@ -105,9 +105,9 @@ describe('serializeDirectiveComments', () => {
 		expect(
 			serializeDirectiveComments([
 				{ name: 'group', args: ['audio', 'nonstick'] },
-				{ name: 'favorite', args: [] },
+				{ name: 'testDirective', args: [] },
 			])
-		).toBe('; @group audio nonstick @favorite');
+		).toBe('; @group audio nonstick @testDirective');
 	});
 });
 

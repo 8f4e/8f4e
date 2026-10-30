@@ -83,7 +83,6 @@ export default function contextMenu(
 		registry.registerMenu('moduleMenu', (state, { codeBlock }: { codeBlock: CodeBlockGraphicData }) =>
 			menus.moduleMenu(state, codeBlock, registry.getItems('moduleMenu', { state, codeBlock }))
 		),
-		registry.registerMenu('favoritesMenu', menus.favoritesMenu),
 	];
 	const updateMenu = async () => {
 		const { menuStack } = state.contextMenu;

@@ -42,7 +42,7 @@ Hosts can override feature flags. Core still owns ordinary editing, navigation, 
 
 This package has its own composition and dependencies. The full `@8f4e/editor-default` composition provides session
 persistence, file and WASM exports, screenshots, built-in module browsing, and additional editing actions such as
-visual grouping, execution/favorite toggles, and memory disconnection.
+visual grouping, execution toggles, favorites navigation/editing, and memory disconnection.
 
 Verify from the workspace root:
 

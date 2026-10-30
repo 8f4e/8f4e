@@ -16,14 +16,14 @@ describe('removeDirective', () => {
 	});
 
 	it('should handle directive with trailing whitespace', () => {
-		const code = ['module test', '; @favorite  ', '', 'moduleEnd'];
-		const result = removeDirective(code, 'favorite');
+		const code = ['module test', '; @testDirective  ', '', 'moduleEnd'];
+		const result = removeDirective(code, 'testDirective');
 		expect(result).toEqual(['module test', '', 'moduleEnd']);
 	});
 
 	it('should handle indented directive', () => {
-		const code = ['module test', '  ; @favorite', '', 'moduleEnd'];
-		const result = removeDirective(code, 'favorite');
+		const code = ['module test', '  ; @testDirective', '', 'moduleEnd'];
+		const result = removeDirective(code, 'testDirective');
 		expect(result).toEqual(['module test', '', 'moduleEnd']);
 	});
 
@@ -34,9 +34,9 @@ describe('removeDirective', () => {
 	});
 
 	it('should not remove other directives', () => {
-		const code = ['module test', '; @custom myGroup', '; @favorite', '', 'moduleEnd'];
+		const code = ['module test', '; @custom myGroup', '; @testDirective', '', 'moduleEnd'];
 		const result = removeDirective(code, 'custom');
-		expect(result).toEqual(['module test', '; @favorite', '', 'moduleEnd']);
+		expect(result).toEqual(['module test', '; @testDirective', '', 'moduleEnd']);
 	});
 
 	it('should be no-op when directive is not present', () => {
@@ -52,12 +52,12 @@ describe('removeDirective', () => {
 	});
 
 	it('should handle different directive names', () => {
-		const code = ['module test', '; @favorite', '; @custom test', '', 'moduleEnd'];
+		const code = ['module test', '; @testDirective', '; @custom test', '', 'moduleEnd'];
 		const resultCustom = removeDirective(code, 'custom');
-		expect(resultCustom).toEqual(['module test', '; @favorite', '', 'moduleEnd']);
+		expect(resultCustom).toEqual(['module test', '; @testDirective', '', 'moduleEnd']);
 
-		const resultFavorite = removeDirective(code, 'favorite');
-		expect(resultFavorite).toEqual(['module test', '; @custom test', '', 'moduleEnd']);
+		const resultTestDirective = removeDirective(code, 'testDirective');
+		expect(resultTestDirective).toEqual(['module test', '; @custom test', '', 'moduleEnd']);
 	});
 
 	it('should handle empty code array', () => {
@@ -74,16 +74,16 @@ describe('removeDirective', () => {
 	});
 
 	it('should preserve other directives on the same line', () => {
-		const code = ['module test', '; @custom myGroup @favorite', 'moduleEnd'];
+		const code = ['module test', '; @custom myGroup @testDirective', 'moduleEnd'];
 		const result = removeDirective(code, 'custom');
-		expect(result).toEqual(['module test', '; @favorite', 'moduleEnd']);
+		expect(result).toEqual(['module test', '; @testDirective', 'moduleEnd']);
 	});
 
 	it('removes a trailing directive without removing the instruction', () => {
-		expect(removeDirective(['  int gate 0 ; @favorite'], 'favorite')).toEqual(['  int gate 0']);
+		expect(removeDirective(['  int gate 0 ; @testDirective'], 'testDirective')).toEqual(['  int gate 0']);
 	});
 
 	it('preserves neighboring trailing directives and the instruction', () => {
-		expect(removeDirective(['int gate 0 ; @favorite @watch'], 'favorite')).toEqual(['int gate 0 ; @watch']);
+		expect(removeDirective(['int gate 0 ; @testDirective @watch'], 'testDirective')).toEqual(['int gate 0 ; @watch']);
 	});
 });

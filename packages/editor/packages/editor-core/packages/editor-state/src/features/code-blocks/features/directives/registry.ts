@@ -9,7 +9,6 @@ import type {
 import buildDisplayModel from '../../buildDisplayModel';
 import alwaysOnTopDirective from './alwaysOnTop/plugin';
 import disabledDirective from './disabled/plugin';
-import favoriteDirective from './favorite/plugin';
 import hideDirective from './hide/plugin';
 import homeDirective from './home/plugin';
 import { matchEditorDirectives } from './utils';
@@ -24,7 +23,6 @@ export type {
 export const directiveDefinitions: EditorDirectiveDefinition[] = [
 	disabledDirective,
 	homeDirective,
-	favoriteDirective,
 	hideDirective,
 	viewportDirective,
 	alwaysOnTopDirective,
@@ -56,7 +54,6 @@ export function deriveDirectiveState(
 		blockState: {
 			disabled: false,
 			isHome: false,
-			isFavorite: false,
 		},
 		displayState: {},
 		displayModel: buildDisplayModel(code),

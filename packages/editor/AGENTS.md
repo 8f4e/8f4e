@@ -24,8 +24,8 @@
   selected-line tooltips in `@8f4e/editor-plugin-tooltips`, browser screenshots in `@8f4e/editor-plugin-screenshot`,
   project Open/Save/Export and browser file access in `@8f4e/editor-plugin-project-files`, and WebAssembly export in `@8f4e/editor-plugin-wasm-export`.
   Meter, plot, bars, crossfade, watch, and stack each live in their matching `editor-plugin-<name>` packages.
-  Favorite editing lives in `editor-plugin-toggle-favorite`, and memory-default disconnection in
-  `editor-plugin-remove-memory-connections`. Favorite navigation and directive derivation remain core features.
+  Favorite detection, editing, and navigation live in `editor-plugin-favorites`, and memory-default disconnection in
+  `editor-plugin-remove-memory-connections`. Core has no favorite-specific block state or menus.
   Visual `@group` behavior lives in `editor-plugin-grouping`, including private membership, drag and paste policies,
   and group action menus. Nested language-level project groups remain in core.
   `editor-plugin-binary-assets` owns binary fetching, caching, memory loading, dialogs, and size constants.
@@ -76,7 +76,7 @@
   `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-assertion-markers,@8f4e/editor-plugin-keyboard-memory,@8f4e/editor-plugin-midi-input`.
   Assertion markers also have a `test:screenshot` target; MIDI tests require no hardware.
 - Verify the favorite and memory-connection actions with
-  `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-toggle-favorite,@8f4e/editor-plugin-remove-memory-connections`.
+  `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-favorites,@8f4e/editor-plugin-remove-memory-connections`.
   Each also has a `test:screenshot` target for its canvas menu interaction.
 - Verify connectors and their line renderer with `npx nx run @8f4e/editor-plugin-connectors:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-connectors:test:screenshot`.
