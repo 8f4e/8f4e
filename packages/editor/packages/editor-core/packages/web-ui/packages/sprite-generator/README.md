@@ -51,3 +51,8 @@ Unit tests compare every glyph pixel against its ASCII source for every bundled 
 and check packed-row decoding, fallback IDs, and cached loading. Browser snapshots cover mask previews, renderer
 integration, and example palettes. Update snapshots only for intentional visual changes with
 `npx nx run @8f4e/sprite-generator:test:screenshot:update`.
+
+Browser checks start their own Vite preview server at `http://localhost:3102`, separate from the metrics dashboard
+on port 3002. The port is bound strictly and existing servers are never reused. Tests navigate relative to the
+configured base URL and wait for the preview page's `data-ready` signal before capturing images. Playwright
+launches Vite directly and stops it after the run.

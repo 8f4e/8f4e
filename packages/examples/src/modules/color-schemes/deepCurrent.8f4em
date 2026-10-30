@@ -1,0 +1,18 @@
+8f4e/v1
+
+note deepCurrentColors
+; @public
+; @config color.canvas #0c141b
+; @config color.surface #1a2933
+; @config color.ink #d3e0e1
+; @config color.primary #58cfe2
+; @config color.secondary #e8b45c
+; @config color.positive #4fa685
+; @config color.warning #e0b052
+; @config color.negative #d46157
+; @config color.muted #607481
+; @config color.stroke rgba(88,215,232,0.46)
+; @config color.tertiary #7c9098
+; @config color.highlight #41e4ff
+; @config color.detail #58cfe2
+noteEnd

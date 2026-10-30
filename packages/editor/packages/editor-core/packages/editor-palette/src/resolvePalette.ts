@@ -3,7 +3,6 @@ import {
 	composite,
 	formatColor,
 	gamutMap,
-	mix,
 	normalizeColor,
 	parseColor,
 	type Rgba,
@@ -48,34 +47,19 @@ function resolveBaseColors(config: PaletteConfig): { bases: BaseColors; theme: P
 	for (const key of Object.keys(config))
 		if (!BASE_COLORS.includes(key as (typeof BASE_COLORS)[number]))
 			throw new TypeError(`Unknown palette color '${key}'.`);
-	const input = { ...defaultPalette, ...config };
-	const parsed = Object.fromEntries(Object.entries(input).map(([key, value]) => [key, parseColor(value)])) as Record<
-		keyof typeof defaultPalette,
-		Rgba
-	> &
-		Partial<BaseColors>;
-	const { canvas, surface, ink, primary } = parsed;
+	const bases = Object.fromEntries(
+		Object.entries({ ...defaultPalette, ...config }).map(([key, value]) => [key, parseColor(value)])
+	) as BaseColors;
+	const { canvas, surface, ink, primary } = bases;
 	const background = composite(surface, composite(canvas, BLACK));
 	const visibleInk = composite(ink, background);
-	const primaryChroma = chroma(primary);
 	const theme: PaletteTheme = {
 		background,
 		visibleInk,
 		isDark: toOklab(rgb(background))[0] < toOklab(rgb(visibleInk))[0],
-		primaryChroma,
+		primaryChroma: chroma(primary),
 		surfaceChroma: chroma(background),
 		isLightOverlay: surface[3] > 0 && surface[3] < 1 && toOklab(rgb(surface))[0] > 0.8,
-	};
-	const muted = parsed.muted ?? mix(primaryChroma > 0.02 ? mix(ink, primary, 0.5) : ink, background, 0.2, 1);
-	const secondary = parsed.secondary ?? primary;
-	const bases: BaseColors = {
-		...parsed,
-		muted,
-		secondary,
-		tertiary: parsed.tertiary ?? mix(muted, background, 0.25, muted[3]),
-		highlight: parsed.highlight ?? secondary,
-		detail: parsed.detail ?? primary,
-		stroke: parsed.stroke ?? [...rgb(primary), 0.3],
 	};
 	return { bases, theme };
 }

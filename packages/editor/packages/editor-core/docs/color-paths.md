@@ -20,24 +20,26 @@ and opacity variants when resolving the palette. No colors are lightened, darken
 
 | Path | Purpose | Default |
 | --- | --- | --- |
-| `color.canvas` | Canvas behind code blocks | `transparent` |
-| `color.surface` | Code blocks and panels | `rgba(0,0,0,0.9)` |
-| `color.ink` | Main foreground | `#cccccc` |
-| `color.primary` | Main accent | `#ffffff` |
-| `color.muted` | Subdued foreground | Generated from ink, primary, and surface |
-| `color.secondary` | Additional accent | Resolved `primary` |
-| `color.tertiary` | Supporting accent, including comments | Generated from muted and surface |
-| `color.highlight` | Bright accent for visualizations | Resolved `secondary` (including alpha) |
-| `color.detail` | Additional contrasting accent | Resolved `primary` |
-| `color.stroke` | Shared lines and outlines | Primary at 30% opacity |
-| `color.positive` | Positive states | `#00ff00` |
-| `color.warning` | Caution states | `#ffff00` |
-| `color.negative` | Negative states | `#ff0000` |
+| `color.canvas` | Canvas behind code blocks | `#060606` |
+| `color.surface` | Code blocks and panels | `#101010` |
+| `color.ink` | Main foreground | `#e3e3e3` |
+| `color.primary` | Main accent | `#cba6f7` |
+| `color.muted` | Subdued foreground | `#909090` |
+| `color.secondary` | Additional accent | `#fab387` |
+| `color.tertiary` | Supporting accent, including comments | `#7f849c` |
+| `color.highlight` | Bright accent for visualizations | `#94e2d5` |
+| `color.detail` | Additional contrasting accent | `#f5c2e7` |
+| `color.stroke` | Shared lines and outlines | `#858585` |
+| `color.positive` | Positive states | `#a6e3a1` |
+| `color.warning` | Caution states | `#f9e2af` |
+| `color.negative` | Negative states | `#f38ba8` |
 
-Four colors establish the main theme. Optional accents retain an existing theme's independent hues without adding
-feature-specific configuration. For example, Aurora uses mint primary, yellow secondary and highlight, purple tertiary,
-blue detail, and translucent mint strokes. Every field is optional and has a shared fallback. Canvas and surface remain
-independent. Accents are authored directly; the resolver does not invent complementary or hue-rotated colors.
+The default adapts Catppuccin Mocha accents to neutral black surfaces, with a faint separation between the canvas and
+code blocks and quiet comments.
+
+Every base color is independent and optional. Omitted colors use the defaults above; overriding primary, secondary,
+ink, or either background does not change other base colors. Configure all thirteen colors for a complete theme.
+Accents are authored directly; the resolver does not invent complementary or hue-rotated colors.
 
 Accepts `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, comma-separated `rgb()` / `rgba()`, and `transparent`.
 Base alpha is preserved in generated shades. For example, `color.stroke rgba(69,89,160,0.38)` retains that exact line

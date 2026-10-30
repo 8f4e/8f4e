@@ -8,6 +8,9 @@
 - From root: `npx nx run @8f4e/sprite-generator:build|test|typecheck`.
 - From package directory: use `npx nx run @8f4e/sprite-generator:<target>` (e.g., `npx nx run @8f4e/sprite-generator:dev`).
 - Screenshot tests: `npx nx run @8f4e/sprite-generator:test:screenshot` and variants (:ui, :update, :headed, :debug).
+- Browser previews use `http://localhost:3102`, separate from the metrics dashboard on port 3002. Playwright starts
+  Vite directly as its owned test server with strict port binding; keep its base URL aligned with
+  `screenshot-tests/vite.config.ts`. Run the screenshot tasks themselves through Nx.
 
 ## Coding Style
 - TypeScript; use Biome as the fixer (`npx biome check --write <files>`) per root config. Keep pure, deterministic functions.

@@ -65,7 +65,7 @@ describe('example modules plugin', () => {
 		const test = setup();
 		test.events.dispatch('contextmenu', { x: 100, y: 112 });
 		await vi.waitFor(() =>
-			expect(test.state.contextMenu.items.some(item => item.title?.includes('Add Built-in Module'))).toBe(true)
+			expect(test.state.contextMenu.items.some(item => item.title?.includes('Add Built-in Block'))).toBe(true)
 		);
 		const click = (title: string) => {
 			test.state.contextMenu.highlightedItem = test.state.contextMenu.items.findIndex(item =>
@@ -73,7 +73,7 @@ describe('example modules plugin', () => {
 			);
 			test.events.dispatch('mousedown', { x: 100, y: 112 });
 		};
-		click('Add Built-in Module');
+		click('Add Built-in Block');
 		await vi.waitFor(() => expect(test.state.contextMenu.items.some(item => item.title?.includes('Audio'))).toBe(true));
 		click('Audio');
 		await vi.waitFor(() =>
@@ -132,6 +132,23 @@ describe('example modules plugin', () => {
 		});
 		await test.addModule('simple');
 		expect(test.state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['env', 'simple']);
+	});
+
+	it('inserts a palette note and applies its colors without creating executable modules', async () => {
+		const test = setup({
+			sources: new Map([
+				[
+					'color-schemes/copper',
+					async () => '8f4e/v1\nnote copperColors\n; @public\n; @config color.primary #e1843d\nnoteEnd',
+				],
+			]),
+		});
+		await test.addModule('copper');
+
+		expect(test.state.codeBlockRendering.codeBlocks.map(block => block.blockType)).toEqual(['constants', 'note']);
+		expect(test.state.codeBlockRendering.codeBlocks[1].name).toBe('copperColors');
+		expect(test.state.codeBlockRendering.codeBlocks[1].code).not.toContain('; @public');
+		expect(test.state.editorConfig.color).toMatchObject({ primary: '#e1843d' });
 	});
 
 	it('continues inserting available dependencies when one chunk fails', async () => {

@@ -65,6 +65,24 @@ describe('reference catalog analysis', () => {
 		expect(entries[0].source).not.toContain('entryEnd');
 	});
 
+	it('exposes public palette notes as reusable blocks', () => {
+		const [entry] = analyzeExamples(
+			'block',
+			new Map([
+				['color-schemes/copper', '8f4e/v1\nnote copperColors\n; @public\n; @config color.primary #e1843d\nnoteEnd'],
+			])
+		);
+		expect(entry).toMatchObject({
+			kind: 'block',
+			path: 'color-schemes/copper',
+			title: 'Copper',
+			category: 'Color Schemes',
+			summary: '',
+			dependencies: [],
+			source: 'note copperColors\n; @config color.primary #e1843d\nnoteEnd',
+		});
+	});
+
 	it('describes projects from notes while preserving source and allowing identical filenames in different categories', () => {
 		const source =
 			'8f4e/v1\nnote\n; @pos 3 4\n; @config testRuntime.enabled true\nnoteEnd\nnote\n; Explain an audio effect.\nnoteEnd\n';

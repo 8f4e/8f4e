@@ -108,6 +108,8 @@
 ## Security & Configuration Tips
 - Node: use `nvm use` (repo uses `v24.16.0`).
 - Dev server: Vite sets COOP/COEP headers; prefer running only one instance on port `3000`.
+- Browser preview ports: the metrics dashboard uses `3002`; sprite-generator screenshot tests start their own
+  server on `3102` with strict port binding.
 - Verify aliases resolve to built outputs: run package `build` before `vite build` when changing package APIs.
 
 ## Maintenance Note

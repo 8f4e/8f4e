@@ -42,7 +42,7 @@
   Session restoration/autosaving and project URL loading live in `editor-plugin-session-persistence` and
   `editor-plugin-project-url-loader`. The default host supplies storage/fetch and chooses initial URL priority.
   The standard plugin set is composed in `editor-default`.
-  `editor-plugin-example-modules` owns built-in module menus, catalog metadata, lazy source caching, public-block
+  `editor-plugin-example-modules` owns built-in block menus, catalog metadata, lazy source caching, public-block
   selection, and dependency insertion. The default editor supplies source loaders; core owns generic submenu registration.
 
 ## Build, Test, Dev

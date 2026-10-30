@@ -62,7 +62,7 @@ functionEnd float`,
 			canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, bubbles: true }));
 		};
 		canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: 80, clientY: 32, bubbles: true }));
-		await click('Add Built-in Module');
+		await click('Add Built-in Block');
 		await click('Audio');
 		await click('Effects');
 		await click('< Back');

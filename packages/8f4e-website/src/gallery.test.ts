@@ -101,7 +101,7 @@ test('keeps live editing available with the minimal project menu', async () => {
 	for (const action of ['importProject', 'exportProject', 'exportWasm', 'exportCanvasScreenshot']) {
 		expect(menu.some(item => item.action === action)).toBe(false);
 	}
-	expect(menu.some(item => item.title === 'Add Built-in Module')).toBe(false);
+	expect(menu.some(item => item.title === 'Add Built-in Block')).toBe(false);
 	editor.pauseRendering();
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot('minimal-project-menu');
