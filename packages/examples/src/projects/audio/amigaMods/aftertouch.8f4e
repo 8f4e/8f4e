@@ -837,7 +837,7 @@ const E       2.718281828459045
 
 constantsEnd
 
-note
+note colors
 ; @pos -100 -135
 ; @config color.canvas #3399cc
 ; @config color.ink rgba(255,255,255,0.8)

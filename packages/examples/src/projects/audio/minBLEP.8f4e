@@ -240,6 +240,10 @@ note
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
 ; @config audioRuntime.audioOutBufferRAddress audioout:buffer
 ; @config export.fileName minBLEP
+noteEnd
+
+note colors
+; @pos -116 -63
 ; @config color.canvas #18211f
 ; @config color.surface #2c342f
 ; @config color.ink #d8dccd

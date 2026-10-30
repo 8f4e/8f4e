@@ -34,6 +34,10 @@ constantsEnd
 note
 ; @pos -438 18
 ; @config export.fileName digitClassifierFloat32
+noteEnd
+
+note colors
+; @pos -489 18
 ; @config color.canvas #d9dee9
 ; @config color.surface #f6f5fa
 ; @config color.ink #35405c

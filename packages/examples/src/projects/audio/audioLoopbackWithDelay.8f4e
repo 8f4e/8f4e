@@ -29,6 +29,10 @@ note
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
 ; @config audioRuntime.audioOutBufferRAddress audioout:buffer
 ; @config export.fileName audioLoopbackWithDelay
+noteEnd
+
+note colors
+; @pos -176 6
 ; @config color.canvas #160f11
 ; @config color.surface #2d1d21
 ; @config color.ink #ddcfca
@@ -42,7 +46,6 @@ note
 ; @config color.tertiary #947b7a
 ; @config color.highlight #ff6d5f
 ; @config color.detail #c44845
-
 noteEnd
 
 note

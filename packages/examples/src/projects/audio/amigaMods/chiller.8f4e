@@ -1000,7 +1000,7 @@ note
 ; EC0 immediate note cuts are supported.
 noteEnd
 
-note
+note colors
 ; @pos 706 -154
 ; @config color.canvas #080706
 ; @config color.ink #e8dcc2

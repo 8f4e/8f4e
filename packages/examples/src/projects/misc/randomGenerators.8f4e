@@ -15,6 +15,10 @@ note
 ; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 50
 ; @config export.fileName randomGenerators
+noteEnd
+
+note colors
+; @pos -205 -20
 ; @config color.canvas #090b16
 ; @config color.surface #15192b
 ; @config color.ink #eef2ff

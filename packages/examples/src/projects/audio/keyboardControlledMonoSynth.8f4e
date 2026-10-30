@@ -309,6 +309,10 @@ note
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
 ; @config audioRuntime.audioOutBufferRAddress audioout:buffer
 ; @config export.fileName keyboardControlledMonoSynth
+noteEnd
+
+note colors
+; @pos -146 1
 ; @config color.canvas #191613
 ; @config color.surface #2f2a25
 ; @config color.ink #e7dfcf
@@ -322,7 +326,6 @@ note
 ; @config color.tertiary #9b9083
 ; @config color.highlight #efba62
 ; @config color.detail #e1843d
-
 noteEnd
 
 entry main

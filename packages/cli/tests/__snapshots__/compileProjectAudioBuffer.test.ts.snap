@@ -288,7 +288,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 188,
+        "projectBlockId": 191,
         "sourceIdentity": {
           "codeBlockId": "audioout",
           "projectGroupPath": "",
@@ -730,7 +730,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 145,
+        "projectBlockId": 148,
         "sourceIdentity": {
           "codeBlockId": "phaseAccumulator",
           "projectGroupPath": "",
@@ -1895,7 +1895,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "moduleEnd",
       ],
       "entry": "main",
-      "id": 145,
+      "id": 148,
     },
     {
       "code": [
@@ -1944,7 +1944,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "moduleEnd",
       ],
       "entry": "main",
-      "id": 188,
+      "id": 191,
     },
   ],
   "notes": [
@@ -1957,6 +1957,14 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "; @config audioRuntime.audioOutBufferLAddress audioout:buffer",
         "; @config audioRuntime.audioOutBufferRAddress audioout:buffer",
         "; @config export.fileName audioBuffer",
+        "noteEnd",
+      ],
+      "id": 111,
+    },
+    {
+      "code": [
+        "note colors",
+        "; @pos -172 0",
         "; @config color.canvas #0c141b",
         "; @config color.surface #1a2933",
         "; @config color.ink #d3e0e1",
@@ -1970,10 +1978,9 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "; @config color.tertiary #7c9098",
         "; @config color.highlight #41e4ff",
         "; @config color.detail #58cfe2",
-        "",
         "noteEnd",
       ],
-      "id": 111,
+      "id": 120,
     },
     {
       "code": [
@@ -1987,7 +1994,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "; (audioout)",
         "noteEnd",
       ],
-      "id": 134,
+      "id": 137,
     },
   ],
   "pointerMetadataByModuleId": {

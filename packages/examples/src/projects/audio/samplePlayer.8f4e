@@ -38,6 +38,10 @@ note
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
 ; @config audioRuntime.audioOutBufferRAddress audioout:buffer
 ; @config export.fileName samplePlayer
+noteEnd
+
+note colors
+; @pos -141 -54
 ; @config color.canvas #16130f
 ; @config color.surface #c8b99f
 ; @config color.ink #211c17
@@ -51,7 +55,6 @@ note
 ; @config color.tertiary #4b4339
 ; @config color.highlight #f0a24a
 ; @config color.detail #b45032
-
 noteEnd
 
 note
