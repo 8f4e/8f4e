@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAudioRuntimePlugin } from './index';
 
@@ -93,7 +93,7 @@ describe('AudioWorklet context lifetime', () => {
 			menus: store.menus,
 			directives: store.directives,
 			layout: store.layout,
-			drawers: createCodeBlockDrawerRegistry(),
+			drawers: createEditorDrawerRegistry(),
 		});
 		const cleanup = () => {
 			cleanups.delete(cleanup);

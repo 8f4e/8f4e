@@ -13,6 +13,7 @@ export interface CodeBlockDrawerContext {
 
 export type CodeBlockDrawer = (context: CodeBlockDrawerContext) => void;
 
+/** Registrations exposed to editor plugins. */
 export interface EditorDrawerRegistry {
 	/** Register a GPU layer whose resources are bound to the renderer lifecycle. */
 	registerRenderLayer: (factory: RenderLayerFactory) => () => void;
@@ -22,7 +23,8 @@ export interface EditorDrawerRegistry {
 	registerCodeBlockOverlay: (drawer: CodeBlockDrawer) => () => void;
 }
 
-export interface CodeBlockDrawerRegistry extends EditorDrawerRegistry {
+/** Renderer-owned invocation and lifecycle of registered drawers and layers. */
+export interface EditorDrawerHost extends EditorDrawerRegistry {
 	attachRenderLayers: ReturnType<typeof createRenderLayerRegistry>['attachRenderLayers'];
 	drawCodeBlock: CodeBlockDrawer;
 	drawCodeBlockOverlay: CodeBlockDrawer;
@@ -44,7 +46,7 @@ function createDrawerSlot() {
 	};
 }
 
-export function createCodeBlockDrawerRegistry(): CodeBlockDrawerRegistry {
+export function createEditorDrawerRegistry(): EditorDrawerHost {
 	const widgets = createDrawerSlot();
 	const overlays = createDrawerSlot();
 	return {

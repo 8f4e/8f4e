@@ -1,6 +1,6 @@
 import initState from '@8f4e/editor-state';
 import { createMockCodeBlock, createMockEventDispatcher } from '@8f4e/editor-state-testing';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { type EditorPlugin, installEditorPlugins } from './plugins';
 
@@ -13,7 +13,7 @@ function createContext() {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
-		drawers: createCodeBlockDrawerRegistry(),
+		drawers: createEditorDrawerRegistry(),
 	};
 }
 

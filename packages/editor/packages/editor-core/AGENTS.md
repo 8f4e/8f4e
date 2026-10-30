@@ -56,6 +56,8 @@
 - Editor `@group` behavior belongs to `editor-plugin-grouping`, including membership, dragging policy, clipboard
   collision handling, and all group actions/menus. Keep only generic drag-target and paste-source events in core;
   nested language-level project groups, navigation, and memory scopes remain core-owned.
+- Create drawer registrations with `createEditorDrawerRegistry`; it covers both code-block drawing and canvas-wide
+  GPU layers. Keep renderer invocation on the internal `EditorDrawerHost` interface.
 - Input/output connectors and the complete GPU line renderer belong to `editor-plugin-connectors`. Keep connector
   fields and address indexes out of core. Expose GPU passes through `drawers.registerRenderLayer`; the renderer owns
   layer initialization, palette notifications, memory-release notifications, and disposal before context destruction.

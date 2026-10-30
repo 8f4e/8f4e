@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { EditorPlugin } from '@8f4e/editor-core';
 import initState from '@8f4e/editor-state';
-import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
 import { createEvents } from './events';
 import { createDrawContextMock } from './rendering';
@@ -19,12 +19,12 @@ export async function setup(
 		installed = true,
 		mode = 'edit',
 		name = 'audio',
-		drawers = createCodeBlockDrawerRegistry(),
+		drawers = createEditorDrawerRegistry(),
 	}: {
 		installed?: boolean;
 		mode?: 'edit' | 'view';
 		name?: string;
-		drawers?: ReturnType<typeof createCodeBlockDrawerRegistry>;
+		drawers?: ReturnType<typeof createEditorDrawerRegistry>;
 	} = {}
 ) {
 	const text =

@@ -2,7 +2,7 @@ import { parseProjectSource } from '@8f4e/compiler';
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import initState from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach } from 'vitest';
 import { createLazyPluginLoaderPlugin, type LazyEditorPlugin } from '../index';
 
@@ -39,7 +39,7 @@ export function setup(plugins: readonly LazyEditorPlugin[], initialSource?: stri
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
-		drawers: createCodeBlockDrawerRegistry(),
+		drawers: createEditorDrawerRegistry(),
 	};
 	const dispose = createLazyPluginLoaderPlugin(plugins).setup(context);
 	cleanups.push(dispose);

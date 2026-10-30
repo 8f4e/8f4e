@@ -2,7 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
 import initState, { deleteCodeBlocks } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createFakeWebGl } from './__tests__/fake-webgl';
@@ -44,7 +44,7 @@ async function setup(text = source, installed = true) {
 	};
 	const events = createEvents();
 	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
-	const drawers = createCodeBlockDrawerRegistry();
+	const drawers = createEditorDrawerRegistry();
 	const dispose = installed
 		? connectorsPlugin.setup({
 				store,

@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-/** Creates the WebGL2 surface shared by plugin unit tests. */
+/** Creates the WebGL2 surface consumed by wire rendering and its shared shader helpers. */
 export function createFakeWebGl() {
 	let resourceId = 0;
 	/** Returns one distinguishable fake GPU resource. */
@@ -13,7 +13,6 @@ export function createFakeWebGl() {
 		COMPILE_STATUS: 0x8b81,
 		LINK_STATUS: 0x8b82,
 		ARRAY_BUFFER: 0x8892,
-		STATIC_DRAW: 0x88e4,
 		DYNAMIC_DRAW: 0x88e8,
 		FLOAT: 0x1406,
 		UNSIGNED_BYTE: 0x1401,
@@ -28,25 +27,6 @@ export function createFakeWebGl() {
 		ONE: 1,
 		ONE_MINUS_SRC_ALPHA: 0x0303,
 		TRIANGLE_STRIP: 0x0005,
-		TEXTURE_2D: 0x0de1,
-		TEXTURE0: 0x84c0,
-		RGBA8: 0x8058,
-		RGBA: 0x1908,
-		TEXTURE_MIN_FILTER: 0x2801,
-		TEXTURE_MAG_FILTER: 0x2800,
-		TEXTURE_WRAP_S: 0x2802,
-		TEXTURE_WRAP_T: 0x2803,
-		NEAREST: 0x2600,
-		CLAMP_TO_EDGE: 0x812f,
-		UNPACK_ALIGNMENT: 0x0cf5,
-		PIXEL_UNPACK_BUFFER: 0x88ec,
-		UNPACK_ROW_LENGTH: 0x0cf2,
-		UNPACK_SKIP_PIXELS: 0x0cf4,
-		UNPACK_SKIP_ROWS: 0x0cf3,
-		UNPACK_IMAGE_HEIGHT: 0x806e,
-		UNPACK_SKIP_IMAGES: 0x806d,
-		UNPACK_FLIP_Y_WEBGL: 0x9240,
-		UNPACK_PREMULTIPLY_ALPHA_WEBGL: 0x9241,
 		createShader: vi.fn(() => resource('shader')),
 		shaderSource: vi.fn(),
 		compileShader: vi.fn(),
@@ -63,8 +43,6 @@ export function createFakeWebGl() {
 		deleteBuffer: vi.fn(),
 		createVertexArray: vi.fn(() => resource('vertex-array')),
 		deleteVertexArray: vi.fn(),
-		createTexture: vi.fn(() => resource('texture')),
-		deleteTexture: vi.fn(),
 		getUniformLocation: vi.fn((_program: unknown, name: string) => ({ name })),
 		useProgram: vi.fn(),
 		bindVertexArray: vi.fn(),
@@ -81,20 +59,8 @@ export function createFakeWebGl() {
 		blendEquation: vi.fn(),
 		blendFunc: vi.fn(),
 		colorMask: vi.fn(),
-		activeTexture: vi.fn(),
-		bindTexture: vi.fn(),
-		bindSampler: vi.fn(),
-		pixelStorei: vi.fn(),
-		texParameteri: vi.fn(),
-		texImage2D: vi.fn(),
-		texSubImage2D: vi.fn(),
-		uniform1i: vi.fn(),
 		uniform2f: vi.fn(),
-		uniform4f: vi.fn(),
-		drawArrays: vi.fn(),
 		drawArraysInstanced: vi.fn(),
 	};
 	return gl as unknown as typeof gl & WebGL2RenderingContext;
 }
-
-export type FakeWebGl = ReturnType<typeof createFakeWebGl>;

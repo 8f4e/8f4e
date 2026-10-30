@@ -1,7 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createProjectFilesPlugin } from './index';
@@ -63,7 +63,7 @@ function setup({
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
-				drawers: createCodeBlockDrawerRegistry(),
+				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};
 	cleanups.push(() => {

@@ -29,6 +29,9 @@ until the image dimensions change; memory release deletes the texture and the ne
 
 ## API
 
+`createEditorDrawerRegistry()` creates the per-editor registry for code-block drawers, overlays, and canvas-wide
+render layers. Pass that registry through `options.drawers` when initializing the renderer.
+
 ### `init(state, renderData, canvas, memoryViews, fontAtlas, palette, options?)`
 
 Initializes the web UI renderer.

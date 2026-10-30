@@ -1,7 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { vi } from 'vitest';
 import { groupingPlugin } from '../index';
 import { createEvents } from './events';
@@ -45,7 +45,7 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
-				drawers: createCodeBlockDrawerRegistry(),
+				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};
 	events.dispatch('loadProject', { project: parseProjectSource(code) });

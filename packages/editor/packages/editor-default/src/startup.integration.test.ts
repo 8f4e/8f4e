@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
 import { createDefaultEditorPlugins } from './index';
 
@@ -29,7 +29,7 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
 	events.dispatch('enterEditMode');
-	const drawers = createCodeBlockDrawerRegistry();
+	const drawers = createEditorDrawerRegistry();
 	const disposers: Array<() => void> = [];
 	const onInitialProjectLoaded = vi.fn();
 	const onInitialProjectLoadError = vi.fn();

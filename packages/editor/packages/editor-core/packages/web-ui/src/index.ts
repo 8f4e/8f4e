@@ -8,7 +8,7 @@ import drawCodeBlocks from './drawers/codeBlocks';
 import drawContextMenu from './drawers/contextMenu';
 import drawDialog from './drawers/dialog';
 import drawModeOverlay from './drawers/modeOverlay';
-import { type CodeBlockDrawerRegistry, createCodeBlockDrawerRegistry } from './drawers/registry';
+import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/registry';
 import { createWasmOverlayTextureDrawer, type WasmOverlayTextureOptions } from './drawers/wasmOverlayTexture';
 import BackgroundRenderer from './plugins/background';
 import { RgbaTextureLayer } from './plugins/rgba-texture-layer';
@@ -16,7 +16,7 @@ import type { MemoryViews } from './types';
 
 export { DrawContext } from './drawContext';
 export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from './drawers/registry';
-export { createCodeBlockDrawerRegistry } from './drawers/registry';
+export { createEditorDrawerRegistry } from './drawers/registry';
 export { createProgram, prepareRenderPass, requireResource, requireUniform } from './plugins/webgl';
 export type {
 	EditorRenderLayer,
@@ -38,7 +38,7 @@ export interface RenderStats {
 }
 
 export interface WebUiOptions {
-	drawers?: CodeBlockDrawerRegistry;
+	drawers?: EditorDrawerHost;
 	onRenderStats?: (stats: RenderStats) => void;
 	renderStatsIntervalFrames?: number;
 	overlayTexture?: WasmOverlayTextureOptions;
@@ -93,9 +93,9 @@ export default async function init(
 	}
 
 	installFontAtlas(fontAtlas, state.editorConfig.font ?? DEFAULT_FONT);
-	let renderLayers: ReturnType<CodeBlockDrawerRegistry['attachRenderLayers']>;
+	let renderLayers: ReturnType<EditorDrawerHost['attachRenderLayers']>;
 	try {
-		renderLayers = (options.drawers ?? createCodeBlockDrawerRegistry()).attachRenderLayers({ gl: engine.gl, palette });
+		renderLayers = (options.drawers ?? createEditorDrawerRegistry()).attachRenderLayers({ gl: engine.gl, palette });
 	} catch (error) {
 		background.destroy();
 		engine.destroy();

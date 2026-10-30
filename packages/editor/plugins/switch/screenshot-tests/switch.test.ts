@@ -3,7 +3,7 @@ import { resolvePalette } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
 import loadFontAtlas from '@8f4e/sprite-generator';
-import initView, { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import { createSwitchPlugin } from '../src/index';
@@ -29,7 +29,7 @@ entryEnd`);
 		callbacks: {},
 	});
 	store.set('editorMode', 'edit');
-	const drawers = createCodeBlockDrawerRegistry();
+	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = createSwitchPlugin({ writeMemory: () => {} }).setup({
 		store,
 		events,

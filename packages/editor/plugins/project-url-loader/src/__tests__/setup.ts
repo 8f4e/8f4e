@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import type { EditorPlugin } from '@8f4e/editor-core';
 import initState from '@8f4e/editor-state';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 
 export function setupPlugin(plugin: EditorPlugin) {
 	const emitter = new EventEmitter();
@@ -14,7 +14,7 @@ export function setupPlugin(plugin: EditorPlugin) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
-		drawers: createCodeBlockDrawerRegistry(),
+		drawers: createEditorDrawerRegistry(),
 	});
 	const dispatchAsync = async (name: string, payload?: unknown) => {
 		await Promise.all(emitter.listeners(name).map(listener => listener(payload)));

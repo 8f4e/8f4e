@@ -14,5 +14,6 @@
 - Draw wires independently of block culling. Read pointer values each frame, suppress wires during dialogs, and
   highlight connections belonging to the selected input block.
 - Install in the fixed default and minimal compositions; connectors are inferred from memory declarations.
+- Ignore Vitest attachments and screenshot comparison images; keep reference screenshots tracked.
 - Verify with `npx nx run @8f4e/editor-plugin-connectors:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-connectors:test:screenshot`.

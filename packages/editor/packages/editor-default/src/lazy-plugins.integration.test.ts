@@ -3,7 +3,7 @@ import { parseProjectSource } from '@8f4e/compiler';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createLazyPluginRegistry } from './lazy-plugins';
 
@@ -42,7 +42,7 @@ function restoreSession(directive: string, nested = false) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
-		drawers: createCodeBlockDrawerRegistry(),
+		drawers: createEditorDrawerRegistry(),
 	};
 	const disposeSession = createSessionPersistencePlugin({
 		storage,

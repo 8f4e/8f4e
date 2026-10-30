@@ -1,6 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { favoritesPlugin } from './index';
@@ -20,7 +20,7 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
-				drawers: createCodeBlockDrawerRegistry(),
+				drawers: createEditorDrawerRegistry(),
 			})
 		: undefined;
 	const disposePlugin = () => {

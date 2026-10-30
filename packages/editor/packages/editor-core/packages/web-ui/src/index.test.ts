@@ -3,7 +3,7 @@ import { createMockState } from '@8f4e/editor-state-testing';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCodeBlockDrawerRegistry } from './drawers/registry';
+import { createEditorDrawerRegistry } from './drawers/registry';
 
 const renderDataSnapshot = { codeBlocks: new Map() };
 const renderData: WebUiRenderDataSource = { getSnapshot: () => renderDataSnapshot };
@@ -216,7 +216,7 @@ describe('web-ui init', () => {
 			float32: new Float32Array(0),
 			float64: new Float64Array(0),
 		};
-		const drawers = createCodeBlockDrawerRegistry();
+		const drawers = createEditorDrawerRegistry();
 		const drawLayer = vi.fn();
 		drawers.registerRenderLayer(() => ({ draw: drawLayer, destroy: vi.fn() }));
 		await init(

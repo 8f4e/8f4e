@@ -9,7 +9,7 @@ import type { EditorConfigSchemaContributionRegistry, InfoRecord, State } from '
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, {
-	createCodeBlockDrawerRegistry,
+	createEditorDrawerRegistry,
 	type MemoryViews,
 	type RenderStats,
 	type WebUiOptions,
@@ -192,7 +192,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		cleanups.push(() => store.dispose());
 		const editing = createEditorEditingHandle(store, events);
 		cleanups.push(editing.dispose);
-		const drawers = createCodeBlockDrawerRegistry();
+		const drawers = createEditorDrawerRegistry();
 		cleanups.push(
 			installEditorPlugins(options.plugins ?? [], {
 				store,

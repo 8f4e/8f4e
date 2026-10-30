@@ -2,7 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import { createCodeBlockDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSwitchPlugin } from './index';
 
@@ -49,7 +49,7 @@ async function setup(code = source, installed = true) {
 		},
 	});
 	events.dispatch('enterEditMode');
-	const drawers = createCodeBlockDrawerRegistry();
+	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = installed
 		? createSwitchPlugin({ writeMemory: write }).setup({
 				store,

@@ -3,7 +3,7 @@ import type { State } from '@8f4e/editor-state-types';
 import type { WebUiRenderData } from '@8f4e/web-ui-render-projection';
 import type { DrawContext } from '../../drawContext';
 import type { MemoryViews } from '../../types';
-import type { CodeBlockDrawerRegistry } from '../registry';
+import type { EditorDrawerHost } from '../registry';
 import drawArrow from './drawArrow';
 import drawEntryOutlines from './drawEntryOutlines';
 import drawSelectedOutline from './drawSelectedOutline';
@@ -19,7 +19,7 @@ export default function drawModules(
 	state: State,
 	memoryViews: MemoryViews,
 	renderData: WebUiRenderData,
-	drawers?: CodeBlockDrawerRegistry
+	drawers?: EditorDrawerHost
 ): void {
 	const { x, y } = state.viewport;
 
