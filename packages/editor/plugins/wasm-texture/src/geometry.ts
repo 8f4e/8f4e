@@ -1,4 +1,4 @@
-import { requireResource } from '../webgl';
+import { requireResource } from '@8f4e/web-ui';
 
 /** GPU geometry owned by the RGBA texture-layer plugin. */
 export type RectangleGeometry = {

@@ -78,7 +78,7 @@ export default function installCompilation(
 			const memoryReinitialized = result.memoryAction.action === 'recreated';
 
 			// Publish rendering artifacts before metadata subscriptions or runtimes can react.
-			events.dispatch('compilationSucceeded', { memoryRef: result.memoryRef, codeBuffer: result.codeBuffer });
+			events.dispatch('compilationSucceeded', { memoryRef: result.memoryRef });
 			store.set('compiler.compiledFunctions', result.compiledFunctions);
 			store.set('compiler.compiledModules', result.compiledModules);
 			store.set('compiler.projectMemoryExposuresByGroupPath', result.projectMemoryExposuresByGroupPath);

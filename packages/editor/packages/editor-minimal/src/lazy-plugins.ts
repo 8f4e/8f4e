@@ -72,6 +72,15 @@ export function createLazyPluginRegistry({
 		},
 
 		{
+			id: 'wasm-texture',
+			scope: 'project',
+			matches: directives => hasConfig(directives, 'wasmTexture'),
+			load: () =>
+				import('@8f4e/editor-plugin-wasm-texture').then(module =>
+					module.createWasmTexturePlugin({ getCodeBuffer, getMemory })
+				),
+		},
+		{
 			id: 'midi-input',
 			scope: 'project',
 			matches: directives => hasConfig(directives, 'midi'),

@@ -5,27 +5,19 @@ web UI render data, and memory views, treating them as immutable inputs. It is d
 replaceable by renderers for other platforms.
 
 Rendering is backed by `glugglugglug`. Glyph IDs are ASCII character codes 0–127 and fill is 128, so
-per-frame drawers submit positions, sizes, shared shape IDs, and numeric palette indices. WebAssembly RGBA frames are
-drawn above the sprites and connection lines. A procedural dotted background runs before the sprite pass.
+per-frame drawers submit positions, sizes, shared shape IDs, and numeric palette indices. Plugins can register canvas-wide GPU passes above the sprites. A procedural dotted background runs before the sprite pass.
 
 The default framebuffer has no depth buffer; passes use explicit drawing order. Custom raw-context hooks requiring
 depth testing must use a framebuffer with their own depth attachment.
 
 ## Rendering plugins
 
-Web-ui owns its rendering plugins under `src/plugins/`: `background` draws the canvas pattern and
-`rgba-texture-layer` draws WebAssembly framebuffer overlays. They depend only on glugglugglug's `RenderPluginHost`
-context and hook contract. Glugglugglug owns the sprite renderer; it does not bundle these plugins.
+Web-ui owns the procedural background under `src/plugins/background`. It precomposes dot colors over the base
+when the palette changes and draws one triangle before sprites. Glugglugglug owns sprite rendering.
 
-The plugins share shader compilation, required-uniform lookup, render-state setup, and hook removal helpers. Each
-plugin owns its resources and destruction. Web-ui initializes the background, creates texture layers only for
-configured overlays, and coordinates memory release and restoration. Backgrounds run in `preDraw`; registered editor
-render layers run in `postDraw`, followed by configured texture overlays. The connectors plugin owns all wire
-geometry, shaders, buffers, and drawing.
-
-The background precomposes dot colors over the base when the palette changes and draws one triangle. Each RGBA
-overlay owns one texture, uses nearest filtering, and takes opacity from its pixels. Pixel uploads reuse storage
-until the image dimensions change; memory release deletes the texture and the next upload recreates it.
+Canvas-wide editor layers run after sprites in registration order and before render statistics are sampled.
+Web-ui supplies shader helpers and forwards palette changes, memory release, and disposal. The connectors plugin
+owns wires; `@8f4e/editor-plugin-wasm-texture` owns RGBA framebuffer pixels, their WASM execution, and GPU resources.
 
 ## API
 

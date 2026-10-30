@@ -47,7 +47,6 @@ const view = {
 	releaseRenderingResources: vi.fn(),
 	resumeRendering: vi.fn(),
 	renderFrame: vi.fn(),
-	setOverlayTexture: vi.fn(),
 	destroy: vi.fn(),
 };
 
@@ -113,20 +112,15 @@ describe('editor init', () => {
 			releaseCompiler.mock.invocationCallOrder[0]
 		);
 	});
-	it('refreshes memory views and renderer artifacts from accepted compilation events', async () => {
+	it('refreshes memory views from accepted compilation events', async () => {
 		const { default: init } = await import('./index');
-		const { default: initView } = await import('@8f4e/web-ui');
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {});
-		const renderer = vi.mocked(initView).mock.calls.at(-1)![6]!;
 		const accept = events.on.mock.calls.find(([name]) => name === 'compilationSucceeded')![1];
 		const memoryRef = new WebAssembly.Memory({ initial: 1 });
 		new Int32Array(memoryRef.buffer)[1] = 22;
-		const codeBuffer = new Uint8Array([2]);
-		const artifacts: ProgramArtifacts = { memoryRef, codeBuffer };
+		const artifacts: ProgramArtifacts = { memoryRef };
 		accept(artifacts);
 		expect(editor.getMemoryViews().int32[1]).toBe(22);
-		expect(renderer.getMemory?.()).toBe(memoryRef);
-		expect(renderer.getCodeBuffer?.()).toEqual(codeBuffer);
 		editor.dispose();
 		expect(events.off).toHaveBeenCalledWith('compilationSucceeded', accept);
 	});
@@ -216,7 +210,6 @@ describe('editor init', () => {
 		view.releaseRenderingResources.mockClear();
 		view.resumeRendering.mockClear();
 		view.renderFrame.mockClear();
-		view.setOverlayTexture.mockClear();
 		view.destroy.mockClear();
 		renderProjection.dispose.mockClear();
 		cleanupSpriteSheet.mockClear();
@@ -359,15 +352,12 @@ describe('editor init', () => {
 		const { default: init } = await import('./index');
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {});
-		const overlaySubscription = store.subscribe.mock.calls.find(([path]) => path === 'editorConfig.webUI')?.[1];
 
 		editor.dispose();
 		editor.dispose();
 
 		expect(cleanupSpriteSheet).toHaveBeenCalledOnce();
 		expect(renderProjection.dispose).toHaveBeenCalledOnce();
-		expect(store.unsubscribe).toHaveBeenCalledOnce();
-		expect(store.unsubscribe).toHaveBeenCalledWith('editorConfig.webUI', overlaySubscription);
 		expect(store.dispose).toHaveBeenCalledOnce();
 		expect(events.dispose).toHaveBeenCalledOnce();
 		expect(view.destroy).toHaveBeenCalledOnce();
@@ -386,23 +376,15 @@ describe('editor init', () => {
 
 	it('commits sampled render stats into info.graphics', async () => {
 		const { default: init } = await import('./index');
-		const { default: initState } = await import('@8f4e/editor-state');
 		const { default: initView } = await import('@8f4e/web-ui');
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 
 		await init(canvas, {
 			renderStatsIntervalFrames: 12,
-			overlayTexture: {
-				entry: 'renderFrame',
-				target: 'screen:rgba',
-				width: 1,
-				height: 1,
-			},
 		});
 
 		const viewCall = vi.mocked(initView).mock.calls.at(-1)!;
 		const viewOptions = viewCall[6]!;
-		const initStateOptions = vi.mocked(initState).mock.calls.at(-1)![1];
 		expect(viewCall[1]).toBe(renderProjection);
 		viewOptions.onRenderStats?.({
 			timeToRenderMs: 10,
@@ -415,50 +397,6 @@ describe('editor init', () => {
 		});
 
 		expect(viewOptions.renderStatsIntervalFrames).toBe(12);
-		expect(viewOptions.overlayTexture).toEqual({
-			entry: 'renderFrame',
-			target: 'screen:rgba',
-			width: 1,
-			height: 1,
-		});
-		expect(view.setOverlayTexture).toHaveBeenCalledWith({
-			entry: 'renderFrame',
-			target: 'screen:rgba',
-			width: 1,
-			height: 1,
-		});
-		const overlaySubscription = store.subscribe.mock.calls.find(([path]) => path === 'editorConfig.webUI')?.[1];
-		expect(overlaySubscription).toBeTypeOf('function');
-		storeState.editorConfig = {
-			webUI: {
-				overlay: {
-					entry: 'draw',
-					target: 'screen:pixels',
-					width: 64,
-					height: 32,
-					magnification: 3,
-					position: 'left',
-				},
-			},
-		};
-		overlaySubscription?.();
-		expect(view.setOverlayTexture).toHaveBeenLastCalledWith({
-			entry: 'draw',
-			target: 'screen:pixels',
-			width: 64,
-			height: 32,
-			magnification: 3,
-			position: 'left',
-		});
-		expect(viewOptions.getCodeBuffer?.()).toBeInstanceOf(Uint8Array);
-		expect(viewOptions.getMemory?.()).toBeNull();
-		expect(initStateOptions.editorConfigSchemaContributions?.['web-ui']).toMatchObject({
-			root: 'webUI',
-			schema: {
-				type: 'object',
-			},
-		});
-
 		expect(store.set).toHaveBeenCalledWith('info.graphics', {
 			timeToRenderMs: 10,
 			fps: 50,

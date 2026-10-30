@@ -49,7 +49,7 @@ async function setup() {
 				compiledModules: compiled.compiledModules,
 				projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
 			});
-			events.dispatch('compilationSucceeded', { memoryRef: memory, codeBuffer: compiled.codeBuffer });
+			events.dispatch('compilationSucceeded', { memoryRef: memory });
 			return () => {};
 		},
 	};

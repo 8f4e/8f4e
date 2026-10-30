@@ -11,7 +11,8 @@
 - Contribute the integer `recompileDebounceDelay` config schema through `editorConfigSchemaContributions.compiler`.
   Keep its typing and default in this package; use the shared directive validation and parsing mechanism.
 - The internal worker adapter requires an explicit current-input check and returns the canonical language-spec result.
-  Core receives only `ProgramArtifacts` for rendering; do not reconstruct the old core compiler-result interface.
+  Core receives only `ProgramArtifacts` containing `memoryRef`; bytecode stays on the compiler getter.
+  Do not reconstruct the old core compiler-result interface.
 - Check input generation before accepting results in both the worker adapter and publication effect, including changes
   during debounce. Publish handles and the `compilationSucceeded` rendering event before metadata and runtime readiness.
 - Cancel scheduling before rejecting pending requests and terminating the worker. Release every owned registration;

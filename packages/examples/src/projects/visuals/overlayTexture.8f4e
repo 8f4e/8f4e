@@ -16,12 +16,12 @@ note
 ; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 1
 ; @config export.fileName overlayTexture
-; @config webUI.overlay.entry main
-; @config webUI.overlay.target screen:rgba
-; @config webUI.overlay.width 32
-; @config webUI.overlay.height 32
-; @config webUI.overlay.magnification 8
-; @config webUI.overlay.position left
+; @config wasmTexture.entry main
+; @config wasmTexture.target screen:rgba
+; @config wasmTexture.width 32
+; @config wasmTexture.height 32
+; @config wasmTexture.magnification 8
+; @config wasmTexture.position left
 
 ; The main entry runs once per editor
 ; frame and fills a 32 x 32 RGBA8

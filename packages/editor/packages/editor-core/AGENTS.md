@@ -93,7 +93,7 @@
 
 - Core emits `compilationInputChanged` after its compiler input revision advances. Compilation scheduling and worker ownership belong to `editor-plugin-compiler`; do not restore a compile callback or built-in compiler effect.
 - `EditorOptions` has no public callbacks bag. Construct internal memory, clipboard, and animation callbacks in core.
-- Consume accepted `compilationSucceeded` program artifacts (`memoryRef` and `codeBuffer`) to update memory views and renderer artifacts before metadata consumers react. Dispose plugins in reverse installation order so execution plugins stop before compiler resources are released. Drain cleanup stacks even when a disposer throws.
+- Consume accepted `compilationSucceeded` program artifacts (`memoryRef`) to update generic memory views before metadata consumers react. Dispose plugins in reverse installation order so execution plugins stop before compiler resources are released. Drain cleanup stacks even when a disposer throws.
 - Render environment-constant contributions uniformly; each plugin owns its contribution key.
 
 - Audio, worker, and test execution are ordinary lazy plugins in `packages/editor/plugins/audio-runtime`,
@@ -104,3 +104,9 @@
   `bufferSizeConstantName` (default `AUDIO_BUFFER_SIZE`). Each contributes under its own environment key. Keep info
   namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
   selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.
+
+- WASM framebuffer textures belong entirely to `editor-plugin-wasm-texture`: `wasmTexture` config schema,
+  WebAssembly execution, RGBA shaders and textures, uploads, and placement. Both compositions load it lazily from
+  the raw `wasmTexture` config root with project scope and compiler getters. Core consumes compilation memory
+  for generic views; web-ui only owns generic render-layer lifecycle. Keep configuration and instantiation out
+  of the render hot path, and register texture drawing after connectors to preserve overlay ordering.

@@ -132,7 +132,7 @@ Supported paths:
 - `bin.<id>.memories.<name>` - additional memory load targets for the same binary asset.
 - `keyboard.keyCodeMemory` / `keyboard.keyPressedMemory` - memory ids for browser keyboard state.
 - `midi.inputs.<id>.port` / `midi.inputs.<id>.callback` - browser MIDI input bindings.
-- `webUI.overlay.<field>` - WebAssembly-generated RGBA texture centered over the editor.
+- `wasmTexture.<field>` - WebAssembly-generated RGBA texture centered over the editor.
 
 Examples:
 
@@ -170,24 +170,25 @@ exact-position ties between different block types can resolve differently after 
 
 #### WASM editor overlay
 
-The web UI can call an exported WebAssembly function every editor frame, read an RGBA8 pixel buffer from memory, and
-draw it over the editor. Configure the export name, qualified memory target, source dimensions, and horizontal
+The `@8f4e/editor-plugin-wasm-texture` plugin calls an exported WebAssembly function every editor frame, reads an RGBA8
+pixel buffer from shared compiler memory, and draws it over the editor. Both editor compositions load it automatically
+when the project uses `wasmTexture` configuration. Configure the export name, qualified memory target, source dimensions, and horizontal
 position:
 
 ```txt
-; @config webUI.overlay.entry renderFrame
-; @config webUI.overlay.target screen:rgba
-; @config webUI.overlay.width 64
-; @config webUI.overlay.height 32
-; @config webUI.overlay.magnification 4
-; @config webUI.overlay.position center
+; @config wasmTexture.entry renderFrame
+; @config wasmTexture.target screen:rgba
+; @config wasmTexture.width 64
+; @config wasmTexture.height 32
+; @config wasmTexture.magnification 4
+; @config wasmTexture.position center
 ```
 
 The target contains `width * height * 4` bytes in top-to-bottom RGBA order. Pixel alpha controls how strongly the
 overlay covers the editor: `0` is transparent and `255` is opaque. The texture always uses nearest-neighbor filtering
-and is vertically centered. `webUI.overlay.position` accepts `left`, `center`, or `right`; these place the texture in
+and is vertically centered. `wasmTexture.position` accepts `left`, `center`, or `right`; these place the texture in
 the center of the left half, the full viewport, or the right half respectively. It defaults to `center`. An optional
-numeric `webUI.overlay.magnification` of at least `1` multiplies both displayed dimensions while preserving the source
+numeric `wasmTexture.magnification` of at least `1` multiplies both displayed dimensions while preserving the source
 aspect ratio; for example, `4` displays each source pixel as a 4 × 4 block.
 
 Supported `font` values:

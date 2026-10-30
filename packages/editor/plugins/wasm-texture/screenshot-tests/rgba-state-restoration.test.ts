@@ -1,6 +1,6 @@
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
-import { RgbaTextureLayer } from '../src/plugins/rgba-texture-layer';
+import { RgbaTextureDrawer } from '../src/rgba-texture-drawer';
 
 function readPixels(gl: WebGL2RenderingContext, width: number, height: number): Uint8Array {
 	const pixels = new Uint8Array(width * height * 4);
@@ -19,14 +19,14 @@ test('restores nearest overlay sampling after raw hooks without a sprite pass', 
 	gl.samplerParameteri(sampler, gl.TEXTURE_WRAP_S, gl.REPEAT);
 	gl.samplerParameteri(sampler, gl.TEXTURE_WRAP_T, gl.REPEAT);
 	engine.hooks.postDraw.push(context => context.bindSampler(0, sampler));
-	const overlay = new RgbaTextureLayer(engine);
+	const overlay = new RgbaTextureDrawer(engine.gl);
 	const pixels = new Uint8Array([255, 0, 0, 255, 0, 0, 255, 128, 0, 0, 0, 0, 255, 255, 0, 255]);
 	let destinationAlpha = 0;
 	engine.hooks.preDraw.push(context => {
 		context.clearColor(0, destinationAlpha / 255, 0, destinationAlpha / 255);
 		context.clear(context.COLOR_BUFFER_BIT);
 	});
-	overlay.setDrawCallback(layer => layer.drawTexture(0, 0, canvas.width, canvas.height));
+	engine.hooks.postDraw.push(() => overlay.drawTexture(0, 0, canvas.width, canvas.height));
 	try {
 		for (const [stage, width, height] of [
 			['initial', 8, 8],
@@ -95,10 +95,10 @@ for (const dirtyState of ['row layout', 'unpack buffer', 'flip and premultiplica
 				context.pixelStorei(context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 			}
 		});
-		const overlay = new RgbaTextureLayer(engine);
-		overlay.setDrawCallback(layer => {
-			layer.uploadRgba8Texture(pixels, width, height);
-			layer.drawTexture(0, 0, canvas.width, canvas.height);
+		const overlay = new RgbaTextureDrawer(engine.gl);
+		engine.hooks.postDraw.push(() => {
+			overlay.uploadRgba8Texture(pixels, width, height);
+			overlay.drawTexture(0, 0, canvas.width, canvas.height);
 		});
 		try {
 			for (const [version, stage] of ['allocate', 'update', 'resize', 'restore'].entries()) {

@@ -1,23 +1,23 @@
 import loadFontAtlas, { FILL_SPRITE_ID } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
-import { RgbaTextureLayer } from '../src/plugins/rgba-texture-layer';
+import { RgbaTextureDrawer } from '../src/rgba-texture-drawer';
 
 test('RGBA overlays use nearest filtering and per-pixel alpha above sprites, including after restoration', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 8;
 	canvas.height = 8;
 	const engine = new Engine(canvas);
-	const overlay = new RgbaTextureLayer(engine);
+	const overlay = new RgbaTextureDrawer(engine.gl);
 	try {
 		const spriteAtlas = await loadFontAtlas();
 		engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.grid);
 		const fill = FILL_SPRITE_ID;
 		engine.setPalette(new Uint8Array([0, 255, 0, 255]));
 		const pixels = new Uint8Array([255, 0, 0, 255, 0, 0, 255, 128, 0, 0, 0, 0, 255, 255, 0, 255]);
-		overlay.setDrawCallback(layer => {
-			layer.uploadRgba8Texture(pixels, 2, 2);
-			layer.drawTexture(0, 0, 8, 8);
+		engine.hooks.postDraw.push(() => {
+			overlay.uploadRgba8Texture(pixels, 2, 2);
+			overlay.drawTexture(0, 0, 8, 8);
 		});
 		for (const restore of [false, true]) {
 			if (restore) {

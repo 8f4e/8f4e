@@ -75,7 +75,7 @@ describe('compiler plugin', () => {
 		const order: string[] = [];
 		test.events.on('compilationSucceeded', (result: ProgramArtifacts) => {
 			expect(test.compiler.getMemory()).toBe(result.memoryRef);
-			expect(test.compiler.getCodeBuffer()).toBe(result.codeBuffer);
+			expect(test.compiler.getCodeBuffer()).toBe(codeBuffer);
 			order.push('rendering');
 		});
 		test.store.subscribe('compiler.memoryPlan', () => {

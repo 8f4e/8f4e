@@ -8,12 +8,7 @@ import initState, {
 import type { EditorConfigSchemaContributionRegistry, InfoRecord, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import loadFontAtlas from '@8f4e/sprite-generator';
-import initView, {
-	createEditorDrawerRegistry,
-	type MemoryViews,
-	type RenderStats,
-	type WebUiOptions,
-} from '@8f4e/web-ui';
+import initView, { createEditorDrawerRegistry, type MemoryViews, type RenderStats } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 
 import { disposeAll } from './disposeAll';
@@ -23,11 +18,6 @@ import pointerEvents from './events/pointerEvents';
 import { createMemoryViewManager } from './memoryViewManager';
 import { type EditorPlugin, installEditorPlugins } from './plugins';
 import { createSpriteSheetManager } from './spriteSheetManager';
-import {
-	resolveWebUiOverlayConfig,
-	WEB_UI_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID,
-	webUiEditorConfigSchemaContribution,
-} from './webUiConfig';
 
 export type {
 	EditorEdit,
@@ -70,10 +60,9 @@ export type { EventDispatcher } from './events';
 export type { EditorPlugin, EditorPluginContext } from './plugins';
 // Re-export helper functions
 
-/** Accepted program data needed by memory views and the renderer. */
+/** Accepted compiler memory used by generic editor views. */
 export interface ProgramArtifacts {
 	memoryRef: WebAssembly.Memory;
-	codeBuffer: Uint8Array;
 }
 
 export interface Editor {
@@ -101,7 +90,6 @@ export interface EditorOptions {
 	featureFlags?: Partial<State['featureFlags']>;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 	renderStatsIntervalFrames?: number;
-	overlayTexture?: WebUiOptions['overlayTexture'];
 }
 
 interface CanvasSize {
@@ -156,25 +144,16 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		const events = initEvents();
 		beforeDispose = () => events.dispatch('dispose');
 		cleanups.push(() => events.dispose());
-		let currentMemoryRef: WebAssembly.Memory | null = null;
-		let currentCodeBuffer = new Uint8Array();
 		const onCompilationSucceeded = (result: ProgramArtifacts) => {
-			currentMemoryRef = result.memoryRef;
 			updateMemoryViews(result.memoryRef);
-			currentCodeBuffer = new Uint8Array(result.codeBuffer);
 		};
 		events.on('compilationSucceeded', onCompilationSucceeded);
 		cleanups.push(() => events.off('compilationSucceeded', onCompilationSucceeded));
 		let store: ReturnType<typeof initState>;
 		let view: Awaited<ReturnType<typeof initView>>;
-		const editorConfigSchemaContributions: EditorConfigSchemaContributionRegistry = {
-			[WEB_UI_EDITOR_CONFIG_SCHEMA_CONTRIBUTION_ID]: webUiEditorConfigSchemaContribution,
-			...options.editorConfigSchemaContributions,
-		};
 
 		store = initState(events, {
 			...options,
-			editorConfigSchemaContributions,
 			callbacks: {
 				getWordFromMemory: (allocationUnitAddress: number) => {
 					return memoryViews.int32[allocationUnitAddress] || 0;
@@ -214,7 +193,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 
 		const renderProjection = createWebUiRenderProjection(store, events);
 		cleanups.push(() => renderProjection.dispose());
-		const getOverlayTexture = () => resolveWebUiOverlayConfig(state) ?? options.overlayTexture;
 
 		view = await initView(
 			state,
@@ -226,21 +204,12 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			{
 				drawers,
 				renderStatsIntervalFrames: options.renderStatsIntervalFrames,
-				overlayTexture: getOverlayTexture(),
-				getCodeBuffer: () => currentCodeBuffer,
-				getMemory: () => currentMemoryRef,
 				onRenderStats: stats => {
 					store.set('info.graphics', toGraphicsInfoRecord(stats));
 				},
 			}
 		);
 		cleanups.push(() => view.destroy());
-		const syncOverlayTexture = () => {
-			view.setOverlayTexture(getOverlayTexture());
-		};
-		store.subscribe('editorConfig.webUI', syncOverlayTexture);
-		cleanups.push(() => store.unsubscribe('editorConfig.webUI', syncOverlayTexture));
-		syncOverlayTexture();
 
 		cleanups.push(createSpriteSheetManager(store, view, events));
 

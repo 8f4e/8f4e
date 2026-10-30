@@ -10,7 +10,7 @@
 - Keep standard-library discovery in this package's Vite configuration and lazy include resolver. There is no
   example-module source collection here.
 - Keep project signals and dynamic imports in `src/lazy-plugins.ts`. Plugins own feature logic; the existing loader
-  owns activation and disposal. Match all wave variants and raw `midi`, `bin`, and runtime config roots before their
+  owns activation and disposal. Match all wave variants and raw `midi`, `bin`, `wasmTexture`, and runtime config roots before their
   schemas load. Declare `scope: 'view'` for visual/control plugins and `scope: 'project'` for runtime, MIDI, and
   asset plugins. Match cached directives; completed project changes and group navigation trigger automatic scans.
   Supply the browser navigator and live compiler getters to the registry for MIDI and binary assets.
@@ -26,3 +26,9 @@
 
 - Install `connectorsPlugin` in the fixed plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
+
+- WASM framebuffer textures belong entirely to `editor-plugin-wasm-texture`: `wasmTexture` config schema,
+  WebAssembly execution, RGBA shaders and textures, uploads, and placement. Both compositions load it lazily from
+  the raw `wasmTexture` config root with project scope and compiler getters. Core consumes compilation memory
+  for generic views; web-ui only owns generic render-layer lifecycle. Keep configuration and instantiation out
+  of the render hot path, and register texture drawing after connectors to preserve overlay ordering.

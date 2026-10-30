@@ -136,13 +136,14 @@ disposer. Each plugin owns its widget types and uses the drawing surface's sprit
 
 Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`
 once the renderer is ready and returns `{ draw, destroy, loadPalette?, releaseMemory? }`. `draw` receives
-`{ state, memoryViews }` every frame after sprites and before configured RGBA overlays, independently of block culling.
+`{ state, memoryViews }` every frame after sprites in registration order, independently of block culling.
 Palette changes and memory release are forwarded to the layer. Registration may precede renderer initialization or
 arrive later; unregistering destroys the active layer, and renderer disposal destroys all layers before its context.
 Types and generic WebGL resource helpers are exported by `@8f4e/web-ui`.
 
 `@8f4e/editor-plugin-connectors` owns input/output widgets and the complete wire renderer through these hooks.
 Core keeps memory semantics independent of connector data and has no connector-specific fields or GPU resources.
+`@8f4e/editor-plugin-wasm-texture` owns the RGBA framebuffer renderer and its WASM execution through the same layer hook.
 
 Interaction handlers can subscribe to `codeBlockPointerDown` for the start of a block press and `mouseup` for release.
 Use `events.on('mousemove', handler, { capture: true })` when a plugin must consume a drag before ordinary listeners,
@@ -262,7 +263,7 @@ Configure editor settings with `; @config <path> <value>`.
 - Extensions can contribute schema-backed config roots; runtime packages use this for paths like `; @config audioRuntime.sampleRate 48000` and `; @config audioRuntime.audioOutBufferLAddress audioout:buffer`.
 - `; @config export.fileName <value>` controls the base file name used by editor export actions.
 - `; @config color.<path> <value>` controls base palette colors.
-- `; @config webUI.overlay.<field> <value>` configures a WebAssembly-generated RGBA texture drawn over the editor.
+- `; @config wasmTexture.<field> <value>` configures a WebAssembly-generated RGBA texture drawn over the editor.
 - Base colors accept hex with optional alpha, `rgb()` / `rgba()`, and `transparent`. The palette contains `canvas`,
   `surface`, `ink`, `muted`, `primary`, `secondary`, `tertiary`, `highlight`, `detail`, `stroke`, `positive`, `warning`,
   and `negative`. Optional accents preserve independently authored hues and opacity.
@@ -291,6 +292,6 @@ Supported fonts: `6x10`, `ibmvga8x16`, `terminus8x16`, `terminus8x16bold`, `term
 
 Runtime execution belongs to ordinary browser plugins. Each receives compiler getters through its factory, imports its own worker/worklet assets, contributes schemas and constants, and publishes its own info namespace. The audio plugin can borrow a host-supplied AudioContext. Runtimes can run concurrently; core owns no execution registry or selector. Memory-writing plugins receive a `writeMemory(address, value, isInteger)` function directly from their host.
 
-Core emits `compilationInputChanged` after compilation inputs change. Install `@8f4e/editor-plugin-compiler` to schedule compilation and publish diagnostics, compiler metadata, and statistics. Core consumes its `compilationSucceeded` event with `ProgramArtifacts` (`memoryRef` and `codeBuffer`) to update memory views and renderer artifacts. Public editor options no longer expose a callbacks bag; core constructs its internal browser callbacks. The compiler factory returns stable artifact getters and a memory writer for dependent feature and runtime plugins; core has no compile callback. Plugins dispose in reverse installation order, releasing runtime resources before their compiler dependency.
+Core emits `compilationInputChanged` after compilation inputs change. Install `@8f4e/editor-plugin-compiler` to schedule compilation and publish diagnostics, compiler metadata, and statistics. Core consumes its `compilationSucceeded` event with `ProgramArtifacts` (`memoryRef`) to update generic memory views. Public editor options no longer expose a callbacks bag; core constructs its internal browser callbacks. The compiler factory returns stable artifact getters and a memory writer for dependent feature and runtime plugins; core has no compile callback. Plugins dispose in reverse installation order, releasing runtime resources before their compiler dependency.
 
 Plugins dispatch `memoryValuesChanged` when external execution changes memory, so core can refresh derived layout and rendering.

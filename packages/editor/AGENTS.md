@@ -36,7 +36,7 @@
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   `editor-plugin-lazy-loader` scans cached directives automatically after project changes and group navigation.
   Explicit registry scopes match visual/control plugins in the current project level and runtime/MIDI/asset plugins
-  across the project tree. Matching plugins stay installed until editor disposal. Both editor compositions' lightweight registries dynamically import plot, wave,
+  and WASM textures across the project tree. Matching plugins stay installed until editor disposal. Both editor compositions' lightweight registries dynamically import plot, wave,
   meter, bars, switch, button, piano, slider, and crossfade for their directives, plus MIDI, binary assets, and runtime
   plugins for their raw config roots.
   `editor-plugin-connectors` owns input/output geometry, private connector state, wire lookup, and all line GPU
@@ -111,3 +111,9 @@
   `bufferSizeConstantName` (default `AUDIO_BUFFER_SIZE`). Each contributes under its own environment key. Keep info
   namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
   selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.
+
+- WASM framebuffer textures belong entirely to `editor-plugin-wasm-texture`: `wasmTexture` config schema,
+  WebAssembly execution, RGBA shaders and textures, uploads, and placement. Both compositions load it lazily from
+  the raw `wasmTexture` config root with project scope and compiler getters. Core consumes compilation memory
+  for generic views; web-ui only owns generic render-layer lifecycle. Keep configuration and instantiation out
+  of the render hot path, and register texture drawing after connectors to preserve overlay ordering.

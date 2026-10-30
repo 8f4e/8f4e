@@ -12,7 +12,7 @@ export interface RenderLayerFrameContext {
 	memoryViews: MemoryViews;
 }
 
-/** A canvas-wide pass drawn above sprites and below the configured texture overlay. */
+/** A canvas-wide pass drawn above sprites, in plugin registration order. */
 export interface EditorRenderLayer {
 	draw: (context: RenderLayerFrameContext) => void;
 	loadPalette?: (palette: ResolvedPalette) => void;

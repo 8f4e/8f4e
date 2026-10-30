@@ -26,8 +26,8 @@
   with a live reduced-motion preference from the browser; install their overlays before tooltips.
 - Compose `createLazyPluginLoaderPlugin` with the per-editor `createLazyPluginRegistry` for optional signal-driven plugins.
   Keep its per-editor registry in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano, slider,
-  crossfade, MIDI input, and binary assets. Match all three wave directives: `wave`, `wave2`, and `wave4`, and raw
-  `midi`/`bin` config roots before their schemas load. Import implementations and construct
+  crossfade, MIDI input, binary assets, and WASM textures. Match all three wave directives: `wave`, `wave2`, and `wave4`, and raw
+  `midi`/`bin`/`wasmTexture` config roots before their schemas load. Import implementations and construct
   their factories only inside `load()`, using the supplied live memory writer. Supply runtime plugins with compiler artifact getters and the optional shared AudioContext. Each runtime plugin imports its own worker/worklet assets and owns browser API use.
   Declare `scope: 'view'` for visual/control plugins and `scope: 'project'` for runtime, MIDI, and asset plugins.
   Match cached parsed directive records; the loader scans automatically after completed project edits and view changes.
@@ -57,7 +57,7 @@
 - The compiler plugin owns scheduling, worker lifetime, artifacts, diagnostics, and statistics. Return the core editor directly; do not wrap disposal to terminate a separate host compiler service.
 - Supply the compiler plugin's live `writeMemory` to button, switch, slider, piano, crossfade, and keyboard-memory factories. Core has no memory-write callback.
 
-- The compiler plugin publishes `ProgramArtifacts` (`memoryRef` and `codeBuffer`) for core rendering, without taking an editor argument. The full compilation result stays inside the plugin. Core owns memory-view updates. Derive bytecode size from `codeBuffer.byteLength`; do not restore unused status flags.
+- The compiler plugin publishes `ProgramArtifacts` (`memoryRef`) for core rendering, without taking an editor argument. The full compilation result stays inside the plugin. Core owns memory-view updates. Derive bytecode size from `codeBuffer.byteLength`; do not restore unused status flags.
 
 - Cached memory-write views belong to the compiler plugin. Pass its writer directly rather than allocating views in the host.
 - Expose the compiler plugin's stable diagnostic read handle as `getCompilerDiagnostics` on the returned core editor. Webpage hosts may pass it to their external WebMCP bridge; mounting the default editor does not register site tools.
@@ -73,3 +73,9 @@
 
 - Install `connectorsPlugin` in the fixed plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
+
+- WASM framebuffer textures belong entirely to `editor-plugin-wasm-texture`: `wasmTexture` config schema,
+  WebAssembly execution, RGBA shaders and textures, uploads, and placement. Both compositions load it lazily from
+  the raw `wasmTexture` config root with project scope and compiler getters. Core consumes compilation memory
+  for generic views; web-ui only owns generic render-layer lifecycle. Keep configuration and instantiation out
+  of the render hot path, and register texture drawing after connectors to preserve overlay ordering.

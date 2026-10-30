@@ -9,9 +9,7 @@ import drawContextMenu from './drawers/contextMenu';
 import drawDialog from './drawers/dialog';
 import drawModeOverlay from './drawers/modeOverlay';
 import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/registry';
-import { createWasmOverlayTextureDrawer, type WasmOverlayTextureOptions } from './drawers/wasmOverlayTexture';
 import BackgroundRenderer from './plugins/background';
-import { RgbaTextureLayer } from './plugins/rgba-texture-layer';
 import type { MemoryViews } from './types';
 
 export { DrawContext } from './drawContext';
@@ -41,13 +39,6 @@ export interface WebUiOptions {
 	drawers?: EditorDrawerHost;
 	onRenderStats?: (stats: RenderStats) => void;
 	renderStatsIntervalFrames?: number;
-	overlayTexture?: WasmOverlayTextureOptions;
-	getCodeBuffer?: () => Uint8Array;
-	getMemory?: () => WebAssembly.Memory | null;
-	instantiateOverlayTextureWasm?: (
-		memory: WebAssembly.Memory,
-		codeBuffer: Uint8Array
-	) => Promise<WebAssembly.Exports> | WebAssembly.Exports;
 }
 
 export default async function init(
@@ -66,7 +57,6 @@ export default async function init(
 	releaseRenderingResources: () => void;
 	resumeRendering: () => void;
 	renderFrame: () => void;
-	setOverlayTexture: (overlayTexture: WasmOverlayTextureOptions | undefined) => void;
 	destroy: () => void;
 }> {
 	const engine = new Engine(canvas);
@@ -143,58 +133,6 @@ export default async function init(
 	};
 	engine.hooks.postDraw.push(renderStatsHook);
 
-	let overlayTexture = options.overlayTexture;
-	let overlayTextureLayer: RgbaTextureLayer | undefined;
-	let overlayTextureKey = '';
-
-	function destroyOverlayTextureLayer(): void {
-		overlayTextureLayer?.destroy();
-		overlayTextureLayer = undefined;
-		overlayTextureKey = '';
-	}
-
-	function keepRenderStatsHookLast(): void {
-		const hookIndex = engine.hooks.postDraw.indexOf(renderStatsHook);
-		if (hookIndex !== -1) {
-			engine.hooks.postDraw.splice(hookIndex, 1);
-			engine.hooks.postDraw.push(renderStatsHook);
-		}
-	}
-
-	function syncWasmOverlayTexture(): void {
-		const nextOverlayTextureKey = overlayTexture ? JSON.stringify(overlayTexture) : '';
-		if (!overlayTexture || !options.getCodeBuffer || !options.getMemory) {
-			destroyOverlayTextureLayer();
-			return;
-		}
-
-		if (overlayTextureLayer && overlayTextureKey === nextOverlayTextureKey) {
-			return;
-		}
-
-		destroyOverlayTextureLayer();
-		const drawWasmOverlayTexture = createWasmOverlayTextureDrawer({
-			state,
-			memoryViews,
-			overlayTexture,
-			getCodeBuffer: options.getCodeBuffer,
-			getMemory: options.getMemory,
-			getViewportSize: () => ({ width: viewportWidth, height: viewportHeight }),
-			instantiate: options.instantiateOverlayTextureWasm,
-		});
-		overlayTextureLayer = new RgbaTextureLayer(engine);
-		overlayTextureLayer.setDrawCallback(layer => {
-			drawWasmOverlayTexture(layer);
-		});
-		overlayTextureKey = nextOverlayTextureKey;
-		keepRenderStatsHookLast();
-	}
-
-	function setOverlayTexture(nextOverlayTexture: WasmOverlayTextureOptions | undefined): void {
-		overlayTexture = nextOverlayTexture;
-		syncWasmOverlayTexture();
-	}
-
 	const drawFrame = () => {
 		drawCodeBlocks(draw, state, memoryViews, renderData.getSnapshot(), options.drawers);
 		drawContextMenu(draw, state);
@@ -239,7 +177,6 @@ export default async function init(
 			return;
 		}
 
-		overlayTextureLayer?.releaseMemory();
 		renderLayers.releaseMemory();
 		engine.releaseRenderingMemory();
 		renderingResourcesReleased = true;
@@ -267,7 +204,6 @@ export default async function init(
 		renderNextFrame();
 	};
 
-	syncWasmOverlayTexture();
 	resumeRendering();
 
 	return {
@@ -290,7 +226,6 @@ export default async function init(
 		pauseRendering,
 		releaseRenderingResources,
 		resumeRendering,
-		setOverlayTexture,
 		renderFrame: () => {
 			restoreRenderingResources();
 			engine.renderFrame(drawFrame);
@@ -301,7 +236,6 @@ export default async function init(
 				renderLayers.destroy();
 			} finally {
 				background.destroy();
-				destroyOverlayTextureLayer();
 				engine.destroy();
 			}
 		},
