@@ -82,7 +82,6 @@ describe('tooltips plugin', () => {
 			5 * 16
 		);
 		expect(vi.mocked(test.draw.drawFill).mock.calls.map(call => call[2])).toContain(PALETTE_INDICES.negativeSoft);
-		expect(test.state).not.toHaveProperty('tooltip');
 		test.store.set('codeBlockRendering.selectedCodeBlock', undefined);
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();

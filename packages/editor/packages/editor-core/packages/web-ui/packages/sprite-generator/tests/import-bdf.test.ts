@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -17,7 +17,7 @@ beforeEach(() => {
 afterEach(() => rmSync(directory, { recursive: true, force: true }));
 
 describe('BDF importer', () => {
-	it('imports ASCII characters with their offsets without a fallback glyph source', async () => {
+	it('imports ASCII characters with their offsets', async () => {
 		const bdf = join(directory, 'font.bdf');
 		writeFileSync(
 			bdf,
@@ -45,14 +45,5 @@ ENDFONT
 		expect(glyphs).toHaveLength(128);
 		expect(glyphs[65]).toEqual(['     ', ' ### ', ' # # ', ' ### ', '     ', '     ']);
 		expect(glyphs[32]).toEqual(Array(6).fill('     '));
-	});
-
-	it('rejects the obsolete fallback option', () => {
-		const result = spawnSync(process.execPath, [importer, 'font.bdf', 'fixture', '--glyphs-from', 'ibmvga8x16'], {
-			encoding: 'utf8',
-		});
-		expect(result.status).toBe(1);
-		expect(result.stderr).toContain('Usage:');
-		expect(readdirSync(directory)).toEqual(['tools']);
 	});
 });

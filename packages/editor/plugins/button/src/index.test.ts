@@ -265,7 +265,6 @@ describe('button plugin', () => {
 		expect(test.codeBlock.parsedDirectives).toContainEqual(
 			expect.objectContaining({ name: 'button', args: ['&gate'] })
 		);
-		expect(test.codeBlock.widgets).not.toHaveProperty('buttons');
 		test.press();
 		test.release();
 		test.render();

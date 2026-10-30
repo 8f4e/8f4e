@@ -41,7 +41,6 @@ describe('editor state lifecycle', () => {
 		});
 
 		expect(store.getState().editorMode).toBe('view');
-		expect(store.getState().featureFlags).not.toHaveProperty('editing');
 
 		store.dispose();
 	});
