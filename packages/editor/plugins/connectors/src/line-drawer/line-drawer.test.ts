@@ -4,25 +4,9 @@ import { LineDrawer } from './line-drawer';
 import { LINE_INSTANCE_BYTE_STRIDE } from './line-instance';
 
 describe('LineDrawer', () => {
-	it.each([0, -1, 0.5, 1.5, NaN, Infinity, -Infinity])(
-		'rejects invalid pixel thickness %s before queuing',
-		thickness => {
-			const gl = createFakeWebGl();
-			const lines = new LineDrawer(gl);
-
-			lines.reset();
-			expect(() => lines.drawLine(0, 0, 10, 10, thickness, [1, 1, 1, 1])).toThrow(
-				new RangeError('thickness must be a positive integer number of pixels.')
-			);
-			lines.flush();
-			expect(gl.bufferSubData).not.toHaveBeenCalled();
-			expect(gl.drawArraysInstanced).not.toHaveBeenCalled();
-		}
-	);
-
 	it('draws compact ordered line instances once', () => {
 		const gl = createFakeWebGl();
-		const lines = new LineDrawer(gl, { initialCapacity: 1 });
+		const lines = new LineDrawer(gl, 1);
 
 		lines.reset();
 		lines.drawLine(1, 2, 11, 12, 3, [1, 0.5, 0, 0.25]);
@@ -64,7 +48,7 @@ describe('LineDrawer', () => {
 
 	it('releases dynamic buffer storage and reallocates it on the next non-empty frame', () => {
 		const gl = createFakeWebGl();
-		const lines = new LineDrawer(gl, { initialCapacity: 2 });
+		const lines = new LineDrawer(gl, 2);
 		gl.bufferData.mockClear();
 
 		lines.releaseMemory();
@@ -83,7 +67,7 @@ describe('LineDrawer', () => {
 
 	it('reuses upload views and limits used ranges after growth, empty frames, and memory release', () => {
 		const gl = createFakeWebGl();
-		const lines = new LineDrawer(gl, { initialCapacity: 1 });
+		const lines = new LineDrawer(gl, 1);
 		const render = (count: number): Uint8Array | undefined => {
 			gl.bufferSubData.mockClear();
 			lines.reset();

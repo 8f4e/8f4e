@@ -5,12 +5,6 @@ import { lineFragmentShaderSource, lineVertexShaderSource } from './line-shaders
 
 const DEFAULT_INITIAL_CAPACITY = 1_024;
 
-/** Construction options for a line-drawer plugin. */
-export type LineDrawerOptions = {
-	/** Initial number of line instances retained by the CPU and GPU buffers. */
-	initialCapacity?: number;
-};
-
 /**
  * Plugin-owned renderer that batches Bresenham pixel lines above all sprites.
  *
@@ -35,13 +29,13 @@ export class LineDrawer {
 	 * Creates the wire renderer on the editor WebGL context.
 	 *
 	 * @param gl - Shared WebGL context.
-	 * @param options - Optional initial line-buffer configuration.
+	 * @param initialCapacity - Number of line instances retained before the buffer grows.
 	 */
 	constructor(
 		private readonly gl: WebGL2RenderingContext,
-		options: LineDrawerOptions = {}
+		initialCapacity = DEFAULT_INITIAL_CAPACITY
 	) {
-		this.lines = new LineInstanceBuffer(options.initialCapacity ?? DEFAULT_INITIAL_CAPACITY);
+		this.lines = new LineInstanceBuffer(initialCapacity);
 		this.gpuCapacity = this.lines.capacity;
 
 		const resources = createLineResources(this.gl);
@@ -78,12 +72,8 @@ export class LineDrawer {
 	 * @param y2 - Ending Y coordinate in canvas pixels.
 	 * @param thickness - Positive integer thickness in canvas pixels.
 	 * @param color - Normalized red, green, blue, and alpha components.
-	 * @throws RangeError when thickness is not a positive integer.
 	 */
 	drawLine(x1: number, y1: number, x2: number, y2: number, thickness: number, color: LineColor): void {
-		if (!Number.isInteger(thickness) || thickness <= 0) {
-			throw new RangeError('thickness must be a positive integer number of pixels.');
-		}
 		this.lines.append(x1, y1, x2, y2, thickness, color);
 	}
 

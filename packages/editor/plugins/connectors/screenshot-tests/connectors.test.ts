@@ -32,14 +32,10 @@ for (const font of ['6x10', 'ibmvga8x16', 'spleen16x32'] satisfies Font[]) {
 			const block = createMockCodeBlock();
 			const widgets: ConnectorWidgets = { inputs: [], outputs: [] };
 			widgets.inputs.push({
-				codeBlock: block,
 				x: characterWidth,
 				y: characterHeight,
-				width: characterWidth * 3,
-				height: characterHeight,
 				wireX: 0,
 				wireY: 0,
-				id: 'input',
 				allocationUnitAddress: 0,
 			});
 			const memoryViews = createMockMemoryViews();
@@ -49,11 +45,8 @@ for (const font of ['6x10', 'ibmvga8x16', 'spleen16x32'] satisfies Font[]) {
 					codeBlock: block,
 					x: characterWidth * (5 + index * 4),
 					y: characterHeight,
-					width: characterWidth * 3,
-					height: characterHeight,
 					wireX: 0,
 					wireY: 0,
-					id: `output${index}`,
 					calibratedMax: 1,
 					calibratedMin: -1,
 					memory: {

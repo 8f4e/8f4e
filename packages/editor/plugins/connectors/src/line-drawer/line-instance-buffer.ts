@@ -12,9 +12,6 @@ export class LineInstanceBuffer {
 	 * @param initialCapacity - Positive number of line records to retain initially.
 	 */
 	constructor(initialCapacity: number) {
-		if (!Number.isInteger(initialCapacity) || initialCapacity <= 0) {
-			throw new RangeError('initialCapacity must be a positive integer.');
-		}
 		this.bytes = new Uint8Array(initialCapacity * LINE_INSTANCE_BYTE_STRIDE);
 		this.view = new DataView(this.bytes.buffer);
 	}

@@ -17,11 +17,8 @@ function fixture(width = 8, height = 16) {
 		codeBlock: block,
 		x: 2,
 		y: 3,
-		width: width * 3,
-		height,
 		wireX: 0,
 		wireY: 0,
-		id: 'output',
 		calibratedMax: 1,
 		calibratedMin: -1,
 		memory: {
@@ -65,14 +62,10 @@ describe('drawConnectors', () => {
 		const { engine, drawSprite, state, widgets, memory } = fixture(width, height);
 		widgets.outputs = [];
 		widgets.inputs.push({
-			codeBlock: createMockCodeBlock(),
 			x: 2,
 			y: 3,
-			width: width * 3,
-			height,
 			wireX: 0,
 			wireY: 0,
-			id: 'input',
 			allocationUnitAddress: 0,
 		});
 

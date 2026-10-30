@@ -4,6 +4,8 @@
   Keep connector data private to each editor; core has no input/output widget fields or output-address index.
 - Derive geometry through `layout.subscribe` and rebuild the byte-address index after `codeBlockLayoutsChanged` from
   the current project slice. Retain support for inherited declarations, private outputs, and project memory exposures.
+- Derive both connector lists in one pass and retain only fields consumed by drawing. Keep line width and initial
+  capacity as trusted internal values; do not restore the former mutation helpers or a line-renderer options bag.
 - Keep memory semantics in the shared compiler plan and memory-resolution helpers. Connector visibility and render
   order must not affect pointer resolution or other plugins.
 - Register sprite drawing through `drawers.registerCodeBlockDrawer` and the GPU wire pass through

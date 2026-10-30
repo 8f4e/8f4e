@@ -2,8 +2,7 @@ import type { EditorPlugin } from '@8f4e/editor-core';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import drawConnections from './drawer/connections';
 import drawConnectors from './drawer/connectors';
-import updateInputsGraphicData from './layout/inputs/updateGraphicData';
-import updateOutputsGraphicData from './layout/outputs/updateGraphicData';
+import deriveConnectors from './layout/deriveConnectors';
 import { LineDrawer } from './line-drawer';
 import type { ConnectorWidgets, Output } from './types';
 import { resolveWireColors } from './wire-colors';
@@ -42,10 +41,7 @@ export const connectorsPlugin: EditorPlugin = {
 		});
 		events.on('codeBlockLayoutsChanged', rebuildOutputIndex);
 		const unsubscribeLayout = layout.subscribe(({ codeBlock, state }) => {
-			const widgets: ConnectorWidgets = { inputs: [], outputs: [] };
-			updateInputsGraphicData(codeBlock, state, widgets);
-			updateOutputsGraphicData(codeBlock, state, widgets);
-			widgetsByBlock.set(codeBlock, widgets);
+			widgetsByBlock.set(codeBlock, deriveConnectors(codeBlock, state));
 		});
 		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
 			const widgets = widgetsByBlock.get(codeBlock);

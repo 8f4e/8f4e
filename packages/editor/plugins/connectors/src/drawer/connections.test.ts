@@ -37,25 +37,18 @@ describe('drawConnections', () => {
 			y: 400,
 		});
 		const input: Input = {
-			codeBlock: inputBlock,
-			width: 30,
-			height: 18,
 			x: 0,
 			y: 36,
 			wireX: 15,
 			wireY: 45,
-			id: 'in',
 			allocationUnitAddress: 2,
 		};
 		const output: Output = {
 			codeBlock: outputBlock,
-			width: 30,
-			height: 18,
 			x: 140,
 			y: 54,
 			wireX: 155,
 			wireY: 63,
-			id: 'out',
 			calibratedMax: 0,
 			calibratedMin: 0,
 			memory: {

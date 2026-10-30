@@ -1,11 +1,13 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
 import initState, { deleteCodeBlocks } from '@8f4e/editor-state';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createFakeWebGl } from './__tests__/fake-webgl';
 import { connectorsPlugin } from './index';
+import { LineDrawer } from './line-drawer';
 
 const source = `8f4e/v1
 entry main
@@ -22,6 +24,7 @@ entryEnd`;
 const cleanups: Array<() => void> = [];
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
+	vi.restoreAllMocks();
 });
 
 async function setup(text = source, installed = true) {
@@ -76,14 +79,11 @@ async function setup(text = source, installed = true) {
 }
 
 describe('connectors plugin', () => {
-	it('keeps core free of connector state and GPU allocations when omitted', async () => {
-		const { state, gl, render } = await setup(source, false);
+	it('allocates no connector GPU resources when omitted', async () => {
+		const { gl, render } = await setup(source, false);
 		render();
 		expect(gl.createBuffer).not.toHaveBeenCalled();
 		expect(gl.createProgram).not.toHaveBeenCalled();
-		expect(state.codeBlockRendering).not.toHaveProperty('outputsByWordAddress');
-		expect(state.codeBlockRendering.codeBlocks[0].widgets).not.toHaveProperty('inputs');
-		expect(state.codeBlockRendering.codeBlocks[0].widgets).not.toHaveProperty('outputs');
 	});
 
 	it('draws live pointer connections independently of block visibility', async () => {
@@ -142,7 +142,8 @@ describe('connectors plugin', () => {
 	});
 
 	it('resolves group exposures and rebuilds the index while navigating between project slices', async () => {
-		const { state, store, gl, render } = await setup(`8f4e/v1
+		const drawLine = vi.spyOn(LineDrawer.prototype, 'drawLine');
+		const { state, store, render } = await setup(`8f4e/v1
 entry main
 group patch
 expose output &source:value
@@ -159,14 +160,29 @@ moduleEnd
 entryEnd`);
 		const root = state.codeBlockRendering.codeBlocks;
 		const group = root.find(block => block.name === 'patch')!;
-		render();
-		expect(gl.drawArraysInstanced).toHaveBeenCalledWith(gl.TRIANGLE_STRIP, 0, 4, 1);
-		store.set('codeBlockRendering.codeBlocks', group.nestedProjectCodeBlocks!);
-		render();
-		expect(gl.drawArraysInstanced).toHaveBeenCalledWith(gl.TRIANGLE_STRIP, 0, 4, 1);
+		const outerSink = root.find(block => block.name === 'outerSink')!;
+		const nested = group.nestedProjectCodeBlocks!;
+		const innerSink = nested.find(block => block.name === 'innerSink')!;
+		const innerSource = nested.find(block => block.name === 'source')!;
+		const expectConnection = (input: CodeBlockGraphicData, output: CodeBlockGraphicData) => {
+			drawLine.mockClear();
+			render();
+			// Each fixture declaration is on its block's second source row.
+			const { vGrid, hGrid, x, y } = state.viewport;
+			expect(drawLine.mock.calls.map(call => call.slice(0, 4))).toEqual([
+				[
+					input.x + vGrid * 1.5 - x,
+					input.y + hGrid * 1.5 - y,
+					output.x + output.width - vGrid * 1.5 - x,
+					output.y + hGrid * 1.5 - y,
+				],
+			]);
+		};
+		expectConnection(outerSink, group);
+		store.set('codeBlockRendering.codeBlocks', nested);
+		expectConnection(innerSink, innerSource);
 		store.set('codeBlockRendering.codeBlocks', root);
-		render();
-		expect(gl.drawArraysInstanced).toHaveBeenCalledWith(gl.TRIANGLE_STRIP, 0, 4, 1);
+		expectConnection(outerSink, group);
 	});
 
 	it('can install after the project and renderer are already initialized', async () => {
