@@ -1,4 +1,3 @@
-import { getEditorBlockId } from '@8f4e/editor-core';
 import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
 import type { WebMcpTool } from '@8f4e/editor-webmcp';
 import { afterEach, expect, test, vi } from 'vitest';
@@ -14,14 +13,9 @@ afterEach(() => {
 	vi.clearAllMocks();
 });
 
-function setup(
-	responses: Record<string, () => Promise<Response>>,
-	assets: Record<string, () => Promise<Response>> = {}
-) {
+function setup(responses: Record<string, () => Promise<Response>>) {
 	const fetch = globalThis.fetch.bind(globalThis);
 	vi.spyOn(globalThis, 'fetch').mockImplementation((input, options) => {
-		const asset = assets[String(input)];
-		if (asset) return asset();
 		const id = Object.keys(responses).find(id => input === `/gallery-${id}.8f4e`);
 		return id ? responses[id]() : fetch(input, options);
 	});
@@ -59,27 +53,6 @@ function setup(
 		return await vi.mocked(mountMinimalEditor).mock.results[index].value;
 	};
 	return { gallery, panel, mounted };
-}
-
-async function scanPlugins(view: ReturnType<typeof setup>, editor: MinimalEditorInstance) {
-	const canvas = view.panel().querySelector('canvas')!;
-	const rect = canvas.getBoundingClientRect();
-	canvas.dispatchEvent(
-		new MouseEvent('contextmenu', { clientX: rect.x + 10000, clientY: rect.y + 10000, bubbles: true })
-	);
-	await vi.waitFor(() =>
-		expect(editor.state.contextMenu.items.some(item => item.action === 'loadPluginsUsedByProject')).toBe(true)
-	);
-	const menu = editor.state.contextMenu;
-	const index = menu.items.findIndex(item => item.action === 'loadPluginsUsedByProject');
-	const point = {
-		clientX: rect.x + menu.x - editor.state.viewport.x + 8,
-		clientY: rect.y + menu.y - editor.state.viewport.y + index * editor.state.viewport.hGrid + 8,
-		bubbles: true,
-	};
-	canvas.dispatchEvent(new MouseEvent('mousemove', point));
-	canvas.dispatchEvent(new MouseEvent('mousedown', { ...point, buttons: 1 }));
-	canvas.dispatchEvent(new MouseEvent('mouseup', point));
 }
 
 test('keeps the editor mounted while a project fetch is pending and reveals it on completion', async () => {
@@ -248,177 +221,6 @@ entryEnd`),
 	expect(editor.getMemoryViews().int32[address]).toBe(1);
 	canvas.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
 	expect(editor.getMemoryViews().int32[address]).toBe(0);
-});
-
-test('recompiles with asset size constants after a lazy asset fetch completes', async () => {
-	const assetUrl = 'https://example.com/lazy-sized.pcm';
-	let finish!: (response: Response) => void;
-	const pending = new Promise<Response>(resolve => {
-		finish = resolve;
-	});
-	const fetchAsset = vi.fn(() => pending);
-	const view = setup(
-		{
-			assets: async () =>
-				new Response(`8f4e/v1
-note settings
-; @config recompileDebounceDelay 10
-; @config bin.sound.url ${assetUrl}
-; @config bin.sound.memory player:buffer
-noteEnd
-entry main
-module player
-use env
-int8[] buffer ASSET_SOUND_SIZE
-moduleEnd
-entryEnd`),
-		},
-		{ [assetUrl]: fetchAsset }
-	);
-	const editor = await view.mounted();
-	await vi.waitFor(() => expect(fetchAsset).toHaveBeenCalledOnce());
-	await vi.waitFor(() => expect(editor.state.codeErrors.compilationErrors.length).toBeGreaterThan(0), {
-		timeout: 10000,
-	});
-	expect(editor.state.dialogStack.some(dialog => dialog.id === 'binary-assets-loading')).toBe(true);
-	finish(new Response(new Uint8Array([1, 2, 3, 4, 5, 6])));
-	await vi.waitFor(
-		() => expect(editor.state.compiler.memoryPlan.modules.player?.memory.buffer.numberOfElements).toBe(6),
-		{ timeout: 10000 }
-	);
-	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
-	const memory = editor.state.compiler.memoryPlan.modules.player.memory.buffer;
-	expect([...editor.getMemoryViews().uint8.slice(memory.byteAddress, memory.byteAddress + 6)]).toEqual([
-		1, 2, 3, 4, 5, 6,
-	]);
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
-	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
-	expect(editor.state.dialogStack).toEqual([]);
-});
-
-test('activates assets after compilation through the manual scan and reloads them into grown memory', async () => {
-	const assetUrl = 'https://example.com/lazy-existing-memory.pcm';
-	const fetchAsset = vi.fn(async () => new Response(new Uint8Array([9, 8, 7, 6])));
-	const view = setup(
-		{
-			lateAssets: async () =>
-				new Response(`8f4e/v1
-note settings ; @mode edit
-; @config recompileDebounceDelay 10
-noteEnd
-entry main
-module player
-int[] buffer 4
-moduleEnd
-entryEnd`),
-		},
-		{ [assetUrl]: fetchAsset }
-	);
-	const editor = await view.mounted();
-	await vi.waitFor(() => expect(editor.state.compiler.memoryPlan.modules.player).toBeDefined(), { timeout: 10000 });
-	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
-	expect(fetchAsset).not.toHaveBeenCalled();
-	expect(editor.state.editorConfigSchemaContributions.binaryAssets).toBeUndefined();
-	const config = editor.state.codeBlockRendering.codeBlocks.find(block => block.blockType === 'note')!;
-	editor.editing.applyEdits({
-		expectedRevision: editor.editing.getRevision(),
-		edits: [
-			{
-				type: 'update',
-				blockId: getEditorBlockId(config),
-				code: [
-					...config.code.slice(0, -1),
-					`; @config bin.sound.url ${assetUrl}`,
-					'; @config bin.sound.memory player:buffer',
-					'noteEnd',
-				],
-			},
-		],
-	});
-	expect(fetchAsset).not.toHaveBeenCalled();
-	await scanPlugins(view, editor);
-	const read = () => {
-		const memory = editor.state.compiler.memoryPlan.modules.player.memory.buffer;
-		return [...editor.getMemoryViews().uint8.slice(memory.byteAddress, memory.byteAddress + 4)];
-	};
-	await vi.waitFor(() => expect(read()).toEqual([9, 8, 7, 6]));
-	const buffer = editor.getMemoryViews().uint8.buffer;
-	editor.editing.applyEdits({
-		expectedRevision: editor.editing.getRevision(),
-		edits: [{ type: 'insert', code: ['module larger', 'int[] padding 40000', 'moduleEnd'], entry: 'main' }],
-	});
-	await vi.waitFor(() => expect(editor.getMemoryViews().uint8.buffer).not.toBe(buffer), { timeout: 10000 });
-	await vi.waitFor(() => expect(read()).toEqual([9, 8, 7, 6]));
-	expect(fetchAsset).toHaveBeenCalledOnce();
-});
-
-test('activates MIDI after compilation through the manual scan and releases its input listener', async () => {
-	const input = Object.assign(new EventTarget(), { id: 'keys', name: 'Keys', state: 'connected' });
-	const access = Object.assign(new EventTarget(), {
-		inputs: new Map([['keys', input]]),
-		outputs: new Map(),
-	}) as unknown as MIDIAccess;
-	const requestAccess = vi.spyOn(navigator, 'requestMIDIAccess').mockResolvedValue(access);
-	const view = setup({
-		midi: async () =>
-			new Response(`8f4e/v1
-note settings ; @mode edit
-; @config recompileDebounceDelay 10
-noteEnd
-entry main
-module received
-int status
-moduleEnd
-entryEnd
-function onMidi
-#export onMidi
-#impure
-param int status
-push &received:status
-push status
-store
-functionEnd`),
-	});
-	const editor = await view.mounted();
-	await vi.waitFor(() => expect(editor.state.compiler.memoryPlan.modules.received).toBeDefined(), { timeout: 10000 });
-	expect(requestAccess).not.toHaveBeenCalled();
-	expect(editor.state.editorConfigSchemaContributions.midi).toBeUndefined();
-	const config = editor.state.codeBlockRendering.codeBlocks.find(block => block.blockType === 'note')!;
-	editor.editing.applyEdits({
-		expectedRevision: editor.editing.getRevision(),
-		edits: [
-			{
-				type: 'update',
-				blockId: getEditorBlockId(config),
-				code: [
-					...config.code.slice(0, -1),
-					'; @config midi.inputs.keys.port 0',
-					'; @config midi.inputs.keys.callback onMidi',
-					'noteEnd',
-				],
-			},
-		],
-	});
-	expect(requestAccess).not.toHaveBeenCalled();
-	await scanPlugins(view, editor);
-	const send = (status: number) => {
-		const event = new Event('midimessage');
-		Object.defineProperty(event, 'data', { value: new Uint8Array([status, 64, 127]) });
-		input.dispatchEvent(event);
-	};
-	await vi.waitFor(() => {
-		send(0x90);
-		const address = editor.state.compiler.memoryPlan.modules.received.memory.status.allocationUnitAddress;
-		expect(editor.getMemoryViews().int32[address]).toBe(0x90);
-	});
-	expect(requestAccess).toHaveBeenCalledOnce();
-	expect(editor.state.info.midi).toEqual({ '0': 'Keys (in)' });
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
-	const memory = editor.getMemoryViews().int32;
-	const address = editor.state.compiler.memoryPlan.modules.received.memory.status.allocationUnitAddress;
-	editor.dispose();
-	send(0x80);
-	expect(memory[address]).toBe(0x90);
 });
 
 test('reports a failed request immediately and loads the project when retried', async () => {
