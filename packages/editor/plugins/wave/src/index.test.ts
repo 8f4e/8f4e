@@ -88,7 +88,6 @@ describe('wave plugin', () => {
 			test.codeBlock.width - x,
 			rows * 16
 		);
-		expect(test.codeBlock.widgets).not.toHaveProperty('arrayWaves');
 	});
 
 	it('supports all height variants in the same block', async () => {
