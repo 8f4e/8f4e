@@ -149,6 +149,24 @@ Examples:
 ; @config midi.inputs.0.callback onMidiIn
 ```
 
+#### Configuration precedence
+
+Configuration is global to the whole project, including nested project groups. When multiple valid directives set
+the same path, the last one in spatial order wins:
+
+- Blocks are processed from left to right by their grid position, then top to bottom at the same horizontal position.
+- Blocks at the same grid position are processed in creation order, so the later-created block wins.
+- Directives within a block are processed from top to bottom, and left to right when chained on one line.
+- A project-group block's own directives are processed before its children. Children use the same spatial order in
+  their local coordinates, and the entire group subtree is processed before the next sibling block.
+- Invalid declarations produce diagnostics and do not replace an earlier valid value. Different paths combine.
+
+Place defaults on the left and customizations on the right. Moving a block past another block can change the
+effective configuration as soon as the move completes. Selecting a block or bringing it to the front does not change
+precedence. Configuration uses spatial order across block types, even though the saved file groups blocks by type.
+Use distinct grid positions for intentional overrides: creation indices are rebuilt when importing `.8f4e` text, so
+exact-position ties between different block types can resolve differently after saving and reopening.
+
 #### WASM editor overlay
 
 The web UI can call an exported WebAssembly function every editor frame, read an RGBA8 pixel buffer from memory, and
