@@ -98,7 +98,7 @@ export function createLazyPluginRegistry({
 		{
 			id: 'texture-runtime',
 			scope: 'project',
-			matches: directives => hasConfig(directives, 'textureRuntime'),
+			matches: directives => hasConfig(directives, 'textureRuntime') || hasDirective(directives, 'texture'),
 			load: () =>
 				import('@8f4e/editor-plugin-texture-runtime').then(module =>
 					module.createTextureRuntimePlugin({ getCodeBuffer, getMemory })

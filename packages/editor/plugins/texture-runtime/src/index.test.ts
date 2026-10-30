@@ -13,27 +13,33 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-const settings = `; @config textureRuntime.enabled true
-; @config textureRuntime.target screen:rgba
-; @config textureRuntime.width 1
-; @config textureRuntime.height 1
-; @config textureRuntime.magnification 32
-; @config textureRuntime.position left`;
+const settings = '; @config textureRuntime.enabled true';
 
-async function program(pixel = '0x44332211', config = settings, padded = false) {
-	const project = parseProjectSource(`8f4e/v1
+async function program(pixel = '0x44332211', config = settings, padded = false, source?: string) {
+	const project = parseProjectSource(
+		source ??
+			`8f4e/v1
 note config
 ${config}
 noteEnd
 entry main
 module screen
+; @pos 4 4
+; @texture rgba rgba 1 1 32
 ${padded ? 'int padding 0' : ''}
 int rgba 0
+int frames 0
+push &frames
+push frames
+push 1
+add
+store
 push &rgba
 push ${pixel}
 store
 moduleEnd
-entryEnd`);
+entryEnd`
+	);
 	const compiled = await compileProject(project, { disableSharedMemory: true });
 	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
@@ -41,8 +47,19 @@ entryEnd`);
 	return { project, compiled, memory };
 }
 
-async function setup({ config = settings, hold = false } = {}) {
-	let current = await program(undefined, config);
+async function setup({
+	config = settings,
+	hold = false,
+	source,
+}: {
+	config?: string;
+	hold?: boolean;
+	source?: string;
+} = {}) {
+	let current = await program(undefined, config, false, source);
+	const screenId = Object.keys(current.compiled.memoryPlan.modules).find(
+		id => id === 'screen' || id.endsWith('/screen')
+	)!;
 	const initial = current;
 	const originalInstantiate = WebAssembly.instantiate;
 	const instantiate = vi.spyOn(WebAssembly, 'instantiate');
@@ -55,6 +72,7 @@ async function setup({ config = settings, hold = false } = {}) {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
 	const state = store.getState();
+	Object.assign(state.viewport, { x: 0, y: 0, width: 640, height: 480 });
 	const publishMetadata = ({
 		compiledFunctions,
 		compiledModules,
@@ -62,7 +80,8 @@ async function setup({ config = settings, hold = false } = {}) {
 		memoryPlan,
 		memoryDefaultsByModuleId,
 	}: typeof current.compiled) => {
-		Object.assign(state.compiler, {
+		store.set('compiler', {
+			...state.compiler,
 			compiledFunctions,
 			compiledModules,
 			projectMemoryExposuresByGroupPath,
@@ -86,6 +105,7 @@ async function setup({ config = settings, hold = false } = {}) {
 	const gl = createFakeWebGl();
 	Object.assign(gl, { drawingBufferHeight: 180 });
 	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette() });
+	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'screen' || block.name === 'visuals')!;
 	const frame = () => {
 		const buffer = current.memory.buffer;
 		layers.draw({
@@ -112,6 +132,8 @@ async function setup({ config = settings, hold = false } = {}) {
 	return {
 		gl,
 		state,
+		store,
+		block,
 		events,
 		frame,
 		settle,
@@ -122,7 +144,16 @@ async function setup({ config = settings, hold = false } = {}) {
 		get memory() {
 			return current.memory;
 		},
-		address: current.compiled.memoryPlan.modules.screen.memory.rgba.byteAddress,
+		address: current.compiled.memoryPlan.modules[screenId].memory.rgba.byteAddress,
+		frameCount: () =>
+			new Int32Array(current.memory.buffer)[
+				current.compiled.memoryPlan.modules[screenId].memory.frames.allocationUnitAddress
+			],
+		editTextures: (directives: string) => {
+			const code = block.code.filter(line => !line.includes('@texture'));
+			code.splice(2, 0, ...directives.split('\n').filter(Boolean));
+			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }], { affectsCompilation: false });
+		},
 		editConfig: (source: string) => {
 			const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'config')!;
 			applyCodeBlockSourceEdits(
@@ -143,92 +174,103 @@ async function setup({ config = settings, hold = false } = {}) {
 	};
 }
 
-it('executes the entry every frame, uploads its pixels, and follows viewport resizing', async () => {
+it('executes once per frame for multiple textures, uploads updated pixels, and follows block movement', async () => {
 	const test = await setup();
 	await test.settle();
+	test.editTextures('; @texture rgba rgba 1 1 32\n; @texture frames mono 1 1 16');
 	test.frame();
-	const data = test.gl.texImage2D.mock.calls.at(-1)!.at(-1) as Uint8Array;
-	expect([...data]).toEqual([17, 34, 51, 68]);
-	expect(test.gl.uniform4f).toHaveBeenLastCalledWith(expect.anything(), 64, 74, 32, 32);
-	const reads = test.getCodeBuffer.mock.calls.length;
-	new Uint8Array(test.memory.buffer).fill(0, test.address, test.address + 4);
-	Object.assign(test.gl, { drawingBufferWidth: 640, drawingBufferHeight: 360 });
+	expect(test.frameCount()).toBe(1);
+	expect(test.gl.createProgram).toHaveBeenCalledOnce();
+	expect(test.gl.createTexture).toHaveBeenCalledTimes(2);
+	expect([...(test.gl.texImage2D.mock.calls[0].at(-1) as Uint8Array)]).toEqual([17, 34, 51, 68]);
+	const rect = test.gl.uniform4f.mock.calls[0];
+	test.block.x += 40;
+	test.state.viewport.y += 20;
 	test.frame();
-	expect([...new Uint8Array(test.memory.buffer, test.address, 4)]).toEqual([17, 34, 51, 68]);
-	expect(test.gl.texSubImage2D).toHaveBeenCalledOnce();
-	expect(test.gl.uniform4f).toHaveBeenLastCalledWith(expect.anything(), 144, 164, 32, 32);
-	expect(test.getCodeBuffer).toHaveBeenCalledTimes(reads);
+	expect(test.frameCount()).toBe(2);
+	expect(test.gl.uniform4f.mock.calls[2].slice(1)).toEqual([Number(rect[1]) + 40, Number(rect[2]) - 20, 32, 32]);
+	expect(test.gl.texSubImage2D).toHaveBeenCalledTimes(2);
 	expect(test.instantiate).toHaveBeenCalledOnce();
 });
 
-it('allocates only for complete configuration and releases resources when it is removed', async () => {
-	const test = await setup({ config: '; @config textureRuntime.enabled true\n; @config textureRuntime.width 1' });
+it('reserves rows after each directive and widens the block, even before memory resolves', async () => {
+	const test = await setup();
+	const initialHeight = test.block.height;
+	test.editTextures('; @texture missing rgba 300 20 2\n; @texture rgba mono 1 17 1');
+	expect(test.block.width).toBeGreaterThanOrEqual(
+		600 + (test.block.lineNumberColumnWidth + 3) * test.state.viewport.vGrid
+	);
+	expect(test.block.height).toBe(initialHeight + 4 * test.state.viewport.hGrid);
 	test.frame();
-	expect(test.gl.createProgram).not.toHaveBeenCalled();
-	const loaded = await program();
-	test.events.dispatch('loadProject', { project: loaded.project });
-	await test.settle();
-	test.frame();
-	expect(test.gl.texImage2D).toHaveBeenCalledOnce();
-	test.events.dispatch('loadProject', { project: parseProjectSource('8f4e/v1\nnote empty\nnoteEnd') });
-	expect(test.gl.deleteTexture).toHaveBeenCalledOnce();
-	expect(test.gl.deleteProgram).toHaveBeenCalledOnce();
+	expect(test.gl.createTexture).not.toHaveBeenCalled();
+	test.editTextures('');
+	expect(test.block.minGridWidth).toBeUndefined();
+	expect(test.block.height).toBeLessThan(initialHeight);
 });
 
-it('defaults to disabled and can be enabled, disabled, and restarted', async () => {
-	const test = await setup({ config: settings.replace('; @config textureRuntime.enabled true\n', '') });
+it('displays memory with execution disabled and can enable, disable, and restart the entry', async () => {
+	const test = await setup({ config: '' });
 	test.frame();
 	expect(test.instantiate).not.toHaveBeenCalled();
-	expect(test.gl.createProgram).not.toHaveBeenCalled();
+	expect(test.gl.drawArrays).toHaveBeenCalledOnce();
+	expect(test.frameCount()).toBe(0);
 	test.editConfig(settings);
 	await test.settle();
 	test.frame();
-	expect(test.instantiate).toHaveBeenCalledOnce();
-	expect(test.gl.texImage2D).toHaveBeenCalledOnce();
-	test.editConfig(settings.replace('enabled true', 'enabled false'));
-	const draws = test.gl.drawArrays.mock.calls.length;
+	expect(test.frameCount()).toBe(1);
+	test.editConfig('; @config textureRuntime.enabled false');
 	test.frame();
-	expect(test.gl.drawArrays).toHaveBeenCalledTimes(draws);
-	expect(test.gl.deleteProgram).toHaveBeenCalledOnce();
-	expect(test.gl.deleteTexture).toHaveBeenCalledOnce();
+	expect(test.frameCount()).toBe(1);
+	expect(test.gl.drawArrays).toHaveBeenCalledTimes(3);
 	test.editConfig(settings);
 	await test.settle();
 	test.frame();
+	expect(test.frameCount()).toBe(2);
 	expect(test.instantiate).toHaveBeenCalledTimes(2);
-	expect(test.gl.texImage2D).toHaveBeenCalledTimes(2);
 });
 
-it('discards a pending instance when disabled', async () => {
-	const test = await setup({ hold: true });
-	test.editConfig(settings.replace('enabled true', 'enabled false'));
-	await test.release();
-	await test.settle();
-	test.frame();
-	expect(test.gl.drawArrays).not.toHaveBeenCalled();
-	expect(test.gl.deleteProgram).toHaveBeenCalledOnce();
-});
-
-it('reuses the accepted program when placement and magnification change', async () => {
+it('reuses the current instance for texture edits and releases removed or offscreen views', async () => {
 	const test = await setup();
 	await test.settle();
 	test.frame();
-	test.editConfig(settings.replace('position left', 'position right').replace('magnification 32', 'magnification 16'));
-	await test.settle();
+	test.editTextures('; @texture rgba mono 1 1 16');
 	test.frame();
 	expect(test.instantiate).toHaveBeenCalledOnce();
-	expect(test.gl.uniform4f).toHaveBeenLastCalledWith(expect.anything(), 232, 82, 16, 16);
-	expect([...(test.gl.texSubImage2D.mock.calls.at(-1)!.at(-1) as Uint8Array)]).toEqual([17, 34, 51, 68]);
+	expect(test.gl.uniform4f).toHaveBeenLastCalledWith(expect.anything(), expect.any(Number), expect.any(Number), 16, 16);
+	test.state.viewport.x = 100000;
+	test.frame();
+	expect(test.frameCount()).toBe(3);
+	expect(test.gl.deleteTexture).toHaveBeenCalledOnce();
+	test.state.viewport.x = 0;
+	test.frame();
+	expect(test.gl.createTexture).toHaveBeenCalledTimes(2);
+	test.editTextures('');
+	test.frame();
+	expect(test.gl.deleteTexture).toHaveBeenCalledTimes(2);
 });
 
-it('applies current settings when the pending program becomes ready', async () => {
+it('does not read past the framebuffer declaration', async () => {
+	const test = await setup();
+	test.editTextures('; @texture rgba rgba 2 1 16');
+	test.frame();
+	expect(test.gl.drawArrays).not.toHaveBeenCalled();
+	test.editTextures('; @texture rgba rgba 1 1 16');
+	test.frame();
+	expect(test.gl.drawArrays).toHaveBeenCalledOnce();
+});
+
+it('keeps a pending instance through texture edits, and applies the current entry', async () => {
 	const test = await setup({ hold: true });
-	test.editConfig(settings.replace('position left', 'position right').replace('magnification 32', 'magnification 16'));
+	test.editTextures('; @texture rgba rgba 1 1 16');
+	test.editConfig(settings + '\n; @config textureRuntime.entry missing');
 	await test.release();
 	await test.settle();
 	test.frame();
+	expect(test.frameCount()).toBe(0);
+	test.editConfig(settings);
+	test.frame();
+	expect(test.frameCount()).toBe(1);
 	expect(test.instantiate).toHaveBeenCalledOnce();
-	expect(test.gl.uniform4f).toHaveBeenLastCalledWith(expect.anything(), 232, 82, 16, 16);
-	expect([...(test.gl.texImage2D.mock.calls.at(-1)!.at(-1) as Uint8Array)]).toEqual([17, 34, 51, 68]);
 });
 
 it('uses replacement compiler memory and updated addresses', async () => {
@@ -243,14 +285,15 @@ it('uses replacement compiler memory and updated addresses', async () => {
 	expect([...data]).toEqual([34, 51, 68, 85]);
 });
 
-it('ignores a pending WASM instance after disposal', async () => {
+it.each(['disabled', 'disposed'] as const)('discards a pending instance when %s', async mode => {
 	const test = await setup({ hold: true });
-	test.dispose();
+	if (mode === 'disposed') test.dispose();
+	else test.editConfig('; @config textureRuntime.enabled false');
 	await test.release();
 	await test.settle();
 	test.frame();
-	expect(test.gl.drawArrays).not.toHaveBeenCalled();
-	expect(test.gl.deleteProgram).toHaveBeenCalledOnce();
+	expect(test.frameCount()).toBe(0);
+	expect(test.gl.drawArrays).toHaveBeenCalledTimes(mode === 'disposed' ? 0 : 1);
 });
 
 it('keeps a replacement compilation when an older instance completes later', async () => {
@@ -263,4 +306,50 @@ it('keeps a replacement compilation when an older instance completes later', asy
 	await test.settle();
 	test.frame();
 	expect([...(test.gl.texSubImage2D.mock.calls.at(-1)!.at(-1) as Uint8Array)]).toEqual([34, 51, 68, 85]);
+});
+
+it('stacks chained texture directives without sharing or overwriting their GPU storage', async () => {
+	const test = await setup();
+	await test.settle();
+	test.editTextures('; @texture rgba rgba 1 1 32 @texture frames mono 1 1 16');
+	test.frame();
+	expect(test.gl.createTexture).toHaveBeenCalledTimes(2);
+	const first = test.gl.uniform4f.mock.calls[0];
+	const second = test.gl.uniform4f.mock.calls[1];
+	expect(second.slice(1)).toEqual([first[1], Number(first[2]) + 32, 16, 16]);
+	expect(test.frameCount()).toBe(1);
+});
+
+it('hides texture views and their reserved space when source is collapsed', async () => {
+	const test = await setup();
+	test.editTextures('; @hide\n; @texture rgba rgba 1 1 32');
+	test.events.dispatch('exitToViewMode');
+	expect(test.block.isCollapsed).toBe(true);
+	expect(test.block.minGridWidth).toBeUndefined();
+	test.frame();
+	expect(test.gl.createTexture).not.toHaveBeenCalled();
+});
+
+it('resolves group exposures locally and from a qualified reference on a note', async () => {
+	const test = await setup({
+		config: '',
+		source: `8f4e/v1
+note viewer
+; @pos 4 4
+; @texture visuals:picture rgba 1 1 16
+noteEnd
+entry main
+group visuals
+; @pos 4 12
+expose picture &screen:rgba
+; @texture picture rgba 1 1 16
+module screen
+int rgba 0x44332211
+moduleEnd
+groupEnd
+entryEnd`,
+	});
+	test.frame();
+	expect(test.gl.createTexture).toHaveBeenCalledTimes(2);
+	for (const call of test.gl.texImage2D.mock.calls) expect([...(call.at(-1) as Uint8Array)]).toEqual([17, 34, 51, 68]);
 });

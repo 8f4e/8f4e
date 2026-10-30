@@ -1,11 +1,11 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { resolveMemoryTarget } from '@8f4e/editor-state/memory';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/test-runner';
-import { readTextureRuntimeConfig, TEXTURE_RUNTIME_CONFIG, type TextureRuntimeConfig } from './config';
-import { getTextureDrawRect } from './placement';
-import { RgbaTextureDrawer } from './rgba-texture-drawer';
+import { readTextureRuntimeConfig, TEXTURE_RUNTIME_CONFIG } from './config';
+import { type BlockTexture, registerTextureLayout } from './layout';
+import { TextureDrawer } from './texture-drawer';
 
-/** Executes a project entry once per editor frame and draws its RGBA framebuffer. */
+/** Executes one project entry per editor frame and displays block-bound framebuffer views. */
 export function createTextureRuntimePlugin({
 	getCodeBuffer,
 	getMemory,
@@ -15,40 +15,31 @@ export function createTextureRuntimePlugin({
 }): EditorPlugin {
 	return {
 		id: 'texture-runtime',
-		setup: ({ store, events, drawers }) => {
+		setup: ({ store, events, drawers, layout }) => {
 			const state = store.getState();
-			let config: TextureRuntimeConfig | undefined;
-			let program: { memory: WebAssembly.Memory; exports: WebAssembly.Exports } | undefined;
+			let config = readTextureRuntimeConfig(state.editorConfig);
+			let program: WebAssembly.Exports | undefined;
 			let entry: CallableFunction | undefined;
-			let byteAddress: number | undefined;
-			let byteLength = 0;
 			let generation = 0;
 			let pending = false;
-			let unregisterLayer: (() => void) | undefined;
+			const texturesByBlock = new WeakMap<CodeBlockGraphicData, BlockTexture[]>();
 
 			function clearProgram() {
 				generation++;
 				program = undefined;
 				pending = false;
 				entry = undefined;
-				byteAddress = undefined;
 			}
 
-			function prepareFrame() {
-				entry = undefined;
-				byteAddress = undefined;
-				if (!config || !program) return;
-				const target = resolveMemoryTarget(state, { kind: 'project', groupPath: '' }, config.target);
-				const nextEntry = program.exports[config.entry];
-				if (typeof nextEntry !== 'function' || !target) return;
-				entry = nextEntry;
-				byteAddress = target.memory.byteAddress;
+			function prepareEntry() {
+				const nextEntry = program?.[config.entry];
+				entry = typeof nextEntry === 'function' ? nextEntry : undefined;
 			}
 
 			async function syncProgram() {
 				clearProgram();
 				const version = generation;
-				if (!config) return;
+				if (!config.enabled) return;
 				const nextMemory = getMemory();
 				const code = getCodeBuffer();
 				if (!nextMemory || code.byteLength === 0) return;
@@ -58,9 +49,9 @@ export function createTextureRuntimePlugin({
 						host: { memory: nextMemory, ...IGNORED_ASSERTION_IMPORTS },
 					});
 					if (version !== generation) return;
-					program = { memory: nextMemory, exports: instance.exports };
+					program = instance.exports;
 					pending = false;
-					prepareFrame();
+					prepareEntry();
 				} catch (error) {
 					if (version === generation) {
 						pending = false;
@@ -71,45 +62,50 @@ export function createTextureRuntimePlugin({
 
 			function syncConfig() {
 				config = readTextureRuntimeConfig(state.editorConfig);
-				byteLength = config ? config.width * config.height * 4 : 0;
-				if (!config) {
-					unregisterLayer?.();
-					unregisterLayer = undefined;
-					clearProgram();
-				} else if (!unregisterLayer) {
-					unregisterLayer = drawers.registerRenderLayer(({ gl }) => {
-						const texture = new RgbaTextureDrawer(gl);
-						return {
-							draw: () => {
-								if (!config || !entry || !program || byteAddress === undefined) return;
-								entry();
-								const { memory } = program;
-								if (byteAddress + byteLength > memory.buffer.byteLength) return;
-								texture.uploadRgba8Texture(
-									new Uint8Array(memory.buffer, byteAddress, byteLength),
-									config.width,
-									config.height
-								);
-								const rect = getTextureDrawRect(
-									config.width,
-									config.height,
-									gl.drawingBufferWidth,
-									gl.drawingBufferHeight,
-									config.magnification,
-									config.position
-								);
-								texture.drawTexture(rect.x, rect.y, rect.width, rect.height);
-							},
-							releaseMemory: () => texture.releaseMemory(),
-							destroy: () => texture.destroy(),
-						};
-					});
+				if (!config.enabled) clearProgram();
+				else {
+					prepareEntry();
+					if (!program && !pending) void syncProgram();
 				}
-				prepareFrame();
-				if (config && !program && !pending) void syncProgram();
 			}
 
 			store.set('editorConfigSchemaContributions.textureRuntime', TEXTURE_RUNTIME_CONFIG);
+			const unregisterLayout = registerTextureLayout(layout, texturesByBlock);
+			const unregisterLayer = drawers.registerRenderLayer(({ gl }) => {
+				let drawer: TextureDrawer | undefined;
+				const visibleKeys = new Set<string>();
+				return {
+					draw: ({ memoryViews }) => {
+						entry?.();
+						visibleKeys.clear();
+						for (const block of state.codeBlockRendering.codeBlocks) {
+							for (const texture of texturesByBlock.get(block) ?? []) {
+								const x = block.x - state.viewport.x + texture.x;
+								const y = block.y - state.viewport.y + texture.y;
+								const width = texture.width * texture.magnification;
+								const height = texture.height * texture.magnification;
+								if (x + width <= 0 || y + height <= 0 || x >= state.viewport.width || y >= state.viewport.height)
+									continue;
+								const { byteAddress, byteLength } = texture;
+								if (byteAddress === undefined || byteAddress + byteLength > memoryViews.uint8.length) continue;
+								drawer ??= new TextureDrawer(gl);
+								visibleKeys.add(texture.key);
+								drawer.upload(
+									texture.key,
+									memoryViews.uint8.subarray(byteAddress, byteAddress + byteLength),
+									texture.width,
+									texture.height,
+									texture.format
+								);
+								drawer.drawTexture(texture.key, x, y, width, height);
+							}
+						}
+						drawer?.retainTextures(visibleKeys);
+					},
+					releaseMemory: () => drawer?.releaseMemory(),
+					destroy: () => drawer?.destroy(),
+				};
+			});
 			store.subscribe('editorConfig.textureRuntime', syncConfig);
 			events.on('compilationSucceeded', syncProgram);
 			syncConfig();
@@ -117,7 +113,8 @@ export function createTextureRuntimePlugin({
 				store.unsubscribe('editorConfig.textureRuntime', syncConfig);
 				events.off('compilationSucceeded', syncProgram);
 				clearProgram();
-				unregisterLayer?.();
+				unregisterLayout();
+				unregisterLayer();
 				const schemas = { ...state.editorConfigSchemaContributions };
 				delete schemas.textureRuntime;
 				store.set('editorConfigSchemaContributions', schemas);

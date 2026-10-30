@@ -1,13 +1,13 @@
 import { requireResource } from '@8f4e/web-ui';
 
-/** GPU geometry owned by the RGBA texture-layer plugin. */
+/** GPU geometry owned by the texture directive renderer. */
 export type RectangleGeometry = {
 	readonly buffer: WebGLBuffer;
 	readonly vertexArray: WebGLVertexArrayObject;
 };
 
 /**
- * Creates reusable rectangle geometry for the RGBA texture-layer plugin.
+ * Creates reusable rectangle geometry for the texture directive renderer.
  *
  * @param gl - WebGL2 context that owns the geometry.
  * @returns Buffer and vertex array required to draw a four-vertex triangle strip.
@@ -33,7 +33,7 @@ export function createRectangleGeometry(gl: WebGL2RenderingContext): RectangleGe
 }
 
 /**
- * Deletes the RGBA texture-layer plugin's reusable rectangle geometry.
+ * Deletes the texture directive renderer's reusable rectangle geometry.
  *
  * @param gl - WebGL2 context that owns the geometry.
  * @param geometry - Geometry returned by `createRectangleGeometry()`.

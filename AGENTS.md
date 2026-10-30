@@ -14,7 +14,7 @@
   Both editor compositions keep explicit loading scopes, lazy signals, and dynamic imports in `src/lazy-plugins.ts`
   for plot, wave, meter, bars, switch, button, piano, slider, crossfade, MIDI input, binary assets, and the
   audio/worker/test/texture runtimes. MIDI, assets, and texture execution match raw `midi`,
-  `bin`, and `textureRuntime` config roots before their schemas load. Other plugins remain fixed.
+  `bin`, and `textureRuntime` config roots before their schemas load. Texture views also match `@texture`. Other plugins remain fixed.
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
   selection, and paste collision renaming. Nested language-level project groups remain core project structure.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`
@@ -153,8 +153,11 @@ Choose errors by detection phase:
   namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
   selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.
 
-- Per-frame WASM execution and framebuffer rendering belong entirely to `editor-plugin-texture-runtime`: `textureRuntime` config schema,
-  WebAssembly execution, RGBA shaders and textures, uploads, and placement. Both compositions load it lazily from
-  the raw `textureRuntime` config root with project scope and compiler getters. Core consumes compilation memory
-  for generic views; web-ui only owns generic render-layer lifecycle. Keep configuration and instantiation out
-  of the render hot path, and register texture drawing after connectors to preserve overlay ordering.
+- Per-frame WASM execution and `@texture` framebuffer views belong entirely to `editor-plugin-texture-runtime`.
+  Its `textureRuntime` config owns only `enabled` and `entry`; each directive owns its framebuffer, format, dimensions,
+  and integer magnification. Both compositions load it lazily from `@texture` or raw `textureRuntime` config with
+  project scope and compiler getters. Layout contributions reserve rows and a minimum block width; private views
+  resolve memory in the containing block's scope. One GPU program and rectangle serve all 1bit/mono/rgb/rgba views.
+  The generic overlay pass executes the entry once per editor frame and draws visible textures at block-relative
+  positions above the editor, without block occlusion. Rendering remains active when entry execution is disabled.
+  Keep parsing and memory lookup outside the frame path; release storage for removed/offscreen views and on GPU release.

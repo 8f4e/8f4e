@@ -27,7 +27,7 @@
 - Compose `createLazyPluginLoaderPlugin` with the per-editor `createLazyPluginRegistry` for optional signal-driven plugins.
   Keep its per-editor registry in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano, slider,
   crossfade, MIDI input, binary assets, and runtime plugins. Match all three wave directives: `wave`, `wave2`, and `wave4`, and raw
-  `midi`/`bin`/`textureRuntime` config roots before their schemas load. Import implementations and construct
+  `midi`/`bin`/`textureRuntime` config roots before their schemas load. Also match `@texture`. Import implementations and construct
   their factories only inside `load()`, using the supplied live memory writer. Supply runtime plugins with compiler artifact getters and the optional shared AudioContext. Each runtime plugin imports its own worker/worklet assets and owns browser API use.
   Declare `scope: 'view'` for visual/control plugins and `scope: 'project'` for runtime, MIDI, and asset plugins.
   Match cached parsed directive records; the loader scans automatically after completed project edits and view changes.
@@ -74,8 +74,11 @@
 - Install `connectorsPlugin` in the fixed plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
 
-- Per-frame WASM execution and framebuffer rendering belong entirely to `editor-plugin-texture-runtime`: `textureRuntime` config schema,
-  WebAssembly execution, RGBA shaders and textures, uploads, and placement. Both compositions load it lazily from
-  the raw `textureRuntime` config root with project scope and compiler getters. Core consumes compilation memory
-  for generic views; web-ui only owns generic render-layer lifecycle. Keep configuration and instantiation out
-  of the render hot path, and register texture drawing after connectors to preserve overlay ordering.
+- Per-frame WASM execution and `@texture` framebuffer views belong entirely to `editor-plugin-texture-runtime`.
+  Its `textureRuntime` config owns only `enabled` and `entry`; each directive owns its framebuffer, format, dimensions,
+  and integer magnification. Both compositions load it lazily from `@texture` or raw `textureRuntime` config with
+  project scope and compiler getters. Layout contributions reserve rows and a minimum block width; private views
+  resolve memory in the containing block's scope. One GPU program and rectangle serve all 1bit/mono/rgb/rgba views.
+  The generic overlay pass executes the entry once per editor frame and draws visible textures at block-relative
+  positions above the editor, without block occlusion. Rendering remains active when entry execution is disabled.
+  Keep parsing and memory lookup outside the frame path; release storage for removed/offscreen views and on GPU release.

@@ -174,6 +174,7 @@ export { serializeProjectTo8f4e } from './pureHelpers/projectSerialization/seria
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
 export {
 	isMemoryAddress,
+	isMemoryId,
 	isPointerSource,
 	parseElementCount,
 	parseFiniteNumber,

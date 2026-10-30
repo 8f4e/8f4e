@@ -26,7 +26,8 @@ writer; MIDI receives its browser navigator and live compiler getters, binary as
 and runtime factories receive compiler artifacts and an optional shared `AudioContext`.
 
 The loader checks cached directives automatically after project changes and group navigation. Visual/control plugins
-use `view` scope: signals in unopened groups wait until that level is visited. Runtime, MIDI, and asset plugins use
+use `view` scope: signals in unopened groups wait until that level is visited. Texture views load for `@texture` as well as `textureRuntime` configuration, using the existing overlay pass.
+Runtime, MIDI, and asset plugins use
 `project` scope and match signals across the complete project tree. Loaded plugins stay installed until disposal.
 Imports and compilation finish independently of mounting and the initial-project callback. A callback may run before
 the mount promise resolves.
