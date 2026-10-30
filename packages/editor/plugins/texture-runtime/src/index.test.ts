@@ -5,7 +5,7 @@ import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createFakeWebGl } from './__tests__/fake-webgl';
-import { createWasmTexturePlugin } from './index';
+import { createTextureRuntimePlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -13,11 +13,12 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-const settings = `; @config wasmTexture.target screen:rgba
-; @config wasmTexture.width 1
-; @config wasmTexture.height 1
-; @config wasmTexture.magnification 32
-; @config wasmTexture.position left`;
+const settings = `; @config textureRuntime.enabled true
+; @config textureRuntime.target screen:rgba
+; @config textureRuntime.width 1
+; @config textureRuntime.height 1
+; @config textureRuntime.magnification 32
+; @config textureRuntime.position left`;
 
 async function program(pixel = '0x44332211', config = settings, padded = false) {
 	const project = parseProjectSource(`8f4e/v1
@@ -73,7 +74,7 @@ async function setup({ config = settings, hold = false } = {}) {
 	const drawers = createEditorDrawerRegistry();
 	const getMemory = vi.fn(() => current.memory);
 	const getCodeBuffer = vi.fn(() => current.compiled.codeBuffer);
-	const dispose = createWasmTexturePlugin({ getMemory, getCodeBuffer }).setup({
+	const dispose = createTextureRuntimePlugin({ getMemory, getCodeBuffer }).setup({
 		store,
 		events,
 		drawers,
@@ -161,7 +162,7 @@ it('executes the entry every frame, uploads its pixels, and follows viewport res
 });
 
 it('allocates only for complete configuration and releases resources when it is removed', async () => {
-	const test = await setup({ config: '; @config wasmTexture.width 1' });
+	const test = await setup({ config: '; @config textureRuntime.enabled true\n; @config textureRuntime.width 1' });
 	test.frame();
 	expect(test.gl.createProgram).not.toHaveBeenCalled();
 	const loaded = await program();
@@ -171,6 +172,39 @@ it('allocates only for complete configuration and releases resources when it is 
 	expect(test.gl.texImage2D).toHaveBeenCalledOnce();
 	test.events.dispatch('loadProject', { project: parseProjectSource('8f4e/v1\nnote empty\nnoteEnd') });
 	expect(test.gl.deleteTexture).toHaveBeenCalledOnce();
+	expect(test.gl.deleteProgram).toHaveBeenCalledOnce();
+});
+
+it('defaults to disabled and can be enabled, disabled, and restarted', async () => {
+	const test = await setup({ config: settings.replace('; @config textureRuntime.enabled true\n', '') });
+	test.frame();
+	expect(test.instantiate).not.toHaveBeenCalled();
+	expect(test.gl.createProgram).not.toHaveBeenCalled();
+	test.editConfig(settings);
+	await test.settle();
+	test.frame();
+	expect(test.instantiate).toHaveBeenCalledOnce();
+	expect(test.gl.texImage2D).toHaveBeenCalledOnce();
+	test.editConfig(settings.replace('enabled true', 'enabled false'));
+	const draws = test.gl.drawArrays.mock.calls.length;
+	test.frame();
+	expect(test.gl.drawArrays).toHaveBeenCalledTimes(draws);
+	expect(test.gl.deleteProgram).toHaveBeenCalledOnce();
+	expect(test.gl.deleteTexture).toHaveBeenCalledOnce();
+	test.editConfig(settings);
+	await test.settle();
+	test.frame();
+	expect(test.instantiate).toHaveBeenCalledTimes(2);
+	expect(test.gl.texImage2D).toHaveBeenCalledTimes(2);
+});
+
+it('discards a pending instance when disabled', async () => {
+	const test = await setup({ hold: true });
+	test.editConfig(settings.replace('enabled true', 'enabled false'));
+	await test.release();
+	await test.settle();
+	test.frame();
+	expect(test.gl.drawArrays).not.toHaveBeenCalled();
 	expect(test.gl.deleteProgram).toHaveBeenCalledOnce();
 });
 

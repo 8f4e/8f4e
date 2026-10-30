@@ -143,7 +143,7 @@ Types and generic WebGL resource helpers are exported by `@8f4e/web-ui`.
 
 `@8f4e/editor-plugin-connectors` owns input/output widgets and the complete wire renderer through these hooks.
 Core keeps memory semantics independent of connector data and has no connector-specific fields or GPU resources.
-`@8f4e/editor-plugin-wasm-texture` owns the RGBA framebuffer renderer and its WASM execution through the same layer hook.
+`@8f4e/editor-plugin-texture-runtime` owns editor-frame WASM execution and RGBA framebuffer rendering through the same layer hook.
 
 Interaction handlers can subscribe to `codeBlockPointerDown` for the start of a block press and `mouseup` for release.
 Use `events.on('mousemove', handler, { capture: true })` when a plugin must consume a drag before ordinary listeners,
@@ -263,7 +263,7 @@ Configure editor settings with `; @config <path> <value>`.
 - Extensions can contribute schema-backed config roots; runtime packages use this for paths like `; @config audioRuntime.sampleRate 48000` and `; @config audioRuntime.audioOutBufferLAddress audioout:buffer`.
 - `; @config export.fileName <value>` controls the base file name used by editor export actions.
 - `; @config color.<path> <value>` controls base palette colors.
-- `; @config wasmTexture.<field> <value>` configures a WebAssembly-generated RGBA texture drawn over the editor.
+- `; @config textureRuntime.<field> <value>` configures the opt-in texture runtime, which executes once per editor frame and draws an RGBA framebuffer.
 - Base colors accept hex with optional alpha, `rgb()` / `rgba()`, and `transparent`. The palette contains `canvas`,
   `surface`, `ink`, `muted`, `primary`, `secondary`, `tertiary`, `highlight`, `detail`, `stroke`, `positive`, `warning`,
   and `negative`. Optional accents preserve independently authored hues and opacity.

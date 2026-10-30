@@ -26,8 +26,8 @@
   with a live reduced-motion preference from the browser; install their overlays before tooltips.
 - Compose `createLazyPluginLoaderPlugin` with the per-editor `createLazyPluginRegistry` for optional signal-driven plugins.
   Keep its per-editor registry in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano, slider,
-  crossfade, MIDI input, binary assets, and WASM textures. Match all three wave directives: `wave`, `wave2`, and `wave4`, and raw
-  `midi`/`bin`/`wasmTexture` config roots before their schemas load. Import implementations and construct
+  crossfade, MIDI input, binary assets, and runtime plugins. Match all three wave directives: `wave`, `wave2`, and `wave4`, and raw
+  `midi`/`bin`/`textureRuntime` config roots before their schemas load. Import implementations and construct
   their factories only inside `load()`, using the supplied live memory writer. Supply runtime plugins with compiler artifact getters and the optional shared AudioContext. Each runtime plugin imports its own worker/worklet assets and owns browser API use.
   Declare `scope: 'view'` for visual/control plugins and `scope: 'project'` for runtime, MIDI, and asset plugins.
   Match cached parsed directive records; the loader scans automatically after completed project edits and view changes.
@@ -62,11 +62,11 @@
 - Cached memory-write views belong to the compiler plugin. Pass its writer directly rather than allocating views in the host.
 - Expose the compiler plugin's stable diagnostic read handle as `getCompilerDiagnostics` on the returned core editor. Webpage hosts may pass it to their external WebMCP bridge; mounting the default editor does not register site tools.
 
-- Audio, worker, and test execution are ordinary lazy plugins in `packages/editor/plugins/audio-runtime`,
-  `worker-runtime`, and `test-runtime`. The default editor matches their raw `@config` roots before their schemas load.
+- Audio, worker, test, and texture execution are ordinary lazy plugins in `packages/editor/plugins/audio-runtime`,
+  `worker-runtime`, `test-runtime`, and `texture-runtime`. The default editor matches their raw `@config` roots before their schemas load.
   Each owns `enabled` (default false), schema registration, compiler readiness, execution, and cleanup. They may run
   together against shared compiler memory. Keep worker/worklet execution code in the existing runtime packages.
-- Runtime constant names are configured with `sampleRateConstantName` (default `SAMPLE_RATE`) and audio's
+- Audio and worker runtime constant names are configured with `sampleRateConstantName` (default `SAMPLE_RATE`) and audio's
   `bufferSizeConstantName` (default `AUDIO_BUFFER_SIZE`). Each contributes under its own environment key. Keep info
   namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
   selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.
@@ -74,8 +74,8 @@
 - Install `connectorsPlugin` in the fixed plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
 
-- WASM framebuffer textures belong entirely to `editor-plugin-wasm-texture`: `wasmTexture` config schema,
+- Per-frame WASM execution and framebuffer rendering belong entirely to `editor-plugin-texture-runtime`: `textureRuntime` config schema,
   WebAssembly execution, RGBA shaders and textures, uploads, and placement. Both compositions load it lazily from
-  the raw `wasmTexture` config root with project scope and compiler getters. Core consumes compilation memory
+  the raw `textureRuntime` config root with project scope and compiler getters. Core consumes compilation memory
   for generic views; web-ui only owns generic render-layer lifecycle. Keep configuration and instantiation out
   of the render hot path, and register texture drawing after connectors to preserve overlay ordering.

@@ -6,22 +6,19 @@ constants env
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
-const SAMPLE_RATE 1
-
 constantsEnd
 
 note
 ; @pos -62 -22
 ; @home left
-; @config workerRuntime.enabled true
-; @config workerRuntime.sampleRate 1
 ; @config export.fileName overlayTexture
-; @config wasmTexture.entry main
-; @config wasmTexture.target screen:rgba
-; @config wasmTexture.width 32
-; @config wasmTexture.height 32
-; @config wasmTexture.magnification 8
-; @config wasmTexture.position left
+; @config textureRuntime.enabled true
+; @config textureRuntime.entry main
+; @config textureRuntime.target screen:rgba
+; @config textureRuntime.width 32
+; @config textureRuntime.height 32
+; @config textureRuntime.magnification 8
+; @config textureRuntime.position left
 
 ; The main entry runs once per editor
 ; frame and fills a 32 x 32 RGBA8

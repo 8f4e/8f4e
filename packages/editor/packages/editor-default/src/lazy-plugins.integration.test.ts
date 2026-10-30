@@ -141,14 +141,14 @@ it('loads binary assets from a restored session and announces their size as comp
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['binary-assets']);
 });
 
-it('loads the WASM texture plugin from raw configuration in an unopened group', async () => {
+it('loads the texture runtime from raw configuration in an unopened group', async () => {
 	const { state, entries } = restoreSession(
-		'config wasmTexture.target audio:points\n; @config wasmTexture.width 2\n; @config wasmTexture.height 2',
+		'config textureRuntime.enabled true\n; @config textureRuntime.target audio:points\n; @config textureRuntime.width 2\n; @config textureRuntime.height 2',
 		true
 	);
 	await vi.waitFor(() =>
-		expect(state.editorConfig.wasmTexture).toEqual({ target: 'audio:points', width: 2, height: 2 })
+		expect(state.editorConfig.textureRuntime).toEqual({ enabled: true, target: 'audio:points', width: 2, height: 2 })
 	);
 	expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
-	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['wasm-texture']);
+	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['texture-runtime']);
 });

@@ -1,4 +1,4 @@
-import type { TextureConfig } from './config';
+import type { TextureRuntimeConfig } from './config';
 
 export function getTextureDrawRect(
 	sourceWidth: number,
@@ -6,7 +6,7 @@ export function getTextureDrawRect(
 	viewportWidth: number,
 	viewportHeight: number,
 	magnification: number,
-	position: TextureConfig['position']
+	position: TextureRuntimeConfig['position']
 ): { x: number; y: number; width: number; height: number } {
 	const width = sourceWidth * magnification;
 	const height = sourceHeight * magnification;

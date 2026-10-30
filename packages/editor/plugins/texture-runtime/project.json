@@ -1,5 +1,5 @@
 {
-  "name": "@8f4e/editor-plugin-wasm-texture",
+  "name": "@8f4e/editor-plugin-texture-runtime",
   "sourceRoot": "src",
   "projectType": "library",
   "targets": {
@@ -33,7 +33,7 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "biome check --write packages/editor/plugins/wasm-texture/src",
+        "command": "biome check --write packages/editor/plugins/texture-runtime/src",
         "cwd": "{workspaceRoot}"
       }
     },

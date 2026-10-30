@@ -1,8 +1,8 @@
 {
-  "name": "@8f4e/editor-plugin-wasm-texture",
+  "name": "@8f4e/editor-plugin-texture-runtime",
   "version": "0.1.0",
   "private": true,
-  "description": "WebAssembly framebuffer textures for the 8f4e editor",
+  "description": "Editor-frame WebAssembly runtime with RGBA framebuffer rendering",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

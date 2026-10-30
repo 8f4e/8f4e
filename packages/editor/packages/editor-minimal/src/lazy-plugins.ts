@@ -72,15 +72,6 @@ export function createLazyPluginRegistry({
 		},
 
 		{
-			id: 'wasm-texture',
-			scope: 'project',
-			matches: directives => hasConfig(directives, 'wasmTexture'),
-			load: () =>
-				import('@8f4e/editor-plugin-wasm-texture').then(module =>
-					module.createWasmTexturePlugin({ getCodeBuffer, getMemory })
-				),
-		},
-		{
 			id: 'midi-input',
 			scope: 'project',
 			matches: directives => hasConfig(directives, 'midi'),
@@ -104,6 +95,15 @@ export function createLazyPluginRegistry({
 				),
 		},
 
+		{
+			id: 'texture-runtime',
+			scope: 'project',
+			matches: directives => hasConfig(directives, 'textureRuntime'),
+			load: () =>
+				import('@8f4e/editor-plugin-texture-runtime').then(module =>
+					module.createTextureRuntimePlugin({ getCodeBuffer, getMemory })
+				),
+		},
 		{
 			id: 'worker-runtime',
 			scope: 'project',

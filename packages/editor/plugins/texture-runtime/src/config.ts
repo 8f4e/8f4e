@@ -1,11 +1,12 @@
 import { type EditorConfig, type EditorConfigSchemaContribution, resolveSchemaConfigRoot } from '@8f4e/editor-core';
 
-export const WASM_TEXTURE_CONFIG: EditorConfigSchemaContribution = {
-	root: 'wasmTexture',
-	defaults: { entry: 'main', magnification: 1, position: 'center' },
+export const TEXTURE_RUNTIME_CONFIG: EditorConfigSchemaContribution = {
+	root: 'textureRuntime',
+	defaults: { enabled: false, entry: 'main', magnification: 1, position: 'center' },
 	schema: {
 		type: 'object',
 		properties: {
+			enabled: { type: 'boolean' },
 			entry: { type: 'string', pattern: '.+' },
 			target: { type: 'string', pattern: '^[^:]+:[^:]+$' },
 			width: { type: 'integer', minimum: 1 },
@@ -17,7 +18,7 @@ export const WASM_TEXTURE_CONFIG: EditorConfigSchemaContribution = {
 	},
 };
 
-export interface TextureConfig {
+export interface TextureRuntimeConfig {
 	entry: string;
 	target: string;
 	width: number;
@@ -26,8 +27,8 @@ export interface TextureConfig {
 	position: 'left' | 'center' | 'right';
 }
 
-export function readTextureConfig(editorConfig: EditorConfig): TextureConfig | undefined {
-	const config = resolveSchemaConfigRoot(WASM_TEXTURE_CONFIG, editorConfig);
-	if (!config.target || config.width === undefined || config.height === undefined) return undefined;
-	return config as unknown as TextureConfig;
+export function readTextureRuntimeConfig(editorConfig: EditorConfig): TextureRuntimeConfig | undefined {
+	const config = resolveSchemaConfigRoot(TEXTURE_RUNTIME_CONFIG, editorConfig);
+	if (!config.enabled || !config.target || config.width === undefined || config.height === undefined) return undefined;
+	return config as unknown as TextureRuntimeConfig;
 }

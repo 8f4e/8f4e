@@ -15,11 +15,12 @@ Nearest sampling and per-pixel alpha.
 noteEnd
 note config
 ; @pos 100 100
-; @config wasmTexture.target screen:rgba
-; @config wasmTexture.width 2
-; @config wasmTexture.height 2
-; @config wasmTexture.magnification 64
-; @config wasmTexture.position right
+; @config textureRuntime.enabled true
+; @config textureRuntime.target screen:rgba
+; @config textureRuntime.width 2
+; @config textureRuntime.height 2
+; @config textureRuntime.magnification 64
+; @config textureRuntime.position right
 noteEnd
 entry main
 module screen
@@ -34,8 +35,8 @@ test.each(['project settings', 'schema defaults'] as const)(
 		const useDefaults = mode === 'schema defaults';
 		const projectSource = useDefaults
 			? source
-					.replace('; @config wasmTexture.magnification 64\n', '')
-					.replace('; @config wasmTexture.position right\n', '')
+					.replace('; @config textureRuntime.magnification 64\n', '')
+					.replace('; @config textureRuntime.position right\n', '')
 			: source;
 		const sample = useDefaults ? ([319, 179] as const) : ([420, 120] as const);
 		const resizedSample = useDefaults ? ([399, 199] as const) : ([540, 140] as const);
@@ -46,7 +47,7 @@ test.each(['project settings', 'schema defaults'] as const)(
 		canvas.style.height = '360px';
 		document.body.append(canvas);
 		const compiler = createCompilerPlugin();
-		const load = vi.fn(() => import('../src/index').then(module => module.createWasmTexturePlugin(compiler)));
+		const load = vi.fn(() => import('../src/index').then(module => module.createTextureRuntimePlugin(compiler)));
 		let editor: Editor | undefined;
 		try {
 			editor = await initEditor(canvas, {
@@ -54,7 +55,12 @@ test.each(['project settings', 'schema defaults'] as const)(
 				plugins: [
 					compiler.plugin,
 					createLazyPluginLoaderPlugin([
-						{ id: 'wasm-texture', scope: 'project', matches: directives => hasConfig(directives, 'wasmTexture'), load },
+						{
+							id: 'texture-runtime',
+							scope: 'project',
+							matches: directives => hasConfig(directives, 'textureRuntime'),
+							load,
+						},
 					]),
 				],
 				featureFlags: { modeOverlay: false, offscreenBlockArrows: false },
@@ -85,7 +91,7 @@ test.each(['project settings', 'schema defaults'] as const)(
 			editor.resize(640, 360);
 			editor.renderFrame();
 			readRed(...sample);
-			if (!useDefaults) await expect(canvas).toMatchScreenshot('wasm-texture');
+			if (!useDefaults) await expect(canvas).toMatchScreenshot('texture-runtime');
 		} finally {
 			editor?.dispose();
 			canvas.remove();

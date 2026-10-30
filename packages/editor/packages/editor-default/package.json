@@ -60,7 +60,7 @@
     "@8f4e/editor-plugin-test-runtime": "*",
     "@8f4e/language-spec": "*",
     "@8f4e/editor-plugin-connectors": "*",
-    "@8f4e/editor-plugin-wasm-texture": "*"
+    "@8f4e/editor-plugin-texture-runtime": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

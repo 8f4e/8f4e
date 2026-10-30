@@ -1,12 +1,12 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/test-runner';
-import { readTextureConfig, type TextureConfig, WASM_TEXTURE_CONFIG } from './config';
+import { readTextureRuntimeConfig, TEXTURE_RUNTIME_CONFIG, type TextureRuntimeConfig } from './config';
 import { getTextureDrawRect } from './placement';
 import { RgbaTextureDrawer } from './rgba-texture-drawer';
 
-/** Runs a project entry and draws its RGBA framebuffer above earlier render layers. */
-export function createWasmTexturePlugin({
+/** Executes a project entry once per editor frame and draws its RGBA framebuffer. */
+export function createTextureRuntimePlugin({
 	getCodeBuffer,
 	getMemory,
 }: {
@@ -14,10 +14,10 @@ export function createWasmTexturePlugin({
 	getMemory: () => WebAssembly.Memory | null;
 }): EditorPlugin {
 	return {
-		id: 'wasm-texture',
+		id: 'texture-runtime',
 		setup: ({ store, events, drawers }) => {
 			const state = store.getState();
-			let config: TextureConfig | undefined;
+			let config: TextureRuntimeConfig | undefined;
 			let program: { memory: WebAssembly.Memory; exports: WebAssembly.Exports } | undefined;
 			let entry: CallableFunction | undefined;
 			let byteAddress: number | undefined;
@@ -64,13 +64,13 @@ export function createWasmTexturePlugin({
 				} catch (error) {
 					if (version === generation) {
 						pending = false;
-						console.error('Failed to instantiate WASM texture:', error);
+						console.error('Failed to instantiate texture runtime:', error);
 					}
 				}
 			}
 
 			function syncConfig() {
-				config = readTextureConfig(state.editorConfig);
+				config = readTextureRuntimeConfig(state.editorConfig);
 				byteLength = config ? config.width * config.height * 4 : 0;
 				if (!config) {
 					unregisterLayer?.();
@@ -109,17 +109,17 @@ export function createWasmTexturePlugin({
 				if (config && !program && !pending) void syncProgram();
 			}
 
-			store.set('editorConfigSchemaContributions.wasmTexture', WASM_TEXTURE_CONFIG);
-			store.subscribe('editorConfig.wasmTexture', syncConfig);
+			store.set('editorConfigSchemaContributions.textureRuntime', TEXTURE_RUNTIME_CONFIG);
+			store.subscribe('editorConfig.textureRuntime', syncConfig);
 			events.on('compilationSucceeded', syncProgram);
 			syncConfig();
 			return () => {
-				store.unsubscribe('editorConfig.wasmTexture', syncConfig);
+				store.unsubscribe('editorConfig.textureRuntime', syncConfig);
 				events.off('compilationSucceeded', syncProgram);
 				clearProgram();
 				unregisterLayer?.();
 				const schemas = { ...state.editorConfigSchemaContributions };
-				delete schemas.wasmTexture;
+				delete schemas.textureRuntime;
 				store.set('editorConfigSchemaContributions', schemas);
 			};
 		},
