@@ -2,7 +2,7 @@
   "name": "@8f4e/editor-plugin-project-files",
   "version": "0.0.7",
   "private": true,
-  "description": "Project Open, Save, and Export plugin for the 8f4e editor",
+  "description": "Project Open and Save plugin for the 8f4e editor",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,7 +19,8 @@
     "@8f4e/editor-core": "*",
     "@8f4e/editor-state": "*",
     "@8f4e/compiler": "*",
-    "@8f4e/language-spec": "*"
+    "@8f4e/language-spec": "*",
+    "@8f4e/editor-file-session": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",
@@ -27,6 +28,7 @@
     "vitest": "4.1.7",
     "@vitest/browser-playwright": "4.1.7",
     "@vitest/browser": "4.1.7",
-    "@8f4e/editor-state-testing": "*"
+    "@8f4e/editor-state-testing": "*",
+    "@8f4e/editor-plugin-project-export": "*"
   }
 }

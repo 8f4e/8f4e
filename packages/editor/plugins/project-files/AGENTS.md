@@ -1,13 +1,12 @@
 # Project Files Plugin
 
-- Own Open From Disk, Save, Export Project, their actions/menus, and Cmd/Ctrl+S here.
-- Export `createProjectFilesPlugin({ inputTarget, showOpenMenuItem })` with inline factory dependencies.
-- Derive browser resources from the input element's ownerDocument. Own file associations, permissions, input/download
-  fallbacks, pending destinations, and ordered writes inside each setup. The default editor supplies no file service.
-- Dispatch generic `loadProject` after parsing an opened file; observe that action to clear old associations. Undo/redo
-  restore state within the existing project. Keep file-specific callbacks, flags, and handles out of core.
-- Start pickers and permission requests synchronously from user actions. Accepted writes may finish after disposal;
-  pending opens must not replace the disposed editor's project.
-- Use public serialization and logging helpers. Session persistence belongs to its separate plugin.
-- Return explicit cleanup for DOM listeners, actions, and menu contributions.
+- Own Open From Disk, Save, their actions/menus, and Cmd/Ctrl+S here. Export Project belongs to its separate plugin.
+- Export `createProjectFilesPlugin({ inputTarget, fileSession, showOpenMenuItem })` with required session injection.
+- Derive Open's browser resources from the input element's ownerDocument. Parse before dispatching `loadProject`,
+  then associate the opened handle through the shared file session. Cancellation and failed parsing retain it.
+- The composition installs the file session's plugin before project loaders. Keep associations, permissions,
+  pending destinations, ordered writes, and downloads in `@8f4e/editor-file-session`, outside core.
+- Pending opens must not replace a disposed editor's project. Return cleanup for DOM listeners, actions, and menus.
+- Keep the composed Open/Save, Export, and shared-session behavior covered here: independent installation, destination
+  sharing, serialized writes, replacement/disposal, fallbacks, and per-editor isolation. Keep local test helpers local.
 - Verify `build`, `test`, `typecheck`, and `test:screenshot` through this package's Nx targets.

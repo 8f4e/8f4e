@@ -1,9 +1,11 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
+import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createStackPlugin } from '@8f4e/editor-plugin-stack';
 import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
@@ -37,12 +39,14 @@ export async function mountMinimalEditor(
 	}: MinimalEditorMountOptions = {}
 ): Promise<MinimalEditorInstance> {
 	const compiler = createCompilerPlugin({ resolveInclude: resolveStdlibInclude });
+	const fileSession = createProjectFileSession();
 	const browserWindow = canvas.ownerDocument.defaultView!;
 	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
+			fileSession.plugin,
 			connectorsPlugin,
 			createProjectUrlLoaderPlugin({
 				fetch: globalThis.fetch,
@@ -51,6 +55,7 @@ export async function mountMinimalEditor(
 				onError: onInitialProjectLoadError,
 			}),
 			assertionMarkersPlugin,
+			createProjectExportPlugin({ document: canvas.ownerDocument, fileSession }),
 			createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory: compiler.writeMemory }),
 			createLazyPluginLoaderPlugin(
 				createLazyPluginRegistry({

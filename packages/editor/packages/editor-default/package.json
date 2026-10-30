@@ -60,7 +60,9 @@
     "@8f4e/editor-plugin-test-runtime": "*",
     "@8f4e/language-spec": "*",
     "@8f4e/editor-plugin-connectors": "*",
-    "@8f4e/editor-plugin-texture-runtime": "*"
+    "@8f4e/editor-plugin-texture-runtime": "*",
+    "@8f4e/editor-file-session": "*",
+    "@8f4e/editor-plugin-project-export": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

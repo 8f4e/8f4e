@@ -1,4 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
+import { createProjectFileSession } from '@8f4e/editor-file-session';
+import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
 import initState from '@8f4e/editor-state';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
@@ -32,10 +34,14 @@ function createHandle() {
 }
 function setup({
 	installed = true,
+	openSave = true,
+	projectExport = true,
 	mode = 'edit',
 	showOpenMenuItem = true,
 }: {
 	installed?: boolean;
+	openSave?: boolean;
+	projectExport?: boolean;
 	mode?: 'edit' | 'view';
 	showOpenMenuItem?: boolean;
 } = {}) {
@@ -56,16 +62,27 @@ function setup({
 		body: { appendChild: vi.fn() },
 	};
 	const inputTarget = Object.assign(new EventTarget(), { ownerDocument: document }) as unknown as HTMLElement;
-	const disposePlugin = installed
-		? createProjectFilesPlugin({ inputTarget, showOpenMenuItem }).setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				drawers: createEditorDrawerRegistry(),
-			})
-		: () => {};
+	const fileSession = createProjectFileSession();
+	const plugins = installed
+		? [
+				fileSession.plugin,
+				...(openSave ? [createProjectFilesPlugin({ inputTarget, fileSession, showOpenMenuItem })] : []),
+				...(projectExport ? [createProjectExportPlugin({ document: inputTarget.ownerDocument, fileSession })] : []),
+			]
+		: [];
+	const pluginCleanups = plugins.map(plugin =>
+		plugin.setup({
+			store,
+			events,
+			menus: store.menus,
+			directives: store.directives,
+			layout: store.layout,
+			drawers: createEditorDrawerRegistry(),
+		})
+	);
+	const disposePlugin = () => {
+		while (pluginCleanups.length) pluginCleanups.pop()!();
+	};
 	cleanups.push(() => {
 		disposePlugin();
 		store.dispose();
@@ -97,7 +114,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe('project files plugin', () => {
+describe('project file plugins', () => {
 	it.each(['edit', 'view'] as const)('opens and exports through the main menu in %s mode', async mode => {
 		const test = setup({ mode });
 		await test.openMenu();
@@ -110,6 +127,31 @@ describe('project files plugin', () => {
 		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledOnce();
 		expect(await test.handle.writable.write.mock.calls[0][0].text()).toContain('int value 1');
 		expect(test.state.contextMenu.open).toBe(false);
+	});
+	it('exports independently without Open or the Save shortcut', async () => {
+		const test = setup({ openSave: false });
+		await test.openMenu();
+		expect(test.state.contextMenu.items.some(item => item.action === 'importProject')).toBe(false);
+		expect(test.state.contextMenu.items.some(item => item.action === 'exportProject')).toBe(true);
+		expect(test.keydown('s', { ctrlKey: true }).defaultPrevented).toBe(false);
+		await test.events.dispatchAsync('saveProject');
+		await test.events.dispatchAsync('importProject');
+		expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
+		expect(test.browserWindow.showOpenFilePicker).not.toHaveBeenCalled();
+		await test.events.dispatchAsync('exportProject');
+		expect(await test.handle.writable.write.mock.calls[0][0].text()).toContain('int value 1');
+	});
+	it('opens and saves independently without Export', async () => {
+		const test = setup({ projectExport: false });
+		await test.openMenu();
+		expect(test.state.contextMenu.items.some(item => item.action === 'importProject')).toBe(true);
+		expect(test.state.contextMenu.items.some(item => item.action === 'exportProject')).toBe(false);
+		await test.events.dispatchAsync('exportProject');
+		expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
+		await test.events.dispatchAsync('importProject');
+		expect(test.keydown('s', { metaKey: true }).defaultPrevented).toBe(true);
+		await vi.waitFor(() => expect(test.handle.writable.close).toHaveBeenCalledOnce());
+		expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
 	});
 	it('hides only the Open menu item when requested by the host', async () => {
 		const test = setup({ showOpenMenuItem: false });
@@ -322,10 +364,10 @@ describe('project files plugin', () => {
 		expect(project.modules[0].code).toContain('int value 1');
 		expect(project.groups[0].modules[0].code).toEqual(nested.code);
 	});
-	it('reports incomplete source before opening a picker', async () => {
+	it.each(['saveProject', 'exportProject'])('reports incomplete source before %s opens a picker', async action => {
 		const test = setup();
 		test.state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'test')!.code = ['module unfinished'];
-		await test.events.dispatchAsync('saveProject');
+		await test.events.dispatchAsync(action);
 		expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
 		expect(test.state.console.logs.at(-1)?.message).toContain('Failed to serialize project');
 	});
@@ -344,6 +386,7 @@ describe('project files plugin', () => {
 		expect(test.keydown('s', { ctrlKey: true }).defaultPrevented).toBe(false);
 		await test.events.dispatchAsync('saveProject');
 		await test.events.dispatchAsync('importProject');
+		await test.events.dispatchAsync('exportProject');
 		expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
 		expect(test.browserWindow.showOpenFilePicker).not.toHaveBeenCalled();
 	});

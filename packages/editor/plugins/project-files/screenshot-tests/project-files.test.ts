@@ -1,5 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { createProjectFileSession } from '@8f4e/editor-file-session';
+import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
 import { expect, test, vi } from 'vitest';
 import { createProjectFilesPlugin } from '../src/index';
 
@@ -33,9 +35,14 @@ noteEnd`;
 	vi.stubGlobal('showOpenFilePicker', vi.fn().mockResolvedValue([handle]));
 	let editor: Editor | undefined;
 	try {
+		const fileSession = createProjectFileSession();
 		editor = await initEditor(canvas, {
 			initialProject: parseProjectSource(source),
-			plugins: [createProjectFilesPlugin({ inputTarget: canvas })],
+			plugins: [
+				fileSession.plugin,
+				createProjectFilesPlugin({ inputTarget: canvas, fileSession }),
+				createProjectExportPlugin({ document, fileSession }),
+			],
 		});
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		const state = editor.state;

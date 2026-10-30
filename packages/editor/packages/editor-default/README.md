@@ -60,10 +60,13 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 `@8f4e/editor-plugin-slider` for sliders,
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
-`@8f4e/editor-plugin-project-files` for project Open/Save/Export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
+`@8f4e/editor-plugin-project-files` for project Open/Save, `@8f4e/editor-plugin-project-export` for source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
 `createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
-constructs this plugin set with resources for one editor. The project-files plugin derives browser resources from the
-canvas; WebAssembly export receives its document and a live compiler-byte getter. There is no host file service.
+constructs this plugin set with resources for one editor. It creates one `@8f4e/editor-file-session`, installs its
+plugin before project loaders, and supplies it to Open/Save and Export. That session shares the current destination
+and pending write state, so Export selects the file used by subsequent saves. Each file plugin serializes its own
+project and passes a Blob and filename to the shared browser writer. Open derives browser resources from the
+canvas; WebAssembly export receives its document and a live compiler-byte getter. File handling stays outside core.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
 browser resources. This composition supplies resources tied to the host, while browser plugins can own their
 browser API use.

@@ -18,7 +18,9 @@ editor.dispose();
 ```
 
 The composition installs the compiler first, with lazy standard-library include resolution. It includes project URL
-loading, keyboard input, assertion markers, watch and stack annotations, and tooltips.
+loading, project source export, keyboard input, assertion markers, watch and stack annotations, and tooltips.
+Export Project saves the entire current project as `.8f4e` source through `@8f4e/editor-plugin-project-export`.
+The composition gives it a per-editor `@8f4e/editor-file-session`; no Open/Save plugin or Save shortcut is installed.
 Plot, wave, meter, bars, switch, button, piano, slider, crossfade, and audio/worker/test/texture runtimes load through the
 project-signal registry in `src/lazy-plugins.ts`. MIDI input and binary assets also load through that registry when
 raw `@config midi.*` or `@config bin.*` directives appear. Control factories receive the current editor's live memory
@@ -41,7 +43,7 @@ layout, visibility management, and any WebMCP bridge.
 Hosts can override feature flags. Core still owns ordinary editing, navigation, clipboard operations, and history.
 
 This package has its own composition and dependencies. The full `@8f4e/editor-default` composition provides session
-persistence, file and WASM exports, screenshots, built-in module browsing, and additional editing actions such as
+persistence, Open/Save with Cmd/Ctrl+S, WASM exports, screenshots, built-in module browsing, and additional editing actions such as
 visual grouping, execution toggles, favorites navigation/editing, and memory disconnection.
 
 Verify from the workspace root:

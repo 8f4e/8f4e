@@ -2,6 +2,7 @@ import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
+import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
 import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
@@ -31,6 +32,9 @@ vi.mock('@8f4e/editor-plugin-keyboard-memory', () => ({
 }));
 vi.mock('@8f4e/editor-plugin-screenshot', () => ({
 	createScreenshotPlugin: vi.fn(() => ({ id: 'screenshot', setup: () => () => {} })),
+}));
+vi.mock('@8f4e/editor-plugin-project-export', () => ({
+	createProjectExportPlugin: vi.fn(() => ({ id: 'project-export', setup: () => () => {} })),
 }));
 vi.mock('@8f4e/editor-plugin-project-files', () => ({
 	createProjectFilesPlugin: vi.fn(() => ({ id: 'project-files', setup: () => () => {} })),
@@ -68,7 +72,9 @@ describe('default editor plugins', () => {
 			.mock.calls.at(-1)![1]
 			.plugins!.map(plugin => plugin.id);
 		expect(pluginIds[0]).toBe('compiler');
-		expect(pluginIds).toEqual(expect.arrayContaining(['connectors', 'watch', 'stack', 'tooltips', 'favorites']));
+		expect(pluginIds).toEqual(
+			expect.arrayContaining(['connectors', 'watch', 'stack', 'tooltips', 'favorites', 'project-file-session'])
+		);
 		expect(pluginIds.indexOf('watch')).toBeLessThan(pluginIds.indexOf('tooltips'));
 		expect(pluginIds.indexOf('stack')).toBeLessThan(pluginIds.indexOf('tooltips'));
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
@@ -86,7 +92,10 @@ describe('default editor plugins', () => {
 		expect(createKeyboardMemoryPlugin).toHaveBeenCalledWith({ inputTarget: canvas, writeMemory });
 		const options = vi.mocked(createScreenshotPlugin).mock.calls[0][0];
 		expect(options.canvas).toBe(canvas);
-		expect(createProjectFilesPlugin).toHaveBeenCalledWith({ inputTarget: canvas, showOpenMenuItem: true });
+		const { fileSession } = vi.mocked(createProjectFilesPlugin).mock.calls[0][0];
+		expect(createProjectFilesPlugin).toHaveBeenCalledWith({ inputTarget: canvas, fileSession, showOpenMenuItem: true });
+		expect(createProjectExportPlugin).toHaveBeenCalledWith({ document: canvas.ownerDocument, fileSession });
+		expect(vi.mocked(initEditor).mock.calls.at(-1)![1].plugins).toContain(fileSession.plugin);
 		expect(createWasmExportPlugin).toHaveBeenCalledWith({ document: canvas.ownerDocument, getCodeBuffer });
 		expect(renderFrame).not.toHaveBeenCalled();
 		options.renderFrame();
@@ -117,7 +126,11 @@ describe('default editor plugins', () => {
 		});
 		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
 		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
-		expect(createProjectFilesPlugin).toHaveBeenCalledWith({ inputTarget: canvas, showOpenMenuItem: false });
+		expect(createProjectFilesPlugin).toHaveBeenCalledWith({
+			inputTarget: canvas,
+			fileSession: expect.anything(),
+			showOpenMenuItem: false,
+		});
 		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
 			storage,
 			storageKey: 'project_custom',
@@ -166,6 +179,7 @@ describe('default editor plugins', () => {
 		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();
 		expect(createScreenshotPlugin).not.toHaveBeenCalled();
 		expect(createProjectFilesPlugin).not.toHaveBeenCalled();
+		expect(createProjectExportPlugin).not.toHaveBeenCalled();
 		expect(createWasmExportPlugin).not.toHaveBeenCalled();
 		withoutPlugins.dispose();
 	});
