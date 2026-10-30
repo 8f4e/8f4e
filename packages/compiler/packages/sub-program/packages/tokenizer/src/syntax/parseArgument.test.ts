@@ -248,6 +248,21 @@ describe('classifyIdentifier – check ordering regression', () => {
 		]);
 	});
 
+	it('classifies &*name as a pointee address without dereferencing its value', () => {
+		expect(classifyIdentifier('&*buffer')).toEqual({
+			type: ArgumentType.IDENTIFIER,
+			value: '&*buffer',
+			referenceKind: 'memory-pointer',
+			scope: 'local',
+			targetMemoryId: 'buffer',
+			dereferenceDepth: 0,
+		});
+	});
+
+	it('rejects a missing pointee-address target', () => {
+		expect(() => classifyIdentifier('&*')).toThrow('Memory pointer target is missing');
+	});
+
 	it('rejects pointer identifiers deeper than the supported double-dereference syntax', () => {
 		expect(() => classifyIdentifier('***buffer')).toThrow('Invalid pointer depth.');
 	});

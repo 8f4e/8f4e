@@ -5,6 +5,7 @@
 ## Memory reference
 
 - `&name` pushes the start address (byte address) of the memory item.
+- `&*name` pushes the byte address currently stored in a pointer-typed memory item, without loading the pointee value. It is only valid for pointer-typed identifiers.
 - `name&` pushes the start address (byte address) of the final 4-byte allocation unit covering the memory item.
 - `&this` pushes the start byte address of the current module.
 - `this&` pushes the byte address of the current module's final allocation unit.
@@ -37,7 +38,9 @@ Example:
 ```
 int target 123
 int* ptr &target
-push *ptr
+push &ptr    ; address of the pointer slot
+push &*ptr   ; address stored in ptr (the start of target)
+push *ptr    ; value loaded from target
 
 int** pptr &ptr
 push *pptr    ; pushes the address stored in ptr

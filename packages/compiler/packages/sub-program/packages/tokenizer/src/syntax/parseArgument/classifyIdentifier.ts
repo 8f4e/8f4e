@@ -95,6 +95,18 @@ export function classifyIdentifier(value: string): ArgumentIdentifier {
 	// Local memory reference: &name (start) or name& (end).
 	// Checked after all intermodular forms since &mod: and &mod:mem also start with &.
 	if (hasMemoryReferenceSigil) {
+		if (value.startsWith('&*') && value[2] !== '*') {
+			const { targetMemoryId } = getMemoryPointerTarget(value.slice(1));
+			return {
+				type: ArgumentType.IDENTIFIER,
+				value,
+				referenceKind: 'memory-pointer',
+				scope: 'local',
+				targetMemoryId,
+				dereferenceDepth: 0,
+			};
+		}
+
 		const isEndAddress = lastChar === '&';
 		const targetMemoryId = firstChar === '&' ? value.substring(1) : value.slice(0, -1);
 		return {

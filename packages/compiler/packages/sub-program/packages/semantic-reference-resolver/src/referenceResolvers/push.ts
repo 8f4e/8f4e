@@ -94,6 +94,11 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			const pointerArgument = argument as MemoryPointerIdentifier;
 			const memoryItem = getResolvedMemoryDeclaration(context, pointerArgument.targetMemoryId);
 			if (memoryItem) {
+				if (pointerArgument.dereferenceDepth === 0 && !memoryItem.pointeeBaseType) {
+					throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, context, {
+						identifier: pointerArgument.value,
+					});
+				}
 				validateDereferenceDepth(pointerArgument, memoryItem, line, context);
 				const resolvedLine: Omit<ResolvedMemoryPointerPushLine, 'resolvedTarget'> = {
 					...line,
@@ -103,6 +108,11 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			}
 
 			const local = context.locals[pointerArgument.targetMemoryId];
+			if (pointerArgument.dereferenceDepth === 0 && local && !isResolvedPointerLocal(local)) {
+				throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, context, {
+					identifier: pointerArgument.value,
+				});
+			}
 			if (isResolvedPointerLocal(local)) {
 				validateDereferenceDepth(pointerArgument, local, line, context);
 				const resolvedLine: Omit<ResolvedLocalPointerPushLine, 'resolvedTarget'> = {

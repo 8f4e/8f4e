@@ -85,4 +85,10 @@ describe('getError', () => {
 			`Duplicate identifier: same. Module and function names must be unique. (${ErrorCode.DUPLICATE_IDENTIFIER})`
 		);
 	});
+	it('explains that the pointee address prefix requires a pointer', () => {
+		const error = getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, undefined, { identifier: 'value' });
+
+		expect(error.message).toContain('pointee address prefix requires a pointer-typed identifier');
+		expect(error.message).toContain('value');
+	});
 });

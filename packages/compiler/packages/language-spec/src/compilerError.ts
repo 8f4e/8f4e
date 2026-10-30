@@ -544,6 +544,18 @@ export function getError(
 				line,
 				context,
 			};
+		case ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER:
+			return {
+				code,
+				message:
+					'The pointee address prefix requires a pointer-typed identifier' +
+					(details?.identifier ? `: ${details.identifier}` : '') +
+					'. (' +
+					code +
+					')',
+				line,
+				context,
+			};
 		case ErrorCode.POINTER_DEREFERENCE_DEPTH_EXCEEDED:
 			return {
 				code,

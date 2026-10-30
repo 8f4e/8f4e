@@ -59,6 +59,7 @@ export const ErrorCode = {
 	DUPLICATE_GROUP_MEMORY_INITIALIZER: 76,
 	INVALID_ARRAY_SIZE: 77,
 	INVALID_ADDRESS_ARITHMETIC: 78,
+	POINTEE_ADDRESS_REQUIRES_POINTER: 79,
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
