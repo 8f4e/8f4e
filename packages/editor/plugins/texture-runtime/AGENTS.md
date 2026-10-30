@@ -16,4 +16,5 @@
   storage for removed/offscreen views. Schema validation owns config constraints; directive parsing owns argument constraints.
 - Run `npx nx run @8f4e/editor-plugin-texture-runtime:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-texture-runtime:test:screenshot`.
+- Builds clear `dist/` before compilation so deleted or renamed sources cannot remain in emitted output or build caches.
 - Ignore Vitest attachments and screenshot comparisons; retain reference images. Browser fixtures require COOP/COEP.
