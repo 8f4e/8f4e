@@ -39,6 +39,8 @@
   under the package root.
 - Builds: the website outputs to `packages/editor/packages/editor-website/dist/`. Package bundles are consumed via
   aliases like `@8f4e/editor-default` and `@8f4e/editor-core`.
+- Package builds clear their own `dist/` before emitting output. Plain TypeScript builds use `rm -rf dist && tsc`.
+  Mixed builds clean once before the first emitter so later TypeScript or Vite steps preserve earlier assets and declarations.
 - Docs and assets: `docs/`, selected files copied via Vite static-copy.
 - Example builds generate module sources without precompiling project WASM files. The default editor discovers
   `.8f4em` sources through `@8f4e/vite-plugin-sources` and supplies lazy loaders to the example-modules plugin,

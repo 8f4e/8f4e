@@ -8,6 +8,7 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "commands": [
+          "rm -rf dist",
           "vite build -c vite.config.worklet.ts",
           "tsc"
         ],

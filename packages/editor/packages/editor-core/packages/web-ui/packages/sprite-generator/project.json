@@ -23,7 +23,7 @@
         "generate-fonts"
       ],
       "options": {
-        "command": "tsc",
+        "command": "rm -rf dist && tsc",
         "cwd": "{projectRoot}"
       }
     },

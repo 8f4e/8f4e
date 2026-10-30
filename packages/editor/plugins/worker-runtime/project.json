@@ -6,7 +6,7 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc",
+        "command": "rm -rf dist && tsc",
         "cwd": "{projectRoot}"
       },
       "dependsOn": [

@@ -8,6 +8,7 @@
 - From root: `npx nx run @8f4e/runtime-audio-worklet:build|test|typecheck`.
 - From package directory: use `npx nx run @8f4e/runtime-audio-worklet:<target>` (e.g., `npx nx run @8f4e/runtime-audio-worklet:dev`).
 - Build before integrating in the default editor composition to ensure alias resolution.
+- Clean `dist/` once before the sequential Vite worklet and TypeScript builds; preserve the worklet bundle when emitting TypeScript output.
 
 ## Coding Style
 - TypeScript. Use Biome as the fixer (`npx biome check --write <files>`); it owns formatting rules such as tabs, single quotes, semicolons, and width 120.

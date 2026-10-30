@@ -50,6 +50,8 @@
 
 ## Build, Test, Dev
 
+- Clear each package's `dist/` before build output is emitted. Keep plain TypeScript plugin builds as
+  `rm -rf dist && tsc`; mixed pipelines clean once before their first emitting step.
 - Build or test the composition with `npx nx run @8f4e/editor-default:build|test|typecheck`.
 - Build or verify the embedded composition with `npx nx run @8f4e/editor-minimal:build|test|typecheck` and
   `npx nx run @8f4e/8f4e-website:test:browser`.
