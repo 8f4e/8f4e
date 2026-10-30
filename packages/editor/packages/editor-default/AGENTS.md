@@ -29,8 +29,10 @@
   crossfade, MIDI input, and binary assets. Match all three wave directives: `wave`, `wave2`, and `wave4`, and raw
   `midi`/`bin` config roots before their schemas load. Import implementations and construct
   their factories only inside `load()`, using the supplied live memory writer. Supply runtime plugins with compiler artifact getters and the optional shared AudioContext. Each runtime plugin imports its own worker/worklet assets and owns browser API use.
-  Mounting and initial project notifications do not wait for lazy plugin imports. The loader owns project-load scans,
-  its manual scan menu, late installation, and disposal; core keeps the ordinary plugin contract.
+  Declare `scope: 'view'` for visual/control plugins and `scope: 'project'` for runtime, MIDI, and asset plugins.
+  Match cached parsed directive records; the loader scans automatically after completed project edits and view changes.
+  Mounting and initial project notifications do not wait for lazy plugin imports. The loader owns late installation
+  and disposal; core keeps the ordinary plugin contract.
 - Include `toggleFavoritePlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Core does
   not install these editing actions or their menus.
 - Include `groupingPlugin` after the execution-toggle plugin. It owns editor `@group` behavior, including drag and

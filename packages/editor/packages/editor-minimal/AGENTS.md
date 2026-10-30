@@ -11,7 +11,9 @@
   example-module source collection here.
 - Keep project signals and dynamic imports in `src/lazy-plugins.ts`. Plugins own feature logic; the existing loader
   owns activation and disposal. Match all wave variants and raw `midi`, `bin`, and runtime config roots before their
-  schemas load. Supply the browser navigator and live compiler getters to the registry for MIDI and binary assets.
+  schemas load. Declare `scope: 'view'` for visual/control plugins and `scope: 'project'` for runtime, MIDI, and
+  asset plugins. Match cached directives; completed project changes and group navigation trigger automatic scans.
+  Supply the browser navigator and live compiler getters to the registry for MIDI and binary assets.
 - Supply the canvas and browser navigator to input plugins, memory getters to binary assets, and the compiler memory
   writer to interactive controls. Install watch/stack overlays before tooltips.
 - The project URL plugin owns fetching. Forward initial-project callbacks; mounting does not wait for the fetch.

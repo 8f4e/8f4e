@@ -12,11 +12,11 @@ Configure input callbacks with separate directives:
 ; @info midi
 ```
 
-The default and minimal editors load the plugin lazily when raw `@config midi.*` directives exist. Project loading
-scans automatically; after adding MIDI configuration through editing, use **Load plugins used by project** in the
-background menu. Installation reads current configuration and compiler artifacts, including after compilation has
-already completed. The plugin requests MIDI access only when MIDI configuration exists. It publishes
-available input and output names under `state.info.midi`, using stable numeric indexes while discovery is active.
+The default and minimal editors automatically load the plugin when raw `@config midi.*` directives exist, including
+after editing and inside unopened groups. Detection reads cached parsed directives across the complete project tree.
+The plugin stays installed until editor disposal. Installation reads current configuration and compiler artifacts,
+including after compilation has already completed. The plugin requests MIDI access only when MIDI configuration
+exists. It publishes available input and output names under `state.info.midi`, using stable numeric indexes while discovery is active.
 Input callbacks use those indexes and name exported WASM functions accepting `(status, data1, data2)`. Multiple
 callbacks can share a port; duplicate bindings are ignored. Missing bytes in short realtime messages become zero.
 

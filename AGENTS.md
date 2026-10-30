@@ -9,9 +9,11 @@
 - WebMCP lives in `packages/editor/packages/editor-webmcp/` as an external page-owned adapter bound to one editor's public `editing` handle. The editor website and example/test galleries compose it; gallery project switches dispose and recreate the bridge.
 - Optional editor features live in `packages/editor/plugins/<feature>/` as independent npm/Nx packages named
   `@8f4e/editor-plugin-<feature>`.
-- `editor-plugin-lazy-loader` scans project signals on replacement and a manual menu action. Both editor compositions
-  keeps lazy signals and dynamic imports in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano,
-  slider, crossfade, MIDI input, binary assets, and the audio/worker/test runtimes. MIDI and assets match raw `midi`
+- `editor-plugin-lazy-loader` automatically matches cached editor directives after project changes and group navigation.
+  Visual/control plugins use the current project level; runtime, MIDI, and asset plugins use the entire project tree.
+  Both editor compositions keep explicit loading scopes, lazy signals, and dynamic imports in `src/lazy-plugins.ts`
+  for plot, wave, meter, bars, switch, button, piano, slider, crossfade, MIDI input, binary assets, and the
+  audio/worker/test runtimes. MIDI and assets match raw `midi`
   and `bin` config roots before their schemas load. Other plugins remain fixed.
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
   selection, and paste collision renaming. Nested language-level project groups remain core project structure.

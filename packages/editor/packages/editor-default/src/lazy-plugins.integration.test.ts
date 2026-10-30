@@ -13,11 +13,12 @@ afterEach(() => {
 	vi.unstubAllGlobals();
 });
 
-function restoreSession(directive: string) {
+function restoreSession(directive: string, nested = false) {
 	const project = parseProjectSource(
 		[
 			'8f4e/v1',
 			'entry main',
+			...(nested ? ['group outer', 'group inner'] : []),
 			'module audio',
 			'int[] points 4',
 			'int value 0',
@@ -27,6 +28,7 @@ function restoreSession(directive: string) {
 			'int pressed 0',
 			`; @${directive}`,
 			'moduleEnd',
+			...(nested ? ['groupEnd', 'groupEnd'] : []),
 			'entryEnd',
 		].join('\n')
 	);
@@ -67,8 +69,11 @@ function restoreSession(directive: string) {
 	for (const entry of entries) expect(entry.load).not.toHaveBeenCalled();
 	events.dispatch('init');
 	const state = store.getState();
-	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'audio')!;
-	return { block, entries, state };
+	const outer = state.codeBlockRendering.codeBlocks.find(block => block.name === 'outer');
+	const inner = outer?.nestedProjectCodeBlocks?.find(block => block.name === 'inner');
+	const blocks = inner?.nestedProjectCodeBlocks ?? state.codeBlockRendering.codeBlocks;
+	const block = blocks.find(block => block.name === 'audio')!;
+	return { block, entries, state, events, outer, inner };
 }
 
 it.each([
@@ -95,6 +100,26 @@ it('loads MIDI from restored raw configuration and registers its schema', async 
 	expect(state.editorConfig.midi).toEqual({ inputs: { keys: { port: 0, callback: 'onMidi' } } });
 	expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['midi-input']);
+});
+
+it('loads MIDI from unopened groups while deferring plot until its project level is visited', async () => {
+	const { block, entries, state, events, outer, inner } = restoreSession(
+		'plot &points 4\n; @config midi.inputs.keys.port 0\n; @config midi.inputs.keys.callback onMidi',
+		true
+	);
+	await vi.waitFor(() => expect(state.info.midi).toEqual({}));
+	const plot = entries.find(entry => entry.id === 'plot')!;
+	expect(plot.load).not.toHaveBeenCalled();
+	events.dispatch('openProjectGroup', { codeBlock: outer });
+	await Promise.resolve();
+	expect(plot.load).not.toHaveBeenCalled();
+	events.dispatch('openProjectGroup', { codeBlock: inner });
+	await vi.waitFor(() => expect(block.gaps.get(7)?.size).toBe(8));
+	events.dispatch('goToRootProjectGroup');
+	events.dispatch('openProjectGroup', { codeBlock: outer });
+	events.dispatch('openProjectGroup', { codeBlock: inner });
+	await Promise.resolve();
+	expect(plot.load).toHaveBeenCalledOnce();
 });
 
 it('loads binary assets from a restored session and announces their size as compiler input', async () => {

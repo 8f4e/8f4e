@@ -54,7 +54,7 @@ export function createCodeBlockGraphicData(
 		isHome: false,
 		isFavorite: false,
 		alwaysOnTop: false,
-		parsedDirectives: parseBlockDirectives(code),
+		parsedDirectives: overrides.parsedDirectives ?? parseBlockDirectives(code),
 		widgets: {
 			blockHighlights: [],
 			inputs: [],

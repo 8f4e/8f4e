@@ -1,5 +1,5 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
-import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
+import { mountMinimalEditor } from '@8f4e/editor-minimal';
 import { afterEach, expect, test, vi } from 'vitest';
 
 const cleanups: Array<() => void> = [];
@@ -27,24 +27,6 @@ async function setup(source: string, assets: Record<string, () => Promise<Respon
 	cleanups.push(() => editor.dispose());
 	await vi.waitFor(() => expect(editor.state.viewport.width).toBe(768));
 	return { canvas, editor };
-}
-
-async function scanPlugins(canvas: HTMLCanvasElement, editor: MinimalEditorInstance) {
-	const rect = canvas.getBoundingClientRect();
-	canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: rect.x + 600, clientY: rect.y + 400, bubbles: true }));
-	await vi.waitFor(() =>
-		expect(editor.state.contextMenu.items.some(item => item.action === 'loadPluginsUsedByProject')).toBe(true)
-	);
-	const menu = editor.state.contextMenu;
-	const index = menu.items.findIndex(item => item.action === 'loadPluginsUsedByProject');
-	const point = {
-		clientX: rect.x + menu.x - editor.state.viewport.x + 8,
-		clientY: rect.y + menu.y - editor.state.viewport.y + index * editor.state.viewport.hGrid + 8,
-		bubbles: true,
-	};
-	canvas.dispatchEvent(new MouseEvent('mousemove', point));
-	canvas.dispatchEvent(new MouseEvent('mousedown', { ...point, buttons: 1 }));
-	canvas.dispatchEvent(new MouseEvent('mouseup', point));
 }
 
 test('recompiles with asset size constants after a lazy asset fetch completes', async () => {
@@ -89,10 +71,10 @@ entryEnd`,
 	expect(editor.state.dialogStack).toEqual([]);
 });
 
-test('activates assets after compilation through the manual scan and reloads them into grown memory', async () => {
+test('automatically activates assets added after compilation and reloads them into grown memory', async () => {
 	const assetUrl = 'https://example.com/lazy-existing-memory.pcm';
 	const fetchAsset = vi.fn(async () => new Response(new Uint8Array([9, 8, 7, 6])));
-	const { canvas, editor } = await setup(
+	const { editor } = await setup(
 		`8f4e/v1
 note settings ; @mode edit
 ; @config recompileDebounceDelay 10
@@ -124,9 +106,6 @@ entryEnd`,
 			},
 		],
 	});
-	expect(fetchAsset).not.toHaveBeenCalled();
-	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'), { timeout: 10000 });
-	await scanPlugins(canvas, editor);
 	const read = () => {
 		const memory = editor.state.compiler.memoryPlan.modules.player.memory.buffer;
 		return [...editor.getMemoryViews().uint8.slice(memory.byteAddress, memory.byteAddress + 4)];
@@ -142,14 +121,14 @@ entryEnd`,
 	expect(fetchAsset).toHaveBeenCalledOnce();
 });
 
-test('activates MIDI after compilation through the manual scan and releases its input listener', async () => {
+test('automatically activates MIDI added after compilation and releases its input listener', async () => {
 	const input = Object.assign(new EventTarget(), { id: 'keys', name: 'Keys', state: 'connected' });
 	const access = Object.assign(new EventTarget(), {
 		inputs: new Map([['keys', input]]),
 		outputs: new Map(),
 	}) as unknown as MIDIAccess;
 	const requestAccess = vi.spyOn(navigator, 'requestMIDIAccess').mockResolvedValue(access);
-	const { canvas, editor } = await setup(`8f4e/v1
+	const { editor } = await setup(`8f4e/v1
 note settings ; @mode edit
 ; @config recompileDebounceDelay 10
 noteEnd
@@ -185,21 +164,19 @@ functionEnd`);
 			},
 		],
 	});
-	expect(requestAccess).not.toHaveBeenCalled();
-	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'), { timeout: 10000 });
-	const compiledRevision = editor.getCompilerDiagnostics()!.completedRevision;
-	await scanPlugins(canvas, editor);
 	const send = (status: number) => {
 		const event = new Event('midimessage');
 		Object.defineProperty(event, 'data', { value: new Uint8Array([status, 64, 127]) });
 		input.dispatchEvent(event);
 	};
-	await vi.waitFor(() => {
-		send(0x90);
-		const address = editor.state.compiler.memoryPlan.modules.received.memory.status.allocationUnitAddress;
-		expect(editor.getMemoryViews().int32[address]).toBe(0x90);
-	});
-	expect(editor.getCompilerDiagnostics()!.completedRevision).toBe(compiledRevision);
+	await vi.waitFor(
+		() => {
+			send(0x90);
+			const address = editor.state.compiler.memoryPlan.modules.received.memory.status.allocationUnitAddress;
+			expect(editor.getMemoryViews().int32[address]).toBe(0x90);
+		},
+		{ timeout: 10000 }
+	);
 	expect(requestAccess).toHaveBeenCalledOnce();
 	expect(editor.state.info.midi).toEqual({ '0': 'Keys (in)' });
 	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
