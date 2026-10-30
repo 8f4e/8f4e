@@ -132,7 +132,7 @@ Supported paths:
 - `bin.<id>.memories.<name>` - additional memory load targets for the same binary asset.
 - `keyboard.keyCodeMemory` / `keyboard.keyPressedMemory` - memory ids for browser keyboard state.
 - `midi.inputs.<id>.port` / `midi.inputs.<id>.callback` - browser MIDI input bindings.
-- `textureRuntime.<field>` - opt-in editor-frame execution with RGBA framebuffer rendering.
+- `textureRuntime.enabled` / `textureRuntime.entry` - opt-in execution once per editor frame, independent of texture display.
 
 Examples:
 
@@ -265,6 +265,36 @@ Range detection:
 - integer arrays use type-derived bounds, matching `@wave`
 - lengths can be positive literal counts, integer memory targets, or `count(buffer)`
 - if `minValue` and `maxValue` are specified, they override the type-derived defaults
+
+### `@texture`
+
+Displays a framebuffer immediately below its directive and reserves rows and block width for the magnified image:
+
+```txt
+; @texture <framebuffer> <1bit|mono|rgb|rgba> <width> <height> <magnification>
+; @texture screen:color rgba 32 32 4
+; @texture screen:mask 1bit 64 32 2
+```
+
+The framebuffer is a plain `memoryId`, resolved in the containing block's module or project/group scope. Qualified
+names and group exposures work as with other memory directives. Width, height, and magnification are positive integers.
+The memory declaration must contain the full source buffer. Valid directives reserve space while memory is unresolved.
+
+| Type | Bytes and channel order |
+| --- | --- |
+| `1bit` | Packed black/white pixels, MSB first; rows are byte-aligned with `ceil(width / 8)` bytes each |
+| `mono` | One unsigned grayscale byte per pixel: black 0 through white 255 |
+| `rgb` | Three unsigned bytes per pixel: red, green, blue; fully opaque |
+| `rgba` | Four unsigned bytes per pixel: red, green, blue, alpha |
+
+Rows run top to bottom, and magnification uses nearest sampling. Any number of directives can view different buffers
+or the same buffer at different scales. Images follow their block and viewport but draw in the canvas overlay above
+editor content; overlapping blocks do not occlude them.
+
+Both editor compositions lazily install `@8f4e/editor-plugin-texture-runtime` for this directive, even without runtime
+configuration. Display does not require entry execution: static memory, audio, or worker runtimes can produce pixels.
+To execute an entry once per editor frame, configure `textureRuntime.enabled` and `textureRuntime.entry` as described
+under Runtime plugins.
 
 ### `@bars`
 
@@ -935,24 +965,14 @@ parsed directives. Each plugin stays installed until editor disposal and owns it
 
 #### Texture runtime
 
-The `@8f4e/editor-plugin-texture-runtime` runtime calls an exported WebAssembly function every editor frame, reads an RGBA8
-pixel buffer from shared compiler memory, and draws it over the editor. Both editor compositions load it automatically
-when the project uses `textureRuntime` configuration. Execution defaults to disabled; enable it explicitly and configure
-the export name, qualified memory target, source dimensions, and horizontal position:
+`@8f4e/editor-plugin-texture-runtime` executes a WebAssembly entry once per editor frame when explicitly enabled:
 
 ```txt
 ; @config textureRuntime.enabled true
 ; @config textureRuntime.entry renderFrame
-; @config textureRuntime.target screen:rgba
-; @config textureRuntime.width 64
-; @config textureRuntime.height 32
-; @config textureRuntime.magnification 4
-; @config textureRuntime.position center
 ```
 
-The target contains `width * height * 4` bytes in top-to-bottom RGBA order. Pixel alpha controls how strongly the
-overlay covers the editor: `0` is transparent and `255` is opaque. The texture always uses nearest-neighbor filtering
-and is vertically centered. `textureRuntime.position` accepts `left`, `center`, or `right`; these place the texture in
-the center of the left half, the full viewport, or the right half respectively. It defaults to `center`. An optional
-numeric `textureRuntime.magnification` of at least `1` multiplies both displayed dimensions while preserving the source
-aspect ratio; for example, `4` displays each source pixel as a 4 × 4 block.
+The entry defaults to `main` and runs once regardless of the number or visibility of `@texture` directives. It uses
+the compiler's shared memory and does not reinitialize defaults. The runtime only configures execution; each texture
+view specifies its framebuffer, format, dimensions, and magnification in its own directive. Disabling execution leaves
+framebuffer display active. Both editor compositions load the plugin for raw `textureRuntime` configuration or `@texture`.

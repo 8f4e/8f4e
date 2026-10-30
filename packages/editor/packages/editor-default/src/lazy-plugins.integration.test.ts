@@ -141,14 +141,12 @@ it('loads binary assets from a restored session and announces their size as comp
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['binary-assets']);
 });
 
-it('loads the texture runtime from raw configuration in an unopened group', async () => {
-	const { state, entries } = restoreSession(
-		'config textureRuntime.enabled true\n; @config textureRuntime.target audio:points\n; @config textureRuntime.width 2\n; @config textureRuntime.height 2',
-		true
-	);
-	await vi.waitFor(() =>
-		expect(state.editorConfig.textureRuntime).toEqual({ enabled: true, target: 'audio:points', width: 2, height: 2 })
-	);
+it.each([
+	['raw configuration', 'config textureRuntime.enabled true'],
+	['a texture directive', 'texture points mono 2 2 2'],
+])('loads the texture runtime from %s in an unopened group', async (_label, directive) => {
+	const { state, entries } = restoreSession(directive, true);
+	await vi.waitFor(() => expect(entries.find(entry => entry.id === 'texture-runtime')!.load).toHaveBeenCalledOnce());
 	expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['texture-runtime']);
 });

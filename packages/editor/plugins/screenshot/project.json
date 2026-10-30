@@ -9,7 +9,7 @@
         "{projectRoot}/dist"
       ],
       "options": {
-        "command": "tsc",
+        "command": "rm -rf dist && tsc",
         "cwd": "{projectRoot}"
       }
     },

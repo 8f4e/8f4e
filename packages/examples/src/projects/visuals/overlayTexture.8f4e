@@ -14,16 +14,12 @@ note
 ; @config export.fileName overlayTexture
 ; @config textureRuntime.enabled true
 ; @config textureRuntime.entry main
-; @config textureRuntime.target screen:rgba
-; @config textureRuntime.width 32
-; @config textureRuntime.height 32
-; @config textureRuntime.magnification 8
-; @config textureRuntime.position left
 
 ; The main entry runs once per editor
 ; frame and fills a 32 x 32 RGBA8
 ; image. Its pixels are magnified and
-; centered over the editor.
+; displayed below the directive.
+; @texture screen:rgba rgba 32 32 8
 noteEnd
 
 note colors

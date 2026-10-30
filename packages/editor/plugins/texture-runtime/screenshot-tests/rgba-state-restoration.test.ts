@@ -1,6 +1,6 @@
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
-import { RgbaTextureDrawer } from '../src/rgba-texture-drawer';
+import { TextureDrawer } from '../src/texture-drawer';
 
 function readPixels(gl: WebGL2RenderingContext, width: number, height: number): Uint8Array {
 	const pixels = new Uint8Array(width * height * 4);
@@ -19,14 +19,14 @@ test('restores nearest overlay sampling after raw hooks without a sprite pass', 
 	gl.samplerParameteri(sampler, gl.TEXTURE_WRAP_S, gl.REPEAT);
 	gl.samplerParameteri(sampler, gl.TEXTURE_WRAP_T, gl.REPEAT);
 	engine.hooks.postDraw.push(context => context.bindSampler(0, sampler));
-	const overlay = new RgbaTextureDrawer(engine.gl);
+	const overlay = new TextureDrawer(engine.gl);
 	const pixels = new Uint8Array([255, 0, 0, 255, 0, 0, 255, 128, 0, 0, 0, 0, 255, 255, 0, 255]);
 	let destinationAlpha = 0;
 	engine.hooks.preDraw.push(context => {
 		context.clearColor(0, destinationAlpha / 255, 0, destinationAlpha / 255);
 		context.clear(context.COLOR_BUFFER_BIT);
 	});
-	engine.hooks.postDraw.push(() => overlay.drawTexture(0, 0, canvas.width, canvas.height));
+	engine.hooks.postDraw.push(() => overlay.drawTexture('rgba', 0, 0, canvas.width, canvas.height));
 	try {
 		for (const [stage, width, height] of [
 			['initial', 8, 8],
@@ -39,7 +39,7 @@ test('restores nearest overlay sampling after raw hooks without a sprite pass', 
 				engine.restoreRenderingMemory();
 			}
 			engine.resize(width, height);
-			overlay.uploadRgba8Texture(pixels, 2, 2);
+			overlay.upload('rgba', pixels, 2, 2, 'rgba');
 			for (const alpha of [0, 128, 255]) {
 				destinationAlpha = alpha;
 				engine.renderFrame(() => {});
@@ -95,10 +95,10 @@ for (const dirtyState of ['row layout', 'unpack buffer', 'flip and premultiplica
 				context.pixelStorei(context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 			}
 		});
-		const overlay = new RgbaTextureDrawer(engine.gl);
+		const overlay = new TextureDrawer(engine.gl);
 		engine.hooks.postDraw.push(() => {
-			overlay.uploadRgba8Texture(pixels, width, height);
-			overlay.drawTexture(0, 0, canvas.width, canvas.height);
+			overlay.upload('rgba', pixels, width, height, 'rgba');
+			overlay.drawTexture('rgba', 0, 0, canvas.width, canvas.height);
 		});
 		try {
 			for (const [version, stage] of ['allocate', 'update', 'resize', 'restore'].entries()) {
@@ -131,7 +131,7 @@ for (const dirtyState of ['row layout', 'unpack buffer', 'flip and premultiplica
 					}
 				}
 				expect(gl.getParameter(gl.PIXEL_UNPACK_BUFFER_BINDING), stage).toBeNull();
-				expect(gl.getParameter(gl.UNPACK_ALIGNMENT), stage).toBe(4);
+				expect(gl.getParameter(gl.UNPACK_ALIGNMENT), stage).toBe(1);
 				for (const parameter of [
 					gl.UNPACK_ROW_LENGTH,
 					gl.UNPACK_IMAGE_HEIGHT,

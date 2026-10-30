@@ -173,6 +173,7 @@ export { default as serializeCodeBlocksToProject } from './pureHelpers/projectSe
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
 export {
 	isMemoryAddress,
+	isMemoryId,
 	isPointerSource,
 	parseElementCount,
 	parseFiniteNumber,

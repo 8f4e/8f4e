@@ -143,7 +143,7 @@ Types and generic WebGL resource helpers are exported by `@8f4e/web-ui`.
 
 `@8f4e/editor-plugin-connectors` owns input/output widgets and the complete wire renderer through these hooks.
 Core keeps memory semantics independent of connector data and has no connector-specific fields or GPU resources.
-`@8f4e/editor-plugin-texture-runtime` owns editor-frame WASM execution and RGBA framebuffer rendering through the same layer hook.
+`@8f4e/editor-plugin-texture-runtime` owns editor-frame WASM execution and block-bound `@texture` framebuffer views through the same overlay hook.
 
 Interaction handlers can subscribe to `codeBlockPointerDown` for the start of a block press and `mouseup` for release.
 Use `events.on('mousemove', handler, { capture: true })` when a plugin must consume a drag before ordinary listeners,
@@ -261,11 +261,11 @@ whose factory receives lazy source loaders. Core retains generic menus and block
 Configure editor settings with `; @config <path> <value>`.
 
 - Global editor directives control editor presentation settings like `font` and color overrides.
-- Runtime plugins own their independent `audioRuntime.enabled`, `workerRuntime.enabled`, and `testRuntime.enabled` settings.
+- Runtime plugins own their independent `audioRuntime.enabled`, `workerRuntime.enabled`, `testRuntime.enabled`, and `textureRuntime.enabled` settings.
 - Extensions can contribute schema-backed config roots; runtime packages use this for paths like `; @config audioRuntime.sampleRate 48000` and `; @config audioRuntime.audioOutBufferLAddress audioout:buffer`.
 - `; @config export.fileName <value>` controls the base file name used by editor export actions.
 - `; @config color.<path> <value>` controls base palette colors.
-- `; @config textureRuntime.<field> <value>` configures the opt-in texture runtime, which executes once per editor frame and draws an RGBA framebuffer.
+- `; @config textureRuntime.<field> <value>` configures the opt-in texture runtime, which controls entry execution once per editor frame. `; @texture <framebuffer> <1bit|mono|rgb|rgba> <width> <height> <magnification>` independently reserves block space and displays a framebuffer.
 - Base colors accept hex with optional alpha, `rgb()` / `rgba()`, and `transparent`. The palette contains `canvas`,
   `surface`, `ink`, `muted`, `primary`, `secondary`, `tertiary`, `highlight`, `detail`, `stroke`, `positive`, `warning`,
   and `negative`. Optional accents preserve independently authored hues and opacity.

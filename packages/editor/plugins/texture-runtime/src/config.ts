@@ -2,33 +2,17 @@ import { type EditorConfig, type EditorConfigSchemaContribution, resolveSchemaCo
 
 export const TEXTURE_RUNTIME_CONFIG: EditorConfigSchemaContribution = {
 	root: 'textureRuntime',
-	defaults: { enabled: false, entry: 'main', magnification: 1, position: 'center' },
+	defaults: { enabled: false, entry: 'main' },
 	schema: {
 		type: 'object',
 		properties: {
 			enabled: { type: 'boolean' },
 			entry: { type: 'string', pattern: '.+' },
-			target: { type: 'string', pattern: '^[^:]+:[^:]+$' },
-			width: { type: 'integer', minimum: 1 },
-			height: { type: 'integer', minimum: 1 },
-			magnification: { type: 'number', minimum: 1 },
-			position: { type: 'string', enum: ['left', 'center', 'right'] },
 		},
 		additionalProperties: false,
 	},
 };
 
-export interface TextureRuntimeConfig {
-	entry: string;
-	target: string;
-	width: number;
-	height: number;
-	magnification: number;
-	position: 'left' | 'center' | 'right';
-}
-
-export function readTextureRuntimeConfig(editorConfig: EditorConfig): TextureRuntimeConfig | undefined {
-	const config = resolveSchemaConfigRoot(TEXTURE_RUNTIME_CONFIG, editorConfig);
-	if (!config.enabled || !config.target || config.width === undefined || config.height === undefined) return undefined;
-	return config as unknown as TextureRuntimeConfig;
+export function readTextureRuntimeConfig(editorConfig: EditorConfig): { enabled: boolean; entry: string } {
+	return resolveSchemaConfigRoot(TEXTURE_RUNTIME_CONFIG, editorConfig) as { enabled: boolean; entry: string };
 }

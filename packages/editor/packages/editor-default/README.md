@@ -80,7 +80,8 @@ schemas are registered. The registry supplies the canvas's navigator and live co
 and the compiler's live memory writer to control factories after importing them.
 The loader scans automatically after project changes, including typing, paste, undo/redo, URL and session loads.
 Visual/control plugins use `view` scope and load when their signals appear in the current project level, including
-after entering a group. Runtime, MIDI, and asset plugins use `project` scope and match signals throughout nested groups.
+after entering a group. Texture views load for `@texture` as well as `textureRuntime` configuration, using the existing overlay pass.
+Runtime, MIDI, and asset plugins use `project` scope and match signals throughout nested groups.
 Imports finish in the background; mounting and initial-project notifications do not wait for them. A loaded plugin stays installed until editor disposal. See the [loader contract](../../plugins/lazy-loader/README.md).
 The `plugins` option replaces the default feature set: pass `[]` to omit feature plugins, or a custom array to select and extend it. The compiler remains installed first. Use `initEditor` from editor-core for a composition without a compiler or with a different compiler plugin.
 Each editor installs and disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).

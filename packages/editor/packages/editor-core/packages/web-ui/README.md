@@ -17,7 +17,7 @@ when the palette changes and draws one triangle before sprites. Glugglugglug own
 
 Canvas-wide editor layers run after sprites in registration order and before render statistics are sampled.
 Web-ui supplies shader helpers and forwards palette changes, memory release, and disposal. The connectors plugin
-owns wires; `@8f4e/editor-plugin-texture-runtime` owns RGBA framebuffer pixels, their WASM execution, and GPU resources.
+owns wires; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer views in the overlay, their optional WASM execution, and shared GPU resources.
 
 ## API
 
