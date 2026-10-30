@@ -98,7 +98,13 @@ test('keeps live editing available with the minimal project menu', async () => {
 		expect(editor.state.contextMenu.items.some(item => item.action === 'createCodeBlock')).toBe(true)
 	);
 	const menu = editor.state.contextMenu.items;
-	for (const action of ['importProject', 'exportProject', 'exportWasm', 'exportCanvasScreenshot']) {
+	for (const action of [
+		'importProject',
+		'exportProject',
+		'exportWasm',
+		'exportCanvasScreenshot',
+		'loadPluginsUsedByProject',
+	]) {
 		expect(menu.some(item => item.action === action)).toBe(false);
 	}
 	expect(menu.some(item => item.title === 'Add Built-in Block')).toBe(false);
@@ -194,8 +200,9 @@ entryEnd`),
 	await vi.waitFor(() => expect(editor.state.compiler.memoryPlan.modules.controls).toBeDefined(), { timeout: 10000 });
 	const state = editor.state;
 	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
-	await vi.waitFor(() =>
-		expect([10, 11, 12, 13, 14, 15].map(row => block.gaps.get(row)?.size)).toEqual([2, 1, 8, 6, 2, 2])
+	await vi.waitFor(
+		() => expect([10, 11, 12, 13, 14, 15].map(row => block.gaps.get(row)?.size)).toEqual([2, 1, 8, 6, 2, 2]),
+		{ timeout: 10000 }
 	);
 	expect(state.codeErrors.compilationErrors).toEqual([]);
 	const canvas = view.panel().querySelector('canvas')!;

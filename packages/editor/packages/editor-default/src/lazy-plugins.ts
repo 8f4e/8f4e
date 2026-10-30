@@ -18,53 +18,63 @@ export function createLazyPluginRegistry({
 	return [
 		{
 			id: 'plot',
-			matches: project => hasDirective(project, 'plot'),
+			scope: 'view',
+			matches: directives => hasDirective(directives, 'plot'),
 			load: () => import('@8f4e/editor-plugin-plot').then(module => module.plotPlugin),
 		},
 		{
 			id: 'wave',
-			matches: project => ['wave', 'wave2', 'wave4'].some(name => hasDirective(project, name)),
+			scope: 'view',
+			matches: directives => ['wave', 'wave2', 'wave4'].some(name => hasDirective(directives, name)),
 			load: () => import('@8f4e/editor-plugin-wave').then(module => module.wavePlugin),
 		},
 		{
 			id: 'meter',
-			matches: project => hasDirective(project, 'meter'),
+			scope: 'view',
+			matches: directives => hasDirective(directives, 'meter'),
 			load: () => import('@8f4e/editor-plugin-meter').then(module => module.meterPlugin),
 		},
 		{
 			id: 'bars',
-			matches: project => hasDirective(project, 'bars'),
+			scope: 'view',
+			matches: directives => hasDirective(directives, 'bars'),
 			load: () => import('@8f4e/editor-plugin-bars').then(module => module.barsPlugin),
 		},
 		{
 			id: 'switch',
-			matches: project => hasDirective(project, 'switch'),
+			scope: 'view',
+			matches: directives => hasDirective(directives, 'switch'),
 			load: () => import('@8f4e/editor-plugin-switch').then(module => module.createSwitchPlugin({ writeMemory })),
 		},
 		{
 			id: 'button',
-			matches: project => hasDirective(project, 'button'),
+			scope: 'view',
+			matches: directives => hasDirective(directives, 'button'),
 			load: () => import('@8f4e/editor-plugin-button').then(module => module.createButtonPlugin({ writeMemory })),
 		},
 		{
 			id: 'piano',
-			matches: project => hasDirective(project, 'piano'),
+			scope: 'view',
+			matches: directives => hasDirective(directives, 'piano'),
 			load: () => import('@8f4e/editor-plugin-piano').then(module => module.createPianoPlugin({ writeMemory })),
 		},
 		{
 			id: 'slider',
-			matches: project => hasDirective(project, 'slider'),
+			scope: 'view',
+			matches: directives => hasDirective(directives, 'slider'),
 			load: () => import('@8f4e/editor-plugin-slider').then(module => module.createSliderPlugin({ writeMemory })),
 		},
 		{
 			id: 'crossfade',
-			matches: project => hasDirective(project, 'crossfade'),
+			scope: 'view',
+			matches: directives => hasDirective(directives, 'crossfade'),
 			load: () => import('@8f4e/editor-plugin-crossfade').then(module => module.createCrossfadePlugin({ writeMemory })),
 		},
 
 		{
 			id: 'midi-input',
-			matches: project => hasConfig(project, 'midi'),
+			scope: 'project',
+			matches: directives => hasConfig(directives, 'midi'),
 			load: () =>
 				import('@8f4e/editor-plugin-midi-input').then(module =>
 					module.createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })
@@ -72,7 +82,8 @@ export function createLazyPluginRegistry({
 		},
 		{
 			id: 'binary-assets',
-			matches: project => hasConfig(project, 'bin'),
+			scope: 'project',
+			matches: directives => hasConfig(directives, 'bin'),
 			load: () =>
 				import('@8f4e/editor-plugin-binary-assets').then(module =>
 					module.createBinaryAssetsPlugin({
@@ -86,7 +97,8 @@ export function createLazyPluginRegistry({
 
 		{
 			id: 'worker-runtime',
-			matches: project => hasConfig(project, 'workerRuntime'),
+			scope: 'project',
+			matches: directives => hasConfig(directives, 'workerRuntime'),
 			load: () =>
 				import('@8f4e/editor-plugin-worker-runtime').then(module =>
 					module.createWorkerRuntimePlugin({ getCodeBuffer, getMemory })
@@ -94,7 +106,8 @@ export function createLazyPluginRegistry({
 		},
 		{
 			id: 'audio-runtime',
-			matches: project => hasConfig(project, 'audioRuntime'),
+			scope: 'project',
+			matches: directives => hasConfig(directives, 'audioRuntime'),
 			load: () =>
 				import('@8f4e/editor-plugin-audio-runtime').then(module =>
 					module.createAudioRuntimePlugin({ getCodeBuffer, getMemory, sharedAudioContext })
@@ -102,7 +115,8 @@ export function createLazyPluginRegistry({
 		},
 		{
 			id: 'test-runtime',
-			matches: project => hasConfig(project, 'testRuntime'),
+			scope: 'project',
+			matches: directives => hasConfig(directives, 'testRuntime'),
 			load: () =>
 				import('@8f4e/editor-plugin-test-runtime').then(module =>
 					module.createTestRuntimePlugin({ getCodeBuffer, getMemory, getAssertionSites })

@@ -71,14 +71,15 @@ Meter, bars, crossfade, watch, and stack are also optional plugins in this stand
 and register their overlays before tooltips. They receive a live reduced-motion preference from the browser host
 and keep their animation and data inside their installations.
 Plot, wave, meter, bars, switch, button, piano, slider, and crossfade load on demand through
-`@8f4e/editor-plugin-lazy-loader`. The per-editor registry in `src/lazy-plugins.ts` matches their directives through
-generic parsing and dynamically imports their implementations. Wave matches `@wave`, `@wave2`, and `@wave4`.
+`@8f4e/editor-plugin-lazy-loader`. The per-editor registry in `src/lazy-plugins.ts` matches cached parsed directives
+and dynamically imports their implementations. Wave matches `@wave`, `@wave2`, and `@wave4`.
 MIDI input and binary assets load when raw `@config midi.*` or `@config bin.*` directives appear, before their
 schemas are registered. The registry supplies the canvas's navigator and live compiler getters to those factories,
 and the compiler's live memory writer to control factories after importing them.
-The loader scans on project replacement, including URL and session loads. After adding a directive through editing,
-use **Load plugins used by project** in the background menu. Imports finish in the background; mounting and initial-project notifications do not
-wait for them. A loaded plugin stays installed until editor disposal. See the [loader contract](../../plugins/lazy-loader/README.md).
+The loader scans automatically after project changes, including typing, paste, undo/redo, URL and session loads.
+Visual/control plugins use `view` scope and load when their signals appear in the current project level, including
+after entering a group. Runtime, MIDI, and asset plugins use `project` scope and match signals throughout nested groups.
+Imports finish in the background; mounting and initial-project notifications do not wait for them. A loaded plugin stays installed until editor disposal. See the [loader contract](../../plugins/lazy-loader/README.md).
 The `plugins` option replaces the default feature set: pass `[]` to omit feature plugins, or a custom array to select and extend it. The compiler remains installed first. Use `initEditor` from editor-core for a composition without a compiler or with a different compiler plugin.
 Each editor installs and disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).
 
