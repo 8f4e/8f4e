@@ -66,7 +66,6 @@ export class TextureDrawer {
 	private readonly formatLocation: WebGLUniformLocation;
 	private readonly sourceSizeLocation: WebGLUniformLocation;
 	private readonly textures = new Map<string, TextureStorage>();
-	private destroyed = false;
 
 	/**
 	 * Creates the shader and rectangle used to draw framebuffer pixels.
@@ -162,10 +161,6 @@ export class TextureDrawer {
 
 	/** Deletes the texture drawer's WebGL resources. */
 	destroy(): void {
-		if (this.destroyed) {
-			return;
-		}
-		this.destroyed = true;
 		this.releaseMemory();
 		this.gl.deleteProgram(this.program);
 		deleteRectangleGeometry(this.gl, this.geometry);

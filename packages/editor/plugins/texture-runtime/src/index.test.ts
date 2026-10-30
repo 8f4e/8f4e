@@ -91,9 +91,10 @@ async function setup({
 	};
 	publishMetadata(current.compiled);
 	const drawers = createEditorDrawerRegistry();
-	const getMemory = vi.fn(() => current.memory);
-	const getCodeBuffer = vi.fn(() => current.compiled.codeBuffer);
-	const dispose = createTextureRuntimePlugin({ getMemory, getCodeBuffer }).setup({
+	const dispose = createTextureRuntimePlugin({
+		getMemory: () => current.memory,
+		getCodeBuffer: () => current.compiled.codeBuffer,
+	}).setup({
 		store,
 		events,
 		drawers,
@@ -132,19 +133,15 @@ async function setup({
 	return {
 		gl,
 		state,
-		store,
 		block,
 		events,
 		frame,
 		settle,
 		dispose,
 		instantiate,
-		getMemory,
-		getCodeBuffer,
 		get memory() {
 			return current.memory;
 		},
-		address: current.compiled.memoryPlan.modules[screenId].memory.rgba.byteAddress,
 		frameCount: () =>
 			new Int32Array(current.memory.buffer)[
 				current.compiled.memoryPlan.modules[screenId].memory.frames.allocationUnitAddress

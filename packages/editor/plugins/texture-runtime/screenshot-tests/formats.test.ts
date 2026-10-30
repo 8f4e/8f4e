@@ -1,9 +1,10 @@
+import loadFontAtlas, { FILL_SPRITE_ID } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import type { TextureFormat } from '../src/directive';
 import { TextureDrawer } from '../src/texture-drawer';
 
-test('one program switches between all formats with packed odd-width rows and retained storage', () => {
+test('one program draws all formats over sprites with packed odd-width rows and restored storage', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 30;
 	canvas.height = 6;
@@ -45,8 +46,8 @@ test('one program switches between all formats with packed odd-width rows and re
 			pixels: [255, 0, 0, 255, 0, 0, 255, 128, 0, 0, 0, 0, 255, 255, 0, 255, 0, 255, 0, 255, 255, 0, 255, 255],
 			expected: [
 				[255, 0, 0, 255],
-				[0, 0, 128, 128],
-				[0, 0, 0, 0],
+				[0, 127, 128, 255],
+				[0, 255, 0, 255],
 				[255, 255, 0, 255],
 				[0, 255, 0, 255],
 				[255, 0, 255, 255],
@@ -54,16 +55,23 @@ test('one program switches between all formats with packed odd-width rows and re
 		},
 	];
 	try {
+		const atlas = await loadFontAtlas();
+		engine.setSpriteAtlas(atlas.image, atlas.grid);
+		engine.setPalette(new Uint8Array([0, 255, 0, 255]));
 		for (const item of cases) {
 			engine.resize(item.width * 3, 6);
 			for (const stage of ['allocate', 'update', 'restore']) {
-				if (stage === 'restore') drawer.releaseMemory();
+				if (stage === 'restore') {
+					drawer.releaseMemory();
+					engine.releaseRenderingMemory();
+					engine.restoreRenderingMemory();
+				}
 				engine.hooks.postDraw.length = 0;
 				engine.hooks.postDraw.push(() => {
 					drawer.upload('view', new Uint8Array(item.pixels), item.width, 2, item.format);
 					drawer.drawTexture('view', 0, 0, canvas.width, canvas.height);
 				});
-				engine.renderFrame(() => {});
+				engine.renderFrame(() => engine.drawSprite(0, 0, FILL_SPRITE_ID, 0, canvas.width, canvas.height));
 				const actual = new Uint8Array(canvas.width * canvas.height * 4);
 				gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, actual);
 				for (let y = 0; y < canvas.height; y++)
