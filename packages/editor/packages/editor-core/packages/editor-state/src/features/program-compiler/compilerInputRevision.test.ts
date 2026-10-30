@@ -11,14 +11,11 @@ import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pa
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
-import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import codeEditing from '../code-editing/effect';
 import historyTracking from '../edit-history/effect';
 import { createSchemaEditorConfigValidator } from '../editor-config/schemaValidator';
-import globalEditorDirectivesEffect from '../global-editor-directives/effect';
-import * as globalDirectiveRegistry from '../global-editor-directives/registry';
 import projectLoading from '../project-loading/effect';
 import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
 import publishCompilationInputChanges from './inputChanges';
@@ -142,8 +139,6 @@ describe('compiler input revision', () => {
 			createSchemaEditorConfigValidator({ root: 'example', schema: { type: 'integer' } })
 		);
 		block.code.splice(1, 0, '; @pos 0 0', '; @config example 120');
-		parsedDirectivesUpdater(store);
-		globalEditorDirectivesEffect(store);
 		rendering(
 			store,
 			events,
@@ -153,7 +148,6 @@ describe('compiler input revision', () => {
 		codeBlockDragger(store, events);
 		store.set('codeBlockRendering.codeBlocks', state.codeBlockRendering.codeBlocks);
 		dispatch('mousedown', { x: 32, y: 8 });
-		const resolveSpy = vi.spyOn(globalDirectiveRegistry, 'resolveGlobalEditorDirectives');
 		dispatch('mousemove', { movementX: 16, movementY: 32 });
 		dispatch('mouseup');
 		expect(block.code).toContain('; @pos 2 2');
@@ -162,7 +156,6 @@ describe('compiler input revision', () => {
 		expect(block.gridX).toBe(2);
 		expect(block.gridY).toBe(2);
 		expect(state.editorConfig.example).toBe(120);
-		expect(resolveSpy).not.toHaveBeenCalled();
 		expect(state.compilerInputRevision).toBe(0);
 		expect(onInputChanged).not.toHaveBeenCalled();
 	});

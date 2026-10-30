@@ -8,7 +8,6 @@ import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';
 import codeBlockRenderingEffect from './effect';
 import { directiveDefinitions } from './features/directives/registry';
 import entryOutlines from './features/entryOutlines/effect';
-import parsedDirectivesUpdater from './features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './layout/registry';
 
@@ -415,111 +414,6 @@ entryEnd`);
 			y: state.viewport.y,
 		});
 	});
-
-	it('keeps the unselected home block centered after a font grid change', () => {
-		const state = createMockState({
-			initialProjectState: {
-				...EMPTY_DEFAULT_PROJECT,
-				modules: [
-					{
-						id: 0,
-						code: ['module home', '; @home', '; @pos 10 20', 'moduleEnd'],
-						entry: 'main',
-					},
-				],
-			},
-			viewport: {
-				x: 0,
-				y: 0,
-				width: 200,
-				height: 200,
-				roundedWidth: 200,
-				roundedHeight: 200,
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-
-		codeBlockRenderingEffect(
-			store,
-			events,
-			directiveDefinitions,
-			createLayoutRegistry(() => {})
-		);
-		store.set('initialProjectState', state.initialProjectState);
-
-		const [homeBlock] = state.codeBlockRendering.codeBlocks;
-		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-
-		state.viewport.vGrid = 6;
-		state.viewport.hGrid = 12;
-		const spriteSheetRerenderedHandler = (events.on as Mock).mock.calls.find(
-			([eventName]) => eventName === 'spriteSheetRerendered'
-		)?.[1] as (() => void) | undefined;
-		spriteSheetRerenderedHandler?.();
-
-		expect({ x: homeBlock.x, y: homeBlock.y }).toEqual({
-			x: homeBlock.gridX * state.viewport.vGrid,
-			y: homeBlock.gridY * state.viewport.hGrid,
-		});
-		expect(centerViewportOnCodeBlock(state.viewport, homeBlock)).toEqual({
-			x: state.viewport.x,
-			y: state.viewport.y,
-		});
-	});
-
-	it('keeps the selected code block centered after a font grid change', () => {
-		const selectedBlock = createMockCodeBlock({
-			name: 'selected',
-			code: ['module selected', '; @pos 10 20', 'moduleEnd'],
-			gridX: 10,
-			gridY: 20,
-			x: 80,
-			y: 320,
-		});
-		const state = createMockState({
-			codeBlockRendering: {
-				codeBlocks: [selectedBlock],
-				selectedCodeBlock: selectedBlock,
-			},
-			viewport: {
-				x: 0,
-				y: 0,
-				width: 200,
-				height: 200,
-				roundedWidth: 200,
-				roundedHeight: 200,
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-
-		codeBlockRenderingEffect(
-			store,
-			events,
-			directiveDefinitions,
-			createLayoutRegistry(() => {})
-		);
-		state.viewport.vGrid = 6;
-		state.viewport.hGrid = 12;
-		const spriteSheetRerenderedHandler = (events.on as Mock).mock.calls.find(
-			([eventName]) => eventName === 'spriteSheetRerendered'
-		)?.[1] as (() => void) | undefined;
-		spriteSheetRerenderedHandler?.();
-
-		expect({ x: selectedBlock.x, y: selectedBlock.y }).toEqual({
-			x: selectedBlock.gridX * state.viewport.vGrid,
-			y: selectedBlock.gridY * state.viewport.hGrid,
-		});
-		expect(centerViewportOnCodeBlock(state.viewport, selectedBlock)).toEqual({
-			x: state.viewport.x,
-			y: state.viewport.y,
-		});
-	});
 });
 
 describe('code block rendering @alwaysOnTop live edits', () => {
@@ -550,7 +444,6 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		parsedDirectivesUpdater(store);
 		codeBlockRenderingEffect(
 			store,
 			events,
@@ -597,7 +490,6 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		parsedDirectivesUpdater(store);
 		codeBlockRenderingEffect(
 			store,
 			events,

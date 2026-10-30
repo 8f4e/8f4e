@@ -85,7 +85,7 @@ describe('public editor editing handle', () => {
 		expect(serializeToProject(state)).toEqual(changedProject);
 	});
 
-	it('derives inserted and updated positions from source, including removing @pos and undoing it', () => {
+	it('updates valid positions and retains the last position when @pos is removed, including undo and redo', () => {
 		const { editing, state } = setup();
 		const code = ['module placed', '; @pos -12 34', 'moduleEnd'];
 		const inserted = editing.applyEdits({
@@ -106,17 +106,20 @@ describe('public editor editing handle', () => {
 			expectedRevision: updated.revision,
 			edits: [{ type: 'update', blockId: inserted.createdBlockIds[0], code: withoutPos }],
 		});
-		expect(findPlaced()).toMatchObject({ code: withoutPos, gridX: 0, gridY: 0 });
+		expect(findPlaced()).toMatchObject({ code: withoutPos, gridX: 56, gridY: -78 });
 		const undone = editing.undo({ expectedRevision: removed.revision });
 		expect(findPlaced()).toMatchObject({ code: updatedCode, gridX: 56, gridY: -78 });
 		editing.redo({ expectedRevision: undone.revision });
-		expect(findPlaced()).toMatchObject({ code: withoutPos, gridX: 0, gridY: 0 });
+		expect(findPlaced()).toMatchObject({ code: withoutPos, gridX: 56, gridY: -78 });
 	});
 
 	it.each([{ directives: [] }, { directives: ['; @pos invalid 3'] }, { directives: ['; @pos 1 2', '; @pos 3 4'] }])(
 		'preserves unfinished or missing positioning source on inserts and updates: $directives',
 		({ directives }) => {
-			const { editing, state } = setup();
+			const { editing, state, events } = setup({
+				...structuredClone(EMPTY_DEFAULT_PROJECT),
+				modules: [{ id: 0, entry: 'main', code: ['module original', '; @pos 9 12', 'moduleEnd'] }],
+			});
 			const code = ['module unplaced', ...directives, 'moduleEnd'];
 			const originalId = getEditorBlockId(
 				state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!
@@ -133,8 +136,17 @@ describe('public editor editing handle', () => {
 			);
 			expect(affected).toHaveLength(2);
 			for (const block of affected) {
-				expect(block).toMatchObject({ code, gridX: 0, gridY: 0 });
+				const existing = getEditorBlockId(block) === originalId;
+				expect(block).toMatchObject({ code, gridX: existing ? 9 : 0, gridY: existing ? 12 : 0 });
 			}
+			events.dispatch('loadProject', {
+				project: { ...structuredClone(EMPTY_DEFAULT_PROJECT), modules: [{ id: 0, entry: 'main', code }] },
+			});
+			expect(state.codeBlockRendering.codeBlocks.find(block => block.creationIndex === 0)).toMatchObject({
+				code,
+				gridX: 0,
+				gridY: 0,
+			});
 		}
 	);
 

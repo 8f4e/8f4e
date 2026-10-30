@@ -3,7 +3,12 @@ import type { ProjectObjectModel } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 
 type ProjectStore = Pick<StateManager<State>, 'getState' | 'set'>;
-const restoring = new WeakSet<State>();
+const restoring = new WeakMap<State, Exclude<ProjectChange['kind'], 'edit'>>();
+
+export function isRestoringProjectEdit(state: State): boolean {
+	const kind = restoring.get(state);
+	return kind === 'checkpoint' || kind === 'restore';
+}
 
 /** Publish once after a completed persisted edit and its derived state have been updated. */
 export function publishProjectChange(store: ProjectStore, kind: ProjectChange['kind'] = 'edit'): void {
@@ -19,13 +24,14 @@ export function restoreProject(
 	kind: Exclude<ProjectChange['kind'], 'edit'>
 ): void {
 	const state = store.getState();
-	const nested = restoring.has(state);
-	restoring.add(state);
+	const previousKind = restoring.get(state);
+	restoring.set(state, kind);
 	try {
 		store.set('initialProjectState', project);
 		if (kind === 'replace') store.set('editorMode', state.globalEditorDirectives.mode ?? 'view');
 	} finally {
-		if (!nested) restoring.delete(state);
+		if (previousKind) restoring.set(state, previousKind);
+		else restoring.delete(state);
 	}
-	if (!nested) publishProjectChange(store, kind);
+	if (!previousKind) publishProjectChange(store, kind);
 }

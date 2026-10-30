@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
-
+import getBlockType from '../../code-blocks/utils/codeParsers/getBlockType';
+import getCodeBlockNameFromSource from '../../code-blocks/utils/getCodeBlockNameFromSource';
 import { parseBlockDirectives } from '../../code-blocks/utils/parseBlockDirectives';
 import { resolveGlobalEditorDirectives } from '../registry';
 
 function createParsedBlock(code: string[], name?: string, projectPath = '') {
 	return {
 		projectPath,
+		creationIndex: 0,
 		parsedDirectives: parseBlockDirectives(code),
-		...(name ? { name, blockType: 'module' as const } : {}),
+		name: name ?? getCodeBlockNameFromSource(code),
+		blockType: getBlockType(code),
 	};
 }
 
@@ -24,9 +27,9 @@ describe('@config directive', () => {
 		]);
 
 		expect(result.resolved.configEntries).toEqual([
-			{ path: 'font', value: '6x10', sourceLineIndex: 1, codeBlockId: 0 },
-			{ path: 'color.ink', value: '#112233', sourceLineIndex: 2, codeBlockId: 0 },
-			{ path: 'color.primary', value: '#010203', sourceLineIndex: 3, codeBlockId: 0 },
+			{ path: 'font', value: '6x10', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'color.ink', value: '#112233', sourceLineIndex: 2, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'color.primary', value: '#010203', sourceLineIndex: 3, codeBlockId: 0, moduleId: 'a' },
 		]);
 		expect(result.errors).toEqual([]);
 	});
@@ -37,7 +40,7 @@ describe('@config directive', () => {
 		]);
 
 		expect(result.resolved.configEntries).toEqual([
-			{ path: 'webUI.overlay.target', value: 'frame:buffer', sourceLineIndex: 1, codeBlockId: 0 },
+			{ path: 'webUI.overlay.target', value: 'frame:buffer', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
 		]);
 		expect(result.errors).toEqual([]);
 	});
@@ -71,9 +74,9 @@ describe('@config directive', () => {
 		]);
 
 		expect(result.resolved.configEntries).toEqual([
-			{ path: 'font', value: 'tiny', sourceLineIndex: 1, codeBlockId: 0 },
-			{ path: 'blockScale', value: '4', sourceLineIndex: 2, codeBlockId: 0 },
-			{ path: 'color.ink', value: '???', sourceLineIndex: 3, codeBlockId: 0 },
+			{ path: 'font', value: 'tiny', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'blockScale', value: '4', sourceLineIndex: 2, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'color.ink', value: '???', sourceLineIndex: 3, codeBlockId: 0, moduleId: 'a' },
 		]);
 		expect(result.errors).toEqual([]);
 	});

@@ -140,10 +140,11 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 						invalid('Keep the project group name when updating its source; edit child blocks through their handles');
 					}
 					const pos = parsePos(parseBlockDirectives(edit.code));
-					// Source owns positioning; match project loading when @pos is missing or invalid.
 					target.code = [...edit.code];
-					target.gridX = pos?.x ?? 0;
-					target.gridY = pos?.y ?? 0;
+					if (pos) {
+						target.gridX = pos.x;
+						target.gridY = pos.y;
+					}
 					target.blockType = getBlockType(target.code);
 					if (target.blockType !== 'unknown') target.isProjectScope = false;
 					target.disabled = hasDirective(target.code, 'disabled');

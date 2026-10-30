@@ -4,7 +4,10 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, test } from 'vitest';
 import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
 import createDefaultState from '~/pureHelpers/state/createDefaultState';
-import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
+import { createMockCodeBlock, createMockEventDispatcher } from '~/pureHelpers/testingUtils/testUtils';
+import codeBlockRendering from '../../effect';
+import { createLayoutRegistry } from '../../layout/registry';
+import { directiveDefinitions } from '../directives/registry';
 import autoEnvConstants from './effect';
 
 const AUTO_ENV_BLOCK_NAME = 'env';
@@ -42,6 +45,12 @@ describe('autoEnvConstants', () => {
 		};
 		store = createStateManager<State>(baseState);
 		state = store.getState();
+		codeBlockRendering(
+			store,
+			createMockEventDispatcher(),
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 	});
 
 	test('should create env constants block when project is loaded', () => {

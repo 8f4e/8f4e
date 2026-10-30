@@ -1,14 +1,13 @@
 import type {
-	CodeBlockType,
+	CodeBlockGraphicData,
 	CodeError,
 	GlobalEditorDirectiveContext,
 	GlobalEditorDirectiveDefinition,
 	GlobalEditorDirectiveResolutionResult,
-	ParsedDirectiveRecord,
 	ParsedGlobalEditorDirective,
 	ResolvedGlobalEditorDirectives,
 } from '@8f4e/editor-state-types';
-import { createProjectModuleId, type ProjectGroupPath } from '@8f4e/language-spec';
+import { createProjectModuleId } from '@8f4e/language-spec';
 import configDirective from './config/plugin';
 import modeDirective from './mode/plugin';
 import { parseGlobalEditorDirectives } from './utils';
@@ -16,13 +15,7 @@ import { parseGlobalEditorDirectives } from './utils';
 export const globalEditorDirectiveDefinitions: GlobalEditorDirectiveDefinition[] = [configDirective, modeDirective];
 
 export function resolveGlobalEditorDirectives(
-	codeBlocks: {
-		parsedDirectives: ParsedDirectiveRecord[];
-		projectPath: ProjectGroupPath;
-		creationIndex?: number;
-		name?: string;
-		blockType?: CodeBlockType;
-	}[],
+	codeBlocks: Pick<CodeBlockGraphicData, 'parsedDirectives' | 'projectPath' | 'creationIndex' | 'name' | 'blockType'>[],
 	definitions: GlobalEditorDirectiveDefinition[] = globalEditorDirectiveDefinitions
 ): GlobalEditorDirectiveResolutionResult {
 	const definitionMap = new Map(definitions.map(definition => [definition.name, definition]));
@@ -34,12 +27,10 @@ export function resolveGlobalEditorDirectives(
 		errors: [],
 	};
 
-	for (let blockIndex = 0; blockIndex < codeBlocks.length; blockIndex++) {
-		const block = codeBlocks[blockIndex];
+	for (const block of codeBlocks) {
 		const directives: ParsedGlobalEditorDirective[] = parseGlobalEditorDirectives(block.parsedDirectives, definitions);
-		const codeBlockId = block.creationIndex ?? blockIndex;
 		const context: GlobalEditorDirectiveContext = {
-			codeBlockId,
+			codeBlockId: block.creationIndex,
 			moduleId:
 				block.blockType === 'module' && block.name ? createProjectModuleId(block.projectPath, block.name) : undefined,
 			blockType: block.blockType,

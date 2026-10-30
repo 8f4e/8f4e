@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { afterEach, describe, expect, it } from 'vitest';
-import initState, { applyCodeBlockSourceEdits, matchEditorDirectives } from '../../../../index';
+import initState, { applyCodeBlockSourceEdits, matchEditorDirectives } from '../../index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -30,6 +30,49 @@ function matched(block: CodeBlockGraphicData) {
 }
 
 describe('cached directive records', () => {
+	it('updates metadata and configuration before publishing layouts, including diagnostic row changes', () => {
+		const { store, state, audio } = setup(
+			'8f4e/v1\nnote audio\n; @config export.fileName initial\n; @config unknown value\nnoteEnd'
+		);
+		const block = audio();
+		const seen: unknown[] = [];
+		cleanups.push(
+			store.layout.subscribe(({ codeBlock }) => {
+				if (codeBlock !== block) return;
+				seen.push([
+					block.gridX,
+					block.gridY,
+					state.editorConfig.export?.fileName,
+					state.codeErrors.editorDirectiveErrors[0]?.lineNumber,
+				]);
+			})
+		);
+		seen.length = 0;
+		applyCodeBlockSourceEdits(
+			store,
+			[
+				{
+					codeBlock: block,
+					code: [
+						'note audio',
+						'; @pos 20 30',
+						'; @config export.fileName updated',
+						'; @config unknown value',
+						'noteEnd',
+					],
+				},
+			],
+			{ affectsCompilation: false }
+		);
+		expect(seen.length).toBeGreaterThan(0);
+		for (const value of seen) expect(value).toEqual([20, 30, 'updated', 3]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['note audio', '; @pos 20 30', 'noteEnd'] }], {
+			affectsCompilation: false,
+		});
+		expect(state.editorConfig.export?.fileName).toBeUndefined();
+		expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+	});
+
 	it('delivers existing unknown records to late layout subscribers and reuses them during layout changes', () => {
 		const { store, events, audio } = setup();
 		const block = audio();

@@ -6,6 +6,9 @@ describe('global editor directive registry', () => {
 		const result = resolveGlobalEditorDirectives([
 			{
 				projectPath: '',
+				creationIndex: 0,
+				name: 'test',
+				blockType: 'note',
 				parsedDirectives: [
 					{
 						prefix: '@',

@@ -26,6 +26,10 @@
 ## Plugins
 - Install plugins in editor-core so one setup receives state, event, menu, directive, layout, and drawer services.
 - Keep generic directive parsing and layout in editor-state, and generic drawing hooks in web-ui.
+- Source updates use `features/code-blocks/sourceUpdates.ts`: refresh source metadata, regenerate environment source,
+  resolve global configuration, then refresh layouts. Add source-derived work to that path instead of relying on
+  effect subscription order. Same-project edits retain existing positions while `@pos` is incomplete or invalid;
+  replacement projects and newly inserted blocks have no previous position to retain.
 - Expose revision tracking and validated commands through `Editor.editing`, and shared project view navigation through `Editor.navigation`. Consumers read the existing `Editor.state` directly and use `editing.getRevision()` to track source changes. Validate edit batches before applying them as one undo step, and retain revision checks across human edits, history changes, and project replacement. WebMCP remains in its external adapter package.
 - Keep API revisions, history, and session persistence on `state.projectChange`, with one revision and operation kind.
   Source and metadata actions call `publishProjectChange(store)` once after a completed change; no-ops and navigation

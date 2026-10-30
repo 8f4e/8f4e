@@ -4,7 +4,6 @@ import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it } from 'vitest';
 import codeBlockRendering from './effect';
 import { directiveDefinitions } from './features/directives/registry';
-import parsedDirectivesUpdater from './features/parsedDirectivesUpdater/effect';
 import { createLayoutRegistry } from './layout/registry';
 
 function setup() {
@@ -84,7 +83,6 @@ describe('assertion error messages', () => {
 		const { store, state, block, result } = setup();
 		block.projectPath = 'nested';
 		state.codeBlockRendering.codeBlocks = [];
-		parsedDirectivesUpdater(store);
 		codeBlockRendering(
 			store,
 			createMockEventDispatcher(),

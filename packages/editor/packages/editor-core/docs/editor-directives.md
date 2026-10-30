@@ -123,7 +123,8 @@ Set editor configuration values.
 
 Supported paths:
 
-- `font` - editor font used for rendering code blocks and UI text.
+- `font` - editor font used for rendering code blocks and UI text. Font changes refresh block layouts without
+  recentering the viewport.
 - `runtime` - runtime host loaded for the project.
 - `color.<path>` - editor base palette color. See [Color Paths](./color-paths.md) for the full list of color paths.
 - `export.fileName` - base file name used by editor export actions.
@@ -148,6 +149,24 @@ Examples:
 ; @config midi.inputs.0.port 0
 ; @config midi.inputs.0.callback onMidiIn
 ```
+
+#### Configuration precedence
+
+Configuration is global to the whole project, including nested project groups. When multiple valid directives set
+the same path, the last one in spatial order wins:
+
+- Blocks are processed from left to right by their grid position, then top to bottom at the same horizontal position.
+- Blocks at the same grid position are processed in creation order, so the later-created block wins.
+- Directives within a block are processed from top to bottom, and left to right when chained on one line.
+- A project-group block's own directives are processed before its children. Children use the same spatial order in
+  their local coordinates, and the entire group subtree is processed before the next sibling block.
+- Invalid declarations produce diagnostics and do not replace an earlier valid value. Different paths combine.
+
+Place defaults on the left and customizations on the right. Moving a block past another block can change the
+effective configuration as soon as the move completes. Selecting a block or bringing it to the front does not change
+precedence. Configuration uses spatial order across block types, even though the saved file groups blocks by type.
+Use distinct grid positions for intentional overrides: creation indices are rebuilt when importing `.8f4e` text, so
+exact-position ties between different block types can resolve differently after saving and reopening.
 
 #### WASM editor overlay
 
@@ -641,13 +660,16 @@ This directive stores the position of a code block within the project.
 
 - `gridX` and `gridY` must be strict integers (floats are rejected)
 - Negative values are allowed
-- Multiple `@pos` directives in one block are treated as invalid (position defaults to `0,0`)
-- Malformed values (non-integers) are treated as invalid (position defaults to `0,0`)
+- Multiple `@pos` directives in one block are treated as invalid
+- Malformed values (non-integers) are treated as invalid
 
 **Behavior:**
 
 - **Project Load**: Position is parsed from `@pos` directive. Missing or invalid directive defaults to `(0,0)`
-- **Code Edit**: If you manually edit `@pos` to valid values, the block immediately moves to that position
+- **Code Edit**: Valid `@pos` edits immediately update the block's grid coordinates and position before config
+  precedence is resolved. Missing, incomplete, or invalid directives leave the block at its last valid position,
+  including updates through the editing API and same-project history restoration. Newly inserted blocks without a
+  valid position start at `(0,0)`.
 - **Dragging**: When you drag a block, `@pos` is automatically updated when the drag ends (not during the drag)
 - **Creation**: New blocks automatically get a canonical `@pos` directive based on creation location
 - **Paste**: Pasted blocks automatically get `@pos` directives with adjusted positions

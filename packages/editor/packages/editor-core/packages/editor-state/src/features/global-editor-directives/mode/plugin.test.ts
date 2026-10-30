@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
+import getBlockType from '../../code-blocks/utils/codeParsers/getBlockType';
+import getCodeBlockNameFromSource from '../../code-blocks/utils/getCodeBlockNameFromSource';
 import { parseBlockDirectives } from '../../code-blocks/utils/parseBlockDirectives';
 import { resolveGlobalEditorDirectives } from '../registry';
 
 function block(code: string[], creationIndex = 0) {
-	return { projectPath: '', creationIndex, parsedDirectives: parseBlockDirectives(code) };
+	return {
+		projectPath: '',
+		creationIndex,
+		name: getCodeBlockNameFromSource(code),
+		blockType: getBlockType(code),
+		parsedDirectives: parseBlockDirectives(code),
+	};
 }
 
 describe('@mode directive', () => {
