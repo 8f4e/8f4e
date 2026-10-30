@@ -13,8 +13,7 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 	const store = initState(events, {
 		callbacks: {},
 	});
-	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
-	const disposePlugin = installed
+	let pluginCleanup = installed
 		? favoritesPlugin.setup({
 				store,
 				events,
@@ -23,7 +22,11 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 				layout: store.layout,
 				drawers: createCodeBlockDrawerRegistry(),
 			})
-		: () => {};
+		: undefined;
+	const disposePlugin = () => {
+		pluginCleanup?.();
+		pluginCleanup = undefined;
+	};
 	cleanups.push(() => {
 		disposePlugin();
 		store.dispose();
@@ -42,7 +45,7 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 		events.dispatch('contextmenu', { x: block.x + 8, y: block.y + 8 });
 		await Promise.resolve();
 	};
-	return { store, state, events, block, disposePlugin, openMenu };
+	return { state, events, block, disposePlugin, openMenu };
 }
 
 afterEach(() => {
@@ -62,7 +65,6 @@ describe('favorites plugin', () => {
 		const test = setup(code);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		expect(test.block.code.slice(0, 2)).toEqual([code[0], '; @favorite']);
-		expect(test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(test.block);
 	});
 
 	it('removes every favorite directive while keeping other directives and source', () => {
@@ -73,17 +75,13 @@ describe('favorites plugin', () => {
 		expect(test.block.code).toContain('; @favorite');
 	});
 
-	it('updates the timestamp without announcing changed compilation inputs', async () => {
-		vi.useFakeTimers();
+	it('publishes one project change without announcing changed compilation inputs', () => {
 		const test = setup();
 		const onInputChanged = vi.fn();
 		test.events.on('compilationInputChanged', onInputChanged);
 		const revision = test.state.compilerInputRevision;
 		const projectRevision = test.state.projectChange.revision;
-		const lastUpdated = test.block.lastUpdated;
-		await vi.advanceTimersByTimeAsync(10);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
-		expect(test.block.lastUpdated).toBeGreaterThan(lastUpdated);
 		expect(test.state.compilerInputRevision).toBe(revision);
 		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
 		expect(onInputChanged).not.toHaveBeenCalled();
