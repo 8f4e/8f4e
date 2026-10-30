@@ -19,8 +19,8 @@
 - The project URL plugin owns fetching. Forward initial-project callbacks; mounting does not wait for the fetch.
   Without a URL, start empty and announce readiness after initialization.
 - Construct one `createProjectFileSession()` and install its plugin before the
-  project URL loader. Pass it to `createProjectExportPlugin({ document: canvas.ownerDocument, fileSession })` for Export Project.
-- Keep Open/Save and its keyboard shortcut, session storage, WASM export/screenshot plugins, built-in module browsing, grouping, and optional editing
+  project URL loader. Pass it to `createProjectSavePlugin({ inputTarget: canvas, fileSession })` for Save, Export Project, and Cmd/Ctrl+S.
+- Keep Open From Disk, session storage, WASM export/screenshot plugins, built-in module browsing, grouping, and optional editing
   actions, including favorite navigation and editing, in editor-default. Add no storage options, callbacks, or
   compatibility wrappers here.
 - Verify with `npx nx run @8f4e/editor-minimal:build|test|typecheck`. The product website's `test:browser` target covers

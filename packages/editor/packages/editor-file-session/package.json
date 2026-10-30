@@ -2,7 +2,7 @@
   "name": "@8f4e/editor-file-session",
   "version": "0.1.0",
   "private": true,
-  "description": "Per-editor project file association and ordered writes",
+  "description": "Shared project file handle for one editor",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

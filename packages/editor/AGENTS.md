@@ -13,8 +13,8 @@
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, example source discovery,
   and startup policy.
 - `@8f4e/editor-minimal` independently composes the embedded editor for the product homepage and galleries. Keep live
-  editing, controls, visualizations, compiler/runtime plugins, input, URL loading, and project source export. Keep session
-  storage, built-in modules, Open/Save, WASM export, screenshots, and optional authoring actions in editor-default.
+  editing, controls, visualizations, compiler/runtime plugins, input, URL loading, and project source saving/export. Keep session
+  storage, built-in modules, Open From Disk, WASM export, screenshots, and optional authoring actions in editor-default.
 - `@8f4e/editor-website` is the thin deployable Vite host for the default composition.
 - `@8f4e/editor-webmcp` is an external, page-owned adapter bound to one editor's public editing handle. Hosts own its registration and dispose it before replacing the editor; it is not an editor plugin.
 - The bridge bundles its help, compiler/editor documentation, and example catalogs using `@8f4e/vite-plugin-sources` at build time. Its `generate-content` target prepares the search index and lazy content modules before build/test/typecheck; hosts need no content configuration.
@@ -22,10 +22,11 @@
   lives in `@8f4e/editor-plugin-switch`, momentary buttons in `@8f4e/editor-plugin-button`, waveforms in
   `@8f4e/editor-plugin-wave`, piano keyboards in `@8f4e/editor-plugin-piano`, sliders in `@8f4e/editor-plugin-slider`,
   selected-line tooltips in `@8f4e/editor-plugin-tooltips`, browser screenshots in `@8f4e/editor-plugin-screenshot`,
-  project Open/Save in `@8f4e/editor-plugin-project-files`, project source export in
-  `@8f4e/editor-plugin-project-export`, and WebAssembly export in `@8f4e/editor-plugin-wasm-export`.
+  project opening in `@8f4e/editor-plugin-project-open`, project saving/export in
+  `@8f4e/editor-plugin-project-save`, and WebAssembly export in `@8f4e/editor-plugin-wasm-export`.
   Compose one `@8f4e/editor-file-session` per editor and install its plugin before file plugins and project loaders.
-  Inject it into Open/Save and Export to share the destination, ordered writes, and project replacement cleanup.
+  Inject it into Open and Save to share the handle and project replacement cleanup. The Save plugin owns serialization
+  and all write coordination.
   Meter, plot, bars, crossfade, watch, and stack each live in their matching `editor-plugin-<name>` packages.
   Favorite detection, editing, and navigation live in `editor-plugin-favorites`, and memory-default disconnection in
   `editor-plugin-remove-memory-connections`. Core has no favorite-specific block state or menus.
@@ -64,10 +65,10 @@
   `npx nx run @8f4e/editor-plugin-piano:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-slider:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-screenshot:build|test|typecheck`, or
-  `npx nx run @8f4e/editor-plugin-project-files:build|test|typecheck`, or
+  `npx nx run @8f4e/editor-plugin-project-open:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-wasm-export:build|test|typecheck`.
-  Build/typecheck `@8f4e/editor-file-session` and `@8f4e/editor-plugin-project-export` through Nx. Their composed file
-  behavior is covered by project-files tests and the minimal-editor gallery browser tests.
+  Build/typecheck `@8f4e/editor-file-session` and build/test/typecheck `@8f4e/editor-plugin-project-save` through Nx.
+  Composed file behavior is covered by project-open tests and the minimal-editor gallery browser tests.
 - Verify example module browsing with `npx nx run @8f4e/editor-plugin-example-modules:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-example-modules:test:screenshot`.
 - Verify startup plugins with

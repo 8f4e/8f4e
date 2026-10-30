@@ -1,14 +1,7 @@
-export type ProjectFileHandle = FileSystemFileHandle & {
-	requestPermission: (options: { mode: 'readwrite' }) => Promise<PermissionState>;
-};
+import type { ProjectFileHandle } from '@8f4e/editor-file-session';
 
-export type FilePickerWindow = Window &
+export type SaveFilePickerWindow = Window &
 	typeof globalThis & {
-		showOpenFilePicker?: (options: {
-			types: Array<{ description: string; accept: Record<string, string[]> }>;
-			multiple: boolean;
-			excludeAcceptAllOption: boolean;
-		}) => Promise<ProjectFileHandle[]>;
 		showSaveFilePicker?: (options: {
 			suggestedName: string;
 			types: Array<{ description: string; accept: Record<string, string[]> }>;
@@ -17,12 +10,8 @@ export type FilePickerWindow = Window &
 
 export const projectFileType = { description: '8f4e Project', accept: { 'text/plain': ['.8f4e'] } };
 
-export function isPickerCancellation(error: unknown): boolean {
-	return error instanceof Error && error.name === 'AbortError';
-}
-
 export function downloadBlob(document: Document, blob: Blob, fileName: string): void {
-	const browserWindow = document.defaultView as FilePickerWindow;
+	const browserWindow = document.defaultView as SaveFilePickerWindow;
 	const url = browserWindow.URL.createObjectURL(blob);
 	const link = document.createElement('a');
 	link.style.display = 'none';

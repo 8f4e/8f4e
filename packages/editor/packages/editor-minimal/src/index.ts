@@ -5,7 +5,7 @@ import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plu
 import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { createProjectExportPlugin } from '@8f4e/editor-plugin-project-export';
+import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createStackPlugin } from '@8f4e/editor-plugin-stack';
 import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
@@ -55,7 +55,7 @@ export async function mountMinimalEditor(
 				onError: onInitialProjectLoadError,
 			}),
 			assertionMarkersPlugin,
-			createProjectExportPlugin({ document: canvas.ownerDocument, fileSession }),
+			createProjectSavePlugin({ inputTarget: canvas, fileSession }),
 			createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory: compiler.writeMemory }),
 			createLazyPluginLoaderPlugin(
 				createLazyPluginRegistry({

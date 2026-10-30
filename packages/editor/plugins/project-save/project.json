@@ -1,5 +1,5 @@
 {
-  "name": "@8f4e/editor-plugin-project-export",
+  "name": "@8f4e/editor-plugin-project-save",
   "sourceRoot": "src",
   "projectType": "library",
   "targets": {
@@ -16,15 +16,25 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc --noEmit",
+        "command": "tsc --noEmit -p tsconfig.test.json",
         "cwd": "{projectRoot}"
       }
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "biome check --write packages/editor/plugins/project-export/src",
+        "command": "biome check --write packages/editor/plugins/project-save/src",
         "cwd": "{workspaceRoot}"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "^build"
+      ],
+      "options": {
+        "command": "vitest run",
+        "cwd": "{projectRoot}"
       }
     }
   },

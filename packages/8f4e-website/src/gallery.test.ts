@@ -88,7 +88,8 @@ test('keeps live editing and project export available in the minimal editor', as
 		close: vi.fn().mockResolvedValue(undefined),
 		abort: vi.fn().mockResolvedValue(undefined),
 	};
-	const showSaveFilePicker = vi.fn().mockResolvedValue({ createWritable: async () => writable });
+	const requestPermission = vi.fn().mockResolvedValue('granted');
+	const showSaveFilePicker = vi.fn().mockResolvedValue({ createWritable: async () => writable, requestPermission });
 	vi.stubGlobal('showSaveFilePicker', showSaveFilePicker);
 	const view = setup({
 		minimal: async () => new Response(source.replace('int value 1', '; @pos 4 10\n; @favorite\nint value 1')),
@@ -112,10 +113,6 @@ test('keeps live editing and project export available in the minimal editor', as
 		expect(menu.some(item => item.action === action)).toBe(false);
 	}
 	expect(menu.some(item => item.action === 'exportProject')).toBe(true);
-	const saveKey = new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true });
-	canvas.dispatchEvent(saveKey);
-	expect(saveKey.defaultPrevented).toBe(false);
-	expect(showSaveFilePicker).not.toHaveBeenCalled();
 	expect(menu.some(item => item.title === 'Add Built-in Block')).toBe(false);
 	expect(menu.some(item => item.payload?.menu === 'favoritesMenu')).toBe(false);
 	editor.pauseRendering();
@@ -133,6 +130,12 @@ test('keeps live editing and project export available in the minimal editor', as
 	expect(exportedSource).toContain('module galleryExample');
 	expect(exportedSource).toContain('int value 1');
 	expect(editor.state.contextMenu.open).toBe(false);
+	const saveKey = new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true });
+	canvas.dispatchEvent(saveKey);
+	expect(saveKey.defaultPrevented).toBe(true);
+	await vi.waitFor(() => expect(writable.close).toHaveBeenCalledTimes(2));
+	expect(requestPermission).toHaveBeenCalledWith({ mode: 'readwrite' });
+	expect(showSaveFilePicker).toHaveBeenCalledOnce();
 });
 
 test('loads and runs worker and test runtime plugins together through the minimal composition', async () => {

@@ -42,7 +42,7 @@
     "@8f4e/editor-plugin-crossfade": "*",
     "@8f4e/editor-plugin-stack": "*",
     "@8f4e/editor-plugin-bars": "*",
-    "@8f4e/editor-plugin-project-files": "*",
+    "@8f4e/editor-plugin-project-open": "*",
     "@8f4e/editor-plugin-wasm-export": "*",
     "@8f4e/editor-plugin-favorites": "*",
     "@8f4e/editor-plugin-remove-memory-connections": "*",
@@ -62,7 +62,7 @@
     "@8f4e/editor-plugin-connectors": "*",
     "@8f4e/editor-plugin-texture-runtime": "*",
     "@8f4e/editor-file-session": "*",
-    "@8f4e/editor-plugin-project-export": "*"
+    "@8f4e/editor-plugin-project-save": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

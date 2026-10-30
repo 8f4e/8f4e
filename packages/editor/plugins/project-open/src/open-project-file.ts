@@ -1,13 +1,19 @@
-import { type FilePickerWindow, type ProjectFileHandle, projectFileType } from '@8f4e/editor-file-session';
+import type { ProjectFileHandle } from '@8f4e/editor-file-session';
 
 export async function openProjectFile(document: Document): Promise<{
 	file: File;
 	handle: ProjectFileHandle | undefined;
 } | null> {
-	const browserWindow = document.defaultView as FilePickerWindow;
+	const browserWindow = document.defaultView as Window & {
+		showOpenFilePicker?: (options: {
+			types: Array<{ description: string; accept: Record<string, string[]> }>;
+			multiple: boolean;
+			excludeAcceptAllOption: boolean;
+		}) => Promise<ProjectFileHandle[]>;
+	};
 	if (browserWindow.showOpenFilePicker) {
 		const [handle] = await browserWindow.showOpenFilePicker({
-			types: [projectFileType],
+			types: [{ description: '8f4e Project', accept: { 'text/plain': ['.8f4e'] } }],
 			multiple: false,
 			excludeAcceptAllOption: true,
 		});
