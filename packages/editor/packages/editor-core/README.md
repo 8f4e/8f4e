@@ -166,8 +166,9 @@ Meter, plot, and bars plugins own their typed-memory visualization and layout. C
 interaction and drawer. Watch and stack own separate inline value overlays; their factories receive a
 `prefersReducedMotion` function from the host. None of these features adds fields to core code-block state.
 The screenshot plugin owns the main-menu action, temporary overlay visibility, PNG encoding, and browser file saving.
-The project-files plugin owns Open From Disk, Save/Export, their menus and shortcut, browser file access, and file
-associations. Its factory receives the input element. The WebAssembly-export plugin receives a document and compiler
+The project-open plugin owns Open From Disk and receives the editor's document. The project-save plugin owns
+Save/Export, its menu and shortcut, serialization, and browser writes; its factory receives the input element.
+Both receive one file session holding the current handle and its reset lifecycle. The WebAssembly-export plugin receives a document and compiler
 byte getter, and owns WASM Blob creation and browser file writing.
 The execution-toggle plugin owns the Skip/Unskip menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
 layout, animation, and overlay drawing, with its state private to each installation. Nested block shading remains
@@ -203,10 +204,11 @@ share `isRenderableInfoValue` and `formatInfoValue`. Its `/memory` entry
 exports memory scope, identifier, element-count, and typed-value resolution, plus `getMemoryDefaultEdits` for rewriting
 resolved memory defaults in their source modules. Each group of values is edited together, even across module owners.
 Plugins use these public exports rather than importing core files.
-`serializeToProject`, `serializeProjectTo8f4e`, and `getExportBaseName` provide shared project serialization and naming;
+`serializeToProject` and `getExportBaseName` provide shared project-model serialization and naming;
 `logError` records failures in the editor console. These helpers and filename configuration remain available
 independently of the export and persistence plugins.
-Serialization lives under `pureHelpers/projectSerialization`; filename configuration belongs to `features/editor-config`.
+Project-model serialization lives under `pureHelpers/projectSerialization`; filename configuration belongs to
+`features/editor-config`. The project-save plugin owns its private `.8f4e` text formatter.
 `serializeToProject` and `serializeCodeBlocksToProject` return detached models with independent source arrays throughout
 nested groups. Their fixed field order and grid/creation ordering support direct JSON comparison of canonical models.
 
@@ -241,7 +243,7 @@ for compilation inputs.
 
 Hosts can provide a compiler-owned `ProjectObjectModel` through `initialProject`, or dispatch `loadProject` with
 `{ project }` later. Core loads initial content after the first resize and emits `init` once that content is installed.
-Open From Disk belongs to the project-files plugin. Core has no file callbacks or file-association flags; undo/redo
+Open From Disk belongs to the project-open plugin. Core has no file callbacks or file-association flags; undo/redo
 restore snapshots directly within the current project.
 
 Session restoration and autosaving belong to `@8f4e/editor-plugin-session-persistence`. Project URL fetching and

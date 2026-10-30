@@ -1,5 +1,6 @@
 import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
+import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
@@ -8,7 +9,8 @@ import { favoritesPlugin } from '@8f4e/editor-plugin-favorites';
 import { groupingPlugin } from '@8f4e/editor-plugin-grouping';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
+import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
+import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { removeMemoryConnectionsPlugin } from '@8f4e/editor-plugin-remove-memory-connections';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
@@ -40,9 +42,11 @@ export function createDefaultEditorPlugins(options: {
 	getAssertionSites: ReturnType<typeof createCompilerPlugin>['getAssertionSites'];
 	sharedAudioContext?: AudioContext;
 }): NonNullable<EditorOptions['plugins']> {
+	const fileSession = createProjectFileSession();
 	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
+		fileSession.plugin,
 		createProjectUrlLoaderPlugin({
 			fetch: globalThis.fetch,
 			initialProjectUrl: options.initialProjectUrl,
@@ -75,7 +79,12 @@ export function createDefaultEditorPlugins(options: {
 		createWatchPlugin({ prefersReducedMotion }),
 		createStackPlugin({ prefersReducedMotion }),
 		tooltipsPlugin,
-		createProjectFilesPlugin({ inputTarget: options.canvas, showOpenMenuItem: options.showOpenMenuItem }),
+		createProjectOpenPlugin({
+			document: options.canvas.ownerDocument,
+			fileSession,
+			showOpenMenuItem: options.showOpenMenuItem,
+		}),
+		createProjectSavePlugin({ inputTarget: options.canvas, fileSession }),
 		createWasmExportPlugin({ document: options.canvas.ownerDocument, getCodeBuffer: options.getCodeBuffer }),
 		createScreenshotPlugin({ canvas: options.canvas, renderFrame: options.renderFrame }),
 	];
@@ -94,7 +103,7 @@ export interface DefaultEditorMountOptions {
 	onInitialProjectLoaded?: () => void;
 	/** The initial URL request or source parsing failed. */
 	onInitialProjectLoadError?: (error: unknown) => void;
-	/** Show Open From Disk in the project-files plugin menu. */
+	/** Show Open From Disk in the project-open plugin menu. */
 	showOpenMenuItem?: boolean;
 	storage?: Storage;
 	storageNamespace?: string;

@@ -8,6 +8,7 @@
 - From root: `npx nx run @8f4e/editor-core:build|test|typecheck`.
 - From package directory: use `npx nx run @8f4e/editor-core:<target>` (e.g., `npx nx run @8f4e/editor-core:dev`).
 - Ensure `dist/` exists before building the default editor composition after API changes.
+- The nested editor-state build clears `dist/` once before emitting declarations and then bundling with Vite.
 
 ## Coding Style
 - TypeScript (ESM). Use Biome as the fixer (`npx biome check --write <files>`); it owns formatting and import organization.
@@ -66,10 +67,11 @@
 
 - Meter, plot, bars, crossfade, watch, and stack own their data and drawers in plugin packages. Keep memory scope,
   typed-value resolution, tab layout, and compiler lookups generic and available through public helper exports.
-- Keep project serialization under editor-state's `pureHelpers/projectSerialization`, filename configuration under
-  `features/editor-config`. Session persistence belongs to its plugin.
-  Project Open/Save/Export, browser file access, and file associations belong to the project-files plugin; WASM file
-  writing belongs to the wasm-export plugin. Keep file callbacks and association flags out of core. Undo/redo restore
+- Keep canonical project-model serialization under editor-state's `pureHelpers/projectSerialization`, filename
+  configuration under `features/editor-config`, and `.8f4e` text formatting private to project-save.
+  Session persistence belongs to its plugin. Project-open owns reading/parsing; project-save owns Save/Export,
+  Cmd/Ctrl+S, permissions, and writes. Their per-editor file session holds only the handle and reset lifecycle.
+  WASM writing belongs to wasm-export. Keep file callbacks and association flags out of core. Undo/redo restore
   snapshots within the current project; unrelated replacements dispatch loadProject.
 - Favorites belong entirely to `editor-plugin-favorites`: cached directive detection, toggling, navigation menus,
   and the generated env block's favorite marker. Keep favorite flags and event handlers out of core. Export generic

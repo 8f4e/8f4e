@@ -1,7 +1,8 @@
 import { EventEmitter } from 'node:events';
+import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it } from 'vitest';
-import initState, { applyCodeBlockSourceEdits, serializeProjectTo8f4e, serializeToProject } from '../../index';
+import initState, { applyCodeBlockSourceEdits, serializeToProject } from '../../index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -13,7 +14,8 @@ function setup(source: string) {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
 	cleanups.push(store.dispose);
-	const load = (text: string) => events.dispatch('loadProject', { project: parseProjectSource(text) });
+	const load = (project: string | ProjectObjectModel) =>
+		events.dispatch('loadProject', { project: typeof project === 'string' ? parseProjectSource(project) : project });
 	load(source);
 	events.dispatch('enterEditMode');
 	return { store, state: store.getState(), events, load };
@@ -51,11 +53,11 @@ noteEnd`);
 		store.set('codeBlockRendering.codeBlocks', blocks);
 		expect(state.editorConfig.export?.fileName).toBe(winner);
 		expect(blocks).toEqual(reversed);
-		load(serializeProjectTo8f4e(serializeToProject(state)));
+		load(serializeToProject(state));
 		expect(state.editorConfig.export?.fileName).toBe(winner);
 	});
 
-	it('uses spatial order across block types before and after saving', () => {
+	it('uses spatial order across block types before and after snapshot reload', () => {
 		const { state, load } = setup(`8f4e/v1
 note right
 ; @pos 20 0
@@ -68,7 +70,7 @@ module left
 moduleEnd
 entryEnd`);
 		expect(state.editorConfig.export?.fileName).toBe('right');
-		load(serializeProjectTo8f4e(serializeToProject(state)));
+		load(serializeToProject(state));
 		expect(state.editorConfig.export?.fileName).toBe('right');
 	});
 
@@ -164,7 +166,7 @@ noteEnd`);
 		events.dispatch('mouseup');
 		expect(left.gridX).toBe(100);
 		expect(state.editorConfig.export?.fileName).toBe('left');
-		load(serializeProjectTo8f4e(serializeToProject(state)));
+		load(serializeToProject(state));
 		expect(state.editorConfig.export?.fileName).toBe('left');
 	});
 
@@ -215,7 +217,7 @@ entryEnd`);
 		expect(state.editorConfig.export?.fileName).toBe('leaf');
 		events.dispatch('goToParentProjectGroup');
 		expect(state.editorConfig.export?.fileName).toBe('leaf');
-		load(serializeProjectTo8f4e(serializeToProject(state)));
+		load(serializeToProject(state));
 		expect(state.editorConfig.export?.fileName).toBe('leaf');
 	});
 });

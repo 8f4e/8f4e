@@ -60,10 +60,12 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 `@8f4e/editor-plugin-slider` for sliders,
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
-`@8f4e/editor-plugin-project-files` for project Open/Save/Export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
+`@8f4e/editor-plugin-project-open` for opening projects, `@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
 `createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
-constructs this plugin set with resources for one editor. The project-files plugin derives browser resources from the
-canvas; WebAssembly export receives its document and a live compiler-byte getter. There is no host file service.
+constructs this plugin set with resources for one editor. It creates one `@8f4e/editor-file-session`, installs its
+plugin before project loaders, and supplies it to Open and Save. The session shares the current handle and clears it
+on project replacement. Open receives the canvas's document. Save receives the canvas and owns serialization, writing,
+and Cmd/Ctrl+S. WebAssembly export receives a document and a live compiler-byte getter. File handling stays outside core.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
 browser resources. This composition supplies resources tied to the host, while browser plugins can own their
 browser API use.
@@ -116,7 +118,7 @@ from paths without loading module text, owns the menu and source cache, and inse
 dependencies. Omitting it removes the module browser. Standard-library include resolution remains in the host.
 
 Code changes automatically save a recovery session to browser storage. With the editor canvas focused, `Cmd+S`
-or `Ctrl+S` saves canonical `.8f4e` source to disk through the project-files plugin. In browsers supporting the File System Access API in a secure
+or `Ctrl+S` saves canonical `.8f4e` source to disk through the project-save plugin. In browsers supporting the File System Access API in a secure
 context, the first Save chooses a destination and later saves reuse it. Opening a project from disk associates the
 selected file with the editor; the first Save can ask for write permission. The Export Project menu action acts as
 Save As: it chooses a destination and makes that file the target of later saves.

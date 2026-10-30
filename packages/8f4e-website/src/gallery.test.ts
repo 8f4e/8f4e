@@ -10,6 +10,7 @@ const cleanups: Array<() => void> = [];
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 	vi.restoreAllMocks();
+	vi.unstubAllGlobals();
 	vi.clearAllMocks();
 });
 
@@ -81,7 +82,15 @@ test('reveals a successfully loaded empty project', async () => {
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 });
 
-test('keeps live editing available with the minimal project menu', async () => {
+test('keeps live editing and project export available in the minimal editor', async () => {
+	const writable = {
+		write: vi.fn().mockResolvedValue(undefined),
+		close: vi.fn().mockResolvedValue(undefined),
+		abort: vi.fn().mockResolvedValue(undefined),
+	};
+	const requestPermission = vi.fn().mockResolvedValue('granted');
+	const showSaveFilePicker = vi.fn().mockResolvedValue({ createWritable: async () => writable, requestPermission });
+	vi.stubGlobal('showSaveFilePicker', showSaveFilePicker);
 	const view = setup({
 		minimal: async () => new Response(source.replace('int value 1', '; @pos 4 10\n; @favorite\nint value 1')),
 	});
@@ -100,20 +109,33 @@ test('keeps live editing available with the minimal project menu', async () => {
 		expect(editor.state.contextMenu.items.some(item => item.action === 'createCodeBlock')).toBe(true)
 	);
 	const menu = editor.state.contextMenu.items;
-	for (const action of [
-		'importProject',
-		'exportProject',
-		'exportWasm',
-		'exportCanvasScreenshot',
-		'loadPluginsUsedByProject',
-	]) {
+	for (const action of ['importProject', 'exportWasm', 'exportCanvasScreenshot', 'loadPluginsUsedByProject']) {
 		expect(menu.some(item => item.action === action)).toBe(false);
 	}
+	expect(menu.some(item => item.action === 'exportProject')).toBe(true);
 	expect(menu.some(item => item.title === 'Add Built-in Block')).toBe(false);
 	expect(menu.some(item => item.payload?.menu === 'favoritesMenu')).toBe(false);
 	editor.pauseRendering();
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot('minimal-project-menu');
+	const exportIndex = menu.findIndex(item => item.action === 'exportProject');
+	const x = rect.x + editor.state.contextMenu.x - editor.state.viewport.x + 8;
+	const y =
+		rect.y + editor.state.contextMenu.y - editor.state.viewport.y + exportIndex * editor.state.viewport.hGrid + 8;
+	canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true }));
+	canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, bubbles: true }));
+	await vi.waitFor(() => expect(writable.close).toHaveBeenCalledOnce());
+	expect(showSaveFilePicker).toHaveBeenCalledWith(expect.objectContaining({ suggestedName: 'project.8f4e' }));
+	const exportedSource = await (writable.write.mock.calls[0][0] as Blob).text();
+	expect(exportedSource).toContain('module galleryExample');
+	expect(exportedSource).toContain('int value 1');
+	expect(editor.state.contextMenu.open).toBe(false);
+	const saveKey = new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true });
+	canvas.dispatchEvent(saveKey);
+	expect(saveKey.defaultPrevented).toBe(true);
+	await vi.waitFor(() => expect(writable.close).toHaveBeenCalledTimes(2));
+	expect(requestPermission).toHaveBeenCalledWith({ mode: 'readwrite' });
+	expect(showSaveFilePicker).toHaveBeenCalledOnce();
 });
 
 test('loads and runs worker and test runtime plugins together through the minimal composition', async () => {

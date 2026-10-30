@@ -170,7 +170,6 @@ export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModul
 export { default as getExportBaseName } from './pureHelpers/getExportBaseName';
 export { getUniqueName } from './pureHelpers/getUniqueName';
 export { default as serializeCodeBlocksToProject } from './pureHelpers/projectSerialization/serializeCodeBlocks';
-export { serializeProjectTo8f4e } from './pureHelpers/projectSerialization/serializeTo8f4e';
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
 export {
 	isMemoryAddress,

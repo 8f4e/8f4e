@@ -1,7 +1,9 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { createProjectFileSession } from '@8f4e/editor-file-session';
+import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
 import { expect, test, vi } from 'vitest';
-import { createProjectFilesPlugin } from '../src/index';
+import { createProjectOpenPlugin } from '../src/index';
 
 test('opens a file, saves from the canvas shortcut, and exports from the contributed menu', async () => {
 	const canvas = document.createElement('canvas');
@@ -33,9 +35,14 @@ noteEnd`;
 	vi.stubGlobal('showOpenFilePicker', vi.fn().mockResolvedValue([handle]));
 	let editor: Editor | undefined;
 	try {
+		const fileSession = createProjectFileSession();
 		editor = await initEditor(canvas, {
 			initialProject: parseProjectSource(source),
-			plugins: [createProjectFilesPlugin({ inputTarget: canvas })],
+			plugins: [
+				fileSession.plugin,
+				createProjectOpenPlugin({ document, fileSession }),
+				createProjectSavePlugin({ inputTarget: canvas, fileSession }),
+			],
 		});
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		const state = editor.state;
@@ -66,7 +73,7 @@ noteEnd`;
 		canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: 600, clientY: 16, bubbles: true }));
 		await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.action === 'exportProject')).toBe(true));
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('project-files-menu');
+		await expect(canvas).toMatchScreenshot('project-file-menu');
 		const menu = state.contextMenu;
 		const index = menu.items.findIndex(item => item.action === 'exportProject');
 		const x = menu.x - state.viewport.x + 8;

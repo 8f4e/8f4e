@@ -1,73 +1,41 @@
-import { parseProjectSource } from '@8f4e/compiler';
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { getExportBaseName, logError, serializeProjectTo8f4e, serializeToProject } from '@8f4e/editor-state';
-import type { ProjectObjectModel } from '@8f4e/language-spec';
-import {
-	downloadBlob,
-	type FilePickerWindow,
-	isPickerCancellation,
-	openProjectFile,
-	type ProjectFileHandle,
-	projectFileType,
-} from './browser-files';
+import type { ProjectFileHandle, ProjectFileSession } from '@8f4e/editor-file-session';
+import { getExportBaseName, logError, serializeToProject } from '@8f4e/editor-state';
+import { downloadBlob, projectFileType, type SaveFilePickerWindow } from './browser-files';
+import { serializeProjectTo8f4e } from './serializeTo8f4e';
 
-export function createProjectFilesPlugin({
+export function createProjectSavePlugin({
 	inputTarget,
-	showOpenMenuItem = true,
+	fileSession,
 }: {
 	inputTarget: HTMLElement;
-	showOpenMenuItem?: boolean;
+	fileSession: ProjectFileSession;
 }): EditorPlugin {
 	return {
-		id: 'project-files',
+		id: 'project-save',
 		setup: ({ store, events, menus }) => {
-			const state = store.getState();
 			const document = inputTarget.ownerDocument;
-			const browserWindow = document.defaultView as FilePickerWindow;
-			let activeHandle: ProjectFileHandle | undefined;
+			const browserWindow = document.defaultView as SaveFilePickerWindow;
 			let generation = 0;
 			let writes: Promise<void> = Promise.resolve();
 			let pendingDestination: Promise<ProjectFileHandle> | undefined;
-			let disposed = false;
-			const clearFileAssociation = () => {
+			const resetDestination = () => {
 				generation++;
-				activeHandle = undefined;
 				pendingDestination = undefined;
 			};
-			const unregisterOpen = menus.registerItem('mainMenu', () =>
-				showOpenMenuItem ? { title: 'Open From Disk', action: 'importProject', close: true } : undefined
-			);
-			const unregisterExport = menus.registerItem('mainMenu', () => ({
+			const unregister = menus.registerItem('mainMenu', () => ({
 				title: 'Export Project',
 				action: 'exportProject',
 				close: true,
 			}));
-			const onImport = async () => {
-				let project: ProjectObjectModel;
-				let handle: ProjectFileHandle | undefined;
-				try {
-					const opened = await openProjectFile(document);
-					if (!opened) return;
-					project = parseProjectSource(await opened.file.text());
-					handle = opened.handle;
-				} catch (error) {
-					if (disposed || isPickerCancellation(error)) return;
-					logError(state, `Failed to open project: ${String(error)}`);
-					return;
-				}
-				if (disposed) return;
-				events.dispatch('loadProject', { project });
-				activeHandle = handle;
-			};
-			const writeProject = (data: string, fileName: string, saveAs: boolean): Promise<void> => {
+			const writeProject = (blob: Blob, fileName: string, saveAs: boolean): Promise<void> => {
 				const currentGeneration = generation;
-				const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
 				let destination: Promise<ProjectFileHandle | undefined>;
 				// Start pickers and permissions in the user gesture, before queued writes.
 				if (!saveAs && pendingDestination) {
 					destination = pendingDestination;
-				} else if (!saveAs && activeHandle) {
-					const handle = activeHandle;
+				} else if (!saveAs && fileSession.handle) {
+					const handle = fileSession.handle;
 					destination = handle.requestPermission({ mode: 'readwrite' }).then(permission => {
 						if (permission !== 'granted') throw new Error('Permission to save the project was denied');
 						return handle;
@@ -87,7 +55,7 @@ export function createProjectFilesPlugin({
 				const operation = writes.then(async () => {
 					const result = await prepared;
 					if ('error' in result) {
-						if (isPickerCancellation(result.error)) return;
+						if (result.error instanceof Error && result.error.name === 'AbortError') return;
 						throw result.error;
 					}
 					if (!result.handle) {
@@ -102,7 +70,7 @@ export function createProjectFilesPlugin({
 						await writable.abort().catch(() => undefined);
 						throw error;
 					}
-					if (currentGeneration === generation) activeHandle = result.handle;
+					if (currentGeneration === generation) fileSession.handle = result.handle;
 				});
 				const completion = operation.finally(() => {
 					if (pendingDestination === destination) pendingDestination = undefined;
@@ -111,15 +79,19 @@ export function createProjectFilesPlugin({
 				return completion;
 			};
 			const save = (saveAs: boolean) => {
-				const project = serializeToProject(state);
+				const state = store.getState();
 				let text: string;
 				try {
-					text = serializeProjectTo8f4e(project);
+					text = serializeProjectTo8f4e(serializeToProject(state));
 				} catch (error) {
 					logError(state, `Failed to serialize project: ${String(error)}`);
 					return;
 				}
-				return writeProject(text, `${getExportBaseName(state)}.8f4e`, saveAs).catch(error => {
+				return writeProject(
+					new Blob([text], { type: 'text/plain;charset=utf-8' }),
+					`${getExportBaseName(state)}.8f4e`,
+					saveAs
+				).catch(error => {
 					logError(state, `Failed to save project: ${String(error)}`);
 				});
 			};
@@ -130,21 +102,17 @@ export function createProjectFilesPlugin({
 				event.preventDefault();
 				events.dispatch('saveProject');
 			};
-			events.on('loadProject', clearFileAssociation);
-			events.on('importProject', onImport);
+			events.on('loadProject', resetDestination);
 			events.on('saveProject', onSave);
 			events.on('exportProject', onExport);
 			inputTarget.addEventListener('keydown', onKeydown);
 			return () => {
-				disposed = true;
-				clearFileAssociation();
+				resetDestination();
 				inputTarget.removeEventListener('keydown', onKeydown);
-				events.off('loadProject', clearFileAssociation);
-				events.off('importProject', onImport);
+				events.off('loadProject', resetDestination);
 				events.off('saveProject', onSave);
 				events.off('exportProject', onExport);
-				unregisterOpen();
-				unregisterExport();
+				unregister();
 			};
 		},
 	};
