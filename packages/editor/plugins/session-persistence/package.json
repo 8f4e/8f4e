@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-session-persistence",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "description": "Session restoration and autosaving for the 8f4e editor",
   "type": "module",

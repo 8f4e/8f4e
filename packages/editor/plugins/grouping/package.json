@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-grouping",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "description": "Editor block grouping, group actions, dragging, and paste handling",
   "type": "module",
