@@ -660,13 +660,14 @@ This directive stores the position of a code block within the project.
 
 - `gridX` and `gridY` must be strict integers (floats are rejected)
 - Negative values are allowed
-- Multiple `@pos` directives in one block are treated as invalid (position defaults to `0,0`)
-- Malformed values (non-integers) are treated as invalid (position defaults to `0,0`)
+- Multiple `@pos` directives in one block are treated as invalid
+- Malformed values (non-integers) are treated as invalid
 
 **Behavior:**
 
 - **Project Load**: Position is parsed from `@pos` directive. Missing or invalid directive defaults to `(0,0)`
-- **Code Edit**: If you manually edit `@pos` to valid values, the block immediately moves to that position
+- **Code Edit**: Valid `@pos` edits immediately update the block's grid coordinates and position before config
+  precedence is resolved. Missing, incomplete, or invalid directives leave the block at its last valid position.
 - **Dragging**: When you drag a block, `@pos` is automatically updated when the drag ends (not during the drag)
 - **Creation**: New blocks automatically get a canonical `@pos` directive based on creation location
 - **Paste**: Pasted blocks automatically get `@pos` directives with adjusted positions

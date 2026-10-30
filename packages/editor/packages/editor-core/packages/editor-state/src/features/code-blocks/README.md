@@ -46,6 +46,8 @@ This feature contains several subfeatures under `features/` that handle specific
 
 - `blockHighlights` - Visual highlighting for selected/hovered blocks
 - `blockTypeUpdater` - Automatic block type detection and updates
+- `positionUpdater` - Updates valid grid positions after directive parsing and before config resolution; incomplete
+  or invalid edits retain the existing position
 - `codeBlockCreator` - Block creation logic
 - `codeBlockDragger` - Drag and drop operations
 - `codeBlockNavigation` - Keyboard navigation between blocks

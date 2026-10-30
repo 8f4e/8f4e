@@ -18,6 +18,7 @@ import { createDirectiveRegistry } from './features/code-blocks/features/directi
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
 import parsedDirectivesUpdater from './features/code-blocks/features/parsedDirectivesUpdater/effect';
+import positionUpdater from './features/code-blocks/features/positionUpdater/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './features/code-blocks/layout/registry';
 import codeEditing from './features/code-editing/effect';
@@ -105,6 +106,7 @@ export default function init(
 	registerEffect(codeBlockCreator(store, events));
 	registerEffect(projectGroupNavigation(store, events));
 	registerEffect(parsedDirectivesUpdater(store));
+	registerEffect(positionUpdater(store));
 	registerEffect(autoEnvConstants(store)); // Must run after codeBlockCreator to ensure env block is created
 	registerEffect(blockTypeUpdater(store)); // Classify blocks before announcing compiler input changes
 	registerEffect(globalEditorDirectivesEffect(store));

@@ -2,7 +2,6 @@ import type { CodeBlockGraphicData, CodeError, State } from '@8f4e/editor-state-
 import type { StateManager } from '@8f4e/state-manager';
 import compareCodeBlocksByPosition from '../../pureHelpers/compareCodeBlocksByPosition';
 import deepEqual from '../../shared/utils/deepEqual';
-import parsePos from '../code-blocks/features/directives/pos/data';
 import { resolveEditorConfigEntries, validateEditorConfigEntries } from '../editor-config/validators';
 import { globalEditorDirectiveDefinitions, resolveGlobalEditorDirectives } from './registry';
 import { parseGlobalEditorDirectives } from './utils';
@@ -16,25 +15,20 @@ function withOwnerId(errors: CodeError[]): CodeError[] {
 	}));
 }
 
-function collectProjectCodeBlocks(
-	codeBlocks: CodeBlockGraphicData[]
-): { block: CodeBlockGraphicData; inputs: ReturnType<typeof getGlobalDirectiveInputs> }[] {
-	return codeBlocks
-		.map(block => ({ block, inputs: getGlobalDirectiveInputs(block) }))
-		.sort((a, b) => compareCodeBlocksByPosition(a.inputs, b.inputs))
-		.flatMap(({ block, inputs }) => [
-			{ block, inputs },
+function collectProjectCodeBlocks(codeBlocks: CodeBlockGraphicData[]): CodeBlockGraphicData[] {
+	return [...codeBlocks]
+		.sort(compareCodeBlocksByPosition)
+		.flatMap(block => [
+			block,
 			...(block.nestedProjectCodeBlocks ? collectProjectCodeBlocks(block.nestedProjectCodeBlocks) : []),
 		]);
 }
 
 function getGlobalDirectiveInputs(block: CodeBlockGraphicData) {
-	// Source edits notify this effect before rendering refreshes the block's grid coordinates.
-	const position = parsePos(block.parsedDirectives);
 	return {
 		directives: parseGlobalEditorDirectives(block.parsedDirectives, globalEditorDirectiveDefinitions),
-		gridX: position?.x ?? block.gridX,
-		gridY: position?.y ?? block.gridY,
+		gridX: block.gridX,
+		gridY: block.gridY,
 		creationIndex: block.creationIndex,
 		name: block.name,
 		blockType: block.blockType,
@@ -57,8 +51,8 @@ export default function globalEditorDirectivesEffect(store: StateManager<State>)
 	function resolve(): void {
 		const state = store.getState();
 		const projectCodeBlocks = collectProjectCodeBlocks(state.codeBlockRendering.rootCodeBlocks);
-		resolvedInputs = new WeakMap(projectCodeBlocks.map(({ block, inputs }) => [block, inputs]));
-		const { resolved, errors } = resolveGlobalEditorDirectives(projectCodeBlocks.map(({ block }) => block));
+		resolvedInputs = new WeakMap(projectCodeBlocks.map(block => [block, getGlobalDirectiveInputs(block)]));
+		const { resolved, errors } = resolveGlobalEditorDirectives(projectCodeBlocks);
 		const { configEntries, ...globalEditorDirectives } = resolved;
 		const nextEditorConfig = resolveEditorConfigEntries(configEntries ?? [], state.editorConfigValidators);
 		const nextErrors = [...errors, ...validateEditorConfigEntries(configEntries ?? [], state.editorConfigValidators)];

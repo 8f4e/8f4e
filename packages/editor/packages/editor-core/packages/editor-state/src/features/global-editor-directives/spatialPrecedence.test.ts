@@ -109,7 +109,31 @@ noteEnd`);
 				}
 			);
 		}
+		expect({ x: left.gridX, y: left.gridY }).toEqual({ x: 100, y: 0 });
+		expect({ x: left.x, y: left.y }).toEqual({ x: 100 * state.viewport.vGrid, y: 0 });
 		expect(state.editorConfig.export?.fileName).toBe('left');
+		if (editKind === 'typing') {
+			left.cursor = { row: 1, col: left.code[1].length, x: 0, y: 0 };
+			events.dispatch('deleteBackward');
+		} else {
+			applyCodeBlockSourceEdits(
+				store,
+				[{ codeBlock: left, code: left.code.map(line => line.replace('@pos 100 0', '@pos 100 -')) }],
+				{ affectsCompilation: false }
+			);
+		}
+		expect({ x: left.gridX, y: left.gridY }).toEqual({ x: 100, y: 0 });
+		expect({ x: left.x, y: left.y }).toEqual({ x: 100 * state.viewport.vGrid, y: 0 });
+		expect(state.editorConfig.export?.fileName).toBe('left');
+		if (editKind === 'typing') {
+			events.dispatch('insertText', { text: '0' });
+		} else {
+			applyCodeBlockSourceEdits(
+				store,
+				[{ codeBlock: left, code: left.code.map(line => line.replace('@pos 100 -', '@pos 100 0')) }],
+				{ affectsCompilation: false }
+			);
+		}
 		events.dispatch('undo');
 		expect(state.editorConfig.export?.fileName).toBe('right');
 		events.dispatch('redo');

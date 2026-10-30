@@ -206,14 +206,21 @@ export default function codeBlockRendering(
 		refreshBlockLayouts(state.codeBlockRendering.codeBlocks);
 	};
 
+	const updateEditedCodeBlock = (block: CodeBlockGraphicData | undefined) => {
+		if (!block) return;
+		refreshBlockLayouts([block]);
+		if (!block.viewportAnchor) {
+			block.x = block.gridX * state.viewport.vGrid;
+			block.y = block.gridY * state.viewport.hGrid;
+		}
+	};
+
 	const updateSelectedCodeBlock = () => {
-		const block = state.codeBlockRendering.selectedCodeBlock;
-		if (block) refreshBlockLayouts([block]);
+		updateEditedCodeBlock(state.codeBlockRendering.selectedCodeBlock);
 	};
 
 	const updateProgrammaticSelectedCodeBlock = () => {
-		const block = state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit;
-		if (block) refreshBlockLayouts([block]);
+		updateEditedCodeBlock(state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit);
 	};
 
 	const updateHideSelectionTransition = (
@@ -378,28 +385,6 @@ export default function codeBlockRendering(
 		incrementCompilerInputRevision(store);
 	};
 
-	// When user edits code, parse @pos and update runtime position if valid
-	const applyPositionFromCodeEdit = () => {
-		if (!state.codeBlockRendering.selectedCodeBlock) {
-			return;
-		}
-		const codeBlock = state.codeBlockRendering.selectedCodeBlock;
-		const posResult = parsePos(codeBlock.parsedDirectives);
-
-		// Only update position if @pos is valid
-		if (posResult !== undefined) {
-			codeBlock.gridX = posResult.x;
-			codeBlock.gridY = posResult.y;
-			if (!codeBlock.viewportAnchor) {
-				// World-space block: convert grid coordinates directly to pixels.
-				codeBlock.x = posResult.x * state.viewport.vGrid;
-				codeBlock.y = posResult.y * state.viewport.hGrid;
-			}
-			// Viewport-anchored block: x/y will be recomputed by block derivation
-			// once width/height are up to date.
-		}
-	};
-
 	updateAllBlockDerivedState();
 
 	events.on<CodeBlockPointerDownEvent>('codeBlockPointerDown', onCodeBlockPointerDown);
@@ -419,7 +404,6 @@ export default function codeBlockRendering(
 	store.subscribe('info', updateAllBlockDerivedState);
 	store.subscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.code', updateSelectedCodeBlock);
-	store.subscribe('codeBlockRendering.selectedCodeBlock.code', applyPositionFromCodeEdit);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);
 	store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', updateProgrammaticSelectedCodeBlock);
 }
