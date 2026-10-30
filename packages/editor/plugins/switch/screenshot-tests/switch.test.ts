@@ -17,6 +17,7 @@ test('switch plugin draws off and on values', async () => {
 	const project = parseProjectSource(`8f4e/v1
 entry main
 module controls
+; @pos 4 2
 int off 0
 int on 1
 ; @switch &off
@@ -48,8 +49,6 @@ entryEnd`);
 	store.set('initialProjectState', project);
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.codeBlocks', [codeBlock]);
-	codeBlock.x = 32;
-	codeBlock.y = 32;
 	state.editorConfig.color = {
 		canvas: '#000',
 		surface: '#111',
@@ -89,6 +88,7 @@ entryEnd`);
 					codeBlock,
 					code: [
 						'module controls',
+						'; @pos 4 2',
 						'int off 0',
 						'int on 1',
 						'push 0 ; @switch &off',
