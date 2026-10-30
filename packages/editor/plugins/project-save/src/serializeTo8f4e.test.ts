@@ -1,5 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import type { ProjectObjectModel } from '@8f4e/language-spec';
+import type { ProjectGroupObjectModel, ProjectObjectModel } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { serializeProjectTo8f4e } from './serializeTo8f4e';
 
@@ -20,6 +20,10 @@ function createProject(partial: Partial<ProjectObjectModel> = {}): ProjectObject
 		groups: [],
 		...partial,
 	};
+}
+
+function createGroup(partial: Partial<ProjectGroupObjectModel>): ProjectGroupObjectModel {
+	return { ...createProject(), name: 'group', entry: 'main', exposures: [], ...partial };
 }
 
 describe('serializeProjectTo8f4e', () => {
@@ -115,10 +119,9 @@ describe('serializeProjectTo8f4e', () => {
 	});
 
 	it('round-trips recursively owned groups', () => {
-		const project = createProject({
+		const project = createGroup({
 			groups: [
-				createProject({
-					id: 'audio-id',
+				createGroup({
 					name: 'audio',
 					entry: 'main',
 					code: [
@@ -138,7 +141,7 @@ describe('serializeProjectTo8f4e', () => {
 					modules: [{ id: 1, code: validBlock, entry: 'main' }],
 					functions: [{ id: 2, code: validFunctionBlock }],
 					groups: [
-						createProject({
+						createGroup({
 							name: 'notes',
 							entry: 'main',
 							code: ['group notes', 'groupEnd'],

@@ -1,5 +1,5 @@
 {
-  "name": "@8f4e/editor-plugin-project-files",
+  "name": "@8f4e/editor-plugin-project-open",
   "sourceRoot": "src",
   "projectType": "library",
   "targets": {
@@ -9,7 +9,7 @@
         "{projectRoot}/dist"
       ],
       "options": {
-        "command": "tsc",
+        "command": "rm -rf dist && tsc",
         "cwd": "{projectRoot}"
       }
     },
@@ -33,7 +33,7 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "biome check --write packages/editor/plugins/project-files/src",
+        "command": "biome check --write packages/editor/plugins/project-open/src",
         "cwd": "{workspaceRoot}"
       }
     },

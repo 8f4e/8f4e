@@ -4,7 +4,8 @@
 - Editor product: the reusable default composition lives in `packages/editor/packages/editor-default/`; the thin
   Vite website lives in `packages/editor/packages/editor-website/`.
 - Embedded composition: `packages/editor/packages/editor-minimal/` supplies live editing, project URL loading,
-  controls, visualizations, and runtimes for the product homepage and galleries, without session storage or authoring plugins.
+  controls, visualizations, runtimes, and project source saving/export for the product homepage and galleries, without session storage
+  or the default editor's other authoring plugins.
 - Compiler integration lives in `packages/editor/plugins/compiler/` (`@8f4e/editor-plugin-compiler`). The default editor constructs and installs it first and injects its live handles into dependent plugins, including runtimes. Core emits input-change events and consumes accepted artifacts.
 - WebMCP lives in `packages/editor/packages/editor-webmcp/` as an external page-owned adapter bound to one editor's public `editing` handle. The editor website and example/test galleries compose it; gallery project switches dispose and recreate the bridge.
 - Optional editor features live in `packages/editor/plugins/<feature>/` as independent npm/Nx packages named
