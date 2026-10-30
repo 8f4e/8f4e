@@ -1,12 +1,12 @@
-type OverlayPosition = 'left' | 'center' | 'right';
+import type { TextureConfig } from './config';
 
 export function getTextureDrawRect(
 	sourceWidth: number,
 	sourceHeight: number,
 	viewportWidth: number,
 	viewportHeight: number,
-	magnification = 1,
-	position: OverlayPosition = 'center'
+	magnification: number,
+	position: TextureConfig['position']
 ): { x: number; y: number; width: number; height: number } {
 	const width = sourceWidth * magnification;
 	const height = sourceHeight * magnification;

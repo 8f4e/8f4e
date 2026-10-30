@@ -18,36 +18,54 @@ export function createWasmTexturePlugin({
 		setup: ({ store, events, drawers }) => {
 			const state = store.getState();
 			let config: TextureConfig | undefined;
-			let memory: WebAssembly.Memory | undefined;
+			let program: { memory: WebAssembly.Memory; exports: WebAssembly.Exports } | undefined;
 			let entry: CallableFunction | undefined;
 			let byteAddress: number | undefined;
 			let byteLength = 0;
 			let generation = 0;
+			let pending = false;
 			let unregisterLayer: (() => void) | undefined;
 
-			async function syncProgram() {
-				const version = ++generation;
-				memory = undefined;
+			function clearProgram() {
+				generation++;
+				program = undefined;
+				pending = false;
 				entry = undefined;
 				byteAddress = undefined;
+			}
+
+			function prepareFrame() {
+				entry = undefined;
+				byteAddress = undefined;
+				if (!config || !program) return;
+				const target = resolveMemoryTarget(state, { kind: 'project', groupPath: '' }, config.target);
+				const nextEntry = program.exports[config.entry];
+				if (typeof nextEntry !== 'function' || !target) return;
+				entry = nextEntry;
+				byteAddress = target.memory.byteAddress;
+			}
+
+			async function syncProgram() {
+				clearProgram();
+				const version = generation;
 				if (!config) return;
 				const nextMemory = getMemory();
 				const code = getCodeBuffer();
 				if (!nextMemory || code.byteLength === 0) return;
-				const { entry: entryName, target: targetName } = config;
+				pending = true;
 				try {
 					const { instance } = await WebAssembly.instantiate(new Uint8Array(code), {
 						host: { memory: nextMemory, ...IGNORED_ASSERTION_IMPORTS },
 					});
 					if (version !== generation) return;
-					const target = resolveMemoryTarget(state, { kind: 'project', groupPath: '' }, targetName);
-					const nextEntry = instance.exports[entryName];
-					if (typeof nextEntry !== 'function' || !target) return;
-					memory = nextMemory;
-					entry = nextEntry;
-					byteAddress = target.memory.byteAddress;
+					program = { memory: nextMemory, exports: instance.exports };
+					pending = false;
+					prepareFrame();
 				} catch (error) {
-					if (version === generation) console.error('Failed to instantiate WASM texture:', error);
+					if (version === generation) {
+						pending = false;
+						console.error('Failed to instantiate WASM texture:', error);
+					}
 				}
 			}
 
@@ -57,13 +75,15 @@ export function createWasmTexturePlugin({
 				if (!config) {
 					unregisterLayer?.();
 					unregisterLayer = undefined;
+					clearProgram();
 				} else if (!unregisterLayer) {
 					unregisterLayer = drawers.registerRenderLayer(({ gl }) => {
 						const texture = new RgbaTextureDrawer(gl);
 						return {
 							draw: () => {
-								if (!config || !entry || !memory || byteAddress === undefined) return;
+								if (!config || !entry || !program || byteAddress === undefined) return;
 								entry();
+								const { memory } = program;
 								if (byteAddress + byteLength > memory.buffer.byteLength) return;
 								texture.uploadRgba8Texture(
 									new Uint8Array(memory.buffer, byteAddress, byteLength),
@@ -85,7 +105,8 @@ export function createWasmTexturePlugin({
 						};
 					});
 				}
-				void syncProgram();
+				prepareFrame();
+				if (config && !program && !pending) void syncProgram();
 			}
 
 			store.set('editorConfigSchemaContributions.wasmTexture', WASM_TEXTURE_CONFIG);
@@ -95,9 +116,7 @@ export function createWasmTexturePlugin({
 			return () => {
 				store.unsubscribe('editorConfig.wasmTexture', syncConfig);
 				events.off('compilationSucceeded', syncProgram);
-				generation++;
-				entry = undefined;
-				memory = undefined;
+				clearProgram();
 				unregisterLayer?.();
 				const schemas = { ...state.editorConfigSchemaContributions };
 				delete schemas.wasmTexture;

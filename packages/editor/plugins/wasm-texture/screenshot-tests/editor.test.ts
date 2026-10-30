@@ -28,56 +28,67 @@ int8u[] rgba 16 255 0 0 255 0 0 255 128 0 0 0 0 255 255 0 255
 moduleEnd
 entryEnd`;
 
-test('loads from raw config and renders compiled pixels through resize and resource restoration', async () => {
-	const canvas = document.createElement('canvas');
-	canvas.width = 640;
-	canvas.height = 360;
-	canvas.style.width = '640px';
-	canvas.style.height = '360px';
-	document.body.append(canvas);
-	const compiler = createCompilerPlugin();
-	const load = vi.fn(() => import('../src/index').then(module => module.createWasmTexturePlugin(compiler)));
-	let editor: Editor | undefined;
-	try {
-		editor = await initEditor(canvas, {
-			initialProject: parseProjectSource(source),
-			plugins: [
-				compiler.plugin,
-				createLazyPluginLoaderPlugin([
-					{ id: 'wasm-texture', scope: 'project', matches: directives => hasConfig(directives, 'wasmTexture'), load },
-				]),
-			],
-			featureFlags: { modeOverlay: false, offscreenBlockArrows: false },
-		});
-		editor.pauseRendering();
-		await vi.waitFor(
-			() => expect(compiler.getCodeBuffer().byteLength, JSON.stringify(compiler.getDiagnostics())).toBeGreaterThan(0),
-			{ timeout: 10000 }
-		);
-		expect(editor.state.codeErrors.compilationErrors).toEqual([]);
-		const address = editor.state.compiler.memoryPlan.modules.screen.memory.rgba.byteAddress;
-		expect([...new Uint8Array(compiler.getMemory()!.buffer, address, 4)]).toEqual([255, 0, 0, 255]);
-		const gl = canvas.getContext('webgl2')!;
-		const readRed = (x: number, y: number) => {
-			const pixel = new Uint8Array(4);
-			gl.readPixels(x, canvas.height - 1 - y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-			expect([...pixel]).toEqual([255, 0, 0, 255]);
-		};
-		await vi.waitFor(() => {
-			editor!.renderFrame();
-			readRed(420, 120);
-		});
-		expect(load).toHaveBeenCalledOnce();
-		expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
-		editor.resize(800, 400);
-		readRed(540, 140);
-		editor.releaseRenderingResources();
-		editor.resize(640, 360);
-		editor.renderFrame();
-		readRed(420, 120);
-		await expect(canvas).toMatchScreenshot('wasm-texture');
-	} finally {
-		editor?.dispose();
-		canvas.remove();
+test.each(['project settings', 'schema defaults'] as const)(
+	'loads raw config and renders compiled pixels through resize and resource restoration using %s',
+	async mode => {
+		const useDefaults = mode === 'schema defaults';
+		const projectSource = useDefaults
+			? source
+					.replace('; @config wasmTexture.magnification 64\n', '')
+					.replace('; @config wasmTexture.position right\n', '')
+			: source;
+		const sample = useDefaults ? ([319, 179] as const) : ([420, 120] as const);
+		const resizedSample = useDefaults ? ([399, 199] as const) : ([540, 140] as const);
+		const canvas = document.createElement('canvas');
+		canvas.width = 640;
+		canvas.height = 360;
+		canvas.style.width = '640px';
+		canvas.style.height = '360px';
+		document.body.append(canvas);
+		const compiler = createCompilerPlugin();
+		const load = vi.fn(() => import('../src/index').then(module => module.createWasmTexturePlugin(compiler)));
+		let editor: Editor | undefined;
+		try {
+			editor = await initEditor(canvas, {
+				initialProject: parseProjectSource(projectSource),
+				plugins: [
+					compiler.plugin,
+					createLazyPluginLoaderPlugin([
+						{ id: 'wasm-texture', scope: 'project', matches: directives => hasConfig(directives, 'wasmTexture'), load },
+					]),
+				],
+				featureFlags: { modeOverlay: false, offscreenBlockArrows: false },
+			});
+			editor.pauseRendering();
+			await vi.waitFor(
+				() => expect(compiler.getCodeBuffer().byteLength, JSON.stringify(compiler.getDiagnostics())).toBeGreaterThan(0),
+				{ timeout: 10000 }
+			);
+			expect(editor.state.codeErrors.compilationErrors).toEqual([]);
+			const address = editor.state.compiler.memoryPlan.modules.screen.memory.rgba.byteAddress;
+			expect([...new Uint8Array(compiler.getMemory()!.buffer, address, 4)]).toEqual([255, 0, 0, 255]);
+			const gl = canvas.getContext('webgl2')!;
+			const readRed = (x: number, y: number) => {
+				const pixel = new Uint8Array(4);
+				gl.readPixels(x, canvas.height - 1 - y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+				expect([...pixel]).toEqual([255, 0, 0, 255]);
+			};
+			await vi.waitFor(() => {
+				editor!.renderFrame();
+				readRed(...sample);
+			});
+			expect(load).toHaveBeenCalledOnce();
+			expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+			editor.resize(800, 400);
+			readRed(...resizedSample);
+			editor.releaseRenderingResources();
+			editor.resize(640, 360);
+			editor.renderFrame();
+			readRed(...sample);
+			if (!useDefaults) await expect(canvas).toMatchScreenshot('wasm-texture');
+		} finally {
+			editor?.dispose();
+			canvas.remove();
+		}
 	}
-});
+);

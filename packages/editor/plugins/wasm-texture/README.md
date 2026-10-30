@@ -18,6 +18,7 @@ image in the left half, full canvas, or right half. Pixels use top-to-bottom RGB
 own alpha. The entry executes every frame against the compiler's shared memory without reinitializing defaults.
 
 Custom hosts install `createWasmTexturePlugin({ getCodeBuffer, getMemory })` with live compiler getters. Install it
-after connectors to draw above wires. Core and web-ui do not install this feature. Configuration updates and
-compilation prepare the WASM instance; frames run the entry, upload its buffer, and draw it. Recompilation replaces
-the instance, and disposal invalidates pending instantiation and releases all registrations and GPU resources.
+after connectors to draw above wires. Core and web-ui do not install this feature. Configuration updates reuse the
+current or pending WASM instance and refresh the entry, framebuffer, and placement. Activation and accepted compilation
+create instances; frames run the entry, upload its buffer, and draw it. Configuration removal and disposal invalidate
+pending instantiation and release resources.

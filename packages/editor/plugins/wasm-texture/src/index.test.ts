@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createFakeWebGl } from './__tests__/fake-webgl';
@@ -54,7 +54,22 @@ async function setup({ config = settings, hold = false } = {}) {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
 	const state = store.getState();
-	Object.assign(state.compiler, current.compiled);
+	const publishMetadata = ({
+		compiledFunctions,
+		compiledModules,
+		projectMemoryExposuresByGroupPath,
+		memoryPlan,
+		memoryDefaultsByModuleId,
+	}: typeof current.compiled) => {
+		Object.assign(state.compiler, {
+			compiledFunctions,
+			compiledModules,
+			projectMemoryExposuresByGroupPath,
+			memoryPlan,
+			memoryDefaultsByModuleId,
+		});
+	};
+	publishMetadata(current.compiled);
 	const drawers = createEditorDrawerRegistry();
 	const getMemory = vi.fn(() => current.memory);
 	const getCodeBuffer = vi.fn(() => current.compiled.codeBuffer);
@@ -107,6 +122,14 @@ async function setup({ config = settings, hold = false } = {}) {
 			return current.memory;
 		},
 		address: current.compiled.memoryPlan.modules.screen.memory.rgba.byteAddress,
+		editConfig: (source: string) => {
+			const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'config')!;
+			applyCodeBlockSourceEdits(
+				store,
+				[{ codeBlock: block, code: ['note config', ...source.split('\n'), 'noteEnd'] }],
+				{ affectsCompilation: false }
+			);
+		},
 		release: async () =>
 			resolvePending(
 				await originalInstantiate(new Uint8Array(initial.compiled.codeBuffer), { host: { memory: initial.memory } })
@@ -114,7 +137,7 @@ async function setup({ config = settings, hold = false } = {}) {
 		recompile: async () => {
 			current = await program('0x55443322', config, true);
 			events.dispatch('compilationSucceeded', { memoryRef: current.memory });
-			Object.assign(state.compiler, current.compiled);
+			publishMetadata(current.compiled);
 		},
 	};
 }
@@ -149,6 +172,29 @@ it('allocates only for complete configuration and releases resources when it is 
 	test.events.dispatch('loadProject', { project: parseProjectSource('8f4e/v1\nnote empty\nnoteEnd') });
 	expect(test.gl.deleteTexture).toHaveBeenCalledOnce();
 	expect(test.gl.deleteProgram).toHaveBeenCalledOnce();
+});
+
+it('reuses the accepted program when placement and magnification change', async () => {
+	const test = await setup();
+	await test.settle();
+	test.frame();
+	test.editConfig(settings.replace('position left', 'position right').replace('magnification 32', 'magnification 16'));
+	await test.settle();
+	test.frame();
+	expect(test.instantiate).toHaveBeenCalledOnce();
+	expect(test.gl.uniform4f).toHaveBeenLastCalledWith(expect.anything(), 232, 82, 16, 16);
+	expect([...(test.gl.texSubImage2D.mock.calls.at(-1)!.at(-1) as Uint8Array)]).toEqual([17, 34, 51, 68]);
+});
+
+it('applies current settings when the pending program becomes ready', async () => {
+	const test = await setup({ hold: true });
+	test.editConfig(settings.replace('position left', 'position right').replace('magnification 32', 'magnification 16'));
+	await test.release();
+	await test.settle();
+	test.frame();
+	expect(test.instantiate).toHaveBeenCalledOnce();
+	expect(test.gl.uniform4f).toHaveBeenLastCalledWith(expect.anything(), 232, 82, 16, 16);
+	expect([...(test.gl.texImage2D.mock.calls.at(-1)!.at(-1) as Uint8Array)]).toEqual([17, 34, 51, 68]);
 });
 
 it('uses replacement compiler memory and updated addresses', async () => {
