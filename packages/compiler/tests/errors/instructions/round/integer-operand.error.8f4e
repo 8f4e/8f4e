@@ -1,0 +1,8 @@
+8f4e/v1
+
+entry main
+module integerRoundOperand
+push 1
+round
+moduleEnd
+entryEnd
