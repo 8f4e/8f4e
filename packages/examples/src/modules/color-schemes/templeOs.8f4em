@@ -1,7 +1,6 @@
 8f4e/v1
 
-entry main
-module templeOS
+note templeOS
 ; @public
 ; @pos -41 76
 ; @tab 46
@@ -18,5 +17,4 @@ module templeOS
 ; @config color.tertiary #aaaaaa
 ; @config color.highlight rgba(255,255,255,0.45)
 ; @config color.detail #ffffff
-moduleEnd
-entryEnd
+noteEnd

@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { type PaletteConfig, resolvePalette } from './index';
 
-// Preserve established material choices across light, dark, saturated, and translucent themes.
+// Cover material choices across light, dark, saturated, and translucent themes.
 const cases = [
 	{
 		name: 'default',
 		config: {},
 		expected: {
-			surfaceRaised2: '#0f0f0f',
-			lightBase: '#cccccc',
-			darkBase: '#000000',
-			floatingSurface: '#080808',
-			selectionSurface: '#ffffff',
-			inverseSurface: '#d4d4d4',
+			surfaceRaised2: '#2c2c2c',
+			lightBase: '#e3e3e3',
+			darkBase: '#101010',
+			floatingSurface: '#262626',
+			selectionSurface: '#cba6f7',
+			inverseSurface: '#dfdae7',
 		},
 	},
 	{
@@ -21,12 +21,12 @@ const cases = [
 			primary: '#d9a6ff',
 		},
 		expected: {
-			surfaceRaised2: '#100d13',
-			lightBase: '#cccccc',
-			darkBase: '#000000',
-			floatingSurface: '#09070b',
+			surfaceRaised2: '#2c2c2c',
+			lightBase: '#e3e3e3',
+			darkBase: '#101010',
+			floatingSurface: '#262626',
 			selectionSurface: '#d9a6ff',
-			inverseSurface: '#cec7d4',
+			inverseSurface: '#e2dae8',
 		},
 	},
 	{
@@ -108,7 +108,7 @@ const cases = [
 			primary: 'rgba(220,50,130,0.2)',
 		},
 		expected: {
-			surfaceRaised2: '#dad3d5',
+			surfaceRaised2: '#dddddd',
 			lightBase: '#e6e6e6',
 			darkBase: '#000000',
 			floatingSurface: '#c61370',
@@ -119,7 +119,7 @@ const cases = [
 ] satisfies { name: string; config: PaletteConfig; expected: Record<string, string> }[];
 
 describe('palette material rules', () => {
-	it.each(cases)('preserves the colors of $name', ({ config, expected }) => {
+	it.each(cases)('resolves materials for $name', ({ config, expected }) => {
 		expect(resolvePalette(config).colors).toMatchObject(expected);
 	});
 });

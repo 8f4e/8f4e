@@ -8,6 +8,7 @@ export default function extractPublicBlockFromModuleSource(source: string): stri
 		...project.functions,
 		...project.constants,
 		...project.prototypes,
+		...project.notes,
 	].find(block => parseBlockDirectives(block.code).some(directive => directive.name === 'public'))!;
 	return removeDirective(publicBlock.code, 'public');
 }

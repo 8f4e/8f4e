@@ -2,6 +2,10 @@
 
 Pure base palette resolution for the editor. This package has no browser, renderer, state, or plugin dependencies.
 
+The default uses Catppuccin Mocha accents with a neutral `#060606` canvas, `#101010` code-block surface, and subdued
+comments. Projects can override each shared base color independently; omitted colors retain their default values.
+The Catppuccin MIT license notice is retained in `src/palette.ts`.
+
 ```ts
 import { PALETTE_INDICES, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
 
@@ -18,7 +22,7 @@ changes. Drawers select stable palette indices and share color-independent glyph
 256 such entries and prepares premultiplied colors in a 4 KiB uniform buffer. Equal colors keep distinct indices so a
 later theme can give them different values without changing projections.
 
-The implementation keeps the token catalog in `palette.ts`, base defaults and shade generation in `resolvePalette.ts`,
+The implementation keeps the token catalog and base defaults in `palette.ts`, base resolution and shade generation in `resolvePalette.ts`,
 and material recipes and contrast selection in `materials.ts`. Color parsing, math, and RGB normalization live in
 `color.ts`. Material recipes run in declaration order, after the materials they depend on. Each generated color is
 normalized to eight-bit RGB before later recipes use it, preserving the palette values used by the GPU and line rendering.

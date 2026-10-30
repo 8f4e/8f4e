@@ -28,4 +28,23 @@ describe('extractPublicBlockFromModuleSource', () => {
 
 		expect(extractPublicBlockFromModuleSource(text)).toEqual(['function helper', 'functionEnd']);
 	});
+
+	it('selects the named public note from a note-only example', () => {
+		const source = [
+			'8f4e/v1',
+			'note',
+			'; Private instructions.',
+			'noteEnd',
+			'note copperColors',
+			'; @public',
+			'; @config color.primary #e1843d',
+			'noteEnd',
+		].join('\n');
+
+		expect(extractPublicBlockFromModuleSource(source)).toEqual([
+			'note copperColors',
+			'; @config color.primary #e1843d',
+			'noteEnd',
+		]);
+	});
 });

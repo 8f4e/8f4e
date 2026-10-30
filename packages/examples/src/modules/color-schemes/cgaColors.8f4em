@@ -1,7 +1,6 @@
 8f4e/v1
 
-entry main
-module cgaColors
+note cgaColors
 ; @public
 ; @config color.canvas #00aaaa
 ; @config color.surface #0000aa
@@ -16,5 +15,4 @@ module cgaColors
 ; @config color.tertiary #aaaaaa
 ; @config color.highlight rgba(255,255,255,0.45)
 ; @config color.detail #ffffff
-moduleEnd
-entryEnd
+noteEnd

@@ -1,7 +1,6 @@
 8f4e/v1
 
-entry main
-module dx7colors
+note dx7colors
 ; @public
 ; @pos 2 51
 ; @config color.primary #33ffcc
@@ -10,5 +9,4 @@ module dx7colors
 ; @config color.highlight rgba(255,255,255,0.45)
 ; @config color.detail #ffffff
 ; @config color.stroke rgba(255,255,255,0.3)
-moduleEnd
-entryEnd
+noteEnd

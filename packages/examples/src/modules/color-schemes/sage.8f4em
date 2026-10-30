@@ -1,0 +1,18 @@
+8f4e/v1
+
+note sageColors
+; @public
+; @config color.canvas #18211f
+; @config color.surface #2c342f
+; @config color.ink #d8dccd
+; @config color.primary #78c6a6
+; @config color.secondary #e1b15f
+; @config color.positive #3d8d5b
+; @config color.warning #d7a63e
+; @config color.negative #c64c3c
+; @config color.muted #788278
+; @config color.stroke rgba(126,226,177,0.62)
+; @config color.tertiary #939b8d
+; @config color.highlight #f2b35d
+; @config color.detail #3d8d5b
+noteEnd

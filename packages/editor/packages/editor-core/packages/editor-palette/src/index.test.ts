@@ -12,13 +12,33 @@ import {
 } from './index';
 
 describe('editor palette', () => {
-	it('preserves and normalizes anchors, with secondary following the selected primary', () => {
+	it('uses the selected Catppuccin Mocha palette with subtly separated black surfaces by default', () => {
+		const palette = resolvePalette();
+		expect(Object.fromEntries(BASE_COLORS.map(base => [base, palette.colors[`${base}Base`]]))).toEqual({
+			canvas: '#060606',
+			surface: '#101010',
+			ink: '#e3e3e3',
+			muted: '#909090',
+			primary: '#cba6f7',
+			secondary: '#fab387',
+			tertiary: '#7f849c',
+			highlight: '#94e2d5',
+			detail: '#f5c2e7',
+			stroke: '#858585',
+			positive: '#a6e3a1',
+			warning: '#f9e2af',
+			negative: '#f38ba8',
+		});
+	});
+
+	it('normalizes overrides and keeps omitted base colors independent', () => {
 		const palette = resolvePalette({ primary: '#D9A6FF', canvas: '#609' });
 		expect(palette.colors.primaryBase).toBe('#d9a6ff');
 		expect(palette.colors.canvasBase).toBe('#660099');
-		expect(palette.colors.secondaryBase).toBe('#d9a6ff');
+		for (const base of BASE_COLORS.filter(base => base !== 'primary' && base !== 'canvas')) {
+			expect(palette.colors[`${base}Base`]).toBe(defaultPalette[base]);
+		}
 		expect(resolvePalette({ primary: '#d9a6ff', secondary: '#f90' }).colors.secondaryBase).toBe('#ff9900');
-		expect(defaultPalette.primary).toBe('#ffffff');
 	});
 
 	it('resolves omitted and explicitly supplied defaults identically', () => {
@@ -26,13 +46,15 @@ describe('editor palette', () => {
 		expect(resolvePalette(defaultPalette)).toEqual(palette);
 		expect(resolvePalette({ primary: defaultPalette.primary })).toEqual(palette);
 		expect(resolvePalette({ secondary: palette.colors.secondaryBase })).toEqual(palette);
+		expect(resolvePalette({ primary: '#CBA6F7', surface: 'rgb(16,16,16)' })).toEqual(palette);
 	});
 
-	it('inherits the secondary color and alpha for highlights unless explicitly configured', () => {
+	it('keeps secondary and highlight colors and alpha independent', () => {
 		const secondary = 'rgba(242,200,121,0.35)';
 		const palette = resolvePalette({ secondary });
-		expect(palette.rgba.highlightBase).toEqual(palette.rgba.secondaryBase);
-		expect(palette.rgba.highlightLight2[3]).toBe(0.35);
+		expect(palette.rgba.secondaryLight2[3]).toBe(0.35);
+		expect(palette.colors.highlightBase).toBe(defaultPalette.highlight);
+		expect(palette.rgba.highlightLight2[3]).toBe(1);
 		expect(resolvePalette({ secondary, highlight: 'rgba(255,255,255,0.45)' }).rgba.highlightBase).toEqual([
 			1, 1, 1, 0.45,
 		]);
@@ -181,7 +203,7 @@ describe('GPU palette indices', () => {
 		const a = PALETTE_INDICES.primaryBase;
 		const b = PALETTE_INDICES.secondaryBase;
 		expect(a).not.toBe(b);
-		const equal = toPaletteBytes(resolvePalette({ primary: '#fff' }));
+		const equal = toPaletteBytes(resolvePalette({ primary: '#fff', secondary: '#fff' }));
 		expect(equal.slice(a * 4, a * 4 + 4)).toEqual(equal.slice(b * 4, b * 4 + 4));
 		const different = toPaletteBytes(resolvePalette({ primary: '#fff', secondary: 'rgba(255,0,0,0.5)' }));
 		expect([...different.slice(b * 4, b * 4 + 4)]).toEqual([255, 0, 0, 128]);

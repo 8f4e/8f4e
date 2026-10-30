@@ -134,6 +134,23 @@ describe('example modules plugin', () => {
 		expect(test.state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['env', 'simple']);
 	});
 
+	it('inserts a palette note and applies its colors without creating executable modules', async () => {
+		const test = setup({
+			sources: new Map([
+				[
+					'color-schemes/copper',
+					async () => '8f4e/v1\nnote copperColors\n; @public\n; @config color.primary #e1843d\nnoteEnd',
+				],
+			]),
+		});
+		await test.addModule('copper');
+
+		expect(test.state.codeBlockRendering.codeBlocks.map(block => block.blockType)).toEqual(['constants', 'note']);
+		expect(test.state.codeBlockRendering.codeBlocks[1].name).toBe('copperColors');
+		expect(test.state.codeBlockRendering.codeBlocks[1].code).not.toContain('; @public');
+		expect(test.state.editorConfig.color).toMatchObject({ primary: '#e1843d' });
+	});
+
 	it('continues inserting available dependencies when one chunk fails', async () => {
 		const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
 		const test = setup({
