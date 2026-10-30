@@ -8,7 +8,6 @@ import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';
 import codeBlockRenderingEffect from './effect';
 import { directiveDefinitions } from './features/directives/registry';
 import entryOutlines from './features/entryOutlines/effect';
-import parsedDirectivesUpdater from './features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './layout/registry';
 
@@ -445,7 +444,6 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		parsedDirectivesUpdater(store);
 		codeBlockRenderingEffect(
 			store,
 			events,
@@ -492,7 +490,6 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		parsedDirectivesUpdater(store);
 		codeBlockRenderingEffect(
 			store,
 			events,

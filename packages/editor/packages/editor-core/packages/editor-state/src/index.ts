@@ -9,7 +9,6 @@ import type {
 import createStateManager, { type StateManager } from '@8f4e/state-manager';
 import codeBlockRendering from './features/code-blocks/effect';
 import autoEnvConstants from './features/code-blocks/features/auto-env-constants/effect';
-import blockTypeUpdater from './features/code-blocks/features/blockTypeUpdater/effect';
 import codeBlockCreator from './features/code-blocks/features/codeBlockCreator/effect';
 import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
@@ -17,8 +16,6 @@ import registerInfoLayout from './features/code-blocks/features/directives/info/
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
-import parsedDirectivesUpdater from './features/code-blocks/features/parsedDirectivesUpdater/effect';
-import positionUpdater from './features/code-blocks/features/positionUpdater/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './features/code-blocks/layout/registry';
 import codeEditing from './features/code-editing/effect';
@@ -29,7 +26,6 @@ import { registerExportFileNameEditorConfigValidator } from './features/editor-c
 import { registerEditorConfigSchemaContributionsValidator } from './features/editor-config/schemaContributions';
 import editorMode from './features/editor-mode/effect';
 import font from './features/font/effect';
-import globalEditorDirectivesEffect from './features/global-editor-directives/effect';
 import contextMenu from './features/menu/effect';
 import createMenuRegistry from './features/menu/registry';
 import publishCompilationInputChanges from './features/program-compiler/inputChanges';
@@ -105,11 +101,7 @@ export default function init(
 	registerEffect(viewport(store, events));
 	registerEffect(codeBlockCreator(store, events));
 	registerEffect(projectGroupNavigation(store, events));
-	registerEffect(parsedDirectivesUpdater(store));
-	registerEffect(positionUpdater(store));
 	registerEffect(autoEnvConstants(store)); // Must run after codeBlockCreator to ensure env block is created
-	registerEffect(blockTypeUpdater(store)); // Classify blocks before announcing compiler input changes
-	registerEffect(globalEditorDirectivesEffect(store));
 	registerEffect(publishCompilationInputChanges(store, events));
 	registerEffect(codeBlockRendering(store, events, directives.definitions, layout));
 	registerEffect(registerInfoLayout(layout));

@@ -45,15 +45,17 @@ Block types are automatically detected and updated based on code content.
 This feature contains several subfeatures under `features/` that handle specific aspects:
 
 - `blockHighlights` - Visual highlighting for selected/hovered blocks
-- `blockTypeUpdater` - Automatic block type detection and updates
-- `positionUpdater` - Updates valid grid positions after directive parsing and before config resolution; incomplete
-  or invalid edits retain the existing position
 - `codeBlockCreator` - Block creation logic
 - `codeBlockDragger` - Drag and drop operations
 - `codeBlockNavigation` - Keyboard navigation between blocks
 - `codeBlockRendering` - Visual properties computation
 - `inputs` - Audio input routing
 - `outputs` - Audio output routing
+
+Source changes use `sourceUpdates.ts` in an explicit sequence: parse directives and update block type and valid grid
+coordinates, regenerate environment source, resolve global configuration, then refresh layouts. An incomplete or
+invalid position directive retains the existing block position. Interactive and programmatic edits use this same
+path; ordinary layout invalidations do not reparse source.
 
 ## Events & Callbacks
 

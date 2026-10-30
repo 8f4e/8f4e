@@ -667,7 +667,9 @@ This directive stores the position of a code block within the project.
 
 - **Project Load**: Position is parsed from `@pos` directive. Missing or invalid directive defaults to `(0,0)`
 - **Code Edit**: Valid `@pos` edits immediately update the block's grid coordinates and position before config
-  precedence is resolved. Missing, incomplete, or invalid directives leave the block at its last valid position.
+  precedence is resolved. Missing, incomplete, or invalid directives leave the block at its last valid position,
+  including updates through the editing API and same-project history restoration. Newly inserted blocks without a
+  valid position start at `(0,0)`.
 - **Dragging**: When you drag a block, `@pos` is automatically updated when the drag ends (not during the drag)
 - **Creation**: New blocks automatically get a canonical `@pos` directive based on creation location
 - **Paste**: Pasted blocks automatically get `@pos` directives with adjusted positions

@@ -11,11 +11,9 @@ import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pa
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
-import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import codeEditing from '../code-editing/effect';
-import globalEditorDirectivesEffect from '../global-editor-directives/effect';
 import projectImport from '../project-loading/effect';
 import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
 
@@ -111,8 +109,6 @@ describe('project revision', () => {
 
 	it('advances once for a drag position commit, without advancing the compiler revision', () => {
 		block.code.splice(1, 0, '; @pos 0 0');
-		parsedDirectivesUpdater(store);
-		globalEditorDirectivesEffect(store);
 		rendering(
 			store,
 			events,

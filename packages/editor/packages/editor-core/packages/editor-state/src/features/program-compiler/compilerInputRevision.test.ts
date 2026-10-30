@@ -11,13 +11,11 @@ import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pa
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
-import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import codeEditing from '../code-editing/effect';
 import historyTracking from '../edit-history/effect';
 import { createSchemaEditorConfigValidator } from '../editor-config/schemaValidator';
-import globalEditorDirectivesEffect from '../global-editor-directives/effect';
 import projectLoading from '../project-loading/effect';
 import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
 import publishCompilationInputChanges from './inputChanges';
@@ -141,8 +139,6 @@ describe('compiler input revision', () => {
 			createSchemaEditorConfigValidator({ root: 'example', schema: { type: 'integer' } })
 		);
 		block.code.splice(1, 0, '; @pos 0 0', '; @config example 120');
-		parsedDirectivesUpdater(store);
-		globalEditorDirectivesEffect(store);
 		rendering(
 			store,
 			events,

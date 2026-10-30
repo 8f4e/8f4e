@@ -8,10 +8,8 @@ import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
 import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
-import parsedDirectivesUpdater from '../code-blocks/features/parsedDirectivesUpdater/effect';
 import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import codeEditing from '../code-editing/effect';
-import globalEditorDirectivesEffect from '../global-editor-directives/effect';
 import projectImport from '../project-loading/effect';
 import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
 import historyTracking from './effect';
@@ -90,7 +88,6 @@ describe('history tracking with real project mutations', () => {
 		state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
 		state.codeBlockRendering.selectedCodeBlock = block;
 		projectImport(store, events);
-		parsedDirectivesUpdater(store);
 		rendering(
 			store,
 			events,
@@ -238,7 +235,6 @@ describe('history tracking with real project mutations', () => {
 			},
 		});
 		const loaded = state.codeBlockRendering.codeBlocks[0];
-		globalEditorDirectivesEffect(store);
 		store.set('editorMode', 'edit');
 		codeBlockDragger(store, events);
 		store.set('codeBlockRendering.codeBlocks', state.codeBlockRendering.codeBlocks);

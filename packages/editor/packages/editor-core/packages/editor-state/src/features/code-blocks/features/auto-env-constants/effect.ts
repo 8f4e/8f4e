@@ -3,7 +3,6 @@ import type { ProjectBlock } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
 import { publishProjectChange } from '../../../project-changes';
-import parsePos from '../directives/pos/data';
 
 const AUTO_ENV_CONSTANTS_BLOCK_NAME = 'env';
 
@@ -14,17 +13,15 @@ const isEnvBlock = (block: CodeBlockGraphicData): boolean => block.name === AUTO
  * This block provides runtime environment values as constants that can be used throughout the program.
  *
  * @param state - The current editor state
- * @param existingPos - Existing env block grid position from its `; @pos x y` directive. When provided, this
- * position is preserved in the regenerated block; otherwise the block defaults to `0,0`.
+ * @param position - Grid position to write into the generated source.
  * @returns Array of code lines for the constants block
  */
-function generateEnvConstantsBlock(state: State, existingPos?: { x: number; y: number }): string[] {
+function generateEnvConstantsBlock(state: State, position: { x: number; y: number }): string[] {
 	const lines: string[] = [];
-	const pos = existingPos ?? { x: 0, y: 0 };
 
 	// Header with warning
 	lines.push(`constants ${AUTO_ENV_CONSTANTS_BLOCK_NAME}`);
-	lines.push(`; @pos ${pos.x} ${pos.y}`);
+	lines.push(`; @pos ${position.x} ${position.y}`);
 	lines.push('; @favorite');
 	lines.push('; Auto-generated environment constants');
 	lines.push('; Changes will be overwritten');
@@ -42,57 +39,30 @@ function generateEnvConstantsBlock(state: State, existingPos?: { x: number; y: n
 	return lines;
 }
 
-/**
- * Auto-managed environment constants block effect.
- *
- * This effect automatically maintains a constants block named 'env' that contains
- * environment values like contributed runtime values and contributed constants.
- * The env block is added to the project's constants collection when the project is loaded,
- * and its content is updated in codeBlockRendering.codeBlocks when contributed environment constants change.
- *
- * @param store - State manager instance
- */
+/** Regenerate environment source using the block position established by source metadata refresh. */
+export function updateEnvConstantsBlock(store: StateManager<State>): void {
+	const state = store.getState();
+	const targetBlock = state.codeBlockRendering.codeBlocks.find(block => isEnvBlock(block));
+
+	if (!targetBlock) {
+		return;
+	}
+	const newCode = generateEnvConstantsBlock(state, { x: targetBlock.gridX, y: targetBlock.gridY });
+
+	if (targetBlock.code.length === newCode.length && targetBlock.code.every((line, index) => line === newCode[index])) {
+		return;
+	}
+
+	targetBlock.code = newCode;
+	targetBlock.lastUpdated = performance.now();
+
+	store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', targetBlock);
+	incrementCompilerInputRevision(store);
+	publishProjectChange(store);
+}
+
+/** Ensure environment source exists on load and refresh it when its contributions change. */
 export default function autoEnvConstants(store: StateManager<State>): void {
-	function areCodeLinesEqual(a: string[], b: string[]): boolean {
-		if (a.length !== b.length) {
-			return false;
-		}
-
-		for (let i = 0; i < a.length; i++) {
-			if (a[i] !== b[i]) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Updates the env constants block code in codeBlockRendering.codeBlocks.
-	 * This avoids triggering an infinite loop by not modifying initialProjectState.
-	 */
-	function updateEnvConstantsBlockInCodeBlockRendering(): void {
-		const state = store.getState();
-		const targetBlock = state.codeBlockRendering.codeBlocks.find(block => isEnvBlock(block));
-
-		if (!targetBlock) {
-			return;
-		}
-		const existingPos = parsePos(targetBlock.parsedDirectives);
-		const newCode = generateEnvConstantsBlock(state, existingPos);
-
-		if (areCodeLinesEqual(targetBlock.code, newCode)) {
-			return;
-		}
-
-		targetBlock.code = newCode;
-		targetBlock.lastUpdated = performance.now();
-
-		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', targetBlock);
-		incrementCompilerInputRevision(store);
-		publishProjectChange(store);
-	}
-
 	/**
 	 * Ensures env block exists in project when loaded.
 	 * This only runs once when the project is loaded.
@@ -122,7 +92,7 @@ export default function autoEnvConstants(store: StateManager<State>): void {
 			].map(block => block.id);
 			const envBlock: ProjectBlock = {
 				id: Math.max(-1, ...allIds) + 1,
-				code: generateEnvConstantsBlock(state),
+				code: generateEnvConstantsBlock(state, { x: 0, y: 0 }),
 			};
 
 			store.set('initialProjectState', {
@@ -137,8 +107,6 @@ export default function autoEnvConstants(store: StateManager<State>): void {
 
 	// Update env block code in codeBlockRendering.codeBlocks when contributed environment constants change.
 	// This avoids the infinite loop caused by modifying initialProjectState.
-	store.subscribe('codeBlockRendering.selectedCodeBlock.code', updateEnvConstantsBlockInCodeBlockRendering);
-	store.subscribe('codeBlockRendering.codeBlocks', updateEnvConstantsBlockInCodeBlockRendering);
-	store.subscribe('editorConfig', updateEnvConstantsBlockInCodeBlockRendering);
-	store.subscribe('envConstantContributions', updateEnvConstantsBlockInCodeBlockRendering);
+	store.subscribe('editorConfig', () => updateEnvConstantsBlock(store));
+	store.subscribe('envConstantContributions', () => updateEnvConstantsBlock(store));
 }
