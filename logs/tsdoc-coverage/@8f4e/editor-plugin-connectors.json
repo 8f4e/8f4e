@@ -1,0 +1,63 @@
+[
+	{
+		"commit": "8387ab1aba27081c68216b2a510e55572c18357e",
+		"recordedAt": "2026-10-30T23:06:46.352Z",
+		"coverage": {
+			"documented": 26,
+			"total": 90,
+			"percentage": 28.9,
+			"byKind": {
+				"function": {
+					"documented": 5,
+					"total": 15,
+					"percentage": 33.3
+				},
+				"property-signature": {
+					"documented": 0,
+					"total": 30,
+					"percentage": 0
+				},
+				"variable": {
+					"documented": 2,
+					"total": 12,
+					"percentage": 16.7
+				},
+				"interface": {
+					"documented": 1,
+					"total": 5,
+					"percentage": 20
+				},
+				"class": {
+					"documented": 2,
+					"total": 2,
+					"percentage": 100
+				},
+				"class-property": {
+					"documented": 0,
+					"total": 10,
+					"percentage": 0
+				},
+				"class-method": {
+					"documented": 8,
+					"total": 8,
+					"percentage": 100
+				},
+				"constructor": {
+					"documented": 2,
+					"total": 2,
+					"percentage": 100
+				},
+				"accessor": {
+					"documented": 4,
+					"total": 4,
+					"percentage": 100
+				},
+				"type": {
+					"documented": 2,
+					"total": 2,
+					"percentage": 100
+				}
+			}
+		}
+	}
+]

@@ -6438,5 +6438,91 @@
 				"maxRangesPerFunction": 7
 			}
 		}
+	},
+	{
+		"schemaVersion": 2,
+		"commit": "8387ab1aba27081c68216b2a510e55572c18357e",
+		"version": "7.0.19",
+		"benchmark": "hymnToAurora.8f4e",
+		"coverage": {
+			"compilerPipeline": {
+				"coveredFunctions": 438,
+				"functionEntries": 122543,
+				"rangeExecutions": 455778,
+				"maxRangesPerFunction": 32
+			},
+			"compiler": {
+				"coveredFunctions": 5,
+				"functionEntries": 6,
+				"rangeExecutions": 6,
+				"maxRangesPerFunction": 1
+			},
+			"tokenizer": {
+				"coveredFunctions": 52,
+				"functionEntries": 34236,
+				"rangeExecutions": 264003,
+				"maxRangesPerFunction": 32
+			},
+			"constantResolver": {
+				"coveredFunctions": 27,
+				"functionEntries": 10691,
+				"rangeExecutions": 24181,
+				"maxRangesPerFunction": 10
+			},
+			"memoryPlanner": {
+				"coveredFunctions": 23,
+				"functionEntries": 3355,
+				"rangeExecutions": 9659,
+				"maxRangesPerFunction": 8
+			},
+			"memoryReferenceResolver": {
+				"coveredFunctions": 37,
+				"functionEntries": 20028,
+				"rangeExecutions": 44414,
+				"maxRangesPerFunction": 24
+			},
+			"memoryDefaultResolver": {
+				"coveredFunctions": 11,
+				"functionEntries": 1639,
+				"rangeExecutions": 4066,
+				"maxRangesPerFunction": 10
+			},
+			"semanticReferenceResolver": {
+				"coveredFunctions": 39,
+				"functionEntries": 11563,
+				"rangeExecutions": 25125,
+				"maxRangesPerFunction": 13
+			},
+			"semanticUtils": {
+				"coveredFunctions": 14,
+				"functionEntries": 2815,
+				"rangeExecutions": 4753,
+				"maxRangesPerFunction": 27
+			},
+			"stackAnalyzer": {
+				"coveredFunctions": 70,
+				"functionEntries": 15429,
+				"rangeExecutions": 45725,
+				"maxRangesPerFunction": 27
+			},
+			"wasmCodegen": {
+				"coveredFunctions": 97,
+				"functionEntries": 5406,
+				"rangeExecutions": 10366,
+				"maxRangesPerFunction": 11
+			},
+			"compilerWasmUtils": {
+				"coveredFunctions": 30,
+				"functionEntries": 2866,
+				"rangeExecutions": 7816,
+				"maxRangesPerFunction": 8
+			},
+			"languageSpec": {
+				"coveredFunctions": 33,
+				"functionEntries": 14509,
+				"rangeExecutions": 15664,
+				"maxRangesPerFunction": 7
+			}
+		}
 	}
 ]
