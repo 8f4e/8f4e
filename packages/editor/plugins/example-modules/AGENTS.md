@@ -1,6 +1,6 @@
 # Example Modules Plugin
 
-- Own the Add Built-in Module menu, category navigation, catalog metadata, loading/cache, public-block selection,
+- Own the Add Built-in Block menu, category navigation, catalog metadata, loading/cache, public-block selection,
   and dependency insertion here.
 - Export `createExampleModulesPlugin({ sources })`; receive lazy source loaders from the host, keyed by paths
   relative to the module directory without the extension. Keep Vite discovery in the default editor.

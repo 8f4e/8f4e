@@ -2,8 +2,6 @@
 
 note templeOS
 ; @public
-; @pos -41 76
-; @tab 46
 ; @config color.canvas #55ffff
 ; @config color.surface #ffffff
 ; @config color.ink #000000

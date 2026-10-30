@@ -1,6 +1,6 @@
 # Example Modules Plugin
 
-`@8f4e/editor-plugin-example-modules` owns the Add Built-in Module menu, nested categories, source caching,
+`@8f4e/editor-plugin-example-modules` owns the Add Built-in Block menu, nested categories, source caching,
 public-block selection, and dependency insertion. It has no browser dependencies.
 
 ```ts
@@ -18,6 +18,7 @@ The `./catalog` subpath exports `createModuleCatalog`, and `./public-block` expo
 
 Each source is a canonical `8f4e/v1` example file with a public module, function, constants, prototype, or note block marked
 with `; @public`. Test-entry modules are excluded from selection, and the public marker is removed before insertion.
+Sources without an eligible public block fail with an error explaining the required `; @public` marker.
 The plugin reads `use` dependencies that match catalog slugs and inserts missing blocks to the right, skipping
 blocks of the same name and type already in the current project slice. Dependency discovery covers the requested
 file's direct dependencies. Core owns ordinary block creation, unique naming, entry assignment, and persistence.

@@ -23,7 +23,7 @@ export function createExampleModulesPlugin({
 			const unregisterItem = menus.registerItem('mainMenu', ({ state }) =>
 				state.editorMode === 'edit'
 					? {
-							title: 'Add Built-in Module',
+							title: 'Add Built-in Block',
 							action: 'openSubMenu',
 							payload: { menu: EXAMPLE_MODULES_MENU, payload: { path: [] } },
 							close: false,
