@@ -3,6 +3,7 @@ import { createMockState } from '@8f4e/editor-state-testing';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createCodeBlockDrawerRegistry } from './drawers/registry';
 
 const renderDataSnapshot = { codeBlocks: new Map() };
 const renderData: WebUiRenderDataSource = { getSnapshot: () => renderDataSnapshot };
@@ -33,6 +34,7 @@ const mocks = vi.hoisted(() => {
 		restoreRenderingMemory: vi.fn(),
 		destroy: vi.fn(),
 	};
+	const drawOverlay = vi.fn(() => overlayTextureDrawCallback?.(overlayTextureLayer));
 	const overlayTextureLayer = {
 		setDrawCallback: vi.fn((callback: (layer: unknown) => void) => {
 			overlayTextureDrawCallback = callback;
@@ -44,27 +46,15 @@ const mocks = vi.hoisted(() => {
 			overlayTextureDrawCallback = undefined;
 		}),
 	};
-	const lines = {
-		drawLine: vi.fn(),
-		releaseMemory: vi.fn(),
-		destroy: vi.fn(),
-	};
 	const background = { setFont: vi.fn(), setPalette: vi.fn(), destroy: vi.fn() };
-	const wireColors = {
-		wire: [0.1, 0.2, 0.3, 1] as const,
-		wireHighlighted: [0.4, 0.5, 0.6, 1] as const,
-	};
-	const resolveWireColors = vi.fn(() => wireColors);
 	const requestAnimationFrame = vi.fn(() => 23);
 	const cancelAnimationFrame = vi.fn();
 
 	return {
 		engine,
 		overlayTextureLayer,
-		lines,
+		drawOverlay,
 		background,
-		wireColors,
-		resolveWireColors,
 		requestAnimationFrame,
 		cancelAnimationFrame,
 		// biome-ignore lint/complexity/useArrowFunction: Engine is constructed with new in the code under test.
@@ -76,19 +66,14 @@ const mocks = vi.hoisted(() => {
 		}),
 		// biome-ignore lint/complexity/useArrowFunction: Plugins are constructed with new in the code under test.
 		RgbaTextureLayer: vi.fn(function () {
-			engine.hooks.postDraw.push(() => overlayTextureDrawCallback?.(overlayTextureLayer));
+			engine.hooks.postDraw.push(drawOverlay);
 			return overlayTextureLayer;
-		}),
-		// biome-ignore lint/complexity/useArrowFunction: Plugins are constructed with new in the code under test.
-		LineDrawer: vi.fn(function () {
-			return lines;
 		}),
 		// biome-ignore lint/complexity/useArrowFunction: The background renderer is constructed with new.
 		BackgroundRenderer: vi.fn(function () {
 			return background;
 		}),
 		drawCodeBlocks: vi.fn(),
-		drawConnections: vi.fn(),
 		drawContextMenu: vi.fn(),
 		drawDialog: vi.fn(),
 		drawModeOverlay: vi.fn(),
@@ -99,7 +84,6 @@ vi.mock('glugglugglug', () => ({
 	Engine: mocks.Engine,
 }));
 
-vi.mock('./plugins/line-drawer', () => ({ LineDrawer: mocks.LineDrawer }));
 vi.mock('./plugins/rgba-texture-layer', () => ({ RgbaTextureLayer: mocks.RgbaTextureLayer }));
 
 vi.mock('./plugins/background', () => ({
@@ -108,10 +92,6 @@ vi.mock('./plugins/background', () => ({
 
 vi.mock('./drawers/codeBlocks', () => ({
 	default: mocks.drawCodeBlocks,
-}));
-
-vi.mock('./drawers/codeBlocks/widgets/connections', () => ({
-	default: mocks.drawConnections,
 }));
 
 vi.mock('./drawers/contextMenu', () => ({
@@ -124,10 +104,6 @@ vi.mock('./drawers/dialog', () => ({
 
 vi.mock('./drawers/modeOverlay', () => ({
 	default: mocks.drawModeOverlay,
-}));
-
-vi.mock('./wire-colors', () => ({
-	resolveWireColors: mocks.resolveWireColors,
 }));
 
 function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemoryDeclaration {
@@ -199,8 +175,6 @@ describe('web-ui init', () => {
 
 		expect(frameState).toBe(state);
 		expect(frameRenderData).toBe(renderDataSnapshot);
-		expect(mocks.resolveWireColors).toHaveBeenCalledWith(resolvePalette(state.editorConfig.color));
-		expect(mocks.drawConnections).toHaveBeenCalledWith(mocks.lines, mocks.wireColors, frameState, memoryViews);
 		expect(mocks.drawModeOverlay).toHaveBeenCalledWith(expect.anything(), frameState);
 	});
 
@@ -230,7 +204,7 @@ describe('web-ui init', () => {
 		expect(mocks.RgbaTextureLayer).not.toHaveBeenCalled();
 	});
 
-	it('registers a configured overlay after the line renderer', async () => {
+	it('draws registered render layers before the configured texture overlay', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = {
@@ -242,6 +216,9 @@ describe('web-ui init', () => {
 			float32: new Float32Array(0),
 			float64: new Float64Array(0),
 		};
+		const drawers = createCodeBlockDrawerRegistry();
+		const drawLayer = vi.fn();
+		drawers.registerRenderLayer(() => ({ draw: drawLayer, destroy: vi.fn() }));
 		await init(
 			state,
 			renderData,
@@ -250,6 +227,7 @@ describe('web-ui init', () => {
 			createFontAtlas(),
 			resolvePalette(state.editorConfig.color),
 			{
+				drawers,
 				overlayTexture: {
 					entry: 'renderFrame',
 					target: 'screen:rgba',
@@ -262,40 +240,8 @@ describe('web-ui init', () => {
 		);
 
 		expect(mocks.RgbaTextureLayer).toHaveBeenCalledWith(mocks.engine);
-		expect(mocks.LineDrawer.mock.invocationCallOrder[0]).toBeLessThan(
-			mocks.RgbaTextureLayer.mock.invocationCallOrder[0]
-		);
-	});
-
-	it('hides wires while a dialog is visible and restores them when it closes', async () => {
-		const { default: init } = await import('./index');
-		const state = createMockState({
-			dialogStack: [{ id: 'permission', title: 'Permission', text: 'Allow audio?', buttons: [] }],
-		});
-		const memoryViews = {
-			int8: new Int8Array(0),
-			int16: new Int16Array(0),
-			int32: new Int32Array(0),
-			uint8: new Uint8Array(0),
-			uint16: new Uint16Array(0),
-			float32: new Float32Array(0),
-			float64: new Float64Array(0),
-		};
-		const view = await init(
-			state,
-			renderData,
-			{} as HTMLCanvasElement,
-			memoryViews,
-			createFontAtlas(),
-			resolvePalette(state.editorConfig.color)
-		);
-
-		expect(mocks.drawConnections).not.toHaveBeenCalled();
-
-		state.dialogStack = [];
-		view.renderFrame();
-
-		expect(mocks.drawConnections).toHaveBeenCalledWith(mocks.lines, mocks.wireColors, state, memoryViews);
+		expect(drawLayer).toHaveBeenCalledOnce();
+		expect(drawLayer.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawOverlay.mock.invocationCallOrder[0]);
 	});
 
 	it('pauses and resumes its animation frame loop idempotently', async () => {
@@ -364,7 +310,6 @@ describe('web-ui init', () => {
 
 		expect(mocks.cancelAnimationFrame).toHaveBeenCalledOnce();
 		expect(mocks.overlayTextureLayer.releaseMemory).not.toHaveBeenCalled();
-		expect(mocks.lines.releaseMemory).toHaveBeenCalledOnce();
 		expect(mocks.engine.releaseRenderingMemory).toHaveBeenCalledOnce();
 		expect(canvas).toEqual(expect.objectContaining({ width: 1, height: 1 }));
 		expect(view.resize(800, 600)).toBe(false);
@@ -378,7 +323,7 @@ describe('web-ui init', () => {
 		expect(mocks.engine.renderFrame).toHaveBeenCalledTimes(2);
 	});
 
-	it('updates palette and wire colors independently of font atlas replacement', async () => {
+	it('updates palette independently of font atlas replacement', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = {
@@ -400,19 +345,15 @@ describe('web-ui init', () => {
 		);
 		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
 		const backgroundPaletteUploads = mocks.background.setPalette.mock.calls.length;
-		const wireUpdates = mocks.resolveWireColors.mock.calls.length;
 		view.loadFontAtlas(createFontAtlas(), 'ibmvga8x16');
 		expect(mocks.engine.setPalette).toHaveBeenCalledTimes(paletteUploads);
 		expect(mocks.background.setPalette).toHaveBeenCalledTimes(backgroundPaletteUploads);
-		expect(mocks.resolveWireColors).toHaveBeenCalledTimes(wireUpdates);
 
 		const installCount = mocks.engine.setSpriteAtlas.mock.calls.length;
 		const palette = resolvePalette({ primary: '#00ff00' });
 		view.loadPalette(palette);
 		expect(mocks.background.setPalette).toHaveBeenCalledWith(mocks.engine.setPalette.mock.calls.at(-1)?.[0]);
 		expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(installCount);
-
-		expect(mocks.resolveWireColors).toHaveBeenLastCalledWith(palette);
 	});
 
 	it('updates font dimensions and background settings when the atlas is replaced', async () => {

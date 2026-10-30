@@ -22,3 +22,6 @@
   actions in editor-default. Add no storage options, callbacks, or compatibility wrappers here.
 - Verify with `npx nx run @8f4e/editor-minimal:build|test|typecheck`. The product website's `test:browser` target covers
   real compiler execution, URL loading, lazy controls/runtimes, editing, bridge lifecycle, and disposal.
+
+- Install `connectorsPlugin` in the fixed plugin set. It owns all input/output widgets and GPU wire rendering;
+  core owns only generic render-layer lifecycle.

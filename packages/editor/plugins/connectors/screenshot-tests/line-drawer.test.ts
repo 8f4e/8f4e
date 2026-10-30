@@ -1,6 +1,6 @@
 import { Engine } from 'glugglugglug';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
-import { LineDrawer } from '../src/plugins/line-drawer';
+import { LineDrawer } from '../src/line-drawer';
 
 type Point = readonly [number, number];
 
@@ -14,7 +14,7 @@ describe('Bresenham wires', () => {
 		canvas.width = 32;
 		canvas.height = 32;
 		engine = new Engine(canvas);
-		lines = new LineDrawer(engine);
+		lines = new LineDrawer(engine.gl);
 	});
 
 	afterAll(() => {
@@ -64,7 +64,11 @@ describe('Bresenham wires', () => {
 			])
 		)('$direction with width $thickness matches the integer reference', ({ from, to, thickness }) => {
 			const expected = rasterizeReference(from, to, thickness, canvas.width, canvas.height);
-			engine.renderFrame(() => lines.drawLine(...from, ...to, thickness, [1, 1, 1, 1]));
+			engine.renderFrame(() => {
+				lines.reset();
+				lines.drawLine(...from, ...to, thickness, [1, 1, 1, 1]);
+				lines.flush();
+			});
 			const actual = new Uint8Array(canvas.width * canvas.height * 4);
 			engine.gl.readPixels(0, 0, canvas.width, canvas.height, engine.gl.RGBA, engine.gl.UNSIGNED_BYTE, actual);
 			expect(occupiedPixels(actual, canvas.width)).toEqual(occupiedPixels(expected, canvas.width));

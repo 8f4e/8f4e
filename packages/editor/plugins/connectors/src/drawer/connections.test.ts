@@ -1,9 +1,9 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { Input, Output } from '@8f4e/editor-state-types';
+import type { MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
-import type { LineDrawer } from '../../../plugins/line-drawer';
-import type { MemoryViews } from '../../../types';
-import type { WireColors } from '../../../wire-colors';
+import type { LineDrawer } from '../line-drawer';
+import type { ConnectorWidgets, Input, Output } from '../types';
+import type { WireColors } from '../wire-colors';
 import drawConnections from './connections';
 
 function createMemoryViews({ int32 = [] }: { int32?: number[] } = {}): MemoryViews {
@@ -64,7 +64,8 @@ describe('drawConnections', () => {
 				allocationUnitCount: 1,
 			} as never,
 		};
-		inputBlock.widgets.inputs = [input];
+		const widgetsByBlock = new WeakMap([[inputBlock, { inputs: [input], outputs: [] } as ConnectorWidgets]]);
+		const outputsByByteAddress = new Map([[outputAddress, output]]);
 
 		const state = createMockState({
 			viewport: {
@@ -73,23 +74,9 @@ describe('drawConnections', () => {
 				vGrid: 10,
 				hGrid: 18,
 			},
-			compiler: {
-				compiledModules: {
-					inputModule: {
-						memory: {
-							in: {
-								byteAddress: 8,
-								allocationUnitAddress: 2,
-								allocationUnitCount: 1,
-							},
-						},
-					},
-				},
-			},
 			codeBlockRendering: {
 				codeBlocks: [inputBlock, outputBlock],
 				selectedCodeBlock: inputBlock,
-				outputsByWordAddress: new Map([[outputAddress, output]]),
 			},
 		});
 		const lines = createMockLines();
@@ -98,7 +85,14 @@ describe('drawConnections', () => {
 			wireHighlighted: [1, 1, 1, 1],
 		};
 
-		drawConnections(lines, wireColors, state, createMemoryViews({ int32: [0, 0, outputAddress] }));
+		drawConnections(
+			lines,
+			wireColors,
+			state,
+			createMemoryViews({ int32: [0, 0, outputAddress] }),
+			widgetsByBlock,
+			outputsByByteAddress
+		);
 
 		expect(lines.drawLine).toHaveBeenCalledWith(110, 236, 450, 454, 2, wireColors.wireHighlighted);
 	});

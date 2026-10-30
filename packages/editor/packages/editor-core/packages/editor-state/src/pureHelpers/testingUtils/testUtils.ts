@@ -106,8 +106,6 @@ export function createMockCodeBlock(
 		parsedDirectives: parseBlockDirectives(code),
 		widgets: {
 			blockHighlights: [],
-			inputs: [],
-			outputs: [],
 			infoPanels: [],
 			shapeDeclarations: [],
 			errorMessages: [],
@@ -147,7 +145,7 @@ export function deriveDirectiveStateForCode(
  * @returns The item with the matching id, or undefined if not found
  *
  * @example
- * const output = findWidgetById(mockGraphicData.widgets.outputs, 'output1');
+ * const output = findWidgetById(widgets, 'output1');
  * expect(output).toBeDefined();
  */
 export function findWidgetById<T extends { id: string }>(array: T[], id: string): T | undefined {

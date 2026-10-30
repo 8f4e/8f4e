@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPluginHost } from '../__tests__/fake-webgl';
+import { createFakeWebGl } from '../__tests__/fake-webgl';
 import { LineDrawer } from './line-drawer';
 import { LINE_INSTANCE_BYTE_STRIDE } from './line-instance';
 
@@ -7,29 +7,27 @@ describe('LineDrawer', () => {
 	it.each([0, -1, 0.5, 1.5, NaN, Infinity, -Infinity])(
 		'rejects invalid pixel thickness %s before queuing',
 		thickness => {
-			const { gl, hooks } = createPluginHost();
-			const lines = new LineDrawer({ gl, hooks });
+			const gl = createFakeWebGl();
+			const lines = new LineDrawer(gl);
 
-			hooks.preDraw[0](gl);
+			lines.reset();
 			expect(() => lines.drawLine(0, 0, 10, 10, thickness, [1, 1, 1, 1])).toThrow(
 				new RangeError('thickness must be a positive integer number of pixels.')
 			);
-			hooks.postDraw[0](gl);
+			lines.flush();
 			expect(gl.bufferSubData).not.toHaveBeenCalled();
 			expect(gl.drawArraysInstanced).not.toHaveBeenCalled();
 		}
 	);
 
-	it('attaches to both frame hooks and draws compact ordered line instances once', () => {
-		const { gl, hooks } = createPluginHost();
-		const lines = new LineDrawer({ gl, hooks }, { initialCapacity: 1 });
-		expect(hooks.preDraw).toHaveLength(1);
-		expect(hooks.postDraw).toHaveLength(1);
+	it('draws compact ordered line instances once', () => {
+		const gl = createFakeWebGl();
+		const lines = new LineDrawer(gl, { initialCapacity: 1 });
 
-		hooks.preDraw[0](gl);
+		lines.reset();
 		lines.drawLine(1, 2, 11, 12, 3, [1, 0.5, 0, 0.25]);
 		lines.drawLine(20, 21, 30, 31, 4, [0, 1, 0, 1]);
-		hooks.postDraw[0](gl);
+		lines.flush();
 
 		expect(gl.createBuffer).toHaveBeenCalledOnce();
 		expect(gl.bufferData).toHaveBeenCalledTimes(2);
@@ -48,25 +46,25 @@ describe('LineDrawer', () => {
 	});
 
 	it('resets its write cursor at the start of every frame', () => {
-		const { gl, hooks } = createPluginHost();
-		const lines = new LineDrawer({ gl, hooks });
+		const gl = createFakeWebGl();
+		const lines = new LineDrawer(gl);
 
-		hooks.preDraw[0](gl);
+		lines.reset();
 		lines.drawLine(0, 0, 10, 10, 1, [1, 1, 1, 1]);
-		hooks.postDraw[0](gl);
+		lines.flush();
 		expect(gl.drawArraysInstanced).toHaveBeenCalledOnce();
 
 		gl.drawArraysInstanced.mockClear();
 		gl.bufferSubData.mockClear();
-		hooks.preDraw[0](gl);
-		hooks.postDraw[0](gl);
+		lines.reset();
+		lines.flush();
 		expect(gl.bufferSubData).not.toHaveBeenCalled();
 		expect(gl.drawArraysInstanced).not.toHaveBeenCalled();
 	});
 
 	it('releases dynamic buffer storage and reallocates it on the next non-empty frame', () => {
-		const { gl, hooks } = createPluginHost();
-		const lines = new LineDrawer({ gl, hooks }, { initialCapacity: 2 });
+		const gl = createFakeWebGl();
+		const lines = new LineDrawer(gl, { initialCapacity: 2 });
 		gl.bufferData.mockClear();
 
 		lines.releaseMemory();
@@ -75,22 +73,22 @@ describe('LineDrawer', () => {
 		expect(gl.bufferData).toHaveBeenCalledOnce();
 		expect(gl.bufferData).toHaveBeenCalledWith(gl.ARRAY_BUFFER, 0, gl.DYNAMIC_DRAW);
 
-		hooks.preDraw[0](gl);
+		lines.reset();
 		lines.drawLine(0, 0, 10, 10, 1, [1, 1, 1, 1]);
-		hooks.postDraw[0](gl);
+		lines.flush();
 
 		expect(gl.bufferData).toHaveBeenCalledTimes(2);
 		expect(gl.bufferData).toHaveBeenLastCalledWith(gl.ARRAY_BUFFER, 2 * LINE_INSTANCE_BYTE_STRIDE, gl.DYNAMIC_DRAW);
 	});
 
 	it('reuses upload views and limits used ranges after growth, empty frames, and memory release', () => {
-		const { gl, hooks } = createPluginHost();
-		const lines = new LineDrawer({ gl, hooks }, { initialCapacity: 1 });
+		const gl = createFakeWebGl();
+		const lines = new LineDrawer(gl, { initialCapacity: 1 });
 		const render = (count: number): Uint8Array | undefined => {
 			gl.bufferSubData.mockClear();
-			hooks.preDraw[0](gl);
+			lines.reset();
 			for (let i = 0; i < count; i++) lines.drawLine(i, 0, i + 1, 1, 1, [1, 0.5, 0, 0.25]);
-			hooks.postDraw[0](gl);
+			lines.flush();
 			if (count === 0) {
 				expect(gl.bufferSubData).not.toHaveBeenCalled();
 				return undefined;
@@ -113,15 +111,13 @@ describe('LineDrawer', () => {
 		expect(render(2)).toBe(grown);
 	});
 
-	it('detaches and deletes only its own resources idempotently', () => {
-		const { gl, hooks } = createPluginHost();
-		const lines = new LineDrawer({ gl, hooks });
+	it('deletes only its own resources idempotently', () => {
+		const gl = createFakeWebGl();
+		const lines = new LineDrawer(gl);
 
 		lines.destroy();
 		lines.destroy();
 
-		expect(hooks.preDraw).toEqual([]);
-		expect(hooks.postDraw).toEqual([]);
 		expect(gl.deleteBuffer).toHaveBeenCalledOnce();
 		expect(gl.deleteVertexArray).toHaveBeenCalledOnce();
 		expect(gl.deleteProgram).toHaveBeenCalledOnce();

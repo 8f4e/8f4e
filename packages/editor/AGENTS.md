@@ -39,6 +39,8 @@
   across the project tree. Matching plugins stay installed until editor disposal. Both editor compositions' lightweight registries dynamically import plot, wave,
   meter, bars, switch, button, piano, slider, and crossfade for their directives, plus MIDI, binary assets, and runtime
   plugins for their raw config roots.
+  `editor-plugin-connectors` owns input/output geometry, private connector state, wire lookup, and all line GPU
+  resources. Both compositions install it in their fixed plugin set. Web-ui provides generic render-layer lifecycle.
   Core provides independent layout contributions and subscriptions; directive parsing and layout remain separate.
   Session restoration/autosaving and project URL loading live in `editor-plugin-session-persistence` and
   `editor-plugin-project-url-loader`. The default host supplies storage/fetch and chooses initial URL priority.
@@ -76,6 +78,8 @@
 - Verify the favorite and memory-connection actions with
   `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-toggle-favorite,@8f4e/editor-plugin-remove-memory-connections`.
   Each also has a `test:screenshot` target for its canvas menu interaction.
+- Verify connectors and their line renderer with `npx nx run @8f4e/editor-plugin-connectors:build|test|typecheck` and
+  `npx nx run @8f4e/editor-plugin-connectors:test:screenshot`.
 - Verify visual grouping with `npx nx run @8f4e/editor-plugin-grouping:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-grouping:test:screenshot`.
 - Verify lazy plugin loading with `npx nx run @8f4e/editor-plugin-lazy-loader:build|test|typecheck` and

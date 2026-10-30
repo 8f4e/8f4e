@@ -68,8 +68,6 @@ describe('gaps', () => {
 			code: ['module foo', 'shape sharedState', 'moduleEnd'],
 			widgets: {
 				blockHighlights: [],
-				inputs: [],
-				outputs: [],
 				infoPanels: [],
 				errorMessages: [{ message: ['Error', 'detail', 'more'], x: 0, y: 0, lineNumber: 1 }],
 			},
@@ -98,8 +96,6 @@ describe('gaps', () => {
 			code: ['module foo', '; layout space', 'push 1', 'moduleEnd'],
 			widgets: {
 				blockHighlights: [],
-				inputs: [],
-				outputs: [],
 				infoPanels: [],
 				errorMessages: [{ message: ['Error'], x: 0, y: 0, lineNumber: 2 }],
 			},

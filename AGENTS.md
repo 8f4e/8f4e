@@ -27,7 +27,9 @@
 - Editor colors: `@8f4e/editor-palette` owns the pure base palette and predefined shades. Configure only shared base
   colors; core and plugin drawers select generic palette tokens. Shades are uploaded as premultiplied colors in a GPU
   uniform buffer (up to 256 entries); the sprite atlas contains color-independent R8 binary visibility masks.
-- Rendering plugins: web-ui owns the procedural background, its font-specific dot settings, the line drawer, and RGBA texture layer under `src/plugins/`.
+- Rendering plugins: web-ui owns the procedural background, its font-specific dot settings, and RGBA texture layer under `src/plugins/`.
+  `editor-plugin-connectors` owns input/output widgets, wire lookup, and the complete line renderer. Web-ui provides
+  generic render-layer registration, palette updates, memory release, and disposal.
   Glugglugglug owns sprite rendering and generic render hooks. The sprite generator supplies only a uniform grid of
   glyph/fill masks; background patterns do not occupy the sprite atlas. Glyph IDs are ASCII codes 0–127 and fill is 128;
   editor state carries no sprite lookup tables. The renderer derives source

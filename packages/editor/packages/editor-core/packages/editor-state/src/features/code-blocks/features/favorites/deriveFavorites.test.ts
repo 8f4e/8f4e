@@ -27,8 +27,6 @@ function mockCodeBlock(
 		lastUpdated: 0,
 		widgets: {
 			blockHighlights: [],
-			inputs: [],
-			outputs: [],
 			errorMessages: [],
 		},
 	} as CodeBlockGraphicData;

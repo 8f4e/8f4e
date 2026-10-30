@@ -1,10 +1,11 @@
 import { PALETTE_INDICES, type PaletteConfig, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import loadFontAtlas, { FILL_SPRITE_ID, type Font } from '@8f4e/sprite-generator';
+import { DrawContext } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
-import { DrawContext } from '../src/drawContext';
-import drawConnectors from '../src/drawers/codeBlocks/widgets/connectors';
+import drawConnectors from '../src/drawer/connectors';
+import type { ConnectorWidgets } from '../src/types';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
 
@@ -29,7 +30,8 @@ for (const font of ['6x10', 'ibmvga8x16', 'spleen16x32'] satisfies Font[]) {
 				viewport: { vGrid: characterWidth, hGrid: characterHeight },
 			});
 			const block = createMockCodeBlock();
-			block.widgets.inputs.push({
+			const widgets: ConnectorWidgets = { inputs: [], outputs: [] };
+			widgets.inputs.push({
 				codeBlock: block,
 				x: characterWidth,
 				y: characterHeight,
@@ -43,7 +45,7 @@ for (const font of ['6x10', 'ibmvga8x16', 'spleen16x32'] satisfies Font[]) {
 			const memoryViews = createMockMemoryViews();
 			for (const [index, value] of [-1, -0.6, -0.2, 0.2, 0.6, 1].entries()) {
 				memoryViews.float32[index] = value;
-				block.widgets.outputs.push({
+				widgets.outputs.push({
 					codeBlock: block,
 					x: characterWidth * (5 + index * 4),
 					y: characterHeight,
@@ -76,7 +78,7 @@ for (const font of ['6x10', 'ibmvga8x16', 'spleen16x32'] satisfies Font[]) {
 			try {
 				engine.renderFrame(() => {
 					engine.drawSprite(0, 0, FILL_SPRITE_ID, PALETTE_INDICES.white, canvas.width, canvas.height);
-					drawConnectors(new DrawContext(engine, characterWidth), state, block, memoryViews);
+					drawConnectors(new DrawContext(engine, characterWidth), state, widgets, memoryViews);
 				});
 				await expect(canvas).toMatchScreenshot();
 			} finally {

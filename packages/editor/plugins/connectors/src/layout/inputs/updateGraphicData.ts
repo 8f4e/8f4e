@@ -1,29 +1,34 @@
-import type { CodeBlockGraphicData, Output, State } from '@8f4e/editor-state-types';
-import getCodeBlockModuleId from '../../../../pureHelpers/getCodeBlockModuleId';
+import { getCodeBlockModuleId } from '@8f4e/editor-state';
+import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { ConnectorWidgets } from '../../types';
 import {
 	getConnectorMemoryDeclarations,
 	getConnectorRow,
 	isInputMemoryDeclaration,
-	isOutputMemoryDeclaration,
 } from '../connectors/memoryDeclarations';
 import { getProjectMemoryExposureConnectors } from '../connectors/projectMemoryExposures';
 
 const CONNECTOR_WIDTH_GRID_CELLS = 3;
 
-export default function updateOutputsGraphicData(graphicData: CodeBlockGraphicData, state: State) {
-	graphicData.widgets.outputs = [];
+export default function updateInputsGraphicData(
+	graphicData: CodeBlockGraphicData,
+	state: State,
+	widgets: ConnectorWidgets
+) {
+	widgets.inputs = [];
 	if (!graphicData.name) {
 		return;
 	}
 	if (graphicData.nestedProjectCodeBlocks !== undefined) {
 		getProjectMemoryExposureConnectors(graphicData, state).forEach(({ exposure, row }) => {
-			if (isInputMemoryDeclaration(exposure.targetMemory)) return;
+			if (!isInputMemoryDeclaration(exposure.targetMemory)) return;
 
 			const width = state.viewport.vGrid * CONNECTOR_WIDTH_GRID_CELLS;
 			const height = state.viewport.hGrid;
-			const x = graphicData.width - 3 * state.viewport.vGrid;
+			const x = 0;
 			const y = row * state.viewport.hGrid;
-			const out: Output = {
+
+			widgets.inputs.push({
 				width,
 				height,
 				x,
@@ -31,14 +36,9 @@ export default function updateOutputsGraphicData(graphicData: CodeBlockGraphicDa
 				wireX: Math.round(x + width / 2),
 				wireY: Math.round(y + height / 2),
 				id: exposure.name,
+				allocationUnitAddress: exposure.targetMemory.allocationUnitAddress,
 				codeBlock: graphicData,
-				calibratedMax: 0,
-				calibratedMin: 0,
-				memory: { ...exposure.targetMemory, id: exposure.name, lineNumber: row },
-			};
-
-			graphicData.widgets.outputs.push(out);
-			state.codeBlockRendering.outputsByWordAddress.set(exposure.targetMemory.byteAddress, out);
+			});
 		});
 		return;
 	}
@@ -48,14 +48,14 @@ export default function updateOutputsGraphicData(graphicData: CodeBlockGraphicDa
 	const memoryDefaults = state.compiler.memoryDefaultsByModuleId[moduleId];
 	getConnectorMemoryDeclarations(plannedModule, memoryDefaults).forEach(declaration => {
 		const { memory } = declaration;
-		if (!isOutputMemoryDeclaration(memory)) return;
+		if (!isInputMemoryDeclaration(memory)) return;
 
 		const width = state.viewport.vGrid * CONNECTOR_WIDTH_GRID_CELLS;
 		const height = state.viewport.hGrid;
-		const x = graphicData.width - 3 * state.viewport.vGrid;
+		const x = 0;
 		const y = getConnectorRow(declaration, graphicData.gaps) * state.viewport.hGrid;
 
-		const out: Output = {
+		widgets.inputs.push({
 			width,
 			height,
 			x,
@@ -63,13 +63,8 @@ export default function updateOutputsGraphicData(graphicData: CodeBlockGraphicDa
 			wireX: Math.round(x + width / 2),
 			wireY: Math.round(y + height / 2),
 			id: memory.id,
+			allocationUnitAddress: memory.allocationUnitAddress,
 			codeBlock: graphicData,
-			calibratedMax: 0,
-			calibratedMin: 0,
-			memory,
-		};
-
-		graphicData.widgets.outputs.push(out);
-		state.codeBlockRendering.outputsByWordAddress.set(memory.byteAddress, out);
+		});
 	});
 }

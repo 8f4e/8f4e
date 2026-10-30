@@ -1,7 +1,11 @@
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { MemoryDefaults, PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockCodeBlock, createMockState, findWidgetById } from '~/pureHelpers/testingUtils/testUtils';
+import type { ConnectorWidgets } from '../../types';
+
+const findWidgetById = <T extends { id: string }>(widgets: T[], id: string) => widgets.find(widget => widget.id === id);
+
 import updateInputsGraphicData from './updateGraphicData';
 
 function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemoryDeclaration {
@@ -13,6 +17,10 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 		byteAddress: 20,
 		allocationUnitAddress: 5,
 		allocationUnitCount: 1,
+		elementByteLength: 4,
+		allocatedByteLength: 4,
+		endByteAddress: 24,
+		endAddressSafeByteLength: 4,
 		lineNumber: 1,
 		isInteger: true,
 		pointerDepth: 1,
@@ -46,8 +54,10 @@ function setModuleMemory(
 describe('updateInputsGraphicData', () => {
 	let mockGraphicData: CodeBlockGraphicData;
 	let mockState: State;
+	let widgets: ConnectorWidgets;
 
 	beforeEach(() => {
+		widgets = { inputs: [], outputs: [] };
 		mockGraphicData = createMockCodeBlock({
 			name: 'test-block',
 			code: ['module test-block', 'int* input1'],
@@ -59,10 +69,10 @@ describe('updateInputsGraphicData', () => {
 	});
 
 	it('adds input widgets from pointer scalar memory metadata', () => {
-		updateInputsGraphicData(mockGraphicData, mockState);
+		updateInputsGraphicData(mockGraphicData, mockState, widgets);
 
-		expect(mockGraphicData.widgets.inputs.length).toBe(1);
-		expect(findWidgetById(mockGraphicData.widgets.inputs, 'input1')).toBeDefined();
+		expect(widgets.inputs.length).toBe(1);
+		expect(findWidgetById(widgets.inputs, 'input1')).toBeDefined();
 	});
 
 	it('renders a pointer exposure as a group input backed by the target pointer slot', () => {
@@ -84,10 +94,10 @@ describe('updateInputsGraphicData', () => {
 			},
 		];
 
-		updateInputsGraphicData(mockGraphicData, mockState);
+		updateInputsGraphicData(mockGraphicData, mockState, widgets);
 
-		expect(mockGraphicData.widgets.inputs).toHaveLength(1);
-		expect(mockGraphicData.widgets.inputs[0]).toMatchObject({
+		expect(widgets.inputs).toHaveLength(1);
+		expect(widgets.inputs[0]).toMatchObject({
 			id: 'publicInput',
 			y: 16,
 			allocationUnitAddress: 9,
@@ -100,9 +110,9 @@ describe('updateInputsGraphicData', () => {
 			pointerDepth: 0,
 		});
 
-		updateInputsGraphicData(mockGraphicData, mockState);
+		updateInputsGraphicData(mockGraphicData, mockState, widgets);
 
-		expect(mockGraphicData.widgets.inputs.length).toBe(0);
+		expect(widgets.inputs.length).toBe(0);
 	});
 
 	it('adds input widgets from pointer array memory metadata', () => {
@@ -111,16 +121,16 @@ describe('updateInputsGraphicData', () => {
 			pointerDepth: 1,
 		});
 
-		updateInputsGraphicData(mockGraphicData, mockState);
+		updateInputsGraphicData(mockGraphicData, mockState, widgets);
 
-		expect(mockGraphicData.widgets.inputs.length).toBe(1);
-		expect(findWidgetById(mockGraphicData.widgets.inputs, 'input1')).toBeDefined();
+		expect(widgets.inputs.length).toBe(1);
+		expect(findWidgetById(widgets.inputs, 'input1')).toBeDefined();
 	});
 
 	it('calculates dimensions and position from metadata', () => {
-		updateInputsGraphicData(mockGraphicData, mockState);
+		updateInputsGraphicData(mockGraphicData, mockState, widgets);
 
-		const input = findWidgetById(mockGraphicData.widgets.inputs, 'input1');
+		const input = findWidgetById(widgets.inputs, 'input1');
 		const { codeBlock: _codeBlock, ...inputWithoutCodeBlock } = input || {};
 		expect(inputWithoutCodeBlock).toMatchSnapshot();
 		expect(input?.codeBlock).toBe(mockGraphicData);
@@ -129,13 +139,13 @@ describe('updateInputsGraphicData', () => {
 	it('does not add inputs when compiled module metadata is missing', () => {
 		mockState.compiler.memoryPlan.modules = {};
 
-		updateInputsGraphicData(mockGraphicData, mockState);
+		updateInputsGraphicData(mockGraphicData, mockState, widgets);
 
-		expect(mockGraphicData.widgets.inputs.length).toBe(0);
+		expect(widgets.inputs.length).toBe(0);
 	});
 
 	it('clears existing inputs before updating', () => {
-		mockGraphicData.widgets.inputs.push({
+		widgets.inputs.push({
 			codeBlock: mockGraphicData,
 			width: 0,
 			height: 0,
@@ -147,9 +157,9 @@ describe('updateInputsGraphicData', () => {
 			allocationUnitAddress: 0,
 		});
 
-		updateInputsGraphicData(mockGraphicData, mockState);
+		updateInputsGraphicData(mockGraphicData, mockState, widgets);
 
-		expect(findWidgetById(mockGraphicData.widgets.inputs, 'oldInput')).toBeUndefined();
+		expect(findWidgetById(widgets.inputs, 'oldInput')).toBeUndefined();
 	});
 
 	it('handles multiple inputs in line-number order', () => {
@@ -163,10 +173,10 @@ describe('updateInputsGraphicData', () => {
 		});
 		mockState.compiler.memoryDefaultsByModuleId['test-block']!.input2 = { value: 0, isInherited: false };
 
-		updateInputsGraphicData(mockGraphicData, mockState);
+		updateInputsGraphicData(mockGraphicData, mockState, widgets);
 
-		expect(mockGraphicData.widgets.inputs.length).toBe(2);
-		const entries = Object.entries(mockGraphicData.widgets.inputs).map(([key, value]) => {
+		expect(widgets.inputs.length).toBe(2);
+		const entries = Object.entries(widgets.inputs).map(([key, value]) => {
 			const { codeBlock: _codeBlock, ...rest } = value;
 			return [key, rest];
 		});
@@ -176,9 +186,9 @@ describe('updateInputsGraphicData', () => {
 	it('positions inputs at the metadata line number', () => {
 		mockState.compiler.memoryPlan.modules['test-block']!.memory['input1'] = createMemory({ lineNumber: 2 });
 
-		updateInputsGraphicData(mockGraphicData, mockState);
+		updateInputsGraphicData(mockGraphicData, mockState, widgets);
 
-		const input = findWidgetById(mockGraphicData.widgets.inputs, 'input1');
+		const input = findWidgetById(widgets.inputs, 'input1');
 		const { codeBlock: _codeBlock, ...inputWithoutCodeBlock } = input || {};
 		expect(inputWithoutCodeBlock).toMatchSnapshot();
 	});
@@ -192,18 +202,18 @@ describe('updateInputsGraphicData', () => {
 			input1: { value: 0, isInherited: true },
 		};
 
-		updateInputsGraphicData(mockGraphicData, mockState);
+		updateInputsGraphicData(mockGraphicData, mockState, widgets);
 
-		expect(findWidgetById(mockGraphicData.widgets.inputs, 'input1')?.y).toBe(32);
+		expect(findWidgetById(widgets.inputs, 'input1')?.y).toBe(32);
 	});
 
 	it('rounds wire coordinates to whole pixels', () => {
 		mockState.viewport.vGrid = 9;
 		mockState.viewport.hGrid = 17;
 
-		updateInputsGraphicData(mockGraphicData, mockState);
+		updateInputsGraphicData(mockGraphicData, mockState, widgets);
 
-		const input = findWidgetById(mockGraphicData.widgets.inputs, 'input1');
+		const input = findWidgetById(widgets.inputs, 'input1');
 		expect(input?.wireX).toBe(14);
 		expect(input?.wireY).toBe(26);
 	});

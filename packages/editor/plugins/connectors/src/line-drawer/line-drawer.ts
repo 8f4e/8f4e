@@ -1,5 +1,4 @@
-import type { RenderHook, RenderPluginHost } from 'glugglugglug';
-import { createProgram, prepareRenderPass, removeHook, requireResource, requireUniform } from '../webgl';
+import { createProgram, prepareRenderPass, requireResource, requireUniform } from '@8f4e/web-ui';
 import { LINE_INSTANCE_BYTE_STRIDE, LINE_INSTANCE_LAYOUT, type LineColor } from './line-instance';
 import { LineInstanceBuffer } from './line-instance-buffer';
 import { lineFragmentShaderSource, lineVertexShaderSource } from './line-shaders';
@@ -13,15 +12,12 @@ export type LineDrawerOptions = {
 };
 
 /**
- * Editor-owned render-hook plugin that batches Bresenham pixel lines above all sprites.
+ * Plugin-owned renderer that batches Bresenham pixel lines above all sprites.
  *
- * The plugin registers one pre-draw hook to reset its reusable CPU buffer and
- * one post-draw hook to upload and render the submitted lines. It owns its GPU
- * resources; callers must invoke `destroy()` independently of `Engine.destroy()`.
+ * The connectors plugin resets, fills, and flushes one reusable buffer per pass.
+ * It owns all GPU resources and releases them through the editor render-layer lifecycle.
  */
 export class LineDrawer {
-	private readonly gl: WebGL2RenderingContext;
-	private readonly hooks: RenderPluginHost['hooks'];
 	private readonly lines: LineInstanceBuffer;
 	private readonly program: WebGLProgram;
 	private readonly buffer: WebGLBuffer;
@@ -30,25 +26,21 @@ export class LineDrawer {
 	private gpuCapacity: number;
 	private destroyed = false;
 
-	/** Resets retained line storage before application drawing begins. */
-	private readonly resetHook: RenderHook = () => {
+	/** Start a new wire pass without reallocating the retained buffer. */
+	reset(): void {
 		this.lines.reset();
-	};
-
-	/** Uploads and draws queued lines after the engine's sprite pass. */
-	private readonly flushHook: RenderHook = () => {
-		this.flush();
-	};
+	}
 
 	/**
-	 * Creates and attaches a line overlay to a render-hook host.
+	 * Creates the wire renderer on the editor WebGL context.
 	 *
-	 * @param host - Engine or compatible host whose context and hooks receive the line pass.
+	 * @param gl - Shared WebGL context.
 	 * @param options - Optional initial line-buffer configuration.
 	 */
-	constructor(host: RenderPluginHost, options: LineDrawerOptions = {}) {
-		this.gl = host.gl;
-		this.hooks = host.hooks;
+	constructor(
+		private readonly gl: WebGL2RenderingContext,
+		options: LineDrawerOptions = {}
+	) {
 		this.lines = new LineInstanceBuffer(options.initialCapacity ?? DEFAULT_INITIAL_CAPACITY);
 		this.gpuCapacity = this.lines.capacity;
 
@@ -58,7 +50,6 @@ export class LineDrawer {
 		this.vertexArray = resources.vertexArray;
 		this.pixelToClipLocation = resources.pixelToClipLocation;
 
-		const gl = this.gl;
 		gl.bindVertexArray(this.vertexArray);
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
 		gl.bufferData(gl.ARRAY_BUFFER, this.gpuCapacity * LINE_INSTANCE_BYTE_STRIDE, gl.DYNAMIC_DRAW);
@@ -71,9 +62,6 @@ export class LineDrawer {
 		gl.enableVertexAttribArray(2);
 		gl.vertexAttribPointer(2, 4, gl.UNSIGNED_BYTE, true, LINE_INSTANCE_BYTE_STRIDE, LINE_INSTANCE_LAYOUT.color);
 		gl.vertexAttribDivisor(2, 1);
-
-		this.hooks.preDraw.push(this.resetHook);
-		this.hooks.postDraw.push(this.flushHook);
 	}
 
 	/**
@@ -110,7 +98,7 @@ export class LineDrawer {
 	}
 
 	/**
-	 * Detaches this plugin and releases every WebGL resource it owns.
+	 * Releases every WebGL resource owned by this renderer.
 	 *
 	 * Calling this method more than once has no effect.
 	 */
@@ -119,15 +107,13 @@ export class LineDrawer {
 			return;
 		}
 		this.destroyed = true;
-		removeHook(this.hooks.preDraw, this.resetHook);
-		removeHook(this.hooks.postDraw, this.flushHook);
 		this.gl.deleteBuffer(this.buffer);
 		this.gl.deleteVertexArray(this.vertexArray);
 		this.gl.deleteProgram(this.program);
 	}
 
 	/** Uploads the used instance range and draws every queued line in one call. */
-	private flush(): void {
+	flush(): void {
 		if (this.lines.count === 0) {
 			return;
 		}

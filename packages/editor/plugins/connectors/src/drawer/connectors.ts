@@ -1,7 +1,7 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import type { DrawContext } from '../../../drawContext';
-import type { MemoryViews } from '../../../types';
+import type { State } from '@8f4e/editor-state-types';
+import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import type { ConnectorWidgets } from '../types';
 
 const OUTPUT_COLORS = [
 	'primaryDark3',
@@ -34,13 +34,13 @@ function drawConnector(
 export default function drawConnectors(
 	engine: DrawContext,
 	state: State,
-	codeBlock: CodeBlockGraphicData,
+	widgets: ConnectorWidgets,
 	memoryViews: MemoryViews
 ): void {
 	const { vGrid: width, hGrid: height } = state.viewport;
 	const background = PALETTE_INDICES.surfaceOverlay;
 
-	for (const output of codeBlock.widgets.outputs) {
+	for (const output of widgets.outputs) {
 		const { x, y, memory } = output;
 
 		const rawValue = memory.isInteger
@@ -72,7 +72,7 @@ export default function drawConnectors(
 		);
 	}
 
-	for (const { x, y } of codeBlock.widgets.inputs) {
+	for (const { x, y } of widgets.inputs) {
 		drawConnector(engine, x, y, width, height, background, PALETTE_INDICES.primaryBase);
 	}
 }

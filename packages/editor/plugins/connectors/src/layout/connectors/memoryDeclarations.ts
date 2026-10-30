@@ -1,6 +1,6 @@
+import { gapCalculator } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import type { MemoryDefaults, PlannedMemoryDeclaration, PlannedMemoryModule } from '@8f4e/language-spec';
-import gapCalculator from '~/features/code-editing/gapCalculator';
 
 export interface ConnectorMemoryDeclaration {
 	memory: PlannedMemoryDeclaration;

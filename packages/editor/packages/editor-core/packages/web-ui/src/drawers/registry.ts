@@ -1,5 +1,6 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../drawContext';
+import { createRenderLayerRegistry, type RenderLayerFactory } from '../render-layers';
 import type { MemoryViews } from '../types';
 
 export interface CodeBlockDrawerContext {
@@ -13,6 +14,8 @@ export interface CodeBlockDrawerContext {
 export type CodeBlockDrawer = (context: CodeBlockDrawerContext) => void;
 
 export interface EditorDrawerRegistry {
+	/** Register a GPU layer whose resources are bound to the renderer lifecycle. */
+	registerRenderLayer: (factory: RenderLayerFactory) => () => void;
 	/** Draw after error messages and before built-in block widgets. */
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;
 	/** Draw after all built-in block widgets, inside the same block group. */
@@ -20,6 +23,7 @@ export interface EditorDrawerRegistry {
 }
 
 export interface CodeBlockDrawerRegistry extends EditorDrawerRegistry {
+	attachRenderLayers: ReturnType<typeof createRenderLayerRegistry>['attachRenderLayers'];
 	drawCodeBlock: CodeBlockDrawer;
 	drawCodeBlockOverlay: CodeBlockDrawer;
 }
@@ -44,6 +48,7 @@ export function createCodeBlockDrawerRegistry(): CodeBlockDrawerRegistry {
 	const widgets = createDrawerSlot();
 	const overlays = createDrawerSlot();
 	return {
+		...createRenderLayerRegistry(),
 		registerCodeBlockDrawer: widgets.register,
 		registerCodeBlockOverlay: overlays.register,
 		drawCodeBlock: widgets.draw,

@@ -1,9 +1,8 @@
+import { gapCalculator } from '@8f4e/editor-state';
+import { getCodeBlockMemoryScope, resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { ResolvedProjectMemoryExposure } from '@8f4e/language-spec';
 import { tryParseProjectMemoryExposureLine } from '@8f4e/project-preparser';
-import gapCalculator from '~/features/code-editing/gapCalculator';
-import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
-import resolveMemoryTarget from '~/pureHelpers/resolveMemoryTarget';
 
 export interface ProjectMemoryExposureConnector {
 	exposure: ResolvedProjectMemoryExposure;

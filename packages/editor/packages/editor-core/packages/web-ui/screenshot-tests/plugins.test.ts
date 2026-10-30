@@ -1,21 +1,19 @@
 import loadFontAtlas, { FILL_SPRITE_ID } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
-import { LineDrawer } from '../src/plugins/line-drawer';
 import { RgbaTextureLayer } from '../src/plugins/rgba-texture-layer';
 
-test('RGBA overlays use nearest filtering and per-pixel alpha above sprites and lines, including after restoration', async () => {
+test('RGBA overlays use nearest filtering and per-pixel alpha above sprites, including after restoration', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 8;
 	canvas.height = 8;
 	const engine = new Engine(canvas);
-	const lines = new LineDrawer(engine);
 	const overlay = new RgbaTextureLayer(engine);
 	try {
 		const spriteAtlas = await loadFontAtlas();
 		engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.grid);
 		const fill = FILL_SPRITE_ID;
-		engine.setPalette(new Uint8Array([255, 0, 0, 255]));
+		engine.setPalette(new Uint8Array([0, 255, 0, 255]));
 		const pixels = new Uint8Array([255, 0, 0, 255, 0, 0, 255, 128, 0, 0, 0, 0, 255, 255, 0, 255]);
 		overlay.setDrawCallback(layer => {
 			layer.uploadRgba8Texture(pixels, 2, 2);
@@ -24,13 +22,11 @@ test('RGBA overlays use nearest filtering and per-pixel alpha above sprites and 
 		for (const restore of [false, true]) {
 			if (restore) {
 				overlay.releaseMemory();
-				lines.releaseMemory();
 				engine.releaseRenderingMemory();
 				engine.restoreRenderingMemory();
 			}
 			engine.renderFrame(() => {
 				engine.drawSprite(0, 0, fill, 0, 8, 8);
-				lines.drawLine(-1, 4, 9, 4, 8, [0, 1, 0, 1]);
 			});
 			const actual = new Uint8Array(8 * 8 * 4);
 			engine.gl.readPixels(0, 0, 8, 8, engine.gl.RGBA, engine.gl.UNSIGNED_BYTE, actual);
@@ -52,7 +48,6 @@ test('RGBA overlays use nearest filtering and per-pixel alpha above sprites and 
 		}
 	} finally {
 		overlay.destroy();
-		lines.destroy();
 		engine.destroy();
 	}
 });

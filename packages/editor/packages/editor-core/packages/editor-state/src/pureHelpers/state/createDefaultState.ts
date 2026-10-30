@@ -23,7 +23,6 @@ export default function createDefaultState() {
 			entryOutlines: [],
 			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,
-			outputsByWordAddress: new Map(),
 			selectedCodeBlockForProgrammaticEdit: undefined,
 		},
 		contextMenu: {

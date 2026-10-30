@@ -1,7 +1,8 @@
-import type { State } from '@8f4e/editor-state-types';
-import type { LineDrawer } from '../../../plugins/line-drawer';
-import type { MemoryViews } from '../../../types';
-import type { WireColors } from '../../../wire-colors';
+import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { MemoryViews } from '@8f4e/web-ui';
+import type { LineDrawer } from '../line-drawer';
+import type { ConnectorWidgets, Output } from '../types';
+import type { WireColors } from '../wire-colors';
 
 const WIRE_COLOR = 'wire';
 const WIRE_HIGHLIGHTED_COLOR = 'wireHighlighted';
@@ -12,7 +13,9 @@ export default function drawConnections(
 	lines: LineDrawer,
 	wireColors: WireColors,
 	state: State,
-	memoryViews: MemoryViews
+	memoryViews: MemoryViews,
+	widgetsByBlock: WeakMap<CodeBlockGraphicData, ConnectorWidgets>,
+	outputsByByteAddress: ReadonlyMap<number, Output>
 ): void {
 	for (const codeBlock of state.codeBlockRendering.codeBlocks) {
 		const isSelected = codeBlock === state.codeBlockRendering.selectedCodeBlock;
@@ -21,9 +24,9 @@ export default function drawConnections(
 			continue;
 		}
 
-		for (const input of codeBlock.widgets.inputs) {
+		for (const input of widgetsByBlock.get(codeBlock)?.inputs ?? []) {
 			const outputAddress = memoryViews.int32[input.allocationUnitAddress];
-			const output = state.codeBlockRendering.outputsByWordAddress.get(outputAddress);
+			const output = outputsByByteAddress.get(outputAddress);
 
 			if (!output) {
 				continue;

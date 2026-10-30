@@ -27,7 +27,6 @@ describe('codeBlockDragger', () => {
 				draggedCodeBlock: undefined,
 				selectedCodeBlock: undefined,
 				nextCodeBlockCreationIndex: 0,
-				outputsByWordAddress: new Map(),
 			},
 			contextMenu: {
 				highlightedItem: 0,
