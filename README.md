@@ -67,7 +67,7 @@ The 8f4e project is organized as an Nx monorepo with the following package hiera
     │       ├── <a href="./packages/editor/plugins/slider">slider</a> (Interactive slider controls)
     │       ├── <a href="./packages/editor/plugins/stack">stack</a> (Stack analysis overlays)
     │       ├── <a href="./packages/editor/plugins/switch">switch</a> (Memory toggle controls)
-    │       ├── <a href="./packages/editor/plugins/toggle-favorite">toggle-favorite</a> (Favorite and Unfavorite editing actions)
+    │       ├── <a href="./packages/editor/plugins/favorites">favorites</a> (Favorite directives, editing, and navigation)
     │       ├── <a href="./packages/editor/plugins/toggle-skip-execution">toggle-skip-execution</a> (Single-module execution toggling)
     │       ├── <a href="./packages/editor/plugins/tooltips">tooltips</a> (Selected-line tooltips)
     │       ├── <a href="./packages/editor/plugins/wasm-export">wasm-export</a> (WebAssembly export action)

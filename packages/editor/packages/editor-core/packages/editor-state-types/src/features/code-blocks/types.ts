@@ -188,12 +188,6 @@ export interface CodeBlockGraphicData {
 	 */
 	homeAlignment?: ViewportBlockAlignment;
 	/**
-	 * When true, marks this block as a favorite for quick navigation.
-	 * Derived from ; @favorite directive.
-	 * Defaults to false.
-	 */
-	isFavorite: boolean;
-	/**
 	 * Parsed directive records derived from this block's code lines during the central update pass.
 	 * Covers editor directives (`; @name`).
 	 * Populated once per update; consumers should prefer these over rescanning raw code lines.

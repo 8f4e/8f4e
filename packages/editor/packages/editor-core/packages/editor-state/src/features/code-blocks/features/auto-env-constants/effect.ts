@@ -22,7 +22,6 @@ function generateEnvConstantsBlock(state: State, position: { x: number; y: numbe
 	// Header with warning
 	lines.push(`constants ${AUTO_ENV_CONSTANTS_BLOCK_NAME}`);
 	lines.push(`; @pos ${position.x} ${position.y}`);
-	lines.push('; @favorite');
 	lines.push('; Auto-generated environment constants');
 	lines.push('; Changes will be overwritten');
 	lines.push('');

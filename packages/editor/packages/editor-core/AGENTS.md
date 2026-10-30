@@ -66,8 +66,9 @@
   Project Open/Save/Export, browser file access, and file associations belong to the project-files plugin; WASM file
   writing belongs to the wasm-export plugin. Keep file callbacks and association flags out of core. Undo/redo restore
   snapshots within the current project; unrelated replacements dispatch loadProject.
-- Favorite toggling and memory-connection removal belong to their plugins, including menu labels and availability.
-  Favorite directive derivation and navigation stay in core. Export shared directive editing through public helpers.
+- Favorites belong entirely to `editor-plugin-favorites`: cached directive detection, toggling, navigation menus,
+  and the generated env block's favorite marker. Keep favorite flags and event handlers out of core. Export generic
+  block jumping and directive editing through public helpers. Memory-connection removal belongs to its plugin.
 - Binary assets belong to `editor-plugin-binary-assets`, including their schema, fetching/cache, private state, dialog,
   and size constants. Keep only generic `envConstantContributions`, schema registration, dialogs, and memory resolution
   in core. Environment constants refresh when blocks are populated as well as when contributions change.

@@ -69,7 +69,6 @@ export function createMockCodeBlock(
 		projectPath,
 		disabled: false,
 		isHome: false,
-		isFavorite: false,
 		alwaysOnTop: false,
 		parsedDirectives: [],
 		widgets: {

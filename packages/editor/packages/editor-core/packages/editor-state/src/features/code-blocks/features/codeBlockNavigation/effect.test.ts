@@ -5,15 +5,10 @@ import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import codeBlockNavigation, { goHome, jumpToCodeBlock, navigateToCodeBlockInDirection } from './effect';
 
-interface JumpToFavoriteCodeBlockEvent {
-	creationIndex: number;
-}
-
 describe('codeBlockNavigation', () => {
 	let state: ReturnType<typeof createMockState>;
 	let events: ReturnType<typeof createMockEventDispatcherWithVitest>;
 	let onNavigateCodeBlockHandler: (event: NavigateCodeBlockEvent) => void;
-	let onJumpToFavoriteCodeBlockHandler: (event: JumpToFavoriteCodeBlockEvent) => void;
 	let onGoHomeHandler: () => void;
 	let selectedBlock: CodeBlockGraphicData;
 	let leftBlock: CodeBlockGraphicData;
@@ -64,14 +59,9 @@ describe('codeBlockNavigation', () => {
 		// Create mock event dispatcher using shared utility
 		events = createMockEventDispatcherWithVitest();
 		(events.on as ReturnType<typeof vi.fn>).mockImplementation(
-			(
-				eventName: string,
-				callback: ((event: NavigateCodeBlockEvent | JumpToFavoriteCodeBlockEvent) => void) | (() => void)
-			) => {
+			(eventName: string, callback: ((event: NavigateCodeBlockEvent) => void) | (() => void)) => {
 				if (eventName === 'navigateCodeBlock') {
 					onNavigateCodeBlockHandler = callback as (event: NavigateCodeBlockEvent) => void;
-				} else if (eventName === 'jumpToFavoriteCodeBlock') {
-					onJumpToFavoriteCodeBlockHandler = callback as (event: JumpToFavoriteCodeBlockEvent) => void;
 				} else if (eventName === 'goHome') {
 					onGoHomeHandler = callback as () => void;
 				}
@@ -84,13 +74,6 @@ describe('codeBlockNavigation', () => {
 		codeBlockNavigation(createStateManager(state), events);
 
 		expect(events.on).toHaveBeenCalledWith('navigateCodeBlock', expect.any(Function));
-	});
-
-	it('should register a jumpToFavoriteCodeBlock event handler', () => {
-		// Initialize the effect
-		codeBlockNavigation(createStateManager(state), events);
-
-		expect(events.on).toHaveBeenCalledWith('jumpToFavoriteCodeBlock', expect.any(Function));
 	});
 
 	it('should register a goHome event handler', () => {
@@ -416,27 +399,6 @@ describe('codeBlockNavigation', () => {
 			jumpToCodeBlock(createStateManager(state), 4, events);
 
 			expect(state.viewport.y).toBe(downBlock.y + downBlock.cursor.y - state.viewport.height / 2);
-		});
-	});
-
-	describe('jumpToFavoriteCodeBlock event', () => {
-		it('should jump when jumpToFavoriteCodeBlock event is dispatched', () => {
-			// Initialize the effect
-			codeBlockNavigation(createStateManager(state), events);
-
-			onJumpToFavoriteCodeBlockHandler({ creationIndex: 2 });
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
-		});
-
-		it('should handle jumpToFavoriteCodeBlock with non-existent target gracefully', () => {
-			// Initialize the effect
-			codeBlockNavigation(createStateManager(state), events);
-
-			onJumpToFavoriteCodeBlockHandler({
-				creationIndex: 999,
-			});
-			// selectedCodeBlock should remain unchanged
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
 		});
 	});
 

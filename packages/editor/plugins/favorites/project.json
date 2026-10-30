@@ -1,5 +1,5 @@
 {
-  "name": "@8f4e/editor-plugin-toggle-favorite",
+  "name": "@8f4e/editor-plugin-favorites",
   "sourceRoot": "src",
   "projectType": "library",
   "targets": {
@@ -33,7 +33,7 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "biome check --write packages/editor/plugins/toggle-favorite/src",
+        "command": "biome check --write packages/editor/plugins/favorites/src",
         "cwd": "{workspaceRoot}"
       }
     },

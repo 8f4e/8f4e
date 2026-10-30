@@ -9,7 +9,6 @@ export interface DirectiveBlockState {
 	isHome: boolean;
 	/** Effective viewport alignment for `; @home [alignment]`. Present only when the block is a valid home block. */
 	homeAlignment?: ViewportBlockAlignment;
-	isFavorite: boolean;
 	/** Viewport anchor set by `; @viewport <corner>`. When present, @pos is interpreted as inward offset from this corner. */
 	viewportAnchor?: ViewportAnchor;
 	/** When true the block is always rendered above normal blocks. Set by `; @alwaysOnTop`. */

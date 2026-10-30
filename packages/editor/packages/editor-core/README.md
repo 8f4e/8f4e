@@ -166,8 +166,8 @@ The grouping plugin owns `; @group <name> [nonstick]`, private group membership,
 renaming, and all visual-group menu actions, including group execution toggling. Nested language-level project
 groups (`group … groupEnd`), their navigation, and memory scopes remain in core.
 
-The favorite-toggle plugin owns Favorite/Unfavorite editing and its block-menu item. Favorite directive derivation
-and Jump to navigation remain in core. The memory-connection-removal plugin owns its block-menu item, enabled
+The favorites plugin owns `@favorite` detection, Favorite/Unfavorite editing, and Jump to navigation menus. Core
+provides generic directive parsing and block jumping. The memory-connection-removal plugin owns its block-menu item, enabled
 state, and source transformation for disconnecting intermodular memory defaults. Both receive the clicked block
 through their action payload and respect edit mode; their menu entries disappear when the plugins are omitted.
 The public `removeDirective` helper edits generic directive comments without coupling core to either action.

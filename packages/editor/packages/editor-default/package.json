@@ -44,7 +44,7 @@
     "@8f4e/editor-plugin-bars": "*",
     "@8f4e/editor-plugin-project-files": "*",
     "@8f4e/editor-plugin-wasm-export": "*",
-    "@8f4e/editor-plugin-toggle-favorite": "*",
+    "@8f4e/editor-plugin-favorites": "*",
     "@8f4e/editor-plugin-remove-memory-connections": "*",
     "@8f4e/editor-plugin-binary-assets": "*",
     "@8f4e/editor-plugin-assertion-markers": "*",

@@ -30,8 +30,7 @@ function setup({
 	const store = initState(events, {
 		callbacks: {},
 	});
-	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
-	const disposePlugin = installed
+	let pluginCleanup = installed
 		? createExampleModulesPlugin({ sources }).setup({
 				store,
 				events,
@@ -40,7 +39,11 @@ function setup({
 				layout: store.layout,
 				drawers: createCodeBlockDrawerRegistry(),
 			})
-		: () => {};
+		: undefined;
+	const disposePlugin = () => {
+		pluginCleanup?.();
+		pluginCleanup = undefined;
+	};
 	cleanups.push(() => {
 		disposePlugin();
 		store.dispose();
@@ -52,7 +55,7 @@ function setup({
 	const state = store.getState();
 	const addModule = (slug = 'target', x = 100, y = 112) =>
 		on.mock.calls.find(([name]) => name === ADD_EXAMPLE_MODULE)![1]({ slug, x, y });
-	return { events, state, store, disposePlugin, sources, addModule };
+	return { events, state, disposePlugin, addModule };
 }
 
 afterEach(() => {
@@ -174,9 +177,8 @@ describe('example modules plugin', () => {
 		const load = vi.fn(async () => publicSource(mainCode));
 		const test = setup({ mode: 'view', sources: new Map([['audio/target', load]]) });
 		test.events.dispatch('contextmenu', { x: 100, y: 112 });
-		await vi.waitFor(() =>
-			expect(test.state.contextMenu.items.some(item => item.title?.includes('Jump to'))).toBe(true)
-		);
+		await Promise.resolve();
+		expect(test.state.contextMenu.open).toBe(true);
 		expect(test.state.contextMenu.items.some(item => item.payload?.menu === EXAMPLE_MODULES_MENU)).toBe(false);
 		await test.addModule();
 		expect(load).not.toHaveBeenCalled();
