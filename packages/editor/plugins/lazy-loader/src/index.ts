@@ -1,13 +1,20 @@
-import type { EditorPlugin } from '@8f4e/editor-core';
-import { logError, serializeToProject } from '@8f4e/editor-state';
-import type { ProjectObjectModel } from '@8f4e/language-spec';
+import type { CodeBlockGraphicData, EditorPlugin, ParsedDirectiveRecord } from '@8f4e/editor-core';
+import { logError } from '@8f4e/editor-state';
 
 export { hasConfig, hasDirective } from './hasDirective';
 
 export interface LazyEditorPlugin {
 	id: string;
-	matches: (project: ProjectObjectModel) => boolean;
+	scope: 'view' | 'project';
+	matches: (directives: readonly ParsedDirectiveRecord[]) => boolean;
 	load: () => Promise<EditorPlugin>;
+}
+
+function collectProjectDirectives(blocks: readonly CodeBlockGraphicData[]): ParsedDirectiveRecord[] {
+	return blocks.flatMap(block => [
+		...block.parsedDirectives,
+		...collectProjectDirectives(block.nestedProjectCodeBlocks ?? []),
+	]);
 }
 
 /** Loading is asynchronous; each loaded plugin still uses the ordinary synchronous setup contract. */
@@ -15,10 +22,11 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 	return {
 		id: 'lazy-loader',
 		setup: context => {
-			const { store, events, menus } = context;
+			const { store } = context;
 			const installed = new Map<string, () => void>();
 			const pending = new Set<string>();
 			let disposed = false;
+			let scanQueued = false;
 
 			const activate = async (entry: LazyEditorPlugin) => {
 				pending.add(entry.id);
@@ -37,30 +45,34 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 				}
 			};
 			const scan = () => {
-				const project = serializeToProject(store.getState());
+				const { codeBlocks, rootCodeBlocks } = store.getState().codeBlockRendering;
+				const directives = {
+					view: codeBlocks.flatMap(block => block.parsedDirectives),
+					project: collectProjectDirectives(rootCodeBlocks),
+				};
 				for (const entry of plugins) {
-					if (!installed.has(entry.id) && !pending.has(entry.id) && entry.matches(project)) {
+					if (!installed.has(entry.id) && !pending.has(entry.id) && entry.matches(directives[entry.scope])) {
 						void activate(entry);
 					}
 				}
 			};
-			const onProjectChange = () => {
-				if (store.getState().projectChange.kind === 'replace') scan();
+			const scheduleScan = () => {
+				if (scanQueued || disposed) return;
+				scanQueued = true;
+				// Project edits may temporarily reset the view before restoring its group. Inspect the settled view.
+				queueMicrotask(() => {
+					scanQueued = false;
+					if (!disposed) scan();
+				});
 			};
-			const unregisterMenu = menus.registerItem('mainMenu', () => ({
-				title: 'Load plugins used by project',
-				action: 'loadPluginsUsedByProject',
-				close: true,
-			}));
-			store.subscribe('projectChange', onProjectChange);
-			events.on('loadPluginsUsedByProject', scan);
+			store.subscribe('projectChange', scheduleScan);
+			store.subscribe('codeBlockRendering.codeBlocks', scheduleScan);
 			scan();
 
 			return () => {
 				disposed = true;
-				store.unsubscribe('projectChange', onProjectChange);
-				events.off('loadPluginsUsedByProject', scan);
-				unregisterMenu();
+				store.unsubscribe('projectChange', scheduleScan);
+				store.unsubscribe('codeBlockRendering.codeBlocks', scheduleScan);
 				const errors: unknown[] = [];
 				for (const cleanup of [...installed.values()].reverse()) {
 					try {

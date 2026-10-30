@@ -25,9 +25,11 @@ raw `@config midi.*` or `@config bin.*` directives appear. Control factories rec
 writer; MIDI receives its browser navigator and live compiler getters, binary assets receive a current-memory getter,
 and runtime factories receive compiler artifacts and an optional shared `AudioContext`.
 
-Project loading scans for plugin signals automatically. After introducing a new directive by editing or pasting,
-use **Load plugins used by project** in the background menu. Imports and compilation finish independently of
-mounting and the initial-project callback. A callback may run before the mount promise resolves.
+The loader checks cached directives automatically after project changes and group navigation. Visual/control plugins
+use `view` scope: signals in unopened groups wait until that level is visited. Runtime, MIDI, and asset plugins use
+`project` scope and match signals across the complete project tree. Loaded plugins stay installed until disposal.
+Imports and compilation finish independently of mounting and the initial-project callback. A callback may run before
+the mount promise resolves.
 
 Without `initialProjectUrl`, the editor starts with an empty project and calls `onInitialProjectLoaded` after core
 initialization. A URL failure calls `onInitialProjectLoadError`. The host owns page URLs, loading/error UI, canvas

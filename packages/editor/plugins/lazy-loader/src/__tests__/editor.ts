@@ -49,5 +49,5 @@ export function setup(plugins: readonly LazyEditorPlugin[], initialSource?: stri
 		await Promise.resolve();
 		return state.contextMenu.items;
 	};
-	return { ...context, state, load, dispose, openMenu };
+	return { ...context, store, state, load, dispose, openMenu };
 }

@@ -9,7 +9,8 @@
 
 The plugin registers its schema on setup and initializes from current configuration and compiler artifacts. It can
 run alongside other runtimes, sharing the compiler's memory. Disabling it stops its own execution. A loaded plugin
-stays installed until editor disposal; configuration introduced by editing uses **Load plugins used by project**.
+stays installed until editor disposal. Both editor compositions automatically detect configuration after editing
+and across unopened groups, using cached parsed directives.
 
 Configure `workerRuntime.entry` and `workerRuntime.sampleRate` to select the exported entry and its rate.
 The defaults are `main` and `50` respectively.

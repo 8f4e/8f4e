@@ -948,5 +948,6 @@ The audio entry defaults to `buffer` and the worker entry to `main`. Each runtim
 Both contribute a sample-rate constant named `SAMPLE_RATE` by default; use their `sampleRateConstantName` settings
 when running them together. Audio also contributes `AUDIO_BUFFER_SIZE`, configurable through
 `audioRuntime.bufferSizeConstantName`. Info namespaces are fixed: `audioRuntime`, `workerRuntime`, and `testRuntime`.
-The default editor lazily imports these plugins when their configuration roots appear. New roots introduced by
-editing use **Load plugins used by project**. Each plugin owns its schema and cleanup.
+The default and minimal editors automatically import these plugins when their configuration roots appear, including
+after editing. Runtime signals are checked across the complete project tree, including unopened groups, using cached
+parsed directives. Each plugin stays installed until editor disposal and owns its schema and cleanup.

@@ -34,8 +34,9 @@
   contract; there is no separate environment-plugin manager. Assertion results and inline diagnostics remain core.
   Plugin contracts and installation live in `editor-core`,
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
-  `editor-plugin-lazy-loader` scans project signals on replacement or a manual menu action, installs matching plugins,
-  and disposes them with the editor. Both editor compositions' lightweight registries dynamically import plot, wave,
+  `editor-plugin-lazy-loader` scans cached directives automatically after project changes and group navigation.
+  Explicit registry scopes match visual/control plugins in the current project level and runtime/MIDI/asset plugins
+  across the project tree. Matching plugins stay installed until editor disposal. Both editor compositions' lightweight registries dynamically import plot, wave,
   meter, bars, switch, button, piano, slider, and crossfade for their directives, plus MIDI, binary assets, and runtime
   plugins for their raw config roots.
   Core provides independent layout contributions and subscriptions; directive parsing and layout remain separate.
