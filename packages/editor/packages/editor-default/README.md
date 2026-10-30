@@ -73,19 +73,21 @@ and keep their animation and data inside their installations.
 Plot, wave, meter, bars, switch, button, piano, slider, and crossfade load on demand through
 `@8f4e/editor-plugin-lazy-loader`. The per-editor registry in `src/lazy-plugins.ts` matches their directives through
 generic parsing and dynamically imports their implementations. Wave matches `@wave`, `@wave2`, and `@wave4`.
-The registry receives the compiler's live memory writer and supplies it to control factories after importing them.
+MIDI input and binary assets load when raw `@config midi.*` or `@config bin.*` directives appear, before their
+schemas are registered. The registry supplies the canvas's navigator and live compiler getters to those factories,
+and the compiler's live memory writer to control factories after importing them.
 The loader scans on project replacement, including URL and session loads. After adding a directive through editing,
 use **Load plugins used by project** in the background menu. Imports finish in the background; mounting and initial-project notifications do not
 wait for them. A loaded plugin stays installed until editor disposal. See the [loader contract](../../plugins/lazy-loader/README.md).
 The `plugins` option replaces the default feature set: pass `[]` to omit feature plugins, or a custom array to select and extend it. The compiler remains installed first. Use `initEditor` from editor-core for a composition without a compiler or with a different compiler plugin.
 Each editor installs and disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).
 
-`@8f4e/editor-plugin-binary-assets` is also included. It owns binary asset configuration, fetching, caching, memory
+`@8f4e/editor-plugin-binary-assets` loads on demand from `bin` configuration. It owns fetching, caching, memory
 copies, loading UI, and generated size constants. The default editor supplies a getter for current compiler memory
 bytes, so memory replacement and growth are visible to the plugin without sharing browser-specific context fields.
 
-The standard set includes `@8f4e/editor-plugin-assertion-markers` for executed assertion indicators,
-`@8f4e/editor-plugin-keyboard-memory` for keyboard-to-memory input, and `@8f4e/editor-plugin-midi-input` for MIDI
+The fixed set includes `@8f4e/editor-plugin-assertion-markers` for executed assertion indicators and
+`@8f4e/editor-plugin-keyboard-memory` for keyboard-to-memory input. The lazy `@8f4e/editor-plugin-midi-input` owns MIDI
 discovery and callbacks. Keyboard input receives the mounted canvas and a live memory writer. MIDI receives that canvas's navigator and
 live compiler memory/bytecode getters, and owns its WASM instance and export cache. MIDI access is requested only
 when the project has MIDI configuration. Omitting these plugins also omits their schemas and input listeners.

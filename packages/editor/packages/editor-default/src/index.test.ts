@@ -1,9 +1,7 @@
 import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor } from '@8f4e/editor-core';
-import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
-import { createMidiInputPlugin } from '@8f4e/editor-plugin-midi-input';
 import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
@@ -30,12 +28,6 @@ vi.mock('@8f4e/editor-plugin-example-modules', () => ({
 }));
 vi.mock('@8f4e/editor-plugin-keyboard-memory', () => ({
 	createKeyboardMemoryPlugin: vi.fn(() => ({ id: 'keyboard-memory', setup: () => () => {} })),
-}));
-vi.mock('@8f4e/editor-plugin-midi-input', () => ({
-	createMidiInputPlugin: vi.fn(() => ({ id: 'midi-input', setup: () => () => {} })),
-}));
-vi.mock('@8f4e/editor-plugin-binary-assets', () => ({
-	createBinaryAssetsPlugin: vi.fn(() => ({ id: 'binary-assets', setup: () => () => {} })),
 }));
 vi.mock('@8f4e/editor-plugin-screenshot', () => ({
 	createScreenshotPlugin: vi.fn(() => ({ id: 'screenshot', setup: () => () => {} })),
@@ -79,7 +71,6 @@ describe('default editor plugins', () => {
 		expect(pluginIds).toEqual(expect.arrayContaining(['watch', 'stack', 'tooltips']));
 		expect(pluginIds.indexOf('watch')).toBeLessThan(pluginIds.indexOf('tooltips'));
 		expect(pluginIds.indexOf('stack')).toBeLessThan(pluginIds.indexOf('tooltips'));
-		const getBytes = vi.mocked(createBinaryAssetsPlugin).mock.calls[0][0].getMemoryBytes;
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl: undefined,
@@ -93,13 +84,6 @@ describe('default editor plugins', () => {
 		});
 		expect(createExampleModulesPlugin).toHaveBeenCalledWith({ sources: exampleModuleSources });
 		expect(createKeyboardMemoryPlugin).toHaveBeenCalledWith({ inputTarget: canvas, writeMemory });
-		expect(createMidiInputPlugin).toHaveBeenCalledWith({ navigator: window.navigator, getMemory, getCodeBuffer });
-		expect(getBytes()).toBeUndefined();
-		const memory = new WebAssembly.Memory({ initial: 1 });
-		getMemory.mockReturnValue(memory);
-		expect(getBytes()?.buffer).toBe(memory.buffer);
-		memory.grow(1);
-		expect(getBytes()?.byteLength).toBe(memory.buffer.byteLength);
 		const options = vi.mocked(createScreenshotPlugin).mock.calls[0][0];
 		expect(options.canvas).toBe(canvas);
 		expect(createProjectFilesPlugin).toHaveBeenCalledWith({ inputTarget: canvas, showOpenMenuItem: true });
@@ -179,9 +163,7 @@ describe('default editor plugins', () => {
 		expect(createSessionPersistencePlugin).not.toHaveBeenCalled();
 		expect(createProjectUrlLoaderPlugin).not.toHaveBeenCalled();
 		expect(createExampleModulesPlugin).not.toHaveBeenCalled();
-		expect(createBinaryAssetsPlugin).not.toHaveBeenCalled();
 		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();
-		expect(createMidiInputPlugin).not.toHaveBeenCalled();
 		expect(createScreenshotPlugin).not.toHaveBeenCalled();
 		expect(createProjectFilesPlugin).not.toHaveBeenCalled();
 		expect(createWasmExportPlugin).not.toHaveBeenCalled();

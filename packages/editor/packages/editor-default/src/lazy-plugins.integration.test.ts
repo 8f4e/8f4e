@@ -10,6 +10,7 @@ import { createLazyPluginRegistry } from './lazy-plugins';
 const cleanups: Array<() => void> = [];
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
+	vi.unstubAllGlobals();
 });
 
 function restoreSession(directive: string) {
@@ -47,6 +48,7 @@ function restoreSession(directive: string) {
 		restoreOnStartup: true,
 	}).setup(context);
 	const entries = createLazyPluginRegistry({
+		navigator: {} as Navigator,
 		writeMemory: () => {},
 		getMemory: () => null,
 		getCodeBuffer: () => new Uint8Array(),
@@ -66,7 +68,7 @@ function restoreSession(directive: string) {
 	events.dispatch('init');
 	const state = store.getState();
 	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'audio')!;
-	return { block, entries };
+	return { block, entries, state };
 }
 
 it.each([
@@ -83,4 +85,33 @@ it.each([
 	const { block, entries } = restoreSession(directive);
 	await vi.waitFor(() => expect(block.gaps.get(7)?.size).toBe(rows));
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual([plugin]);
+});
+
+it('loads MIDI from restored raw configuration and registers its schema', async () => {
+	const { state, entries } = restoreSession(
+		'config midi.inputs.keys.port 0\n; @config midi.inputs.keys.callback onMidi'
+	);
+	await vi.waitFor(() => expect(state.info.midi).toEqual({}));
+	expect(state.editorConfig.midi).toEqual({ inputs: { keys: { port: 0, callback: 'onMidi' } } });
+	expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['midi-input']);
+});
+
+it('loads binary assets from a restored session and announces their size as compiler input', async () => {
+	const fetch = vi.fn(async () => new Response(new Uint8Array([1, 2, 3, 4, 5, 6])));
+	vi.stubGlobal('fetch', fetch);
+	vi.stubGlobal('caches', undefined);
+	const { state, entries } = restoreSession(
+		'config bin.sound.url https://example.com/lazy.pcm\n; @config bin.sound.memory audio:points'
+	);
+	const revision = state.compilerInputRevision;
+	await vi.waitFor(() =>
+		expect(state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'env')!.code).toContain(
+			'const ASSET_SOUND_SIZE 6'
+		)
+	);
+	expect(state.compilerInputRevision).toBeGreaterThan(revision);
+	expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(fetch).toHaveBeenCalledExactlyOnceWith('https://example.com/lazy.pcm');
+	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['binary-assets']);
 });

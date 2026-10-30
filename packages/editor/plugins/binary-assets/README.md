@@ -1,7 +1,9 @@
 # Binary Assets Plugin
 
-`@8f4e/editor-plugin-binary-assets` loads project-configured binary files into runtime memory. The default editor
-includes it; custom hosts install it through the standard plugin list:
+`@8f4e/editor-plugin-binary-assets` loads project-configured binary files into runtime memory. The default and minimal
+editors load it lazily when raw `@config bin.*` directives exist. Project loading scans automatically; after adding asset
+configuration through editing, use **Load plugins used by project** in the background menu. Custom hosts can install
+it through the standard plugin list:
 
 ```ts
 import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';

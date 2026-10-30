@@ -12,7 +12,10 @@ Configure input callbacks with separate directives:
 ; @info midi
 ```
 
-The plugin is installed synchronously but requests MIDI access only when MIDI configuration exists. It publishes
+The default and minimal editors load the plugin lazily when raw `@config midi.*` directives exist. Project loading
+scans automatically; after adding MIDI configuration through editing, use **Load plugins used by project** in the
+background menu. Installation reads current configuration and compiler artifacts, including after compilation has
+already completed. The plugin requests MIDI access only when MIDI configuration exists. It publishes
 available input and output names under `state.info.midi`, using stable numeric indexes while discovery is active.
 Input callbacks use those indexes and name exported WASM functions accepting `(status, data1, data2)`. Multiple
 callbacks can share a port; duplicate bindings are ignored. Missing bytes in short realtime messages become zero.
@@ -23,7 +26,7 @@ and on disposal. Late access or export results cannot attach listeners to a disp
 the published ports and bindings. Unsupported Web MIDI or denied access leaves an empty device list.
 
 The plugin owns its schema and removes it on disposal. The shared plugin context contains no browser resources or
-MIDI-specific services. Loading the implementation lazily remains a separate plugin-system follow-up.
+MIDI-specific services.
 
 Verify with `npx nx run @8f4e/editor-plugin-midi-input:build|test|typecheck`. Tests use simulated MIDI ports and real
 compiled WASM callbacks; no hardware is required.

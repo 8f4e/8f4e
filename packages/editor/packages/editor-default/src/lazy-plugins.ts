@@ -1,12 +1,14 @@
 import { hasConfig, hasDirective, type LazyEditorPlugin } from '@8f4e/editor-plugin-lazy-loader';
 
 export function createLazyPluginRegistry({
+	navigator,
 	writeMemory,
 	getMemory,
 	getCodeBuffer,
 	getAssertionSites,
 	sharedAudioContext,
 }: {
+	navigator: Navigator;
 	writeMemory: (address: number, value: number, isInteger: boolean) => void;
 	getMemory: () => WebAssembly.Memory | null;
 	getCodeBuffer: () => Uint8Array;
@@ -58,6 +60,28 @@ export function createLazyPluginRegistry({
 			id: 'crossfade',
 			matches: project => hasDirective(project, 'crossfade'),
 			load: () => import('@8f4e/editor-plugin-crossfade').then(module => module.createCrossfadePlugin({ writeMemory })),
+		},
+
+		{
+			id: 'midi-input',
+			matches: project => hasConfig(project, 'midi'),
+			load: () =>
+				import('@8f4e/editor-plugin-midi-input').then(module =>
+					module.createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })
+				),
+		},
+		{
+			id: 'binary-assets',
+			matches: project => hasConfig(project, 'bin'),
+			load: () =>
+				import('@8f4e/editor-plugin-binary-assets').then(module =>
+					module.createBinaryAssetsPlugin({
+						getMemoryBytes: () => {
+							const memory = getMemory();
+							return memory ? new Uint8Array(memory.buffer) : undefined;
+						},
+					})
+				),
 		},
 
 		{
