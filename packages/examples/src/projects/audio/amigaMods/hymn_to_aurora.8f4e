@@ -446,7 +446,7 @@ const S12_REPEAT_LENGTH	2
 
 constantsEnd
 
-note
+note colors
 ; @pos -116 -119
 ; @tab 52
 ; @config color.canvas #050816

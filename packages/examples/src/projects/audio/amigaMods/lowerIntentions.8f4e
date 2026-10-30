@@ -818,7 +818,7 @@ note
 ; (c)1998
 noteEnd
 
-note
+note colors
 ; @pos 717 -138
 ; @config color.canvas #7898d2
 ; @config color.ink rgba(249,248,255,0.9)

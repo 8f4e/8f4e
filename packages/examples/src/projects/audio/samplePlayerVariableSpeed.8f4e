@@ -38,6 +38,10 @@ note
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
 ; @config audioRuntime.audioOutBufferRAddress audioout:buffer
 ; @config export.fileName samplePlayerVariableSpeed
+noteEnd
+
+note colors
+; @pos -159 -64
 ; @config color.canvas #11171a
 ; @config color.surface #b8bfbc
 ; @config color.ink #172126
@@ -51,7 +55,6 @@ note
 ; @config color.tertiary #39484d
 ; @config color.highlight #a9d49a
 ; @config color.detail #006b75
-
 noteEnd
 
 note

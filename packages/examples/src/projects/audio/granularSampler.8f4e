@@ -107,6 +107,10 @@ note
 ; @config audioRuntime.audioOutBufferLAddress audiooutL:buffer
 ; @config audioRuntime.audioOutBufferRAddress audiooutR:buffer
 ; @config export.fileName granularSampler
+noteEnd
+
+note colors
+; @pos -399 -54
 ; @config color.canvas #11121d
 ; @config color.surface #24253a
 ; @config color.ink #d8d5e5

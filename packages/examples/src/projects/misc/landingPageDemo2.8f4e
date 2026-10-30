@@ -16,6 +16,10 @@ note
 ; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 1
 ; @config export.fileName landingPageDemo2
+noteEnd
+
+note colors
+; @pos -208 -10
 ; @config color.canvas #096
 ; @config color.surface #011b17
 ; @config color.ink #f8fff9

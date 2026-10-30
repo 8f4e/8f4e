@@ -464,7 +464,7 @@ note
 
 noteEnd
 
-note
+note colors
 ; @pos 2 51
 ; @config color.canvas #151210
 ; @config color.surface #25211e

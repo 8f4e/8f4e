@@ -56,6 +56,10 @@ note
 ; @config audioRuntime.audioOutBufferLAddress audiooutL:buffer
 ; @config audioRuntime.audioOutBufferRAddress audiooutR:buffer
 ; @config export.fileName Reverb
+noteEnd
+
+note colors
+; @pos -268 -43
 ; @config color.canvas #dcd9d0
 ; @config color.surface #f4f0e7
 ; @config color.ink #3e4a4b

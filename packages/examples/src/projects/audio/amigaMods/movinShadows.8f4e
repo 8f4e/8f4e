@@ -1040,7 +1040,7 @@ note
 ; Source: movinshadows1point3.mod
 noteEnd
 
-note
+note colors
 ; @pos 721 -150
 ; @config color.canvas #070912
 ; @config color.ink #d7d2f3

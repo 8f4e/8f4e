@@ -1026,7 +1026,7 @@ note
 ; 'Chronodemon'
 noteEnd
 
-note
+note colors
 ; @pos 748 -121
 ; @config color.canvas #09090b
 ; @config color.ink #e8dfcf

@@ -15,6 +15,10 @@ note
 ; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 50
 ; @config export.fileName bistableMultivibrators
+noteEnd
+
+note colors
+; @pos -167 8
 ; @config color.canvas #c8d0d1
 ; @config color.surface #f5f2e9
 ; @config color.ink #35454a
@@ -28,7 +32,6 @@ note
 ; @config color.tertiary #7d8783
 ; @config color.highlight #edc45b
 ; @config color.detail #30778e
-
 noteEnd
 
 note

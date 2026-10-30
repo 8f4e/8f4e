@@ -31,6 +31,10 @@ note
 ; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 10
 ; @config export.fileName xorProblem
+noteEnd
+
+note colors
+; @pos -153 -95
 ; @config color.canvas #d9dee9
 ; @config color.surface #f6f5fa
 ; @config color.ink #35405c
@@ -44,7 +48,6 @@ note
 ; @config color.tertiary #7e8799
 ; @config color.highlight #efb74d
 ; @config color.detail #697ac6
-
 noteEnd
 
 entry main

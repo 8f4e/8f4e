@@ -103,7 +103,7 @@ note
 ; @config export.fileName formantSynth
 noteEnd
 
-note
+note colors
 ; @pos -125 4
 ; @config color.canvas #ffe2cc
 ; @config color.surface #fff7e6
