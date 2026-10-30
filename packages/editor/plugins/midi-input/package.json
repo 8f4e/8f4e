@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-midi-input",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "description": "MIDI input for the 8f4e editor",
   "type": "module",

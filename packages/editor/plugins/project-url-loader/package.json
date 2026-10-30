@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-project-url-loader",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": true,
   "description": "Project loading from URLs for the 8f4e editor",
   "type": "module",

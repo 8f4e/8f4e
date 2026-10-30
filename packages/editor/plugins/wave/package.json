@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-wave",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "private": true,
   "description": "Waveform directive plugin for the 8f4e editor",
   "type": "module",
