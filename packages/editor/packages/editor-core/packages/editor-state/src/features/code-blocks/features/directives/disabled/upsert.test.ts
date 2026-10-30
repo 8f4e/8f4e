@@ -43,14 +43,14 @@ describe('upsertDisabled', () => {
 	});
 
 	it('preserves other directives when adding @disabled', () => {
-		const code = ['module test', '; @group myGroup', '; @pos 10 20', '; @favorite', 'moduleEnd'];
+		const code = ['module test', '; @group myGroup', '; @pos 10 20', '; @marker', 'moduleEnd'];
 		const result = upsertDisabled(code, true);
 		expect(result).toEqual([
 			'module test',
 			'; @disabled',
 			'; @group myGroup',
 			'; @pos 10 20',
-			'; @favorite',
+			'; @marker',
 			'moduleEnd',
 		]);
 	});
@@ -98,13 +98,13 @@ describe('upsertDisabled', () => {
 	});
 
 	it('preserves exact order of other directives when adding @disabled', () => {
-		const code = ['module test', '; @group myGroup', '; @favorite', '; @pos 10 20', 'output out 1', 'moduleEnd'];
+		const code = ['module test', '; @group myGroup', '; @marker', '; @pos 10 20', 'output out 1', 'moduleEnd'];
 		const result = upsertDisabled(code, true);
 		expect(result).toEqual([
 			'module test',
 			'; @disabled',
 			'; @group myGroup',
-			'; @favorite',
+			'; @marker',
 			'; @pos 10 20',
 			'output out 1',
 			'moduleEnd',

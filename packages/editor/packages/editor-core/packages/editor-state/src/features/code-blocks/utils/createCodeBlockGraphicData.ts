@@ -52,7 +52,6 @@ export function createCodeBlockGraphicData(
 		projectPath,
 		disabled: false,
 		isHome: false,
-		isFavorite: false,
 		alwaysOnTop: false,
 		parsedDirectives: parseBlockDirectives(code),
 		widgets: {

@@ -541,7 +541,8 @@ The recommended pattern is one load per asset and sharing that memory from other
 
 ### `@favorite`
 
-Mark a code block as a favorite for quick navigation.
+`@8f4e/editor-plugin-favorites` marks code blocks for quick navigation. The default editor includes it; the minimal
+editor omits it. Core parses the directive as source metadata without providing favorite behavior.
 
 ```txt
 ; @favorite

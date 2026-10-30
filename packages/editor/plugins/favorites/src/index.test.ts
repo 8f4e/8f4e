@@ -3,7 +3,7 @@ import initState from '@8f4e/editor-state';
 import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
-import { toggleFavoritePlugin } from './index';
+import { favoritesPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 
@@ -15,7 +15,7 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 	});
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const disposePlugin = installed
-		? toggleFavoritePlugin.setup({
+		? favoritesPlugin.setup({
 				store,
 				events,
 				menus: store.menus,
@@ -50,7 +50,7 @@ afterEach(() => {
 	vi.useRealTimers();
 });
 
-describe('toggle favorite plugin', () => {
+describe('favorites plugin', () => {
 	it.each([
 		['module target', 'moduleEnd'],
 		['function target', 'functionEnd'],
@@ -62,7 +62,6 @@ describe('toggle favorite plugin', () => {
 		const test = setup(code);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		expect(test.block.code.slice(0, 2)).toEqual([code[0], '; @favorite']);
-		expect(test.block.isFavorite).toBe(true);
 		expect(test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(test.block);
 	});
 
@@ -70,9 +69,8 @@ describe('toggle favorite plugin', () => {
 		const test = setup(['module target', '; @favorite @pos 2 3', '; @favorite', 'int value 1', 'moduleEnd']);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		expect(test.block.code).toEqual(['module target', '; @pos 2 3', 'int value 1', 'moduleEnd']);
-		expect(test.block.isFavorite).toBe(false);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
-		expect(test.block.isFavorite).toBe(true);
+		expect(test.block.code).toContain('; @favorite');
 	});
 
 	it('updates the timestamp without announcing changed compilation inputs', async () => {
@@ -126,7 +124,7 @@ describe('toggle favorite plugin', () => {
 		test.state.contextMenu.highlightedItem = index;
 		test.events.dispatch('mousedown', { x: test.block.x + 8, y: test.block.y + 8, stopPropagation: false });
 		expect(test.state.contextMenu.open).toBe(false);
-		expect(test.block.isFavorite).toBe(true);
+		expect(test.block.code).toContain('; @favorite');
 		expect(other.code).toEqual(originalOtherCode);
 		await test.openMenu();
 		expect(test.state.contextMenu.items.find(item => item.action === 'toggleFavoriteDirective')?.title).toContain(
@@ -152,22 +150,99 @@ describe('toggle favorite plugin', () => {
 	});
 
 	it.each([false, true])('has no menu or handler when omitted or disposed: installed=%s', async installed => {
-		const test = setup(undefined, installed);
+		const test = setup(['module target', '; @favorite', 'moduleEnd'], installed);
+		const code = [...test.block.code];
 		if (installed) test.disposePlugin();
 		await test.openMenu();
 		expect(test.state.contextMenu.items.some(item => item.action === 'toggleFavoriteDirective')).toBe(false);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
-		expect(test.block.isFavorite).toBe(false);
+		expect(test.block.code).toEqual(code);
+		test.events.dispatch('contextmenu', { x: 600, y: 400 });
+		await Promise.resolve();
+		expect(test.state.contextMenu.items.some(item => item.payload?.menu === 'favoritesMenu')).toBe(false);
+		expect(test.state.envConstantContributions.favorites).toBeUndefined();
+		expect(test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'env')!.code).not.toContain(
+			'; @favorite'
+		);
+		test.events.dispatch('jumpToFavoriteCodeBlock', { creationIndex: test.block.creationIndex });
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+	});
+
+	it('lists standalone and trailing favorites once per block in creation order', async () => {
+		const test = setup([
+			'module target',
+			'; @favorite @alwaysOnTop @pos 50 20',
+			'; @favorite',
+			'moduleEnd',
+			'module second',
+			'int value 1 ; @favorite',
+			'moduleEnd',
+			'module other',
+			'moduleEnd',
+		]);
+		test.events.dispatch('openSubMenu', { menu: 'favoritesMenu' });
+		await Promise.resolve();
+		const items = test.state.contextMenu.items.filter(item => item.action === 'jumpToFavoriteCodeBlock');
+		expect(items).toMatchObject([
+			{ title: expect.stringContaining('constants env') },
+			{ title: expect.stringContaining('module target') },
+			{ title: expect.stringContaining('module second') },
+		]);
+		expect(items.map(item => item.payload?.creationIndex)).toEqual(
+			['env', 'target', 'second'].map(
+				name => test.state.codeBlockRendering.codeBlocks.find(block => block.name === name)!.creationIndex
+			)
+		);
+	});
+
+	it('offers navigation in view mode and jumps without changing project or compiler revisions', async () => {
+		const test = setup(['module target', '; @favorite @pos 40 20', 'moduleEnd'], true, 'view');
+		test.events.dispatch('contextmenu', { x: 600, y: 400 });
+		await Promise.resolve();
+		expect(test.state.contextMenu.items.some(item => item.payload?.menu === 'favoritesMenu')).toBe(true);
+		test.events.dispatch('openSubMenu', { menu: 'favoritesMenu' });
+		await Promise.resolve();
+		const revision = test.state.projectChange.revision;
+		const compilerRevision = test.state.compilerInputRevision;
+		test.state.contextMenu.highlightedItem = test.state.contextMenu.items.findIndex(
+			item => item.payload?.creationIndex === test.block.creationIndex
+		);
+		test.events.dispatch('mousedown', { x: 8, y: 8, stopPropagation: false });
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block);
+		expect(test.state.viewport.y).toBe(test.block.y + test.block.cursor.y - test.state.viewport.height / 2);
+		expect(test.state.projectChange.revision).toBe(revision);
+		expect(test.state.compilerInputRevision).toBe(compilerRevision);
+	});
+
+	it('uses the current project level and shows an empty placeholder after removing its last favorite', async () => {
+		const test = setup(['group target', 'module nested', '; @favorite', 'moduleEnd', 'groupEnd']);
+		const openFavorites = async () => {
+			test.events.dispatch('openSubMenu', { menu: 'favoritesMenu' });
+			await Promise.resolve();
+		};
+		await openFavorites();
+		expect(test.state.contextMenu.items.some(item => item.title?.includes('nested'))).toBe(false);
+		test.events.dispatch('openProjectGroup', { codeBlock: test.block });
+		await openFavorites();
+		const nested = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'nested')!;
+		expect(test.state.contextMenu.items).toContainEqual(
+			expect.objectContaining({ payload: { creationIndex: nested.creationIndex } })
+		);
+		test.events.dispatch('toggleFavoriteDirective', { codeBlock: nested });
+		await openFavorites();
+		expect(test.state.contextMenu.items.filter(item => item.disabled)).toEqual([
+			expect.objectContaining({ title: expect.stringContaining('No favorites'), disabled: true }),
+		]);
 	});
 
 	it('isolates registrations and edits between editor instances', () => {
 		const first = setup();
 		const second = setup();
 		first.events.dispatch('toggleFavoriteDirective', { codeBlock: first.block });
-		expect(first.block.isFavorite).toBe(true);
-		expect(second.block.isFavorite).toBe(false);
+		expect(first.block.code).toContain('; @favorite');
+		expect(second.block.code).not.toContain('; @favorite');
 		first.disposePlugin();
 		second.events.dispatch('toggleFavoriteDirective', { codeBlock: second.block });
-		expect(second.block.isFavorite).toBe(true);
+		expect(second.block.code).toContain('; @favorite');
 	});
 });

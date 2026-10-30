@@ -8,7 +8,7 @@ const contributedDirectives: EditorDirectiveDefinition[] = [
 		name: 'inlineDisplay',
 		aliases: ['inline'],
 		apply: (_, draft) => {
-			draft.blockState.isFavorite = true;
+			draft.blockState.alwaysOnTop = true;
 		},
 	},
 	{
@@ -39,9 +39,9 @@ describe('directive registry', () => {
 	});
 
 	it('derives block state and display rows', () => {
-		const code = ['module foo', '; @disabled @home @favorite', '; @rowDisplay 3', 'moduleEnd'];
+		const code = ['module foo', '; @disabled @home @marker', '; @rowDisplay 3', 'moduleEnd'];
 		const result = deriveDirectiveState(code, parseBlockDirectives(code), {}, definitions);
-		expect(result.blockState).toEqual({ disabled: true, isHome: true, homeAlignment: 'center', isFavorite: true });
+		expect(result.blockState).toEqual({ disabled: true, isHome: true, homeAlignment: 'center' });
 		expect(result.displayModel.displayRowToSourceLineIndex).toEqual([0, 1, 2, 3]);
 	});
 
@@ -53,7 +53,6 @@ describe('directive registry', () => {
 			disabled: false,
 			isHome: true,
 			homeAlignment: 'center',
-			isFavorite: false,
 		});
 	});
 
@@ -94,9 +93,9 @@ describe('directive registry', () => {
 	});
 
 	it('applies standalone and trailing directives and aliases uniformly', () => {
-		const code = ['; @inline', 'int other 1 ; @rowDisplay 3 @home @favorite'];
+		const code = ['; @inline', 'int other 1 ; @rowDisplay 3 @home @marker'];
 		const derived = deriveDirectiveState(code, parseBlockDirectives(code), {}, definitions);
-		expect(derived.blockState.isFavorite).toBe(true);
+		expect(derived.blockState.alwaysOnTop).toBe(true);
 		expect(derived.blockState.disabled).toBe(true);
 		expect(derived.blockState.isHome).toBe(true);
 	});

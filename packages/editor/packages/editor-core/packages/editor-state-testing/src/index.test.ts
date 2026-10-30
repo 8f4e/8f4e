@@ -9,7 +9,7 @@ describe('editor-state testing utilities', () => {
 			y: 32,
 			width: 80,
 			height: 40,
-			code: ['module synth', '; @home @favorite', 'moduleEnd'],
+			code: ['module synth', '; @home @marker', 'moduleEnd'],
 		});
 
 		expect(block.gridX).toBe(2);

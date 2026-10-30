@@ -31,8 +31,9 @@
   their factories only inside `load()`, using the supplied live memory writer. Supply runtime plugins with compiler artifact getters and the optional shared AudioContext. Each runtime plugin imports its own worker/worklet assets and owns browser API use.
   Mounting and initial project notifications do not wait for lazy plugin imports. The loader owns project-load scans,
   its manual scan menu, late installation, and disposal; core keeps the ordinary plugin contract.
-- Include `toggleFavoritePlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Core does
-  not install these editing actions or their menus.
+- Include `favoritesPlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Favorites stays
+  fixed so its editing action is available before the first directive. The plugin owns favorite detection, both menus,
+  navigation actions, and its env-source marker; core does not install favorite behavior.
 - Include `groupingPlugin` after the execution-toggle plugin. It owns editor `@group` behavior, including drag and
   paste policies and group menus; it has no browser factory dependencies.
 - Load `createBinaryAssetsPlugin({ getMemoryBytes })` from the lazy registry with a getter for current compiler memory.

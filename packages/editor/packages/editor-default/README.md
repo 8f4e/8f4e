@@ -52,7 +52,7 @@ request may still be pending, so hosts can dispose that editor when navigating e
 provide their own asynchronous loading notifications.
 
 The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
-`@8f4e/editor-plugin-toggle-favorite` for Favorite/Unfavorite editing,
+`@8f4e/editor-plugin-favorites` for favorite directives, editing, and navigation,
 `@8f4e/editor-plugin-grouping` for visual `@group` membership, dragging, paste renaming, and group menus,
 `@8f4e/editor-plugin-remove-memory-connections` for disconnecting intermodular memory defaults,
 `@8f4e/editor-plugin-switch` for the switch widget, `@8f4e/editor-plugin-button` for momentary buttons,

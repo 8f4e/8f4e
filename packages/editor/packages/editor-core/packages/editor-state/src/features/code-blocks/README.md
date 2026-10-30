@@ -19,10 +19,10 @@ Switch, button, and waveform features are provided by `@8f4e/editor-plugin-switc
 slider also live in their own `@8f4e/editor-plugin-<name>` packages. Core carries no derived data or drawers for these
 features; the default composition selects and installs them.
 
-Favorite/Unfavorite editing and Remove connections are provided by `@8f4e/editor-plugin-toggle-favorite` and
+Favorites and Remove connections are provided by `@8f4e/editor-plugin-favorites` and
 `@8f4e/editor-plugin-remove-memory-connections`. They own their action handlers and block-menu contributions.
-Core still derives `isFavorite` from directives and provides favorite navigation; generic directive editing remains
-available through the public `removeDirective` helper.
+The favorites plugin reads cached directives and owns its navigation submenu. Core exposes generic block jumping
+and directive editing through public helpers.
 
 Visual grouping through `; @group <name> [nonstick]` belongs to `@8f4e/editor-plugin-grouping`, including group menus,
 actions, drag-target selection, and paste collision renaming. Membership stays private to that plugin. Core dispatches

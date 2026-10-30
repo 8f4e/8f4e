@@ -82,7 +82,9 @@ test('reveals a successfully loaded empty project', async () => {
 });
 
 test('keeps live editing available with the minimal project menu', async () => {
-	const view = setup({ minimal: async () => new Response(source.replace('int value 1', '; @pos 4 10\nint value 1')) });
+	const view = setup({
+		minimal: async () => new Response(source.replace('int value 1', '; @pos 4 10\n; @favorite\nint value 1')),
+	});
 	const editor = await view.mounted();
 	const canvas = view.panel().querySelector('canvas')!;
 	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
@@ -102,6 +104,7 @@ test('keeps live editing available with the minimal project menu', async () => {
 		expect(menu.some(item => item.action === action)).toBe(false);
 	}
 	expect(menu.some(item => item.title === 'Add Built-in Block')).toBe(false);
+	expect(menu.some(item => item.payload?.menu === 'favoritesMenu')).toBe(false);
 	editor.pauseRendering();
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot('minimal-project-menu');

@@ -48,12 +48,6 @@ export const mainMenu = (state: State): ContextMenuItem[] => [
 				},
 			]
 		: []),
-	{
-		title: 'Jump to...',
-		action: 'openSubMenu',
-		payload: { menu: 'favoritesMenu' },
-		close: false,
-	},
 	...(state.editorMode === 'edit' && state.featureFlags.projectCreation ? [{ divider: true }] : []),
 	...(state.editorMode === 'edit' && state.featureFlags.projectCreation
 		? [{ title: 'New Project', action: 'new', close: true }]

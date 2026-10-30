@@ -137,7 +137,10 @@ export type { ClipboardCodeBlock } from './features/code-blocks/features/clipboa
 export { serializeCodeBlocksToClipboard } from './features/code-blocks/features/clipboard/clipboardUtils';
 export type { TransformPastedCodeBlocksEvent } from './features/code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 export type { ResolveCodeBlockDragTargetsEvent } from './features/code-blocks/features/codeBlockDragger/effect';
-export { navigateToCodeBlockInDirection } from './features/code-blocks/features/codeBlockNavigation/effect';
+export {
+	jumpToCodeBlock,
+	navigateToCodeBlockInDirection,
+} from './features/code-blocks/features/codeBlockNavigation/effect';
 export {
 	removeDirective,
 	updateDirectiveArgs,

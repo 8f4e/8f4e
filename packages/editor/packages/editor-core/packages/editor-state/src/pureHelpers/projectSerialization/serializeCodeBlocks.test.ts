@@ -220,7 +220,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 
 		scope.code[0] = 'pass changed';
 		module.code[1] = 'int value 3';
-		group.code.splice(1, 0, '; @favorite');
+		group.code.splice(1, 0, '; @marker');
 		child.code[1] = 'int value 4';
 		expect(saved.code).toEqual(['pass env']);
 		expect(saved.modules[0].code).toEqual(['module root', 'int value 1', 'moduleEnd']);
@@ -233,7 +233,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 		saved.groups[0].modules[0].code[1] = 'int value 6';
 		expect(scope.code).toEqual(['pass changed']);
 		expect(module.code).toEqual(['module root', 'int value 3', 'moduleEnd']);
-		expect(group.code).toEqual(['group voice', '; @favorite', 'groupEnd']);
+		expect(group.code).toEqual(['group voice', '; @marker', 'groupEnd']);
 		expect(child.code).toEqual(['module child', 'int value 4', 'moduleEnd']);
 		expect(other.code).toEqual(['pass env']);
 		expect(other.modules[0].code[1]).toBe('int value 1');

@@ -92,7 +92,7 @@ describe('parsePos', () => {
 	});
 
 	it('ignores other directives and only parses @pos', () => {
-		const code = ['module test', '; @group myGroup', '; @pos 10 20', '; @favorite', 'moduleEnd'];
+		const code = ['module test', '; @group myGroup', '; @pos 10 20', '; @marker', 'moduleEnd'];
 		const result = runParsePos(code);
 		expect(result).toEqual({ x: 10, y: 20 });
 	});

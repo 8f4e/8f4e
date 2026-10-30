@@ -33,10 +33,10 @@ describe('parseBlockDirectives', () => {
 	});
 
 	it('should record the correct sourceLineIndex for each directive', () => {
-		const code = ['module test', '; @pos 5 10', 'push 1', '; @favorite', 'moduleEnd'];
+		const code = ['module test', '; @pos 5 10', 'push 1', '; @marker', 'moduleEnd'];
 		expect(parseBlockDirectives(code)).toEqual([
 			{ prefix: '@', name: 'pos', args: ['5', '10'], sourceLineIndex: 1, sourceLine: '; @pos 5 10', isTrailing: false },
-			{ prefix: '@', name: 'favorite', args: [], sourceLineIndex: 3, sourceLine: '; @favorite', isTrailing: false },
+			{ prefix: '@', name: 'marker', args: [], sourceLineIndex: 3, sourceLine: '; @marker', isTrailing: false },
 		]);
 	});
 
@@ -62,11 +62,11 @@ describe('parseBlockDirectives', () => {
 	});
 
 	it('should parse multiple directives from a block', () => {
-		const code = ['; @pos 0 0', '; @disabled', '; @favorite'];
+		const code = ['; @pos 0 0', '; @disabled', '; @marker'];
 		expect(parseBlockDirectives(code)).toEqual([
 			{ prefix: '@', name: 'pos', args: ['0', '0'], sourceLineIndex: 0, sourceLine: '; @pos 0 0', isTrailing: false },
 			{ prefix: '@', name: 'disabled', args: [], sourceLineIndex: 1, sourceLine: '; @disabled', isTrailing: false },
-			{ prefix: '@', name: 'favorite', args: [], sourceLineIndex: 2, sourceLine: '; @favorite', isTrailing: false },
+			{ prefix: '@', name: 'marker', args: [], sourceLineIndex: 2, sourceLine: '; @marker', isTrailing: false },
 		]);
 	});
 
@@ -77,21 +77,21 @@ describe('parseBlockDirectives', () => {
 	});
 
 	it('should parse multiple directives from a single comment line', () => {
-		expect(parseBlockDirectives(['; @pos 1 2 @favorite'])).toEqual([
+		expect(parseBlockDirectives(['; @pos 1 2 @marker'])).toEqual([
 			{
 				prefix: '@',
 				name: 'pos',
 				args: ['1', '2'],
 				sourceLineIndex: 0,
-				sourceLine: '; @pos 1 2 @favorite',
+				sourceLine: '; @pos 1 2 @marker',
 				isTrailing: false,
 			},
 			{
 				prefix: '@',
-				name: 'favorite',
+				name: 'marker',
 				args: [],
 				sourceLineIndex: 0,
-				sourceLine: '; @pos 1 2 @favorite',
+				sourceLine: '; @pos 1 2 @marker',
 				isTrailing: false,
 			},
 		]);
@@ -111,13 +111,13 @@ describe('parseBlockDirectives', () => {
 	});
 
 	it('should ignore dash continuation comments without a previous directive', () => {
-		expect(parseBlockDirectives(['; - orphan', '; @favorite'])).toEqual([
+		expect(parseBlockDirectives(['; - orphan', '; @marker'])).toEqual([
 			{
 				prefix: '@',
-				name: 'favorite',
+				name: 'marker',
 				args: [],
 				sourceLineIndex: 1,
-				sourceLine: '; @favorite',
+				sourceLine: '; @marker',
 				isTrailing: false,
 			},
 		]);
