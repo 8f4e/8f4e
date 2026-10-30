@@ -1,13 +1,4 @@
-import type { RenderHooks } from 'glugglugglug';
 import { vi } from 'vitest';
-
-/** Creates a render-plugin host backed by a focused fake WebGL2 context. */
-export function createPluginHost(): { gl: FakeWebGl; hooks: RenderHooks } {
-	return {
-		gl: createFakeWebGl(),
-		hooks: { preDraw: [], postDraw: [] },
-	};
-}
 
 /** Creates the WebGL2 surface shared by plugin unit tests. */
 export function createFakeWebGl() {
@@ -23,7 +14,6 @@ export function createFakeWebGl() {
 		LINK_STATUS: 0x8b82,
 		ARRAY_BUFFER: 0x8892,
 		STATIC_DRAW: 0x88e4,
-		DYNAMIC_DRAW: 0x88e8,
 		FLOAT: 0x1406,
 		UNSIGNED_BYTE: 0x1401,
 		FRAMEBUFFER: 0x8d40,
@@ -79,10 +69,8 @@ export function createFakeWebGl() {
 		bindVertexArray: vi.fn(),
 		bindBuffer: vi.fn(),
 		bufferData: vi.fn(),
-		bufferSubData: vi.fn(),
 		enableVertexAttribArray: vi.fn(),
 		vertexAttribPointer: vi.fn(),
-		vertexAttribDivisor: vi.fn(),
 		bindFramebuffer: vi.fn(),
 		viewport: vi.fn(),
 		enable: vi.fn(),
@@ -101,9 +89,6 @@ export function createFakeWebGl() {
 		uniform2f: vi.fn(),
 		uniform4f: vi.fn(),
 		drawArrays: vi.fn(),
-		drawArraysInstanced: vi.fn(),
 	};
 	return gl as unknown as typeof gl & WebGL2RenderingContext;
 }
-
-export type FakeWebGl = ReturnType<typeof createFakeWebGl>;

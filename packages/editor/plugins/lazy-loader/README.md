@@ -20,7 +20,7 @@ const loader = createLazyPluginLoaderPlugin([
 Pass the loader alongside fixed plugins when constructing the editor. Both default and minimal editors use `view`
 scope for plot, wave, meter, bars, switch, button, piano, slider, and crossfade. Their registries supply the editor's
 live memory writer to control factories after their implementations load. MIDI input, binary assets, and
-audio/worker/test runtime plugins use `project` scope. Other plugins remain fixed.
+audio/worker/test/texture runtime plugins use `project` scope. Other plugins remain fixed.
 
 Each `LazyEditorPlugin` entry contains `id`, required `scope: 'view' | 'project'`, `matches(directives)`, and
 `load(): Promise<EditorPlugin>`. Keep IDs unique and implementation imports inside `load`. The loader reads core's

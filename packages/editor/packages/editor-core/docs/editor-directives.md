@@ -125,14 +125,14 @@ Supported paths:
 
 - `font` - editor font used for rendering code blocks and UI text. Font changes refresh block layouts without
   recentering the viewport.
-- `runtime` - runtime host loaded for the project.
+- `audioRuntime.<field>` / `workerRuntime.<field>` / `testRuntime.<field>` - independently enabled execution runtimes.
 - `color.<path>` - editor base palette color. See [Color Paths](./color-paths.md) for the full list of color paths.
 - `export.fileName` - base file name used by editor export actions.
 - `bin.<id>.url` / `bin.<id>.memory` - binary asset URL and memory load target.
 - `bin.<id>.memories.<name>` - additional memory load targets for the same binary asset.
 - `keyboard.keyCodeMemory` / `keyboard.keyPressedMemory` - memory ids for browser keyboard state.
 - `midi.inputs.<id>.port` / `midi.inputs.<id>.callback` - browser MIDI input bindings.
-- `webUI.overlay.<field>` - WebAssembly-generated RGBA texture centered over the editor.
+- `textureRuntime.<field>` - opt-in editor-frame execution with RGBA framebuffer rendering.
 
 Examples:
 
@@ -167,28 +167,6 @@ effective configuration as soon as the move completes. Selecting a block or brin
 precedence. Configuration uses spatial order across block types, even though the saved file groups blocks by type.
 Use distinct grid positions for intentional overrides: creation indices are rebuilt when importing `.8f4e` text, so
 exact-position ties between different block types can resolve differently after saving and reopening.
-
-#### WASM editor overlay
-
-The web UI can call an exported WebAssembly function every editor frame, read an RGBA8 pixel buffer from memory, and
-draw it over the editor. Configure the export name, qualified memory target, source dimensions, and horizontal
-position:
-
-```txt
-; @config webUI.overlay.entry renderFrame
-; @config webUI.overlay.target screen:rgba
-; @config webUI.overlay.width 64
-; @config webUI.overlay.height 32
-; @config webUI.overlay.magnification 4
-; @config webUI.overlay.position center
-```
-
-The target contains `width * height * 4` bytes in top-to-bottom RGBA order. Pixel alpha controls how strongly the
-overlay covers the editor: `0` is transparent and `255` is opaque. The texture always uses nearest-neighbor filtering
-and is vertically centered. `webUI.overlay.position` accepts `left`, `center`, or `right`; these place the texture in
-the center of the left half, the full viewport, or the right half respectively. It defaults to `center`. An optional
-numeric `webUI.overlay.magnification` of at least `1` multiplies both displayed dimensions while preserving the source
-aspect ratio; for example, `4` displays each source pixel as a 4 × 4 block.
 
 Supported `font` values:
 
@@ -929,7 +907,7 @@ Set the base file name used by editor export actions.
 
 ### Runtime plugins
 
-Audio, worker, and test runtimes are independently enabled plugins:
+Audio, worker, test, and texture runtimes are independently enabled plugins:
 
 ```txt
 ; @config audioRuntime.enabled true
@@ -942,12 +920,39 @@ Audio, worker, and test runtimes are independently enabled plugins:
 ; @config workerRuntime.sampleRate 50
 ; @config workerRuntime.entry main
 ; @config testRuntime.enabled true
+; @config textureRuntime.enabled true
 ```
 
-The audio entry defaults to `buffer` and the worker entry to `main`. Each runtime's `enabled` default is false.
-Both contribute a sample-rate constant named `SAMPLE_RATE` by default; use their `sampleRateConstantName` settings
+The audio entry defaults to `buffer`; worker and texture entries default to `main`. Each runtime's `enabled` default
+is false.
+Audio and worker runtimes contribute a sample-rate constant named `SAMPLE_RATE` by default; use their
+`sampleRateConstantName` settings
 when running them together. Audio also contributes `AUDIO_BUFFER_SIZE`, configurable through
 `audioRuntime.bufferSizeConstantName`. Info namespaces are fixed: `audioRuntime`, `workerRuntime`, and `testRuntime`.
 The default and minimal editors automatically import these plugins when their configuration roots appear, including
 after editing. Runtime signals are checked across the complete project tree, including unopened groups, using cached
 parsed directives. Each plugin stays installed until editor disposal and owns its schema and cleanup.
+
+#### Texture runtime
+
+The `@8f4e/editor-plugin-texture-runtime` runtime calls an exported WebAssembly function every editor frame, reads an RGBA8
+pixel buffer from shared compiler memory, and draws it over the editor. Both editor compositions load it automatically
+when the project uses `textureRuntime` configuration. Execution defaults to disabled; enable it explicitly and configure
+the export name, qualified memory target, source dimensions, and horizontal position:
+
+```txt
+; @config textureRuntime.enabled true
+; @config textureRuntime.entry renderFrame
+; @config textureRuntime.target screen:rgba
+; @config textureRuntime.width 64
+; @config textureRuntime.height 32
+; @config textureRuntime.magnification 4
+; @config textureRuntime.position center
+```
+
+The target contains `width * height * 4` bytes in top-to-bottom RGBA order. Pixel alpha controls how strongly the
+overlay covers the editor: `0` is transparent and `255` is opaque. The texture always uses nearest-neighbor filtering
+and is vertically centered. `textureRuntime.position` accepts `left`, `center`, or `right`; these place the texture in
+the center of the left half, the full viewport, or the right half respectively. It defaults to `center`. An optional
+numeric `textureRuntime.magnification` of at least `1` multiplies both displayed dimensions while preserving the source
+aspect ratio; for example, `4` displays each source pixel as a 4 × 4 block.

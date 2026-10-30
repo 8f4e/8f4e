@@ -13,8 +13,8 @@
   Visual/control plugins use the current project level; runtime, MIDI, and asset plugins use the entire project tree.
   Both editor compositions keep explicit loading scopes, lazy signals, and dynamic imports in `src/lazy-plugins.ts`
   for plot, wave, meter, bars, switch, button, piano, slider, crossfade, MIDI input, binary assets, and the
-  audio/worker/test runtimes. MIDI and assets match raw `midi`
-  and `bin` config roots before their schemas load. Other plugins remain fixed.
+  audio/worker/test/texture runtimes. MIDI, assets, and texture execution match raw `midi`,
+  `bin`, and `textureRuntime` config roots before their schemas load. Other plugins remain fixed.
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
   selection, and paste collision renaming. Nested language-level project groups remain core project structure.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`
@@ -27,7 +27,7 @@
 - Editor colors: `@8f4e/editor-palette` owns the pure base palette and predefined shades. Configure only shared base
   colors; core and plugin drawers select generic palette tokens. Shades are uploaded as premultiplied colors in a GPU
   uniform buffer (up to 256 entries); the sprite atlas contains color-independent R8 binary visibility masks.
-- Rendering plugins: web-ui owns the procedural background, its font-specific dot settings, and RGBA texture layer under `src/plugins/`.
+- Rendering plugins: web-ui owns the procedural background and its font-specific dot settings under `src/plugins/`.
   `editor-plugin-connectors` owns input/output widgets, wire lookup, and the complete line renderer. Web-ui provides
   generic render-layer registration, palette updates, memory release, and disposal.
   Glugglugglug owns sprite rendering and generic render hooks. The sprite generator supplies only a uniform grid of
@@ -144,11 +144,17 @@ Choose errors by detection phase:
 
 <!-- nx configuration end-->
 
-- Audio, worker, and test execution are ordinary lazy plugins in `packages/editor/plugins/audio-runtime`,
-  `worker-runtime`, and `test-runtime`. The default editor matches their raw `@config` roots before their schemas load.
+- Audio, worker, test, and texture execution are ordinary lazy plugins in `packages/editor/plugins/audio-runtime`,
+  `worker-runtime`, `test-runtime`, and `texture-runtime`. The default editor matches their raw `@config` roots before their schemas load.
   Each owns `enabled` (default false), schema registration, compiler readiness, execution, and cleanup. They may run
   together against shared compiler memory. Keep worker/worklet execution code in the existing runtime packages.
-- Runtime constant names are configured with `sampleRateConstantName` (default `SAMPLE_RATE`) and audio's
+- Audio and worker runtime constant names are configured with `sampleRateConstantName` (default `SAMPLE_RATE`) and audio's
   `bufferSizeConstantName` (default `AUDIO_BUFFER_SIZE`). Each contributes under its own environment key. Keep info
   namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
   selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.
+
+- Per-frame WASM execution and framebuffer rendering belong entirely to `editor-plugin-texture-runtime`: `textureRuntime` config schema,
+  WebAssembly execution, RGBA shaders and textures, uploads, and placement. Both compositions load it lazily from
+  the raw `textureRuntime` config root with project scope and compiler getters. Core consumes compilation memory
+  for generic views; web-ui only owns generic render-layer lifecycle. Keep configuration and instantiation out
+  of the render hot path, and register texture drawing after connectors to preserve overlay ordering.

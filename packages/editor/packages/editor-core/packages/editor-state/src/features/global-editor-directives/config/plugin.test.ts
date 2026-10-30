@@ -36,11 +36,11 @@ describe('@config directive', () => {
 
 	it('records config entries with dash continuation arguments', () => {
 		const result = resolveGlobalEditorDirectives([
-			createParsedBlock(['module a', '; @config', '; - webUI.overlay.target', '; - frame:buffer', 'moduleEnd']),
+			createParsedBlock(['module a', '; @config', '; - settings.target', '; - frame:buffer', 'moduleEnd']),
 		]);
 
 		expect(result.resolved.configEntries).toEqual([
-			{ path: 'webUI.overlay.target', value: 'frame:buffer', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'settings.target', value: 'frame:buffer', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
 		]);
 		expect(result.errors).toEqual([]);
 	});

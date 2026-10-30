@@ -1,5 +1,4 @@
-import type { RenderHook, RenderPluginHost } from 'glugglugglug';
-import { createProgram, prepareRenderPass, removeHook, requireResource, requireUniform } from '../webgl';
+import { createProgram, prepareRenderPass, requireResource, requireUniform } from '@8f4e/web-ui';
 import { createRectangleGeometry, deleteRectangleGeometry, type RectangleGeometry } from './geometry';
 
 const textureVertexShaderSource = `#version 300 es
@@ -35,9 +34,8 @@ const textureFragmentShaderSource = `#version 300 es
 `;
 
 /** Uploads and draws caller-owned RGBA8 pixels in an overlay above sprites and lines. */
-export class RgbaTextureLayer {
+export class RgbaTextureDrawer {
 	private readonly gl: WebGL2RenderingContext;
-	private readonly hooks: RenderPluginHost['hooks'];
 	private readonly geometry: RectangleGeometry;
 	private readonly program: WebGLProgram;
 	private readonly pixelToClipLocation: WebGLUniformLocation;
@@ -46,22 +44,15 @@ export class RgbaTextureLayer {
 	private texture: WebGLTexture | null = null;
 	private width = 0;
 	private height = 0;
-	private drawCallback: ((layer: RgbaTextureLayer) => void) | null = null;
 	private destroyed = false;
 
-	/** Invokes the current layer callback from its overlay render phase. */
-	private readonly drawHook: RenderHook = () => {
-		this.drawCallback?.(this);
-	};
-
 	/**
-	 * Creates and attaches an initially empty overlay texture layer.
+	 * Creates the shader and rectangle used to draw framebuffer pixels.
 	 *
-	 * @param host - Engine or compatible render-plugin host.
+	 * @param gl - WebGL context that owns the resources.
 	 */
-	constructor(host: RenderPluginHost) {
-		this.gl = host.gl;
-		this.hooks = host.hooks;
+	constructor(gl: WebGL2RenderingContext) {
+		this.gl = gl;
 		const geometry = createRectangleGeometry(this.gl);
 		let program: WebGLProgram | null = null;
 		try {
@@ -78,21 +69,10 @@ export class RgbaTextureLayer {
 		}
 		this.geometry = geometry;
 		this.program = program;
-		this.hooks.postDraw.push(this.drawHook);
-	}
-
-	/**
-	 * Sets the callback that uploads and draws the current overlay after sprites and lines.
-	 *
-	 * @param callback - Per-frame texture update/draw callback.
-	 */
-	setDrawCallback(callback: (layer: RgbaTextureLayer) => void): void {
-		this.drawCallback = callback;
 	}
 
 	/** Uploads the overlay's RGBA8 pixels, reusing same-sized GPU storage. */
 	uploadRgba8Texture(data: Uint8Array, width: number, height: number): void {
-		assertTextureInput(data, width, height);
 		const gl = this.gl;
 		const sizeChanged = this.texture === null || this.width !== width || this.height !== height;
 		if (this.texture === null) this.texture = requireResource(gl.createTexture(), 'RGBA8 overlay texture');
@@ -141,33 +121,14 @@ export class RgbaTextureLayer {
 		}
 	}
 
-	/** Detaches the hook and deletes the overlay's WebGL resources. */
+	/** Deletes the texture drawer's WebGL resources. */
 	destroy(): void {
 		if (this.destroyed) {
 			return;
 		}
 		this.destroyed = true;
-		removeHook(this.hooks.postDraw, this.drawHook);
 		this.releaseMemory();
 		this.gl.deleteProgram(this.program);
 		deleteRectangleGeometry(this.gl, this.geometry);
-		this.drawCallback = null;
-	}
-}
-
-/**
- * Validates cold RGBA upload dimensions and storage length.
- *
- * @param data - Pixel array to validate.
- * @param width - Requested texture width.
- * @param height - Requested texture height.
- */
-function assertTextureInput(data: Uint8Array, width: number, height: number): void {
-	if (!Number.isInteger(width) || width <= 0 || !Number.isInteger(height) || height <= 0) {
-		throw new RangeError('RGBA8 texture dimensions must be positive integers.');
-	}
-	const requiredByteLength = width * height * 4;
-	if (data.byteLength < requiredByteLength) {
-		throw new RangeError(`RGBA8 texture data is too small: expected at least ${requiredByteLength} bytes.`);
 	}
 }

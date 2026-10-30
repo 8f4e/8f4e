@@ -61,7 +61,6 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 							const publish = () =>
 								services.events.dispatch('compilationSucceeded', {
 									memoryRef: memory,
-									codeBuffer: compiled.codeBuffer,
 								});
 							services.events.on('init', publish);
 							return () => services.events.off('init', publish);

@@ -112,11 +112,11 @@ describe('parseBlockDirectives', () => {
 	});
 
 	it('should append dash continuation comment arguments to the previous directive', () => {
-		expect(parseBlockDirectives(['; @config', '; - webUI.overlay.target', '; - frame:buffer'])).toEqual([
+		expect(parseBlockDirectives(['; @config', '; - settings.target', '; - frame:buffer'])).toEqual([
 			{
 				prefix: '@',
 				name: 'config',
-				args: ['webUI.overlay.target', 'frame:buffer'],
+				args: ['settings.target', 'frame:buffer'],
 				sourceLineIndex: 0,
 				sourceLine: '; @config',
 				isTrailing: false,
