@@ -26,7 +26,7 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/editor-state-testing": "*",
-    "vitest": "4.1.7",
+    "vitest": "4.1.11",
     "@8f4e/compiler": "*",
     "@8f4e/web-ui-render-projection": "*",
     "@vitest/browser-playwright": "4.1.7",

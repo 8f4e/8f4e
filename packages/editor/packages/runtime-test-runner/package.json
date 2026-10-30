@@ -35,6 +35,6 @@
     "@8f4e/compiler": "*",
     "@8f4e/config": "*",
     "@types/node": "24.13.2",
-    "vitest": "4.1.7"
+    "vitest": "4.1.11"
   }
 }
