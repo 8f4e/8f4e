@@ -898,5 +898,20 @@
 			"gzip": 762,
 			"brotli": 652
 		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-10-30T13:18:41.305Z",
+		"commit": "6c7007b5bee9baabd273f732f14b7ea42b3762b6",
+		"branch": "",
+		"releaseTag": "@8f4e/sprite-generator@2.0.35",
+		"packageName": "@8f4e/sprite-generator",
+		"projectName": "@8f4e/sprite-generator",
+		"version": "2.0.35",
+		"bytes": {
+			"raw": 1709,
+			"gzip": 762,
+			"brotli": 652
+		}
 	}
 ]
