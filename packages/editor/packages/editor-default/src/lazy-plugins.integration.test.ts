@@ -146,7 +146,10 @@ it.each([
 	['a texture directive', 'texture points mono 2 2 2'],
 ])('loads the texture runtime from %s in an unopened group', async (_label, directive) => {
 	const { state, entries } = restoreSession(directive, true);
-	await vi.waitFor(() => expect(entries.find(entry => entry.id === 'texture-runtime')!.load).toHaveBeenCalledOnce());
-	expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+	await vi.waitFor(() => {
+		expect(state.editorConfigSchemaContributions.textureRuntime).toBeDefined();
+		expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+	});
+	expect(entries.find(entry => entry.id === 'texture-runtime')!.load).toHaveBeenCalledOnce();
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['texture-runtime']);
 });
