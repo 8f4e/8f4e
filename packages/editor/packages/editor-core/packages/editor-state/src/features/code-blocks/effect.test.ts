@@ -159,23 +159,6 @@ describe('code block rendering home directive', () => {
 		});
 	});
 
-	it('clears output addresses when the rendered project slice changes', () => {
-		const state = createMockState();
-		state.codeBlockRendering.outputsByWordAddress.set(40, {} as never);
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-		codeBlockRenderingEffect(
-			store,
-			events,
-			directiveDefinitions,
-			createLayoutRegistry(() => {})
-		);
-
-		store.set('codeBlockRendering.codeBlocks', []);
-
-		expect(state.codeBlockRendering.outputsByWordAddress.size).toBe(0);
-	});
-
 	it('renders project-level includes blocks from imported project state', () => {
 		const includesBlock = ['includes', 'include std/events/risingEdge', 'includesEnd'];
 		const state = createMockState({

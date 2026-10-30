@@ -13,31 +13,24 @@ depth testing must use a framebuffer with their own depth attachment.
 
 ## Rendering plugins
 
-Web-ui owns its rendering plugins under `src/plugins/`: `background` draws the canvas pattern, `line-drawer` batches
-connection wires with a Bresenham staircase and no antialiasing, and `rgba-texture-layer` draws WebAssembly framebuffer
-overlays. They depend only on glugglugglug's `RenderPluginHost` context and hook contract. Glugglugglug owns the sprite
-renderer; it does not bundle these plugins.
+Web-ui owns its rendering plugins under `src/plugins/`: `background` draws the canvas pattern and
+`rgba-texture-layer` draws WebAssembly framebuffer overlays. They depend only on glugglugglug's `RenderPluginHost`
+context and hook contract. Glugglugglug owns the sprite renderer; it does not bundle these plugins.
 
 The plugins share shader compilation, required-uniform lookup, render-state setup, and hook removal helpers. Each
-plugin owns its resources and destruction. Web-ui initializes background and line rendering, creates texture layers
-only for configured overlays, and coordinates memory release and restoration. Backgrounds run in `preDraw`; lines
-run in `postDraw`, followed by configured texture overlays.
+plugin owns its resources and destruction. Web-ui initializes the background, creates texture layers only for
+configured overlays, and coordinates memory release and restoration. Backgrounds run in `preDraw`; registered editor
+render layers run in `postDraw`, followed by configured texture overlays. The connectors plugin owns all wire
+geometry, shaders, buffers, and drawing.
 
 The background precomposes dot colors over the base when the palette changes and draws one triangle. Each RGBA
 overlay owns one texture, uses nearest filtering, and takes opacity from its pixels. Pixel uploads reuse storage
 until the image dimensions change; memory release deletes the texture and the next upload recreates it.
 
-### Wire rasterization
-
-Wires follow a Bresenham staircase with one pixel per column for shallow angles or per row for steep angles.
-Thickness must be a positive integer number of pixels; fractional and non-positive widths throw a `RangeError`.
-Selected wires expand the staircase along its minor axis. Both endpoints snap to the nearest pixel and are included;
-reversing the endpoints preserves the same pixels. The comparison below enlarges pixels 3×, with the previous
-rectangle coverage on the left and Bresenham rendering on the right.
-
-![Wire rendering before and after Bresenham rasterization](images/bresenham-comparison.png)
-
 ## API
+
+`createEditorDrawerRegistry()` creates the per-editor registry for code-block drawers, overlays, and canvas-wide
+render layers. Pass that registry through `options.drawers` when initializing the renderer.
 
 ### `init(state, renderData, canvas, memoryViews, fontAtlas, palette, options?)`
 
@@ -58,7 +51,7 @@ Initializes the web UI renderer.
 
 - `resize(width, height)` - Resize the canvas
 - `loadFontAtlas(fontAtlas, font)` - Replace font masks and derived drawing data
-- `loadPalette(palette)` - Update GPU colors and wire colors without rebuilding masks
+- `loadPalette(palette)` - Update GPU colors and notify render layers without rebuilding masks
 - `renderFrame()` - Draw one frame on demand
 - `destroy()` - Release renderer and plugin resources
 
@@ -91,19 +84,14 @@ interface FontAtlas {
 
 The web-ui package reads from the editor state and render projection but does **not** mutate either. The nested
 `@8f4e/web-ui-render-projection` package subscribes to editor state changes and precalculates code-cell shape IDs and palette indices.
-Atlas and font changes are explicit and are applied through `loadFontAtlas()`. Theme-only changes use `loadPalette()` and retain the atlas and projected glyph IDs. Wire colors are refreshed from
-the same resolved palette. `DrawContext.drawFill()` uses the shared fill mask, `drawText()` uses fixed ASCII glyph IDs,
+Atlas and font changes are explicit and are applied through `loadFontAtlas()`. Theme-only changes use `loadPalette()` and retain the atlas and projected glyph IDs. Registered render layers receive the same resolved palette. `DrawContext.drawFill()` uses the shared fill mask, `drawText()` uses fixed ASCII glyph IDs,
 and both accept an explicit palette index. The renderer prepares up to 256 palette colors as premultiplied float32
 values in a 4 KiB uniform buffer, while `loadPalette()` continues accepting the resolved editor palette.
 The editor installs font grid dimensions into state before initializing or updating the view.
 Font changes replace the masks and update drawing metrics. Dot positions and sizes live beside the background plugin
 in `src/plugins/background/dot-settings.ts`; no background settings come from the font atlas.
 
-Input `[ ]` and output `[*]` connectors are composed at runtime from the shared fill and font sprites. Both use a
-three-cell `surfaceRaised2` background; input brackets use `primaryBase`, and output brackets use `secondaryBase`.
-The output star selects `primaryDark3`, `primaryDark2`, `primaryDark1`, `primaryBase`, `warningBase`, or `negativeBase`
-using the existing calibrated value scale. Each input submits three sprites and each output four, in the same sprite
-batch. The generator does not prerender connector icons.
+Input/output connector sprites and wires belong to `@8f4e/editor-plugin-connectors`.
 
 `@8f4e/editor-plugin-assertion-markers` uses the generic code-block drawer hook to draw passed/failed assertion
 indicators after source text. The renderer has no assertion-specific drawer or marker fields.

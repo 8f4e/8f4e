@@ -2,13 +2,13 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { assertionMarkersPlugin } from './index';
 
 describe('assertion markers plugin', () => {
 	it('draws current results and layout, and unregisters its drawer on disposal', () => {
-		const drawers = createCodeBlockDrawerRegistry();
+		const drawers = createEditorDrawerRegistry();
 		const events = createMockEventDispatcher();
 		const store = initState(events, { callbacks: {} });
 		const dispose = assertionMarkersPlugin.setup({

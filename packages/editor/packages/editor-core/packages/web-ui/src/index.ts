@@ -5,21 +5,25 @@ import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { Engine } from 'glugglugglug';
 import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
-import drawConnections from './drawers/codeBlocks/widgets/connections';
 import drawContextMenu from './drawers/contextMenu';
 import drawDialog from './drawers/dialog';
 import drawModeOverlay from './drawers/modeOverlay';
-import type { CodeBlockDrawerRegistry } from './drawers/registry';
+import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/registry';
 import { createWasmOverlayTextureDrawer, type WasmOverlayTextureOptions } from './drawers/wasmOverlayTexture';
 import BackgroundRenderer from './plugins/background';
-import { LineDrawer } from './plugins/line-drawer';
 import { RgbaTextureLayer } from './plugins/rgba-texture-layer';
 import type { MemoryViews } from './types';
-import { resolveWireColors } from './wire-colors';
 
-export type { DrawContext } from './drawContext';
+export { DrawContext } from './drawContext';
 export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from './drawers/registry';
-export { createCodeBlockDrawerRegistry } from './drawers/registry';
+export { createEditorDrawerRegistry } from './drawers/registry';
+export { createProgram, prepareRenderPass, requireResource, requireUniform } from './plugins/webgl';
+export type {
+	EditorRenderLayer,
+	RenderLayerContext,
+	RenderLayerFactory,
+	RenderLayerFrameContext,
+} from './render-layers';
 // Re-export types
 export type { MemoryViews } from './types';
 
@@ -34,7 +38,7 @@ export interface RenderStats {
 }
 
 export interface WebUiOptions {
-	drawers?: CodeBlockDrawerRegistry;
+	drawers?: EditorDrawerHost;
 	onRenderStats?: (stats: RenderStats) => void;
 	renderStatsIntervalFrames?: number;
 	overlayTexture?: WasmOverlayTextureOptions;
@@ -70,10 +74,8 @@ export default async function init(
 	engine.hooks.preDraw.push(() => {
 		frameStartedAt = performance.now();
 	});
-	const lines = new LineDrawer(engine);
 	const background = new BackgroundRenderer(engine);
 	const draw = new DrawContext(engine, fontAtlas.grid.cellWidth);
-	let wireColors = resolveWireColors(palette);
 	const paletteBytes = toPaletteBytes(palette);
 	engine.setPalette(paletteBytes);
 	background.setPalette(paletteBytes);
@@ -91,6 +93,16 @@ export default async function init(
 	}
 
 	installFontAtlas(fontAtlas, state.editorConfig.font ?? DEFAULT_FONT);
+	let renderLayers: ReturnType<EditorDrawerHost['attachRenderLayers']>;
+	try {
+		renderLayers = (options.drawers ?? createEditorDrawerRegistry()).attachRenderLayers({ gl: engine.gl, palette });
+	} catch (error) {
+		background.destroy();
+		engine.destroy();
+		throw error;
+	}
+	const layerFrame = { state, memoryViews };
+	engine.hooks.postDraw.push(() => renderLayers.draw(layerFrame));
 
 	function getSampledFps(): number {
 		const now = performance.now();
@@ -185,9 +197,6 @@ export default async function init(
 
 	const drawFrame = () => {
 		drawCodeBlocks(draw, state, memoryViews, renderData.getSnapshot(), options.drawers);
-		if (state.dialogStack.length === 0) {
-			drawConnections(lines, wireColors, state, memoryViews);
-		}
 		drawContextMenu(draw, state);
 		drawModeOverlay(draw, state);
 		drawDialog(draw, state);
@@ -231,7 +240,7 @@ export default async function init(
 		}
 
 		overlayTextureLayer?.releaseMemory();
-		lines.releaseMemory();
+		renderLayers.releaseMemory();
 		engine.releaseRenderingMemory();
 		renderingResourcesReleased = true;
 		canvas.width = 1;
@@ -276,7 +285,7 @@ export default async function init(
 			const bytes = toPaletteBytes(palette);
 			engine.setPalette(bytes);
 			background.setPalette(bytes);
-			wireColors = resolveWireColors(palette);
+			renderLayers.loadPalette(palette);
 		},
 		pauseRendering,
 		releaseRenderingResources,
@@ -288,10 +297,13 @@ export default async function init(
 		},
 		destroy: () => {
 			pauseRendering();
-			lines.destroy();
-			background.destroy();
-			destroyOverlayTextureLayer();
-			engine.destroy();
+			try {
+				renderLayers.destroy();
+			} finally {
+				background.destroy();
+				destroyOverlayTextureLayer();
+				engine.destroy();
+			}
 		},
 	};
 }

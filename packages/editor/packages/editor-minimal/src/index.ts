@@ -1,6 +1,7 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
+import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
@@ -42,6 +43,7 @@ export async function mountMinimalEditor(
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
+			connectorsPlugin,
 			createProjectUrlLoaderPlugin({
 				fetch: globalThis.fetch,
 				initialProjectUrl,

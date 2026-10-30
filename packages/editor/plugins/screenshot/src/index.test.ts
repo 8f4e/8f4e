@@ -1,5 +1,5 @@
 import initState from '@8f4e/editor-state';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createScreenshotPlugin } from './index';
@@ -35,7 +35,7 @@ function setup(installed = true, mode: 'edit' | 'view' = 'edit') {
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
-				drawers: createCodeBlockDrawerRegistry(),
+				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};
 	cleanups.push(() => {

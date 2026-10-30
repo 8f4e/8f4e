@@ -2,7 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import loadFontAtlas from '@8f4e/sprite-generator';
-import initView, { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
@@ -29,7 +29,7 @@ entryEnd`);
 		callbacks: {},
 	});
 	store.set('editorMode', 'edit');
-	const drawers = createCodeBlockDrawerRegistry();
+	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = createButtonPlugin({ writeMemory: () => {} }).setup({
 		store,
 		events,

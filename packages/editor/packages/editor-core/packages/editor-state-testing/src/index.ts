@@ -73,8 +73,6 @@ export function createMockCodeBlock(
 		parsedDirectives: [],
 		widgets: {
 			blockHighlights: [],
-			inputs: [],
-			outputs: [],
 			infoPanels: [],
 			shapeDeclarations: [],
 			errorMessages: [],
@@ -135,7 +133,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			entryOutlines: [],
 			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,
-			outputsByWordAddress: new Map(),
 		},
 		contextMenu: {
 			highlightedItem: 0,

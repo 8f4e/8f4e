@@ -10,8 +10,10 @@ Manages the lifecycle of code blocks in the editor: creation, selection, drag op
 - **Selection**: Tracks which block is currently selected for editing
 - **Drag Operations**: Handles repositioning blocks in the viewport
 - **Graphics Derivation**: Computes visual properties (position, size, color) from block data
-- **Block Widgets**: Derives interactive elements from code annotations:
-  - Inputs/Outputs for audio routing
+- **Block Widgets**: Derives inline error messages, shape declarations, and info panels
+
+Input/output connector geometry, private widget data, wire lookup, and the complete GPU line renderer belong to
+`@8f4e/editor-plugin-connectors`. Both editor compositions install it through the generic layout and drawing hooks.
 
 Switch, button, and waveform features are provided by `@8f4e/editor-plugin-switch`, `@8f4e/editor-plugin-button`, and
 `@8f4e/editor-plugin-wave`, included in `@8f4e/editor-default`. Their plugins own derived data and drawing through the

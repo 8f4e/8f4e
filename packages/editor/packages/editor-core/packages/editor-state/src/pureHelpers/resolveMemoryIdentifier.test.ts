@@ -71,7 +71,6 @@ describe('resolveMemoryIdentifier', () => {
 		state.compiler.memoryPlan.moduleList = [watcherModule, pointeeModule];
 		state.callbacks.getWordFromMemory = () => pointee.byteAddress;
 
-		expect(state.codeBlockRendering.outputsByWordAddress.size).toBe(0);
 		expect(resolveMemoryIdentifier(state, { kind: 'module', moduleId: 'watcher' }, '*pointer')?.memory).toBe(pointee);
 	});
 

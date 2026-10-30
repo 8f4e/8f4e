@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { createKeyboardMemoryPlugin } from './index';
 
@@ -50,7 +50,7 @@ entryEnd`
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
-		drawers: createCodeBlockDrawerRegistry(),
+		drawers: createEditorDrawerRegistry(),
 	});
 	const prefix = exposed ? 'keyboard' : 'keys';
 	store.set('editorConfig.keyboard', { keyCodeMemory: `${prefix}:code`, keyPressedMemory: `${prefix}:pressed` });

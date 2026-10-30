@@ -1,6 +1,6 @@
 import { resolvePalette } from '@8f4e/editor-palette';
 import loadFontAtlas from '@8f4e/sprite-generator';
-import initView, { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import { setup } from '../src/__tests__/setup';
@@ -12,7 +12,7 @@ test('stack plugin renders its directive', async () => {
 	canvas.height = 512;
 	canvas.style.background = '#000';
 	document.body.append(canvas);
-	const drawers = createCodeBlockDrawerRegistry();
+	const drawers = createEditorDrawerRegistry();
 	const test = await setup(
 		createStackPlugin({ prefersReducedMotion: () => true }),
 		['module audio', '; @pos 4 3', 'push 2 ; @stack', 'push 3', '; @stack', 'add ; @s', 'drop ; @stack', 'moduleEnd'],

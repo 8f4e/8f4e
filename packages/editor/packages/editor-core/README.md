@@ -134,6 +134,16 @@ drawing surface's text/fill primitives and shared numeric palette indices.
 `@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
 disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
 
+Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`
+once the renderer is ready and returns `{ draw, destroy, loadPalette?, releaseMemory? }`. `draw` receives
+`{ state, memoryViews }` every frame after sprites and before configured RGBA overlays, independently of block culling.
+Palette changes and memory release are forwarded to the layer. Registration may precede renderer initialization or
+arrive later; unregistering destroys the active layer, and renderer disposal destroys all layers before its context.
+Types and generic WebGL resource helpers are exported by `@8f4e/web-ui`.
+
+`@8f4e/editor-plugin-connectors` owns input/output widgets and the complete wire renderer through these hooks.
+Core keeps memory semantics independent of connector data and has no connector-specific fields or GPU resources.
+
 Interaction handlers can subscribe to `codeBlockPointerDown` for the start of a block press and `mouseup` for release.
 Use `events.on('mousemove', handler, { capture: true })` when a plugin must consume a drag before ordinary listeners,
 such as viewport panning. Capture listeners run first in registration order. Setting `event.stopPropagation = true`

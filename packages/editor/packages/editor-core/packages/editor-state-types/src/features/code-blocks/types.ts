@@ -17,33 +17,6 @@ import type { CodeBlockDisplayModel } from './buildDisplayModel';
  */
 export type CodeBlockType = DocumentBlockType | 'unknown';
 
-// Forward declarations for circular dependencies
-export interface Input {
-	codeBlock: CodeBlockGraphicData;
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	wireX: number;
-	wireY: number;
-	id: string;
-	allocationUnitAddress: number;
-}
-
-export interface Output {
-	codeBlock: CodeBlockGraphicData;
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	wireX: number;
-	wireY: number;
-	id: string;
-	calibratedMax: number;
-	calibratedMin: number;
-	memory: PlannedMemoryDeclaration;
-}
-
 export interface InfoPanel {
 	width: number;
 	height: number;
@@ -134,8 +107,6 @@ export interface CodeBlockGraphicData {
 			width: number;
 			color: PaletteToken;
 		}>;
-		inputs: Input[];
-		outputs: Output[];
 		infoPanels: InfoPanel[];
 		shapeDeclarations: ShapeDeclaration[];
 		errorMessages: Array<{
@@ -219,7 +190,6 @@ export interface CodeBlockEntryOutline {
  * Code block rendering state for rendering code blocks and UI elements.
  */
 export type CodeBlockRendering = {
-	outputsByWordAddress: Map<number, Output>;
 	/** Recursive project-tree root. Project-owned array identities remain stable while editing. */
 	rootCodeBlocks: CodeBlockGraphicData[];
 	/** Direct pointer to the project slice currently rendered by the editor. */

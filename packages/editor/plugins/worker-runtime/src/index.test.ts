@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import type { WebWorkerRuntimeMessage } from '@8f4e/runtime-web-worker/messages';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createWorkerRuntimePlugin } from './index';
 
@@ -42,7 +42,7 @@ function setup(config = ['enabled true'], ready = true) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
-		drawers: createCodeBlockDrawerRegistry(),
+		drawers: createEditorDrawerRegistry(),
 	});
 	const cleanup = () => {
 		cleanups.delete(cleanup);

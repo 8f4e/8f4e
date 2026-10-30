@@ -21,8 +21,6 @@ import blockHighlights from './features/blockHighlights/updateGraphicData';
 import type { CodeBlockPointerDownEvent } from './features/codeBlockDragger/effect';
 import parsePos from './features/directives/pos/data';
 import { deriveDirectiveState } from './features/directives/registry';
-import inputs from './features/inputs/updateGraphicData';
-import outputs from './features/outputs/updateGraphicData';
 import gaps from './gaps';
 import getCodeBlockGridWidth from './getCodeBlockGridWidth';
 import type { LayoutRegistry } from './layout/registry';
@@ -124,8 +122,6 @@ export default function codeBlockRendering(
 
 		graphicData.width = getCodeBlockGridWidth(graphicData.code, graphicData.minGridWidth) * state.viewport.vGrid;
 
-		outputs(graphicData, state);
-		inputs(graphicData, state);
 		blockHighlights(graphicData, state);
 
 		const gapRowCount = [...graphicData.gaps.values()].reduce((total, gap) => total + gap.size, 0);
@@ -175,7 +171,6 @@ export default function codeBlockRendering(
 	};
 
 	const updateAllBlockDerivedState = () => {
-		state.codeBlockRendering.outputsByWordAddress.clear();
 		refreshBlockLayouts(state.codeBlockRendering.codeBlocks);
 	};
 
@@ -237,7 +232,6 @@ export default function codeBlockRendering(
 			return;
 		}
 
-		state.codeBlockRendering.outputsByWordAddress.clear();
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 		const previousBlocks = new Map<string, CodeBlockGraphicData>();
 		const previousGroups = new Map<string, CodeBlockGraphicData>();

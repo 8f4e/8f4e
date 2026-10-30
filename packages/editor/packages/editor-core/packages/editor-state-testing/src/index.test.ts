@@ -64,7 +64,7 @@ describe('editor-state testing utilities', () => {
 		expect(state.info.compiler?.compilationTimeMs).toBe(120);
 		expect(state.viewport.width).toBe(400);
 		expect(state.viewport.height).toBe(768);
-		expect(state.codeBlockRendering.outputsByWordAddress).not.toBe(secondState.codeBlockRendering.outputsByWordAddress);
+		expect(state.codeBlockRendering.codeBlocks).not.toBe(secondState.codeBlockRendering.codeBlocks);
 	});
 
 	it('creates no-op event dispatchers and viewports', () => {
@@ -91,11 +91,9 @@ describe('editor-state testing utilities', () => {
 		expect(state.compiler.memoryPlan.moduleList).not.toBe(other.compiler.memoryPlan.moduleList);
 		state.compiler.projectMemoryExposuresByGroupPath.root = [];
 		state.codeBlockRendering.codeBlocks.push(createMockCodeBlock());
-		expect(state.codeBlockRendering.outputsByWordAddress).not.toBe(other.codeBlockRendering.outputsByWordAddress);
 		expect(other.compiler.memoryPlan.moduleList).toEqual([]);
 		expect(other.compiler.projectMemoryExposuresByGroupPath).toEqual({});
 		expect(other.codeBlockRendering.codeBlocks).toEqual([]);
-		expect(other.codeBlockRendering.outputsByWordAddress.size).toBe(0);
 	});
 
 	it('uses a root-only block override as the active slice without copying it', () => {
@@ -122,14 +120,14 @@ describe('editor-state testing utilities', () => {
 
 	it('retains callback and collection overrides while preserving unrelated nested defaults', async () => {
 		const writeClipboardText = async (_text: string) => {};
-		const outputs = new Map();
+		const blocks = [createMockCodeBlock()];
 		const state = createMockState({
 			callbacks: { writeClipboardText },
+			codeBlockRendering: { codeBlocks: blocks },
 			compiler: { isCompiling: true },
-			codeBlockRendering: { outputsByWordAddress: outputs },
 		});
 		expect(state.callbacks.writeClipboardText).toBe(writeClipboardText);
-		expect(state.codeBlockRendering.outputsByWordAddress).toBe(outputs);
+		expect(state.codeBlockRendering.codeBlocks).toBe(blocks);
 		expect(state.compiler.isCompiling).toBe(true);
 		expect(state.compiler.memoryPlan).toEqual({ modules: {}, moduleList: [] });
 	});

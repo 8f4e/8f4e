@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
@@ -32,7 +32,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		callbacks: {},
 	});
 	events.dispatch('enterEditMode');
-	const drawers = createCodeBlockDrawerRegistry();
+	const drawers = createEditorDrawerRegistry();
 	const dispose = installed
 		? createButtonPlugin({ writeMemory: write }).setup({
 				store,

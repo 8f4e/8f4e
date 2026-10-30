@@ -3,8 +3,6 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath, type ProjectObjectModel } from '@8f4e/language-spec';
 import { beforeEach, describe, expect, it } from 'vitest';
-import updateInputs from '~/features/code-blocks/features/inputs/updateGraphicData';
-import updateOutputs from '~/features/code-blocks/features/outputs/updateGraphicData';
 import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
 import resolveMemoryTarget from '~/pureHelpers/resolveMemoryTarget';
@@ -86,18 +84,6 @@ describe('shared exposed memory resolution', () => {
 		const scope = getCodeBlockMemoryScope(audio);
 		const target = resolveMemoryTarget(state, scope, 'gain')!.memory;
 		expect(resolveMemoryIdentifier(state, scope, '*input')?.memory).toBe(target);
-	});
-
-	it('resolves backing addresses for connectors', () => {
-		const { state, audio } = test;
-		updateInputs(audio, state);
-		updateOutputs(audio, state);
-		const gain = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(audio), '&gain')!.memory;
-		expect(audio.widgets.outputs.find(output => output.id === 'gain')?.memory.allocationUnitAddress).toBe(
-			gain.allocationUnitAddress
-		);
-		expect(audio.widgets.inputs.map(input => input.id)).toEqual(['input']);
-		expect(audio.widgets.outputs.map(output => output.id)).toContain('gateAlias');
 	});
 
 	it('rebinds controls to replacement metadata and removes unresolved aliases', () => {

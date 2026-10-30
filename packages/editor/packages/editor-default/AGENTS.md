@@ -70,3 +70,6 @@
   `bufferSizeConstantName` (default `AUDIO_BUFFER_SIZE`). Each contributes under its own environment key. Keep info
   namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
   selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.
+
+- Install `connectorsPlugin` in the fixed plugin set. It owns all input/output widgets and GPU wire rendering;
+  core owns only generic render-layer lifecycle.

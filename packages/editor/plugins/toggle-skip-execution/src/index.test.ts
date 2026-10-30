@@ -1,7 +1,7 @@
 import initState from '@8f4e/editor-state';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import type { EventDispatcher, Options } from '@8f4e/editor-state-types';
-import { createCodeBlockDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { toggleSkipExecutionPlugin } from './index';
 
@@ -37,7 +37,7 @@ function setupState(events: EventDispatcher, options: Options, installed = true)
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
-				drawers: createCodeBlockDrawerRegistry(),
+				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};
 	const dispose = () => {

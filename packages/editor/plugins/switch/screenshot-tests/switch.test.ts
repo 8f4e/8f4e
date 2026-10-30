@@ -3,7 +3,7 @@ import { resolvePalette } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
 import loadFontAtlas from '@8f4e/sprite-generator';
-import initView, { createCodeBlockDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import { createSwitchPlugin } from '../src/index';
@@ -17,6 +17,7 @@ test('switch plugin draws off and on values', async () => {
 	const project = parseProjectSource(`8f4e/v1
 entry main
 module controls
+; @pos 4 2
 int off 0
 int on 1
 ; @switch &off
@@ -29,7 +30,7 @@ entryEnd`);
 		callbacks: {},
 	});
 	store.set('editorMode', 'edit');
-	const drawers = createCodeBlockDrawerRegistry();
+	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = createSwitchPlugin({ writeMemory: () => {} }).setup({
 		store,
 		events,
@@ -48,8 +49,6 @@ entryEnd`);
 	store.set('initialProjectState', project);
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.codeBlocks', [codeBlock]);
-	codeBlock.x = 32;
-	codeBlock.y = 32;
 	state.editorConfig.color = {
 		canvas: '#000',
 		surface: '#111',
@@ -89,6 +88,7 @@ entryEnd`);
 					codeBlock,
 					code: [
 						'module controls',
+						'; @pos 4 2',
 						'int off 0',
 						'int on 1',
 						'push 0 ; @switch &off',

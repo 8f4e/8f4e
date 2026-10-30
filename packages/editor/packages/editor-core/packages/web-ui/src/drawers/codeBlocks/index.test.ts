@@ -4,7 +4,7 @@ import type { WebUiRenderData } from '@8f4e/web-ui-render-projection';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DrawContext as Engine } from '../../drawContext';
 import type { MemoryViews } from '../../types';
-import { createCodeBlockDrawerRegistry } from '../registry';
+import { createEditorDrawerRegistry } from '../registry';
 import drawModules from './index';
 
 const emptyRenderData: WebUiRenderData = { codeBlocks: new Map() };
@@ -42,7 +42,7 @@ describe('drawModules', () => {
 		});
 		const engine = createMockEngine();
 		const memoryViews = createMemoryViews();
-		const drawers = createCodeBlockDrawerRegistry();
+		const drawers = createEditorDrawerRegistry();
 		const calls: string[] = [];
 		const first = vi.fn(context => {
 			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
