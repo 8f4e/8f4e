@@ -158,8 +158,8 @@ Choose errors by detection phase:
 
 - Per-frame WASM execution and texture upload/view directives belong entirely to `editor-plugin-texture-runtime`.
   `textureRuntime` config owns `enabled` and `entry`. `@textureUpload <address> <format> <width> <height>` defines a source;
-  `@texture <address> <magnification> [<x> <y> <width> <height>]` defines a full or cropped view. Both use pointer sources,
+  `@texture <address> <magnification> <width> <height> [<x> <y>]` defines a full or cropped view. Both use pointer sources,
   resolved to byte addresses after entry execution each frame. Discover uploads throughout the project and share one
-  upload per visible address, with one GPU program for all formats. Views own reserved layout space and cropping.
+  upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
   Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.

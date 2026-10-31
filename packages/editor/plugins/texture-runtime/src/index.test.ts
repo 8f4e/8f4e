@@ -25,7 +25,7 @@ noteEnd
 entry main
 module screen
 ; @pos 4 4
-; @textureUpload &rgba rgba 1 1\n; @texture &rgba 32
+; @textureUpload &rgba rgba 1 1\n; @texture &rgba 32 1 1
 ${padded ? 'int padding 0' : ''}
 int rgba 0
 int frames 0
@@ -59,6 +59,7 @@ async function setup({
 	source?: string;
 } = {}) {
 	let current = await program(undefined, config, false, source);
+	let hasCompilerMemory = !deferMetadata;
 	const screenId = Object.keys(current.compiled.memoryPlan.modules).find(
 		id => id === 'screen' || id.endsWith('/screen')
 	)!;
@@ -82,6 +83,7 @@ async function setup({
 		memoryPlan,
 		memoryDefaultsByModuleId,
 	}: typeof current.compiled) => {
+		hasCompilerMemory = true;
 		store.set('compiler', {
 			isCompiling: true,
 			compiledFunctions,
@@ -95,7 +97,7 @@ async function setup({
 	if (!deferMetadata) publishMetadata(current.compiled);
 	const drawers = createEditorDrawerRegistry();
 	const dispose = createTextureRuntimePlugin({
-		getMemory: () => current.memory,
+		getMemory: () => (hasCompilerMemory ? current.memory : null),
 		getCodeBuffer: () => current.compiled.codeBuffer,
 	}).setup({
 		store,
@@ -180,7 +182,7 @@ it('executes once per frame for multiple textures, uploads updated pixels, and f
 	const test = await setup();
 	await test.settle();
 	test.editTextures(
-		'; @textureUpload &rgba rgba 1 1\n; @texture &rgba 32\n; @textureUpload &frames mono 1 1\n; @texture &frames 16'
+		'; @textureUpload &rgba rgba 1 1\n; @texture &rgba 32 1 1\n; @textureUpload &frames mono 1 1\n; @texture &frames 16 1 1'
 	);
 	test.frame();
 	expect(test.frameCount()).toBe(1);
@@ -199,12 +201,12 @@ it('executes once per frame for multiple textures, uploads updated pixels, and f
 	expect(test.instantiate).toHaveBeenCalledOnce();
 });
 
-it('reserves view space from upload declarations before addresses resolve', async () => {
-	const test = await setup();
+it('reserves declared view space before compiler memory exists', async () => {
+	const test = await setup({ deferMetadata: true });
 	test.editTextures('');
 	const sourceHeight = test.block.height;
 	test.editTextures(
-		'; @textureUpload &missing rgba 300 20\n; @texture &missing 2\n; @textureUpload &other mono 1 17\n; @texture &other 1'
+		'; @textureUpload &missing rgba 300 20\n; @texture &missing 2 300 20\n; @textureUpload &other mono 1 17\n; @texture &other 1 1 17'
 	);
 	expect(test.block.width).toBeGreaterThanOrEqual(
 		600 + (test.block.lineNumberColumnWidth + 3) * test.state.viewport.vGrid
@@ -242,7 +244,7 @@ it('reuses the current instance for texture edits and releases removed or offscr
 	const test = await setup();
 	await test.settle();
 	test.frame();
-	test.editTextures('; @textureUpload &rgba mono 1 1\n; @texture &rgba 16');
+	test.editTextures('; @textureUpload &rgba mono 1 1\n; @texture &rgba 16 1 1');
 	test.frame();
 	expect(test.instantiate).toHaveBeenCalledOnce();
 	expect(test.gl.uniform4f).toHaveBeenLastCalledWith(expect.anything(), expect.any(Number), expect.any(Number), 16, 16);
@@ -260,17 +262,17 @@ it('reuses the current instance for texture edits and releases removed or offscr
 
 it('bounds uploads against current WASM memory', async () => {
 	const test = await setup();
-	test.editTextures('; @textureUpload &rgba rgba 65536 1\n; @texture &rgba 1');
+	test.editTextures('; @textureUpload &rgba rgba 65536 1\n; @texture &rgba 1 1 1');
 	test.frame();
 	expect(test.gl.drawArrays).not.toHaveBeenCalled();
-	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @texture &rgba 16');
+	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @texture &rgba 16 1 1');
 	test.frame();
 	expect(test.gl.drawArrays).toHaveBeenCalledOnce();
 });
 
 it('keeps a pending instance through texture edits, and applies the current entry', async () => {
 	const test = await setup({ hold: true });
-	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @texture &rgba 16');
+	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @texture &rgba 16 1 1');
 	test.editConfig(settings + '\n; @config textureRuntime.entry missing');
 	await test.release();
 	await test.settle();
@@ -321,7 +323,7 @@ it('stacks chained texture directives without sharing or overwriting their GPU s
 	const test = await setup();
 	await test.settle();
 	test.editTextures(
-		'; @textureUpload &rgba rgba 1 1 @texture &rgba 32 @textureUpload &frames mono 1 1 @texture &frames 16'
+		'; @textureUpload &rgba rgba 1 1 @texture &rgba 32 1 1 @textureUpload &frames mono 1 1 @texture &frames 16 1 1'
 	);
 	test.frame();
 	expect(test.gl.createTexture).toHaveBeenCalledTimes(2);
@@ -333,7 +335,7 @@ it('stacks chained texture directives without sharing or overwriting their GPU s
 
 it('hides texture views and their reserved space when source is collapsed', async () => {
 	const test = await setup();
-	test.editTextures('; @hide\n; @textureUpload &rgba rgba 1 1\n; @texture &rgba 32');
+	test.editTextures('; @hide\n; @textureUpload &rgba rgba 1 1\n; @texture &rgba 32 1 1');
 	test.events.dispatch('exitToViewMode');
 	expect(test.block.isCollapsed).toBe(true);
 	expect(test.block.minGridWidth).toBeUndefined();
@@ -347,13 +349,13 @@ it('resolves group exposures locally and from a qualified reference on a note', 
 		source: `8f4e/v1
 note viewer
 ; @pos 4 4
-; @textureUpload &visuals:picture rgba 1 1\n; @texture &visuals:picture 16
+; @textureUpload &visuals:picture rgba 1 1\n; @texture &visuals:picture 16 1 1
 noteEnd
 entry main
 group visuals
 ; @pos 4 12
 expose picture &screen:rgba
-; @textureUpload &picture rgba 1 1\n; @texture &picture 16
+; @textureUpload &picture rgba 1 1\n; @texture &picture 16 1 1
 module screen
 int rgba 0x44332211
 moduleEnd
@@ -376,7 +378,7 @@ int8u[] pixels 16 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
 int8u* pointer &pixels
 ; @textureUpload &pixels rgba 2 2
 ; @textureUpload pointer rgba 2 2
-; @texture &pixels 8
+; @texture &pixels 8 2 2
 ; @texture pointer 16 1 1 1 1
 moduleEnd
 entryEnd`,
@@ -410,7 +412,7 @@ int second 0x88776655
 int8u* pointer &first
 int frames 0
 ; @textureUpload pointer rgba 1 1
-; @texture pointer 16
+; @texture pointer 16 1 1
 push &pointer
 push &second
 store
@@ -421,19 +423,19 @@ entryEnd`,
 	test.frame();
 	expect([...(test.gl.texImage2D.mock.calls[0].at(-1) as Uint8Array)]).toEqual([85, 102, 119, 136]);
 	// A view may use a different pointer symbol as long as its current address matches.
-	test.editTextures('; @textureUpload &second rgba 1 1\n; @texture pointer 16');
+	test.editTextures('; @textureUpload &second rgba 1 1\n; @texture pointer 16 1 1');
 	test.frame();
 	expect(test.gl.texSubImage2D).toHaveBeenCalledOnce();
 });
 
 it('rejects conflicting uploads at an address and recovers after the conflict is removed', async () => {
 	const test = await setup({ config: '' });
-	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @textureUpload &rgba mono 1 1\n; @texture &rgba 16');
+	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @textureUpload &rgba mono 1 1\n; @texture &rgba 16 1 1');
 	test.frame();
 	test.frame();
 	expect(test.gl.drawArrays).not.toHaveBeenCalled();
 	expect(test.state.console.logs.filter(log => log.message.includes('Conflicting @textureUpload'))).toHaveLength(1);
-	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @texture &rgba 16');
+	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @texture &rgba 16 1 1');
 	test.frame();
 	expect(test.gl.drawArrays).toHaveBeenCalledOnce();
 });
@@ -444,7 +446,7 @@ it('uses uploads from unopened groups for views in the enclosing project', async
 		source: `8f4e/v1
 note viewer
 ; @pos 4 4
-; @texture &visuals:picture 16
+; @texture &visuals:picture 16 1 1
 noteEnd
 entry main
 group visuals
@@ -463,12 +465,12 @@ entryEnd`,
 
 it('omits views without an upload or with out-of-bounds crops', async () => {
 	const test = await setup({ config: '' });
-	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @texture &rgba 16 1 0 1 1\n; @texture &frames 16');
+	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @texture &rgba 16 1 1 1 0\n; @texture &frames 16 1 1');
 	test.frame();
 	expect(test.gl.createTexture).not.toHaveBeenCalled();
 });
 
-it('sizes pointer views after compiler metadata is published atomically', async () => {
+it('reserves pointer view geometry before compilation and binds it on completion', async () => {
 	const test = await setup({
 		config: '',
 		deferMetadata: true,
@@ -481,16 +483,22 @@ moduleEnd
 module viewer
 ; @pos 4 4
 int8u* pixels &screen:rgba
-; @texture pixels 16
+; @texture pixels 16 1 1
 moduleEnd
 entryEnd`,
 	});
-	expect(() => test.publishMetadata()).not.toThrow();
+	const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'viewer')!;
+	expect(block.gaps.get(3)?.size).toBe(1);
+	const height = block.height;
 	test.frame();
+	expect(test.gl.drawArrays).not.toHaveBeenCalled();
+	test.publishMetadata();
+	test.frame();
+	expect(block.height).toBe(height);
 	expect(test.gl.drawArrays).toHaveBeenCalledOnce();
 });
 
-it('updates whole-view dimensions when a pointer switches uploaded sources', async () => {
+it('keeps view layout fixed when a pointer selects differently sized uploads', async () => {
 	const test = await setup({
 		config: '',
 		source: `8f4e/v1
@@ -502,16 +510,23 @@ int8u[] second 8
 int8u* pixels &first
 ; @textureUpload &first mono 2 4
 ; @textureUpload &second rgba 2 1
-; @texture pixels 8
+; @texture pixels 8 2 4
+; @texture pixels 8 2 1
 moduleEnd
 entryEnd`,
 	});
 	test.frame();
 	const originalHeight = test.block.height;
+	const originalWidth = test.block.width;
+	const layoutChanged = vi.fn();
+	test.events.on('codeBlockLayoutsChanged', layoutChanged);
 	const memory = test.state.compiler.memoryPlan.modules.screen.memory;
 	new Int32Array(test.memory.buffer)[memory.pixels.allocationUnitAddress] = memory.second.byteAddress;
 	test.frame();
-	expect(test.block.height).toBe(originalHeight - test.state.viewport.hGrid);
+	expect(test.block.height).toBe(originalHeight);
+	expect(test.block.width).toBe(originalWidth);
+	expect(layoutChanged).not.toHaveBeenCalled();
+	expect(test.gl.drawArrays).toHaveBeenCalledTimes(3);
 	expect(test.gl.uniform4f).toHaveBeenLastCalledWith(expect.anything(), expect.any(Number), expect.any(Number), 16, 8);
 	expect(test.gl.texImage2D).toHaveBeenCalledTimes(2);
 	expect(test.gl.deleteTexture).toHaveBeenCalledOnce();

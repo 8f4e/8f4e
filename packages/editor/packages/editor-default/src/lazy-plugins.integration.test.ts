@@ -143,7 +143,7 @@ it('loads binary assets from a restored session and announces their size as comp
 
 it.each([
 	['raw configuration', 'config textureRuntime.enabled true'],
-	['a texture directive', 'texture &points 2'],
+	['a texture directive', 'texture &points 2 2 2'],
 	['an upload directive', 'textureUpload &points mono 2 2'],
 ])('loads the texture runtime from %s in an unopened group', async (_label, directive) => {
 	const { state, entries } = restoreSession(directive, true);

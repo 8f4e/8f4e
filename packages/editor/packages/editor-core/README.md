@@ -264,7 +264,7 @@ Configure editor settings with `; @config <path> <value>`.
 - Extensions can contribute schema-backed config roots; runtime packages use this for paths like `; @config audioRuntime.sampleRate 48000` and `; @config audioRuntime.audioOutBufferLAddress audioout:buffer`.
 - `; @config export.fileName <value>` controls the base file name used by editor export actions.
 - `; @config color.<path> <value>` controls base palette colors.
-- `; @config textureRuntime.<field> <value>` configures the opt-in texture runtime, which controls entry execution once per editor frame. `; @textureUpload <address> <format> <width> <height>` declares a source, and `; @texture <address> <magnification> [<x> <y> <width> <height>]` displays a full or cropped view while reserving block space.
+- `; @config textureRuntime.<field> <value>` configures the opt-in texture runtime, which controls entry execution once per editor frame. `; @textureUpload <address> <format> <width> <height>` declares a source, and `; @texture <address> <magnification> <width> <height> [<x> <y>]` displays a full or cropped view while reserving block space.
 - Base colors accept hex with optional alpha, `rgb()` / `rgba()`, and `transparent`. The palette contains `canvas`,
   `surface`, `ink`, `muted`, `primary`, `secondary`, `tertiary`, `highlight`, `detail`, `stroke`, `positive`, `warning`,
   and `negative`. Optional accents preserve independently authored hues and opacity.

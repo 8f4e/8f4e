@@ -57,7 +57,7 @@ const PIXEL_COUNT WIDTH*HEIGHT
 int8u[] rgba PIXEL_COUNT*4
 
 ; @textureUpload &rgba rgba 32 32
-; @texture &rgba 8
+; @texture &rgba 8 32 32
 
 moduleEnd
 module screen2
@@ -68,7 +68,7 @@ use screen
 int* frame &frameCounter:frame
 int8u* rgba &screen:rgba
 
-; @texture rgba 8
+; @texture rgba 8 32 32
 
 loop PIXEL_COUNT*4
 

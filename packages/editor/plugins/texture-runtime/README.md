@@ -9,14 +9,15 @@ configuration appears anywhere in the project tree.
 ; @config textureRuntime.entry renderFrame
 
 ; @textureUpload &screen:color rgba 64 64
-; @texture &screen:color 4
-; @texture &screen:color 4 0 0 32 32
+; @texture &screen:color 4 64 64
+; @texture &screen:color 4 32 32 16 16
 ```
 
 `@textureUpload <address> <1bit|mono|rgb|rgba> <width> <height>` describes the complete source texture.
-`@texture <address> <magnification> [<x> <y> <width> <height>]` displays it below the directive, either in full or
-as a crop in source-pixel coordinates. Upload declarations reserve no image space; each view reserves its own rows
-and minimum block width. Crops retain the uploaded texture's row stride, including byte-aligned packed 1bit rows.
+`@texture <address> <magnification> <width> <height> [<x> <y>]` displays a fixed-size view below the directive.
+Width and height are in source pixels; the optional source origin defaults to `(0, 0)`. Upload declarations reserve
+no image space. Each view reserves its own rows and minimum block width immediately, independent of compiler memory
+and matching uploads. Views retain the uploaded texture's row stride, including byte-aligned packed 1bit rows.
 
 Both directives accept pointer sources: `&pixels` or `&screen:pixels` uses the storage's byte address; a plain typed
 pointer such as `framebufferPointer` reads the current address from memory. Qualified names and group exposures use
@@ -27,8 +28,8 @@ Matching resolved byte addresses share one GPU texture and one upload per frame 
 regardless of the reference spelling, crop, magnification, or number of views. Identical upload declarations coalesce.
 Conflicting format/dimension declarations for one address suppress that resource and report an error in the editor
 console. The complete upload must fit current WASM memory; crop rectangles must fit the declared source dimensions.
-Dimensions and magnification are positive integers; crop offsets are nonnegative integers. Cropped views reserve their
-explicit size while unresolved, and whole views can use a matching declaration before compilation resolves its address.
+Dimensions and magnification are positive integers; source offsets are nonnegative integers. Pointer swaps never
+change the view geometry. Missing or undersized uploads skip drawing while the reserved space stays unchanged.
 
 | Type | Source layout |
 | --- | --- |

@@ -19,7 +19,7 @@ export interface TextureCrop {
 export interface TextureDirective {
 	address: string;
 	magnification: number;
-	crop?: TextureCrop;
+	crop: TextureCrop;
 }
 
 export function parseTextureUploadDirective(args: string[]): TextureUploadDirective | undefined {
@@ -37,15 +37,15 @@ export function parseTextureUploadDirective(args: string[]): TextureUploadDirect
 }
 
 export function parseTextureDirective(args: string[]): TextureDirective | undefined {
-	if ((args.length !== 2 && args.length !== 6) || !isPointerSource(args[0])) return;
+	if ((args.length !== 4 && args.length !== 6) || !isPointerSource(args[0])) return;
 	const magnification = parseInteger(args[1]);
-	if (!magnification || magnification < 1) return;
-	if (args.length === 2) return { address: args[0], magnification };
-	const x = parseInteger(args[2]);
-	const y = parseInteger(args[3]);
-	const width = parseInteger(args[4]);
-	const height = parseInteger(args[5]);
+	const width = parseInteger(args[2]);
+	const height = parseInteger(args[3]);
+	const x = args.length === 6 ? parseInteger(args[4]) : 0;
+	const y = args.length === 6 ? parseInteger(args[5]) : 0;
 	if (
+		!magnification ||
+		magnification < 1 ||
 		x === undefined ||
 		x < 0 ||
 		y === undefined ||

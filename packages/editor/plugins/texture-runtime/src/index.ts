@@ -1,8 +1,9 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { logError } from '@8f4e/editor-state';
 import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/test-runner';
+import { createTextureBindings } from './bindings';
 import { readTextureRuntimeConfig, TEXTURE_RUNTIME_CONFIG } from './config';
-import { createTextureLayout, resolveTextureAddress } from './layout';
+import { createTextureLayout } from './layout';
 import { TextureDrawer } from './texture-drawer';
 
 /** Executes one project entry per editor frame and displays block-bound framebuffer views. */
@@ -69,7 +70,8 @@ export function createTextureRuntimePlugin({
 			}
 
 			store.set('editorConfigSchemaContributions.textureRuntime', TEXTURE_RUNTIME_CONFIG);
-			const textures = createTextureLayout({ store, layout, getMemory });
+			const bindings = createTextureBindings(store);
+			const textures = createTextureLayout(layout);
 			const unregisterLayer = drawers.registerRenderLayer(({ gl }) => {
 				let drawer: TextureDrawer | undefined;
 				const visibleKeys = new Set<string>();
@@ -77,28 +79,26 @@ export function createTextureRuntimePlugin({
 				return {
 					draw: ({ memoryViews }) => {
 						entry?.();
-						const { sources, conflicts } = textures.resolveUploads(memoryViews.int32);
+						const { sources, conflicts } = bindings.resolveUploads(memoryViews.int32);
 						for (const address of conflicts)
 							if (!previousConflicts.has(address))
 								logError(state, `Conflicting @textureUpload definitions at byte address ${address}`);
 						previousConflicts = conflicts;
-						textures.updateSizes(sources, memoryViews.int32);
 						visibleKeys.clear();
 						for (const block of state.codeBlockRendering.codeBlocks) {
 							for (const texture of textures.viewsByBlock.get(block) ?? []) {
-								if (!texture.visible || !texture.width || !texture.height) continue;
 								const x = block.x - state.viewport.x + texture.x;
 								const y = block.y - state.viewport.y + texture.y;
-								const width = texture.width * texture.magnification;
-								const height = texture.height * texture.magnification;
+								const width = texture.crop.width * texture.magnification;
+								const height = texture.crop.height * texture.magnification;
 								if (x + width <= 0 || y + height <= 0 || x >= state.viewport.width || y >= state.viewport.height)
 									continue;
-								const address = resolveTextureAddress(texture.binding, memoryViews.int32);
+								const address = bindings.resolveViewAddress(block, texture.address, memoryViews.int32);
 								const source = address === undefined ? undefined : sources.get(address);
 								if (!source || address === undefined || address + source.byteLength > memoryViews.uint8.length)
 									continue;
 								const crop = texture.crop;
-								if (crop && (crop.x + crop.width > source.width || crop.y + crop.height > source.height)) continue;
+								if (crop.x + crop.width > source.width || crop.y + crop.height > source.height) continue;
 								const key = String(address);
 								drawer ??= new TextureDrawer(gl);
 								if (!visibleKeys.has(key))
@@ -126,6 +126,7 @@ export function createTextureRuntimePlugin({
 				store.unsubscribe('editorConfig.textureRuntime', syncConfig);
 				events.off('compilationSucceeded', syncProgram);
 				clearProgram();
+				bindings.dispose();
 				textures.dispose();
 				unregisterLayer();
 				const schemas = { ...state.editorConfigSchemaContributions };

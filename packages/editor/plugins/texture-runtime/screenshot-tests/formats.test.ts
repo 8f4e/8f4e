@@ -69,7 +69,7 @@ test('one program draws all formats over sprites with packed odd-width rows and 
 				engine.hooks.postDraw.length = 0;
 				engine.hooks.postDraw.push(() => {
 					drawer.upload('view', new Uint8Array(item.pixels), item.width, 2, item.format);
-					drawer.drawTexture('view', 0, 0, canvas.width, canvas.height);
+					drawer.drawTexture('view', 0, 0, canvas.width, canvas.height, { x: 0, y: 0, width: item.width, height: 2 });
 				});
 				engine.renderFrame(() => engine.drawSprite(0, 0, FILL_SPRITE_ID, 0, canvas.width, canvas.height));
 				const actual = new Uint8Array(canvas.width * canvas.height * 4);

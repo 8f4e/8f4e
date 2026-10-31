@@ -15,9 +15,13 @@ it.each([
 		byteLength,
 	});
 });
-it('accepts pointer sources and cropped views', () => {
-	expect(parseTextureDirective(['pointer', '4'])).toEqual({ address: 'pointer', magnification: 4 });
-	expect(parseTextureDirective(['&screen:pixels', '2', '1', '3', '4', '5'])).toEqual({
+it('requires view dimensions and defaults the source origin to zero', () => {
+	expect(parseTextureDirective(['pointer', '4', '8', '6'])).toEqual({
+		address: 'pointer',
+		magnification: 4,
+		crop: { x: 0, y: 0, width: 8, height: 6 },
+	});
+	expect(parseTextureDirective(['&screen:pixels', '2', '4', '5', '1', '3'])).toEqual({
 		address: '&screen:pixels',
 		magnification: 2,
 		crop: { x: 1, y: 3, width: 4, height: 5 },
@@ -36,13 +40,17 @@ it.each([
 });
 it.each([
 	'&pixels',
-	'&pixels 0',
-	'&pixels 1.5',
-	'&pixels 2 1 2',
-	'&pixels 2 -1 0 2 2',
-	'&pixels 2 0 0 0 2',
-	'&pixels 2 0 0 2 2 extra',
-	'pixels[1] 2',
+	'&pixels 2',
+	'&pixels 0 2 2',
+	'&pixels 1.5 2 2',
+	'&pixels 2 0 2',
+	'&pixels 2 2 -1',
+	'&pixels 2 2 2 -1 0',
+	'&pixels 2 2 2 0 -1',
+	'&pixels 2 2 2 0',
+	'&pixels 2 2 2 0 0 extra',
+	'&pixels 2 9007199254740991 2',
+	'pixels[1] 2 2 2',
 ])('rejects invalid view: %s', args => {
 	expect(parseTextureDirective(args.split(' '))).toBeUndefined();
 });

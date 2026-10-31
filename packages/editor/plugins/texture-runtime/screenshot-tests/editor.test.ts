@@ -13,13 +13,13 @@ note views
 ; @pos 4 3
 Four framebuffer formats, one program.
 ; @textureUpload &screen:rgba rgba 2 2
-; @texture &screen:rgba 24
+; @texture &screen:rgba 24 2 2
 ; @textureUpload &screen:rgb rgb 3 2
-; @texture &screen:rgb 16
+; @texture &screen:rgb 16 3 2
 ; @textureUpload &screen:mono mono 3 2
-; @texture &screen:mono 16
+; @texture &screen:mono 16 3 2
 ; @textureUpload &screen:bits 1bit 10 2
-; @texture &screen:bits 6
+; @texture &screen:bits 6 10 2
 Code follows the reserved image space.
 noteEnd
 entry renderFrame
@@ -173,12 +173,12 @@ module screen ; @mode edit
 ; @pos 4 3
 int8u[] rgba 16
 ; @textureUpload &rgba rgba 2 2
-; @texture &rgba 16
+; @texture &rgba 16 2 2
 moduleEnd
 module viewer
 ; @pos 50 3
 int8u* pixels &screen:rgba
-; @texture pixels 16
+; @texture pixels 16 2 2
 moduleEnd
 entryEnd`),
 			plugins: [compiler.plugin, createTextureRuntimePlugin(compiler)],

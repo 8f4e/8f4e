@@ -272,11 +272,11 @@ Declare a source upload once, then display full or cropped views of it:
 
 ```txt
 ; @textureUpload <address> <1bit|mono|rgb|rgba> <width> <height>
-; @texture <address> <magnification> [<x> <y> <width> <height>]
+; @texture <address> <magnification> <width> <height> [<x> <y>]
 
 ; @textureUpload &screen:color rgba 64 64
-; @texture &screen:color 4
-; @texture &screen:color 4 0 0 32 32
+; @texture &screen:color 4 64 64
+; @texture &screen:color 4 32 32 16 16
 ```
 
 Both addresses are `pointerSource` arguments. `&memory` uses its start byte address; a plain typed pointer reads its
@@ -284,11 +284,12 @@ current byte address from runtime memory. Scoped module names, qualified referen
 Pointers resolve after the runtime entry executes each frame. Upload declarations may live anywhere in the project,
 including unopened groups; matching uses resolved addresses rather than names.
 
-The upload owns the format and full source dimensions. Views reserve rows immediately below their directive and
-widen their containing block. The optional crop is `(x, y, width, height)` in source pixels and retains the original
-row stride. Dimensions and magnification are positive integers; crop offsets are nonnegative. A crop must fit the
-source. Uploads must fit WASM memory and can span declarations. Cropped views reserve their explicit size while
-unresolved; whole views can infer size from a matching upload declaration before compilation resolves the address.
+The upload owns the format and full source dimensions. Every view specifies its width and height in source pixels;
+the optional `(x, y)` source origin defaults to `(0, 0)`. Views retain the original upload's row stride and reserve
+fixed rows and minimum block width immediately, before compiler memory or a matching upload exists. Pointer changes
+never resize the containing block. Dimensions and magnification are positive integers; source offsets are nonnegative.
+The view rectangle must fit the selected upload, and uploads must fit WASM memory; uploads can span declarations.
+Missing or undersized uploads skip drawing while keeping the reserved space unchanged.
 
 Identical upload declarations at one address coalesce. Conflicting formats or dimensions report an editor-console
 error and suppress that resource until corrected. Multiple visible views share one upload per address per frame.

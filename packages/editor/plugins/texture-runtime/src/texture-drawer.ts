@@ -128,7 +128,7 @@ export class TextureDrawer {
 	}
 
 	/** Draws a source texture with nearest sampling and premultiplied-alpha output. */
-	drawTexture(key: string, x: number, y: number, width: number, height: number, crop?: TextureCrop): void {
+	drawTexture(key: string, x: number, y: number, width: number, height: number, crop: TextureCrop): void {
 		const gl = this.gl;
 		const source = this.textures.get(key)!;
 		prepareRenderPass(gl, this.program, this.geometry.vertexArray);
@@ -137,13 +137,7 @@ export class TextureDrawer {
 		gl.bindSampler(0, null);
 		gl.uniform1i(this.textureLocation, 0);
 		gl.uniform1i(this.formatLocation, FORMAT_IDS[source.format]);
-		gl.uniform4f(
-			this.sourceRectangleLocation,
-			crop?.x ?? 0,
-			crop?.y ?? 0,
-			crop?.width ?? source.width,
-			crop?.height ?? source.height
-		);
+		gl.uniform4f(this.sourceRectangleLocation, crop.x, crop.y, crop.width, crop.height);
 		gl.uniform2f(this.pixelToClipLocation, 2 / gl.drawingBufferWidth, -2 / gl.drawingBufferHeight);
 		gl.uniform4f(this.rectangleLocation, x, y, width, height);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
