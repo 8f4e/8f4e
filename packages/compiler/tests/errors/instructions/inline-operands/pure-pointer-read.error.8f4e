@@ -1,0 +1,7 @@
+8f4e/v1
+
+function invalid
+param float* pointer
+push 1.0
+mul *pointer
+functionEnd float

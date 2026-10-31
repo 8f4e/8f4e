@@ -1,0 +1,21 @@
+{
+  "code": 5,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "missing",
+      },
+    ],
+    "instruction": "push",
+    "lineNumber": 2,
+  },
+  "message": "Undeclared identifier: missing. (5)",
+}

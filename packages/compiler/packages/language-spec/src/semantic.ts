@@ -13,6 +13,7 @@ import type {
 	CallLine,
 	CompilerASTLine,
 	DefaultLine,
+	InlineOperandLine,
 	LocalSetLine,
 	LoopLine,
 	MapLine,
@@ -344,6 +345,10 @@ export type SemanticCallLine = Omit<CallLine, 'arguments'> & {
 	inlineArgumentPushes?: CodegenPushLine[];
 };
 
+export type SemanticInlineOperandLine = InlineOperandLine & {
+	inlineOperandPush?: SemanticPushLine;
+};
+
 export type SemanticAssertEqualLine = AssertEqualLine & {
 	expectedPush: CodegenPushLine;
 };
@@ -358,27 +363,29 @@ export type ResolvedPushShapeLine = Omit<PushShapeLine, 'arguments'> & {
 	shapeExpansions: PushShapeExpansion[];
 };
 
-export type SemanticReferenceLine<TLine extends CompilerASTLine = CompilerASTLine> = TLine extends DefaultLine
-	? ResolvedDefaultLine | DefaultLine
-	: TLine extends AssertEqualLine
-		? SemanticAssertEqualLine
-		: TLine extends CallLine
-			? SemanticCallLine | CallLine
-			: TLine extends MapLine
-				? ResolvedMapLine
-				: TLine extends LocalSetLine
-					? ResolvedLocalSetLine
-					: TLine extends PushLine
-						? SemanticPushLine
-						: TLine extends PushShapeLine
-							? ResolvedPushShapeLine
-							: TLine extends LoopLine
-								? ResolvedLoopLine
-								: TLine extends MemoryCopyLine
-									? ResolvedMemoryCopyLine | MemoryCopyLine
-									: TLine extends ArrayDeclarationLine
-										? ArrayDeclarationLine
-										: TLine;
+export type SemanticReferenceLine<TLine extends CompilerASTLine = CompilerASTLine> = TLine extends InlineOperandLine
+	? SemanticInlineOperandLine
+	: TLine extends DefaultLine
+		? ResolvedDefaultLine | DefaultLine
+		: TLine extends AssertEqualLine
+			? SemanticAssertEqualLine
+			: TLine extends CallLine
+				? SemanticCallLine | CallLine
+				: TLine extends MapLine
+					? ResolvedMapLine
+					: TLine extends LocalSetLine
+						? ResolvedLocalSetLine
+						: TLine extends PushLine
+							? SemanticPushLine
+							: TLine extends PushShapeLine
+								? ResolvedPushShapeLine
+								: TLine extends LoopLine
+									? ResolvedLoopLine
+									: TLine extends MemoryCopyLine
+										? ResolvedMemoryCopyLine | MemoryCopyLine
+										: TLine extends ArrayDeclarationLine
+											? ArrayDeclarationLine
+											: TLine;
 
 /** Resolved instructions that remain after declaration processing. */
 export type ExecutableInstructionLine = Extract<SemanticReferenceLine, { instruction: CodegenInstructionName }>;

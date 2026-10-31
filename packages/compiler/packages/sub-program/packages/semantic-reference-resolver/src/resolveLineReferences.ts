@@ -1,6 +1,8 @@
-import type { CompilerASTLine, SemanticReferenceLine } from '@8f4e/language-spec';
+import type { CompilerASTLine, PushArgument, SemanticReferenceLine } from '@8f4e/language-spec';
+import { getInstructionSpec } from '@8f4e/language-spec';
 import type { ReferenceResolutionContext } from './context';
 import resolveInstructionReferences from './referenceResolvers';
+import resolvePushReferences from './referenceResolvers/push';
 
 /**
  * Resolves semantic value arguments for one AST line.
@@ -15,5 +17,19 @@ export default function resolveLineReferences<TLine extends CompilerASTLine>(
 	line: TLine,
 	context: ReferenceResolutionContext
 ): SemanticReferenceLine<TLine> {
+	const spec = getInstructionSpec(line.instruction);
+	if (spec && 'inlineOperand' in spec && spec.inlineOperand && line.arguments.length) {
+		return {
+			...line,
+			inlineOperandPush: resolvePushReferences(
+				{
+					lineNumber: line.lineNumber,
+					instruction: 'push',
+					arguments: [line.arguments[0] as PushArgument],
+				},
+				context
+			),
+		} as SemanticReferenceLine<TLine>;
+	}
 	return resolveInstructionReferences(line, context);
 }

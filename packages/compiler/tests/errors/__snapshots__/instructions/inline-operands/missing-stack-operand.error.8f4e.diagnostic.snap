@@ -1,0 +1,20 @@
+{
+  "code": 0,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 2,
+      },
+    ],
+    "instruction": "mul",
+    "lineNumber": 1,
+  },
+  "message": "Insufficient number of elements in the stack for the operation to proceed. (0)",
+}

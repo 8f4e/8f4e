@@ -387,11 +387,15 @@ function assertFunctionMemoryIoAllowed(line: SemanticReferenceLine, context: Ref
 		'resolvedTarget' in line &&
 		(line.resolvedTarget.kind === 'local-pointer' || line.resolvedTarget.kind === 'memory-pointer');
 	const inlinePushes =
-		'expectedPush' in line
-			? [line.expectedPush]
-			: 'inlineArgumentPushes' in line
-				? (line.inlineArgumentPushes ?? [])
-				: [];
+		'inlineOperandPush' in line
+			? line.inlineOperandPush
+				? [line.inlineOperandPush]
+				: []
+			: 'expectedPush' in line
+				? [line.expectedPush]
+				: 'inlineArgumentPushes' in line
+					? (line.inlineArgumentPushes ?? [])
+					: [];
 	const inlinePointerPush = inlinePushes.some(
 		push =>
 			'resolvedTarget' in push &&

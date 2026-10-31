@@ -1,5 +1,28 @@
 # Arithmetic instructions
 
+## Optional right operand
+
+The binary instructions `add`, `sub`, `mul`, `div`, `min`, `max`, and `remainder` accept an optional source operand.
+`op value` is equivalent to `push value` followed by `op`: the existing stack value is the left operand.
+The source operand uses the same value syntax as `push`, including literals, constants, locals, memory values,
+pointer dereferences, and compile-time expressions.
+
+`sub 7` computes `x - 7`; `div 3` computes `x / 3`. The zero-argument form still takes both operands from the stack.
+Existing numeric type rules, pointer arithmetic, and divisor checks apply without implicit conversions.
+This shorthand reduces source lines and emits the same operations as the expanded form.
+
+```8f4e
+push 8
+sub 3
+mul 2
+; stack: [10]
+
+float gain 0.5
+push 2.0
+mul gain
+; stack: [10, 1.0]
+```
+
 ### add
 
 The "add" instruction operates on two numbers of the same type that are retrieved from the stack. It performs addition on these numbers and then stores the result back onto the stack.

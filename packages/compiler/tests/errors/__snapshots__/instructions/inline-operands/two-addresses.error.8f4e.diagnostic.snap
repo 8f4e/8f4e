@@ -1,0 +1,29 @@
+{
+  "code": 78,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "address": {
+          "safeRange": {
+            "byteAddress": 4,
+            "memoryId": "value",
+            "moduleId": "invalid",
+            "safeByteLength": 4,
+            "source": "memory-start",
+          },
+        },
+        "isInteger": true,
+        "type": "literal",
+        "value": 4,
+      },
+    ],
+    "instruction": "add",
+    "lineNumber": 3,
+  },
+  "message": "Invalid address arithmetic. Add accepts one address and one integer offset; subtraction accepts an address minus an integer offset or two addresses. (78)",
+}

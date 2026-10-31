@@ -12,6 +12,7 @@ Add an `includes` block near the top of the project, after the `8f4e/v1` header 
 
 includes
 include std/math/clamp
+include std/math/exp2
 include std/math/fract
 include std/math/lerp
 include std/math/normalize
@@ -551,6 +552,33 @@ call normalize
 moduleEnd
 entryEnd
 ```
+
+## `std/math/exp2`
+
+Provides `exp2(float x) -> float`, a 32-bit float approximation of `2^x` for finite inputs.
+Inputs are clamped to `[-24.0, 6.0]`, so values outside that range return `2^-24` or `64.0` respectively.
+This helper uses range reduction and a sixth-order polynomial, followed by integer power reconstruction.
+It is independent of any synthesizer or envelope implementation.
+
+A sweep of 122,881 evenly spaced float inputs (step `1/4096`) across the supported range measured a maximum relative
+error of approximately `2.16e-7` against `2^x`. The numerical regression test allows `3e-7` on that grid; this is a
+measured approximation error rather than a correctly rounded result for every float input.
+
+```8f4e
+includes
+include std/math/exp2
+includesEnd
+
+entry test
+module exp2Example
+push -1.0
+call exp2
+; stack: 0.5
+moduleEnd
+entryEnd
+```
+
+Unlike `exp2`, `std/math/pow2` takes an integer exponent and returns an integer.
 
 ## `std/math/pow2`
 
