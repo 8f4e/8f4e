@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/web-ui",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "private": true,
   "description": "8f4e web UI package - canvas renderer for the editor",
   "type": "module",

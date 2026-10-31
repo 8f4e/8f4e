@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-watch",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "description": "Watch directive plugin for the 8f4e editor",
   "type": "module",

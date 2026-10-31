@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-assertion-markers",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": true,
   "description": "Assertion result markers for the 8f4e editor",
   "type": "module",

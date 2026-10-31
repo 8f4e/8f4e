@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-stack",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "description": "Stack directive plugin for the 8f4e editor",
   "type": "module",
