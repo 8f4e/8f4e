@@ -25,6 +25,6 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/compiler": "*",
-    "vitest": "4.1.7"
+    "vitest": "4.1.12"
   }
 }

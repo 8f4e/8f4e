@@ -20,9 +20,9 @@
 	},
 	"devDependencies": {
 		"@8f4e/config": "*",
-		"@vitest/browser": "4.1.7",
-		"@vitest/browser-playwright": "4.1.7",
-		"vitest": "4.1.7",
+		"@vitest/browser": "4.1.12",
+		"@vitest/browser-playwright": "4.1.12",
+		"vitest": "4.1.12",
 		"vite": "7.3.7",
 		"vite-plugin-static-copy": "4.1.1"
 	}

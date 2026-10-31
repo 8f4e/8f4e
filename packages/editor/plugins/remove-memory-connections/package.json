@@ -26,8 +26,8 @@
     "@8f4e/config": "*",
     "@8f4e/compiler": "*",
     "@8f4e/web-ui": "*",
-    "vitest": "4.1.7",
-    "@vitest/browser-playwright": "4.1.7",
-    "@vitest/browser": "4.1.7"
+    "vitest": "4.1.12",
+    "@vitest/browser-playwright": "4.1.12",
+    "@vitest/browser": "4.1.12"
   }
 }
