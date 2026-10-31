@@ -24,8 +24,10 @@ include std/math/trig/sine
 include std/math/trig/triangle
 include std/bitwise/extractBit
 include std/bitwise/extractByte
+include std/events/gateToTrigger
 include std/events/risingEdge
 include std/events/hasChanged
+include std/events/triggerToGate
 include std/random/lcg
 include std/random/xorshift
 include std/memory/advancePointer
@@ -820,6 +822,125 @@ if
  push 1
  store
 ifEnd
+moduleEnd
+entryEnd
+```
+
+## `std/events/gateToTrigger`
+
+Provides `gateToTrigger`, which compares the current gate value with a stored previous value, stores the current value,
+and returns a one-sample trigger when the current value is greater. Any increase qualifies; this is not limited to a
+zero-to-positive transition.
+
+Available overloads:
+
+- `gateToTrigger(int gate, int* previousGate) -> int`
+- `gateToTrigger(float gate, float* previousGate) -> int`
+
+The second argument must be the address of persistent state, such as `&previousGate`. The function compares against the
+value currently stored there, then writes `gate` through that pointer before returning. Equal or decreasing values
+return `0`; an increase returns `1`, including an increase between two nonzero values or from a negative value to zero.
+
+Example:
+
+```8f4e
+8f4e/v1
+
+includes
+include std/events/gateToTrigger
+includesEnd
+
+entry main
+module gateToTriggerExample
+int previousGate
+
+push 0
+call gateToTrigger &previousGate
+assertEqual 0
+
+push 1
+call gateToTrigger &previousGate
+assertEqual 1
+
+push 2
+call gateToTrigger &previousGate
+assertEqual 1
+
+push 2
+call gateToTrigger &previousGate
+assertEqual 0
+
+push -1
+call gateToTrigger &previousGate
+assertEqual 0
+
+push 0
+call gateToTrigger &previousGate
+assertEqual 1
+moduleEnd
+entryEnd
+```
+
+## `std/events/triggerToGate`
+
+Provides `triggerToGate`, which turns a positive trigger into a gate held for a specified number of calls. A positive
+trigger resets the stored countdown to `duration`, including when the previous call also had a positive trigger. If the
+countdown is positive, the function decrements it and returns `1`; otherwise it returns `0`.
+
+Available overloads:
+
+- `triggerToGate(int trigger, int duration, int* remainingSamples) -> int`
+- `triggerToGate(float trigger, int duration, int* remainingSamples) -> int`
+
+The third argument must be the address of persistent state, such as `&remainingSamples`. The duration is counted in
+calls. When called once per sample, it therefore represents samples, and the triggering call is included in the
+duration. For example, with an initially zero `remainingSamples`, duration `3`, and trigger inputs `1, 0, 0, 0`, the
+gate outputs are `1, 1, 1, 0`. A later positive trigger restarts the countdown, even on consecutive calls.
+
+Example:
+
+```8f4e
+8f4e/v1
+
+includes
+include std/events/triggerToGate
+includesEnd
+
+entry main
+module triggerToGateExample
+int remainingSamples
+
+; Inputs 1, 0, 0, 0 produce gates 1, 1, 1, 0.
+push 1
+push 3
+call triggerToGate &remainingSamples
+assertEqual 1
+push 0
+push 3
+call triggerToGate &remainingSamples
+assertEqual 1
+push 0
+push 3
+call triggerToGate &remainingSamples
+assertEqual 1
+push 0
+push 3
+call triggerToGate &remainingSamples
+assertEqual 0
+
+; A positive trigger restarts the duration, including consecutively.
+push 1
+push 3
+call triggerToGate &remainingSamples
+assertEqual 1
+push 1
+push 3
+call triggerToGate &remainingSamples
+assertEqual 1
+push 0
+push 3
+call triggerToGate &remainingSamples
+assertEqual 1
 moduleEnd
 entryEnd
 ```
