@@ -45,7 +45,7 @@ describe('stack plugin', () => {
 		const test = await setup(plugin, source);
 		test.render();
 		expect(test.draw.drawText).toHaveBeenCalled();
-		test.store.set('compiler.compiledModules', {});
+		test.store.set('compiler.result.compiledModules', {});
 		test.store.set('compiler.isCompiling', false);
 		test.render();
 		expect(test.draw.drawText).not.toHaveBeenCalled();

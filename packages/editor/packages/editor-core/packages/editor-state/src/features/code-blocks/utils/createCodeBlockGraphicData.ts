@@ -56,7 +56,6 @@ export function createCodeBlockGraphicData(
 		parsedDirectives: overrides.parsedDirectives ?? parseBlockDirectives(code),
 		widgets: {
 			blockHighlights: [],
-			infoPanels: [],
 			shapeDeclarations: [],
 			errorMessages: [],
 		},

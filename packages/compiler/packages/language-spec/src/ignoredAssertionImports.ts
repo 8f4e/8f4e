@@ -1,4 +1,4 @@
-import { ASSERTION_IMPORT_NAMES } from '@8f4e/language-spec';
+import { ASSERTION_IMPORT_NAMES } from './assertions';
 
 const ignoreAssertion = () => {};
 

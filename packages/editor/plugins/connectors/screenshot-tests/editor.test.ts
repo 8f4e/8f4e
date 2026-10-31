@@ -43,7 +43,7 @@ async function setup() {
 	const installArtifacts: EditorPlugin = {
 		id: 'test-artifacts',
 		setup: ({ store, events }) => {
-			Object.assign(store.getState().compiler, {
+			Object.assign(store.getState().compiler.result, {
 				memoryPlan: compiled.memoryPlan,
 				memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
 				compiledModules: compiled.compiledModules,

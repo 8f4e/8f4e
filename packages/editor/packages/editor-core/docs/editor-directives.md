@@ -266,19 +266,33 @@ Range detection:
 - lengths can be positive literal counts, integer memory targets, or `count(buffer)`
 - if `minValue` and `maxValue` are specified, they override the type-derived defaults
 
-### `@texture`
+### `@textureUpload` and `@texture`
 
-Displays a framebuffer immediately below its directive and reserves rows and block width for the magnified image:
+Declare a source upload once, then display full or cropped views of it:
 
 ```txt
-; @texture <framebuffer> <1bit|mono|rgb|rgba> <width> <height> <magnification>
-; @texture screen:color rgba 32 32 4
-; @texture screen:mask 1bit 64 32 2
+; @textureUpload <address> <1bit|mono|rgb|rgba> <width> <height>
+; @texture <address> <magnification> <width> <height> [<x> <y>]
+
+; @textureUpload &screen:color rgba 64 64
+; @texture &screen:color 4 64 64
+; @texture &screen:color 4 32 32 16 16
 ```
 
-The framebuffer is a plain `memoryId`, resolved in the containing block's module or project/group scope. Qualified
-names and group exposures work as with other memory directives. Width, height, and magnification are positive integers.
-The memory declaration must contain the full source buffer. Valid directives reserve space while memory is unresolved.
+Both addresses are `pointerSource` arguments. `&memory` uses its start byte address; a plain typed pointer reads its
+current byte address from runtime memory. Scoped module names, qualified references, and group exposures are supported.
+Pointers resolve after the runtime entry executes each frame. Upload declarations may live anywhere in the project,
+including unopened groups; matching uses resolved addresses rather than names.
+
+The upload owns the format and full source dimensions. Every view specifies its width and height in source pixels;
+the optional `(x, y)` source origin defaults to `(0, 0)`. Views retain the original upload's row stride and reserve
+fixed rows and minimum block width immediately, before compiler memory or a matching upload exists. Pointer changes
+never resize the containing block. Dimensions and magnification are positive integers; source offsets are nonnegative.
+The view rectangle must fit the selected upload, and uploads must fit WASM memory; uploads can span declarations.
+Missing or undersized uploads skip drawing while keeping the reserved space unchanged.
+
+Identical upload declarations at one address coalesce. Conflicting formats or dimensions report an editor-console
+error and suppress that resource until corrected. Multiple visible views share one upload per address per frame.
 
 | Type | Bytes and channel order |
 | --- | --- |
@@ -287,14 +301,13 @@ The memory declaration must contain the full source buffer. Valid directives res
 | `rgb` | Three unsigned bytes per pixel: red, green, blue; fully opaque |
 | `rgba` | Four unsigned bytes per pixel: red, green, blue, alpha |
 
-Rows run top to bottom, and magnification uses nearest sampling. Any number of directives can view different buffers
-or the same buffer at different scales. Images follow their block and viewport but draw in the canvas overlay above
-editor content; overlapping blocks do not occlude them.
+Rows run top to bottom with nearest sampling. One WebGL program handles all formats; views reuse the uploaded
+texture, including crops starting inside a packed byte. Images follow their blocks and viewport in the overlay above
+editor content; overlapping blocks do not occlude them. Uploads without visible views release their GPU storage.
 
-Both editor compositions lazily install `@8f4e/editor-plugin-texture-runtime` for this directive, even without runtime
-configuration. Display does not require entry execution: static memory, audio, or worker runtimes can produce pixels.
-To execute an entry once per editor frame, configure `textureRuntime.enabled` and `textureRuntime.entry` as described
-under Runtime plugins.
+Both editor compositions lazily install `@8f4e/editor-plugin-texture-runtime` for either directive or raw runtime
+configuration. Static memory, audio, or worker runtimes can supply pixels with entry execution disabled. To execute
+an entry once per frame, configure `textureRuntime.enabled` and `textureRuntime.entry` under Runtime plugins.
 
 ### `@bars`
 
@@ -469,10 +482,10 @@ MIDI input bindings are configured through `@config`.
 
 Notes:
 
-- The MIDI plugin is activated by `@config midi...`; `; @info midi` can display available ports while MIDI is active.
+- The MIDI plugin is activated by `@config midi...` and publishes available ports in `state.info.midi`.
 - `<id>` is a binding identifier such as `0`, `1`, etc.
-- `<port>` is the numeric input index shown by `; @info midi`.
-- MIDI entries are shown as `0`, `1`, etc.; only entries marked `(in)` can be used as input ports.
+- `<port>` is the numeric input index in `state.info.midi`.
+- MIDI entries use keys `0`, `1`, etc.; only entries marked `(in)` can be used as input ports.
 - Indexes are stable while the MIDI plugin is active; disconnected port indexes are not reused until the plugin is restarted.
 - `<callbackExportName>` must be a callable WebAssembly export created with `#export`.
 - The callback receives three integer arguments: `status`, `data1`, and `data2`.
@@ -484,7 +497,6 @@ Notes:
 Example:
 
 ```txt
-; @info midi
 ; @config midi.inputs.0.port 0
 ; @config midi.inputs.0.callback onMidiIn
 ; @config midi.inputs.1.port 0
@@ -973,6 +985,6 @@ parsed directives. Each plugin stays installed until editor disposal and owns it
 ```
 
 The entry defaults to `main` and runs once regardless of the number or visibility of `@texture` directives. It uses
-the compiler's shared memory and does not reinitialize defaults. The runtime only configures execution; each texture
-view specifies its framebuffer, format, dimensions, and magnification in its own directive. Disabling execution leaves
-framebuffer display active. Both editor compositions load the plugin for raw `textureRuntime` configuration or `@texture`.
+the compiler's shared memory and does not reinitialize defaults. The runtime only configures execution; upload
+declarations specify source addresses, formats, and dimensions, while views specify magnification and optional crops. Disabling execution leaves
+framebuffer display active. Both editor compositions load the plugin for raw `textureRuntime` configuration, `@textureUpload`, or `@texture`.

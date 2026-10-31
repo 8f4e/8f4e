@@ -10,7 +10,6 @@ import drawSelectedOutline from './drawSelectedOutline';
 import drawShapeDeclarations from './drawShapeDeclarations';
 import drawBlockHighlights from './widgets/blockHighlights';
 import drawErrorMessages from './widgets/errorMessages';
-import drawInfoPanels from './widgets/infoPanels';
 
 const corner = '+';
 
@@ -89,7 +88,6 @@ export default function drawModules(
 
 			drawErrorMessages(engine, state, codeBlock);
 			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
-			drawInfoPanels(engine, state, codeBlock);
 			drawers?.drawCodeBlockOverlay({ draw: engine, state, codeBlock, memoryViews });
 
 			engine.endGroup();

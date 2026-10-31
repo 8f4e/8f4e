@@ -1,20 +1,20 @@
 # Texture Runtime
 
-- Own `textureRuntime.enabled` (default false), `entry` (default main), and per-editor-frame WASM execution.
-  Entry execution is independent of framebuffer display and runs once per frame regardless of visible view count.
-- Own `@texture <framebuffer> <1bit|mono|rgb|rgba> <width> <height> <magnification>`, argument validation, scoped memory
-  resolution, private per-block views, and layout contributions. Dimensions and magnification are positive integers.
-  Reserve rows immediately below each directive and enough block width, even while memory is unresolved.
-- Export `createTextureRuntimePlugin({ getCodeBuffer, getMemory })`. Reuse ready/pending instances for directive and
-  entry changes. Create instances on activation or accepted compilation; cancel stale completion on disable/recompile/dispose.
-- Use one private GPU program and rectangle per renderer, with a format uniform and independent storage per directive.
-  Upload raw R8/RGB8/RGBA8 bytes; decode packed 1bit rows in the shader (byte-aligned, MSB first).
-- Use generic layout and render-layer APIs; add no texture fields to core state. The overlay may cover other editor
-  elements; block overlap handling is intentionally outside this feature. Track viewport/block positions and cull invisible views.
-- Both editor compositions match raw `textureRuntime` config or `@texture` with project scope before plugin installation.
-- Preserve nearest sampling, premultiplied-alpha output, storage reuse, and resource release/restoration. Free texture
-  storage for removed/offscreen views. Schema validation owns config constraints; directive parsing owns argument constraints.
-- Run `npx nx run @8f4e/editor-plugin-texture-runtime:build|test|typecheck` and
-  `npx nx run @8f4e/editor-plugin-texture-runtime:test:screenshot`.
-- Builds clear `dist/` before compilation so deleted or renamed sources cannot remain in emitted output or build caches.
-- Ignore Vitest attachments and screenshot comparisons; retain reference images. Browser fixtures require COOP/COEP.
+- Own runtime enabled/entry config and per-frame entry execution, independent of texture visibility.
+- Own `@textureUpload <pointerSource> <1bit|mono|rgb|rgba> <width> <height>` and
+  `@texture <pointerSource> <magnification> <width> <height> [<x> <y>]`. Keep no compatibility syntax or aliases.
+- Parse project-wide upload declarations and block-local views outside the frame path. Resolve direct addresses and
+  typed pointer values after entry execution each frame. Include unopened groups and group exposures.
+- Match views/uploads by current resolved byte address. Coalesce identical declarations, report conflicts once in
+  the editor console, and suppress conflicting resources. Bounds-check upload spans against current WASM memory.
+- Upload once per visible address per frame. Keep native R8/RGB8/RGBA8 storage and one program/rectangle. Crops use
+  source-pixel coordinates and original row stride; 1bit crops can start within packed bytes. Preserve nearest sampling
+  and premultiplied alpha. Free storage with no visible users and recreate after GPU release.
+- Rebind address caches when `compiler.result` changes; accepted metadata is published atomically and independently of progress.
+- Reserve view space from explicit source-pixel dimensions, with an optional source origin defaulting to zero. Layout
+  uses only directives and viewport grid sizes; it has no compiler or memory dependencies. Pointer swaps and invalid
+  sources never resize views. Keep rendering bindings separate from geometry and texture fields out of core.
+- Keep the overlay above editor content; block occlusion is outside this feature. Both compositions match either
+  directive and raw runtime config with project scope.
+- Export `createTextureRuntimePlugin({ getCodeBuffer, getMemory })`. Preserve instance reuse and stale completion cleanup.
+- Verify build/test/typecheck and test:screenshot through Nx. Builds clean dist before compilation.

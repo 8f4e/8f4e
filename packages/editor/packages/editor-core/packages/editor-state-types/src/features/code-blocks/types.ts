@@ -17,16 +17,6 @@ import type { CodeBlockDisplayModel } from './buildDisplayModel';
  */
 export type CodeBlockType = DocumentBlockType | 'unknown';
 
-export interface InfoPanel {
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-	id: string;
-	rowCount: number;
-	keyColumnWidth: number;
-}
-
 export interface MemoryIdentifier {
 	memory: PlannedMemoryDeclaration;
 	showAddress: boolean;
@@ -107,7 +97,6 @@ export interface CodeBlockGraphicData {
 			width: number;
 			color: PaletteToken;
 		}>;
-		infoPanels: InfoPanel[];
 		shapeDeclarations: ShapeDeclaration[];
 		errorMessages: Array<{
 			message: string[];

@@ -100,7 +100,7 @@ test('keeps live editing and project export available in the minimal editor', as
 	canvas.style.width = '640px';
 	canvas.style.height = '400px';
 	await vi.waitFor(() => expect(editor.state.viewport.width).toBe(640));
-	await vi.waitFor(() => expect(editor.state.compiler.compiledModules.galleryExample).toBeDefined());
+	await vi.waitFor(() => expect(editor.state.compiler.result.compiledModules.galleryExample).toBeDefined());
 	expect(editor.state.editorMode).toBe('edit');
 	expect(editor.state.featureFlags.projectCreation).toBe(false);
 	const rect = canvas.getBoundingClientRect();
@@ -170,7 +170,7 @@ entryEnd`),
 		() => expect(editor.state.info.testRuntime).toEqual({ status: 'passed', assertionCount: 1, failureCount: 0 }),
 		{ timeout: 10000 }
 	);
-	const memory = editor.state.compiler.memoryPlan.modules.counter.memory.count;
+	const memory = editor.state.compiler.result.memoryPlan.modules.counter.memory.count;
 	await vi.waitFor(() => expect(editor.getMemoryViews().int32[memory.allocationUnitAddress]).toBeGreaterThan(2));
 	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
 	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
@@ -183,7 +183,9 @@ test('compiles a loaded project through the compiler plugin and refreshes editor
 	const editor = await view.mounted();
 	await vi.waitFor(
 		() =>
-			expect(Object.keys(editor.state.compiler.compiledModules).some(id => id.includes('galleryExample'))).toBe(true),
+			expect(Object.keys(editor.state.compiler.result.compiledModules).some(id => id.includes('galleryExample'))).toBe(
+				true
+			),
 		{ timeout: 10000 }
 	);
 	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
@@ -222,7 +224,9 @@ moduleEnd
 entryEnd`),
 	});
 	const editor = await view.mounted();
-	await vi.waitFor(() => expect(editor.state.compiler.memoryPlan.modules.controls).toBeDefined(), { timeout: 10000 });
+	await vi.waitFor(() => expect(editor.state.compiler.result.memoryPlan.modules.controls).toBeDefined(), {
+		timeout: 10000,
+	});
 	const state = editor.state;
 	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	await vi.waitFor(
@@ -231,7 +235,7 @@ entryEnd`),
 	);
 	expect(state.codeErrors.compilationErrors).toEqual([]);
 	const canvas = view.panel().querySelector('canvas')!;
-	const address = state.compiler.memoryPlan.modules.controls.memory.value.allocationUnitAddress;
+	const address = state.compiler.result.memoryPlan.modules.controls.memory.value.allocationUnitAddress;
 	const press = (row: number) => {
 		const rect = canvas.getBoundingClientRect();
 		canvas.dispatchEvent(

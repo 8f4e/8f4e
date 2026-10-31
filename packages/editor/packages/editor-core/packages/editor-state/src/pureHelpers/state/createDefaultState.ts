@@ -9,13 +9,15 @@ export default function createDefaultState() {
 		projectChange: { revision: 0, kind: 'replace' } satisfies ProjectChange,
 		compiler: {
 			isCompiling: false,
-			compiledModules: {},
-			memoryPlan: {
-				modules: {},
-				moduleList: [],
+			result: {
+				compiledModules: {},
+				memoryPlan: {
+					modules: {},
+					moduleList: [],
+				},
+				memoryDefaultsByModuleId: {},
+				projectMemoryExposuresByGroupPath: {},
 			},
-			memoryDefaultsByModuleId: {},
-			projectMemoryExposuresByGroupPath: {},
 		},
 		codeBlockRendering: {
 			rootCodeBlocks,

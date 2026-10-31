@@ -417,7 +417,6 @@ export default function codeBlockRendering(
 		resolveEditorConfig(store);
 		updateAllBlockDerivedState();
 	});
-	store.subscribe('info', updateAllBlockDerivedState);
 	store.subscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.code', updateSelectedCodeBlockSource);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);

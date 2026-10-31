@@ -10,7 +10,6 @@ import type {
 	CodeBlockGraphicData,
 	CodeBlockRendering,
 	CodeBlockType,
-	InfoPanel,
 	MemoryIdentifier,
 	ParsedDirectiveRecord,
 	TypedValueKind,
@@ -69,7 +68,6 @@ export type {
 	EventDispatcher,
 	EventSubscriptionOptions,
 	GridCoordinates,
-	InfoPanel,
 	InsertTextEvent,
 	InternalKeyboardEvent,
 	InternalMouseEvent,
@@ -197,7 +195,7 @@ export interface State {
 	compiler: Compiler;
 	codeBlockRendering: CodeBlockRendering;
 	contextMenu: ContextMenu;
-	/** Arbitrary key/value records rendered by `; @info <id>` directives. */
+	/** Shared information records published by the editor and plugins. */
 	info: InfoState;
 	callbacks: Callbacks;
 	featureFlags: FeatureFlags;

@@ -56,7 +56,7 @@ async function setup(text = source, installed = true) {
 			})
 		: () => {};
 	const state = store.getState();
-	Object.assign(state.compiler, {
+	Object.assign(state.compiler.result, {
 		memoryPlan: compiled.memoryPlan,
 		memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
 		compiledModules: compiled.compiledModules,
@@ -88,8 +88,8 @@ describe('connectors plugin', () => {
 
 	it('draws live pointer connections independently of block visibility', async () => {
 		const { state, memoryViews, gl, render } = await setup();
-		const output = state.compiler.memoryPlan.modules.source.memory.output;
-		const input = state.compiler.memoryPlan.modules.sink.memory.input;
+		const output = state.compiler.result.memoryPlan.modules.source.memory.output;
+		const input = state.compiler.result.memoryPlan.modules.sink.memory.input;
 		state.codeBlockRendering.codeBlocks[0].x = -10000;
 		state.codeBlockRendering.codeBlocks[1].x = 10000;
 		render();
@@ -133,9 +133,9 @@ describe('connectors plugin', () => {
 
 	it('rebinds geometry and the output index when compilation changes memory addresses', async () => {
 		const { state, events, memoryViews, gl, render } = await setup();
-		const module = state.compiler.memoryPlan.modules.source;
+		const module = state.compiler.result.memoryPlan.modules.source;
 		module.memory.output = { ...module.memory.output, byteAddress: 128, allocationUnitAddress: 32 };
-		memoryViews.int32[state.compiler.memoryPlan.modules.sink.memory.input.allocationUnitAddress] = 128;
+		memoryViews.int32[state.compiler.result.memoryPlan.modules.sink.memory.input.allocationUnitAddress] = 128;
 		events.dispatch('memoryValuesChanged');
 		render();
 		expect(gl.drawArraysInstanced).toHaveBeenCalledOnce();

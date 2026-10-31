@@ -39,18 +39,20 @@ describe('selected line tooltip animation', () => {
 		const highlightFont = PALETTE_INDICES.inverseAccent;
 		const state = createMockState({
 			compiler: {
-				memoryPlan: {
-					modules: {
-						test: {
-							memory: {
-								pointer: {
-									allocationUnitAddress: 0,
+				result: {
+					memoryPlan: {
+						modules: {
+							test: {
+								memory: {
+									pointer: {
+										allocationUnitAddress: 0,
+									},
 								},
 							},
 						},
 					},
 				},
-			} as never,
+			},
 			featureFlags: { codeLineSelection: true },
 			codeBlockRendering: { selectedCodeBlock: codeBlock },
 		});
@@ -249,24 +251,26 @@ describe('tooltip drawing', () => {
 		});
 		const state = createMockState({
 			compiler: {
-				memoryPlan: {
-					modules: {
-						test: {
-							id: 'test',
-							lineNumber: 1,
-							byteAddress: 8,
-							allocationUnitCount: 1,
-							allocatedByteLength: 4,
-							endByteAddress: 8,
-							endAddressSafeByteLength: 4,
-							memory: {
-								pointer,
+				result: {
+					memoryPlan: {
+						modules: {
+							test: {
+								id: 'test',
+								lineNumber: 1,
+								byteAddress: 8,
+								allocationUnitCount: 1,
+								allocatedByteLength: 4,
+								endByteAddress: 8,
+								endAddressSafeByteLength: 4,
+								memory: {
+									pointer,
+								},
+								declarations: [pointer],
+								declarationSources: [],
 							},
-							declarations: [pointer],
-							declarationSources: [],
 						},
+						moduleList: [],
 					},
-					moduleList: [],
 				},
 			},
 			codeBlockRendering: {

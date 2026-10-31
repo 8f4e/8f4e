@@ -50,6 +50,7 @@
   subscriptions. Changed requests automatically rederive affected visible blocks without source changes, project
   revisions, or compilation. Unchanged values are no-ops; callbacks can update requests and settle synchronously.
   Keep all layout requests/callbacks out of directive drafts, and layout refresh policy out of the lazy loader.
+  Web UI text projection refreshes only after `codeBlockLayoutsChanged`; keep input invalidation owned by editor-state.
 - Use `applyCodeBlockSourceEdits(store, edits, { affectsCompilation })` for plugin source-edit batches and
   `deleteCodeBlocks(store, blocks)` for removing blocks from the current slice. These helpers own refreshes,
   deleted-block reference cleanup, and one completed project/compiler notification. Callers own edit-mode policy;
@@ -93,6 +94,7 @@
 
 - Memory writes belong to injected plugin factory dependencies. Keep `getWordFromMemory` for core pointer dereferencing; do not restore a state-level write callback.
 
+- Keep accepted metadata in `state.compiler.result`, separate from `compiler.isCompiling` progress.
 - Core emits `compilationInputChanged` after its compiler input revision advances. Compilation scheduling and worker ownership belong to `editor-plugin-compiler`; do not restore a compile callback or built-in compiler effect.
 - `EditorOptions` has no public callbacks bag. Construct internal memory, clipboard, and animation callbacks in core.
 - Consume accepted `compilationSucceeded` program artifacts (`memoryRef`) to update generic memory views before metadata consumers react. Dispose plugins in reverse installation order so execution plugins stop before compiler resources are released. Drain cleanup stacks even when a disposer throws.
@@ -107,11 +109,10 @@
   namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
   selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.
 
-- Per-frame WASM execution and `@texture` framebuffer views belong entirely to `editor-plugin-texture-runtime`.
-  Its `textureRuntime` config owns only `enabled` and `entry`; each directive owns its framebuffer, format, dimensions,
-  and integer magnification. Both compositions load it lazily from `@texture` or raw `textureRuntime` config with
-  project scope and compiler getters. Layout contributions reserve rows and a minimum block width; private views
-  resolve memory in the containing block's scope. One GPU program and rectangle serve all 1bit/mono/rgb/rgba views.
-  The generic overlay pass executes the entry once per editor frame and draws visible textures at block-relative
-  positions above the editor, without block occlusion. Rendering remains active when entry execution is disabled.
-  Keep parsing and memory lookup outside the frame path; release storage for removed/offscreen views and on GPU release.
+- Per-frame WASM execution and texture upload/view directives belong entirely to `editor-plugin-texture-runtime`.
+  `textureRuntime` config owns `enabled` and `entry`. `@textureUpload <address> <format> <width> <height>` defines a source;
+  `@texture <address> <magnification> <width> <height> [<x> <y>]` defines a full or cropped view. Both use pointer sources,
+  resolved to byte addresses after entry execution each frame. Discover uploads throughout the project and share one
+  upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
+  Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
+  path and release storage without visible views. The overlay remains above editor content without block occlusion.

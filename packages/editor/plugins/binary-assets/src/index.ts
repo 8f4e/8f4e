@@ -118,14 +118,14 @@ export function createBinaryAssetsPlugin({
 			}
 
 			store.subscribe('editorConfig.bin', syncConfig);
-			store.subscribe('compiler.memoryPlan', reloadMemory);
+			store.subscribe('compiler.result.memoryPlan', reloadMemory);
 			store.set('editorConfigSchemaContributions.binaryAssets', binaryAssetsEditorConfigSchemaContribution);
 			void syncConfig();
 
 			return () => {
 				disposed = true;
 				store.unsubscribe('editorConfig.bin', syncConfig);
-				store.unsubscribe('compiler.memoryPlan', reloadMemory);
+				store.unsubscribe('compiler.result.memoryPlan', reloadMemory);
 				assets = [];
 				if (dialogVisible) events.dispatch('removeDialog', { id: DIALOG_ID });
 				const constants = { ...store.getState().envConstantContributions };

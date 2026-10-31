@@ -19,7 +19,7 @@ function getStackAnalysisLines(
 		return getCompiledFunctionForCodeBlock(graphicData, state)?.stackAnalysis;
 	}
 
-	return state.compiler.compiledModules[getCodeBlockModuleId(graphicData)]?.stackAnalysis;
+	return state.compiler.result.compiledModules[getCodeBlockModuleId(graphicData)]?.stackAnalysis;
 }
 
 function findStackAnalysisLine(

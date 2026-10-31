@@ -10,6 +10,7 @@ export * from './diagnostics';
 export * from './errors';
 export * from './functionLayout';
 export * from './functionTypes';
+export * from './ignoredAssertionImports';
 export * from './instructionSpecs';
 export * from './instructionSpecTypes';
 export * from './instructionSpecUtils';

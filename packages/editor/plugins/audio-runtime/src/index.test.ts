@@ -349,8 +349,8 @@ describe('AudioWorklet context lifetime', () => {
 			['module audiooutL', 'float[] buffer 128', 'moduleEnd', 'module audiooutR', 'float[] buffer 128', 'moduleEnd']
 		);
 		const compiled = await compileProject(editor.project);
-		editor.store.set('compiler', {
-			...editor.state.compiler,
+		editor.store.set('compiler.result', {
+			...editor.state.compiler.result,
 			compiledModules: compiled.compiledModules,
 			memoryPlan: compiled.memoryPlan,
 			memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,

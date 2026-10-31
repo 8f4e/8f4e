@@ -85,14 +85,14 @@ describe('editor-state testing utilities', () => {
 	it('provides complete compiler defaults and fresh mutable state for every fixture', async () => {
 		const state = createMockState();
 		const other = createMockState();
-		expect(state.compiler.memoryPlan).toEqual({ modules: {}, moduleList: [] });
-		expect(state.compiler.projectMemoryExposuresByGroupPath).toEqual({});
-		expect(state.compiler.memoryDefaultsByModuleId).toEqual({});
-		expect(state.compiler.memoryPlan.moduleList).not.toBe(other.compiler.memoryPlan.moduleList);
-		state.compiler.projectMemoryExposuresByGroupPath.root = [];
+		expect(state.compiler.result.memoryPlan).toEqual({ modules: {}, moduleList: [] });
+		expect(state.compiler.result.projectMemoryExposuresByGroupPath).toEqual({});
+		expect(state.compiler.result.memoryDefaultsByModuleId).toEqual({});
+		expect(state.compiler.result.memoryPlan.moduleList).not.toBe(other.compiler.result.memoryPlan.moduleList);
+		state.compiler.result.projectMemoryExposuresByGroupPath.root = [];
 		state.codeBlockRendering.codeBlocks.push(createMockCodeBlock());
-		expect(other.compiler.memoryPlan.moduleList).toEqual([]);
-		expect(other.compiler.projectMemoryExposuresByGroupPath).toEqual({});
+		expect(other.compiler.result.memoryPlan.moduleList).toEqual([]);
+		expect(other.compiler.result.projectMemoryExposuresByGroupPath).toEqual({});
 		expect(other.codeBlockRendering.codeBlocks).toEqual([]);
 	});
 
@@ -129,6 +129,6 @@ describe('editor-state testing utilities', () => {
 		expect(state.callbacks.writeClipboardText).toBe(writeClipboardText);
 		expect(state.codeBlockRendering.codeBlocks).toBe(blocks);
 		expect(state.compiler.isCompiling).toBe(true);
-		expect(state.compiler.memoryPlan).toEqual({ modules: {}, moduleList: [] });
+		expect(state.compiler.result.memoryPlan).toEqual({ modules: {}, moduleList: [] });
 	});
 });

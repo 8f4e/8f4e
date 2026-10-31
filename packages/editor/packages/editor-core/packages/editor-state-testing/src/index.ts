@@ -73,7 +73,6 @@ export function createMockCodeBlock(
 		parsedDirectives: [],
 		widgets: {
 			blockHighlights: [],
-			infoPanels: [],
 			shapeDeclarations: [],
 			errorMessages: [],
 		},
@@ -118,13 +117,15 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		projectChange: { revision: 0, kind: 'replace' },
 		compiler: {
 			isCompiling: false,
-			compiledModules: {},
-			memoryPlan: {
-				modules: {},
-				moduleList: [],
+			result: {
+				compiledModules: {},
+				memoryPlan: {
+					modules: {},
+					moduleList: [],
+				},
+				memoryDefaultsByModuleId: {},
+				projectMemoryExposuresByGroupPath: {},
 			},
-			memoryDefaultsByModuleId: {},
-			projectMemoryExposuresByGroupPath: {},
 		},
 		callbacks: {},
 		codeBlockRendering: {

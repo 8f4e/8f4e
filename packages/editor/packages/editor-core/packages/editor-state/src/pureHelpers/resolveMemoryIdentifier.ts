@@ -2,7 +2,7 @@ import type { MemoryIdentifier, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration, PlannedMemoryModule } from '@8f4e/language-spec';
 import resolveMemoryTarget, { type MemoryScope, type ResolvedMemoryTarget } from './resolveMemoryTarget';
 
-type MemoryPlanLookup = State['compiler']['memoryPlan'];
+type MemoryPlanLookup = State['compiler']['result']['memoryPlan'];
 
 interface CachedDeclarationsByByteAddress {
 	moduleList: readonly PlannedMemoryModule[];
@@ -76,7 +76,7 @@ export default function resolveMemoryIdentifier(
 	let memory: PlannedMemoryDeclaration | undefined = target.memory;
 	if (operator === '*' && memory.pointeeBaseType) {
 		const pointerAddress = state.callbacks?.getWordFromMemory?.(memory.allocationUnitAddress) || 0;
-		memory = getDeclarationsByByteAddress(state.compiler.memoryPlan)?.get(pointerAddress);
+		memory = getDeclarationsByByteAddress(state.compiler.result.memoryPlan)?.get(pointerAddress);
 	}
 
 	if (!memory) {

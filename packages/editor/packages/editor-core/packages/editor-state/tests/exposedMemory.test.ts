@@ -28,8 +28,8 @@ async function setup() {
 	const project = parseProjectSource(source);
 	const compiled = await compileProject(project, { disableSharedMemory: true });
 	const state = createMockState();
-	state.compiler.memoryPlan = compiled.memoryPlan;
-	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
+	state.compiler.result.memoryPlan = compiled.memoryPlan;
+	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
 	(instance.exports.initDefaults as CallableFunction)();
@@ -89,13 +89,13 @@ describe('shared exposed memory resolution', () => {
 	it('rebinds controls to replacement metadata and removes unresolved aliases', () => {
 		const { state, audio } = test;
 		const replacement = {
-			...state.compiler.projectMemoryExposuresByGroupPath.audio[0],
+			...state.compiler.result.projectMemoryExposuresByGroupPath.audio[0],
 			targetModuleId: 'other/voice',
-			targetMemory: state.compiler.memoryPlan.modules['other/voice'].memory.level,
+			targetMemory: state.compiler.result.memoryPlan.modules['other/voice'].memory.level,
 		};
-		state.compiler.projectMemoryExposuresByGroupPath = { audio: [replacement] };
+		state.compiler.result.projectMemoryExposuresByGroupPath = { audio: [replacement] };
 		expect(resolveMemoryTarget(state, getCodeBlockMemoryScope(audio), 'gain')?.memory).toBe(replacement.targetMemory);
-		state.compiler.projectMemoryExposuresByGroupPath = {};
+		state.compiler.result.projectMemoryExposuresByGroupPath = {};
 		expect(resolveMemoryTarget(state, { kind: 'project', groupPath: '' }, 'audio:gain')).toBeUndefined();
 	});
 });

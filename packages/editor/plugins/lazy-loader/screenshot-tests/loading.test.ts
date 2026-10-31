@@ -51,7 +51,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 						id: 'test-artifacts',
 						setup: services => {
 							context = services;
-							Object.assign(services.store.getState().compiler, {
+							Object.assign(services.store.getState().compiler.result, {
 								memoryPlan: compiled.memoryPlan,
 								memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
 								compiledModules: compiled.compiledModules,

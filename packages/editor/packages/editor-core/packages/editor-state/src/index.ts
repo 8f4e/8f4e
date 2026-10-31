@@ -12,7 +12,6 @@ import autoEnvConstants from './features/code-blocks/features/auto-env-constants
 import codeBlockCreator from './features/code-blocks/features/codeBlockCreator/effect';
 import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
-import registerInfoLayout from './features/code-blocks/features/directives/info/layout';
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
@@ -104,7 +103,6 @@ export default function init(
 	registerEffect(autoEnvConstants(store)); // Must run after codeBlockCreator to ensure env block is created
 	registerEffect(publishCompilationInputChanges(store, events));
 	registerEffect(codeBlockRendering(store, events, directives.definitions, layout));
-	registerEffect(registerInfoLayout(layout));
 	registerEffect(viewportDirectiveEffect(store, events));
 	registerEffect(entryOutlines(store));
 	registerEffect(codeEditing(store, events));
@@ -179,5 +177,4 @@ export {
 	parseFiniteNumber,
 	parseInteger,
 } from './shared/editorDirectiveArgumentTypes';
-export { formatInfoValue, isRenderableInfoValue } from './shared/formatInfoValue';
 export { formatKnownStackValue } from './shared/formatKnownStackValue';

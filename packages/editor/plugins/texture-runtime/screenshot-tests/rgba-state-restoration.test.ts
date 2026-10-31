@@ -26,7 +26,9 @@ test('restores nearest overlay sampling after raw hooks without a sprite pass', 
 		context.clearColor(0, destinationAlpha / 255, 0, destinationAlpha / 255);
 		context.clear(context.COLOR_BUFFER_BIT);
 	});
-	engine.hooks.postDraw.push(() => overlay.drawTexture('rgba', 0, 0, canvas.width, canvas.height));
+	engine.hooks.postDraw.push(() =>
+		overlay.drawTexture(0, 0, 0, canvas.width, canvas.height, { x: 0, y: 0, width: 2, height: 2 })
+	);
 	try {
 		for (const [stage, width, height] of [
 			['initial', 8, 8],
@@ -39,7 +41,7 @@ test('restores nearest overlay sampling after raw hooks without a sprite pass', 
 				engine.restoreRenderingMemory();
 			}
 			engine.resize(width, height);
-			overlay.upload('rgba', pixels, 2, 2, 'rgba');
+			overlay.upload(0, pixels, 2, 2, 'rgba');
 			for (const alpha of [0, 128, 255]) {
 				destinationAlpha = alpha;
 				engine.renderFrame(() => {});
@@ -97,8 +99,8 @@ for (const dirtyState of ['row layout', 'unpack buffer', 'flip and premultiplica
 		});
 		const overlay = new TextureDrawer(engine.gl);
 		engine.hooks.postDraw.push(() => {
-			overlay.upload('rgba', pixels, width, height, 'rgba');
-			overlay.drawTexture('rgba', 0, 0, canvas.width, canvas.height);
+			overlay.upload(0, pixels, width, height, 'rgba');
+			overlay.drawTexture(0, 0, 0, canvas.width, canvas.height, { x: 0, y: 0, width, height });
 		});
 		try {
 			for (const [version, stage] of ['allocate', 'update', 'resize', 'restore'].entries()) {

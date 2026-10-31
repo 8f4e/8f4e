@@ -96,7 +96,7 @@ describe('watch plugin', () => {
 			'0.2500',
 			expect.any(Number)
 		);
-		test.store.set('compiler.projectMemoryExposuresByGroupPath', {});
+		test.store.set('compiler.result.projectMemoryExposuresByGroupPath', {});
 		test.events.dispatch('memoryValuesChanged');
 		test.render();
 		expect(test.draw.drawText).not.toHaveBeenCalled();

@@ -38,8 +38,8 @@ function setMemories(state: State, memories: PlannedMemoryDeclaration[], inherit
 		declarations: memories,
 		declarationSources: [],
 	};
-	state.compiler.memoryPlan = { modules: { 'test-block': module }, moduleList: [module] };
-	state.compiler.memoryDefaultsByModuleId['test-block'] = Object.fromEntries(
+	state.compiler.result.memoryPlan = { modules: { 'test-block': module }, moduleList: [module] };
+	state.compiler.result.memoryDefaultsByModuleId['test-block'] = Object.fromEntries(
 		memories.map(memory => [memory.id, { value: 0, isInherited: inheritedIds.includes(memory.id) }])
 	);
 }
@@ -136,7 +136,7 @@ describe('deriveConnectors', () => {
 				'groupEnd',
 			],
 		});
-		state.compiler.projectMemoryExposuresByGroupPath.audio = [
+		state.compiler.result.projectMemoryExposuresByGroupPath.audio = [
 			{
 				name: 'publicInput',
 				targetModuleName: 'source',

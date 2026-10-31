@@ -30,27 +30,29 @@ describe('tooltip effect', () => {
 		});
 		const state = createMockState({
 			compiler: {
-				compiledModules: {
-					test: {
-						stackAnalysis: [
-							{
-								lineNumber: 2,
-								instruction: 'add',
-								stackAnalysis: {
-									stackBefore: [
-										{ kind: 'value', valueType: 'int', knownValue: 1 },
-										{ kind: 'value', valueType: 'int', knownValue: 2 },
-									],
-									consumedOperands: [
-										{ kind: 'value', valueType: 'int', knownValue: 1 },
-										{ kind: 'value', valueType: 'int', knownValue: 2 },
-									],
-									producedStackItems: [{ kind: 'value', valueType: 'int' }],
-									stackAfter: [{ kind: 'value', valueType: 'int' }],
+				result: {
+					compiledModules: {
+						test: {
+							stackAnalysis: [
+								{
+									lineNumber: 2,
+									instruction: 'add',
+									stackAnalysis: {
+										stackBefore: [
+											{ kind: 'value', valueType: 'int', knownValue: 1 },
+											{ kind: 'value', valueType: 'int', knownValue: 2 },
+										],
+										consumedOperands: [
+											{ kind: 'value', valueType: 'int', knownValue: 1 },
+											{ kind: 'value', valueType: 'int', knownValue: 2 },
+										],
+										producedStackItems: [{ kind: 'value', valueType: 'int' }],
+										stackAfter: [{ kind: 'value', valueType: 'int' }],
+									},
 								},
-							},
-						],
-					} as never,
+							],
+						} as never,
+					},
 				},
 			},
 			codeBlockRendering: {
@@ -113,36 +115,38 @@ describe('tooltip effect', () => {
 		const functionId = createFunctionId('helper', ['int', 'int']);
 		const state = createMockState({
 			compiler: {
-				compiledFunctions: {
-					[createFunctionId('helper', ['float'])]: {
-						id: createFunctionId('helper', ['float']),
-						name: 'helper',
-						ast: { projectBlockId: 99 },
-						stackAnalysis: [],
-					} as never,
-					[functionId]: {
-						id: functionId,
-						name: 'helper',
-						ast: { projectBlockId: 42 },
-						stackAnalysis: [
-							{
-								lineNumber: 3,
-								instruction: 'add',
-								stackAnalysis: {
-									stackBefore: [
-										{ kind: 'value', valueType: 'int', knownValue: 1 },
-										{ kind: 'value', valueType: 'int', knownValue: 2 },
-									],
-									consumedOperands: [
-										{ kind: 'value', valueType: 'int', knownValue: 1 },
-										{ kind: 'value', valueType: 'int', knownValue: 2 },
-									],
-									producedStackItems: [{ kind: 'value', valueType: 'int' }],
-									stackAfter: [{ kind: 'value', valueType: 'int' }],
+				result: {
+					compiledFunctions: {
+						[createFunctionId('helper', ['float'])]: {
+							id: createFunctionId('helper', ['float']),
+							name: 'helper',
+							ast: { projectBlockId: 99 },
+							stackAnalysis: [],
+						} as never,
+						[functionId]: {
+							id: functionId,
+							name: 'helper',
+							ast: { projectBlockId: 42 },
+							stackAnalysis: [
+								{
+									lineNumber: 3,
+									instruction: 'add',
+									stackAnalysis: {
+										stackBefore: [
+											{ kind: 'value', valueType: 'int', knownValue: 1 },
+											{ kind: 'value', valueType: 'int', knownValue: 2 },
+										],
+										consumedOperands: [
+											{ kind: 'value', valueType: 'int', knownValue: 1 },
+											{ kind: 'value', valueType: 'int', knownValue: 2 },
+										],
+										producedStackItems: [{ kind: 'value', valueType: 'int' }],
+										stackAfter: [{ kind: 'value', valueType: 'int' }],
+									},
 								},
-							},
-						],
-					} as never,
+							],
+						} as never,
+					},
 				},
 			},
 			codeBlockRendering: {
@@ -188,29 +192,31 @@ describe('tooltip effect', () => {
 		});
 		const state = createMockState({
 			compiler: {
-				memoryPlan: {
-					modules: {
-						[moduleId]: {
-							id: 'test',
-							lineNumber: 0,
-							byteAddress: 0,
-							allocationUnitCount: 0,
-							allocatedByteLength: 0,
-							endByteAddress: 0,
-							endAddressSafeByteLength: 0,
-							memory: {
-								value: {
-									id: 'value',
-									numberOfElements: 1,
-									byteAddress: 4,
-									allocationUnitAddress: 1,
+				result: {
+					memoryPlan: {
+						modules: {
+							[moduleId]: {
+								id: 'test',
+								lineNumber: 0,
+								byteAddress: 0,
+								allocationUnitCount: 0,
+								allocatedByteLength: 0,
+								endByteAddress: 0,
+								endAddressSafeByteLength: 0,
+								memory: {
+									value: {
+										id: 'value',
+										numberOfElements: 1,
+										byteAddress: 4,
+										allocationUnitAddress: 1,
+									},
 								},
+								declarations: [],
+								declarationSources: [],
 							},
-							declarations: [],
-							declarationSources: [],
 						},
+						moduleList: [],
 					},
-					moduleList: [],
 				},
 			},
 			codeBlockRendering: {
@@ -301,9 +307,11 @@ describe('tooltip effect', () => {
 		});
 		const state = createMockState({
 			compiler: {
-				compiledModules: {
-					'module-a': {} as never,
-					'module-b': {} as never,
+				result: {
+					compiledModules: {
+						'module-a': {} as never,
+						'module-b': {} as never,
+					},
 				},
 			},
 			codeBlockRendering: {
@@ -411,7 +419,7 @@ describe('tooltip lifecycle', () => {
 			store.dispose();
 		});
 		expect(tooltip.getState().text).not.toContain('execution order: 2');
-		store.set('compiler.compiledModules', { first: {} as never, test: {} as never });
+		store.set('compiler.result.compiledModules', { first: {} as never, test: {} as never });
 		expect(tooltip.getState().text).toContain('execution order: 2');
 	});
 });

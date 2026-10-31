@@ -36,10 +36,10 @@ entryEnd`
 	const store = initState(events, {
 		callbacks: {},
 	});
-	store.set('compiler.compiledModules', compiled.compiledModules);
-	store.set('compiler.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
-	store.set('compiler.memoryPlan', compiled.memoryPlan);
-	store.set('compiler.projectMemoryExposuresByGroupPath', compiled.projectMemoryExposuresByGroupPath);
+	store.set('compiler.result.compiledModules', compiled.compiledModules);
+	store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
+	store.set('compiler.result.memoryPlan', compiled.memoryPlan);
+	store.set('compiler.result.projectMemoryExposuresByGroupPath', compiled.projectMemoryExposuresByGroupPath);
 	const inputTarget = new EventTarget();
 	const dispose = createKeyboardMemoryPlugin({
 		inputTarget: inputTarget as HTMLElement,

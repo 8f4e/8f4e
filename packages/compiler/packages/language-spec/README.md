@@ -10,6 +10,7 @@ This package is the place for data and types that describe the 8f4e language its
 - Memory declaration types, memory data contracts, and memory layout metadata types.
 - Function type limits, function signature helpers, parameter shape metadata, and runtime option contracts.
 - Compiler error codes and shared error metadata.
+- Assertion host import names and default no-op bindings (`IGNORED_ASSERTION_IMPORTS`) for hosts that ignore assertions.
 
 The package is intentionally declarative. Other compiler packages import these facts so they agree on the same language model.
 

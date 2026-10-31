@@ -15,6 +15,8 @@
   Do not reconstruct the old core compiler-result interface.
 - Check input generation before accepting results in both the worker adapter and publication effect, including changes
   during debounce. Publish handles and the `compilationSucceeded` rendering event before metadata and runtime readiness.
+- Publish all compiler metadata atomically by replacing `state.compiler.result` in one store update while `isCompiling` is
+  true. Result publication must not notify progress subscribers. Set `isCompiling` false afterward so memory-plan subscribers finish loading assets before runtimes resume.
 - Cancel scheduling before rejecting pending requests and terminating the worker. Release every owned registration;
   ignore late results and keep editor instances isolated. Cache typed memory-write views and refresh after growth.
 - Inject include resolution through the factory. The default Vite worker import belongs to this package; do not move

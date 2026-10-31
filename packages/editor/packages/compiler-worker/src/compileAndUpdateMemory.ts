@@ -9,8 +9,7 @@ import type {
 	ProjectIncludeResolver,
 	ProjectObjectModel,
 } from '@8f4e/language-spec';
-import { ALLOCATION_UNIT_BYTE_SIZE } from '@8f4e/language-spec';
-import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/test-runner';
+import { ALLOCATION_UNIT_BYTE_SIZE, IGNORED_ASSERTION_IMPORTS } from '@8f4e/language-spec';
 import getMemoryValueChanges from './getMemoryValueChanges';
 import getOrCreateMemory from './getOrCreateMemory';
 

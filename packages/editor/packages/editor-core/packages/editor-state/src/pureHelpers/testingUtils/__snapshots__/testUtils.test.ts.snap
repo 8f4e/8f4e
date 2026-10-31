@@ -33,7 +33,6 @@ exports[`createMockCodeBlock > cursor calculation > should calculate cursor posi
   "widgets": {
     "blockHighlights": [],
     "errorMessages": [],
-    "infoPanels": [],
     "shapeDeclarations": [],
   },
   "width": 200,
@@ -75,7 +74,6 @@ exports[`createMockCodeBlock > cursor calculation > should prefer explicit curso
   "widgets": {
     "blockHighlights": [],
     "errorMessages": [],
-    "infoPanels": [],
     "shapeDeclarations": [],
   },
   "width": 100,
@@ -117,7 +115,6 @@ exports[`createMockCodeBlock > cursor calculation > should use cursorY convenien
   "widgets": {
     "blockHighlights": [],
     "errorMessages": [],
-    "infoPanels": [],
     "shapeDeclarations": [],
   },
   "width": 200,
@@ -159,7 +156,6 @@ exports[`createMockCodeBlock > default values > should create a block with defau
   "widgets": {
     "blockHighlights": [],
     "errorMessages": [],
-    "infoPanels": [],
     "shapeDeclarations": [],
   },
   "width": 100,
@@ -201,7 +197,6 @@ exports[`createMockCodeBlock > edge cases > should handle negative coordinates 1
   "widgets": {
     "blockHighlights": [],
     "errorMessages": [],
-    "infoPanels": [],
     "shapeDeclarations": [],
   },
   "width": 100,
@@ -243,7 +238,6 @@ exports[`createMockCodeBlock > edge cases > should handle zero dimensions 1`] = 
   "widgets": {
     "blockHighlights": [],
     "errorMessages": [],
-    "infoPanels": [],
     "shapeDeclarations": [],
   },
   "width": 0,
@@ -286,7 +280,6 @@ exports[`createMockCodeBlock > override behavior > should allow independent over
   "widgets": {
     "blockHighlights": [],
     "errorMessages": [],
-    "infoPanels": [],
     "shapeDeclarations": [],
   },
   "width": 100,
@@ -346,7 +339,6 @@ exports[`createMockCodeBlock > override behavior > should allow override of code
   "widgets": {
     "blockHighlights": [],
     "errorMessages": [],
-    "infoPanels": [],
     "shapeDeclarations": [],
   },
   "width": 100,
@@ -388,7 +380,6 @@ exports[`createMockCodeBlock > override behavior > should override position and 
   "widgets": {
     "blockHighlights": [],
     "errorMessages": [],
-    "infoPanels": [],
     "shapeDeclarations": [],
   },
   "width": 200,
@@ -430,7 +421,6 @@ exports[`createMockCodeBlock > override behavior > should override the block nam
   "widgets": {
     "blockHighlights": [],
     "errorMessages": [],
-    "infoPanels": [],
     "shapeDeclarations": [],
   },
   "width": 100,

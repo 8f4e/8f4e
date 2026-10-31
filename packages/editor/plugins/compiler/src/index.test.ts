@@ -78,13 +78,14 @@ describe('compiler plugin', () => {
 			expect(test.compiler.getCodeBuffer()).toBe(codeBuffer);
 			order.push('rendering');
 		});
-		test.store.subscribe('compiler.memoryPlan', () => {
-			expect(test.compiler.getMemory()).toBe(memory);
-			test.compiler.writeMemory(1, 42, true);
-			order.push('memory');
-		});
 		test.store.subscribe('compiler.isCompiling', () => {
 			if (!test.store.getState().compiler.isCompiling) order.push('runtime');
+		});
+		test.store.subscribe('compiler.result.memoryPlan', () => {
+			expect(test.compiler.getMemory()).toBe(memory);
+			expect(test.store.getState().compiler.isCompiling).toBe(true);
+			test.compiler.writeMemory(1, 42, true);
+			order.push('memory');
 		});
 		test.worker.emitMessage(createSuccessMessage(codeBuffer, memory));
 		await vi.advanceTimersByTimeAsync(0);

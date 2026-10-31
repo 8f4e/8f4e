@@ -46,7 +46,7 @@ entryEnd`);
 	const state = store.getState();
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
-	Object.assign(state.compiler, compiled);
+	Object.assign(state.compiler.result, compiled);
 	store.set('initialProjectState', project);
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.codeBlocks', [codeBlock]);

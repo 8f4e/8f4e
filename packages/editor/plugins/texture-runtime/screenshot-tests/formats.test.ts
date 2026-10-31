@@ -68,8 +68,8 @@ test('one program draws all formats over sprites with packed odd-width rows and 
 				}
 				engine.hooks.postDraw.length = 0;
 				engine.hooks.postDraw.push(() => {
-					drawer.upload('view', new Uint8Array(item.pixels), item.width, 2, item.format);
-					drawer.drawTexture('view', 0, 0, canvas.width, canvas.height);
+					drawer.upload(0, new Uint8Array(item.pixels), item.width, 2, item.format);
+					drawer.drawTexture(0, 0, 0, canvas.width, canvas.height, { x: 0, y: 0, width: item.width, height: 2 });
 				});
 				engine.renderFrame(() => engine.drawSprite(0, 0, FILL_SPRITE_ID, 0, canvas.width, canvas.height));
 				const actual = new Uint8Array(canvas.width * canvas.height * 4);
@@ -82,6 +82,28 @@ test('one program draws all formats over sprites with packed odd-width rows and 
 						);
 					}
 				expect(gl.getError()).toBe(gl.NO_ERROR);
+				const horizontal = {
+					x: item.format === '1bit' ? 7 : 1,
+					y: 0,
+					width: item.format === '1bit' ? 3 : 2,
+					height: 2,
+				};
+				for (const crop of [horizontal, { ...horizontal, y: 1, height: 1 }]) {
+					engine.resize(crop.width * 3, crop.height * 3);
+					engine.hooks.postDraw.length = 0;
+					engine.hooks.postDraw.push(() => drawer.drawTexture(0, 0, 0, canvas.width, canvas.height, crop));
+					engine.renderFrame(() => engine.drawSprite(0, 0, FILL_SPRITE_ID, 0, canvas.width, canvas.height));
+					const cropped = new Uint8Array(canvas.width * canvas.height * 4);
+					gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, cropped);
+					for (let y = 0; y < canvas.height; y++)
+						for (let x = 0; x < canvas.width; x++) {
+							const offset = ((canvas.height - 1 - y) * canvas.width + x) * 4;
+							expect([...cropped.subarray(offset, offset + 4)], `crop ${item.format}, ${stage}, ${x},${y}`).toEqual(
+								item.expected[(Math.floor(y / 3) + crop.y) * item.width + Math.floor(x / 3) + crop.x]
+							);
+						}
+				}
+				engine.resize(item.width * 3, 6);
 			}
 		}
 	} finally {

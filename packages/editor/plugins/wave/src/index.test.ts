@@ -47,11 +47,11 @@ async function setup(code = source, installed = true, name = 'audio') {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.memoryPlan = compiled.memoryPlan;
-	state.compiler.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.compiledModules = compiled.compiledModules;
-	state.compiler.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
+	state.compiler.result.memoryPlan = compiled.memoryPlan;
+	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
+	state.compiler.result.compiledModules = compiled.compiledModules;
+	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
+	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
@@ -135,7 +135,7 @@ describe('wave plugin', () => {
 			'; @wave start length playhead',
 			'moduleEnd',
 		]);
-		const memory = test.state.compiler.memoryPlan.modules.audio.memory;
+		const memory = test.state.compiler.result.memoryPlan.modules.audio.memory;
 		test.memoryViews.int32[memory.playhead.allocationUnitAddress] = memory.samples.byteAddress + 2 * 4;
 		test.render();
 		const width = test.codeBlock.width - (test.codeBlock.lineNumberColumnWidth + 2) * 8;
@@ -202,7 +202,7 @@ describe('wave plugin', () => {
 
 	it('rebinds compiler memory metadata and removes unresolved waves', async () => {
 		const test = await setup();
-		const memory = test.state.compiler.memoryPlan.modules.audio.memory;
+		const memory = test.state.compiler.result.memoryPlan.modules.audio.memory;
 		memory.samples = {
 			...memory.samples,
 			byteAddress: memory.samples.byteAddress + 64,
