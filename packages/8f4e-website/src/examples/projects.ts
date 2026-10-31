@@ -90,6 +90,12 @@ export const projects = [
 		path: 'audio/keyboardController6OperatorFMSynth.8f4e',
 	},
 	{
+		id: 'dx7-stg-crescendo',
+		title: 'DX7 STG CRSNDO',
+		description: 'Hold a keyboard note to swell a DX7-style string voice with delayed vibrato and stereo reverb.',
+		path: 'audio/dx7StgCrescendo.8f4e',
+	},
+	{
 		id: 'formant-synth',
 		title: 'Formant synthesizer',
 		description: 'Cycle through vowel sounds with a sawtooth oscillator and three formant filters.',
