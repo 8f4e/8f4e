@@ -6,11 +6,12 @@ import type {
 	LocalValueMetadata,
 	PointeeBaseType,
 	PointeeMetadata,
+	PointerLocalMetadata,
 	ResolvedMemoryDeclaration,
 	ResolvedPushLine,
 	Stack,
 } from '@8f4e/language-spec';
-import { ArgumentType, getDereferencedValueKindFromMetadata, getPointerDepthFromMetadata } from '@8f4e/language-spec';
+import { ArgumentType, BASE_TYPE_METADATA, getPointerDepthFromMetadata } from '@8f4e/language-spec';
 import { getResolvedMemoryDeclaration } from '@8f4e/semantic-utils';
 import { kindToStackItem, resolveArgumentValueKind, resolveMemoryValueKind } from '../utils/pushValueKind';
 import { createStackValue, produce } from './stack';
@@ -36,7 +37,7 @@ function getAddressPointeeMetadata(context: CompilationContext, address: Address
 		return undefined;
 	}
 
-	const baseType = (memoryItem.pointeeBaseType ?? memoryItem.type.replace(/\*+$/, '')) as PointeeBaseType;
+	const baseType = (memoryItem.pointeeBaseType ?? memoryItem.type) as PointeeBaseType;
 
 	return {
 		baseType,
@@ -87,32 +88,26 @@ function pushDereferencedPointerStackItems(
 	const pointerMetadata =
 		line.resolvedTarget.kind === 'memory-pointer'
 			? line.resolvedTarget.memoryItem
-			: line.resolvedTarget.kind === 'local-pointer'
-				? context.locals[line.resolvedTarget.binding.id]!
-				: undefined;
-	if (!pointerMetadata) {
-		return [];
-	}
-	if (!pointerMetadata.pointeeBaseType) {
-		return [];
-	}
+			: (context.locals[line.resolvedTarget.binding.id]! as PointerLocalMetadata);
+	// Reference resolution guarantees a pointer target and a valid dereference depth.
+	const baseType = pointerMetadata.pointeeBaseType!;
 
 	const dereferenceDepth = line.arguments[0].dereferenceDepth;
-	const remainingPointerDepth = getPointerDepthFromMetadata(pointerMetadata) - dereferenceDepth;
+	const remainingPointerDepth = pointerMetadata.pointerDepth - dereferenceDepth;
 	if (remainingPointerDepth > 0) {
 		return [
 			kindToStackItem('int32', {
 				isNonZero: false,
 				address: {},
 				pointsTo: {
-					baseType: pointerMetadata.pointeeBaseType,
+					baseType,
 					pointerDepth: remainingPointerDepth,
 				},
 			}),
 		];
 	}
 
-	const kind = getDereferencedValueKindFromMetadata(pointerMetadata, dereferenceDepth);
+	const kind = BASE_TYPE_METADATA[baseType].valueKind;
 	return [kindToStackItem(kind, { isNonZero: false })];
 }
 
