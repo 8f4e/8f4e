@@ -12,10 +12,14 @@ constantsEnd
 note views
 ; @pos 4 3
 Four framebuffer formats, one program.
-; @texture screen:rgba rgba 2 2 24
-; @texture screen:rgb rgb 3 2 16
-; @texture screen:mono mono 3 2 16
-; @texture screen:bits 1bit 10 2 6
+; @textureUpload &screen:rgba rgba 2 2
+; @texture &screen:rgba 24
+; @textureUpload &screen:rgb rgb 3 2
+; @texture &screen:rgb 16
+; @textureUpload &screen:mono mono 3 2
+; @texture &screen:mono 16
+; @textureUpload &screen:bits 1bit 10 2
+; @texture &screen:bits 6
 Code follows the reserved image space.
 noteEnd
 entry renderFrame
@@ -57,7 +61,10 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 					{
 						id: 'texture-runtime',
 						scope: 'project',
-						matches: directives => hasConfig(directives, 'textureRuntime') || hasDirective(directives, 'texture'),
+						matches: directives =>
+							hasConfig(directives, 'textureRuntime') ||
+							hasDirective(directives, 'textureUpload') ||
+							hasDirective(directives, 'texture'),
 						load,
 					},
 				]),
@@ -72,7 +79,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 		const block = editor.state.codeBlockRendering.codeBlocks.find(block => block.name === 'views')!;
 		const gl = canvas.getContext('webgl2')!;
 		const origin = (name: string) => {
-			const line = block.code.findIndex(line => line.includes(`@texture screen:${name} `));
+			const line = block.code.findIndex(line => line.includes(`@texture &screen:${name} `));
 			return [
 				block.x - editor!.state.viewport.x + (block.lineNumberColumnWidth + 2) * editor!.state.viewport.vGrid,
 				block.y -
@@ -144,5 +151,68 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 	} finally {
 		editor?.dispose();
 		canvas.remove();
+	}
+});
+
+test('shares a cross-module pointer upload through compilation and graphics-stat refreshes', async () => {
+	const canvas = document.createElement('canvas');
+	canvas.width = 768;
+	canvas.height = 480;
+	document.body.append(canvas);
+	const compiler = createCompilerPlugin();
+	const { createTextureRuntimePlugin } = await import('../src/index');
+	let editor: Editor | undefined;
+	try {
+		editor = await initEditor(canvas, {
+			initialProject: parseProjectSource(`8f4e/v1
+constants env
+; @pos 150 100
+constantsEnd
+entry main
+module screen ; @mode edit
+; @pos 4 3
+int8u[] rgba 16
+; @textureUpload &rgba rgba 2 2
+; @texture &rgba 16
+moduleEnd
+module viewer
+; @pos 50 3
+int8u* pixels &screen:rgba
+; @texture pixels 16
+moduleEnd
+entryEnd`),
+			plugins: [compiler.plugin, createTextureRuntimePlugin(compiler)],
+			renderStatsIntervalFrames: 1,
+		});
+		editor.pauseRendering();
+		await vi.waitFor(() => expect(compiler.getDiagnostics().status).toBe('ready'), { timeout: 10000 });
+		expect(editor.state.codeErrors.compilationErrors).toEqual([]);
+		const start = editor.state.compiler.memoryPlan.modules.screen.memory.rgba.byteAddress;
+		new Uint8Array(compiler.getMemory()!.buffer).set(
+			[255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255],
+			start
+		);
+		const gl = canvas.getContext('webgl2')!;
+		const uploads = vi.spyOn(gl, 'texImage2D');
+		for (let frame = 0; frame < 65; frame++) editor.renderFrame();
+		expect(uploads.mock.calls.filter(call => call[2] === gl.RGBA8 && call[3] === 2 && call[4] === 2)).toHaveLength(1);
+		for (const name of ['screen', 'viewer']) {
+			const block = editor.state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
+			const line = block.code.findIndex(line => line.includes('@texture '));
+			const x = block.x - editor.state.viewport.x + (block.lineNumberColumnWidth + 2) * editor.state.viewport.vGrid;
+			const y =
+				block.y -
+				editor.state.viewport.y +
+				(gapCalculator(block.displayModel.sourceLineIndexToDisplayRow[line], block.gaps) + 1) *
+					editor.state.viewport.hGrid;
+			const pixel = new Uint8Array(4);
+			gl.readPixels(x, canvas.height - 1 - y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+			expect([...pixel], name).toEqual([255, 0, 0, 255]);
+		}
+		expect(gl.getError()).toBe(gl.NO_ERROR);
+	} finally {
+		editor?.dispose();
+		canvas.remove();
+		vi.restoreAllMocks();
 	}
 });

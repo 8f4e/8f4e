@@ -1,5 +1,5 @@
 import { createProgram, prepareRenderPass, requireResource, requireUniform } from '@8f4e/web-ui';
-import type { TextureFormat } from './directive';
+import type { TextureCrop, TextureFormat } from './directive';
 import { createRectangleGeometry, deleteRectangleGeometry, type RectangleGeometry } from './geometry';
 
 const textureVertexShaderSource = `#version 300 es
@@ -27,12 +27,12 @@ const textureFragmentShaderSource = `#version 300 es
 	in vec2 v_textureCoordinate;
 	uniform sampler2D u_texture;
 	uniform int u_format;
-	uniform vec2 u_sourceSize;
+	uniform vec4 u_sourceRectangle;
 
 	out vec4 outColor;
 
 	void main() {
-		ivec2 pixel = min(ivec2(v_textureCoordinate * u_sourceSize), ivec2(u_sourceSize) - 1);
+		ivec2 pixel = ivec2(u_sourceRectangle.xy) + min(ivec2(v_textureCoordinate * u_sourceRectangle.zw), ivec2(u_sourceRectangle.zw) - 1);
 		vec4 color;
 		if (u_format == 0) {
 			uint packed = uint(round(texelFetch(u_texture, ivec2(pixel.x / 8, pixel.y), 0).r * 255.0));
@@ -64,7 +64,7 @@ export class TextureDrawer {
 	private readonly rectangleLocation: WebGLUniformLocation;
 	private readonly textureLocation: WebGLUniformLocation;
 	private readonly formatLocation: WebGLUniformLocation;
-	private readonly sourceSizeLocation: WebGLUniformLocation;
+	private readonly sourceRectangleLocation: WebGLUniformLocation;
 	private readonly textures = new Map<string, TextureStorage>();
 
 	/**
@@ -82,7 +82,7 @@ export class TextureDrawer {
 			this.rectangleLocation = requireUniform(this.gl, program, 'u_rectangle');
 			this.textureLocation = requireUniform(this.gl, program, 'u_texture');
 			this.formatLocation = requireUniform(this.gl, program, 'u_format');
-			this.sourceSizeLocation = requireUniform(this.gl, program, 'u_sourceSize');
+			this.sourceRectangleLocation = requireUniform(this.gl, program, 'u_sourceRectangle');
 		} catch (error) {
 			if (program) {
 				this.gl.deleteProgram(program);
@@ -94,7 +94,7 @@ export class TextureDrawer {
 		this.program = program;
 	}
 
-	/** Uploads source bytes directly, retaining independent storage for each directive. */
+	/** Uploads source bytes directly, retaining storage for each uploaded address. */
 	upload(key: string, data: Uint8Array, width: number, height: number, format: TextureFormat): void {
 		const gl = this.gl;
 		const previous = this.textures.get(key);
@@ -128,7 +128,7 @@ export class TextureDrawer {
 	}
 
 	/** Draws a source texture with nearest sampling and premultiplied-alpha output. */
-	drawTexture(key: string, x: number, y: number, width: number, height: number): void {
+	drawTexture(key: string, x: number, y: number, width: number, height: number, crop?: TextureCrop): void {
 		const gl = this.gl;
 		const source = this.textures.get(key)!;
 		prepareRenderPass(gl, this.program, this.geometry.vertexArray);
@@ -137,13 +137,19 @@ export class TextureDrawer {
 		gl.bindSampler(0, null);
 		gl.uniform1i(this.textureLocation, 0);
 		gl.uniform1i(this.formatLocation, FORMAT_IDS[source.format]);
-		gl.uniform2f(this.sourceSizeLocation, source.width, source.height);
+		gl.uniform4f(
+			this.sourceRectangleLocation,
+			crop?.x ?? 0,
+			crop?.y ?? 0,
+			crop?.width ?? source.width,
+			crop?.height ?? source.height
+		);
 		gl.uniform2f(this.pixelToClipLocation, 2 / gl.drawingBufferWidth, -2 / gl.drawingBufferHeight);
 		gl.uniform4f(this.rectangleLocation, x, y, width, height);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 	}
 
-	/** Frees storage for directives removed from the current view or scrolled offscreen. */
+	/** Frees storage for uploads removed from the current view or scrolled offscreen. */
 	retainTextures(keys: ReadonlySet<string>): void {
 		for (const [key, source] of this.textures) {
 			if (!keys.has(key)) {

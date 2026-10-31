@@ -1,8 +1,8 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import { logError } from '@8f4e/editor-state';
 import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/test-runner';
 import { readTextureRuntimeConfig, TEXTURE_RUNTIME_CONFIG } from './config';
-import { type BlockTexture, registerTextureLayout } from './layout';
+import { createTextureLayout, resolveTextureAddress } from './layout';
 import { TextureDrawer } from './texture-drawer';
 
 /** Executes one project entry per editor frame and displays block-bound framebuffer views. */
@@ -22,7 +22,6 @@ export function createTextureRuntimePlugin({
 			let entry: CallableFunction | undefined;
 			let generation = 0;
 			let pending = false;
-			const texturesByBlock = new WeakMap<CodeBlockGraphicData, BlockTexture[]>();
 
 			function clearProgram() {
 				generation++;
@@ -70,34 +69,48 @@ export function createTextureRuntimePlugin({
 			}
 
 			store.set('editorConfigSchemaContributions.textureRuntime', TEXTURE_RUNTIME_CONFIG);
-			const unregisterLayout = registerTextureLayout(layout, texturesByBlock);
+			const textures = createTextureLayout({ store, layout, getMemory });
 			const unregisterLayer = drawers.registerRenderLayer(({ gl }) => {
 				let drawer: TextureDrawer | undefined;
 				const visibleKeys = new Set<string>();
+				let previousConflicts = new Set<number>();
 				return {
 					draw: ({ memoryViews }) => {
 						entry?.();
+						const { sources, conflicts } = textures.resolveUploads(memoryViews.int32);
+						for (const address of conflicts)
+							if (!previousConflicts.has(address))
+								logError(state, `Conflicting @textureUpload definitions at byte address ${address}`);
+						previousConflicts = conflicts;
+						textures.updateSizes(sources, memoryViews.int32);
 						visibleKeys.clear();
 						for (const block of state.codeBlockRendering.codeBlocks) {
-							for (const texture of texturesByBlock.get(block) ?? []) {
+							for (const texture of textures.viewsByBlock.get(block) ?? []) {
+								if (!texture.visible || !texture.width || !texture.height) continue;
 								const x = block.x - state.viewport.x + texture.x;
 								const y = block.y - state.viewport.y + texture.y;
 								const width = texture.width * texture.magnification;
 								const height = texture.height * texture.magnification;
 								if (x + width <= 0 || y + height <= 0 || x >= state.viewport.width || y >= state.viewport.height)
 									continue;
-								const { byteAddress, byteLength } = texture;
-								if (byteAddress === undefined || byteAddress + byteLength > memoryViews.uint8.length) continue;
+								const address = resolveTextureAddress(texture.binding, memoryViews.int32);
+								const source = address === undefined ? undefined : sources.get(address);
+								if (!source || address === undefined || address + source.byteLength > memoryViews.uint8.length)
+									continue;
+								const crop = texture.crop;
+								if (crop && (crop.x + crop.width > source.width || crop.y + crop.height > source.height)) continue;
+								const key = String(address);
 								drawer ??= new TextureDrawer(gl);
-								visibleKeys.add(texture.key);
-								drawer.upload(
-									texture.key,
-									memoryViews.uint8.subarray(byteAddress, byteAddress + byteLength),
-									texture.width,
-									texture.height,
-									texture.format
-								);
-								drawer.drawTexture(texture.key, x, y, width, height);
+								if (!visibleKeys.has(key))
+									drawer.upload(
+										key,
+										memoryViews.uint8.subarray(address, address + source.byteLength),
+										source.width,
+										source.height,
+										source.format
+									);
+								visibleKeys.add(key);
+								drawer.drawTexture(key, x, y, width, height, crop);
 							}
 						}
 						drawer?.retainTextures(visibleKeys);
@@ -113,7 +126,7 @@ export function createTextureRuntimePlugin({
 				store.unsubscribe('editorConfig.textureRuntime', syncConfig);
 				events.off('compilationSucceeded', syncProgram);
 				clearProgram();
-				unregisterLayout();
+				textures.dispose();
 				unregisterLayer();
 				const schemas = { ...state.editorConfigSchemaContributions };
 				delete schemas.textureRuntime;

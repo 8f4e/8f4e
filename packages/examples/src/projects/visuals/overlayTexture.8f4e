@@ -2,25 +2,11 @@
 
 constants env
 ; @pos -62 -2
-; @favorite
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
+
 constantsEnd
-
-note
-; @pos -62 -22
-; @home left
-; @config export.fileName overlayTexture
-; @config textureRuntime.enabled true
-; @config textureRuntime.entry main
-
-; The main entry runs once per editor
-; frame and fills a 32 x 32 RGBA8
-; image. Its pixels are magnified and
-; displayed below the directive.
-; @texture screen:rgba rgba 32 32 8
-noteEnd
 
 note colors
 ; @pos -118 -22
@@ -32,7 +18,14 @@ note colors
 noteEnd
 
 note
-; @pos 54 2
+; @pos 27 -28
+; @config export.fileName overlayTexture
+; @config textureRuntime.enabled true
+; @config textureRuntime.entry main
+noteEnd
+
+note
+; @pos 63 -4
 
 ; The shortest 8f4e program
 ; I managed to write that
@@ -42,17 +35,6 @@ note
 noteEnd
 
 entry main
-module screen
-; @pos 97 1
-
-const WIDTH 32
-const HEIGHT 32
-const PIXEL_COUNT WIDTH*HEIGHT
-
-; Framebuffer
-int8u[] rgba PIXEL_COUNT*4
-
-moduleEnd
 module frameCounter
 ; @pos 99 -32
 
@@ -64,6 +46,20 @@ add
 store
 
 moduleEnd
+module screen
+; @pos 100 -16
+
+const WIDTH 32
+const HEIGHT 32
+const PIXEL_COUNT WIDTH*HEIGHT
+
+; Framebuffer
+int8u[] rgba PIXEL_COUNT*4
+
+; @textureUpload &rgba rgba 32 32
+; @texture &rgba 8
+
+moduleEnd
 module screen2
 ; @pos 143 -21
 ; @home right
@@ -71,6 +67,8 @@ use screen
 
 int* frame &frameCounter:frame
 int8u* rgba &screen:rgba
+
+; @texture rgba 8
 
 loop PIXEL_COUNT*4
 
