@@ -3,6 +3,7 @@ import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing
 import type { State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { createSuccessMessage } from './__tests__/helpers';
 import compilerEffect from './compilation';
 import type { CompilerService } from './compiler-service';
 import { compilerEditorConfigSchemaContribution } from './editor-config';
@@ -197,6 +198,31 @@ describe('compilation scheduling and publication', () => {
 				message: 'Passed constant namespace env is undefined in the parent project scope.',
 			},
 		]);
+	});
+
+	it('publishes complete metadata to every field subscriber before runtimes resume', async () => {
+		const result = createSuccessMessage(new Uint8Array([0]), new WebAssembly.Memory({ initial: 1 })).payload;
+		mockCompileCode.mockResolvedValue(result);
+		const fields = [
+			'compiledFunctions',
+			'compiledModules',
+			'projectMemoryExposuresByGroupPath',
+			'memoryPlan',
+			'memoryDefaultsByModuleId',
+		] as const;
+		const observed: State['compiler'][] = [];
+		for (const field of fields) {
+			store.subscribe(`compiler.${field}`, () => observed.push({ ...mockState.compiler }));
+		}
+
+		await triggerCompile();
+
+		expect(observed).toHaveLength(fields.length);
+		for (const metadata of observed) {
+			expect(metadata.isCompiling).toBe(true);
+			for (const field of fields) expect(metadata[field]).toBe(result[field]);
+		}
+		expect(mockState.compiler.isCompiling).toBe(false);
 	});
 
 	it('stores compilation stats in state.info.compiler from successful compilation results', async () => {

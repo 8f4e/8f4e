@@ -10,7 +10,7 @@
 - Upload once per visible address per frame. Keep native R8/RGB8/RGBA8 storage and one program/rectangle. Crops use
   source-pixel coordinates and original row stride; 1bit crops can start within packed bytes. Preserve nearest sampling
   and premultiplied alpha. Free storage with no visible users and recreate after GPU release.
-- Rebind after `compiler.memoryDefaultsByModuleId` is published last; earlier compiler-field updates are incomplete.
+- Rebind when `compiler.isCompiling` becomes false; compiler metadata is published atomically before that signal.
 - Keep view layout space separate from upload declarations. Explicit crops reserve size while unresolved; whole
   views infer dimensions from matching declarations and follow dynamic address changes. Keep texture fields out of core.
 - Keep the overlay above editor content; block occlusion is outside this feature. Both compositions match either

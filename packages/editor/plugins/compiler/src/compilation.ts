@@ -79,11 +79,15 @@ export default function installCompilation(
 
 			// Publish rendering artifacts before metadata subscriptions or runtimes can react.
 			events.dispatch('compilationSucceeded', { memoryRef: result.memoryRef });
-			store.set('compiler.compiledFunctions', result.compiledFunctions);
-			store.set('compiler.compiledModules', result.compiledModules);
-			store.set('compiler.projectMemoryExposuresByGroupPath', result.projectMemoryExposuresByGroupPath);
-			store.set('compiler.memoryPlan', result.memoryPlan);
-			store.set('compiler.memoryDefaultsByModuleId', result.memoryDefaultsByModuleId);
+			store.set('compiler', {
+				isCompiling: true,
+				compiledFunctions: result.compiledFunctions,
+				compiledModules: result.compiledModules,
+				projectMemoryExposuresByGroupPath: result.projectMemoryExposuresByGroupPath,
+				memoryPlan: result.memoryPlan,
+				memoryDefaultsByModuleId: result.memoryDefaultsByModuleId,
+			});
+			// Let metadata subscribers load memory before runtimes resume.
 			store.set('compiler.isCompiling', false);
 			setCompilerInfo({
 				isCompiling: false,

@@ -82,11 +82,15 @@ async function setup({
 		memoryPlan,
 		memoryDefaultsByModuleId,
 	}: typeof current.compiled) => {
-		store.set('compiler.compiledFunctions', compiledFunctions);
-		store.set('compiler.compiledModules', compiledModules);
-		store.set('compiler.projectMemoryExposuresByGroupPath', projectMemoryExposuresByGroupPath);
-		store.set('compiler.memoryPlan', memoryPlan);
-		store.set('compiler.memoryDefaultsByModuleId', memoryDefaultsByModuleId);
+		store.set('compiler', {
+			isCompiling: true,
+			compiledFunctions,
+			compiledModules,
+			projectMemoryExposuresByGroupPath,
+			memoryPlan,
+			memoryDefaultsByModuleId,
+		});
+		store.set('compiler.isCompiling', false);
 	};
 	if (!deferMetadata) publishMetadata(current.compiled);
 	const drawers = createEditorDrawerRegistry();
@@ -464,7 +468,7 @@ it('omits views without an upload or with out-of-bounds crops', async () => {
 	expect(test.gl.createTexture).not.toHaveBeenCalled();
 });
 
-it('waits for complete compiler metadata before sizing pointer views', async () => {
+it('sizes pointer views after compiler metadata is published atomically', async () => {
 	const test = await setup({
 		config: '',
 		deferMetadata: true,
@@ -482,7 +486,6 @@ moduleEnd
 entryEnd`,
 	});
 	expect(() => test.publishMetadata()).not.toThrow();
-	expect(() => test.store.set('info.graphics', { frame: 60 })).not.toThrow();
 	test.frame();
 	expect(test.gl.drawArrays).toHaveBeenCalledOnce();
 });

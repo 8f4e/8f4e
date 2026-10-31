@@ -172,8 +172,7 @@ export function createTextureLayout({
 
 	const unsubscribeLayout = layout.subscribe(({ codeBlock }) => updateBlockLayout(codeBlock));
 	store.subscribe('projectChange', refresh);
-	// Defaults are published last, after the compiler's memory plan and module metadata.
-	store.subscribe('compiler.memoryDefaultsByModuleId', refresh);
+	store.subscribeToValue('compiler.isCompiling', false, refresh);
 	refresh();
 	return {
 		viewsByBlock,
@@ -181,7 +180,7 @@ export function createTextureLayout({
 		updateSizes,
 		dispose: () => {
 			store.unsubscribe('projectChange', refresh);
-			store.unsubscribe('compiler.memoryDefaultsByModuleId', refresh);
+			store.unsubscribe('compiler.isCompiling', refresh);
 			unsubscribeLayout();
 			contribution.dispose();
 			viewsByBlock.clear();

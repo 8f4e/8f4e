@@ -37,10 +37,12 @@ projects. The default delay is 500ms; projects can set `; @config recompileDebou
 project has an enabled test entry, including nested tests and a root function exported as `test`.
 
 For an accepted result, the plugin first updates its artifact handles and emits `compilationSucceeded` with the
-`ProgramArtifacts` needed for rendering: `memoryRef` and `codeBuffer`. Core consumes that event to refresh memory views and renderer bytecode. The plugin then publishes
-compiler lookups, memory plans/defaults and project exposures, statistics, and diagnostics to shared editor state.
-`compiler.isCompiling` becomes false only after the compiler metadata is available, allowing runtimes to consume it.
-The binary-assets plugin observes the new memory plan and copies retained bytes into the current memory.
+`ProgramArtifacts` needed for rendering: `memoryRef`. Core consumes that event to refresh memory views; bytecode stays
+on the compiler getter. The plugin replaces `state.compiler` in one store update containing all compiler lookups,
+memory plans/defaults and project exposures, while `isCompiling` remains true. Every metadata subscriber sees the
+complete result. Once those subscribers finish, the plugin sets `compiler.isCompiling` false so runtimes resume,
+then publishes statistics and diagnostics. The binary-assets plugin observes the new memory plan and copies retained
+bytes into current memory before runtimes run, regardless of subscription order.
 
 Each input change invalidates outstanding results immediately, including during the next debounce interval. The plugin
 runs one worker compilation at a time because the worker shares memory and caches across requests; edits arriving
