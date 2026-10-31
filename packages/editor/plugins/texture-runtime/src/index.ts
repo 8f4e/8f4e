@@ -74,7 +74,7 @@ export function createTextureRuntimePlugin({
 			const textures = createTextureLayout(layout);
 			const unregisterLayer = drawers.registerRenderLayer(({ gl }) => {
 				let drawer: TextureDrawer | undefined;
-				const visibleKeys = new Set<string>();
+				const visibleAddresses = new Set<number>();
 				let previousConflicts = new Set<number>();
 				return {
 					draw: ({ memoryViews }) => {
@@ -84,7 +84,7 @@ export function createTextureRuntimePlugin({
 							if (!previousConflicts.has(address))
 								logError(state, `Conflicting @textureUpload definitions at byte address ${address}`);
 						previousConflicts = conflicts;
-						visibleKeys.clear();
+						visibleAddresses.clear();
 						for (const block of state.codeBlockRendering.codeBlocks) {
 							for (const texture of textures.viewsByBlock.get(block) ?? []) {
 								const x = block.x - state.viewport.x + texture.x;
@@ -99,21 +99,20 @@ export function createTextureRuntimePlugin({
 									continue;
 								const crop = texture.crop;
 								if (crop.x + crop.width > source.width || crop.y + crop.height > source.height) continue;
-								const key = String(address);
 								drawer ??= new TextureDrawer(gl);
-								if (!visibleKeys.has(key))
+								if (!visibleAddresses.has(address))
 									drawer.upload(
-										key,
+										address,
 										memoryViews.uint8.subarray(address, address + source.byteLength),
 										source.width,
 										source.height,
 										source.format
 									);
-								visibleKeys.add(key);
-								drawer.drawTexture(key, x, y, width, height, crop);
+								visibleAddresses.add(address);
+								drawer.drawTexture(address, x, y, width, height, crop);
 							}
 						}
-						drawer?.retainTextures(visibleKeys);
+						drawer?.retainTextures(visibleAddresses);
 					},
 					releaseMemory: () => drawer?.releaseMemory(),
 					destroy: () => drawer?.destroy(),

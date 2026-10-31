@@ -154,7 +154,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 	}
 });
 
-test('shares a cross-module pointer upload through compilation and graphics-stat refreshes', async () => {
+test('shares one upload per frame across direct and cross-module pointer views', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
 	canvas.height = 480;
@@ -182,7 +182,6 @@ int8u* pixels &screen:rgba
 moduleEnd
 entryEnd`),
 			plugins: [compiler.plugin, createTextureRuntimePlugin(compiler)],
-			renderStatsIntervalFrames: 1,
 		});
 		editor.pauseRendering();
 		await vi.waitFor(() => expect(compiler.getDiagnostics().status).toBe('ready'), { timeout: 10000 });
@@ -193,9 +192,14 @@ entryEnd`),
 			start
 		);
 		const gl = canvas.getContext('webgl2')!;
-		const uploads = vi.spyOn(gl, 'texImage2D');
-		for (let frame = 0; frame < 65; frame++) editor.renderFrame();
-		expect(uploads.mock.calls.filter(call => call[2] === gl.RGBA8 && call[3] === 2 && call[4] === 2)).toHaveLength(1);
+		const allocations = vi.spyOn(gl, 'texImage2D');
+		const updates = vi.spyOn(gl, 'texSubImage2D');
+		editor.renderFrame();
+		editor.renderFrame();
+		expect(allocations.mock.calls.filter(call => call[2] === gl.RGBA8 && call[3] === 2 && call[4] === 2)).toHaveLength(
+			1
+		);
+		expect(updates.mock.calls.filter(call => call[4] === 2 && call[5] === 2 && call[6] === gl.RGBA)).toHaveLength(1);
 		for (const name of ['screen', 'viewer']) {
 			const block = editor.state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 			const line = block.code.findIndex(line => line.includes('@texture '));

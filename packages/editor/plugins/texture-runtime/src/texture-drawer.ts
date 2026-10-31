@@ -65,7 +65,7 @@ export class TextureDrawer {
 	private readonly textureLocation: WebGLUniformLocation;
 	private readonly formatLocation: WebGLUniformLocation;
 	private readonly sourceRectangleLocation: WebGLUniformLocation;
-	private readonly textures = new Map<string, TextureStorage>();
+	private readonly textures = new Map<number, TextureStorage>();
 
 	/**
 	 * Creates the shader and rectangle used to draw framebuffer pixels.
@@ -95,9 +95,9 @@ export class TextureDrawer {
 	}
 
 	/** Uploads source bytes directly, retaining storage for each uploaded address. */
-	upload(key: string, data: Uint8Array, width: number, height: number, format: TextureFormat): void {
+	upload(address: number, data: Uint8Array, width: number, height: number, format: TextureFormat): void {
 		const gl = this.gl;
-		const previous = this.textures.get(key);
+		const previous = this.textures.get(address);
 		const texture = previous?.texture ?? requireResource(gl.createTexture(), 'framebuffer texture');
 		const sizeChanged =
 			!previous || previous.width !== width || previous.height !== height || previous.format !== format;
@@ -121,16 +121,16 @@ export class TextureDrawer {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		if (sizeChanged) {
 			gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, uploadWidth, height, 0, externalFormat, gl.UNSIGNED_BYTE, data);
-			this.textures.set(key, { texture, width, height, format });
+			this.textures.set(address, { texture, width, height, format });
 		} else {
 			gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, uploadWidth, height, externalFormat, gl.UNSIGNED_BYTE, data);
 		}
 	}
 
 	/** Draws a source texture with nearest sampling and premultiplied-alpha output. */
-	drawTexture(key: string, x: number, y: number, width: number, height: number, crop: TextureCrop): void {
+	drawTexture(address: number, x: number, y: number, width: number, height: number, crop: TextureCrop): void {
 		const gl = this.gl;
-		const source = this.textures.get(key)!;
+		const source = this.textures.get(address)!;
 		prepareRenderPass(gl, this.program, this.geometry.vertexArray);
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, source.texture);
@@ -144,11 +144,11 @@ export class TextureDrawer {
 	}
 
 	/** Frees storage for uploads removed from the current view or scrolled offscreen. */
-	retainTextures(keys: ReadonlySet<string>): void {
-		for (const [key, source] of this.textures) {
-			if (!keys.has(key)) {
+	retainTextures(addresses: ReadonlySet<number>): void {
+		for (const [address, source] of this.textures) {
+			if (!addresses.has(address)) {
 				this.gl.deleteTexture(source.texture);
-				this.textures.delete(key);
+				this.textures.delete(address);
 			}
 		}
 	}
