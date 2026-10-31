@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-lazy-loader",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "Project-triggered lazy editor plugin loading",
   "type": "module",

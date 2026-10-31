@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-meter",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "private": true,
   "description": "Meter directive plugin for the 8f4e editor",
   "type": "module",

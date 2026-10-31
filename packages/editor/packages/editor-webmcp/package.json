@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-webmcp",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "description": "Single-editor WebMCP adapter for 8f4e webpage hosts",
   "type": "module",

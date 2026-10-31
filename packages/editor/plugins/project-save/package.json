@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-project-save",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "Project Save and Export plugin for the 8f4e editor",
   "type": "module",
