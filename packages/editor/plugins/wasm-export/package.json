@@ -22,6 +22,6 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/web-ui": "*",
-    "vitest": "4.1.7"
+    "vitest": "4.1.12"
   }
 }
