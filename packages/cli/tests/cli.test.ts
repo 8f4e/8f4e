@@ -70,7 +70,7 @@ describe('cli', () => {
 				'; This comment should wrap into multiple lines when width is set low enough',
 				'load ; This trailing comment should also wrap after the instruction prefix',
 				'push "; this is a string literal, not a comment delimiter"',
-				'; @info this directive-shaped comment should stay on one long line',
+				'; @custom this directive-shaped comment should stay on one long line',
 				'moduleEnd',
 			].join('\n') + '\n'
 		);
@@ -87,7 +87,7 @@ describe('cli', () => {
 				'     ; also wrap after the',
 				'     ; instruction prefix',
 				'push "; this is a string literal, not a comment delimiter"',
-				'; @info this directive-shaped comment should stay on one long line',
+				'; @custom this directive-shaped comment should stay on one long line',
 				'moduleEnd',
 			].join('\n') + '\n'
 		);

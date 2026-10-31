@@ -9,7 +9,6 @@ Configure input callbacks with separate directives:
 ```text
 ; @config midi.inputs.keys.port 0
 ; @config midi.inputs.keys.callback onMidiEvent
-; @info midi
 ```
 
 The default and minimal editors automatically load the plugin when raw `@config midi.*` directives exist, including

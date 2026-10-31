@@ -481,10 +481,10 @@ MIDI input bindings are configured through `@config`.
 
 Notes:
 
-- The MIDI plugin is activated by `@config midi...`; `; @info midi` can display available ports while MIDI is active.
+- The MIDI plugin is activated by `@config midi...` and publishes available ports in `state.info.midi`.
 - `<id>` is a binding identifier such as `0`, `1`, etc.
-- `<port>` is the numeric input index shown by `; @info midi`.
-- MIDI entries are shown as `0`, `1`, etc.; only entries marked `(in)` can be used as input ports.
+- `<port>` is the numeric input index in `state.info.midi`.
+- MIDI entries use keys `0`, `1`, etc.; only entries marked `(in)` can be used as input ports.
 - Indexes are stable while the MIDI plugin is active; disconnected port indexes are not reused until the plugin is restarted.
 - `<callbackExportName>` must be a callable WebAssembly export created with `#export`.
 - The callback receives three integer arguments: `status`, `data1`, and `data2`.
@@ -496,7 +496,6 @@ Notes:
 Example:
 
 ```txt
-; @info midi
 ; @config midi.inputs.0.port 0
 ; @config midi.inputs.0.callback onMidiIn
 ; @config midi.inputs.1.port 0

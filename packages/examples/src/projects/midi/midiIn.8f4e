@@ -83,6 +83,4 @@ note
 ; @config midi.inputs.0.port 0
 ; @config midi.inputs.0.callback onMidiEvent
 
-; @info midi
-
 noteEnd

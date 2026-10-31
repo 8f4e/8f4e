@@ -24,6 +24,23 @@ function setup() {
 }
 
 describe('independent layout contributions', () => {
+	it('keeps info updates independent of block layout and compiler inputs', () => {
+		const { store, state, layout, events } = setup();
+		const onLayout = vi.fn();
+		const onCompilationInputChanged = vi.fn();
+		const unsubscribe = layout.subscribe(onLayout);
+		events.on('compilationInputChanged', onCompilationInputChanged);
+		onLayout.mockClear();
+
+		store.set('info.graphics', { fps: 60 });
+		store.set('info.graphics', { fps: 30, timeToRenderMs: 12 });
+
+		expect(state.info.graphics).toEqual({ fps: 30, timeToRenderMs: 12 });
+		expect(onLayout).not.toHaveBeenCalled();
+		expect(onCompilationInputChanged).not.toHaveBeenCalled();
+		unsubscribe();
+	});
+
 	it('recalculates added, updated, removed, and disposed requests without source edits or compilation', () => {
 		const { store, state, block, layout } = setup();
 		store.set('codeBlockRendering.selectedCodeBlock', block);

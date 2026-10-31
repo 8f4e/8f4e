@@ -23,7 +23,6 @@ The serial plugin needs to define deterministic framing itself, copy completed f
 Add a serial input editor plugin with two directives:
 
 ```8f4e
-; @info serial
 ; @serialIn <port> <baudRate> <bufferMemoryId> <frameBytes>
 ; @serialInCallback <port> <callbackExportName>
 ```
@@ -33,7 +32,6 @@ Add a serial input editor plugin with two directives:
 Example:
 
 ```8f4e
-; @info serial
 ; @serialIn 0 115200 serialBuffer 32
 ; @serialInCallback 0 onSerialFrame
 ; @serialInCallback 0 onSerialDebug
@@ -61,7 +59,7 @@ Incomplete trailing bytes remain buffered until more serial data arrives. Queues
 ## Initial Decisions
 
 - Use a dedicated editor plugin, following the regular plugin contract used by `editor-plugin-midi-input`.
-- Use `@info serial` as the discovery surface for serial ports.
+- Publish discovered serial ports in `state.info.serial`; presentation belongs to future info overlays.
 - Use `@serialIn <port> <baudRate> <bufferMemoryId> <frameBytes>` to define one input pipeline per port.
 - Use `@serialInCallback <port> <callbackExportName>` to fan out completed frames to one or more callbacks.
 - Include `baudRate` in the directive because Web Serial requires it when opening a port.
@@ -107,7 +105,7 @@ Responsibilities:
 ### Step 1: Register the serial plugin
 
 - Compose a serial plugin factory in the default editor, passing browser and compiler dependencies through its factory.
-- Activate pipelines from `serialIn` and `serialInCallback` directives. Keep `@info serial` as an info display directive.
+- Activate pipelines from `serialIn` and `serialInCallback` directives.
 - Use the regular plugin installer; lazy implementation loading remains a separate design task (TODO 508).
 
 ### Step 2: Add serial device discovery
@@ -159,7 +157,7 @@ Responsibilities:
 - Unit test fixed-size framing across arbitrary chunk boundaries.
 - Unit test callback fanout for one configured port.
 - Unit test lifecycle cleanup, queue clearing on resync, and disconnect/read failure behavior.
-- Update editor directive docs with `@serialIn`, `@serialInCallback`, and `@info serial`.
+- Update editor directive docs with `@serialIn` and `@serialInCallback`, and document `state.info.serial`.
 
 ## Validation Checkpoints
 
@@ -169,7 +167,7 @@ Responsibilities:
 
 ## Success Criteria
 
-- [ ] `@info serial` lists already-granted serial ports while the plugin is active.
+- [ ] `state.info.serial` lists already-granted serial ports while the plugin is active.
 - [ ] `@serialIn <port> <baudRate> <bufferMemoryId> <frameBytes>` configures one fixed-frame serial input pipeline.
 - [ ] `@serialInCallback <port> <callbackExportName>` binds one or more exported callbacks to completed frames.
 - [ ] Serial `ReadableStream` chunks are buffered and reframed deterministically by `frameBytes`.
@@ -184,7 +182,7 @@ Responsibilities:
 
 - `packages/editor/plugins/serial-input` - new serial plugin implementation, WASM access, and tests.
 - `packages/editor/packages/editor-default/src/index.ts` - compose the factory with navigator and current compiler-resource getters.
-- `packages/editor/packages/editor-core/docs/editor-directives.md` - document `@serialIn`, `@serialInCallback`, and `@info serial`.
+- `packages/editor/packages/editor-core/docs/editor-directives.md` - document `@serialIn`, `@serialInCallback`, and `state.info.serial`.
 
 ## Risks & Considerations
 

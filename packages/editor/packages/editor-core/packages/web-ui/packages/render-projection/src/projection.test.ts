@@ -1,7 +1,7 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { StateManager } from '@8f4e/state-manager';
+import createStateManager, { type StateManager } from '@8f4e/state-manager';
 import type { SpriteId } from 'glugglugglug';
 import { describe, expect, it, vi } from 'vitest';
 import createWebUiRenderProjection from './projection';
@@ -10,6 +10,22 @@ import { createSpriteCell } from './spriteCell';
 const cell = (id: number, color: number) => createSpriteCell(id as SpriteId, color);
 
 describe('createWebUiRenderProjection', () => {
+	it('keeps text render data when info records change', () => {
+		const store = createStateManager(
+			createMockState({ codeBlockRendering: { codeBlocks: [createMockCodeBlock({ code: ['module audio'] })] } })
+		);
+		const events = { on: vi.fn(), off: vi.fn() } as unknown as Pick<EventDispatcher, 'on' | 'off'>;
+		const projection = createWebUiRenderProjection(store, events);
+		const snapshot = projection.getSnapshot();
+
+		store.set('info.graphics', { fps: 60 });
+		store.set('info.graphics', { fps: 30, timeToRenderMs: 12 });
+
+		expect(projection.getSnapshot()).toBe(snapshot);
+		projection.dispose();
+		store.dispose();
+	});
+
 	it('subscribes beside editor-state and publishes render data by runtime id', () => {
 		const block = createMockCodeBlock({
 			creationIndex: 7,

@@ -73,7 +73,6 @@ export function createMockCodeBlock(
 		parsedDirectives: [],
 		widgets: {
 			blockHighlights: [],
-			infoPanels: [],
 			shapeDeclarations: [],
 			errorMessages: [],
 		},
