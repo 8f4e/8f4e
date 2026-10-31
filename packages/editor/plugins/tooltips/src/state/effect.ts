@@ -25,7 +25,7 @@ function getSelectedCodeBlockStackAnalysisLine(
 		return compiledFunction?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row);
 	}
 
-	return state.compiler.compiledModules[
+	return state.compiler.result.compiledModules[
 		createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name)
 	]?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row);
 }
@@ -50,7 +50,7 @@ function getSelectedModuleExecutionOrder(
 		return undefined;
 	}
 
-	const moduleIndex = Object.keys(state.compiler.compiledModules).indexOf(
+	const moduleIndex = Object.keys(state.compiler.result.compiledModules).indexOf(
 		createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name)
 	);
 	return moduleIndex === -1 ? undefined : moduleIndex + 1;

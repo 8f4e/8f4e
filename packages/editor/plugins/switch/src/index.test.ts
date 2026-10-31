@@ -65,11 +65,11 @@ async function setup(code = source, installed = true) {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.memoryPlan = compiled.memoryPlan;
-	state.compiler.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.compiledModules = compiled.compiledModules;
-	state.compiler.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
+	state.compiler.result.memoryPlan = compiled.memoryPlan;
+	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
+	state.compiler.result.compiledModules = compiled.compiledModules;
+	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
+	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	const address = compiled.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
@@ -196,7 +196,7 @@ describe('switch plugin', () => {
 			'int gate 0',
 			'moduleEnd',
 		]);
-		const address = test.state.compiler.memoryPlan.modules.other.memory.gate.allocationUnitAddress;
+		const address = test.state.compiler.result.memoryPlan.modules.other.memory.gate.allocationUnitAddress;
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);
 		expect(test.memoryViews.int32[test.address]).toBe(0);
@@ -204,7 +204,7 @@ describe('switch plugin', () => {
 
 	it('rebinds after runtime memory metadata changes and drops unresolved widgets', async () => {
 		const test = await setup();
-		const memory = test.state.compiler.memoryPlan.modules.controls.memory;
+		const memory = test.state.compiler.result.memoryPlan.modules.controls.memory;
 		memory.gate = { ...memory.gate, allocationUnitAddress: test.address + 4 };
 		test.events.dispatch('memoryValuesChanged');
 		test.press();

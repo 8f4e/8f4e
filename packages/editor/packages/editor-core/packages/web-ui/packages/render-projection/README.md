@@ -8,7 +8,7 @@ The projection is a disposable read model, not a second source of truth. Its dat
 current editor state.
 
 ```text
-editor-state ──changes──▶ web-ui-render-projection ──snapshot──▶ web-ui
+editor-state ──completed layouts──▶ web-ui-render-projection ──snapshot──▶ web-ui
                                    ▲
                                    │
                          runtime lifecycle events
@@ -63,7 +63,7 @@ candidate for the render projection.
 `createWebUiRenderProjection(store, events)` creates a projection controller that:
 
 1. reads the current editor state;
-2. subscribes to relevant state changes and lifecycle events;
+2. subscribes to `codeBlockLayoutsChanged` after core has settled source, diagnostic, memory, font, and plugin layout changes;
 3. derives a new `WebUiRenderData` snapshot outside the renderer;
 4. exposes the current snapshot through `getSnapshot()`; and
 5. removes its subscriptions through `dispose()`.
@@ -100,7 +100,6 @@ syntax highlighters remain internal implementation modules.
 ## Current Limitations
 
 - Relevant changes currently recalculate every code block rather than structurally sharing unaffected records.
-- State subscriptions are broad and are not yet coordinated by a transaction or committed-change boundary.
 - Only code glyph preparation has moved into the projection so far; the web UI still reads editor-state for other
   layout and interaction data.
 - Frame-time runtime values deliberately remain live renderer inputs rather than projected data.

@@ -1,7 +1,8 @@
 # Test Runner Package Guidelines
 
-- This package owns native assertion callbacks, execution, structured results, and failure formatting shared by
+- This package owns collecting native assertion callbacks, execution, structured results, and failure formatting shared by
   compiler fixtures and the CLI. Adapters own file handling, compilation options, and snapshots.
+  Shared no-op host callbacks belong to `@8f4e/language-spec` alongside the assertion import ABI.
 - Accept compiled output using language-spec contracts; adapters own compilation. Keep the runner independent of
   the compiler implementation, browser-safe, and free of Node file APIs.
 - Consume compiler-produced assertion sites. Do not rewrite source or inject assertion declarations.

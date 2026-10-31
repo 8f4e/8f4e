@@ -114,9 +114,7 @@ describe('shape', () => {
 			code: ['module filterA', 'shape filterState', 'float cutoff 1200', 'moduleEnd'],
 		});
 		const state = createMockState({
-			compiler: {
-				...createCompilerReports(createInheritedMemory(4)),
-			},
+			compiler: { result: createCompilerReports(createInheritedMemory(4)) },
 		});
 		const blockLayout = createLayoutDraft();
 
@@ -131,9 +129,7 @@ describe('shape', () => {
 			code: ['module filterA', 'shape filterState', 'shape missingState', 'moduleEnd'],
 		});
 		const state = createMockState({
-			compiler: {
-				...createCompilerReports(),
-			},
+			compiler: { result: createCompilerReports() },
 		});
 		const blockLayout = createLayoutDraft();
 
@@ -154,7 +150,7 @@ describe('shape', () => {
 				hGrid: 16,
 			},
 			compiler: {
-				...createCompilerReports(
+				result: createCompilerReports(
 					{
 						input: createMemory({
 							id: 'input',

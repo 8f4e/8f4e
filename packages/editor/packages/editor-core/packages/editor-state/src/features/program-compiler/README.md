@@ -22,15 +22,15 @@ plugin is installed.
 
 ## Published state and artifacts
 
-- `state.compiler.isCompiling` indicates compilation activity.
-- `state.compiler.compiledModules` and `compiledFunctions` provide compiler lookups.
-- `state.compiler.memoryPlan`, `memoryDefaultsByModuleId`, and `projectMemoryExposuresByGroupPath` support memory consumers.
+- `state.compiler.isCompiling` indicates compilation activity independently of the last accepted `state.compiler.result`.
+- `state.compiler.result.compiledModules` and `compiledFunctions` provide compiler lookups.
+- `state.compiler.result.memoryPlan`, `memoryDefaultsByModuleId`, and `projectMemoryExposuresByGroupPath` support memory consumers.
 - `state.info.compiler` contains compilation duration, bytecode size, memory usage, and cache statistics.
 - `state.codeErrors.compilationErrors` contains diagnostics mapped to project blocks and source lines.
 
 The plugin updates its live artifact handles and emits `compilationSucceeded` with `ProgramArtifacts` (`memoryRef`)
 before publishing metadata and runtime readiness. Core consumes that event to refresh memory views; bytecode stays
-on the compiler getter. All compiler metadata is published atomically in one `state.compiler` replacement while
+on the compiler getter. All compiler metadata is published atomically in one `state.compiler.result` replacement while
 `isCompiling` remains true. After metadata subscribers finish, `compiler.isCompiling` becomes false to resume runtimes.
 `memoryAction` distinguishes recreated and reused memory. The binary-assets plugin observes new memory plans and
 reloads its retained bytes into current targets before runtimes resume. Editor state stores no binary asset metadata.

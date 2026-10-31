@@ -51,8 +51,8 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 	} else {
 		const moduleId = getCodeBlockModuleId(codeBlock);
 		for (const declaration of getConnectorMemoryDeclarations(
-			state.compiler.memoryPlan.modules[moduleId],
-			state.compiler.memoryDefaultsByModuleId[moduleId]
+			state.compiler.result.memoryPlan.modules[moduleId],
+			state.compiler.result.memoryDefaultsByModuleId[moduleId]
 		)) {
 			addConnector(declaration.memory, getConnectorRow(declaration, codeBlock.gaps));
 		}

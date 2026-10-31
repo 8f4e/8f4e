@@ -69,19 +69,21 @@ describe('paramShape', () => {
 				hGrid: 16,
 			},
 			compiler: {
-				compiledFunctions: {
-					[createFunctionId('foo', ['float*'])]: {
-						id: createFunctionId('foo', ['float*']),
-						name: 'foo',
-						ast: { projectBlockId: 99 },
-						paramShapeExpansions: [
-							{
-								lineNumber: 2,
-								parameters: [{ type: 'float*', name: 'wrong' }],
-							},
-						],
-					} as CompiledFunction,
-					[createFunctionId('foo', ['int*', 'float*'])]: createCompiledFunction(42),
+				result: {
+					compiledFunctions: {
+						[createFunctionId('foo', ['float*'])]: {
+							id: createFunctionId('foo', ['float*']),
+							name: 'foo',
+							ast: { projectBlockId: 99 },
+							paramShapeExpansions: [
+								{
+									lineNumber: 2,
+									parameters: [{ type: 'float*', name: 'wrong' }],
+								},
+							],
+						} as CompiledFunction,
+						[createFunctionId('foo', ['int*', 'float*'])]: createCompiledFunction(42),
+					},
 				},
 			},
 		});

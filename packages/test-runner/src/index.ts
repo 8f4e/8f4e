@@ -1,8 +1,6 @@
 import type { AssertionSite, CompileResult, ProjectObjectModel } from '@8f4e/language-spec';
 import { ASSERTION_IMPORT_NAMES, WASM_MEMORY_PAGE_SIZE } from '@8f4e/language-spec';
 
-export { IGNORED_ASSERTION_IMPORTS } from './ignoredAssertionImports';
-
 /** One invocation; loops can execute the same static site several times. */
 export type TestAssertionResult = {
 	assertIndex: number;

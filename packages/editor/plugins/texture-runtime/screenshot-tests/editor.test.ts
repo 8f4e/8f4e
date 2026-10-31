@@ -100,7 +100,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 		expect(load).toHaveBeenCalledOnce();
 		expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
 		expect(editor.state.codeErrors.compilationErrors).toEqual([]);
-		const framesAddress = editor.state.compiler.memoryPlan.modules.screen.memory.frames.allocationUnitAddress;
+		const framesAddress = editor.state.compiler.result.memoryPlan.modules.screen.memory.frames.allocationUnitAddress;
 		const frames = new Int32Array(compiler.getMemory()!.buffer);
 		if (enabled)
 			await vi.waitFor(() => {
@@ -186,7 +186,7 @@ entryEnd`),
 		editor.pauseRendering();
 		await vi.waitFor(() => expect(compiler.getDiagnostics().status).toBe('ready'), { timeout: 10000 });
 		expect(editor.state.codeErrors.compilationErrors).toEqual([]);
-		const start = editor.state.compiler.memoryPlan.modules.screen.memory.rgba.byteAddress;
+		const start = editor.state.compiler.result.memoryPlan.modules.screen.memory.rgba.byteAddress;
 		new Uint8Array(compiler.getMemory()!.buffer).set(
 			[255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255],
 			start

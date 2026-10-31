@@ -59,11 +59,11 @@ export async function setup(
 		dispose();
 		store.dispose();
 	});
-	state.compiler.memoryPlan = compiled.memoryPlan;
-	state.compiler.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.compiledModules = compiled.compiledModules;
-	state.compiler.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
+	state.compiler.result.memoryPlan = compiled.memoryPlan;
+	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
+	state.compiler.result.compiledModules = compiled.compiledModules;
+	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
+	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	events.dispatch('loadProject', { project });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;

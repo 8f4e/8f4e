@@ -27,13 +27,13 @@ export default function shape(graphicData: CodeBlockGraphicData, state: State, b
 	}
 
 	const moduleId = getCodeBlockModuleId(graphicData);
-	const compiledModule = state.compiler.compiledModules[moduleId];
-	const plannedModule = state.compiler.memoryPlan.modules[moduleId];
+	const compiledModule = state.compiler.result.compiledModules[moduleId];
+	const plannedModule = state.compiler.result.memoryPlan.modules[moduleId];
 	if (!compiledModule || compiledModule.ast.type !== 'module') {
 		return;
 	}
 
-	const memoryDefaults = state.compiler.memoryDefaultsByModuleId[moduleId]!;
+	const memoryDefaults = state.compiler.result.memoryDefaultsByModuleId[moduleId]!;
 	const inheritedDeclarationCountByLineNumber = Object.values(plannedModule!.memory).reduce<Map<number, number>>(
 		(result, memory) => {
 			if (memoryDefaults[memory.id]!.isInherited === true) {
@@ -72,14 +72,14 @@ export function updateShapeDeclarations(
 	}
 
 	const moduleId = getCodeBlockModuleId(graphicData);
-	const compiledModule = state.compiler.compiledModules[moduleId];
-	const plannedModule = state.compiler.memoryPlan.modules[moduleId];
+	const compiledModule = state.compiler.result.compiledModules[moduleId];
+	const plannedModule = state.compiler.result.memoryPlan.modules[moduleId];
 	if (!compiledModule || compiledModule.ast.type !== 'module') {
 		return;
 	}
 
 	const textX = (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
-	const memoryDefaults = state.compiler.memoryDefaultsByModuleId[moduleId]!;
+	const memoryDefaults = state.compiler.result.memoryDefaultsByModuleId[moduleId]!;
 	for (const { memory, rowOffset } of getInheritedDeclarationRowOffsets(plannedModule!, memoryDefaults)) {
 		const displayRow = blockLayout.displayModel.sourceLineIndexToDisplayRow[memory.lineNumber];
 		if (displayRow === undefined) {

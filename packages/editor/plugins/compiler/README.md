@@ -38,9 +38,9 @@ project has an enabled test entry, including nested tests and a root function ex
 
 For an accepted result, the plugin first updates its artifact handles and emits `compilationSucceeded` with the
 `ProgramArtifacts` needed for rendering: `memoryRef`. Core consumes that event to refresh memory views; bytecode stays
-on the compiler getter. The plugin replaces `state.compiler` in one store update containing all compiler lookups,
+on the compiler getter. The plugin replaces `state.compiler.result` in one store update containing all compiler lookups,
 memory plans/defaults and project exposures, while `isCompiling` remains true. Every metadata subscriber sees the
-complete result. Once those subscribers finish, the plugin sets `compiler.isCompiling` false so runtimes resume,
+complete result without notifying compilation-progress subscribers. Once those subscribers finish, the plugin sets `compiler.isCompiling` false so runtimes resume,
 then publishes statistics and diagnostics. The binary-assets plugin observes the new memory plan and copies retained
 bytes into current memory before runtimes run, regardless of subscription order.
 

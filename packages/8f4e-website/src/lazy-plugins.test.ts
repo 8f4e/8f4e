@@ -58,11 +58,11 @@ entryEnd`,
 	expect(editor.state.dialogStack.some(dialog => dialog.id === 'binary-assets-loading')).toBe(true);
 	finish(new Response(new Uint8Array([1, 2, 3, 4, 5, 6])));
 	await vi.waitFor(
-		() => expect(editor.state.compiler.memoryPlan.modules.player?.memory.buffer.numberOfElements).toBe(6),
+		() => expect(editor.state.compiler.result.memoryPlan.modules.player?.memory.buffer.numberOfElements).toBe(6),
 		{ timeout: 10000 }
 	);
 	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
-	const memory = editor.state.compiler.memoryPlan.modules.player.memory.buffer;
+	const memory = editor.state.compiler.result.memoryPlan.modules.player.memory.buffer;
 	expect([...editor.getMemoryViews().uint8.slice(memory.byteAddress, memory.byteAddress + 6)]).toEqual([
 		1, 2, 3, 4, 5, 6,
 	]);
@@ -86,7 +86,9 @@ moduleEnd
 entryEnd`,
 		{ [assetUrl]: fetchAsset }
 	);
-	await vi.waitFor(() => expect(editor.state.compiler.memoryPlan.modules.player).toBeDefined(), { timeout: 10000 });
+	await vi.waitFor(() => expect(editor.state.compiler.result.memoryPlan.modules.player).toBeDefined(), {
+		timeout: 10000,
+	});
 	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
 	expect(fetchAsset).not.toHaveBeenCalled();
 	expect(editor.state.editorConfigSchemaContributions.binaryAssets).toBeUndefined();
@@ -107,7 +109,7 @@ entryEnd`,
 		],
 	});
 	const read = () => {
-		const memory = editor.state.compiler.memoryPlan.modules.player.memory.buffer;
+		const memory = editor.state.compiler.result.memoryPlan.modules.player.memory.buffer;
 		return [...editor.getMemoryViews().uint8.slice(memory.byteAddress, memory.byteAddress + 4)];
 	};
 	await vi.waitFor(() => expect(read()).toEqual([9, 8, 7, 6]));
@@ -145,7 +147,9 @@ push &received:status
 push status
 store
 functionEnd`);
-	await vi.waitFor(() => expect(editor.state.compiler.memoryPlan.modules.received).toBeDefined(), { timeout: 10000 });
+	await vi.waitFor(() => expect(editor.state.compiler.result.memoryPlan.modules.received).toBeDefined(), {
+		timeout: 10000,
+	});
 	expect(requestAccess).not.toHaveBeenCalled();
 	expect(editor.state.editorConfigSchemaContributions.midi).toBeUndefined();
 	const config = editor.state.codeBlockRendering.codeBlocks.find(block => block.blockType === 'note')!;
@@ -172,7 +176,7 @@ functionEnd`);
 	await vi.waitFor(
 		() => {
 			send(0x90);
-			const address = editor.state.compiler.memoryPlan.modules.received.memory.status.allocationUnitAddress;
+			const address = editor.state.compiler.result.memoryPlan.modules.received.memory.status.allocationUnitAddress;
 			expect(editor.getMemoryViews().int32[address]).toBe(0x90);
 		},
 		{ timeout: 10000 }
@@ -181,7 +185,7 @@ functionEnd`);
 	expect(editor.state.info.midi).toEqual({ '0': 'Keys (in)' });
 	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
 	const memory = editor.getMemoryViews().int32;
-	const address = editor.state.compiler.memoryPlan.modules.received.memory.status.allocationUnitAddress;
+	const address = editor.state.compiler.result.memoryPlan.modules.received.memory.status.allocationUnitAddress;
 	editor.dispose();
 	send(0x80);
 	expect(memory[address]).toBe(0x90);

@@ -32,28 +32,30 @@ const store = createStateManager(
 			},
 		},
 		compiler: {
-			projectMemoryExposuresByGroupPath: {},
-			compiledModules: {},
-			memoryPlan: {
-				modules: {
-					source: {
-						id: 'source',
-						lineNumber: 0,
-						byteAddress: 0,
-						allocationUnitCount: 0,
-						allocatedByteLength: 0,
-						endByteAddress: 0,
-						endAddressSafeByteLength: 0,
-						memory: {
-							buffer: { id: 'buffer', allocationUnitAddress: 32 },
+			result: {
+				projectMemoryExposuresByGroupPath: {},
+				compiledModules: {},
+				memoryPlan: {
+					modules: {
+						source: {
+							id: 'source',
+							lineNumber: 0,
+							byteAddress: 0,
+							allocationUnitCount: 0,
+							allocatedByteLength: 0,
+							endByteAddress: 0,
+							endAddressSafeByteLength: 0,
+							memory: {
+								buffer: { id: 'buffer', allocationUnitAddress: 32 },
+							},
+							declarations: [],
+							declarationSources: [],
 						},
-						declarations: [],
-						declarationSources: [],
 					},
+					moduleList: [],
 				},
-				moduleList: [],
+				memoryDefaultsByModuleId: {},
 			},
-			memoryDefaultsByModuleId: {},
 		},
 	})
 );

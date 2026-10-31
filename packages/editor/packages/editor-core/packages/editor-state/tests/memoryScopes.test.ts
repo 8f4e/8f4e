@@ -15,13 +15,13 @@ describe('explicit memory scopes', () => {
 	beforeAll(async () => {
 		const compiled = await compileProject(parseProjectSource(source), { disableSharedMemory: true });
 		state = createMockState();
-		state.compiler.memoryPlan = compiled.memoryPlan;
-		state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
+		state.compiler.result.memoryPlan = compiled.memoryPlan;
+		state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	});
 
 	it('keeps local declarations and exposed aliases separate when a module and group share a name', () => {
 		expect(resolveMemoryTarget(state, moduleScope, 'gain')?.memory).toBe(
-			state.compiler.memoryPlan.modules.audio.memory.gain
+			state.compiler.result.memoryPlan.modules.audio.memory.gain
 		);
 		expect(resolveMemoryTarget(state, projectScope, 'gain')).toMatchObject({
 			publicModuleId: 'audio',
@@ -34,14 +34,14 @@ describe('explicit memory scopes', () => {
 	});
 
 	it('resolves qualified aliases and canonical backing references from the root project', () => {
-		const backing = state.compiler.memoryPlan.modules['audio/voice'].memory.level;
+		const backing = state.compiler.result.memoryPlan.modules['audio/voice'].memory.level;
 		expect(resolveMemoryTarget(state, rootScope, 'audio:gain')?.memory).toBe(backing);
 		expect(resolveMemoryTarget(state, rootScope, 'audio/voice:level')?.memory).toBe(backing);
 		expect(resolveMemoryTarget(state, moduleScope, 'audio:gain')?.memory).toBe(backing);
 	});
 
 	it('resolves qualified names relative to project scopes and module owners', () => {
-		const backing = state.compiler.memoryPlan.modules['audio/nested/voice'].memory.level;
+		const backing = state.compiler.result.memoryPlan.modules['audio/nested/voice'].memory.level;
 		expect(resolveMemoryTarget(state, projectScope, 'nested:gain')?.memory).toBe(backing);
 		expect(resolveMemoryTarget(state, { kind: 'module', moduleId: 'audio/voice' }, 'nested:gain')?.memory).toBe(
 			backing

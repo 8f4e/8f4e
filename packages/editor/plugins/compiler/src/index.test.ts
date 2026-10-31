@@ -81,7 +81,7 @@ describe('compiler plugin', () => {
 		test.store.subscribe('compiler.isCompiling', () => {
 			if (!test.store.getState().compiler.isCompiling) order.push('runtime');
 		});
-		test.store.subscribe('compiler.memoryPlan', () => {
+		test.store.subscribe('compiler.result.memoryPlan', () => {
 			expect(test.compiler.getMemory()).toBe(memory);
 			expect(test.store.getState().compiler.isCompiling).toBe(true);
 			test.compiler.writeMemory(1, 42, true);

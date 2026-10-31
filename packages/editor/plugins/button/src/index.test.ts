@@ -48,11 +48,11 @@ async function setup(code = source, installed = true, name = 'controls') {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.memoryPlan = compiled.memoryPlan;
-	state.compiler.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.compiledModules = compiled.compiledModules;
-	state.compiler.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
+	state.compiler.result.memoryPlan = compiled.memoryPlan;
+	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
+	state.compiler.result.compiledModules = compiled.compiledModules;
+	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
+	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
@@ -85,7 +85,7 @@ describe('button plugin', () => {
 		test.render();
 		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 16, 32, PALETTE_INDICES.lightBase, 8, 16);
 		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', PALETTE_INDICES.darkBase);
-		const address = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
+		const address = test.state.compiler.result.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		test.memoryViews.int32[address] = 7;
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
@@ -96,7 +96,7 @@ describe('button plugin', () => {
 		const test = await setup(['module controls', 'int gate 0', '; @button &gate', '; @pos 40 20', 'moduleEnd']);
 		test.store.set('editorMode', editing ? 'edit' : 'view');
 		test.events.dispatch('mousedown', { ...test.point(), buttons: 1, altKey: false });
-		const address = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
+		const address = test.state.compiler.result.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0, true);
@@ -107,7 +107,7 @@ describe('button plugin', () => {
 
 	it('writes configured float values and draws them from float memory', async () => {
 		const test = await setup(['module controls', 'float gate 0.1', '; @button &gate 0.1 0.9', 'moduleEnd']);
-		const address = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
+		const address = test.state.compiler.result.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		test.memoryViews.float32[address] = 0.1;
 		test.render();
 		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[| ]', PALETTE_INDICES.darkBase);
@@ -175,8 +175,8 @@ describe('button plugin', () => {
 			'; @button &second 10 20',
 			'moduleEnd',
 		]);
-		const first = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
-		const second = test.state.compiler.memoryPlan.modules.controls.memory.second.allocationUnitAddress;
+		const first = test.state.compiler.result.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
+		const second = test.state.compiler.result.memoryPlan.modules.controls.memory.second.allocationUnitAddress;
 		test.press(3);
 		expect(test.write).toHaveBeenLastCalledWith(first, 1, true);
 		test.release();
@@ -196,7 +196,7 @@ describe('button plugin', () => {
 			'int gate 0',
 			'moduleEnd',
 		]);
-		const address = test.state.compiler.memoryPlan.modules.other.memory.gate.allocationUnitAddress;
+		const address = test.state.compiler.result.memoryPlan.modules.other.memory.gate.allocationUnitAddress;
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);
 		test.release();
@@ -213,7 +213,7 @@ describe('button plugin', () => {
 			'moduleEnd',
 			'groupEnd',
 		]);
-		const address = test.state.compiler.memoryPlan.modules['controls/voice'].memory.gate.allocationUnitAddress;
+		const address = test.state.compiler.result.memoryPlan.modules['controls/voice'].memory.gate.allocationUnitAddress;
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);
 		test.release();
@@ -222,7 +222,7 @@ describe('button plugin', () => {
 
 	it('rebinds after runtime memory metadata changes and drops unresolved buttons', async () => {
 		const test = await setup();
-		const memory = test.state.compiler.memoryPlan.modules.controls.memory;
+		const memory = test.state.compiler.result.memoryPlan.modules.controls.memory;
 		const address = memory.gate.allocationUnitAddress + 4;
 		memory.gate = { ...memory.gate, allocationUnitAddress: address };
 		test.events.dispatch('memoryValuesChanged');
@@ -240,7 +240,7 @@ describe('button plugin', () => {
 
 	it('draws, presses, and releases a button in a trailing comment', async () => {
 		const test = await setup(['module controls', 'int gate 0', 'int extra 0 ; @button &gate', 'moduleEnd']);
-		const address = test.state.compiler.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
+		const address = test.state.compiler.result.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		test.render();
 		expect(test.draw.drawText).toHaveBeenCalledWith(test.codeBlock.width - 32, 32, '[| ]', PALETTE_INDICES.darkBase);
 		test.press();

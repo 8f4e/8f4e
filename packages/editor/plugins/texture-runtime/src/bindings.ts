@@ -66,7 +66,7 @@ export function createTextureBindings(store: EditorPluginContext['store']) {
 	}
 
 	store.subscribe('projectChange', refresh);
-	store.subscribeToValue('compiler.isCompiling', false, refresh);
+	store.subscribe('compiler.result', refresh);
 	refresh();
 	return {
 		resolveUploads,
@@ -74,7 +74,7 @@ export function createTextureBindings(store: EditorPluginContext['store']) {
 			resolveAddress(bindingsByBlock.get(block)?.get(address), memory),
 		dispose: () => {
 			store.unsubscribe('projectChange', refresh);
-			store.unsubscribe('compiler.isCompiling', refresh);
+			store.unsubscribe('compiler.result', refresh);
 			uploads = [];
 		},
 	};

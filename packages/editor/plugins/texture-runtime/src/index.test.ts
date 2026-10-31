@@ -84,8 +84,8 @@ async function setup({
 		memoryDefaultsByModuleId,
 	}: typeof current.compiled) => {
 		hasCompilerMemory = true;
-		store.set('compiler', {
-			isCompiling: true,
+		store.set('compiler.isCompiling', true);
+		store.set('compiler.result', {
 			compiledFunctions,
 			compiledModules,
 			projectMemoryExposuresByGroupPath,
@@ -520,7 +520,7 @@ entryEnd`,
 	const originalWidth = test.block.width;
 	const layoutChanged = vi.fn();
 	test.events.on('codeBlockLayoutsChanged', layoutChanged);
-	const memory = test.state.compiler.memoryPlan.modules.screen.memory;
+	const memory = test.state.compiler.result.memoryPlan.modules.screen.memory;
 	new Int32Array(test.memory.buffer)[memory.pixels.allocationUnitAddress] = memory.second.byteAddress;
 	test.frame();
 	expect(test.block.height).toBe(originalHeight);

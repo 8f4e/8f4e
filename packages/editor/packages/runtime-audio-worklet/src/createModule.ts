@@ -1,4 +1,4 @@
-import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/test-runner';
+import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/language-spec';
 
 const noop = () => {
 	return;

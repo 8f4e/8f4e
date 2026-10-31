@@ -1,5 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/test-runner';
+import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { executeTests } from './executeTests';
 

@@ -36,18 +36,13 @@ export default function createWebUiRenderProjection(
 		};
 	};
 
-	const selectors = ['codeBlockRendering', 'codeErrors', 'assertionResults', 'compiler.isCompiling'] as const;
-	for (const selector of selectors) store.subscribe(selector, refresh);
-	// Font changes can change plugin-created logical gaps even though glyph IDs stay fixed.
-	const eventNames = ['memoryValuesChanged', 'spriteSheetRerendered', 'codeBlockLayoutsChanged'] as const;
-	for (const eventName of eventNames) events.on(eventName, refresh);
+	events.on('codeBlockLayoutsChanged', refresh);
 	refresh();
 
 	return {
 		getSnapshot: () => snapshot,
 		dispose: () => {
-			for (const selector of selectors) store.unsubscribe(selector, refresh);
-			for (const eventName of eventNames) events.off(eventName, refresh);
+			events.off('codeBlockLayoutsChanged', refresh);
 		},
 	};
 }

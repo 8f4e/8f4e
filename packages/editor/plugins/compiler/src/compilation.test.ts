@@ -211,8 +211,10 @@ describe('compilation scheduling and publication', () => {
 			'memoryDefaultsByModuleId',
 		] as const;
 		const observed: State['compiler'][] = [];
+		const progress: boolean[] = [];
+		store.subscribe('compiler.isCompiling', value => progress.push(value));
 		for (const field of fields) {
-			store.subscribe(`compiler.${field}`, () => observed.push({ ...mockState.compiler }));
+			store.subscribe(`compiler.result.${field}`, () => observed.push({ ...mockState.compiler }));
 		}
 
 		await triggerCompile();
@@ -220,9 +222,10 @@ describe('compilation scheduling and publication', () => {
 		expect(observed).toHaveLength(fields.length);
 		for (const metadata of observed) {
 			expect(metadata.isCompiling).toBe(true);
-			for (const field of fields) expect(metadata[field]).toBe(result[field]);
+			for (const field of fields) expect(metadata.result[field]).toBe(result[field]);
 		}
 		expect(mockState.compiler.isCompiling).toBe(false);
+		expect(progress).toEqual([true, false]);
 	});
 
 	it('stores compilation stats in state.info.compiler from successful compilation results', async () => {

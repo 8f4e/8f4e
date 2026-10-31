@@ -10,7 +10,7 @@
 - Upload once per visible address per frame. Keep native R8/RGB8/RGBA8 storage and one program/rectangle. Crops use
   source-pixel coordinates and original row stride; 1bit crops can start within packed bytes. Preserve nearest sampling
   and premultiplied alpha. Free storage with no visible users and recreate after GPU release.
-- Rebind address caches when `compiler.isCompiling` becomes false; compiler metadata is published atomically before that signal.
+- Rebind address caches when `compiler.result` changes; accepted metadata is published atomically and independently of progress.
 - Reserve view space from explicit source-pixel dimensions, with an optional source origin defaulting to zero. Layout
   uses only directives and viewport grid sizes; it has no compiler or memory dependencies. Pointer swaps and invalid
   sources never resize views. Keep rendering bindings separate from geometry and texture fields out of core.

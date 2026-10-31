@@ -49,11 +49,11 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 	events.dispatch('enterEditMode');
 	if (compile) {
 		const compiled = await compileProject(project, { disableSharedMemory: true });
-		store.set('compiler.compiledModules', compiled.compiledModules);
-		store.set('compiler.compiledFunctions', compiled.compiledFunctions);
-		store.set('compiler.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
-		store.set('compiler.projectMemoryExposuresByGroupPath', compiled.projectMemoryExposuresByGroupPath);
-		store.set('compiler.memoryPlan', compiled.memoryPlan);
+		store.set('compiler.result.compiledModules', compiled.compiledModules);
+		store.set('compiler.result.compiledFunctions', compiled.compiledFunctions);
+		store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
+		store.set('compiler.result.projectMemoryExposuresByGroupPath', compiled.projectMemoryExposuresByGroupPath);
+		store.set('compiler.result.memoryPlan', compiled.memoryPlan);
 	}
 	const state = store.getState();
 	const env = () => state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'env')!;
@@ -76,7 +76,7 @@ describe('binary assets plugin', () => {
 	it('loads configured bytes and contributes their size to the environment constants', async () => {
 		const test = await setup();
 		await vi.waitFor(() => expect(test.state.dialogStack).toEqual([]));
-		const target = test.state.compiler.memoryPlan.modules.player.memory.buffer;
+		const target = test.state.compiler.result.memoryPlan.modules.player.memory.buffer;
 		expect([...test.memory.slice(target.byteAddress, target.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
 		expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6');
 		expect(test.env().code).toContain("; 'sample.pcm'");
@@ -91,7 +91,7 @@ describe('binary assets plugin', () => {
 		const test = await setup({ source });
 		await vi.waitFor(() => expect(test.state.dialogStack).toEqual([]));
 		for (const name of ['player', 'preview']) {
-			const target = test.state.compiler.memoryPlan.modules[name].memory.buffer;
+			const target = test.state.compiler.result.memoryPlan.modules[name].memory.buffer;
 			expect([...test.memory.slice(target.byteAddress, target.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
 		}
 		expect(fetchMock).toHaveBeenCalledOnce();
@@ -103,7 +103,7 @@ describe('binary assets plugin', () => {
 		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6'));
 		expect(test.state.dialogStack).toContainEqual(expect.objectContaining({ id: 'binary-assets-loading' }));
 		test.getMemoryBytes.mockReturnValue(test.memory);
-		test.store.set('compiler.memoryPlan', test.state.compiler.memoryPlan);
+		test.store.set('compiler.result.memoryPlan', test.state.compiler.result.memoryPlan);
 		expect(test.state.dialogStack).toEqual([]);
 	});
 
@@ -112,15 +112,15 @@ describe('binary assets plugin', () => {
 		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6'));
 		expect(test.state.dialogStack).toHaveLength(1);
 		const compiled = await compileProject(parseProjectSource(SOURCE), { disableSharedMemory: true });
-		test.store.set('compiler.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
-		test.store.set('compiler.compiledModules', compiled.compiledModules);
-		test.store.set('compiler.memoryPlan', compiled.memoryPlan);
+		test.store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
+		test.store.set('compiler.result.compiledModules', compiled.compiledModules);
+		test.store.set('compiler.result.memoryPlan', compiled.memoryPlan);
 		expect(test.state.dialogStack).toEqual([]);
 		const nextMemory = new Uint8Array(65536);
 		test.getMemoryBytes.mockReturnValue(nextMemory);
-		test.store.set('compiler.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
-		test.store.set('compiler.compiledModules', compiled.compiledModules);
-		test.store.set('compiler.memoryPlan', compiled.memoryPlan);
+		test.store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
+		test.store.set('compiler.result.compiledModules', compiled.compiledModules);
+		test.store.set('compiler.result.memoryPlan', compiled.memoryPlan);
 		const target = compiled.memoryPlan.modules.player.memory.buffer;
 		expect([...nextMemory.slice(target.byteAddress, target.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
 		expect(fetchMock).toHaveBeenCalledOnce();
@@ -134,7 +134,7 @@ describe('binary assets plugin', () => {
 		);
 		const test = await setup({ source });
 		await vi.waitFor(() => expect(test.state.dialogStack).toEqual([]));
-		const target = test.state.compiler.memoryPlan.modules.player.memory.value;
+		const target = test.state.compiler.result.memoryPlan.modules.player.memory.value;
 		expect([...test.memory.slice(target.byteAddress, target.byteAddress + target.allocatedByteLength)]).toEqual(
 			new Array(8).fill(7)
 		);
@@ -148,7 +148,7 @@ describe('binary assets plugin', () => {
 		);
 		const test = await setup({ source });
 		await vi.waitFor(() => expect(test.state.dialogStack).toEqual([]));
-		const target = test.state.compiler.memoryPlan.modules['audio/player'].memory.buffer;
+		const target = test.state.compiler.result.memoryPlan.modules['audio/player'].memory.buffer;
 		expect(test.memory[target.byteAddress]).toBe(1);
 	});
 
@@ -231,7 +231,7 @@ describe('binary assets plugin', () => {
 		expect(test.state.envConstantContributions).toEqual({});
 		expect(test.state.editorConfigSchemaContributions).toEqual({});
 		expect(test.state.dialogStack).toEqual([]);
-		test.store.set('compiler.memoryPlan', test.state.compiler.memoryPlan);
+		test.store.set('compiler.result.memoryPlan', test.state.compiler.result.memoryPlan);
 		expect(test.memory.every(value => value === 0)).toBe(true);
 	});
 
@@ -244,7 +244,7 @@ describe('binary assets plugin', () => {
 		first.disposePlugin();
 		expect(second.state.envConstantContributions.binaryAssets).toContain('const ASSET_SOUND_SIZE 6');
 		second.getMemoryBytes.mockReturnValue(second.memory);
-		second.store.set('compiler.memoryPlan', second.state.compiler.memoryPlan);
+		second.store.set('compiler.result.memoryPlan', second.state.compiler.result.memoryPlan);
 		expect(second.state.dialogStack).toEqual([]);
 	});
 });

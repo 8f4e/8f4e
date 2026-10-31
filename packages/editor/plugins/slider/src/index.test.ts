@@ -50,11 +50,11 @@ async function setup(code = source, installed = true, name = 'controls') {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.memoryPlan = compiled.memoryPlan;
-	state.compiler.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.compiledModules = compiled.compiledModules;
-	state.compiler.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
+	state.compiler.result.memoryPlan = compiled.memoryPlan;
+	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
+	state.compiler.result.compiledModules = compiled.compiledModules;
+	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
+	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
 	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
 	const initialRevision = state.compilerInputRevision;
@@ -323,7 +323,7 @@ describe('slider plugin', () => {
 			'audio'
 		);
 		const target = test.compiled.memoryPlan.modules['audio/other'].memory.level;
-		test.store.set('compiler.projectMemoryExposuresByGroupPath', {
+		test.store.set('compiler.result.projectMemoryExposuresByGroupPath', {
 			audio: [
 				{
 					...test.compiled.projectMemoryExposuresByGroupPath.audio[0],
@@ -335,7 +335,7 @@ describe('slider plugin', () => {
 		test.store.set('compiler.isCompiling', false);
 		test.press(1);
 		expect(test.write).toHaveBeenLastCalledWith(target.allocationUnitAddress, 127, true);
-		test.store.set('compiler.projectMemoryExposuresByGroupPath', {});
+		test.store.set('compiler.result.projectMemoryExposuresByGroupPath', {});
 		test.store.set('compiler.isCompiling', false);
 		test.write.mockClear();
 		test.render();

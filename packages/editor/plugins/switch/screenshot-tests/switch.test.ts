@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
+import type { EventDispatcher } from '@8f4e/editor-state-types';
 import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
@@ -25,7 +25,20 @@ int on 1
 moduleEnd
 entryEnd`);
 	const compiled = await compileProject(project, { disableSharedMemory: true });
-	const events = createMockEventDispatcher();
+	const listeners = new Map<string, Set<(event: unknown) => void>>();
+	const events: EventDispatcher = {
+		on: (name, callback) => {
+			const handlers = listeners.get(name) ?? new Set();
+			handlers.add(callback as (event: unknown) => void);
+			listeners.set(name, handlers);
+		},
+		off: (name, callback) => {
+			listeners.get(name)?.delete(callback as (event: unknown) => void);
+		},
+		dispatch: (name, event) => {
+			for (const callback of listeners.get(name) ?? []) callback(event);
+		},
+	};
 	const store = initState(events, {
 		callbacks: {},
 	});
@@ -42,10 +55,10 @@ entryEnd`);
 	const state = store.getState();
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
-	state.compiler.memoryPlan = compiled.memoryPlan;
-	state.compiler.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.compiledModules = compiled.compiledModules;
-	state.compiler.compiledFunctions = compiled.compiledFunctions;
+	state.compiler.result.memoryPlan = compiled.memoryPlan;
+	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
+	state.compiler.result.compiledModules = compiled.compiledModules;
+	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
 	store.set('initialProjectState', project);
 	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.codeBlocks', [codeBlock]);

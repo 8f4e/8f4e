@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { logError } from '@8f4e/editor-state';
-import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/test-runner';
+import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/language-spec';
 import { createTextureBindings } from './bindings';
 import { readTextureRuntimeConfig, TEXTURE_RUNTIME_CONFIG } from './config';
 import { createTextureLayout } from './layout';
