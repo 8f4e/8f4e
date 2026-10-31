@@ -203,6 +203,203 @@
     },
   },
   "moduleAst": {
+    "controlFlowOperands": {
+      "id": "controlFlowOperands",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "controlFlowOperands",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "total",
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "loop",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "total",
+              "type": "identifier",
+              "value": "&total",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "total",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "add",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [],
+          "instruction": "loopEnd",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "total",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "total",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "if",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "total",
+              "type": "identifier",
+              "value": "&total",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "total",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+          ],
+          "instruction": "mul",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [],
+          "instruction": "ifEnd",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "total",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 8,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
     "floatOperands": {
       "id": "floatOperands",
       "lines": [
@@ -1619,6 +1816,23 @@
     },
   },
   "moduleMemory": {
+    "controlFlowOperands": {
+      "memory": {
+        "total": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
+          "byteAddress": 4,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": "total",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
     "floatOperands": {
       "memory": {},
     },
@@ -1628,9 +1842,9 @@
     "referenceOperands": {
       "memory": {
         "gain": {
-          "allocationUnitAddress": 2,
+          "allocationUnitAddress": 3,
           "allocationUnitCount": 1,
-          "byteAddress": 8,
+          "byteAddress": 12,
           "default": 1.5,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
@@ -1642,10 +1856,10 @@
           "type": "float",
         },
         "indirect": {
-          "allocationUnitAddress": 4,
+          "allocationUnitAddress": 5,
           "allocationUnitCount": 1,
-          "byteAddress": 16,
-          "default": 12,
+          "byteAddress": 20,
+          "default": 16,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": "indirect",
@@ -1658,10 +1872,10 @@
           "type": "float**",
         },
         "pointer": {
-          "allocationUnitAddress": 3,
+          "allocationUnitAddress": 4,
           "allocationUnitCount": 1,
-          "byteAddress": 12,
-          "default": 8,
+          "byteAddress": 16,
+          "default": 12,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": "pointer",
@@ -1674,9 +1888,9 @@
           "type": "float*",
         },
         "value": {
-          "allocationUnitAddress": 1,
+          "allocationUnitAddress": 2,
           "allocationUnitCount": 1,
-          "byteAddress": 4,
+          "byteAddress": 8,
           "default": 4,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
@@ -1688,9 +1902,9 @@
           "type": "int",
         },
         "values": {
-          "allocationUnitAddress": 5,
+          "allocationUnitAddress": 6,
           "allocationUnitCount": 3,
-          "byteAddress": 20,
+          "byteAddress": 24,
           "default": {
             "0": 11,
             "1": 22,
@@ -1713,9 +1927,9 @@
     "scoped/source": {
       "memory": {
         "value": {
-          "allocationUnitAddress": 8,
+          "allocationUnitAddress": 9,
           "allocationUnitCount": 1,
-          "byteAddress": 32,
+          "byteAddress": 36,
           "default": 7,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
@@ -1735,13 +1949,14 @@
       "scale__float__float",
     ],
     "compiledModules": [
+      "controlFlowOperands",
       "floatOperands",
       "integerOperands",
       "referenceOperands",
       "scoped/reader",
       "scoped/source",
     ],
-    "requiredMemoryBytes": 36,
+    "requiredMemoryBytes": 40,
     "wasmExports": [
       "initDefaults",
       "main",

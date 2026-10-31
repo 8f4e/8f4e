@@ -1,12 +1,13 @@
 import type {
 	AddressMetadata,
+	CodegenPushLine,
 	CompilationContext,
+	LiteralPushLine,
 	LocalValueMetadata,
 	PointeeBaseType,
 	PointeeMetadata,
 	ResolvedMemoryDeclaration,
 	ResolvedPushLine,
-	SemanticPushLine,
 	Stack,
 } from '@8f4e/language-spec';
 import { ArgumentType, getDereferencedValueKindFromMetadata, getPointerDepthFromMetadata } from '@8f4e/language-spec';
@@ -43,15 +44,11 @@ function getAddressPointeeMetadata(context: CompilationContext, address: Address
 	} satisfies PointeeMetadata;
 }
 
-function pushLiteralStackItems(line: SemanticPushLine, context: CompilationContext): Stack {
+function pushLiteralStackItems(line: LiteralPushLine, context: CompilationContext): Stack {
 	const argument = line.arguments[0];
 
 	if (argument.type === ArgumentType.STRING_LITERAL) {
 		return Array.from(argument.value, ch => createStackValue('int', { isNonZero: (ch.charCodeAt(0) & 0xff) !== 0 }));
-	}
-
-	if (argument.type === ArgumentType.COMPILE_TIME_EXPRESSION || argument.type === ArgumentType.IDENTIFIER) {
-		return [];
 	}
 
 	const kind = resolveArgumentValueKind(argument);
@@ -174,7 +171,7 @@ function pushResolvedTargetStackItems(line: ResolvedPushLine, context: Compilati
  * @param context - Compilation context used by the operation.
  * @returns The relevant stack items for the analysis step.
  */
-export function analyzePush(line: SemanticPushLine, context: CompilationContext): Stack {
+export function analyzePush(line: CodegenPushLine, context: CompilationContext): Stack {
 	const produced =
 		'resolvedTarget' in line ? pushResolvedTargetStackItems(line, context) : pushLiteralStackItems(line, context);
 	produce(context, produced);

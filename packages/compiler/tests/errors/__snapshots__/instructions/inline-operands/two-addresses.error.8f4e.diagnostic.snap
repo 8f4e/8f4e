@@ -8,18 +8,12 @@
   "line": {
     "arguments": [
       {
-        "address": {
-          "safeRange": {
-            "byteAddress": 4,
-            "memoryId": "value",
-            "moduleId": "invalid",
-            "safeByteLength": 4,
-            "source": "memory-start",
-          },
-        },
-        "isInteger": true,
-        "type": "literal",
-        "value": 4,
+        "isEndAddress": false,
+        "referenceKind": "memory-reference",
+        "scope": "local",
+        "targetMemoryId": "value",
+        "type": "identifier",
+        "value": "&value",
       },
     ],
     "instruction": "add",

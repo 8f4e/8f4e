@@ -447,41 +447,6 @@ describe('resolveLineReferences', () => {
 		expect(resolveLineReferences(line, context)).toEqual(line);
 	});
 
-	it('resolves inline call arguments as push lines', () => {
-		const targetFunction = {
-			id: 'knownFn',
-			name: 'knownFn',
-			signature: { parameters: ['int'], returns: [] },
-		};
-		const context = {
-			namespace: {
-				moduleName: 'test',
-				functions: {
-					byId: { knownFn: targetFunction },
-					arityByName: { knownFn: 1 },
-				},
-			},
-			locals: {},
-		} as unknown as ReferenceResolutionContext;
-		const line: CompilerASTLine = {
-			lineNumber: 1,
-			instruction: 'call',
-			arguments: [classifyIdentifier('knownFn'), { type: ArgumentType.LITERAL, value: 8, isInteger: true }],
-		};
-
-		expect(resolveLineReferences(line, context)).toEqual({
-			...line,
-			arguments: [classifyIdentifier('knownFn'), { type: ArgumentType.LITERAL, value: 8, isInteger: true }],
-			inlineArgumentPushes: [
-				{
-					lineNumber: 1,
-					instruction: 'push',
-					arguments: [{ type: ArgumentType.LITERAL, value: 8, isInteger: true }],
-				},
-			],
-		});
-	});
-
 	it('rejects zero clamp-address access width', () => {
 		const context = {
 			namespace: { moduleName: 'test' },

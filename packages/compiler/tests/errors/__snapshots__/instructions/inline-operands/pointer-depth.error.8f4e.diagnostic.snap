@@ -16,7 +16,7 @@
         "value": "**pointer",
       },
     ],
-    "instruction": "push",
+    "instruction": "add",
     "lineNumber": 4,
   },
   "message": "Pointer dereference depth exceeds the declared pointer depth: **pointer. (57)",

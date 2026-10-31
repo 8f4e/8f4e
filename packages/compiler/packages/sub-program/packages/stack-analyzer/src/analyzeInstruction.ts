@@ -7,7 +7,6 @@ import type {
 import { getInstructionSpec, hasBinaryMatchingOperands } from '@8f4e/language-spec';
 import { analyzeByInstruction } from './instructionAnalyzers';
 import { getNumericOperandKind } from './instructionAnalyzers/numeric/shared';
-import { analyzePush } from './instructionAnalyzers/push';
 import { cloneStack } from './instructionAnalyzers/stack';
 import { validateInstruction } from './validateInstruction';
 
@@ -20,9 +19,6 @@ import { validateInstruction } from './validateInstruction';
  */
 export function analyzeInstruction(line: SemanticReferenceLine, context: CompilationContext): StackAnalysisLineFacts {
 	const stackBefore = cloneStack(context.stack);
-	if ('inlineOperandPush' in line && line.inlineOperandPush) {
-		analyzePush(line.inlineOperandPush, context);
-	}
 	validateInstruction(line, context);
 	const { consumed, produced, dropped, targetFunctionId, numericOperandKind, map, clamp } = analyzeByInstruction(
 		line,

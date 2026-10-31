@@ -14,7 +14,7 @@ describe('stack analysis tooltip text', () => {
 				instruction: 'add',
 				stackAnalysis: {
 					stackBefore: [untouched, left],
-					consumedOperands: [left, { kind: 'value', valueType: 'int', knownValue: 2 }],
+					consumedOperands: [left],
 					producedStackItems: [result],
 					stackAfter: [untouched, result],
 				},

@@ -168,6 +168,29 @@ load
 assertEqual 7
 moduleEnd
 groupEnd
+module controlFlowOperands
+int total
+loop 4
+push &total
+push total
+add 1
+store
+loopEnd
+push total
+assertEqual 4
+push total
+push 4
+equal
+if
+push &total
+push total
+mul
+- 2
+store
+ifEnd
+push total
+assertEqual 8
+moduleEnd
 entryEnd
 
 function scale

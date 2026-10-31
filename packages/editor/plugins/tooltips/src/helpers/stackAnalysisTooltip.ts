@@ -185,16 +185,11 @@ export function getStackAnalysisTooltipContent(
 	}
 
 	const { consumedOperands, producedStackItems, stackBefore, stackAfter } = stackAnalysisLine.stackAnalysis;
-	// Inline operands are consumed by the operation but were never on the source line's input stack.
-	const consumedFromStack = Math.min(
-		consumedOperands.length,
-		Math.max(0, stackBefore.length - stackAfter.length + producedStackItems.length)
-	);
 	const beforeContent = formatStackTooltipLines(
 		stackBeforeInlineLabel,
 		stackBeforeBlockLabel,
 		stackBefore,
-		consumedFromStack,
+		consumedOperands.length,
 		'consumed',
 		0
 	);

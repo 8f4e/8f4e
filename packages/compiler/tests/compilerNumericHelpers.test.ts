@@ -26,7 +26,40 @@ functionEnd float
 		expect(operation.lineNumber).toBe(6);
 		expect(operation.stackAnalysis.stackBefore).toHaveLength(1);
 		expect(operation.stackAnalysis.stackAfter).toHaveLength(1);
+		expect(operation.stackAnalysis.consumedOperands).toHaveLength(1);
 		expect(operation.stackAnalysis.producedStackItems[0].valueType).toBe('float');
+	});
+
+	test('groups normalized operations by source without consuming unrelated source stack values', async () => {
+		const { compileResult } = await compileFixtureProgramSource(
+			`8f4e/v1
+entry main
+module operations
+push 99
+push 8
+sub 3
+call identity 4
+clearStack
+moduleEnd
+entryEnd
+function identity
+param int value
+push value
+functionEnd int
+`,
+			{ includeStackAnalysis: true }
+		);
+		const analysis = compileResult.compiledModules.operations.stackAnalysis!;
+		const subtract = analysis.find(line => line.instruction === 'sub')!.stackAnalysis;
+		expect(subtract.stackBefore.map(value => value.knownValue)).toEqual([99, 8]);
+		expect(subtract.stackAfter.map(value => value.knownValue)).toEqual([99, 5]);
+		expect(subtract.consumedOperands.map(value => value.knownValue)).toEqual([8]);
+		expect(subtract.producedStackItems.map(value => value.knownValue)).toEqual([5]);
+		const call = analysis.find(line => line.instruction === 'call')!.stackAnalysis;
+		expect(call.stackBefore.map(value => value.knownValue)).toEqual([99, 5]);
+		expect(call.consumedOperands).toEqual([]);
+		expect(call.producedStackItems).toHaveLength(1);
+		expect(analysis.map(line => line.instruction)).toEqual(['push', 'push', 'sub', 'call', 'clearStack']);
 	});
 
 	test('exp2 stays monotonic and within its measured relative error across the supported range', async () => {

@@ -37,8 +37,9 @@ import {
 	isCodegenInstructionName,
 	isSemanticInstructionLine,
 } from '@8f4e/language-spec';
-import { createCompilationContext, popBlock, pushBlock } from '@8f4e/semantic-utils';
+import { createCompilationContext, popBlock, pushBlock, withSourceDiagnostic } from '@8f4e/semantic-utils';
 import type { ReferenceResolutionContext } from './context';
+import { normalizeOperands } from './normalizeOperands';
 import resolveLineReferences from './resolveLineReferences';
 
 const moduleBlockType = compilerSourceBlockInstructionByType.module.type;
@@ -76,7 +77,8 @@ export interface ResolveSemanticReferencesInput<
 	prototypeShapes: Readonly<Record<string, TPrototype>>;
 }
 
-export interface ResolvedBodyLine {
+export interface ResolvedOperation {
+	/** Provenance only: several executable operations may share one source line. */
 	sourceLineIndex: number;
 	line: ExecutableInstructionLine;
 }
@@ -84,7 +86,7 @@ export interface ResolvedBodyLine {
 export interface ModuleSemanticReferences<TModule extends ModuleAST = ModuleAST> {
 	ast: TModule;
 	bindings: readonly SourceLocalBinding[];
-	body: readonly ResolvedBodyLine[];
+	body: readonly ResolvedOperation[];
 	skipExecutionInCycle: boolean;
 }
 
@@ -92,7 +94,7 @@ export interface FunctionSemanticReferences<TFunction extends FunctionAST = Func
 	ast: TFunction;
 	metadata: FunctionMetadata;
 	bindings: readonly SourceLocalBinding[];
-	body: readonly ResolvedBodyLine[];
+	body: readonly ResolvedOperation[];
 }
 
 export interface SemanticReferenceReport<
@@ -386,16 +388,7 @@ function assertFunctionMemoryIoAllowed(line: SemanticReferenceLine, context: Ref
 	const pointerPush =
 		'resolvedTarget' in line &&
 		(line.resolvedTarget.kind === 'local-pointer' || line.resolvedTarget.kind === 'memory-pointer');
-	const inlinePushes =
-		'inlineOperandPush' in line
-			? line.inlineOperandPush
-				? [line.inlineOperandPush]
-				: []
-			: 'expectedPush' in line
-				? [line.expectedPush]
-				: 'inlineArgumentPushes' in line
-					? (line.inlineArgumentPushes ?? [])
-					: [];
+	const inlinePushes = 'expectedPush' in line ? [line.expectedPush] : [];
 	const inlinePointerPush = inlinePushes.some(
 		push =>
 			'resolvedTarget' in push &&
@@ -411,19 +404,23 @@ function resolveBody(
 	context: ReferenceResolutionContext,
 	constantReferences: ConstantResolutionBlockFacts | undefined,
 	memoryReferences: MemoryReferenceResolutionBlockFacts | undefined
-): ResolvedBodyLine[] {
-	const body: ResolvedBodyLine[] = [];
+): ResolvedOperation[] {
+	const body: ResolvedOperation[] = [];
 	for (const [sourceLineIndex, originalLine] of lines.entries()) {
 		const sourceLine = applyResolvedArgumentFacts(
 			originalLine,
 			constantReferences?.lineFacts[sourceLineIndex],
 			memoryReferences?.lineFacts[sourceLineIndex]
 		);
-		const line = resolveLineReferences(sourceLine, context);
-		applyResolvedLineEffect(line, context);
-		if (!isCodegenInstructionName(line.instruction)) continue;
-		assertFunctionMemoryIoAllowed(line, context);
-		body.push({ sourceLineIndex, line: line as ExecutableInstructionLine });
+		withSourceDiagnostic(originalLine, () => {
+			for (const operation of normalizeOperands(sourceLine)) {
+				const line = resolveLineReferences(operation, context);
+				applyResolvedLineEffect(line, context);
+				if (!isCodegenInstructionName(line.instruction)) continue;
+				assertFunctionMemoryIoAllowed(line, context);
+				body.push({ sourceLineIndex, line: line as ExecutableInstructionLine });
+			}
+		});
 	}
 	return body;
 }

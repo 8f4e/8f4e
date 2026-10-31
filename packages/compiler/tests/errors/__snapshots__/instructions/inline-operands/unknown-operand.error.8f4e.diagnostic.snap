@@ -14,7 +14,7 @@
         "value": "missing",
       },
     ],
-    "instruction": "push",
+    "instruction": "add",
     "lineNumber": 2,
   },
   "message": "Undeclared identifier: missing. (5)",
