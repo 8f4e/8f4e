@@ -762,13 +762,15 @@ div
 add
 store
 
-; Wrap phase when it exceeds PI
+; Wrap phase and preserve overshoot
 push phase
 push PI
 greaterThan
 if
 push &phase
-push NEG_PI
+push phase
+push TAU
+sub
 store
 ifEnd
 
@@ -813,13 +815,15 @@ div
 add
 store
 
-; Wrap phase when it exceeds PI
+; Wrap phase and preserve overshoot
 push phase
 push PI
 greaterThan
 if
 push &phase
-push NEG_PI
+push phase
+push TAU
+sub
 store
 ifEnd
 
@@ -864,13 +868,15 @@ div
 add
 store
 
-; Wrap phase when it exceeds PI
+; Wrap phase and preserve overshoot
 push phase
 push PI
 greaterThan
 if
 push &phase
-push NEG_PI
+push phase
+push TAU
+sub
 store
 ifEnd
 
@@ -980,13 +986,15 @@ div
 add
 store
 
-; Wrap phase when it exceeds PI
+; Wrap phase and preserve overshoot
 push phase
 push PI
 greaterThan
 if
 push &phase
-push NEG_PI
+push phase
+push TAU
+sub
 store
 ifEnd
 
@@ -1035,13 +1043,15 @@ div
 add
 store
 
-; Wrap phase when it exceeds PI
+; Wrap phase and preserve overshoot
 push phase
 push PI
 greaterThan
 if
 push &phase
-push NEG_PI
+push phase
+push TAU
+sub
 store
 ifEnd
 
@@ -1090,13 +1100,15 @@ div
 add
 store
 
-; Wrap phase when it exceeds PI
+; Wrap phase and preserve overshoot
 push phase
 push PI
 greaterThan
 if
 push &phase
-push NEG_PI
+push phase
+push TAU
+sub
 store
 ifEnd
 
