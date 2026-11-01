@@ -1,0 +1,24 @@
+function addAt
+#export
+#impure
+; Adds a value to the existing
+; float at buffer[index].
+param float* buffer
+param int index
+param float value
+
+push buffer
+push index
+mul sizeof(*buffer)
+add
+
+push buffer
+push index
+mul sizeof(*buffer)
+add
+loadFloat
+
+add value
+store
+
+functionEnd

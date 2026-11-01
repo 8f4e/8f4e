@@ -1,5 +1,13 @@
 8f4e/v1
 
+includes
+; @pos -58 -19
+include std/math/fract
+include std/math/lerp
+include std/memory/addAt
+include std/memory/advancePointer
+includesEnd
+
 function buffer
 ; @pos -58 -39
 #export buffer
@@ -10,35 +18,8 @@ call main
 loopEnd
 functionEnd
 
-function wrapAdd32
-; @pos 98 -136
-param int base
-param int offset
-local int sum
-
-; Add an offset and wrap
-; the result into a 32-slot ring.
-push base
-push offset
-add
-localSet sum
-
-push sum
-push 32
-greaterOrEqual
-if
-push sum
-push 32
-sub
-return
-ifEnd
-
-push sum
-
-functionEnd int
-
 function blepQueuePtr
-; @pos 141 -136
+; @pos 152 -130
 param float* buffer
 param int index
 
@@ -47,28 +28,13 @@ param int index
 ; pointer and index.
 push buffer
 push index
-push sizeof(*buffer)
-mul
+mul sizeof(*buffer)
 add
 
 functionEnd float*
 
-function frac
-; @pos 178 -136
-param float value
-
-; Return the fractional part
-; of a positive float.
-push value
-push value
-castToInt
-castToFloat
-sub
-
-functionEnd float
-
 function positionIncrementToBlepPhase
-; @pos 216 -136
+; @pos 188 -148
 param float position
 param float increment
 local float phase
@@ -77,13 +43,11 @@ local float phase
 ; a 0..16 BLEP phase based on
 ; where the discontinuity occurred
 ; inside the output sample interval.
-push position
-call frac
+call fract position
 push increment
 ensureNonZero 0.000001
 div
-push 16.0
-mul
+mul 16.0
 localSet phase
 
 ; Wrap the exact-boundary case
@@ -94,8 +58,7 @@ push 16.0
 greaterOrEqual
 if
 push phase
-push 16.0
-sub
+sub 16.0
 return
 ifEnd
 
@@ -104,7 +67,7 @@ push phase
 functionEnd float
 
 function blepValueAt
-; @pos 330 -157
+; @pos 235 -169
 #impure
 param float* lut
 param float phase
@@ -133,98 +96,32 @@ localSet phaseFrac
 
 push phaseIndex
 push tapIndex
-push 16
-mul
+mul 16
 add
 localSet lutIndex
 
 push lut
 push lutIndex
-push sizeof(*lut)
-mul
+mul sizeof(*lut)
 add
 loadFloat
 localSet sample0
 
 push lut
 push lutIndex
-push 1
-add
-push sizeof(*lut)
-mul
+add 1
+mul sizeof(*lut)
 add
 loadFloat
 localSet sample1
 
-push sample0
-push sample1
-push sample0
-sub
-push phaseFrac
-mul
-add
-push delta
-mul
+call lerp sample0 sample1 phaseFrac
+mul delta
 
 functionEnd float
 
-function addBlepAt
-; @pos 372 -157
-#impure
-param float* buffer
-param int index
-param float value
-
-; Accumulate one correction
-; value into a queue slot.
-push buffer
-push index
-call blepQueuePtr
-
-push buffer
-push index
-call blepQueuePtr
-loadFloat
-
-push value
-add
-store
-
-functionEnd
-
-constants math
-; @pos -63 -102
-
-const PI      3.141592653589793
-const NEG_PI -3.141592653589793
-const TAU     6.283185307179586
-const HALF_PI 1.570796326794896
-const INV_PI  0.318309886183790
-const INV_TAU 0.159154943091895
-const PHI     1.618033988749895
-const DEG2RAD 0.017453292519943
-const RAD2DEG 57.29577951308232
-const SQRT2   1.414213562373095
-const SQRT1_2 0.707106781186547
-; Useful in FFT twiddle factors.
-const HANN_A0 0.5
-; For common window functions before FFT.
-const HAMMING_A0 0.54
-const HAMMING_A1 0.46
-const BLACKMAN_A0 0.42
-const BLACKMAN_A1 0.5
-const BLACKMAN_A2 0.08
-const LN2     0.693147180559945
-const LN10    2.302585092994046
-const LOG2E   1.442695040888963
-const LOG10E  0.434294481903251
-const E       2.718281828459045
-
-constantsEnd
-
 constants env
 ; @pos -58 -50
-; @favorite
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -233,14 +130,13 @@ const AUDIO_BUFFER_SIZE 128
 
 constantsEnd
 
-note
-; @pos -58 -63
-; @config audioRuntime.enabled true
-; @config audioRuntime.sampleRate 48000
-; @config audioRuntime.audioOutBufferLAddress audioout:buffer
-; @config audioRuntime.audioOutBufferRAddress audioout:buffer
-; @config export.fileName minBLEP
-noteEnd
+constants math
+; @pos -58 -28
+
+const PI      3.141592653589793
+const E       2.718281828459045
+
+constantsEnd
 
 note colors
 ; @pos -116 -63
@@ -259,6 +155,15 @@ note colors
 ; @config color.detail #3d8d5b
 noteEnd
 
+note
+; @pos -115 -73
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRate 48000
+; @config audioRuntime.audioOutBufferLAddress audioout:buffer
+; @config audioRuntime.audioOutBufferRAddress audioout:buffer
+; @config export.fileName minBLEP
+noteEnd
+
 entry main
 module notes
 ; @pos 15 -89
@@ -275,7 +180,7 @@ module notes
 ; routing it to audioout.
 moduleEnd
 module scopeOriginal
-; @pos 44 -73
+; @pos 36 -73
 
 float* in &pcmPlayer:out
 float[] buffer 128
@@ -293,20 +198,8 @@ push pointer
 push *in
 store
 
-push &pointer
-push pointer
-push sizeof(buffer)
-add
-store
-
-push pointer
-push buffer&
-greaterThan
-if
-push &pointer
-push &buffer
-store
-ifEnd
+call advancePointer
+- &pointer &buffer count(buffer)
 
 moduleEnd
 module params
@@ -324,7 +217,7 @@ float volSmoothed 1.0; @w
 
 moduleEnd
 module scopeSmooth
-; @pos 82 -73
+; @pos 78 -73
 
 float* in &blepSmoother:out
 float[] buffer 128
@@ -341,20 +234,8 @@ push pointer
 push *in
 store
 
-push &pointer
-push pointer
-push sizeof(buffer)
-add
-store
-
-push pointer
-push buffer&
-greaterThan
-if
-push &pointer
-push &buffer
-store
-ifEnd
+call advancePointer
+- &pointer &buffer count(buffer)
 
 moduleEnd
 module packedPulseSample
@@ -409,11 +290,9 @@ float out
 
 push &out
 push *originalIn
-push *volOriginal
-mul
+mul *volOriginal
 push *smoothedIn
-push *volSmoothed
-mul
+mul *volSmoothed
 add
 store
 
@@ -426,10 +305,12 @@ int8* sample &packedPulseSample:0
 int8* playhead &packedPulseSample:0
 float position 0.0 ; @w
 float readPosition 0.0 ; @w
+float readIncrement 0.0
+float advanceIncrement 0.0
 float* increment &params:increment
 float out
 
-; @wave &packedPulseSample:0 128 playhead
+; @wave sample 128 playhead
 
 ; Capture the current read position
 ; before advancing the playhead.
@@ -437,12 +318,23 @@ push &readPosition
 push position
 store
 
-; Calculate read address from float position
+; Keep the increment that produced
+; this read position for BLEP timing,
+; then capture the next advance.
+push &readIncrement
+push advanceIncrement
+store
+
+push &advanceIncrement
+push *increment
+store
+
+; Calculate read address from 
+; float position
 push &playhead
 push readPosition
 castToInt
-push sample
-add
+add sample
 store
 
 ; Read sample at playhead
@@ -450,32 +342,31 @@ store
 push &out
 push *playhead
 castToFloat
-push 64.0
-div
+div 64.0
 store
 
 ; Advance the float position
 push &position
 push position
-push *increment
-add
+add advanceIncrement
 store
 
-; Reset position
-; when it reaches buffer end
+; Wrap at the buffer end without
+; discarding fractional progress.
 push position
 castToInt
 push 128
 greaterOrEqual
 if
 push &position
-push 0.0
+push position
+sub 128.0
 store
 ifEnd
 
 moduleEnd
 module audioout
-; @pos 165 -100
+; @pos 164 -103
 use env
 
 float* in &mixer:out
@@ -484,32 +375,15 @@ float[] buffer AUDIO_BUFFER_SIZE
 float* pointer &buffer
 
 ; @plot &buffer count(buffer)
-; @hide
 ; Store the input value
 ; in the buffer
 push pointer
 push *in
 store
 
-; Increment the buffer
-; pointer by the word size
-push &pointer
-push pointer
-push sizeof(buffer)
-add
-store
-
-; Reset the buffer pointer
-; when it reaches the end
-; of the buffer
-push pointer
-push buffer&
-greaterThan
-if
-push &pointer
-push &buffer
-store
-ifEnd
+; Advance and wrap the buffer pointer.
+call advancePointer
+- &pointer &buffer count(buffer)
 
 moduleEnd
 module sampleDelta
@@ -520,8 +394,7 @@ float out
 
 push &out
 push previous
-push *in
-sub
+sub *in
 store
 
 push &previous
@@ -533,7 +406,7 @@ module blepSmoother
 ; @pos 213 -73
 float* raw &pcmPlayer:out
 float* position &pcmPlayer:readPosition
-float* increment &params:increment
+float* readIncrement &pcmPlayer:readIncrement
 float* delta &sampleDelta:out
 int index 0 ; @w
 float correction ; @w
@@ -549,24 +422,21 @@ loop 16
 push &blepBuffer
 push index
 loopIndex
-call wrapAdd32
+add
+and 31
 push &minBLEPLUT:0
-push *position
-push *increment
 call positionIncrementToBlepPhase
+- *position *readIncrement
 loopIndex
-push *delta
-call blepValueAt
-call addBlepAt
+call blepValueAt *delta
+call addAt
 loopEnd
 ifEnd
 
 ; Read the correction sample
 ; at the current ring position.
 push &correction
-push &blepBuffer
-push index
-call blepQueuePtr
+call blepQueuePtr &blepBuffer index
 loadFloat
 store
 
@@ -574,15 +444,12 @@ store
 ; current BLEP correction.
 push &out
 push *raw
-push correction
-add
+add correction
 store
 
 ; Clear the consumed correction
 ; at the current ring position.
-push &blepBuffer
-push index
-call blepQueuePtr
+call blepQueuePtr &blepBuffer index
 push 0.0
 store
 
@@ -590,16 +457,15 @@ store
 ; for the next output sample.
 push &index
 push index
-push 1
-call wrapAdd32
+add 1
+and 31
 store
 
 moduleEnd
 module blepLowpass
-; @pos 263 -73
+; @pos 269 -73
 float* in &blepSmoother:out
-float state 0.0 ; @w
-float out ; @w
+float out 0.0 ; @w
 
 use math
 use env
@@ -611,17 +477,7 @@ const DECAY E^EXPONENT
 const COEFFICIENT 1-DECAY
 
 push &out
-push state
-push *in
-push state
-sub
-push COEFFICIENT
-mul
-add
-store
-
-push &state
-push out
+call lerp out *in COEFFICIENT
 store
 
 moduleEnd

@@ -32,6 +32,7 @@ include std/events/hasChanged
 include std/events/triggerToGate
 include std/random/lcg
 include std/random/xorshift
+include std/memory/addAt
 include std/memory/advancePointer
 include std/memory/loadAt
 include std/memory/nearestValue
@@ -281,6 +282,35 @@ push &source
 push &dest
 call copy
 ; dest is 12.5
+moduleEnd
+entryEnd
+```
+
+## `std/memory/addAt`
+
+Provides `addAt`, which adds a value to the existing float at a buffer's element index.
+
+Available overloads:
+
+- `addAt(float* buffer, int index, float value) -> void`
+
+`index` is zero-based and measured in elements. Callers supply a valid buffer index; the function does not wrap indices
+or clamp them to the buffer length. Repeated calls accumulate into the same element.
+
+Examples:
+
+```8f4e
+includes
+include std/memory/addAt
+includesEnd
+
+entry test
+module addAtExamples
+float[] buffer 3 1.0 2.0 3.0
+
+call addAt &buffer 1 0.5
+call addAt &buffer 1 -0.25
+; buffer[1] is 2.25
 moduleEnd
 entryEnd
 ```

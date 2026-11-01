@@ -1,0 +1,63 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/memory/addAt
+includesEnd
+
+entry test
+module addAtAssertions
+; It accumulates float values at
+; the first, middle, and last
+; elements without changing neighbors.
+float before 17.0
+float[] buffer 4 1.0 2.0 3.0 4.0
+float after 23.0
+
+call addAt &buffer 0 0.5
+push &buffer
+loadFloat
+assertEqual 1.5
+
+call addAt &buffer 2 -1.25
+push &buffer
+add sizeof(buffer)*2
+loadFloat
+assertEqual 1.75
+
+call addAt &buffer 2 0.25
+push &buffer
+add sizeof(buffer)*2
+loadFloat
+assertEqual 2.0
+
+call addAt &buffer 2 -2.0
+push &buffer
+add sizeof(buffer)*2
+loadFloat
+assertEqual 0.0
+
+call addAt &buffer 3 -4.0
+push &buffer
+add sizeof(buffer)*3
+loadFloat
+assertEqual 0.0
+
+push &buffer
+loadFloat
+assertEqual 1.5
+
+push &buffer
+add sizeof(buffer)
+loadFloat
+assertEqual 2.0
+
+push before
+assertEqual 17.0
+push after
+assertEqual 23.0
+moduleEnd
+entryEnd
