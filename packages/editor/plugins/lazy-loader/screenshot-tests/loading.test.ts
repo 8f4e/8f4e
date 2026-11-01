@@ -40,6 +40,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 		document.body.append(canvas);
 		let editor: Editor | undefined;
 		let context!: EditorPluginContext;
+		let restoreOutlineClock: (() => void) | undefined;
 		try {
 			editor = await initEditor(canvas, {
 				initialProject:
@@ -74,11 +75,16 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 			editor.pauseRendering();
 			if (trigger === 'group navigation') {
+				const now = vi.spyOn(performance, 'now').mockReturnValue(0);
+				restoreOutlineClock = () => now.mockRestore();
 				expect(load).not.toHaveBeenCalled();
 				context.events.dispatch('mousemove', { buttons: 1, movementX: 64, movementY: 96 });
 				editor.renderFrame();
 				await expect(canvas).toMatchScreenshot('parent-viewport-before-group');
 				const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audioGroup')!;
+				context.store.set('codeBlockRendering.selectedCodeBlock', group);
+				editor.renderFrame();
+				await expect(canvas).toMatchScreenshot('parent-selection-before-group');
 				editor.navigation.openGroup(getEditorBlockId(group));
 			}
 			const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
@@ -97,14 +103,16 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 				editor.navigation.goToRoot();
 				expect(editor.state.viewport).toMatchObject({ x: -64, y: -96 });
 				editor.renderFrame();
-				await expect(canvas).toMatchScreenshot('parent-viewport-before-group');
 				const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audioGroup')!;
+				expect(editor.state.codeBlockRendering.selectedCodeBlock).toBe(group);
+				await expect(canvas).toMatchScreenshot('parent-selection-before-group');
 				editor.navigation.openGroup(getEditorBlockId(group));
 				expect(editor.state.viewport).toMatchObject({ x: -128, y: -160 });
 				await expect.poll(() => block.gaps.get(3)?.size).toBe(8);
 				expect(load).toHaveBeenCalledOnce();
 			}
 		} finally {
+			restoreOutlineClock?.();
 			editor?.dispose();
 			canvas.remove();
 		}

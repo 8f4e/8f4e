@@ -296,12 +296,14 @@ describe('public editor editing handle', () => {
 				execution: [{ type: 'module', id: 0, entry: 'main', code: ['module inner', 'moduleEnd'] }],
 			},
 		];
-		const { editing, navigation, events, state } = setup(project);
+		const { editing, navigation, events, state, store } = setup(project);
 		Object.assign(state.viewport, { x: 64, y: 96 });
 		const group = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'voice')!;
+		store.set('codeBlockRendering.selectedCodeBlock', group);
 		events.dispatch('openProjectGroup', { codeBlock: group });
 		Object.assign(state.viewport, { x: -320, y: 160 });
 		const inner = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'inner')!;
+		store.set('codeBlockRendering.selectedCodeBlock', inner);
 		editing.applyEdits({
 			expectedRevision: editing.getRevision(),
 			edits: [
@@ -319,18 +321,28 @@ describe('public editor editing handle', () => {
 		expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'updatedInner')).toBe(true);
 		expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'added')).toBe(true);
 		expect(state.codeBlockRendering.currentProject.path).toBe('voice');
+		expect(state.codeBlockRendering.selectedCodeBlock?.name).toBe('updatedInner');
+		expect(state.codeBlockRendering.selectedCodeBlock).not.toBe(inner);
 		expect(state.viewport).toMatchObject({ x: -320, y: 160 });
 		editing.undo({ expectedRevision: editing.getRevision() });
 		expect(state.codeBlockRendering.currentProject.path).toBe('voice');
+		expect(state.codeBlockRendering.selectedCodeBlock?.name).toBe('inner');
 		expect(state.viewport).toMatchObject({ x: -320, y: 160 });
 		editing.redo({ expectedRevision: editing.getRevision() });
+		expect(state.codeBlockRendering.selectedCodeBlock?.name).toBe('updatedInner');
 		expect(state.viewport).toMatchObject({ x: -320, y: 160 });
 		navigation.goToRoot();
 		expect(state.viewport).toMatchObject({ x: 64, y: 96 });
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(
+			state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'voice')
+		);
+		expect(state.codeBlockRendering.selectedCodeBlock).not.toBe(group);
 		const snapshot = serializeToProject(state);
 		expect(JSON.stringify(snapshot)).not.toContain('viewport');
+		expect(JSON.stringify(snapshot)).not.toContain('selectedBlock');
 		events.dispatch('loadProject', { project: snapshot });
 		expect(state.viewport).toMatchObject({ x: 0, y: 0 });
+		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		const replacementGroup = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'voice')!;
 		expect(replacementGroup.childProject!.viewport).toBeUndefined();
 		navigation.openGroup(getEditorBlockId(replacementGroup));

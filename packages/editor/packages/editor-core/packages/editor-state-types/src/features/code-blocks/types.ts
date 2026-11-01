@@ -176,11 +176,12 @@ export interface CodeBlockEntryOutline {
 	bottomLeft: { x: number; y: number };
 }
 
-/** An editor-owned project level. Viewport positions live only in browser memory. */
+/** An editor-owned project level. Remembered views and selections live only in browser memory. */
 export interface ProjectLevel {
 	path: ProjectGroupPath;
 	blocks: CodeBlockGraphicData[];
 	viewport?: Position;
+	selectedBlock?: CodeBlockGraphicData;
 }
 
 /**

@@ -277,11 +277,14 @@ describe('session persistence plugin', () => {
 		const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'voice')!;
 		test.storage.setItem.mockClear();
 		Object.assign(test.state.viewport, { x: 256, y: -128 });
+		test.store.set('codeBlockRendering.selectedCodeBlock', group);
 		test.events.dispatch('openProjectGroup', { codeBlock: group });
 		expect(test.state.codeBlockRendering.rootProject.viewport).toEqual({ x: 256, y: -128 });
+		expect(test.state.codeBlockRendering.rootProject.selectedBlock).toBe(group);
 		expect(test.storage.setItem).not.toHaveBeenCalled();
 		test.store.set('projectChange', { revision: test.state.projectChange.revision + 1, kind: 'edit' });
 		expect(test.storage.getItem('session')).not.toContain('viewport');
+		expect(test.storage.getItem('session')).not.toContain('selectedBlock');
 		expect(getProjectGroups(JSON.parse(test.storage.getItem('session')!))[0].name).toBe('voice');
 	});
 
