@@ -115,10 +115,10 @@ describe('bundled documentation and examples', () => {
 		const phase = searchExamples('phase accumulator', 'block').results[0];
 		expect(phase.dependencies).toContain('constants/math');
 		for (const dependency of phase.dependencies) expect(await getExample('block', dependency)).not.toBe('');
-		const project = searchExamples('reverb grouped', 'project').results[0];
-		expect(project.path).toBe('audio/reverbGrouped');
+		const project = searchExamples('reverb', 'project').results[0];
+		expect(project.path).toBe('audio/reverb');
 		expect(await getExample(project.kind, project.path)).toBe(
-			readFileSync(join(examplesRoot, 'src/projects/audio/reverbGrouped.8f4e'), 'utf8')
+			readFileSync(join(examplesRoot, 'src/projects/audio/reverb.8f4e'), 'utf8')
 		);
 	});
 

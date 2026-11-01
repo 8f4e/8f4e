@@ -122,18 +122,6 @@ export const projects = [
 		path: 'audio/reverb.8f4e',
 	},
 	{
-		id: 'reverb-grouped',
-		title: 'Reverb: grouped',
-		description: 'Follow a sample through a reverb whose processing modules are organized into a group.',
-		path: 'audio/reverbGrouped.8f4e',
-	},
-	{
-		id: 'reverb-tweakable',
-		title: 'Reverb: tweakable',
-		description: 'Shape the reverb with sliders for decay, diffusion, damping and delay modulation.',
-		path: 'audio/reverbTweakable.8f4e',
-	},
-	{
 		id: 'granular-sampler',
 		title: 'Granular sampler',
 		description: 'Explore sample playback driven by a clock, random positions and modulation, with stereo reverb.',

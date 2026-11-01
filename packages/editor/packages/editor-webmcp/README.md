@@ -57,7 +57,7 @@ search_docs({ query: 'push' });
 get_docs({ topic: 'compiler/instructions/stack#push' });
 search_examples({ query: 'low pass filter', kind: 'block' });
 get_example({ kind: 'block', path: 'filters/lowPassFilter' });
-get_example({ kind: 'project', path: 'audio/reverbGrouped' });
+get_example({ kind: 'project', path: 'audio/reverb' });
 ```
 
 Documentation topics cover the existing compiler and editor references, including source syntax, instructions, compiler directives, editor directives, configuration, and runtime concepts. Full-page topics use paths such as `compiler/source-syntax` and `editor/editor-directives`; named sections add a heading anchor. Search summaries use the selected section's first explanatory paragraph, and search terms come from that section rather than inherited introductions. Titles, summaries, and query matching preserve language symbols such as `#`, `@`, `*`, `&`, `[]`, and identifier underscores. Full topic reads still preserve relevant enclosing introductions, such as compiler-directive prologue rules.

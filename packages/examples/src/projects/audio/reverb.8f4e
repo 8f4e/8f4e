@@ -1,17 +1,5 @@
 8f4e/v1
 
-includes
-; @pos -64 3
-include std/math/lerp
-include std/memory/wrapPointer
-include std/math/fract
-include std/memory/readInterpolated
-include std/math/trig/cosine
-include std/memory/advancePointer
-include std/math/trig/advancePhase
-
-includesEnd
-
 function buffer
 ; @pos -116 -9
 #export buffer
@@ -21,15 +9,6 @@ loop AUDIO_BUFFER_SIZE
 call main
 loopEnd
 functionEnd
-
-constants cloudsReverb
-; @pos -76 -8
-use env
-
-const CLOUDS_SAMPLE_RATE 32000
-const CLOUDS_RATIO SAMPLE_RATE/CLOUDS_SAMPLE_RATE
-
-constantsEnd
 
 constants env
 ; @pos -69 -24
@@ -102,39 +81,6 @@ note
 ;
 noteEnd
 
-function allpassStep
-; @pos -116 8
-#impure
-; Runs one all-pass stage using
-; a signed gain and delay state.
-param float input
-param float gain
-param float* buffer
-param float** pointer
-param int itemCount
-local float writeValue
-
-; input + delayed * gain
-push input
-push **pointer
-mul gain
-add
-localSet writeValue
-
-; delayed - writeValue * gain
-push **pointer
-push writeValue
-mul gain
-sub
-
-push *pointer
-push writeValue
-store
-call advancePointer
-- pointer buffer itemCount
-
-functionEnd float
-
 entry main
 module pcmPlayer
 ; @pos -5 -27
@@ -175,6 +121,92 @@ push &playhead
 push &buffer
 store
 ifEnd
+
+moduleEnd
+group reverb
+; @pos 46 -27
+expose in &reverbInput:in
+expose outL &tank1OutputMix:out
+expose outR &tank2OutputMix:out
+
+init &in &pcmPlayer:out
+
+expose decay &controlValues:decay
+expose amount &controlValues:amount
+expose diffusion &controlValues:diffusion
+expose damping &controlValues:damping
+
+; @slider &decay
+; @slider &amount
+; @slider &diffusion
+; @slider &damping
+
+pass env
+
+includes
+; @pos -64 3
+include std/math/lerp
+include std/memory/wrapPointer
+include std/math/fract
+include std/memory/readInterpolated
+include std/math/trig/cosine
+include std/memory/advancePointer
+include std/math/trig/advancePhase
+
+includesEnd
+
+constants cloudsReverb
+; @pos -76 -8
+use env
+
+const CLOUDS_SAMPLE_RATE 32000
+const CLOUDS_RATIO SAMPLE_RATE/CLOUDS_SAMPLE_RATE
+
+constantsEnd
+
+function allpassStep
+; @pos -116 8
+#impure
+; Runs one all-pass stage using
+; a signed gain and delay state.
+param float input
+param float gain
+param float* buffer
+param float** pointer
+param int itemCount
+local float writeValue
+
+; input + delayed * gain
+push input
+push **pointer
+mul gain
+add
+localSet writeValue
+
+; delayed - writeValue * gain
+push **pointer
+push writeValue
+mul gain
+sub
+
+push *pointer
+push writeValue
+store
+call advancePointer
+- pointer buffer itemCount
+
+functionEnd float
+
+entry main
+module reverbInput
+; @pos -5 -27
+; @home left
+float* in
+float out
+
+push &out
+push *in
+store
 
 moduleEnd
 module controlValues
@@ -297,7 +329,7 @@ use cloudsReverb
 
 const DELAY_SIZE round(113*CLOUDS_RATIO)
 
-float* in &pcmPlayer:out
+float* in &reverbInput:out
 float out
 float[] buffer DELAY_SIZE
 float* pointer &buffer
@@ -682,7 +714,7 @@ module tank1OutputMix
 ; @pos 774 -60
 ; @group tank1
 
-float* dry &pcmPlayer:out
+float* dry &reverbInput:out
 float* wet &tank1AllpassB:out
 float* amount &controlValues:amount
 float out
@@ -696,7 +728,7 @@ module tank2OutputMix
 ; @pos 774 -6
 ; @group tank2
 
-float* dry &pcmPlayer:out
+float* dry &reverbInput:out
 float* wet &tank2AllpassB:out
 float* amount &controlValues:amount
 float out
@@ -706,11 +738,13 @@ call lerp *dry *wet *amount
 store
 
 moduleEnd
+entryEnd
+groupEnd
 module audiooutL
-; @pos 831 -35
+; @pos 101 -27
 use env
 
-float* in &tank1OutputMix:out
+float* in &reverb:outL
 
 float[] buffer AUDIO_BUFFER_SIZE
 float* pointer &buffer
@@ -745,10 +779,10 @@ ifEnd
 
 moduleEnd
 module audiooutR
-; @pos 872 -35
+; @pos 142 -27
 use env
 
-float* in &tank2OutputMix:out
+float* in &reverb:outR
 
 float[] buffer AUDIO_BUFFER_SIZE
 float* pointer &buffer

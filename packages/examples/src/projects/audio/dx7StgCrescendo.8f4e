@@ -318,7 +318,7 @@ note preset
 ; Copy of keyboardController6OperatorFMSynth.
 ; Hold a Janko keyboard note to hear the swell.
 ; Release the key to start the release envelope.
-; Stereo reverb is copied from reverbGrouped.
+; Stereo reverb sits in its own group.
 ; Its exposed sliders control decay, amount, diffusion and damping.
 ;
 ; Algorithm 2: [2 feedback] -> 1 -> output

@@ -102,7 +102,7 @@ test('ships documentation and examples through the built bridge without changing
 	const code = await call('get_example', { kind: block.kind, path: block.path });
 	expect(code).toMatch(/^module lowPassFilter\n/);
 	expect(code).not.toContain('@public');
-	expect(await call('get_example', { kind: 'project', path: 'audio/reverbGrouped' })).toContain('groupEnd');
+	expect(await call('get_example', { kind: 'project', path: 'audio/reverb' })).toContain('groupEnd');
 	expect(editor.state.codeBlockRendering.currentProject.blocks).toBe(blocks);
 	expect(editor.editing.getRevision()).toBe(revision);
 	expect(await call('apply_edits', { edits: [{ operation: 'insert', code }] })).toMatchObject({
