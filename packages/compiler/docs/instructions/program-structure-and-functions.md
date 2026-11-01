@@ -9,6 +9,54 @@ Block instructions define the structure of your program. See detailed documentat
 - [Function blocks](./blocks/function.md) - `function`, `param`, `paramShape`, and `functionEnd`
 - [Constants blocks](./blocks/constants.md) - `constants` and `constantsEnd`
 
+## Entries and project groups
+
+The root project and each `group` define their own named entries. Put executable modules inside an `entry <name>` /
+`entryEnd` section. Entries take no arguments and return no values; `call <name>` invokes an entry in the current scope.
+Groups also appear inside an entry in their enclosing scope. The same entry may be reopened to preserve the order
+of interleaved modules and groups.
+
+A group's `main` runs at the group's position in its enclosing entry. Its `init` joins the parent scope's `init` entry,
+recursively, and runs when that entry is invoked. Neither entry is required. A group with only `foo` and `bar` does no
+automatic work; those entries run only when explicitly called. Root entries are exported to the host; group entries
+use ordinary local names without visibility modifiers.
+
+```8f4e
+8f4e/v1
+entry main
+group clocked
+entry main
+module scheduler
+int clock
+push clock
+if
+call gate
+ifEnd
+moduleEnd
+entryEnd
+entry gate
+module calculate
+; Work scheduled by the group, with persistent module memory.
+int count
+push &count
+push count
+push 1
+add
+store
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+```
+
+Here `clocked` runs its scheduler automatically, and the scheduler decides whether to call `gate`. For clock-edge work,
+keep the previous clock value in the scheduler and call the calculation entry only on an edge.
+
+Modules and groups within an entry follow source declaration order. The editor supplies this order from spatial
+position (left to right, then top to bottom, with creation order breaking ties), independently at every project level.
+Existing group bodies must wrap executable modules in explicit entries; bare group modules no longer inherit the
+parent's entry.
+
 ## Other Instructions
 
 ### expose
@@ -41,11 +89,13 @@ init &foo 11
 init &gain 0.5
 init &input &source:output
 
+entry main
 module processor
 int foo 3
 float gain 0.25
 float* input
 moduleEnd
+entryEnd
 groupEnd
 entryEnd
 ```

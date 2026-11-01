@@ -167,7 +167,7 @@ export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModul
 // Export project serialization helpers
 export { default as getExportBaseName } from './pureHelpers/getExportBaseName';
 export { getUniqueName } from './pureHelpers/getUniqueName';
-export { default as serializeCodeBlocksToProject } from './pureHelpers/projectSerialization/serializeCodeBlocks';
+export { default as serializeProjectLevel } from './pureHelpers/projectSerialization/serializeProjectLevel';
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
 export {
 	findParentProjectLevel,

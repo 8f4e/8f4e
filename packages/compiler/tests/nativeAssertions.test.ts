@@ -304,7 +304,9 @@ entryEnd`,
 		const project = parseProjectSource(`8f4e/v1
 entry main
 group parent
+entry main
 group child
+entry main
 module repeated
 ; A physical comment line.
 push
@@ -317,6 +319,7 @@ loop 2
 call helper
 loopEnd
 moduleEnd
+entryEnd
 function helper
 #export
 ; Export removal must not shift the source line.
@@ -328,6 +331,7 @@ module repeated
 push 2
 assert
 moduleEnd
+entryEnd
 groupEnd
 entryEnd`);
 		const options = { enableAssertions: true, disableSharedMemory: true };
@@ -357,9 +361,11 @@ group included
 includes
 include checking-helper
 includesEnd
+entry main
 module caller
 call includedCheck
 moduleEnd
+entryEnd
 groupEnd
 entryEnd`);
 		const result = await compileProject(project, {

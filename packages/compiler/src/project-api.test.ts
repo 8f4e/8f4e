@@ -22,6 +22,7 @@ const source = [
 ].join('\n');
 
 const directProject: ProjectObjectModel = {
+	entries: ['main'],
 	code: [],
 	execution: [
 		{
@@ -50,6 +51,8 @@ const relocatedProject: ProjectObjectModel = {
 			code: ['module relocated', 'int input 7', 'int output', 'push &output', 'push input', 'store', 'moduleEnd'],
 		},
 	],
+
+	entries: ['main'],
 };
 
 describe('project compiler API', () => {
@@ -70,6 +73,23 @@ describe('project compiler API', () => {
 		]);
 		expect(new Uint8Array(parsedResult.codeBuffer)).toEqual(new Uint8Array(directResult.codeBuffer));
 		expect(parsedResult.memoryPlan).toEqual(directResult.memoryPlan);
+	});
+
+	it('exports root entries while keeping group entries in their own scope', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry foo
+entryEnd
+entry main
+group child
+entry foo
+entryEnd
+entry bar
+entryEnd
+groupEnd
+entryEnd`);
+		const result = await compileProject(project, { disableSharedMemory: true });
+		const exports = WebAssembly.Module.exports(new WebAssembly.Module(new Uint8Array(result.codeBuffer)));
+		expect(exports.map(item => item.name).sort()).toEqual(['foo', 'initDefaults', 'main']);
 	});
 
 	it('applies the configured starting memory word address to planned and emitted module memory', async () => {
@@ -106,6 +126,8 @@ describe('project compiler API', () => {
 				{ type: 'module', id: 2, entry: 'main', code: ['module mainModule', 'moduleEnd'] },
 				{ type: 'module', id: 3, entry: 'alternate', code: ['module secondAlternate', 'moduleEnd'] },
 			],
+
+			entries: ['alternate', 'main'],
 		};
 
 		const result = await compileProject(project, { disableSharedMemory: true });

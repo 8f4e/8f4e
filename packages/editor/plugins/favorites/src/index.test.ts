@@ -213,7 +213,15 @@ describe('favorites plugin', () => {
 	});
 
 	it('uses the current project level and shows an empty placeholder after removing its last favorite', async () => {
-		const test = setup(['group target', 'module nested', '; @favorite', 'moduleEnd', 'groupEnd']);
+		const test = setup([
+			'group target',
+			'entry main',
+			'module nested',
+			'; @favorite',
+			'moduleEnd',
+			'entryEnd',
+			'groupEnd',
+		]);
 		const openFavorites = async () => {
 			test.events.dispatch('openSubMenu', { menu: 'favoritesMenu' });
 			await Promise.resolve();

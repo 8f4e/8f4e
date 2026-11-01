@@ -10,6 +10,7 @@ const validNoteBlock = ['note', '; @pos 1 2', 'compiler should ignore this', 'no
 
 function createProject(partial: Partial<ProjectObjectModel> = {}): ProjectObjectModel {
 	return {
+		entries: [],
 		code: [],
 		execution: [],
 		functions: [],
@@ -23,7 +24,16 @@ function createProject(partial: Partial<ProjectObjectModel> = {}): ProjectObject
 }
 
 function createGroup(partial: Partial<ProjectGroupObjectModel>): ProjectGroupObjectModel {
-	return { ...createProject(), type: 'group', id: 0, name: 'group', entry: 'main', exposures: [], ...partial };
+	return {
+		entry: 'main',
+
+		...createProject(),
+		type: 'group',
+		id: 0,
+		name: 'group',
+		exposures: [],
+		...partial,
+	};
 }
 
 describe('serializeProjectTo8f4e', () => {
@@ -34,23 +44,28 @@ entry main
 module rootA
 moduleEnd
 group synth
+entry main
 module voiceA
 moduleEnd
 group oscillator
+entry main
 module tick
 moduleEnd
+entryEnd
 groupEnd
 module voiceB
 moduleEnd
+entryEnd
 groupEnd
 module rootB
 moduleEnd
 entryEnd
-
 entry alternate
 group other
+entry main
 module otherVoice
 moduleEnd
+entryEnd
 groupEnd
 module otherRoot
 moduleEnd
@@ -70,6 +85,7 @@ entryEnd`;
 
 	it('serializes multiple block collections separated by blank lines', () => {
 		const project = createProject({
+			entries: ['main'],
 			execution: [{ type: 'module', id: 1, code: validBlock, entry: 'main' }],
 			functions: [{ id: 2, code: validFunctionBlock }],
 			notes: [{ id: 3, code: validNoteBlock }],
@@ -93,6 +109,7 @@ entryEnd`;
 
 	it('preserves module order within each entry', () => {
 		const project = createProject({
+			entries: ['main', 'test'],
 			execution: [
 				{ type: 'module', id: 1, code: ['module a', 'moduleEnd'], entry: 'main' },
 				{ type: 'module', id: 3, code: ['module b', 'moduleEnd'], entry: 'test' },
@@ -109,12 +126,13 @@ entryEnd`;
 				'entry main',
 				'module a',
 				'moduleEnd',
-				'module c',
-				'moduleEnd',
 				'entryEnd',
-				'',
 				'entry test',
 				'module b',
+				'moduleEnd',
+				'entryEnd',
+				'entry main',
+				'module c',
 				'moduleEnd',
 				'entryEnd',
 			].join('\n')
@@ -142,6 +160,7 @@ entryEnd`;
 
 	it('round-trips canonical block collections through project text', () => {
 		const project = createProject({
+			entries: ['main'],
 			execution: [{ type: 'module', id: 1, code: validBlock, entry: 'main' }],
 			functions: [{ id: 2, code: validFunctionBlock }],
 			notes: [{ id: 3, code: validNoteBlock }],
@@ -158,8 +177,9 @@ entryEnd`;
 		const project = createGroup({
 			execution: [
 				createGroup({
+					entries: ['main'],
 					name: 'audio',
-					entry: 'main',
+
 					code: [
 						'group audio',
 						'; retain this group comment',
@@ -177,8 +197,9 @@ entryEnd`;
 					execution: [
 						{ type: 'module', id: 1, code: validBlock, entry: 'main' },
 						createGroup({
+							entries: [],
 							name: 'notes',
-							entry: 'main',
+
 							code: ['group notes', 'groupEnd'],
 							exposures: [],
 							notes: [{ id: 3, code: validNoteBlock }],
@@ -192,8 +213,9 @@ entryEnd`;
 		const parsed = parseProjectSource(serializeProjectTo8f4e(project));
 
 		expect(getProjectGroups(parsed)[0]).toMatchObject({
+			entries: ['main'],
 			name: 'audio',
-			entry: 'main',
+
 			code: [
 				'group audio',
 				'; retain this group comment',
@@ -210,10 +232,19 @@ entryEnd`;
 			],
 			execution: [
 				{ type: 'module', code: validBlock, entry: 'main' },
-				{ type: 'group', name: 'notes', entry: 'main', notes: [{ code: validNoteBlock }] },
+				{ entry: 'main', entries: [], type: 'group', name: 'notes', notes: [{ code: validNoteBlock }] },
 			],
 			functions: [{ code: validFunctionBlock }],
 		});
+	});
+
+	it('preserves empty local entries without introducing a main entry', () => {
+		const source = '8f4e/v1\nentry main\ngroup idle\nentry foo\nentryEnd\nentry bar\nentryEnd\ngroupEnd\nentryEnd';
+		const saved = serializeProjectTo8f4e(parseProjectSource(source));
+		const group = getProjectGroups(parseProjectSource(saved))[0];
+		expect(group.entries).toEqual(['foo', 'bar']);
+		expect(group.execution).toEqual([]);
+		expect(saved).toContain('group idle\nentry foo\nentryEnd\nentry bar\nentryEnd\ngroupEnd');
 	});
 
 	it('accepts functionEnd with type suffix', () => {

@@ -1,41 +1,81 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, ProjectLevel } from '@8f4e/editor-state-types';
 import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
-import convertGraphicDataToProjectStructure from './serializeCodeBlocks';
+import serializeProjectLevel from './serializeProjectLevel';
 
-describe('convertGraphicDataToProjectStructure', () => {
+describe('serializeProjectLevel', () => {
+	it('preserves detached empty entry definitions and excludes runtime level data', () => {
+		const child: ProjectLevel = {
+			path: 'worker',
+			entries: ['foo', 'bar'],
+			blocks: [],
+			viewport: { x: 32, y: 64 },
+		};
+		const level: ProjectLevel = {
+			path: '',
+			entries: ['main', 'rootEmpty'],
+			viewport: { x: 128, y: 256 },
+			blocks: [
+				createMockCodeBlock({ name: 'worker', entry: 'main', code: ['group worker', 'groupEnd'], childProject: child }),
+			],
+		};
+		const saved = serializeProjectLevel(level);
+		const savedChild = getProjectGroups(saved)[0];
+		level.entries.push('later');
+		child.entries.push('later');
+		expect(saved.entries).toEqual(['main', 'rootEmpty']);
+		expect(savedChild.entries).toEqual(['foo', 'bar']);
+		expect(savedChild.execution).toEqual([]);
+		saved.entries.push('savedOnly');
+		savedChild.entries.push('savedOnly');
+		expect(level.entries).toEqual(['main', 'rootEmpty', 'later']);
+		expect(child.entries).toEqual(['foo', 'bar', 'later']);
+		for (const project of [saved, savedChild]) {
+			expect(project).not.toHaveProperty('path');
+			expect(project).not.toHaveProperty('viewport');
+		}
+	});
+
 	it('stores the editable root project-scope block as project code', () => {
-		const result = convertGraphicDataToProjectStructure([
-			createMockCodeBlock({
-				code: ['pass env'],
-				isProjectScope: true,
-				creationIndex: 1,
-			}),
-		]);
+		const result = serializeProjectLevel({
+			path: '',
+			entries: [],
+			blocks: [
+				createMockCodeBlock({
+					code: ['pass env'],
+					isProjectScope: true,
+					creationIndex: 1,
+				}),
+			],
+		});
 
 		expect(result.code).toEqual(['pass env']);
 		expect(result.unknown).toEqual([]);
 	});
 
 	it('places editor blocks in their canonical collections', () => {
-		const result = convertGraphicDataToProjectStructure([
-			createMockCodeBlock({
-				code: ['module second', 'moduleEnd'],
-				blockType: 'module',
-				creationIndex: 2,
-				entry: 'main',
-				gridX: 10,
-				gridY: 0,
-			}),
-			createMockCodeBlock({
-				code: ['function first', 'functionEnd'],
-				blockType: 'function',
-				creationIndex: 1,
-				gridX: 0,
-				gridY: 0,
-			}),
-		]);
+		const result = serializeProjectLevel({
+			path: '',
+			entries: [],
+			blocks: [
+				createMockCodeBlock({
+					code: ['module second', 'moduleEnd'],
+					blockType: 'module',
+					creationIndex: 2,
+					entry: 'main',
+					gridX: 10,
+					gridY: 0,
+				}),
+				createMockCodeBlock({
+					code: ['function first', 'functionEnd'],
+					blockType: 'function',
+					creationIndex: 1,
+					gridX: 0,
+					gridY: 0,
+				}),
+			],
+		});
 
 		expect(result.functions).toEqual([{ id: 1, code: ['function first', 'functionEnd'] }]);
 		expect(getProjectModules(result)).toEqual([
@@ -50,7 +90,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 			createMockCodeBlock({ name: 'c', code: ['line 3'], gridX: 0, gridY: 0 }),
 		];
 
-		const result = convertGraphicDataToProjectStructure(blocks);
+		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
 
 		expect(result.unknown.map(block => block.code[0])).toEqual(['line 3', 'line 2', 'line 1']);
 	});
@@ -58,7 +98,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 	it('stores explicit disabled state when a block is disabled', () => {
 		const blocks: CodeBlockGraphicData[] = [createMockCodeBlock({ name: 'disabled', code: ['code'], disabled: true })];
 
-		const result = convertGraphicDataToProjectStructure(blocks);
+		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
 
 		expect(result.unknown[0].disabled).toBe(true);
 		expect(result.unknown[0].code).toEqual(['code']);
@@ -67,7 +107,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 	it('does not include disabled field when block is not disabled', () => {
 		const blocks: CodeBlockGraphicData[] = [createMockCodeBlock({ name: 'enabled', code: ['code'], disabled: false })];
 
-		const result = convertGraphicDataToProjectStructure(blocks);
+		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
 
 		expect(result.unknown[0]).not.toHaveProperty('disabled');
 		expect(result.unknown[0].code).toEqual(['code']);
@@ -95,7 +135,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 			}),
 		];
 
-		const result = convertGraphicDataToProjectStructure(blocks);
+		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
 
 		expect(result.notes.map(block => block.code[0])).toEqual(['note local.editorConfig', 'note', 'note custom']);
 	});
@@ -118,7 +158,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 			}),
 		];
 
-		const result = convertGraphicDataToProjectStructure(blocks);
+		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
 
 		expect(getProjectModules(result)).toEqual([
 			{ type: 'module', id: 1, code: ['module main', 'moduleEnd'], entry: 'main' },
@@ -127,38 +167,46 @@ describe('convertGraphicDataToProjectStructure', () => {
 	});
 
 	it('reconstructs recursively owned projects from nested project code-block slices', () => {
-		const result = convertGraphicDataToProjectStructure([
-			createMockCodeBlock({
-				name: 'Audio',
-				entry: 'main',
-				code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
-				childProject: {
-					path: '',
-					blocks: [
-						createMockCodeBlock({
-							name: 'Oscillator',
-							entry: 'main',
-							code: ['group Oscillator', 'groupEnd'],
-							childProject: {
-								path: '',
-								blocks: [
-									createMockCodeBlock({
-										creationIndex: 1,
-										blockType: 'module',
-										entry: 'main',
-										code: ['module voice', 'moduleEnd'],
-									}),
-								],
-							},
-						}),
-					],
-				},
-			}),
-		]);
+		const result = serializeProjectLevel({
+			path: '',
+			entries: [],
+			blocks: [
+				createMockCodeBlock({
+					name: 'Audio',
+					entry: 'main',
+					code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
+					childProject: {
+						entries: [],
+						path: '',
+						blocks: [
+							createMockCodeBlock({
+								name: 'Oscillator',
+								entry: 'main',
+								code: ['group Oscillator', 'groupEnd'],
+								childProject: {
+									entries: [],
+									path: '',
+									blocks: [
+										createMockCodeBlock({
+											creationIndex: 1,
+											blockType: 'module',
+											entry: 'main',
+											code: ['module voice', 'moduleEnd'],
+										}),
+									],
+								},
+							}),
+						],
+					},
+				}),
+			],
+		});
 
 		expect(getProjectGroups(result)[0]).toMatchObject({
-			name: 'Audio',
+			entries: ['main'],
 			entry: 'main',
+			name: 'Audio',
+
 			code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
 			exposures: [
 				{
@@ -169,10 +217,12 @@ describe('convertGraphicDataToProjectStructure', () => {
 			],
 			execution: [
 				{
+					entry: 'main',
+					entries: ['main'],
 					id: 0,
 					type: 'group',
 					name: 'Oscillator',
-					entry: 'main',
+
 					execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
 				},
 			],
@@ -180,21 +230,27 @@ describe('convertGraphicDataToProjectStructure', () => {
 	});
 
 	it('preserves empty nested projects represented by project-group blocks', () => {
-		const result = convertGraphicDataToProjectStructure([
-			createMockCodeBlock({
-				name: 'Empty',
-				entry: 'main',
-				code: ['group Empty', 'groupEnd'],
-				childProject: { path: '', blocks: [] },
-			}),
-		]);
+		const result = serializeProjectLevel({
+			path: '',
+			entries: [],
+			blocks: [
+				createMockCodeBlock({
+					name: 'Empty',
+					entry: 'main',
+					code: ['group Empty', 'groupEnd'],
+					childProject: { entries: [], path: '', blocks: [] },
+				}),
+			],
+		});
 
 		expect(getProjectGroups(result)).toEqual([
 			{
+				entry: 'main',
+				entries: [],
 				type: 'group',
 				id: 0,
 				name: 'Empty',
-				entry: 'main',
+
 				code: ['group Empty', 'groupEnd'],
 				exposures: [],
 				execution: [],
@@ -223,11 +279,11 @@ describe('convertGraphicDataToProjectStructure', () => {
 			name: 'voice',
 			entry: 'main',
 			code: ['group voice', 'groupEnd'],
-			childProject: { path: '', blocks: [child] },
+			childProject: { entries: [], path: '', blocks: [child] },
 		});
 		const blocks = [scope, module, group];
-		const saved = convertGraphicDataToProjectStructure(blocks);
-		const other = convertGraphicDataToProjectStructure(blocks);
+		const saved = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
+		const other = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
 
 		scope.code[0] = 'pass changed';
 		module.code[1] = 'int value 3';
@@ -277,7 +333,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 			gridX: 4,
 			gridY: 8,
 			code: ['group voice', 'expose value &first:value', 'groupEnd'],
-			childProject: { path: '', blocks: [second, first] },
+			childProject: { entries: [], path: '', blocks: [second, first] },
 		});
 		const blocks = [second, group, first];
 		const reorder = (block: CodeBlockGraphicData): CodeBlockGraphicData =>
@@ -285,10 +341,10 @@ describe('convertGraphicDataToProjectStructure', () => {
 				...Object.fromEntries(Object.entries(block).reverse()),
 				...(block.childProject === undefined
 					? {}
-					: { childProject: { path: '', blocks: [...block.childProject.blocks].reverse().map(reorder) } }),
+					: { childProject: { entries: [], path: '', blocks: [...block.childProject.blocks].reverse().map(reorder) } }),
 			}) as CodeBlockGraphicData;
-		const original = convertGraphicDataToProjectStructure(blocks);
-		const reordered = convertGraphicDataToProjectStructure([...blocks].reverse().map(reorder));
+		const original = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
+		const reordered = serializeProjectLevel({ path: '', entries: [], blocks: [...blocks].reverse().map(reorder) });
 
 		expect(JSON.stringify(reordered)).toBe(JSON.stringify(original));
 		expect(getProjectModules(original).map(block => block.id)).toEqual([1, 2]);

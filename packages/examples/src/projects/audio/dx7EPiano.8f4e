@@ -688,6 +688,7 @@ map 52 A4
 map 49 B4
 mapEnd int
 functionEnd int
+entry main
 module janko
 ; @pos 0 0
 ; @home left
@@ -735,6 +736,7 @@ push &previousNote
 push *note
 store
 moduleEnd
+entryEnd
 groupEnd
 group envelope2
 ; @pos 320 0
@@ -784,6 +786,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -982,6 +985,7 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 group envelope4
 ; @pos 320 22
@@ -1031,6 +1035,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -1229,6 +1234,7 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 group envelope6
 ; @pos 320 44
@@ -1278,6 +1284,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -1476,6 +1483,7 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 group envelope1
 ; @pos 422 0
@@ -1525,6 +1533,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -1723,6 +1732,7 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 group envelope3
 ; @pos 422 22
@@ -1772,6 +1782,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -1970,6 +1981,7 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 group envelope5
 ; @pos 422 44
@@ -2019,6 +2031,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -2217,5 +2230,6 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

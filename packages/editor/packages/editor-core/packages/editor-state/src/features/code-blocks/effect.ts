@@ -378,6 +378,7 @@ export default function codeBlockRendering(
 			// Stable-sort to maintain the partition: normal blocks first, always-on-top last.
 			return {
 				path: projectPath,
+				entries: [...currentProject.entries],
 				blocks: partitionCodeBlocksByAlwaysOnTop(projectCodeBlocks),
 				viewport: previousLevels.get(projectPath)?.viewport,
 			};

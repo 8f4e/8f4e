@@ -7,6 +7,7 @@ describe('getOrCreateMemory', () => {
 	async function createProgramMemoryStructure(moduleIds = ['module1']): Promise<ProgramMemoryStructure> {
 		const result = await compileProject(
 			{
+				entries: ['main'],
 				code: [],
 				execution: [
 					...moduleIds.map((id, projectBlockId) => ({

@@ -19,7 +19,7 @@ function fixture() {
 		creationIndex: 2,
 		entry: 'main',
 		code: ['group voices', '; voice settings', 'groupEnd'],
-		childProject: { path: '', blocks: [deep] },
+		childProject: { path: 'audio/voices', entries: ['main'], blocks: [deep] },
 	});
 	const direct = module('oscillator', 'audio', 1);
 	const audio = createMockCodeBlock({
@@ -28,10 +28,12 @@ function fixture() {
 		creationIndex: 0,
 		entry: 'main',
 		code: ['group audio', 'expose oscillator:value', 'groupEnd'],
-		childProject: { path: '', blocks: [direct, voices] },
+		childProject: { path: 'audio', entries: ['main'], blocks: [direct, voices] },
 	});
 	const root = module('rootModule', '', 4);
-	const state = createMockState({ codeBlockRendering: { rootProject: { path: '', blocks: [audio, root] } } });
+	const state = createMockState({
+		codeBlockRendering: { rootProject: { entries: [], path: '', blocks: [audio, root] } },
+	});
 	return { state, audio, voices, root };
 }
 
@@ -40,7 +42,7 @@ describe('one-level 8f4e source views', () => {
 		const { state } = fixture();
 		const view = createSourceView(state);
 		expect(view).toBe(
-			'8f4e/v1\n\nentry main\n\ngroup audio\nexpose oscillator:value\ngroupEnd\n\nmodule rootModule\nint value 1\nmoduleEnd\nentryEnd'
+			'8f4e/v1\n\nentry main\n\ngroup audio\nexpose oscillator:value\nentry main\nentryEnd\ngroupEnd\n\nmodule rootModule\nint value 1\nmoduleEnd\nentryEnd'
 		);
 		expect(view).not.toContain('module oscillator');
 		expect(view).not.toContain('group voices');
@@ -51,7 +53,7 @@ describe('one-level 8f4e source views', () => {
 		state.codeBlockRendering.currentProject = audio.childProject!;
 		const view = createSourceView(state);
 		expect(view).toBe(
-			'group audio\nexpose oscillator:value\n\nmodule oscillator\nint value 1\nmoduleEnd\n\ngroup voices\n; voice settings\ngroupEnd\ngroupEnd'
+			'group audio\nexpose oscillator:value\n\nentry main\n\nmodule oscillator\nint value 1\nmoduleEnd\n\ngroup voices\n; voice settings\nentry main\nentryEnd\ngroupEnd\nentryEnd\ngroupEnd'
 		);
 		expect(view).not.toContain('deepSecret');
 		state.codeBlockRendering.currentProject = voices.childProject!;
@@ -60,11 +62,26 @@ describe('one-level 8f4e source views', () => {
 		expect(nested).not.toContain('module oscillator');
 	});
 
+	it('retains empty named entries and unfinished group shells', () => {
+		const { state, audio } = fixture();
+		audio.code = ['group audio', '; unfinished settings'];
+		audio.childProject!.blocks = [];
+		audio.childProject!.entries = ['foo', 'bar'];
+		expect(createSourceView(state)).toContain(
+			'group audio\n; unfinished settings\nentry foo\nentryEnd\nentry bar\nentryEnd'
+		);
+		state.codeBlockRendering.currentProject = audio.childProject!;
+		const view = createSourceView(state);
+		expect(view).toContain('entry foo\nentryEnd');
+		expect(view).toContain('entry bar\nentryEnd');
+		expect(view).not.toContain('entry main');
+	});
+
 	it('reads unfinished code without export validation and rejects an unavailable current scope', () => {
 		const { state, root } = fixture();
 		root.code = ['module unfinished', 'push'];
 		expect(createSourceView(state)).toContain('module unfinished\npush');
-		state.codeBlockRendering.currentProject = { path: 'missing', blocks: [] };
+		state.codeBlockRendering.currentProject = { entries: [], path: 'missing', blocks: [] };
 		expect(() => createSourceView(state)).toThrow('currently expanded group is unavailable');
 	});
 
@@ -84,6 +101,6 @@ describe('one-level 8f4e source views', () => {
 		expect(view).toContain('entry main\n');
 		expect(view).toContain('entry secondary\n');
 		state.codeBlockRendering.currentProject = audio.childProject!;
-		expect(createSourceView(state)).toBe(audio.code.join('\n'));
+		expect(createSourceView(state)).toBe('group audio\nexpose oscillator:value\n\nentry main\nentryEnd\ngroupEnd');
 	});
 });

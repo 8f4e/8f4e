@@ -6,8 +6,10 @@ moduleEnd
 group synth
 expose input &processor:input
 init &input &source:output
+entry main
 module processor
 int* input
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

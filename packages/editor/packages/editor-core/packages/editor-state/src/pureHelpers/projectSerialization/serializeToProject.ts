@@ -1,6 +1,6 @@
 import type { State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
-import convertGraphicDataToProjectStructure from './serializeCodeBlocks';
+import serializeProjectLevel from './serializeProjectLevel';
 
 /**
  * Returns detached canonical project data for history, session persistence, compilation, and project export.
@@ -9,5 +9,5 @@ import convertGraphicDataToProjectStructure from './serializeCodeBlocks';
  */
 export default function serializeToProject(state: State): ProjectObjectModel {
 	const { codeBlockRendering } = state;
-	return convertGraphicDataToProjectStructure(codeBlockRendering.rootProject.blocks);
+	return serializeProjectLevel(codeBlockRendering.rootProject);
 }

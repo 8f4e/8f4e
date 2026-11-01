@@ -9,7 +9,7 @@ export interface ClipboardCodeBlock {
 	code: string[];
 	gridCoordinates: { x: number; y: number };
 	entry?: string;
-	childProject?: { blocks: ClipboardCodeBlock[] };
+	childProject?: { entries: string[]; blocks: ClipboardCodeBlock[] };
 }
 
 function createClipboardCodeBlock(block: CodeBlockGraphicData, origin: { x: number; y: number }): ClipboardCodeBlock {
@@ -24,7 +24,8 @@ function createClipboardCodeBlock(block: CodeBlockGraphicData, origin: { x: numb
 			? {}
 			: {
 					childProject: {
-						blocks: block.childProject?.blocks.map(child => createClipboardCodeBlock(child, { x: 0, y: 0 })),
+						entries: [...block.childProject.entries],
+						blocks: block.childProject.blocks.map(child => createClipboardCodeBlock(child, { x: 0, y: 0 })),
 					},
 				}),
 	};
@@ -82,6 +83,7 @@ function isValidClipboardCodeBlock(obj: unknown): obj is ClipboardCodeBlock {
 	if (block.childProject !== undefined) {
 		if (typeof block.childProject !== 'object' || block.childProject === null) return false;
 		const project = block.childProject as Record<string, unknown>;
+		if (!Array.isArray(project.entries) || !project.entries.every(entry => typeof entry === 'string')) return false;
 		if (!Array.isArray(project.blocks) || !project.blocks.every(isValidClipboardCodeBlock)) return false;
 	}
 

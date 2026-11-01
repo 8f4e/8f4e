@@ -4,6 +4,7 @@
     "functions": [],
     "modules": [
       {
+        "executionEntryName": "main",
         "id": "same",
         "lines": [
           {
@@ -44,6 +45,7 @@
         "type": "module",
       },
       {
+        "executionEntryName": "child/main",
         "id": "child/same",
         "lines": [
           {
@@ -76,7 +78,7 @@
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 8,
+        "projectBlockId": 9,
         "sourceIdentity": {
           "codeBlockId": "same",
           "projectGroupPath": "child",
@@ -96,12 +98,30 @@
       "misses": 2,
     },
   },
-  "entryNames": [
-    "main",
+  "entries": [
+    {
+      "exportName": "main",
+      "id": "main",
+      "steps": [
+        {
+          "id": "same",
+          "type": "module",
+        },
+        {
+          "id": "child/main",
+          "type": "entry",
+        },
+      ],
+    },
+    {
+      "id": "child/main",
+      "steps": [
+        {
+          "id": "child/same",
+          "type": "module",
+        },
+      ],
+    },
   ],
   "memoryExposures": [],
-  "moduleEntryNames": [
-    "main",
-    "main",
-  ],
 }

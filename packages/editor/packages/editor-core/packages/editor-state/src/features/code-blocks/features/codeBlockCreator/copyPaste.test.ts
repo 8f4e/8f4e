@@ -4,7 +4,7 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
-import convertGraphicDataToProjectStructure from '../../../../pureHelpers/projectSerialization/serializeCodeBlocks';
+import serializeProjectLevel from '../../../../pureHelpers/projectSerialization/serializeProjectLevel';
 import codeBlockCreator from './effect';
 
 describe('codeBlockCreator - copy/paste', () => {
@@ -45,7 +45,7 @@ describe('codeBlockCreator - copy/paste', () => {
 				gridX: -3,
 				gridY: 8,
 				creationIndex: 3,
-				childProject: { path: '', blocks: [nestedModule] },
+				childProject: { entries: ['main', 'empty'], path: '', blocks: [nestedModule] },
 			});
 			const module = createMockCodeBlock({
 				name: 'output',
@@ -73,7 +73,7 @@ describe('codeBlockCreator - copy/paste', () => {
 				gridX: 10,
 				gridY: 20,
 				creationIndex: 0,
-				childProject: { path: '', blocks: [module, functionBlock, nestedGroup] },
+				childProject: { entries: ['main', 'foo', 'bar'], path: '', blocks: [module, functionBlock, nestedGroup] },
 			});
 			const rootCodeBlocks = [group];
 			mockState.codeBlockRendering.rootProject.blocks = rootCodeBlocks;
@@ -136,13 +136,15 @@ describe('codeBlockCreator - copy/paste', () => {
 			expect(new Set(pastedCreationIndexes).size).toBe(pastedCreationIndexes.length);
 			expect(Math.min(...pastedCreationIndexes)).toBe(20);
 
-			const pastedProjectGroup = getProjectGroups(convertGraphicDataToProjectStructure(rootCodeBlocks))[1];
+			const pastedProjectGroup = getProjectGroups(serializeProjectLevel(mockState.codeBlockRendering.rootProject))[1];
 			expect(pastedProjectGroup).toMatchObject({
+				entries: ['main', 'foo', 'bar'],
 				name: 'audio1',
 				entry: 'main',
 				execution: [
 					{
 						type: 'group',
+						entries: ['main', 'empty'],
 						name: 'modulation',
 						execution: [{ type: 'module', entry: 'main', code: expect.arrayContaining(['module voice']) }],
 					},

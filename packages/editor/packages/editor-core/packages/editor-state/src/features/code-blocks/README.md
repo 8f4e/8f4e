@@ -82,7 +82,7 @@ path; ordinary layout invalidations do not reparse source.
 - Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs)
 
 Project-group blocks use the same `CodeBlockGraphicData` representation as other blocks. Their optional
-`childProject` field owns a `ProjectLevel` with its canonical `path`, `blocks`, and optional remembered `viewport`.
+`childProject` field owns a `ProjectLevel` with its canonical `path`, `blocks`, local `entries`, and optional remembered `viewport`.
 `rootProject` owns the recursive tree; `currentProject` refers directly to the level being rendered. Shared tree helpers
 resolve levels and parents by path, without recovering identity from block arrays.
 

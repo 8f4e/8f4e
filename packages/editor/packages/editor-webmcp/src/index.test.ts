@@ -407,7 +407,7 @@ describe('single-editor WebMCP bridge', () => {
 			projectPath: '',
 			name: 'audio',
 			code: ['group audio', 'groupEnd'],
-			childProject: { path: 'audio', blocks: [child, note] },
+			childProject: { entries: [], path: 'audio', blocks: [child, note] },
 		});
 		view.state.codeBlockRendering.rootProject.blocks.push(
 			group,

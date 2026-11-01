@@ -110,7 +110,7 @@ export function createMockEventDispatcher(): EventDispatcher {
 }
 
 export function createMockState(overrides: StateOverrides = {}): State {
-	const rootProject: ProjectLevel = { path: '', blocks: [] };
+	const rootProject: ProjectLevel = { entries: [], path: '', blocks: [] };
 
 	const defaults: State = {
 		compilerInputRevision: 0,

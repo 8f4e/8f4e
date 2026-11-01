@@ -4,7 +4,7 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance } from 'vitest';
 import projectLoading from '~/features/project-loading/effect';
 import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
-import convertGraphicDataToProjectStructure from '~/pureHelpers/projectSerialization/serializeCodeBlocks';
+import serializeProjectLevel from '~/pureHelpers/projectSerialization/serializeProjectLevel';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import codeBlockRendering from './effect';
@@ -193,7 +193,7 @@ describe('creationIndex', () => {
 
 			const codeBlocksArray = [block1, block2, block3];
 
-			const { execution: modules } = convertGraphicDataToProjectStructure(codeBlocksArray);
+			const { execution: modules } = serializeProjectLevel({ path: '', entries: [], blocks: codeBlocksArray });
 
 			expect(modules[0].code).toEqual(['module c', 'moduleEnd']); // left, top
 			expect(modules[1].code).toEqual(['module b', 'moduleEnd']); // left, lower
@@ -229,7 +229,7 @@ describe('creationIndex', () => {
 				gridY: 0,
 			});
 
-			const { execution: modules } = convertGraphicDataToProjectStructure([block1, block2, block3]);
+			const { execution: modules } = serializeProjectLevel({ path: '', entries: [], blocks: [block1, block2, block3] });
 
 			expect(modules[0].code).toEqual(['module b', 'moduleEnd']);
 			expect(modules[1].code).toEqual(['module c', 'moduleEnd']);
@@ -256,7 +256,11 @@ describe('creationIndex', () => {
 				gridY: 0,
 			});
 
-			const { execution: modules } = convertGraphicDataToProjectStructure([dependentBlock, sourceBlock]);
+			const { execution: modules } = serializeProjectLevel({
+				path: '',
+				entries: [],
+				blocks: [dependentBlock, sourceBlock],
+			});
 
 			expect(modules[0].code).toEqual(['module dependent', 'int* ptr &source:0', 'moduleEnd']);
 			expect(modules[1].code).toEqual(['module source', 'int value 0', 'moduleEnd']);
@@ -286,7 +290,11 @@ describe('creationIndex', () => {
 
 			const codeBlocksArray = [moduleBlock, functionBlock, secondModuleBlock];
 
-			const { execution: modules, functions } = convertGraphicDataToProjectStructure(codeBlocksArray);
+			const { execution: modules, functions } = serializeProjectLevel({
+				path: '',
+				entries: [],
+				blocks: codeBlocksArray,
+			});
 
 			expect(modules.length).toBe(2);
 			expect(modules[0].code).toEqual(['module testModule', 'moduleEnd']);

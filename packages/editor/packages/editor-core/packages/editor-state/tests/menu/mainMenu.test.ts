@@ -8,8 +8,8 @@ describe('menus - go home entry', () => {
 		const nestedProjectCodeBlocks = [];
 		const mockState = createMockState({
 			codeBlockRendering: {
-				rootProject: { path: '', blocks: rootCodeBlocks },
-				currentProject: { path: '', blocks: nestedProjectCodeBlocks },
+				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
+				currentProject: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
 			},
 		});
 
@@ -33,7 +33,7 @@ describe('menus - go home entry', () => {
 	it('shows "Go @home" even when no home block exists', () => {
 		const mockState = createMockState({
 			editorMode: 'edit',
-			codeBlockRendering: { currentProject: { path: '', blocks: [] } },
+			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [] } },
 		});
 
 		const menu = mainMenu(mockState);

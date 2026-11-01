@@ -4,9 +4,17 @@ import { copyProjectLevel, findParentProjectLevel, findProjectLevel, updateProje
 import { createMockCodeBlock } from './testingUtils/testUtils';
 
 function fixture() {
-	const child: ProjectLevel = { path: 'Audio/Voices', blocks: [createMockCodeBlock({ name: 'voice' })] };
-	const audio: ProjectLevel = { path: 'Audio', blocks: [createMockCodeBlock({ name: 'Voices', childProject: child })] };
-	const root: ProjectLevel = { path: '', blocks: [createMockCodeBlock({ name: 'Audio', childProject: audio })] };
+	const child: ProjectLevel = { entries: [], path: 'Audio/Voices', blocks: [createMockCodeBlock({ name: 'voice' })] };
+	const audio: ProjectLevel = {
+		entries: [],
+		path: 'Audio',
+		blocks: [createMockCodeBlock({ name: 'Voices', childProject: child })],
+	};
+	const root: ProjectLevel = {
+		entries: [],
+		path: '',
+		blocks: [createMockCodeBlock({ name: 'Audio', childProject: audio })],
+	};
 	return { root, audio, child };
 }
 
@@ -25,9 +33,12 @@ describe('project tree', () => {
 	it('copies source-edit drafts without sharing source or remembering runtime views', () => {
 		const { root, child } = fixture();
 		child.viewport = { x: 64, y: 96 };
+		child.entries = ['foo', 'bar'];
 		const copy = copyProjectLevel(root);
 		const copiedChild = findProjectLevel(copy, child.path)!;
 		copiedChild.blocks[0].code.push('changed');
+		copiedChild.entries.push('copyOnly');
+		expect(child.entries).toEqual(['foo', 'bar']);
 		expect(child.blocks[0].code).toEqual([]);
 		expect(copiedChild.viewport).toBeUndefined();
 	});

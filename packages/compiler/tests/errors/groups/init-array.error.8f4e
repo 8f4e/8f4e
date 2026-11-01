@@ -3,8 +3,10 @@ entry main
 group synth
 expose values &processor:values
 init &values 11
+entry main
 module processor
 int[] values 1
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

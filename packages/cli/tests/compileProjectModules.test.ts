@@ -5,6 +5,7 @@ import compileProjectModules from '../src/compile/compileProjectModules';
 
 function projectWithModules(modules: Array<Omit<ProjectModuleBlock, 'type'>>): ProjectObjectModel {
 	return {
+		entries: [...new Set(modules.map(module => module.entry))],
 		code: [],
 		execution: modules.map(module => ({ ...module, type: 'module' })),
 		functions: [],
@@ -115,6 +116,8 @@ describe('compileProjectModules', () => {
 				...projectWithModules([]),
 				execution: [
 					{
+						entry: 'main',
+
 						type: 'group',
 						...projectWithModules([
 							{
@@ -125,11 +128,15 @@ describe('compileProjectModules', () => {
 						]),
 						id: 1,
 						name: 'nested',
-						entry: 'main',
+
 						code: ['group nested', 'groupEnd'],
 						exposures: [],
+
+						entries: ['main'],
 					},
 				],
+
+				entries: [],
 			},
 			{
 				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },

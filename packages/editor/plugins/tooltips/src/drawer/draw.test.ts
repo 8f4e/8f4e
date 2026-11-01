@@ -168,7 +168,7 @@ describe('tooltip drawing', () => {
 		});
 		const state = createMockState({
 			codeBlockRendering: {
-				currentProject: { path: '', blocks: [block] },
+				currentProject: { entries: [], path: '', blocks: [block] },
 				selectedCodeBlock: block,
 			},
 			featureFlags: {
@@ -274,7 +274,7 @@ describe('tooltip drawing', () => {
 				},
 			},
 			codeBlockRendering: {
-				currentProject: { path: '', blocks: [block] },
+				currentProject: { entries: [], path: '', blocks: [block] },
 				selectedCodeBlock: block,
 			},
 			featureFlags: {

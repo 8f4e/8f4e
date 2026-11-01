@@ -17,6 +17,7 @@ group synth
 expose input &processor:input
 init &input &source:output ; host wiring
 
+entry main
 module source
 int output 999
 moduleEnd
@@ -32,9 +33,11 @@ assertEqual 3
 push sizeof(*input)
 assertEqual 4
 moduleEnd
+entryEnd
 groupEnd
 
 group outer
+entry main
 module source
 int output 17
 moduleEnd
@@ -43,6 +46,7 @@ group inner
 expose input &processor:input
 init &input &source:output
 
+entry main
 module processor
 int* input
 push *input
@@ -50,14 +54,18 @@ assertEqual 17
 push count(*input)
 assertEqual 1
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 
 group signal
 expose output &data:value
+entry main
 module data
 int value 55
 moduleEnd
+entryEnd
 groupEnd
 
 group consumer
@@ -68,6 +76,7 @@ prototype state
 int* input
 prototypeEnd
 
+entry main
 module processor
 shape state
 push *input
@@ -75,5 +84,6 @@ assertEqual 55
 push count(*input)
 assertEqual 1
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

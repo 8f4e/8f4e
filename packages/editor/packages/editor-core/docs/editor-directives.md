@@ -59,9 +59,11 @@ expose gain &voice:level
 ; @slider &gain 0 1 0.01
 ; @watch gain
 
+entry main
 module voice
 float level 0.5
 moduleEnd
+entryEnd
 groupEnd
 ```
 

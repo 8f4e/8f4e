@@ -4,6 +4,7 @@ exports[`serializeToProject > serializes basic project state without compiled da
 {
   "code": [],
   "constants": [],
+  "entries": [],
   "execution": [],
   "functions": [],
   "includes": [],

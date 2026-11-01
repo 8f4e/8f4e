@@ -23,11 +23,11 @@ describe('code block rendering error mapping', () => {
 			name: 'audio',
 			code: ['group audio', 'pass env', 'groupEnd'],
 			projectPath: '',
-			childProject: { path: '', blocks: [] },
+			childProject: { entries: [], path: '', blocks: [] },
 			creationIndex: 8,
 		});
 		const state = createMockState({
-			codeBlockRendering: { currentProject: { path: '', blocks: [rootScope, group] } },
+			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [rootScope, group] } },
 			codeErrors: {
 				compilationErrors: [
 					{ lineNumber: 0, codeBlockId: -1, projectGroupPath: '', message: 'Undefined root constant' },
@@ -58,7 +58,7 @@ describe('code block rendering error mapping', () => {
 		});
 		const state = createMockState({
 			codeBlockRendering: {
-				currentProject: { path: '', blocks: [functionBlock] },
+				currentProject: { entries: [], path: '', blocks: [functionBlock] },
 			},
 			codeErrors: {
 				compilationErrors: [
@@ -97,7 +97,7 @@ describe('code block rendering cursor selection', () => {
 				codeLineSelection: true,
 			},
 			codeBlockRendering: {
-				currentProject: { path: '', blocks: [selectedBlock] },
+				currentProject: { entries: [], path: '', blocks: [selectedBlock] },
 				selectedCodeBlock: selectedBlock,
 			},
 			viewport: {
@@ -193,11 +193,13 @@ describe('code block rendering home directive', () => {
 				execution: [
 					{ type: 'module', id: 0, entry: 'main', code: ['module root', 'moduleEnd'] },
 					{
+						entry: 'main',
+
 						id: 0,
 						type: 'group',
 						...EMPTY_DEFAULT_PROJECT,
 						name: 'Audio',
-						entry: 'main',
+
 						code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
 						exposures: [
 							{
@@ -207,6 +209,8 @@ describe('code block rendering home directive', () => {
 							},
 						],
 						execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
+
+						entries: ['main'],
 					},
 				],
 			},
@@ -243,18 +247,24 @@ describe('code block rendering home directive', () => {
 entry main
 group audio
 ; @pos 10 20
+entry main
 group voices
 ; @pos 30 40
+entry main
 module voice
 ; @pos 50 60
 float out
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd
 entry test
 group checks
 ; @pos -20 -10
+entry main
+entryEnd
 groupEnd
 entryEnd`);
 		const state = createMockState({ initialProjectState: project });
@@ -308,14 +318,18 @@ entryEnd`);
 				...EMPTY_DEFAULT_PROJECT,
 				execution: [
 					{
+						entry: 'main',
+
 						id: 0,
 						type: 'group',
 						...EMPTY_DEFAULT_PROJECT,
 						name: 'Audio',
-						entry: 'main',
+
 						code: ['group Audio', 'groupEnd'],
 						exposures: [],
 						execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
+
+						entries: ['main'],
 					},
 				],
 			},
@@ -409,8 +423,8 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		const codeBlocks = [normalA, normalB, topA];
 		const state = createMockState({
 			codeBlockRendering: {
-				rootProject: { path: '', blocks: codeBlocks },
-				currentProject: { path: '', blocks: codeBlocks },
+				rootProject: { entries: [], path: '', blocks: codeBlocks },
+				currentProject: { entries: [], path: '', blocks: codeBlocks },
 				selectedCodeBlock: normalA,
 			},
 		});
@@ -459,8 +473,8 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		const codeBlocks = [normalA, normalB, topA, topB];
 		const state = createMockState({
 			codeBlockRendering: {
-				rootProject: { path: '', blocks: codeBlocks },
-				currentProject: { path: '', blocks: codeBlocks },
+				rootProject: { entries: [], path: '', blocks: codeBlocks },
+				currentProject: { entries: [], path: '', blocks: codeBlocks },
 				selectedCodeBlock: topB,
 			},
 		});

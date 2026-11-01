@@ -8,5 +8,7 @@ moduleEnd
 group hidden
 function hidden
 functionEnd
+entry main
+entryEnd
 groupEnd
 entryEnd

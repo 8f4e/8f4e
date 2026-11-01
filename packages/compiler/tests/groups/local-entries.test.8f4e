@@ -1,0 +1,151 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+Groups own ordinary entries. Only main and init connect to the parent automatically.
+Other entries execute when called and retain their module memory between calls.
+noteEnd
+
+entry test
+group synth
+expose count &state:count
+expose mainCalls &state:mainCalls
+expose initialized &state:initialized
+
+entry init
+module setup
+push &state:initialized
+push 7
+store
+moduleEnd
+entryEnd
+
+entry main
+module scheduler
+push &state:mainCalls
+push &state:mainCalls
+load
+push 1
+add
+store
+loop 3
+call gate
+loopEnd
+push &nested:count
+load
+assertEqual 15
+push &dormant:ran
+load
+assertEqual 0
+moduleEnd
+entryEnd
+
+entry gate
+module state
+int count
+int mainCalls
+int initialized
+push &count
+push count
+push 1
+add
+store
+moduleEnd
+
+group nested
+expose count &state:count
+expose initialized &state:initialized
+entry main
+module state
+int count
+int initialized
+push &count
+push count
+push 5
+add
+store
+moduleEnd
+entryEnd
+entry init
+module setup
+push &state:initialized
+push 11
+store
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+
+entry unused
+group dormant
+expose ran &state:ran
+entry foo
+module state
+int ran
+push &ran
+push 99
+store
+moduleEnd
+entryEnd
+entry bar
+module fail
+push 0
+assert
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+
+entry init
+module verifyNestedInit
+push &nested:initialized
+load
+assertEqual 11
+moduleEnd
+entryEnd
+
+entry report
+module alsoDormant
+push 0
+assert
+moduleEnd
+entryEnd
+groupEnd
+
+group sibling
+expose count &state:count
+entry main
+module scheduler
+call gate
+moduleEnd
+entryEnd
+entry gate
+module state
+int count
+push &count
+push count
+push 2
+add
+store
+moduleEnd
+entryEnd
+groupEnd
+
+module verify
+int* count &synth:count
+int* mainCalls &synth:mainCalls
+int* initialized &synth:initialized
+int* siblingCount &sibling:count
+push *count
+assertEqual 3
+push *mainCalls
+assertEqual 1
+push *siblingCount
+assertEqual 2
+push *initialized
+assertEqual 0
+call init
+push *initialized
+assertEqual 7
+moduleEnd
+entryEnd
