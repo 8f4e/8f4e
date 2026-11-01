@@ -87,7 +87,11 @@ delete, paste, and reorder operations replace their contents in place so the roo
 not diverge. Loading a project rebuilds the recursive tree and resets `codeBlocks` to `rootCodeBlocks`.
 Project-group blocks expose an **Open group** context-menu action that points `codeBlocks` directly at their child
 slice. Nested-slice context menus expose **Go back**, which finds the immediate parent through those stable array
-references.
+references. Navigation remembers the viewport position for each canonical project-group path and restores it when
+returning to a parent, jumping to the root, or reopening a visited group. First visits use the slice's first `@home`
+block (including its alignment), or `(0, 0)` if none exists. These positions survive same-project edits and snapshot
+restoration, remain outside persisted project state, and reset when a different project is loaded. Switching slices
+also stops any active viewport animation; navigating to the already active slice leaves its view and selection alone.
 
 `@8f4e/editor-plugin-assertion-markers` owns assertion site aggregation, geometry, and drawing over line numbers.
 It reads `state.assertionResults` and current block layout through the generic drawer hook. Core block state
