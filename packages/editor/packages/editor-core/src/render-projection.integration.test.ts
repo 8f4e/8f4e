@@ -15,7 +15,7 @@ function setup() {
 	events.dispatch('loadProject', {
 		project: {
 			...EMPTY_DEFAULT_PROJECT,
-			modules: [{ id: 0, entry: 'main', code: ['module audio', 'int value 0', 'moduleEnd'] }],
+			execution: [{ type: 'module', id: 0, entry: 'main', code: ['module audio', 'int value 0', 'moduleEnd'] }],
 		},
 	});
 	const projection = createWebUiRenderProjection(store, events);

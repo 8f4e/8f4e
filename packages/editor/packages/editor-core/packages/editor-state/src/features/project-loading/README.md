@@ -2,7 +2,9 @@
 
 Core owns generic project replacement and New Project. Hosts and plugins dispatch `loadProject` with `{ project }`,
 where project is the compiler-owned `ProjectObjectModel`. The action sets `state.initialProjectState`; block effects
-populate the project and compilation follows its normal subscriptions. The `new` action dispatches `loadProject` with
+populate the project and compilation follows its normal subscriptions. Modules and groups occupy the same ordered
+`execution` sequence; group ids are retained as editor creation indices. Loading an unpositioned group preserves its
+source instead of adding a position directive that changes execution order. The `new` action dispatches `loadProject` with
 an empty project so plugins can observe the same replacement path.
 
 Undo and redo restore `initialProjectState` directly within the current project. They do not dispatch the action for

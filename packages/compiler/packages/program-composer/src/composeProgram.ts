@@ -8,6 +8,7 @@ import {
 	type IncludedFunctionBindings,
 	type ProjectConstantNamespacePassLine,
 	type ProjectGroupPath,
+	type ProjectMemoryExposure,
 	type ProjectMemoryInitializerLine,
 	type ProjectObjectModel,
 	ROOT_PROJECT_GROUP_PATH,
@@ -52,7 +53,7 @@ function collectProjectConstantNamespacePasses(
 function appendMemoryExposureAliases(
 	program: ComposedProgram,
 	groupPath: ProjectGroupPath,
-	exposures: ProjectObjectModel['groups'][number]['exposures']
+	exposures: ProjectMemoryExposure[]
 ): void {
 	if (exposures.length === 0) {
 		return;
@@ -134,12 +135,6 @@ function appendUnit(
 		});
 	}
 
-	project.groups.forEach(group => {
-		const groupPath = createChildProjectGroupPath(projectPath, group.name);
-		appendMemoryExposureAliases(program, groupPath, group.exposures);
-		appendUnit(group, groupPath, projectPath, program, includedFunctionsByProjectPath);
-	});
-
 	const prefix = projectPath === ROOT_PROJECT_GROUP_PATH ? undefined : `${projectPath}/`;
 	const qualify = <TAst extends ValidatedAST>(
 		ast: TAst,
@@ -151,7 +146,6 @@ function appendUnit(
 		};
 	};
 	const prototypes = project.prototypes.filter(block => !block.disabled);
-	const modules = project.modules.filter(block => !block.disabled);
 	const constants = project.constants.filter(block => !block.disabled);
 	const functions = project.functions.filter(block => !block.disabled);
 	const includedFunctions = includedFunctionsByProjectPath.get(projectPath) ?? [];
@@ -195,7 +189,15 @@ function appendUnit(
 	);
 
 	const moduleIndexByEntry = new Map<string, number>();
-	for (const module of modules) {
+	for (const block of project.execution) {
+		if (block.type === 'group') {
+			const groupPath = createChildProjectGroupPath(projectPath, block.name);
+			appendMemoryExposureAliases(program, groupPath, block.exposures);
+			appendUnit(block, groupPath, projectPath, program, includedFunctionsByProjectPath);
+			continue;
+		}
+		const module = block;
+		if (module.disabled) continue;
 		const index = moduleIndexByEntry.get(module.entry) ?? 0;
 		moduleIndexByEntry.set(module.entry, index + 1);
 		program.ast.modules.push(
@@ -215,7 +217,7 @@ function appendUnit(
 
 /**
  * Parses and composes a recursive project tree into one globally planned compiler program.
- * Child modules are appended before parent modules, while functions, constants, and prototypes remain hoisted.
+ * Groups expand at their declaration positions; functions, constants, and prototypes remain hoisted.
  */
 export function composeProgram(
 	project: ProjectObjectModel,

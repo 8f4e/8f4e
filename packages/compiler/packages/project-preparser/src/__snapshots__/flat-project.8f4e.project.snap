@@ -10,6 +10,18 @@
       "id": 9,
     },
   ],
+  "execution": [
+    {
+      "code": [
+        "module counter",
+        "int count",
+        "moduleEnd",
+      ],
+      "entry": "main",
+      "id": 4,
+      "type": "module",
+    },
+  ],
   "functions": [
     {
       "code": [
@@ -23,19 +35,7 @@
       "id": 13,
     },
   ],
-  "groups": [],
   "includes": [],
-  "modules": [
-    {
-      "code": [
-        "module counter",
-        "int count",
-        "moduleEnd",
-      ],
-      "entry": "main",
-      "id": 4,
-    },
-  ],
   "notes": [
     {
       "code": [

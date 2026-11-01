@@ -9,7 +9,7 @@ This file extends the repository-level guidance for `packages/compiler`.
 - `@8f4e/language-spec` owns shared contracts, `ProjectObjectModel`, and semantic compiler errors.
 - `@8f4e/project-preparser` parses project source and resolves included functions.
 - `@8f4e/program-composer` parses blocks, traverses recursive groups, qualifies symbols, and establishes deterministic
-  module order. Child modules execute before their parent modules for the same entry.
+  module order. Modules and groups share the ordered `execution` sequence; child groups expand at their declaration positions.
 - `@8f4e/tokenizer` owns syntax parsing and validation.
 - `@8f4e/sub-program` orchestrates semantic resolution, memory planning, stack analysis, and compilation.
 - `@8f4e/wasm-codegen` generates function and module bodies and emits the final WebAssembly binary.

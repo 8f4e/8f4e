@@ -1,4 +1,5 @@
 import type { ProjectIncludeResolver } from '@8f4e/language-spec';
+import { getProjectGroups } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { parseProjectSource, resolveProjectIncludesAsync } from '../src';
 
@@ -21,7 +22,7 @@ describe('project-preparser integration', () => {
 		);
 
 		expect(project.code).toEqual(['; root contract', 'pass env']);
-		expect(project.groups[0].code).toEqual(['group audio', '; child contract', 'pass env', 'groupEnd']);
+		expect(getProjectGroups(project)[0].code).toEqual(['group audio', '; child contract', 'pass env', 'groupEnd']);
 	});
 
 	it('requires constants to be declared in a named constants block', () => {

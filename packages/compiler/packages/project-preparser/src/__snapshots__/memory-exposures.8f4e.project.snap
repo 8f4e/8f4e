@@ -1,8 +1,17 @@
 {
   "code": [],
   "constants": [],
-  "functions": [],
-  "groups": [
+  "execution": [
+    {
+      "code": [
+        "module outer",
+        "int* input &audio:exposedValue",
+        "moduleEnd",
+      ],
+      "entry": "main",
+      "id": 4,
+      "type": "module",
+    },
     {
       "code": [
         "group audio",
@@ -14,6 +23,28 @@
       ],
       "constants": [],
       "entry": "main",
+      "execution": [
+        {
+          "code": [
+            "module source",
+            "int value 42",
+            "moduleEnd",
+          ],
+          "entry": "main",
+          "id": 12,
+          "type": "module",
+        },
+        {
+          "code": [
+            "module consumer",
+            "int* input",
+            "moduleEnd",
+          ],
+          "entry": "main",
+          "id": 16,
+          "type": "module",
+        },
+      ],
       "exposures": [
         {
           "name": "exposedValue",
@@ -27,46 +58,17 @@
         },
       ],
       "functions": [],
-      "groups": [],
+      "id": 8,
       "includes": [],
-      "modules": [
-        {
-          "code": [
-            "module source",
-            "int value 42",
-            "moduleEnd",
-          ],
-          "entry": "main",
-          "id": 12,
-        },
-        {
-          "code": [
-            "module consumer",
-            "int* input",
-            "moduleEnd",
-          ],
-          "entry": "main",
-          "id": 16,
-        },
-      ],
       "name": "audio",
       "notes": [],
       "prototypes": [],
+      "type": "group",
       "unknown": [],
     },
   ],
+  "functions": [],
   "includes": [],
-  "modules": [
-    {
-      "code": [
-        "module outer",
-        "int* input &audio:exposedValue",
-        "moduleEnd",
-      ],
-      "entry": "main",
-      "id": 4,
-    },
-  ],
   "notes": [],
   "prototypes": [],
   "unknown": [],

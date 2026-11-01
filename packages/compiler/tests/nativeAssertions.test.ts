@@ -1,4 +1,4 @@
-import { type CompileResult, ErrorCode } from '@8f4e/language-spec';
+import { type CompileResult, ErrorCode, getProjectModules } from '@8f4e/language-spec';
 import { describe, expect, it, vi } from 'vitest';
 import { compileProject, parseProjectSource } from '../src';
 
@@ -174,12 +174,12 @@ entryEnd`);
 		expect(events[3].expected).toBe(Math.fround(1.2501));
 		for (const site of result.assertionSites!) {
 			expect(site).toMatchObject({
-				projectBlockId: project.modules[0].id,
+				projectBlockId: getProjectModules(project)[0].id,
 				projectGroupPath: '',
 				codeBlockType: 'module',
 				codeBlockId: 'checks',
 			});
-			expect(project.modules[0].code[site.lineNumber].split(' ')[0]).toBe(site.instruction);
+			expect(getProjectModules(project)[0].code[site.lineNumber].split(' ')[0]).toBe(site.instruction);
 		}
 	});
 

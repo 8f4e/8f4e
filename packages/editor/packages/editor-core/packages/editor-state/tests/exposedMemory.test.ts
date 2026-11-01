@@ -1,7 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import { createChildProjectGroupPath, type ProjectObjectModel } from '@8f4e/language-spec';
+import {
+	createChildProjectGroupPath,
+	getProjectGroups,
+	getProjectModules,
+	type ProjectObjectModel,
+} from '@8f4e/language-spec';
 import { beforeEach, describe, expect, it } from 'vitest';
 import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
 import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
@@ -12,8 +17,10 @@ const source = readFileSync(new URL('./fixtures/exposed-controls.8f4e', import.m
 
 function createBlocks(project: ProjectObjectModel, projectPath = ''): CodeBlockGraphicData[] {
 	return [
-		...project.modules.map(block => createMockCodeBlock({ code: block.code, projectPath, blockType: 'module' })),
-		...project.groups.map(group =>
+		...getProjectModules(project).map(block =>
+			createMockCodeBlock({ code: block.code, projectPath, blockType: 'module' })
+		),
+		...getProjectGroups(project).map(group =>
 			createMockCodeBlock({
 				name: group.name,
 				code: group.code,

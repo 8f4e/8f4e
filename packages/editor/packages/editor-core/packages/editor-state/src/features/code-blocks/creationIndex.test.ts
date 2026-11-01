@@ -115,10 +115,10 @@ describe('creationIndex', () => {
 
 			const projectWithBlocks: ProjectObjectModel = {
 				...EMPTY_DEFAULT_PROJECT,
-				modules: [
-					{ id: 0, code: ['module a', 'moduleEnd'], entry: 'main' },
-					{ id: 1, code: ['module b', 'moduleEnd'], entry: 'main' },
-					{ id: 2, code: ['module c', 'moduleEnd'], entry: 'main' },
+				execution: [
+					{ type: 'module', id: 0, code: ['module a', 'moduleEnd'], entry: 'main' },
+					{ type: 'module', id: 1, code: ['module b', 'moduleEnd'], entry: 'main' },
+					{ type: 'module', id: 2, code: ['module c', 'moduleEnd'], entry: 'main' },
 				],
 			};
 
@@ -151,7 +151,7 @@ describe('creationIndex', () => {
 
 			const project: ProjectObjectModel = {
 				...EMPTY_DEFAULT_PROJECT,
-				modules: [{ id: 0, code: ['module a', 'moduleEnd'], entry: 'main' }],
+				execution: [{ type: 'module', id: 0, code: ['module a', 'moduleEnd'], entry: 'main' }],
 			};
 
 			loadProjectCallback({ project });
@@ -193,7 +193,7 @@ describe('creationIndex', () => {
 
 			const codeBlocksArray = [block1, block2, block3];
 
-			const { modules } = convertGraphicDataToProjectStructure(codeBlocksArray);
+			const { execution: modules } = convertGraphicDataToProjectStructure(codeBlocksArray);
 
 			expect(modules[0].code).toEqual(['module c', 'moduleEnd']); // left, top
 			expect(modules[1].code).toEqual(['module b', 'moduleEnd']); // left, lower
@@ -229,7 +229,7 @@ describe('creationIndex', () => {
 				gridY: 0,
 			});
 
-			const { modules } = convertGraphicDataToProjectStructure([block1, block2, block3]);
+			const { execution: modules } = convertGraphicDataToProjectStructure([block1, block2, block3]);
 
 			expect(modules[0].code).toEqual(['module b', 'moduleEnd']);
 			expect(modules[1].code).toEqual(['module c', 'moduleEnd']);
@@ -256,7 +256,7 @@ describe('creationIndex', () => {
 				gridY: 0,
 			});
 
-			const { modules } = convertGraphicDataToProjectStructure([dependentBlock, sourceBlock]);
+			const { execution: modules } = convertGraphicDataToProjectStructure([dependentBlock, sourceBlock]);
 
 			expect(modules[0].code).toEqual(['module dependent', 'int* ptr &source:0', 'moduleEnd']);
 			expect(modules[1].code).toEqual(['module source', 'int value 0', 'moduleEnd']);
@@ -286,7 +286,7 @@ describe('creationIndex', () => {
 
 			const codeBlocksArray = [moduleBlock, functionBlock, secondModuleBlock];
 
-			const { modules, functions } = convertGraphicDataToProjectStructure(codeBlocksArray);
+			const { execution: modules, functions } = convertGraphicDataToProjectStructure(codeBlocksArray);
 
 			expect(modules.length).toBe(2);
 			expect(modules[0].code).toEqual(['module testModule', 'moduleEnd']);

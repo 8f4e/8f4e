@@ -9,8 +9,9 @@ const project: ProjectObjectModel = parseProjectSource(sourceText);
 ```
 
 It understands document delimiters, entries, recursively owned groups, group memory exposures, disabled blocks, and
-block markers. Parsing classifies every block once into the corresponding `ProjectObjectModel` collection. The model
-itself is defined only by `@8f4e/language-spec`.
+block markers. Parsing classifies blocks once: modules and groups become typed nodes in the shared `execution` sequence,
+while hoisted declarations and non-executable blocks retain their own collections. Each scope preserves relative
+module/group declaration order and source block ids. The model is defined only by `@8f4e/language-spec`.
 
 Note blocks (`note` through `noteEnd`) preserve their content as text until the closing `noteEnd`.
 Lines that look like other block markers remain note content at the project root and inside groups.
@@ -19,7 +20,7 @@ This package owns:
 
 - Parsing raw project source into `ProjectObjectModel` collections and groups.
 - Classifying project document blocks.
-- Preserving entry membership for module blocks.
+- Preserving entry membership for module and group nodes.
 - Preserving project/group-level `pass <namespace>` declarations for the program composer.
 - Preserving group-level `init` declarations for syntax validation and scoped composition.
 - Parsing `expose <name> &<module>:<memory>` declarations owned by groups.

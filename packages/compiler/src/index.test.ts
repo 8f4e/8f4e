@@ -27,16 +27,17 @@ function compile(fixture: ProjectFixture, options: CompileOptions) {
 	});
 	const project: ProjectObjectModel = {
 		code: [],
-		modules: Object.entries(fixture.entries).flatMap(([entry, modules]) =>
-			modules.map(module => ({ ...toBlock(module), entry }))
-		),
+		execution: [
+			...Object.entries(fixture.entries).flatMap(([entry, modules]) =>
+				modules.map(module => ({ ...toBlock(module), type: 'module' as const, entry }))
+			),
+		],
 		functions: fixture.functions.map(toBlock),
 		constants: fixture.constants.map(toBlock),
 		prototypes: fixture.prototypes.map(toBlock),
 		includes: [],
 		notes: [],
 		unknown: [],
-		groups: [],
 	};
 	return compileProjectObjectModel(project, options);
 }

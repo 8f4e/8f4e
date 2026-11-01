@@ -30,20 +30,21 @@ type ParsedProjectBlock = { block: ProjectBlock; type: DocumentBlockType; nextIn
 function createEmptyProject(): ProjectObjectModel {
 	return {
 		code: [],
-		modules: [],
+		execution: [],
 		functions: [],
 		constants: [],
 		prototypes: [],
 		includes: [],
 		notes: [],
 		unknown: [],
-		groups: [],
 	};
 }
 
-function createEmptyProjectGroup(name: string, entry: string, openerLine: string): ProjectGroupObjectModel {
+function createEmptyProjectGroup(id: number, name: string, entry: string, openerLine: string): ProjectGroupObjectModel {
 	return {
 		...createEmptyProject(),
+		type: 'group',
+		id,
 		name,
 		entry,
 		code: [openerLine],
@@ -69,7 +70,7 @@ export function parseProjectSource(text: string): ProjectObjectModel {
 		const { block, type } = parsed;
 		if (type === 'module') {
 			if (!entry) throw new Error(`Project module block ${block.id} is missing an entry`);
-			targetProject.modules.push({ ...block, entry });
+			targetProject.execution.push({ ...block, type: 'module', entry });
 			return;
 		}
 		const collectionByType = {
@@ -174,10 +175,10 @@ export function parseProjectSource(text: string): ProjectObjectModel {
 			if (!opener) throw new Error(`Parse error at line ${i + 1}: expected opener keyword, got "${trimmed}"`);
 			if (opener === GROUP_BLOCK_DELIMITER.opener) {
 				const nested = readProjectGroup(i, options.entry);
-				if (options.project.groups.some(group => group.name === nested.group.name)) {
+				if (options.project.execution.some(block => block.type === 'group' && block.name === nested.group.name)) {
 					throw new Error(`Parse error at line ${i + 1}: duplicate sibling group "${nested.group.name}"`);
 				}
-				options.project.groups.push(nested.group);
+				options.project.execution.push(nested.group);
 				i = nested.nextIndex;
 				continue;
 			}
@@ -195,7 +196,12 @@ export function parseProjectSource(text: string): ProjectObjectModel {
 		if (getProjectOpenerKeyword(openerLine.trim()) !== GROUP_BLOCK_DELIMITER.opener) {
 			throw new Error(`Parse error at line ${startIndex + 1}: expected group opener`);
 		}
-		const group = createEmptyProjectGroup(getProjectBlockName(openerLine, startIndex + 1, 'group'), entry, openerLine);
+		const group = createEmptyProjectGroup(
+			startIndex + 1,
+			getProjectBlockName(openerLine, startIndex + 1, 'group'),
+			entry,
+			openerLine
+		);
 		return {
 			nextIndex: readProjectContainerContents(startIndex + 1, {
 				project: group,

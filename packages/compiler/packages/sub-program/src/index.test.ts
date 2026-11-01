@@ -5,14 +5,13 @@ import { compileSubProgram } from '.';
 
 const emptyProject: ProjectObjectModel = {
 	code: [],
-	modules: [],
+	execution: [],
 	functions: [],
 	constants: [],
 	prototypes: [],
 	includes: [],
 	notes: [],
 	unknown: [],
-	groups: [],
 };
 
 describe('compileSubProgram', () => {

@@ -70,16 +70,18 @@ exports[`project-preparser integration > parses project source into typed collec
         "id": 8,
       },
     ],
-    "functions": [
+    "execution": [
       {
         "code": [
-          "function helper",
-          "functionEnd int",
+          "module main",
+          "shape state",
+          "int counter",
+          "moduleEnd",
         ],
-        "id": 12,
+        "entry": "main",
+        "id": 26,
+        "type": "module",
       },
-    ],
-    "groups": [
       {
         "code": [
           "group audio",
@@ -87,6 +89,18 @@ exports[`project-preparser integration > parses project source into typed collec
         ],
         "constants": [],
         "entry": "main",
+        "execution": [
+          {
+            "code": [
+              "module grouped",
+              "int ignoredByCompilerInput",
+              "moduleEnd",
+            ],
+            "entry": "main",
+            "id": 31,
+            "type": "module",
+          },
+        ],
         "exposures": [],
         "functions": [
           {
@@ -97,23 +111,22 @@ exports[`project-preparser integration > parses project source into typed collec
             "id": 34,
           },
         ],
-        "groups": [],
+        "id": 30,
         "includes": [],
-        "modules": [
-          {
-            "code": [
-              "module grouped",
-              "int ignoredByCompilerInput",
-              "moduleEnd",
-            ],
-            "entry": "main",
-            "id": 31,
-          },
-        ],
         "name": "audio",
         "notes": [],
         "prototypes": [],
+        "type": "group",
         "unknown": [],
+      },
+    ],
+    "functions": [
+      {
+        "code": [
+          "function helper",
+          "functionEnd int",
+        ],
+        "id": 12,
       },
     ],
     "includes": [
@@ -125,18 +138,6 @@ exports[`project-preparser integration > parses project source into typed collec
           "includesEnd",
         ],
         "id": 3,
-      },
-    ],
-    "modules": [
-      {
-        "code": [
-          "module main",
-          "shape state",
-          "int counter",
-          "moduleEnd",
-        ],
-        "entry": "main",
-        "id": 26,
       },
     ],
     "notes": [

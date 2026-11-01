@@ -16,7 +16,7 @@ afterEach(() => {
 function setup(
 	project: ProjectObjectModel = {
 		...structuredClone(EMPTY_DEFAULT_PROJECT),
-		modules: [{ id: 0, entry: 'main', code: ['module original', 'int value 1', 'moduleEnd'] }],
+		execution: [{ type: 'module', id: 0, entry: 'main', code: ['module original', 'int value 1', 'moduleEnd'] }],
 	}
 ) {
 	const events = initEvents();
@@ -46,6 +46,81 @@ function setup(
 }
 
 describe('public editor editing handle', () => {
+	it('assigns generated environment blocks an identity distinct from root groups', () => {
+		const { state } = setup({
+			...structuredClone(EMPTY_DEFAULT_PROJECT),
+			execution: [
+				{
+					...structuredClone(EMPTY_DEFAULT_PROJECT),
+					type: 'group',
+					id: 0,
+					name: 'synth',
+					entry: 'main',
+					exposures: [],
+					code: ['group synth', 'groupEnd'],
+				},
+			],
+		});
+		const ids = state.codeBlockRendering.rootCodeBlocks.map(block => block.creationIndex);
+		expect(ids).toHaveLength(2);
+		expect(new Set(ids).size).toBe(ids.length);
+	});
+
+	it('preserves mixed module and group order through loading, edits, history, and reloading', () => {
+		const module = (id: number, name: string) => ({
+			type: 'module' as const,
+			id,
+			entry: 'main',
+			code: [`module ${name}`, 'moduleEnd'],
+		});
+		const project: ProjectObjectModel = {
+			...structuredClone(EMPTY_DEFAULT_PROJECT),
+			execution: [
+				module(1, 'rootA'),
+				{
+					...structuredClone(EMPTY_DEFAULT_PROJECT),
+					type: 'group',
+					id: 2,
+					name: 'synth',
+					entry: 'main',
+					exposures: [],
+					code: ['group synth', 'groupEnd'],
+					execution: [
+						module(3, 'voiceA'),
+						{
+							...structuredClone(EMPTY_DEFAULT_PROJECT),
+							type: 'group',
+							id: 4,
+							name: 'oscillator',
+							entry: 'main',
+							exposures: [],
+							code: ['group oscillator', 'groupEnd'],
+							execution: [module(5, 'tick')],
+						},
+						module(6, 'voiceB'),
+					],
+				},
+				module(7, 'rootB'),
+			],
+		};
+		const { editing, events, state } = setup(project);
+		const before = serializeToProject(state);
+		expect(before.execution).toEqual(project.execution);
+		const rootB = state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'rootB')!;
+		editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [{ type: 'update', blockId: getEditorBlockId(rootB), code: ['module rootB', 'int value 1', 'moduleEnd'] }],
+		});
+		const edited = serializeToProject(state);
+		expect(edited.execution.map(block => block.code[0])).toEqual(['module rootA', 'group synth', 'module rootB']);
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expect(serializeToProject(state)).toEqual(before);
+		editing.redo({ expectedRevision: editing.getRevision() });
+		expect(serializeToProject(state)).toEqual(edited);
+		events.dispatch('loadProject', { project: edited });
+		expect(serializeToProject(state)).toEqual(edited);
+	});
+
 	it('uses state reads and one undo step for a coordinated edit batch', () => {
 		const { editing, state, events, compilationChanged } = setup();
 		const target = state.codeBlockRendering.codeBlocks.find(block => block.name === 'original')!;
@@ -118,7 +193,7 @@ describe('public editor editing handle', () => {
 		({ directives }) => {
 			const { editing, state, events } = setup({
 				...structuredClone(EMPTY_DEFAULT_PROJECT),
-				modules: [{ id: 0, entry: 'main', code: ['module original', '; @pos 9 12', 'moduleEnd'] }],
+				execution: [{ type: 'module', id: 0, entry: 'main', code: ['module original', '; @pos 9 12', 'moduleEnd'] }],
 			});
 			const code = ['module unplaced', ...directives, 'moduleEnd'];
 			const originalId = getEditorBlockId(
@@ -140,7 +215,10 @@ describe('public editor editing handle', () => {
 				expect(block).toMatchObject({ code, gridX: existing ? 9 : 0, gridY: existing ? 12 : 0 });
 			}
 			events.dispatch('loadProject', {
-				project: { ...structuredClone(EMPTY_DEFAULT_PROJECT), modules: [{ id: 0, entry: 'main', code }] },
+				project: {
+					...structuredClone(EMPTY_DEFAULT_PROJECT),
+					execution: [{ type: 'module', id: 0, entry: 'main', code }],
+				},
 			});
 			expect(state.codeBlockRendering.codeBlocks.find(block => block.creationIndex === 0)).toMatchObject({
 				code,
@@ -197,14 +275,17 @@ describe('public editor editing handle', () => {
 
 	it('targets duplicate block IDs in nested projects and preserves the currently viewed group', () => {
 		const project = structuredClone(EMPTY_DEFAULT_PROJECT);
-		project.modules = [{ id: 0, entry: 'main', code: ['module outer', 'moduleEnd'] }];
-		project.groups = [
+		project.execution = [
+			{ type: 'module', id: 0, entry: 'main', code: ['module outer', 'moduleEnd'] },
 			{
 				...structuredClone(EMPTY_DEFAULT_PROJECT),
+				type: 'group',
+				id: 1,
 				name: 'voice',
+				exposures: [],
 				entry: 'main',
 				code: ['group voice', 'groupEnd'],
-				modules: [{ id: 0, entry: 'main', code: ['module inner', 'moduleEnd'] }],
+				execution: [{ type: 'module', id: 0, entry: 'main', code: ['module inner', 'moduleEnd'] }],
 			},
 		];
 		const { editing, events, state } = setup(project);
@@ -227,17 +308,23 @@ describe('public editor editing handle', () => {
 		const project = structuredClone(EMPTY_DEFAULT_PROJECT);
 		const child = {
 			...structuredClone(EMPTY_DEFAULT_PROJECT),
+			type: 'group' as const,
+			id: 2,
+			exposures: [],
 			name: 'child',
 			entry: 'main',
 			code: ['group child', 'groupEnd'],
 		};
-		project.groups = [
+		project.execution = [
 			{
 				...structuredClone(EMPTY_DEFAULT_PROJECT),
+				type: 'group',
+				id: 1,
 				name: 'parent',
+				exposures: [],
 				entry: 'main',
 				code: ['group parent', 'groupEnd'],
-				groups: [child],
+				execution: [child],
 			},
 		];
 		const { navigation, editing, state, dispose } = setup(project);

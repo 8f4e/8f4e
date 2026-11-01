@@ -2,6 +2,7 @@ import {
 	type CompileProjectOptions,
 	type CompileResult,
 	createChildProjectGroupPath,
+	getProjectGroups,
 	type ProjectGroupPath,
 	type ProjectObjectModel,
 	ROOT_PROJECT_GROUP_PATH,
@@ -30,7 +31,7 @@ async function resolveRecursiveProjectIncludes(
 		result.set(projectPath, includedFunctions);
 	}
 	await Promise.all(
-		project.groups.map(group =>
+		getProjectGroups(project).map(group =>
 			resolveRecursiveProjectIncludes(
 				group,
 				resolveInclude,

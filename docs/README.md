@@ -86,7 +86,11 @@ Because all addresses are known at compile time, the compiler can inline them di
 
 The code is organized into modules, each containing variable declarations and a sequence of commands.
 
-Within a project unit and execution entry, modules execute in their source/object-model order. A memory reference does not reorder execution: if a module reads a producer's memory, the producer is not moved earlier. Child groups are the exception to the source order within a project unit: a group's modules execute before the parent project's modules for the same entry, and groups are traversed in their declared order. See the [compiler documentation](../packages/compiler/README.md) for the recursive composition details.
+Within each execution entry, modules and groups share declaration order. A group executes its contents recursively
+where the group is declared: `rootA`, `synth { voiceA, voiceB }`, `rootB` runs as
+`rootA -> synth/voiceA -> synth/voiceB -> rootB`. The same rule applies inside nested groups. A memory reference does
+not reorder execution: if a module reads a producer's memory, the producer is not moved earlier. See the
+[compiler documentation](../packages/compiler/README.md) for recursive composition details.
 
 Execution order is separate from memory layout. Modules are allocated in alphabetical order by qualified id, but address order does not choose which module executes first.
 

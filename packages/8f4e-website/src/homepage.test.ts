@@ -73,5 +73,5 @@ test('reveals an initialized empty editor when no project URL is supplied', asyn
 	const view = setup();
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
-	expect(editor.state.initialProjectState.modules).toEqual([]);
+	expect(editor.state.initialProjectState.execution).toEqual([]);
 });

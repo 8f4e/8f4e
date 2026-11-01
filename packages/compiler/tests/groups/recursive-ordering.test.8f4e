@@ -3,26 +3,95 @@
 note
 ; @config testRuntime.enabled true
 
-Group modules run before their parent's modules, even when
-the parent module appears first in the source.
+Modules and groups share declaration order. Nested groups execute where they appear between their parent's modules.
+Each producer writes its output during execution, so the assertions require the complete declared sequence.
 noteEnd
 
 entry test
-module root
-int* input &audio:output
-
-push *input
-assertEqual 1
-moduleEnd
-
-group audio
-expose output &grouped:value
-
-module grouped
-int value
-push &value
+module rootA
+int output
+push &output
 push 1
 store
 moduleEnd
+
+group synth
+expose input &voiceA:input
+expose output &voiceB:output
+init &input &rootA:output
+
+module voiceA
+int* input
+int output
+push *input
+assertEqual 1
+push &output
+push 2
+store
+moduleEnd
+
+group oscillator
+expose input &tick:input
+expose output &tick:output
+init &input &voiceA:output
+
+module tick
+int* input
+int output
+push *input
+assertEqual 2
+push &output
+push 3
+store
+moduleEnd
 groupEnd
+
+module skipped
+; @disabled
+push 0
+assert
+moduleEnd
+
+module voiceB
+int* input &oscillator:output
+int output
+push *input
+assertEqual 3
+push &output
+push 4
+store
+moduleEnd
+groupEnd
+
+module rootB
+int* input &synth:output
+int output
+push *input
+assertEqual 4
+push &output
+push 5
+store
+moduleEnd
+
+group tail
+expose input &last:input
+expose output &last:output
+init &input &rootB:output
+
+module last
+int* input
+int output
+push *input
+assertEqual 5
+push &output
+push 6
+store
+moduleEnd
+groupEnd
+
+module rootC
+int* input &tail:output
+push *input
+assertEqual 6
+moduleEnd
 entryEnd

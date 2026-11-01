@@ -1,3 +1,4 @@
+import { getProjectModules } from '@8f4e/language-spec';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { describe, expect, it } from 'vitest';
 import { hasTestEntry } from './index';
@@ -47,7 +48,7 @@ entryEnd
 function test
 #export
 functionEnd`);
-		project.modules[0].disabled = true;
+		getProjectModules(project)[0].disabled = true;
 		project.functions[0].disabled = true;
 		expect(hasTestEntry(project)).toBe(false);
 		expect(

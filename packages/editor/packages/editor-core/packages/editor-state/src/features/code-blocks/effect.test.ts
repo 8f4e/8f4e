@@ -165,13 +165,7 @@ describe('code block rendering home directive', () => {
 			initialProjectState: {
 				...EMPTY_DEFAULT_PROJECT,
 				includes: [{ id: 0, code: includesBlock }],
-				modules: [
-					{
-						id: 1,
-						code: ['module main', 'moduleEnd'],
-						entry: 'main',
-					},
-				],
+				execution: [{ type: 'module', id: 1, code: ['module main', 'moduleEnd'], entry: 'main' }],
 			},
 		});
 		const store = createStateManager(state);
@@ -194,9 +188,11 @@ describe('code block rendering home directive', () => {
 		const state = createMockState({
 			initialProjectState: {
 				...EMPTY_DEFAULT_PROJECT,
-				modules: [{ id: 0, entry: 'main', code: ['module root', 'moduleEnd'] }],
-				groups: [
+				execution: [
+					{ type: 'module', id: 0, entry: 'main', code: ['module root', 'moduleEnd'] },
 					{
+						id: 0,
+						type: 'group',
 						...EMPTY_DEFAULT_PROJECT,
 						name: 'Audio',
 						entry: 'main',
@@ -208,7 +204,7 @@ describe('code block rendering home directive', () => {
 								targetMemoryName: 'level',
 							},
 						],
-						modules: [{ id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
+						execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
 					},
 				],
 			},
@@ -229,13 +225,7 @@ describe('code block rendering home directive', () => {
 		expect(state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['root', 'Audio']);
 		const groupBlock = state.codeBlockRendering.codeBlocks[1];
 		expect(groupBlock.projectPath).toBe('');
-		expect(groupBlock.code).toEqual([
-			'group Audio',
-			'; keep this comment',
-			'expose level &voice:level',
-			'; @pos 0 -6',
-			'groupEnd',
-		]);
+		expect(groupBlock.code).toEqual(['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd']);
 		expect(groupBlock.nestedProjectCodeBlocks).toHaveLength(1);
 		expect(groupBlock.nestedProjectCodeBlocks?.[0]).toMatchObject({
 			name: 'voice',
@@ -314,14 +304,16 @@ entryEnd`);
 		const state = createMockState({
 			initialProjectState: {
 				...EMPTY_DEFAULT_PROJECT,
-				groups: [
+				execution: [
 					{
+						id: 0,
+						type: 'group',
 						...EMPTY_DEFAULT_PROJECT,
 						name: 'Audio',
 						entry: 'main',
 						code: ['group Audio', 'groupEnd'],
 						exposures: [],
-						modules: [{ id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
+						execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
 					},
 				],
 			},
@@ -344,7 +336,7 @@ entryEnd`);
 
 		store.set('initialProjectState', {
 			...EMPTY_DEFAULT_PROJECT,
-			modules: [{ id: 2, entry: 'main', code: ['module replacement', 'moduleEnd'] }],
+			execution: [{ type: 'module', id: 2, entry: 'main', code: ['module replacement', 'moduleEnd'] }],
 		});
 
 		expect(state.codeBlockRendering.rootCodeBlocks).not.toBe(firstRoot);
@@ -357,12 +349,8 @@ entryEnd`);
 		const state = createMockState({
 			initialProjectState: {
 				...EMPTY_DEFAULT_PROJECT,
-				modules: [
-					{
-						id: 0,
-						code: ['module home', '; @home top', '; @pos 10 20', 'moduleEnd'],
-						entry: 'main',
-					},
+				execution: [
+					{ type: 'module', id: 0, code: ['module home', '; @home top', '; @pos 10 20', 'moduleEnd'], entry: 'main' },
 				],
 			},
 			viewport: {

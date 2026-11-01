@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import { getProjectModules } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEditorEditingHandle, getEditorBlockId } from '../../editing';
@@ -60,8 +61,8 @@ describe('project operations', () => {
 		});
 
 		expect(beforeEdit).toHaveBeenCalledOnce();
-		expect(beforeEdit.mock.results[0].value.modules[0].code).toContain('int value 1');
-		expect(serializeToProject(test.state).modules[0].code).toContain('int value 2');
+		expect(getProjectModules(beforeEdit.mock.results[0].value)[0].code).toContain('int value 1');
+		expect(getProjectModules(serializeToProject(test.state))[0].code).toContain('int value 2');
 		expect(serializeToProject(test.state).notes).toHaveLength(1);
 		expect(result.createdBlockIds).toHaveLength(1);
 		expect(result.revision).not.toBe(beforeRevision);

@@ -104,15 +104,19 @@ export interface ProjectBlock {
 
 /** Ordered executable block with required entry membership. */
 export interface ProjectModuleBlock extends ProjectBlock {
+	type: 'module';
 	entry: ProjectEntryName;
 }
+
+/** Executable declarations in their shared order within one project scope. */
+export type ProjectExecutableBlock = ProjectModuleBlock | ProjectGroupObjectModel;
 
 /** Canonical in-memory representation shared by all 8f4e project actors. */
 export interface ProjectObjectModel {
 	/** Source lines owned directly by this project scope, excluding recursively owned document and group blocks. */
 	code: string[];
-	/** Ordered executable modules; filtering by entry preserves execution order within that entry. */
-	modules: ProjectModuleBlock[];
+	/** Ordered modules and groups. A group expands recursively at its position in this sequence. */
+	execution: ProjectExecutableBlock[];
 	/** Hoisted function blocks. */
 	functions: ProjectBlock[];
 	/** Hoisted constants blocks. */
@@ -125,8 +129,6 @@ export interface ProjectObjectModel {
 	notes: ProjectBlock[];
 	/** Incomplete or unclassified blocks retained by live editors. */
 	unknown: ProjectBlock[];
-	/** Recursively owned named project groups. */
-	groups: ProjectGroupObjectModel[];
 }
 
 /** A group-owned public memory name backed by a memory item in one of the group's direct modules. */
@@ -162,10 +164,22 @@ export function resolveProjectMemoryAlias(
 
 /** Named child project owned by another project object model. */
 export interface ProjectGroupObjectModel extends ProjectObjectModel {
+	type: 'group';
+	id: ProjectBlockId;
 	name: ProjectGroupName;
 	entry: ProjectEntryName;
 	/** Ordered public memory aliases exposed to the enclosing project. */
 	exposures: ProjectMemoryExposure[];
+}
+
+/** Selects direct modules without changing their execution order. */
+export function getProjectModules(project: ProjectObjectModel): ProjectModuleBlock[] {
+	return project.execution.filter(block => block.type === 'module');
+}
+
+/** Selects direct child groups without changing their execution order. */
+export function getProjectGroups(project: ProjectObjectModel): ProjectGroupObjectModel[] {
+	return project.execution.filter(block => block.type === 'group');
 }
 
 /** Compiler-resolved group exposure backed directly by the target's planned memory declaration. */

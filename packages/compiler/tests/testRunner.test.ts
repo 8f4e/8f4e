@@ -1,3 +1,4 @@
+import { getProjectModules } from '@8f4e/language-spec';
 import { formatTestFailures, runTests } from '@8f4e/test-runner';
 import { promises as fs } from 'fs';
 import { tmpdir } from 'os';
@@ -56,7 +57,9 @@ functionEnd`);
 		expect(events.find(event => event.site.siteId === 5)).toBeUndefined();
 		for (const event of events) {
 			const site = assertionSites[event.site.siteId];
-			const block = [...original.modules, ...original.functions].find(block => block.id === site.projectBlockId)!;
+			const block = [...getProjectModules(original), ...original.functions].find(
+				block => block.id === site.projectBlockId
+			)!;
 			expect(block.code[site.lineNumber]).toMatch(/^assertEqual/);
 		}
 		expect(assertionSites[7]).toMatchObject({ codeBlockType: 'function', codeBlockId: 'helper', lineNumber: 2 });
@@ -87,8 +90,8 @@ entryEnd`);
 		const compiled = await compileProject(project, { enableAssertions: true, disableSharedMemory: true });
 		const result = await runTests(compiled);
 		expect(result.failures.map(failure => failure.site)).toMatchObject([
-			{ projectGroupPath: 'parent/child', codeBlockId: 'repeated', lineNumber: 2, siteId: 0 },
 			{ projectGroupPath: 'parent', codeBlockId: 'helper', codeBlockType: 'function', lineNumber: 2, siteId: 1 },
+			{ projectGroupPath: 'parent/child', codeBlockId: 'repeated', lineNumber: 2, siteId: 0 },
 		]);
 		expect(formatTestFailures(result.failures)).toContain('module parent/child/repeated, block line 3 (site 0)');
 		expect(formatTestFailures(result.failures)).toContain('function parent/helper, block line 3 (site 1)');

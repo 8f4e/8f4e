@@ -1,7 +1,8 @@
 # @8f4e/program-composer
 
 Private compiler stage that parses recursive `ProjectObjectModel` trees, isolates group symbols, and produces one
-ordered AST program for global allocation and code generation.
+ordered AST program for global allocation and code generation. It consumes the typed `execution` sequence directly,
+expanding each group recursively at its declaration position. Later compiler stages receive the flattened module order.
 
 Group names form canonical encoded paths. The root project keeps unqualified symbols, while nested symbols use readable
 identities such as `audio/counter` and `audio/voices/counter`; these identities flow unchanged into compiler result maps.

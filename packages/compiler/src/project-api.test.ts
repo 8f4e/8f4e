@@ -23,8 +23,9 @@ const source = [
 
 const directProject: ProjectObjectModel = {
 	code: [],
-	modules: [
+	execution: [
 		{
+			type: 'module',
 			id: 8,
 			entry: 'main',
 			code: ['module counter', 'int value 2', 'push value', 'call one', 'add', 'drop', 'moduleEnd'],
@@ -36,14 +37,14 @@ const directProject: ProjectObjectModel = {
 	includes: [],
 	notes: [],
 	unknown: [],
-	groups: [],
 };
 
 const relocatedProject: ProjectObjectModel = {
 	...directProject,
 	functions: [],
-	modules: [
+	execution: [
 		{
+			type: 'module',
 			id: 1,
 			entry: 'main',
 			code: ['module relocated', 'int input 7', 'int output', 'push &output', 'push input', 'store', 'moduleEnd'],
@@ -100,10 +101,10 @@ describe('project compiler API', () => {
 		const project: ProjectObjectModel = {
 			...directProject,
 			functions: [],
-			modules: [
-				{ id: 1, entry: 'alternate', code: ['module firstAlternate', 'moduleEnd'] },
-				{ id: 2, entry: 'main', code: ['module mainModule', 'moduleEnd'] },
-				{ id: 3, entry: 'alternate', code: ['module secondAlternate', 'moduleEnd'] },
+			execution: [
+				{ type: 'module', id: 1, entry: 'alternate', code: ['module firstAlternate', 'moduleEnd'] },
+				{ type: 'module', id: 2, entry: 'main', code: ['module mainModule', 'moduleEnd'] },
+				{ type: 'module', id: 3, entry: 'alternate', code: ['module secondAlternate', 'moduleEnd'] },
 			],
 		};
 

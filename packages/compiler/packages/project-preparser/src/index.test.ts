@@ -1,3 +1,4 @@
+import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { readdirSync, readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -68,8 +69,8 @@ describe('project-preparser index', () => {
 		expect(getProjectOpenerKeyword('group audio')).toBe('group');
 		expect(getProjectCloserKeyword('groupEnd')).toBe('groupEnd');
 		expect(getExpectedProjectCloserPrefix('entry')).toBe('entryEnd');
-		expect(getDocumentProjectBlockType(project.modules[0].code)).toBe('module');
-		expect(getProjectBlockType(project.modules[0].code)).toBe('module');
+		expect(getDocumentProjectBlockType(getProjectModules(project)[0].code)).toBe('module');
+		expect(getProjectBlockType(getProjectModules(project)[0].code)).toBe('module');
 	});
 });
 
@@ -95,11 +96,11 @@ describe('parseProjectSource', () => {
 		].join('\n');
 		const project = parseProjectSource(text);
 
-		expect(project.modules).toEqual([{ id: 6, code: validModuleBlock, entry: 'main' }]);
+		expect(getProjectModules(project)).toEqual([{ type: 'module', id: 6, code: validModuleBlock, entry: 'main' }]);
 		expect(project.functions).toEqual([{ id: 15, code: validFunctionBlock }]);
 		expect(project.prototypes).toEqual([{ id: 19, code: validPrototypeBlock }]);
 		expect(project.notes).toEqual([{ id: 24, code: validNoteBlock }]);
-		expect(project.groups).toEqual([]);
+		expect(getProjectGroups(project)).toEqual([]);
 	});
 
 	it.each(noteContentMarkers)('preserves %s as root note content', marker => {
@@ -110,11 +111,11 @@ describe('parseProjectSource', () => {
 
 		expect(project.notes).toEqual([{ id: 3, code: noteCode }]);
 		expect(project.functions).toEqual([{ id: 10, code: validFunctionBlock }]);
-		expect(project.modules).toEqual([{ id: 14, code: validModuleBlock, entry: 'main' }]);
+		expect(getProjectModules(project)).toEqual([{ type: 'module', id: 14, code: validModuleBlock, entry: 'main' }]);
 		expect(project.constants).toEqual([]);
 		expect(project.prototypes).toEqual([]);
 		expect(project.includes).toEqual([]);
-		expect(project.groups).toEqual([]);
+		expect(getProjectGroups(project)).toEqual([]);
 	});
 
 	it('preserves note text and following blocks inside nested groups', () => {
@@ -141,20 +142,21 @@ describe('parseProjectSource', () => {
 		);
 
 		expect(project.notes).toEqual([]);
-		expect(project.groups[0].code).toEqual(['group audio', 'groupEnd']);
-		expect(project.groups[0].groups[0]).toEqual({
+		expect(getProjectGroups(project)[0].code).toEqual(['group audio', 'groupEnd']);
+		expect(getProjectGroups(getProjectGroups(project)[0])[0]).toEqual({
+			type: 'group',
+			id: 4,
 			name: 'docs',
 			entry: 'main',
 			code: ['group docs', 'groupEnd'],
 			exposures: [],
-			modules: [{ id: 5 + noteCode.length, code: validModuleBlock, entry: 'main' }],
+			execution: [{ type: 'module', id: 5 + noteCode.length, code: validModuleBlock, entry: 'main' }],
 			functions: [],
 			constants: [],
 			prototypes: [],
 			includes: [],
 			notes: [{ id: 5, code: noteCode }],
 			unknown: [],
-			groups: [],
 		});
 	});
 
@@ -174,7 +176,7 @@ describe('parseProjectSource', () => {
 		);
 
 		expect(project.includes).toEqual([{ id: 3, code: includesBlock }]);
-		expect(project.modules).toEqual([{ id: 9, code: validModuleBlock, entry: 'main' }]);
+		expect(getProjectModules(project)).toEqual([{ type: 'module', id: 9, code: validModuleBlock, entry: 'main' }]);
 	});
 
 	it('parses module blocks that contain shape instructions', () => {
@@ -182,7 +184,8 @@ describe('parseProjectSource', () => {
 			['8f4e/v1', '', 'entry main', 'module oscillator', 'shape oscillatorState', 'moduleEnd', 'entryEnd'].join('\n')
 		);
 
-		expect(project.modules[0]).toEqual({
+		expect(getProjectModules(project)[0]).toEqual({
+			type: 'module',
 			id: 4,
 			code: ['module oscillator', 'shape oscillatorState', 'moduleEnd'],
 			entry: 'main',
@@ -192,13 +195,13 @@ describe('parseProjectSource', () => {
 	it('allows empty entries', () => {
 		const project = parseProjectSource(['8f4e/v1', '', 'entry main', 'entryEnd'].join('\n'));
 
-		expect(project.modules).toEqual([]);
-		expect(project.groups).toEqual([]);
+		expect(getProjectModules(project)).toEqual([]);
+		expect(getProjectGroups(project)).toEqual([]);
 	});
 
 	it('parses empty files with only a header', () => {
-		expect(parseProjectSource('8f4e/v1\n').modules).toEqual([]);
-		expect(parseProjectSource('8f4e/v1\n').groups).toEqual([]);
+		expect(getProjectModules(parseProjectSource('8f4e/v1\n'))).toEqual([]);
+		expect(getProjectGroups(parseProjectSource('8f4e/v1\n'))).toEqual([]);
 	});
 
 	it('parses nested groups under entries', () => {
@@ -219,39 +222,42 @@ describe('parseProjectSource', () => {
 			].join('\n')
 		);
 
-		expect(project.modules).toEqual([]);
+		expect(getProjectModules(project)).toEqual([]);
 		expect(project.functions).toEqual([]);
 		expect(project.prototypes).toEqual([]);
 		expect(project.notes).toEqual([]);
-		expect(project.groups).toEqual([
+		expect(getProjectGroups(project)).toEqual([
 			{
+				type: 'group',
+				id: 4,
 				name: 'audio',
 				entry: 'main',
 				code: ['group audio', 'groupEnd'],
 				exposures: [],
-				modules: [{ id: 5, code: validModuleBlock, entry: 'main' }],
-				functions: [{ id: 10, code: validFunctionBlock }],
-				constants: [],
-				prototypes: [],
-				includes: [],
-				notes: [],
-				unknown: [],
-				groups: [
+				execution: [
+					{ type: 'module', id: 5, code: validModuleBlock, entry: 'main' },
 					{
+						id: 13,
+						type: 'group',
 						name: 'oscillator',
 						entry: 'main',
 						code: ['group oscillator', 'groupEnd'],
 						exposures: [],
-						modules: [],
+						execution: [],
 						functions: [],
 						constants: [],
 						prototypes: [{ id: 14, code: validPrototypeBlock }],
 						includes: [],
 						notes: [{ id: 18, code: validNoteBlock }],
 						unknown: [],
-						groups: [],
 					},
 				],
+				functions: [{ id: 10, code: validFunctionBlock }],
+				constants: [],
+				prototypes: [],
+				includes: [],
+				notes: [],
+				unknown: [],
 			},
 		]);
 	});
@@ -271,9 +277,11 @@ describe('parseProjectSource', () => {
 			)
 		);
 
-		expect(project.groups[0].code).toEqual(groupCode);
-		expect(project.groups[0].modules).toEqual([{ id: 8, code: validModuleBlock, entry: 'main' }]);
-		expect(project.groups[0].exposures).toEqual([
+		expect(getProjectGroups(project)[0].code).toEqual(groupCode);
+		expect(getProjectModules(getProjectGroups(project)[0])).toEqual([
+			{ type: 'module', id: 8, code: validModuleBlock, entry: 'main' },
+		]);
+		expect(getProjectGroups(project)[0].exposures).toEqual([
 			{
 				name: 'level',
 				targetModuleName: 'voice',
