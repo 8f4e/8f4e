@@ -17,11 +17,14 @@ export default function projectGroupNavigation(store: StateManager<State>, event
 		const current = state.codeBlockRendering.currentProject;
 		if (project === current) return;
 		current.viewport = { x: state.viewport.x, y: state.viewport.y };
+		current.selectedBlock = state.codeBlockRendering.selectedCodeBlock;
 		stopViewportAnimation(state);
 		store.set('codeBlockRendering.selectedCodeBlock', undefined);
 		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', undefined);
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 		store.set('codeBlockRendering.currentProject', project);
+		if (project.selectedBlock && !project.blocks.includes(project.selectedBlock)) project.selectedBlock = undefined;
+		store.set('codeBlockRendering.selectedCodeBlock', project.selectedBlock);
 		const { x, y } = getProjectViewportPosition(project, state.viewport);
 		updateViewport(state, x, y, events);
 	}

@@ -82,16 +82,20 @@ path; ordinary layout invalidations do not reparse source.
 - Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs)
 
 Project-group blocks use the same `CodeBlockGraphicData` representation as other blocks. Their optional
-`childProject` field owns a `ProjectLevel` with its canonical `path`, `blocks`, local `entries`, and optional remembered `viewport`.
+`childProject` field owns a `ProjectLevel` with its canonical `path`, `blocks`, local `entries`, optional remembered
+`viewport`, and `selectedBlock`.
 `rootProject` owns the recursive tree; `currentProject` refers directly to the level being rendered. Shared tree helpers
 resolve levels and parents by path, without recovering identity from block arrays.
 
 **Open group**, **Go back**, and root navigation save the departing level's position and restore the destination's
-remembered position. A remembered position always takes precedence over `@home`, including a remembered origin.
+remembered position and selected block. If the group block was selected before entry, returning reselects it.
+Reopening a group also restores its last selection. An explicitly cleared selection stays cleared, and deleted blocks
+are not restored. A remembered position always takes precedence over `@home`, including a remembered origin.
 Only first visits use the first `@home` block (including its alignment), or `(0, 0)` if none exists. Positions live only
-in browser memory: project serialization, clipboard payloads, and session storage exclude them. Same-project edits and
-undo/redo transfer remembered positions to rebuilt levels by path and preserve the active level, falling back to the
-root if that level was removed. Loading a different project creates fresh levels and positions. Switching levels stops
+in browser memory together with remembered selections: project serialization, clipboard payloads, and session storage
+exclude both. Same-project edits and undo/redo transfer remembered views and selections to rebuilt levels, resolving
+selections to the new live blocks. They preserve the active level, falling back to the root if that level was removed.
+Loading a different project creates fresh levels without remembered views or selections. Switching levels stops
 active viewport animations; navigating to the current level leaves its view and selection alone.
 
 `@8f4e/editor-plugin-assertion-markers` owns assertion site aggregation, geometry, and drawing over line numbers.

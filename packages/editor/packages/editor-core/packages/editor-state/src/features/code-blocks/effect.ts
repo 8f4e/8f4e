@@ -246,8 +246,10 @@ export default function codeBlockRendering(
 		const previousLevels = new Map<string, ProjectLevel>();
 		const previousBlocks = new Map<string, CodeBlockGraphicData>();
 		const previousGroups = new Map<string, CodeBlockGraphicData>();
+		const recreatedBlocks = new Map<CodeBlockGraphicData, CodeBlockGraphicData>();
 		if (sameProject) {
 			previousCurrent.viewport = { x: state.viewport.x, y: state.viewport.y };
+			previousCurrent.selectedBlock = state.codeBlockRendering.selectedCodeBlock;
 			for (const level of walkProjectLevels(state.codeBlockRendering.rootProject)) {
 				previousLevels.set(level.path, level);
 				for (const block of level.blocks) {
@@ -313,7 +315,7 @@ export default function codeBlockRendering(
 			const pixelX = isAnchored ? 0 : gridX * state.viewport.vGrid;
 			const pixelY = isAnchored ? 0 : gridY * state.viewport.hGrid;
 
-			return createCodeBlockGraphicData({
+			const graphicData = createCodeBlockGraphicData({
 				width: 0,
 				height: 0,
 				code: codeBlock.code,
@@ -335,6 +337,8 @@ export default function codeBlockRendering(
 				parsedDirectives: blockParsedDirectives,
 				...overrides,
 			});
+			if (previousBlock) recreatedBlocks.set(previousBlock, graphicData);
+			return graphicData;
 		};
 		const createProjectLevel = (currentProject: ProjectObjectModel, projectPath: ProjectGroupPath): ProjectLevel => {
 			const projectScopeBlocks =
@@ -374,13 +378,15 @@ export default function codeBlockRendering(
 				);
 			});
 			const projectCodeBlocks = [...projectScopeBlocks, ...codeBlocks, ...executionBlocks];
+			const previousLevel = previousLevels.get(projectPath);
 
 			// Stable-sort to maintain the partition: normal blocks first, always-on-top last.
 			return {
 				path: projectPath,
 				entries: [...currentProject.entries],
 				blocks: partitionCodeBlocksByAlwaysOnTop(projectCodeBlocks),
-				viewport: previousLevels.get(projectPath)?.viewport,
+				viewport: previousLevel?.viewport,
+				selectedBlock: previousLevel?.selectedBlock ? recreatedBlocks.get(previousLevel.selectedBlock) : undefined,
 			};
 		};
 		const rootProject = createProjectLevel(project, ROOT_PROJECT_GROUP_PATH);
@@ -389,6 +395,7 @@ export default function codeBlockRendering(
 		stopViewportAnimation(state);
 		store.set('codeBlockRendering.rootProject', rootProject);
 		store.set('codeBlockRendering.currentProject', currentProject);
+		store.set('codeBlockRendering.selectedCodeBlock', currentProject.selectedBlock);
 		const { x, y } = getProjectViewportPosition(currentProject, state.viewport);
 		updateViewport(state, x, y, events);
 		incrementCompilerInputRevision(store);

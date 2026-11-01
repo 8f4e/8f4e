@@ -23,7 +23,7 @@ export function* walkProjectBlocks(project: ProjectLevel): Generator<CodeBlockGr
 	for (const level of walkProjectLevels(project)) yield* level.blocks;
 }
 
-/** Detached source-edit draft; runtime viewport positions stay on the live project tree. */
+/** Detached source-edit draft; runtime views and selections stay on the live project tree. */
 export function copyProjectLevel(project: ProjectLevel): ProjectLevel {
 	return {
 		path: project.path,

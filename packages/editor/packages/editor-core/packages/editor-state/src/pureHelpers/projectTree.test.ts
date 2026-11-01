@@ -33,6 +33,7 @@ describe('project tree', () => {
 	it('copies source-edit drafts without sharing source or remembering runtime views', () => {
 		const { root, child } = fixture();
 		child.viewport = { x: 64, y: 96 };
+		child.selectedBlock = child.blocks[0];
 		child.entries = ['foo', 'bar'];
 		const copy = copyProjectLevel(root);
 		const copiedChild = findProjectLevel(copy, child.path)!;
@@ -41,6 +42,7 @@ describe('project tree', () => {
 		expect(child.entries).toEqual(['foo', 'bar']);
 		expect(child.blocks[0].code).toEqual([]);
 		expect(copiedChild.viewport).toBeUndefined();
+		expect(copiedChild.selectedBlock).toBeUndefined();
 	});
 
 	it('updates nested paths after a group rename while retaining its remembered view', () => {

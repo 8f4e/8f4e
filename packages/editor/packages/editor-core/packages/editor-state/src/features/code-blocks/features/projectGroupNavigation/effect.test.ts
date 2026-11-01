@@ -26,6 +26,45 @@ describe('projectGroupNavigation', () => {
 		return { state, store, events, dispatch };
 	}
 
+	it('restores the latest selection at each level, including an explicitly cleared selection', () => {
+		const child = createMockCodeBlock({ name: 'oscillator' });
+		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: 'Audio', blocks: [child] } });
+		const { state, dispatch } = setupNavigation([group]);
+		state.codeBlockRendering.selectedCodeBlock = group;
+		const revision = state.projectChange.revision;
+
+		dispatch('openProjectGroup', { codeBlock: group });
+		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		state.codeBlockRendering.selectedCodeBlock = child;
+		dispatch('goToParentProjectGroup');
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(group);
+
+		dispatch('openProjectGroup', { codeBlock: group });
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(child);
+		state.codeBlockRendering.selectedCodeBlock = undefined;
+		dispatch('goToParentProjectGroup');
+		state.codeBlockRendering.selectedCodeBlock = undefined;
+		dispatch('openProjectGroup', { codeBlock: group });
+		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		dispatch('goToParentProjectGroup');
+		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(state.projectChange.revision).toBe(revision);
+	});
+
+	it('does not restore a remembered block that was deleted while viewing another level', () => {
+		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: 'Audio', blocks: [] } });
+		const removed = createMockCodeBlock({ name: 'removed' });
+		const { state, dispatch } = setupNavigation([group, removed]);
+		state.codeBlockRendering.selectedCodeBlock = removed;
+		dispatch('openProjectGroup', { codeBlock: group });
+		state.codeBlockRendering.rootProject.blocks.pop();
+
+		dispatch('goToParentProjectGroup');
+
+		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(state.codeBlockRendering.rootProject.selectedBlock).toBeUndefined();
+	});
+
 	it('restores the latest viewport of the parent and revisited group instead of their home blocks', () => {
 		const group = createMockCodeBlock({
 			name: 'Audio',
@@ -64,15 +103,19 @@ describe('projectGroupNavigation', () => {
 		});
 		const { state, dispatch } = setupNavigation([group]);
 
+		state.codeBlockRendering.selectedCodeBlock = group;
 		dispatch('openProjectGroup', { codeBlock: group });
 		Object.assign(state.viewport, { x: 128, y: 256 });
+		state.codeBlockRendering.selectedCodeBlock = nestedGroup;
 		dispatch('openProjectGroup', { codeBlock: nestedGroup });
 		Object.assign(state.viewport, { x: 512, y: -640 });
 		dispatch('goToRootProjectGroup');
 		expect(state.viewport).toMatchObject({ x: 64, y: -96 });
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(group);
 
 		dispatch('openProjectGroup', { codeBlock: group });
 		expect(state.viewport).toMatchObject({ x: 128, y: 256 });
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(nestedGroup);
 		dispatch('openProjectGroup', { codeBlock: nestedGroup });
 		expect(state.viewport).toMatchObject({ x: 512, y: -640 });
 		dispatch('goToParentProjectGroup');
