@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-website",
-  "version": "5.0.9",
+  "version": "5.0.28",
   "private": true,
   "description": "8f4e editor website",
   "type": "module",
@@ -15,7 +15,8 @@
   },
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
-    "@8f4e/editor-default": "*"
+    "@8f4e/editor-default": "*",
+    "@8f4e/editor-webmcp": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

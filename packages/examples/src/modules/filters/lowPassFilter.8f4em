@@ -3,6 +3,9 @@
 entry main
 module lowPassFilter
 ; @public
+; One-pole low-pass filter
+; smooths a signal and 
+; reduces high-frequency content
 
 float* in
 float out

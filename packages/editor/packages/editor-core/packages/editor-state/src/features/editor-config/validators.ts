@@ -47,7 +47,7 @@ export function validateEditorConfigEntries(
 		}
 
 		errors.push({
-			lineNumber: entry.rawRow,
+			lineNumber: entry.sourceLineIndex,
 			message,
 			codeBlockId: entry.codeBlockId,
 		});

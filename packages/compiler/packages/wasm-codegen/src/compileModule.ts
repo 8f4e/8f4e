@@ -56,8 +56,8 @@ export function compileModule(
 		bindings
 	);
 
-	for (const { sourceLineIndex, line } of body)
-		compileCodegenLine(line, stackReport.lineFacts[sourceLineIndex]!, context);
+	for (const [operationIndex, { line }] of body.entries())
+		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context);
 
 	return {
 		id: ast.id,

@@ -30,12 +30,17 @@ export interface GridCoordinates {
 	y: number;
 }
 
+export interface EventSubscriptionOptions {
+	/** Run before ordinary listeners, in capture registration order. */
+	capture?: boolean;
+}
+
 /**
  * Event dispatcher interface for managing event subscriptions and dispatching.
  * Used throughout the editor for decoupled communication between features.
  */
 export interface EventDispatcher {
-	on: <T>(eventName: string, callback: (event: T) => void) => void;
+	on: <T>(eventName: string, callback: (event: T) => void, options?: EventSubscriptionOptions) => void;
 	off: <T>(eventName: string, callback: (event: T) => void) => void;
 	dispatch: <T>(eventName: string, eventObject?: T) => void;
 }

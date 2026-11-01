@@ -1,13 +1,13 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
-import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createEditorDrawerRegistry } from './drawers/registry';
 
 const renderDataSnapshot = { codeBlocks: new Map() };
 const renderData: WebUiRenderDataSource = { getSnapshot: () => renderDataSnapshot };
 
 const mocks = vi.hoisted(() => {
-	let overlayTextureDrawCallback: ((layer: unknown) => void) | undefined;
 	const engine = {
 		hooks: {
 			preDraw: [] as Array<() => void>,
@@ -17,8 +17,11 @@ const mocks = vi.hoisted(() => {
 			spriteCount: 100,
 			uploadedInstanceBytes: 2000,
 		},
-		setSpriteAtlas: vi.fn(() => ({ resolveSprite: (identifier: string | number) => Number(identifier) + 100 })),
+		setPalette: vi.fn(),
+		setSpriteAtlas: vi.fn(),
 		drawSprite: vi.fn(),
+		drawFill: vi.fn(),
+		drawCharacter: vi.fn(),
 		renderFrame: vi.fn((drawFrame: () => void) => {
 			for (const hook of engine.hooks.preDraw) hook();
 			drawFrame();
@@ -29,57 +32,26 @@ const mocks = vi.hoisted(() => {
 		restoreRenderingMemory: vi.fn(),
 		destroy: vi.fn(),
 	};
-	const overlayTextureLayer = {
-		setDrawCallback: vi.fn((callback: ((layer: unknown) => void) | null) => {
-			overlayTextureDrawCallback = callback ?? undefined;
-		}),
-		uploadRgba8Texture: vi.fn(() => ({ texture: {}, width: 128, height: 128, filter: 'nearest' })),
-		drawTexture: vi.fn(),
-		releaseMemory: vi.fn(),
-		destroy: vi.fn(() => {
-			overlayTextureDrawCallback = undefined;
-		}),
-	};
-	const lines = {
-		drawLine: vi.fn(),
-		releaseMemory: vi.fn(),
-		destroy: vi.fn(),
-	};
-	const wireColors = {
-		wire: [0.1, 0.2, 0.3, 1] as const,
-		wireHighlighted: [0.4, 0.5, 0.6, 1] as const,
-	};
-	const resolveWireColors = vi.fn(() => wireColors);
+	const background = { setFont: vi.fn(), setPalette: vi.fn(), destroy: vi.fn() };
 	const requestAnimationFrame = vi.fn(() => 23);
 	const cancelAnimationFrame = vi.fn();
 
 	return {
 		engine,
-		overlayTextureLayer,
-		lines,
-		wireColors,
-		resolveWireColors,
+		background,
 		requestAnimationFrame,
 		cancelAnimationFrame,
 		// biome-ignore lint/complexity/useArrowFunction: Engine is constructed with new in the code under test.
 		Engine: vi.fn(function () {
 			engine.hooks.preDraw.length = 0;
 			engine.hooks.postDraw.length = 0;
-			overlayTextureDrawCallback = undefined;
 			return engine;
 		}),
-		// biome-ignore lint/complexity/useArrowFunction: Plugins are constructed with new in the code under test.
-		RgbaTextureLayer: vi.fn(function (_host: unknown, options: { phase?: 'preDraw' | 'postDraw' } = {}) {
-			engine.hooks[options.phase ?? 'preDraw'].push(() => overlayTextureDrawCallback?.(overlayTextureLayer));
-			return overlayTextureLayer;
+		// biome-ignore lint/complexity/useArrowFunction: The background renderer is constructed with new.
+		BackgroundRenderer: vi.fn(function () {
+			return background;
 		}),
-		// biome-ignore lint/complexity/useArrowFunction: Plugins are constructed with new in the code under test.
-		LineDrawer: vi.fn(function () {
-			return lines;
-		}),
-		drawBackground: vi.fn(),
 		drawCodeBlocks: vi.fn(),
-		drawConnections: vi.fn(),
 		drawContextMenu: vi.fn(),
 		drawDialog: vi.fn(),
 		drawModeOverlay: vi.fn(),
@@ -88,20 +60,14 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('glugglugglug', () => ({
 	Engine: mocks.Engine,
-	RgbaTextureLayer: mocks.RgbaTextureLayer,
-	LineDrawer: mocks.LineDrawer,
 }));
 
-vi.mock('./drawers/drawBackground', () => ({
-	default: mocks.drawBackground,
+vi.mock('./plugins/background', () => ({
+	default: mocks.BackgroundRenderer,
 }));
 
 vi.mock('./drawers/codeBlocks', () => ({
 	default: mocks.drawCodeBlocks,
-}));
-
-vi.mock('./drawers/codeBlocks/widgets/connections', () => ({
-	default: mocks.drawConnections,
 }));
 
 vi.mock('./drawers/contextMenu', () => ({
@@ -116,40 +82,14 @@ vi.mock('./drawers/modeOverlay', () => ({
 	default: mocks.drawModeOverlay,
 }));
 
-vi.mock('./wire-colors', () => ({
-	resolveWireColors: mocks.resolveWireColors,
-}));
-
-function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemoryDeclaration {
+function createFontAtlas(characterWidth = 8, characterHeight = 16) {
 	return {
-		id: 'rgba',
-		numberOfElements: 1,
-		elementWordSize: 4,
-		type: 'int' as const,
-		byteAddress: 0,
-		elementByteLength: 4,
-		allocationUnitCount: 1,
-		allocatedByteLength: 4,
-		allocationUnitAddress: 0,
-		endByteAddress: 0,
-		endAddressSafeByteLength: 4,
-		lineNumber: 1,
-		isInteger: true,
-		pointerDepth: 0,
-		isUnsigned: false,
-		...overrides,
-	};
-}
-
-function createSpriteData(identifier = 0, characterWidth = 8, characterHeight = 16) {
-	return {
-		spriteAtlas: {
-			image: {} as OffscreenCanvas,
-			lookup: {},
-			spriteIdentifiers: { fillColors: { background: identifier } } as never,
+		image: {
+			width: characterWidth * 16,
+			height: characterHeight * 9,
+			data: new Uint8Array(characterWidth * 16 * characterHeight * 9),
 		},
-		characterWidth,
-		characterHeight,
+		grid: { cellWidth: characterWidth, cellHeight: characterHeight, columns: 16, cellCount: 129 },
 	};
 }
 
@@ -174,7 +114,14 @@ describe('web-ui init', () => {
 			float64: new Float64Array(0),
 		};
 
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData());
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createFontAtlas(),
+			resolvePalette(state.editorConfig.color)
+		);
 
 		view.renderFrame();
 
@@ -183,12 +130,10 @@ describe('web-ui init', () => {
 
 		expect(frameState).toBe(state);
 		expect(frameRenderData).toBe(renderDataSnapshot);
-		expect(mocks.resolveWireColors).toHaveBeenCalledWith(state.editorConfig.color);
-		expect(mocks.drawConnections).toHaveBeenCalledWith(mocks.lines, mocks.wireColors, frameState, memoryViews);
 		expect(mocks.drawModeOverlay).toHaveBeenCalledWith(expect.anything(), frameState);
 	});
 
-	it('does not construct overlay rendering resources when no overlay is configured', async () => {
+	it('draws registered render layers above sprites in registration order', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = {
@@ -200,64 +145,26 @@ describe('web-ui init', () => {
 			float32: new Float32Array(0),
 			float64: new Float64Array(0),
 		};
-
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData());
-		view.renderFrame();
-
-		expect(mocks.RgbaTextureLayer).not.toHaveBeenCalled();
-	});
-
-	it('registers a configured overlay after the line renderer', async () => {
-		const { default: init } = await import('./index');
-		const state = createMockState();
-		const memoryViews = {
-			int8: new Int8Array(0),
-			int16: new Int16Array(0),
-			int32: new Int32Array(0),
-			uint8: new Uint8Array(0),
-			uint16: new Uint16Array(0),
-			float32: new Float32Array(0),
-			float64: new Float64Array(0),
-		};
-		await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData(), {
-			overlayTexture: {
-				entry: 'renderFrame',
-				target: 'screen:rgba',
-				width: 1,
-				height: 1,
-			},
-			getCodeBuffer: () => new Uint8Array(0),
-			getMemory: () => null,
-		});
-
-		expect(mocks.RgbaTextureLayer).toHaveBeenCalledWith(mocks.engine, { phase: 'postDraw' });
-		expect(mocks.LineDrawer.mock.invocationCallOrder[0]).toBeLessThan(
-			mocks.RgbaTextureLayer.mock.invocationCallOrder[0]
+		const drawers = createEditorDrawerRegistry();
+		const drawLayer = vi.fn();
+		drawers.registerRenderLayer(() => ({ draw: drawLayer, destroy: vi.fn() }));
+		const drawTopLayer = vi.fn();
+		drawers.registerRenderLayer(() => ({ draw: drawTopLayer, destroy: vi.fn() }));
+		await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createFontAtlas(),
+			resolvePalette(state.editorConfig.color),
+			{
+				drawers,
+			}
 		);
-	});
 
-	it('hides wires while a dialog is visible and restores them when it closes', async () => {
-		const { default: init } = await import('./index');
-		const state = createMockState({
-			dialogStack: [{ id: 'permission', title: 'Permission', text: 'Allow audio?', buttons: [] }],
-		});
-		const memoryViews = {
-			int8: new Int8Array(0),
-			int16: new Int16Array(0),
-			int32: new Int32Array(0),
-			uint8: new Uint8Array(0),
-			uint16: new Uint16Array(0),
-			float32: new Float32Array(0),
-			float64: new Float64Array(0),
-		};
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData());
-
-		expect(mocks.drawConnections).not.toHaveBeenCalled();
-
-		state.dialogStack = [];
-		view.renderFrame();
-
-		expect(mocks.drawConnections).toHaveBeenCalledWith(mocks.lines, mocks.wireColors, state, memoryViews);
+		expect(drawLayer).toHaveBeenCalledOnce();
+		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawLayer.mock.invocationCallOrder[0]);
+		expect(drawLayer.mock.invocationCallOrder[0]).toBeLessThan(drawTopLayer.mock.invocationCallOrder[0]);
 	});
 
 	it('pauses and resumes its animation frame loop idempotently', async () => {
@@ -272,7 +179,14 @@ describe('web-ui init', () => {
 			float32: new Float32Array(0),
 			float64: new Float64Array(0),
 		};
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData());
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createFontAtlas(),
+			resolvePalette(state.editorConfig.color)
+		);
 		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
 		expect(mocks.requestAnimationFrame).toHaveBeenCalledOnce();
 
@@ -288,6 +202,7 @@ describe('web-ui init', () => {
 
 		view.destroy();
 		expect(mocks.cancelAnimationFrame).toHaveBeenCalledTimes(2);
+		expect(mocks.background.destroy).toHaveBeenCalledOnce();
 		expect(mocks.engine.destroy).toHaveBeenCalledOnce();
 	});
 
@@ -304,14 +219,19 @@ describe('web-ui init', () => {
 			float64: new Float64Array(0),
 		};
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
-		const view = await init(state, renderData, canvas, memoryViews, createSpriteData());
+		const view = await init(
+			state,
+			renderData,
+			canvas,
+			memoryViews,
+			createFontAtlas(),
+			resolvePalette(state.editorConfig.color)
+		);
 
 		view.releaseRenderingResources();
 		view.releaseRenderingResources();
 
 		expect(mocks.cancelAnimationFrame).toHaveBeenCalledOnce();
-		expect(mocks.overlayTextureLayer.releaseMemory).not.toHaveBeenCalled();
-		expect(mocks.lines.releaseMemory).toHaveBeenCalledOnce();
 		expect(mocks.engine.releaseRenderingMemory).toHaveBeenCalledOnce();
 		expect(canvas).toEqual(expect.objectContaining({ width: 1, height: 1 }));
 		expect(view.resize(800, 600)).toBe(false);
@@ -325,7 +245,7 @@ describe('web-ui init', () => {
 		expect(mocks.engine.renderFrame).toHaveBeenCalledTimes(2);
 	});
 
-	it('re-resolves wire colors from the current theme when the atlas is loaded', async () => {
+	it('updates palette independently of font atlas replacement', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = {
@@ -337,21 +257,28 @@ describe('web-ui init', () => {
 			float32: new Float32Array(0),
 			float64: new Float64Array(0),
 		};
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData());
-		const nextColorScheme = {
-			fill: {
-				wire: '#123456',
-				wireHighlighted: '#abcdef',
-			},
-		};
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createFontAtlas(),
+			resolvePalette(state.editorConfig.color)
+		);
+		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
+		const backgroundPaletteUploads = mocks.background.setPalette.mock.calls.length;
+		view.loadFontAtlas(createFontAtlas(), 'ibmvga8x16');
+		expect(mocks.engine.setPalette).toHaveBeenCalledTimes(paletteUploads);
+		expect(mocks.background.setPalette).toHaveBeenCalledTimes(backgroundPaletteUploads);
 
-		state.editorConfig.color = nextColorScheme;
-		view.loadSpriteAtlas(createSpriteData());
-
-		expect(mocks.resolveWireColors).toHaveBeenLastCalledWith(nextColorScheme);
+		const installCount = mocks.engine.setSpriteAtlas.mock.calls.length;
+		const palette = resolvePalette({ primary: '#00ff00' });
+		view.loadPalette(palette);
+		expect(mocks.background.setPalette).toHaveBeenCalledWith(mocks.engine.setPalette.mock.calls.at(-1)?.[0]);
+		expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(installCount);
 	});
 
-	it('rebuilds resolved sprite ids and grid metrics when the atlas is replaced', async () => {
+	it('updates font dimensions and background settings when the atlas is replaced', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = {
@@ -364,13 +291,21 @@ describe('web-ui init', () => {
 			float64: new Float64Array(0),
 		};
 
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData(7, 8, 16));
-		expect(state.spriteLookups?.fillColors.background).toBe(107);
-		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 16, vGrid: 8 }));
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createFontAtlas(8, 16),
+			resolvePalette(state.editorConfig.color)
+		);
 
-		view.loadSpriteAtlas(createSpriteData(42, 10, 18));
-		expect(state.spriteLookups?.fillColors.background).toBe(142);
-		expect(state.viewport).toEqual(expect.objectContaining({ hGrid: 18, vGrid: 10 }));
+		view.loadFontAtlas(createFontAtlas(10, 18), 'terminus10x18');
+		expect(mocks.background.setFont).toHaveBeenLastCalledWith('terminus10x18', createFontAtlas(10, 18).grid);
+		expect(mocks.engine.setSpriteAtlas).toHaveBeenLastCalledWith(
+			createFontAtlas(10, 18).image,
+			createFontAtlas(10, 18).grid
+		);
 	});
 
 	it('emits render stats at the configured frame interval', async () => {
@@ -392,10 +327,18 @@ describe('web-ui init', () => {
 		};
 		const onRenderStats = vi.fn();
 
-		const view = await init(state, renderData, {} as HTMLCanvasElement, memoryViews, createSpriteData(), {
-			onRenderStats,
-			renderStatsIntervalFrames: 2,
-		});
+		const view = await init(
+			state,
+			renderData,
+			{} as HTMLCanvasElement,
+			memoryViews,
+			createFontAtlas(),
+			resolvePalette(state.editorConfig.color),
+			{
+				onRenderStats,
+				renderStatsIntervalFrames: 2,
+			}
+		);
 		expect(onRenderStats).not.toHaveBeenCalled();
 
 		view.renderFrame();
@@ -413,101 +356,5 @@ describe('web-ui init', () => {
 		view.renderFrame();
 		expect(onRenderStats).toHaveBeenCalledTimes(1);
 		performanceNow.mockRestore();
-	});
-
-	it('can draw a WebAssembly-generated RGBA8 overlay texture', async () => {
-		const { default: init } = await import('./index');
-		const state = createMockState();
-		const rgba = createMemory({
-			byteAddress: 4,
-			allocationUnitAddress: 1,
-			endByteAddress: 4,
-		});
-		state.compiler.memoryPlan = {
-			modules: {
-				screen: {
-					id: 'screen',
-					lineNumber: 1,
-					byteAddress: 4,
-					allocationUnitCount: 1,
-					allocatedByteLength: 4,
-					endByteAddress: 4,
-					endAddressSafeByteLength: 4,
-					memory: {
-						rgba,
-					},
-					declarations: [rgba],
-					declarationSources: [],
-				},
-			},
-			moduleList: [],
-		};
-		const memoryBuffer = new ArrayBuffer(24);
-		const memoryViews = {
-			int8: new Int8Array(memoryBuffer),
-			int16: new Int16Array(memoryBuffer),
-			int32: new Int32Array(memoryBuffer),
-			uint8: new Uint8Array(memoryBuffer),
-			uint16: new Uint16Array(memoryBuffer),
-			float32: new Float32Array(memoryBuffer),
-			float64: new Float64Array(memoryBuffer),
-		};
-		memoryViews.uint8.set([1, 2, 3, 4, 5, 6, 7, 8], 4);
-		const memory = { buffer: memoryBuffer } as WebAssembly.Memory;
-		const codeBuffer = new Uint8Array([1, 2, 3]);
-		const renderFrameExport = vi.fn(() => {
-			memoryViews.uint8.set([10, 20, 30, 255], 4);
-		});
-		const instantiateOverlayTextureWasm = vi.fn(async () => ({ renderFrame: renderFrameExport }));
-		const canvas = { width: 160, height: 90 } as HTMLCanvasElement;
-
-		const view = await init(state, renderData, canvas, memoryViews, createSpriteData(), {
-			getCodeBuffer: () => codeBuffer,
-			getMemory: () => memory,
-			instantiateOverlayTextureWasm,
-		});
-
-		view.renderFrame();
-		expect(instantiateOverlayTextureWasm).not.toHaveBeenCalled();
-
-		view.setOverlayTexture({
-			entry: 'renderFrame',
-			target: 'screen:rgba',
-			width: 1,
-			height: 1,
-			magnification: 32,
-			position: 'left',
-		});
-		expect(instantiateOverlayTextureWasm).not.toHaveBeenCalled();
-
-		view.renderFrame();
-
-		expect(instantiateOverlayTextureWasm).toHaveBeenCalledWith(memory, codeBuffer);
-		expect(renderFrameExport).not.toHaveBeenCalled();
-		await Promise.resolve();
-		view.resize(320, 180);
-		view.renderFrame();
-
-		expect(renderFrameExport).toHaveBeenCalledTimes(1);
-		expect(mocks.overlayTextureLayer.uploadRgba8Texture).toHaveBeenCalledWith(expect.any(Uint8Array), 1, 1, {
-			texture: undefined,
-			filter: 'nearest',
-		});
-		const data = mocks.overlayTextureLayer.uploadRgba8Texture.mock.calls.at(-1)?.[0] as Uint8Array;
-		expect([...data]).toEqual([10, 20, 30, 255]);
-		expect(mocks.overlayTextureLayer.drawTexture).toHaveBeenCalledWith(
-			{ texture: {}, width: 128, height: 128, filter: 'nearest' },
-			64,
-			74,
-			32,
-			32
-		);
-
-		view.releaseRenderingResources();
-		expect(mocks.overlayTextureLayer.releaseMemory).toHaveBeenCalledOnce();
-		view.resumeRendering();
-
-		view.setOverlayTexture(undefined);
-		expect(mocks.overlayTextureLayer.destroy).toHaveBeenCalledOnce();
 	});
 });

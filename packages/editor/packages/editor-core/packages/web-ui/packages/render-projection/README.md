@@ -5,13 +5,13 @@ moves repeatable preparation work out of the frame hot path while keeping editor
 concerns.
 
 The projection is a disposable read model, not a second source of truth. Its data can always be rebuilt from the
-current editor state and rendering resources.
+current editor state.
 
 ```text
-editor-state ──changes──▶ web-ui-render-projection ──snapshot──▶ web-ui
+editor-state ──completed layouts──▶ web-ui-render-projection ──snapshot──▶ web-ui
                                    ▲
                                    │
-                         sprite and lifecycle events
+                         runtime lifecycle events
 ```
 
 The default editor package is the composition root. It creates editor-state and the web UI render projection as sibling
@@ -25,7 +25,7 @@ state or rendering resources change can happen earlier, including:
 - syntax highlighting;
 - tab expansion into visual cells;
 - line-number preparation and conversion of collapsed placeholders into render cells;
-- character and font lookup resolution into sprite IDs;
+- ASCII glyph ID selection and unsupported-character fallback;
 - disabled-code font selection; and
 - insertion of blank rows for editor-owned logical gaps.
 
@@ -45,7 +45,7 @@ when their ownership boundary is clear.
 ### The web UI render projection owns
 
 - replaceable, render-ready data derived from editor state;
-- syntax font transitions and resolved glyph sprite IDs; and
+- syntax palette transitions and resolved glyph shape/color selections; and
 - snapshots that can be recalculated outside the draw loop.
 
 ### The renderer owns
@@ -62,8 +62,8 @@ candidate for the render projection.
 
 `createWebUiRenderProjection(store, events)` creates a projection controller that:
 
-1. reads the current editor state and sprite lookups;
-2. subscribes to relevant state changes and lifecycle events;
+1. reads the current editor state;
+2. subscribes to `codeBlockLayoutsChanged` after core has settled source, diagnostic, memory, font, and plugin layout changes;
 3. derives a new `WebUiRenderData` snapshot outside the renderer;
 4. exposes the current snapshot through `getSnapshot()`; and
 5. removes its subscriptions through `dispose()`.
@@ -90,7 +90,7 @@ interface WebUiRenderData {
 }
 
 interface CodeBlockRenderData {
-  codeCells: Array<Array<SpriteId | null>>;
+  codeCells: Array<Array<SpriteCell | null>>; // SpriteCell is a uint32 packing a uint16 shape ID and uint16 palette index.
 }
 ```
 
@@ -100,7 +100,6 @@ syntax highlighters remain internal implementation modules.
 ## Current Limitations
 
 - Relevant changes currently recalculate every code block rather than structurally sharing unaffected records.
-- State subscriptions are broad and are not yet coordinated by a transaction or committed-change boundary.
 - Only code glyph preparation has moved into the projection so far; the web UI still reads editor-state for other
   layout and interaction data.
 - Frame-time runtime values deliberately remain live renderer inputs rather than projected data.
@@ -117,3 +116,9 @@ npx nx run @8f4e/web-ui-render-projection:test
 npx nx run @8f4e/web-ui-render-projection:typecheck
 npx nx run @8f4e/web-ui-render-projection:build
 ```
+
+Palette-only updates retain the same shape IDs and stable token indices, so the cached cells remain valid without
+rebuilding the projection. Glyph IDs remain fixed across font changes. The font-change event refreshes projected rows after editor-state
+recalculates font-dependent layout and plugin-created logical gaps; it does not resolve a new glyph table.
+Pre-resolved cells store shape and color together in one unsigned 32-bit number. This retains numeric cell storage
+and avoids allocating a separate array or object for every glyph when the projection refreshes.

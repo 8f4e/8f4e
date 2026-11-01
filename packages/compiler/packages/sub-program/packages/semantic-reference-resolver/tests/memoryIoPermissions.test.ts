@@ -66,7 +66,7 @@ describe('semantic memory IO permissions', () => {
 	});
 
 	it.each(memoryIoBodies)('accepts $name in an impure function', ({ body }) => {
-		expect(resolveFunction(body, true).body).toHaveLength(body.length);
+		expect(() => resolveFunction(body, true)).not.toThrow();
 	});
 
 	it('allows pure functions to pass pointer values without dereferencing them', () => {

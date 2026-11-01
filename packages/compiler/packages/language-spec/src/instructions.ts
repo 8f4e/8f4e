@@ -136,13 +136,6 @@ export const compilerSourceBlockInstructionPairs = compilerBlockInstructionPairs
 	];
 }) as CompilerSourceBlockInstructionPair[];
 
-type CompiledModuleSourceBlockPair = Extract<CompilerSourceBlockInstructionPair, { compilesToModule: true }>;
-
-export type CompiledModuleBlockType = CompiledModuleSourceBlockPair['type'];
-export const compiledModuleBlockTypes = compilerSourceBlockInstructionPairs
-	.filter((pair): pair is CompiledModuleSourceBlockPair => pair.compilesToModule)
-	.map(({ type }) => type) as CompiledModuleBlockType[];
-
 export const compilerSourceBlockInstructionByType = Object.fromEntries(
 	compilerSourceBlockInstructionPairs.map(pair => [pair.type, pair])
 ) as {
@@ -261,14 +254,4 @@ export const knownInstructionNameSet: ReadonlySet<string> = new Set([
 /** Checks whether an instruction is accepted by the subprogram tokenizer. */
 export function isSubProgramInstructionName(instruction: string): instruction is SubProgramInstruction {
 	return subProgramInstructionNameSet.has(instruction);
-}
-
-/**
- * Checks whether a string is an instruction accepted anywhere in project source.
- *
- * @param instruction - Instruction keyword to inspect.
- * @returns True when the keyword belongs to a known project or subprogram instruction.
- */
-export function isKnownInstructionName(instruction: string): instruction is Instruction {
-	return knownInstructionNameSet.has(instruction);
 }

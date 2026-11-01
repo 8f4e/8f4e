@@ -1,0 +1,31 @@
+{
+  "name": "@8f4e/editor-plugin-binary-assets",
+  "version": "0.1.11",
+  "private": true,
+  "description": "Binary asset fetching, caching and memory loading for the 8f4e editor",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "dependencies": {
+    "@8f4e/editor-core": "*",
+    "@8f4e/editor-state": "*",
+    "@8f4e/editor-state-types": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "@8f4e/compiler": "*",
+    "@8f4e/web-ui": "*",
+    "vitest": "4.1.7",
+    "@vitest/browser-playwright": "4.1.7",
+    "@vitest/browser": "4.1.7"
+  }
+}

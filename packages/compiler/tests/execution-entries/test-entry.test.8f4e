@@ -26,7 +26,7 @@ noteEnd
 
 note
 ; @pos 55 7
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 The main entry should compile,
 but the fixture runner only

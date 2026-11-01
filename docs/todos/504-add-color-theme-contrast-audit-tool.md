@@ -12,32 +12,33 @@ completed: null
 
 ## Problem Description
 
-Editor themes can configure many semantic foreground and background colors, but there is no automated way to verify
+Editor themes generate many foreground and background shades from a small base palette, but there is no automated way to verify
 that critical elements remain distinguishable after those colors are combined. Visual regression tests detect pixel
 changes, but they do not measure legibility. A theme can therefore render a control marker, text label, connector, or
 status indicator with nearly the same color as its immediate background without failing a test.
 
-The shared `text.controlKnob` and `fill.controlKnob` roles make this especially visible: one theme definition now affects
-buttons, switches, and sliders, so a low-contrast pair can make all three controls difficult to read. Similar risks exist
+Controls share generated palette shades, so a low-contrast drawer choice can make buttons, switches, and sliders
+difficult to read. The palette resolver provides readable aliases for specific backgrounds, but arbitrary shade pairs
+and composited overlays still need auditing. Similar risks exist
 for module text, dialogs, tooltips, errors, highlighted menu items, connectors, and meaningful non-text graphics.
 
 ## Proposed Solution
 
-Add a reusable contrast-audit tool close to the sprite-generator color model. It should accept a complete color scheme
-or theme overrides resolved through the same code as the editor, evaluate a maintained registry of critical semantic
-foreground/background relationships, and report the measured ratio, required target, and pass/fail result for each
+Add a reusable contrast-audit tool close to the sprite-generator color model. It should accept a resolved palette
+or base overrides resolved through the same code as the editor, evaluate a maintained registry of critical semantic
+foreground/background relationships chosen by drawers, and report the measured ratio, required target, and pass/fail result for each
 relationship.
 
 Each registry entry should identify:
 
-- the foreground color path;
+- the foreground palette token selected by the drawer;
 - the immediate background or ordered compositing stack;
 - whether the element is text or meaningful non-text UI;
 - the target contrast ratio and a short explanation of the relationship.
 
 The calculator must handle alpha compositing before measuring contrast. Provide both human-readable output for theme
 authors and structured output for automated tests or CI. Start with the default scheme and bundled example themes, then
-make it easy for other consumers to audit a resolved `ColorScheme` without depending on the editor UI.
+make it easy for other consumers to audit a `ResolvedPalette` without depending on the editor UI.
 
 ## Anti-Patterns
 
@@ -53,8 +54,8 @@ make it easy for other consumers to audit a resolved `ColorScheme` without depen
 
 - Inventory rendered foreground/background pairs across editor text, menus, dialogs, tooltips, errors, connectors, and
   interactive controls.
-- Represent each relationship as typed data using semantic color paths rather than duplicated literal colors.
-- Include `text.controlKnob` over `fill.controlKnob` as the first control-specific case.
+- Represent each relationship as typed data using palette tokens rather than duplicated literal colors.
+- Include `inkOn` over `inkBase` as the first control-specific case.
 
 ### Step 2: Implement contrast measurement
 
@@ -65,7 +66,7 @@ make it easy for other consumers to audit a resolved `ColorScheme` without depen
 
 ### Step 3: Add a theme-audit entry point
 
-- Accept either a resolved `ColorScheme` or overrides passed through the production `resolveColorScheme` path.
+- Accept either a `ResolvedPalette` or overrides passed through the production `resolvePalette` path.
 - Provide a command or Nx target that prints a compact report and exits non-zero when required relationships fail.
 - Offer structured results so package tests can assert individual failures without parsing terminal text.
 
@@ -79,13 +80,13 @@ make it easy for other consumers to audit a resolved `ColorScheme` without depen
 
 - Run sprite-generator unit tests and typecheck through Nx.
 - Verify known black/white, same-color, translucent, and layered examples against independently calculated ratios.
-- Confirm a theme with matching `text.controlKnob` and `fill.controlKnob` values fails with a diagnostic naming both paths.
+- Confirm a theme with a low-contrast drawer shade pair fails with a diagnostic naming both tokens.
 - Confirm the default theme and every bundled theme are enumerated by the repository audit command.
 
 ## Success Criteria
 
 - [ ] A pure API measures contrast for a resolved editor color scheme.
-- [ ] Critical foreground/background relationships are defined in one typed registry.
+- [ ] Critical foreground/background relationships chosen by drawers are defined in one typed registry.
 - [ ] Alpha colors are composited against their actual background stack before measurement.
 - [ ] Reports identify the semantic paths, resolved colors, measured ratio, and required target.
 - [ ] The tool supports both human-readable and structured output.
@@ -94,7 +95,8 @@ make it easy for other consumers to audit a resolved `ColorScheme` without depen
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/` - Color resolution, contrast helpers,
+- `packages/editor/packages/editor-core/packages/editor-palette/` - Color resolution and contrast helpers.
+- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/` - Atlas integration,
   relationship registry, and unit tests.
 - `packages/examples/src/projects/` - Bundled theme inputs and any narrowly documented fixes or exceptions.
 - `packages/editor/packages/editor-core/docs/color-paths.md` - Documentation of audited semantic relationships.

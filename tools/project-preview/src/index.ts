@@ -87,7 +87,6 @@ interface PreviewState {
 		offscreenBlockArrows: boolean;
 	};
 	initialProjectState?: unknown;
-	spriteLookups?: unknown;
 	viewport: {
 		height: number;
 		width: number;
@@ -258,9 +257,7 @@ export async function generateProjectPreview({
 			await page.waitForFunction(
 				() => {
 					const state = (globalThis as unknown as PreviewWindow).state;
-					return Boolean(
-						state?.spriteLookups && state.initialProjectState && state.codeBlockRendering.rootCodeBlocks.length > 0
-					);
+					return Boolean(state?.initialProjectState && state.codeBlockRendering.rootCodeBlocks.length > 0);
 				},
 				undefined,
 				{ timeout: timeoutMs }

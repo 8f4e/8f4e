@@ -10,12 +10,25 @@ Manages the lifecycle of code blocks in the editor: creation, selection, drag op
 - **Selection**: Tracks which block is currently selected for editing
 - **Drag Operations**: Handles repositioning blocks in the viewport
 - **Graphics Derivation**: Computes visual properties (position, size, color) from block data
-- **Block Widgets**: Derives interactive elements from code annotations:
-  - Inputs/Outputs for audio routing
-  - Buttons and Switches for interactive controls
-  - Piano keyboard for note input
-  - Debuggers for runtime inspection
-  - Plotters for visualization
+- **Block Widgets**: Derives inline error messages and shape declarations
+
+Input/output connector geometry, private widget data, wire lookup, and the complete GPU line renderer belong to
+`@8f4e/editor-plugin-connectors`. Both editor compositions install it through the generic layout and drawing hooks.
+
+Switch, button, and waveform features are provided by `@8f4e/editor-plugin-switch`, `@8f4e/editor-plugin-button`, and
+`@8f4e/editor-plugin-wave`, included in `@8f4e/editor-default`. Their plugins own derived data and drawing through the
+[plugin API](../../../../../README.md#plugins), with switch and button plugins also owning their interactions. Meter, plot, bars, watch, stack, crossfade, piano, and
+slider also live in their own `@8f4e/editor-plugin-<name>` packages. Core carries no derived data or drawers for these
+features; the default composition selects and installs them.
+
+Favorites and Remove connections are provided by `@8f4e/editor-plugin-favorites` and
+`@8f4e/editor-plugin-remove-memory-connections`. They own their action handlers and block-menu contributions.
+The favorites plugin reads cached directives and owns its navigation submenu. Core exposes generic block jumping
+and directive editing through public helpers.
+
+Visual grouping through `; @group <name> [nonstick]` belongs to `@8f4e/editor-plugin-grouping`, including group menus,
+actions, drag-target selection, and paste collision renaming. Membership stays private to that plugin. Core dispatches
+the generic `resolveCodeBlockDragTargets` and `transformPastedCodeBlocks` events before moving or inserting blocks.
 
 ## Block Types
 
@@ -34,25 +47,30 @@ Block types are automatically detected and updated based on code content.
 This feature contains several subfeatures under `features/` that handle specific aspects:
 
 - `blockHighlights` - Visual highlighting for selected/hovered blocks
-- `assertions` - Derives assertion result rectangles from `state.assertionResults` into `widgets.assertions`
-- `blockTypeUpdater` - Automatic block type detection and updates
-- `arrayPlotters` - Visualization of runtime array data
-- `buttons` - Interactive button controls derived from code
 - `codeBlockCreator` - Block creation logic
 - `codeBlockDragger` - Drag and drop operations
 - `codeBlockNavigation` - Keyboard navigation between blocks
-- `debuggers` - Runtime debugging overlays
 - `codeBlockRendering` - Visual properties computation
 - `inputs` - Audio input routing
 - `outputs` - Audio output routing
-- `pianoKeyboard` - Piano keyboard interface
-- `switches` - Toggle switch controls
+
+Source changes use `sourceUpdates.ts` in an explicit sequence: parse directives and update block type and valid grid
+coordinates, regenerate environment source, resolve global configuration, then refresh layouts. An incomplete or
+invalid position directive retains the existing block position. Interactive and programmatic edits use this same
+path; ordinary layout invalidations do not reparse source.
 
 ## Events & Callbacks
 
 ### Key Events
 
-- Block creation, deletion, and selection events
+- `createCodeBlock({ x, y, blockType })`: create a template of the requested type
+- `pasteCodeBlocks({ x, y })`: read and insert clipboard content, including multiple blocks
+- `insertCodeBlock({ x, y, code })`: insert supplied source lines
+- `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
+- `transformPastedCodeBlocks({ blocks })`: synchronously replace an incoming clipboard batch before insertion
+- `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal contribution invalidation; rederives affected visible blocks
+- `codeBlockLayoutsChanged()`: announces completed layout calculations to rendering and viewport anchoring
+- Block deletion and selection events
 - Drag start/update/end events
 - Block type update events
 
@@ -61,7 +79,7 @@ This feature contains several subfeatures under `features/` that handle specific
 - `state.codeBlockRendering.rootCodeBlocks` - Recursive root tree of project-owned code-block arrays
 - `state.codeBlockRendering.codeBlocks` - Direct pointer to the project slice currently rendered
 - `state.codeBlockRendering.selectedCodeBlock` - Currently selected block reference
-- Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs/buttons/switches)
+- Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs)
 
 Project-group blocks use the same `CodeBlockGraphicData` representation as other blocks. Their optional
 `nestedProjectCodeBlocks` field points to the child project slice. Project-owned arrays keep stable identity; add,
@@ -71,17 +89,13 @@ Project-group blocks expose an **Open group** context-menu action that points `c
 slice. Nested-slice context menus expose **Go back**, which finds the immediate parent through those stable array
 references.
 
-Assertion markers match compiler site block IDs to `creationIndex` within the corresponding `projectPath`.
-Repeated calls to a site produce one marker; any failure makes it failed. Sites that were not executed or belong
-to included source have no marker. Geometry is relative to the code block, using the source-to-display row map
-and widget gaps. Runtime updates and group navigation refresh markers, and normal block derivation updates their
-layout. Markers remain during the debounce delay and clear when compilation starts.
-The web UI draws these rectangles over the line numbers, using `assertionPassed` (green) and `assertionFailed`
-(red) fill sprites. The instruction text remains visible.
+`@8f4e/editor-plugin-assertion-markers` owns assertion site aggregation, geometry, and drawing over line numbers.
+It reads `state.assertionResults` and current block layout through the generic drawer hook. Core block state
+contains no marker rectangles.
 
-Failed assertions also use the inline error-message widget. The runtime can provide a formatted `message` with
+Failed assertions use the inline error-message widget independently of the marker plugin. The runtime can provide a formatted `message` with
 expected and received values; outcomes without a message display `Assertion failed`. One message is shown per
-source site, using its first failed invocation. Messages follow the same block and project identity as markers,
+source site, using its first failed invocation. Messages match compiler block IDs and project paths,
 clear with results or compilation start, and contribute space below the assertion through the existing error layout.
 
 ## Integration Points
@@ -99,11 +113,22 @@ canonical. Local module declarations and group exposures remain distinct even wh
 Widgets, connectors, and other code-block consumers use `getCodeBlockMemoryScope` to convert graphical blocks at the
 editor boundary. Configuration and renderer consumers construct scopes from their known project paths or canonical
 module IDs. `resolveMemoryTarget` handles target lookup using these explicit scopes, and `resolveMemoryIdentifier`
-adds address operators, dereferencing, indexing, and display formats. The resolvers accept no graphical blocks or
-implicit string scopes.
+adds address operators, dereferencing, and indexing. The watch plugin owns binary/hex formatting prefixes and
+end-address display syntax. The resolvers accept no graphical blocks or implicit string scopes.
 
 ## References
 
 - See `utils/` for block manipulation helpers
 - See `features/` subdirectories for detailed subfeature implementations
 - See `../../../../../docs/editor-directives.md` for editor-only directive syntax (`; @...`) and supported directives
+
+## Layout Contributions
+
+The independent `store.layout` service owns contributions and subscriptions. Plugins submit complete space/minimum-width
+requests through `createContribution().update(block, value)` and subscribe to calculated blocks with `layout.subscribe`.
+A subscription can update its own requests; unchanged values do not trigger another calculation. Core processes changed
+requests synchronously and refreshes rendered text after layouts settle. Directive drafts contain only block/display
+semantics. Match live blocks with `matchEditorDirectives(codeBlock.parsedDirectives, definitions)`. Core updates
+records on source changes and retains unknown directives for late plugins. Raw-source parsing remains available
+through `parseBlockDirectives` for incoming source and whole-project scans. Standalone and trailing directives share
+the same syntax; matching preserves source context and normalizes aliases.

@@ -1,0 +1,22 @@
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    # Match every workspace manifest so security alerts use the same group.
+    directories:
+      - "/"
+      - "/packages/**"
+      - "/tools/project-preview"
+    schedule:
+      interval: "weekly"
+    # Renovate owns routine updates. This limit does not block security fixes,
+    # which also bypass the version-update schedule and release-age wait.
+    open-pull-requests-limit: 0
+    groups:
+      npm-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "fix"
+      include: "scope"

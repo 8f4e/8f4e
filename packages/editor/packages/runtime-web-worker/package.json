@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/runtime-web-worker",
-  "version": "3.0.7",
+  "version": "3.0.23",
   "private": true,
   "description": "8f4e web worker runtime package",
   "type": "module",
@@ -11,9 +11,9 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./runtime-def": {
-      "types": "./dist/runtimeDef.d.ts",
-      "default": "./dist/runtimeDef.js"
+    "./messages": {
+      "types": "./dist/messages.d.ts",
+      "default": "./dist/messages.js"
     }
   },
   "sideEffects": false,
@@ -28,14 +28,9 @@
   },
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
-    "@8f4e/test-runner": "*"
+    "@8f4e/language-spec": "*"
   },
   "devDependencies": {
-    "@8f4e/editor-state-testing": "*",
     "@types/node": "24.13.2"
-  },
-  "peerDependencies": {
-    "@8f4e/editor-core": "*",
-    "@8f4e/state-manager": "*"
   }
 }

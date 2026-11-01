@@ -17,7 +17,7 @@ const blocks = [createMockCodeBlock({ code: ['module voice', 'moduleEnd'] })];
 const state = createMockState({
 	compiler: { isCompiling: true },
 	codeBlockRendering: { rootCodeBlocks: blocks },
-	callbacks: { loadSession: async () => null },
+	callbacks: {},
 });
 ```
 

@@ -2,36 +2,30 @@
 
 constants env
 ; @pos -62 -2
-; @favorite
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
-const SAMPLE_RATE 1
 
 constantsEnd
 
-note
-; @pos -62 -22
-; @home left
-; @config runtime WebWorkerRuntime
-; @config workerRuntime.sampleRate 1
-; @config export.fileName overlayTexture
-; @config webUI.overlay.entry main
-; @config webUI.overlay.target screen:rgba
-; @config webUI.overlay.width 32
-; @config webUI.overlay.height 32
-; @config webUI.overlay.magnification 8
-; @config webUI.overlay.position left
-; @config color.fill.background #002
-
-; The main entry runs once per editor
-; frame and fills a 32 x 32 RGBA8
-; image. Its pixels are magnified and
-; centered over the editor.
+note colors
+; @pos -118 -22
+; @config color.canvas #002
+; @config color.tertiary #666666
+; @config color.highlight rgba(255,255,255,0.45)
+; @config color.detail #ffffff
+; @config color.stroke rgba(255,255,255,0.3)
 noteEnd
 
 note
-; @pos 54 2
+; @pos 27 -28
+; @config export.fileName overlayTexture
+; @config textureRuntime.enabled true
+; @config textureRuntime.entry main
+noteEnd
+
+note
+; @pos 63 -4
 
 ; The shortest 8f4e program
 ; I managed to write that
@@ -41,17 +35,6 @@ note
 noteEnd
 
 entry main
-module screen
-; @pos 97 1
-
-const WIDTH 32
-const HEIGHT 32
-const PIXEL_COUNT WIDTH*HEIGHT
-
-; Framebuffer
-int8u[] rgba PIXEL_COUNT*4
-
-moduleEnd
 module frameCounter
 ; @pos 99 -32
 
@@ -63,6 +46,20 @@ add
 store
 
 moduleEnd
+module screen
+; @pos 100 -16
+
+const WIDTH 32
+const HEIGHT 32
+const PIXEL_COUNT WIDTH*HEIGHT
+
+; Framebuffer
+int8u[] rgba PIXEL_COUNT*4
+
+; @textureUpload &rgba rgba 32 32
+; @texture &rgba 8 32 32
+
+moduleEnd
 module screen2
 ; @pos 143 -21
 ; @home right
@@ -70,6 +67,8 @@ use screen
 
 int* frame &frameCounter:frame
 int8u* rgba &screen:rgba
+
+; @texture rgba 8 32 32
 
 loop PIXEL_COUNT*4
 

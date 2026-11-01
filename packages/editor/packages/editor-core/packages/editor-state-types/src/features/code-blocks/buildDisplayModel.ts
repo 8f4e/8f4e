@@ -1,17 +1,17 @@
 export interface DisplayLine {
-	rawRow: number;
+	sourceLineIndex: number;
 	text: string;
 	isPlaceholder?: boolean;
 }
 
 export interface CodeBlockDisplayModel {
 	lines: DisplayLine[];
-	displayRowToRawRow: number[];
-	rawRowToDisplayRow: Array<number | undefined>;
+	displayRowToSourceLineIndex: number[];
+	sourceLineIndexToDisplayRow: Array<number | undefined>;
 	isCollapsed: boolean;
 }
 
 export interface BuildDisplayModelOptions {
-	hideAfterRawRow?: number;
+	hideAfterSourceLineIndex?: number;
 	isExpandedForEditing?: boolean;
 }

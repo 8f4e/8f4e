@@ -1,4 +1,4 @@
-import type { EditorDirectivePlugin, ParsedDirectiveRecord, ParsedEditorDirective } from '@8f4e/editor-state-types';
+import type { EditorDirectiveDefinition, ParsedDirectiveRecord } from '@8f4e/editor-state-types';
 
 export interface DirectiveComment {
 	name: string;
@@ -76,8 +76,8 @@ export function parseDirectiveRecords(code: string[]): ParsedDirectiveRecord[] {
 	const records: ParsedDirectiveRecord[] = [];
 	let previousRecord: ParsedDirectiveRecord | undefined;
 
-	for (let rawRow = 0; rawRow < code.length; rawRow++) {
-		const line = code[rawRow];
+	for (let sourceLineIndex = 0; sourceLineIndex < code.length; sourceLineIndex++) {
+		const line = code[sourceLineIndex];
 		const continuationArgs = parseDirectiveContinuationArgs(line);
 		if (continuationArgs) {
 			if (previousRecord && continuationArgs.length > 0) {
@@ -90,7 +90,7 @@ export function parseDirectiveRecords(code: string[]): ParsedDirectiveRecord[] {
 			prefix: parsed.prefix,
 			name: parsed.name,
 			args: parsed.args,
-			rawRow,
+			sourceLineIndex,
 			sourceLine: line,
 			isTrailing: parsed.isTrailing,
 		}));
@@ -107,12 +107,6 @@ export function parseDirectiveRecords(code: string[]): ParsedDirectiveRecord[] {
 	return records;
 }
 
-export function parseDirectiveComments(line: string): DirectiveComment[] {
-	return parseDirectiveLineRecords(line).flatMap(parsed =>
-		parsed.isTrailing ? [] : [{ name: parsed.name, args: parsed.args }]
-	);
-}
-
 export function serializeDirectiveComments(directives: DirectiveComment[]): string | undefined {
 	if (directives.length === 0) {
 		return undefined;
@@ -123,60 +117,39 @@ export function serializeDirectiveComments(directives: DirectiveComment[]): stri
 		.join(' ')}`;
 }
 
-export function createDirectivePlugin(
+export function createDirectiveDefinition(
 	name: string,
-	apply: NonNullable<EditorDirectivePlugin['apply']>,
-	options: Pick<EditorDirectivePlugin, 'aliases' | 'allowTrailingComment' | 'clearGraphicData'> = {}
-): EditorDirectivePlugin {
+	apply: NonNullable<EditorDirectiveDefinition['apply']>
+): EditorDirectiveDefinition {
 	return {
 		name,
-		...options,
 		apply,
 	};
 }
 
 /**
- * Shared alias-normalization helper. Filters `ParsedDirectiveRecord[]` to
- * editor (`@`) directives only, resolves aliases to canonical plugin names, and
- * applies the `allowTrailingComment` gate for trailing records.
- *
- * Both `parseEditorDirectives` and `deriveDirectiveState` delegate to this so
- * alias normalization lives in exactly one place.
+ * Selects matching records and resolves aliases to canonical directive names.
+ * Preserves source order, duplicates, and source context without reparsing source.
  */
-export function normalizeEditorDirectiveRecords(
-	records: ParsedDirectiveRecord[],
-	plugins: EditorDirectivePlugin[]
-): ParsedEditorDirective[] {
-	const pluginEntries = plugins.flatMap(plugin =>
-		[plugin.name, ...(plugin.aliases ?? [])].map(name => [name, plugin] as const)
+export function matchEditorDirectives(
+	records: readonly ParsedDirectiveRecord[],
+	definitions: readonly Pick<EditorDirectiveDefinition, 'name' | 'aliases'>[]
+): ParsedDirectiveRecord[] {
+	const definitionEntries = definitions.flatMap(definition =>
+		[definition.name, ...(definition.aliases ?? [])].map(name => [name, definition] as const)
 	);
-	const pluginsByName = new Map(pluginEntries);
+	const definitionsByName = new Map(definitionEntries);
 
 	return records.flatMap(record => {
-		const plugin = pluginsByName.get(record.name);
-		if (!plugin) {
+		const definition = definitionsByName.get(record.name);
+		if (!definition) {
 			return [];
 		}
 
-		if (record.isTrailing && !plugin.allowTrailingComment) {
-			return [];
-		}
-
-		return [
-			{
-				name: plugin.name,
-				rawRow: record.rawRow,
-				args: record.args,
-				sourceLine: record.sourceLine,
-			},
-		];
+		return [{ ...record, name: definition.name }];
 	});
 }
 
-export function parseEditorDirectives(code: string[], plugins: EditorDirectivePlugin[]): ParsedEditorDirective[] {
-	return normalizeEditorDirectiveRecords(parseDirectiveRecords(code), plugins);
-}
-
 export function hasDirective(code: string[], name: string): boolean {
-	return code.some(line => parseDirectiveComments(line).some(directive => directive.name === name));
+	return parseDirectiveRecords(code).some(directive => directive.name === name);
 }

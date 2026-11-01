@@ -1,19 +1,21 @@
-import type { ContextMenuItem, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	ContextMenuItem,
+	EventDispatcher,
+	MenuStackEntry,
+	State,
+} from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import roundToGrid from '~/features/viewport/roundToGrid';
 import findCodeBlockAtViewportCoordinates from '../code-blocks/utils/finders/findCodeBlockAtViewportCoordinates';
 import * as menus from './menus';
+import type { MenuRegistry } from './registry';
 
 interface MouseEvent {
 	x: number;
 	y: number;
 	buttons?: number;
 	stopPropagation?: boolean;
-}
-
-interface MenuEvent {
-	menu: string;
-	[key: string]: unknown;
 }
 
 function getHighlightedMenuItem(x: number, y: number, width: number, height: number) {
@@ -67,8 +69,31 @@ function keepMenuWithinViewport(state: State): void {
 	contextMenu.y = viewport.y + Math.min(Math.max(y, 0), maxY);
 }
 
-export default function contextMenu(store: StateManager<State>, events: EventDispatcher): () => void {
+export default function contextMenu(
+	store: StateManager<State>,
+	events: EventDispatcher,
+	registry: MenuRegistry
+): () => void {
 	const state = store.getState();
+	const unregisterMenus = [
+		registry.registerMenu('mainMenu', state => {
+			const contributions = registry.getItems('mainMenu', { state });
+			return [...menus.mainMenu(state), ...(contributions.length ? [{ divider: true }, ...contributions] : [])];
+		}),
+		registry.registerMenu('moduleMenu', (state, { codeBlock }: { codeBlock: CodeBlockGraphicData }) =>
+			menus.moduleMenu(state, codeBlock, registry.getItems('moduleMenu', { state, codeBlock }))
+		),
+	];
+	const updateMenu = async () => {
+		const { menuStack } = state.contextMenu;
+		const items = await registry.generateMenu(menuStack.at(-1)!, state);
+		state.contextMenu.items = decorateMenu([
+			...(menuStack.length > 1 ? [{ title: '< Back', action: 'menuBack' }] : []),
+			...items,
+		]);
+		state.contextMenu.itemWidth = getLongestMenuItem(state.contextMenu.items) * state.viewport.vGrid;
+		keepMenuWithinViewport(state);
+	};
 	const onMouseMove = (event: MouseEvent) => {
 		if (!state.contextMenu.open) {
 			return;
@@ -132,60 +157,28 @@ export default function contextMenu(store: StateManager<State>, events: EventDis
 
 		const codeBlock = findCodeBlockAtViewportCoordinates(state, x, y);
 
-		if (codeBlock) {
-			state.contextMenu.items = decorateMenu(await menus.moduleMenu(state));
-		} else {
-			state.contextMenu.items = decorateMenu(await menus.mainMenu(state));
-		}
-
-		state.contextMenu.itemWidth = getLongestMenuItem(state.contextMenu.items) * state.viewport.vGrid;
-		keepMenuWithinViewport(state);
+		state.contextMenu.menuStack = [codeBlock ? { menu: 'moduleMenu', payload: { codeBlock } } : { menu: 'mainMenu' }];
+		await updateMenu();
 	};
 
-	const onOpenSubMenu = async (event: MenuEvent) => {
-		const { menu, ...payload } = event;
-		state.contextMenu.menuStack.push({ menu, payload });
-		state.contextMenu.items = decorateMenu([
-			{ title: '< Back', action: 'menuBack' },
-			...(await (menus as Record<string, (state: State, payload?: unknown) => Promise<ContextMenuItem[]>>)[menu](
-				state,
-				payload
-			)),
-		]);
-		state.contextMenu.itemWidth = getLongestMenuItem(state.contextMenu.items) * state.viewport.vGrid;
-		keepMenuWithinViewport(state);
+	const onOpenSubMenu = async (request: MenuStackEntry) => {
+		state.contextMenu.menuStack.push(request);
+		await updateMenu();
 	};
 
 	const onMenuBack = async () => {
 		state.contextMenu.menuStack.pop();
-		const entry = state.contextMenu.menuStack.pop();
-
-		if (!entry) {
-			state.contextMenu.items = decorateMenu(await menus.mainMenu(state));
-			state.contextMenu.itemWidth = getLongestMenuItem(state.contextMenu.items) * state.viewport.vGrid;
-			keepMenuWithinViewport(state);
-			return;
-		}
-
-		const { menu, payload } = entry;
-		state.contextMenu.items = decorateMenu([
-			{ title: '< Back', action: 'menuBack' },
-			...(await (menus as Record<string, (state: State, payload?: unknown) => Promise<ContextMenuItem[]>>)[menu](
-				state,
-				payload
-			)),
-		]);
-		state.contextMenu.itemWidth = getLongestMenuItem(state.contextMenu.items) * state.viewport.vGrid;
-		keepMenuWithinViewport(state);
+		await updateMenu();
 	};
 
 	events.on('openSubMenu', onOpenSubMenu);
 	events.on('contextmenu', onContextMenu);
 	events.on('menuBack', onMenuBack);
 	events.on('mousedown', onMouseDown);
-	events.on('mousemove', onMouseMove);
+	events.on('mousemove', onMouseMove, { capture: true });
 
 	return () => {
+		for (const unregister of unregisterMenus) unregister();
 		events.off('contextmenu', onContextMenu);
 		events.off('openSubMenu', onOpenSubMenu);
 		events.off('menuBack', onMenuBack);

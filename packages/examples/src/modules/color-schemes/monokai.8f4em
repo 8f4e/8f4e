@@ -1,0 +1,18 @@
+8f4e/v1
+
+note monokaiColors
+; @public
+; @config color.canvas #060606
+; @config color.surface #0d0d0d
+; @config color.ink #e3e3e3
+; @config color.primary #f92672
+; @config color.secondary #ae81ff
+; @config color.tertiary #918b7b
+; @config color.highlight #66d9ef
+; @config color.detail #a6e22e
+; @config color.stroke #858585
+; @config color.muted #909090
+; @config color.positive #a6e22e
+; @config color.warning #e6db74
+; @config color.negative #f92672
+noteEnd

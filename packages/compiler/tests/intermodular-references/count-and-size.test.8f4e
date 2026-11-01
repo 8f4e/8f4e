@@ -11,7 +11,7 @@ constantsEnd
 
 note
 ; @pos 4 2
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Intermodule count(...) and
 sizeof(...) references should

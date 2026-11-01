@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/compiler",
-  "version": "7.0.6",
+  "version": "7.0.20",
   "private": true,
   "description": "8f4e compiler package",
   "type": "module",
@@ -28,6 +28,7 @@
     "@8f4e/program-composer": "*",
     "@8f4e/project-preparser": "*",
     "@8f4e/sub-program": "*",
+    "@8f4e/tokenizer": "*",
     "@8f4e/wasm-codegen": "*"
   },
   "devDependencies": {

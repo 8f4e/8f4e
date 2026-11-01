@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
 
-import { extractGroupName } from '../group/extractGroupName';
 import { parseClipboardData, serializeCodeBlocksToClipboard } from './clipboardUtils';
 
 describe('serializeCodeBlocksToClipboard', () => {
-	it('should serialize group blocks with relative coordinates', () => {
+	it('serializes a block batch with relative coordinates', () => {
 		const anchor = createMockCodeBlock({
 			code: ['module foo', 'moduleEnd'],
 			gridX: 10,
@@ -280,31 +279,5 @@ describe('parseClipboardData', () => {
 
 			expect(result.type).toBe('single');
 		});
-	});
-});
-
-describe('extractGroupName', () => {
-	it('should extract group name from code with @group directive', () => {
-		const code = ['module test', '; @group audio-chain', 'moduleEnd'];
-
-		const groupName = extractGroupName(code);
-
-		expect(groupName).toBe('audio-chain');
-	});
-
-	it('should return undefined when no @group directive', () => {
-		const code = ['module test', 'moduleEnd'];
-
-		const groupName = extractGroupName(code);
-
-		expect(groupName).toBeUndefined();
-	});
-
-	it('should extract group name ignoring nonstick flag', () => {
-		const code = ['module test', '; @group audio-chain nonstick', 'moduleEnd'];
-
-		const groupName = extractGroupName(code);
-
-		expect(groupName).toBe('audio-chain');
 	});
 });

@@ -5,6 +5,7 @@ import { resolveMemoryReferences } from './index';
 import {
 	type MemoryReferenceResolutionContext,
 	resolveMemoryExpressionOperand,
+	resolveMetadataTarget,
 } from './resolveMemoryExpressionOperand';
 import { tryResolveValueArgument } from './tryResolveValueArgument';
 
@@ -897,5 +898,172 @@ describe('tryResolveValueArgument', () => {
 	it('returns undefined for division by zero and non-identifier arguments', () => {
 		expect(tryResolveValueArgument(mockContext, parseArgument('sizeof(samples)/0'))).toBeUndefined();
 		expect(tryResolveValueArgument(mockContext, parseArgument('123'))).toBeUndefined();
+	});
+});
+
+describe('metadata query compatibility', () => {
+	const queries = ['count', 'sizeof', 'max', 'min'] as const;
+	const samples = createMemoryDeclaration('samples', {
+		type: 'int16u',
+		numberOfElements: 7,
+		elementWordSize: 2,
+		isUnsigned: true,
+	});
+	const main = createPlannedModule('main', { samples });
+	const source = createPlannedModule('audio/source', { samples });
+	const context = createTestContext(main, {
+		memoryPlan: createMemoryPlan([main, source]),
+		memoryAliases: new Map([
+			['audio', new Map([['exported', { targetModuleId: 'audio/source', targetMemoryId: 'samples' }]])],
+		]),
+	});
+
+	it('resolves one canonical target independently of the query kind', () => {
+		expect(resolveMetadataTarget({ scope: 'local', targetMemoryId: 'samples', dereferenceDepth: 0 }, context)).toEqual({
+			kind: 'memory',
+			memory: samples,
+		});
+		expect(
+			resolveMetadataTarget(
+				{ scope: 'intermodule', targetModuleId: 'audio', targetMemoryId: 'exported', dereferenceDepth: 0 },
+				context
+			)
+		).toEqual({
+			kind: 'memory',
+			memory: samples,
+		});
+		expect(
+			resolveMetadataTarget({ scope: 'local', targetMemoryId: 'missing', dereferenceDepth: 0 }, context)
+		).toBeUndefined();
+	});
+
+	it('collects pointer facts once in memory-before-local order', () => {
+		const pointer = createMemoryDeclaration('ptr', { pointeeBaseType: 'int8', pointerDepth: 1 });
+		const local = { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 1, pointeeElementCount: 3 } as const;
+		const pointerContext = createTestContext(createPlannedModule('main', { ptr: pointer }), {
+			pointerMetadata: { main: { ptr: { pointeeElementCount: 1 } } },
+			locals: { ptr: local, localOnly: local },
+		});
+		expect(
+			resolveMetadataTarget({ scope: 'local', targetMemoryId: 'ptr', dereferenceDepth: 1 }, pointerContext)
+		).toEqual({
+			kind: 'pointer',
+			pointers: [{ ...pointer, pointeeElementCount: 1 }, local],
+		});
+		expect(
+			resolveMetadataTarget({ scope: 'local', targetMemoryId: 'localOnly', dereferenceDepth: 1 }, pointerContext)
+		).toEqual({
+			kind: 'pointer',
+			pointers: [local],
+		});
+	});
+
+	it.each(['samples', 'this:samples', 'audio/source:samples', 'audio:exported'])(
+		'resolves all queries for %s through the same memory facts',
+		target => {
+			for (const [index, query] of queries.entries()) {
+				expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(${target})`), context)).toEqual({
+					value: [7, 2, 65535, 0][index],
+					isInteger: true,
+				});
+			}
+		}
+	);
+
+	it.each(['missing', 'missing:samples', 'audio/source:missing', '*missing'])(
+		'keeps %s unresolved for every query',
+		target => {
+			for (const query of queries) {
+				expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(${target})`), context)).toBeUndefined();
+			}
+		}
+	);
+
+	it.each([
+		['int8', 1, 127, -128, true],
+		['int8u', 1, 255, 0, true],
+		['int16', 2, 32767, -32768, true],
+		['int16u', 2, 65535, 0, true],
+		['int', 4, 2147483647, -2147483648, true],
+		['float', 4, 3.4028234663852886e38, -3.4028234663852886e38, false],
+		['float64', 8, Number.MAX_VALUE, -Number.MAX_VALUE, false],
+	] as const)('uses identical memory and local pointer metadata for %s', (baseType, size, max, min, isInteger) => {
+		const pointer = createMemoryDeclaration('memoryPtr', { pointeeBaseType: baseType, pointerDepth: 1 });
+		const pointerContext = createTestContext(createPlannedModule('main', { memoryPtr: pointer }), {
+			pointerMetadata: { main: { memoryPtr: { pointeeElementCount: 1 } } },
+			locals: { localPtr: { isInteger: true, pointeeBaseType: baseType, pointerDepth: 1, pointeeElementCount: 1 } },
+		});
+		for (const target of ['memoryPtr', 'localPtr']) {
+			for (const [index, query] of queries.entries()) {
+				expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*${target})`), pointerContext)).toEqual({
+					value: [1, size, max, min][index],
+					isInteger: index < 2 || isInteger,
+				});
+			}
+		}
+	});
+
+	it.each([0, 1, 8, undefined])('preserves count %s and one-star pointer-slot semantics for double pointers', count => {
+		const pointer = createMemoryDeclaration('ptr', { pointeeBaseType: 'float64', pointerDepth: 2 });
+		for (const storage of ['memory', 'local']) {
+			const pointerContext = createTestContext(
+				createPlannedModule('main', storage === 'memory' ? { ptr: pointer } : {}),
+				{
+					pointerMetadata: { main: { ptr: { pointeeElementCount: count } } },
+					locals:
+						storage === 'local'
+							? { ptr: { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 2, pointeeElementCount: count } }
+							: {},
+				}
+			);
+			for (const [index, query] of queries.entries()) {
+				const result = resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*ptr)`), pointerContext);
+				expect(result).toEqual(
+					index === 0 && count === undefined
+						? undefined
+						: { value: [count, 4, 2147483647, -2147483648][index], isInteger: true }
+				);
+			}
+		}
+	});
+
+	it('preserves memory precedence and the local known-count fallback', () => {
+		const pointer = createMemoryDeclaration('ptr', { pointeeBaseType: 'int8', pointerDepth: 1 });
+		const pointerContext = createTestContext(createPlannedModule('main', { ptr: pointer }), {
+			locals: { ptr: { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 1, pointeeElementCount: 3 } },
+		});
+		for (const [index, query] of queries.entries()) {
+			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*ptr)`), pointerContext)).toEqual({
+				value: [3, 1, 127, -128][index],
+				isInteger: true,
+			});
+		}
+		pointerContext.pointerMetadata = { main: { ptr: { pointeeElementCount: 0 } } };
+		expect(resolveMemoryExpressionOperand(classifyIdentifier('count(*ptr)'), pointerContext)).toEqual({
+			value: 0,
+			isInteger: true,
+		});
+	});
+
+	it('preserves nonpointer memory results and rejects scalar locals as pointee targets', () => {
+		const scalarContext = { ...context, locals: { scalar: { isInteger: true } } };
+		for (const query of queries) {
+			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*scalar)`), scalarContext)).toBeUndefined();
+			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(scalar)`), scalarContext)).toBeUndefined();
+			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*samples)`), scalarContext)).toEqual(
+				query === 'count' ? undefined : { value: 0, isInteger: query === 'sizeof' }
+			);
+		}
+	});
+
+	it('leaves currently unsupported second-star metadata queries unresolved', () => {
+		const pointerContext = createTestContext(
+			createPlannedModule('main', {
+				ptr: createMemoryDeclaration('ptr', { pointeeBaseType: 'float64', pointerDepth: 2 }),
+			})
+		);
+		for (const query of queries) {
+			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(**ptr)`), pointerContext)).toBeUndefined();
+		}
 	});
 });

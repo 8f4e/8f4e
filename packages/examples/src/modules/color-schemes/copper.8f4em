@@ -1,0 +1,18 @@
+8f4e/v1
+
+note copperColors
+; @public
+; @config color.canvas #191613
+; @config color.surface #2f2a25
+; @config color.ink #e7dfcf
+; @config color.primary #e1843d
+; @config color.secondary #efba62
+; @config color.positive #6ca474
+; @config color.warning #e0b45f
+; @config color.negative #d26858
+; @config color.muted #756d63
+; @config color.stroke rgba(232,139,66,0.52)
+; @config color.tertiary #9b9083
+; @config color.highlight #efba62
+; @config color.detail #e1843d
+noteEnd

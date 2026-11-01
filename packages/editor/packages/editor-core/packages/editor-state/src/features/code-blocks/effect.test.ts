@@ -1,36 +1,15 @@
 import { parseProjectSource } from '@8f4e/project-preparser';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type Mock, vi } from 'vitest';
-import { EMPTY_DEFAULT_PROJECT } from '~/features/project-import/emptyDefaultProject';
+import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';
 import codeBlockRenderingEffect from './effect';
+import { directiveDefinitions } from './features/directives/registry';
 import entryOutlines from './features/entryOutlines/effect';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
-
-function createFontIds() {
-	return new Proxy(
-		{ 63: 63 },
-		{
-			get: (target, key) => {
-				const characterCode = Number(key);
-				return Number.isNaN(characterCode) ? Reflect.get(target, key) : characterCode;
-			},
-		}
-	);
-}
-
-function createSpriteLookups() {
-	return {
-		fillColors: {},
-		fontNumbers: createFontIds(),
-		fontCode: createFontIds(),
-		fontDisabledCode: createFontIds(),
-		fontLineNumber: createFontIds(),
-		fontCodeComment: createFontIds(),
-	} as never;
-}
+import { createLayoutRegistry } from './layout/registry';
 
 describe('code block rendering error mapping', () => {
 	it('maps project-scope compiler errors by canonical group path', () => {
@@ -59,7 +38,12 @@ describe('code block rendering error mapping', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events);
+		codeBlockRenderingEffect(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 
 		expect(rootScope.widgets.errorMessages[0]?.message.join('')).toContain('Undefined root constant');
 		expect(group.widgets.errorMessages[0]?.message.join('')).toContain('Undefined child constant');
@@ -89,7 +73,12 @@ describe('code block rendering error mapping', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events);
+		codeBlockRenderingEffect(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 
 		expect(functionBlock.widgets.errorMessages).toHaveLength(1);
 		expect(functionBlock.widgets.errorMessages[0].lineNumber).toBe(2);
@@ -121,13 +110,18 @@ describe('code block rendering cursor selection', () => {
 		const onSelectedRowChanged = vi.fn();
 
 		store.subscribe('codeBlockRendering.selectedCodeBlock.cursor.row', onSelectedRowChanged);
-		codeBlockRenderingEffect(store, events);
+		codeBlockRenderingEffect(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 
-		const codeBlockClickHandler = (events.on as Mock).mock.calls.find(
-			([eventName]) => eventName === 'codeBlockClick'
+		const codeBlockPointerDownHandler = (events.on as Mock).mock.calls.find(
+			([eventName]) => eventName === 'codeBlockPointerDown'
 		)?.[1] as ((event: { relativeX: number; relativeY: number; codeBlock: typeof selectedBlock }) => void) | undefined;
 
-		codeBlockClickHandler?.({
+		codeBlockPointerDownHandler?.({
 			relativeX: 0,
 			relativeY: state.viewport.hGrid,
 			codeBlock: selectedBlock,
@@ -145,12 +139,16 @@ describe('code block rendering home directive', () => {
 				...EMPTY_DEFAULT_PROJECT,
 				code: ['pass env'],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events);
+		codeBlockRenderingEffect(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		store.set('initialProjectState', state.initialProjectState);
 
 		expect(state.codeBlockRendering.codeBlocks).toHaveLength(1);
@@ -159,18 +157,6 @@ describe('code block rendering home directive', () => {
 			isProjectScope: true,
 			projectPath: '',
 		});
-	});
-
-	it('clears output addresses when the rendered project slice changes', () => {
-		const state = createMockState();
-		state.codeBlockRendering.outputsByWordAddress.set(40, {} as never);
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-		codeBlockRenderingEffect(store, events);
-
-		store.set('codeBlockRendering.codeBlocks', []);
-
-		expect(state.codeBlockRendering.outputsByWordAddress.size).toBe(0);
 	});
 
 	it('renders project-level includes blocks from imported project state', () => {
@@ -187,12 +173,16 @@ describe('code block rendering home directive', () => {
 					},
 				],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events);
+		codeBlockRenderingEffect(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		store.set('initialProjectState', state.initialProjectState);
 
 		expect(state.codeBlockRendering.codeBlocks).toHaveLength(2);
@@ -222,12 +212,16 @@ describe('code block rendering home directive', () => {
 					},
 				],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events);
+		codeBlockRenderingEffect(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		store.set('initialProjectState', state.initialProjectState);
 
 		expect(state.codeBlockRendering.codeBlocks).toBe(state.codeBlockRendering.rootCodeBlocks);
@@ -271,10 +265,15 @@ group checks
 ; @pos -20 -10
 groupEnd
 entryEnd`);
-		const state = createMockState({ initialProjectState: project, spriteLookups: createSpriteLookups() });
+		const state = createMockState({ initialProjectState: project });
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
-		codeBlockRenderingEffect(store, events);
+		codeBlockRenderingEffect(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		entryOutlines(store);
 		projectGroupNavigation(store, events);
 		store.set('initialProjectState', project);
@@ -326,12 +325,16 @@ entryEnd`);
 					},
 				],
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events);
+		codeBlockRenderingEffect(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		store.set('initialProjectState', state.initialProjectState);
 		expect(state.compilerInputRevision).toBe(1);
 		const firstRoot = state.codeBlockRendering.rootCodeBlocks;
@@ -372,12 +375,16 @@ entryEnd`);
 				vGrid: 8,
 				hGrid: 16,
 			},
-			spriteLookups: createSpriteLookups(),
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events);
+		codeBlockRenderingEffect(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		store.set('initialProjectState', state.initialProjectState);
 
 		expect(state.codeBlockRendering.codeBlocks).toHaveLength(1);
@@ -390,101 +397,98 @@ entryEnd`);
 			y: state.viewport.y,
 		});
 	});
+});
 
-	it('keeps the unselected home block centered after a font grid change', () => {
-		const state = createMockState({
-			initialProjectState: {
-				...EMPTY_DEFAULT_PROJECT,
-				modules: [
-					{
-						id: 0,
-						code: ['module home', '; @home', '; @pos 10 20', 'moduleEnd'],
-						entry: 'main',
-					},
-				],
-			},
-			viewport: {
-				x: 0,
-				y: 0,
-				width: 200,
-				height: 200,
-				roundedWidth: 200,
-				roundedHeight: 200,
-				vGrid: 8,
-				hGrid: 16,
-			},
-			spriteLookups: createSpriteLookups(),
+describe('code block rendering @alwaysOnTop live edits', () => {
+	it('re-partitions codeBlocks when @alwaysOnTop is added via live code edit', () => {
+		const normalA = createMockCodeBlock({
+			name: 'normalA',
+			code: ['module normalA', 'moduleEnd'],
+			alwaysOnTop: false,
 		});
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-
-		codeBlockRenderingEffect(store, events);
-		store.set('initialProjectState', state.initialProjectState);
-
-		const [homeBlock] = state.codeBlockRendering.codeBlocks;
-		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-
-		state.viewport.vGrid = 6;
-		state.viewport.hGrid = 12;
-		const spriteSheetRerenderedHandler = (events.on as Mock).mock.calls.find(
-			([eventName]) => eventName === 'spriteSheetRerendered'
-		)?.[1] as (() => void) | undefined;
-		spriteSheetRerenderedHandler?.();
-
-		expect({ x: homeBlock.x, y: homeBlock.y }).toEqual({
-			x: homeBlock.gridX * state.viewport.vGrid,
-			y: homeBlock.gridY * state.viewport.hGrid,
+		const normalB = createMockCodeBlock({
+			name: 'normalB',
+			code: ['module normalB', 'moduleEnd'],
+			alwaysOnTop: false,
 		});
-		expect(centerViewportOnCodeBlock(state.viewport, homeBlock)).toEqual({
-			x: state.viewport.x,
-			y: state.viewport.y,
+		const topA = createMockCodeBlock({
+			name: 'topA',
+			code: ['module topA', '; @alwaysOnTop', 'moduleEnd'],
+			alwaysOnTop: true,
 		});
-	});
-
-	it('keeps the selected code block centered after a font grid change', () => {
-		const selectedBlock = createMockCodeBlock({
-			name: 'selected',
-			code: ['module selected', '; @pos 10 20', 'moduleEnd'],
-			gridX: 10,
-			gridY: 20,
-			x: 80,
-			y: 320,
-		});
+		const codeBlocks = [normalA, normalB, topA];
 		const state = createMockState({
 			codeBlockRendering: {
-				codeBlocks: [selectedBlock],
-				selectedCodeBlock: selectedBlock,
-			},
-			spriteLookups: createSpriteLookups(),
-			viewport: {
-				x: 0,
-				y: 0,
-				width: 200,
-				height: 200,
-				roundedWidth: 200,
-				roundedHeight: 200,
-				vGrid: 8,
-				hGrid: 16,
+				rootCodeBlocks: codeBlocks,
+				codeBlocks,
+				selectedCodeBlock: normalA,
 			},
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(store, events);
-		state.viewport.vGrid = 6;
-		state.viewport.hGrid = 12;
-		const spriteSheetRerenderedHandler = (events.on as Mock).mock.calls.find(
-			([eventName]) => eventName === 'spriteSheetRerendered'
-		)?.[1] as (() => void) | undefined;
-		spriteSheetRerenderedHandler?.();
+		codeBlockRenderingEffect(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 
-		expect({ x: selectedBlock.x, y: selectedBlock.y }).toEqual({
-			x: selectedBlock.gridX * state.viewport.vGrid,
-			y: selectedBlock.gridY * state.viewport.hGrid,
+		store.set('codeBlockRendering.selectedCodeBlock.code', ['module normalA', '; @alwaysOnTop', 'moduleEnd']);
+
+		expect(normalA.alwaysOnTop).toBe(true);
+		expect(state.codeBlockRendering.codeBlocks).toBe(codeBlocks);
+		expect(state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['normalB', 'normalA', 'topA']);
+	});
+
+	it('re-partitions codeBlocks when @alwaysOnTop is removed from the last of multiple top blocks via live code edit', () => {
+		const normalA = createMockCodeBlock({
+			name: 'normalA',
+			code: ['module normalA', 'moduleEnd'],
+			alwaysOnTop: false,
 		});
-		expect(centerViewportOnCodeBlock(state.viewport, selectedBlock)).toEqual({
-			x: state.viewport.x,
-			y: state.viewport.y,
+		const normalB = createMockCodeBlock({
+			name: 'normalB',
+			code: ['module normalB', 'moduleEnd'],
+			alwaysOnTop: false,
 		});
+		const topA = createMockCodeBlock({
+			name: 'topA',
+			code: ['module topA', '; @alwaysOnTop', 'moduleEnd'],
+			alwaysOnTop: true,
+		});
+		const topB = createMockCodeBlock({
+			name: 'topB',
+			code: ['module topB', '; @alwaysOnTop', 'moduleEnd'],
+			alwaysOnTop: true,
+		});
+		const codeBlocks = [normalA, normalB, topA, topB];
+		const state = createMockState({
+			codeBlockRendering: {
+				rootCodeBlocks: codeBlocks,
+				codeBlocks,
+				selectedCodeBlock: topB,
+			},
+		});
+		const store = createStateManager(state);
+		const events = createMockEventDispatcherWithVitest();
+
+		codeBlockRenderingEffect(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
+
+		store.set('codeBlockRendering.selectedCodeBlock.code', ['module topB', 'moduleEnd']);
+
+		expect(topB.alwaysOnTop).toBe(false);
+		expect(state.codeBlockRendering.codeBlocks).toBe(codeBlocks);
+		expect(state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual([
+			'normalA',
+			'normalB',
+			'topB',
+			'topA',
+		]);
 	});
 });

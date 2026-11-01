@@ -1,0 +1,7 @@
+8f4e/v1
+
+entry main
+module tooManyArrayInitializerValues
+int[] values 2 1 2 3
+moduleEnd
+entryEnd

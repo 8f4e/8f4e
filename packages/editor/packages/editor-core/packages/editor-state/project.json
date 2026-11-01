@@ -7,7 +7,7 @@
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
       "options": {
-        "command": "tsc --emitDeclarationOnly && vite build",
+        "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build",
         "cwd": "{projectRoot}"
       }
     },

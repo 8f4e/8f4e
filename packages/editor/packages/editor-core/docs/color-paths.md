@@ -1,93 +1,134 @@
-# Color Paths
+# Base Palette
 
-Use these paths as the suffix after `color.` with:
-
-```txt
-; @config color.<path> <value>
-```
-
-Example:
+Projects configure a small palette with `; @config color.<name> <value>`. The editor generates a fixed catalog of shades
+and opacity variants when resolving the palette. No colors are lightened, darkened, or tinted during drawing.
 
 ```txt
-; @config color.fill.moduleBackground rgba(0,0,0,0.9)
+; @config color.canvas #660099
+; @config color.surface #1a0b24
+; @config color.ink #f6eff8
+; @config color.primary #d9a6ff
+; @config color.muted #b79ad0
+; @config color.secondary #f2c879
+; @config color.tertiary #a99bcb
+; @config color.highlight #f2c879
+; @config color.detail #78bceb
+; @config color.stroke rgba(227,175,255,0.6)
 ```
 
-## `text.*`
+## Configurable Colors
 
-- `text.lineNumber`
-- `text.entryName`
-- `text.arrow`
-- `text.instruction`
-- `text.codeComment`
-- `text.code`
-- `text.errorMessage`
-- `text.disabledCode`
-- `text.numbers`
-- `text.menuItemText`
-- `text.menuItemTextHighlighted`
-- `text.dialogTitle`
-- `text.dialogText`
-- `text.binaryZero`
-- `text.binaryOne`
-- `text.basePrefix`
-- `text.pianoKeyWhitePressedOverlay`
-- `text.pianoKeyBlackPressedOverlay`
-- `text.controlKnob`
+| Path | Purpose | Default |
+| --- | --- | --- |
+| `color.canvas` | Canvas behind code blocks | `#060606` |
+| `color.surface` | Code blocks and panels | `#101010` |
+| `color.ink` | Main foreground | `#e3e3e3` |
+| `color.primary` | Main accent | `#cba6f7` |
+| `color.muted` | Subdued foreground | `#909090` |
+| `color.secondary` | Additional accent | `#fab387` |
+| `color.tertiary` | Supporting accent, including comments | `#7f849c` |
+| `color.highlight` | Bright accent for visualizations | `#94e2d5` |
+| `color.detail` | Additional contrasting accent | `#f5c2e7` |
+| `color.stroke` | Shared lines and outlines | `#858585` |
+| `color.positive` | Positive states | `#a6e3a1` |
+| `color.warning` | Caution states | `#f9e2af` |
+| `color.negative` | Negative states | `#f38ba8` |
 
-## `fill.*`
+The default adapts Catppuccin Mocha accents to neutral black surfaces, with a faint separation between the canvas and
+code blocks and quiet comments.
 
-- `fill.menuItemBackground`
-- `fill.menuItemBackgroundHighlighted`
-- `fill.background`
-- `fill.backgroundDots`
-- `fill.backgroundDots2`
-- `fill.moduleBackground`
-- `fill.moduleBackgroundDragged`
-- `fill.moduleBackgroundDisabled`
-- `fill.wire`
-- `fill.wireHighlighted`
-- `fill.errorMessageBackground`
-- `fill.dialogBackground`
-- `fill.dialogDimmer`
-- `fill.highlightedCodeLine`
-- `fill.trace`
-- `fill.plotterBackground`
-- `fill.bars`
-- `fill.waveform`
-- `fill.meterGreen`
-- `fill.meterYellow`
-- `fill.meterRed`
-- `fill.scanLine`
-- `fill.track`
-- `fill.fill`
-- `fill.controlKnob`
-- `fill.crossfadeHandle`
-- `fill.codeBlockHighlightLevel1`
-- `fill.codeBlockHighlightLevel2`
-- `fill.codeBlockHighlightLevel3`
-- `fill.pianoKeyWhite`
-- `fill.pianoKeyBlack`
-- `fill.switchBackground`
+Every base color is independent and optional. Omitted colors use the defaults above; overriding primary, secondary,
+ink, or either background does not change other base colors. Configure all thirteen colors for a complete theme.
+Accents are authored directly; the resolver does not invent complementary or hue-rotated colors.
 
-## `icons.*`
+Accepts `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, comma-separated `rgb()` / `rgba()`, and `transparent`.
+Base alpha is preserved in generated shades. For example, `color.stroke rgba(69,89,160,0.38)` retains that exact line
+color and opacity; `color.canvas transparent` preserves the host background behind the editor.
 
-- `icons.inputConnector`
-- `icons.outputConnector`
-- `icons.inputConnectorBackground`
-- `icons.outputConnectorBackground`
+The former `color.text.*`, `color.fill.*`, and `color.icons.*` paths are removed. Features and plugins do not register
+additional configurable palette colors.
 
-`text.controlKnob` and `fill.controlKnob` style the knob shared by `@button`, `@switch`, and `@slider`. The text color
-styles the `|` marker inside the knob; sliders draw one marker on each row.
+## Predefined Shades and Opacity
 
-`fill.crossfadeHandle` styles `@crossfade` handles independently.
+Every base provides `Dark4`, `Dark3`, `Dark2`, `Dark1`, `Base`, `Light1`, `Light2`, `Light3`, and `Light4`.
+`Base` preserves the configured color and alpha. Lightness changes use fixed amounts of 10%, 25%, 50%, and 75% in Oklab.
+Darkening preserves chroma until gamut mapping requires reducing it; lighter shades gradually reduce chroma toward white.
+This retains stronger accent colors in shaded controls instead of washing them out.
 
-## Feedback Scale Entries
+Every base also has `Alpha30`, `Alpha60`, and `Alpha90` variants. These use the base RGB with fixed absolute alpha levels;
+they do not multiply the configured alpha. Standard source-over blending combines the prepared RGBA pixels with whatever
+is beneath them. Transparency and darker shades serve different purposes.
 
-Feedback scale entries use indexed icon paths:
+## Shared Surface and Foreground Catalog
 
-- `icons.feedbackScale0`
-- `icons.feedbackScale1`
-- `icons.feedbackScale2`
-- `icons.feedbackScale3`
-- `icons.feedbackScale4`
-- `icons.feedbackScale5`
+Generic material colors derive from the anchors with predefined blending rules. Surface polarity and derived materials
+use the visible, composited surface, so translucent white panels over a dark canvas retain the canvas tint:
+
+- `canvasDetail1/2` retain the canvas hue while adding visible detail.
+- `surfaceRaised1/2/3` are subtle surfaces tinted with muted foreground; saturated surfaces retain their own hue.
+- `mutedBase` is the configured subdued foreground; `mutedSoft` and `inkFaint` blend it toward the surface.
+- `inkStrong` increases foreground contrast for labels; `secondarySoft` softens numeric prefixes in light and dark themes.
+- Syntax highlighting uses the authored `primaryBase`, `secondaryBase`, and `tertiaryBase` unchanged.
+- `secondaryReadable` chooses a shade with at least 4.5:1 contrast on the composited base surface.
+- `primarySoft` blends a small accent into the surface; `primaryStrong` supplies stronger emphasis in light themes.
+- `floatingSurface`, `floatingInk`, `floatingMuted`, and `floatingAccent` supply contrasting floating materials.
+- `selectionSurface` and `selectionInk` supply the selected floating material.
+- `darkSurface` and `onDarkAccent` keep dark regions available in both light and dark themes.
+- `inverseSurface`, `inverseInk`, and `inverseAccent` provide an inverted material, including a dark material in light themes.
+- `positiveSoft` and `negativeSoft` provide status backgrounds appropriate to the inverse material.
+- `inkOn` contrasts with `inkBase`; `negativeOn` contrasts with `negativeSurface`, which supplies dark or soft negative surfaces.
+  `strokeStrong` supplies an opaque outline.
+- `lightBase`, `darkBase`, `black`, and `white` supply neutral endpoints and contrast fallbacks.
+- `scrim`, `darkOverlaySoft`, `primaryOverlay`, and `transparent` supply predefined RGBA overlays.
+
+Light translucent surfaces retain layered materials: `surfaceRaised1/2/3` use half, three-quarters, and full base
+surface alpha; `surfaceSubdued` uses half alpha, and `surfaceOverlay` uses 40% alpha. Floating surfaces stay light
+and translucent with dark text, while dark surfaces retain the canvas hue and base surface alpha.
+`accentSurface` uses a translucent secondary accent for these overlays and `detailDark1` for opaque themes. Canvas detail
+and the scrim use light translucent overlays. This keeps pale overlays over colored canvases distinct from opaque
+light and dark themes.
+
+All rules run once during palette resolution. `secondaryReadable` applies to its documented background; drawers must still
+choose contrasting pairs for other shades. This does not replace a complete contrast audit.
+
+## Drawing API
+
+`PALETTE_INDICES` exposes stable numeric indices for every shade, opacity variant, and shared material. Drawers choose
+these indices directly: `draw.drawFill(x, y, PALETTE_INDICES.primaryDark2, width, height)` and
+`draw.drawText(x, y, text, PALETTE_INDICES.inkOn)` reuse the same fill mask and fixed glyph IDs across unrelated controls.
+Local visual choices belong to drawers rather than theme configuration. Controls use `accentSurface` fills and
+`lightBase` handles with `darkBase` labels; disabled panels use `surfaceSubdued`. Equal resolved colors keep separate indices
+so a theme change can make them diverge without rebuilding projections.
+
+Connector icons are composed at runtime: a `surfaceOverlay` fill sits behind input brackets in `primaryBase` or output
+brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`, `primaryDark1`, `primaryBase`,
+`warningBase`, or `negativeBase` from the calibrated value. There are no dedicated input or feedback-scale atlas entries.
+
+The sprite atlas contains color-independent R8 binary visibility masks: 128 glyphs and one fully covered fill cell,
+all on the same 16-column grid. Sprite IDs are their row-major cell positions; the vertex shader derives source
+coordinates from these IDs and shared cell dimensions without a rectangle lookup texture. All palette entries can color
+text, including `Alpha30/60/90` variants. Web-ui renders the
+background in a separate procedural pass before sprites, using the font's dot geometry and `canvasBase`,
+`canvasDetail2`, and `canvasDetail1` colors. Palette changes precompose each dot color over the base so one triangle
+draws the complete background. Transparent pixels are discarded and a fully transparent background is skipped.
+The background uses no atlas entries, texture samples, or per-dot instance uploads.
+The renderer accepts straight-alpha RGBA8 palette bytes and prepares premultiplied float32 colors on changed uploads.
+The vertex shader reads the selected color from a uniform buffer; the sprite fragment shader discards zero mask samples
+and zero-alpha palette colors, then emits the prepared palette color directly. Atlas bytes must be 0 or 255;
+atlas installation validates this once. Translucent colors use
+premultiplied-alpha blending.
+The buffer reserves 256 colors (4 KiB), with 196 active entries using 3,136 bytes from a 784-byte RGBA8 input.
+Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
+
+Web-ui owns the background, line, and RGBA texture render plugins under `src/plugins/`, including their shared WebGL
+setup helpers and resource lifetimes. Glugglugglug supplies sprite rendering and the generic render-hook contract.
+RGBA overlays establish their sampler binding and tightly packed pixel-upload state after raw hooks, including frames
+with no sprite pass. Their nearest filtering and straight-alpha uploads are independent of state left by other passes.
+
+`@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
+the generated masks and separately resolved palette. Theme changes update palette colors, the background's three
+premultiplied color uniforms, and line-rendered wire colors. Font changes load cached masks, install grid dimensions,
+and update the background's dot geometry from web-ui's font-specific settings. Glyph IDs remain stable, and editor
+state carries no sprite lookup tables. The background program and empty vertex array survive rendering-memory
+release and are deleted when the view is destroyed. Font builds leave the active palette untouched, and
+stale asynchronous font builds are ignored.

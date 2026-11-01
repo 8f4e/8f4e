@@ -2,21 +2,19 @@ function advancePhase
 #export
 #impure
 ; Advances a phase by one sample
-; and wraps from PI to -PI.
+; and preserves overshoot when
+; wrapping across PI.
 param float* phase
 param float frequency
 param int sampleRate
 
 const PI 3.141592653589793
-const NEG_PI -3.141592653589793
+const TAU 6.283185307179586
 
 push phase
 push *phase
-push PI
-push NEG_PI
-sub
-push frequency
-mul
+push TAU
+mul frequency
 push sampleRate
 castToFloat
 ensureNonZero
@@ -29,7 +27,8 @@ push PI
 greaterThan
 if
 push phase
-push NEG_PI
+push *phase
+sub TAU
 store
 ifEnd
 

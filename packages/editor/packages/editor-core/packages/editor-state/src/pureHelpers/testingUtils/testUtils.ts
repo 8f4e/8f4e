@@ -87,9 +87,9 @@ export function createMockCodeBlock(
 		name,
 		code,
 		displayModel: {
-			lines: code.map((text, rawRow) => ({ text, rawRow })),
-			displayRowToRawRow: code.map((_, rawRow) => rawRow),
-			rawRowToDisplayRow: code.map((_, rawRow) => rawRow),
+			lines: code.map((text, sourceLineIndex) => ({ text, sourceLineIndex })),
+			displayRowToSourceLineIndex: code.map((_, sourceLineIndex) => sourceLineIndex),
+			sourceLineIndexToDisplayRow: code.map((_, sourceLineIndex) => sourceLineIndex),
 			isCollapsed: false,
 		},
 		gaps: new Map(),
@@ -101,25 +101,10 @@ export function createMockCodeBlock(
 		projectPath,
 		disabled: false,
 		isHome: false,
-		isFavorite: false,
 		alwaysOnTop: false,
 		parsedDirectives: parseBlockDirectives(code),
 		widgets: {
-			assertions: [],
 			blockHighlights: [],
-			inputs: [],
-			outputs: [],
-			debuggers: [],
-			switches: [],
-			buttons: [],
-			sliders: [],
-			crossfades: [],
-			pianoKeyboards: [],
-			arrayPlotters: [],
-			arrayBars: [],
-			arrayMeters: [],
-			arrayWaves: [],
-			infoPanels: [],
 			shapeDeclarations: [],
 			errorMessages: [],
 		},
@@ -158,8 +143,8 @@ export function deriveDirectiveStateForCode(
  * @returns The item with the matching id, or undefined if not found
  *
  * @example
- * const button = findWidgetById(mockGraphicData.widgets.buttons, 'btn1');
- * expect(button).toBeDefined();
+ * const output = findWidgetById(widgets, 'output1');
+ * expect(output).toBeDefined();
  */
 export function findWidgetById<T extends { id: string }>(array: T[], id: string): T | undefined {
 	return array.find(item => item.id === id);

@@ -15,12 +15,6 @@ describe('compileToAST', () => {
 		);
 	});
 
-	it('rejects the removed #region directive', () => {
-		expect(() => compileToAST(['module synth', '#region samples', 'moduleEnd'])).toThrow(
-			expect.objectContaining({ code: SyntaxErrorCode.UNRECOGNISED_INSTRUCTION })
-		);
-	});
-
 	it('constructs module metadata from the source-block parse path', () => {
 		const ast = compileToAST([
 			'module target',

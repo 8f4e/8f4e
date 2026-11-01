@@ -61,7 +61,7 @@ constantsEnd
 
 note
 ; @pos 3 1
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Export directives are captured
 in compile-result snapshots

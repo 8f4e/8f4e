@@ -1,53 +1,45 @@
-import type { MenuGenerator } from '@8f4e/editor-state-types';
+import type { ContextMenuItem, State } from '@8f4e/editor-state-types';
 
-export const mainMenu: MenuGenerator = state => [
+export const mainMenu = (state: State): ContextMenuItem[] => [
 	...(state.codeBlockRendering.codeBlocks !== state.codeBlockRendering.rootCodeBlocks
 		? [{ title: 'Go back', action: 'goToParentProjectGroup', close: true }, { divider: true }]
 		: []),
-	...(state.featureFlags.editing
+	...(state.editorMode === 'edit'
 		? [
 				{
 					title: 'New Module',
-					action: 'addCodeBlock',
-					payload: { isNew: true, blockType: 'module' },
+					action: 'createCodeBlock',
+					payload: { blockType: 'module' },
 					close: true,
 				},
 				{
 					title: 'New Function',
-					action: 'addCodeBlock',
-					payload: { isNew: true, blockType: 'function' },
+					action: 'createCodeBlock',
+					payload: { blockType: 'function' },
 					close: true,
 				},
 				{
 					title: 'New Prototype',
-					action: 'addCodeBlock',
-					payload: { isNew: true, blockType: 'prototype' },
+					action: 'createCodeBlock',
+					payload: { blockType: 'prototype' },
 					close: true,
 				},
 				{
 					title: 'New Note',
-					action: 'addCodeBlock',
-					payload: { isNew: true, blockType: 'note' },
+					action: 'createCodeBlock',
+					payload: { blockType: 'note' },
 					close: true,
 				},
 				{
 					title: 'Paste Code Block',
-					action: 'addCodeBlock',
-					payload: { isPaste: true },
+					action: 'pasteCodeBlocks',
 					close: true,
 					disabled: !state.callbacks.readClipboardText,
 				},
-				{
-					title: 'Add Built-in Module',
-					action: 'openSubMenu',
-					payload: { menu: 'moduleCategoriesMenu' },
-					close: false,
-					disabled: !state.callbacks.getListOfModules,
-				},
 			]
 		: []),
-	...(state.featureFlags.editing ? [{ divider: true }] : []),
-	...(state.featureFlags.editing
+	...(state.editorMode === 'edit' ? [{ divider: true }] : []),
+	...(state.editorMode === 'edit'
 		? [
 				{
 					title: 'Go @home',
@@ -56,43 +48,8 @@ export const mainMenu: MenuGenerator = state => [
 				},
 			]
 		: []),
-	{
-		title: 'Jump to...',
-		action: 'openSubMenu',
-		payload: { menu: 'favoritesMenu' },
-		close: false,
-	},
-	{ divider: true },
-	...(state.featureFlags.editing && state.featureFlags.projectCreation
+	...(state.editorMode === 'edit' && state.featureFlags.projectCreation ? [{ divider: true }] : []),
+	...(state.editorMode === 'edit' && state.featureFlags.projectCreation
 		? [{ title: 'New Project', action: 'new', close: true }]
 		: []),
-	...(state.featureFlags.editing && state.featureFlags.projectCreation && state.featureFlags.projectOpening
-		? [{ divider: true }]
-		: []),
-	...(state.featureFlags.projectOpening
-		? [
-				{
-					title: 'Open From Disk',
-					action: 'importProject',
-					close: true,
-					disabled: !state.callbacks.importProject,
-				},
-			]
-		: []),
-	...((state.featureFlags.editing && state.featureFlags.projectCreation) || state.featureFlags.projectOpening
-		? [{ divider: true }]
-		: []),
-	{ title: 'Export Project', action: 'exportProject', close: true, disabled: !state.callbacks.exportProject },
-	{
-		title: 'Export WebAssembly',
-		action: 'exportWasm',
-		close: true,
-		disabled: !state.callbacks.exportBinaryCode,
-	},
-	{
-		title: 'Take Screenshot',
-		action: 'exportCanvasScreenshot',
-		close: true,
-		disabled: !state.callbacks.exportCanvasScreenshot,
-	},
 ];

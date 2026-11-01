@@ -2,7 +2,7 @@ import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { MemoryDefaults, PlannedMemoryModule } from '@8f4e/language-spec';
 import getCodeBlockModuleId from '../../../pureHelpers/getCodeBlockModuleId';
 import gapCalculator from '../../code-editing/gapCalculator';
-import type { DirectiveDerivedState } from '../features/directives/registry';
+import type { BlockLayoutDraft } from '../layout/types';
 
 function getInheritedDeclarationRowOffsets(plannedModule: PlannedMemoryModule, memoryDefaults: MemoryDefaults) {
 	const rowOffsetByLineNumber = new Map<number, number>();
@@ -20,24 +20,20 @@ function getInheritedDeclarationRowOffsets(plannedModule: PlannedMemoryModule, m
 		});
 }
 
-export default function shape(
-	graphicData: CodeBlockGraphicData,
-	state: State,
-	directiveState: DirectiveDerivedState
-): void {
+export default function shape(graphicData: CodeBlockGraphicData, state: State, blockLayout: BlockLayoutDraft): void {
 	graphicData.widgets.shapeDeclarations = [];
 	if (graphicData.disabled || graphicData.blockType !== 'module') {
 		return;
 	}
 
 	const moduleId = getCodeBlockModuleId(graphicData);
-	const compiledModule = state.compiler.compiledModules[moduleId];
-	const plannedModule = state.compiler.memoryPlan.modules[moduleId];
+	const compiledModule = state.compiler.result.compiledModules[moduleId];
+	const plannedModule = state.compiler.result.memoryPlan.modules[moduleId];
 	if (!compiledModule || compiledModule.ast.type !== 'module') {
 		return;
 	}
 
-	const memoryDefaults = state.compiler.memoryDefaultsByModuleId[moduleId]!;
+	const memoryDefaults = state.compiler.result.memoryDefaultsByModuleId[moduleId]!;
 	const inheritedDeclarationCountByLineNumber = Object.values(plannedModule!.memory).reduce<Map<number, number>>(
 		(result, memory) => {
 			if (memoryDefaults[memory.id]!.isInherited === true) {
@@ -58,9 +54,9 @@ export default function shape(
 			return;
 		}
 
-		directiveState.layoutContributions.push({
-			rawRow: line.lineNumber,
-			rows: inheritedDeclarationCount,
+		blockLayout.verticalSpaceAfterSourceLine.push({
+			sourceLineIndex: line.lineNumber,
+			heightInRows: inheritedDeclarationCount,
 		});
 	});
 }
@@ -68,7 +64,7 @@ export default function shape(
 export function updateShapeDeclarations(
 	graphicData: CodeBlockGraphicData,
 	state: State,
-	directiveState: DirectiveDerivedState
+	blockLayout: BlockLayoutDraft
 ): void {
 	graphicData.widgets.shapeDeclarations = [];
 	if (graphicData.disabled || graphicData.blockType !== 'module') {
@@ -76,16 +72,16 @@ export function updateShapeDeclarations(
 	}
 
 	const moduleId = getCodeBlockModuleId(graphicData);
-	const compiledModule = state.compiler.compiledModules[moduleId];
-	const plannedModule = state.compiler.memoryPlan.modules[moduleId];
+	const compiledModule = state.compiler.result.compiledModules[moduleId];
+	const plannedModule = state.compiler.result.memoryPlan.modules[moduleId];
 	if (!compiledModule || compiledModule.ast.type !== 'module') {
 		return;
 	}
 
 	const textX = (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
-	const memoryDefaults = state.compiler.memoryDefaultsByModuleId[moduleId]!;
+	const memoryDefaults = state.compiler.result.memoryDefaultsByModuleId[moduleId]!;
 	for (const { memory, rowOffset } of getInheritedDeclarationRowOffsets(plannedModule!, memoryDefaults)) {
-		const displayRow = directiveState.displayModel.rawRowToDisplayRow[memory.lineNumber];
+		const displayRow = blockLayout.displayModel.sourceLineIndexToDisplayRow[memory.lineNumber];
 		if (displayRow === undefined) {
 			continue;
 		}

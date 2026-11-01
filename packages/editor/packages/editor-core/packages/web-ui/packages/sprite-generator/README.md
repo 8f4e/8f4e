@@ -1,173 +1,58 @@
-# Sprite Generator Package
+# Font atlas generation
 
-This package generates sprite sheets for the 8f4e editor, including fonts, icons, and UI elements.
-
-## Sprite atlas output
-
-The generator returns a `spriteAtlas` containing the generated `OffscreenCanvas`, one flat deduplicated lookup, and
-grouped public numeric identifiers. Resolve those identifiers against the installed atlas to produce dense IDs for
-hot-path drawing. Source coordinates are an internal generation detail and are not included in the public result:
+`@8f4e/sprite-generator` supplies color-independent binary R8 font masks and one solid fill cell.
+It returns only `{ image, grid }`. Glyph IDs are ASCII character codes 0–127; the fill ID is 128.
+Unsupported characters use the question-mark glyph, ID 63. Every font uses the same IDs, so changing a font
+requires no glyph lookup tables or remapping of prepared text cells.
 
 ```ts
-import generateSprite, { resolveSpriteIds } from '@8f4e/sprite-generator';
+import loadFontAtlas, { FILL_SPRITE_ID, getGlyphSpriteId } from '@8f4e/sprite-generator';
+import { resolvePalette, toPaletteBytes, PALETTE_INDICES } from '@8f4e/editor-palette';
 import { Engine } from 'glugglugglug';
 
-const { spriteAtlas } = await generateSprite({ font: 'ibmvga8x16' });
+const { image, grid } = await loadFontAtlas('ibmvga8x16');
 const engine = new Engine(canvas);
-
-const resolver = engine.setSpriteAtlas(spriteAtlas.image, spriteAtlas.lookup);
-const spriteIds = resolveSpriteIds(spriteAtlas.spriteIdentifiers, resolver);
+engine.setSpriteAtlas(image, grid);
+engine.setPalette(toPaletteBytes(resolvePalette()));
 engine.renderFrame(() => {
-	engine.drawSprite(20, 20, spriteIds.fontCode[65]);
-	engine.drawSprite(40, 20, spriteIds.fillColors.background, 200, 100);
+	engine.drawSprite(40, 20, FILL_SPRITE_ID, PALETTE_INDICES.surfaceBase, 200, 100);
+	engine.drawSprite(20, 20, getGlyphSpriteId(65), PALETTE_INDICES.inkBase);
 });
 ```
 
-Aliases and semantic roles that refer to the same source rectangle share one public numeric identifier. Callers resolve
-the grouped `spriteIdentifiers` against the resolver returned for the installed atlas, retain the resulting `spriteIds`,
-and pass those dense ids directly rather than resolving identifiers inside the render loop. Repeat this step whenever
-the atlas is replaced.
+`loadFontAtlas()` defaults to `DEFAULT_FONT`. Each font loads lazily and is decoded and expanded once;
+concurrent requests share the same promise. Returned atlases and pixel arrays are cached and shared: treat them
+as read-only. No canvas is needed. The default 8×16 font has a 128×144 atlas, with 129 cells on a 16-column grid.
+The remaining cells in its last row are transparent.
 
-## Font Bitmaps
+Font names, cell dimensions, and lazy imports are defined once in `src/fonts/catalog.ts`. `FONT_NAMES` and the
+`Font` type come from that catalog. Font sources are ASCII art in `src/fonts/<font>/ascii.ts`: `#` sets a pixel,
+and spaces leave it empty. The build packs glyph rows into compact Base64 payloads under `src/generated/`.
+These generated modules are ignored by Git. The runtime decoder retains typed arrays for the packed rows.
 
-Font bitmaps are precomputed from ASCII art sources and bundled as Base64-encoded payloads to reduce bundle size and eliminate runtime conversion overhead.
+Import a BDF font with `node tools/import-bdf.mjs <bdf-path> <font-name>`, then register its dimensions and payload
+import in the catalog. Web-ui owns font-specific background dot settings in `src/plugins/background/dot-settings.ts`;
+configure those there. Backgrounds use a procedural pass, and connectors use ordinary glyphs and fill.
 
-### Editing Fonts
+Packed text cells and palette selection belong to `@8f4e/web-ui-render-projection`, separately from font loading.
+Themes are resolved through `@8f4e/editor-palette` and never change mask pixels.
 
-Font glyphs are defined as ASCII art in the source files:
+From the repository root:
 
-- `src/fonts/ibmvga8x16/ascii.ts` - 8x16 ASCII character font
-- `src/fonts/ibmvga8x16/glyphs.ts` - 8x16 custom glyphs for UI elements
-- `src/fonts/6x10/ascii.ts` - 6x10 ASCII character font
-- `src/fonts/6x10/glyphs.ts` - 6x10 custom glyphs for UI elements
-
-Each glyph is an array of strings where:
-- `' '` (space) represents an unset pixel
-- `'#'` represents a set pixel
-
-Example:
-```typescript
-[ // Character 'A'
-	'   #    ',
-	'  ###   ',
-	' ## ##  ',
-	'##   ## ',
-	'####### ',
-	'##   ## ',
-	'##   ## ',
-]
-```
-
-### Regenerating Font Bitmaps
-
-Font bitmaps are automatically regenerated as part of the build process. However, you can manually regenerate them:
-
-```bash
-# From the sprite-generator package directory
-node tools/generate-font-bitmaps.mjs
-
-# Or using Nx
+```sh
 npx nx run @8f4e/sprite-generator:generate-fonts
-```
-
-Generated files are located in:
-- `src/fonts/ibmvga8x16/generated/`
-- `src/fonts/6x10/generated/`
-
-These files are git-ignored and should not be committed.
-
-### How It Works
-
-1. **Build Time**: The `generate-font-bitmaps.mjs` tool reads ASCII art font definitions and converts them to numeric bitmaps.
-2. **Encoding**: Numeric bitmaps are encoded as Base64 strings with metadata (character dimensions, glyph count).
-3. **Runtime**: The `font-decoder.ts` utility decodes Base64 payloads back to numeric arrays for rendering.
-
-This approach reduces the production bundle size by ~90% compared to shipping ASCII art sources.
-
-## Development
-
-```bash
-# Build the package
 npx nx run @8f4e/sprite-generator:build
-
-# Run tests
 npx nx run @8f4e/sprite-generator:test
-
-# Type check
 npx nx run @8f4e/sprite-generator:typecheck
-
-# Development mode with watch
-npx nx run @8f4e/sprite-generator:dev
-```
-
-## Visual Regression Testing
-
-The sprite generator includes Playwright-driven screenshot tests to ensure visual consistency and catch rendering regressions early.
-
-### Prerequisites
-
-Before running screenshot tests, ensure the sprite-generator package is built:
-
-```bash
-# Build the package (required for Vite aliases to resolve)
-npx nx run @8f4e/sprite-generator:build
-```
-
-### Running Screenshot Tests
-
-```bash
-# Run all screenshot tests
 npx nx run @8f4e/sprite-generator:test:screenshot
-
-# Run with UI mode for debugging
-npx nx run @8f4e/sprite-generator:test:screenshot:ui
-
-# Run in headed mode (visible browser)
-npx nx run @8f4e/sprite-generator:test:screenshot:headed
-
-# Debug tests step-by-step
-npx nx run @8f4e/sprite-generator:test:screenshot:debug
 ```
 
-### Updating Snapshots
+Unit tests compare every glyph pixel against its ASCII source for every bundled font, verify fill and unused cells,
+and check packed-row decoding, fallback IDs, and cached loading. Browser snapshots cover mask previews, renderer
+integration, and example palettes. Update snapshots only for intentional visual changes with
+`npx nx run @8f4e/sprite-generator:test:screenshot:update`.
 
-When sprite rendering changes are intentional (e.g., new features or bug fixes), update the baseline snapshots:
-
-```bash
-# Update all snapshots
-npx nx run @8f4e/sprite-generator:test:screenshot:update
-```
-
-### Test Structure
-
-Screenshot tests are located in `screenshot-tests/`:
-- `screenshot.test.ts` - Main Playwright test file
-- `test-cases/` - HTML and TypeScript files for each test scenario
-- `screenshot.test.ts-snapshots/` - Baseline snapshot images (committed to git)
-- `vite.config.ts` - Vite configuration for the test server (port 3002)
-
-### Test Cases
-
-Current test scenarios include:
-- **sprite-sheet-with-8x16-font** - Default 8x16 font with the standard color scheme
-- **sprite-sheet-with-6x10-font** - Sprite sheet generated with the 6x10 font
-- **sprite-atlas** - Generated flat lookup and numeric IDs rendered through the WebGL engine
-
-### Adding New Test Cases
-
-1. Create a new HTML file in `screenshot-tests/test-cases/` (e.g., `my-test.html`)
-2. Create a corresponding TypeScript file (e.g., `my-test.ts`)
-3. Add the test case name to the `testCases` array in `screenshot.test.ts`
-4. Run `npx nx run @8f4e/sprite-generator:test:screenshot:update` to capture the baseline snapshot
-
-### CI Integration
-
-Screenshot tests run automatically in CI. If a test fails:
-1. Review the diff in the CI output
-2. If the change is intentional, update snapshots locally and commit
-3. If the change is unintentional, fix the rendering issue
-
-## Bundle Size
-
-Font bitmaps before optimization: ~79KB
-Font bitmaps after optimization: ~8KB (90% reduction)
+Browser checks start their own Vite preview server at `http://localhost:3102`, separate from the metrics dashboard
+on port 3002. The port is bound strictly and existing servers are never reused. Tests navigate relative to the
+configured base URL and wait for the preview page's `data-ready` signal before capturing images. Playwright
+launches Vite directly and stops it after the run.

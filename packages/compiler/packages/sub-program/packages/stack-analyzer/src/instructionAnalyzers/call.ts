@@ -13,7 +13,6 @@ import {
 	getError,
 	stackItemToFunctionValueType,
 } from '@8f4e/language-spec';
-import { analyzePush } from './push';
 import { consume, produce } from './stack';
 
 function stackItemsToFunctionId(functionName: string, stackItems: readonly StackItem[]): string {
@@ -63,10 +62,6 @@ export function analyzeCall(
 	line: SemanticCallLine,
 	context: CompilationContext
 ): { consumed: Stack; produced: Stack; targetFunctionId: string } {
-	for (const inlinePushLine of line.inlineArgumentPushes ?? []) {
-		analyzePush(inlinePushLine, context);
-	}
-
 	const targetFunction = resolveTargetFunction(line, context);
 	const { parameters, returns } = targetFunction.signature;
 

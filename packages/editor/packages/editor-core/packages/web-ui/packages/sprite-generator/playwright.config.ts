@@ -1,5 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
+const baseURL = 'http://localhost:3102';
+
 export default defineConfig({
 	testDir: './screenshot-tests',
 	fullyParallel: true,
@@ -8,6 +10,7 @@ export default defineConfig({
 	workers: process.env.CI ? 1 : undefined,
 	reporter: 'list',
 	use: {
+		baseURL,
 		trace: 'on-first-retry',
 		viewport: { width: 1024, height: 768 },
 	},
@@ -20,9 +23,9 @@ export default defineConfig({
 	},
 	// Configure web server for testing
 	webServer: {
-		command: 'npx nx run @8f4e/sprite-generator:dev:test',
-		port: 3002,
-		reuseExistingServer: !process.env.CI,
+		command: 'vite --config screenshot-tests/vite.config.ts',
+		url: `${baseURL}/test-cases/sprite-atlas.html`,
+		reuseExistingServer: false,
 		stdout: 'pipe',
 		stderr: 'pipe',
 	},

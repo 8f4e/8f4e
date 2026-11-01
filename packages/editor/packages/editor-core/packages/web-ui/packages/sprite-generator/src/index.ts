@@ -1,432 +1,51 @@
-import type { SpriteCoordinates, SpriteId, SpriteIdentifier } from 'glugglugglug';
-import { createAtlasLayout } from './atlasLayout.ts';
-import generateBackground, { generateLookup as generateLookupForBackground } from './background.ts';
-import defaultColorScheme from './defaultColorScheme.ts';
-import generateFeedbackScale, { generateLookup as generateLookupForFeedbackScale } from './feedbackScale.ts';
-import type { FillSpriteColorName } from './fillColors.ts';
-import generateFillColors, { generateLookup as generateLookupForFillColors } from './fillColors.ts';
-import generateFont, { type FontLookups, generateLookups as generateLookupsForFonts } from './font.ts';
+import type { SpriteAtlasGrid, SpriteAtlasImage, SpriteId } from 'glugglugglug';
+import { createAtlasLayout, FONT_COLUMNS, GLYPH_COUNT } from './atlasLayout.ts';
+import { writeGlyph } from './font.ts';
+import { DEFAULT_FONT, FONTS, type Font } from './fonts/catalog.ts';
 import decodeFontBase64 from './fonts/font-decoder.ts';
-import type { FontMetadata } from './fonts/ibmvga8x16/generated/ascii.ts';
-import generateIcons, { generateLookup as generateLookupForIcons, type IconValue } from './icons.ts';
-import {
-	createSpriteAtlas,
-	type SpriteAtlas,
-	type SpriteIdentifierLookup,
-	type SpriteIdentifiers,
-	type SpriteIdLookup,
-	type SpriteIds,
-} from './sprite-atlas.ts';
-import { type ColorScheme, type ColorSchemeOverrides, Command, type Config, FONT_NAMES, type Font } from './types.ts';
 
-export type { SpriteId } from 'glugglugglug';
-export { default as defaultColorScheme } from './defaultColorScheme.ts';
-export type { FillSpriteColorName } from './fillColors.ts';
-export { Icon } from './icons.ts';
-export type {
-	ResolvedSpriteIds,
-	SpriteAtlas,
-	SpriteIdentifierLookup,
-	SpriteIdentifiers,
-	SpriteIdLookup,
-	SpriteIds,
-} from './sprite-atlas.ts';
-export { createSpriteAtlas, resolveSpriteIds } from './sprite-atlas.ts';
-export type { ColorScheme, ColorSchemeOverrides, Font } from './types.ts';
-export { FONT_NAMES } from './types.ts';
+export { DEFAULT_FONT, FONT_NAMES, type Font } from './fonts/catalog.ts';
 
-type FontData = {
-	asciiBitmap: number[];
-	glyphsBitmap: number[];
-	characterWidth: number;
-	characterHeight: number;
-};
+export const FILL_SPRITE_ID = GLYPH_COUNT as SpriteId;
 
-type FontMetadataSet = {
-	asciiMetadata: FontMetadata;
-	glyphsMetadata: FontMetadata;
-};
-
-type FontDefinition = {
-	characterWidth: number;
-	characterHeight: number;
-	loadMetadata: () => Promise<FontMetadataSet>;
-};
-
-const FONT_DEFINITIONS: Record<Font, FontDefinition> = {
-	attpc63008x16: {
-		characterWidth: 8,
-		characterHeight: 16,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/attpc63008x16/generated/ascii.ts'),
-				import('./fonts/attpc63008x16/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	'6x10': {
-		characterWidth: 6,
-		characterHeight: 10,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/6x10/generated/ascii.ts'),
-				import('./fonts/6x10/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	ibmvga8x16: {
-		characterWidth: 8,
-		characterHeight: 16,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/ibmvga8x16/generated/ascii.ts'),
-				import('./fonts/ibmvga8x16/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	nix8810m168x16: {
-		characterWidth: 8,
-		characterHeight: 16,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/nix8810m168x16/generated/ascii.ts'),
-				import('./fonts/nix8810m168x16/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	olivettithin8x16: {
-		characterWidth: 8,
-		characterHeight: 16,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/olivettithin8x16/generated/ascii.ts'),
-				import('./fonts/olivettithin8x16/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	spleen5x8: {
-		characterWidth: 5,
-		characterHeight: 8,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/spleen5x8/generated/ascii.ts'),
-				import('./fonts/spleen5x8/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	spleen6x12: {
-		characterWidth: 6,
-		characterHeight: 12,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/spleen6x12/generated/ascii.ts'),
-				import('./fonts/spleen6x12/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	spleen8x16: {
-		characterWidth: 8,
-		characterHeight: 16,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/spleen8x16/generated/ascii.ts'),
-				import('./fonts/spleen8x16/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	templeos8x8: {
-		characterWidth: 8,
-		characterHeight: 8,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/templeos8x8/generated/ascii.ts'),
-				import('./fonts/templeos8x8/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	spleen12x24: {
-		characterWidth: 12,
-		characterHeight: 24,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/spleen12x24/generated/ascii.ts'),
-				import('./fonts/spleen12x24/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	spleen16x32: {
-		characterWidth: 16,
-		characterHeight: 32,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/spleen16x32/generated/ascii.ts'),
-				import('./fonts/spleen16x32/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	terminus8x16: {
-		characterWidth: 8,
-		characterHeight: 16,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/terminus8x16/generated/ascii.ts'),
-				import('./fonts/terminus8x16/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	terminus8x16bold: {
-		characterWidth: 8,
-		characterHeight: 16,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/terminus8x16bold/generated/ascii.ts'),
-				import('./fonts/terminus8x16bold/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	terminus10x18: {
-		characterWidth: 10,
-		characterHeight: 18,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/terminus10x18/generated/ascii.ts'),
-				import('./fonts/terminus10x18/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	terminus10x18bold: {
-		characterWidth: 10,
-		characterHeight: 18,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/terminus10x18bold/generated/ascii.ts'),
-				import('./fonts/terminus10x18bold/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	kana12x13: {
-		characterWidth: 12,
-		characterHeight: 13,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/kana12x13/generated/ascii.ts'),
-				import('./fonts/kana12x13/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	terminus12x24: {
-		characterWidth: 12,
-		characterHeight: 24,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/terminus12x24/generated/ascii.ts'),
-				import('./fonts/terminus12x24/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-	terminus12x24bold: {
-		characterWidth: 12,
-		characterHeight: 24,
-		loadMetadata: async () => {
-			const [{ fontMetadata: asciiMetadata }, { fontMetadata: glyphsMetadata }] = await Promise.all([
-				import('./fonts/terminus12x24bold/generated/ascii.ts'),
-				import('./fonts/terminus12x24bold/generated/glyphs.ts'),
-			]);
-
-			return { asciiMetadata, glyphsMetadata };
-		},
-	},
-};
-
-function decodeFontData({ asciiMetadata, glyphsMetadata }: FontMetadataSet, definition: FontDefinition): FontData {
-	return {
-		asciiBitmap: decodeFontBase64(asciiMetadata),
-		glyphsBitmap: decodeFontBase64(glyphsMetadata),
-		characterWidth: definition.characterWidth,
-		characterHeight: definition.characterHeight,
-	};
+/** Bundled glyph IDs match ASCII character codes; unsupported characters use the question mark. */
+export function getGlyphSpriteId(character: number): SpriteId {
+	return (character >= 0 && character < GLYPH_COUNT ? character : 63) as SpriteId;
 }
 
-// Fonts are loaded on first use and cached so each bitmap is decoded at most once.
-const fontCache: Partial<Record<Font, FontData>> = {};
-
-export const DEFAULT_FONT: Font = 'ibmvga8x16';
-
-function resolveFont(font: Config['font']): Font {
-	return FONT_NAMES.includes(font as Font) ? (font as Font) : DEFAULT_FONT;
+export interface FontAtlas {
+	image: SpriteAtlasImage;
+	grid: SpriteAtlasGrid;
 }
 
-async function loadFont(font: Font): Promise<FontData> {
-	if (fontCache[font]) {
-		return fontCache[font]!;
+const fontCache: Partial<Record<Font, Promise<FontAtlas>>> = {};
+
+/** Loads and expands each bundled font once. All fonts share the same glyph and fill cell IDs. */
+export default function loadFontAtlas(font: Font = DEFAULT_FONT): Promise<FontAtlas> {
+	return (fontCache[font] ??= buildFontAtlas(font));
+}
+
+async function buildFontAtlas(font: Font): Promise<FontAtlas> {
+	const { width, height, load } = FONTS[font];
+	const { default: base64 } = await load();
+	const bitmap = decodeFontBase64(base64, width > 8 ? 2 : 1);
+	const layout = createAtlasLayout(width, height);
+	const image = { width: layout.width, height: layout.height, data: new Uint8Array(layout.width * layout.height) };
+	for (let code = 0; code < GLYPH_COUNT; code++) {
+		writeGlyph(
+			image.data,
+			image.width,
+			bitmap,
+			code,
+			width,
+			height,
+			(code % FONT_COLUMNS) * width,
+			Math.floor(code / FONT_COLUMNS) * height
+		);
 	}
-
-	const definition = FONT_DEFINITIONS[font];
-	const metadata = await definition.loadMetadata();
-	const fontData = decodeFontData(metadata, definition);
-
-	fontCache[font] = fontData;
-	return fontData;
-}
-
-interface AtlasCoordinates extends FontLookups {
-	fillColors: Record<FillSpriteColorName, SpriteCoordinates>;
-	background: Record<0, SpriteCoordinates>;
-	icons: Record<IconValue, SpriteCoordinates>;
-	feedbackScale: Partial<Record<number, SpriteCoordinates>>;
-}
-
-/** Validated fixed-cell font whose fallback glyph is guaranteed to exist. */
-export type SpriteFont = SpriteIdLookup & { readonly 63: SpriteId };
-
-/** Validated feedback scale whose neutral fallback sprite is guaranteed to exist. */
-export type SpriteFeedbackScale = SpriteIdLookup & { readonly 0: SpriteId };
-
-type NonFontAtlasCoordinates = Omit<AtlasCoordinates, keyof FontLookups>;
-
-type SpriteIdentifierFont = SpriteIdentifierLookup & { readonly 63: SpriteIdentifier };
-type SpriteIdentifierFeedbackScale = SpriteIdentifierLookup & { readonly 0: SpriteIdentifier };
-
-/** Grouped public identifiers emitted with a generated atlas and resolved when that atlas is installed. */
-export type SpriteIdentifierLookups = Omit<SpriteIdentifiers<NonFontAtlasCoordinates>, 'feedbackScale'> & {
-	feedbackScale: SpriteIdentifierFeedbackScale;
-} & {
-	[Group in keyof FontLookups]: SpriteIdentifierFont;
-};
-
-/** Grouped numeric sprite identifiers used by the editor render hot path. */
-export type SpriteIdLookups = Omit<SpriteIds<NonFontAtlasCoordinates>, 'feedbackScale'> & {
-	feedbackScale: SpriteFeedbackScale;
-} & {
-	[Group in keyof FontLookups]: SpriteFont;
-};
-
-export function resolveColorScheme(overrides: Config['colorScheme'] = {}): ColorScheme {
-	const colorSchemeOverrides = overrides as ColorSchemeOverrides;
-	return {
-		text: { ...defaultColorScheme.text, ...colorSchemeOverrides.text },
-		fill: { ...defaultColorScheme.fill, ...colorSchemeOverrides.fill },
-		icons: { ...defaultColorScheme.icons, ...colorSchemeOverrides.icons },
-	};
-}
-
-export default async function generateSprite(config: Config): Promise<{
-	spriteAtlas: SpriteAtlas<SpriteIdentifierLookups>;
-	characterWidth: number;
-	characterHeight: number;
-}> {
-	const { characterWidth, characterHeight, asciiBitmap, glyphsBitmap } = await loadFont(resolveFont(config.font));
-	const layout = createAtlasLayout(characterWidth, characterHeight);
-	const canvas = new OffscreenCanvas(layout.canvasWidth, layout.canvasHeight);
-	const colorScheme = resolveColorScheme(config.colorScheme);
-
-	const ctx = canvas.getContext('2d', {
-		alpha: true,
-		antialias: false,
-	}) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
-
-	const commands = [
-		...generateFillColors(characterWidth, characterHeight, colorScheme.fill),
-		...generateFeedbackScale(asciiBitmap, characterWidth, characterHeight, colorScheme.icons),
-		...generateFont(asciiBitmap, characterWidth, characterHeight, colorScheme.text),
-		...generateBackground(glyphsBitmap, characterWidth, characterHeight, colorScheme.fill),
-		...generateIcons(asciiBitmap, characterWidth, characterHeight, colorScheme.icons),
-	];
-
-	commands.forEach(([command, ...params]) => {
-		switch (command) {
-			case Command.FILL_COLOR:
-				ctx.fillStyle = <string>params[0];
-				break;
-			case Command.RECTANGLE:
-				ctx.fillRect(...(params as [number, number, number, number]));
-				break;
-			case Command.SAVE:
-				ctx.save();
-				break;
-			case Command.RESET_TRANSFORM:
-				ctx.resetTransform();
-				break;
-			case Command.RESTORE:
-				ctx.restore();
-				break;
-			case Command.TRANSLATE:
-				ctx.translate(...(params as [number, number]));
-				break;
-			case Command.PIXEL:
-				ctx.fillRect(...(params as [number, number]), 1, 1);
-				break;
-		}
-	});
-
-	const atlasCoordinates: AtlasCoordinates = {
-		fillColors: generateLookupForFillColors(characterWidth, characterHeight),
-		...generateLookupsForFonts(characterWidth, characterHeight, colorScheme.text),
-		feedbackScale: generateLookupForFeedbackScale(characterWidth, characterHeight, colorScheme.icons),
-		background: generateLookupForBackground(characterWidth, characterHeight),
-		icons: generateLookupForIcons(characterWidth, characterHeight),
-	};
-	const rawSpriteAtlas = createSpriteAtlas(canvas, atlasCoordinates);
-	const spriteAtlas: SpriteAtlas<SpriteIdentifierLookups> = {
-		...rawSpriteAtlas,
-		spriteIdentifiers: validateSpriteIdentifiers(rawSpriteAtlas.spriteIdentifiers),
-	};
-
-	return {
-		characterHeight,
-		characterWidth,
-		spriteAtlas,
-	};
-}
-
-/**
- * Strengthens generated lookup groups after confirming that their required fallback sprites exist.
- *
- * @param spriteIdentifiers - Public atlas lookups produced from validated source rectangles.
- * @returns The same lookups with required font and feedback fallbacks reflected in their types.
- */
-function validateSpriteIdentifiers(spriteIdentifiers: SpriteIdentifiers<AtlasCoordinates>): SpriteIdentifierLookups {
-	for (const [groupName, group] of Object.entries(spriteIdentifiers)) {
-		if (groupName.startsWith('font') && (group as SpriteIdentifierLookup)[63] === undefined) {
-			throw new Error(`Generated sprite font ${groupName} is missing fallback glyph 63.`);
-		}
+	for (let row = 0; row < height; row++) {
+		const start = (layout.fill.y + row) * image.width + layout.fill.x;
+		image.data.fill(255, start, start + width);
 	}
-	if (spriteIdentifiers.feedbackScale[0] === undefined) {
-		throw new Error('Generated feedback scale is missing fallback sprite 0.');
-	}
-	return spriteIdentifiers as SpriteIdentifierLookups;
+	return { image, grid: { cellWidth: width, cellHeight: height, columns: FONT_COLUMNS, cellCount: GLYPH_COUNT + 1 } };
 }

@@ -89,7 +89,7 @@ export function validateUnresolvedValueExpression(
 	argument: Extract<Argument, { type: typeof ArgumentType.COMPILE_TIME_EXPRESSION }>,
 	line: CompilerASTLine,
 	context: ReferenceResolutionContext
-): void {
+): never {
 	if (argument.left.type === ArgumentType.IDENTIFIER) {
 		validateIntermoduleAddressReference(argument.left, line, context);
 	}
@@ -117,7 +117,7 @@ export function validateUnresolvedIdentifier(
 	argument: Extract<Argument, { type: typeof ArgumentType.IDENTIFIER }>,
 	line: CompilerASTLine,
 	context: ReferenceResolutionContext
-): void {
+): never {
 	validateIntermoduleAddressReference(argument, line, context);
 	throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: argument.value });
 }

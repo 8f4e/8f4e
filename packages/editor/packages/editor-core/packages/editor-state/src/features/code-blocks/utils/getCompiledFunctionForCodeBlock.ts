@@ -1,12 +1,12 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 
-export type CompiledFunction = NonNullable<NonNullable<State['compiler']['compiledFunctions']>[string]>;
-type CompiledFunctionLookup = NonNullable<State['compiler']['compiledFunctions']>;
+export type CompiledFunction = NonNullable<NonNullable<State['compiler']['result']['compiledFunctions']>[string]>;
+type CompiledFunctionLookup = NonNullable<State['compiler']['result']['compiledFunctions']>;
 
 const compiledFunctionsByBlockIdCache = new WeakMap<CompiledFunctionLookup, Map<number, CompiledFunction>>();
 
 export function getCompiledFunctionsByBlockId(
-	compiledFunctions: State['compiler']['compiledFunctions']
+	compiledFunctions: State['compiler']['result']['compiledFunctions']
 ): Map<number, CompiledFunction> | undefined {
 	if (!compiledFunctions) {
 		return undefined;
@@ -39,5 +39,5 @@ export function getCompiledFunctionForCodeBlock(
 		return undefined;
 	}
 
-	return getCompiledFunctionsByBlockId(state.compiler.compiledFunctions)?.get(graphicData.creationIndex);
+	return getCompiledFunctionsByBlockId(state.compiler.result.compiledFunctions)?.get(graphicData.creationIndex);
 }

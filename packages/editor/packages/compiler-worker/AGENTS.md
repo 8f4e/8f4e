@@ -17,3 +17,5 @@
 
 ## Commits & PRs
 - Commits: `compiler-worker: <change>`; PRs describe protocol changes and include tests.
+
+- Return the compilation artifacts using `memoryRef` consistently across the worker boundary. Do not add redundant size or instance-reset flags; memory lifecycle is described by `memoryAction`.

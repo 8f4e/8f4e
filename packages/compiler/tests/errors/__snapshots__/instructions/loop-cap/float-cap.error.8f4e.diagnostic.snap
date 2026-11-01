@@ -8,9 +8,10 @@
   "line": {
     "arguments": [
       {
-        "isInteger": false,
-        "type": "literal",
-        "value": 1.5,
+        "referenceKind": "constant",
+        "scope": "local",
+        "type": "identifier",
+        "value": "LOOP_COUNT",
       },
     ],
     "instruction": "loop",

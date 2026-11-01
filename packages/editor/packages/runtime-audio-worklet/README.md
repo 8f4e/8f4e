@@ -1,14 +1,6 @@
 # @8f4e/runtime-audio-worklet
 
-AudioWorklet runtime for executing 8f4e programs in the browser audio graph. Includes the worklet entry point and runtime definition metadata.
+AudioWorklet processor, audio buffer routing, and message protocol for 8f4e programs. The page-side editor integration, configuration, and lifecycle live in
+[`@8f4e/editor-plugin-audio-runtime`](../../plugins/audio-runtime/README.md).
 
-## Responsibilities
-
-- Provide the AudioWorklet processor entry.
-- Expose runtime definitions used by the editor and host.
-
-## Microphone input
-
-When a project configures an audio input buffer, the runtime requests microphone audio with echo cancellation, noise
-suppression, and automatic gain control disabled. This avoids voice-oriented processing that can attenuate or distort
-music and feedback signals. Browsers and audio devices may still apply processing outside the Web Audio constraints.
+Validate with `npx nx run @8f4e/runtime-audio-worklet:build|test|typecheck`.

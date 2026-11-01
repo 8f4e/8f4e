@@ -7,9 +7,8 @@ import {
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '../../../pureHelpers/testingUtils/testUtils';
-import tooltip from '../../tooltip/effect';
-import { createStackDirectiveWidgetContribution } from '../features/directives/stack/resolve';
 import gaps from '../gaps';
+import type { BlockLayoutDraft } from '../layout/types';
 import paramShape, { updateParamShapeDeclarations } from '../paramShape/updateGraphicData';
 import { createCodeBlockGraphicData } from './createCodeBlockGraphicData';
 import { getCompiledFunctionForCodeBlock, getCompiledFunctionsByBlockId } from './getCompiledFunctionForCodeBlock';
@@ -19,7 +18,6 @@ function createTestCompiledFunction(
 	projectBlockId: number,
 	options: {
 		paramLabel?: { type: 'int*' | 'float*'; name: string };
-		stackValue?: number;
 	} = {}
 ): CompiledFunction {
 	const paramType = options.paramLabel?.type ?? 'int*';
@@ -40,21 +38,7 @@ function createTestCompiledFunction(
 					},
 				]
 			: [],
-		stackAnalysis:
-			options.stackValue !== undefined
-				? [
-						{
-							lineNumber: 1,
-							instruction: 'push',
-							stackAnalysis: {
-								stackBefore: [],
-								consumedOperands: [],
-								producedStackItems: [{ kind: 'value', valueType: 'int', knownValue: options.stackValue }],
-								stackAfter: [{ kind: 'value', valueType: 'int', knownValue: options.stackValue }],
-							},
-						},
-					]
-				: [],
+		stackAnalysis: [],
 		ast: {
 			type: 'function',
 			name,
@@ -64,7 +48,7 @@ function createTestCompiledFunction(
 				codeBlockId: name,
 			},
 			functionLine: { lineNumber: 0, instruction: 'function', arguments: [{ value: name }] },
-			functionEndLine: { lineNumber: 3, instruction: 'functionEnd', arguments: [] },
+			functionEndLine: { lineNumber: 2, instruction: 'functionEnd', arguments: [] },
 			signature: { parameters: [paramType], returns: [] },
 			lines: [],
 		} as unknown as ComposedFunctionAST,
@@ -76,7 +60,9 @@ describe('getCompiledFunctionForCodeBlock', () => {
 		const fnA = createTestCompiledFunction('fnA', 10);
 		const fnB = createTestCompiledFunction('fnB', 20);
 		let propReads = 0;
-		const compiledFunctions: NonNullable<ReturnType<typeof createMockState>['compiler']['compiledFunctions']> = {};
+		const compiledFunctions: NonNullable<
+			ReturnType<typeof createMockState>['compiler']['result']['compiledFunctions']
+		> = {};
 
 		Object.defineProperty(compiledFunctions, fnA.id, {
 			enumerable: true,
@@ -94,7 +80,7 @@ describe('getCompiledFunctionForCodeBlock', () => {
 		});
 
 		const state = createMockState({
-			compiler: { compiledFunctions },
+			compiler: { result: { compiledFunctions } },
 		});
 		const blockA = createCodeBlockGraphicData({ blockType: 'function', creationIndex: 10 });
 		const blockB = createCodeBlockGraphicData({ blockType: 'function', creationIndex: 20 });
@@ -120,9 +106,11 @@ describe('getCompiledFunctionForCodeBlock', () => {
 		const duplicate = createTestCompiledFunction('duplicate', 7);
 		const state = createMockState({
 			compiler: {
-				compiledFunctions: {
-					[first.id]: first,
-					[duplicate.id]: duplicate,
+				result: {
+					compiledFunctions: {
+						[first.id]: first,
+						[duplicate.id]: duplicate,
+					},
 				},
 			},
 		});
@@ -131,94 +119,78 @@ describe('getCompiledFunctionForCodeBlock', () => {
 		expect(getCompiledFunctionForCodeBlock(block, state)).toBe(first);
 	});
 
-	it('updates layout, stack widgets, and tooltips across recompilation, function deletion, and reset', () => {
+	it('updates parameter layout across recompilation, function deletion, and reset', () => {
 		const block = createMockCodeBlock({
 			name: 'helper',
 			blockType: 'function',
 			creationIndex: 42,
 			lineNumberColumnWidth: 1,
-			code: ['function helper', 'push 1', '; @stack', 'functionEnd'],
-			cursor: { row: 1, col: 0, x: 0, y: 0 },
+			code: ['function helper', 'paramShape parameters', 'functionEnd'],
 		});
 		const initialFn = createTestCompiledFunction('helper', 42, {
 			paramLabel: { type: 'int*', name: 'initialParam' },
-			stackValue: 1,
 		});
 		const state = createMockState({
 			viewport: { vGrid: 8, hGrid: 16 },
 			compiler: {
-				compiledFunctions: {
-					[initialFn.id]: initialFn,
+				result: {
+					compiledFunctions: {
+						[initialFn.id]: initialFn,
+					},
 				},
-			},
-			codeBlockRendering: {
-				selectedCodeBlock: block,
 			},
 		});
 		const store = createStateManager(state);
-		tooltip(store);
 
-		const runLayoutAndStack = () => {
+		const runLayout = () => {
 			block.widgets.shapeDeclarations = [];
-			block.widgets.debuggers = [];
-			const directiveState = {
-				blockState: { disabled: false, isHome: false, isFavorite: false },
-				displayState: {},
+			const blockLayout: BlockLayoutDraft = {
 				displayModel: {
-					lines: block.code.map((text, rawRow) => ({ rawRow, text })),
-					displayRowToRawRow: [0, 1, 2, 3],
-					rawRowToDisplayRow: [0, 1, 2, 3],
+					lines: block.code.map((text, sourceLineIndex) => ({ sourceLineIndex, text })),
+					displayRowToSourceLineIndex: [0, 1, 2],
+					sourceLineIndexToDisplayRow: [0, 1, 2],
 					isCollapsed: false,
 				},
-				layoutContributions: [],
-				widgets: [],
+				verticalSpaceAfterSourceLine: [],
 			};
-			paramShape(block, state, directiveState);
-			gaps(block, directiveState);
-			updateParamShapeDeclarations(block, state, directiveState);
-			createStackDirectiveWidgetContribution({ lineNumber: 2, isTrailing: false }).afterGraphicDataWidthCalculation?.(
-				block,
-				state,
-				directiveState
-			);
+			paramShape(block, state, blockLayout);
+			gaps(block, blockLayout);
+			updateParamShapeDeclarations(block, state, blockLayout);
 		};
 
-		runLayoutAndStack();
+		runLayout();
 		expect(block.widgets.shapeDeclarations).toEqual([{ x: 24, y: 32, text: 'int* initialParam' }]);
-		expect(block.widgets.debuggers).toContainEqual(expect.objectContaining({ id: 'stack:2', text: '1' }));
-		expect(state.tooltip.text).toContain('after: [+int=1]');
 
 		// Recompile with updated function metadata for the same projectBlockId
 		const recompiledFn = createTestCompiledFunction('helper', 42, {
 			paramLabel: { type: 'float*', name: 'updatedParam' },
-			stackValue: 9,
 		});
-		store.set('compiler.compiledFunctions', {
-			[recompiledFn.id]: recompiledFn,
+		store.set('compiler.result', {
+			...state.compiler.result,
+			compiledFunctions: { [recompiledFn.id]: recompiledFn },
 		});
 
-		runLayoutAndStack();
+		runLayout();
 		expect(block.widgets.shapeDeclarations).toEqual([{ x: 24, y: 32, text: 'float* updatedParam' }]);
-		expect(block.widgets.debuggers).toContainEqual(expect.objectContaining({ id: 'stack:2', text: '9' }));
-		expect(state.tooltip.text).toContain('after: [+int=9]');
 
 		// Delete function / replace project compilation result without block 42
 		const unrelatedFn = createTestCompiledFunction('other', 99, {
 			paramLabel: { type: 'int*', name: 'otherParam' },
-			stackValue: 5,
 		});
-		store.set('compiler.compiledFunctions', {
-			[unrelatedFn.id]: unrelatedFn,
+		store.set('compiler.result', {
+			...state.compiler.result,
+			compiledFunctions: { [unrelatedFn.id]: unrelatedFn },
 		});
 
-		runLayoutAndStack();
+		runLayout();
 		expect(block.widgets.shapeDeclarations).toEqual([]);
-		expect(block.widgets.debuggers).toEqual([]);
-		expect(state.tooltip.text).not.toContain('after: [+int=9]');
 
 		// Reset compiledFunctions to undefined
-		store.set('compiler.compiledFunctions', undefined);
+		store.set('compiler.result', { ...state.compiler.result, compiledFunctions: undefined });
+		runLayout();
+		expect(block.widgets.shapeDeclarations).toEqual([]);
 		expect(getCompiledFunctionForCodeBlock(block, state)).toBeUndefined();
-		expect(getCompiledFunctionsByBlockId(state.compiler.compiledFunctions)).toBeUndefined();
+		expect(getCompiledFunctionsByBlockId(state.compiler.result.compiledFunctions)).toBeUndefined();
+		store.dispose();
 	});
 });

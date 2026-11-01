@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { instructionSpecs } from './instructionSpecs';
 import {
-	compiledModuleBlockTypes,
 	compilerBlockInstructionPairs,
 	compilerSourceBlockInstructionPairs,
 	functionPreBodyInstructionNames,
@@ -10,8 +9,8 @@ import {
 	isFunctionBodyInstructionName,
 	isFunctionPreBodyInstructionName,
 	isImportedFunctionDeclarationInstructionName,
-	isKnownInstructionName,
 	isSubProgramInstructionName,
+	knownInstructionNameSet,
 	stackBlockInstructionPairs,
 } from './instructions';
 
@@ -38,7 +37,6 @@ describe('instruction block classification', () => {
 
 		expect({
 			binaryMatchingInstructionNames,
-			compiledModuleBlockTypes,
 			compilerBlockInstructionPairs,
 			compilerSourceBlockInstructionPairs,
 			stackBlockInstructionPairs,
@@ -67,12 +65,12 @@ describe('function instruction classification', () => {
 
 describe('instruction name classification', () => {
 	it('includes project instructions in the complete set but excludes them from subprograms', () => {
-		expect(isKnownInstructionName('group')).toBe(true);
-		expect(isKnownInstructionName('groupEnd')).toBe(true);
-		expect(isKnownInstructionName('expose')).toBe(true);
-		expect(isKnownInstructionName('init')).toBe(true);
-		expect(isKnownInstructionName('bind')).toBe(false);
-		expect(isKnownInstructionName('pass')).toBe(true);
+		expect(knownInstructionNameSet.has('group')).toBe(true);
+		expect(knownInstructionNameSet.has('groupEnd')).toBe(true);
+		expect(knownInstructionNameSet.has('expose')).toBe(true);
+		expect(knownInstructionNameSet.has('init')).toBe(true);
+		expect(knownInstructionNameSet.has('bind')).toBe(false);
+		expect(knownInstructionNameSet.has('pass')).toBe(true);
 		expect(isSubProgramInstructionName('group')).toBe(false);
 		expect(isSubProgramInstructionName('expose')).toBe(false);
 		expect(isSubProgramInstructionName('init')).toBe(false);

@@ -9,27 +9,41 @@ describe('parseBlockDirectives', () => {
 
 	it('should parse an editor directive (@)', () => {
 		expect(parseBlockDirectives(['; @pos 10 20'])).toEqual([
-			{ prefix: '@', name: 'pos', args: ['10', '20'], rawRow: 0, sourceLine: '; @pos 10 20', isTrailing: false },
+			{
+				prefix: '@',
+				name: 'pos',
+				args: ['10', '20'],
+				sourceLineIndex: 0,
+				sourceLine: '; @pos 10 20',
+				isTrailing: false,
+			},
 		]);
 	});
 
 	it('should parse unknown editor directive names', () => {
-		expect(parseBlockDirectives(['; @midi'])).toEqual([
-			{ prefix: '@', name: 'midi', args: [], rawRow: 0, sourceLine: '; @midi', isTrailing: false },
+		expect(parseBlockDirectives(['; @custom'])).toEqual([
+			{ prefix: '@', name: 'custom', args: [], sourceLineIndex: 0, sourceLine: '; @custom', isTrailing: false },
 		]);
 	});
 
 	it('should parse directives with no arguments', () => {
 		expect(parseBlockDirectives(['; @disabled'])).toEqual([
-			{ prefix: '@', name: 'disabled', args: [], rawRow: 0, sourceLine: '; @disabled', isTrailing: false },
+			{ prefix: '@', name: 'disabled', args: [], sourceLineIndex: 0, sourceLine: '; @disabled', isTrailing: false },
 		]);
 	});
 
-	it('should record the correct rawRow for each directive', () => {
-		const code = ['module test', '; @pos 5 10', 'push 1', '; @favorite', 'moduleEnd'];
+	it('should record the correct sourceLineIndex for each directive', () => {
+		const code = ['module test', '; @pos 5 10', 'push 1', '; @testDirective', 'moduleEnd'];
 		expect(parseBlockDirectives(code)).toEqual([
-			{ prefix: '@', name: 'pos', args: ['5', '10'], rawRow: 1, sourceLine: '; @pos 5 10', isTrailing: false },
-			{ prefix: '@', name: 'favorite', args: [], rawRow: 3, sourceLine: '; @favorite', isTrailing: false },
+			{ prefix: '@', name: 'pos', args: ['5', '10'], sourceLineIndex: 1, sourceLine: '; @pos 5 10', isTrailing: false },
+			{
+				prefix: '@',
+				name: 'testDirective',
+				args: [],
+				sourceLineIndex: 3,
+				sourceLine: '; @testDirective',
+				isTrailing: false,
+			},
 		]);
 	});
 
@@ -47,7 +61,7 @@ describe('parseBlockDirectives', () => {
 				prefix: '@',
 				name: 'group',
 				args: ['myGroup'],
-				rawRow: 0,
+				sourceLineIndex: 0,
 				sourceLine: '   ; @group myGroup',
 				isTrailing: false,
 			},
@@ -55,41 +69,55 @@ describe('parseBlockDirectives', () => {
 	});
 
 	it('should parse multiple directives from a block', () => {
-		const code = ['; @pos 0 0', '; @disabled', '; @favorite'];
+		const code = ['; @pos 0 0', '; @disabled', '; @testDirective'];
 		expect(parseBlockDirectives(code)).toEqual([
-			{ prefix: '@', name: 'pos', args: ['0', '0'], rawRow: 0, sourceLine: '; @pos 0 0', isTrailing: false },
-			{ prefix: '@', name: 'disabled', args: [], rawRow: 1, sourceLine: '; @disabled', isTrailing: false },
-			{ prefix: '@', name: 'favorite', args: [], rawRow: 2, sourceLine: '; @favorite', isTrailing: false },
+			{ prefix: '@', name: 'pos', args: ['0', '0'], sourceLineIndex: 0, sourceLine: '; @pos 0 0', isTrailing: false },
+			{ prefix: '@', name: 'disabled', args: [], sourceLineIndex: 1, sourceLine: '; @disabled', isTrailing: false },
+			{
+				prefix: '@',
+				name: 'testDirective',
+				args: [],
+				sourceLineIndex: 2,
+				sourceLine: '; @testDirective',
+				isTrailing: false,
+			},
 		]);
 	});
 
 	it('should parse trailing inline editor directives', () => {
 		expect(parseBlockDirectives(['int foo 1 ; @watch'])).toEqual([
-			{ prefix: '@', name: 'watch', args: [], rawRow: 0, sourceLine: 'int foo 1 ; @watch', isTrailing: true },
+			{ prefix: '@', name: 'watch', args: [], sourceLineIndex: 0, sourceLine: 'int foo 1 ; @watch', isTrailing: true },
 		]);
 	});
 
 	it('should parse multiple directives from a single comment line', () => {
-		expect(parseBlockDirectives(['; @pos 1 2 @favorite'])).toEqual([
+		expect(parseBlockDirectives(['; @pos 1 2 @testDirective'])).toEqual([
 			{
 				prefix: '@',
 				name: 'pos',
 				args: ['1', '2'],
-				rawRow: 0,
-				sourceLine: '; @pos 1 2 @favorite',
+				sourceLineIndex: 0,
+				sourceLine: '; @pos 1 2 @testDirective',
 				isTrailing: false,
 			},
-			{ prefix: '@', name: 'favorite', args: [], rawRow: 0, sourceLine: '; @pos 1 2 @favorite', isTrailing: false },
+			{
+				prefix: '@',
+				name: 'testDirective',
+				args: [],
+				sourceLineIndex: 0,
+				sourceLine: '; @pos 1 2 @testDirective',
+				isTrailing: false,
+			},
 		]);
 	});
 
 	it('should append dash continuation comment arguments to the previous directive', () => {
-		expect(parseBlockDirectives(['; @config', '; - webUI.overlay.target', '; - frame:buffer'])).toEqual([
+		expect(parseBlockDirectives(['; @config', '; - settings.target', '; - frame:buffer'])).toEqual([
 			{
 				prefix: '@',
 				name: 'config',
-				args: ['webUI.overlay.target', 'frame:buffer'],
-				rawRow: 0,
+				args: ['settings.target', 'frame:buffer'],
+				sourceLineIndex: 0,
 				sourceLine: '; @config',
 				isTrailing: false,
 			},
@@ -97,13 +125,13 @@ describe('parseBlockDirectives', () => {
 	});
 
 	it('should ignore dash continuation comments without a previous directive', () => {
-		expect(parseBlockDirectives(['; - orphan', '; @favorite'])).toEqual([
+		expect(parseBlockDirectives(['; - orphan', '; @testDirective'])).toEqual([
 			{
 				prefix: '@',
-				name: 'favorite',
+				name: 'testDirective',
 				args: [],
-				rawRow: 1,
-				sourceLine: '; @favorite',
+				sourceLineIndex: 1,
+				sourceLine: '; @testDirective',
 				isTrailing: false,
 			},
 		]);

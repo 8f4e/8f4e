@@ -1,6 +1,6 @@
 {
 	"name": "@8f4e/8f4e-website",
-	"version": "0.2.9",
+	"version": "0.2.28",
 	"private": true,
 	"description": "8f4e product website",
 	"type": "module",
@@ -15,10 +15,14 @@
 	},
 	"homepage": "https://github.com/8f4e/8f4e#readme",
 	"dependencies": {
-		"@8f4e/editor-default": "*"
+		"@8f4e/editor-minimal": "*",
+		"@8f4e/editor-webmcp": "*"
 	},
 	"devDependencies": {
 		"@8f4e/config": "*",
+		"@vitest/browser": "4.1.7",
+		"@vitest/browser-playwright": "4.1.7",
+		"vitest": "4.1.7",
 		"vite": "7.3.7",
 		"vite-plugin-static-copy": "4.1.1"
 	}

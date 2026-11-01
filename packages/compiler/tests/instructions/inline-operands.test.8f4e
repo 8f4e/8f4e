@@ -1,0 +1,209 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+entry test
+module integerOperands
+push 8
+add 3
+assertEqual 11
+
+push 8
+sub 3
+assertEqual 5
+
+push 8
+mul 3
+assertEqual 24
+
+push 8
+div 3
+assertEqual 2
+
+push 8
+min 3
+assertEqual 3
+
+push 8
+max 3
+assertEqual 8
+
+push 8
+remainder 3
+assertEqual 2
+
+push 10
+and 3
+assertEqual 2
+
+push 8
+or 3
+assertEqual 11
+
+push 10
+xor 3
+assertEqual 9
+
+push 3
+shiftLeft 2
+assertEqual 12
+
+push -8
+shiftRight 2
+assertEqual -2
+
+push -8
+shiftRightUnsigned 2
+assertEqual 1073741822
+
+moduleEnd
+
+module floatOperands
+push 1.5
+add 2.0
+assertEqual 3.5
+
+push 1.5
+sub 2.0
+assertEqual -0.5
+
+push 1.5
+mul 2.0
+assertEqual 3.0
+
+push 1.5
+div 2.0
+assertEqual 0.75
+
+push 1.5
+min 2.0
+assertEqual 1.5
+
+push 1.5
+max 2.0
+assertEqual 2.0
+
+push 1.5f64
+add 2.0f64
+assertEqual 3.5f64
+
+push 1.5f64
+sub 2.0f64
+assertEqual -0.5f64
+
+push 1.5f64
+mul 2.0f64
+assertEqual 3.0f64
+
+push 1.5f64
+div 2.0f64
+assertEqual 0.75f64
+
+push 1.5f64
+min 2.0f64
+assertEqual 1.5f64
+
+push 1.5f64
+max 2.0f64
+assertEqual 2.0f64
+
+moduleEnd
+
+module referenceOperands
+const FACTOR 3
+int value 4
+float gain 1.5
+float* pointer &gain
+float** indirect &pointer
+int[] values 3 11 22 33
+local int temp
+
+push 5
+localSet temp
+push 2
+mul temp
+add value
+add FACTOR
+assertEqual 17
+
+push 2.0
+mul *pointer
+assertEqual 3.0
+push 2.0
+mul **indirect
+assertEqual 3.0
+
+push 0
+add &values
+add sizeof(values)
+load
+assertEqual 22
+push 1
+add count(values)
+assertEqual 4
+push 10
+sub FACTOR*2
+assertEqual 4
+
+push 10
+sub "A"
+assertEqual -55
+
+call scale 2.0 1.5
+assertEqual 3.0
+call readScale 2.0 pointer
+assertEqual 3.0
+moduleEnd
+
+group scoped
+module source
+int value 7
+moduleEnd
+module reader
+push 0
+add &source:value
+load
+assertEqual 7
+moduleEnd
+groupEnd
+module controlFlowOperands
+int total
+loop 4
+push &total
+push total
+add 1
+store
+loopEnd
+push total
+assertEqual 4
+push total
+push 4
+equal
+if
+push &total
+push total
+mul
+- 2
+store
+ifEnd
+push total
+assertEqual 8
+moduleEnd
+entryEnd
+
+function scale
+param float value
+param float gain
+push value
+mul gain
+functionEnd float
+
+function readScale
+#impure
+param float value
+param float* gain
+push value
+mul *gain
+functionEnd float

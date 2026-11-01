@@ -1,0 +1,18 @@
+8f4e/v1
+
+note tokyoNightColors
+; @public
+; @config color.canvas #060606
+; @config color.surface #0d0d0d
+; @config color.ink #e3e3e3
+; @config color.primary #bb9af7
+; @config color.secondary #ff9e64
+; @config color.tertiary #7d8198
+; @config color.highlight #7dcfff
+; @config color.detail #7aa2f7
+; @config color.stroke #858585
+; @config color.muted #909090
+; @config color.positive #9ece6a
+; @config color.warning #e0af68
+; @config color.negative #f7768e
+noteEnd

@@ -30,20 +30,6 @@ describe('menus - go home entry', () => {
 		expect(menu.some(item => item.action === 'goToParentProjectGroup')).toBe(false);
 	});
 
-	it('places "Go @home" directly above "Jump to..."', () => {
-		const mockState = createMockState({
-			editorMode: 'edit',
-		});
-
-		const menu = mainMenu(mockState);
-
-		const goHomeIndex = menu.findIndex(item => item.title === 'Go @home');
-		const jumpToIndex = menu.findIndex(item => item.title === 'Jump to...');
-
-		expect(goHomeIndex).toBeGreaterThanOrEqual(0);
-		expect(jumpToIndex).toBe(goHomeIndex + 1);
-	});
-
 	it('shows "Go @home" even when no home block exists', () => {
 		const mockState = createMockState({
 			editorMode: 'edit',
@@ -54,21 +40,7 @@ describe('menus - go home entry', () => {
 
 		const goHomeItem = menu.find(item => item.title === 'Go @home');
 
-		expect(goHomeItem).toBeDefined();
-		expect(goHomeItem?.disabled).toBeUndefined();
-	});
-
-	it('shows "Jump to..." in view mode when editing is disabled', () => {
-		const mockState = createMockState({
-			editorMode: 'view',
-			featureFlags: { editing: false },
-		});
-
-		const menu = mainMenu(mockState);
-		const jumpToItem = menu.find(item => item.title === 'Jump to...');
-
-		expect(jumpToItem).toBeDefined();
-		expect(jumpToItem?.action).toBe('openSubMenu');
+		expect(goHomeItem).toEqual({ title: 'Go @home', action: 'goHome', close: true });
 	});
 
 	it('shows "New Note" when editing is enabled', () => {
@@ -80,8 +52,8 @@ describe('menus - go home entry', () => {
 		const newNoteItem = menu.find(item => item.title === 'New Note');
 
 		expect(newNoteItem).toBeDefined();
-		expect(newNoteItem?.action).toBe('addCodeBlock');
-		expect(newNoteItem?.payload).toEqual({ isNew: true, blockType: 'note' });
+		expect(newNoteItem?.action).toBe('createCodeBlock');
+		expect(newNoteItem?.payload).toEqual({ blockType: 'note' });
 	});
 
 	it('shows "New Prototype" when editing is enabled', () => {
@@ -93,8 +65,8 @@ describe('menus - go home entry', () => {
 		const newPrototypeItem = menu.find(item => item.title === 'New Prototype');
 
 		expect(newPrototypeItem).toBeDefined();
-		expect(newPrototypeItem?.action).toBe('addCodeBlock');
-		expect(newPrototypeItem?.payload).toEqual({ isNew: true, blockType: 'prototype' });
+		expect(newPrototypeItem?.action).toBe('createCodeBlock');
+		expect(newPrototypeItem?.payload).toEqual({ blockType: 'prototype' });
 	});
 
 	it('uses "New Module" as the module creation action', () => {
@@ -106,44 +78,18 @@ describe('menus - go home entry', () => {
 		const newModuleItem = menu.find(item => item.title === 'New Module');
 
 		expect(newModuleItem).toBeDefined();
-		expect(newModuleItem?.action).toBe('addCodeBlock');
-		expect(newModuleItem?.payload).toEqual({ isNew: true, blockType: 'module' });
+		expect(newModuleItem?.action).toBe('createCodeBlock');
+		expect(newModuleItem?.payload).toEqual({ blockType: 'module' });
 	});
 
 	it('hides "New Module" when editing is disabled', () => {
 		const mockState = createMockState({
 			editorMode: 'view',
-			featureFlags: { editing: false },
 		});
 
 		const menu = mainMenu(mockState);
 		const newModuleItem = menu.find(item => item.title === 'New Module');
 
 		expect(newModuleItem).toBeUndefined();
-	});
-
-	it('shows "Take Screenshot" when canvas screenshot export is available', () => {
-		const mockState = createMockState({
-			callbacks: { exportCanvasScreenshot: async () => {} },
-		});
-
-		const menu = mainMenu(mockState);
-		const screenshotItem = menu.find(item => item.title === 'Take Screenshot');
-
-		expect(screenshotItem).toBeDefined();
-		expect(screenshotItem?.action).toBe('exportCanvasScreenshot');
-		expect(screenshotItem?.disabled).toBe(false);
-	});
-
-	it('disables "Take Screenshot" when canvas screenshot export is unavailable', () => {
-		const mockState = createMockState({
-			callbacks: { exportCanvasScreenshot: undefined },
-		});
-
-		const menu = mainMenu(mockState);
-		const screenshotItem = menu.find(item => item.title === 'Take Screenshot');
-
-		expect(screenshotItem).toBeDefined();
-		expect(screenshotItem?.disabled).toBe(true);
 	});
 });

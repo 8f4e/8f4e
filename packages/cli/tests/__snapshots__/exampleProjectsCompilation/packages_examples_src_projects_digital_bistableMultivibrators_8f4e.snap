@@ -56,7 +56,7 @@
             }
           ]
         },
-        "projectBlockId": 104,
+        "projectBlockId": 48,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "resetButton"
@@ -118,7 +118,7 @@
             }
           ]
         },
-        "projectBlockId": 113,
+        "projectBlockId": 57,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "setButton"
@@ -380,7 +380,7 @@
             }
           ]
         },
-        "projectBlockId": 123,
+        "projectBlockId": 67,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "norGate2"
@@ -642,7 +642,7 @@
             }
           ]
         },
-        "projectBlockId": 147,
+        "projectBlockId": 91,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "norGate"
@@ -1000,7 +1000,7 @@
             }
           ]
         },
-        "projectBlockId": 171,
+        "projectBlockId": 115,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "scope"
@@ -1074,7 +1074,7 @@
             }
           ]
         },
-        "projectBlockId": 200,
+        "projectBlockId": 144,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "buttons"
@@ -1287,7 +1287,7 @@
             }
           ]
         },
-        "projectBlockId": 215,
+        "projectBlockId": 159,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "negate"
@@ -1549,7 +1549,7 @@
             }
           ]
         },
-        "projectBlockId": 233,
+        "projectBlockId": 177,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "orGate"
@@ -1811,7 +1811,7 @@
             }
           ]
         },
-        "projectBlockId": 256,
+        "projectBlockId": 200,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "andGate"
@@ -2169,7 +2169,7 @@
             }
           ]
         },
-        "projectBlockId": 279,
+        "projectBlockId": 223,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "scope2"

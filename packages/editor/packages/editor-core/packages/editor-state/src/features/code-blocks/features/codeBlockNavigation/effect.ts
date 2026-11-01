@@ -43,13 +43,13 @@ function alignTargetBlockCursorForHorizontalNavigation(
 	const targetDisplayRow = reverseGapCalculator(targetPhysicalRow, targetBlock.gaps);
 	const boundedDisplayRow = Math.min(
 		Math.max(targetDisplayRow, 0),
-		Math.max(targetDirectiveState.displayModel.displayRowToRawRow.length - 1, 0)
+		Math.max(targetDirectiveState.displayModel.displayRowToSourceLineIndex.length - 1, 0)
 	);
-	const targetRawRow = targetDirectiveState.displayModel.displayRowToRawRow[boundedDisplayRow] ?? 0;
+	const targetSourceLineIndex = targetDirectiveState.displayModel.displayRowToSourceLineIndex[boundedDisplayRow] ?? 0;
 
 	setSelectedCodeBlockCursor(store, targetBlock, {
-		row: targetRawRow,
-		col: Math.min(sourceBlock.cursor.col, targetBlock.code[targetRawRow]?.length ?? 0),
+		row: targetSourceLineIndex,
+		col: Math.min(sourceBlock.cursor.col, targetBlock.code[targetSourceLineIndex]?.length ?? 0),
 		y: gapCalculator(boundedDisplayRow, targetBlock.gaps) * state.viewport.hGrid,
 	});
 }
@@ -64,13 +64,13 @@ function setBlockCursorToDisplayRow(
 	const directiveState = deriveDirectiveState(block.code, block.parsedDirectives, {
 		isExpandedForEditing: true,
 	});
-	const maxDisplayRow = Math.max(directiveState.displayModel.displayRowToRawRow.length - 1, 0);
+	const maxDisplayRow = Math.max(directiveState.displayModel.displayRowToSourceLineIndex.length - 1, 0);
 	const boundedDisplayRow = Math.min(Math.max(displayRow, 0), maxDisplayRow);
-	const targetRawRow = directiveState.displayModel.displayRowToRawRow[boundedDisplayRow] ?? 0;
+	const targetSourceLineIndex = directiveState.displayModel.displayRowToSourceLineIndex[boundedDisplayRow] ?? 0;
 
 	setSelectedCodeBlockCursor(store, block, {
-		row: targetRawRow,
-		col: Math.min(sourceCol ?? block.cursor.col, block.code[targetRawRow]?.length ?? 0),
+		row: targetSourceLineIndex,
+		col: Math.min(sourceCol ?? block.cursor.col, block.code[targetSourceLineIndex]?.length ?? 0),
 		y: gapCalculator(boundedDisplayRow, block.gaps) * state.viewport.hGrid,
 	});
 }
@@ -92,7 +92,7 @@ function moveSelectionToCurrentBlockVerticalEdge(
 	const directiveState = deriveDirectiveState(block.code, block.parsedDirectives, {
 		isExpandedForEditing: true,
 	});
-	const maxDisplayRow = Math.max(directiveState.displayModel.displayRowToRawRow.length - 1, 0);
+	const maxDisplayRow = Math.max(directiveState.displayModel.displayRowToSourceLineIndex.length - 1, 0);
 	const currentDisplayRow = getSelectedBlockDisplayRow(state, block);
 	const edgeDisplayRow = direction === 'up' ? 0 : maxDisplayRow;
 
@@ -113,18 +113,10 @@ function alignTargetBlockCursorForVerticalNavigation(
 	const targetDirectiveState = deriveDirectiveState(targetBlock.code, targetBlock.parsedDirectives, {
 		isExpandedForEditing: true,
 	});
-	const maxDisplayRow = Math.max(targetDirectiveState.displayModel.displayRowToRawRow.length - 1, 0);
+	const maxDisplayRow = Math.max(targetDirectiveState.displayModel.displayRowToSourceLineIndex.length - 1, 0);
 	const targetDisplayRow = direction === 'up' ? maxDisplayRow : 0;
 
 	setBlockCursorToDisplayRow(store, targetBlock, targetDisplayRow, sourceBlock.cursor.col);
-}
-
-/**
- * Event payload for jumping to a favorite code block.
- */
-interface JumpToFavoriteCodeBlockEvent {
-	/** Primary identifier: stable runtime creationIndex */
-	creationIndex: number;
 }
 
 /**
@@ -190,7 +182,11 @@ export function navigateToCodeBlockInDirection(
  * @param creationIndex - The stable runtime identifier of the target block
  * @returns {boolean} true if the block was found and jumped to, false otherwise
  */
-export function jumpToCodeBlock(store: StateManager<State>, creationIndex: number, events: EventDispatcher): boolean {
+export function jumpToCodeBlock(
+	store: Pick<StateManager<State>, 'getState' | 'set'>,
+	creationIndex: number,
+	events: EventDispatcher
+): boolean {
 	const state = store.getState();
 	const codeBlocks = state.codeBlockRendering.codeBlocks;
 
@@ -243,13 +239,6 @@ export function goHome(store: StateManager<State>, events: EventDispatcher): voi
  *
  * If no code block is selected, the effect does nothing.
  *
- * Also listens for jumpToFavoriteCodeBlock events to enable jumping to specific
- * code blocks by creationIndex. When a jumpToFavoriteCodeBlock event is received,
- * this effect will:
- * - Resolve the target block by creationIndex
- * - Select that code block
- * - Center the viewport on the newly selected block
- *
  * @param store - The editor state manager
  * @param events - The event dispatcher
  */
@@ -258,16 +247,11 @@ export default function codeBlockNavigation(store: StateManager<State>, events: 
 		navigateToCodeBlockInDirection(store, event.direction, events);
 	};
 
-	const onJumpToFavoriteCodeBlock = (event: JumpToFavoriteCodeBlockEvent) => {
-		jumpToCodeBlock(store, event.creationIndex, events);
-	};
-
 	const onGoHome = () => {
 		goHome(store, events);
 	};
 
 	// Register the abstract navigation event handler
 	events.on<NavigateCodeBlockEvent>('navigateCodeBlock', onNavigateCodeBlock);
-	events.on<JumpToFavoriteCodeBlockEvent>('jumpToFavoriteCodeBlock', onJumpToFavoriteCodeBlock);
 	events.on('goHome', onGoHome);
 }

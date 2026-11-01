@@ -1,60 +1,50 @@
 # Edit History Feature
 
-## Purpose
+Undo and redo retain independent serialized project snapshots, including persisted editor metadata. Each stack holds
+up to ten entries. History stays in memory for the current project.
 
-Provides undo/redo functionality for code changes by maintaining snapshots of project state. Uses a debounced save mechanism to avoid excessive memory usage and provide smooth editing experience.
+## Shared Project Changes
 
-## Key Behaviors
+`state.projectChange` is the single completed-change record used by API concurrency checks, history, and session
+persistence. It contains a monotonic `revision` and a `kind` describing the operation:
 
-- **Debounced Saves**: Code changes trigger a 1-second debounced save to history stack
-- **Fixed Stack Size**: Maintains up to 10 undo states (older states are dropped)
-- **Undo/Redo Operations**: Restores previous/next project snapshots
-- **Project Serialization**: Uses serialized project format for snapshots (without compiled data)
-- **Event-Driven**: Responds to code changes and undo/redo events
+| Kind | Operation | History behavior |
+| --- | --- | --- |
+| `edit` | Completed source or metadata mutation | Clear redo immediately and debounce one undo step for one second |
+| `checkpoint` | Validated API edit batch | Record one immediate undo step after committing pending human edits |
+| `restore` | Undo or redo snapshot | Rebase the current snapshot and retain the remaining stacks |
+| `replace` | Opening or creating a project | Cancel pending edits and clear both stacks |
 
-## Events & Callbacks
+Source and metadata mutation handlers call the public `publishProjectChange(store)` helper after completing an
+operation and publishing its derived state. Multi-block actions announce once; no-op actions do not announce.
+Selection, caret movement, and navigation leave the record unchanged.
 
-### Events Listened To
+The editing handle creates its opaque revision token from its instance identity and this shared revision. It keeps
+no separate content fingerprint or revision subscriptions. A load invalidates old tokens even when the newly opened
+project has identical content. Undo and redo advance the revision while returning to earlier source content.
 
-- `undo` - Restores previous project state
-- `redo` - Restores next project state
+Compiler scheduling independently uses `compilerInputRevision`, which excludes visual metadata. A compiler-only
+revision change does not create a project revision, autosave, or history entry.
 
-### Events Dispatched
+## Snapshots and Restoration
 
-- `loadProject` - Triggered to load a historical snapshot
+While an ordinary edit is pending, the committed snapshot remains the before-state. At commit, the current project
+is compared by content with that snapshot. Changed content adds one undo step; returning to the committed content
+adds none. Serialization returns detached canonical models, so history retains them directly and compares their
+JSON without additional cloning or object-key sorting.
 
-### State Subscriptions
+Undo and redo commit pending edits first, so an edit undone immediately can still be redone. The project-operations
+effect owns `applyProjectEdit`: it compares the canonical API draft with current serialized content, emits
+`beforeProjectEdit` for changed drafts, then restores the batch as a checkpoint. History listens to the before-event
+to commit pending typing and the completed change record to retain the checkpoint. Identical-content batches emit
+neither notification, preserving pending edits, revisions, history, and persistence. Project operations apply API
+edits independently of whether the history effect is installed or `featureFlags.historyTracking` is enabled.
 
-- `codeBlockRendering.selectedCodeBlock.code` - Monitors code changes for history saves
+Project loading, API operations, and history use the shared `restoreProject` helper to install `initialProjectState`.
+It publishes a single change after rendering and generated environment constants have updated, suppressing intermediate edit
+notifications during restoration. Undo, redo, and API batches preserve the file association within the current
+project. Unrelated replacements dispatch `loadProject` and publish a `replace` change.
 
-### State Touched
-
-- `state.historyStack` - Array of historical project states (max 10 entries)
-- `state.redoStack` - Array of redo states (max 10 entries)
-- `state.featureFlags.historyTracking` - Enable/disable flag for the feature
-
-## Integration Points
-
-- **Project Export**: Uses `serializeToProject()` to create snapshots
-- **Project Import**: Uses `loadProject` event to restore snapshots
-- **Code Editing**: Monitors code changes through state subscriptions
-
-## History Semantics
-
-- **On Code Change**: Debounces for 1 second, then saves current state to history stack
-- **On Undo**: 
-  - Saves current state to redo stack
-  - Pops and loads previous state from history stack
-  - Clears pending debounce timer
-- **On Redo**:
-  - Saves current state to history stack
-  - Pops and loads next state from redo stack
-  - Clears pending debounce timer
-
-## Notes & Limitations
-
-- History is limited to 10 entries in each direction
-- Only tracks code changes in selected blocks
-- Snapshots exclude compiled modules to reduce memory usage
-- Debounce timer is cleared on undo/redo to avoid unexpected saves
-- History is not persisted across sessions
+The session-persistence plugin subscribes only to `projectChange`. It saves once after startup restoration, then
+saves once per completed project change. History also subscribes only to this record. Disposal cancels pending
+history work and removes owned listeners and subscriptions.

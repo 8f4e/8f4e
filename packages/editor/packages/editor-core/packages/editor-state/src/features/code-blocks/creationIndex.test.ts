@@ -2,13 +2,15 @@ import type { State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance } from 'vitest';
-import convertGraphicDataToProjectStructure from '~/features/project-export/serializeCodeBlocks';
-import projectImport from '~/features/project-import/effect';
-import { EMPTY_DEFAULT_PROJECT } from '~/features/project-import/emptyDefaultProject';
+import projectLoading from '~/features/project-loading/effect';
+import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
+import convertGraphicDataToProjectStructure from '~/pureHelpers/projectSerialization/serializeCodeBlocks';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import codeBlockRendering from './effect';
 import codeBlockCreator from './features/codeBlockCreator/effect';
+import { directiveDefinitions } from './features/directives/registry';
+import { createLayoutRegistry } from './layout/registry';
 
 describe('creationIndex', () => {
 	let mockState: State;
@@ -26,18 +28,18 @@ describe('creationIndex', () => {
 			// Initialize the codeBlockCreator
 			codeBlockCreator(store, mockEvents);
 
-			// Find the addCodeBlock handler
+			// Find the createCodeBlock handler
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			expect(addCodeBlockCall).toBeDefined();
+			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
+			expect(createCodeBlockCall).toBeDefined();
 
-			const addCodeBlockHandler = addCodeBlockCall![1];
+			const createCodeBlockHandler = createCodeBlockCall![1];
 
 			// Initial state should have nextCodeBlockCreationIndex = 0
 			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(0);
 
 			// Add first code block
-			addCodeBlockHandler({ x: 0, y: 0, isNew: true });
+			createCodeBlockHandler({ x: 0, y: 0, blockType: 'module' });
 
 			// Verify first code block got creationIndex 0
 			const codeBlocks = mockState.codeBlockRendering.codeBlocks;
@@ -50,13 +52,13 @@ describe('creationIndex', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockHandler = addCodeBlockCall![1];
+			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
+			const createCodeBlockHandler = createCodeBlockCall![1];
 
 			// Add multiple code blocks
-			addCodeBlockHandler({ x: 0, y: 0, isNew: true });
-			addCodeBlockHandler({ x: 100, y: 0, isNew: true });
-			addCodeBlockHandler({ x: 200, y: 0, isNew: true });
+			createCodeBlockHandler({ x: 0, y: 0, blockType: 'module' });
+			createCodeBlockHandler({ x: 100, y: 0, blockType: 'module' });
+			createCodeBlockHandler({ x: 200, y: 0, blockType: 'module' });
 
 			const codeBlocks = mockState.codeBlockRendering.codeBlocks;
 			expect(codeBlocks.length).toBe(3);
@@ -71,15 +73,15 @@ describe('creationIndex', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
+			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
 			const deleteCodeBlockCall = onCalls.find(call => call[0] === 'deleteCodeBlock');
-			const addCodeBlockHandler = addCodeBlockCall![1];
+			const createCodeBlockHandler = createCodeBlockCall![1];
 			const deleteCodeBlockHandler = deleteCodeBlockCall![1];
 
 			// Add three code blocks
-			addCodeBlockHandler({ x: 0, y: 0, isNew: true });
-			addCodeBlockHandler({ x: 100, y: 0, isNew: true });
-			addCodeBlockHandler({ x: 200, y: 0, isNew: true });
+			createCodeBlockHandler({ x: 0, y: 0, blockType: 'module' });
+			createCodeBlockHandler({ x: 100, y: 0, blockType: 'module' });
+			createCodeBlockHandler({ x: 200, y: 0, blockType: 'module' });
 
 			// Delete the middle one (creationIndex 1)
 			const codeBlocks = mockState.codeBlockRendering.codeBlocks;
@@ -87,7 +89,7 @@ describe('creationIndex', () => {
 			deleteCodeBlockHandler({ codeBlock: middleBlock });
 
 			// Add a new block
-			addCodeBlockHandler({ x: 300, y: 0, isNew: true });
+			createCodeBlockHandler({ x: 300, y: 0, blockType: 'module' });
 
 			// Verify the new block gets creationIndex 3 (not 1, leaving a gap)
 			const updatedCodeBlocks = mockState.codeBlockRendering.codeBlocks;
@@ -97,10 +99,15 @@ describe('creationIndex', () => {
 		});
 	});
 
-	describe('projectImport', () => {
+	describe('projectLoading', () => {
 		it('should assign creationIndex to code blocks when loading a project', () => {
-			projectImport(store, mockEvents);
-			codeBlockRendering(store, mockEvents);
+			projectLoading(store, mockEvents);
+			codeBlockRendering(
+				store,
+				mockEvents,
+				directiveDefinitions,
+				createLayoutRegistry(() => {})
+			);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 			const loadProjectCall = onCalls.find(call => call[0] === 'loadProject');
@@ -127,8 +134,13 @@ describe('creationIndex', () => {
 		});
 
 		it('should reset creationIndex counter when loading a new project', () => {
-			projectImport(store, mockEvents);
-			codeBlockRendering(store, mockEvents);
+			projectLoading(store, mockEvents);
+			codeBlockRendering(
+				store,
+				mockEvents,
+				directiveDefinitions,
+				createLayoutRegistry(() => {})
+			);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 			const loadProjectCall = onCalls.find(call => call[0] === 'loadProject');

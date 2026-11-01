@@ -1,0 +1,18 @@
+8f4e/v1
+
+note githubDarkColors
+; @public
+; @config color.canvas #060606
+; @config color.surface #0d0d0d
+; @config color.ink #e3e3e3
+; @config color.primary #ff7b72
+; @config color.secondary #79c0ff
+; @config color.tertiary #8b949e
+; @config color.highlight #7ee787
+; @config color.detail #d2a8ff
+; @config color.stroke #858585
+; @config color.muted #909090
+; @config color.positive #7ee787
+; @config color.warning #d29922
+; @config color.negative #f85149
+noteEnd
