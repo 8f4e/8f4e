@@ -69,7 +69,10 @@
       "id": "readFirst__int_p",
       "signature": {
         "parameters": [
-          "int*",
+          {
+            "name": "pointer",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",

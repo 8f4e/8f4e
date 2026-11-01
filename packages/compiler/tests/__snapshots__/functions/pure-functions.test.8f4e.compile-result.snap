@@ -935,7 +935,10 @@
       "id": "absInt__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -946,8 +949,14 @@
       "id": "addInts__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
+          {
+            "name": "y",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -958,8 +967,14 @@
       "id": "addWithLocal__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
+          {
+            "name": "y",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -970,7 +985,10 @@
       "id": "duplicateInt__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -1000,8 +1018,14 @@
       "id": "multiplyFloats__float__float",
       "signature": {
         "parameters": [
-          "float",
-          "float",
+          {
+            "name": "x",
+            "type": "float",
+          },
+          {
+            "name": "y",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -1012,8 +1036,14 @@
       "id": "multiplyMixed__int__float",
       "signature": {
         "parameters": [
-          "int",
-          "float",
+          {
+            "name": "x",
+            "type": "int",
+          },
+          {
+            "name": "y",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -1031,7 +1061,10 @@
       "id": "readValue__int_p",
       "signature": {
         "parameters": [
-          "int*",
+          {
+            "name": "address",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",
@@ -1042,7 +1075,10 @@
       "id": "square__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -1053,8 +1089,14 @@
       "id": "writeValue__int_p__int",
       "signature": {
         "parameters": [
-          "int*",
-          "int",
+          {
+            "name": "address",
+            "type": "int*",
+          },
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [],
       },

@@ -1,4 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
 import { TOOLTIP_WRAP_WIDTH } from './constants';
@@ -68,5 +69,73 @@ describe('selected line tooltip content', () => {
 			{ lineIndex: 3, column: 16, widthChars: 6, fillColor: 'negativeSoft' },
 			{ lineIndex: 4, column: 8, widthChars: 4, fillColor: 'positiveSoft' },
 		]);
+	});
+});
+
+const callAnalysis = {
+	lineNumber: 1,
+	instruction: 'call',
+	resolvedCall: {
+		targetFunctionId: 'mix__float__float',
+		signature: {
+			parameters: [
+				{ name: 'a', type: 'float' },
+				{ name: 'b', type: 'float' },
+			],
+			returns: ['float'],
+		},
+	},
+	stackAnalysis: { stackBefore: [], stackAfter: [], consumedOperands: [], producedStackItems: [] },
+} satisfies CompiledStackAnalysisLine;
+
+describe('call signature tooltips', () => {
+	it('uses the source callable name and the concrete overload parameter names', () => {
+		const content = getSelectedLineTooltipContent('  call blend 0.2 0.8 ; mix', 80, callAnalysis);
+		expect(content.text[0]).toBe('call blend (a: float b: float -- float)');
+		expect(content.colors[0][0]).toBe(PALETTE_INDICES.inverseAccent);
+	});
+
+	it('wraps and highlights every signature line and offsets stack highlights below it', () => {
+		const content = getSelectedLineTooltipContent('call mix', 24, {
+			...callAnalysis,
+			stackAnalysis: {
+				stackBefore: [{ kind: 'value', valueType: 'float' }],
+				stackAfter: [],
+				consumedOperands: [{ kind: 'value', valueType: 'float' }],
+				producedStackItems: [],
+			},
+		});
+		expect(content.text.slice(0, 2)).toEqual(['call mix (a: float b:', 'float -- float)']);
+		expect(content.text.every(line => line.length <= 24)).toBe(true);
+		expect(content.colors.slice(0, 2).map(line => line[0])).toEqual([
+			PALETTE_INDICES.inverseAccent,
+			PALETTE_INDICES.inverseAccent,
+		]);
+		const stackLineIndex = content.text.findIndex(line => line.startsWith('before '));
+		expect(content.highlightTargets[0].lineIndex).toBe(stackLineIndex);
+		expect(content.colors[2][0]).toBe(PALETTE_INDICES.inverseInk);
+	});
+
+	it('shows empty parameter lists, pointer types, and multiple return types', () => {
+		expect(
+			getSelectedLineTooltipText('call init', 80, {
+				...callAnalysis,
+				resolvedCall: { targetFunctionId: 'init__void', signature: { parameters: [], returns: [] } },
+			})[0]
+		).toBe('call init ( -- )');
+		expect(
+			getSelectedLineTooltipText('call read', 80, {
+				...callAnalysis,
+				resolvedCall: {
+					targetFunctionId: 'read__float_p',
+					signature: { parameters: [{ name: 'buffer', type: 'float*' }], returns: ['int', 'float64'] },
+				},
+			})[0]
+		).toBe('call read (buffer: float* -- int float64)');
+	});
+
+	it('keeps the generic signature until resolved call metadata is available', () => {
+		expect(getSelectedLineTooltipText('call mix')[0]).toBe('call (args... -- returns...)');
+		expect(getSelectedLineTooltipText('add', 80, callAnalysis)[0]).toBe('add (T T -- T)');
 	});
 });

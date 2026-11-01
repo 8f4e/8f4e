@@ -1687,9 +1687,18 @@
       "id": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__float_p__float_p__int",
       "signature": {
         "parameters": [
-          "float*",
-          "float*",
-          "int",
+          {
+            "name": "pointer",
+            "type": "float*",
+          },
+          {
+            "name": "buffer",
+            "type": "float*",
+          },
+          {
+            "name": "byteLength",
+            "type": "int",
+          },
         ],
         "returns": [
           "float*",
@@ -1700,9 +1709,18 @@
       "id": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int16_p__int16_p__int",
       "signature": {
         "parameters": [
-          "int16*",
-          "int16*",
-          "int",
+          {
+            "name": "pointer",
+            "type": "int16*",
+          },
+          {
+            "name": "buffer",
+            "type": "int16*",
+          },
+          {
+            "name": "byteLength",
+            "type": "int",
+          },
         ],
         "returns": [
           "int16*",
@@ -1713,9 +1731,18 @@
       "id": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int_p__int_p__int",
       "signature": {
         "parameters": [
-          "int*",
-          "int*",
-          "int",
+          {
+            "name": "pointer",
+            "type": "int*",
+          },
+          {
+            "name": "buffer",
+            "type": "int*",
+          },
+          {
+            "name": "byteLength",
+            "type": "int",
+          },
         ],
         "returns": [
           "int*",
@@ -1726,10 +1753,22 @@
       "id": "readInterpolated__float_p__float_p__int__float",
       "signature": {
         "parameters": [
-          "float*",
-          "float*",
-          "int",
-          "float",
+          {
+            "name": "pointer",
+            "type": "float*",
+          },
+          {
+            "name": "buffer",
+            "type": "float*",
+          },
+          {
+            "name": "itemCount",
+            "type": "int",
+          },
+          {
+            "name": "fraction",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -1740,10 +1779,22 @@
       "id": "readInterpolated__int16_p__int16_p__int__float",
       "signature": {
         "parameters": [
-          "int16*",
-          "int16*",
-          "int",
-          "float",
+          {
+            "name": "pointer",
+            "type": "int16*",
+          },
+          {
+            "name": "buffer",
+            "type": "int16*",
+          },
+          {
+            "name": "itemCount",
+            "type": "int",
+          },
+          {
+            "name": "fraction",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -1754,10 +1805,22 @@
       "id": "readInterpolated__int_p__int_p__int__float",
       "signature": {
         "parameters": [
-          "int*",
-          "int*",
-          "int",
-          "float",
+          {
+            "name": "pointer",
+            "type": "int*",
+          },
+          {
+            "name": "buffer",
+            "type": "int*",
+          },
+          {
+            "name": "itemCount",
+            "type": "int",
+          },
+          {
+            "name": "fraction",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",

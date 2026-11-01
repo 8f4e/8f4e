@@ -1,6 +1,5 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import type { TooltipHighlightRange } from '../types';
-import { getStackSignatureFromSourceLine } from './sourceLine';
 import { getStackValueHighlightRange } from './stackAnalysisTooltip';
 
 /**
@@ -32,16 +31,12 @@ export function getTooltipLineColors(
  * Computes color transitions for the selected-line tooltip text.
  */
 export function getSelectedLineTooltipColors(
-	line: string | undefined,
-	text: string[]
+	text: string[],
+	signatureLineCount: number
 ): Array<Array<PaletteIndex | undefined>> {
-	const stackSignature = line ? getStackSignatureFromSourceLine(line) : undefined;
-
 	return text.map((tooltipLine, index) => {
 		const highlightRange =
-			index === 0 && stackSignature === tooltipLine
-				? { start: 0, end: tooltipLine.length }
-				: getStackValueHighlightRange(tooltipLine);
+			index < signatureLineCount ? { start: 0, end: tooltipLine.length } : getStackValueHighlightRange(tooltipLine);
 
 		return getTooltipLineColors(tooltipLine, highlightRange ? [highlightRange] : []);
 	});

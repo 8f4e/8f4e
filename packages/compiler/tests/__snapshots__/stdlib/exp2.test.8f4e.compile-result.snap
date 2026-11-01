@@ -387,7 +387,10 @@
       "id": "exp2__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "x",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",

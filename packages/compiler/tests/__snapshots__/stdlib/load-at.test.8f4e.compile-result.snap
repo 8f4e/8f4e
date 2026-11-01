@@ -120,8 +120,14 @@
       "id": "loadAt__int_p__int",
       "signature": {
         "parameters": [
-          "int*",
-          "int",
+          {
+            "name": "buffer",
+            "type": "int*",
+          },
+          {
+            "name": "index",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

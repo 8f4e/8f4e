@@ -28,7 +28,7 @@ export function planFunctionLayout(
 		functions.map(({ metadata }) => [
 			metadata.id,
 			getOrRegisterFunctionType(types, {
-				params: metadata.signature.parameters.map(functionValueTypeToWasmType),
+				params: metadata.signature.parameters.map(parameter => functionValueTypeToWasmType(parameter.type)),
 				results: metadata.signature.returns.map(functionValueTypeToWasmType),
 			}),
 		])

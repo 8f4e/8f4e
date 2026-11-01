@@ -180,9 +180,18 @@
       "id": "addAt__float_p__int__float",
       "signature": {
         "parameters": [
-          "float*",
-          "int",
-          "float",
+          {
+            "name": "buffer",
+            "type": "float*",
+          },
+          {
+            "name": "index",
+            "type": "int",
+          },
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [],
       },

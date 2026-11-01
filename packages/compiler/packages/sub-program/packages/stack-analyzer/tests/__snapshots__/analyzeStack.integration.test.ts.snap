@@ -874,6 +874,20 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
         {
           "instruction": "call",
           "lineNumber": 7,
+          "resolvedCall": {
+            "signature": {
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": "int",
+                },
+              ],
+              "returns": [
+                "int",
+              ],
+            },
+            "targetFunctionId": "increment__int",
+          },
           "stackAnalysis": {
             "consumedOperands": [
               {

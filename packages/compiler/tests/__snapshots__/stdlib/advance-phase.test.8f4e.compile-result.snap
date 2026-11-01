@@ -287,9 +287,18 @@
       "id": "advancePhase__float_p__float__int",
       "signature": {
         "parameters": [
-          "float*",
-          "float",
-          "int",
+          {
+            "name": "phase",
+            "type": "float*",
+          },
+          {
+            "name": "frequency",
+            "type": "float",
+          },
+          {
+            "name": "sampleRate",
+            "type": "int",
+          },
         ],
         "returns": [
           "float",

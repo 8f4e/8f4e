@@ -246,7 +246,7 @@ describe('compile prototype validation', () => {
 
 		const functionId = createFunctionId('addOffset', ['int']);
 		expect(result.compiledFunctions![functionId]).toMatchObject({
-			signature: { parameters: ['int'], returns: ['int'] },
+			signature: { parameters: [{ name: 'value', type: 'int' }], returns: ['int'] },
 		});
 	});
 
@@ -268,13 +268,13 @@ describe('compile prototype validation', () => {
 		expect(result.compiledFunctions![intOverloadId]).toMatchObject({
 			id: intOverloadId,
 			name: 'convert',
-			signature: { parameters: ['int'], returns: ['int'] },
+			signature: { parameters: [{ name: 'value', type: 'int' }], returns: ['int'] },
 			ast: { name: 'convert' },
 		});
 		expect(result.compiledFunctions![floatOverloadId]).toMatchObject({
 			id: floatOverloadId,
 			name: 'convert',
-			signature: { parameters: ['float'], returns: ['float'] },
+			signature: { parameters: [{ name: 'value', type: 'float' }], returns: ['float'] },
 			ast: { name: 'convert' },
 		});
 	});

@@ -228,9 +228,18 @@
       "id": "moveTowards__float__float__float",
       "signature": {
         "parameters": [
-          "float",
-          "float",
-          "float",
+          {
+            "name": "current",
+            "type": "float",
+          },
+          {
+            "name": "target",
+            "type": "float",
+          },
+          {
+            "name": "maxStep",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",

@@ -15,13 +15,13 @@ function resolveFunction(body: string[], isImpure = false) {
 	const metadata: FunctionMetadata = {
 		id: 'caller__int_p',
 		name: 'caller',
-		signature: { parameters: ['int*'], returns: [] },
+		signature: { parameters: [{ name: 'value', type: 'int*' }], returns: [] },
 		...(isImpure ? { isImpure: true } : {}),
 	};
 	const consumer: FunctionMetadata = {
 		id: 'consume__int',
 		name: 'consume',
-		signature: { parameters: ['int'], returns: [] },
+		signature: { parameters: [{ name: 'value', type: 'int' }], returns: [] },
 	};
 
 	return resolveSemanticReferences({

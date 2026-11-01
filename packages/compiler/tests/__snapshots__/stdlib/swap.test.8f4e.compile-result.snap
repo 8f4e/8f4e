@@ -366,8 +366,14 @@
       "id": "swap__float__float",
       "signature": {
         "parameters": [
-          "float",
-          "float",
+          {
+            "name": "first",
+            "type": "float",
+          },
+          {
+            "name": "second",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -379,8 +385,14 @@
       "id": "swap__float__int",
       "signature": {
         "parameters": [
-          "float",
-          "int",
+          {
+            "name": "first",
+            "type": "float",
+          },
+          {
+            "name": "second",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -392,8 +404,14 @@
       "id": "swap__int__float",
       "signature": {
         "parameters": [
-          "int",
-          "float",
+          {
+            "name": "first",
+            "type": "int",
+          },
+          {
+            "name": "second",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -405,8 +423,14 @@
       "id": "swap__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "first",
+            "type": "int",
+          },
+          {
+            "name": "second",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

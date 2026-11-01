@@ -181,8 +181,14 @@
       "id": "readScale__float__float_p",
       "signature": {
         "parameters": [
-          "float",
-          "float*",
+          {
+            "name": "value",
+            "type": "float",
+          },
+          {
+            "name": "gain",
+            "type": "float*",
+          },
         ],
         "returns": [
           "float",
@@ -193,8 +199,14 @@
       "id": "scale__float__float",
       "signature": {
         "parameters": [
-          "float",
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
+          {
+            "name": "gain",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",

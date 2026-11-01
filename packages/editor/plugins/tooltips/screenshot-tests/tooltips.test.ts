@@ -9,17 +9,34 @@ import { createEvents } from '../src/__tests__/events';
 import { tooltipsPlugin } from '../src/index';
 
 test.each([
-	{ name: 'instruction stack analysis', row: 4, inline: false },
-	{ name: 'live memory values', row: 1, inline: false },
-	{ name: 'inline arithmetic operand', row: 3, inline: true },
-])('tooltips plugin draws $name', async ({ row, inline }) => {
+	{ name: 'instruction stack analysis', row: 4, inline: false, call: false },
+	{ name: 'live memory values', row: 1, inline: false, call: false },
+	{ name: 'inline arithmetic operand', row: 3, inline: true, call: false },
+	{ name: 'named call signature', row: 1, inline: false, call: true },
+])('tooltips plugin draws $name', async ({ row, inline, call }) => {
 	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
 	canvas.height = 320;
 	canvas.style.background = '#000';
 	document.body.append(canvas);
-	const project = parseProjectSource(`8f4e/v1
+	const project = parseProjectSource(
+		call
+			? `8f4e/v1
+entry main
+module controls
+call mix 0.2 0.8
+drop
+moduleEnd
+entryEnd
+function mix
+param float a
+param float b
+push a
+push b
+add
+functionEnd float`
+			: `8f4e/v1
 entry main
 module controls
 int value 42
@@ -27,7 +44,8 @@ push 1
 ${inline ? 'add 2' : 'push 2\nadd'}
 drop
 moduleEnd
-entryEnd`);
+entryEnd`
+	);
 	const compiled = await compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
 	const events = createEvents();
 	const store = initState(events, {
@@ -66,7 +84,7 @@ entryEnd`);
 		float32: new Float32Array(buffer),
 		float64: new Float64Array(buffer),
 	};
-	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.value.allocationUnitAddress] = 42;
+	if (!call) memoryViews.int32[compiled.memoryPlan.modules.controls.memory.value.allocationUnitAddress] = 42;
 	const spriteData = await loadFontAtlas(state.editorConfig.font);
 	const projection = createWebUiRenderProjection(store, events);
 	const renderer = await initView(

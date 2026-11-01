@@ -241,10 +241,22 @@
       ],
       "signature": {
         "parameters": [
-          "int",
-          "int*",
-          "float*",
-          "int",
+          {
+            "name": "base",
+            "type": "int",
+          },
+          {
+            "name": "a",
+            "type": "int*",
+          },
+          {
+            "name": "b",
+            "type": "float*",
+          },
+          {
+            "name": "tail",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -270,8 +282,14 @@
       ],
       "signature": {
         "parameters": [
-          "int*",
-          "float*",
+          {
+            "name": "a",
+            "type": "int*",
+          },
+          {
+            "name": "b",
+            "type": "float*",
+          },
         ],
         "returns": [
           "float",

@@ -25,7 +25,7 @@ function createTestCompiledFunction(
 	return {
 		id: functionId,
 		name,
-		signature: { parameters: [paramType], returns: [] },
+		signature: { parameters: [{ name: 'value', type: paramType }], returns: [] },
 		wasmIndex: 0,
 		typeIndex: 0,
 		body: [],
@@ -49,7 +49,7 @@ function createTestCompiledFunction(
 			},
 			functionLine: { lineNumber: 0, instruction: 'function', arguments: [{ value: name }] },
 			functionEndLine: { lineNumber: 2, instruction: 'functionEnd', arguments: [] },
-			signature: { parameters: [paramType], returns: [] },
+			signature: { parameters: [{ name: 'value', type: paramType }], returns: [] },
 			lines: [],
 		} as unknown as ComposedFunctionAST,
 	};

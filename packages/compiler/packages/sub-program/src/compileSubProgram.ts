@@ -85,7 +85,7 @@ function createEntryFunctionMetadata(entryNames: readonly string[]): FunctionReg
 	entryNames.forEach(entryName => {
 		const parameters: FunctionMetadata['signature']['parameters'] = [];
 		const metadata: FunctionMetadata = {
-			id: createFunctionId(entryName, parameters),
+			id: createFunctionId(entryName, []),
 			name: entryName,
 			signature: { parameters, returns: [] },
 		};

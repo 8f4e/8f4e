@@ -108,8 +108,14 @@
       "id": "extractBit__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "word",
+            "type": "int",
+          },
+          {
+            "name": "bitIndex",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

@@ -6,13 +6,14 @@ import { getLiveTooltipContent } from './liveValues';
 import {
 	getInstructionSpecFromSourceLine,
 	getMemoryDeclarationIdFromSourceLine,
-	getStackSignatureFromSourceLine,
+	getStackSignatureTooltipLines,
 } from './sourceLine';
 import { getStackAnalysisTooltipContent } from './stackAnalysisTooltip';
 import { getMaxLineLength, getTooltipTextCharacters, wrapTooltipText } from './text';
 
 interface SelectedLineTooltipTextContent {
 	text: string[];
+	signatureLineCount: number;
 	highlightTargets: SelectedLineTooltipContent['highlightTargets'];
 }
 
@@ -26,18 +27,16 @@ export function getSelectedLineTooltipTextContent(
 	moduleExecutionOrder?: number
 ): SelectedLineTooltipTextContent {
 	if (!line) {
-		return { text: [], highlightTargets: [] };
+		return { text: [], signatureLineCount: 0, highlightTargets: [] };
 	}
 
 	const spec = getInstructionSpecFromSourceLine(line);
-	const stackSignature = getStackSignatureFromSourceLine(line);
+	const signatureLines = getStackSignatureTooltipLines(line, maxLength, stackAnalysisLine);
 	const shortDescription = spec?.docs?.shortDescription;
 	const tooltipText: string[] = [];
 	const highlightTargets: SelectedLineTooltipContent['highlightTargets'] = [];
 
-	if (stackSignature) {
-		tooltipText.push(stackSignature);
-	}
+	tooltipText.push(...signatureLines);
 
 	if (shortDescription) {
 		tooltipText.push(...wrapTooltipText(shortDescription, maxLength));
@@ -57,10 +56,10 @@ export function getSelectedLineTooltipTextContent(
 	tooltipText.push(...stackAnalysisContent.text);
 
 	if (tooltipText.length === 0) {
-		return { text: [], highlightTargets: [] };
+		return { text: [], signatureLineCount: 0, highlightTargets: [] };
 	}
 
-	return { text: tooltipText, highlightTargets };
+	return { text: tooltipText, signatureLineCount: signatureLines.length, highlightTargets };
 }
 
 /**
@@ -89,7 +88,7 @@ export function getSelectedLineTooltipContent(
 	const textContent = getSelectedLineTooltipTextContent(line, maxLength, stackAnalysisLine, moduleExecutionOrder);
 	const text = textContent.text;
 	const memoryId = getMemoryDeclarationIdFromSourceLine(line);
-	const colors = getSelectedLineTooltipColors(line, text);
+	const colors = getSelectedLineTooltipColors(text, textContent.signatureLineCount);
 	const liveTooltipContent = getLiveTooltipContent(memory, moduleId, memoryId, text.length);
 
 	text.push(...liveTooltipContent.text);

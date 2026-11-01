@@ -1,11 +1,14 @@
-import { getInstructionSpec, type ResolvedStackEffect, resolveInstructionStackEffect } from '@8f4e/language-spec';
+import { getInstructionSpec, resolveInstructionStackEffect } from '@8f4e/language-spec';
 
 /**
  * Formats a resolved stack effect as a human-readable instruction signature.
  * The tooltip uses the Forth-style `( inputs -- outputs )` convention from the
  * instruction documentation.
  */
-export function formatStackSignature(instruction: string, stackEffect: ResolvedStackEffect): string {
+export function formatStackSignature(
+	instruction: string,
+	stackEffect: { inputs: readonly string[]; outputs: readonly string[] }
+): string {
 	return `${instruction} (${stackEffect.inputs.join(' ')} -- ${stackEffect.outputs.join(' ')})`;
 }
 

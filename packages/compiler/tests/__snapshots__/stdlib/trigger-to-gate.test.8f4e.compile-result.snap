@@ -508,9 +508,18 @@
       "id": "triggerToGate__float__int__int_p",
       "signature": {
         "parameters": [
-          "float",
-          "int",
-          "int*",
+          {
+            "name": "trigger",
+            "type": "float",
+          },
+          {
+            "name": "duration",
+            "type": "int",
+          },
+          {
+            "name": "remainingSamples",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",
@@ -521,9 +530,18 @@
       "id": "triggerToGate__int__int__int_p",
       "signature": {
         "parameters": [
-          "int",
-          "int",
-          "int*",
+          {
+            "name": "trigger",
+            "type": "int",
+          },
+          {
+            "name": "duration",
+            "type": "int",
+          },
+          {
+            "name": "remainingSamples",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",

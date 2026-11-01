@@ -583,7 +583,10 @@
       "id": "assignFloat64Parameter__float64",
       "signature": {
         "parameters": [
-          "float64",
+          {
+            "name": "value",
+            "type": "float64",
+          },
         ],
         "returns": [
           "float64",
@@ -594,7 +597,10 @@
       "id": "assignFloatParameter__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -605,7 +611,10 @@
       "id": "doubleFloat64__float64",
       "signature": {
         "parameters": [
-          "float64",
+          {
+            "name": "value",
+            "type": "float64",
+          },
         ],
         "returns": [
           "float64",
@@ -643,7 +652,10 @@
       "id": "readUnsignedByte__int8u_p",
       "signature": {
         "parameters": [
-          "int8u*",
+          {
+            "name": "bytes",
+            "type": "int8u*",
+          },
         ],
         "returns": [
           "int",
@@ -654,7 +666,10 @@
       "id": "shadowValue__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

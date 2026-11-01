@@ -182,7 +182,10 @@
       "id": "bindingSlots__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

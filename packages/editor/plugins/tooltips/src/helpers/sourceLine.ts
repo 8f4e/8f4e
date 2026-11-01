@@ -1,11 +1,13 @@
 import {
 	ArgumentType,
+	type CompiledStackAnalysisLine,
 	getInstructionSpec,
 	type InstructionSpec,
 	memoryDeclarationInstructions,
 } from '@8f4e/language-spec';
 
-import { getInstructionStackSignature } from './stackSignature';
+import { formatStackSignature, getInstructionStackSignature } from './stackSignature';
+import { wrapTooltipText } from './text';
 
 const memoryIdentifierRegExp = /^[a-z_]\w*$/i;
 const memoryDeclarationInstructionSet = new Set<string>(memoryDeclarationInstructions);
@@ -77,7 +79,10 @@ function getStackSignatureLineFromSourceLine(line: string, instruction: string):
 /**
  * Formats the stack signature for the instruction on a source line.
  */
-export function getStackSignatureFromSourceLine(line: string): string | undefined {
+export function getStackSignatureFromSourceLine(
+	line: string,
+	stackAnalysisLine?: CompiledStackAnalysisLine
+): string | undefined {
 	const instruction = getInstructionNameFromSourceLine(line);
 	const spec = getInstructionSpecFromSourceLine(line);
 
@@ -85,5 +90,29 @@ export function getStackSignatureFromSourceLine(line: string): string | undefine
 		return undefined;
 	}
 
+	if (instruction === 'call' && stackAnalysisLine?.instruction === 'call' && stackAnalysisLine.resolvedCall) {
+		const targetName = line.split(';')[0].trim().split(/\s+/)[1];
+		if (targetName) {
+			const { parameters, returns } = stackAnalysisLine.resolvedCall.signature;
+			return formatStackSignature(`call ${targetName}`, {
+				inputs: parameters.map(parameter => `${parameter.name}: ${parameter.type}`),
+				outputs: returns,
+			});
+		}
+	}
+
 	return getInstructionStackSignature(instruction, getStackSignatureLineFromSourceLine(line, instruction));
+}
+
+/** Wraps concrete call signatures while preserving the existing instruction headers. */
+export function getStackSignatureTooltipLines(
+	line: string,
+	maxLength: number,
+	stackAnalysisLine?: CompiledStackAnalysisLine
+): string[] {
+	const signature = getStackSignatureFromSourceLine(line, stackAnalysisLine);
+	if (!signature) return [];
+	return stackAnalysisLine?.resolvedCall && getInstructionNameFromSourceLine(line) === 'call'
+		? wrapTooltipText(signature, maxLength)
+		: [signature];
 }
