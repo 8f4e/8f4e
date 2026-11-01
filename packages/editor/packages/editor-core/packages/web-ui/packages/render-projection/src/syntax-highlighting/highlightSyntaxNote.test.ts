@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { syntaxFonts } from './__tests__/testUtils';
 import highlightSyntaxNote from './highlightSyntaxNote';
-import { syntaxFonts } from './testUtils';
 
 describe('highlightSyntaxNote', () => {
 	it('renders note bodies as comments while keeping delimiters as instructions', () => {

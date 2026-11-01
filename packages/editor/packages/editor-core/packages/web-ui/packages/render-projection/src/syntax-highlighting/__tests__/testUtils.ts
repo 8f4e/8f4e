@@ -1,4 +1,4 @@
-import type { SyntaxFonts } from './types';
+import type { SyntaxFonts } from '../types';
 
 export const syntaxFonts: SyntaxFonts<string> = {
 	fontInstruction: 'instruction',

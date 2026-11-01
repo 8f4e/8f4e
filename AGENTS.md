@@ -91,6 +91,11 @@
 - Imports: Prefer workspace aliases `@8f4e/<package>` for inter-package references.
 - Files/dirs: kebab-case for packages, `.ts` for sources; keep `src/` clean and cohesive by domain.
 
+## Build Inputs and Test Dependencies
+- Production builds and generators use `production` inputs; tests retain their own `default` inputs and consume dependency `production` inputs. Type checks retain their own test files.
+- Keep sample data local to the consuming tests when an integration with the source package is not under test. Do not copy dependency implementations or remove required test/build relationships. `devDependencies` still create Nx project graph edges.
+- Test paths are excluded narrowly. Shipped compiler fixtures in the product test gallery, WebMCP catalogs/docs/examples, stdlib sources, bundled modules, workers, and worklets must remain explicit production inputs. Verify resolved inputs with `nx show target inputs <project>:<target> --json` after adding shipped assets or test conventions; see `docs/build-input-audit.md`.
+
 ## Testing Guidelines
 - Framework: Vitest with built-in ESM support and first-class Vite integration.
 - Locations: `**/__tests__/**` or `*.test.ts` / `*.spec.ts` alongside sources.

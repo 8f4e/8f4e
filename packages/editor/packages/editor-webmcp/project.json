@@ -58,8 +58,8 @@
       "executor": "nx:run-commands",
       "cache": true,
       "inputs": [
-        "default",
-        "^default"
+        "production",
+        "^production"
       ],
       "outputs": [
         "{projectRoot}/src/generated"

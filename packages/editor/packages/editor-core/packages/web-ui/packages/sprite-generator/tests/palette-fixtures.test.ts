@@ -1,8 +1,6 @@
 import { type PaletteConfig, resolvePalette } from '@8f4e/editor-palette';
-import aftertouch from '@8f4e/examples/projects/audio/amigaMods/aftertouch.8f4e?raw';
-import aurora from '@8f4e/examples/projects/audio/amigaMods/hymn_to_aurora.8f4e?raw';
-import lowerIntentions from '@8f4e/examples/projects/audio/amigaMods/lowerIntentions.8f4e?raw';
 import { describe, expect, it } from 'vitest';
+import { aftertouch, aurora, translucent as lowerIntentions } from './fixtures/palettes';
 
 function paletteFromSource(source: string) {
 	return resolvePalette(
@@ -12,7 +10,7 @@ function paletteFromSource(source: string) {
 	);
 }
 
-describe('bundled example palettes', () => {
+describe('local palette fixtures', () => {
 	it('retains Aurora’s independent accent hues and translucent strokes', () => {
 		const palette = paletteFromSource(aurora);
 		expect(palette.colors).toMatchObject({
