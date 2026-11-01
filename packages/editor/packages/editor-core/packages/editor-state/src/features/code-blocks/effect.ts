@@ -254,7 +254,6 @@ export default function codeBlockRendering(
 		};
 		const collectProjectBlocks = (currentProject: ProjectObjectModel): ClassifiedProjectBlock[] => {
 			return [
-				...currentProject.modules.map(block => ({ ...block, blockType: 'module' as const })),
 				...currentProject.functions.map(block => ({ ...block, blockType: 'function' as const })),
 				...currentProject.constants.map(block => ({ ...block, blockType: 'constants' as const })),
 				...currentProject.prototypes.map(block => ({ ...block, blockType: 'prototype' as const })),
@@ -267,7 +266,9 @@ export default function codeBlockRendering(
 			Math.max(
 				-1,
 				...collectProjectBlocks(currentProject).map(block => block.id),
-				...currentProject.groups.map(getHighestProjectBlockId)
+				...currentProject.execution.map(block =>
+					block.type === 'group' ? Math.max(block.id, getHighestProjectBlockId(block)) : block.id
+				)
 			);
 		let nextCodeBlockCreationIndex = getHighestProjectBlockId(project) + 1;
 		store.set('codeBlockRendering.selectedCodeBlock', undefined);
@@ -341,25 +342,16 @@ export default function codeBlockRendering(
 			const codeBlocks = collectProjectBlocks(currentProject).map(codeBlock =>
 				createGraphicCodeBlock(codeBlock, { projectPath })
 			);
-			const groupBlocks = currentProject.groups.map((group, groupIndex) => {
-				const groupName = group.name;
-				const gridX = groupIndex * 24;
-				const gridY = -6;
-				const groupCode = [...group.code];
-				if (
-					!parsePos(parseBlockDirectives(groupCode)) &&
-					!previousGroups.has(createChildProjectGroupPath(projectPath, groupName))
-				) {
-					let closerIndex = groupCode.length - 1;
-					while (closerIndex >= 0 && groupCode[closerIndex].trim() === '') closerIndex -= 1;
-					groupCode.splice(closerIndex, 0, `; @pos ${gridX} ${gridY}`);
+			const executionBlocks = currentProject.execution.map(block => {
+				if (block.type === 'module') {
+					return createGraphicCodeBlock({ ...block, blockType: 'module' }, { projectPath });
 				}
-				const creationIndex = nextCodeBlockCreationIndex;
-				nextCodeBlockCreationIndex += 1;
+				const group = block;
+				const groupName = group.name;
 				return createGraphicCodeBlock(
 					{
-						id: creationIndex,
-						code: groupCode,
+						id: group.id,
+						code: [...group.code],
 						blockType: 'unknown',
 						entry: group.entry,
 					},
@@ -373,7 +365,7 @@ export default function codeBlockRendering(
 					}
 				);
 			});
-			const projectCodeBlocks = [...projectScopeBlocks, ...codeBlocks, ...groupBlocks];
+			const projectCodeBlocks = [...projectScopeBlocks, ...codeBlocks, ...executionBlocks];
 
 			// Stable-sort to maintain the partition: normal blocks first, always-on-top last.
 			return partitionCodeBlocksByAlwaysOnTop(projectCodeBlocks);

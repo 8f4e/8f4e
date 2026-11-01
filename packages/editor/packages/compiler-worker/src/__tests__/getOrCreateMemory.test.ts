@@ -8,18 +8,20 @@ describe('getOrCreateMemory', () => {
 		const result = await compileProject(
 			{
 				code: [],
-				modules: moduleIds.map((id, projectBlockId) => ({
-					id: projectBlockId,
-					entry: 'main',
-					code: [`module ${id}`, 'int value 0', 'moduleEnd'],
-				})),
+				execution: [
+					...moduleIds.map((id, projectBlockId) => ({
+						type: 'module' as const,
+						id: projectBlockId,
+						entry: 'main',
+						code: [`module ${id}`, 'int value 0', 'moduleEnd'],
+					})),
+				],
 				functions: [],
 				constants: [],
 				prototypes: [],
 				includes: [],
 				notes: [],
 				unknown: [],
-				groups: [],
 			},
 			{ startingMemoryAllocationUnitAddress: 0 }
 		);

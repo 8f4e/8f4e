@@ -247,7 +247,7 @@ describe('compilation scheduling and publication', () => {
 
 		expect(mockCompileCode).toHaveBeenCalledWith(
 			expect.objectContaining({
-				modules: expect.any(Array),
+				execution: expect.any(Array),
 				constants: expect.any(Array),
 				functions: expect.any(Array),
 				prototypes: expect.any(Array),
@@ -293,7 +293,7 @@ describe('compilation scheduling and publication', () => {
 
 		expect(mockCompileCode).toHaveBeenCalledWith(
 			expect.objectContaining({
-				modules: expect.any(Array),
+				execution: expect.any(Array),
 				constants: expect.any(Array),
 				functions: expect.any(Array),
 				prototypes: expect.any(Array),

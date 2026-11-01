@@ -1,3 +1,4 @@
+import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import serializeToProject from './serializeToProject';
@@ -50,7 +51,7 @@ describe('serializeToProject', () => {
 
 		expect(serializeToProject(state)).toEqual({
 			code: [],
-			modules: [],
+			execution: [],
 			functions: [],
 			constants: [],
 			prototypes: [],
@@ -61,7 +62,6 @@ describe('serializeToProject', () => {
 			],
 			notes: [],
 			unknown: [],
-			groups: [],
 		});
 	});
 
@@ -99,7 +99,7 @@ describe('serializeToProject', () => {
 
 		const project = serializeToProject(state);
 
-		expect(project.modules.map(block => block.code[0])).toEqual(['module root']);
-		expect(project.groups[0].modules.map(block => block.code[0])).toEqual(['module voice']);
+		expect(getProjectModules(project).map(block => block.code[0])).toEqual(['module root']);
+		expect(getProjectModules(getProjectGroups(project)[0]).map(block => block.code[0])).toEqual(['module voice']);
 	});
 });

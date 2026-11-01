@@ -10,6 +10,7 @@ This file extends the root and compiler package guidance for `packages/compiler/
   for the compiler facade.
 - Does not know about editor state, grid positioning, rendering, browser storage, or host webview state.
 - Does not load include files itself. Callers provide an async `resolveInclude` function so node, browser, editor, and test environments can load includes however they need.
+- Modules and groups share one typed `execution` sequence per scope. Preserve their relative declaration order and block ids.
 - Groups recursively own project blocks. Sibling group names are unique because names form canonical compiler paths.
 
 ## Commands

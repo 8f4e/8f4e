@@ -1,4 +1,4 @@
-import type { ProjectGroupObjectModel, ProjectModuleBlock, ProjectObjectModel } from '@8f4e/language-spec';
+import type { ProjectExecutableBlock, ProjectGroupObjectModel, ProjectObjectModel } from '@8f4e/language-spec';
 import {
 	FORMAT_HEADER,
 	getExpectedProjectCloserPrefix,
@@ -70,8 +70,7 @@ function getDocumentBlocks(project: ProjectObjectModel) {
 function getAllBlocks(project: ProjectObjectModel): Array<{ code: string[] }> {
 	return [
 		...getDocumentBlocks(project),
-		...project.modules,
-		...project.groups.flatMap(group => [group, ...getAllBlocks(group)]),
+		...project.execution.flatMap(block => (block.type === 'group' ? [block, ...getAllBlocks(block)] : [block])),
 	];
 }
 
@@ -82,10 +81,13 @@ function serializeGroup(group: ProjectGroupObjectModel): string[] {
 	return [
 		...group.code.slice(0, closerIndex),
 		...getDocumentBlocks(group).flatMap(block => block.code),
-		...group.modules.flatMap(module => module.code),
-		...group.groups.flatMap(serializeGroup),
+		...group.execution.flatMap(serializeExecutableBlock),
 		...group.code.slice(closerIndex),
 	];
+}
+
+function serializeExecutableBlock(block: ProjectExecutableBlock): string[] {
+	return block.type === 'group' ? serializeGroup(block) : block.code;
 }
 
 /**
@@ -104,34 +106,14 @@ export function serializeProjectTo8f4e(project: ProjectObjectModel): string {
 		...(project.code.length > 0 ? [project.code.join('\n')] : []),
 		...documentBlocks.map(block => block.code.join('\n')),
 	];
-	const emittedEntries = new Set<string>();
-	const modulesByEntry = new Map<string, ProjectModuleBlock[]>();
-	const groupsByEntry = new Map<string, ProjectGroupObjectModel[]>();
-
-	for (const module of project.modules) {
-		const entryModules = modulesByEntry.get(module.entry) ?? [];
-		entryModules.push(module);
-		modulesByEntry.set(module.entry, entryModules);
+	const executionByEntry = new Map<string, ProjectExecutableBlock[]>();
+	for (const block of project.execution) {
+		const sequence = executionByEntry.get(block.entry) ?? [];
+		sequence.push(block);
+		executionByEntry.set(block.entry, sequence);
 	}
-	for (const group of project.groups) {
-		const entryGroups = groupsByEntry.get(group.entry) ?? [];
-		entryGroups.push(group);
-		groupsByEntry.set(group.entry, entryGroups);
-	}
-
-	for (const entry of [...project.modules.map(module => module.entry), ...project.groups.map(group => group.entry)]) {
-		if (emittedEntries.has(entry)) continue;
-		emittedEntries.add(entry);
-		const entryModules = modulesByEntry.get(entry) ?? [];
-		const entryGroups = groupsByEntry.get(entry) ?? [];
-		blockStrings.push(
-			[
-				`entry ${entry}`,
-				...entryModules.flatMap(moduleBlock => moduleBlock.code),
-				...entryGroups.flatMap(serializeGroup),
-				'entryEnd',
-			].join('\n')
-		);
+	for (const [entry, sequence] of executionByEntry) {
+		blockStrings.push([`entry ${entry}`, ...sequence.flatMap(serializeExecutableBlock), 'entryEnd'].join('\n'));
 	}
 
 	return FORMAT_HEADER + '\n\n' + blockStrings.join('\n\n');

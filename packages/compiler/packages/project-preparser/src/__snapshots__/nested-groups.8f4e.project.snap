@@ -1,8 +1,17 @@
 {
   "code": [],
   "constants": [],
-  "functions": [],
-  "groups": [
+  "execution": [
+    {
+      "code": [
+        "module root",
+        "int tick",
+        "moduleEnd",
+      ],
+      "entry": "main",
+      "id": 4,
+      "type": "module",
+    },
     {
       "code": [
         "group audio",
@@ -22,19 +31,17 @@
         },
       ],
       "entry": "main",
-      "exposures": [],
-      "functions": [
+      "execution": [
         {
           "code": [
-            "function sineApprox",
-            "param float x",
-            "push x",
-            "functionEnd float",
+            "module voice",
+            "float phase",
+            "moduleEnd",
           ],
-          "id": 13,
+          "entry": "main",
+          "id": 9,
+          "type": "module",
         },
-      ],
-      "groups": [
         {
           "code": [
             "group oscillator",
@@ -43,11 +50,11 @@
           ],
           "constants": [],
           "entry": "main",
+          "execution": [],
           "exposures": [],
           "functions": [],
-          "groups": [],
+          "id": 22,
           "includes": [],
-          "modules": [],
           "name": "oscillator",
           "notes": [],
           "prototypes": [
@@ -61,39 +68,33 @@
               "id": 23,
             },
           ],
+          "type": "group",
           "unknown": [],
         },
       ],
-      "includes": [],
-      "modules": [
+      "exposures": [],
+      "functions": [
         {
           "code": [
-            "module voice",
-            "float phase",
-            "moduleEnd",
+            "function sineApprox",
+            "param float x",
+            "push x",
+            "functionEnd float",
           ],
-          "entry": "main",
-          "id": 9,
+          "id": 13,
         },
       ],
+      "id": 8,
+      "includes": [],
       "name": "audio",
       "notes": [],
       "prototypes": [],
+      "type": "group",
       "unknown": [],
     },
   ],
+  "functions": [],
   "includes": [],
-  "modules": [
-    {
-      "code": [
-        "module root",
-        "int tick",
-        "moduleEnd",
-      ],
-      "entry": "main",
-      "id": 4,
-    },
-  ],
   "notes": [],
   "prototypes": [],
   "unknown": [],

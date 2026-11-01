@@ -95,8 +95,8 @@ describe('favorites plugin', () => {
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(test.state.historyStack).toHaveLength(2);
-		expect(test.state.historyStack[0].modules[0].code).not.toContain('; @favorite');
-		expect(test.state.historyStack[1].modules[0].code).toContain('; @favorite');
+		expect(test.state.historyStack[0].execution[0].code).not.toContain('; @favorite');
+		expect(test.state.historyStack[1].execution[0].code).toContain('; @favorite');
 		test.events.dispatch('undo');
 		expect(test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'target')!.code).toContain(
 			'; @favorite'

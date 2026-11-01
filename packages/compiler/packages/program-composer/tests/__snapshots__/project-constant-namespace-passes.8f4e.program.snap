@@ -62,7 +62,7 @@
     "functions": [],
     "modules": [
       {
-        "id": "child/nested/nestedVoice",
+        "id": "root",
         "lines": [
           {
             "arguments": [
@@ -70,7 +70,7 @@
                 "referenceKind": "plain",
                 "scope": "local",
                 "type": "identifier",
-                "value": "child/nested/nestedVoice",
+                "value": "root",
               },
             ],
             "instruction": "module",
@@ -82,7 +82,7 @@
                 "referenceKind": "plain",
                 "scope": "local",
                 "type": "identifier",
-                "value": "child/nested/env",
+                "value": "env",
               },
             ],
             "instruction": "use",
@@ -118,16 +118,16 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "child/nested/nestedVoice",
+              "value": "root",
             },
           ],
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 24,
+        "projectBlockId": 8,
         "sourceIdentity": {
-          "codeBlockId": "nestedVoice",
-          "projectGroupPath": "child/nested",
+          "codeBlockId": "root",
+          "projectGroupPath": "",
         },
         "type": "module",
       },
@@ -202,7 +202,7 @@
         "type": "module",
       },
       {
-        "id": "root",
+        "id": "child/nested/nestedVoice",
         "lines": [
           {
             "arguments": [
@@ -210,7 +210,7 @@
                 "referenceKind": "plain",
                 "scope": "local",
                 "type": "identifier",
-                "value": "root",
+                "value": "child/nested/nestedVoice",
               },
             ],
             "instruction": "module",
@@ -222,7 +222,7 @@
                 "referenceKind": "plain",
                 "scope": "local",
                 "type": "identifier",
-                "value": "env",
+                "value": "child/nested/env",
               },
             ],
             "instruction": "use",
@@ -258,16 +258,16 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "root",
+              "value": "child/nested/nestedVoice",
             },
           ],
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 8,
+        "projectBlockId": 24,
         "sourceIdentity": {
-          "codeBlockId": "root",
-          "projectGroupPath": "",
+          "codeBlockId": "nestedVoice",
+          "projectGroupPath": "child/nested",
         },
         "type": "module",
       },

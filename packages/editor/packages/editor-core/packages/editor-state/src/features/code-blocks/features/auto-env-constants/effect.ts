@@ -81,7 +81,7 @@ export default function autoEnvConstants(store: StateManager<State>): void {
 		if (!hasEnvBlock) {
 			// Add the generated block at the beginning of the hoisted constants collection.
 			const allIds = [
-				...state.initialProjectState.modules,
+				...state.initialProjectState.execution,
 				...state.initialProjectState.functions,
 				...state.initialProjectState.constants,
 				...state.initialProjectState.prototypes,

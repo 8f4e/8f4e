@@ -4,7 +4,7 @@
     "functions": [],
     "modules": [
       {
-        "id": "child/descendant/descendant",
+        "id": "root",
         "lines": [
           {
             "arguments": [
@@ -12,7 +12,7 @@
                 "referenceKind": "plain",
                 "scope": "local",
                 "type": "identifier",
-                "value": "child/descendant/descendant",
+                "value": "root",
               },
             ],
             "instruction": "module",
@@ -30,16 +30,16 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "child/descendant/descendant",
+              "value": "root",
             },
           ],
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 12,
+        "projectBlockId": 4,
         "sourceIdentity": {
-          "codeBlockId": "descendant",
-          "projectGroupPath": "child/descendant",
+          "codeBlockId": "root",
+          "projectGroupPath": "",
         },
         "type": "module",
       },
@@ -84,7 +84,7 @@
         "type": "module",
       },
       {
-        "id": "root",
+        "id": "child/descendant/descendant",
         "lines": [
           {
             "arguments": [
@@ -92,7 +92,7 @@
                 "referenceKind": "plain",
                 "scope": "local",
                 "type": "identifier",
-                "value": "root",
+                "value": "child/descendant/descendant",
               },
             ],
             "instruction": "module",
@@ -110,16 +110,16 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "root",
+              "value": "child/descendant/descendant",
             },
           ],
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 4,
+        "projectBlockId": 12,
         "sourceIdentity": {
-          "codeBlockId": "root",
-          "projectGroupPath": "",
+          "codeBlockId": "descendant",
+          "projectGroupPath": "child/descendant",
         },
         "type": "module",
       },

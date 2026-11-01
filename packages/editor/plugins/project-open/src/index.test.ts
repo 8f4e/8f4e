@@ -3,6 +3,7 @@ import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
 import initState from '@8f4e/editor-state';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
+import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
@@ -387,8 +388,8 @@ entryEnd`),
 		test.state.codeBlockRendering.codeBlocks = [nested];
 		await test.events.dispatchAsync('saveProject');
 		const project = parseProjectSource(await test.handle.writable.write.mock.calls[0][0].text());
-		expect(project.modules[0].code).toContain('int value 1');
-		expect(project.groups[0].modules[0].code).toEqual(nested.code);
+		expect(getProjectModules(project)[0].code).toContain('int value 1');
+		expect(getProjectModules(getProjectGroups(project)[0])[0].code).toEqual(nested.code);
 	});
 	it.each(['saveProject', 'exportProject'])('reports incomplete source before %s opens a picker', async action => {
 		const test = setup();

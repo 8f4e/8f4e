@@ -1,4 +1,5 @@
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
 import convertGraphicDataToProjectStructure from './serializeCodeBlocks';
@@ -37,7 +38,9 @@ describe('convertGraphicDataToProjectStructure', () => {
 		]);
 
 		expect(result.functions).toEqual([{ id: 1, code: ['function first', 'functionEnd'] }]);
-		expect(result.modules).toEqual([{ id: 2, code: ['module second', 'moduleEnd'], entry: 'main' }]);
+		expect(getProjectModules(result)).toEqual([
+			{ type: 'module', id: 2, code: ['module second', 'moduleEnd'], entry: 'main' },
+		]);
 	});
 
 	it('sorts code blocks by grid position before mapping', () => {
@@ -117,9 +120,9 @@ describe('convertGraphicDataToProjectStructure', () => {
 
 		const result = convertGraphicDataToProjectStructure(blocks);
 
-		expect(result.modules).toEqual([
-			{ id: 1, code: ['module main', 'moduleEnd'], entry: 'main' },
-			{ id: 2, code: ['module entry', 'moduleEnd'], entry: 'entry1' },
+		expect(getProjectModules(result)).toEqual([
+			{ type: 'module', id: 1, code: ['module main', 'moduleEnd'], entry: 'main' },
+			{ type: 'module', id: 2, code: ['module entry', 'moduleEnd'], entry: 'entry1' },
 		]);
 	});
 
@@ -147,7 +150,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 			}),
 		]);
 
-		expect(result.groups[0]).toMatchObject({
+		expect(getProjectGroups(result)[0]).toMatchObject({
 			name: 'Audio',
 			entry: 'main',
 			code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
@@ -158,11 +161,13 @@ describe('convertGraphicDataToProjectStructure', () => {
 					targetMemoryName: 'level',
 				},
 			],
-			groups: [
+			execution: [
 				{
+					id: 0,
+					type: 'group',
 					name: 'Oscillator',
 					entry: 'main',
-					modules: [{ id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
+					execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
 				},
 			],
 		});
@@ -178,21 +183,21 @@ describe('convertGraphicDataToProjectStructure', () => {
 			}),
 		]);
 
-		expect(result.groups).toEqual([
+		expect(getProjectGroups(result)).toEqual([
 			{
+				type: 'group',
+				id: 0,
 				name: 'Empty',
 				entry: 'main',
 				code: ['group Empty', 'groupEnd'],
 				exposures: [],
-				// Nested project code is represented by its group wrapper rather than a second scope block.
-				modules: [],
+				execution: [],
 				functions: [],
 				constants: [],
 				prototypes: [],
 				includes: [],
 				notes: [],
 				unknown: [],
-				groups: [],
 			},
 		]);
 	});
@@ -223,22 +228,22 @@ describe('convertGraphicDataToProjectStructure', () => {
 		group.code.splice(1, 0, '; @testDirective');
 		child.code[1] = 'int value 4';
 		expect(saved.code).toEqual(['pass env']);
-		expect(saved.modules[0].code).toEqual(['module root', 'int value 1', 'moduleEnd']);
-		expect(saved.groups[0].code).toEqual(['group voice', 'groupEnd']);
-		expect(saved.groups[0].modules[0].code).toEqual(['module child', 'int value 2', 'moduleEnd']);
+		expect(getProjectModules(saved)[0].code).toEqual(['module root', 'int value 1', 'moduleEnd']);
+		expect(getProjectGroups(saved)[0].code).toEqual(['group voice', 'groupEnd']);
+		expect(getProjectModules(getProjectGroups(saved)[0])[0].code).toEqual(['module child', 'int value 2', 'moduleEnd']);
 
 		saved.code[0] = 'pass saved';
-		saved.modules[0].code[1] = 'int value 5';
-		saved.groups[0].code.splice(1, 0, '; @pos 5 6');
-		saved.groups[0].modules[0].code[1] = 'int value 6';
+		getProjectModules(saved)[0].code[1] = 'int value 5';
+		getProjectGroups(saved)[0].code.splice(1, 0, '; @pos 5 6');
+		getProjectModules(getProjectGroups(saved)[0])[0].code[1] = 'int value 6';
 		expect(scope.code).toEqual(['pass changed']);
 		expect(module.code).toEqual(['module root', 'int value 3', 'moduleEnd']);
 		expect(group.code).toEqual(['group voice', '; @testDirective', 'groupEnd']);
 		expect(child.code).toEqual(['module child', 'int value 4', 'moduleEnd']);
 		expect(other.code).toEqual(['pass env']);
-		expect(other.modules[0].code[1]).toBe('int value 1');
-		expect(other.groups[0].code).toEqual(['group voice', 'groupEnd']);
-		expect(other.groups[0].modules[0].code[1]).toBe('int value 2');
+		expect(getProjectModules(other)[0].code[1]).toBe('int value 1');
+		expect(getProjectGroups(other)[0].code).toEqual(['group voice', 'groupEnd']);
+		expect(getProjectModules(getProjectGroups(other)[0])[0].code[1]).toBe('int value 2');
 	});
 
 	it('produces identical JSON independently of live object keys and array order, including nested ties', () => {
@@ -280,7 +285,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 		const reordered = convertGraphicDataToProjectStructure([...blocks].reverse().map(reorder));
 
 		expect(JSON.stringify(reordered)).toBe(JSON.stringify(original));
-		expect(original.modules.map(block => block.id)).toEqual([1, 2]);
-		expect(original.groups[0].modules.map(block => block.id)).toEqual([1, 2]);
+		expect(getProjectModules(original).map(block => block.id)).toEqual([1, 2]);
+		expect(getProjectModules(getProjectGroups(original)[0]).map(block => block.id)).toEqual([1, 2]);
 	});
 });

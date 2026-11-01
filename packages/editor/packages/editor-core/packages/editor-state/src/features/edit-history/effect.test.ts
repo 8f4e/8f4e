@@ -1,4 +1,5 @@
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
+import { getProjectModules } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '../../pureHelpers/testingUtils/testUtils';
@@ -170,7 +171,7 @@ describe('history tracking with real project mutations', () => {
 
 		expect(block.code[1]).toBe('push 12');
 		expect(state.historyStack).toHaveLength(1);
-		expect(state.historyStack[0].modules[0].code).toEqual(['module main', 'push 1', 'drop', 'moduleEnd']);
+		expect(getProjectModules(state.historyStack[0])[0].code).toEqual(['module main', 'push 1', 'drop', 'moduleEnd']);
 	});
 
 	it('creates no history entry when an edit returns to the committed content (case e)', async () => {
@@ -190,7 +191,7 @@ describe('history tracking with real project mutations', () => {
 
 		const otherProject = {
 			...EMPTY_DEFAULT_PROJECT,
-			modules: [{ id: 7, code: ['module other', 'moduleEnd'], entry: 'other' }],
+			execution: [{ type: 'module', id: 7, code: ['module other', 'moduleEnd'], entry: 'other' }],
 		};
 		dispatch('loadProject', { project: otherProject });
 		store.set('editorMode', 'edit');
@@ -207,7 +208,7 @@ describe('history tracking with real project mutations', () => {
 		dispatch('insertText', { text: ';' });
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
-		expect(state.historyStack[0].modules[0].code).toEqual(['module other', 'moduleEnd']);
+		expect(getProjectModules(state.historyStack[0])[0].code).toEqual(['module other', 'moduleEnd']);
 	});
 
 	it('records exactly one entry for pasting several blocks, and none for an empty paste', async () => {
@@ -231,7 +232,9 @@ describe('history tracking with real project mutations', () => {
 		dispatch('loadProject', {
 			project: {
 				...EMPTY_DEFAULT_PROJECT,
-				modules: [{ id: 0, code: ['module main', '; @pos 0 0', 'push 1', 'drop', 'moduleEnd'], entry: 'main' }],
+				execution: [
+					{ type: 'module', id: 0, code: ['module main', '; @pos 0 0', 'push 1', 'drop', 'moduleEnd'], entry: 'main' },
+				],
 			},
 		});
 		const loaded = state.codeBlockRendering.codeBlocks[0];

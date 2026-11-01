@@ -4,6 +4,67 @@
     "functions": [],
     "modules": [
       {
+        "id": "outer",
+        "lines": [
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "outer",
+              },
+            ],
+            "instruction": "module",
+            "lineNumber": 0,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "input",
+              },
+              {
+                "isEndAddress": false,
+                "referenceKind": "intermodular-reference",
+                "scope": "intermodule",
+                "targetMemoryId": "exposedValue",
+                "targetModuleId": "audio",
+                "type": "identifier",
+                "value": "&audio:exposedValue",
+              },
+            ],
+            "instruction": "int*",
+            "lineNumber": 1,
+          },
+          {
+            "arguments": [],
+            "instruction": "moduleEnd",
+            "lineNumber": 2,
+          },
+        ],
+        "moduleLine": {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "outer",
+            },
+          ],
+          "instruction": "module",
+          "lineNumber": 0,
+        },
+        "projectBlockId": 4,
+        "sourceIdentity": {
+          "codeBlockId": "outer",
+          "projectGroupPath": "",
+        },
+        "type": "module",
+      },
+      {
         "id": "audio/source",
         "lines": [
           {
@@ -109,67 +170,6 @@
         "sourceIdentity": {
           "codeBlockId": "consumer",
           "projectGroupPath": "audio",
-        },
-        "type": "module",
-      },
-      {
-        "id": "outer",
-        "lines": [
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "outer",
-              },
-            ],
-            "instruction": "module",
-            "lineNumber": 0,
-          },
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "input",
-              },
-              {
-                "isEndAddress": false,
-                "referenceKind": "intermodular-reference",
-                "scope": "intermodule",
-                "targetMemoryId": "exposedValue",
-                "targetModuleId": "audio",
-                "type": "identifier",
-                "value": "&audio:exposedValue",
-              },
-            ],
-            "instruction": "int*",
-            "lineNumber": 1,
-          },
-          {
-            "arguments": [],
-            "instruction": "moduleEnd",
-            "lineNumber": 2,
-          },
-        ],
-        "moduleLine": {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "outer",
-            },
-          ],
-          "instruction": "module",
-          "lineNumber": 0,
-        },
-        "projectBlockId": 4,
-        "sourceIdentity": {
-          "codeBlockId": "outer",
-          "projectGroupPath": "",
         },
         "type": "module",
       },

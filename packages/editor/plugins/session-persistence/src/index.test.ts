@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import { createEditorEditingHandle, EMPTY_DEFAULT_PROJECT, getEditorBlockId } from '@8f4e/editor-state';
+import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { setupPlugin } from './__tests__/setup';
 import { createSessionPersistencePlugin } from './index';
@@ -44,15 +45,15 @@ describe('session persistence plugin', () => {
 		expect(storage.setItem).not.toHaveBeenCalled();
 		test.events.dispatch('init');
 		expect(test.state.codeBlockRendering.codeBlocks.some(block => block.name === 'retained')).toBe(true);
-		expect(JSON.parse(storage.getItem('session')!).modules[0].code).toContain('module retained');
+		expect(getProjectModules(JSON.parse(storage.getItem('session')!))[0].code).toContain('module retained');
 		expect(storage.setItem).toHaveBeenCalledOnce();
 	});
 
 	it('keeps an empty project when no session exists', () => {
 		const test = setup();
 		test.boot();
-		expect(test.state.initialProjectState).toMatchObject({ modules: [], notes: [], groups: [] });
-		expect(JSON.parse(test.storage.getItem('session')!).modules).toEqual([]);
+		expect(test.state.initialProjectState).toMatchObject({ execution: [], notes: [] });
+		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))).toEqual([]);
 	});
 
 	it('skips restoration and keeps autosaving enabled when startup belongs to another loader', () => {
@@ -65,7 +66,7 @@ describe('session persistence plugin', () => {
 		expect(storage.setItem).toHaveBeenCalledWith('session', expect.any(String));
 		test.events.dispatch('loadProject', { project });
 		test.events.dispatch('enterEditMode');
-		expect(JSON.parse(storage.getItem('session')!).modules[0].code).toContain('module retained');
+		expect(getProjectModules(JSON.parse(storage.getItem('session')!))[0].code).toContain('module retained');
 	});
 
 	it('autosaves typing, API edits, undo/redo, and deletion', () => {
@@ -78,7 +79,7 @@ describe('session persistence plugin', () => {
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
 		test.events.dispatch('insertText', { text: '2' });
-		expect(JSON.parse(test.storage.getItem('session')!).modules[0].code).toContain('int value 12');
+		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 12');
 		const editing = createEditorEditingHandle(test.store, test.events);
 		cleanups.push(editing.dispose);
 		editing.handle.applyEdits({
@@ -87,15 +88,15 @@ describe('session persistence plugin', () => {
 				{ type: 'update', blockId: getEditorBlockId(block), code: ['module retained', 'int value 3', 'moduleEnd'] },
 			],
 		});
-		expect(JSON.parse(test.storage.getItem('session')!).modules[0].code).toContain('int value 3');
+		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 3');
 		test.events.dispatch('undo');
-		expect(JSON.parse(test.storage.getItem('session')!).modules[0].code).toContain('int value 12');
+		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 12');
 		test.events.dispatch('redo');
-		expect(JSON.parse(test.storage.getItem('session')!).modules[0].code).toContain('int value 3');
+		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 3');
 		test.events.dispatch('deleteCodeBlock', {
 			codeBlock: test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!,
 		});
-		expect(JSON.parse(test.storage.getItem('session')!).modules).toEqual([]);
+		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))).toEqual([]);
 	});
 
 	it('does not save or record an API update that keeps the same source', () => {
@@ -139,7 +140,7 @@ describe('session persistence plugin', () => {
 		expect(test.storage.setItem).not.toHaveBeenCalled();
 		expect(test.state.redoStack).toHaveLength(1);
 		test.events.dispatch('redo');
-		expect(JSON.parse(test.storage.getItem('session')!).modules[0].code).toContain('int value 12');
+		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 12');
 	});
 
 	it('shares one completed change across API revisions, history, and saves for batches and restoration', () => {
@@ -245,7 +246,7 @@ describe('session persistence plugin', () => {
 		expect(editing.handle.getRevision()).not.toBe(token);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision);
 		expect(test.storage.setItem).toHaveBeenCalledOnce();
-		expect(JSON.parse(test.storage.getItem('session')!).modules[0].code).toEqual([
+		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toEqual([
 			'module retained',
 			'; @pos 6 5',
 			'int value 1',
@@ -254,7 +255,7 @@ describe('session persistence plugin', () => {
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(test.state.historyStack).toHaveLength(1);
 		test.events.dispatch('undo');
-		expect(JSON.parse(test.storage.getItem('session')!).modules[0].code).toContain('; @pos 4 3');
+		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('; @pos 4 3');
 
 		// A compiler-only request does not create a project edit or an API revision.
 		const afterUndo = editing.handle.getRevision();
@@ -275,7 +276,7 @@ describe('session persistence plugin', () => {
 		test.events.dispatch('enterEditMode');
 		const group = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'voice')!;
 		test.store.set('codeBlockRendering.codeBlocks', group.nestedProjectCodeBlocks!);
-		expect(JSON.parse(test.storage.getItem('session')!).groups[0].name).toBe('voice');
+		expect(getProjectGroups(JSON.parse(test.storage.getItem('session')!))[0].name).toBe('voice');
 	});
 
 	it('isolates storage keys and disposes its subscriptions and listeners', () => {
@@ -285,8 +286,8 @@ describe('session persistence plugin', () => {
 		first.boot();
 		second.boot();
 		first.events.dispatch('loadProject', { project });
-		expect(JSON.parse(storage.getItem('first')!).modules).toHaveLength(1);
-		expect(JSON.parse(storage.getItem('second')!).modules).toEqual([]);
+		expect(getProjectModules(JSON.parse(storage.getItem('first')!))).toHaveLength(1);
+		expect(getProjectModules(JSON.parse(storage.getItem('second')!))).toEqual([]);
 		first.disposePlugin();
 		storage.setItem.mockClear();
 		first.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
@@ -294,7 +295,7 @@ describe('session persistence plugin', () => {
 		first.events.dispatch('init');
 		expect(storage.setItem).not.toHaveBeenCalled();
 		second.events.dispatch('loadProject', { project });
-		expect(JSON.parse(storage.getItem('second')!).modules).toHaveLength(1);
+		expect(getProjectModules(JSON.parse(storage.getItem('second')!))).toHaveLength(1);
 	});
 
 	it('reports unreadable stored JSON and continues with the empty project', () => {
@@ -303,7 +304,7 @@ describe('session persistence plugin', () => {
 		const test = setup(storage);
 		test.boot();
 		expect(test.state.console.logs.some(log => log.message.includes('Failed to restore editor session'))).toBe(true);
-		expect(test.state.initialProjectState).toMatchObject({ modules: [], notes: [], groups: [] });
+		expect(test.state.initialProjectState).toMatchObject({ execution: [], notes: [] });
 	});
 
 	it('reports storage write failures without interrupting source edits', () => {

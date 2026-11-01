@@ -6,6 +6,7 @@ import {
 	type ProjectBlock,
 	type ProjectBlockId,
 	type ProjectEntryName,
+	type ProjectExecutableBlock,
 	type ProjectGroupObjectModel,
 	type ProjectMemoryAliasLookup,
 	type ProjectMemoryExposure,
@@ -18,12 +19,14 @@ import {
 } from './project';
 
 describe('ProjectObjectModel', () => {
-	it('encodes block kinds through top-level collection membership', () => {
+	it('encodes executable kinds in one ordered collection and keeps declarations hoisted', () => {
 		expectTypeOf<ProjectBlock['id']>().toEqualTypeOf<ProjectBlockId>();
 		expectTypeOf<ProjectModuleBlock['entry']>().toEqualTypeOf<ProjectEntryName>();
-		expectTypeOf<ProjectObjectModel['modules']>().toEqualTypeOf<ProjectModuleBlock[]>();
+		expectTypeOf<ProjectObjectModel['execution']>().toEqualTypeOf<ProjectExecutableBlock[]>();
+		expectTypeOf<ProjectModuleBlock['type']>().toEqualTypeOf<'module'>();
+		expectTypeOf<ProjectGroupObjectModel['type']>().toEqualTypeOf<'group'>();
+		expectTypeOf<ProjectGroupObjectModel['id']>().toEqualTypeOf<ProjectBlockId>();
 		expectTypeOf<ProjectObjectModel['functions']>().toEqualTypeOf<ProjectBlock[]>();
-		expectTypeOf<ProjectObjectModel['groups']>().toEqualTypeOf<ProjectGroupObjectModel[]>();
 		expectTypeOf<ProjectGroupObjectModel['entry']>().toEqualTypeOf<ProjectEntryName>();
 		expectTypeOf<ProjectGroupObjectModel['code']>().toEqualTypeOf<string[]>();
 		expectTypeOf<ProjectGroupObjectModel['exposures']>().toEqualTypeOf<ProjectMemoryExposure[]>();

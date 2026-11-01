@@ -6,14 +6,13 @@ import compareCodeBlocksByPosition from '../compareCodeBlocksByPosition';
 function createEmptyProject(): ProjectObjectModel {
 	return {
 		code: [],
-		modules: [],
+		execution: [],
 		functions: [],
 		constants: [],
 		prototypes: [],
 		includes: [],
 		notes: [],
 		unknown: [],
-		groups: [],
 	};
 }
 
@@ -28,8 +27,10 @@ export default function convertGraphicDataToProjectStructure(codeBlocks: CodeBlo
 			continue;
 		}
 		if (codeBlock.nestedProjectCodeBlocks !== undefined) {
-			project.groups.push({
+			project.execution.push({
 				...convertGraphicDataToProjectStructure(codeBlock.nestedProjectCodeBlocks),
+				type: 'group',
+				id: codeBlock.creationIndex,
 				name: codeBlock.name,
 				entry: codeBlock.entry!,
 				code: [...codeBlock.code],
@@ -48,7 +49,7 @@ export default function convertGraphicDataToProjectStructure(codeBlocks: CodeBlo
 		};
 
 		if (codeBlock.blockType === 'module') {
-			project.modules.push({ ...block, entry: codeBlock.entry! });
+			project.execution.push({ ...block, type: 'module', entry: codeBlock.entry! });
 		} else if (codeBlock.blockType === 'function') {
 			project.functions.push(block);
 		} else if (codeBlock.blockType === 'constants') {

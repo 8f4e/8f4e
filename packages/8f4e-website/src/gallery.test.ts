@@ -71,7 +71,7 @@ test('keeps the editor mounted while a project fetch is pending and reveals it o
 	finish(new Response(source));
 	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
 	expect(status.hidden).toBe(true);
-	expect(editor.state.initialProjectState?.modules[0].code).toContain('module galleryExample ; @mode edit');
+	expect(editor.state.initialProjectState?.execution[0].code).toContain('module galleryExample ; @mode edit');
 });
 
 test('reveals a successfully loaded empty project', async () => {

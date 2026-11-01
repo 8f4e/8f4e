@@ -34,7 +34,10 @@ function setup() {
 
 async function startCompilation(test: ReturnType<typeof setup>) {
 	test.events.dispatch('loadProject', {
-		project: { ...EMPTY_DEFAULT_PROJECT, modules: [{ id: 1, entry: 'main', code: ['module main', 'moduleEnd'] }] },
+		project: {
+			...EMPTY_DEFAULT_PROJECT,
+			execution: [{ type: 'module', id: 1, entry: 'main', code: ['module main', 'moduleEnd'] }],
+		},
 	});
 	await vi.advanceTimersByTimeAsync(500);
 }
@@ -60,7 +63,7 @@ describe('compiler plugin', () => {
 				type: 'compile',
 				payload: expect.objectContaining({
 					project: expect.objectContaining({
-						modules: [expect.objectContaining({ code: ['module main', 'moduleEnd'] })],
+						execution: [expect.objectContaining({ type: 'module', code: ['module main', 'moduleEnd'] })],
 					}),
 				}),
 			})

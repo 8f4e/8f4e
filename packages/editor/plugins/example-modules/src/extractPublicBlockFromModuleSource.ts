@@ -4,7 +4,7 @@ import { parseBlockDirectives, removeDirective } from '@8f4e/editor-state';
 export default function extractPublicBlockFromModuleSource(source: string): string[] {
 	const project = parseProjectSource(source);
 	const publicBlock = [
-		...project.modules.filter(block => block.entry !== 'test'),
+		...project.execution.filter(block => block.type === 'module' && block.entry !== 'test'),
 		...project.functions,
 		...project.constants,
 		...project.prototypes,

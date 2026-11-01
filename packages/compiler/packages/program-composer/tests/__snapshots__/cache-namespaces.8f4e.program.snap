@@ -4,46 +4,6 @@
     "functions": [],
     "modules": [
       {
-        "id": "child/same",
-        "lines": [
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "child/same",
-              },
-            ],
-            "instruction": "module",
-            "lineNumber": 0,
-          },
-          {
-            "arguments": [],
-            "instruction": "moduleEnd",
-            "lineNumber": 1,
-          },
-        ],
-        "moduleLine": {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "child/same",
-            },
-          ],
-          "instruction": "module",
-          "lineNumber": 0,
-        },
-        "projectBlockId": 8,
-        "sourceIdentity": {
-          "codeBlockId": "same",
-          "projectGroupPath": "child",
-        },
-        "type": "module",
-      },
-      {
         "id": "same",
         "lines": [
           {
@@ -80,6 +40,46 @@
         "sourceIdentity": {
           "codeBlockId": "same",
           "projectGroupPath": "",
+        },
+        "type": "module",
+      },
+      {
+        "id": "child/same",
+        "lines": [
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "child/same",
+              },
+            ],
+            "instruction": "module",
+            "lineNumber": 0,
+          },
+          {
+            "arguments": [],
+            "instruction": "moduleEnd",
+            "lineNumber": 1,
+          },
+        ],
+        "moduleLine": {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "child/same",
+            },
+          ],
+          "instruction": "module",
+          "lineNumber": 0,
+        },
+        "projectBlockId": 8,
+        "sourceIdentity": {
+          "codeBlockId": "same",
+          "projectGroupPath": "child",
         },
         "type": "module",
       },

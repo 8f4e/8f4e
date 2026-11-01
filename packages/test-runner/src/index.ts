@@ -17,8 +17,8 @@ export type TestRunInput = TestProgram &
 /** Detects an enabled test entry or a root function exported as `test`. */
 export function hasTestEntry(project: ProjectObjectModel): boolean {
 	function hasTestModules(project: ProjectObjectModel): boolean {
-		return (
-			project.modules.some(block => !block.disabled && block.entry === 'test') || project.groups.some(hasTestModules)
+		return project.execution.some(block =>
+			block.type === 'group' ? hasTestModules(block) : !block.disabled && block.entry === 'test'
 		);
 	}
 	return (

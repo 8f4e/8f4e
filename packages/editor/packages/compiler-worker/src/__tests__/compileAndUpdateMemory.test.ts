@@ -1,4 +1,5 @@
 import type { CompileAndUpdateMemoryResult, ProjectObjectModel } from '@8f4e/language-spec';
+import { getProjectModules } from '@8f4e/language-spec';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type compileAndUpdateMemoryType from '../compileAndUpdateMemory';
 
@@ -7,14 +8,13 @@ let compileAndUpdateMemory: typeof compileAndUpdateMemoryType;
 
 const createInput = (modules: Array<{ code: string[] }>, entry = 'main'): ProjectObjectModel => ({
 	code: [],
-	modules: modules.map((module, id) => ({ ...module, id, entry })),
+	execution: [...modules.map((module, id) => ({ ...module, type: 'module' as const, id, entry }))],
 	constants: [],
 	functions: [],
 	prototypes: [],
 	includes: [],
 	notes: [],
 	unknown: [],
-	groups: [],
 });
 
 beforeEach(async () => {
@@ -93,7 +93,7 @@ store
 moduleEnd`.split('\n'),
 			},
 		]);
-		project.modules[0].entry = 'test';
+		getProjectModules(project)[0].entry = 'test';
 		const result = await compileAndUpdateMemory(project, { ...compilerOptions, enableAssertions: true });
 		const imports = WebAssembly.Module.imports(new WebAssembly.Module(new Uint8Array(result.codeBuffer)));
 		expect(result.assertionSites).toMatchObject([

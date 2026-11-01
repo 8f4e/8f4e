@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import { getProjectModules } from '@8f4e/language-spec';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
 import { createDefaultEditorPlugins } from './index';
@@ -57,10 +58,10 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 		events.dispatch('init');
 		expect(fetch).toHaveBeenCalledWith('https://example.com/project.8f4e', { cache: 'no-store' });
 		expect(storage.getItem).not.toHaveBeenCalled();
-		expect(JSON.parse(saved).modules).toEqual([]);
+		expect(getProjectModules(JSON.parse(saved))).toEqual([]);
 		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
 		finish(new Response(source));
-		await vi.waitFor(() => expect(JSON.parse(saved).modules[0]?.code).toContain('module remote'));
+		await vi.waitFor(() => expect(getProjectModules(JSON.parse(saved))[0]?.code).toContain('module remote'));
 		await vi.waitFor(() =>
 			expect(
 				store

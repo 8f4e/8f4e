@@ -2,6 +2,7 @@ import { getEditorBlockId } from '@8f4e/editor-core';
 import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
 import { serializeToProject } from '@8f4e/editor-state';
 import { createEditorWebMcp, type WebMcpTool } from '@8f4e/editor-webmcp';
+import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { afterEach, expect, test, vi } from 'vitest';
 import { page } from 'vitest/browser';
 
@@ -235,8 +236,9 @@ test('patches one source span in the current group with persistence and one-step
 		original.replace('float alpha 0.04', 'float alpha 0.1')
 	);
 	const childSource = () =>
-		serializeToProject(editor.state).groups.find(group => group.name === 'audio')!.modules[0].code;
-	expect(serializeToProject(editor.state).modules[0].code).toContain('float alpha 0.04');
+		getProjectModules(getProjectGroups(serializeToProject(editor.state)).find(group => group.name === 'audio')!)[0]
+			.code;
+	expect(getProjectModules(serializeToProject(editor.state))[0].code).toContain('float alpha 0.04');
 	expect(await call('get_project_metadata')).toMatchObject({ projectPath: 'audio' });
 	expect(window.sessionStorage.getItem('project_8f4e-webmcp-test-patched')).toContain('float alpha 0.1');
 	const project = serializeToProject(editor.state);
@@ -362,7 +364,7 @@ test('exposes source strings through site tools and saves undoable named edits',
 			],
 		})
 	).toBe('Edits applied.');
-	expect(serializeToProject(editor.state).modules[0].code).toContain('int value 17');
+	expect(getProjectModules(serializeToProject(editor.state))[0].code).toContain('int value 17');
 	expect(window.sessionStorage.getItem('project_8f4e-webmcp-test-bridged')).toContain('int value 17');
 	const blocks = editor.state.codeBlockRendering.codeBlocks;
 	expect(blocks.find(block => block.name === 'counter')!).toMatchObject({
@@ -378,5 +380,5 @@ test('exposes source strings through site tools and saves undoable named edits',
 	editor.renderFrame();
 	await page.screenshot({ element: view.panel(), path: '../.vitest-attachments/webmcp-edit.png' });
 	await tools.get('undo')!.execute({});
-	expect(serializeToProject(editor.state).modules[0].code).toContain('int value 1');
+	expect(getProjectModules(serializeToProject(editor.state))[0].code).toContain('int value 1');
 });

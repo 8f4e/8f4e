@@ -1,5 +1,6 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
+import { getProjectModules } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, test } from 'vitest';
 import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
@@ -13,7 +14,7 @@ import autoEnvConstants from './effect';
 const AUTO_ENV_BLOCK_NAME = 'env';
 const PROJECT_WITH_CODE_BLOCK: ProjectObjectModel = {
 	...EMPTY_DEFAULT_PROJECT,
-	modules: [{ id: 0, code: ['module demo', 'moduleEnd'], entry: 'main' }],
+	execution: [{ type: 'module', id: 0, code: ['module demo', 'moduleEnd'], entry: 'main' }],
 };
 
 function createGraphicEnvBlock(code: string[], overrides: Partial<CodeBlockGraphicData> = {}): CodeBlockGraphicData {
@@ -67,7 +68,7 @@ describe('autoEnvConstants', () => {
 	test('should place env block at beginning of codeBlocks array', () => {
 		const projectWithBlocks: ProjectObjectModel = {
 			...EMPTY_DEFAULT_PROJECT,
-			modules: [{ id: 0, code: ['module test', 'moduleEnd'], entry: 'main' }],
+			execution: [{ type: 'module', id: 0, code: ['module test', 'moduleEnd'], entry: 'main' }],
 		};
 
 		store.set('initialProjectState', projectWithBlocks);
@@ -77,7 +78,7 @@ describe('autoEnvConstants', () => {
 		store.set('initialProjectState', { ...projectWithBlocks });
 
 		expect(state.initialProjectState?.constants[0].code[0]).toBe('constants env');
-		expect(state.initialProjectState?.modules[0].code[0]).toBe('module test');
+		expect(getProjectModules(state.initialProjectState)[0].code[0]).toBe('module test');
 	});
 
 	test('includes contributed constants when a project is loaded', () => {

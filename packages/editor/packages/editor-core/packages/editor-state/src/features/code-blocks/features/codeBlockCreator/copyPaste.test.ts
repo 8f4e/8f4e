@@ -1,4 +1,5 @@
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
+import { getProjectGroups } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
@@ -135,18 +136,19 @@ describe('codeBlockCreator - copy/paste', () => {
 			expect(new Set(pastedCreationIndexes).size).toBe(pastedCreationIndexes.length);
 			expect(Math.min(...pastedCreationIndexes)).toBe(20);
 
-			const pastedProjectGroup = convertGraphicDataToProjectStructure(rootCodeBlocks).groups[1];
+			const pastedProjectGroup = getProjectGroups(convertGraphicDataToProjectStructure(rootCodeBlocks))[1];
 			expect(pastedProjectGroup).toMatchObject({
 				name: 'audio1',
 				entry: 'main',
-				modules: [{ entry: 'main', code: expect.arrayContaining(['module output']) }],
-				functions: [{ code: expect.arrayContaining(['function process']) }],
-				groups: [
+				execution: [
 					{
+						type: 'group',
 						name: 'modulation',
-						modules: [{ entry: 'main', code: expect.arrayContaining(['module voice']) }],
+						execution: [{ type: 'module', entry: 'main', code: expect.arrayContaining(['module voice']) }],
 					},
+					{ type: 'module', entry: 'main', code: expect.arrayContaining(['module output']) },
 				],
+				functions: [{ code: expect.arrayContaining(['function process']) }],
 			});
 		});
 	});

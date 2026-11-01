@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import type { ProjectGroupObjectModel, ProjectObjectModel } from '@8f4e/language-spec';
+import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { serializeProjectTo8f4e } from './serializeTo8f4e';
 
@@ -10,31 +11,66 @@ const validNoteBlock = ['note', '; @pos 1 2', 'compiler should ignore this', 'no
 function createProject(partial: Partial<ProjectObjectModel> = {}): ProjectObjectModel {
 	return {
 		code: [],
-		modules: [],
+		execution: [],
 		functions: [],
 		constants: [],
 		prototypes: [],
 		includes: [],
 		notes: [],
 		unknown: [],
-		groups: [],
 		...partial,
 	};
 }
 
 function createGroup(partial: Partial<ProjectGroupObjectModel>): ProjectGroupObjectModel {
-	return { ...createProject(), name: 'group', entry: 'main', exposures: [], ...partial };
+	return { ...createProject(), type: 'group', id: 0, name: 'group', entry: 'main', exposures: [], ...partial };
 }
 
 describe('serializeProjectTo8f4e', () => {
+	it('round-trips interleaved modules and nested groups in each entry', () => {
+		const source = `8f4e/v1
+
+entry main
+module rootA
+moduleEnd
+group synth
+module voiceA
+moduleEnd
+group oscillator
+module tick
+moduleEnd
+groupEnd
+module voiceB
+moduleEnd
+groupEnd
+module rootB
+moduleEnd
+entryEnd
+
+entry alternate
+group other
+module otherVoice
+moduleEnd
+groupEnd
+module otherRoot
+moduleEnd
+entryEnd`;
+		const parsed = parseProjectSource(source);
+		const serialized = serializeProjectTo8f4e(parsed);
+		expect(serialized).toBe(source);
+		expect(parseProjectSource(serialized)).toEqual(parsed);
+	});
+
 	it('produces 8f4e/v1 header', () => {
-		const result = serializeProjectTo8f4e(createProject({ modules: [{ id: 1, code: validBlock, entry: 'main' }] }));
+		const result = serializeProjectTo8f4e(
+			createProject({ execution: [{ type: 'module', id: 1, code: validBlock, entry: 'main' }] })
+		);
 		expect(result.startsWith('8f4e/v1\n')).toBe(true);
 	});
 
 	it('serializes multiple block collections separated by blank lines', () => {
 		const project = createProject({
-			modules: [{ id: 1, code: validBlock, entry: 'main' }],
+			execution: [{ type: 'module', id: 1, code: validBlock, entry: 'main' }],
 			functions: [{ id: 2, code: validFunctionBlock }],
 			notes: [{ id: 3, code: validNoteBlock }],
 		});
@@ -48,7 +84,7 @@ describe('serializeProjectTo8f4e', () => {
 		const visibleIncludesBlock = ['includes', 'include std/events/risingEdge', 'includesEnd'];
 		const project = createProject({
 			includes: [{ id: 1, code: visibleIncludesBlock }],
-			modules: [{ id: 2, code: validBlock, entry: 'main' }],
+			execution: [{ type: 'module', id: 2, code: validBlock, entry: 'main' }],
 		});
 		expect(serializeProjectTo8f4e(project)).toBe(
 			['8f4e/v1', '', ...visibleIncludesBlock, '', 'entry main', ...validBlock, 'entryEnd'].join('\n')
@@ -57,10 +93,10 @@ describe('serializeProjectTo8f4e', () => {
 
 	it('preserves module order within each entry', () => {
 		const project = createProject({
-			modules: [
-				{ id: 1, code: ['module a', 'moduleEnd'], entry: 'main' },
-				{ id: 3, code: ['module b', 'moduleEnd'], entry: 'test' },
-				{ id: 4, code: ['module c', 'moduleEnd'], entry: 'main' },
+			execution: [
+				{ type: 'module', id: 1, code: ['module a', 'moduleEnd'], entry: 'main' },
+				{ type: 'module', id: 3, code: ['module b', 'moduleEnd'], entry: 'test' },
+				{ type: 'module', id: 4, code: ['module c', 'moduleEnd'], entry: 'main' },
 			],
 			functions: [{ id: 2, code: validFunctionBlock }],
 		});
@@ -106,21 +142,21 @@ describe('serializeProjectTo8f4e', () => {
 
 	it('round-trips canonical block collections through project text', () => {
 		const project = createProject({
-			modules: [{ id: 1, code: validBlock, entry: 'main' }],
+			execution: [{ type: 'module', id: 1, code: validBlock, entry: 'main' }],
 			functions: [{ id: 2, code: validFunctionBlock }],
 			notes: [{ id: 3, code: validNoteBlock }],
 		});
 
 		const parsed = parseProjectSource(serializeProjectTo8f4e(project));
 
-		expect(parsed.modules[0].code).toEqual(validBlock);
+		expect(getProjectModules(parsed)[0].code).toEqual(validBlock);
 		expect(parsed.functions[0].code).toEqual(validFunctionBlock);
 		expect(parsed.notes[0].code).toEqual(validNoteBlock);
 	});
 
 	it('round-trips recursively owned groups', () => {
 		const project = createGroup({
-			groups: [
+			execution: [
 				createGroup({
 					name: 'audio',
 					entry: 'main',
@@ -138,9 +174,8 @@ describe('serializeProjectTo8f4e', () => {
 							targetMemoryName: 'count',
 						},
 					],
-					modules: [{ id: 1, code: validBlock, entry: 'main' }],
-					functions: [{ id: 2, code: validFunctionBlock }],
-					groups: [
+					execution: [
+						{ type: 'module', id: 1, code: validBlock, entry: 'main' },
 						createGroup({
 							name: 'notes',
 							entry: 'main',
@@ -149,13 +184,14 @@ describe('serializeProjectTo8f4e', () => {
 							notes: [{ id: 3, code: validNoteBlock }],
 						}),
 					],
+					functions: [{ id: 2, code: validFunctionBlock }],
 				}),
 			],
 		});
 
 		const parsed = parseProjectSource(serializeProjectTo8f4e(project));
 
-		expect(parsed.groups[0]).toMatchObject({
+		expect(getProjectGroups(parsed)[0]).toMatchObject({
 			name: 'audio',
 			entry: 'main',
 			code: [
@@ -172,9 +208,11 @@ describe('serializeProjectTo8f4e', () => {
 					targetMemoryName: 'count',
 				},
 			],
-			modules: [{ code: validBlock, entry: 'main' }],
+			execution: [
+				{ type: 'module', code: validBlock, entry: 'main' },
+				{ type: 'group', name: 'notes', entry: 'main', notes: [{ code: validNoteBlock }] },
+			],
 			functions: [{ code: validFunctionBlock }],
-			groups: [{ name: 'notes', entry: 'main', notes: [{ code: validNoteBlock }] }],
 		});
 	});
 
@@ -221,7 +259,9 @@ describe('serializeProjectTo8f4e', () => {
 	it('ignores trailing empty lines when finding closer', () => {
 		expect(() =>
 			serializeProjectTo8f4e(
-				createProject({ modules: [{ id: 1, code: ['module foo', 'moduleEnd', '', ''], entry: 'main' }] })
+				createProject({
+					execution: [{ type: 'module', id: 1, code: ['module foo', 'moduleEnd', '', ''], entry: 'main' }],
+				})
 			)
 		).not.toThrow();
 	});
