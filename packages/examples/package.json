@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/examples",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "private": true,
   "description": "8f4e example modules and projects",
   "type": "module",
