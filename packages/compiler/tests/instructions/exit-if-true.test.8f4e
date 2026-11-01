@@ -1,0 +1,52 @@
+8f4e/v1
+
+constants env
+; @pos -84 4
+; @favorite
+; Auto-generated environment constants
+; Changes will be overwritten
+
+
+constantsEnd
+
+note
+; @pos 1 2
+; @config testRuntime.enabled true
+
+describe exitIfTrue
+noteEnd
+
+entry test
+module zeroConditionContinues
+; @pos 14 10
+; A zero condition should allow
+; the rest of the module to run.
+int output
+push 0
+exitIfTrue
+push &output
+push 1
+store
+push output
+assertEqual 1
+moduleEnd
+module nonzeroConditionExits
+; @pos 14 32
+; A non-zero condition should
+; skip the remaining instructions.
+int output
+push 1
+exitIfTrue
+push &output
+push 1
+store
+moduleEnd
+module laterModuleContinues
+; @pos 14 54
+; An exited module should not
+; prevent later modules from running.
+int* skippedOutput &nonzeroConditionExits:0
+push *skippedOutput
+assertEqual 0
+moduleEnd
+entryEnd

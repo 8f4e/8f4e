@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/runtime-audio-worklet",
-  "version": "2.1.20",
+  "version": "3.0.23",
   "private": true,
   "description": "8f4e audio worklet runtime package",
   "type": "module",
@@ -11,31 +11,27 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./runtime-def": {
-      "types": "./dist/runtimeDef.d.ts",
-      "default": "./dist/runtimeDef.js"
-    },
     "./worklet": {
       "default": "./dist/worklet/index.js"
+    },
+    "./messages": {
+      "types": "./dist/messages.d.ts",
+      "default": "./dist/messages.js"
     }
   },
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andorthehood/8f4e.git"
+    "url": "git+https://github.com/8f4e/8f4e.git"
   },
   "author": "Andor Polgar",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/andorthehood/8f4e/issues"
+    "url": "https://github.com/8f4e/8f4e/issues"
   },
-  "homepage": "https://github.com/andorthehood/8f4e#readme",
+  "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
-    "@8f4e/test-runner": "*"
+    "@8f4e/language-spec": "*"
   },
-  "devDependencies": {},
-  "peerDependencies": {
-    "@8f4e/editor-core": "*",
-    "@8f4e/state-manager": "*"
-  }
+  "devDependencies": {}
 }

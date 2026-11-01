@@ -10,16 +10,16 @@
       "id": "phaseAccumulator",
       "index": 0,
       "byteAddress": 520,
-      "wordAlignedAddress": 130,
-      "wordAlignedSize": 4,
+      "allocationUnitAddress": 130,
+      "allocationUnitCount": 4,
       "skipExecutionInCycle": false
     },
     {
       "id": "audioout",
       "index": 1,
       "byteAddress": 0,
-      "wordAlignedAddress": 0,
-      "wordAlignedSize": 130,
+      "allocationUnitAddress": 0,
+      "allocationUnitCount": 130,
       "skipExecutionInCycle": false
     }
   ]

@@ -3,7 +3,7 @@ title: 'TODO: Preserve known pointee counts of one'
 priority: Medium
 effort: 1-2h
 created: 2026-10-16
-issue: https://github.com/andorthehood/8f4e/issues/1042
+issue: https://github.com/8f4e/8f4e/issues/1042
 status: Open
 completed: null
 ---
@@ -81,4 +81,4 @@ Preserve unknown-count diagnostics rather than guessing a count from pointer typ
 
 - [Separate pointer type and provenance facts](431-separate-pointer-type-and-provenance-facts.md)
 - [Nest pointer metadata shape](430-nest-pointer-metadata-shape.md)
-- [PR #1041: Remove multiple Wasm memory support](https://github.com/andorthehood/8f4e/pull/1041)
+- [PR #1041: Remove multiple Wasm memory support](https://github.com/8f4e/8f4e/pull/1041)

@@ -59,38 +59,6 @@ functionEnd int
 		});
 	});
 
-	test('inlines call arguments as pushes before invoking custom functions', async () => {
-		const fixture = await instantiateFixtureProgramSource(`
-8f4e/v1
-
-entry main
-module inlineCallArguments
-float output
-
-push &output
-call mix 2 1.5
-store
-moduleEnd
-entryEnd
-
-function mix
-param int left
-param float right
-push left
-castToFloat
-push right
-add
-functionEnd float
-`);
-		const memory = new DataView((fixture.host.memory as WebAssembly.Memory).buffer);
-		const output = fixture.compileResult.memoryPlan.modules.inlineCallArguments!.memory.output!.byteAddress;
-
-		getExportedFunction(fixture.instance.exports, 'initDefaults')();
-		getExportedFunction(fixture.instance.exports, 'main')();
-
-		expect(memory.getFloat32(output, true)).toBe(3.5);
-	});
-
 	test('supports paramShape signatures on host imports', async () => {
 		const calls: number[][] = [];
 		const fixture = await instantiateFixtureProgramSource(

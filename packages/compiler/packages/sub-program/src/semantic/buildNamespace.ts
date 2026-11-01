@@ -67,11 +67,12 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 ): FunctionRegistration<TFunction> {
 	const declarations: RegisteredFunction<TFunction>[] = [];
 	const byId: FunctionMetadataLookup = {};
-	const arityByName: FunctionRegistry['arityByName'] = {};
+	// Source names may also be Object.prototype property names.
+	const arityByName: FunctionRegistry['arityByName'] = Object.create(null);
 	const overloadCountsByName = asts.reduce<Record<string, number>>((counts, ast) => {
 		counts[ast.name] = (counts[ast.name] ?? 0) + 1;
 		return counts;
-	}, {});
+	}, Object.create(null));
 	const seenFunctionIds = new Set(options.reservedFunctionIds);
 	const reservedFunctionNames = new Set(options.reservedFunctionIds);
 	const seenExportNames = new Set(options.reservedExportNames);

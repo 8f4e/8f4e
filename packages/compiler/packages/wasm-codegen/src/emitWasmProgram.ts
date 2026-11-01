@@ -77,7 +77,7 @@ export function emitWasmProgram(
 		cache,
 	} = program;
 	const requiredMemoryBytes = memoryPlan.moduleList.reduce(
-		(maximum, module) => Math.max(maximum, module.byteAddress + module.wordAlignedByteLength),
+		(maximum, module) => Math.max(maximum, module.byteAddress + module.allocatedByteLength),
 		0
 	);
 	const initialMemoryDataSegments = createInitialMemoryDataSegments(memoryPlan, memoryDefaultsByModuleId);

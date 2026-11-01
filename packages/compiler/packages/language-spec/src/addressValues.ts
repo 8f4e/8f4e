@@ -16,7 +16,7 @@ export function memoryStartAddressValue(memoryItem: PlannedMemoryDeclaration, mo
 			safeRange: {
 				source: 'memory-start',
 				byteAddress: memoryItem.byteAddress,
-				safeByteLength: memoryItem.wordAlignedByteLength,
+				safeByteLength: memoryItem.allocatedByteLength,
 				...(moduleId ? { moduleId } : {}),
 				...(memoryItem.id ? { memoryId: memoryItem.id } : {}),
 			},
@@ -68,7 +68,7 @@ export function moduleAddressValue(
 			safeRange: {
 				source,
 				byteAddress,
-				safeByteLength: source === 'module-start' ? module.wordAlignedByteLength : module.endAddressSafeByteLength,
+				safeByteLength: source === 'module-start' ? module.allocatedByteLength : module.endAddressSafeByteLength,
 				...(moduleId ? { moduleId } : {}),
 			},
 		},

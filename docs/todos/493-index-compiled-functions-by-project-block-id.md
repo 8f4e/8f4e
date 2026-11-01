@@ -3,7 +3,7 @@ title: 'TODO: Index compiled functions by project block ID'
 priority: Medium
 effort: 2-4h
 created: 2026-10-14
-issue: https://github.com/andorthehood/8f4e/issues/1010
+issue: https://github.com/8f4e/8f4e/issues/1010
 status: Open
 completed: null
 ---
@@ -46,7 +46,7 @@ keys are needed; this is a secondary index rather than a wholesale object-to-Map
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/utils/getCompiledFunctionForCodeBlock.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/paramShape/updateGraphicData.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/stack/resolve.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/tooltip/effect.ts`
+- `packages/editor/plugins/tooltips/src/state/effect.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/program-compiler/effect.ts`
 - Editor state types and defaults if the index is stored in state.
 

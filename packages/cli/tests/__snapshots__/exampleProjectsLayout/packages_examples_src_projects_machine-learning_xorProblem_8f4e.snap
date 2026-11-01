@@ -16,72 +16,72 @@
       "id": "result",
       "index": 0,
       "byteAddress": 68,
-      "wordAlignedAddress": 17,
-      "wordAlignedSize": 1,
+      "allocationUnitAddress": 17,
+      "allocationUnitCount": 1,
       "skipExecutionInCycle": false
     },
     {
       "id": "notes",
       "index": 1,
       "byteAddress": 32,
-      "wordAlignedAddress": 8,
-      "wordAlignedSize": 0,
+      "allocationUnitAddress": 8,
+      "allocationUnitCount": 0,
       "skipExecutionInCycle": false
     },
     {
       "id": "inputs",
       "index": 2,
       "byteAddress": 24,
-      "wordAlignedAddress": 6,
-      "wordAlignedSize": 2,
+      "allocationUnitAddress": 6,
+      "allocationUnitCount": 2,
       "skipExecutionInCycle": false
     },
     {
       "id": "perceptron",
       "index": 3,
       "byteAddress": 32,
-      "wordAlignedAddress": 8,
-      "wordAlignedSize": 3,
+      "allocationUnitAddress": 8,
+      "allocationUnitCount": 3,
       "skipExecutionInCycle": false
     },
     {
       "id": "perceptron2",
       "index": 4,
       "byteAddress": 44,
-      "wordAlignedAddress": 11,
-      "wordAlignedSize": 3,
+      "allocationUnitAddress": 11,
+      "allocationUnitCount": 3,
       "skipExecutionInCycle": false
     },
     {
       "id": "activationFn",
       "index": 5,
       "byteAddress": 0,
-      "wordAlignedAddress": 0,
-      "wordAlignedSize": 2,
+      "allocationUnitAddress": 0,
+      "allocationUnitCount": 2,
       "skipExecutionInCycle": false
     },
     {
       "id": "activationFn2",
       "index": 6,
       "byteAddress": 8,
-      "wordAlignedAddress": 2,
-      "wordAlignedSize": 2,
+      "allocationUnitAddress": 2,
+      "allocationUnitCount": 2,
       "skipExecutionInCycle": false
     },
     {
       "id": "perceptron3",
       "index": 7,
       "byteAddress": 56,
-      "wordAlignedAddress": 14,
-      "wordAlignedSize": 3,
+      "allocationUnitAddress": 14,
+      "allocationUnitCount": 3,
       "skipExecutionInCycle": false
     },
     {
       "id": "activationFn3",
       "index": 8,
       "byteAddress": 16,
-      "wordAlignedAddress": 4,
-      "wordAlignedSize": 2,
+      "allocationUnitAddress": 4,
+      "allocationUnitCount": 2,
       "skipExecutionInCycle": false
     }
   ]

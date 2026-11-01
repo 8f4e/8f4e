@@ -1,5 +1,95 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`loadFloat instruction compiler > loads float64 with +0 proven bytes and guarded=true 1`] = `
+[
+  33,
+  0,
+  32,
+  0,
+  63,
+  0,
+  65,
+  1,
+  107,
+  65,
+  16,
+  116,
+  65,
+  248,
+  255,
+  3,
+  106,
+  77,
+  4,
+  124,
+  32,
+  0,
+  43,
+  3,
+  0,
+  5,
+  68,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  11,
+]
+`;
+
+exports[`loadFloat instruction compiler > loads float64 with 4 proven bytes and guarded=true 1`] = `
+[
+  33,
+  0,
+  32,
+  0,
+  63,
+  0,
+  65,
+  1,
+  107,
+  65,
+  16,
+  116,
+  65,
+  248,
+  255,
+  3,
+  106,
+  77,
+  4,
+  124,
+  32,
+  0,
+  43,
+  3,
+  0,
+  5,
+  68,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  11,
+]
+`;
+
+exports[`loadFloat instruction compiler > loads float64 with 8 proven bytes and guarded=false 1`] = `
+[
+  43,
+  3,
+  0,
+]
+`;
+
 exports[`loadFloat instruction compiler > loads from a safe memory address 1`] = `
 {
   "byteCode": [

@@ -3,7 +3,7 @@ title: 'TODO: Optimize normalizeArgumentsAtIndexes'
 priority: Medium
 effort: 1-3h
 created: 2026-05-19
-issue: https://github.com/andorthehood/8f4e/issues/660
+issue: https://github.com/8f4e/8f4e/issues/660
 status: Cancelled
 completed: 2026-09-07
 ---

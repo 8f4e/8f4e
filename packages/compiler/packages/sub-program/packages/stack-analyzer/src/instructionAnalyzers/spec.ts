@@ -14,7 +14,7 @@ import type { InstructionAnalysisResult } from './types';
 function analyzeExpectedBlockResult(
 	line: CompilerASTLine,
 	context: CompilationContext,
-	{ restore = false, validateFloatResult = false } = {}
+	{ restore = false } = {}
 ): { consumed: Stack; produced: Stack } {
 	const block = context.blockStack[context.blockStack.length - 1];
 	const expectedResultTypes = block?.expectedResultTypes ?? [];
@@ -37,7 +37,7 @@ function analyzeExpectedBlockResult(
 			throw getError(ErrorCode.ONLY_INTEGERS, line, context);
 		}
 
-		if (validateFloatResult && expectedResultType === 'float' && operand.valueType === 'int') {
+		if (expectedResultType === 'float' && operand.valueType !== 'float') {
 			throw getError(ErrorCode.ONLY_FLOATS, line, context);
 		}
 	}
@@ -139,7 +139,6 @@ export function analyzeFromSpec(
 	if (effects?.blockClose) {
 		return analyzeExpectedBlockResult(line, context, {
 			restore: effects.blockClose.restoreResult,
-			validateFloatResult: effects.blockClose.validateFloatResult,
 		});
 	}
 

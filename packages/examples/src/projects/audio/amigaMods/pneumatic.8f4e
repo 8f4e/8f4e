@@ -887,7 +887,7 @@ constantsEnd
 
 note
 ; @pos -3 -127
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audiooutL:buffer
 ; @config audioRuntime.audioOutBufferRAddress audiooutR:buffer
@@ -934,79 +934,22 @@ note
 
 noteEnd
 
-note
+note colors
 ; @pos 579 -194
 ; @tab 46
-; @config color.text.lineNumber #66788c
-; @config color.text.entryName #e6edf2
-; @config color.text.debugInfo #7893ad
-; @config color.text.arrow #55ffff
-; @config color.text.instruction #55ffff
-; @config color.text.codeComment #cc9966
-; @config color.text.code #e6edf2
-; @config color.text.infoKey #66aadd
-; @config color.text.infoValue #ffcc88
-; @config color.text.errorMessage #ffffff
-; @config color.text.disabledCode #5f6a73
-; @config color.text.numbers #ffcc88
-; @config color.text.menuItemText #e6edf2
-; @config color.text.menuItemTextHighlighted #05070b
-; @config color.text.dialogTitle #ffcc88
-; @config color.text.dialogText #e6edf2
-; @config color.text.binaryZero #6b8095
-; @config color.text.binaryOne #55ffff
-; @config color.text.basePrefix #ff8800
-; @config color.text.pianoKeyWhitePressedOverlay rgba(5,7,11,0.42)
-; @config color.text.pianoKeyBlackPressedOverlay rgba(85,255,255,0.72)
-; @config color.text.tooltipText #05070b
-; @config color.text.tooltipHighlight #0055aa
-; @config color.fill.menuItemBackground #002b57
-; @config color.fill.menuItemBackgroundHighlighted #ff8800
-; @config color.fill.background #05070b
-; @config color.fill.backgroundDots #0b1b30
-; @config color.fill.backgroundDots2 #18314f
-; @config color.fill.moduleBackground #0b1b30
-; @config color.fill.debugInfoBackground #07111f
-; @config color.fill.moduleBackgroundDragged #123861
-; @config color.fill.moduleBackgroundDisabled #09111c
-; @config color.fill.wire rgba(85,255,255,0.28)
-; @config color.fill.wireHighlighted #55ffff
-; @config color.fill.errorMessageBackground #aa2233
-; @config color.fill.assertionPassed #33cc66
-; @config color.fill.assertionFailed #ee4444
-; @config color.fill.dialogBackground #002b57
-; @config color.fill.dialogDimmer rgba(0,0,0,0.72)
-; @config color.fill.highlightedCodeLine #163a5c
-; @config color.fill.trace #55ffff
-; @config color.fill.plotterBackground #03050a
-; @config color.fill.bars #0055aa
-; @config color.fill.waveform #ffcc88
-; @config color.fill.meterGreen #33cc66
-; @config color.fill.meterYellow #ffcc33
-; @config color.fill.meterRed #ee4444
-; @config color.fill.scanLine #ff8800
-; @config color.fill.track #19324d
-; @config color.fill.fill #0055aa
-; @config color.fill.handle #e6edf2
-; @config color.fill.codeBlockHighlightLevel1 #0d2944
-; @config color.fill.codeBlockHighlightLevel2 #123755
-; @config color.fill.codeBlockHighlightLevel3 #174669
-; @config color.fill.pianoKeyWhite #e6edf2
-; @config color.fill.pianoKeyBlack #05070b
-; @config color.fill.tooltipBackground #ffcc88
-; @config color.fill.tooltipAddedHighlight #66dd88
-; @config color.fill.tooltipConsumedHighlight #ff8888
-; @config color.icons.inputConnector #55ffff
-; @config color.icons.outputConnector #ffcc88
-; @config color.icons.inputConnectorBackground #002b57
-; @config color.icons.outputConnectorBackground #002b57
-; @config color.icons.switchBackground #0055aa
-; @config color.icons.feedbackScale0 #194d2f
-; @config color.icons.feedbackScale1 #267342
-; @config color.icons.feedbackScale2 #33a657
-; @config color.icons.feedbackScale3 #33cc66
-; @config color.icons.feedbackScale4 #ffcc33
-; @config color.icons.feedbackScale5 #ee4444
+; @config color.canvas #05070b
+; @config color.surface #0b1b30
+; @config color.ink #e6edf2
+; @config color.primary #55ffff
+; @config color.secondary #ffcc88
+; @config color.positive #33cc66
+; @config color.warning #ffcc33
+; @config color.negative #ee4444
+; @config color.muted #66788c
+; @config color.stroke rgba(85,255,255,0.28)
+; @config color.tertiary #cc9966
+; @config color.highlight #ffcc88
+; @config color.detail #0055aa
 noteEnd
 
 entry main

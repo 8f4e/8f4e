@@ -381,6 +381,8 @@
     "float64StoreAssertions": {
       "memory": {
         "dest": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 3,
           "byteAddress": 8,
           "default": 0,
           "elementWordSize": 8,
@@ -391,10 +393,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float64",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 3,
         },
         "src": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 2,
           "byteAddress": 16,
           "default": 1.5,
           "elementWordSize": 8,
@@ -406,14 +408,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float64",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 2,
         },
       },
     },
     "floatStoreAssertions": {
       "memory": {
         "dest": {
+          "allocationUnitAddress": 6,
+          "allocationUnitCount": 1,
           "byteAddress": 24,
           "default": 0,
           "elementWordSize": 4,
@@ -423,10 +425,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 6,
-          "wordAlignedSize": 1,
         },
         "src": {
+          "allocationUnitAddress": 7,
+          "allocationUnitCount": 1,
           "byteAddress": 28,
           "default": 3.14,
           "elementWordSize": 4,
@@ -437,14 +439,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 7,
-          "wordAlignedSize": 1,
         },
       },
     },
     "intStoreAssertions": {
       "memory": {
         "dest": {
+          "allocationUnitAddress": 8,
+          "allocationUnitCount": 1,
           "byteAddress": 32,
           "default": 0,
           "elementWordSize": 4,
@@ -454,10 +456,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 8,
-          "wordAlignedSize": 1,
         },
         "src": {
+          "allocationUnitAddress": 9,
+          "allocationUnitCount": 1,
           "byteAddress": 36,
           "default": 42,
           "elementWordSize": 4,
@@ -468,8 +470,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 9,
-          "wordAlignedSize": 1,
         },
       },
     },

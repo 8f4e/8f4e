@@ -3,7 +3,7 @@ title: 'TODO: Add resolved identifier line forms'
 priority: Medium
 effort: 1-2d
 created: 2026-05-25
-issue: https://github.com/andorthehood/8f4e/issues/685
+issue: https://github.com/8f4e/8f4e/issues/685
 status: Done
 completed: 2026-05-25
 ---

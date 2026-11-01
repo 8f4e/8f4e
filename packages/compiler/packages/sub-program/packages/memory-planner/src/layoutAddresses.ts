@@ -1,60 +1,69 @@
-import { GLOBAL_ALIGNMENT_BOUNDARY } from '@8f4e/language-spec';
+import { ALLOCATION_UNIT_BYTE_SIZE } from '@8f4e/language-spec';
 
 /**
- * Converts a word offset relative to a byte base into an absolute byte address.
+ * Converts an allocation-unit offset relative to a byte base into an absolute byte address.
  *
  * @param startingByteAddress - Absolute byte address where layout should begin.
- * @param wordOffset - Word offset value to use.
+ * @param allocationUnitOffset - Offset in 4-byte allocation units.
  * @returns The resolved numeric value.
  */
-export function getByteAddressFromWordOffset(startingByteAddress: number, wordOffset: number): number {
-	return startingByteAddress + wordOffset * GLOBAL_ALIGNMENT_BOUNDARY;
+export function getByteAddressFromAllocationUnitOffset(
+	startingByteAddress: number,
+	allocationUnitOffset: number
+): number {
+	return startingByteAddress + allocationUnitOffset * ALLOCATION_UNIT_BYTE_SIZE;
 }
 
 /**
- * Returns the final byte address occupied by a word-aligned allocation.
+ * Returns the byte address at the start of an allocation's final allocation unit.
  *
  * @param byteAddress - Byte address where the value should be written.
- * @param wordAlignedSize - Word aligned size value to use.
+ * @param allocationUnitCount - Number of reserved 4-byte allocation units.
  * @returns The resolved numeric value.
  */
-export function getEndByteAddress(byteAddress: number, wordAlignedSize: number): number {
-	if (wordAlignedSize <= 0) {
+export function getEndByteAddress(byteAddress: number, allocationUnitCount: number): number {
+	if (allocationUnitCount <= 0) {
 		return byteAddress;
 	}
-	return byteAddress + (wordAlignedSize - 1) * GLOBAL_ALIGNMENT_BOUNDARY;
+	return byteAddress + (allocationUnitCount - 1) * ALLOCATION_UNIT_BYTE_SIZE;
 }
 
-export function getWordAlignedByteLength(wordAlignedSize: number): number {
-	return Math.max(0, wordAlignedSize) * GLOBAL_ALIGNMENT_BOUNDARY;
+export function getAllocatedByteLength(allocationUnitCount: number): number {
+	return Math.max(0, allocationUnitCount) * ALLOCATION_UNIT_BYTE_SIZE;
 }
 
-export function getEndAddressSafeByteLength(wordAlignedSize: number): number {
-	return wordAlignedSize > 0 ? GLOBAL_ALIGNMENT_BOUNDARY : 0;
+export function getEndAddressSafeByteLength(allocationUnitCount: number): number {
+	return allocationUnitCount > 0 ? ALLOCATION_UNIT_BYTE_SIZE : 0;
 }
 
 /**
- * Converts a local word offset into an absolute word offset.
+ * Converts a local allocation-unit offset into an absolute allocation-unit offset.
  *
  * @param startingByteAddress - Absolute byte address where layout should begin.
- * @param localWordOffset - Word offset relative to the current allocation start.
+ * @param localAllocationUnitOffset - Allocation-unit offset relative to the current allocation start.
  * @returns The resolved numeric value.
  */
-export function getAbsoluteWordOffset(startingByteAddress: number, localWordOffset: number): number {
-	return startingByteAddress / GLOBAL_ALIGNMENT_BOUNDARY + localWordOffset;
+export function getAbsoluteAllocationUnitOffset(
+	startingByteAddress: number,
+	localAllocationUnitOffset: number
+): number {
+	return startingByteAddress / ALLOCATION_UNIT_BYTE_SIZE + localAllocationUnitOffset;
 }
 
 /**
- * Aligns 64-bit allocations to an even absolute word offset.
+ * Aligns 64-bit allocations to an even absolute allocation-unit offset.
  *
- * @param absoluteWordOffset - Absolute word offset value to use.
- * @param elementWordSize - Word size used to align the absolute offset.
+ * @param absoluteAllocationUnitOffset - Absolute offset in 4-byte allocation units.
+ * @param elementWordSize - Typed element width in bytes, used to align the absolute offset.
  * @returns The resolved numeric value.
  */
-export function alignAbsoluteWordOffset(absoluteWordOffset: number, elementWordSize: number): number {
-	if (elementWordSize !== 8 || absoluteWordOffset % 2 === 0) {
-		return absoluteWordOffset;
+export function alignAbsoluteAllocationUnitOffset(
+	absoluteAllocationUnitOffset: number,
+	elementWordSize: number
+): number {
+	if (elementWordSize !== 8 || absoluteAllocationUnitOffset % 2 === 0) {
+		return absoluteAllocationUnitOffset;
 	}
 
-	return absoluteWordOffset + 1;
+	return absoluteAllocationUnitOffset + 1;
 }

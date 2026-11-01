@@ -197,7 +197,7 @@ export interface State {
 - [Info Overlay Implementation](packages/editor/packages/web-ui/src/drawers/infoOverlay.ts)
 - [Feature Flags Documentation](docs/feature-flags.md)
 - [Feature Flags Config](packages/editor/src/config/featureFlags.ts)
-- [Existing Console Usage](https://github.com/andorthehood/8f4e/search?q=console.log&type=code)
+- [Existing Console Usage](https://github.com/8f4e/8f4e/search?q=console.log&type=code)
 
 ## Visual Layout
 

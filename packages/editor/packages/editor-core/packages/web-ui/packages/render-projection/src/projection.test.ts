@@ -1,66 +1,41 @@
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { SpriteIdLookups } from '@8f4e/sprite-generator';
-import type { StateManager } from '@8f4e/state-manager';
-import { describe, expect, it, vi } from 'vitest';
+import { EventEmitter } from 'node:events';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import createStateManager from '@8f4e/state-manager';
+import type { SpriteId } from 'glugglugglug';
+import { expect, it } from 'vitest';
 import createWebUiRenderProjection from './projection';
+import { createSpriteCell } from './spriteCell';
 
-describe('createWebUiRenderProjection', () => {
-	it('subscribes beside editor-state and publishes render data by runtime id', () => {
-		const block = {
-			creationIndex: 7,
-			code: ['x'],
-			blockType: 'unknown',
-			disabled: false,
-			lineNumberColumnWidth: 1,
-			displayModel: {
-				lines: [{ text: 'x', rawRow: 0 }],
-				displayRowToRawRow: [0],
-				rawRowToDisplayRow: [0],
-				isCollapsed: false,
-			},
-			gaps: new Map(),
-		};
-		const font = new Proxy({ 63: 63 }, { get: (target, key) => target[Number(key) as 63] ?? Number(key) });
-		const state = {
-			codeBlockRendering: { codeBlocks: [block] },
-			spriteLookups: {
-				fontCode: font,
-				fontDisabledCode: font,
-				fontLineNumber: font,
-				fontCodeComment: font,
-				fontInstruction: font,
-				fontNumbers: font,
-				fontBinaryZero: font,
-				fontBinaryOne: font,
-				fontBasePrefix: font,
-			} as SpriteIdLookups,
-		} as unknown as State;
-		const subscriptions = new Map<string, () => void>();
-		const store = {
-			getState: () => state,
-			subscribe: vi.fn((selector: string, callback: () => void) => subscriptions.set(selector, callback)),
-			unsubscribe: vi.fn(),
-		} as unknown as StateManager<State>;
-		const events = { on: vi.fn(), off: vi.fn() } as unknown as Pick<EventDispatcher, 'on' | 'off'>;
+const cell = (id: number, color: number) => createSpriteCell(id as SpriteId, color);
 
-		const projection = createWebUiRenderProjection(store, events);
-
-		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells[0]?.at(-1)).toBe(120);
-		expect(store.subscribe).toHaveBeenCalledWith('codeBlockRendering', expect.any(Function));
-		expect(events.on).toHaveBeenCalledWith('spriteSheetRerendered', expect.any(Function));
+it('projects completed layouts and stops refreshing after disposal', () => {
+	const block = createMockCodeBlock({ creationIndex: 7, code: ['x'] });
+	const store = createStateManager(createMockState({ codeBlockRendering: { codeBlocks: [block] } }));
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter) };
+	const projection = createWebUiRenderProjection(store, events);
+	try {
+		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells[0]?.at(-1)).toEqual(
+			cell(120, PALETTE_INDICES.inkBase)
+		);
 
 		block.code = ['y'];
-		block.displayModel = {
-			lines: [{ text: 'y', rawRow: 0 }],
-			displayRowToRawRow: [0],
-			rawRowToDisplayRow: [0],
-			isCollapsed: false,
-		};
-		subscriptions.get('codeBlockRendering')?.();
-		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells[0]?.at(-1)).toBe(121);
+		block.displayModel.lines[0].text = 'y';
+		block.gaps = new Map([[0, { size: 2 }]]);
+		emitter.emit('codeBlockLayoutsChanged');
+		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells[0]?.at(-1)).toEqual(
+			cell(121, PALETTE_INDICES.inkBase)
+		);
+		expect(projection.getSnapshot().codeBlocks.get(7)?.codeCells).toHaveLength(3);
 
+		const last = projection.getSnapshot();
 		projection.dispose();
-		expect(store.unsubscribe).toHaveBeenCalledWith('codeBlockRendering', expect.any(Function));
-		expect(events.off).toHaveBeenCalledWith('spriteSheetRerendered', expect.any(Function));
-	});
+		block.gaps = new Map();
+		emitter.emit('codeBlockLayoutsChanged');
+		expect(projection.getSnapshot()).toBe(last);
+	} finally {
+		projection.dispose();
+		store.dispose();
+	}
 });

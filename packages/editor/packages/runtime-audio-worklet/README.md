@@ -1,8 +1,6 @@
 # @8f4e/runtime-audio-worklet
 
-AudioWorklet runtime for executing 8f4e programs in the browser audio graph. Includes the worklet entry point and runtime definition metadata.
+AudioWorklet processor, audio buffer routing, and message protocol for 8f4e programs. The page-side editor integration, configuration, and lifecycle live in
+[`@8f4e/editor-plugin-audio-runtime`](../../plugins/audio-runtime/README.md).
 
-## Responsibilities
-
-- Provide the AudioWorklet processor entry.
-- Expose runtime definitions used by the editor and host.
+Validate with `npx nx run @8f4e/runtime-audio-worklet:build|test|typecheck`.

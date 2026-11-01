@@ -1,0 +1,23 @@
+{
+  "code": 78,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "isEndAddress": false,
+        "referenceKind": "memory-reference",
+        "scope": "local",
+        "targetMemoryId": "value",
+        "type": "identifier",
+        "value": "&value",
+      },
+    ],
+    "instruction": "add",
+    "lineNumber": 3,
+  },
+  "message": "Invalid address arithmetic. Add accepts one address and one integer offset; subtraction accepts an address minus an integer offset or two addresses. (78)",
+}

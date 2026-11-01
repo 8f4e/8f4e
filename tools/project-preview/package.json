@@ -1,0 +1,54 @@
+{
+	"name": "@8f4e/project-preview",
+	"version": "0.1.0",
+	"private": true,
+	"description": "CLI for generating preview images from 8f4e projects",
+	"type": "module",
+	"packageManager": "npm@11.13.0",
+	"engines": {
+		"node": "24.16.0",
+		"npm": "11.13.0"
+	},
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"bin": {
+		"8f4e-preview": "bin/8f4e-preview.js"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./cli": "./dist/cli.js"
+	},
+	"scripts": {
+		"build": "vite build && tsc -p tsconfig.build.json",
+		"build:editor": "nx run @8f4e/editor-website:build",
+		"generate-gallery-previews": "npm run build:editor && npm run build && node ../../packages/8f4e-website/scripts/generate-project-previews.mjs",
+		"lint": "biome check --write src tests vite.config.ts vitest.config.ts",
+		"test": "npm run build:editor && npm run build && vitest run",
+		"typecheck": "tsc --noEmit"
+	},
+	"sideEffects": false,
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/8f4e/8f4e.git"
+	},
+	"author": "Andor Polgar",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/8f4e/8f4e/issues"
+	},
+	"homepage": "https://github.com/8f4e/8f4e#readme",
+	"dependencies": {
+		"playwright": "1.64.1",
+		"sharp": "0.35.5",
+		"vite": "7.3.7"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.15",
+		"@types/node": "24.13.2",
+		"typescript": "6.0.3",
+		"vitest": "4.1.7"
+	}
+}

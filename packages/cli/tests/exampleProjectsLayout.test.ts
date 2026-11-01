@@ -50,8 +50,8 @@ describe('compileProject (example project layout)', () => {
 				id: module.id,
 				index: module.index,
 				byteAddress: result.memoryPlan.modules[module.id].byteAddress,
-				wordAlignedAddress: result.memoryPlan.modules[module.id].byteAddress / 4,
-				wordAlignedSize: result.memoryPlan.modules[module.id].wordAlignedSize,
+				allocationUnitAddress: result.memoryPlan.modules[module.id].byteAddress / 4,
+				allocationUnitCount: result.memoryPlan.modules[module.id].allocationUnitCount,
 				skipExecutionInCycle: module.skipExecutionInCycle ?? false,
 			}));
 

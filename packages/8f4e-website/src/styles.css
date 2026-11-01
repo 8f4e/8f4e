@@ -99,6 +99,7 @@ main > img {
 }
 
 .editor-frame {
+	position: relative;
 	grid-area: editor;
 	width: 100%;
 	height: clamp(500px, 70vh, 700px);
@@ -119,6 +120,16 @@ main > img {
 
 .editor-frame > canvas.editor-ready {
 	opacity: 1;
+}
+
+.editor-load-error {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-content: center;
+	padding: 1rem;
+	font-size: 28px;
+	line-height: 1.4;
 }
 
 .editor-copy {
@@ -146,6 +157,49 @@ main > img {
 	color: #111;
 }
 
+footer h2 {
+	margin: 0 0 1rem;
+	font-size: inherit;
+	font-weight: normal;
+}
+
+.featured-examples {
+	width: min(1200px, calc(100% - 2rem));
+	margin: 4rem auto 0;
+}
+
+.featured-examples > h2 {
+	margin: 0 0 1rem;
+	font-size: inherit;
+	font-weight: normal;
+}
+
+.featured-examples-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+.featured-example {
+	display: flex;
+	width: 256px;
+	flex-direction: column;
+	flex: 0 0 256px;
+	gap: 0.5rem;
+}
+
+.featured-example-preview {
+	display: block;
+	width: 100%;
+	height: auto;
+	background: #000;
+	image-rendering: pixelated;
+}
+
+.featured-example:focus-visible {
+	outline: none;
+}
+
 footer {
 	display: grid;
 	box-sizing: border-box;
@@ -155,12 +209,6 @@ footer {
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 2rem;
 	padding: 2rem;
-}
-
-footer h2 {
-	margin: 0 0 1rem;
-	font-size: inherit;
-	font-weight: normal;
 }
 
 footer ul {

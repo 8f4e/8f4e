@@ -30,14 +30,6 @@ describe('project memory exposures', () => {
 		expect(() => parseProjectMemoryExposureLine(line, 7)).toThrow('Parse error at line 7');
 	});
 
-	it.each(['expose int value &source:value', 'expose int* input &processor:input'])(
-		'rejects the removed typed syntax %s',
-		line => {
-			expect(() => parseProjectMemoryExposureLine(line, 7)).toThrow('expected "expose <name> &<module>:<memory>"');
-			expect(tryParseProjectMemoryExposureLine(line)).toBeUndefined();
-		}
-	);
-
 	it('tolerates incomplete live-editor lines', () => {
 		expect(tryParseProjectMemoryExposureLine('expose input')).toBeUndefined();
 		expect(tryParseProjectMemoryExposureLine('module source')).toBeUndefined();

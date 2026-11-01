@@ -19,8 +19,12 @@ export function findOperatorOutsideParens(value: string): number {
 		} else if (ch === ')') {
 			depth--;
 		} else if ((ch === '+' || ch === '-' || ch === '*' || ch === '/' || ch === '^') && depth === 0) {
-			// Treat leading +/- and signed rhs numeric literals as part of the operand,
-			// not as the expression operator: -1/FOO, FOO/-1, FOO--1.
+			// Check from the start of the operand so VALUE-1 and 0x1E-1 stay subtraction.
+			const isExponentSign =
+				(value[i - 1] === 'e' || value[i - 1] === 'E') &&
+				/^-?(?:\d+\.?\d*|\.\d+)[eE][+-]\d$/.test(value.slice(operatorIndex + 1, i + 2));
+
+			// Skip operand signs: -1/FOO, FOO/-1, FOO--1, FOO*1e-3.
 			if (
 				(ch === '+' || ch === '-') &&
 				(i === 0 ||
@@ -28,7 +32,8 @@ export function findOperatorOutsideParens(value: string): number {
 					value[i - 1] === '-' ||
 					value[i - 1] === '*' ||
 					value[i - 1] === '/' ||
-					value[i - 1] === '^')
+					value[i - 1] === '^' ||
+					isExponentSign)
 			) {
 				continue;
 			}

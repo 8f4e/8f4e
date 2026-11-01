@@ -1,0 +1,9 @@
+8f4e/v1
+
+entry main
+module float32ToFloat64Local
+local float64 target
+push 1.5
+localSet target
+moduleEnd
+entryEnd

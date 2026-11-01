@@ -3,7 +3,7 @@ title: 'TODO: Separate pointer type and provenance facts'
 priority: Medium
 effort: 2-4h
 created: 2026-05-27
-issue: https://github.com/andorthehood/8f4e/issues/718
+issue: https://github.com/8f4e/8f4e/issues/718
 status: Open
 completed: null
 ---

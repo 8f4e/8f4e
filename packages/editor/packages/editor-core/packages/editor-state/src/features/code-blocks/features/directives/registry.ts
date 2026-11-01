@@ -1,90 +1,67 @@
 import type {
-	CodeBlockGraphicData,
 	DirectiveDerivedState,
 	DirectiveDerivedStateDraft,
 	DirectiveDeriveOptions,
-	EditorDirectivePlugin,
+	EditorDirectiveDefinition,
+	EditorDirectiveRegistry,
 	ParsedDirectiveRecord,
-	State,
 } from '@8f4e/editor-state-types';
 import buildDisplayModel from '../../buildDisplayModel';
 import alwaysOnTopDirective from './alwaysOnTop/plugin';
-import barsDirective from './bars/plugin';
-import buttonDirective from './button/plugin';
-import crossfadeDirective from './crossfade/plugin';
 import disabledDirective from './disabled/plugin';
-import favoriteDirective from './favorite/plugin';
-import groupDirective from './group/plugin';
 import hideDirective from './hide/plugin';
 import homeDirective from './home/plugin';
-import infoDirective from './info/plugin';
-import meterDirective from './meter/plugin';
-import pianoDirective from './piano/plugin';
-import plotDirective from './plot/plugin';
-import sliderDirective from './slider/plugin';
-import stackDirective from './stack/plugin';
-import switchDirective from './switch/plugin';
-import { normalizeEditorDirectiveRecords } from './utils';
+import { matchEditorDirectives } from './utils';
 import viewportDirective from './viewport/plugin';
-import watchDirective from './watch/plugin';
-import waveDirective, { wave2Directive, wave4Directive } from './wave/plugin';
 
 export type {
 	DirectiveBlockState,
 	DirectiveDerivedState,
-	DirectiveLayoutContribution,
-	ParsedEditorDirective,
 	ViewportAnchor,
 } from '@8f4e/editor-state-types';
 
-export const directivePlugins: EditorDirectivePlugin[] = [
-	meterDirective,
-	barsDirective,
-	plotDirective,
-	waveDirective,
-	wave2Directive,
-	wave4Directive,
-	sliderDirective,
-	crossfadeDirective,
-	pianoDirective,
-	buttonDirective,
-	switchDirective,
-	watchDirective,
-	stackDirective,
-	infoDirective,
+export const directiveDefinitions: EditorDirectiveDefinition[] = [
 	disabledDirective,
 	homeDirective,
-	favoriteDirective,
 	hideDirective,
-	groupDirective,
 	viewportDirective,
 	alwaysOnTopDirective,
 ];
+
+export function createDirectiveRegistry(): EditorDirectiveRegistry & { definitions: EditorDirectiveDefinition[] } {
+	const definitions = [...directiveDefinitions];
+	return {
+		definitions,
+		register: directive => {
+			definitions.push(directive);
+			return () => {
+				const index = definitions.indexOf(directive);
+				if (index !== -1) definitions.splice(index, 1);
+			};
+		},
+	};
+}
 
 export function deriveDirectiveState(
 	code: string[],
 	parsedDirectives: ParsedDirectiveRecord[],
 	options: DirectiveDeriveOptions = {},
-	plugins: EditorDirectivePlugin[] = directivePlugins
+	definitions: EditorDirectiveDefinition[] = directiveDefinitions
 ): DirectiveDerivedState {
-	const directives = normalizeEditorDirectiveRecords(parsedDirectives, plugins);
+	const directives = matchEditorDirectives(parsedDirectives, definitions);
 	const draft: DirectiveDerivedStateDraft = {
 		sourceCode: code,
 		blockState: {
 			disabled: false,
 			isHome: false,
-			isFavorite: false,
 		},
 		displayState: {},
 		displayModel: buildDisplayModel(code),
-		layoutContributions: [],
-		widgets: [],
-		state: options.state,
 	};
 
 	for (const directive of directives) {
-		const plugin = plugins.find(candidate => candidate.name === directive.name);
-		plugin?.apply?.(directive, draft);
+		const definition = definitions.find(candidate => candidate.name === directive.name);
+		definition?.apply?.(directive, draft);
 	}
 
 	return {
@@ -94,32 +71,5 @@ export function deriveDirectiveState(
 			...draft.displayState,
 			isExpandedForEditing: options.isExpandedForEditing,
 		}),
-		layoutContributions: draft.layoutContributions,
-		widgets: draft.widgets,
 	};
-}
-
-export function runAfterGraphicDataWidthCalculation(
-	graphicData: CodeBlockGraphicData,
-	state: State,
-	directiveState: DirectiveDerivedState
-): void {
-	directiveState.widgets.forEach(widget => {
-		widget.afterGraphicDataWidthCalculation?.(graphicData, state, directiveState);
-	});
-}
-
-export function runBeforeGraphicDataWidthCalculation(
-	graphicData: CodeBlockGraphicData,
-	state: State,
-	directiveState: DirectiveDerivedState,
-	plugins: EditorDirectivePlugin[] = directivePlugins
-): void {
-	plugins.forEach(plugin => {
-		plugin.clearGraphicData?.(graphicData);
-	});
-
-	directiveState.widgets.forEach(widget => {
-		widget.beforeGraphicDataWidthCalculation?.(graphicData, state, directiveState);
-	});
 }

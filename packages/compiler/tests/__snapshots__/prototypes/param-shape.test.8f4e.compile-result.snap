@@ -497,6 +497,8 @@
     "main": {
       "memory": {
         "a": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 2,
           "elementWordSize": 4,
@@ -508,10 +510,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
         "b": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 4.5,
           "elementWordSize": 4,
@@ -523,14 +525,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
       },
     },
     "overrides": {
       "memory": {
         "a": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 1,
           "byteAddress": 20,
           "default": 8,
           "elementWordSize": 4,
@@ -541,10 +543,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 5,
-          "wordAlignedSize": 1,
         },
         "b": {
+          "allocationUnitAddress": 6,
+          "allocationUnitCount": 1,
           "byteAddress": 24,
           "default": 1.5,
           "elementWordSize": 4,
@@ -555,8 +557,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 6,
-          "wordAlignedSize": 1,
         },
       },
     },

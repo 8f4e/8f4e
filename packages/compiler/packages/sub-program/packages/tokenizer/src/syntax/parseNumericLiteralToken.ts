@@ -61,15 +61,23 @@ export default function parseNumericLiteralToken(argument: string): ParsedNumeri
 	}
 
 	if (/^-?0x[0-9a-fA-F]+$/.test(argument)) {
+		const value = parseInt(argument.replace('0x', ''), 16);
+		if (!Number.isFinite(value)) {
+			throw new SyntaxRulesError(SyntaxErrorCode.INVALID_NUMERIC_LITERAL, `Invalid numeric literal: ${argument}`);
+		}
 		return {
-			value: parseInt(argument.replace('0x', ''), 16),
+			value,
 			isInteger: true,
 			isHex: true,
 		};
 	}
 
 	if (/^-?0b[0-1]+$/.test(argument)) {
-		return { value: parseInt(argument.replace('0b', ''), 2), isInteger: true };
+		const value = parseInt(argument.replace('0b', ''), 2);
+		if (!Number.isFinite(value)) {
+			throw new SyntaxRulesError(SyntaxErrorCode.INVALID_NUMERIC_LITERAL, `Invalid numeric literal: ${argument}`);
+		}
+		return { value, isInteger: true };
 	}
 
 	return null;

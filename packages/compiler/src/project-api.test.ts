@@ -74,8 +74,8 @@ describe('project compiler API', () => {
 	it('applies the configured starting memory word address to planned and emitted module memory', async () => {
 		const [defaultResult, zeroResult, relocatedResult] = await Promise.all([
 			compileProject(relocatedProject, { disableSharedMemory: true }),
-			compileProject(relocatedProject, { disableSharedMemory: true, startingMemoryWordAddress: 0 }),
-			compileProject(relocatedProject, { disableSharedMemory: true, startingMemoryWordAddress: 8 }),
+			compileProject(relocatedProject, { disableSharedMemory: true, startingMemoryAllocationUnitAddress: 0 }),
+			compileProject(relocatedProject, { disableSharedMemory: true, startingMemoryAllocationUnitAddress: 8 }),
 		]);
 
 		expect(defaultResult.memoryPlan.modules.relocated.byteAddress).toBe(4);

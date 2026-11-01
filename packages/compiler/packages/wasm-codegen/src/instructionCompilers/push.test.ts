@@ -6,7 +6,7 @@ import type {
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../testUtils';
+import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
 import push from './push';
 
 const { classifyIdentifier } = await import('@8f4e/tokenizer');
@@ -47,8 +47,8 @@ function createMemoryItem(
 	return {
 		numberOfElements: 1,
 		elementWordSize: 4,
-		wordAlignedAddress: 0,
-		wordAlignedSize: 1,
+		allocationUnitAddress: 0,
+		allocationUnitCount: 1,
 		isInteger: true,
 		pointerDepth: 0,
 		isUnsigned: false,

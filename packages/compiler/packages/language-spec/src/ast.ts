@@ -5,9 +5,8 @@ import type {
 	ArgumentLiteral,
 	ArgumentStringLiteral,
 } from './arguments';
-import { ArgumentType } from './arguments';
 import type { SourceMetadata } from './compiled';
-import type { NoSourceArgumentInstructionName } from './instructionSpecTypes';
+import type { InlineOperandInstructionName, NoSourceArgumentInstructionName } from './instructionSpecTypes';
 import type { DocumentOnlyInstructionName, SemanticInstructionName } from './instructions';
 import { semanticInstructionNames } from './instructions';
 import {
@@ -30,6 +29,7 @@ export type ASTLineBase<Instruction extends string, Arguments extends Array<Argu
 export type CompileTimeValueArgument = ArgumentLiteral | ArgumentIdentifier | ArgumentCompileTimeExpression;
 export type PushArgument = ArgumentLiteral | ArgumentIdentifier | ArgumentCompileTimeExpression | ArgumentStringLiteral;
 export type PushLine = ASTLineBase<'push', [PushArgument]>;
+export type InlineOperandLine = ASTLineBase<InlineOperandInstructionName, [] | [PushArgument]>;
 export type AssertEqualLine = ASTLineBase<'assertEqual', [CompileTimeValueArgument]>;
 
 export const BLOCK_RESULT_TYPE_IDENTIFIERS = ['int', 'float'] as const;
@@ -172,6 +172,7 @@ export type SemanticInstructionLine =
 
 type ExplicitCompilerASTLineWithoutGenericNoSource =
 	| PushLine
+	| InlineOperandLine
 	| AssertEqualLine
 	| IfLine
 	| IfEndLine
@@ -354,18 +355,4 @@ export function isScalarMemoryDeclarationLine(line: CompilerASTLine | undefined)
  */
 export function isArrayMemoryDeclarationLine(line: CompilerASTLine | undefined): line is ArrayMemoryDeclarationLine {
 	return line !== undefined && isArrayMemoryDeclarationInstructionName(line.instruction);
-}
-
-/**
- * Checks whether a scalar memory declaration starts with an identifier name.
- * Scalar declarations may also be anonymous literal data, so code that needs a
- * named memory binding must use this narrower guard.
- *
- * @param line - Parsed compiler AST line to inspect.
- * @returns True when the line declares named scalar memory.
- */
-export function isNamedScalarMemoryDeclarationLine(
-	line: CompilerASTLine | undefined
-): line is NamedScalarMemoryDeclarationLine {
-	return isScalarMemoryDeclarationLine(line) && line.arguments[0]?.type === ArgumentType.IDENTIFIER;
 }

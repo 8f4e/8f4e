@@ -3,7 +3,7 @@ title: 'TODO: Replace serialized function type registry keys'
 priority: Medium
 effort: 2-4h
 created: 2026-05-25
-issue: https://github.com/andorthehood/8f4e/issues/688
+issue: https://github.com/8f4e/8f4e/issues/688
 status: Done
 completed: 2026-05-25
 ---

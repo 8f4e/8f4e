@@ -16,6 +16,12 @@ const exampleProjects = [
 	'packages/examples/src/projects/machine-learning/xorProblem.8f4e',
 ] as const;
 
+const reverbProjects = [
+	'packages/examples/src/projects/audio/reverb.8f4e',
+	'packages/examples/src/projects/audio/reverbGrouped.8f4e',
+	'packages/examples/src/projects/audio/reverbTweakable.8f4e',
+] as const;
+
 function getSnapshotPath(relativePath: string): string {
 	const fileName = relativePath.replace(/[/.]/g, '_') + '.snap';
 	return path.join(testDir, '__snapshots__', 'exampleProjectsCompilation', fileName);
@@ -43,5 +49,13 @@ describe('compileProject (example projects)', () => {
 		};
 
 		await expect(JSON.stringify(snapshotPayload, null, 2)).toMatchFileSnapshot(getSnapshotPath(relativePath));
+	});
+
+	it.each(reverbProjects)('compiles %s', async relativePath => {
+		const project = await loadExampleProject(relativePath);
+		const cliModule = await import(pathToFileURL(path.join(packageRoot, 'dist', 'index.js')).href);
+		const result = await cliModule.compileProject(project);
+
+		expect(result.compiledWasm.length).toBeGreaterThan(0);
 	});
 });

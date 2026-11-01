@@ -1,0 +1,172 @@
+8f4e/v1
+
+function buffer
+; @pos -126 23
+#export buffer
+use env
+
+loop AUDIO_BUFFER_SIZE
+call main
+loopEnd
+functionEnd
+
+constants env
+; @pos -126 33
+; @favorite
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+
+constantsEnd
+
+note
+; @pos -126 6
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRate 48000
+; @config audioRuntime.audioInBufferLAddress audioin:buffer
+; @config audioRuntime.audioOutBufferLAddress audioout:buffer
+; @config audioRuntime.audioOutBufferRAddress audioout:buffer
+; @config export.fileName audioLoopbackWithDelay
+noteEnd
+
+note colors
+; @pos -176 6
+; @config color.canvas #160f11
+; @config color.surface #2d1d21
+; @config color.ink #ddcfca
+; @config color.primary #ed7067
+; @config color.secondary #efaa68
+; @config color.positive #5d9874
+; @config color.warning #dba653
+; @config color.negative #dc4d48
+; @config color.muted #80666a
+; @config color.stroke rgba(238,87,80,0.6)
+; @config color.tertiary #947b7a
+; @config color.highlight #ff6d5f
+; @config color.detail #c44845
+noteEnd
+
+note
+; @pos 51 0
+; This is a stereo loopback example
+; that delays the input audio before
+; writing the signal into a shared
+; left and right output buffer.
+noteEnd
+
+entry main
+module audioin
+; @pos 5 1
+use env
+
+; Audio buffer
+float[] buffer AUDIO_BUFFER_SIZE
+float out
+int pointer &buffer
+
+; @plot &buffer count(buffer)
+
+push &out
+push pointer
+loadFloat
+store
+
+push &pointer
+push pointer
+push sizeof(buffer)
+add
+store
+
+push pointer
+push buffer&
+greaterThan
+if
+push &pointer
+push &buffer
+store
+ifEnd
+
+moduleEnd
+module delay
+; @pos 53 9
+; @home
+use env
+
+const BUFFER_SIZE SAMPLE_RATE*3
+
+float* in &audioin:out
+float out
+float[] buffer BUFFER_SIZE
+float* pointer &buffer
+
+; Read sample
+push &out
+push *pointer
+store
+
+; Write current sample
+push pointer
+push *in
+store
+
+; Advance and wrap the circular
+; buffer pointer
+push &pointer
+push pointer
+push sizeof(buffer)
+add
+store
+
+push pointer
+push buffer&
+greaterThan
+if
+push &pointer
+push &buffer
+store
+ifEnd
+
+moduleEnd
+module audioout
+; @pos 99 1
+use env
+
+float* in &delay:out
+
+; Audio buffer
+float[] buffer AUDIO_BUFFER_SIZE
+int pointer &buffer
+
+; @plot &buffer count(buffer)
+
+; Store the input value
+; in the buffer
+push pointer
+push *in
+store
+
+; Increment the buffer
+; pointer by the
+; buffer word size
+push &pointer
+push pointer
+push sizeof(buffer)
+add
+store
+
+; Reset the buffer pointer
+; when it reaches the end
+; of the buffer
+push pointer
+push buffer&
+greaterThan
+if
+push &pointer
+push &buffer
+store
+ifEnd
+
+moduleEnd
+entryEnd

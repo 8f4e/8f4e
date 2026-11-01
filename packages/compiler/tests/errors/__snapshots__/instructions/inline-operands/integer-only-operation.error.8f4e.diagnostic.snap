@@ -1,0 +1,20 @@
+{
+  "code": 2,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "isInteger": false,
+        "type": "literal",
+        "value": 1,
+      },
+    ],
+    "instruction": "shiftRight",
+    "lineNumber": 2,
+  },
+  "message": "The operation only accepts integer values as operands. (2)",
+}

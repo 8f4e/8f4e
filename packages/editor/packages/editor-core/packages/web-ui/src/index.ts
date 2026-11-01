@@ -1,31 +1,29 @@
+import { type ResolvedPalette, toPaletteBytes } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import {
-	resolveSpriteIds,
-	type SpriteAtlas,
-	type SpriteIdentifierLookups,
-	type SpriteIdLookups,
-} from '@8f4e/sprite-generator';
+import { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
-import { Engine, LineDrawer, RgbaTextureLayer } from 'glugglugglug';
+import { Engine } from 'glugglugglug';
 import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
-import drawConnections from './drawers/codeBlocks/widgets/connections';
 import drawContextMenu from './drawers/contextMenu';
 import drawDialog from './drawers/dialog';
-import drawBackground from './drawers/drawBackground';
 import drawModeOverlay from './drawers/modeOverlay';
-import { createWasmOverlayTextureDrawer, type WasmOverlayTextureOptions } from './drawers/wasmOverlayTexture';
+import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/registry';
+import BackgroundRenderer from './plugins/background';
 import type { MemoryViews } from './types';
-import { resolveWireColors } from './wire-colors';
 
+export { DrawContext } from './drawContext';
+export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from './drawers/registry';
+export { createEditorDrawerRegistry } from './drawers/registry';
+export { createProgram, prepareRenderPass, requireResource, requireUniform } from './plugins/webgl';
+export type {
+	EditorRenderLayer,
+	RenderLayerContext,
+	RenderLayerFactory,
+	RenderLayerFrameContext,
+} from './render-layers';
 // Re-export types
 export type { MemoryViews } from './types';
-
-export interface SpriteData {
-	spriteAtlas: SpriteAtlas<SpriteIdentifierLookups>;
-	characterWidth: number;
-	characterHeight: number;
-}
 
 export interface RenderStats {
 	timeToRenderMs: number;
@@ -38,17 +36,9 @@ export interface RenderStats {
 }
 
 export interface WebUiOptions {
+	drawers?: EditorDrawerHost;
 	onRenderStats?: (stats: RenderStats) => void;
-	/** Receives ids resolved against each installed atlas before rendering resumes. */
-	onSpriteAtlasResolved?: (spriteLookups: SpriteIdLookups, spriteData: SpriteData) => void;
 	renderStatsIntervalFrames?: number;
-	overlayTexture?: WasmOverlayTextureOptions;
-	getCodeBuffer?: () => Uint8Array;
-	getMemory?: () => WebAssembly.Memory | null;
-	instantiateOverlayTextureWasm?: (
-		memory: WebAssembly.Memory,
-		codeBuffer: Uint8Array
-	) => Promise<WebAssembly.Exports> | WebAssembly.Exports;
 }
 
 export default async function init(
@@ -56,16 +46,17 @@ export default async function init(
 	renderData: WebUiRenderDataSource,
 	canvas: HTMLCanvasElement,
 	memoryViews: MemoryViews,
-	spriteData: SpriteData,
+	fontAtlas: FontAtlas,
+	palette: ResolvedPalette,
 	options: WebUiOptions = {}
 ): Promise<{
 	resize: (width: number, height: number) => boolean;
-	loadSpriteAtlas: (spriteData: SpriteData) => void;
+	loadFontAtlas: (fontAtlas: FontAtlas, font: Font) => void;
+	loadPalette: (palette: ResolvedPalette) => void;
 	pauseRendering: () => void;
 	releaseRenderingResources: () => void;
 	resumeRendering: () => void;
 	renderFrame: () => void;
-	setOverlayTexture: (overlayTexture: WasmOverlayTextureOptions | undefined) => void;
 	destroy: () => void;
 }> {
 	const engine = new Engine(canvas);
@@ -73,9 +64,11 @@ export default async function init(
 	engine.hooks.preDraw.push(() => {
 		frameStartedAt = performance.now();
 	});
-	const lines = new LineDrawer(engine);
-	const draw = new DrawContext(engine, spriteData.characterWidth);
-	let wireColors = resolveWireColors(state.editorConfig.color);
+	const background = new BackgroundRenderer(engine);
+	const draw = new DrawContext(engine, fontAtlas.grid.cellWidth);
+	const paletteBytes = toPaletteBytes(palette);
+	engine.setPalette(paletteBytes);
+	background.setPalette(paletteBytes);
 	const renderStatsIntervalFrames = Math.max(1, Math.floor(options.renderStatsIntervalFrames ?? 60));
 	let viewportWidth = canvas.width;
 	let viewportHeight = canvas.height;
@@ -83,19 +76,23 @@ export default async function init(
 	let statsSampleStartFrameCount = 0;
 	let statsSampleStartTime = performance.now();
 
-	function installSpriteAtlas(nextSpriteData: SpriteData): void {
-		const resolver = engine.setSpriteAtlas(nextSpriteData.spriteAtlas.image, nextSpriteData.spriteAtlas.lookup);
-		const spriteLookups = resolveSpriteIds(nextSpriteData.spriteAtlas.spriteIdentifiers, resolver) as SpriteIdLookups;
-		if (options.onSpriteAtlasResolved) {
-			options.onSpriteAtlasResolved(spriteLookups, nextSpriteData);
-		} else {
-			state.spriteLookups = spriteLookups;
-			state.viewport.hGrid = nextSpriteData.characterHeight;
-			state.viewport.vGrid = nextSpriteData.characterWidth;
-		}
+	function installFontAtlas(atlas: FontAtlas, font: Font): void {
+		engine.setSpriteAtlas(atlas.image, atlas.grid);
+		background.setFont(font, atlas.grid);
+		draw.setCharacterWidth(atlas.grid.cellWidth);
 	}
 
-	installSpriteAtlas(spriteData);
+	installFontAtlas(fontAtlas, state.editorConfig.font ?? DEFAULT_FONT);
+	let renderLayers: ReturnType<EditorDrawerHost['attachRenderLayers']>;
+	try {
+		renderLayers = (options.drawers ?? createEditorDrawerRegistry()).attachRenderLayers({ gl: engine.gl, palette });
+	} catch (error) {
+		background.destroy();
+		engine.destroy();
+		throw error;
+	}
+	const layerFrame = { state, memoryViews };
+	engine.hooks.postDraw.push(() => renderLayers.draw(layerFrame));
 
 	function getSampledFps(): number {
 		const now = performance.now();
@@ -136,64 +133,8 @@ export default async function init(
 	};
 	engine.hooks.postDraw.push(renderStatsHook);
 
-	let overlayTexture = options.overlayTexture;
-	let overlayTextureLayer: RgbaTextureLayer | undefined;
-	let overlayTextureKey = '';
-
-	function destroyOverlayTextureLayer(): void {
-		overlayTextureLayer?.destroy();
-		overlayTextureLayer = undefined;
-		overlayTextureKey = '';
-	}
-
-	function keepRenderStatsHookLast(): void {
-		const hookIndex = engine.hooks.postDraw.indexOf(renderStatsHook);
-		if (hookIndex !== -1) {
-			engine.hooks.postDraw.splice(hookIndex, 1);
-			engine.hooks.postDraw.push(renderStatsHook);
-		}
-	}
-
-	function syncWasmOverlayTexture(): void {
-		const nextOverlayTextureKey = overlayTexture ? JSON.stringify(overlayTexture) : '';
-		if (!overlayTexture || !options.getCodeBuffer || !options.getMemory) {
-			destroyOverlayTextureLayer();
-			return;
-		}
-
-		if (overlayTextureLayer && overlayTextureKey === nextOverlayTextureKey) {
-			return;
-		}
-
-		destroyOverlayTextureLayer();
-		const drawWasmOverlayTexture = createWasmOverlayTextureDrawer({
-			state,
-			memoryViews,
-			overlayTexture,
-			getCodeBuffer: options.getCodeBuffer,
-			getMemory: options.getMemory,
-			getViewportSize: () => ({ width: viewportWidth, height: viewportHeight }),
-			instantiate: options.instantiateOverlayTextureWasm,
-		});
-		overlayTextureLayer = new RgbaTextureLayer(engine, { phase: 'postDraw' });
-		overlayTextureLayer.setDrawCallback(layer => {
-			drawWasmOverlayTexture(layer);
-		});
-		overlayTextureKey = nextOverlayTextureKey;
-		keepRenderStatsHookLast();
-	}
-
-	function setOverlayTexture(nextOverlayTexture: WasmOverlayTextureOptions | undefined): void {
-		overlayTexture = nextOverlayTexture;
-		syncWasmOverlayTexture();
-	}
-
 	const drawFrame = () => {
-		drawBackground(draw, state);
-		drawCodeBlocks(draw, state, memoryViews, renderData.getSnapshot());
-		if (state.dialogStack.length === 0) {
-			drawConnections(lines, wireColors, state, memoryViews);
-		}
+		drawCodeBlocks(draw, state, memoryViews, renderData.getSnapshot(), options.drawers);
 		drawContextMenu(draw, state);
 		drawModeOverlay(draw, state);
 		drawDialog(draw, state);
@@ -236,8 +177,7 @@ export default async function init(
 			return;
 		}
 
-		overlayTextureLayer?.releaseMemory();
-		lines.releaseMemory();
+		renderLayers.releaseMemory();
 		engine.releaseRenderingMemory();
 		renderingResourcesReleased = true;
 		canvas.width = 1;
@@ -264,7 +204,6 @@ export default async function init(
 		renderNextFrame();
 	};
 
-	syncWasmOverlayTexture();
 	resumeRendering();
 
 	return {
@@ -277,24 +216,28 @@ export default async function init(
 			engine.resize(width, height);
 			return true;
 		},
-		loadSpriteAtlas: spriteData => {
-			installSpriteAtlas(spriteData);
-			draw.setCharacterWidth(spriteData.characterWidth);
-			wireColors = resolveWireColors(state.editorConfig.color);
+		loadFontAtlas: installFontAtlas,
+		loadPalette: palette => {
+			const bytes = toPaletteBytes(palette);
+			engine.setPalette(bytes);
+			background.setPalette(bytes);
+			renderLayers.loadPalette(palette);
 		},
 		pauseRendering,
 		releaseRenderingResources,
 		resumeRendering,
-		setOverlayTexture,
 		renderFrame: () => {
 			restoreRenderingResources();
 			engine.renderFrame(drawFrame);
 		},
 		destroy: () => {
 			pauseRendering();
-			lines.destroy();
-			destroyOverlayTextureLayer();
-			engine.destroy();
+			try {
+				renderLayers.destroy();
+			} finally {
+				background.destroy();
+				engine.destroy();
+			}
 		},
 	};
 }

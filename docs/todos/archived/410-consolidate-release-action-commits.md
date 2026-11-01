@@ -3,7 +3,7 @@ title: 'TODO: Consolidate release action commits'
 priority: Medium
 effort: 2-4h
 created: 2026-05-19
-issue: https://github.com/andorthehood/8f4e/issues/664
+issue: https://github.com/8f4e/8f4e/issues/664
 status: Completed
 completed: 2026-05-19
 ---
@@ -102,4 +102,4 @@ Completed on 2026-05-19.
 
 ## Related Items
 
-- **Issue**: https://github.com/andorthehood/8f4e/issues/664
+- **Issue**: https://github.com/8f4e/8f4e/issues/664

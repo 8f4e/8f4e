@@ -1,0 +1,5 @@
+8f4e/v1
+
+function rawIntegerPointerReturn
+push 0
+functionEnd float*

@@ -3,7 +3,7 @@ function wrapPointer
 ; Bidirectionally wraps an int
 ; byte address into a circular
 ; int buffer.
-param int pointer
+param int* pointer
 param int* buffer
 param int itemCount
 
@@ -35,7 +35,7 @@ function wrapPointer
 ; Bidirectionally wraps a float
 ; byte address into a circular
 ; float buffer.
-param int pointer
+param float* pointer
 param float* buffer
 param int itemCount
 

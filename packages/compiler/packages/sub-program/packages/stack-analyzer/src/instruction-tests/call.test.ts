@@ -8,8 +8,8 @@ import type {
 } from '@8f4e/language-spec';
 import { ArgumentType, createFunctionId, ErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
+import createStackAnalyzerTestContext from '../../tests/testUtils';
 import { analyzeInstruction } from '../analyzeInstruction';
-import createStackAnalyzerTestContext from '../testUtils';
 
 const { classifyIdentifier } = await import('@8f4e/tokenizer');
 
@@ -120,13 +120,13 @@ describe('call stack analysis', () => {
 		const previousTrigger: PlannedMemoryDeclaration = {
 			id: 'previousTrigger',
 			elementByteLength: 4,
-			wordAlignedByteLength: 4,
+			allocatedByteLength: 4,
 			endByteAddress: 0,
 			endAddressSafeByteLength: 4,
 			numberOfElements: 1,
 			elementWordSize: 4,
-			wordAlignedAddress: 0,
-			wordAlignedSize: 1,
+			allocationUnitAddress: 0,
+			allocationUnitCount: 1,
 			byteAddress: 0,
 			isInteger: true,
 			pointerDepth: 0,
@@ -138,8 +138,8 @@ describe('call stack analysis', () => {
 			id: 'test',
 			lineNumber: 0,
 			byteAddress: 0,
-			wordAlignedSize: 1,
-			wordAlignedByteLength: 4,
+			allocationUnitCount: 1,
+			allocatedByteLength: 4,
 			endByteAddress: 0,
 			endAddressSafeByteLength: 4,
 			memory: { previousTrigger },

@@ -1,7 +1,8 @@
+import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import type { CodeBlockDisplayModel, CodeBlockType } from '@8f4e/editor-state-types';
-import type { SpriteFont, SpriteId, SpriteIdLookups } from '@8f4e/sprite-generator';
 import getLineNumberPrefix from './getLineNumberPrefix';
 import resolveCodeCells from './resolveCodeCells';
+import type { SpriteCell } from './spriteCell';
 import highlightSyntax from './syntax-highlighting/highlightSyntax';
 import { expandLineColorsToCells, expandLineToCells, getTabStopsByLine } from './tabExpansion';
 
@@ -15,41 +16,48 @@ export interface CodeBlockRenderSource {
 	gaps: ReadonlyMap<number, { size: number }>;
 }
 
-export default function deriveCodeBlockCodeCells(
-	block: CodeBlockRenderSource,
-	spriteLookups: SpriteIdLookups
-): Array<Array<SpriteId | null>> {
+export default function deriveCodeBlockCodeCells(block: CodeBlockRenderSource): Array<Array<SpriteCell | null>> {
 	const tabStopsByLine = getTabStopsByLine(block.code);
-	const characters = block.displayModel.lines.map(({ text, rawRow, isPlaceholder }, displayRow) => {
+	const characters = block.displayModel.lines.map(({ text, sourceLineIndex, isPlaceholder }, displayRow) => {
 		const prefix = getLineNumberPrefix(displayRow, block.lineNumberColumnWidth, text, isPlaceholder ?? false);
 		return [...prefix]
-			.map(character => character.charCodeAt(0) as number | string)
-			.concat(expandLineToCells(text, tabStopsByLine[rawRow] ?? []));
+			.map(character => character.charCodeAt(0))
+			.concat(expandLineToCells(text, tabStopsByLine[sourceLineIndex] ?? []));
 	});
-	const rawColors = highlightSyntax(block.code, block.blockType, spriteLookups);
+	const rawColors = highlightSyntax(block.code, block.blockType, {
+		fontInstruction: PALETTE_INDICES.primaryBase,
+		fontCode: PALETTE_INDICES.inkBase,
+		fontCodeComment: PALETTE_INDICES.tertiaryBase,
+		fontNumbers: PALETTE_INDICES.secondaryBase,
+		fontBinaryZero: PALETTE_INDICES.mutedSoft,
+		fontBinaryOne: PALETTE_INDICES.primaryStrong,
+		fontBasePrefix: PALETTE_INDICES.secondarySoft,
+	});
 	const prefixLength = block.lineNumberColumnWidth + 1;
-	const colors: Array<Array<SpriteFont | undefined>> = characters.map((line, displayRow) => {
-		const lineColors = new Array<SpriteFont | undefined>(line.length).fill(undefined);
+	const colors: Array<Array<PaletteIndex | undefined>> = characters.map((line, displayRow) => {
+		const lineColors = new Array<PaletteIndex | undefined>(line.length).fill(undefined);
 		const displayLine = block.displayModel.lines[displayRow];
-		const rawRow = block.displayModel.displayRowToRawRow[displayRow] ?? 0;
-		lineColors[0] = spriteLookups.fontLineNumber;
+		const sourceLineIndex = block.displayModel.displayRowToSourceLineIndex[displayRow] ?? 0;
+		lineColors[0] = PALETTE_INDICES.mutedBase;
 		lineColors[block.lineNumberColumnWidth] = displayLine?.isPlaceholder
-			? spriteLookups.fontCodeComment
-			: spriteLookups.fontCode;
+			? PALETTE_INDICES.mutedBase
+			: PALETTE_INDICES.inkBase;
 		if (!displayLine?.isPlaceholder) {
-			expandLineColorsToCells(block.code[rawRow] ?? '', rawColors[rawRow] ?? [], tabStopsByLine[rawRow] ?? []).forEach(
-				(color, index) => {
-					if (color !== undefined) lineColors[index + prefixLength] = color;
-				}
-			);
+			expandLineColorsToCells(
+				block.code[sourceLineIndex] ?? '',
+				rawColors[sourceLineIndex] ?? [],
+				tabStopsByLine[sourceLineIndex] ?? []
+			).forEach((color, index) => {
+				if (color !== undefined) lineColors[index + prefixLength] = color;
+			});
 		}
 		return lineColors;
 	});
 	const codeCells = resolveCodeCells(
 		characters,
 		colors,
-		spriteLookups.fontCode,
-		block.disabled ? spriteLookups.fontDisabledCode : undefined
+		PALETTE_INDICES.inkBase,
+		block.disabled ? PALETTE_INDICES.inkFaint : undefined
 	);
 	for (const [row, gap] of [...block.gaps].sort(([left], [right]) => right - left)) {
 		codeCells.splice(row + 1, 0, ...Array.from({ length: gap.size }, () => []));

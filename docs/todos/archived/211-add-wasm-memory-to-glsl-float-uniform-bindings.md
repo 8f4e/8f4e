@@ -3,7 +3,7 @@ title: 'TODO: Add WASM memory to GLSL float uniform bindings via project config'
 priority: Medium
 effort: 2-4d
 created: 2026-02-08
-issue: https://github.com/andorthehood/8f4e/issues/550
+issue: https://github.com/8f4e/8f4e/issues/550
 status: Completed
 completed: 2026-06-14
 ---

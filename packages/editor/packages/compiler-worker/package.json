@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/compiler-worker",
-  "version": "2.1.16",
+  "version": "3.0.20",
   "private": true,
   "description": "8f4e compiler worker package",
   "type": "module",
@@ -15,18 +15,17 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andorthehood/8f4e.git"
+    "url": "git+https://github.com/8f4e/8f4e.git"
   },
   "author": "Andor Polgar",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/andorthehood/8f4e/issues"
+    "url": "https://github.com/8f4e/8f4e/issues"
   },
-  "homepage": "https://github.com/andorthehood/8f4e#readme",
+  "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
     "@8f4e/compiler": "*",
-    "@8f4e/language-spec": "*",
-    "@8f4e/test-runner": "*"
+    "@8f4e/language-spec": "*"
   },
   "devDependencies": {}
 }

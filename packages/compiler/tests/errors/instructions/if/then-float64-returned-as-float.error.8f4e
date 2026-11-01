@@ -1,0 +1,16 @@
+8f4e/v1
+
+entry main
+module ifThenFloat64ReturnedAsFloat
+; else should reject a float64
+; then-branch result when ifEnd
+; declares float.
+push 1
+if
+push 2.0f64
+else
+push 3.0
+ifEnd float
+drop
+moduleEnd
+entryEnd

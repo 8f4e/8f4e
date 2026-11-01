@@ -1,0 +1,18 @@
+8f4e/v1
+
+note draculaColors
+; @public
+; @config color.canvas #060606
+; @config color.surface #0d0d0d
+; @config color.ink #e3e3e3
+; @config color.primary #ff79c6
+; @config color.secondary #bd93f9
+; @config color.tertiary #7d8194
+; @config color.highlight #50fa7b
+; @config color.detail #8be9fd
+; @config color.stroke #858585
+; @config color.muted #909090
+; @config color.positive #50fa7b
+; @config color.warning #f1fa8c
+; @config color.negative #ff5555
+noteEnd

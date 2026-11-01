@@ -1,13 +1,15 @@
 # Editor Directives
 
-This document defines editor-only directives for code blocks.
+This document defines editor-only directives for code blocks. Core owns generic directive parsing and layout;
+`@8f4e/editor-default` installs the optional feature plugins documented here.
 
 ## Directive Syntax
 
-Editor directives use comment lines in this form:
+Editor directives work in standalone comments and trailing comments on instruction lines:
 
 ```txt
 ; @<directive> <args...>
+int gate 0 ; @<directive> <args...>
 ```
 
 You can also chain multiple directives in one comment line:
@@ -16,7 +18,9 @@ You can also chain multiple directives in one comment line:
 ; @pos 1 2 @favorite
 ```
 
-When directives are chained, parsing starts a new directive at the next `@name` token.
+When directives are chained, parsing starts a new directive at the next `@name` token. Every directive supports
+both comment positions. Argument rules belong to each feature; declaration-based argument inference is described
+where supported, such as `@watch` and `@meter`.
 
 Examples:
 
@@ -71,6 +75,29 @@ pointers are inputs, and non-pointers are outputs. Aliases allocate no additiona
 
 ## Supported Directives
 
+### `@mode`
+
+Select the initial editor mode for the whole project. Put exactly one declaration in any project block, including a
+block inside a nested group:
+
+```txt
+note editor
+; @mode edit
+noteEnd
+```
+
+The argument must be `edit` or `view`. Missing, invalid, or duplicate declarations start the project in view mode;
+invalid arguments and duplicates produce editor-directive diagnostics. The compiler ignores this metadata.
+
+The editor applies the mode once when loading or replacing a project, before announcing that the loaded project is
+ready. Later source edits, configuration changes, navigation, and undo/redo do not change the active mode. Loading
+another project resolves its own declaration independently. Mode changes do not create edits or history entries.
+
+The host's `modeToggling` feature flag controls user mode-switching controls. Disabling it still allows the directive
+to choose the initial mode. `state.editorMode` alone determines whether source editing is allowed. Mode changes and
+project replacement preserve `codeLineSelection` and all other host feature flags. There is no host initial-mode
+option or editing feature flag.
+
 ### `@public`
 
 Mark the block exported by a `.8f4em` module file when it is imported from the editor module library.
@@ -96,24 +123,25 @@ Set editor configuration values.
 
 Supported paths:
 
-- `font` - editor font used for rendering code blocks and UI text.
-- `runtime` - runtime host loaded for the project.
-- `color.<path>` - editor color scheme override. See [Color Paths](./color-paths.md) for the full list of color paths.
+- `font` - editor font used for rendering code blocks and UI text. Font changes refresh block layouts without
+  recentering the viewport.
+- `audioRuntime.<field>` / `workerRuntime.<field>` / `testRuntime.<field>` - independently enabled execution runtimes.
+- `color.<path>` - editor base palette color. See [Color Paths](./color-paths.md) for the full list of color paths.
 - `export.fileName` - base file name used by editor export actions.
 - `bin.<id>.url` / `bin.<id>.memory` - binary asset URL and memory load target.
 - `bin.<id>.memories.<name>` - additional memory load targets for the same binary asset.
 - `keyboard.keyCodeMemory` / `keyboard.keyPressedMemory` - memory ids for browser keyboard state.
 - `midi.inputs.<id>.port` / `midi.inputs.<id>.callback` - browser MIDI input bindings.
-- `webUI.overlay.<field>` - WebAssembly-generated RGBA texture centered over the editor.
+- `textureRuntime.enabled` / `textureRuntime.entry` - opt-in execution once per editor frame, independent of texture display.
 
 Examples:
 
 ```txt
 ; @config font ibmvga8x16
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config export.fileName samplePlayer
-; @config color.text.code #cccccc
-; @config color.fill.moduleBackground rgba(0,0,0,0.9)
+; @config color.ink #cccccc
+; @config color.surface #101820
 ; @config bin.amen.url https://static.example.com/amen.pcm
 ; @config bin.amen.memory pcmPlayer:buffer
 ; @config keyboard.keyCodeMemory keyboard:keyCode
@@ -122,27 +150,23 @@ Examples:
 ; @config midi.inputs.0.callback onMidiIn
 ```
 
-#### WASM editor overlay
+#### Configuration precedence
 
-The web UI can call an exported WebAssembly function every editor frame, read an RGBA8 pixel buffer from memory, and
-draw it over the editor. Configure the export name, qualified memory target, source dimensions, and horizontal
-position:
+Configuration is global to the whole project, including nested project groups. When multiple valid directives set
+the same path, the last one in spatial order wins:
 
-```txt
-; @config webUI.overlay.entry renderFrame
-; @config webUI.overlay.target screen:rgba
-; @config webUI.overlay.width 64
-; @config webUI.overlay.height 32
-; @config webUI.overlay.magnification 4
-; @config webUI.overlay.position center
-```
+- Blocks are processed from left to right by their grid position, then top to bottom at the same horizontal position.
+- Blocks at the same grid position are processed in creation order, so the later-created block wins.
+- Directives within a block are processed from top to bottom, and left to right when chained on one line.
+- A project-group block's own directives are processed before its children. Children use the same spatial order in
+  their local coordinates, and the entire group subtree is processed before the next sibling block.
+- Invalid declarations produce diagnostics and do not replace an earlier valid value. Different paths combine.
 
-The target contains `width * height * 4` bytes in top-to-bottom RGBA order. Pixel alpha controls how strongly the
-overlay covers the editor: `0` is transparent and `255` is opaque. The texture always uses nearest-neighbor filtering
-and is vertically centered. `webUI.overlay.position` accepts `left`, `center`, or `right`; these place the texture in
-the center of the left half, the full viewport, or the right half respectively. It defaults to `center`. An optional
-numeric `webUI.overlay.magnification` of at least `1` multiplies both displayed dimensions while preserving the source
-aspect ratio; for example, `4` displays each source pixel as a 4 × 4 block.
+Place defaults on the left and customizations on the right. Moving a block past another block can change the
+effective configuration as soon as the move completes. Selecting a block or bringing it to the front does not change
+precedence. Configuration uses spatial order across block types, even though the saved file groups blocks by type.
+Use distinct grid positions for intentional overrides: creation indices are rebuilt when importing `.8f4e` text, so
+exact-position ties between different block types can resolve differently after saving and reopening.
 
 Supported `font` values:
 
@@ -163,6 +187,8 @@ Supported `font` values:
 - `spleen16x32`
 
 ### `@watch`
+
+Provided by `@8f4e/editor-plugin-watch`.
 
 Show a runtime debugger value for a memory id.
 
@@ -195,6 +221,8 @@ These modifiers can be combined when they make sense. For example:
 
 ### `@stack`
 
+Provided by `@8f4e/editor-plugin-stack`.
+
 Show the compiler's `stackAfter` analysis at a source location. A trailing directive shows the stack after the
 instruction on the same line. A standalone directive shows the stack after the preceding compiled instruction.
 
@@ -220,6 +248,8 @@ Use `@s` as a shorthand alias for `@stack`.
 
 ### `@plot`
 
+Provided by `@8f4e/editor-plugin-plot`.
+
 Draw a plot over a typed pointer range. The first argument provides the start pointer and element type metadata. Use a
 plain pointer memory or `&buffer` for direct buffer memory. The second argument is always the element count. You can
 optionally provide an explicit min/max range override.
@@ -236,7 +266,52 @@ Range detection:
 - lengths can be positive literal counts, integer memory targets, or `count(buffer)`
 - if `minValue` and `maxValue` are specified, they override the type-derived defaults
 
+### `@textureUpload` and `@texture`
+
+Declare a source upload once, then display full or cropped views of it:
+
+```txt
+; @textureUpload <address> <1bit|mono|rgb|rgba> <width> <height>
+; @texture <address> <magnification> <width> <height> [<x> <y>]
+
+; @textureUpload &screen:color rgba 64 64
+; @texture &screen:color 4 64 64
+; @texture &screen:color 4 32 32 16 16
+```
+
+Both addresses are `pointerSource` arguments. `&memory` uses its start byte address; a plain typed pointer reads its
+current byte address from runtime memory. Scoped module names, qualified references, and group exposures are supported.
+Pointers resolve after the runtime entry executes each frame. Upload declarations may live anywhere in the project,
+including unopened groups; matching uses resolved addresses rather than names.
+
+The upload owns the format and full source dimensions. Every view specifies its width and height in source pixels;
+the optional `(x, y)` source origin defaults to `(0, 0)`. Views retain the original upload's row stride and reserve
+fixed rows and minimum block width immediately, before compiler memory or a matching upload exists. Pointer changes
+never resize the containing block. Dimensions and magnification are positive integers; source offsets are nonnegative.
+The view rectangle must fit the selected upload, and uploads must fit WASM memory; uploads can span declarations.
+Missing or undersized uploads skip drawing while keeping the reserved space unchanged.
+
+Identical upload declarations at one address coalesce. Conflicting formats or dimensions report an editor-console
+error and suppress that resource until corrected. Multiple visible views share one upload per address per frame.
+
+| Type | Bytes and channel order |
+| --- | --- |
+| `1bit` | Packed black/white pixels, MSB first; rows are byte-aligned with `ceil(width / 8)` bytes each |
+| `mono` | One unsigned grayscale byte per pixel: black 0 through white 255 |
+| `rgb` | Three unsigned bytes per pixel: red, green, blue; fully opaque |
+| `rgba` | Four unsigned bytes per pixel: red, green, blue, alpha |
+
+Rows run top to bottom with nearest sampling. One WebGL program handles all formats; views reuse the uploaded
+texture, including crops starting inside a packed byte. Images follow their blocks and viewport in the overlay above
+editor content; overlapping blocks do not occlude them. Uploads without visible views release their GPU storage.
+
+Both editor compositions lazily install `@8f4e/editor-plugin-texture-runtime` for either directive or raw runtime
+configuration. Static memory, audio, or worker runtimes can supply pixels with entry execution disabled. To execute
+an entry once per frame, configure `textureRuntime.enabled` and `textureRuntime.entry` under Runtime plugins.
+
 ### `@bars`
+
+Provided by `@8f4e/editor-plugin-bars`.
 
 Draw vertical bars over a typed pointer range. It uses the same pointer, element-count, and optional range arguments as
 `@plot`.
@@ -247,6 +322,8 @@ Draw vertical bars over a typed pointer range. It uses the same pointer, element
 ```
 
 ### `@meter`
+
+Provided by `@8f4e/editor-plugin-meter`.
 
 Render a horizontal level meter from a typed scalar value. The first argument is the typed value source to read. You can
 optionally provide an explicit min/max range override.
@@ -264,6 +341,9 @@ Notes:
 - red still starts at a fixed 90% of the configured range
 
 ### `@wave`
+
+Provided by `@8f4e/editor-plugin-wave`, which also provides `@wave2` and `@wave4` and is included in
+`@8f4e/editor-default`. Hosts composing the minimal editor must include this plugin to enable these directives.
 
 Draw a waveform over a typed absolute pointer range. The first argument provides the start pointer and element size metadata, the second argument is the element count, and the optional third argument is an absolute pointer in the same address space.
 
@@ -289,7 +369,7 @@ Same as `@wave`, but rendered at quadruple height.
 
 ### `@slider`
 
-Render a slider that writes to a memory address.
+Render a slider that writes to a memory address. Provided by `@8f4e/editor-plugin-slider`, included in the default editor.
 
 ```txt
 ; @slider <memoryAddress> [min] [max] [step]
@@ -298,11 +378,13 @@ Render a slider that writes to a memory address.
 
 If provided, `min`, `max`, and `step` must be finite decimal numbers, and `step` must be greater than zero.
 
-Use **Save slider and piano values to code** in the block context menu to save current runtime values as declaration
+Use **Save slider values to code** in the block context menu to save current runtime values as declaration
 defaults. References to other modules or group aliases update the original backing declarations, including declarations
 inside nested groups. The public exposure lines remain unchanged.
 
 ### `@crossfade`
+
+Provided by `@8f4e/editor-plugin-crossfade`.
 
 Render a center-origin crossfade control that writes to two float memory addresses. The left address is driven when the
 knob moves left, and the right address is driven when the knob moves right.
@@ -320,7 +402,10 @@ Notes:
 
 ### `@button`
 
-Render a momentary button that writes to a memory address.
+Provided by `@8f4e/editor-plugin-button`, which is included in `@8f4e/editor-default`. Hosts composing the minimal
+editor must include this plugin to enable the directive.
+
+Render a momentary button that writes its on value when pressed and its off value when released.
 
 ```txt
 ; @button <memoryAddress> [offValue] [onValue]
@@ -332,6 +417,9 @@ Defaults:
 - `onValue`: `1`
 
 ### `@switch`
+
+Provided by `@8f4e/editor-plugin-switch`, which is included in `@8f4e/editor-default`. Hosts composing the minimal
+editor must include this plugin to enable the directive.
 
 Render a toggle switch that reads and writes a memory address.
 
@@ -346,7 +434,7 @@ Defaults:
 
 ### `@piano`
 
-Render a piano keyboard control.
+Render a piano keyboard control. Provided by `@8f4e/editor-plugin-piano`, included in the default editor.
 
 ```txt
 ; @piano <pressedKeysListAddress> <pressedKeyCountAddress> [startingMidiNote]
@@ -356,9 +444,11 @@ Notes:
 
 - Both memory arguments are addresses because piano clicks update the pressed-key array and count directly in runtime
   memory, like sliders. Clicks leave source code and declaration defaults unchanged; note highlights reflect runtime memory.
-- Use **Save slider and piano values to code** in the block context menu to save the current notes and count into their
+- Use **Save piano values to code** in the block context menu to save the current notes and count into their
   backing declarations. This preserves array sizes and inline comments, including when aliases target different modules.
-- `pressedKeysListAddress` is used as both keyboard id and pressed-key array address.
+- `pressedKeysListAddress` must identify an `int[]` array of MIDI note numbers (32-bit integers).
+- `pressedKeyCountAddress` must identify a single `int` count. Other backing types, including `float[]` and `float64[]`
+  notes, do not create an interactive keyboard or a save action.
 - `startingMidiNote` defaults to `0`.
 - `startingMidiNote` must be a non-negative integer.
 - Every other note label has a shaded background using the theme's highlighted code line color, starting with the second
@@ -392,10 +482,10 @@ MIDI input bindings are configured through `@config`.
 
 Notes:
 
-- The MIDI plugin is activated by `@config midi...`; `; @info midi` can display available ports while MIDI is active.
+- The MIDI plugin is activated by `@config midi...` and publishes available ports in `state.info.midi`.
 - `<id>` is a binding identifier such as `0`, `1`, etc.
-- `<port>` is the numeric input index shown by `; @info midi`.
-- MIDI entries are shown as `0`, `1`, etc.; only entries marked `(in)` can be used as input ports.
+- `<port>` is the numeric input index in `state.info.midi`.
+- MIDI entries use keys `0`, `1`, etc.; only entries marked `(in)` can be used as input ports.
 - Indexes are stable while the MIDI plugin is active; disconnected port indexes are not reused until the plugin is restarted.
 - `<callbackExportName>` must be a callable WebAssembly export created with `#export`.
 - The callback receives three integer arguments: `status`, `data1`, and `data2`.
@@ -407,7 +497,6 @@ Notes:
 Example:
 
 ```txt
-; @info midi
 ; @config midi.inputs.0.port 0
 ; @config midi.inputs.0.callback onMidiIn
 ; @config midi.inputs.1.port 0
@@ -446,7 +535,8 @@ moduleEnd
 
 ### Binary Asset Config
 
-Define a named binary asset URL and load it into a memory location.
+`@8f4e/editor-plugin-binary-assets`, included by the default editor, defines named binary asset URLs and loads them
+into runtime memory. The plugin owns fetching, CacheStorage, the loading dialog, and generated size constants.
 
 ```txt
 ; @config bin.<id>.url <url>
@@ -458,7 +548,7 @@ Notes:
 - Asset size constants are auto-generated in the env block as `ASSET_<ID>_SIZE`.
 - `memory` may use a local memory id inside a module block, or a module-qualified memory id from any block.
 - Invalid paths/values are reported through config validation.
-- This is editor metadata only and does not affect compiler output.
+- Binary payloads stay outside serialized project models; generated size constants are available to compilation.
 - Assets with a `url` but no load target are not fetched.
 
 Multiple loads for one asset are supported with named load targets:
@@ -471,7 +561,8 @@ The recommended pattern is one load per asset and sharing that memory from other
 
 ### `@favorite`
 
-Mark a code block as a favorite for quick navigation.
+`@8f4e/editor-plugin-favorites` marks code blocks for quick navigation. The default editor includes it; the minimal
+editor omits it. Core parses the directive as source metadata without providing favorite behavior.
 
 ```txt
 ; @favorite
@@ -590,13 +681,16 @@ This directive stores the position of a code block within the project.
 
 - `gridX` and `gridY` must be strict integers (floats are rejected)
 - Negative values are allowed
-- Multiple `@pos` directives in one block are treated as invalid (position defaults to `0,0`)
-- Malformed values (non-integers) are treated as invalid (position defaults to `0,0`)
+- Multiple `@pos` directives in one block are treated as invalid
+- Malformed values (non-integers) are treated as invalid
 
 **Behavior:**
 
 - **Project Load**: Position is parsed from `@pos` directive. Missing or invalid directive defaults to `(0,0)`
-- **Code Edit**: If you manually edit `@pos` to valid values, the block immediately moves to that position
+- **Code Edit**: Valid `@pos` edits immediately update the block's grid coordinates and position before config
+  precedence is resolved. Missing, incomplete, or invalid directives leave the block at its last valid position,
+  including updates through the editing API and same-project history restoration. Newly inserted blocks without a
+  valid position start at `(0,0)`.
 - **Dragging**: When you drag a block, `@pos` is automatically updated when the drag ends (not during the drag)
 - **Creation**: New blocks automatically get a canonical `@pos` directive based on creation location
 - **Paste**: Pasted blocks automatically get `@pos` directives with adjusted positions
@@ -709,6 +803,7 @@ This block stays pinned to the top-left corner of the viewport and is always ren
 ### `@group`
 
 Assign a code block to a named group for coordinated movement.
+Provided by `@8f4e/editor-plugin-grouping`, included in the default editor.
 
 ```txt
 ; @group <groupName> [nonstick]
@@ -807,7 +902,7 @@ When you copy a group (using "Copy group" in the context menu), all blocks in th
 
 **Group Name Collision Handling:**
 
-When pasted blocks contain `@group` directives, group names are automatically renamed to avoid collisions with existing groups:
+The grouping plugin automatically renames pasted `@group` names to avoid collisions with existing visual groups:
 
 - If a group name ends with a number, that number is incremented: `audio1` → `audio2`
 - If a group name doesn't end with a number, `1` is appended: `audio` → `audio1`
@@ -852,41 +947,44 @@ Set the base file name used by editor export actions.
 ; @config export.fileName samplePlayer
 ```
 
-### Runtime
+### Runtime plugins
 
-Select the runtime host the editor should load for the project.
-
-```txt
-; @config runtime <runtimeId>
-```
-
-- `runtimeId` must be a known runtime id such as `WebWorkerRuntime` or `AudioWorkletRuntime`
-- Duplicate declarations use normal config last-write-wins behavior
-- If no runtime is configured, the editor does not load a runtime
-- Unknown runtime ids produce an editor error and no runtime is loaded
-
-**Example**:
+Audio, worker, test, and texture runtimes are independently enabled plugins:
 
 ```txt
-; @config runtime AudioWorkletRuntime
-```
-
-Extensions may also contribute schema-backed config paths mounted at their own root. Runtime packages use this for
-paths such as:
-
-```txt
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRateConstantName SAMPLE_RATE
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.entry buffer
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
+; @config workerRuntime.enabled true
+; @config workerRuntime.sampleRateConstantName CONTROL_RATE
 ; @config workerRuntime.sampleRate 50
 ; @config workerRuntime.entry main
+; @config testRuntime.enabled true
+; @config textureRuntime.enabled true
 ```
 
-`audioRuntime.entry` selects the exported entry called for each audio processing block and defaults to `buffer`.
-`workerRuntime.entry` selects the exported entry called at the configured worker sample rate and defaults to `main`.
+The audio entry defaults to `buffer`; worker and texture entries default to `main`. Each runtime's `enabled` default
+is false.
+Audio and worker runtimes contribute a sample-rate constant named `SAMPLE_RATE` by default; use their
+`sampleRateConstantName` settings
+when running them together. Audio also contributes `AUDIO_BUFFER_SIZE`, configurable through
+`audioRuntime.bufferSizeConstantName`. Info namespaces are fixed: `audioRuntime`, `workerRuntime`, and `testRuntime`.
+The default and minimal editors automatically import these plugins when their configuration roots appear, including
+after editing. Runtime signals are checked across the complete project tree, including unopened groups, using cached
+parsed directives. Each plugin stays installed until editor disposal and owns its schema and cleanup.
 
-These roots are owned by their contributing package, not by the editor config type.
+#### Texture runtime
 
-The main-thread runtime has been removed. For existing projects, replace `; @config runtime MainThreadRuntime`
-with `; @config runtime WebWorkerRuntime` and rename `mainThreadRuntime.sampleRate` to `workerRuntime.sampleRate`,
-keeping the same rate. Projects using the removed runtime id produce an editor error until updated.
+`@8f4e/editor-plugin-texture-runtime` executes a WebAssembly entry once per editor frame when explicitly enabled:
+
+```txt
+; @config textureRuntime.enabled true
+; @config textureRuntime.entry renderFrame
+```
+
+The entry defaults to `main` and runs once regardless of the number or visibility of `@texture` directives. It uses
+the compiler's shared memory and does not reinitialize defaults. The runtime only configures execution; upload
+declarations specify source addresses, formats, and dimensions, while views specify magnification and optional crops. Disabling execution leaves
+framebuffer display active. Both editor compositions load the plugin for raw `textureRuntime` configuration, `@textureUpload`, or `@texture`.

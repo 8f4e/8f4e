@@ -22,10 +22,6 @@ export const scalarMemoryDeclarationInstructions = [
 
 export type ScalarMemoryDeclarationInstruction = (typeof scalarMemoryDeclarationInstructions)[number];
 
-export const MemoryTypes = Object.fromEntries(
-	scalarMemoryDeclarationInstructions.map(instruction => [instruction, instruction])
-) as { readonly [Instruction in ScalarMemoryDeclarationInstruction]: Instruction };
-
 export type MemoryType = ScalarMemoryDeclarationInstruction;
 
 export const arrayMemoryDeclarationInstructions = [
@@ -155,15 +151,18 @@ export const BASE_TYPE_METADATA: Record<BaseTypeMetadataKey, BaseTypeMetadata> =
 /** Memory declaration metadata produced by layout planning before semantic defaults are applied. */
 export interface PlannedMemoryDeclaration {
 	numberOfElements: number;
+	/** Byte width of one typed element, independent of the 4-byte allocation grid. */
 	elementWordSize: number;
 	type: MemoryType;
 	byteAddress: number;
 	/** Actual value bytes covered by declared elements, excluding alignment padding. */
 	elementByteLength: number;
-	wordAlignedSize: number;
-	/** Byte length represented by `wordAlignedSize`. */
-	wordAlignedByteLength: number;
-	wordAlignedAddress: number;
+	/** Reserved 4-byte allocation units, including any leading alignment padding. */
+	allocationUnitCount: number;
+	/** Storage byte length from `byteAddress`, excluding leading alignment padding. */
+	allocatedByteLength: number;
+	/** Absolute address of the first element in 4-byte allocation units. */
+	allocationUnitAddress: number;
 	/** Last aligned byte address occupied by this declaration. */
 	endByteAddress: number;
 	/** Safe byte length when addressing this declaration through its end address. */
@@ -194,9 +193,10 @@ export interface PlannedMemoryModule {
 	id: string;
 	lineNumber: number;
 	byteAddress: number;
-	wordAlignedSize: number;
-	/** Byte length represented by `wordAlignedSize`. */
-	wordAlignedByteLength: number;
+	/** Reserved 4-byte allocation units, including declaration alignment padding. */
+	allocationUnitCount: number;
+	/** Reserved byte length, equal to `allocationUnitCount * ALLOCATION_UNIT_BYTE_SIZE`. */
+	allocatedByteLength: number;
 	/** Last aligned byte address occupied by this module. */
 	endByteAddress: number;
 	/** Safe byte length when addressing this module through its end address. */
@@ -237,8 +237,8 @@ export type ResolvedMemoryDeclaration = PlannedMemoryDeclaration & MemoryPointer
 export type MemoryBuffer = Int32Array;
 
 export type MemoryValueChange = {
-	wordAlignedSize: number;
-	wordAlignedAddress: number;
+	allocationUnitCount: number;
+	allocationUnitAddress: number;
 	value: number | Record<string, number>;
 	isInteger: boolean;
 	isFloat64?: boolean;

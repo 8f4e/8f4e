@@ -102,82 +102,28 @@ noteEnd
 
 note
 ; @pos -316 -54
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audiooutL:buffer
 ; @config audioRuntime.audioOutBufferRAddress audiooutR:buffer
 ; @config export.fileName granularSampler
-; @config color.text.lineNumber #737492
-; @config color.text.entryName #e9e7f7
-; @config color.text.debugInfo #898aa6
-; @config color.text.arrow #f2a178
-; @config color.text.instruction #78d4da
-; @config color.text.codeComment #8c8ba2
-; @config color.text.code #d8d5e5
-; @config color.text.infoKey #7cc9d2
-; @config color.text.infoValue #e7a0d8
-; @config color.text.errorMessage #fff0f4
-; @config color.text.disabledCode #595a70
-; @config color.text.numbers #d79ce8
-; @config color.text.menuItemText #eceafb
-; @config color.text.menuItemTextHighlighted #12121d
-; @config color.text.dialogTitle #b7a4ff
-; @config color.text.dialogText #eceafb
-; @config color.text.binaryZero #606179
-; @config color.text.binaryOne #78d4da
-; @config color.text.basePrefix #d683d2
-; @config color.text.pianoKeyWhitePressedOverlay rgba(17,18,29,0.34)
-; @config color.text.pianoKeyBlackPressedOverlay rgba(240,107,215,0.68)
-; @config color.text.tooltipText #171522
-; @config color.text.tooltipHighlight #816cc4
-; @config color.fill.menuItemBackground #28283d
-; @config color.fill.menuItemBackgroundHighlighted #aa91f2
-; @config color.fill.background #11121d
-; @config color.fill.backgroundDots #1d1e2e
-; @config color.fill.backgroundDots2 #33344d
-; @config color.fill.moduleBackground #24253a
-; @config color.fill.debugInfoBackground #191a29
-; @config color.fill.moduleBackgroundDragged #363752
-; @config color.fill.moduleBackgroundDisabled #1d1e30
-; @config color.fill.wire rgba(104,215,224,0.56)
-; @config color.fill.wireHighlighted #c6fbff
-; @config color.fill.errorMessageBackground #9c3d5a
-; @config color.fill.assertionPassed #4d967f
-; @config color.fill.assertionFailed #ce506d
-; @config color.fill.dialogBackground #29293f
-; @config color.fill.dialogDimmer rgba(5,5,11,0.8)
-; @config color.fill.highlightedCodeLine #383953
-; @config color.fill.trace #f06bd7
-; @config color.fill.plotterBackground #080914
-; @config color.fill.bars #8e78d8
-; @config color.fill.waveformBackground #090a15
-; @config color.fill.waveform #f06bd7
-; @config color.fill.meterGreen #5eb590
-; @config color.fill.meterYellow #d9b65b
-; @config color.fill.meterRed #db5d77
-; @config color.fill.scanLine #f4a06f
-; @config color.fill.track #3d3e59
-; @config color.fill.fill #7768c8
-; @config color.fill.handle #eceafb
-; @config color.fill.codeBlockHighlightLevel1 #2d2e46
-; @config color.fill.codeBlockHighlightLevel2 #353650
-; @config color.fill.codeBlockHighlightLevel3 #3e3f5d
-; @config color.fill.pianoKeyWhite #e9e6f1
-; @config color.fill.pianoKeyBlack #171721
-; @config color.fill.tooltipBackground #e8e2f6
-; @config color.fill.tooltipAddedHighlight #a0c9b2
-; @config color.fill.tooltipConsumedHighlight #e2a0b3
-; @config color.icons.inputConnector #78d4da
-; @config color.icons.outputConnector #f06bd7
-; @config color.icons.inputConnectorBackground #363752
-; @config color.icons.outputConnectorBackground #363752
-; @config color.icons.switchBackground #7768c8
-; @config color.icons.feedbackScale0 #252642
-; @config color.icons.feedbackScale1 #373866
-; @config color.icons.feedbackScale2 #53549a
-; @config color.icons.feedbackScale3 #7475cf
-; @config color.icons.feedbackScale4 #b67fd6
-; @config color.icons.feedbackScale5 #f06ba7
+noteEnd
+
+note colors
+; @pos -399 -54
+; @config color.canvas #11121d
+; @config color.surface #24253a
+; @config color.ink #d8d5e5
+; @config color.primary #78d4da
+; @config color.secondary #d79ce8
+; @config color.positive #4d967f
+; @config color.warning #d9b65b
+; @config color.negative #ce506d
+; @config color.muted #737492
+; @config color.stroke rgba(104,215,224,0.56)
+; @config color.tertiary #8c8ba2
+; @config color.highlight #f06bd7
+; @config color.detail #8e78d8
 noteEnd
 
 entry main
@@ -348,7 +294,7 @@ float out
 ; @wave2 &buffer count(buffer) playhead
 
 local float samplePosition
-local int sampleAddress
+local int16* sampleAddress
 
 ; Calculate read address
 push *position

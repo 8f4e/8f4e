@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/test-runner",
-  "version": "0.1.5",
+  "version": "0.2.20",
   "private": true,
   "description": "Shared assertion execution and source reporting for 8f4e tests",
   "type": "module",
@@ -15,7 +15,7 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andorthehood/8f4e.git"
+    "url": "git+https://github.com/8f4e/8f4e.git"
   },
   "author": "Andor Polgar",
   "license": "MIT",

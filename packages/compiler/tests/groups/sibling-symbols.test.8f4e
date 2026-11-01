@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Sibling groups can reuse module and function names.
 Each group resolves its own function and executes independently.

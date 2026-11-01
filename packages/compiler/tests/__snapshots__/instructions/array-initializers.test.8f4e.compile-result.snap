@@ -1230,6 +1230,8 @@
     "expressionInitializerAssertions": {
       "memory": {
         "notes": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 4,
           "byteAddress": 4,
           "default": {
             "0": 48,
@@ -1244,14 +1246,14 @@
           "numberOfElements": 4,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 4,
         },
       },
     },
     "hexadecimalInitializerAssertions": {
       "memory": {
         "foo": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 2,
           "byteAddress": 20,
           "default": {
             "0": 1,
@@ -1265,14 +1267,14 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 5,
-          "wordAlignedSize": 2,
         },
       },
     },
     "intArrayInitializerAssertions": {
       "memory": {
         "notes": {
+          "allocationUnitAddress": 7,
+          "allocationUnitCount": 10,
           "byteAddress": 28,
           "default": {
             "0": 48,
@@ -1287,14 +1289,14 @@
           "numberOfElements": 10,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 7,
-          "wordAlignedSize": 10,
         },
       },
     },
     "narrowInitializerAssertions": {
       "memory": {
         "bytes": {
+          "allocationUnitAddress": 17,
+          "allocationUnitCount": 1,
           "byteAddress": 68,
           "default": {
             "0": 1,
@@ -1310,10 +1312,10 @@
           "numberOfElements": 4,
           "pointerDepth": 0,
           "type": "int8",
-          "wordAlignedAddress": 17,
-          "wordAlignedSize": 1,
         },
         "shorts": {
+          "allocationUnitAddress": 18,
+          "allocationUnitCount": 2,
           "byteAddress": 72,
           "default": {
             "0": 1000,
@@ -1328,14 +1330,14 @@
           "numberOfElements": 3,
           "pointerDepth": 0,
           "type": "int16",
-          "wordAlignedAddress": 18,
-          "wordAlignedSize": 2,
         },
       },
     },
     "sparseInitializerAssertions": {
       "memory": {
         "huge": {
+          "allocationUnitAddress": 20,
+          "allocationUnitCount": 1000000,
           "byteAddress": 80,
           "default": {
             "0": 1,
@@ -1348,8 +1350,6 @@
           "numberOfElements": 1000000,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 20,
-          "wordAlignedSize": 1000000,
         },
       },
     },

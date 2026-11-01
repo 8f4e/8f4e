@@ -33,7 +33,7 @@ describe('compileProjectModules', () => {
 				},
 			]),
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 			}
 		);
 
@@ -59,7 +59,7 @@ describe('compileProjectModules', () => {
 				},
 			]),
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 			}
 		);
 
@@ -80,7 +80,7 @@ describe('compileProjectModules', () => {
 				},
 			]),
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 			}
 		);
 
@@ -102,7 +102,7 @@ describe('compileProjectModules', () => {
 				},
 			]),
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 			}
 		);
 
@@ -131,7 +131,7 @@ describe('compileProjectModules', () => {
 				],
 			},
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 			}
 		);
 
@@ -151,7 +151,7 @@ describe('compileProjectModules', () => {
 				includes: [{ id: 1, code: ['includes', 'include std/test/includedOne', 'includesEnd'] }],
 			},
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 				resolveInclude: includeId =>
 					includeId === 'std/test/includedOne'
 						? ['function includedOne', '#export', 'push 1', 'functionEnd int'].join('\n')

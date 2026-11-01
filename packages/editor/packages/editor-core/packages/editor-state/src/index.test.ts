@@ -1,6 +1,6 @@
-import type { EventDispatcher, PianoKeyboard } from '@8f4e/editor-state-types';
+import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
-import { EMPTY_DEFAULT_PROJECT } from './features/project-import/emptyDefaultProject';
+import { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
 import animateViewport from './features/viewport/animateViewport';
 import initState from './index';
 import { createMockCodeBlock } from './pureHelpers/testingUtils/testUtils';
@@ -13,16 +13,14 @@ describe('editor state lifecycle', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
 			callbacks: {
-				loadSession: async () => null,
 				requestAnimationFrame: callback => {
 					frames.push(callback);
 					return frames.length;
 				},
 				cancelAnimationFrame,
 			},
-			initialEditorMode: editorMode,
-			runtimeRegistry: {},
 		});
+		store.set('editorMode', editorMode);
 		const state = store.getState();
 		animateViewport(state, 80, 160, events);
 		expect(state.viewportAnimation.active).toBe(true);
@@ -36,16 +34,13 @@ describe('editor state lifecycle', () => {
 		expect(state.viewport.y).toBe(0);
 	});
 
-	it('initializes the requested editor mode and synchronizes editing', () => {
+	it('starts in view mode before a project is loaded', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
-			callbacks: { loadSession: async () => null },
-			initialEditorMode: 'edit',
-			runtimeRegistry: {},
+			callbacks: {},
 		});
 
-		expect(store.getState().editorMode).toBe('edit');
-		expect(store.getState().featureFlags.editing).toBe(true);
+		expect(store.getState().editorMode).toBe('view');
 
 		store.dispose();
 	});
@@ -53,8 +48,7 @@ describe('editor state lifecycle', () => {
 	it('keeps configuration notes in their project and clears them when an empty project is loaded', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
-			callbacks: { loadSession: async () => null },
-			runtimeRegistry: {},
+			callbacks: {},
 		});
 		const code = ['note local.editorConfig', '; @config font terminus8x16', 'noteEnd'];
 
@@ -75,31 +69,8 @@ describe('editor state lifecycle', () => {
 		store.dispose();
 	});
 
-	it('disposes initialized effects and their active runtime exactly once', async () => {
-		const runtimeDestroyer = vi.fn();
-		const runtimeFactory = vi.fn(() => runtimeDestroyer);
-		const events = createMockEventDispatcherWithVitest();
-		const store = initState(events, {
-			callbacks: { loadSession: async () => null },
-			runtimeRegistry: {
-				TestRuntime: {
-					id: 'TestRuntime',
-					factory: runtimeFactory,
-				},
-			},
-		});
-
-		store.getState().editorConfig.runtime = 'TestRuntime';
-		store.set('compiler.isCompiling', false);
-		await Promise.resolve();
-		store.dispose();
-		store.dispose();
-
-		expect(runtimeFactory).toHaveBeenCalledOnce();
-		expect(runtimeDestroyer).toHaveBeenCalledOnce();
-	});
 	it.each([0, Infinity])(
-		'consumes a menu click over a piano before saving or dismissing (highlighted item: %s)',
+		'consumes a menu click before dispatching to a code block (highlighted item: %s)',
 		highlightedItem => {
 			const handlers = new Map<string, Array<(event: unknown) => void>>();
 			const events: EventDispatcher = {
@@ -119,21 +90,10 @@ describe('editor state lifecycle', () => {
 					}
 				},
 			};
-			const memory = new Map([
-				[4, 2],
-				[5, 3],
-				[6, 2],
-			]);
-			const setWordInMemory = vi.fn((address: number, value: number) => memory.set(address, value));
 			const store = initState(events, {
-				callbacks: {
-					loadSession: async () => null,
-					getWordFromMemory: address => memory.get(address) ?? 0,
-					setWordInMemory,
-				},
-				initialEditorMode: 'edit',
-				runtimeRegistry: {},
+				callbacks: {},
 			});
+			events.dispatch('enterEditMode');
 			const state = store.getState();
 			const codeBlock = createMockCodeBlock({
 				x: 0,
@@ -141,30 +101,8 @@ describe('editor state lifecycle', () => {
 				width: 192,
 				height: 96,
 				blockType: 'module',
-				code: ['module synth', 'int[] notes 2 2 3', 'int count 2', '; @piano &notes &count', 'moduleEnd'],
+				code: ['module synth', 'int value 2', 'moduleEnd'],
 			});
-			codeBlock.widgets.pianoKeyboards = [
-				{
-					pressedKeysListModuleId: 'test-block',
-					pressedNumberOfKeysModuleId: 'test-block',
-					x: 0,
-					y: 0,
-					width: 192,
-					height: 96,
-					keyWidth: 8,
-					lineNumber: 3,
-					startingNumber: 0,
-					keys: Array.from({ length: 24 }, (_, offset) => ({ offset })),
-					pressedKeysListMemory: {
-						id: 'notes',
-						wordAlignedAddress: 4,
-						numberOfElements: 2,
-						elementWordSize: 4,
-						isInteger: true,
-					},
-					pressedNumberOfKeysMemory: { id: 'count', wordAlignedAddress: 6, isInteger: true },
-				} as PianoKeyboard,
-			];
 			state.viewport.x = 0;
 			state.viewport.y = 0;
 			state.codeBlockRendering.codeBlocks = [codeBlock];
@@ -173,14 +111,16 @@ describe('editor state lifecycle', () => {
 			state.contextMenu.highlightedItem = highlightedItem;
 			state.contextMenu.items = [
 				{
-					title: 'Save slider and piano values to code',
-					action: 'saveSliderValuesToCode',
+					title: 'Test action',
+					action: 'testMenuAction',
 					payload: { codeBlock },
 					close: true,
 				},
 			];
-			const onCodeBlockClick = vi.fn();
-			events.on('codeBlockClick', onCodeBlockClick);
+			const onCodeBlockPointerDown = vi.fn();
+			events.on('codeBlockPointerDown', onCodeBlockPointerDown);
+			const onMenuAction = vi.fn();
+			events.on('testMenuAction', onMenuAction);
 			const click = {
 				x: 17,
 				y: 1,
@@ -197,12 +137,9 @@ describe('editor state lifecycle', () => {
 
 			expect(state.contextMenu.open).toBe(false);
 			expect(click.stopPropagation).toBe(true);
-			expect(onCodeBlockClick).not.toHaveBeenCalled();
-			expect(setWordInMemory).not.toHaveBeenCalled();
-			expect(memory.get(4)).toBe(2);
-			expect(memory.get(5)).toBe(3);
-			expect(memory.get(6)).toBe(2);
-			expect(codeBlock.code[1]).toBe('int[] notes 2 2 3');
+			expect(onCodeBlockPointerDown).not.toHaveBeenCalled();
+			expect(onMenuAction).toHaveBeenCalledTimes(highlightedItem === 0 ? 1 : 0);
+			expect(codeBlock.code[1]).toBe('int value 2');
 			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 
 			store.dispose();

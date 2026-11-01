@@ -420,9 +420,7 @@ export function getError(
 			return {
 				code,
 				message:
-					'Mixed float widths: arithmetic operations require all float operands to have the same width (float32 or float64). (' +
-					code +
-					')',
+					'Mixed float widths: floating-point values must have the same width (float32 or float64). (' + code + ')',
 				line,
 				context,
 			};
@@ -574,6 +572,16 @@ export function getError(
 			return {
 				code,
 				message: 'Array size must be a finite nonnegative integer. (' + code + ')',
+				line,
+				context,
+			};
+		case ErrorCode.INVALID_ADDRESS_ARITHMETIC:
+			return {
+				code,
+				message:
+					'Invalid address arithmetic. Add accepts one address and one integer offset; subtraction accepts an address minus an integer offset or two addresses. (' +
+					code +
+					')',
 				line,
 				context,
 			};

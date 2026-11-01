@@ -1,7 +1,7 @@
 {
   "sourceModuleOrder": [
-    "setButton",
     "resetButton",
+    "setButton",
     "norGate2",
     "norGate",
     "scope",
@@ -14,83 +14,83 @@
   ],
   "compiledModuleLayout": [
     {
-      "id": "setButton",
+      "id": "resetButton",
       "index": 0,
-      "byteAddress": 596,
-      "wordAlignedAddress": 149,
-      "wordAlignedSize": 1,
+      "byteAddress": 64,
+      "allocationUnitAddress": 16,
+      "allocationUnitCount": 1,
       "skipExecutionInCycle": false
     },
     {
-      "id": "resetButton",
+      "id": "setButton",
       "index": 1,
-      "byteAddress": 64,
-      "wordAlignedAddress": 16,
-      "wordAlignedSize": 1,
+      "byteAddress": 596,
+      "allocationUnitAddress": 149,
+      "allocationUnitCount": 1,
       "skipExecutionInCycle": false
     },
     {
       "id": "norGate2",
       "index": 2,
       "byteAddress": 40,
-      "wordAlignedAddress": 10,
-      "wordAlignedSize": 3,
+      "allocationUnitAddress": 10,
+      "allocationUnitCount": 3,
       "skipExecutionInCycle": false
     },
     {
       "id": "norGate",
       "index": 3,
       "byteAddress": 28,
-      "wordAlignedAddress": 7,
-      "wordAlignedSize": 3,
+      "allocationUnitAddress": 7,
+      "allocationUnitCount": 3,
       "skipExecutionInCycle": false
     },
     {
       "id": "scope",
       "index": 4,
       "byteAddress": 68,
-      "wordAlignedAddress": 17,
-      "wordAlignedSize": 66,
+      "allocationUnitAddress": 17,
+      "allocationUnitCount": 66,
       "skipExecutionInCycle": false
     },
     {
       "id": "buttons",
       "index": 5,
       "byteAddress": 12,
-      "wordAlignedAddress": 3,
-      "wordAlignedSize": 2,
+      "allocationUnitAddress": 3,
+      "allocationUnitCount": 2,
       "skipExecutionInCycle": false
     },
     {
       "id": "negate",
       "index": 6,
       "byteAddress": 20,
-      "wordAlignedAddress": 5,
-      "wordAlignedSize": 2,
+      "allocationUnitAddress": 5,
+      "allocationUnitCount": 2,
       "skipExecutionInCycle": false
     },
     {
       "id": "orGate",
       "index": 7,
       "byteAddress": 52,
-      "wordAlignedAddress": 13,
-      "wordAlignedSize": 3,
+      "allocationUnitAddress": 13,
+      "allocationUnitCount": 3,
       "skipExecutionInCycle": false
     },
     {
       "id": "andGate",
       "index": 8,
       "byteAddress": 0,
-      "wordAlignedAddress": 0,
-      "wordAlignedSize": 3,
+      "allocationUnitAddress": 0,
+      "allocationUnitCount": 3,
       "skipExecutionInCycle": false
     },
     {
       "id": "scope2",
       "index": 9,
       "byteAddress": 332,
-      "wordAlignedAddress": 83,
-      "wordAlignedSize": 66,
+      "allocationUnitAddress": 83,
+      "allocationUnitCount": 66,
       "skipExecutionInCycle": false
     }
   ]

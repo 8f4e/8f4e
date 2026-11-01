@@ -5,21 +5,22 @@ import { resolveMemoryReferences } from './index';
 import {
 	type MemoryReferenceResolutionContext,
 	resolveMemoryExpressionOperand,
+	resolveMetadataTarget,
 } from './resolveMemoryExpressionOperand';
 import { tryResolveValueArgument } from './tryResolveValueArgument';
 
 const { classifyIdentifier, parseArgument, parseCompileTimeOperand } = await import('@8f4e/tokenizer');
 
-function getWordAlignedByteLength(wordAlignedSize: number): number {
-	return Math.max(0, wordAlignedSize) * 4;
+function getAllocatedByteLength(allocationUnitCount: number): number {
+	return Math.max(0, allocationUnitCount) * 4;
 }
 
-function getEndByteAddress(byteAddress: number, wordAlignedSize: number): number {
-	return wordAlignedSize <= 0 ? byteAddress : byteAddress + (wordAlignedSize - 1) * 4;
+function getEndByteAddress(byteAddress: number, allocationUnitCount: number): number {
+	return allocationUnitCount <= 0 ? byteAddress : byteAddress + (allocationUnitCount - 1) * 4;
 }
 
-function getEndAddressSafeByteLength(wordAlignedSize: number): number {
-	return wordAlignedSize > 0 ? 4 : 0;
+function getEndAddressSafeByteLength(allocationUnitCount: number): number {
+	return allocationUnitCount > 0 ? 4 : 0;
 }
 
 function createMemoryDeclaration(
@@ -32,8 +33,8 @@ function createMemoryDeclaration(
 		type: 'int',
 		numberOfElements: 1,
 		elementWordSize: 4,
-		wordAlignedAddress: 0,
-		wordAlignedSize: 1,
+		allocationUnitAddress: 0,
+		allocationUnitCount: 1,
 		byteAddress: 0,
 		isInteger: true,
 		pointerDepth: 0,
@@ -44,9 +45,9 @@ function createMemoryDeclaration(
 	return {
 		...declaration,
 		elementByteLength: declaration.numberOfElements * declaration.elementWordSize,
-		wordAlignedByteLength: getWordAlignedByteLength(declaration.wordAlignedSize),
-		endByteAddress: getEndByteAddress(declaration.byteAddress, declaration.wordAlignedSize),
-		endAddressSafeByteLength: getEndAddressSafeByteLength(declaration.wordAlignedSize),
+		allocatedByteLength: getAllocatedByteLength(declaration.allocationUnitCount),
+		endByteAddress: getEndByteAddress(declaration.byteAddress, declaration.allocationUnitCount),
+		endAddressSafeByteLength: getEndAddressSafeByteLength(declaration.allocationUnitCount),
 	} as PlannedMemoryDeclaration;
 }
 
@@ -59,7 +60,7 @@ function createPlannedModule(
 		id,
 		lineNumber: 0,
 		byteAddress: 24,
-		wordAlignedSize: 5,
+		allocationUnitCount: 5,
 		memory,
 		declarations: Object.values(memory),
 		declarationSources: [],
@@ -68,9 +69,9 @@ function createPlannedModule(
 
 	return {
 		...module,
-		wordAlignedByteLength: getWordAlignedByteLength(module.wordAlignedSize),
-		endByteAddress: getEndByteAddress(module.byteAddress, module.wordAlignedSize),
-		endAddressSafeByteLength: getEndAddressSafeByteLength(module.wordAlignedSize),
+		allocatedByteLength: getAllocatedByteLength(module.allocationUnitCount),
+		endByteAddress: getEndByteAddress(module.byteAddress, module.allocationUnitCount),
+		endAddressSafeByteLength: getEndAddressSafeByteLength(module.allocationUnitCount),
 	} as PlannedMemoryModule;
 }
 
@@ -138,12 +139,12 @@ describe('resolveMemoryReferences', () => {
 			type: 'int',
 			numberOfElements: 4,
 			elementWordSize: 4,
-			wordAlignedAddress: 4,
-			wordAlignedSize: 4,
+			allocationUnitAddress: 4,
+			allocationUnitCount: 4,
 			byteAddress: 16,
 		});
 		const memoryPlan = createMemoryPlan([
-			createPlannedModule('main', { buffer }, { byteAddress: 16, wordAlignedSize: 4 }),
+			createPlannedModule('main', { buffer }, { byteAddress: 16, allocationUnitCount: 4 }),
 		]);
 
 		const result = resolveMemoryReferences({
@@ -176,7 +177,7 @@ describe('resolveMemoryReferences', () => {
 		expect(ast.lines[1]).toBe(pushLine);
 	});
 
-	it('uses pointer declaration address defaults for later pointee count queries', () => {
+	it.each([0, 1, 4])('preserves a known pointee count of %i from a pointer declaration default', count => {
 		const moduleLine = {
 			lineNumber: 1,
 			instruction: 'module',
@@ -185,7 +186,7 @@ describe('resolveMemoryReferences', () => {
 		const samplesLine = {
 			lineNumber: 2,
 			instruction: 'float[]',
-			arguments: [classifyIdentifier('samples'), { type: ArgumentType.LITERAL, value: 4, isInteger: true }],
+			arguments: [classifyIdentifier('samples'), { type: ArgumentType.LITERAL, value: count, isInteger: true }],
 		};
 		const pointerLine = {
 			lineNumber: 3,
@@ -206,23 +207,23 @@ describe('resolveMemoryReferences', () => {
 		const samples = createMemoryDeclaration('samples', {
 			lineNumber: 2,
 			type: 'float',
-			numberOfElements: 4,
+			numberOfElements: count,
 			elementWordSize: 4,
-			wordAlignedAddress: 4,
-			wordAlignedSize: 4,
+			allocationUnitAddress: 4,
+			allocationUnitCount: count,
 			byteAddress: 16,
 			isInteger: false,
 		});
 		const ptr = createMemoryDeclaration('ptr', {
 			lineNumber: 3,
 			type: 'float*',
-			wordAlignedAddress: 8,
+			allocationUnitAddress: 8,
 			byteAddress: 32,
 			pointeeBaseType: 'float',
 			pointerDepth: 1,
 		});
 		const memoryPlan = createMemoryPlan([
-			createPlannedModule('main', { samples, ptr }, { byteAddress: 16, wordAlignedSize: 5 }),
+			createPlannedModule('main', { samples, ptr }, { byteAddress: 16, allocationUnitCount: 5 }),
 		]);
 
 		const result = resolveMemoryReferences({
@@ -240,7 +241,7 @@ describe('resolveMemoryReferences', () => {
 
 		expect(result.references.modules[0].lineFacts[3]?.arguments?.[0]).toEqual({
 			type: ArgumentType.LITERAL,
-			value: 4,
+			value: count,
 			isInteger: true,
 		});
 	});
@@ -267,12 +268,12 @@ describe('resolveMemoryReferences', () => {
 			type: 'int',
 			numberOfElements: 4,
 			elementWordSize: 4,
-			wordAlignedAddress: 4,
-			wordAlignedSize: 4,
+			allocationUnitAddress: 4,
+			allocationUnitCount: 4,
 			byteAddress: 16,
 		});
 		const memoryPlan = createMemoryPlan([
-			createPlannedModule('main', { buffer }, { byteAddress: 16, wordAlignedSize: 4 }),
+			createPlannedModule('main', { buffer }, { byteAddress: 16, allocationUnitCount: 4 }),
 		]);
 
 		const result = resolveMemoryReferences({
@@ -351,11 +352,11 @@ describe('resolveMemoryReferences', () => {
 			byteAddress: 64,
 			numberOfElements: 8,
 			elementWordSize: 4,
-			wordAlignedSize: 8,
+			allocationUnitCount: 8,
 		});
 		const memoryPlan = createMemoryPlan([
-			createPlannedModule('consumer', { pointer }, { byteAddress: 16, wordAlignedSize: 1 }),
-			createPlannedModule('audio/source', { value }, { byteAddress: 64, wordAlignedSize: 8 }),
+			createPlannedModule('consumer', { pointer }, { byteAddress: 16, allocationUnitCount: 1 }),
+			createPlannedModule('audio/source', { value }, { byteAddress: 64, allocationUnitCount: 8 }),
 		]);
 		const memoryAliases = new Map([
 			['audio', new Map([['level', { targetModuleId: 'audio/source', targetMemoryId: 'value' }]])],
@@ -402,7 +403,7 @@ describe('min/max result types', () => {
 	const value = createMemoryDeclaration('value', {
 		type: 'float64',
 		elementWordSize: 8,
-		wordAlignedSize: 2,
+		allocationUnitCount: 2,
 		isInteger: false,
 		isFloat64: true,
 	});
@@ -410,7 +411,7 @@ describe('min/max result types', () => {
 		type: 'float64',
 		numberOfElements: 2,
 		elementWordSize: 8,
-		wordAlignedSize: 4,
+		allocationUnitCount: 4,
 		isInteger: false,
 	});
 	const pointer = createMemoryDeclaration('pointer', {
@@ -490,7 +491,7 @@ describe('tryResolveValueArgument', () => {
 		byteAddress: 32,
 		numberOfElements: 8,
 		elementWordSize: 2,
-		wordAlignedSize: 4,
+		allocationUnitCount: 4,
 	});
 	const floatBuf = createMemoryDeclaration('floatBuf', {
 		numberOfElements: 4,
@@ -776,12 +777,12 @@ describe('tryResolveValueArgument', () => {
 	it('resolves intermodule start-address reference (&module:memory) once module is laid out', () => {
 		const buffer = createMemoryDeclaration('buffer', {
 			byteAddress: 8,
-			wordAlignedSize: 4,
+			allocationUnitCount: 4,
 			numberOfElements: 4,
 			elementWordSize: 4,
 		});
 		const laidOutNamespace = withRemoteModules(mockContext, [
-			createPlannedModule('source', { buffer }, { byteAddress: 8, wordAlignedSize: 4 }),
+			createPlannedModule('source', { buffer }, { byteAddress: 8, allocationUnitCount: 4 }),
 		]);
 
 		expect(tryResolveValueArgument(laidOutNamespace, classifyIdentifier('&source:buffer'))).toEqual({
@@ -802,15 +803,15 @@ describe('tryResolveValueArgument', () => {
 	it('resolves intermodule end-address reference (module:memory&) once module is laid out', () => {
 		const buffer = createMemoryDeclaration('buffer', {
 			byteAddress: 8,
-			wordAlignedSize: 4,
+			allocationUnitCount: 4,
 			numberOfElements: 4,
 			elementWordSize: 4,
 		});
 		const laidOutNamespace = withRemoteModules(mockContext, [
-			createPlannedModule('source', { buffer }, { byteAddress: 8, wordAlignedSize: 4 }),
+			createPlannedModule('source', { buffer }, { byteAddress: 8, allocationUnitCount: 4 }),
 		]);
 
-		// End address = byteAddress + (wordAlignedSize - 1) * 4 = 8 + 3 * 4 = 20
+		// End address = byteAddress + (allocationUnitCount - 1) * 4 = 8 + 3 * 4 = 20
 		expect(tryResolveValueArgument(laidOutNamespace, classifyIdentifier('source:buffer&'))).toEqual({
 			value: 20,
 			isInteger: true,
@@ -828,7 +829,7 @@ describe('tryResolveValueArgument', () => {
 
 	it('resolves intermodule module-base start-address (&module:) once module is laid out', () => {
 		const laidOutNamespace = withRemoteModules(mockContext, [
-			createPlannedModule('source', {}, { byteAddress: 12, wordAlignedSize: 3 }),
+			createPlannedModule('source', {}, { byteAddress: 12, allocationUnitCount: 3 }),
 		]);
 
 		expect(tryResolveValueArgument(laidOutNamespace, classifyIdentifier('&source:'))).toEqual({
@@ -847,7 +848,7 @@ describe('tryResolveValueArgument', () => {
 
 	it('resolves intermodule module-base end-address (module:&) once module is laid out', () => {
 		const laidOutNamespace = withRemoteModules(mockContext, [
-			createPlannedModule('source', {}, { byteAddress: 12, wordAlignedSize: 3 }),
+			createPlannedModule('source', {}, { byteAddress: 12, allocationUnitCount: 3 }),
 		]);
 
 		// End address = 12 + (3 - 1) * 4 = 12 + 8 = 20
@@ -872,7 +873,7 @@ describe('tryResolveValueArgument', () => {
 
 	it('returns undefined for unresolved intermodule nth references', () => {
 		const laidOutNamespace = withRemoteModules(mockContext, [
-			createPlannedModule('source', {}, { byteAddress: 8, wordAlignedSize: 4 }),
+			createPlannedModule('source', {}, { byteAddress: 8, allocationUnitCount: 4 }),
 		]);
 
 		expect(tryResolveValueArgument(laidOutNamespace, classifyIdentifier('&source:99'))).toBeUndefined();
@@ -919,7 +920,7 @@ describe('tryResolveValueArgument', () => {
 	it('keeps address metadata when adding an in-range integer offset to an address expression', () => {
 		const arr = createMemoryDeclaration('arr', {
 			byteAddress: 16,
-			wordAlignedSize: 4,
+			allocationUnitCount: 4,
 			numberOfElements: 4,
 			elementWordSize: 4,
 		});
@@ -942,7 +943,7 @@ describe('tryResolveValueArgument', () => {
 	it('keeps address metadata when adding an address expression to an integer offset', () => {
 		const arr = createMemoryDeclaration('arr', {
 			byteAddress: 16,
-			wordAlignedSize: 4,
+			allocationUnitCount: 4,
 			numberOfElements: 4,
 			elementWordSize: 4,
 		});
@@ -965,7 +966,7 @@ describe('tryResolveValueArgument', () => {
 	it('drops address metadata when address expression arithmetic leaves the known safe range', () => {
 		const arr = createMemoryDeclaration('arr', {
 			byteAddress: 16,
-			wordAlignedSize: 4,
+			allocationUnitCount: 4,
 			numberOfElements: 4,
 			elementWordSize: 4,
 		});
@@ -984,5 +985,173 @@ describe('tryResolveValueArgument', () => {
 	it('returns undefined for division by zero and non-identifier arguments', () => {
 		expect(tryResolveValueArgument(mockContext, parseArgument('sizeof(samples)/0'))).toBeUndefined();
 		expect(tryResolveValueArgument(mockContext, parseArgument('123'))).toBeUndefined();
+	});
+});
+
+describe('metadata query compatibility', () => {
+	const queries = ['count', 'sizeof', 'max', 'min'] as const;
+	const samples = createMemoryDeclaration('samples', {
+		type: 'int16u',
+		numberOfElements: 7,
+		elementWordSize: 2,
+		isUnsigned: true,
+	});
+	const main = createPlannedModule('main', { samples });
+	const source = createPlannedModule('audio/source', { samples });
+	const context = createTestContext(main, {
+		memoryPlan: createMemoryPlan([main, source]),
+		memoryAliases: new Map([
+			['audio', new Map([['exported', { targetModuleId: 'audio/source', targetMemoryId: 'samples' }]])],
+		]),
+	});
+
+	it('resolves one canonical target independently of the query kind', () => {
+		expect(resolveMetadataTarget({ scope: 'local', targetMemoryId: 'samples', dereferenceDepth: 0 }, context)).toEqual({
+			kind: 'memory',
+			memory: samples,
+		});
+		expect(
+			resolveMetadataTarget(
+				{ scope: 'intermodule', targetModuleId: 'audio', targetMemoryId: 'exported', dereferenceDepth: 0 },
+				context
+			)
+		).toEqual({
+			kind: 'memory',
+			memory: samples,
+		});
+		expect(
+			resolveMetadataTarget({ scope: 'local', targetMemoryId: 'missing', dereferenceDepth: 0 }, context)
+		).toBeUndefined();
+	});
+
+	it('collects pointer facts once in memory-before-local order', () => {
+		const pointer = createMemoryDeclaration('ptr', { pointeeBaseType: 'int8', pointerDepth: 1 });
+		const local = { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 1, pointeeElementCount: 3 } as const;
+		const pointerContext = createTestContext(createPlannedModule('main', { ptr: pointer }), {
+			pointerMetadata: { main: { ptr: { pointeeElementCount: 1 } } },
+			locals: { ptr: local, localOnly: local },
+		});
+		expect(
+			resolveMetadataTarget({ scope: 'local', targetMemoryId: 'ptr', dereferenceDepth: 1 }, pointerContext)
+		).toEqual({
+			kind: 'pointer',
+			pointers: [{ ...pointer, pointeeElementCount: 1 }, local],
+		});
+		expect(
+			resolveMetadataTarget({ scope: 'local', targetMemoryId: 'localOnly', dereferenceDepth: 1 }, pointerContext)
+		).toEqual({
+			kind: 'pointer',
+			pointers: [local],
+		});
+	});
+
+	it.each(['samples', 'this:samples', 'audio/source:samples', 'audio:exported'])(
+		'resolves all queries for %s through the same memory facts',
+		target => {
+			for (const [index, query] of queries.entries()) {
+				expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(${target})`), context)).toEqual({
+					value: [7, 2, 65535, 0][index],
+					isInteger: true,
+				});
+			}
+		}
+	);
+
+	it.each(['missing', 'missing:samples', 'audio/source:missing', '*missing'])(
+		'keeps %s unresolved for every query',
+		target => {
+			for (const query of queries) {
+				expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(${target})`), context)).toBeUndefined();
+			}
+		}
+	);
+
+	it.each([
+		['int8', 1, 127, -128, true],
+		['int8u', 1, 255, 0, true],
+		['int16', 2, 32767, -32768, true],
+		['int16u', 2, 65535, 0, true],
+		['int', 4, 2147483647, -2147483648, true],
+		['float', 4, 3.4028234663852886e38, -3.4028234663852886e38, false],
+		['float64', 8, Number.MAX_VALUE, -Number.MAX_VALUE, false],
+	] as const)('uses identical memory and local pointer metadata for %s', (baseType, size, max, min, isInteger) => {
+		const pointer = createMemoryDeclaration('memoryPtr', { pointeeBaseType: baseType, pointerDepth: 1 });
+		const pointerContext = createTestContext(createPlannedModule('main', { memoryPtr: pointer }), {
+			pointerMetadata: { main: { memoryPtr: { pointeeElementCount: 1 } } },
+			locals: { localPtr: { isInteger: true, pointeeBaseType: baseType, pointerDepth: 1, pointeeElementCount: 1 } },
+		});
+		for (const target of ['memoryPtr', 'localPtr']) {
+			for (const [index, query] of queries.entries()) {
+				expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*${target})`), pointerContext)).toEqual({
+					value: [1, size, max, min][index],
+					isInteger: index < 2 || isInteger,
+					...(index >= 2 && baseType === 'float64' ? { isFloat64: true } : {}),
+				});
+			}
+		}
+	});
+
+	it.each([0, 1, 8, undefined])('preserves count %s and one-star pointer-slot semantics for double pointers', count => {
+		const pointer = createMemoryDeclaration('ptr', { pointeeBaseType: 'float64', pointerDepth: 2 });
+		for (const storage of ['memory', 'local']) {
+			const pointerContext = createTestContext(
+				createPlannedModule('main', storage === 'memory' ? { ptr: pointer } : {}),
+				{
+					pointerMetadata: { main: { ptr: { pointeeElementCount: count } } },
+					locals:
+						storage === 'local'
+							? { ptr: { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 2, pointeeElementCount: count } }
+							: {},
+				}
+			);
+			for (const [index, query] of queries.entries()) {
+				const result = resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*ptr)`), pointerContext);
+				expect(result).toEqual(
+					index === 0 && count === undefined
+						? undefined
+						: { value: [count, 4, 2147483647, -2147483648][index], isInteger: true }
+				);
+			}
+		}
+	});
+
+	it('preserves memory precedence and the local known-count fallback', () => {
+		const pointer = createMemoryDeclaration('ptr', { pointeeBaseType: 'int8', pointerDepth: 1 });
+		const pointerContext = createTestContext(createPlannedModule('main', { ptr: pointer }), {
+			locals: { ptr: { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 1, pointeeElementCount: 3 } },
+		});
+		for (const [index, query] of queries.entries()) {
+			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*ptr)`), pointerContext)).toEqual({
+				value: [3, 1, 127, -128][index],
+				isInteger: true,
+			});
+		}
+		pointerContext.pointerMetadata = { main: { ptr: { pointeeElementCount: 0 } } };
+		expect(resolveMemoryExpressionOperand(classifyIdentifier('count(*ptr)'), pointerContext)).toEqual({
+			value: 0,
+			isInteger: true,
+		});
+	});
+
+	it('preserves nonpointer memory results and rejects scalar locals as pointee targets', () => {
+		const scalarContext = { ...context, locals: { scalar: { isInteger: true } } };
+		for (const query of queries) {
+			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*scalar)`), scalarContext)).toBeUndefined();
+			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(scalar)`), scalarContext)).toBeUndefined();
+			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*samples)`), scalarContext)).toEqual(
+				query === 'count' ? undefined : { value: 0, isInteger: query === 'sizeof' }
+			);
+		}
+	});
+
+	it('leaves currently unsupported second-star metadata queries unresolved', () => {
+		const pointerContext = createTestContext(
+			createPlannedModule('main', {
+				ptr: createMemoryDeclaration('ptr', { pointeeBaseType: 'float64', pointerDepth: 2 }),
+			})
+		);
+		for (const query of queries) {
+			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(**ptr)`), pointerContext)).toBeUndefined();
+		}
 	});
 });

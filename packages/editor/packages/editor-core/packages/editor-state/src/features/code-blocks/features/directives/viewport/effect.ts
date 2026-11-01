@@ -81,6 +81,7 @@ export default function viewportDirectiveEffect(store: StateManager<State>, even
 	store.subscribe('codeBlockRendering.codeBlocks', syncAllBlocks);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.code', syncSelectedCodeBlock);
 	store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', syncProgrammaticSelectedCodeBlock);
+	events.on('codeBlockLayoutsChanged', syncAllBlocks);
 	events.on('spriteSheetRerendered', recomputeAnchoredPositions);
 	events.on('viewportChanged', recomputeAnchoredPositions);
 	events.on('viewportResized', recomputeAnchoredPositions);

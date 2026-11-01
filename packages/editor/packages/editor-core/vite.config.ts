@@ -9,9 +9,9 @@ export default defineConfig(
 		fileName: () => 'index.js',
 		emptyOutDir: false,
 		external: [
+			'@8f4e/editor-palette',
 			'@8f4e/web-ui-render-projection',
 			'@8f4e/language-spec',
-			'@8f4e/test-runner',
 			'@8f4e/editor-state',
 			'@8f4e/editor-state/memory',
 			'@8f4e/sprite-generator',

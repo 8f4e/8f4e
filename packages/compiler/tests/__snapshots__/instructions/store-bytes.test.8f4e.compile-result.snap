@@ -674,6 +674,8 @@
     "storeBytesPopOrderAssertions": {
       "memory": {
         "dest": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 2,
           "byteAddress": 4,
           "default": {},
           "elementWordSize": 1,
@@ -683,14 +685,14 @@
           "numberOfElements": 8,
           "pointerDepth": 0,
           "type": "int8",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 2,
         },
       },
     },
     "storeBytesTruncationAssertions": {
       "memory": {
         "buf": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
           "byteAddress": 12,
           "default": {},
           "elementWordSize": 1,
@@ -700,14 +702,14 @@
           "numberOfElements": 4,
           "pointerDepth": 0,
           "type": "int8",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 1,
         },
       },
     },
     "storeBytesZeroCountAssertions": {
       "memory": {
         "dest": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": 42,
           "elementWordSize": 4,
@@ -718,8 +720,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
         },
       },
     },

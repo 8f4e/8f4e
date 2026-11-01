@@ -31,14 +31,6 @@ export function getPointerDepthFromMetadata(pointerMetadata: PointerMetadata | u
 	return pointerMetadata.pointerDepth;
 }
 
-export function getMemoryByteAddress(memoryItem: PlannedMemoryDeclaration): number {
-	return memoryItem.byteAddress;
-}
-
-export function getMemoryStringLastByteAddress(memoryItem: PlannedMemoryDeclaration): number {
-	return memoryItem.endByteAddress;
-}
-
 export function getElementCount(memoryItem: PlannedMemoryDeclaration): number {
 	return memoryItem.numberOfElements;
 }
@@ -61,12 +53,6 @@ export function getPointeeElementIsIntegerFromMetadata(pointerMetadata: PointerM
 	if (!pointerMetadata?.pointeeBaseType) return false;
 	if (getPointerDepthFromMetadata(pointerMetadata) > 1) return BASE_TYPE_METADATA.pointer.isInteger;
 	return getPointeeBaseTypeMetadata(pointerMetadata.pointeeBaseType).isInteger;
-}
-
-export function getPointeeValueKindFromMetadata(pointerMetadata: PointerMetadata | undefined): MemoryValueKind {
-	if (!pointerMetadata?.pointeeBaseType) return 'float32';
-	if (getPointeeElementIsIntegerFromMetadata(pointerMetadata)) return 'int32';
-	return getPointeeBaseTypeMetadata(pointerMetadata.pointeeBaseType).valueKind;
 }
 
 export function getDereferencedValueWordSizeFromMetadata(

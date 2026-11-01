@@ -26,8 +26,8 @@ export default function getMemoryValueChanges(
 			if (typeof defaultValue === 'object' && typeof previousDefaultValue === 'object') {
 				if (!compareObject(defaultValue, previousDefaultValue)) {
 					changes.push({
-						wordAlignedSize: memory.wordAlignedSize,
-						wordAlignedAddress: memory.wordAlignedAddress,
+						allocationUnitCount: memory.allocationUnitCount,
+						allocationUnitAddress: memory.allocationUnitAddress,
 						value: defaultValue,
 						isInteger: memory.isInteger,
 						isFloat64: memory.isFloat64,
@@ -37,8 +37,8 @@ export default function getMemoryValueChanges(
 			} else {
 				if (previousDefaultValue !== defaultValue) {
 					changes.push({
-						wordAlignedSize: memory.wordAlignedSize,
-						wordAlignedAddress: memory.wordAlignedAddress,
+						allocationUnitCount: memory.allocationUnitCount,
+						allocationUnitAddress: memory.allocationUnitAddress,
 						value: defaultValue,
 						isInteger: memory.isInteger,
 						isFloat64: memory.isFloat64,

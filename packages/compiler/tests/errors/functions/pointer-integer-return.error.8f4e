@@ -1,0 +1,6 @@
+8f4e/v1
+
+function pointerIntegerReturn
+param float* pointer
+push pointer
+functionEnd int

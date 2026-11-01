@@ -91,12 +91,12 @@
               "referenceKind": "constant",
               "scope": "local",
               "type": "identifier",
-              "value": "NEG_PI",
+              "value": "TAU",
             },
             {
               "isInteger": false,
               "type": "literal",
-              "value": -3.141592653589793,
+              "value": 6.283185307179586,
             },
           ],
           "instruction": "const",
@@ -131,25 +131,10 @@
               "referenceKind": "constant",
               "scope": "local",
               "type": "identifier",
-              "value": "PI",
+              "value": "TAU",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "constant",
-              "scope": "local",
-              "type": "identifier",
-              "value": "NEG_PI",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "sub",
         },
         {
           "arguments": [
@@ -160,10 +145,6 @@
               "value": "frequency",
             },
           ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
           "instruction": "mul",
         },
         {
@@ -243,13 +224,26 @@
         {
           "arguments": [
             {
-              "referenceKind": "constant",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
               "scope": "local",
+              "targetMemoryId": "phase",
               "type": "identifier",
-              "value": "NEG_PI",
+              "value": "*phase",
             },
           ],
           "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "TAU",
+            },
+          ],
+          "instruction": "sub",
         },
         {
           "arguments": [],
@@ -456,12 +450,21 @@
         {
           "arguments": [
             {
-              "isInteger": false,
-              "type": "literal",
-              "value": -3.141592653589793,
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "phase",
             },
           ],
-          "instruction": "assertEqual",
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
         },
         {
           "arguments": [
@@ -479,10 +482,343 @@
             {
               "isInteger": false,
               "type": "literal",
-              "value": -3.141592653589793,
+              "value": -1.570796326794896,
+            },
+          ],
+          "instruction": "sub",
+        },
+        {
+          "arguments": [],
+          "instruction": "abs",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0.000001,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "lessOrEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "phase",
+              "type": "identifier",
+              "value": "&phase",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 3.141592653589793,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "advancePhase",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "phase",
+              "type": "identifier",
+              "value": "&phase",
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 48000,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 3.141592653589793,
             },
           ],
           "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "tuningAssertions": {
+      "id": "tuningAssertions",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "tuningAssertions",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "phase",
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "float",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "float",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "wraps",
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 48000,
+            },
+          ],
+          "instruction": "loop",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "previous",
+              "type": "identifier",
+              "value": "&previous",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "phase",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "advancePhase",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "phase",
+              "type": "identifier",
+              "value": "&phase",
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 440,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 48000,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "lessThan",
+        },
+        {
+          "arguments": [],
+          "instruction": "if",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "wraps",
+              "type": "identifier",
+              "value": "&wraps",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "wraps",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "add",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [],
+          "instruction": "ifEnd",
+        },
+        {
+          "arguments": [],
+          "instruction": "loopEnd",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "wraps",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 440,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "phase",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "abs",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0.01,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "lessOrEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
         },
         {
           "arguments": [],
@@ -496,6 +832,8 @@
     "advancePhaseAssertions": {
       "memory": {
         "phase": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
@@ -506,8 +844,50 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
+        },
+      },
+    },
+    "tuningAssertions": {
+      "memory": {
+        "phase": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
+          "byteAddress": 8,
+          "default": 0,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "phase",
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "float",
+        },
+        "previous": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
+          "byteAddress": 12,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": "previous",
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "float",
+        },
+        "wraps": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
+          "byteAddress": 16,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": "wraps",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
         },
       },
     },
@@ -518,8 +898,9 @@
     ],
     "compiledModules": [
       "advancePhaseAssertions",
+      "tuningAssertions",
     ],
-    "requiredMemoryBytes": 8,
+    "requiredMemoryBytes": 20,
     "wasmExports": [
       "initDefaults",
       "main",

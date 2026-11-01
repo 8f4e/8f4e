@@ -86,6 +86,15 @@ push 41
 call increment
 functionEnd int
 
+function mix
+param int left
+param float right
+push left
+castToFloat
+push right
+add
+functionEnd float
+
 constants env
 ; @pos -75 17
 ; @favorite
@@ -97,7 +106,7 @@ constantsEnd
 
 note
 ; @pos 1 1
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Function calls are checked
 through executable source
@@ -183,6 +192,13 @@ assertEqual 10
 push 10
 call double
 assertEqual 20
+moduleEnd
+module inlineCallArguments
+; Inline call arguments should
+; be pushed in source order
+; before invoking the function.
+call mix 2 1.5
+assertEqual 3.5
 moduleEnd
 module callFloat64RoundTrip
 ; @pos 49 100

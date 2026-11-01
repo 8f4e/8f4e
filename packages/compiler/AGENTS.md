@@ -1,111 +1,47 @@
-# Repository Guidelines
+# Compiler Package Guidelines
 
-## Package Scope & Layout
-- Path: `packages/compiler`; source in `src/`, output in `dist/` (ESM).
-- Consumed via alias `@8f4e/compiler`.
-- Compiles custom assembly language into WebAssembly bytecode.
-- Supports modules (stateful, with memory) and pure functions (stateless, stack-only).
-- Shared language contracts live in the nested standalone subpackage `@8f4e/language-spec` (`packages/compiler/packages/language-spec`).
-- Recursive project traversal, AST parsing, symbol isolation, and deterministic flattening live in
-  `@8f4e/program-composer` (`packages/compiler/packages/program-composer`).
-- Global semantic analysis, allocation, and code generation live in `@8f4e/sub-program`
-  (`packages/compiler/packages/sub-program`); its exclusively owned passes live under that package's `packages/`
-  directory.
-- Include-only source resolution lives in the nested standalone subpackage `@8f4e/include-resolver` (`packages/compiler/packages/include-resolver`).
-- Syntax parsing lives in the sub-program-owned package `@8f4e/tokenizer` (`packages/compiler/packages/sub-program/packages/tokenizer`).
-- Project preparsing lives in the nested standalone subpackage `@8f4e/project-preparser` (`packages/compiler/packages/project-preparser`).
-- `@8f4e/language-spec` solely owns `ProjectObjectModel`. The public compiler project API is
-  `parseProjectSource(text)` plus asynchronous `compileProject(project, options)`; internal stages must not require
-  callers to prepare a parallel whole-project input.
-- `ProjectObjectModel.groups` recursively owns nested `ProjectObjectModel` values. `compileProject` composes all groups
-  before global allocation and code generation. Nested symbols are compiler-qualified and child modules execute before
-  their parent modules for the same entry.
-- WebAssembly body generation and final binary emission live in `@8f4e/wasm-codegen` (`packages/compiler/packages/wasm-codegen`).
-- Standard library sources live in the nested source package `@8f4e/stdlib` (`packages/compiler/packages/stdlib`).
-  It has no build or generation step; include IDs follow paths under `std/` without the `.8f4e` extension.
+This file extends the repository-level guidance for `packages/compiler`.
 
-## Build, Test, Dev
-- From root: `npx nx run @8f4e/compiler:build|test|typecheck`.
-- From package directory: use `npx nx run @8f4e/compiler:<target>` (e.g., `npx nx run @8f4e/compiler:dev`).
-- JS output is bundled with Vite; declarations are emitted separately with `tsc --emitDeclarationOnly`.
-- Artifacts in `dist/` must exist before root Vite build when APIs change.
+## Scope and Architecture
 
-## Coding Style
-- TypeScript (strict). Use Biome for linting and import organization.
-- Use Biome as the fixer (`npx biome check --write <files>`);
+- `@8f4e/compiler` is the public facade. Use `parseProjectSource(text)` and asynchronous
+  `compileProject(project, options)` rather than exposing internal pipeline inputs.
+- `@8f4e/language-spec` owns shared contracts, `ProjectObjectModel`, and semantic compiler errors.
+- `@8f4e/project-preparser` parses project source and resolves included functions.
+- `@8f4e/program-composer` parses blocks, traverses recursive groups, qualifies symbols, and establishes deterministic
+  module order. Child modules execute before their parent modules for the same entry.
+- `@8f4e/tokenizer` owns syntax parsing and validation.
+- `@8f4e/sub-program` orchestrates semantic resolution, memory planning, stack analysis, and compilation.
+- `@8f4e/wasm-codegen` generates function and module bodies and emits the final WebAssembly binary.
+- `@8f4e/stdlib` contains source-only standard-library functions. Include IDs are paths under `std/` without `.8f4e`.
+
+## Commands and Style
+
+- Keep compiler stage dependencies external in library bundles so consumers share their implementations and error classes.
+- Use Nx from the repository root: `npx nx run @8f4e/compiler:build|test|typecheck|lint`.
+- TypeScript is strict. Use Biome for formatting, linting, and import organization.
+- Update intentional snapshots with `npx nx run @8f4e/compiler:test --update`.
 
 ## Testing
-- Vitest (via Nx). Keep narrow unit tests colocated with the source under test using `*.test.ts` or `__tests__/`.
-- Put broader compiler behavior, multi-module, integration-style, and generic regression coverage in `tests/`.
-- Syntax/parser in-source tests live with `@8f4e/tokenizer`; compiler tests should focus on semantic and codegen behavior.
-- Assertion execution and failure reporting use `@8f4e/test-runner`, shared with the CLI. Fixture adapters own compile
-  options and snapshot serialization; runner integration coverage lives in `tests/testRunner.test.ts`.
-- To update snapshots after intentional changes, use `npx nx run @8f4e/compiler:test --update`.
 
-### Examples
-
-#### Example 1: Simple arithmetic helper
-```
-function average
-  param int a
-  param int b
-  push a
-  push b
-  add
-  push 2
-  div
-functionEnd int
-```
-
-#### Example 2: Using local variables
-```
-function clampMin
-  param int value
-  param int minValue
-  local int result
-  
-  push value
-  localSet result
-
-  push value
-  push minValue
-  lessThan
-  if
-    push minValue
-    localSet result
-  ifEnd
-  
-  push result
-functionEnd int
-```
+- Default to extending the relevant `tests/**/*.test.8f4e` fixture for language behavior, compiler regressions,
+  semantic behavior, and generated-program behavior. These fixtures run native assertions and capture compile-result
+  snapshots.
+- Use `tests/errors/**/*.error.8f4e` for compilation failures and diagnostic snapshots.
+- Use TypeScript tests only when coverage requires a programmatic API, JavaScript host callback, cache or mutation
+  behavior, generated stress input, fixture infrastructure, or direct inspection of an internal stage.
+- Keep narrow stage unit tests beside the owning source. Syntax and parser tests belong to `@8f4e/tokenizer`.
 
 ## Error Domains
 
-The compiler uses two separate error modules. **Always choose based on detection phase**:
+Choose errors by detection phase:
 
-| Phase | Module | Class / Function | When to use |
-|-------|--------|-----------------|-------------|
-| Syntax | `@8f4e/tokenizer` | `SyntaxRulesError` / `SyntaxErrorCode` | Error detectable from token/argument shape alone, before semantic context |
-| Semantic | `src/compilerError.ts` | `getError` / `ErrorCode` | Error requires symbol resolution, scope, stack state, type checking, or compiler state |
+- Use `SyntaxRulesError` and `SyntaxErrorCode` from `@8f4e/tokenizer` when token or argument shape is sufficient.
+- Use `getError` and `ErrorCode` from `@8f4e/language-spec` when detection needs symbols, scope, memory, stack, types,
+  or other compiler state.
+- Default messages belong in the central registry. Add a throw-site message only for useful dynamic context.
 
-**Syntax error examples**: malformed literal, missing required argument, invalid pointer-depth, invalid string encoding, mixed byte-literal tokens.
+## Internal Contracts
 
-**Compiler error examples**: undeclared identifier, type mismatch, stack mismatch, illegal memory access in pure function, duplicate declarations.
-
-**Default messages** are centrally defined in each module's registry. Throw sites should omit the `message` argument unless dynamic context adds value (e.g. `INVALID_STRING_LITERAL` includes the bad escape sequence).
-
-## Internal Stage Contract Rule
-
-For compiler internals, do not re-validate argument arity or argument shape at every phase once those properties were already guaranteed earlier in the pipeline.
-
-Use this rule:
-
-- Tokenizer owns syntax validation, including instruction arity and raw argument shape.
-- Semantic normalization may transform AST lines into narrower internal forms.
-- Downstream compiler phases should trust validated and normalized internal data.
-- Internal transformation code should be verified with tests and static types, not repeated runtime guards.
-
-This means:
-
-- Do **not** add defensive runtime checks for argument-shape states that can only happen if compiler-owned normalization/manipulation code is wrong.
-- Do **not** compensate for broad internal types by repeatedly checking the same invariant in semantic/codegen steps.
+Tokenizer validation and semantic normalization establish internal invariants. Downstream stages should trust those
+invariants and use static types and tests instead of repeating defensive argument-shape checks.

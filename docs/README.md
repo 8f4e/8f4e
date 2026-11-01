@@ -86,9 +86,38 @@ Because all addresses are known at compile time, the compiler can inline them di
 
 The code is organized into modules, each containing variable declarations and a sequence of commands.
 
-The execution order of modules is determined by their dependencies. If a module’s output is needed as input for others, it is executed first.
+Within a project unit and execution entry, modules execute in their source/object-model order. A memory reference does not reorder execution: if a module reads a producer's memory, the producer is not moved earlier. Child groups are the exception to the source order within a project unit: a group's modules execute before the parent project's modules for the same entry, and groups are traversed in their declared order. See the [compiler documentation](../packages/compiler/README.md) for the recursive composition details.
 
+Execution order is separate from memory layout. Modules are allocated in alphabetical order by qualified id, but address order does not choose which module executes first.
+
+For example, this complete project puts the consumer before the producer in the `main` entry:
+
+```8f4e
+8f4e/v1
+
+entry main
+module zConsumer
+int result
+
+push &result
+push &aProducer:value
+load
+store
+moduleEnd
+
+module aProducer
+int value
+
+push &value
+push 7
+store
+moduleEnd
+entryEnd
 ```
+
+The producer's `value` starts at zero. After `initDefaults()` and one `main()` call, `zConsumer:result` is `0`: the consumer runs first. After a second `main()` call, it is `7`, because the producer's first call stored `7`. `aProducer` is allocated before `zConsumer` because its qualified id sorts first, but that memory order does not change execution order.
+
+```8f4e
 module foo
 
 int a 10

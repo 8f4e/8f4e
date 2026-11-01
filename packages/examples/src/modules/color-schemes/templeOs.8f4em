@@ -1,37 +1,18 @@
 8f4e/v1
 
-entry main
-module templeOS
+note templeOS
 ; @public
-; @pos -41 76
-; @tab 46
-; @config color.fill.moduleBackground	#ffffff
-; @config color.fill.background	#55ffff
-; @config color.fill.backgroundDots	#99cccc
-; @config color.fill.backgroundDots2	#669999
-; @config color.fill.highlightedCodeLine	#ffff55
-; @config color.fill.moduleBackgroundDragged	#ffffff
-; @config color.text.instruction	#0000cc
-; @config color.text.code	#000000
-; @config color.text.lineNumber	#555555
-; @config color.text.codeComment	#aaaaaa
-; @config color.text.numbers	#990099
-; @config color.text.debugInfo	#aaaaaa
-; @config color.fill.debugInfoBackground	#ffff55
-; @config color.fill.wire	rgba(0,0,0,0.6)
-; @config color.fill.wireHighlighted	#000000
-; @config color.fill.menuItemBackground	#0000aa
-; @config color.fill.menuItemBackgroundHighlighted	#ffffff
-; @config color.fill.dialogBackground	#0000aa
-; @config color.fill.dialogDimmer	#000000
-; @config color.fill.codeBlockHighlightLevel1	#eeeeee
-; @config color.fill.codeBlockHighlightLevel2	#dddddd
-; @config color.fill.codeBlockHighlightLevel3	#cccccc
-; @config color.fill.trace	#55ff55
-; @config color.fill.scanLine	#55ffff
-; @config color.icons.outputConnectorBackground	#ffff55
-; @config color.icons.outputConnector	#000000
-; @config color.icons.inputConnectorBackground	#ffff55
-; @config color.icons.inputConnector	#000000
-moduleEnd
-entryEnd
+; @config color.canvas #55ffff
+; @config color.surface #ffffff
+; @config color.ink #000000
+; @config color.primary #0000cc
+; @config color.secondary #990099
+; @config color.positive #55ff55
+; @config color.warning #ffff55
+; @config color.negative #aa0000
+; @config color.muted #555555
+; @config color.stroke rgba(0,0,0,0.6)
+; @config color.tertiary #aaaaaa
+; @config color.highlight rgba(255,255,255,0.45)
+; @config color.detail #ffffff
+noteEnd

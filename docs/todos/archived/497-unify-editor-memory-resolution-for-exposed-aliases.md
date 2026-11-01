@@ -3,7 +3,7 @@ title: 'TODO: Unify editor memory resolution for exposed aliases'
 priority: Medium
 effort: 1-2d
 created: 2026-10-14
-issue: https://github.com/andorthehood/8f4e/issues/1017
+issue: https://github.com/8f4e/8f4e/issues/1017
 status: Completed
 completed: 2026-10-14
 ---

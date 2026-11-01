@@ -31,7 +31,7 @@ export function getModuleAddressRange(context: Pick<CompilationContext, 'current
 	return {
 		source: 'module-start',
 		byteAddress: plannedModule.byteAddress,
-		safeByteLength: plannedModule.wordAlignedByteLength,
+		safeByteLength: plannedModule.allocatedByteLength,
 		moduleId: plannedModule.id,
 	};
 }

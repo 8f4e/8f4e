@@ -6,6 +6,15 @@ const fixtureUrls = import.meta.glob<string>('../../../compiler/tests/**/*.test.
 	import: 'default',
 	eager: true,
 });
+const previewUrls = import.meta.glob<string>('../project-previews/compiler-test.gif', {
+	query: '?url&no-inline',
+	import: 'default',
+	eager: true,
+});
+const compilerTestPreviewUrl = previewUrls['../project-previews/compiler-test.gif'];
+if (!compilerTestPreviewUrl) {
+	throw new Error('Compiler test preview not found');
+}
 
 function humanize(name: string): string {
 	const words = name.replaceAll('-', ' ');
@@ -32,7 +41,8 @@ for (const [file, projectUrl] of Object.entries(fixtureUrls).sort(([left], [righ
 		title: humanize(path.slice(path.lastIndexOf('/') + 1).replace(/\.test\.8f4e$/, '')),
 		description: path,
 		projectUrl,
-		githubUrl: `https://github.com/andorthehood/8f4e/blob/main/packages/compiler/tests/${path}`,
+		previewUrl: compilerTestPreviewUrl,
+		githubUrl: `https://github.com/8f4e/8f4e/blob/main/packages/compiler/tests/${path}`,
 	});
 }
 

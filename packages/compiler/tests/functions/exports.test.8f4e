@@ -20,6 +20,36 @@ push b
 add
 functionEnd int
 
+function constructor
+#export constructorAnswer
+push 7
+functionEnd int
+
+function toString
+#export stringAnswer
+push 8
+functionEnd int
+
+function hasOwnProperty
+#export ownPropertyAnswer
+push 9
+functionEnd int
+
+function __proto__
+#export prototypeAnswer
+push 10
+functionEnd int
+
+function sumObjectPropertyFunctions
+call constructor
+call toString
+add
+call hasOwnProperty
+add
+call __proto__
+add
+functionEnd int
+
 constants env
 ; @pos -59 20
 ; @favorite
@@ -31,7 +61,7 @@ constantsEnd
 
 note
 ; @pos 3 1
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Export directives are captured
 in compile-result snapshots
@@ -52,5 +82,17 @@ push 4
 push 5
 call multiplyExportedByOwnName
 assertEqual 20
+
+; Valid source names must survive registration and registry merging.
+call constructor
+assertEqual 7
+call toString
+assertEqual 8
+call hasOwnProperty
+assertEqual 9
+call __proto__
+assertEqual 10
+call sumObjectPropertyFunctions
+assertEqual 34
 moduleEnd
 entryEnd

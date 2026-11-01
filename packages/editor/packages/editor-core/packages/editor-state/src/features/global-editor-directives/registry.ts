@@ -1,30 +1,24 @@
 import type {
-	CodeBlockType,
+	CodeBlockGraphicData,
 	CodeError,
 	GlobalEditorDirectiveContext,
-	GlobalEditorDirectivePlugin,
+	GlobalEditorDirectiveDefinition,
 	GlobalEditorDirectiveResolutionResult,
-	ParsedDirectiveRecord,
 	ParsedGlobalEditorDirective,
 	ResolvedGlobalEditorDirectives,
 } from '@8f4e/editor-state-types';
-import { createProjectModuleId, type ProjectGroupPath } from '@8f4e/language-spec';
+import { createProjectModuleId } from '@8f4e/language-spec';
 import configDirective from './config/plugin';
+import modeDirective from './mode/plugin';
 import { parseGlobalEditorDirectives } from './utils';
 
-export const globalEditorDirectivePlugins: GlobalEditorDirectivePlugin[] = [configDirective];
+export const globalEditorDirectiveDefinitions: GlobalEditorDirectiveDefinition[] = [configDirective, modeDirective];
 
 export function resolveGlobalEditorDirectives(
-	codeBlocks: {
-		parsedDirectives: ParsedDirectiveRecord[];
-		projectPath: ProjectGroupPath;
-		creationIndex?: number;
-		name?: string;
-		blockType?: CodeBlockType;
-	}[],
-	plugins: GlobalEditorDirectivePlugin[] = globalEditorDirectivePlugins
+	codeBlocks: Pick<CodeBlockGraphicData, 'parsedDirectives' | 'projectPath' | 'creationIndex' | 'name' | 'blockType'>[],
+	definitions: GlobalEditorDirectiveDefinition[] = globalEditorDirectiveDefinitions
 ): GlobalEditorDirectiveResolutionResult {
-	const pluginMap = new Map(plugins.map(plugin => [plugin.name, plugin]));
+	const definitionMap = new Map(definitions.map(definition => [definition.name, definition]));
 	const draft: {
 		resolved: ResolvedGlobalEditorDirectives;
 		errors: CodeError[];
@@ -33,19 +27,17 @@ export function resolveGlobalEditorDirectives(
 		errors: [],
 	};
 
-	for (let blockIndex = 0; blockIndex < codeBlocks.length; blockIndex++) {
-		const block = codeBlocks[blockIndex];
-		const directives: ParsedGlobalEditorDirective[] = parseGlobalEditorDirectives(block.parsedDirectives, plugins);
-		const codeBlockId = block.creationIndex ?? blockIndex;
+	for (const block of codeBlocks) {
+		const directives: ParsedGlobalEditorDirective[] = parseGlobalEditorDirectives(block.parsedDirectives, definitions);
 		const context: GlobalEditorDirectiveContext = {
-			codeBlockId,
+			codeBlockId: block.creationIndex,
 			moduleId:
 				block.blockType === 'module' && block.name ? createProjectModuleId(block.projectPath, block.name) : undefined,
 			blockType: block.blockType,
 		};
 
 		for (const directive of directives) {
-			pluginMap.get(directive.name)?.apply?.(directive, draft, context);
+			definitionMap.get(directive.name)?.apply?.(directive, draft, context);
 		}
 	}
 

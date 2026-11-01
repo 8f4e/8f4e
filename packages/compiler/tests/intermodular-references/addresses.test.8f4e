@@ -11,7 +11,7 @@ constantsEnd
 
 note
 ; @pos 4 4
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Intermodule address references
 should resolve to usable
@@ -169,5 +169,49 @@ assertEqual 5
 
 push *end
 assertEqual 8
+moduleEnd
+module zzFloat64First
+; Leading padding must not move an end address into the next declaration.
+int prefix 0
+float64 padded 1.25f64
+int next 99
+int alignment 0
+float64 aligned 1.25f64
+int alignedNext 99
+
+push padded&
+load
+assertEqual 1072955392
+push aligned&
+load
+assertEqual 1072955392
+moduleEnd
+module zzFloat64Second
+float64[] padded 2 1.25f64 1.25f64
+int next 99
+int alignment 0
+float64[] aligned 2 1.25f64 1.25f64
+int alignedNext 99
+
+push padded&
+load
+assertEqual 1072955392
+push aligned&
+load
+assertEqual 1072955392
+moduleEnd
+module zzFloat64Third
+push zzFloat64First:padded&
+load
+assertEqual 1072955392
+push zzFloat64First:aligned&
+load
+assertEqual 1072955392
+push zzFloat64Second:padded&
+load
+assertEqual 1072955392
+push zzFloat64Second:aligned&
+load
+assertEqual 1072955392
 moduleEnd
 entryEnd

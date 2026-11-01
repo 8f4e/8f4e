@@ -1,7 +1,10 @@
 import { WASM_F64_GT } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest, createStackFacts } from '../testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	createStackFacts,
+} from '../../tests/testUtils';
 import greaterThan from './greaterThan';
 
 describe('greaterThan instruction compiler', () => {

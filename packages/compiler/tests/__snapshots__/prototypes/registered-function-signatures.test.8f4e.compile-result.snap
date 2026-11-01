@@ -295,6 +295,8 @@
     "floatCaller": {
       "memory": {
         "value": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 2.5,
           "elementWordSize": 4,
@@ -306,14 +308,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },
     "integerCaller": {
       "memory": {
         "value": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 7,
           "elementWordSize": 4,
@@ -325,8 +327,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
       },
     },

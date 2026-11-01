@@ -26,3 +26,4 @@ Each ADR follows this structure:
 - [ADR-007: Prefer Off-Main-Thread Runtime Execution](007-prefer-off-main-thread-runtime-execution.md) - 2026-03-16
 - [ADR-008: Provide a Syntax-Only Compiler Entry Point for Tooling](008-provide-a-syntax-only-compiler-entry-point-for-tooling.md) - 2026-03-16
 - [ADR-009: Resolve Constants Independently From Memory](009-resolve-constants-independently-from-memory.md) - 2026-10-14
+- [ADR-010: Reuse a Host-Owned Audio Context Across Editor Instances](010-reuse-host-owned-audio-context-across-editors.md) - 2026-10-21

@@ -2819,6 +2819,8 @@
     "mapCharLiteralAssertions": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
@@ -2828,14 +2830,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },
     "mapDefaultAssertions": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 0,
           "elementWordSize": 4,
@@ -2845,14 +2847,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
       },
     },
     "mapFirstMatchAssertions": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
           "byteAddress": 12,
           "default": 1,
           "elementWordSize": 4,
@@ -2863,14 +2865,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 1,
         },
       },
     },
     "mapFloatFloatAssertions": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": 0,
           "elementWordSize": 4,
@@ -2880,14 +2882,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
         },
       },
     },
     "mapImplicitDefaultAssertions": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 1,
           "byteAddress": 20,
           "default": 0,
           "elementWordSize": 4,
@@ -2897,14 +2899,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 5,
-          "wordAlignedSize": 1,
         },
       },
     },
     "mapImplicitFloatKeyAssertions": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 6,
+          "allocationUnitCount": 1,
           "byteAddress": 24,
           "default": 0,
           "elementWordSize": 4,
@@ -2914,14 +2916,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 6,
-          "wordAlignedSize": 1,
         },
       },
     },
     "mapImplicitKeyAssertions": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 7,
+          "allocationUnitCount": 1,
           "byteAddress": 28,
           "default": 0,
           "elementWordSize": 4,
@@ -2931,14 +2933,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 7,
-          "wordAlignedSize": 1,
         },
       },
     },
     "mapImplicitKeyMixedRowsAssertions": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 8,
+          "allocationUnitCount": 1,
           "byteAddress": 32,
           "default": 0,
           "elementWordSize": 4,
@@ -2948,14 +2950,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 8,
-          "wordAlignedSize": 1,
         },
       },
     },
     "mapIntFloatAssertions": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 9,
+          "allocationUnitCount": 1,
           "byteAddress": 36,
           "default": 0,
           "elementWordSize": 4,
@@ -2965,14 +2967,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 9,
-          "wordAlignedSize": 1,
         },
       },
     },
     "mapIntIntAssertions": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 10,
+          "allocationUnitCount": 1,
           "byteAddress": 40,
           "default": 0,
           "elementWordSize": 4,
@@ -2982,14 +2984,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 10,
-          "wordAlignedSize": 1,
         },
       },
     },
     "mapZeroRowsAssertions": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 11,
+          "allocationUnitCount": 1,
           "byteAddress": 44,
           "default": 5,
           "elementWordSize": 4,
@@ -3000,8 +3002,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 11,
-          "wordAlignedSize": 1,
         },
       },
     },

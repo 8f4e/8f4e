@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-	createDirectivePlugin,
-	normalizeEditorDirectiveRecords,
-	parseDirectiveComments,
+	matchEditorDirectives,
 	parseDirectiveLineRecords,
-	parseEditorDirectives,
+	parseDirectiveRecords,
 	serializeDirectiveComments,
 } from './utils';
 
@@ -88,42 +86,16 @@ describe('parseDirectiveLineRecords', () => {
 	});
 
 	it('parses multiple full-line directives from one comment line', () => {
-		expect(parseDirectiveLineRecords('; @pos 1 2 @favorite')).toEqual([
+		expect(parseDirectiveLineRecords('; @pos 1 2 @testDirective')).toEqual([
 			{ prefix: '@', name: 'pos', args: ['1', '2'], isTrailing: false },
-			{ prefix: '@', name: 'favorite', args: [], isTrailing: false },
+			{ prefix: '@', name: 'testDirective', args: [], isTrailing: false },
 		]);
 	});
 
 	it('parses multiple trailing directives from one inline comment', () => {
-		expect(parseDirectiveLineRecords('int foo 1 ; @watch value @favorite')).toEqual([
+		expect(parseDirectiveLineRecords('int foo 1 ; @watch value @testDirective')).toEqual([
 			{ prefix: '@', name: 'watch', args: ['value'], isTrailing: true },
-			{ prefix: '@', name: 'favorite', args: [], isTrailing: true },
-		]);
-	});
-});
-
-describe('parseDirectiveComments', () => {
-	it('returns all full-line editor directives in source order', () => {
-		expect(parseDirectiveComments('; @pos 1 2 @favorite')).toEqual([
-			{ name: 'pos', args: ['1', '2'] },
-			{ name: 'favorite', args: [] },
-		]);
-	});
-});
-
-describe('parseEditorDirectives', () => {
-	it('appends dash continuation comment arguments to the previous directive', () => {
-		const configPlugin = createDirectivePlugin('config', () => undefined);
-
-		expect(
-			parseEditorDirectives(['; @config', '; - webUI.overlay.target', '; - frame:buffer'], [configPlugin])
-		).toEqual([
-			{
-				name: 'config',
-				rawRow: 0,
-				args: ['webUI.overlay.target', 'frame:buffer'],
-				sourceLine: '; @config',
-			},
+			{ prefix: '@', name: 'testDirective', args: [], isTrailing: true },
 		]);
 	});
 });
@@ -133,44 +105,44 @@ describe('serializeDirectiveComments', () => {
 		expect(
 			serializeDirectiveComments([
 				{ name: 'group', args: ['audio', 'nonstick'] },
-				{ name: 'favorite', args: [] },
+				{ name: 'testDirective', args: [] },
 			])
-		).toBe('; @group audio nonstick @favorite');
+		).toBe('; @group audio nonstick @testDirective');
 	});
 });
 
-describe('normalizeEditorDirectiveRecords', () => {
-	const watchPlugin = createDirectivePlugin('watch', () => undefined, { aliases: ['w'], allowTrailingComment: true });
-	const plotPlugin = createDirectivePlugin('plot', () => undefined);
+describe('matchEditorDirectives', () => {
+	const definitions = [{ name: 'watch', aliases: ['w'] }, { name: 'plot' }];
 
-	it('normalizes alias to canonical plugin name', () => {
-		const records = [{ prefix: '@' as const, name: 'w', args: ['value'], rawRow: 0, isTrailing: false }];
-		expect(normalizeEditorDirectiveRecords(records, [watchPlugin])).toEqual([
-			{ name: 'watch', rawRow: 0, args: ['value'], sourceLine: undefined },
+	it('normalizes aliases without changing cached records or losing source context', () => {
+		const records = parseDirectiveRecords(['int value 1 ; @w']);
+		expect(matchEditorDirectives(records, definitions)).toEqual([{ ...records[0], name: 'watch' }]);
+		expect(records[0].name).toBe('w');
+		expect(records[0].isTrailing).toBe(true);
+	});
+
+	it.each(['; @plot buffer 4', 'push 1 ; @plot buffer 4'])(
+		'accepts standalone and trailing directives uniformly: %s',
+		line => {
+			const records = parseDirectiveRecords([line]);
+			expect(matchEditorDirectives(records, definitions)).toEqual(records);
+		}
+	);
+
+	it('preserves order, duplicates, chained directives, and continuation arguments', () => {
+		const records = parseDirectiveRecords(['; @w first @plot buffer', '; - 4', 'int value 0 ; @w @w second']);
+		expect(matchEditorDirectives(records, definitions)).toEqual([
+			{ ...records[0], name: 'watch' },
+			{ ...records[1], args: ['buffer', '4'] },
+			{ ...records[2], name: 'watch' },
+			{ ...records[3], name: 'watch' },
 		]);
 	});
 
-	it('filters out unknown directive names', () => {
-		const records = [{ prefix: '@' as const, name: 'unknown', args: [], rawRow: 0, isTrailing: false }];
-		expect(normalizeEditorDirectiveRecords(records, [watchPlugin])).toEqual([]);
-	});
-
-	it('allows trailing directives for plugins with allowTrailingComment', () => {
-		const records = [{ prefix: '@' as const, name: 'watch', args: [], rawRow: 1, isTrailing: true }];
-		expect(normalizeEditorDirectiveRecords(records, [watchPlugin])).toEqual([
-			{ name: 'watch', rawRow: 1, args: [], sourceLine: undefined },
-		]);
-	});
-
-	it('blocks trailing directives for plugins without allowTrailingComment', () => {
-		const records = [{ prefix: '@' as const, name: 'plot', args: ['buf'], rawRow: 2, isTrailing: true }];
-		expect(normalizeEditorDirectiveRecords(records, [plotPlugin])).toEqual([]);
-	});
-
-	it('allows non-trailing directives for plugins without allowTrailingComment', () => {
-		const records = [{ prefix: '@' as const, name: 'plot', args: ['buf'], rawRow: 2, isTrailing: false }];
-		expect(normalizeEditorDirectiveRecords(records, [plotPlugin])).toEqual([
-			{ name: 'plot', rawRow: 2, args: ['buf'], sourceLine: undefined },
-		]);
+	it('leaves unknown records available for features installed later', () => {
+		const records = parseDirectiveRecords(['; @future setting @w value']);
+		expect(matchEditorDirectives(records, definitions)).toEqual([{ ...records[1], name: 'watch' }]);
+		expect(matchEditorDirectives(records, [{ name: 'future' }])).toEqual([records[0]]);
+		expect(records).toHaveLength(2);
 	});
 });

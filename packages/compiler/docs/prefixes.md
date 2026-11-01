@@ -5,9 +5,9 @@
 ## Memory reference
 
 - `&name` pushes the start address (byte address) of the memory item.
-- `name&` pushes the start address (byte address) of the last word-aligned chunk covering the memory item (i.e., the base address of the final 4-byte word of the allocation).
+- `name&` pushes the start address (byte address) of the final 4-byte allocation unit covering the memory item.
 - `&this` pushes the start byte address of the current module.
-- `this&` pushes the end-word base byte address of the current module.
+- `this&` pushes the byte address of the current module's final allocation unit.
 
 These work in both `push` instructions and declaration initializers (e.g., `int* ptr &buffer` or `int* endPtr buffer&`) with the same address semantics.
 
@@ -47,8 +47,8 @@ push **pptr   ; loads target
 ## Element count
 
 - `count(name)` pushes the element count for a buffer (or 1 for scalars).
-- `count(*name)` pushes the known element count of the value pointed to by a pointer-typed memory item when the pointer is initialized from a tracked memory start address.
-- If the pointer has no tracked pointee element count, `count(*name)` resolves to `1`. On a non-pointer memory identifier, current compiler behavior resolves `count(*name)` to `0`.
+- `count(*name)` pushes the known element count of the value pointed to by a pointer-typed memory item when the pointer is initialized from a tracked memory start address. Known counts of zero and one are preserved, including through group initializers.
+- If the pointer has no tracked pointee element count, `count(*name)` raises `POINTEE_ELEMENT_COUNT_UNKNOWN`. An end-address initializer does not establish a count; pass the length explicitly instead.
 - Metadata queries currently support one leading `*`. For double pointers, `count(*name)` describes the intermediate pointer slot. `count(**name)` is not supported yet.
 
 Example:
@@ -249,7 +249,7 @@ All of the address and metadata forms above have intermodular counterparts that 
 ### Module base address
 
 - `&module:` — start byte address of the module's memory allocation.
-- `module:&` — end-word base byte address of the module's memory allocation (base address of the last 4-byte word in the allocation).
+- `module:&` — byte address of the final allocation unit in the module's memory allocation.
 
 ```
 module targetModule
@@ -261,7 +261,7 @@ moduleEnd
 ### Named memory item address
 
 - `&module:name` — start byte address of a named memory item in another module.
-- `module:name&` — end-word base byte address of a named memory item in another module.
+- `module:name&` — byte address of the final allocation unit of a named memory item in another module.
 
 ```
 module targetModule

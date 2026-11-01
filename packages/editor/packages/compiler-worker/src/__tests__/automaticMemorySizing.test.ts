@@ -33,7 +33,7 @@ describe('automatic memory sizing', () => {
 		];
 
 		const result = await compileAndUpdateMemory(createInput(modules), {
-			startingMemoryWordAddress: 0,
+			startingMemoryAllocationUnitAddress: 0,
 		});
 
 		// Should have successfully compiled
@@ -55,7 +55,7 @@ describe('automatic memory sizing', () => {
 		];
 
 		const result = await compileAndUpdateMemory(createInput(modules), {
-			startingMemoryWordAddress: 0,
+			startingMemoryAllocationUnitAddress: 0,
 		});
 
 		// Should allocate at least 64 KiB (1 page)

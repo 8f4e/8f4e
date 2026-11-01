@@ -3,7 +3,7 @@ title: 'TODO: Lazy-load editing features on entering edit mode'
 priority: Medium
 effort: 2-4d
 created: 2026-09-06
-issue: https://github.com/andorthehood/8f4e/issues/959
+issue: https://github.com/8f4e/8f4e/issues/959
 status: Open
 completed: null
 ---

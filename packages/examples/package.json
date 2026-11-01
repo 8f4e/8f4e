@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/examples",
-  "version": "2.13.1",
+  "version": "3.6.0",
   "private": true,
   "description": "8f4e example modules and projects",
   "type": "module",
@@ -12,16 +12,15 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andorthehood/8f4e.git"
+    "url": "git+https://github.com/8f4e/8f4e.git"
   },
   "author": "Andor Polgar",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/andorthehood/8f4e/issues"
+    "url": "https://github.com/8f4e/8f4e/issues"
   },
-  "homepage": "https://github.com/andorthehood/8f4e#readme",
+  "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
-    "@8f4e/cli": "*",
-    "@8f4e/editor-state-types": "*"
+    "@8f4e/cli": "*"
   }
 }

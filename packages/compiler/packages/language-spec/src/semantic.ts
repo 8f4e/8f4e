@@ -13,12 +13,12 @@ import type {
 	CallLine,
 	CompilerASTLine,
 	DefaultLine,
+	InlineOperandLine,
 	LocalSetLine,
 	LoopLine,
 	MapLine,
 	MemoryCopyLine,
 	PrototypeAST,
-	PushArgument,
 	PushLine,
 	PushShapeLine,
 } from './ast';
@@ -73,16 +73,9 @@ export type Const = {
 	address?: AddressMetadata;
 };
 
-export type Consts = Record<string, Const>;
-
 export type ResolvedArgumentLiteral = ArgumentLiteral & {
 	/** Address metadata when semantic reference resolution resolves this literal from an address expression. */
 	address?: AddressMetadata;
-};
-
-export type ResolvedIntegerArgumentLiteral = ResolvedArgumentLiteral & {
-	isInteger: true;
-	isFloat64?: false;
 };
 
 /** Scalar local value facts, independent of WebAssembly storage. */
@@ -165,11 +158,10 @@ export interface FunctionCompilationContext extends CompilationContext {
 
 export type StackValueType = 'int' | 'float' | 'float64';
 
-/** Metadata describing values reachable from an address stack item. */
+/** Pointee type facts for an address. These facts do not include provenance or bounds guarantees. */
 export interface PointeeMetadata {
 	baseType: PointeeBaseType;
 	pointerDepth: number;
-	elementCount?: number;
 }
 
 /** Type and value facts known about one ordinary value on the compiler analysis stack. */
@@ -182,7 +174,11 @@ export interface StackValue {
 	knownValue?: number;
 }
 
-/** Type and value facts known about one value that is proven to be a memory address. */
+/**
+ * Type and value facts known about one address-like integer.
+ * `pointsTo` describes how to interpret the address; only `address.safeRange` or
+ * `address.safeAccessByteWidth` proves that a memory access is statically safe.
+ */
 export interface StackAddress {
 	kind: 'address';
 	valueType: 'int';
@@ -296,10 +292,6 @@ export type LiteralPushLine = Omit<PushLine, 'arguments'> & {
 	arguments: [ResolvedArgumentLiteral | ArgumentStringLiteral];
 };
 
-export type DeferredPushLine = Omit<PushLine, 'arguments'> & {
-	arguments: [ArgumentCompileTimeExpression | ArgumentIdentifier];
-};
-
 export type ResolvedMemoryPushLine = Omit<PushLine, 'arguments'> & {
 	arguments: [ArgumentIdentifier];
 	resolvedTarget: {
@@ -339,20 +331,15 @@ export type ResolvedPushLine =
 	| ResolvedLocalPointerPushLine;
 
 export type CodegenPushLine = LiteralPushLine | ResolvedPushLine;
-export type SemanticPushLine = CodegenPushLine | DeferredPushLine;
-
-export type PushIdentifierLine = Omit<PushLine, 'arguments'> & {
-	arguments: [ArgumentIdentifier];
-};
-export type MemoryPointerPushLine = Omit<PushLine, 'arguments'> & {
-	arguments: [MemoryPointerIdentifier];
-};
 
 export type ResolvedLocalSetLine = LocalSetLine & { binding: SourceLocalBinding };
 
 export type SemanticCallLine = Omit<CallLine, 'arguments'> & {
-	arguments: [ArgumentIdentifier, ...PushArgument[]];
-	inlineArgumentPushes?: CodegenPushLine[];
+	arguments: [ArgumentIdentifier];
+};
+
+export type ResolvedInlineOperandLine = Omit<InlineOperandLine, 'arguments'> & {
+	arguments: [];
 };
 
 export type SemanticAssertEqualLine = AssertEqualLine & {
@@ -369,27 +356,29 @@ export type ResolvedPushShapeLine = Omit<PushShapeLine, 'arguments'> & {
 	shapeExpansions: PushShapeExpansion[];
 };
 
-export type SemanticReferenceLine<TLine extends CompilerASTLine = CompilerASTLine> = TLine extends DefaultLine
-	? ResolvedDefaultLine | DefaultLine
-	: TLine extends AssertEqualLine
-		? SemanticAssertEqualLine
-		: TLine extends CallLine
-			? SemanticCallLine | CallLine
-			: TLine extends MapLine
-				? ResolvedMapLine
-				: TLine extends LocalSetLine
-					? ResolvedLocalSetLine
-					: TLine extends PushLine
-						? SemanticPushLine
-						: TLine extends PushShapeLine
-							? ResolvedPushShapeLine
-							: TLine extends LoopLine
-								? ResolvedLoopLine
-								: TLine extends MemoryCopyLine
-									? ResolvedMemoryCopyLine | MemoryCopyLine
-									: TLine extends ArrayDeclarationLine
-										? ArrayDeclarationLine
-										: TLine;
+export type SemanticReferenceLine<TLine extends CompilerASTLine = CompilerASTLine> = TLine extends InlineOperandLine
+	? ResolvedInlineOperandLine
+	: TLine extends DefaultLine
+		? ResolvedDefaultLine | DefaultLine
+		: TLine extends AssertEqualLine
+			? SemanticAssertEqualLine
+			: TLine extends CallLine
+				? SemanticCallLine
+				: TLine extends MapLine
+					? ResolvedMapLine
+					: TLine extends LocalSetLine
+						? ResolvedLocalSetLine
+						: TLine extends PushLine
+							? CodegenPushLine
+							: TLine extends PushShapeLine
+								? ResolvedPushShapeLine
+								: TLine extends LoopLine
+									? ResolvedLoopLine
+									: TLine extends MemoryCopyLine
+										? ResolvedMemoryCopyLine | MemoryCopyLine
+										: TLine extends ArrayDeclarationLine
+											? ArrayDeclarationLine
+											: TLine;
 
 /** Resolved instructions that remain after declaration processing. */
 export type ExecutableInstructionLine = Extract<SemanticReferenceLine, { instruction: CodegenInstructionName }>;
@@ -485,7 +474,6 @@ export type BlockStack = BlockStackFrame[];
 /** Mutable block tracking shared by analysis and bytecode emission. */
 export interface BlockState<TLoop extends LoopBlockStackFrame = LoopBlockStackFrame> {
 	blockStack: Array<Exclude<BlockStackFrame, LoopBlockStackFrame> | TLoop>;
-	activeBlockDepths: Record<BlockTypeValue, number>;
 	activeLoopBlocks: TLoop[];
 	activeMapBlock?: MapBlockStackFrame;
 }

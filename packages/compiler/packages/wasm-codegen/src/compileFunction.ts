@@ -54,8 +54,8 @@ export function compileFunction(
 		bindings
 	);
 
-	for (const { sourceLineIndex, line } of body)
-		compileCodegenLine(line, stackReport.lineFacts[sourceLineIndex]!, context);
+	for (const [operationIndex, { line }] of body.entries())
+		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context);
 	const { wasmIndex, typeIndex } = functionLayout.functions[functionMetadata.id];
 
 	// Collect locals (excluding parameters)

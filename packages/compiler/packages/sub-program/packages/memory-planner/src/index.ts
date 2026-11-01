@@ -17,10 +17,10 @@ import type {
 	ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import {
+	ALLOCATION_UNIT_BYTE_SIZE,
 	ArgumentType,
 	ErrorCode,
 	type ErrorCodeValue,
-	GLOBAL_ALIGNMENT_BOUNDARY,
 	getError,
 	isArrayMemoryDeclarationLine,
 	isBinaryCompileTimeExpression,
@@ -28,7 +28,7 @@ import {
 	isScalarMemoryDeclarationLine,
 } from '@8f4e/language-spec';
 import { planArrayDeclarationLayout, planScalarDeclarationLayout } from './declarations';
-import { getEndAddressSafeByteLength, getEndByteAddress, getWordAlignedByteLength } from './layoutAddresses';
+import { getAllocatedByteLength, getEndAddressSafeByteLength, getEndByteAddress } from './layoutAddresses';
 
 export type {
 	MemoryLayoutPlan,
@@ -197,27 +197,27 @@ function collectModuleMemoryLayoutSourceLines(
 	ast: ModuleAST,
 	constantReferences: ConstantResolutionBlockFacts | undefined
 ): MemoryLayoutSourceModule {
-	const sourceModule: MemoryLayoutSourceModule = {
-		id: ast.id,
-		moduleLine: ast.moduleLine,
-		lines: [],
-	};
+	const lines: MemoryLayoutSourceLine[] = [];
 
 	for (let lineIndex = 0; lineIndex < ast.lines.length; lineIndex++) {
 		const sourceLine = ast.lines[lineIndex];
 		const line = applyConstantFacts(sourceLine, constantReferences?.lineFacts[lineIndex]);
 
 		if (isMemoryDeclarationLine(line)) {
-			sourceModule.lines = [...sourceModule.lines, normalizeLayoutMemoryDeclarationLine(line, sourceLine)];
+			lines.push(normalizeLayoutMemoryDeclarationLine(line, sourceLine));
 			continue;
 		}
 
 		if (isShapeLine(line)) {
-			sourceModule.lines = [...sourceModule.lines, line];
+			lines.push(line);
 		}
 	}
 
-	return sourceModule;
+	return {
+		id: ast.id,
+		moduleLine: ast.moduleLine,
+		lines,
+	};
 }
 
 function createMemoryLayoutSourceModules(
@@ -261,14 +261,18 @@ function getEffectiveMemoryDeclarationSources(
 	return declarationSources;
 }
 
-function planDeclarationLine(line: MemoryDeclarationLine, startingByteAddress: number, localWordOffset: number) {
+function planDeclarationLine(
+	line: MemoryDeclarationLine,
+	startingByteAddress: number,
+	localAllocationUnitOffset: number
+) {
 	if (isScalarMemoryDeclarationLine(line)) {
 		return planScalarDeclarationLayout({
 			id: getScalarDeclarationId(line),
 			lineNumber: line.lineNumber,
 			instruction: line.instruction,
 			startingByteAddress,
-			localWordOffset,
+			localAllocationUnitOffset,
 		});
 	}
 
@@ -279,7 +283,7 @@ function planDeclarationLine(line: MemoryDeclarationLine, startingByteAddress: n
 		instruction: line.instruction,
 		numberOfElements: elementCountArgument.value,
 		startingByteAddress,
-		localWordOffset,
+		localAllocationUnitOffset,
 	});
 }
 
@@ -289,24 +293,28 @@ function planModuleMemory(
 	prototypesById: Readonly<Record<string, MemoryLayoutSourcePrototype>>
 ): Omit<
 	PlannedMemoryModule,
-	'byteAddress' | 'id' | 'lineNumber' | 'wordAlignedByteLength' | 'endByteAddress' | 'endAddressSafeByteLength'
+	'byteAddress' | 'id' | 'lineNumber' | 'allocatedByteLength' | 'endByteAddress' | 'endAddressSafeByteLength'
 > {
-	let localWordOffset = 0;
+	let localAllocationUnitOffset = 0;
 	const memory: Record<string, PlannedMemoryDeclaration> = {};
 	const declarations: PlannedMemoryDeclaration[] = [];
 	const declarationSources = getEffectiveMemoryDeclarationSources(sourceModule, prototypesById);
 
 	for (const declarationSource of declarationSources) {
-		const plannedDeclaration = planDeclarationLine(declarationSource.line, moduleByteAddress, localWordOffset);
+		const plannedDeclaration = planDeclarationLine(
+			declarationSource.line,
+			moduleByteAddress,
+			localAllocationUnitOffset
+		);
 		const declaration = plannedDeclaration.declaration;
 
 		memory[declaration.id] = declaration;
 		declarations.push(declaration);
-		localWordOffset = plannedDeclaration.nextLocalWordOffset;
+		localAllocationUnitOffset = plannedDeclaration.nextLocalAllocationUnitOffset;
 	}
 
 	return {
-		wordAlignedSize: localWordOffset,
+		allocationUnitCount: localAllocationUnitOffset,
 		memory,
 		declarations,
 		declarationSources,
@@ -315,7 +323,7 @@ function planModuleMemory(
 
 /** Plans module and declaration memory addresses from internal planner-ready source. */
 function planMemoryLayout(input: MemoryLayoutPlanInput): MemoryLayoutPlan {
-	const startingByteAddress = input.startingByteAddress ?? GLOBAL_ALIGNMENT_BOUNDARY;
+	const startingByteAddress = input.startingByteAddress ?? ALLOCATION_UNIT_BYTE_SIZE;
 	const prototypesById = getPrototypeMap(input.prototypes);
 	let nextByteAddress = startingByteAddress;
 	const modules: Record<string, PlannedMemoryModule> = {};
@@ -330,10 +338,10 @@ function planMemoryLayout(input: MemoryLayoutPlanInput): MemoryLayoutPlan {
 			id: sourceModule.id,
 			lineNumber: sourceModule.moduleLine.lineNumber,
 			byteAddress: moduleByteAddress,
-			wordAlignedSize: moduleMemory.wordAlignedSize,
-			wordAlignedByteLength: getWordAlignedByteLength(moduleMemory.wordAlignedSize),
-			endByteAddress: getEndByteAddress(moduleByteAddress, moduleMemory.wordAlignedSize),
-			endAddressSafeByteLength: getEndAddressSafeByteLength(moduleMemory.wordAlignedSize),
+			allocationUnitCount: moduleMemory.allocationUnitCount,
+			allocatedByteLength: getAllocatedByteLength(moduleMemory.allocationUnitCount),
+			endByteAddress: getEndByteAddress(moduleByteAddress, moduleMemory.allocationUnitCount),
+			endAddressSafeByteLength: getEndAddressSafeByteLength(moduleMemory.allocationUnitCount),
 			memory: moduleMemory.memory,
 			declarations: moduleMemory.declarations,
 			declarationSources: moduleMemory.declarationSources,
@@ -341,7 +349,7 @@ function planMemoryLayout(input: MemoryLayoutPlanInput): MemoryLayoutPlan {
 
 		modules[plannedModule.id] = plannedModule;
 		moduleList.push(plannedModule);
-		nextByteAddress = moduleByteAddress + plannedModule.wordAlignedByteLength;
+		nextByteAddress = moduleByteAddress + plannedModule.allocatedByteLength;
 	}
 
 	return {
@@ -365,6 +373,6 @@ export function planSubProgramMemoryLayout<
 	return planMemoryLayout({
 		prototypes: getPrototypeSources(input.prototypes, input.constantReferences.prototypes),
 		modules: createMemoryLayoutSourceModules(input.modules, input.constantReferences.modules),
-		startingByteAddress: input.startingByteAddress ?? GLOBAL_ALIGNMENT_BOUNDARY,
+		startingByteAddress: input.startingByteAddress ?? ALLOCATION_UNIT_BYTE_SIZE,
 	});
 }

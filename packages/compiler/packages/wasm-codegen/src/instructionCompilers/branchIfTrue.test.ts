@@ -1,7 +1,7 @@
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../testUtils';
+import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
 import branchIfTrue from './branchIfTrue';
 
 describe('branchIfTrue instruction compiler', () => {

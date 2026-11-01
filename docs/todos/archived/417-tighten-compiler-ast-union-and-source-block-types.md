@@ -3,7 +3,7 @@ title: 'TODO: Tighten compiler AST union and source block types'
 priority: Medium
 effort: 2-4d
 created: 2026-05-25
-issue: https://github.com/andorthehood/8f4e/issues/686
+issue: https://github.com/8f4e/8f4e/issues/686
 status: Completed
 completed: 2026-05-25
 ---

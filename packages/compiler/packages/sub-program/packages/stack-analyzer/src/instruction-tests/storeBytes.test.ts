@@ -1,8 +1,8 @@
 import type { CompilerASTLine } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
+import createStackAnalyzerTestContext from '../../tests/testUtils';
 import { analyzeInstruction } from '../analyzeInstruction';
-import createStackAnalyzerTestContext from '../testUtils';
 
 describe('storeBytes stack analysis', () => {
 	it('throws INSUFFICIENT_OPERANDS when stack has fewer than count+1 items', () => {

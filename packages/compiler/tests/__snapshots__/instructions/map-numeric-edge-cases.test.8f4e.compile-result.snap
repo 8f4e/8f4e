@@ -5825,6 +5825,8 @@
     "mapSignedZeroFloat64Assertions": {
       "memory": {
         "result": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 3,
           "byteAddress": 8,
           "default": 0,
           "elementWordSize": 8,
@@ -5835,14 +5837,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float64",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 3,
         },
       },
     },
     "mapSignedZeroFloatAssertions": {
       "memory": {
         "result": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": 0,
           "elementWordSize": 4,
@@ -5852,8 +5854,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
         },
       },
     },

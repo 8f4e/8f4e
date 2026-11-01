@@ -1,8 +1,24 @@
 import type { CompilationContext, CompilerASTLine } from '@8f4e/language-spec';
 import { ErrorCode, getError } from '@8f4e/language-spec';
 import { getClampAccessByteWidth, getClampedAddressStackItem, getModuleAddressRange } from '@8f4e/semantic-utils';
-import { consume, produce } from './stack';
+import { consume, createStackValue, produce } from './stack';
 import type { InstructionAnalysisResult } from './types';
+
+/**
+ * Produces the floating-point value selected by the address's pointee type.
+ *
+ * @param context - Compilation context containing the address operand.
+ * @returns The consumed address and loaded value facts.
+ */
+export function analyzeLoadFloat(context: CompilationContext): InstructionAnalysisResult {
+	const consumed = consume(context, 1);
+	const address = consumed[0];
+	const isFloat64 =
+		address.kind === 'address' && address.pointsTo?.baseType === 'float64' && address.pointsTo.pointerDepth === 1;
+	const produced = [createStackValue(isFloat64 ? 'float64' : 'float', { isNonZero: false })];
+	produce(context, produced);
+	return { consumed, produced };
+}
 
 /**
  * Consumes an address-like value and produces the stack item representing the clamped address range.

@@ -1,11 +1,11 @@
 8f4e/v1
 
 function buffer
-; @pos -91 17
+; @pos -37 12
 #export buffer
 use env
 
-loop AUDIO_BUFFER_SIZE
+loop 128
 call main
 loopEnd
 functionEnd
@@ -16,138 +16,87 @@ constants env
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
-const SAMPLE_RATE 48000
-const AUDIO_BUFFER_SIZE 128
+const SAMPLE_RATE 50
 
 constantsEnd
 
 note
 ; @pos -171 -5
-; @config runtime AudioWorkletRuntime
-; @config audioRuntime.sampleRate 48000
-; @config audioRuntime.audioOutBufferLAddress audioout:buffer
-; @config audioRuntime.audioOutBufferRAddress audioout:buffer
+; @mode edit
+; @config workerRuntime.enabled true
+; @config workerRuntime.sampleRate 50
+; @config workerRuntime.entry buffer
 ; @config export.fileName landingPageDemo4
-; @config color.text.lineNumber #c6a274
-; @config color.text.entryName #fff8e8
-; @config color.text.debugInfo #bca17e
-; @config color.text.arrow #78dbc6
-; @config color.text.instruction #ffd166
-; @config color.text.codeComment #c6b69d
-; @config color.text.code #f7f0df
-; @config color.text.infoKey #7fe1cf
-; @config color.text.infoValue #ffd27a
-; @config color.text.errorMessage #fff3ed
-; @config color.text.disabledCode #735f4d
-; @config color.text.numbers #8fe0ce
-; @config color.text.menuItemText #fff6e5
-; @config color.text.menuItemTextHighlighted #321d0d
-; @config color.text.dialogTitle #ffd166
-; @config color.text.dialogText #fff6e5
-; @config color.text.binaryZero #92795e
-; @config color.text.binaryOne #8fe0ce
-; @config color.text.basePrefix #ee9366
-; @config color.text.pianoKeyWhitePressedOverlay rgba(50,29,13,0.34)
-; @config color.text.pianoKeyBlackPressedOverlay rgba(127,225,207,0.68)
-; @config color.text.tooltipText #321d0d
-; @config color.text.tooltipHighlight #b56d2b
-; @config color.fill.menuItemBackground #4a2b13
-; @config color.fill.menuItemBackgroundHighlighted #ffd166
-; @config color.fill.background #960
-; @config color.fill.backgroundDots #b98212
-; @config color.fill.backgroundDots2 #e7ad32
-; @config color.fill.moduleBackground #2d1b0e
-; @config color.fill.debugInfoBackground #211309
-; @config color.fill.moduleBackgroundDragged #2d1b0e
-; @config color.fill.moduleBackgroundDisabled #322216
-; @config color.fill.wire #7fe1cf
-; @config color.fill.wireHighlighted #d8fff6
-; @config color.fill.errorMessageBackground #a9483f
-; @config color.fill.assertionPassed #55a879
-; @config color.fill.assertionFailed #d45c4e
-; @config color.fill.dialogBackground #4a2b13
-; @config color.fill.dialogDimmer rgba(38,20,7,0.72)
-; @config color.fill.highlightedCodeLine #62401e
-; @config color.fill.trace #ffd166
-; @config color.fill.plotterBackground #20150c
-; @config color.fill.bars #65cdb7
-; @config color.fill.waveformBackground #181009
-; @config color.fill.waveform #8ee6d2
-; @config color.fill.meterGreen #63ae78
-; @config color.fill.meterYellow #dfb64f
-; @config color.fill.meterRed #d45c4e
-; @config color.fill.scanLine #ffcf70
-; @config color.fill.track #6b4c2e
-; @config color.fill.fill #2fb79e
-; @config color.fill.handle #fff6df
-; @config color.fill.codeBlockHighlightLevel1 #3b2615
-; @config color.fill.codeBlockHighlightLevel2 #4c3219
-; @config color.fill.codeBlockHighlightLevel3 #5f3f1d
-; @config color.fill.pianoKeyWhite #f4ead7
-; @config color.fill.pianoKeyBlack #2d1b0e
-; @config color.fill.tooltipBackground #f4e2bd
-; @config color.fill.tooltipAddedHighlight #9bc69d
-; @config color.fill.tooltipConsumedHighlight #e3a07c
-; @config color.icons.inputConnector #7fe1cf
-; @config color.icons.outputConnector #ffd166
-; @config color.icons.inputConnectorBackground #5a3618
-; @config color.icons.outputConnectorBackground #5a3618
-; @config color.icons.switchBackground #2fb79e
-; @config color.icons.feedbackScale0 #3b2615
-; @config color.icons.feedbackScale1 #62401e
-; @config color.icons.feedbackScale2 #8a5b26
-; @config color.icons.feedbackScale3 #c88b39
-; @config color.icons.feedbackScale4 #dfb64f
-; @config color.icons.feedbackScale5 #d45c4e
+noteEnd
+
+note colors
+; @pos -212 -5
+; @config color.canvas #960
+; @config color.surface #211307
+; @config color.ink #f7f0df
+; @config color.primary #ffd166
+; @config color.secondary #ffd98a
+; @config color.positive #55a879
+; @config color.warning #dfb64f
+; @config color.negative #d45c4e
+; @config color.muted #c6a274
+; @config color.stroke #ffe09c
+; @config color.tertiary #c6b69d
+; @config color.highlight #ffd574
+; @config color.detail #e7a92f
 noteEnd
 
 entry main
-module lcg
-; @pos 18 0
-; Linear congruential
-; generator
+module square
+; @pos 19 0
 ; @home left
 
-const MULTIPLIER 1664525
-const INCREMENT 1013904223
-const MODULUS 2^16
-
-int seed 69420
 float out ; @w
+int count ; @w
 
-push &seed
-push MULTIPLIER
-push seed
-mul
-push INCREMENT
-add
-push MODULUS
-remainder
-store
-
+push count
+push 32
+greaterThan
+if
 push &out
-push seed
-castToFloat
-push MODULUS
-castToFloat
-div
+push 1.0
 store
+else
+push &out
+push -1.0
+store
+ifEnd
+
+push &count
+push count
+push 1
+add
+store
+
+push count
+push 64
+greaterThan
+if
+push &count
+push 0
+store
+ifEnd
 
 moduleEnd
 module lowPassFilter
 ; @pos 55 0
 
-float* in &lcg:out
+float* in &square:out
 float out
 
-float alpha 0.03
+float alpha 0.04
 
 ; You can add UI elements
 ; to the modules such as
 ; sliders to manipulate
 ; values real-time:
 
-; @slider &alpha 0 0.1
+; @slider &alpha 0 0.3
 
 push &out
 push alpha
@@ -162,16 +111,12 @@ add
 store
 
 moduleEnd
-module audioout
+module scope
 ; @pos 91 0
-; @home
-use env
-
 float* in &lowPassFilter:out
 
-; Audio buffer
-float[] buffer AUDIO_BUFFER_SIZE
-int pointer &buffer
+float[] buffer 128
+float* pointer &buffer
 
 ; @plot &buffer count(buffer)
 

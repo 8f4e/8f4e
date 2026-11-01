@@ -73,14 +73,21 @@ load16u
 
 ### loadFloat
 
-The loadFloat instruction consumes an address from the stack and pushes the 32-bit floating-point value stored at that address.
-If the address is out of bounds, it pushes `0.0` instead of trapping.
+The loadFloat instruction consumes an address from the stack and pushes the floating-point value stored there.
+A typed `float64*` address loads an eight-byte `float64` value. Other addresses, including untyped integers, retain the existing four-byte `float` behavior.
+If the complete value is out of bounds, it pushes zero of the matching floating-point type instead of trapping.
 
 #### Examples
 
 ```
 float input 1.25
 push &input
+loadFloat
+```
+
+```
+float64 precise 1.0000000000000002f64
+push &precise
 loadFloat
 ```
 

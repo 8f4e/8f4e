@@ -11,8 +11,8 @@ function didMemoryDeclarationChange(current: PlannedMemoryDeclaration, previous:
 		current.numberOfElements !== previous.numberOfElements ||
 		current.elementWordSize !== previous.elementWordSize ||
 		current.byteAddress !== previous.byteAddress ||
-		current.wordAlignedAddress !== previous.wordAlignedAddress ||
-		current.wordAlignedSize !== previous.wordAlignedSize ||
+		current.allocationUnitAddress !== previous.allocationUnitAddress ||
+		current.allocationUnitCount !== previous.allocationUnitCount ||
 		current.isInteger !== previous.isInteger ||
 		current.isFloat64 !== previous.isFloat64 ||
 		current.pointeeBaseType !== previous.pointeeBaseType ||
@@ -65,7 +65,7 @@ export default function didProgramOrMemoryStructureChange(
 		const plannedModule = current.memoryPlan.modules[id]!;
 		const previousPlannedModule = previous.memoryPlan.modules[id]!;
 
-		if (plannedModule.wordAlignedSize !== previousPlannedModule.wordAlignedSize) {
+		if (plannedModule.allocationUnitCount !== previousPlannedModule.allocationUnitCount) {
 			return true;
 		}
 

@@ -1,0 +1,262 @@
+[
+	{
+		"commit": "9aa44ec4d3ad4662d770e8cda83c54b277a29c3c",
+		"recordedAt": "2026-10-28T19:31:10.474Z",
+		"coverage": {
+			"statements": {
+				"covered": 383,
+				"total": 1196,
+				"percentage": 32.02
+			},
+			"branches": {
+				"covered": 217,
+				"total": 235,
+				"percentage": 92.34
+			},
+			"functions": {
+				"covered": 120,
+				"total": 923,
+				"percentage": 13
+			},
+			"lines": {
+				"covered": 325,
+				"total": 727,
+				"percentage": 44.7
+			}
+		}
+	},
+	{
+		"commit": "7eb3e047ce06031ed31526d6c22ff9da3e9a0d39",
+		"recordedAt": "2026-10-29T15:53:26.320Z",
+		"coverage": {
+			"statements": {
+				"covered": 383,
+				"total": 1194,
+				"percentage": 32.07
+			},
+			"branches": {
+				"covered": 217,
+				"total": 235,
+				"percentage": 92.34
+			},
+			"functions": {
+				"covered": 120,
+				"total": 921,
+				"percentage": 13.02
+			},
+			"lines": {
+				"covered": 325,
+				"total": 726,
+				"percentage": 44.76
+			}
+		}
+	},
+	{
+		"commit": "35bc607f034247595fa0664b3f2ce6e566a3ff58",
+		"recordedAt": "2026-10-29T16:42:57.833Z",
+		"coverage": {
+			"statements": {
+				"covered": 383,
+				"total": 1194,
+				"percentage": 32.07
+			},
+			"branches": {
+				"covered": 217,
+				"total": 235,
+				"percentage": 92.34
+			},
+			"functions": {
+				"covered": 120,
+				"total": 921,
+				"percentage": 13.02
+			},
+			"lines": {
+				"covered": 325,
+				"total": 726,
+				"percentage": 44.76
+			}
+		}
+	},
+	{
+		"commit": "36ed5c9a4d7ffbb1248ad77034fbf450d1465597",
+		"recordedAt": "2026-10-29T19:09:46.772Z",
+		"coverage": {
+			"statements": {
+				"covered": 383,
+				"total": 1196,
+				"percentage": 32.02
+			},
+			"branches": {
+				"covered": 217,
+				"total": 235,
+				"percentage": 92.34
+			},
+			"functions": {
+				"covered": 120,
+				"total": 923,
+				"percentage": 13
+			},
+			"lines": {
+				"covered": 325,
+				"total": 727,
+				"percentage": 44.7
+			}
+		}
+	},
+	{
+		"commit": "2d50a9343076ae3b3f2fbb30f57f0d77df7643b7",
+		"recordedAt": "2026-10-29T20:48:20.641Z",
+		"coverage": {
+			"statements": {
+				"covered": 383,
+				"total": 1196,
+				"percentage": 32.02
+			},
+			"branches": {
+				"covered": 217,
+				"total": 235,
+				"percentage": 92.34
+			},
+			"functions": {
+				"covered": 120,
+				"total": 923,
+				"percentage": 13
+			},
+			"lines": {
+				"covered": 325,
+				"total": 727,
+				"percentage": 44.7
+			}
+		}
+	},
+	{
+		"commit": "201a6300fac835b51665fe8717bfc3e912221ef0",
+		"recordedAt": "2026-10-29T22:32:05.433Z",
+		"coverage": {
+			"statements": {
+				"covered": 383,
+				"total": 1200,
+				"percentage": 31.91
+			},
+			"branches": {
+				"covered": 217,
+				"total": 235,
+				"percentage": 92.34
+			},
+			"functions": {
+				"covered": 120,
+				"total": 927,
+				"percentage": 12.94
+			},
+			"lines": {
+				"covered": 325,
+				"total": 729,
+				"percentage": 44.58
+			}
+		}
+	},
+	{
+		"commit": "6c7007b5bee9baabd273f732f14b7ea42b3762b6",
+		"recordedAt": "2026-10-30T13:18:38.705Z",
+		"coverage": {
+			"statements": {
+				"covered": 383,
+				"total": 1224,
+				"percentage": 31.29
+			},
+			"branches": {
+				"covered": 217,
+				"total": 235,
+				"percentage": 92.34
+			},
+			"functions": {
+				"covered": 120,
+				"total": 951,
+				"percentage": 12.61
+			},
+			"lines": {
+				"covered": 325,
+				"total": 741,
+				"percentage": 43.85
+			}
+		}
+	},
+	{
+		"commit": "8387ab1aba27081c68216b2a510e55572c18357e",
+		"recordedAt": "2026-10-30T23:07:58.481Z",
+		"coverage": {
+			"statements": {
+				"covered": 383,
+				"total": 1226,
+				"percentage": 31.23
+			},
+			"branches": {
+				"covered": 217,
+				"total": 235,
+				"percentage": 92.34
+			},
+			"functions": {
+				"covered": 120,
+				"total": 953,
+				"percentage": 12.59
+			},
+			"lines": {
+				"covered": 325,
+				"total": 742,
+				"percentage": 43.8
+			}
+		}
+	},
+	{
+		"commit": "5277b543f4610e0b6807fb4de75d8f7d47ce536b",
+		"recordedAt": "2026-10-31T10:37:09.314Z",
+		"coverage": {
+			"statements": {
+				"covered": 383,
+				"total": 1230,
+				"percentage": 31.13
+			},
+			"branches": {
+				"covered": 217,
+				"total": 235,
+				"percentage": 92.34
+			},
+			"functions": {
+				"covered": 120,
+				"total": 957,
+				"percentage": 12.53
+			},
+			"lines": {
+				"covered": 325,
+				"total": 744,
+				"percentage": 43.68
+			}
+		}
+	},
+	{
+		"commit": "5e60f870036ff2eb22e118daa071d410fc7a9b87",
+		"recordedAt": "2026-10-31T11:22:29.696Z",
+		"coverage": {
+			"statements": {
+				"covered": 383,
+				"total": 1232,
+				"percentage": 31.08
+			},
+			"branches": {
+				"covered": 217,
+				"total": 235,
+				"percentage": 92.34
+			},
+			"functions": {
+				"covered": 120,
+				"total": 959,
+				"percentage": 12.51
+			},
+			"lines": {
+				"covered": 325,
+				"total": 745,
+				"percentage": 43.62
+			}
+		}
+	}
+]

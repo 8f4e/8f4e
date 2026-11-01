@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/stdlib",
-  "version": "2.0.12",
+  "version": "2.0.31",
   "private": true,
   "description": "8f4e standard library source files",
   "type": "module",
@@ -14,12 +14,12 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andorthehood/8f4e.git"
+    "url": "git+https://github.com/8f4e/8f4e.git"
   },
   "author": "Andor Polgar",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/andorthehood/8f4e/issues"
+    "url": "https://github.com/8f4e/8f4e/issues"
   },
-  "homepage": "https://github.com/andorthehood/8f4e#readme"
+  "homepage": "https://github.com/8f4e/8f4e#readme"
 }

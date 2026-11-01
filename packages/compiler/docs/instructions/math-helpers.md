@@ -36,6 +36,7 @@ round
 ### ensureNonZero
 
 The ensureNonZero instruction ensures a value is non-zero, replacing zero with a provided default (or 1/1.0).
+Floating-point defaults are stored at the operand's float32 or float64 precision without additional decimal rounding.
 
 #### Examples
 

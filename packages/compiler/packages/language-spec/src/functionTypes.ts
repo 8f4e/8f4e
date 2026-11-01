@@ -61,10 +61,6 @@ export function functionValueTypeToLocalMetadata(type: FunctionValueType): Local
 		return { isInteger: false, isFloat64: true };
 	}
 
-	if (!isPointerFunctionValueType(type)) {
-		return { isInteger: false };
-	}
-
 	const { baseType, pointerDepth } = getPointerParts(type);
 	return {
 		isInteger: true,
@@ -96,36 +92,16 @@ export function functionValueTypeToStackItem(type: FunctionValueType): StackItem
 	return localBindingToStackItem(functionValueTypeToLocalMetadata(type));
 }
 
+export function stackItemToFunctionValueType(stackItem: StackItem): FunctionValueType {
+	if (stackItem.kind === 'address' && stackItem.pointsTo) {
+		return `${stackItem.pointsTo.baseType}${'*'.repeat(stackItem.pointsTo.pointerDepth)}` as PointerFunctionValueType;
+	}
+
+	return stackItem.valueType;
+}
+
 export function stackItemMatchesFunctionValueType(stackItem: StackItem, type: FunctionValueType): boolean {
-	if (type === 'int') {
-		return stackItem.valueType === 'int';
-	}
-
-	if (type === 'float') {
-		return stackItem.valueType === 'float';
-	}
-
-	if (type === 'float64') {
-		return stackItem.valueType === 'float64';
-	}
-
-	if (stackItem.valueType !== 'int') {
-		return false;
-	}
-
-	if (stackItem.kind !== 'address' || !stackItem.pointsTo) {
-		return true;
-	}
-
-	const expected = functionValueTypeToStackItem(type);
-	if (expected.kind !== 'address' || !expected.pointsTo) {
-		return true;
-	}
-
-	return (
-		stackItem.pointsTo.baseType === expected.pointsTo.baseType &&
-		stackItem.pointsTo.pointerDepth === expected.pointsTo.pointerDepth
-	);
+	return stackItemToFunctionValueType(stackItem) === type;
 }
 
 /** Default WebAssembly import module namespace for 8f4e host-provided imports. */

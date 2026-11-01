@@ -1,5 +1,5 @@
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 
-export default createDirectivePlugin('alwaysOnTop', (_directive, draft) => {
+export default createDirectiveDefinition('alwaysOnTop', (_directive, draft) => {
 	draft.blockState.alwaysOnTop = true;
 });

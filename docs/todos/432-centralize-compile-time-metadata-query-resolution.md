@@ -3,7 +3,7 @@ title: 'TODO: Centralize compile-time metadata query resolution'
 priority: Medium
 effort: 2-4h
 created: 2026-05-27
-issue: https://github.com/andorthehood/8f4e/issues/719
+issue: https://github.com/8f4e/8f4e/issues/719
 status: Open
 completed: null
 ---

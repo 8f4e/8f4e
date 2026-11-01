@@ -3,7 +3,7 @@ title: 'TODO: Remove hardcoded AudioWorklet buffer size from runtime contract'
 priority: Medium
 effort: 1-2 days
 created: 2026-04-21
-issue: https://github.com/andorthehood/8f4e/issues/561
+issue: https://github.com/8f4e/8f4e/issues/561
 status: Open
 completed: null
 ---

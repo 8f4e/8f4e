@@ -1,0 +1,21 @@
+{
+  "code": 2,
+  "context": {
+    "codeBlockId": "blockFloatReturnedAsInt",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "int",
+      },
+    ],
+    "instruction": "blockEnd",
+    "lineNumber": 5,
+  },
+  "message": "The operation only accepts integer values as operands. (2)",
+}

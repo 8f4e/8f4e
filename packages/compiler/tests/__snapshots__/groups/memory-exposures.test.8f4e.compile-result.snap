@@ -221,6 +221,8 @@
     "processing/audio/source": {
       "memory": {
         "value": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 41,
           "elementWordSize": 4,
@@ -231,14 +233,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },
     "processing/root": {
       "memory": {
         "groupedValue": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 4,
           "elementWordSize": 4,
@@ -248,12 +250,13 @@
           "isUnsigned": false,
           "numberOfElements": 1,
           "pointeeBaseType": "int",
+          "pointeeElementCount": 1,
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
         "metadata": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": 0,
           "elementWordSize": 4,
@@ -263,10 +266,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
         },
         "observed": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
           "byteAddress": 12,
           "default": 0,
           "elementWordSize": 4,
@@ -276,8 +279,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 1,
         },
       },
     },

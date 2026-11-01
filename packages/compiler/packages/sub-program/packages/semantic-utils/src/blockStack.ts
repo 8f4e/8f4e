@@ -7,15 +7,6 @@ export function createBlockState<TLoop extends LoopBlockStackFrame = LoopBlockSt
 ): BlockState<TLoop> {
 	const state: BlockState<TLoop> = {
 		blockStack: [],
-		activeBlockDepths: {
-			[BlockType.MODULE]: 0,
-			[BlockType.FUNCTION]: 0,
-			[BlockType.BLOCK]: 0,
-			[BlockType.LOOP]: 0,
-			[BlockType.CONDITION]: 0,
-			[BlockType.CONSTANTS]: 0,
-			[BlockType.MAP]: 0,
-		},
 		activeLoopBlocks: [],
 	};
 	for (const block of blockStack) pushBlock(state, block);
@@ -28,7 +19,6 @@ export function pushBlock<TLoop extends LoopBlockStackFrame>(
 	block: BlockState<TLoop>['blockStack'][number]
 ): void {
 	context.blockStack.push(block);
-	context.activeBlockDepths[block.blockType]++;
 	if (block.blockType === BlockType.LOOP) context.activeLoopBlocks.push(block);
 	if (block.blockType === BlockType.MAP) context.activeMapBlock = block;
 }
@@ -37,7 +27,6 @@ export function pushBlock<TLoop extends LoopBlockStackFrame>(
 export function popBlock<TLoop extends LoopBlockStackFrame>(context: BlockState<TLoop>) {
 	const block = context.blockStack.pop();
 	if (!block) return block;
-	context.activeBlockDepths[block.blockType]--;
 	if (block.blockType === BlockType.LOOP) context.activeLoopBlocks.pop();
 	if (block.blockType === BlockType.MAP) context.activeMapBlock = undefined;
 	return block;

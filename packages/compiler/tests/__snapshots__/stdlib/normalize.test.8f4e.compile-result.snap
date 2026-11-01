@@ -1443,6 +1443,8 @@
     "normalizeAssertions": {
       "memory": {
         "signed16": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
           "byteAddress": 12,
           "default": {
             "0": -32768,
@@ -1456,10 +1458,10 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int16",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 1,
         },
         "signed8": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": {
             "0": -128,
@@ -1474,10 +1476,10 @@
           "numberOfElements": 3,
           "pointerDepth": 0,
           "type": "int8",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
         "unsigned16": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": {
             "0": 0,
@@ -1491,10 +1493,10 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int16u",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
         },
         "unsigned8": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": {
             "0": 0,
@@ -1509,8 +1511,6 @@
           "numberOfElements": 3,
           "pointerDepth": 0,
           "type": "int8u",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
       },
     },

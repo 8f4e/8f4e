@@ -1,6 +1,6 @@
 {
   "functionAst": {
-    "wrapPointer__int__float_p__int": {
+    "wrapPointer__float_p__float_p__int": {
       "lines": [
         {
           "arguments": [
@@ -19,7 +19,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "int",
+              "value": "float*",
             },
             {
               "referenceKind": "plain",
@@ -229,7 +229,7 @@
       "name": "wrapPointer",
       "type": "function",
     },
-    "wrapPointer__int__int_p__int": {
+    "wrapPointer__int_p__int_p__int": {
       "lines": [
         {
           "arguments": [
@@ -248,7 +248,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "int",
+              "value": "int*",
             },
             {
               "referenceKind": "plain",
@@ -460,11 +460,11 @@
     },
   },
   "functionOverview": {
-    "wrapPointer__int__float_p__int": {
-      "id": "wrapPointer__int__float_p__int",
+    "wrapPointer__float_p__float_p__int": {
+      "id": "wrapPointer__float_p__float_p__int",
       "signature": {
         "parameters": [
-          "int",
+          "float*",
           "float*",
           "int",
         ],
@@ -473,11 +473,11 @@
         ],
       },
     },
-    "wrapPointer__int__int_p__int": {
-      "id": "wrapPointer__int__int_p__int",
+    "wrapPointer__int_p__int_p__int": {
+      "id": "wrapPointer__int_p__int_p__int",
       "signature": {
         "parameters": [
-          "int",
+          "int*",
           "int*",
           "int",
         ],
@@ -540,7 +540,7 @@
               "value": "&buffer",
             },
           ],
-          "instruction": "int",
+          "instruction": "float*",
         },
         {
           "arguments": [
@@ -816,6 +816,8 @@
     "wrapPointerFloatAssertions": {
       "memory": {
         "buffer": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 4,
           "byteAddress": 4,
           "default": {
             "0": 1.25,
@@ -828,10 +830,10 @@
           "numberOfElements": 4,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 4,
         },
         "pointer": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 1,
           "byteAddress": 20,
           "default": 4,
           "elementWordSize": 4,
@@ -840,18 +842,18 @@
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,
-          "pointerDepth": 0,
-          "type": "int",
-          "wordAlignedAddress": 5,
-          "wordAlignedSize": 1,
+          "pointeeBaseType": "float",
+          "pointeeElementCount": 4,
+          "pointerDepth": 1,
+          "type": "float*",
         },
       },
     },
   },
   "overview": {
     "compiledFunctions": [
-      "wrapPointer__int__float_p__int",
-      "wrapPointer__int__int_p__int",
+      "wrapPointer__float_p__float_p__int",
+      "wrapPointer__int_p__int_p__int",
     ],
     "compiledModules": [
       "wrapPointerFloatAssertions",

@@ -67,7 +67,6 @@ export default defineConfig(createEsLibConfig('./src/index.ts'));
 Available helpers:
 - `createEsLibConfig()` - Simple ES module library
 - `createLibConfig()` - Full customization
-- `createUmdBundleConfig()` - UMD bundle for browsers
 - `createWorkerLibConfig()` - Web worker library
 
 ## Philosophy

@@ -1,18 +1,21 @@
 import type { CodeBlockGraphicData, EventDispatcher, State, Viewport } from '@8f4e/editor-state-types';
 import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
 
-type DeepPartial<T> = T extends object
-	? {
-			[P in keyof T]?: DeepPartial<T[P]>;
-		}
-	: T;
+type DeepPartial<T> = T extends (...args: never[]) => unknown
+	? T
+	: T extends object
+		? {
+				[P in keyof T]?: DeepPartial<T[P]>;
+			}
+		: T;
+
+// EditorConfig already accepts partial JSON; expanding its recursive values adds no useful constraints.
+type StateOverrides = {
+	[K in keyof State]?: K extends 'editorConfig' ? State[K] : DeepPartial<State[K]>;
+};
 
 function createMockFunction<T extends (...args: unknown[]) => unknown>(): T {
 	return (() => {}) as T;
-}
-
-function createMockAsyncFunction<T>(returnValue: T): () => Promise<T> {
-	return async () => returnValue;
 }
 
 export function createMockCodeBlock(
@@ -40,9 +43,9 @@ export function createMockCodeBlock(
 		y: cursorYValue,
 	};
 	const displayModel = {
-		lines: code.map((text, rawRow) => ({ text, rawRow })),
-		displayRowToRawRow: code.map((_, rawRow) => rawRow),
-		rawRowToDisplayRow: code.map((_, rawRow) => rawRow),
+		lines: code.map((text, sourceLineIndex) => ({ text, sourceLineIndex })),
+		displayRowToSourceLineIndex: code.map((_, sourceLineIndex) => sourceLineIndex),
+		sourceLineIndexToDisplayRow: code.map((_, sourceLineIndex) => sourceLineIndex),
 		isCollapsed: false,
 	};
 
@@ -66,25 +69,10 @@ export function createMockCodeBlock(
 		projectPath,
 		disabled: false,
 		isHome: false,
-		isFavorite: false,
 		alwaysOnTop: false,
 		parsedDirectives: [],
 		widgets: {
-			assertions: [],
 			blockHighlights: [],
-			inputs: [],
-			outputs: [],
-			debuggers: [],
-			switches: [],
-			buttons: [],
-			sliders: [],
-			crossfades: [],
-			pianoKeyboards: [],
-			arrayPlotters: [],
-			arrayBars: [],
-			arrayMeters: [],
-			arrayWaves: [],
-			infoPanels: [],
 			shapeDeclarations: [],
 			errorMessages: [],
 		},
@@ -121,44 +109,31 @@ export function createMockEventDispatcher(): EventDispatcher {
 	};
 }
 
-export function createMockState(overrides: DeepPartial<State> = {}): State {
-	const mockRuntimeFactory = () => () => {};
-	const workerRuntimeDefaults = { sampleRate: 50 } as const;
+export function createMockState(overrides: StateOverrides = {}): State {
 	const rootCodeBlocks: CodeBlockGraphicData[] = [];
 
 	const defaults: State = {
 		compilerInputRevision: 0,
+		projectChange: { revision: 0, kind: 'replace' },
 		compiler: {
 			isCompiling: false,
-			compiledModules: {},
-			memoryPlan: {
-				modules: {},
-				moduleList: [],
-			},
-			memoryDefaultsByModuleId: {},
-			projectMemoryExposuresByGroupPath: {},
-		},
-		callbacks: {
-			loadSession: createMockAsyncFunction(null),
-		},
-		runtimeRegistry: {
-			WebWorkerRuntime: {
-				id: 'WebWorkerRuntime',
-				editorConfigSchema: {
-					root: 'workerRuntime',
-					defaults: workerRuntimeDefaults,
-					schema: { type: 'object', properties: {} },
+			result: {
+				compiledModules: {},
+				memoryPlan: {
+					modules: {},
+					moduleList: [],
 				},
-				factory: mockRuntimeFactory,
+				memoryDefaultsByModuleId: {},
+				projectMemoryExposuresByGroupPath: {},
 			},
 		},
+		callbacks: {},
 		codeBlockRendering: {
 			rootCodeBlocks,
 			codeBlocks: rootCodeBlocks,
 			entryOutlines: [],
 			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,
-			outputsByWordAddress: new Map(),
 		},
 		contextMenu: {
 			highlightedItem: 0,
@@ -183,37 +158,14 @@ export function createMockState(overrides: DeepPartial<State> = {}): State {
 				memoryReinitialized: false,
 			},
 		},
-		tooltip: {
-			text: [],
-			characters: [],
-			colors: [],
-			lineCount: 0,
-			widthChars: 0,
-			layout: {
-				horizontalPadding: 0,
-				width: 0,
-				height: 0,
-				x: 0,
-				y: 0,
-				lineX: 0,
-			},
-			highlights: [],
-			liveValues: [],
-			target: undefined,
-			animation: {
-				startedAt: undefined,
-			},
-		},
 		featureFlags: {
 			contextMenu: true,
 			moduleDragging: true,
 			codeLineSelection: true,
 			viewportDragging: true,
-			editing: true,
 			modeToggling: true,
 			modeOverlay: true,
 			offscreenBlockArrows: true,
-			projectOpening: true,
 			projectCreation: true,
 		},
 		editorMode: 'edit',
@@ -222,8 +174,7 @@ export function createMockState(overrides: DeepPartial<State> = {}): State {
 		editorConfigSchemaContributions: {},
 		historyStack: [],
 		redoStack: [],
-		storageQuota: { usedBytes: 0, totalBytes: 0 },
-		binaryAssets: [],
+		envConstantContributions: {},
 		codeErrors: {
 			compilationErrors: [],
 			editorDirectiveErrors: [],
@@ -233,9 +184,6 @@ export function createMockState(overrides: DeepPartial<State> = {}): State {
 			maxLogs: 100,
 		},
 		assertionResults: [],
-		runtime: {
-			values: {},
-		},
 		globalEditorDirectives: {},
 		dialog: {
 			id: '',
@@ -276,10 +224,17 @@ export function createMockState(overrides: DeepPartial<State> = {}): State {
 		},
 	};
 
-	return mergeDeep(defaults, overrides);
+	const state = mergeDeep<State>(defaults, overrides);
+	const rendering = overrides.codeBlockRendering;
+	if (rendering?.rootCodeBlocks !== undefined && rendering.codeBlocks === undefined) {
+		state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
+	} else if (rendering?.codeBlocks !== undefined && rendering.rootCodeBlocks === undefined) {
+		state.codeBlockRendering.rootCodeBlocks = state.codeBlockRendering.codeBlocks;
+	}
+	return state;
 }
 
-function mergeDeep<T>(target: T, source: DeepPartial<T>): T {
+function mergeDeep<T>(target: T, source: unknown): T {
 	if (typeof target !== 'object' || target === null || Array.isArray(target)) {
 		return target;
 	}
@@ -316,7 +271,7 @@ function mergeDeep<T>(target: T, source: DeepPartial<T>): T {
 			!(targetValue instanceof Set);
 
 		if (shouldMerge) {
-			result[targetKey] = mergeDeep(targetValue, sourceValue as DeepPartial<typeof targetValue>);
+			result[targetKey] = mergeDeep(targetValue, sourceValue);
 		} else {
 			result[targetKey] = sourceValue as T[keyof T];
 		}

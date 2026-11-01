@@ -42,13 +42,11 @@ export function createCompilationContext<TContext extends CompilationContext = C
 		},
 	};
 	const blockState = createBlockState(context.blockStack);
-	const activeBlockDepths = overrides.activeBlockDepths ?? blockState.activeBlockDepths;
 	const activeLoopBlocks = overrides.activeLoopBlocks ?? blockState.activeLoopBlocks;
 	const activeMapBlock = overrides.activeMapBlock ?? blockState.activeMapBlock;
 
 	return {
 		...context,
-		activeBlockDepths,
 		activeLoopBlocks,
 		activeMapBlock,
 	} as TContext;

@@ -3,7 +3,7 @@ title: 'TODO: Track block context flags during stack analysis'
 priority: Medium
 effort: 2-4h
 created: 2026-05-19
-issue: https://github.com/andorthehood/8f4e/issues/662
+issue: https://github.com/8f4e/8f4e/issues/662
 status: Completed
 completed: 2026-05-19
 ---

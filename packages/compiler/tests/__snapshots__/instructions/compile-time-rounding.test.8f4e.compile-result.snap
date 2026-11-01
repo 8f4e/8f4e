@@ -305,6 +305,8 @@
     "explicitRoundingAssertions": {
       "memory": {
         "lowerBuffer": {
+          "allocationUnitAddress": 6,
+          "allocationUnitCount": 4,
           "byteAddress": 24,
           "default": {},
           "elementWordSize": 4,
@@ -314,10 +316,10 @@
           "numberOfElements": 4,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 6,
-          "wordAlignedSize": 4,
         },
         "nearestBuffer": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 5,
           "byteAddress": 4,
           "default": {},
           "elementWordSize": 4,
@@ -327,10 +329,10 @@
           "numberOfElements": 5,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 5,
         },
         "upperBuffer": {
+          "allocationUnitAddress": 10,
+          "allocationUnitCount": 2,
           "byteAddress": 40,
           "default": {},
           "elementWordSize": 4,
@@ -340,8 +342,6 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 10,
-          "wordAlignedSize": 2,
         },
       },
     },

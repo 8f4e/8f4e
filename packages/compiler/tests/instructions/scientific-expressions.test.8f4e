@@ -1,0 +1,44 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+Scientific notation works in compile-time expressions.
+noteEnd
+
+function smallFloat
+#export
+const SCALE 2.0
+push SCALE*1e-3
+functionEnd float
+
+function smallDouble
+#export
+const SCALE 2.0f64
+push SCALE*1E-3f64
+functionEnd float64
+
+entry test
+module scientificExpressionAssertions
+call smallFloat
+assertEqual 0.002
+
+call smallDouble
+assertEqual 0.002f64
+
+const SCALE 2.0
+const VALUE 3.0
+
+push SCALE*1e+3
+assertEqual 2000.0
+
+push 1E-3*SCALE
+assertEqual 0.002
+
+push 1e-3+2E-3f64
+assertEqual 0.003f64
+
+push VALUE-1
+assertEqual 2.0
+moduleEnd
+entryEnd

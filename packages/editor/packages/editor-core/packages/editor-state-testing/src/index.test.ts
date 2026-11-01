@@ -9,7 +9,7 @@ describe('editor-state testing utilities', () => {
 			y: 32,
 			width: 80,
 			height: 40,
-			code: ['module synth', '; @home @favorite', 'moduleEnd'],
+			code: ['module synth', '; @home @testDirective', 'moduleEnd'],
 		});
 
 		expect(block.gridX).toBe(2);
@@ -35,7 +35,7 @@ describe('editor-state testing utilities', () => {
 					prefix: '@',
 					name: 'home',
 					args: [],
-					rawRow: 1,
+					sourceLineIndex: 1,
 					sourceLine: '; @home',
 					isTrailing: false,
 				},
@@ -47,7 +47,7 @@ describe('editor-state testing utilities', () => {
 				prefix: '@',
 				name: 'home',
 				args: [],
-				rawRow: 1,
+				sourceLineIndex: 1,
 				sourceLine: '; @home',
 				isTrailing: false,
 			},
@@ -64,7 +64,7 @@ describe('editor-state testing utilities', () => {
 		expect(state.info.compiler?.compilationTimeMs).toBe(120);
 		expect(state.viewport.width).toBe(400);
 		expect(state.viewport.height).toBe(768);
-		expect(state.codeBlockRendering.outputsByWordAddress).not.toBe(secondState.codeBlockRendering.outputsByWordAddress);
+		expect(state.codeBlockRendering.codeBlocks).not.toBe(secondState.codeBlockRendering.codeBlocks);
 	});
 
 	it('creates no-op event dispatchers and viewports', () => {
@@ -80,5 +80,55 @@ describe('editor-state testing utilities', () => {
 			roundedWidth: 300,
 			roundedHeight: 200,
 		});
+	});
+
+	it('provides complete compiler defaults and fresh mutable state for every fixture', async () => {
+		const state = createMockState();
+		const other = createMockState();
+		expect(state.compiler.result.memoryPlan).toEqual({ modules: {}, moduleList: [] });
+		expect(state.compiler.result.projectMemoryExposuresByGroupPath).toEqual({});
+		expect(state.compiler.result.memoryDefaultsByModuleId).toEqual({});
+		expect(state.compiler.result.memoryPlan.moduleList).not.toBe(other.compiler.result.memoryPlan.moduleList);
+		state.compiler.result.projectMemoryExposuresByGroupPath.root = [];
+		state.codeBlockRendering.codeBlocks.push(createMockCodeBlock());
+		expect(other.compiler.result.memoryPlan.moduleList).toEqual([]);
+		expect(other.compiler.result.projectMemoryExposuresByGroupPath).toEqual({});
+		expect(other.codeBlockRendering.codeBlocks).toEqual([]);
+	});
+
+	it('uses a root-only block override as the active slice without copying it', () => {
+		const blocks = [createMockCodeBlock()];
+		const state = createMockState({ codeBlockRendering: { rootCodeBlocks: blocks } });
+		expect(state.codeBlockRendering.rootCodeBlocks).toBe(blocks);
+		expect(state.codeBlockRendering.codeBlocks).toBe(blocks);
+	});
+
+	it('owns an active-only block override in the root tree', () => {
+		const blocks = [createMockCodeBlock()];
+		const state = createMockState({ codeBlockRendering: { codeBlocks: blocks } });
+		expect(state.codeBlockRendering.rootCodeBlocks).toBe(blocks);
+		expect(state.codeBlockRendering.codeBlocks).toBe(blocks);
+	});
+
+	it('preserves an explicitly selected nested slice and its project ownership', () => {
+		const nested = [createMockCodeBlock({ projectPath: 'group' })];
+		const root = [createMockCodeBlock({ name: 'group', nestedProjectCodeBlocks: nested })];
+		const state = createMockState({ codeBlockRendering: { rootCodeBlocks: root, codeBlocks: nested } });
+		expect(state.codeBlockRendering.rootCodeBlocks).toBe(root);
+		expect(state.codeBlockRendering.codeBlocks).toBe(root[0].nestedProjectCodeBlocks);
+	});
+
+	it('retains callback and collection overrides while preserving unrelated nested defaults', async () => {
+		const writeClipboardText = async (_text: string) => {};
+		const blocks = [createMockCodeBlock()];
+		const state = createMockState({
+			callbacks: { writeClipboardText },
+			codeBlockRendering: { codeBlocks: blocks },
+			compiler: { isCompiling: true },
+		});
+		expect(state.callbacks.writeClipboardText).toBe(writeClipboardText);
+		expect(state.codeBlockRendering.codeBlocks).toBe(blocks);
+		expect(state.compiler.isCompiling).toBe(true);
+		expect(state.compiler.result.memoryPlan).toEqual({ modules: {}, moduleList: [] });
 	});
 });

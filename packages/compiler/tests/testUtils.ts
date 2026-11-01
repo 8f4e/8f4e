@@ -124,9 +124,9 @@ function serializeMemoryData(
 		type: data.type,
 		numberOfElements: data.numberOfElements,
 		elementWordSize: data.elementWordSize,
-		wordAlignedSize: data.wordAlignedSize,
+		allocationUnitCount: data.allocationUnitCount,
 		byteAddress: data.byteAddress,
-		wordAlignedAddress: data.wordAlignedAddress,
+		allocationUnitAddress: data.allocationUnitAddress,
 		default: serializeDefaultValue(memoryDefault?.value ?? 0),
 		...(memoryDefault?.hasExplicitDefault ? { hasExplicitDefault: true } : {}),
 		...(memoryDefault?.isInherited ? { isInherited: true } : {}),
@@ -185,8 +185,8 @@ function serializeCompiledModuleOverview(
 		index: module.index,
 		...(module.executionEntryName ? { executionEntryName: module.executionEntryName } : {}),
 		byteAddress: plannedModule.byteAddress,
-		wordAlignedAddress: plannedModule.byteAddress / 4,
-		wordAlignedSize: plannedModule.wordAlignedSize,
+		allocationUnitAddress: plannedModule.byteAddress / 4,
+		allocationUnitCount: plannedModule.allocationUnitCount,
 		...(module.skipExecutionInCycle ? { skipExecutionInCycle: true } : {}),
 	};
 }

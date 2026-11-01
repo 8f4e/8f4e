@@ -1808,6 +1808,8 @@
     "nearestValueFloatAssertions": {
       "memory": {
         "ties": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 2,
           "byteAddress": 20,
           "default": {
             "0": 0.25,
@@ -1821,10 +1823,10 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 5,
-          "wordAlignedSize": 2,
         },
         "values": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 4,
           "byteAddress": 4,
           "default": {
             "0": -1,
@@ -1840,14 +1842,14 @@
           "numberOfElements": 4,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 4,
         },
       },
     },
     "nearestValueIntAssertions": {
       "memory": {
         "ties": {
+          "allocationUnitAddress": 12,
+          "allocationUnitCount": 2,
           "byteAddress": 48,
           "default": {
             "0": 0,
@@ -1861,10 +1863,10 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 12,
-          "wordAlignedSize": 2,
         },
         "values": {
+          "allocationUnitAddress": 7,
+          "allocationUnitCount": 5,
           "byteAddress": 28,
           "default": {
             "0": -10,
@@ -1881,8 +1883,6 @@
           "numberOfElements": 5,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 7,
-          "wordAlignedSize": 5,
         },
       },
     },

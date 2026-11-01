@@ -54,6 +54,7 @@
   "release": {
     "projects": [
       "*",
+      "!@8f4e/release",
       "!glugglugglug"
     ],
     "projectsRelationship": "independent",

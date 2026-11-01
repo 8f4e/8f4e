@@ -7,25 +7,22 @@ export default function generateContextMenuMock(): ContextMenu {
 		items: [
 			{
 				title: '.................... New Module',
-				action: 'addCodeBlock',
+				action: 'createCodeBlock',
 				payload: {
-					isNew: true,
+					blockType: 'module',
 				},
 				close: true,
 			},
 			{
 				title: '.............. Paste Code Block',
-				action: 'addCodeBlock',
-				payload: {
-					isPaste: true,
-				},
+				action: 'pasteCodeBlocks',
 				close: true,
 			},
 			{
-				title: '......... Add Built-in Module >',
+				title: '................. More Actions >',
 				action: 'openSubMenu',
 				payload: {
-					menu: 'moduleCategoriesMenu',
+					menu: 'moreActionsMenu',
 				},
 				close: false,
 				disabled: false,
@@ -44,21 +41,6 @@ export default function generateContextMenuMock(): ContextMenu {
 			{
 				title: '................ Open From Disk',
 				action: 'open',
-				close: true,
-				disabled: false,
-			},
-			{
-				divider: true,
-			},
-			{
-				title: '................ Export Project',
-				action: 'exportProject',
-				close: true,
-				disabled: false,
-			},
-			{
-				title: '............ Export WebAssembly',
-				action: 'exportWasm',
 				close: true,
 				disabled: false,
 			},

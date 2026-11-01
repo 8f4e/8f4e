@@ -10,3 +10,4 @@ It should not emit WebAssembly bytes, allocate target-specific function indexes 
 `CodegenContext` and constructor in `@8f4e/wasm-codegen`, with only resolved function metadata,
 native locals, bytecode, and diagnostic context. Both contexts share `BlockState` tracking through
 `createBlockState`, `pushBlock`, and `popBlock`; loop frames retain the metadata owned by their stage.
+Block tracking keeps the ordered `blockStack`, `activeLoopBlocks`, and `activeMapBlock` without duplicating block depths or boolean placement flags.

@@ -59,7 +59,7 @@ rg -n "is[A-Z]|has[A-Z]|kind|type|defaultSet|mode|phase|state" packages/compiler
 Search for fields that tend to travel as a group:
 
 ```sh
-rg -n "pointee|address|byteAddress|wordAlignedSize|isInteger|isFloat64" packages/compiler/packages/language-spec/src packages/compiler/src -g '*.ts'
+rg -n "pointee|address|byteAddress|allocationUnitCount|isInteger|isFloat64" packages/compiler/packages/language-spec/src packages/compiler/src -g '*.ts'
 ```
 
 For a quick ranked list, use a small script from the repo root:

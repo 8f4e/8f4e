@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, ProjectChange } from '@8f4e/editor-state-types';
 import { defaultFeatureFlags } from './featureFlags';
 
 export default function createDefaultState() {
@@ -6,15 +6,18 @@ export default function createDefaultState() {
 
 	return {
 		compilerInputRevision: 0,
+		projectChange: { revision: 0, kind: 'replace' } satisfies ProjectChange,
 		compiler: {
 			isCompiling: false,
-			compiledModules: {},
-			memoryPlan: {
-				modules: {},
-				moduleList: [],
+			result: {
+				compiledModules: {},
+				memoryPlan: {
+					modules: {},
+					moduleList: [],
+				},
+				memoryDefaultsByModuleId: {},
+				projectMemoryExposuresByGroupPath: {},
 			},
-			memoryDefaultsByModuleId: {},
-			projectMemoryExposuresByGroupPath: {},
 		},
 		codeBlockRendering: {
 			rootCodeBlocks,
@@ -22,7 +25,6 @@ export default function createDefaultState() {
 			entryOutlines: [],
 			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,
-			outputsByWordAddress: new Map(),
 			selectedCodeBlockForProgrammaticEdit: undefined,
 		},
 		contextMenu: {
@@ -48,27 +50,6 @@ export default function createDefaultState() {
 				memoryReinitialized: false,
 			},
 		},
-		tooltip: {
-			text: [],
-			characters: [],
-			colors: [],
-			lineCount: 0,
-			widthChars: 0,
-			layout: {
-				horizontalPadding: 0,
-				width: 0,
-				height: 0,
-				x: 0,
-				y: 0,
-				lineX: 0,
-			},
-			highlights: [],
-			liveValues: [],
-			target: undefined,
-			animation: {
-				startedAt: undefined,
-			},
-		},
 		featureFlags: defaultFeatureFlags,
 		editorMode: 'view' as const,
 		editorConfig: {},
@@ -76,8 +57,7 @@ export default function createDefaultState() {
 		editorConfigSchemaContributions: {},
 		historyStack: [],
 		redoStack: [],
-		storageQuota: { usedBytes: 0, totalBytes: 0 },
-		binaryAssets: [],
+		envConstantContributions: {},
 		codeErrors: {
 			compilationErrors: [],
 			editorDirectiveErrors: [],
@@ -88,9 +68,6 @@ export default function createDefaultState() {
 		},
 		globalEditorDirectives: {},
 		assertionResults: [],
-		runtime: {
-			values: {},
-		},
 		dialog: {
 			id: '',
 			text: '',

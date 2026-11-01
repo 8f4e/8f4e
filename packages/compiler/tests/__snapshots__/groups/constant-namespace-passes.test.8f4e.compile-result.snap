@@ -468,6 +468,8 @@
     "audio/nested/nestedVoice": {
       "memory": {
         "blockSize": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 48,
           "elementWordSize": 4,
@@ -478,10 +480,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
         "doubleBlock": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 96,
           "elementWordSize": 4,
@@ -492,14 +494,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
       },
     },
     "audio/voice": {
       "memory": {
         "blockSize": {
+          "allocationUnitAddress": 52,
+          "allocationUnitCount": 1,
           "byteAddress": 208,
           "default": 48,
           "elementWordSize": 4,
@@ -510,10 +512,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 52,
-          "wordAlignedSize": 1,
         },
         "doubleBlock": {
+          "allocationUnitAddress": 53,
+          "allocationUnitCount": 1,
           "byteAddress": 212,
           "default": 96,
           "elementWordSize": 4,
@@ -524,10 +526,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 53,
-          "wordAlignedSize": 1,
         },
         "rate": {
+          "allocationUnitAddress": 51,
+          "allocationUnitCount": 1,
           "byteAddress": 204,
           "default": 48000,
           "elementWordSize": 4,
@@ -538,10 +540,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 51,
-          "wordAlignedSize": 1,
         },
         "samples": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 48,
           "byteAddress": 12,
           "default": {},
           "elementWordSize": 4,
@@ -552,14 +554,14 @@
           "numberOfElements": 48,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 48,
         },
       },
     },
     "root": {
       "memory": {
         "rate": {
+          "allocationUnitAddress": 54,
+          "allocationUnitCount": 1,
           "byteAddress": 216,
           "default": 48000,
           "elementWordSize": 4,
@@ -570,8 +572,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 54,
-          "wordAlignedSize": 1,
         },
       },
     },

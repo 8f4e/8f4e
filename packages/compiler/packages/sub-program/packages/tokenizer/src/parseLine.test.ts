@@ -72,6 +72,22 @@ describe('parseLine', () => {
 		);
 	});
 
+	it('preserves arithmetic-looking quoted strings as string arguments', () => {
+		const result = parseLine('push "2*3.0"', 0);
+		expect(result.instruction).toBe('push');
+		expect(result.arguments).toEqual([{ type: ArgumentType.STRING_LITERAL, value: '2*3.0' }]);
+	});
+
+	it('reports malformed string escapes as INVALID_STRING_LITERAL', () => {
+		try {
+			parseLine('push "\\z"', 0);
+			throw new Error('Expected parseLine to reject the malformed escape');
+		} catch (error) {
+			expect(error).toBeInstanceOf(SyntaxRulesError);
+			expect((error as SyntaxRulesError).code).toBe(SyntaxErrorCode.INVALID_STRING_LITERAL);
+		}
+	});
+
 	it('parses a quoted string argument as STRING_LITERAL', () => {
 		const result = parseLine('push "hello"', 0);
 		expect(result.instruction).toBe('push');

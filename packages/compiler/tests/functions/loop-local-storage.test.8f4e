@@ -29,7 +29,7 @@ constantsEnd
 
 note
 ; @pos 18 22
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Loop counters keep distinct
 storage from locals declared

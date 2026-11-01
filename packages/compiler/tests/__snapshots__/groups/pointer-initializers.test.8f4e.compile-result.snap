@@ -51,6 +51,29 @@
           "instruction": "assertEqual",
         },
         {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-count",
+              "scope": "local",
+              "targetMemoryId": "input",
+              "type": "identifier",
+              "value": "count(*input)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
           "arguments": [],
           "instruction": "moduleEnd",
         },
@@ -101,6 +124,29 @@
               "isInteger": true,
               "type": "literal",
               "value": 17,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-count",
+              "scope": "local",
+              "targetMemoryId": "input",
+              "type": "identifier",
+              "value": "count(*input)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
             },
           ],
           "instruction": "assertEqual",
@@ -441,6 +487,8 @@
     "consumer/processor": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 16,
           "elementWordSize": 4,
@@ -451,16 +499,17 @@
           "isUnsigned": false,
           "numberOfElements": 1,
           "pointeeBaseType": "int",
+          "pointeeElementCount": 1,
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },
     "outer/inner/processor": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 12,
           "elementWordSize": 4,
@@ -470,16 +519,17 @@
           "isUnsigned": false,
           "numberOfElements": 1,
           "pointeeBaseType": "int",
+          "pointeeElementCount": 1,
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
       },
     },
     "outer/source": {
       "memory": {
         "output": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
           "byteAddress": 12,
           "default": 17,
           "elementWordSize": 4,
@@ -490,14 +540,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 1,
         },
       },
     },
     "signal/data": {
       "memory": {
         "value": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": 55,
           "elementWordSize": 4,
@@ -508,14 +558,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
         },
       },
     },
     "source": {
       "memory": {
         "alternate": {
+          "allocationUnitAddress": 8,
+          "allocationUnitCount": 2,
           "byteAddress": 32,
           "default": {
             "0": 91,
@@ -529,10 +579,10 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 8,
-          "wordAlignedSize": 2,
         },
         "output": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 3,
           "byteAddress": 20,
           "default": {
             "0": 41,
@@ -547,14 +597,14 @@
           "numberOfElements": 3,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 5,
-          "wordAlignedSize": 3,
         },
       },
     },
     "synth/processor": {
       "memory": {
         "fallback": {
+          "allocationUnitAddress": 11,
+          "allocationUnitCount": 2,
           "byteAddress": 44,
           "default": {
             "0": 7,
@@ -568,10 +618,10 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 11,
-          "wordAlignedSize": 2,
         },
         "input": {
+          "allocationUnitAddress": 10,
+          "allocationUnitCount": 1,
           "byteAddress": 40,
           "default": 20,
           "elementWordSize": 4,
@@ -584,14 +634,14 @@
           "pointeeElementCount": 3,
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 10,
-          "wordAlignedSize": 1,
         },
       },
     },
     "synth/source": {
       "memory": {
         "output": {
+          "allocationUnitAddress": 13,
+          "allocationUnitCount": 1,
           "byteAddress": 52,
           "default": 999,
           "elementWordSize": 4,
@@ -602,8 +652,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 13,
-          "wordAlignedSize": 1,
         },
       },
     },

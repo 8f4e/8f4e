@@ -10,12 +10,11 @@ Editor directives should be owned by the directive itself.
 
 That means each directive should keep its:
 
-- parsing
+- argument interpretation
 - derived code-block contributions
-- widget and layout behavior
 - directive-specific tests
 
-in one place under the directives feature area.
+in its owning core feature or optional plugin package. Layout requests and geometry subscriptions use the separate layout service.
 
 The shared directive engine should stay generic. It should coordinate directive parsing and application, but it should not hardcode directive-specific behavior such as plotter buckets, wave rules, or layout switches.
 
@@ -23,12 +22,16 @@ This document is specifically about the code-block directive system under `code-
 
 ## Architecture Overview
 
-There are two distinct concerns that must stay separate:
+There are three distinct concerns that must stay separate:
 
 **Directive semantics** — what a directive means:
 - parsing directive arguments
-- deriving block state, layout, and widget contributions
+- deriving block state and source display semantics
 - owned by each directive folder under `directives/`
+
+**Layout** — space, dimensions, and widget geometry:
+- independent contribution values and layout subscriptions
+- core layout service plus plugin-owned interpretation and geometry
 
 **Directive editing** — how directive source lines are rewritten:
 - inserting, removing, or updating directive lines in code
@@ -50,15 +53,8 @@ Typical structure:
 ```txt
 directives/
   registry.ts
-  types.ts
   utils.ts
-  plot/
-    data.ts
-    plugin.ts
-    resolve.ts
-    data.test.ts
-    resolve.test.ts
-  wave/
+  hide/
     data.ts
     plugin.ts
     resolve.ts
@@ -74,21 +70,27 @@ directiveEditing/
 
 Each directive folder should contain its own semantic logic. Avoid putting directive-specific logic back into `registry.ts`. Source rewriting belongs in `directiveEditing/`.
 
-## Directive Flow
+Optional directive interpretation belongs in editor plugin packages. Generic parsing remains in core. Plugins can
+use `matchEditorDirectives(codeBlock.parsedDirectives, [{ name, aliases }])` without registering a directive handler.
+Core keeps these records current when source changes, including directives whose plugins are not installed.
+The matcher selects names, normalizes aliases, and preserves source order, duplicates, and source context
+(`sourceLineIndex`, `sourceLine`, and `isTrailing`). It does not scan source or interpret feature arguments.
 
-The current directive pipeline is:
+Use `parseBlockDirectives(code)` for source that has not entered the editor, such as incoming modules, clipboard
+batches, or the lazy loader's whole-project snapshot. Live-block consumers must reuse `parsedDirectives`.
+Directive subscriptions are deferred; plugins can consume cached records from their existing subscriptions.
 
-1. `deriveDirectiveState(code, options)` scans the block once and parses all registered directives.
-2. Each directive plugin applies its own contributions to a shared draft.
-3. `codeBlockRendering` consumes the derived result.
-4. Directive-owned widget contributions optionally run `beforeGraphicDataWidthCalculation(...)` before width calculation.
-5. Directive-owned widget contributions run `afterGraphicDataWidthCalculation(...)` after width calculation.
+## Directive and Layout Flow
 
-The important boundary is:
+1. Core parses source into cached records when source changes and derives block/display semantics from its directive definitions.
+2. Core calculates dimensions, display rows, source-line gaps, and cursor coordinates using independent layout requests.
+3. Layout subscribers receive the calculated block and current state. A plugin can read directives or other inputs,
+   update its requests, and derive private widget geometry.
+4. Changed requests trigger recalculation; unchanged requests do nothing. Core completes these calculations
+   synchronously before publishing the render projection.
 
-- directives contribute data and behavior
-- the engine coordinates
-- the renderer consumes derived state
+No directive definition owns layout callbacks or space requests. A plugin without any directive can use the same
+layout service, for example to reserve space after asynchronously loaded data arrives.
 
 ## Shared Directive Editing Primitives
 
@@ -100,7 +102,8 @@ import { removeDirective, upsertDirective, updateDirectiveArgs } from '../direct
 
 ### `removeDirective(code, name)`
 
-Removes all lines containing a directive with the given name.
+Removes every matching directive, preserving other directives and any instruction before a trailing comment.
+A standalone comment line is removed when it has no remaining directives.
 
 ```ts
 // Remove all ; @group lines
@@ -124,28 +127,33 @@ code = upsertDirective(code, 'disabled');
 Updates the arguments of all existing directive lines with the given name. Useful when you need to modify args without changing line placement.
 
 ```ts
-// Toggle nonstick flag on ; @group directive
+// Set the requested nonstick mode on ; @group directive
 code = updateDirectiveArgs(code, 'group', ([groupName]) =>
   makeNonstick ? [groupName, 'nonstick'] : [groupName]
 );
 ```
 
+Apply replacement source through the public state helper once the action has checked edit mode:
+
+```ts
+import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+
+applyCodeBlockSourceEdits(store, [{ codeBlock, code }], { affectsCompilation: false });
+```
+
+Pass all changed owners in one batch. The helper refreshes blocks and publishes one completed project change;
+set `affectsCompilation: true` when the edit changes compiler inputs. It handles empty and unchanged batches.
+
 ## Shared Types
 
 The main shared types are in:
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/types.ts`
+- `packages/editor/packages/editor-core/packages/editor-state-types/src/features/code-blocks/features/directives/types.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/registry.ts`
 
-The derived directive state currently includes:
-
-- `blockState`
-- `displayState`
-- `displayModel`
-- `layoutContributions`
-- `widgets`
-
-`widgets` is intentionally generic. Do not add directive-specific buckets like `plotters`, `sliders`, or `pianos` to shared directive state.
+Derived directive state contains `blockState`, `displayState`, and `displayModel`. Layout types live separately in
+`editor-state-types/src/features/code-blocks/layout.ts`: `CodeBlockLayoutContribution`, `EditorLayoutContribution`,
+`CodeBlockLayoutContext`, and `EditorLayoutRegistry`. Keep feature-specific widget models private to their plugins.
 
 ## Adding a New Directive
 
@@ -189,12 +197,15 @@ handles the common syntax:
 ```txt
 ; @directiveName argument1 argument2 ...
 ; @directiveName argument1 @otherDirective
+int value 0 ; @directiveName argument1
 ```
 
 Multiple directives may share one comment line. Shared syntax utilities parse
 one directive record per `@name` token, and source-editing helpers must preserve
 unrelated directives on the same line.
 
+Standalone and trailing comments share the same syntax for every directive. Placement is never an opt-in rule.
+Plugins may use source context for feature-specific interpretation, such as inferring a watch target from a declaration.
 Directives should not re-parse their own comment syntax.
 
 Use the shared argument validators in
@@ -206,7 +217,7 @@ Directive folders should only:
 
 - interpret `args`
 - derive typed directive data
-- contribute block state, layout, display changes, or widgets
+- derive block/display semantics or use the separate layout service for widget requests and geometry
 
 If a directive needs more context than a single line, keep that extra derivation logic inside the directive folder. Do not move it into the central registry.
 
@@ -220,52 +231,38 @@ Use `plugin.ts` to contribute block-level metadata such as:
 
 If a directive changes how code should be displayed, that should be modeled as a directive-owned contribution to the display model, not as a renderer hack in `codeBlockRendering`.
 
-## Layout Contributions
+## Layout Contributions and Subscriptions
 
-If a directive needs extra vertical space, it should add a layout contribution from its own plugin.
-
-Example shape:
+A plugin receives `layout` in its setup context. Create an owner for requests and update a complete per-block value:
 
 ```ts
-draft.layoutContributions.push({
-  rawRow: directive.rawRow,
-  rows: 2,
+const contribution = layout.createContribution();
+contribution.update(codeBlock, {
+  verticalSpaceAfterSourceLine: [{ sourceLineIndex: 2, heightInRows: 2 }],
+  minGridWidth: 40,
 });
 ```
 
-Do not centralize directive layout rules in a global switch.
+Source lines are zero-based; heights use editor rows and widths use editor columns. Space after the same line adds
+across owners; minimum widths combine by maximum. Core maps source lines to display rows and skips hidden lines.
+`remove(codeBlock)` clears one block and `dispose()` removes all requests belonging to that owner.
 
-## Widget Contributions
+Subscribe with `layout.subscribe(({ codeBlock, state }) => { ... })`. The callback runs for the current visible blocks
+immediately and whenever their layout is calculated, including source, font, metadata, and contribution changes.
+Dimensions, display rows, gaps, cursor coordinates, and cached directive records are current. Match records through
+`matchEditorDirectives` if your feature uses directives; other features can derive requests from different inputs.
 
-Directive-owned widgets should use generic widget contributions.
-
-A widget contribution can:
-
-- `beforeGraphicDataWidthCalculation(...)`
-- `afterGraphicDataWidthCalculation(...)`
-
-Use `beforeGraphicDataWidthCalculation(...)` when the directive must affect graphic data before block width is computed, for example setting `minGridWidth`.
-
-Use `afterGraphicDataWidthCalculation(...)` when the directive builds runtime/editor widgets after layout information is available.
-
-The center should only iterate widget contributions. It should not know concrete widget categories.
+Subscribers may replace their own requests. An unchanged value is a no-op; changed values cause another calculation
+before rendering. Keep geometry in a private map shared by drawing and hit testing. Coordinates are relative to the
+block; viewport placement remains core-owned. Unsubscribe before disposing requests so callbacks cannot resubmit them.
+Plugins own every subscription and contribution disposer. Layout changes do not edit source or trigger compilation.
 
 ## Testing
 
-Keep directive tests in the directive folder.
-
-Typical test split:
-
-- `data.test.ts` for generic parse output plus argument-to-data derivation
-- `resolve.test.ts` for widget/layout behavior through the real directive pipeline
-
-Prefer testing through:
-
-- `deriveDirectiveState(...)`
-- `runBeforeGraphicDataWidthCalculation(...)`
-- `runAfterGraphicDataWidthCalculation(...)`
-
-instead of reviving old directive-specific update entry points.
+Test semantic directives through `deriveDirectiveState`; keep generic syntax parsing tests in core and feature argument
+interpretation tests in the owning package. Test layout through actual contribution updates and subscriptions, including
+source/metadata changes, cleanup, and geometry shared by drawing and hit testing. No compatibility directive-layout
+callbacks remain. Use plugin integration tests and browser screenshots to verify visible behavior.
 
 ## Boundaries To Preserve
 
@@ -275,14 +272,14 @@ Good:
 - `directiveEditing/` for all source rewriting mechanics
 - generic shared directive engine
 - generic directive syntax parsing
-- directive-owned argument interpretation and widget logic
+- plugin-owned argument interpretation and independent layout requests/widget geometry
 - directive-owned tests
 - action features remain separate (e.g., group togglers) but delegate source edits to `directiveEditing/`
 
 Bad:
 
 - central registry switches with directive-specific numbers or behavior
-- shared directive state with concrete buckets like `plotters`
+- layout requests or callbacks embedded in directive state, or shared concrete widget buckets
 - directive logic split across unrelated feature folders
 - directive-specific comment parsers that duplicate the shared syntax parser
 - reintroducing directive-specific `updateGraphicData.ts` files outside `directives/`

@@ -1,7 +1,10 @@
 import { WASM_F64_GE } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest, createStackFacts } from '../testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	createStackFacts,
+} from '../../tests/testUtils';
 import greaterOrEqualUnsigned from './greaterOrEqualUnsigned';
 
 describe('greaterOrEqualUnsigned instruction compiler', () => {

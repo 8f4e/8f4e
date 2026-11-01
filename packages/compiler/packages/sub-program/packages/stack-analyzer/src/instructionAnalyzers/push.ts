@@ -1,15 +1,17 @@
 import type {
 	AddressMetadata,
+	CodegenPushLine,
 	CompilationContext,
+	LiteralPushLine,
 	LocalValueMetadata,
 	PointeeBaseType,
 	PointeeMetadata,
+	PointerLocalMetadata,
 	ResolvedMemoryDeclaration,
 	ResolvedPushLine,
-	SemanticPushLine,
 	Stack,
 } from '@8f4e/language-spec';
-import { ArgumentType, getDereferencedValueKindFromMetadata, getPointerDepthFromMetadata } from '@8f4e/language-spec';
+import { ArgumentType, BASE_TYPE_METADATA, getPointerDepthFromMetadata } from '@8f4e/language-spec';
 import { getResolvedMemoryDeclaration } from '@8f4e/semantic-utils';
 import { kindToStackItem, resolveArgumentValueKind, resolveMemoryValueKind } from '../utils/pushValueKind';
 import { createStackValue, produce } from './stack';
@@ -35,24 +37,19 @@ function getAddressPointeeMetadata(context: CompilationContext, address: Address
 		return undefined;
 	}
 
-	const baseType = (memoryItem.pointeeBaseType ?? memoryItem.type.replace(/\*+$/, '')) as PointeeBaseType;
+	const baseType = (memoryItem.pointeeBaseType ?? memoryItem.type) as PointeeBaseType;
 
 	return {
 		baseType,
 		pointerDepth,
-		elementCount: memoryItem.numberOfElements,
 	} satisfies PointeeMetadata;
 }
 
-function pushLiteralStackItems(line: SemanticPushLine, context: CompilationContext): Stack {
+function pushLiteralStackItems(line: LiteralPushLine, context: CompilationContext): Stack {
 	const argument = line.arguments[0];
 
 	if (argument.type === ArgumentType.STRING_LITERAL) {
 		return Array.from(argument.value, ch => createStackValue('int', { isNonZero: (ch.charCodeAt(0) & 0xff) !== 0 }));
-	}
-
-	if (argument.type === ArgumentType.COMPILE_TIME_EXPRESSION || argument.type === ArgumentType.IDENTIFIER) {
-		return [];
 	}
 
 	const kind = resolveArgumentValueKind(argument);
@@ -80,9 +77,6 @@ function getPointeeMetadata(
 		? {
 				baseType: pointerMetadata.pointeeBaseType,
 				pointerDepth: getPointerDepthFromMetadata(pointerMetadata),
-				...(pointerMetadata.pointeeElementCount !== undefined
-					? { elementCount: pointerMetadata.pointeeElementCount }
-					: {}),
 			}
 		: undefined;
 }
@@ -94,35 +88,26 @@ function pushDereferencedPointerStackItems(
 	const pointerMetadata =
 		line.resolvedTarget.kind === 'memory-pointer'
 			? line.resolvedTarget.memoryItem
-			: line.resolvedTarget.kind === 'local-pointer'
-				? context.locals[line.resolvedTarget.binding.id]!
-				: undefined;
-	if (!pointerMetadata) {
-		return [];
-	}
-	if (!pointerMetadata.pointeeBaseType) {
-		return [];
-	}
+			: (context.locals[line.resolvedTarget.binding.id]! as PointerLocalMetadata);
+	// Reference resolution guarantees a pointer target and a valid dereference depth.
+	const baseType = pointerMetadata.pointeeBaseType!;
 
 	const dereferenceDepth = line.arguments[0].dereferenceDepth;
-	const remainingPointerDepth = getPointerDepthFromMetadata(pointerMetadata) - dereferenceDepth;
+	const remainingPointerDepth = pointerMetadata.pointerDepth - dereferenceDepth;
 	if (remainingPointerDepth > 0) {
 		return [
 			kindToStackItem('int32', {
 				isNonZero: false,
 				address: {},
 				pointsTo: {
-					baseType: pointerMetadata.pointeeBaseType,
+					baseType,
 					pointerDepth: remainingPointerDepth,
-					...(pointerMetadata.pointeeElementCount !== undefined
-						? { elementCount: pointerMetadata.pointeeElementCount }
-						: {}),
 				},
 			}),
 		];
 	}
 
-	const kind = getDereferencedValueKindFromMetadata(pointerMetadata, dereferenceDepth);
+	const kind = BASE_TYPE_METADATA[baseType].valueKind;
 	return [kindToStackItem(kind, { isNonZero: false })];
 }
 
@@ -181,7 +166,7 @@ function pushResolvedTargetStackItems(line: ResolvedPushLine, context: Compilati
  * @param context - Compilation context used by the operation.
  * @returns The relevant stack items for the analysis step.
  */
-export function analyzePush(line: SemanticPushLine, context: CompilationContext): Stack {
+export function analyzePush(line: CodegenPushLine, context: CompilationContext): Stack {
 	const produced =
 		'resolvedTarget' in line ? pushResolvedTargetStackItems(line, context) : pushLiteralStackItems(line, context);
 	produce(context, produced);

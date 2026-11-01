@@ -3,7 +3,7 @@ title: 'TODO: Simplify map codegen with reverse row order'
 priority: Medium
 effort: 2-4h
 created: 2026-09-06
-issue: https://github.com/andorthehood/8f4e/issues/955
+issue: https://github.com/8f4e/8f4e/issues/955
 status: Completed
 completed: 2026-10-09
 ---

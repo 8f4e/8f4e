@@ -105,7 +105,7 @@ Both the compiler and editor packages should then depend on and import from `@8f
 
 ## References
 
-- [PR #197](https://github.com/andorthehood/8f4e/pull/197) - Initial syntax-rules package creation
+- [PR #197](https://github.com/8f4e/8f4e/pull/197) - Initial syntax-rules package creation
 - Current `@8f4e/syntax-rules` package structure
 - Compiler package structure
 - Editor-state package structure

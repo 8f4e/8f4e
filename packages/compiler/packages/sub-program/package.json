@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/sub-program",
-  "version": "0.1.19",
+  "version": "0.2.20",
   "private": true,
   "description": "Compilation pipeline for one closed 8f4e sub-program",
   "type": "module",
@@ -13,14 +13,14 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andorthehood/8f4e.git"
+    "url": "git+https://github.com/8f4e/8f4e.git"
   },
   "author": "Andor Polgar",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/andorthehood/8f4e/issues"
+    "url": "https://github.com/8f4e/8f4e/issues"
   },
-  "homepage": "https://github.com/andorthehood/8f4e#readme",
+  "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
     "@8f4e/compiler-wasm-utils": "*",
     "@8f4e/constant-resolver": "*",

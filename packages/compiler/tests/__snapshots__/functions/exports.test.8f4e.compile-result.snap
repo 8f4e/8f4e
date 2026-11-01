@@ -1,5 +1,55 @@
 {
   "functionAst": {
+    "__proto____void": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "__proto__",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "prototypeAnswer",
+            },
+          ],
+          "instruction": "#export",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 10,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "__proto__",
+      "type": "function",
+    },
     "addForExportSnapshot__int__int": {
       "lines": [
         {
@@ -100,6 +150,106 @@
       "name": "addForExportSnapshot",
       "type": "function",
     },
+    "constructor__void": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "constructor",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "constructorAnswer",
+            },
+          ],
+          "instruction": "#export",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 7,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "constructor",
+      "type": "function",
+    },
+    "hasOwnProperty__void": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "hasOwnProperty",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "ownPropertyAnswer",
+            },
+          ],
+          "instruction": "#export",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 9,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "hasOwnProperty",
+      "type": "function",
+    },
     "multiplyExportedByOwnName__int__int": {
       "lines": [
         {
@@ -193,8 +343,152 @@
       "name": "multiplyExportedByOwnName",
       "type": "function",
     },
+    "sumObjectPropertyFunctions__void": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "sumObjectPropertyFunctions",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "constructor",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "toString",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [],
+          "instruction": "add",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "hasOwnProperty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [],
+          "instruction": "add",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "__proto__",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [],
+          "instruction": "add",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "sumObjectPropertyFunctions",
+      "type": "function",
+    },
+    "toString__void": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "toString",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "stringAnswer",
+            },
+          ],
+          "instruction": "#export",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 8,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "toString",
+      "type": "function",
+    },
   },
   "functionOverview": {
+    "__proto____void": {
+      "exportName": "prototypeAnswer",
+      "id": "__proto____void",
+      "signature": {
+        "parameters": [],
+        "returns": [
+          "int",
+        ],
+      },
+    },
     "addForExportSnapshot__int__int": {
       "exportName": "addFromHost",
       "id": "addForExportSnapshot__int__int",
@@ -208,6 +502,26 @@
         ],
       },
     },
+    "constructor__void": {
+      "exportName": "constructorAnswer",
+      "id": "constructor__void",
+      "signature": {
+        "parameters": [],
+        "returns": [
+          "int",
+        ],
+      },
+    },
+    "hasOwnProperty__void": {
+      "exportName": "ownPropertyAnswer",
+      "id": "hasOwnProperty__void",
+      "signature": {
+        "parameters": [],
+        "returns": [
+          "int",
+        ],
+      },
+    },
     "multiplyExportedByOwnName__int__int": {
       "exportName": "multiplyExportedByOwnName",
       "id": "multiplyExportedByOwnName__int__int",
@@ -216,6 +530,25 @@
           "int",
           "int",
         ],
+        "returns": [
+          "int",
+        ],
+      },
+    },
+    "sumObjectPropertyFunctions__void": {
+      "id": "sumObjectPropertyFunctions__void",
+      "signature": {
+        "parameters": [],
+        "returns": [
+          "int",
+        ],
+      },
+    },
+    "toString__void": {
+      "exportName": "stringAnswer",
+      "id": "toString__void",
+      "signature": {
+        "parameters": [],
         "returns": [
           "int",
         ],
@@ -320,6 +653,111 @@
           "instruction": "assertEqual",
         },
         {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "constructor",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 7,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "toString",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 8,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "hasOwnProperty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 9,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "__proto__",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 10,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "sumObjectPropertyFunctions",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 34,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
           "arguments": [],
           "instruction": "moduleEnd",
         },
@@ -334,8 +772,13 @@
   },
   "overview": {
     "compiledFunctions": [
+      "__proto____void",
       "addForExportSnapshot__int__int",
+      "constructor__void",
+      "hasOwnProperty__void",
       "multiplyExportedByOwnName__int__int",
+      "sumObjectPropertyFunctions__void",
+      "toString__void",
     ],
     "compiledModules": [
       "exportedFunctionAssertions",
@@ -343,9 +786,13 @@
     "requiredMemoryBytes": 4,
     "wasmExports": [
       "addFromHost",
+      "constructorAnswer",
       "initDefaults",
       "main",
       "multiplyExportedByOwnName",
+      "ownPropertyAnswer",
+      "prototypeAnswer",
+      "stringAnswer",
       "test",
     ],
   },

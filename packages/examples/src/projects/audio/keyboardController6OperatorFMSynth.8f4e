@@ -2,6 +2,9 @@
 
 includes
 include std/events/risingEdge
+include std/math/clamp
+include std/math/trig/advancePhase
+include std/math/trig/sine
 includesEnd
 
 function adsrEnv
@@ -142,72 +145,6 @@ ifEnd
 
 functionEnd
 
-function sine
-; @pos -35 72
-; Polynomial approximation
-; of the sine function with
-; Taylor series (7th order)
-; Only works in the range of
-; [-PI, PI]
-
-param float x
-
-use math
-
-; Fold to [-pi/2, pi/2]
-push x
-push HALF_PI
-greaterThan
-if
-push PI
-push x
-sub
-localSet x
-ifEnd
-
-push x
-push HALF_PI
-push -1.0
-mul
-lessThan
-if
-push PI
-push -1.0
-mul
-push x
-sub
-localSet x
-ifEnd
-
-local float x2
-push x
-push x
-mul
-localSet x2
-
-; Taylor coefficients
-const T1 -0.1666666666
-const T2 0.0083333333
-const T3 -0.000198412
-
-push x2
-push T3
-mul
-push T2
-add
-push x2
-mul
-push T1
-add
-push x2
-mul
-push 1.0
-add
-push x
-mul
-
-functionEnd float
-
 function buffer
 ; @pos 2 72
 #export buffer
@@ -253,34 +190,11 @@ functionEnd int
 
 constants env
 ; @pos 2 60
-; @favorite
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
 const SAMPLE_RATE 48000
 const AUDIO_BUFFER_SIZE 128
-
-constantsEnd
-
-constants math
-; @pos 2 74
-
-const PI      3.141592653589793
-const NEG_PI -3.141592653589793
-const TAU     6.283185307179586
-const HALF_PI 1.570796326794896
-const INV_PI  0.318309886183790
-const INV_TAU 0.159154943091895
-const PHI     1.618033988749895
-const DEG2RAD 0.017453292519943
-const RAD2DEG 57.29577951308232
-const SQRT2   1.414213562373095
-const SQRT1_2 0.707106781186547
-const LN2     0.693147180559945
-const LN10    2.302585092994046
-const LOG2E   1.442695040888963
-const LOG10E  0.434294481903251
-const E       2.718281828459045
 
 constantsEnd
 
@@ -456,7 +370,7 @@ prototypeEnd
 
 note
 ; @pos 2 41
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
 ; @config audioRuntime.audioOutBufferRAddress audioout:buffer
@@ -464,78 +378,29 @@ note
 
 noteEnd
 
-note
+note colors
 ; @pos 2 51
-; @config color.text.lineNumber #898178
-; @config color.text.entryName #f0ebe2
-; @config color.text.debugInfo #9d978d
-; @config color.text.arrow #7cd8bc
-; @config color.text.instruction #64d1ad
-; @config color.text.codeComment #aaa195
-; @config color.text.code #e5e1d8
-; @config color.text.infoKey #8fb9b0
-; @config color.text.infoValue #c7df8a
-; @config color.text.errorMessage #fff5f1
-; @config color.text.disabledCode #625d56
-; @config color.text.numbers #c7df8a
-; @config color.text.menuItemText #e5e1d8
-; @config color.text.menuItemTextHighlighted #171412
-; @config color.text.dialogTitle #c7df8a
-; @config color.text.dialogText #e5e1d8
-; @config color.text.binaryZero #716c64
-; @config color.text.binaryOne #64d1ad
-; @config color.text.basePrefix #b6d67c
-; @config color.text.pianoKeyWhitePressedOverlay rgba(23,20,18,0.38)
-; @config color.text.pianoKeyBlackPressedOverlay rgba(100,209,173,0.68)
-; @config color.text.tooltipText #182018
-; @config color.text.tooltipHighlight #527e68
-; @config color.fill.menuItemBackground #302a26
-; @config color.fill.menuItemBackgroundHighlighted #64d1ad
-; @config color.fill.background #151210
-; @config color.fill.backgroundDots #2a2521
-; @config color.fill.backgroundDots2 #493f35
-; @config color.fill.moduleBackground #25211e
-; @config color.fill.debugInfoBackground #1a1715
-; @config color.fill.moduleBackgroundDragged #3a322b
-; @config color.fill.moduleBackgroundDisabled #1c1917
-; @config color.fill.wire rgba(100,209,173,0.24)
-; @config color.fill.wireHighlighted #83e2c2
-; @config color.fill.errorMessageBackground #983f39
-; @config color.fill.assertionPassed #64d1ad
-; @config color.fill.assertionFailed #d66b5f
-; @config color.fill.dialogBackground #302a26
-; @config color.fill.dialogDimmer rgba(10,8,7,0.78)
-; @config color.fill.highlightedCodeLine #3b342d
-; @config color.fill.trace #c7df8a
-; @config color.fill.plotterBackground #0d100c
-; @config color.fill.bars #64d1ad
-; @config color.fill.waveform #c7df8a
-; @config color.fill.meterGreen #64d1ad
-; @config color.fill.meterYellow #d9c66f
-; @config color.fill.meterRed #d66b5f
-; @config color.fill.scanLine #c7df8a
-; @config color.fill.track #423a32
-; @config color.fill.fill #64d1ad
-; @config color.fill.handle #e7e0d4
-; @config color.fill.codeBlockHighlightLevel1 #302922
-; @config color.fill.codeBlockHighlightLevel2 #3a3128
-; @config color.fill.codeBlockHighlightLevel3 #45392e
-; @config color.fill.pianoKeyWhite #ded8cc
-; @config color.fill.pianoKeyBlack #171412
-; @config color.fill.tooltipBackground #c7df8a
-; @config color.fill.tooltipAddedHighlight #78c997
-; @config color.fill.tooltipConsumedHighlight #df8a78
-; @config color.icons.inputConnector #64d1ad
-; @config color.icons.outputConnector #c7df8a
-; @config color.icons.inputConnectorBackground #3a322b
-; @config color.icons.outputConnectorBackground #3a322b
-; @config color.icons.switchBackground #64d1ad
-; @config color.icons.feedbackScale0 #25372e
-; @config color.icons.feedbackScale1 #315544
-; @config color.icons.feedbackScale2 #477d63
-; @config color.icons.feedbackScale3 #64d1ad
-; @config color.icons.feedbackScale4 #d9c66f
-; @config color.icons.feedbackScale5 #d66b5f
+; @config color.canvas #151210
+; @config color.surface #25211e
+; @config color.ink #e5e1d8
+; @config color.primary #64d1ad
+; @config color.secondary #c7df8a
+; @config color.positive #64d1ad
+; @config color.warning #d9c66f
+; @config color.negative #d66b5f
+; @config color.muted #898178
+; @config color.stroke rgba(100,209,173,0.24)
+; @config color.tertiary #aaa195
+; @config color.highlight #c7df8a
+; @config color.detail #64d1ad
+noteEnd
+
+note
+; @pos 232 29
+; Original six-operator FM electric piano.
+; Uses simple one-shot envelopes inspired by DX7 E.PIANO 1.
+; Envelope timing and level response are approximate.
+; See dx7EPiano for DX7 envelope groups.
 noteEnd
 
 entry main
@@ -794,7 +659,6 @@ module modulator4
 ; @pos 365 44
 ; @group operator4
 use env
-use math
 float* frequency &midiNote2Freq:out
 float phase 0.0
 float out
@@ -803,34 +667,12 @@ float* amplitude &adsrEnv4:out
 float level 0.89
 
 ; @hide
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase when it exceeds PI
-push phase
-push PI
-greaterThan
-if
-push &phase
-push NEG_PI
-store
-ifEnd
-
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 ; You can swap this call
 ; with any periodic function
 call sine
@@ -845,7 +687,6 @@ module modulator6
 ; @pos 365 74
 ; @group operator5
 use env
-use math
 float* frequency &midiNote2Freq:out
 float phase 0.0
 float out
@@ -854,34 +695,12 @@ float* amplitude &adsrEnv6:out
 float level 0.79
 
 ; @hide
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase when it exceeds PI
-push phase
-push PI
-greaterThan
-if
-push &phase
-push NEG_PI
-store
-ifEnd
-
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 ; You can swap this call
 ; with any periodic function
 call sine
@@ -896,7 +715,6 @@ module modulator2
 ; @pos 366 13
 ; @group operator2
 use env
-use math
 float* frequency &midiNote2Freq:out
 float phase 0.0
 float out
@@ -905,34 +723,12 @@ float* amplitude &adsrEnv2:out
 float level 0.58
 
 ; @hide
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase when it exceeds PI
-push phase
-push PI
-greaterThan
-if
-push &phase
-push NEG_PI
-store
-ifEnd
-
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 ; You can swap this call
 ; with any periodic function
 call sine
@@ -1019,36 +815,13 @@ float out
 float* amplitudeMod &adsrEnv1:out
 
 ; @hide
-use math
-
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase when it exceeds PI
-push phase
-push PI
-greaterThan
-if
-push &phase
-push NEG_PI
-store
-ifEnd
 
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 push *phaseMod
 add
 ; You can swap this call
@@ -1074,36 +847,13 @@ float out
 float* amplitudeMod &adsrEnv3:out
 
 ; @hide
-use math
-
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase when it exceeds PI
-push phase
-push PI
-greaterThan
-if
-push &phase
-push NEG_PI
-store
-ifEnd
 
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 push *phaseMod
 add
 ; You can swap this call
@@ -1129,36 +879,13 @@ float* amplitude &adsrEnv5:out
 float level 0.99
 
 ; @hide
-use math
-
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase when it exceeds PI
-push phase
-push PI
-greaterThan
-if
-push &phase
-push NEG_PI
-store
-ifEnd
 
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 push *phaseMod
 add
 ; You can swap this call
@@ -1202,21 +929,7 @@ float* in &mixer:out
 float out
 
 push &out
-push *in
-push 1.0
-greaterThan
-if
-push 1.0
-else
-push *in
-ifEnd float
-push -1.0
-lessThan
-if
-push -1.0
-else
-push *in
-ifEnd float
+call clamp *in -1.0 1.0
 store
 
 moduleEnd

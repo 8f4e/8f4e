@@ -70,7 +70,7 @@ describe('cli', () => {
 				'; This comment should wrap into multiple lines when width is set low enough',
 				'load ; This trailing comment should also wrap after the instruction prefix',
 				'push "; this is a string literal, not a comment delimiter"',
-				'; @info this directive-shaped comment should stay on one long line',
+				'; @custom this directive-shaped comment should stay on one long line',
 				'moduleEnd',
 			].join('\n') + '\n'
 		);
@@ -87,7 +87,7 @@ describe('cli', () => {
 				'     ; also wrap after the',
 				'     ; instruction prefix',
 				'push "; this is a string literal, not a comment delimiter"',
-				'; @info this directive-shaped comment should stay on one long line',
+				'; @custom this directive-shaped comment should stay on one long line',
 				'moduleEnd',
 			].join('\n') + '\n'
 		);
@@ -180,6 +180,22 @@ describe('cli', () => {
 
 		expect(JSON.parse(stdout)).toEqual({
 			buffer: [1, 2, 3, -1],
+		});
+	});
+
+	it('dumps unsigned narrow integer arrays without signed sign-extension', async () => {
+		const { stdout } = await execCli([
+			'run',
+			runtimeFixturePath,
+			'--dump',
+			'unsignedBytes',
+			'--dump',
+			'unsignedShorts',
+		]);
+
+		expect(JSON.parse(stdout)).toEqual({
+			unsignedBytes: [0, 255],
+			unsignedShorts: [0, 65535],
 		});
 	});
 

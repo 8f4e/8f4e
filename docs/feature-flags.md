@@ -1,118 +1,86 @@
-# Feature Flags Configuration Documentation
+# Editor Feature Flags
 
-The feature flags system allows you to enable/disable specific editor functionality during editor instantiation.
+Hosts configure editor capabilities through the `featureFlags` mounting option. The active editor mode is separate:
+source editing is allowed when `state.editorMode === 'edit'`. Projects choose their initial mode with `; @mode edit`
+or `; @mode view`; projects without a valid, unique declaration start in view mode.
 
-## Available Feature Flags
+There is no `editing` feature flag. Changing modes or loading another project preserves every feature flag,
+including `codeLineSelection`.
 
-- `contextMenu: boolean` - Enable/disable right-click context menu functionality
-- `moduleDragging: boolean` - Enable/disable dragging and repositioning of code block modules
-- `viewportDragging: boolean` - Enable/disable panning/scrolling of the editor viewport
-- `editing: boolean` - Enable/disable all editing functionality (create, edit, delete, save)
-- `modeOverlay: boolean` - Enable/disable the mode hint overlay at the top of the viewport
-- `offscreenBlockArrows: boolean` - Enable/disable arrows that point toward off-screen code blocks
+## Available Flags
 
-## Usage Examples
+All flags default to `true` in the core and default editor:
 
-### Basic Usage - All Features Enabled (Default)
+- `contextMenu` — Show right-click context menus.
+- `moduleDragging` — Allow repositioning blocks while in edit mode.
+- `codeLineSelection` — Allow selecting source lines and moving the caret, independently of editor mode.
+- `viewportDragging` — Allow panning the viewport.
+- `modeToggling` — Enable user controls for switching between edit and view modes.
+- `modeOverlay` — Show the mode hint at the top of the viewport.
+- `historyTracking` — Track source changes for undo and redo.
+- `offscreenBlockArrows` — Show arrows pointing toward blocks outside the viewport.
+- `projectCreation` — Show the New Project action while in edit mode.
+
+The minimal editor disables `projectCreation` by default. Its other flags use the core defaults.
+
+## Configure a Host
 
 ```typescript
-import init from '@8f4e/editor-core';
+import { mountDefaultEditor } from '@8f4e/editor-default';
 
-const state = init(events, project, {});
-// All features are enabled by default
-```
-
-### Disable Specific Features
-
-```typescript
-import init from '@8f4e/editor-core';
-
-const state = init(events, project, {
+const editor = await mountDefaultEditor(canvas, {
+  initialProjectUrl: '/projects/demo.8f4e',
   featureFlags: {
-    contextMenu: false,      // Disable right-click context menu
-    moduleDragging: false,   // Disable module dragging
-    // Other features remain enabled
-  }
+    moduleDragging: false,
+    codeLineSelection: false,
+  },
 });
 ```
 
-### Disable All Editing
+The project can still declare `; @mode edit` in one of its blocks. That enables source-editing commands without
+reenabling dragging or line selection. The editor applies the declaration only when loading the project; later
+source edits and undo/redo preserve the active mode.
 
-```typescript
-import init from '@8f4e/editor-core';
+## Disable User Mode Switching
 
-const state = init(events, project, {
-  featureFlags: {
-    editing: false,          // Disable all editing functionality
-    // All other features remain enabled (context menu, dragging, etc.)
-  }
-});
+Declare the desired starting mode in the project:
+
+```text
+note editor
+; @mode view
+noteEnd
 ```
 
-### View-Only Mode
+Then disable the host's mode-switching controls:
 
 ```typescript
-import init from '@8f4e/editor-core';
-
-const state = init(events, project, {
+const editor = await mountDefaultEditor(canvas, {
+  initialProjectUrl: '/projects/presentation.8f4e',
   featureFlags: {
-    editing: false,             // Disable all editing functionality
-    contextMenu: false,         // Disable context menus
-    moduleDragging: false,      // Disable module dragging
-    // viewportDragging remains enabled for navigation
-  }
-});
-```
-
-### Complete View-Only Mode (No Interaction)
-
-```typescript
-import init from '@8f4e/editor-core';
-
-const state = init(events, project, {
-  featureFlags: {
-    editing: false,             // Disable all editing functionality
-    contextMenu: false,         // Disable context menus
-    moduleDragging: false,      // Disable module dragging
-    viewportDragging: false,    // Disable viewport panning
-  }
-});
-```
-
-### Clean Export Rendering
-
-Screenshot export temporarily disables visual guide features such as `modeOverlay` and `offscreenBlockArrows` through
-editor-state before rendering the capture frame.
-
-### Completely Locked Editor
-
-```typescript
-import init from '@8f4e/editor-core';
-
-const state = init(events, project, {
-  featureFlags: {
+    modeToggling: false,
     contextMenu: false,
     moduleDragging: false,
-    viewportDragging: false,
-  }
+    codeLineSelection: false,
+  },
 });
 ```
 
-## Security Considerations
+`modeToggling` controls user switching controls; it does not override the project's declared mode or prevent trusted
+plugins from changing the mode programmatically. Leave `viewportDragging` enabled when readers should be able to pan.
 
-- Feature flags are immutable after editor instantiation for security
-- Flags should be configured during setup phase and then locked
-- Disabling features provides graceful degradation - no errors occur when disabled features are accessed
+## Runtime State and Types
 
-## Type Safety
+Feature flags remain available in `state.featureFlags`. Trusted plugins can update them through their state manager.
+For example, the screenshot plugin temporarily disables `modeOverlay` and `offscreenBlockArrows` while capturing a
+frame, then restores their previous values. Mode changes do not overwrite those preferences.
 
-The feature flags system is fully type-safe with TypeScript:
+Use `FeatureFlagsConfig` for a typed partial configuration:
 
 ```typescript
-import { FeatureFlagsConfig } from '@8f4e/editor-core';
+import type { FeatureFlagsConfig } from '@8f4e/editor-core';
 
-const config: FeatureFlagsConfig = {
+const featureFlags: FeatureFlagsConfig = {
   contextMenu: false,
-  // TypeScript will provide autocomplete and type checking
+  codeLineSelection: false,
 };
 ```

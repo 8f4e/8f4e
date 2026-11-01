@@ -3,7 +3,7 @@ title: 'TODO: Add reverse stack instruction with explicit item count'
 priority: High
 effort: 4-8h
 created: 2026-02-23
-issue: https://github.com/andorthehood/8f4e/issues/418
+issue: https://github.com/8f4e/8f4e/issues/418
 status: Cancelled
 completed: 2026-06-14
 ---

@@ -7,7 +7,7 @@ includesEnd
 entry main
 module projectConfig
 ; @pos -94 1
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
 ; @config audioRuntime.audioOutBufferRAddress audioout:buffer
@@ -16,9 +16,12 @@ module projectConfig
 moduleEnd
 module dx7colors
 ; @pos 2 51
-; @config color.text.instruction #33ffcc
-; @config color.icons.inputConnector #ff9999
-; @config color.icons.outputConnector #9999cc
+; @config color.primary #33ffcc
+; @config color.secondary #9999cc
+; @config color.tertiary #666666
+; @config color.highlight rgba(255,255,255,0.45)
+; @config color.detail #ffffff
+; @config color.stroke rgba(255,255,255,0.3)
 
 moduleEnd
 module keyboard

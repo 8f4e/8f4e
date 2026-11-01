@@ -3,7 +3,6 @@ import { projectCategories } from './projects';
 
 const dispose = mountGallery({
 	title: 'Compiler tests',
-	storageNamespace: 'compiler-tests',
 	categories: projectCategories,
 	featureFlags: { modeToggling: false, modeOverlay: false },
 });

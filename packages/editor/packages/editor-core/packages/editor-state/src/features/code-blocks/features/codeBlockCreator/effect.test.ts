@@ -5,7 +5,7 @@ import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import codeBlockCreator from './effect';
 
-describe('codeBlockCreator - clipboard callbacks', () => {
+describe('codeBlockCreator - creation and clipboard actions', () => {
 	let mockState: State;
 	let store: ReturnType<typeof createStateManager<State>>;
 	let mockEvents: ReturnType<typeof createMockEventDispatcherWithVitest>;
@@ -16,6 +16,52 @@ describe('codeBlockCreator - clipboard callbacks', () => {
 		mockEvents = createMockEventDispatcherWithVitest();
 	});
 
+	describe('explicit block actions', () => {
+		it.each([
+			['module', 'moduleEnd'],
+			['function', 'functionEnd'],
+			['prototype', 'prototypeEnd'],
+			['note', 'noteEnd'],
+		])('creates a %s template without reading the clipboard', (blockType, end) => {
+			const readClipboardText = vi.fn();
+			mockState.callbacks.readClipboardText = readClipboardText;
+			codeBlockCreator(store, mockEvents);
+			const create = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'createCodeBlock')![1];
+			create({ x: 100, y: 100, blockType });
+			const block = mockState.codeBlockRendering.codeBlocks[0];
+			expect(block.blockType).toBe(blockType);
+			expect(block.code[0]).toMatch(new RegExp(`^${blockType}(?: |$)`));
+			expect(block.code.at(-1)).toBe(end);
+			expect(readClipboardText).not.toHaveBeenCalled();
+		});
+
+		it('inserts supplied single-line source without treating it as a paste request', () => {
+			const readClipboardText = vi.fn().mockResolvedValue('module clipboard\nmoduleEnd');
+			mockState.callbacks.readClipboardText = readClipboardText;
+			codeBlockCreator(store, mockEvents);
+			const insert = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'insertCodeBlock')![1];
+			insert({ x: 100, y: 100, code: ['; Supplied source'] });
+			expect(mockState.codeBlockRendering.codeBlocks[0].code).toContain('; Supplied source');
+			expect(readClipboardText).not.toHaveBeenCalled();
+		});
+
+		it.each([
+			['createCodeBlock', { x: 100, y: 100, blockType: 'module' }],
+			['insertCodeBlock', { x: 100, y: 100, code: ['module supplied', 'moduleEnd'] }],
+			['pasteCodeBlocks', { x: 100, y: 100 }],
+		])('does not edit or read the clipboard in view mode: %s', async (action, payload) => {
+			mockState.editorMode = 'view';
+			const readClipboardText = vi.fn().mockResolvedValue('module clipboard\nmoduleEnd');
+			mockState.callbacks.readClipboardText = readClipboardText;
+			codeBlockCreator(store, mockEvents);
+			await vi
+				.mocked(mockEvents.on)
+				.mock.calls.find(([name]) => name === action)![1](payload);
+			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(0);
+			expect(readClipboardText).not.toHaveBeenCalled();
+		});
+	});
+
 	describe('Paste Code Block (readClipboardText callback)', () => {
 		it('should read from clipboard callback when pasting a module', async () => {
 			const mockReadClipboard = vi.fn().mockResolvedValue('module test\n\nmoduleEnd');
@@ -23,15 +69,15 @@ describe('codeBlockCreator - clipboard callbacks', () => {
 
 			codeBlockCreator(store, mockEvents);
 
-			// Find the addCodeBlock event handler
+			// Find the pasteCodeBlocks event handler
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			expect(addCodeBlockCall).toBeDefined();
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			expect(pasteCodeBlocksCall).toBeDefined();
 
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
-			// Trigger paste code block (code.length < 2 triggers clipboard read)
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			// Read clipboard content through the explicit paste action
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Verify clipboard was read
 			expect(mockReadClipboard).toHaveBeenCalled();
@@ -50,11 +96,11 @@ describe('codeBlockCreator - clipboard callbacks', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
-			// Trigger paste code block (code.length < 2 triggers clipboard read)
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			// Read clipboard content through the explicit paste action
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Verify no code block was added
 			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(0);
@@ -67,11 +113,11 @@ describe('codeBlockCreator - clipboard callbacks', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const pasteCodeBlocksCall = onCalls.find(call => call[0] === 'pasteCodeBlocks');
+			const pasteCodeBlocksCallback = pasteCodeBlocksCall![1];
 
-			// Trigger paste code block (code.length < 2 triggers clipboard read)
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: false, code: [''] });
+			// Read clipboard content through the explicit paste action
+			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Verify clipboard was attempted
 			expect(mockReadClipboard).toHaveBeenCalled();
@@ -86,10 +132,10 @@ describe('codeBlockCreator - clipboard callbacks', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
+			const createCodeBlockCallback = createCodeBlockCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: true, blockType: 'module' });
+			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
 
 			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
 			expect(mockState.codeBlockRendering.codeBlocks[0].entry).toBe('entry');
@@ -110,10 +156,10 @@ describe('codeBlockCreator - clipboard callbacks', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
+			const createCodeBlockCallback = createCodeBlockCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: true, blockType: 'module' });
+			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
 
 			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(2);
 			expect(mockState.codeBlockRendering.codeBlocks[1].entry).toBe('entry2');
@@ -133,10 +179,10 @@ describe('codeBlockCreator - clipboard callbacks', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
+			const createCodeBlockCallback = createCodeBlockCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: true, blockType: 'module' });
+			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
 
 			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
 			expect(mockState.codeBlockRendering.codeBlocks[0].entry).toBe('fx');
@@ -163,10 +209,10 @@ describe('codeBlockCreator - clipboard callbacks', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
+			const createCodeBlockCallback = createCodeBlockCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: true, blockType: 'module' });
+			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
 
 			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
 			expect(mockState.codeBlockRendering.codeBlocks[0].entry).toBe('first');
@@ -186,10 +232,10 @@ describe('codeBlockCreator - clipboard callbacks', () => {
 			codeBlockCreator(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockCall = onCalls.find(call => call[0] === 'addCodeBlock');
-			const addCodeBlockCallback = addCodeBlockCall![1];
+			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
+			const createCodeBlockCallback = createCodeBlockCall![1];
 
-			await addCodeBlockCallback({ x: 100, y: 100, isNew: true, blockType: 'module' });
+			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
 
 			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
 			expect(mockState.codeBlockRendering.codeBlocks[0].entry).toBe('main');
@@ -280,229 +326,6 @@ describe('codeBlockCreator - clipboard callbacks', () => {
 			// No error should be thrown (silent failure)
 		});
 	});
-
-	describe('addCodeBlockBySlug with dependencies', () => {
-		it('should insert dependencies to the right of the requested module', async () => {
-			const mockGetModule = vi.fn();
-			mockGetModule.mockImplementation(async (slug: string) => {
-				if (slug === 'main') {
-					return 'module main\n\nmoduleEnd';
-				} else if (slug === 'dep1') {
-					return 'module dep1\n\nmoduleEnd';
-				} else if (slug === 'dep2') {
-					return 'module dep2\n\nmoduleEnd';
-				}
-				throw new Error('Module not found');
-			});
-
-			mockState.callbacks.getModule = mockGetModule;
-			mockState.callbacks.getModuleDependencies = vi.fn().mockResolvedValue(['dep1', 'dep2']);
-
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockBySlugCall = onCalls.find(call => call[0] === 'addCodeBlockBySlug');
-			const addCodeBlockBySlugCallback = addCodeBlockBySlugCall![1];
-
-			// Trigger add with dependencies
-			await addCodeBlockBySlugCallback({ codeBlockSlug: 'main', x: 100, y: 100 });
-
-			// Verify all modules were added
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(3);
-			expect(mockState.codeBlockRendering.codeBlocks[0].name).toBe('main');
-			expect(mockState.codeBlockRendering.codeBlocks[1].name).toBe('dep1');
-			expect(mockState.codeBlockRendering.codeBlocks[2].name).toBe('dep2');
-
-			// Verify positions - dep1 should be to the right of main
-			expect(mockState.codeBlockRendering.codeBlocks[1].gridX).toBeGreaterThan(
-				mockState.codeBlockRendering.codeBlocks[0].gridX
-			);
-			// Verify positions - dep2 should be to the right of dep1
-			expect(mockState.codeBlockRendering.codeBlocks[2].gridX).toBeGreaterThan(
-				mockState.codeBlockRendering.codeBlocks[1].gridX
-			);
-		});
-
-		it('should skip dependencies that already exist', async () => {
-			const mockGetModule = vi.fn();
-			mockGetModule.mockImplementation(async (slug: string) => {
-				if (slug === 'main') {
-					return 'module main\n\nmoduleEnd';
-				} else if (slug === 'dep1') {
-					return 'module dep1\n\nmoduleEnd';
-				} else if (slug === 'dep2') {
-					return 'module dep2\n\nmoduleEnd';
-				}
-				throw new Error('Module not found');
-			});
-
-			mockState.callbacks.getModule = mockGetModule;
-			mockState.callbacks.getModuleDependencies = vi.fn().mockResolvedValue(['dep1', 'dep2']);
-
-			// Pre-populate with dep1
-			const existingDep1 = createMockCodeBlock({
-				name: 'dep1',
-				code: ['module dep1', '', 'moduleEnd'],
-				blockType: 'module',
-			});
-			mockState.codeBlockRendering.codeBlocks = [existingDep1];
-
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockBySlugCall = onCalls.find(call => call[0] === 'addCodeBlockBySlug');
-			const addCodeBlockBySlugCallback = addCodeBlockBySlugCall![1];
-
-			// Trigger add with dependencies
-			await addCodeBlockBySlugCallback({ codeBlockSlug: 'main', x: 100, y: 100 });
-
-			// Verify only main and dep2 were added (dep1 already existed)
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(3);
-			expect(mockState.codeBlockRendering.codeBlocks[0].name).toBe('dep1'); // Existing
-			expect(mockState.codeBlockRendering.codeBlocks[1].name).toBe('main'); // New
-			expect(mockState.codeBlockRendering.codeBlocks[2].name).toBe('dep2'); // New
-		});
-
-		it('should work without dependencies field', async () => {
-			const mockGetModule = vi.fn().mockResolvedValue('module simple\n\nmoduleEnd');
-
-			mockState.callbacks.getModule = mockGetModule;
-			mockState.callbacks.getModuleDependencies = vi.fn().mockResolvedValue([]);
-
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockBySlugCall = onCalls.find(call => call[0] === 'addCodeBlockBySlug');
-			const addCodeBlockBySlugCallback = addCodeBlockBySlugCall![1];
-
-			// Trigger add without dependencies
-			await addCodeBlockBySlugCallback({ codeBlockSlug: 'simple', x: 100, y: 100 });
-
-			// Verify only the main module was added
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
-			expect(mockState.codeBlockRendering.codeBlocks[0].name).toBe('simple');
-		});
-
-		it('should handle dependency loading errors gracefully', async () => {
-			const mockGetModule = vi.fn();
-			mockGetModule.mockImplementation(async (slug: string) => {
-				if (slug === 'main') {
-					return 'module main\n\nmoduleEnd';
-				} else if (slug === 'dep1') {
-					return 'module dep1\n\nmoduleEnd';
-				}
-				throw new Error('Module not found');
-			});
-
-			mockState.callbacks.getModule = mockGetModule;
-			mockState.callbacks.getModuleDependencies = vi.fn().mockResolvedValue(['dep1', 'missing']);
-
-			// Mock console.warn to verify error handling
-			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockBySlugCall = onCalls.find(call => call[0] === 'addCodeBlockBySlug');
-			const addCodeBlockBySlugCallback = addCodeBlockBySlugCall![1];
-
-			// Trigger add with dependencies (one fails)
-			await addCodeBlockBySlugCallback({ codeBlockSlug: 'main', x: 100, y: 100 });
-
-			// Verify main and dep1 were added, but missing was skipped
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(2);
-			expect(mockState.codeBlockRendering.codeBlocks[0].name).toBe('main');
-			expect(mockState.codeBlockRendering.codeBlocks[1].name).toBe('dep1');
-
-			// Verify warning was logged
-			expect(consoleWarnSpy).toHaveBeenCalledWith('Failed to load dependency: missing', expect.any(Error));
-
-			consoleWarnSpy.mockRestore();
-		});
-
-		it('should use correct grid positioning for dependencies', async () => {
-			const mockGetModule = vi.fn();
-			mockGetModule.mockImplementation(async (slug: string) => {
-				if (slug === 'main') {
-					return 'module main\nlong line of code here\nmoduleEnd';
-				} else if (slug === 'dep1') {
-					return 'module dep1\n\nmoduleEnd';
-				}
-				throw new Error('Module not found');
-			});
-
-			mockState.callbacks.getModule = mockGetModule;
-			mockState.callbacks.getModuleDependencies = vi.fn().mockResolvedValue(['dep1']);
-			mockState.viewport.vGrid = 8; // 8 pixels per grid unit
-
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockBySlugCall = onCalls.find(call => call[0] === 'addCodeBlockBySlug');
-			const addCodeBlockBySlugCallback = addCodeBlockBySlugCall![1];
-
-			// Trigger add with dependencies
-			await addCodeBlockBySlugCallback({ codeBlockSlug: 'main', x: 100, y: 100 });
-
-			// Verify both modules were added
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(2);
-
-			// Calculate expected positions
-			const mainModule = mockState.codeBlockRendering.codeBlocks[0];
-			const dep1Module = mockState.codeBlockRendering.codeBlocks[1];
-
-			// Main module should be at the clicked grid position
-			expect(mainModule.gridX).toBeCloseTo(Math.round((mockState.viewport.x + 100) / mockState.viewport.vGrid), 0);
-
-			// Dep1 should be positioned to the right with correct spacing
-			// The exact value depends on the grid width calculation
-			expect(dep1Module.gridX).toBeGreaterThan(mainModule.gridX);
-		});
-
-		it('should only skip dependencies of the same block type', async () => {
-			const mockGetModule = vi.fn();
-			mockGetModule.mockImplementation(async (slug: string) => {
-				if (slug === 'main') {
-					return 'module main\n\nmoduleEnd';
-				} else if (slug === 'sine') {
-					return 'function sine\nparam float x\nfunctionEnd float';
-				}
-				throw new Error('Module not found');
-			});
-
-			mockState.callbacks.getModule = mockGetModule;
-			mockState.callbacks.getModuleDependencies = vi.fn().mockResolvedValue(['sine']);
-
-			// Pre-populate with a module named 'sine' (different type from the function dependency)
-			const existingSineModule = createMockCodeBlock({
-				name: 'sine',
-				code: ['module sine', '', 'moduleEnd'],
-				blockType: 'module',
-			});
-			mockState.codeBlockRendering.codeBlocks = [existingSineModule];
-
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const addCodeBlockBySlugCall = onCalls.find(call => call[0] === 'addCodeBlockBySlug');
-			const addCodeBlockBySlugCallback = addCodeBlockBySlugCall![1];
-
-			// Trigger add with dependencies
-			await addCodeBlockBySlugCallback({ codeBlockSlug: 'main', x: 100, y: 100 });
-
-			// Verify main was added and sine function was also added (not skipped)
-			// because the existing 'sine' is a module, not a function
-			// Note: names are type-scoped, so the existing module does not force
-			// incrementing the function.
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(3);
-			expect(mockState.codeBlockRendering.codeBlocks[0].name).toBe('sine'); // Existing module
-			expect(mockState.codeBlockRendering.codeBlocks[0].blockType).toBe('module');
-			expect(mockState.codeBlockRendering.codeBlocks[1].name).toBe('main'); // New module
-			expect(mockState.codeBlockRendering.codeBlocks[2].name).toBe('sine'); // New function
-			// Check the code contains function markers
-			expect(mockState.codeBlockRendering.codeBlocks[2].code.join('\n')).toContain('function sine');
-		});
-	});
 });
 
 describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
@@ -582,7 +405,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 	it('should not toggle when editing is disabled', () => {
 		const codeBlock = createMockCodeBlock({ disabled: false });
 		mockState.codeBlockRendering.codeBlocks = [codeBlock];
-		mockState.featureFlags.editing = false;
+		mockState.editorMode = 'view';
 
 		codeBlockCreator(store, mockEvents);
 
@@ -625,5 +448,57 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 
 		expect(codeBlock.code).not.toContain('; @disabled');
 		expect(codeBlock.disabled).toBe(false);
+	});
+});
+
+describe('codeBlockCreator - alwaysOnTop z-order partitioning', () => {
+	let mockState: State;
+	let store: ReturnType<typeof createStateManager<State>>;
+	let mockEvents: ReturnType<typeof createMockEventDispatcherWithVitest>;
+
+	beforeEach(() => {
+		mockState = createMockState();
+		store = createStateManager(mockState);
+		mockEvents = createMockEventDispatcherWithVitest();
+	});
+
+	it('inserts a normal block before existing always-on-top blocks', async () => {
+		const existingNormal = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
+		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
+		mockState.codeBlockRendering.codeBlocks = [existingNormal, existingTop];
+
+		codeBlockCreator(store, mockEvents);
+
+		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
+		const insertCodeBlockCallback = onCalls.find(call => call[0] === 'insertCodeBlock')![1];
+
+		await insertCodeBlockCallback({
+			x: 100,
+			y: 100,
+			code: ['module normal2', 'moduleEnd'],
+		});
+
+		expect(mockState.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['normal1', 'normal2', 'top1']);
+		expect(mockState.codeBlockRendering.codeBlocks[1].alwaysOnTop).toBe(false);
+	});
+
+	it('derives alwaysOnTop and inserts an @alwaysOnTop block directly into the top partition', async () => {
+		const existingNormal = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
+		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
+		mockState.codeBlockRendering.codeBlocks = [existingNormal, existingTop];
+
+		codeBlockCreator(store, mockEvents);
+
+		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
+		const insertCodeBlockCallback = onCalls.find(call => call[0] === 'insertCodeBlock')![1];
+
+		await insertCodeBlockCallback({
+			x: 100,
+			y: 100,
+			code: ['module top2', '; @alwaysOnTop', 'moduleEnd'],
+		});
+
+		expect(mockState.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['normal1', 'top1', 'top2']);
+		expect(mockState.codeBlockRendering.codeBlocks[2].alwaysOnTop).toBe(true);
 	});
 });

@@ -1,0 +1,7 @@
+8f4e/v1
+
+function float64ToFloat32Parameter
+param float target
+push 1.5f64
+localSet target
+functionEnd

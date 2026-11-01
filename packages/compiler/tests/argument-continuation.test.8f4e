@@ -11,7 +11,7 @@ constantsEnd
 
 note
 ; @pos 15 38
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Continuation lines append one
 argument to the previous
@@ -32,9 +32,9 @@ module splitPointerDeclarationAssertions
 ; Declaration arguments can be
 ; continued one argument per
 ; line.
-float*
-- readHead
-- &continuationPointerSource:samples
+float* ; continued pointer declaration
+- readHead ; pointer name
+- &continuationPointerSource:samples ; initial address
 
 push readHead
 assertEqual &continuationPointerSource:samples
@@ -44,9 +44,9 @@ module splitByteDefaultAssertions
 ; Split-byte defaults can be
 ; supplied by continuation
 ; lines.
-int color
-- 0xA8
-- 0xFF
+int color; continued split-byte default
+- 0xA8; first byte
+- 0xFF ; second byte
 
 push color
 assertEqual -1459683328
@@ -57,8 +57,8 @@ module continuedNegativeLiteralAssertions
 ; negative literal should be
 ; treated as syntax, not as the
 ; literal sign.
-push
-- -1
+push ; continued negative literal
+- -1; literal value
 assertEqual -1
 moduleEnd
 entryEnd

@@ -196,7 +196,7 @@ entryEnd`,
 		);
 		const equal = vi.fn();
 		const runtime = await instantiate(result, { assertEqualI32: equal });
-		const index = result.memoryPlan.modules.state.memory.value.wordAlignedAddress;
+		const index = result.memoryPlan.modules.state.memory.value.allocationUnitAddress;
 		new Int32Array(runtime.memory.buffer)[index] = 9;
 		runtime.exports.main();
 		expect(equal).toHaveBeenCalledWith(9, 9, 0);
@@ -235,7 +235,7 @@ entryEnd`,
 		runtime.exports.initDefaults();
 		expect(equal).not.toHaveBeenCalled();
 		const view = new Int32Array(runtime.memory.buffer);
-		const index = result.memoryPlan.modules.checks.memory.output.wordAlignedAddress;
+		const index = result.memoryPlan.modules.checks.memory.output.allocationUnitAddress;
 		expect(view[index]).toBe(17);
 		runtime.exports.main();
 		expect(twice).not.toHaveBeenCalled();

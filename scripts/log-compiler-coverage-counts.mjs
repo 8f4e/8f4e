@@ -14,7 +14,7 @@ const outputDir = path.resolve(workspaceRoot, 'logs/compiler-coverage-counts');
 const suiteName = 'compiler-coverage-counts';
 const schemaVersion = 2;
 const compilerOptions = {
-	startingMemoryWordAddress: 0,
+	startingMemoryAllocationUnitAddress: 0,
 };
 const aggregateComponentId = 'compilerPipeline';
 const coverageComponents = [

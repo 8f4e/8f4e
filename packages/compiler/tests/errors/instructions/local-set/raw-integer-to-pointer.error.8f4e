@@ -1,0 +1,9 @@
+8f4e/v1
+
+entry main
+module rawIntegerToPointerLocal
+local float* pointer
+push 0
+localSet pointer
+moduleEnd
+entryEnd

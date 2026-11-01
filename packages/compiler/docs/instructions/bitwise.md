@@ -1,5 +1,17 @@
 # Bitwise instructions
 
+All binary bitwise instructions (`and`, `or`, `xor`, `shiftLeft`, `shiftRight`, and `shiftRightUnsigned`) accept
+an optional right operand with the same value syntax as `push`. For example, `shiftRight 6` is equivalent to
+`push 6` followed by `shiftRight`. Both operands must still be integers. Omitting the argument preserves the existing
+form that takes two values from the stack.
+
+```8f4e
+push 256
+shiftRight 6
+and 3
+; stack: [0]
+```
+
 ### and
 
 The "and" instruction retrieves two integers from the stack and performs a bitwise AND operation on them. Specifically, each bit of the resulting value is computed by performing a logical AND between the corresponding bits of the two operands. The resulting value is then stored back onto the stack. 

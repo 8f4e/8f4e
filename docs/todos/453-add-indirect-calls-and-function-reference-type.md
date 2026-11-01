@@ -3,7 +3,7 @@ title: 'TODO: Add indirect calls and function reference type'
 priority: Medium
 effort: 2-4d
 created: 2026-06-11
-issue: https://github.com/andorthehood/8f4e/issues/947
+issue: https://github.com/8f4e/8f4e/issues/947
 status: Open
 completed: null
 ---

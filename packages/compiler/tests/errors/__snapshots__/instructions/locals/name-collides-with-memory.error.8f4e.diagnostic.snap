@@ -1,0 +1,27 @@
+{
+  "code": 44,
+  "context": {
+    "codeBlockId": "nameCollidesWithMemory",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "int",
+      },
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "value",
+      },
+    ],
+    "instruction": "local",
+    "lineNumber": 2,
+  },
+  "message": "Local variable name collides with a memory declaration: value. Local names must be unique within the namespace. (44)",
+}

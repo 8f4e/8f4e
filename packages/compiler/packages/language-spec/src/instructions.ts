@@ -136,17 +136,6 @@ export const compilerSourceBlockInstructionPairs = compilerBlockInstructionPairs
 	];
 }) as CompilerSourceBlockInstructionPair[];
 
-type CompiledModuleSourceBlockPair = Extract<CompilerSourceBlockInstructionPair, { compilesToModule: true }>;
-
-export const compilerSourceBlockTypes = compilerSourceBlockInstructionPairs.map(
-	({ type }) => type
-) as CompilerSourceBlockType[];
-
-export type CompiledModuleBlockType = CompiledModuleSourceBlockPair['type'];
-export const compiledModuleBlockTypes = compilerSourceBlockInstructionPairs
-	.filter((pair): pair is CompiledModuleSourceBlockPair => pair.compilesToModule)
-	.map(({ type }) => type) as CompiledModuleBlockType[];
-
 export const compilerSourceBlockInstructionByType = Object.fromEntries(
 	compilerSourceBlockInstructionPairs.map(pair => [pair.type, pair])
 ) as {
@@ -174,8 +163,6 @@ export const documentBlockInstructionPairs = [
 ] as const;
 
 export type DocumentBlockType = (typeof documentBlockInstructionPairs)[number]['type'];
-export type DocumentBlockStartInstruction = (typeof documentBlockInstructionPairs)[number]['start'];
-export type DocumentBlockEndInstruction = (typeof documentBlockInstructionPairs)[number]['end'];
 
 export const documentBlockInstructionByType = Object.fromEntries(
 	documentBlockInstructionPairs.map(pair => [pair.type, pair])
@@ -267,14 +254,4 @@ export const knownInstructionNameSet: ReadonlySet<string> = new Set([
 /** Checks whether an instruction is accepted by the subprogram tokenizer. */
 export function isSubProgramInstructionName(instruction: string): instruction is SubProgramInstruction {
 	return subProgramInstructionNameSet.has(instruction);
-}
-
-/**
- * Checks whether a string is an instruction accepted anywhere in project source.
- *
- * @param instruction - Instruction keyword to inspect.
- * @returns True when the keyword belongs to a known project or subprogram instruction.
- */
-export function isKnownInstructionName(instruction: string): instruction is Instruction {
-	return knownInstructionNameSet.has(instruction);
 }

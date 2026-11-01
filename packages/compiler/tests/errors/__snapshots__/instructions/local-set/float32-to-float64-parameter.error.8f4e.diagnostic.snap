@@ -1,0 +1,21 @@
+{
+  "code": 33,
+  "context": {
+    "codeBlockId": "float32ToFloat64Parameter",
+    "codeBlockType": "function",
+    "projectBlockId": 3,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "target",
+      },
+    ],
+    "instruction": "localSet",
+    "lineNumber": 3,
+  },
+  "message": "Mixed float widths: floating-point values must have the same width (float32 or float64). (33)",
+}

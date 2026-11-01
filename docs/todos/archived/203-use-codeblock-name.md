@@ -3,7 +3,7 @@ title: 'TODO: Use CodeBlock name instead of recomputing from code'
 priority: Low
 effort: 2-4 days
 created: 2026-01-22
-issue: https://github.com/andorthehood/8f4e/issues/403
+issue: https://github.com/8f4e/8f4e/issues/403
 status: Completed
 completed: 2026-06-14
 ---

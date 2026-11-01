@@ -1,4 +1,3 @@
-import type { State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type MockInstance } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
@@ -30,7 +29,7 @@ describe('projectGroupNavigation', () => {
 			},
 			viewport: { x: 64, y: 96 },
 		});
-		const store = createStateManager(state as State);
+		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
 		projectGroupNavigation(store, events);
@@ -52,7 +51,7 @@ describe('projectGroupNavigation', () => {
 		const nestedProjectCodeBlocks: [] = [];
 		const groupBlock = createMockCodeBlock({ nestedProjectCodeBlocks });
 		const state = createMockState();
-		const store = createStateManager(state as State);
+		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
 		projectGroupNavigation(store, events);
@@ -76,7 +75,7 @@ describe('projectGroupNavigation', () => {
 				codeBlocks: deepestSlice,
 			},
 		});
-		const store = createStateManager(state as State);
+		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
 		projectGroupNavigation(store, events);
@@ -95,7 +94,7 @@ describe('projectGroupNavigation', () => {
 	it('keeps the root slice active when there is no parent', () => {
 		const state = createMockState();
 		const rootCodeBlocks = state.codeBlockRendering.rootCodeBlocks;
-		const store = createStateManager(state as State);
+		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
 		projectGroupNavigation(store, events);
@@ -110,7 +109,7 @@ describe('projectGroupNavigation', () => {
 	it('ignores ordinary code blocks when opening a group', () => {
 		const state = createMockState();
 		const originalSlice = state.codeBlockRendering.codeBlocks;
-		const store = createStateManager(state as State);
+		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
 		projectGroupNavigation(store, events);

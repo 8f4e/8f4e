@@ -1,6 +1,9 @@
 import { parseLine } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
-import createInstructionCompilerTestContext, { compileInstructionForTest, createStackFacts } from '../testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	createStackFacts,
+} from '../../tests/testUtils';
 import castToFloat64 from './castToFloat64';
 
 describe('castToFloat64 instruction compiler', () => {

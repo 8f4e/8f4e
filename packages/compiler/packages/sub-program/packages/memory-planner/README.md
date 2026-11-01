@@ -49,3 +49,8 @@ This package does not own:
 The planner reads constant-resolution facts before normalizing declaration sizes. It expects array element counts to become literal planner-ready values after those facts and pure literal arithmetic are applied. Layout-dependent declaration sizes, such as `int[] dest count(source)`, are not supported.
 
 All modules share one linear address space, with a single allocation cursor starting at `startingByteAddress`.
+
+For a declaration, `allocationUnitCount` counts the 4-byte allocation units consumed, including any leading
+float64 alignment padding. The declaration's `allocatedByteLength` and `endByteAddress` describe its storage from
+the aligned `byteAddress`, excluding that leading padding. Cursor advancement and module sizes still include the
+padding, so later declarations and modules keep their positions.

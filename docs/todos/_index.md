@@ -10,12 +10,10 @@ Active todo files are listed below.
 
 | ID | Title | Priority | Effort | Created | Summary |
 | ---- | ----- | -------- | ------ | ------- | ------- |
-| 269 | Add float64 support for round instruction | 🔴 | 1-3h | 2026-02-20 | `round` is missing explicit float64 support in the compiler instruction path. |
-| 271 | Add float64 support for loadFloat instruction | 🔴 | 1-3h | 2026-02-20 | `loadFloat` is missing explicit float64 support in the compiler instruction path. |
-| 272 | Add float32/float64 width checks to localSet instruction | 🔴 | 1-3h | 2026-02-20 | `localSet` is missing explicit float64 support in the compiler instruction path. |
 | 278 | Add storeWords with explicit count and word size | 🔴 | 1-2d | 2026-02-23 | `storeBytes <count>` covers contiguous byte writes, but there is no equivalent explicit instruction for contiguous multi-byte word writes. |
 | 305 | Reuse WASM instance across incremental compiles | 🔴 | 3-6h | 2026-03-14 | The compiler worker currently recreates the WebAssembly instance on every compile, even when memory can be reused and the runtime shape has not changed. |
 | 492 | Trigger autosave and history only on project changes | 🔴 | 3-6h | 2026-10-10 | Selection can autosave unchanged source, add undo-history entries, and clear redo; use a project-change signal that also covers persisted editor metadata. |
+| 517 | Investigate env source overwrites | 🔴 | TBD | 2026-10-27 | Investigate generated environment source ownership and loading paths that overwrite user-authored env blocks; the desired behavior and fix remain undecided. |
 
 ### 🟡 Medium Priority
 
@@ -40,9 +38,7 @@ Active todo files are listed below.
 | 386 | Guard i32.rem_s divisor zero | 🟡 | 2-4h | 2026-04-30 | The `remainder` instruction emits WebAssembly `i32.rem_s` for integer operands. WebAssembly has no non-trapping variant for integer remainder. The raw opcode traps when the divi... |
 | 390 | Add compiler passive data inputs for array initialization | 🟡 | 1-2d | 2026-05-04 | The compiler now uses passive data segments to restore declared initial memory, but every segment is still derived from source-level memory declarations and compiler-owned inter... |
 | 398 | Add compiler peephole arithmetic strength reduction | 🟡 | 1-2 days | 2026-05-12 | The compiler now has compile-time folding and stack-level integer metadata, but runtime arithmetic codegen still emits direct WebAssembly arithmetic operations even when the top... |
-| 400 | Add serial input editor environment plugin | 🟡 | 1-2d | 2026-05-13 | Add a Web Serial editor environment plugin with `@info serial`, fixed-size `@serialIn` framing, and `@serialInCallback` fanout to exported 8f4e functions. |
-| 401 | Tighten runtime browser API typing | 🟡 | 2-4h | 2026-05-18 | Browser runtime packages cross platform-specific API boundaries and currently rely on broad `any` casts and `@ts-expect-error` comments in production runtime code. |
-| 424 | Rename layout word fields to allocation-unit terminology | 🟡 | 4-8h | 2026-05-26 | Separate typed word-size metadata from compiler allocation-grid layout by renaming the 4-byte layout constant and word-aligned fields to allocation-unit terminology. |
+| 400 | Add serial input editor environment plugin | 🟡 | 1-2d | 2026-05-13 | Add a Web Serial editor environment plugin with shared serial info, fixed-size `@serialIn` framing, and `@serialInCallback` fanout to exported 8f4e functions. |
 | 426 | Decide compiler broad type splitting strategy | 🟡 | 2-4h | 2026-05-26 | Decide migration boundaries for broad language-spec shapes such as `DataStructure`, `LocalBinding`, `CompilationContext`, `MapBlockState`, `CollectedNamespace`, and address-bearing constants before implementing more type splits. |
 | 427 | Add depth-aware pointer metadata query dereferencing | 🟡 | 2-4h | 2026-05-27 | `sizeof(**ptr)` and `max(**ptr)` should carry explicit dereference depth and resolve against double-pointer metadata instead of targeting a literal `*ptr` identifier. |
 | 429 | Unify metadata query argument shape | 🟡 | 2-4h | 2026-05-27 | Replace per-helper metadata query reference kinds with one structured query shape carrying query kind, target scope, and dereference depth. |
@@ -57,19 +53,21 @@ Active todo files are listed below.
 | 457 | Make load infer narrow width from pointer metadata | 🟡 | 4-8h | 2026-06-12 | Let plain `load` choose narrow signed or unsigned integer loads when address metadata proves the pointee width, while keeping raw integer addresses 32-bit. |
 | 459 | Extract compiler diagnostics package | 🟡 | 2-4h | 2026-06-15 | Move compiler diagnostic construction into a small shared package so compiler-adjacent packages can emit consistent diagnostics without importing compiler internals. |
 | 461 | Decouple language-spec from WASM output contracts | 🟡 | 1-2d | 2026-06-16 | Move WASM-only output and runtime contracts out of language-spec while keeping target-neutral language facts there. |
-| 475 | Remove dead compiler block-state caches | 🟡 | 2-4h | 2026-08-21 | Remove unused block-depth counts and legacy inside-block booleans while preserving the live loop, map, and ordered block-stack state. |
 | 483 | Lazy-load WASM overlay rendering | 🟡 | 1-2d | 2026-09-06 | Load the framebuffer overlay drawer and RGBA layer only when a project configures an overlay. |
 | 486 | Lazy-load editing features on entering edit mode | 🟡 | 2-4d | 2026-09-06 | Keep authoring-only effects out of view-mode startup and load them before editing becomes available. |
 | 491 | Migrate project testing to native assertions | 🟡 | 2-4d | 2026-10-09 | Use TODO 490 in the shared runner, migrate fixtures and CLI, remove the precompiler, and add an editor test runtime. |
 | 493 | Index compiled functions by project block ID | 🟡 | 2-4h | 2026-10-14 | Reuse a compilation-derived Map for function-block layout, stack-widget, and tooltip lookups instead of repeatedly scanning all compiled functions. |
 | 494 | Make editor block-highlight parsing linear | 🟡 | 3-6h | 2026-10-14 | Track open-block counts and matching stacks incrementally to avoid repeated history scans and array copies during highlight parsing. |
-| 495 | Index editor pointer targets by address | 🟡 | 3-6h | 2026-10-14 | Index planned declarations by memory index and byte address to avoid repeated filter/flatten/find work when resolving pointer-based widgets. |
 | 498 | Consolidate shared editor test-state builders | 🟡 | 4-8h | 2026-10-14 | Share complete typed state defaults and migrate cast-based editor/runtime fixtures so missing required fields are caught earlier. |
 | 499 | Unify project instruction syntax parsing | 🟡 | 4-8h | 2026-10-14 | Move exposure syntax into the tokenizer alongside pass and init, with shared comment handling, validation, and source diagnostics. |
 | 500 | Keep planned memory and its source together | 🟡 | 4-8h | 2026-10-14 | Attach effective source information to each planned declaration, removing parallel arrays and positional source lookups. |
 | 501 | Preserve known pointee counts of one | 🟡 | 1-2h | 2026-10-16 | Retain proven single-element pointee counts so count(*pointer) resolves correctly while unknown counts remain errors. |
 | 502 | Add browser-driven accessibility color-scheme overrides | 🟡 | 2-4d | 2026-10-18 | Add tested alternative editor palettes selected automatically from supported browser contrast and forced-color preferences. |
-| 503 | Explore WebMCP tools for inspecting and editing projects | 🟡 | 1-2d | 2026-10-18 | Research and prototype a safe browser-agent command surface for semantic project inspection and code-block changes. |
+| 504 | Add a color-theme contrast audit tool | 🟡 | 1-2d | 2026-10-21 | Measure critical foreground/background pairs in resolved editor themes and report contrast failures, including alpha compositing. |
+| 506 | Add an inline sample browser directive | 🟡 | TBD | 2026-10-22 | Render a folder/file browser inside a code block and update a bound binary asset URL when a sample is selected. |
+| 512 | Investigate integer sprite instance packing | 🟡 | TBD | 2026-10-26 | Evaluate a 12-byte integer sprite layout against the 20-byte baseline, checking coordinate limits, code complexity, and measured CPU/GPU costs. |
+| 513 | Benchmark fixed-grid glyph addressing | 🟡 | TBD | 2026-10-26 | Compare calculated glyph rectangles with the GPU rectangle lookup, verifying equivalent rendering and measured gains before restricting the atlas layout. |
+| 514 | Investigate viewport culling for code text | 🟡 | TBD | 2026-10-26 | Determine visible text row and column ranges before sprite submission, preserving partial glyphs and layout while measuring traversal, upload, and CPU/GPU savings. |
 
 ### 🟢 Low Priority
 
@@ -80,12 +78,30 @@ Active todo files are listed below.
 | 389 | Add EagleSpCGA Alt3 8x8 font to sprite-generator | 🟢 | 4-8h | 2026-05-04 | The editor sprite-generator has several bundled bitmap fonts, including a few compact 8-pixel-high options, but it does not include EagleSpCGA Alt3 8x8. That leaves the editor w... |
 | 465 | Add Sergamon font to the editor | 🟢 | 4-8h | 2026-07-30 | Add Sergamon's 8x16 programming-font glyphs to the sprite-generator pipeline and expose the font through editor configuration. |
 | 466 | Add Scientifica font to the editor | 🟢 | 4-8h | 2026-07-30 | Import Scientifica's regular 11-pixel BDF face into the sprite-generator pipeline and expose the condensed font through editor configuration. |
-| 496 | Use Set and Map for binary-asset lookups | 🟢 | 1-2h | 2026-10-14 | Deduplicate URLs with a Set and join fetched metadata through a Map while preserving asset request order and memory destinations. |
+| 515 | Share editor plugin test setup | 🟢 | TBD | 2026-10-27 | Explore shared setup for compiled projects, memory, editor lifecycle, and drawing; decide the scope and API later. |
+| 516 | Separate browser-dependent plugin lists | 🟢 | TBD | 2026-10-27 | Expose separate plugins and browserPlugins lists in browser composition while sharing the plugin contract and lifecycle. |
+| 518 | Investigate optional editing locks for agent sessions | 🟢 | TBD | 2026-10-28 | Evaluate whether temporary agent editing sessions improve on revision checks, including takeover, timeout, revocation, and project-switch behavior. |
 
 ## Completed TODOs
 
 | ID | Title | Completed | Notes |
 | ---- | ----- | --------- | ----- |
+| 505 | Add an initial editor mode directive | 2026-10-29 | Added load-only `@mode edit` and `@mode view`; removed the host initial-mode option and compatibility fallbacks. |
+| 508 | Design lazy loading for editor plugins | 2026-10-29 | Project-signal registry and ordinary loader plugin; plot imports on demand, with manual rescanning, late layout refresh, and per-editor cleanup. |
+| 210 | Expose editor editing handles and add an external WebMCP adapter | 2026-10-28 | Public atomic editing handles and an external single-editor bridge; both websites bind site tools to the current project, with browser switching and native tool verification. |
+| 503 | Explore WebMCP tools for inspecting and editing projects | 2026-10-28 | Superseded; reopened TODO 210 defines public editing handles and an external page-owned WebMCP adapter. |
+| 401 | Tighten runtime browser API typing | 2026-10-26 | Narrow Web Audio adapter types and shared runtime message unions replace production `any` and `@ts-expect-error` escapes. |
+| 510 | Use glyph masks and a GPU color palette | 2026-10-26 | R8 masks and stable GPU palette indices replace colored font copies; the default atlas drops from 4 MiB to 96 KiB while retaining 20-byte instances. |
+| 511 | Compose input and output icons at runtime | 2026-10-26 | Inputs and six-state outputs use shared font/fill sprites; prerendered connectors are removed, with visual and rendering-cost checks recorded. |
+| 509 | Rebuild editor colors from a small base palette | 2026-10-26 | Shared configurable accents, predefined shades and opacity, and generic core/plugin sprite lookups replace feature-specific colors. |
+| 507 | Design plugin fill-color contributions | 2026-10-26 | Cancelled; TODO 509 replaces plugin-owned color registration with a shared base palette and generated shades. |
+| 271 | Add float64 support for loadFloat instruction | 2026-10-21 | Completed in [PR #1120](https://github.com/8f4e/8f4e/pull/1120); linked issue #422 was closed as completed. |
+| 496 | Use Set and Map for binary-asset lookups | 2026-10-21 | Completed in [PR #1104](https://github.com/8f4e/8f4e/pull/1104); linked issue #1013 was closed as completed. |
+| 475 | Remove dead compiler block-state caches | 2026-10-20 | Completed in [PR #1101](https://github.com/8f4e/8f4e/pull/1101); linked issue #954 was closed as completed. |
+| 272 | Add float32/float64 width checks to localSet instruction | 2026-10-20 | Completed in [PR #1100](https://github.com/8f4e/8f4e/pull/1100); linked issue #551 was closed as completed. |
+| 495 | Index editor pointer targets by address | 2026-10-20 | Completed in [PR #1108](https://github.com/8f4e/8f4e/pull/1108); linked issue #1012 was closed as completed. |
+| 424 | Rename compiler allocation-grid metadata to allocation-unit terminology | 2026-10-19 | Completed in [PR #1111](https://github.com/8f4e/8f4e/pull/1111); linked issue #712 was closed as completed. |
+| 269 | Add float64 support for round instruction | 2026-10-15 | Completed in [PR #1040](https://github.com/8f4e/8f4e/pull/1040); linked issue #415 was closed as completed. |
 | 497 | Unify editor memory resolution for exposed aliases | 2026-10-14 | Added shared target resolution across widgets, connectors, and environment bindings, with canonical-owner control saving and regression coverage. |
 | 490 | Add native compiler assertions | 2026-10-09 | Added opt-in assert/assertEqual, typed callbacks, disabled operand drops, and compiler source-site metadata; existing testing remains in place pending TODO 491. |
 | 480 | Simplify map codegen with reverse row order | 2026-10-09 | Preserved first-match behavior with two map temporaries; added numeric edge-case project fixtures and a one-time benchmark showing 2.40–2.47× faster 64-row lookups and 1,863 → 895 byte fixtures. |

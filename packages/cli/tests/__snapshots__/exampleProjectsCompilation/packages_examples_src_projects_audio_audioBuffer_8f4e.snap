@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "startingMemoryWordAddress": 0
+    "startingMemoryAllocationUnitAddress": 0
   },
   "compiledModules": {
     "phaseAccumulator": {
@@ -443,7 +443,7 @@
             }
           ]
         },
-        "projectBlockId": 202,
+        "projectBlockId": 148,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "phaseAccumulator"
@@ -834,7 +834,7 @@
             }
           ]
         },
-        "projectBlockId": 245,
+        "projectBlockId": 191,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "audioout"
@@ -850,17 +850,17 @@
         "id": "audioout",
         "lineNumber": 0,
         "byteAddress": 0,
-        "wordAlignedSize": 130,
-        "wordAlignedByteLength": 520,
+        "allocationUnitCount": 130,
+        "allocatedByteLength": 520,
         "endByteAddress": 516,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 0,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 0,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
             "endByteAddress": 0,
@@ -876,9 +876,9 @@
           "buffer": {
             "numberOfElements": 128,
             "elementWordSize": 4,
-            "wordAlignedSize": 128,
-            "wordAlignedByteLength": 512,
-            "wordAlignedAddress": 1,
+            "allocationUnitCount": 128,
+            "allocatedByteLength": 512,
+            "allocationUnitAddress": 1,
             "id": "buffer",
             "lineNumber": 8,
             "byteAddress": 4,
@@ -893,9 +893,9 @@
           "pointer": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 129,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 129,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 516,
             "elementByteLength": 4,
             "endByteAddress": 516,
@@ -912,9 +912,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 0,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 0,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
             "endByteAddress": 0,
@@ -930,9 +930,9 @@
           {
             "numberOfElements": 128,
             "elementWordSize": 4,
-            "wordAlignedSize": 128,
-            "wordAlignedByteLength": 512,
-            "wordAlignedAddress": 1,
+            "allocationUnitCount": 128,
+            "allocatedByteLength": 512,
+            "allocationUnitAddress": 1,
             "id": "buffer",
             "lineNumber": 8,
             "byteAddress": 4,
@@ -947,9 +947,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 129,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 129,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 516,
             "elementByteLength": 4,
             "endByteAddress": 516,
@@ -1036,17 +1036,17 @@
         "id": "phaseAccumulator",
         "lineNumber": 0,
         "byteAddress": 520,
-        "wordAlignedSize": 4,
-        "wordAlignedByteLength": 16,
+        "allocationUnitCount": 4,
+        "allocatedByteLength": 16,
         "endByteAddress": 532,
         "endAddressSafeByteLength": 4,
         "memory": {
           "defaultFreq": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 130,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 130,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 520,
             "elementByteLength": 4,
             "endByteAddress": 520,
@@ -1061,9 +1061,9 @@
           "frequency": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 131,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 131,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 524,
             "elementByteLength": 4,
             "endByteAddress": 524,
@@ -1079,9 +1079,9 @@
           "phase": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 132,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 132,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 528,
             "elementByteLength": 4,
             "endByteAddress": 528,
@@ -1096,9 +1096,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 133,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 133,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 532,
             "elementByteLength": 4,
             "endByteAddress": 532,
@@ -1115,9 +1115,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 130,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 130,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 520,
             "elementByteLength": 4,
             "endByteAddress": 520,
@@ -1132,9 +1132,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 131,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 131,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 524,
             "elementByteLength": 4,
             "endByteAddress": 524,
@@ -1150,9 +1150,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 132,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 132,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 528,
             "elementByteLength": 4,
             "endByteAddress": 528,
@@ -1167,9 +1167,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 133,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 133,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 532,
             "elementByteLength": 4,
             "endByteAddress": 532,
@@ -1264,17 +1264,17 @@
         "id": "audioout",
         "lineNumber": 0,
         "byteAddress": 0,
-        "wordAlignedSize": 130,
-        "wordAlignedByteLength": 520,
+        "allocationUnitCount": 130,
+        "allocatedByteLength": 520,
         "endByteAddress": 516,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 0,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 0,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
             "endByteAddress": 0,
@@ -1290,9 +1290,9 @@
           "buffer": {
             "numberOfElements": 128,
             "elementWordSize": 4,
-            "wordAlignedSize": 128,
-            "wordAlignedByteLength": 512,
-            "wordAlignedAddress": 1,
+            "allocationUnitCount": 128,
+            "allocatedByteLength": 512,
+            "allocationUnitAddress": 1,
             "id": "buffer",
             "lineNumber": 8,
             "byteAddress": 4,
@@ -1307,9 +1307,9 @@
           "pointer": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 129,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 129,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 516,
             "elementByteLength": 4,
             "endByteAddress": 516,
@@ -1326,9 +1326,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 0,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 0,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
             "endByteAddress": 0,
@@ -1344,9 +1344,9 @@
           {
             "numberOfElements": 128,
             "elementWordSize": 4,
-            "wordAlignedSize": 128,
-            "wordAlignedByteLength": 512,
-            "wordAlignedAddress": 1,
+            "allocationUnitCount": 128,
+            "allocatedByteLength": 512,
+            "allocationUnitAddress": 1,
             "id": "buffer",
             "lineNumber": 8,
             "byteAddress": 4,
@@ -1361,9 +1361,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 129,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 129,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 516,
             "elementByteLength": 4,
             "endByteAddress": 516,
@@ -1450,17 +1450,17 @@
         "id": "phaseAccumulator",
         "lineNumber": 0,
         "byteAddress": 520,
-        "wordAlignedSize": 4,
-        "wordAlignedByteLength": 16,
+        "allocationUnitCount": 4,
+        "allocatedByteLength": 16,
         "endByteAddress": 532,
         "endAddressSafeByteLength": 4,
         "memory": {
           "defaultFreq": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 130,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 130,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 520,
             "elementByteLength": 4,
             "endByteAddress": 520,
@@ -1475,9 +1475,9 @@
           "frequency": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 131,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 131,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 524,
             "elementByteLength": 4,
             "endByteAddress": 524,
@@ -1493,9 +1493,9 @@
           "phase": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 132,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 132,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 528,
             "elementByteLength": 4,
             "endByteAddress": 528,
@@ -1510,9 +1510,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 133,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 133,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 532,
             "elementByteLength": 4,
             "endByteAddress": 532,
@@ -1529,9 +1529,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 130,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 130,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 520,
             "elementByteLength": 4,
             "endByteAddress": 520,
@@ -1546,9 +1546,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 131,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 131,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 524,
             "elementByteLength": 4,
             "endByteAddress": 524,
@@ -1564,9 +1564,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 132,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 132,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 528,
             "elementByteLength": 4,
             "endByteAddress": 528,
@@ -1581,9 +1581,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 133,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 133,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 532,
             "elementByteLength": 4,
             "endByteAddress": 532,
@@ -1716,8 +1716,16 @@
     }
   },
   "pointerMetadataByModuleId": {
-    "audioout": {},
-    "phaseAccumulator": {}
+    "audioout": {
+      "in": {
+        "pointeeElementCount": 1
+      }
+    },
+    "phaseAccumulator": {
+      "frequency": {
+        "pointeeElementCount": 1
+      }
+    }
   },
   "compiledWasm": "AGFzbQEAAAABFwVgAABgAX8Bf2ACf38Bf2AAAGABfQF9AhEBBGhvc3QGbWVtb3J5AgMBAQMHBgAAAwQAAAcgAwxpbml0RGVmYXVsdHMAAARtYWluAAEGYnVmZmVyAAIMAQIK9wIGIQBBAEEAQZgE/AsAQQBBAEEE/AgAAEGEBEEAQQz8CAEACwYAEAQQBQskAQF/QQAhAAJAA0AgAEGAAU4EQAwCCyAAQQFqIQAQAQwACwsLZAEBfSAAQ9sPyT9eBEBD2w9JQCAAkyEACyAAQ9sPyT9DAACAv5RdBEBD2w9JQEMAAIC/lCAAkyEACyAAIACUIQEgAUPRDFC5lEOIiAg8kiABlEOrqiq+kiABlEMAAIA/kiAAlAtkAQF9QZAEQZAEKgIAQ9sPyUBBjAQoAgAqAgCUQYD3ArIhACAAQwAAAABbBEBDAACAPyEACyAAlZI4AgBBkAQqAgBD2w9JQF4EQEGQBEPbD0nAOAIAC0GUBEGQBCoCABADOAIAC10CAX8BfUGEBCgCAEEAKAIAKgIAQwAAAD+UIQEhACAAPwBBAWtBEHRB/P8Dak0EQCAAIAE4AgAFC0GEBEGEBCgCAEEEajYCAEGEBCgCAEGABEoEQEGEBEEENgIACwsLFQIBBBQCAAABDAQAAAAAANxDCAIAAA==",
   "requiredMemoryBytes": 536

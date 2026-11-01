@@ -1,6 +1,7 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
-import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../__tests__/rendering';
+import { describe, expect, it, vi } from 'vitest';
+import { createDrawContextMock } from '../__tests__/rendering';
 import drawDialog from './dialog';
 
 describe('drawDialog', () => {
@@ -35,30 +36,16 @@ describe('drawDialog', () => {
 				vGrid: 8,
 				hGrid: 16,
 			},
-			spriteLookups: {
-				fillColors: createSpriteIdLookupMock(),
-				fontCode: createSpriteIdLookupMock(),
-				fontDialogTitle: createSpriteIdLookupMock(),
-				fontDialogText: createSpriteIdLookupMock(),
-				fontMenuItemText: createSpriteIdLookupMock(),
-				fontMenuItemTextHighlighted: createSpriteIdLookupMock(),
-			} as never,
 		});
 
 		drawDialog(engine, state);
 
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).toHaveBeenCalledWith(
-			400,
-			80,
-			'menuItemBackgroundHighlighted',
-			104,
-			48
-		);
+		expect(vi.mocked(engine.drawFill)).toHaveBeenCalledWith(400, 80, PALETTE_INDICES.selectionSurface, 104, 48);
 		expect((engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText).toHaveBeenCalledWith(
 			432,
 			96,
 			'Allow',
-			state.spriteLookups?.fontMenuItemTextHighlighted
+			PALETTE_INDICES.selectionInk
 		);
 	});
 });

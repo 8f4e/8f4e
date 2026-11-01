@@ -1,0 +1,21 @@
+{
+  "code": 19,
+  "context": {
+    "codeBlockId": "rawIntegerToPointerLocal",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "pointer",
+      },
+    ],
+    "instruction": "localSet",
+    "lineNumber": 3,
+  },
+  "message": "Type mismatch. (19)",
+}

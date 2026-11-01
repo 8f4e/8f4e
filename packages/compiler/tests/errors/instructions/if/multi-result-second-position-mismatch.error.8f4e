@@ -1,0 +1,19 @@
+8f4e/v1
+
+entry main
+module ifMultiResultSecondPositionMismatch
+; ifEnd should validate the
+; second result position in a
+; multi-result conditional.
+push 1
+if
+push 1
+push 2.0
+else
+push 1
+push 3.0f64
+ifEnd int float
+drop
+drop
+moduleEnd
+entryEnd

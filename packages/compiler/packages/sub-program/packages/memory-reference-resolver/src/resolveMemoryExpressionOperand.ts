@@ -10,24 +10,19 @@ import type {
 } from '@8f4e/language-spec';
 import {
 	ArgumentType,
-	getElementCount,
-	getElementMaxValue,
-	getElementMinValue,
-	getElementWordSize,
-	getPointeeElementIsIntegerFromMetadata,
-	getPointeeElementMaxValue,
-	getPointeeElementMaxValueFromMetadata,
-	getPointeeElementMinValue,
-	getPointeeElementMinValueFromMetadata,
-	getPointeeElementWordSize,
-	getPointeeElementWordSizeFromMetadata,
-	getPointeeValueKindFromMetadata,
 	memoryEndAddressValue,
 	memoryStartAddressValue,
 	moduleAddressValue,
 	type PointerMetadata,
 	resolveProjectMemoryAlias,
 } from '@8f4e/language-spec';
+
+import {
+	evaluateMetadataQuery,
+	getMetadataQuery,
+	type MetadataTargetRequest,
+	type ResolvedMetadataTarget,
+} from './metadataQuery';
 
 export type MemoryReferenceModuleNamespace = PlannedMemoryModule;
 
@@ -113,10 +108,30 @@ function getPointerFacts(
 	};
 }
 
-function hasKnownPointeeElementCount(
-	pointerMetadata: { pointeeBaseType?: unknown; pointeeElementCount?: number } | undefined
-): pointerMetadata is { pointeeBaseType: unknown; pointeeElementCount: number } {
-	return !!pointerMetadata?.pointeeBaseType && pointerMetadata.pointeeElementCount !== undefined;
+/** Resolves a metadata target once, independently of the query being evaluated. */
+export function resolveMetadataTarget(
+	request: MetadataTargetRequest,
+	context: MemoryReferenceResolutionContext
+): ResolvedMetadataTarget | undefined {
+	if (request.scope === 'intermodule') {
+		const { targetMemory } = resolveIntermoduleMemoryTarget(context, request.targetModuleId, request.targetMemoryId);
+		return targetMemory ? { kind: 'memory', memory: targetMemory } : undefined;
+	}
+
+	const memory = getMemoryDeclaration(context, request.targetMemoryId);
+	if (request.dereferenceDepth === 0) {
+		return memory ? { kind: 'memory', memory } : undefined;
+	}
+
+	// The current AST only requests one dereference. Future depth validation belongs here,
+	// after target lookup, so memory and local pointers share the same semantic boundary.
+	const memoryPointer = getPointerFacts(context, memory);
+	const local = context.locals[request.targetMemoryId];
+	const localPointer = local?.pointeeBaseType ? local : undefined;
+	if (memoryPointer) {
+		return { kind: 'pointer', pointers: localPointer ? [memoryPointer, localPointer] : [memoryPointer] };
+	}
+	return localPointer ? { kind: 'pointer', pointers: [localPointer] } : undefined;
 }
 
 /**
@@ -136,173 +151,10 @@ export function resolveMemoryExpressionOperand(
 		return undefined;
 	}
 
-	if (operand.referenceKind === 'intermodular-element-word-size') {
-		const { targetMemory } = resolveIntermoduleMemoryTarget(context, operand.targetModuleId, operand.targetMemoryId);
-		if (targetMemory) {
-			return {
-				value: getElementWordSize(targetMemory),
-				isInteger: true,
-			};
-		}
-		return undefined;
-	}
-
-	if (operand.referenceKind === 'intermodular-element-count') {
-		const { targetMemory } = resolveIntermoduleMemoryTarget(context, operand.targetModuleId, operand.targetMemoryId);
-		if (targetMemory) {
-			return {
-				value: getElementCount(targetMemory),
-				isInteger: true,
-			};
-		}
-		return undefined;
-	}
-
-	if (operand.referenceKind === 'intermodular-element-max') {
-		const { targetMemory } = resolveIntermoduleMemoryTarget(context, operand.targetModuleId, operand.targetMemoryId);
-		if (targetMemory) {
-			return {
-				value: getElementMaxValue(targetMemory),
-				isInteger: !!targetMemory.isInteger,
-				...(targetMemory.elementWordSize === 8 && !targetMemory.isInteger ? { isFloat64: true } : {}),
-			};
-		}
-		return undefined;
-	}
-
-	if (operand.referenceKind === 'intermodular-element-min') {
-		const { targetMemory } = resolveIntermoduleMemoryTarget(context, operand.targetModuleId, operand.targetMemoryId);
-		if (targetMemory) {
-			return {
-				value: getElementMinValue(targetMemory),
-				isInteger: !!targetMemory.isInteger,
-				...(targetMemory.elementWordSize === 8 && !targetMemory.isInteger ? { isFloat64: true } : {}),
-			};
-		}
-		return undefined;
-	}
-
-	// count(*name) — known pointee element count
-	if (operand.referenceKind === 'pointee-element-count') {
-		const base = operand.targetMemoryId;
-		const memoryItem = getPointerFacts(context, getMemoryDeclaration(context, base));
-		if (hasKnownPointeeElementCount(memoryItem)) {
-			return { value: memoryItem.pointeeElementCount, isInteger: true };
-		}
-		const local = context.locals[base];
-		if (hasKnownPointeeElementCount(local)) {
-			return { value: local.pointeeElementCount, isInteger: true };
-		}
-		return undefined;
-	}
-
-	// sizeof(*name) — pointee element word size
-	if (operand.referenceKind === 'pointee-element-word-size') {
-		const base = operand.targetMemoryId;
-		const memoryItem = getPointerFacts(context, getMemoryDeclaration(context, base));
-		if (memoryItem) {
-			return {
-				value: getPointeeElementWordSize(memoryItem),
-				isInteger: true,
-			};
-		}
-		const local = context.locals[base];
-		if (local?.pointeeBaseType) {
-			return { value: getPointeeElementWordSizeFromMetadata(local), isInteger: true };
-		}
-		return undefined;
-	}
-
-	// sizeof(name) — element word size
-	if (operand.referenceKind === 'element-word-size') {
-		const base = operand.targetMemoryId;
-		const memoryItem = getMemoryDeclaration(context, base);
-		if (memoryItem) {
-			return { value: getElementWordSize(memoryItem), isInteger: true };
-		}
-		return undefined;
-	}
-
-	// count(name) — element count
-	if (operand.referenceKind === 'element-count') {
-		const base = operand.targetMemoryId;
-		const memoryItem = getMemoryDeclaration(context, base);
-		if (memoryItem) {
-			return { value: getElementCount(memoryItem), isInteger: true };
-		}
-		return undefined;
-	}
-
-	// max(*name) — pointee element max value
-	if (operand.referenceKind === 'pointee-element-max') {
-		const base = operand.targetMemoryId;
-		const memoryItem = getPointerFacts(context, getMemoryDeclaration(context, base));
-		if (memoryItem) {
-			return {
-				value: getPointeeElementMaxValue(memoryItem),
-				isInteger: getPointeeElementIsIntegerFromMetadata(memoryItem),
-				...(getPointeeValueKindFromMetadata(memoryItem) === 'float64' ? { isFloat64: true } : {}),
-			};
-		}
-		const local = context.locals[base];
-		if (local?.pointeeBaseType) {
-			return {
-				value: getPointeeElementMaxValueFromMetadata(local),
-				isInteger: getPointeeElementIsIntegerFromMetadata(local),
-				...(getPointeeValueKindFromMetadata(local) === 'float64' ? { isFloat64: true } : {}),
-			};
-		}
-		return undefined;
-	}
-
-	// max(name) — element max value
-	if (operand.referenceKind === 'element-max') {
-		const base = operand.targetMemoryId;
-		const memoryItem = getMemoryDeclaration(context, base);
-		if (memoryItem) {
-			return {
-				value: getElementMaxValue(memoryItem),
-				isInteger: !!memoryItem.isInteger,
-				...(memoryItem.elementWordSize === 8 && !memoryItem.isInteger ? { isFloat64: true } : {}),
-			};
-		}
-		return undefined;
-	}
-
-	// min(*name) — pointee element min value
-	if (operand.referenceKind === 'pointee-element-min') {
-		const base = operand.targetMemoryId;
-		const memoryItem = getPointerFacts(context, getMemoryDeclaration(context, base));
-		if (memoryItem) {
-			return {
-				value: getPointeeElementMinValue(memoryItem),
-				isInteger: getPointeeElementIsIntegerFromMetadata(memoryItem),
-				...(getPointeeValueKindFromMetadata(memoryItem) === 'float64' ? { isFloat64: true } : {}),
-			};
-		}
-		const local = context.locals[base];
-		if (local?.pointeeBaseType) {
-			return {
-				value: getPointeeElementMinValueFromMetadata(local),
-				isInteger: getPointeeElementIsIntegerFromMetadata(local),
-				...(getPointeeValueKindFromMetadata(local) === 'float64' ? { isFloat64: true } : {}),
-			};
-		}
-		return undefined;
-	}
-
-	// min(name) — element min value
-	if (operand.referenceKind === 'element-min') {
-		const base = operand.targetMemoryId;
-		const memoryItem = getMemoryDeclaration(context, base);
-		if (memoryItem) {
-			return {
-				value: getElementMinValue(memoryItem),
-				isInteger: !!memoryItem.isInteger,
-				...(memoryItem.elementWordSize === 8 && !memoryItem.isInteger ? { isFloat64: true } : {}),
-			};
-		}
-		return undefined;
+	const metadataQuery = getMetadataQuery(operand);
+	if (metadataQuery) {
+		const target = resolveMetadataTarget(metadataQuery, context);
+		return target ? evaluateMetadataQuery(metadataQuery.query, target) : undefined;
 	}
 
 	// &module: — start byte address of a module
@@ -330,7 +182,7 @@ export function resolveMemoryExpressionOperand(
 					safeRange: {
 						source: 'module-nth-memory-start',
 						byteAddress: item.byteAddress,
-						safeByteLength: item.wordAlignedByteLength,
+						safeByteLength: item.allocatedByteLength,
 						moduleId: resolvedModuleId,
 						...(item.id ? { memoryId: item.id } : {}),
 					},

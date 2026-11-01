@@ -3,7 +3,7 @@ title: 'TODO: Add glugglugglug shader error callback for editor logging'
 priority: Medium
 effort: 2-4h
 created: 2026-01-16
-issue: https://github.com/andorthehood/8f4e/issues/549
+issue: https://github.com/8f4e/8f4e/issues/549
 status: Cancelled
 completed: 2026-09-07
 ---

@@ -3,7 +3,7 @@ title: 'TODO: Unify metadata query argument shape'
 priority: Medium
 effort: 2-4h
 created: 2026-05-27
-issue: https://github.com/andorthehood/8f4e/issues/716
+issue: https://github.com/8f4e/8f4e/issues/716
 status: Open
 completed: null
 ---

@@ -43,7 +43,15 @@ describe('validateInstructionArguments', () => {
 		expect(() =>
 			validateInstructionArguments('module', [classifyIdentifier('main'), classifyIdentifier('extra')])
 		).toThrowError(SyntaxRulesError);
-		expect(() => validateInstructionArguments('add', [classifyIdentifier('extra')])).toThrowError(SyntaxRulesError);
+		expect(() => validateInstructionArguments('abs', [classifyIdentifier('extra')])).toThrowError(SyntaxRulesError);
+	});
+
+	it('accepts one push-style arithmetic operand but rejects two', () => {
+		expect(() => validateInstructionArguments('add', [])).not.toThrow();
+		expect(() => validateInstructionArguments('add', [classifyIdentifier('*gain')])).not.toThrow();
+		expect(() =>
+			validateInstructionArguments('add', [classifyIdentifier('first'), classifyIdentifier('second')])
+		).toThrowError(SyntaxRulesError);
 	});
 
 	it.each(['audioOut', 'XORShift', 'voice_1', 'low-pass', '_internal'])('accepts the module name %s', moduleName => {

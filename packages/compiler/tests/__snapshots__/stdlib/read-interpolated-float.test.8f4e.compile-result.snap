@@ -1,6 +1,6 @@
 {
   "functionAst": {
-    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__float_p__int": {
+    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__float_p__float_p__int": {
       "lines": [
         {
           "arguments": [
@@ -19,7 +19,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "int",
+              "value": "float*",
             },
             {
               "referenceKind": "plain",
@@ -173,7 +173,7 @@
       "name": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress",
       "type": "function",
     },
-    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__int16_p__int": {
+    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int16_p__int16_p__int": {
       "lines": [
         {
           "arguments": [
@@ -192,7 +192,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "int",
+              "value": "int16*",
             },
             {
               "referenceKind": "plain",
@@ -346,7 +346,7 @@
       "name": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress",
       "type": "function",
     },
-    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__int_p__int": {
+    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int_p__int_p__int": {
       "lines": [
         {
           "arguments": [
@@ -365,7 +365,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "int",
+              "value": "int*",
             },
             {
               "referenceKind": "plain",
@@ -519,7 +519,7 @@
       "name": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress",
       "type": "function",
     },
-    "readInterpolated__int__float_p__int__float": {
+    "readInterpolated__float_p__float_p__int__float": {
       "lines": [
         {
           "arguments": [
@@ -543,7 +543,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "int",
+              "value": "float*",
             },
             {
               "referenceKind": "plain",
@@ -901,7 +901,7 @@
       "name": "readInterpolated",
       "type": "function",
     },
-    "readInterpolated__int__int16_p__int__float": {
+    "readInterpolated__int16_p__int16_p__int__float": {
       "lines": [
         {
           "arguments": [
@@ -925,7 +925,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "int",
+              "value": "int16*",
             },
             {
               "referenceKind": "plain",
@@ -1291,7 +1291,7 @@
       "name": "readInterpolated",
       "type": "function",
     },
-    "readInterpolated__int__int_p__int__float": {
+    "readInterpolated__int_p__int_p__int__float": {
       "lines": [
         {
           "arguments": [
@@ -1315,7 +1315,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "int",
+              "value": "int*",
             },
             {
               "referenceKind": "plain",
@@ -1683,11 +1683,11 @@
     },
   },
   "functionOverview": {
-    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__float_p__int": {
-      "id": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__float_p__int",
+    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__float_p__float_p__int": {
+      "id": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__float_p__float_p__int",
       "signature": {
         "parameters": [
-          "int",
+          "float*",
           "float*",
           "int",
         ],
@@ -1696,11 +1696,11 @@
         ],
       },
     },
-    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__int16_p__int": {
-      "id": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__int16_p__int",
+    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int16_p__int16_p__int": {
+      "id": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int16_p__int16_p__int",
       "signature": {
         "parameters": [
-          "int",
+          "int16*",
           "int16*",
           "int",
         ],
@@ -1709,11 +1709,11 @@
         ],
       },
     },
-    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__int_p__int": {
-      "id": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__int_p__int",
+    "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int_p__int_p__int": {
+      "id": "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int_p__int_p__int",
       "signature": {
         "parameters": [
-          "int",
+          "int*",
           "int*",
           "int",
         ],
@@ -1722,11 +1722,11 @@
         ],
       },
     },
-    "readInterpolated__int__float_p__int__float": {
-      "id": "readInterpolated__int__float_p__int__float",
+    "readInterpolated__float_p__float_p__int__float": {
+      "id": "readInterpolated__float_p__float_p__int__float",
       "signature": {
         "parameters": [
-          "int",
+          "float*",
           "float*",
           "int",
           "float",
@@ -1736,11 +1736,11 @@
         ],
       },
     },
-    "readInterpolated__int__int16_p__int__float": {
-      "id": "readInterpolated__int__int16_p__int__float",
+    "readInterpolated__int16_p__int16_p__int__float": {
+      "id": "readInterpolated__int16_p__int16_p__int__float",
       "signature": {
         "parameters": [
-          "int",
+          "int16*",
           "int16*",
           "int",
           "float",
@@ -1750,11 +1750,11 @@
         ],
       },
     },
-    "readInterpolated__int__int_p__int__float": {
-      "id": "readInterpolated__int__int_p__int__float",
+    "readInterpolated__int_p__int_p__int__float": {
+      "id": "readInterpolated__int_p__int_p__int__float",
       "signature": {
         "parameters": [
-          "int",
+          "int*",
           "int*",
           "int",
           "float",
@@ -1828,7 +1828,7 @@
               "value": "&buffer",
             },
           ],
-          "instruction": "int",
+          "instruction": "float*",
         },
         {
           "arguments": [
@@ -2084,6 +2084,8 @@
     "readInterpolatedFloatAssertions": {
       "memory": {
         "buffer": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 3,
           "byteAddress": 4,
           "default": {
             "0": 10,
@@ -2098,10 +2100,10 @@
           "numberOfElements": 3,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 3,
         },
         "pointer": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": 4,
           "elementWordSize": 4,
@@ -2110,22 +2112,22 @@
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,
-          "pointerDepth": 0,
-          "type": "int",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
+          "pointeeBaseType": "float",
+          "pointeeElementCount": 3,
+          "pointerDepth": 1,
+          "type": "float*",
         },
       },
     },
   },
   "overview": {
     "compiledFunctions": [
-      "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__float_p__int",
-      "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__int_p__int",
-      "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int__int16_p__int",
-      "readInterpolated__int__float_p__int__float",
-      "readInterpolated__int__int_p__int__float",
-      "readInterpolated__int__int16_p__int__float",
+      "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__float_p__float_p__int",
+      "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int_p__int_p__int",
+      "__8f4e_std_memory_readInterpolated__nonexported__wrapReadAddress__int16_p__int16_p__int",
+      "readInterpolated__float_p__float_p__int__float",
+      "readInterpolated__int_p__int_p__int__float",
+      "readInterpolated__int16_p__int16_p__int__float",
     ],
     "compiledModules": [
       "readInterpolatedFloatAssertions",

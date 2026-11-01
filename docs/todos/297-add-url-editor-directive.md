@@ -3,7 +3,7 @@ title: 'TODO: Add url editor directive for clickable links'
 priority: Medium
 effort: 4-8h
 created: 2026-03-12
-issue: https://github.com/andorthehood/8f4e/issues/413
+issue: https://github.com/8f4e/8f4e/issues/413
 status: Open
 completed: null
 ---
@@ -95,7 +95,7 @@ Key requirements:
 ## Related Items
 
 - **Related**: `docs/todos/241-load-project-from-query-param-url.md`
-- **Related**: `docs/todos/archived/210-add-webmcp-mcp-server-integration-editor.md`
+- **Related**: [TODO 210: Expose editor editing handles and add an external WebMCP adapter](archived/210-add-editor-editing-handles-and-webmcp-adapter.md)
 
 ## Notes
 

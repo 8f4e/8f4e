@@ -2,7 +2,10 @@ import { WASM_I32_LT_S, WASM_I32_LT_U, WASM_MEMORY_SIZE, WASM_SELECT } from '@8f
 import type { ClampAddressLine, MemoryAddressRange } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import createInstructionCompilerTestContext, { compileInstructionForTest, createStackFacts } from '../testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	createStackFacts,
+} from '../../tests/testUtils';
 import { clampAddress, clampGlobalAddress, clampModuleAddress } from './clampAddress';
 
 const range: MemoryAddressRange = {

@@ -3,7 +3,7 @@ title: 'TODO: Add compiler passive data inputs for array initialization'
 priority: Medium
 effort: 1-2d
 created: 2026-05-04
-issue: https://github.com/andorthehood/8f4e/issues/652
+issue: https://github.com/8f4e/8f4e/issues/652
 status: Open
 completed: null
 ---

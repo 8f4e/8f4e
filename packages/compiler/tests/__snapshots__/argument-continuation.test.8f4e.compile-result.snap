@@ -221,6 +221,8 @@
     "continuationPointerSource": {
       "memory": {
         "samples": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 8,
           "byteAddress": 4,
           "default": {
             "0": 0,
@@ -233,8 +235,6 @@
           "numberOfElements": 8,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 8,
         },
       },
     },
@@ -244,6 +244,8 @@
     "splitByteDefaultAssertions": {
       "memory": {
         "color": {
+          "allocationUnitAddress": 9,
+          "allocationUnitCount": 1,
           "byteAddress": 36,
           "default": 2835283968,
           "elementWordSize": 4,
@@ -254,14 +256,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 9,
-          "wordAlignedSize": 1,
         },
       },
     },
     "splitPointerDeclarationAssertions": {
       "memory": {
         "readHead": {
+          "allocationUnitAddress": 10,
+          "allocationUnitCount": 1,
           "byteAddress": 40,
           "default": 4,
           "elementWordSize": 4,
@@ -274,8 +276,6 @@
           "pointeeElementCount": 8,
           "pointerDepth": 1,
           "type": "float*",
-          "wordAlignedAddress": 10,
-          "wordAlignedSize": 1,
         },
       },
     },

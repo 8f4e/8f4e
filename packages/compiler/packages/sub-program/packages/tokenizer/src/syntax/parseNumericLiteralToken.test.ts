@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import parseNumericLiteralToken from './parseNumericLiteralToken';
+import { SyntaxErrorCode } from './syntaxError';
 
 describe('parseNumericLiteralToken', () => {
 	it('parses decimal integers and floats', () => {
@@ -53,6 +54,28 @@ describe('parseNumericLiteralToken', () => {
 	it('rejects non-finite numeric literals', () => {
 		expect(() => parseNumericLiteralToken('1e309')).toThrow('Invalid numeric literal');
 		expect(() => parseNumericLiteralToken('1e309f64')).toThrow('Invalid numeric literal');
+	});
+
+	it.each([
+		['positive hexadecimal', `0x${'f'.repeat(260)}`],
+		['negative hexadecimal', `-0x${'f'.repeat(260)}`],
+		['positive binary', `0b${'1'.repeat(1025)}`],
+		['negative binary', `-0b${'1'.repeat(1025)}`],
+	])('rejects overflowing %s literals', (_name, token) => {
+		expect(() => parseNumericLiteralToken(token)).toThrowError(
+			expect.objectContaining({ name: 'SyntaxRulesError', code: SyntaxErrorCode.INVALID_NUMERIC_LITERAL })
+		);
+	});
+
+	it.each([
+		['0x10', 16],
+		['-0x10', -16],
+		['0b101', 5],
+		['-0b101', -5],
+		['0x100000000', 2 ** 32],
+		[`0b1${'0'.repeat(32)}`, 2 ** 32],
+	] as const)('preserves the finite integer value of %s', (token, value) => {
+		expect(parseNumericLiteralToken(token)).toMatchObject({ value, isInteger: true });
 	});
 
 	it('returns null for non-literals', () => {

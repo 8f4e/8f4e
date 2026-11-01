@@ -1,0 +1,27 @@
+{
+  "code": 3,
+  "context": {
+    "codeBlockId": "ifMultiResultSecondPositionMismatch",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "int",
+      },
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "float",
+      },
+    ],
+    "instruction": "ifEnd",
+    "lineNumber": 11,
+  },
+  "message": "The operation only accepts float values as operands. (3)",
+}

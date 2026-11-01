@@ -17,64 +17,64 @@
       "id": "keyboard",
       "index": 0,
       "byteAddress": 560,
-      "wordAlignedAddress": 140,
-      "wordAlignedSize": 2,
+      "allocationUnitAddress": 140,
+      "allocationUnitCount": 2,
       "skipExecutionInCycle": false
     },
     {
       "id": "janko",
       "index": 1,
       "byteAddress": 552,
-      "wordAlignedAddress": 138,
-      "wordAlignedSize": 2,
+      "allocationUnitAddress": 138,
+      "allocationUnitCount": 2,
       "skipExecutionInCycle": false
     },
     {
       "id": "midiLUT",
       "index": 2,
       "byteAddress": 568,
-      "wordAlignedAddress": 142,
-      "wordAlignedSize": 128,
+      "allocationUnitAddress": 142,
+      "allocationUnitCount": 128,
       "skipExecutionInCycle": false
     },
     {
       "id": "midiNote2Freq",
       "index": 3,
       "byteAddress": 1080,
-      "wordAlignedAddress": 270,
-      "wordAlignedSize": 3,
+      "allocationUnitAddress": 270,
+      "allocationUnitCount": 3,
       "skipExecutionInCycle": false
     },
     {
       "id": "arEnv",
       "index": 4,
       "byteAddress": 0,
-      "wordAlignedAddress": 0,
-      "wordAlignedSize": 8,
+      "allocationUnitAddress": 0,
+      "allocationUnitCount": 8,
       "skipExecutionInCycle": false
     },
     {
       "id": "phaseAccumulator",
       "index": 5,
       "byteAddress": 1092,
-      "wordAlignedAddress": 273,
-      "wordAlignedSize": 4,
+      "allocationUnitAddress": 273,
+      "allocationUnitCount": 4,
       "skipExecutionInCycle": false
     },
     {
       "id": "vca",
       "index": 6,
       "byteAddress": 1108,
-      "wordAlignedAddress": 277,
-      "wordAlignedSize": 3,
+      "allocationUnitAddress": 277,
+      "allocationUnitCount": 3,
       "skipExecutionInCycle": false
     },
     {
       "id": "audioout",
       "index": 7,
       "byteAddress": 32,
-      "wordAlignedAddress": 8,
-      "wordAlignedSize": 130,
+      "allocationUnitAddress": 8,
+      "allocationUnitCount": 130,
       "skipExecutionInCycle": false
     }
   ]

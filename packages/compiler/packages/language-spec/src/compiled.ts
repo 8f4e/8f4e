@@ -119,14 +119,6 @@ export type CompileResult = {
 	cache: CompilerCache;
 };
 
-/** Directed connection between two module connectors in an editor graph. */
-export interface Connection {
-	fromModuleId: string;
-	fromConnectorId: string;
-	toModuleId: string;
-	toConnectorId: string;
-}
-
 /** Source origin for blocks expanded from built-in or external includes. */
 export interface IncludedSourceMetadata {
 	kind: 'include';

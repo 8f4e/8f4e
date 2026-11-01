@@ -1,0 +1,14 @@
+{
+  "code": 78,
+  "context": {
+    "codeBlockId": "addTwoAddresses",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [],
+    "instruction": "add",
+    "lineNumber": 5,
+  },
+  "message": "Invalid address arithmetic. Add accepts one address and one integer offset; subtraction accepts an address minus an integer offset or two addresses. (78)",
+}

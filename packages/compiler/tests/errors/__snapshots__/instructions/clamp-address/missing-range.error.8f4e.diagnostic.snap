@@ -1,0 +1,14 @@
+{
+  "code": 48,
+  "context": {
+    "codeBlockId": "missingAddressRange",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [],
+    "instruction": "clampAddress",
+    "lineNumber": 2,
+  },
+  "message": "This instruction requires address range metadata. (48)",
+}

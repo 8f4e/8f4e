@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 noteEnd
 
 includes
@@ -14,7 +14,7 @@ module readInterpolatedFloatAssertions
 ; between float samples in a
 ; circular buffer.
 float[] buffer 3 10.0 20.0 40.0
-int pointer &buffer
+float* pointer &buffer
 
 push pointer
 push &buffer

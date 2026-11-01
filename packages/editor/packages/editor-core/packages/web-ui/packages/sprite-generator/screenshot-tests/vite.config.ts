@@ -7,7 +7,8 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
 	server: {
-		port: 3002,
+		port: 3102,
+		strictPort: true,
 		host: 'localhost',
 		open: false, // Don't auto-open browser
 	},

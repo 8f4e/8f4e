@@ -3,7 +3,7 @@ title: 'TODO: Add float64 support for castToInt instruction'
 priority: High
 effort: 1-3h
 created: 2026-02-20
-issue: https://github.com/andorthehood/8f4e/issues/414
+issue: https://github.com/8f4e/8f4e/issues/414
 status: Cancelled
 completed: 2026-09-07
 ---

@@ -3,7 +3,7 @@ title: 'TODO: Remove unused editor-core feature-flag configuration'
 priority: Medium
 effort: 1-2h
 created: 2026-02-21
-issue: https://github.com/andorthehood/8f4e/issues/552
+issue: https://github.com/8f4e/8f4e/issues/552
 status: Completed
 completed: 2026-09-30
 ---

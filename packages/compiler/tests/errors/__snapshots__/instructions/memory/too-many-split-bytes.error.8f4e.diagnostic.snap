@@ -1,0 +1,46 @@
+{
+  "code": 35,
+  "context": {
+    "codeBlockId": "tooManySplitBytes",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "foo",
+      },
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 1,
+      },
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 2,
+      },
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 3,
+      },
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 4,
+      },
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 5,
+      },
+    ],
+    "instruction": "int",
+    "lineNumber": 1,
+  },
+  "message": "Too many split-byte values for this declaration type. (35)",
+}

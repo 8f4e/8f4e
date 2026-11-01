@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "startingMemoryWordAddress": 0
+    "startingMemoryAllocationUnitAddress": 0
   },
   "compiledModules": {
     "result": {
@@ -65,7 +65,7 @@
             }
           ]
         },
-        "projectBlockId": 109,
+        "projectBlockId": 54,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "result"
@@ -115,7 +115,7 @@
             }
           ]
         },
-        "projectBlockId": 120,
+        "projectBlockId": 65,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "notes"
@@ -199,7 +199,7 @@
             }
           ]
         },
-        "projectBlockId": 130,
+        "projectBlockId": 75,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "inputs"
@@ -497,7 +497,7 @@
             }
           ]
         },
-        "projectBlockId": 140,
+        "projectBlockId": 85,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron"
@@ -795,7 +795,7 @@
             }
           ]
         },
-        "projectBlockId": 165,
+        "projectBlockId": 110,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron2"
@@ -938,7 +938,7 @@
             }
           ]
         },
-        "projectBlockId": 190,
+        "projectBlockId": 135,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn"
@@ -1081,7 +1081,7 @@
             }
           ]
         },
-        "projectBlockId": 202,
+        "projectBlockId": 147,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn2"
@@ -1380,7 +1380,7 @@
             }
           ]
         },
-        "projectBlockId": 214,
+        "projectBlockId": 159,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron3"
@@ -1610,7 +1610,7 @@
             }
           ]
         },
-        "projectBlockId": 239,
+        "projectBlockId": 184,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn3"
@@ -1626,17 +1626,17 @@
         "id": "activationFn",
         "lineNumber": 0,
         "byteAddress": 0,
-        "wordAlignedSize": 2,
-        "wordAlignedByteLength": 8,
+        "allocationUnitCount": 2,
+        "allocatedByteLength": 8,
         "endByteAddress": 4,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 0,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 0,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
             "endByteAddress": 0,
@@ -1652,9 +1652,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 1,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 1,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
             "endByteAddress": 4,
@@ -1671,9 +1671,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 0,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 0,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
             "endByteAddress": 0,
@@ -1689,9 +1689,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 1,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 1,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
             "endByteAddress": 4,
@@ -1750,17 +1750,17 @@
         "id": "activationFn2",
         "lineNumber": 0,
         "byteAddress": 8,
-        "wordAlignedSize": 2,
-        "wordAlignedByteLength": 8,
+        "allocationUnitCount": 2,
+        "allocatedByteLength": 8,
         "endByteAddress": 12,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 2,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 2,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
             "endByteAddress": 8,
@@ -1776,9 +1776,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 3,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 3,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
             "endByteAddress": 12,
@@ -1795,9 +1795,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 2,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 2,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
             "endByteAddress": 8,
@@ -1813,9 +1813,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 3,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 3,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
             "endByteAddress": 12,
@@ -1874,17 +1874,17 @@
         "id": "activationFn3",
         "lineNumber": 0,
         "byteAddress": 16,
-        "wordAlignedSize": 2,
-        "wordAlignedByteLength": 8,
+        "allocationUnitCount": 2,
+        "allocatedByteLength": 8,
         "endByteAddress": 20,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 4,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
             "endByteAddress": 16,
@@ -1900,9 +1900,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 5,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 5,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
             "endByteAddress": 20,
@@ -1919,9 +1919,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 4,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
             "endByteAddress": 16,
@@ -1937,9 +1937,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 5,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 5,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
             "endByteAddress": 20,
@@ -1998,17 +1998,17 @@
         "id": "inputs",
         "lineNumber": 0,
         "byteAddress": 24,
-        "wordAlignedSize": 2,
-        "wordAlignedByteLength": 8,
+        "allocationUnitCount": 2,
+        "allocatedByteLength": 8,
         "endByteAddress": 28,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in1": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 6,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 6,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
             "endByteAddress": 24,
@@ -2023,9 +2023,9 @@
           "in2": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 7,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 7,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
             "endByteAddress": 28,
@@ -2042,9 +2042,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 6,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 6,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
             "endByteAddress": 24,
@@ -2059,9 +2059,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 7,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 7,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
             "endByteAddress": 28,
@@ -2121,8 +2121,8 @@
         "id": "notes",
         "lineNumber": 0,
         "byteAddress": 32,
-        "wordAlignedSize": 0,
-        "wordAlignedByteLength": 0,
+        "allocationUnitCount": 0,
+        "allocatedByteLength": 0,
         "endByteAddress": 32,
         "endAddressSafeByteLength": 0,
         "memory": {},
@@ -2133,17 +2133,17 @@
         "id": "perceptron",
         "lineNumber": 0,
         "byteAddress": 32,
-        "wordAlignedSize": 3,
-        "wordAlignedByteLength": 12,
+        "allocationUnitCount": 3,
+        "allocatedByteLength": 12,
         "endByteAddress": 40,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in1": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 8,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 8,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 32,
             "elementByteLength": 4,
             "endByteAddress": 32,
@@ -2159,9 +2159,9 @@
           "in2": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 9,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 9,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 36,
             "elementByteLength": 4,
             "endByteAddress": 36,
@@ -2177,9 +2177,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 10,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 10,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 40,
             "elementByteLength": 4,
             "endByteAddress": 40,
@@ -2196,9 +2196,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 8,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 8,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 32,
             "elementByteLength": 4,
             "endByteAddress": 32,
@@ -2214,9 +2214,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 9,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 9,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 36,
             "elementByteLength": 4,
             "endByteAddress": 36,
@@ -2232,9 +2232,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 10,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 10,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 40,
             "elementByteLength": 4,
             "endByteAddress": 40,
@@ -2317,17 +2317,17 @@
         "id": "perceptron2",
         "lineNumber": 0,
         "byteAddress": 44,
-        "wordAlignedSize": 3,
-        "wordAlignedByteLength": 12,
+        "allocationUnitCount": 3,
+        "allocatedByteLength": 12,
         "endByteAddress": 52,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in1": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 11,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 11,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 44,
             "elementByteLength": 4,
             "endByteAddress": 44,
@@ -2343,9 +2343,9 @@
           "in2": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 12,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 12,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 48,
             "elementByteLength": 4,
             "endByteAddress": 48,
@@ -2361,9 +2361,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 13,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 13,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 52,
             "elementByteLength": 4,
             "endByteAddress": 52,
@@ -2380,9 +2380,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 11,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 11,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 44,
             "elementByteLength": 4,
             "endByteAddress": 44,
@@ -2398,9 +2398,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 12,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 12,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 48,
             "elementByteLength": 4,
             "endByteAddress": 48,
@@ -2416,9 +2416,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 13,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 13,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 52,
             "elementByteLength": 4,
             "endByteAddress": 52,
@@ -2501,17 +2501,17 @@
         "id": "perceptron3",
         "lineNumber": 0,
         "byteAddress": 56,
-        "wordAlignedSize": 3,
-        "wordAlignedByteLength": 12,
+        "allocationUnitCount": 3,
+        "allocatedByteLength": 12,
         "endByteAddress": 64,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in1": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 14,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 14,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 56,
             "elementByteLength": 4,
             "endByteAddress": 56,
@@ -2527,9 +2527,9 @@
           "in2": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 15,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 15,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 60,
             "elementByteLength": 4,
             "endByteAddress": 60,
@@ -2545,9 +2545,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 16,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 16,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 64,
             "elementByteLength": 4,
             "endByteAddress": 64,
@@ -2564,9 +2564,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 14,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 14,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 56,
             "elementByteLength": 4,
             "endByteAddress": 56,
@@ -2582,9 +2582,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 15,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 15,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 60,
             "elementByteLength": 4,
             "endByteAddress": 60,
@@ -2600,9 +2600,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 16,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 16,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 64,
             "elementByteLength": 4,
             "endByteAddress": 64,
@@ -2685,17 +2685,17 @@
         "id": "result",
         "lineNumber": 0,
         "byteAddress": 68,
-        "wordAlignedSize": 1,
-        "wordAlignedByteLength": 4,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
         "endByteAddress": 68,
         "endAddressSafeByteLength": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 17,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 17,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 68,
             "elementByteLength": 4,
             "endByteAddress": 68,
@@ -2713,9 +2713,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 17,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 17,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 68,
             "elementByteLength": 4,
             "endByteAddress": 68,
@@ -2762,17 +2762,17 @@
         "id": "activationFn",
         "lineNumber": 0,
         "byteAddress": 0,
-        "wordAlignedSize": 2,
-        "wordAlignedByteLength": 8,
+        "allocationUnitCount": 2,
+        "allocatedByteLength": 8,
         "endByteAddress": 4,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 0,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 0,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
             "endByteAddress": 0,
@@ -2788,9 +2788,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 1,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 1,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
             "endByteAddress": 4,
@@ -2807,9 +2807,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 0,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 0,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
             "endByteAddress": 0,
@@ -2825,9 +2825,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 1,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 1,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
             "endByteAddress": 4,
@@ -2886,17 +2886,17 @@
         "id": "activationFn2",
         "lineNumber": 0,
         "byteAddress": 8,
-        "wordAlignedSize": 2,
-        "wordAlignedByteLength": 8,
+        "allocationUnitCount": 2,
+        "allocatedByteLength": 8,
         "endByteAddress": 12,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 2,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 2,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
             "endByteAddress": 8,
@@ -2912,9 +2912,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 3,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 3,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
             "endByteAddress": 12,
@@ -2931,9 +2931,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 2,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 2,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
             "endByteAddress": 8,
@@ -2949,9 +2949,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 3,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 3,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
             "endByteAddress": 12,
@@ -3010,17 +3010,17 @@
         "id": "activationFn3",
         "lineNumber": 0,
         "byteAddress": 16,
-        "wordAlignedSize": 2,
-        "wordAlignedByteLength": 8,
+        "allocationUnitCount": 2,
+        "allocatedByteLength": 8,
         "endByteAddress": 20,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 4,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
             "endByteAddress": 16,
@@ -3036,9 +3036,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 5,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 5,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
             "endByteAddress": 20,
@@ -3055,9 +3055,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 4,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
             "endByteAddress": 16,
@@ -3073,9 +3073,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 5,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 5,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
             "endByteAddress": 20,
@@ -3134,17 +3134,17 @@
         "id": "inputs",
         "lineNumber": 0,
         "byteAddress": 24,
-        "wordAlignedSize": 2,
-        "wordAlignedByteLength": 8,
+        "allocationUnitCount": 2,
+        "allocatedByteLength": 8,
         "endByteAddress": 28,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in1": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 6,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 6,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
             "endByteAddress": 24,
@@ -3159,9 +3159,9 @@
           "in2": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 7,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 7,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
             "endByteAddress": 28,
@@ -3178,9 +3178,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 6,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 6,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
             "endByteAddress": 24,
@@ -3195,9 +3195,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 7,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 7,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
             "endByteAddress": 28,
@@ -3257,8 +3257,8 @@
         "id": "notes",
         "lineNumber": 0,
         "byteAddress": 32,
-        "wordAlignedSize": 0,
-        "wordAlignedByteLength": 0,
+        "allocationUnitCount": 0,
+        "allocatedByteLength": 0,
         "endByteAddress": 32,
         "endAddressSafeByteLength": 0,
         "memory": {},
@@ -3269,17 +3269,17 @@
         "id": "perceptron",
         "lineNumber": 0,
         "byteAddress": 32,
-        "wordAlignedSize": 3,
-        "wordAlignedByteLength": 12,
+        "allocationUnitCount": 3,
+        "allocatedByteLength": 12,
         "endByteAddress": 40,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in1": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 8,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 8,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 32,
             "elementByteLength": 4,
             "endByteAddress": 32,
@@ -3295,9 +3295,9 @@
           "in2": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 9,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 9,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 36,
             "elementByteLength": 4,
             "endByteAddress": 36,
@@ -3313,9 +3313,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 10,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 10,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 40,
             "elementByteLength": 4,
             "endByteAddress": 40,
@@ -3332,9 +3332,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 8,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 8,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 32,
             "elementByteLength": 4,
             "endByteAddress": 32,
@@ -3350,9 +3350,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 9,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 9,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 36,
             "elementByteLength": 4,
             "endByteAddress": 36,
@@ -3368,9 +3368,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 10,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 10,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 40,
             "elementByteLength": 4,
             "endByteAddress": 40,
@@ -3453,17 +3453,17 @@
         "id": "perceptron2",
         "lineNumber": 0,
         "byteAddress": 44,
-        "wordAlignedSize": 3,
-        "wordAlignedByteLength": 12,
+        "allocationUnitCount": 3,
+        "allocatedByteLength": 12,
         "endByteAddress": 52,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in1": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 11,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 11,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 44,
             "elementByteLength": 4,
             "endByteAddress": 44,
@@ -3479,9 +3479,9 @@
           "in2": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 12,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 12,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 48,
             "elementByteLength": 4,
             "endByteAddress": 48,
@@ -3497,9 +3497,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 13,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 13,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 52,
             "elementByteLength": 4,
             "endByteAddress": 52,
@@ -3516,9 +3516,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 11,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 11,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 44,
             "elementByteLength": 4,
             "endByteAddress": 44,
@@ -3534,9 +3534,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 12,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 12,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 48,
             "elementByteLength": 4,
             "endByteAddress": 48,
@@ -3552,9 +3552,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 13,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 13,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 52,
             "elementByteLength": 4,
             "endByteAddress": 52,
@@ -3637,17 +3637,17 @@
         "id": "perceptron3",
         "lineNumber": 0,
         "byteAddress": 56,
-        "wordAlignedSize": 3,
-        "wordAlignedByteLength": 12,
+        "allocationUnitCount": 3,
+        "allocatedByteLength": 12,
         "endByteAddress": 64,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in1": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 14,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 14,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 56,
             "elementByteLength": 4,
             "endByteAddress": 56,
@@ -3663,9 +3663,9 @@
           "in2": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 15,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 15,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 60,
             "elementByteLength": 4,
             "endByteAddress": 60,
@@ -3681,9 +3681,9 @@
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 16,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 16,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 64,
             "elementByteLength": 4,
             "endByteAddress": 64,
@@ -3700,9 +3700,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 14,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 14,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 56,
             "elementByteLength": 4,
             "endByteAddress": 56,
@@ -3718,9 +3718,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 15,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 15,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 60,
             "elementByteLength": 4,
             "endByteAddress": 60,
@@ -3736,9 +3736,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 16,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 16,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 64,
             "elementByteLength": 4,
             "endByteAddress": 64,
@@ -3821,17 +3821,17 @@
         "id": "result",
         "lineNumber": 0,
         "byteAddress": 68,
-        "wordAlignedSize": 1,
-        "wordAlignedByteLength": 4,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
         "endByteAddress": 68,
         "endAddressSafeByteLength": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 17,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 17,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 68,
             "elementByteLength": 4,
             "endByteAddress": 68,
@@ -3849,9 +3849,9 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "wordAlignedAddress": 17,
-            "wordAlignedSize": 1,
-            "wordAlignedByteLength": 4,
+            "allocationUnitAddress": 17,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
             "byteAddress": 68,
             "elementByteLength": 4,
             "endByteAddress": 68,
@@ -4004,15 +4004,52 @@
     }
   },
   "pointerMetadataByModuleId": {
-    "activationFn": {},
-    "activationFn2": {},
-    "activationFn3": {},
+    "activationFn": {
+      "in": {
+        "pointeeElementCount": 1
+      }
+    },
+    "activationFn2": {
+      "in": {
+        "pointeeElementCount": 1
+      }
+    },
+    "activationFn3": {
+      "in": {
+        "pointeeElementCount": 1
+      }
+    },
     "inputs": {},
     "notes": {},
-    "perceptron": {},
-    "perceptron2": {},
-    "perceptron3": {},
-    "result": {}
+    "perceptron": {
+      "in1": {
+        "pointeeElementCount": 1
+      },
+      "in2": {
+        "pointeeElementCount": 1
+      }
+    },
+    "perceptron2": {
+      "in1": {
+        "pointeeElementCount": 1
+      },
+      "in2": {
+        "pointeeElementCount": 1
+      }
+    },
+    "perceptron3": {
+      "in1": {
+        "pointeeElementCount": 1
+      },
+      "in2": {
+        "pointeeElementCount": 1
+      }
+    },
+    "result": {
+      "out": {
+        "pointeeElementCount": 1
+      }
+    }
   },
   "compiledWasm": "AGFzbQEAAAABFARgAABgAX8Bf2ACf38Bf2ABfQF9AhEBBGhvc3QGbWVtb3J5AgMBAQMNDAAAAwAAAAAAAAAAAAcXAgxpbml0RGVmYXVsdHMAAARtYWluAAEMAQEKpAIMFwBBAEEAQcgA/AsAQQBBAEHIAPwIAAALFAAQAxAEEAUQBhAHEAgQCRAKEAsLJgEBfSAAIACLQwAAgD+SIQEgAUMAAAAAWwRAQwAAgD8hAQsgAZULAgALAgALAgALKgBBKEEgKAIAKgIAQ1bmIEGUQSQoAgAqAgBDxiUqwpSSQ4Are8CSOAIACyoAQTRBLCgCACoCAEOqoIzClEEwKAIAKgIAQ2gcxkGUkkPbPQzBkjgCAAsRAEEEQQAoAgAqAgAQAjgCAAsRAEEMQQgoAgAqAgAQAjgCAAsrAEHAAEE4KAIAKgIAQ65H3kCUQTwoAgAqAgBDsKzUQJSSQ6nZwUCSOAIACx8AQRRBECgCACoCABACQwAAAD9eBH9BAQVBAAs2AgALC0sBAUgoAAAAAAAAADQAAAAAAAAAQAAAAAAAAAAAAIA/AAAAABgAAAAcAAAAAAAAABgAAAAcAAAAAAAAAAQAAAAMAAAAAAAAABQAAAA=",
   "requiredMemoryBytes": 72

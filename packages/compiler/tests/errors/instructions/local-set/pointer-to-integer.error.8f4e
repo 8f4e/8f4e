@@ -1,0 +1,10 @@
+8f4e/v1
+
+entry main
+module pointerToIntegerLocal
+float value
+local int address
+push &value
+localSet address
+moduleEnd
+entryEnd

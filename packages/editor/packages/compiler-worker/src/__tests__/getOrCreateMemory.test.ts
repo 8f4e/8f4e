@@ -21,7 +21,7 @@ describe('getOrCreateMemory', () => {
 				unknown: [],
 				groups: [],
 			},
-			{ startingMemoryWordAddress: 0 }
+			{ startingMemoryAllocationUnitAddress: 0 }
 		);
 
 		return {

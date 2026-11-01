@@ -3,7 +3,7 @@ title: 'TODO: Trigger autosave and history only on project changes'
 priority: High
 effort: 3-6h
 created: 2026-10-10
-issue: https://github.com/andorthehood/8f4e/issues/1024
+issue: https://github.com/8f4e/8f4e/issues/1024
 status: Open
 completed: null
 ---
@@ -52,7 +52,7 @@ invalidate redo history.
 ## Affected Components
 
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/edit-history/effect.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/project-export/effect.ts`
+- `packages/editor/plugins/session-persistence/src/index.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-editing/effect.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/` source and metadata updates
 - `packages/editor/packages/editor-core/packages/editor-state-types/src/index.ts` and state defaults/test helpers

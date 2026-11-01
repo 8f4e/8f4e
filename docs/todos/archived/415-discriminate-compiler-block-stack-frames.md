@@ -3,7 +3,7 @@ title: 'TODO: Discriminate compiler block stack frames'
 priority: Medium
 effort: 4-8h
 created: 2026-05-25
-issue: https://github.com/andorthehood/8f4e/issues/684
+issue: https://github.com/8f4e/8f4e/issues/684
 status: Done
 completed: 2026-05-25
 ---

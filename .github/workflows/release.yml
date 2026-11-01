@@ -5,99 +5,23 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release
   cancel-in-progress: false
 
-env:
-  NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD || 'true' }}
-
 jobs:
   release:
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
+    name: Release
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-run.yml
 
-    steps:
-      - name: Validate branch
-        if: github.ref != 'refs/heads/main'
-        run: |
-          echo "Releases must be run from main. Current ref: $GITHUB_REF"
-          exit 1
-
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          ref: main
-          submodules: recursive
-
-      - name: Fetch release history
-        run: git fetch --prune --tags --unshallow origin main
-
-      - name: Setup Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Configure git author
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          release_tags="$(git tag --list '@8f4e/*@*' 'app@*')"
-          if [[ -z "$release_tags" ]]; then
-            echo "No existing release tags were found. Refusing to run first-release mode from CI."
-            exit 1
-          fi
-          npx nx release --skip-publish
-
-          npx nx run @8f4e/editor-website:build
-          node scripts/log-bundle-sizes.mjs
-          npx nx run @8f4e/examples:log-bytecode-size
-          npx nx run @8f4e/examples:log-compiler-coverage-counts
-          npx nx run @8f4e/compiler:docs-coverage
-          npx nx run-many --target=test --all --exclude=@8f4e/editor-website,glugglugglug --parallel=2 --skip-nx-cache -- --coverage
-          node scripts/log-test-coverage.mjs
-
-          if [[ -n "$(git status --porcelain -- logs/bundle-sizes logs/bytecode-size logs/compiler-coverage-counts logs/tsdoc-coverage logs/test-coverage)" ]]; then
-            git add logs/bundle-sizes logs/bytecode-size logs/compiler-coverage-counts logs/tsdoc-coverage logs/test-coverage
-            git commit -m "chore(release): record release metrics" --no-verify
-          fi
-
-      - name: Build 8f4e.com
-        run: npx nx run @8f4e/8f4e-website:build
-
-      - name: Verify generated sites
-        run: |
-          test -f packages/8f4e-website/dist/index.html
-          test -f packages/editor/packages/editor-website/dist/index.html
-
-      - name: Publish release
-        run: git push origin HEAD:main --follow-tags --no-verify --atomic
-
-      - name: Deploy 8f4e.com to Cloudflare Pages
-        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4.114.0'
-          command: pages deploy packages/8f4e-website/dist --project-name=8f4e-website --branch=main
-
-      - name: Deploy editor.8f4e.com to Cloudflare Pages
-        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4.114.0'
-          command: pages deploy packages/editor/packages/editor-website/dist --project-name=8f4e --branch=main
+  deploy:
+    name: Deploy
+    needs: release
+    permissions: {}
+    uses: ./.github/workflows/release-deploy.yml
+    secrets:
+      cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}

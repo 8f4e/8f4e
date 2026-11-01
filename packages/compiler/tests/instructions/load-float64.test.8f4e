@@ -1,0 +1,123 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+Typed float64 loads preserve precision.
+Guarded loads check all eight bytes.
+Untyped and float32 loads keep their existing width.
+noteEnd
+
+entry test
+module loadFloatAssertions
+float64 precise 1.0000000000000002f64
+float64[] values 2 -2.5f64 3.75f64
+float single 1.25
+int bits 1067450368
+
+push &precise
+loadFloat
+assertEqual 1.0000000000000002f64
+
+push &values
+loadFloat
+assertEqual -2.5f64
+
+push &values
+push 8
+add
+loadFloat
+assertEqual 3.75f64
+
+push &precise
+call readDouble
+assertEqual 1.0000000000000002f64
+
+push &values
+push 8
+call readOffsetDouble
+assertEqual 3.75f64
+
+push &values
+push 8
+add
+call readPreviousDouble
+assertEqual -2.5f64
+
+push &single
+loadFloat
+assertEqual 1.25
+
+push &bits
+loadFloat
+assertEqual 1.25
+
+push &bits
+load
+assertEqual 1067450368
+
+push 65528
+push 2.5f64
+store
+
+push &precise
+push 65520
+add
+call readDouble
+assertEqual 2.5f64
+
+push &precise
+push 65521
+add
+call readDouble
+assertEqual 0.0f64
+
+push &precise
+push 65520
+call readOffsetDouble
+assertEqual 2.5f64
+
+push &precise
+push 65521
+call readOffsetDouble
+assertEqual 0.0f64
+
+push &precise
+push 2147483647
+add
+loadFloat
+assertEqual 0.0f64
+
+push &precise
+push 2147483647
+sub
+loadFloat
+assertEqual 0.0f64
+moduleEnd
+entryEnd
+
+function readDouble
+#impure
+param float64* pointer
+push pointer
+loadFloat
+functionEnd float64
+
+function readOffsetDouble
+#impure
+param float64* pointer
+param int offset
+push pointer
+push offset
+add
+loadFloat
+functionEnd float64
+
+function readPreviousDouble
+#impure
+param float64* pointer
+push pointer
+push 8
+sub
+loadFloat
+functionEnd float64

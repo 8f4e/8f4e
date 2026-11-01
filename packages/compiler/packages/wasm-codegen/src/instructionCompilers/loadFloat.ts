@@ -1,6 +1,6 @@
-import { f32load, WASM_TYPE_F32 } from '@8f4e/compiler-wasm-utils';
+import { f32load, f64load, WASM_TYPE_F32, WASM_TYPE_F64 } from '@8f4e/compiler-wasm-utils';
 import type { ASTLineBase, FloatLoadInstructionSpecName, InstructionCompiler } from '@8f4e/language-spec';
-import { getInstructionSpec } from '@8f4e/language-spec';
+import { DOUBLE_WORD_MEMORY_ACCESS_WIDTH, getInstructionSpec } from '@8f4e/language-spec';
 import { guardedLoad, isSafeMemoryAccess } from './utils/memoryAccessGuard';
 import { saveByteCode } from './utils/saveByteCode';
 
@@ -14,9 +14,10 @@ const loadFloat: InstructionCompiler<LoadFloatLine> = (line, context, facts) => 
 	const [rawAddress] = facts.stackAnalysis.consumedOperands;
 	const address = rawAddress;
 	const operation = getInstructionSpec(line.instruction).effects.memory;
-	const accessByteWidth = operation.accessByteWidth;
+	const isFloat64 = facts.stackAnalysis.producedStackItems[0].valueType === 'float64';
+	const accessByteWidth = isFloat64 ? DOUBLE_WORD_MEMORY_ACCESS_WIDTH : operation.accessByteWidth;
 
-	const instructions = f32load(2, 0);
+	const instructions = isFloat64 ? f64load(3, 0) : f32load(2, 0);
 	if (isSafeMemoryAccess(address, accessByteWidth)) {
 		return saveByteCode(context, instructions);
 	}
@@ -26,7 +27,7 @@ const loadFloat: InstructionCompiler<LoadFloatLine> = (line, context, facts) => 
 		guardedLoad(context, {
 			accessByteWidth,
 			lineNumber: line.lineNumber,
-			resultType: WASM_TYPE_F32,
+			resultType: isFloat64 ? WASM_TYPE_F64 : WASM_TYPE_F32,
 			loadByteCode: instructions,
 		})
 	);

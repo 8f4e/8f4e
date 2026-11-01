@@ -15,3 +15,5 @@ assigns source binding identities while producing executable bodies without decl
 bodies and produces execution facts. Codegen assigns WebAssembly local indexes and emits bytecode from resolved bodies
 and stack facts. The original ASTs remain unchanged for diagnostics and compiled output; the registry remains available
 for matching calls.
+
+Source-name arity and overload-count dictionaries have no object prototype, so names such as `constructor`, `toString`, `hasOwnProperty`, and `__proto__` remain valid function identifiers through registration and registry merging. Function ids still include their parameter signature, and duplicate signatures and invalid overload sets keep their existing diagnostics.

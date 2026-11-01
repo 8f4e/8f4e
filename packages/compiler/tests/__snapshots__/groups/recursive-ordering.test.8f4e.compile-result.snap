@@ -130,6 +130,8 @@
     "audio/grouped": {
       "memory": {
         "value": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
@@ -139,14 +141,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },
     "root": {
       "memory": {
         "input": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 4,
           "elementWordSize": 4,
@@ -156,10 +158,9 @@
           "isUnsigned": false,
           "numberOfElements": 1,
           "pointeeBaseType": "int",
+          "pointeeElementCount": 1,
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
       },
     },

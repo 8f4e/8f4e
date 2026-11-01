@@ -209,7 +209,7 @@ entryEnd`);
 	const compiled = await compileProject(project, { enableAssertions: true, disableSharedMemory: true });
 	const first = await runTests(compiled);
 	const second = await runTests(compiled);
-	const address = compiled.memoryPlan.modules.counter.memory.value.wordAlignedAddress;
+	const address = compiled.memoryPlan.modules.counter.memory.value.allocationUnitAddress;
 	expect(first.failures).toHaveLength(0);
 	expect(second.failures).toHaveLength(0);
 	expect(first.assertions.length).toBe(1);
