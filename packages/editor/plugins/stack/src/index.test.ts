@@ -1,3 +1,4 @@
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { describe, expect, it, vi } from 'vitest';
 import { setup } from './__tests__/setup';
 import { createStackPlugin } from './index';
@@ -21,25 +22,44 @@ describe('stack plugin', () => {
 		expect(test.draw.drawText).toHaveBeenCalledOnce();
 		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), expect.any(Number), '', expect.any(Number));
 	});
-	it('reads analysis for function blocks', async () => {
-		const test = await setup(
-			plugin,
-			[
-				'8f4e/v1',
-				'function helper',
-				'push 3 ; @stack',
-				'drop',
-				'functionEnd',
-				'entry main',
-				'module audio',
-				'call helper',
-				'moduleEnd',
-				'entryEnd',
-			],
-			{ name: 'helper' }
-		);
+	it('refreshes function analysis across recompilation, deletion, and reset', async () => {
+		const functionSource = (value: number) => [
+			'8f4e/v1',
+			'function helper',
+			`push ${value} ; @stack`,
+			'drop',
+			'functionEnd',
+			'entry main',
+			'module audio',
+			'call helper',
+			'moduleEnd',
+			'entryEnd',
+		];
+		const test = await setup(plugin, functionSource(3), { name: 'helper' });
 		test.render();
 		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), expect.any(Number), '3', expect.any(Number));
+
+		const recompiled = await compileProject(parseProjectSource(functionSource(9).join('\n')), {
+			disableSharedMemory: true,
+			includeStackAnalysis: true,
+		});
+		test.store.set('compiler.result', {
+			...test.state.compiler.result,
+			compiledFunctions: recompiled.compiledFunctions,
+		});
+		test.store.set('compiler.isCompiling', false);
+		test.render();
+		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), expect.any(Number), '9', expect.any(Number));
+
+		test.store.set('compiler.result', { ...test.state.compiler.result, compiledFunctions: {} });
+		test.store.set('compiler.isCompiling', false);
+		test.render();
+		expect(test.draw.drawText).not.toHaveBeenCalled();
+
+		test.store.set('compiler.result', { ...test.state.compiler.result, compiledFunctions: undefined });
+		test.store.set('compiler.isCompiling', false);
+		test.render();
+		expect(test.draw.drawText).not.toHaveBeenCalled();
 	});
 	it('rebuilds after compiler results change and removes missing analysis', async () => {
 		const test = await setup(plugin, source);

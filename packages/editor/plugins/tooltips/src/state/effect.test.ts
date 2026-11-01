@@ -1,6 +1,6 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
-import { createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
+import { type CompiledStackAnalysisLine, createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from '../__tests__/events';
@@ -99,7 +99,7 @@ describe('tooltip effect', () => {
 		]);
 	});
 
-	it('adds selected function line stack analysis when compiler data is available', () => {
+	it('refreshes selected function analysis across recompilation, deletion, and reset', () => {
 		const selectedBlock = createMockCodeBlock({
 			name: 'helper',
 			code: ['function helper', 'param int', 'param int', 'add', 'return', 'functionEnd'],
@@ -173,6 +173,30 @@ describe('tooltip effect', () => {
 			'negativeSoft',
 			'positiveSoft',
 		]);
+
+		const initialFunction = state.compiler.result.compiledFunctions![functionId];
+		store.set('compiler.result', {
+			...state.compiler.result,
+			compiledFunctions: {
+				[functionId]: {
+					...initialFunction,
+					stackAnalysis: initialFunction.stackAnalysis!.map<CompiledStackAnalysisLine>(line => ({
+						...line,
+						stackAnalysis: {
+							...line.stackAnalysis,
+							stackAfter: [{ kind: 'value', valueType: 'int', knownValue: 9 }],
+						},
+					})),
+				},
+			},
+		});
+		expect(tooltip.getState().text).toContain('after: [+int=9]');
+
+		store.set('compiler.result', { ...state.compiler.result, compiledFunctions: {} });
+		expect(tooltip.getState().text.some(line => line.startsWith('after:'))).toBe(false);
+
+		store.set('compiler.result', { ...state.compiler.result, compiledFunctions: undefined });
+		expect(tooltip.getState().text.some(line => line.startsWith('after:'))).toBe(false);
 	});
 
 	it.each(['', 'group'])('writes live value metadata in project path %s', projectPath => {
