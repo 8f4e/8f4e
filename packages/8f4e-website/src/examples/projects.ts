@@ -109,6 +109,13 @@ export const projects = [
 		path: 'audio/formantSynth.8f4e',
 	},
 	{
+		id: 'grids-patterns',
+		title: 'Grids patterns',
+		description:
+			'Generate 808 drum patterns with X/Y interpolation and independent kick, snare and hi-hat density controls.',
+		path: 'audio/gridsPatterns.8f4e',
+	},
+	{
 		id: 'reverb',
 		title: 'Reverb',
 		description: 'Explore a stereo reverb built from modulated delays, diffusers and feedback paths.',
