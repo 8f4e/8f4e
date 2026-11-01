@@ -4,6 +4,8 @@ includes
 ; @pos 22 -83
 include std/events/risingEdge
 include std/events/hasChanged
+include std/bitwise/extractNibble
+include std/math/lerp
 includesEnd
 
 function buffer
@@ -21,8 +23,8 @@ function sampleNumberCanLoop
 use sampleMeta
 param int sampleNumber
 
-push sampleNumber
 call sampleNumberToRepeatLen
+- sampleNumber
 push 2
 greaterThan
 
@@ -34,11 +36,9 @@ use mod
 param int row
 
 push row
-push SAMPLE_HI_NIBBLE
-and
+and SAMPLE_HI_NIBBLE
 push row
-push SAMPLE_LO_NIBBLE
-and
+and SAMPLE_LO_NIBBLE
 push SAMPLE_LO_NIBBLE_SHIFT
 shiftRight
 or
@@ -51,13 +51,11 @@ use mod
 param int row
 
 push row
-push PERIOD_HI
-and
+and PERIOD_HI
 push PERIOD_SHIFT
 shiftLeft
 push row
-push PERIOD_LO
-and
+and PERIOD_LO
 push PERIOD_SHIFT
 shiftRight
 or
@@ -90,14 +88,9 @@ functionEnd float
 
 function maskEffect
 ; @pos 348 -123
-use mod
 param int row
 
-push row
-push EFFECT_NIBBLE
-and
-push EFFECT_NIBBLE_SHIFT
-shiftRight
+call extractNibble row 4
 
 functionEnd int
 
@@ -107,8 +100,7 @@ use mod
 param int row
 
 push row
-push EFFECT_PARAM
-and
+and EFFECT_PARAM
 push EFFECT_PARAM_SHIFT
 shiftRight
 
@@ -303,33 +295,18 @@ const ASSET_SAMPLE12_SIZE 9000
 
 constantsEnd
 
-constants math
+constants outputFilter
 ; @pos 145 -124
+use env
 
-const PI      3.141592653589793
-const NEG_PI -3.141592653589793
-const TAU     6.283185307179586
-const HALF_PI 1.570796326794896
-const INV_PI  0.318309886183790
-const INV_TAU 0.159154943091895
-const PHI     1.618033988749895
-const DEG2RAD 0.017453292519943
-const RAD2DEG 57.29577951308232
-const SQRT2   1.414213562373095
-const SQRT1_2 0.707106781186547
-; Useful in FFT twiddle factors.
-const HANN_A0 0.5
-; For common window functions before FFT.
-const HAMMING_A0 0.54
-const HAMMING_A1 0.46
-const BLACKMAN_A0 0.42
-const BLACKMAN_A1 0.5
-const BLACKMAN_A2 0.08
-const LN2     0.693147180559945
-const LN10    2.302585092994046
-const LOG2E   1.442695040888963
-const LOG10E  0.434294481903251
-const E       2.718281828459045
+const PI 3.141592653589793
+const E 2.718281828459045
+const FREQ 4400
+const MINUS_2_PI -2*PI
+const CUTOFF_TERM MINUS_2_PI*FREQ
+const EXPONENT CUTOFF_TERM/SAMPLE_RATE
+const DECAY E^EXPONENT
+const COEFFICIENT 1-DECAY
 
 constantsEnd
 
@@ -344,8 +321,6 @@ const PERIOD_LO	0x0000FF00
 const PERIOD_SHIFT	8
 const SAMPLE_LO_NIBBLE	0x00F00000
 const SAMPLE_LO_NIBBLE_SHIFT	20
-const EFFECT_NIBBLE	0x000F0000
-const EFFECT_NIBBLE_SHIFT	16
 const EFFECT_PARAM	0xFF000000
 const EFFECT_PARAM_SHIFT	24
 ; AMIGA magic const
@@ -619,8 +594,7 @@ ifEnd
 
 push &counter
 push counter
-push 1
-add
+add 1
 store
 
 moduleEnd
@@ -1032,14 +1006,14 @@ int param
 
 ; @watch out
 
-push *row
 call maskSampleNumber
+- *row
 push 0
 greaterThan
 if
 push &out
-push *row
 call maskSampleNumber
+- *row
 store
 ifEnd
 
@@ -1053,14 +1027,14 @@ int param
 
 ; @watch out
 
-push *row
 call maskSampleNumber
+- *row
 push 0
 greaterThan
 if
 push &out
-push *row
 call maskSampleNumber
+- *row
 store
 ifEnd
 
@@ -1074,14 +1048,14 @@ int param
 
 ; @watch out
 
-push *row
 call maskSampleNumber
+- *row
 push 0
 greaterThan
 if
 push &out
-push *row
 call maskSampleNumber
+- *row
 store
 ifEnd
 
@@ -1095,14 +1069,14 @@ int param
 
 ; @watch out
 
-push *row
 call maskSampleNumber
+- *row
 push 0
 greaterThan
 if
 push &out
-push *row
 call maskSampleNumber
+- *row
 store
 ifEnd
 
@@ -1115,14 +1089,12 @@ int out
 
 ; @watch out
 
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 store
 ifEnd
 
@@ -1135,14 +1107,12 @@ int out
 
 ; @watch out
 
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 store
 ifEnd
 
@@ -1155,14 +1125,12 @@ int out
 
 ; @watch out
 
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 store
 ifEnd
 
@@ -1175,14 +1143,12 @@ int out
 
 ; @watch out
 
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 store
 ifEnd
 
@@ -1201,12 +1167,11 @@ int prevRowCounter
 push &out
 push 0
 store
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 store
@@ -1227,12 +1192,11 @@ int prevRowCounter
 push &out
 push 0
 store
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 store
@@ -1251,12 +1215,11 @@ int prevRowCounter
 push &out
 push 0
 store
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 store
@@ -1277,12 +1240,11 @@ int prevRowCounter
 push &out
 push 0
 store
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 store
@@ -1305,20 +1267,18 @@ push 0
 greaterThan
 if
 push &out
-push *sampleNumber
 call sampleNumberToVolume
+- *sampleNumber
 store
 ifEnd
 
 ; Load volume from effect
-push *row
-call maskEffect
+call maskEffect *row
 push SET_VOLUME
 equal
 if
 push &out
-push *row
-call maskParam
+call maskParam *row
 store
 ifEnd
 
@@ -1339,20 +1299,18 @@ push 0
 greaterThan
 if
 push &out
-push *sampleNumber
 call sampleNumberToVolume
+- *sampleNumber
 store
 ifEnd
 
 ; Load volume from effect
-push *row
-call maskEffect
+call maskEffect *row
 push SET_VOLUME
 equal
 if
 push &out
-push *row
-call maskParam
+call maskParam *row
 store
 ifEnd
 
@@ -1373,20 +1331,18 @@ push 0
 greaterThan
 if
 push &out
-push *sampleNumber
 call sampleNumberToVolume
+- *sampleNumber
 store
 ifEnd
 
 ; Load volume from effect
-push *row
-call maskEffect
+call maskEffect *row
 push SET_VOLUME
 equal
 if
 push &out
-push *row
-call maskParam
+call maskParam *row
 store
 ifEnd
 
@@ -1407,20 +1363,18 @@ push 0
 greaterThan
 if
 push &out
-push *sampleNumber
 call sampleNumberToVolume
+- *sampleNumber
 store
 ifEnd
 
 ; Load volume from effect
-push *row
-call maskEffect
+call maskEffect *row
 push SET_VOLUME
 equal
 if
 push &out
-push *row
-call maskParam
+call maskParam *row
 store
 ifEnd
 
@@ -1875,8 +1829,7 @@ push &out
 push *in
 push *volume
 castToFloat
-push 64.0
-div
+div 64.0
 mul
 store
 
@@ -1891,8 +1844,7 @@ push &out
 push *in
 push *volume
 castToFloat
-push 64.0
-div
+div 64.0
 mul
 store
 
@@ -1907,8 +1859,7 @@ push &out
 push *in
 push *volume
 castToFloat
-push 64.0
-div
+div 64.0
 mul
 store
 
@@ -1923,8 +1874,7 @@ push &out
 push *in
 push *volume
 castToFloat
-push 64.0
-div
+div 64.0
 mul
 store
 
@@ -1941,30 +1891,22 @@ float outR; @meter
 
 push &outL
 push *in1
-push *in3
-add
-push 2.0
-div
+add *in3
+div 2.0
 push *in2
-push *in4
-add
-push 4.0
-div
+add *in4
+div 4.0
 add
 store
 
 push &outR
 push *in2
-push *in4
-add
-push 2.0
-div
+add *in4
+div 2.0
 
 push *in1
-push *in3
-add
-push 4.0
-div
+add *in3
+div 4.0
 add
 store
 
@@ -1972,60 +1914,24 @@ moduleEnd
 module lowpassL
 ; @pos 638 -12
 float* in &mixer:outL
-float state 0.0 ; @w
-float out ; @w
+float out 0.0 ; @w
 
-use math
-use env
-
-const MINUS_2_PI -2*PI
-const CUTOFF_TERM MINUS_2_PI*4400
-const EXPONENT CUTOFF_TERM/SAMPLE_RATE
-const DECAY E^EXPONENT
-const COEFFICIENT 1-DECAY
+use outputFilter
 
 push &out
-push state
-push *in
-push state
-sub
-push COEFFICIENT
-mul
-add
-store
-
-push &state
-push out
+call lerp out *in COEFFICIENT
 store
 
 moduleEnd
 module lowpassR
 ; @pos 638 19
 float* in &mixer:outR
-float state 0.0 ; @w
-float out ; @w
+float out 0.0 ; @w
 
-use math
-use env
-
-const MINUS_2_PI -2*PI
-const CUTOFF_TERM MINUS_2_PI*4400
-const EXPONENT CUTOFF_TERM/SAMPLE_RATE
-const DECAY E^EXPONENT
-const COEFFICIENT 1-DECAY
+use outputFilter
 
 push &out
-push state
-push *in
-push state
-sub
-push COEFFICIENT
-mul
-add
-store
-
-push &state
-push out
+call lerp out *in COEFFICIENT
 store
 
 moduleEnd
