@@ -1,0 +1,56 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/math/moveTowards
+includesEnd
+
+entry test
+module moveTowardsAssertions
+; It moves in either direction.
+call moveTowards 0.0 1.0 0.25
+assertEqual 0.25
+call moveTowards 1.0 0.0 0.25
+assertEqual 0.75
+call moveTowards -2.0 1.0 0.5
+assertEqual -1.5
+call moveTowards 2.0 -1.0 0.5
+assertEqual 1.5
+
+; It stops at the target.
+call moveTowards 0.0 1.0 2.0
+assertEqual 1.0
+call moveTowards 1.0 0.0 2.0
+assertEqual 0.0
+call moveTowards 0.5 0.5 2.0
+assertEqual 0.5
+
+; A nonpositive step holds the value.
+call moveTowards 0.5 1.0 0.0
+assertEqual 0.5
+call moveTowards 0.5 0.0 -1.0
+assertEqual 0.5
+moduleEnd
+
+module convergenceAssertions
+float rising
+float falling 1.0
+
+loop 10
+push &rising
+call moveTowards rising 1.0 0.3
+store
+push &falling
+call moveTowards falling -1.0 0.3
+store
+loopEnd
+
+push rising
+assertEqual 1.0
+push falling
+assertEqual -1.0
+moduleEnd
+entryEnd

@@ -23,15 +23,60 @@ assertEqual 1.570796326794896
 push phase
 assertEqual 1.570796326794896
 
-; it wraps to the lower bound
+; it preserves the overshoot
 ; after crossing the upper bound.
 push &phase
 push 2.0
 push 4
 call advancePhase
-assertEqual -3.141592653589793
+push phase
+equal
+assert
 
 push phase
-assertEqual -3.141592653589793
+sub -1.570796326794896
+abs
+push 0.000001
+lessOrEqual
+assert
+
+; it keeps the boundary value
+; when there is no advance.
+push &phase
+push 3.141592653589793
+store
+call advancePhase &phase 0.0 48000
+assertEqual 3.141592653589793
+moduleEnd
+
+module tuningAssertions
+; Repeated wrapping must preserve
+; the requested frequency.
+float phase 0.0
+float previous
+int wraps
+
+loop 48000
+push &previous
+push phase
+store
+call advancePhase &phase 440.0 48000
+push previous
+lessThan
+if
+push &wraps
+push wraps
+add 1
+store
+ifEnd
+loopEnd
+
+push wraps
+assertEqual 440
+push phase
+abs
+push 0.01
+lessOrEqual
+assert
 moduleEnd
 entryEnd
