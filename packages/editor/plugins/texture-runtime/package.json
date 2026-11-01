@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-texture-runtime",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Editor-frame WebAssembly runtime and inline framebuffer textures",
   "type": "module",

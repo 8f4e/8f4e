@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/memory-reference-resolver",
-  "version": "5.0.20",
+  "version": "5.1.0",
   "private": true,
   "description": "8f4e AST memory reference resolver package",
   "type": "module",
