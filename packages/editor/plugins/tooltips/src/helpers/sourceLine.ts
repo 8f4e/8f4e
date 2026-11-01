@@ -6,8 +6,7 @@ import {
 	memoryDeclarationInstructions,
 } from '@8f4e/language-spec';
 
-import { formatStackSignature, getInstructionStackSignature } from './stackSignature';
-import { wrapTooltipText } from './text';
+import { formatStackSignature, formatStackSignatureLines, getInstructionStackSignature } from './stackSignature';
 
 const memoryIdentifierRegExp = /^[a-z_]\w*$/i;
 const memoryDeclarationInstructionSet = new Set<string>(memoryDeclarationInstructions);
@@ -76,6 +75,27 @@ function getStackSignatureLineFromSourceLine(line: string, instruction: string):
 	};
 }
 
+/** Resolves the source callable name and the selected overload's labels for formatting. */
+function getCallSignatureFromSourceLine(line: string, stackAnalysisLine?: CompiledStackAnalysisLine) {
+	if (
+		getInstructionNameFromSourceLine(line) === 'call' &&
+		stackAnalysisLine?.instruction === 'call' &&
+		stackAnalysisLine.resolvedCall
+	) {
+		const targetName = line.split(';')[0].trim().split(/\s+/)[1];
+		if (targetName) {
+			const { parameters, returns } = stackAnalysisLine.resolvedCall.signature;
+			return {
+				instruction: `call ${targetName}`,
+				stackEffect: {
+					inputs: parameters.map(parameter => `${parameter.name}: ${parameter.type}`),
+					outputs: returns,
+				},
+			};
+		}
+	}
+}
+
 /**
  * Formats the stack signature for the instruction on a source line.
  */
@@ -90,15 +110,9 @@ export function getStackSignatureFromSourceLine(
 		return undefined;
 	}
 
-	if (instruction === 'call' && stackAnalysisLine?.instruction === 'call' && stackAnalysisLine.resolvedCall) {
-		const targetName = line.split(';')[0].trim().split(/\s+/)[1];
-		if (targetName) {
-			const { parameters, returns } = stackAnalysisLine.resolvedCall.signature;
-			return formatStackSignature(`call ${targetName}`, {
-				inputs: parameters.map(parameter => `${parameter.name}: ${parameter.type}`),
-				outputs: returns,
-			});
-		}
+	const callSignature = getCallSignatureFromSourceLine(line, stackAnalysisLine);
+	if (callSignature) {
+		return formatStackSignature(callSignature.instruction, callSignature.stackEffect);
 	}
 
 	return getInstructionStackSignature(instruction, getStackSignatureLineFromSourceLine(line, instruction));
@@ -110,9 +124,11 @@ export function getStackSignatureTooltipLines(
 	maxLength: number,
 	stackAnalysisLine?: CompiledStackAnalysisLine
 ): string[] {
-	const signature = getStackSignatureFromSourceLine(line, stackAnalysisLine);
+	const callSignature = getCallSignatureFromSourceLine(line, stackAnalysisLine);
+	if (callSignature) {
+		return formatStackSignatureLines(callSignature.instruction, callSignature.stackEffect, maxLength);
+	}
+	const signature = getStackSignatureFromSourceLine(line);
 	if (!signature) return [];
-	return stackAnalysisLine?.resolvedCall && getInstructionNameFromSourceLine(line) === 'call'
-		? wrapTooltipText(signature, maxLength)
-		: [signature];
+	return [signature];
 }

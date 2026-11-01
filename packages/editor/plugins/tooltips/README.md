@@ -17,8 +17,10 @@ source, compiler, grid, and sprite changes. Live values are read from the curren
 Disposal removes its subscriptions, sprite-reload listener, and overlay contribution.
 
 For `call` instructions, successful compilation supplies the selected overload's parameter names, types, and return
-types. The tooltip uses the callable name from the selected source line and wraps long signatures. Parameters expanded
-by `paramShape` appear in declaration order. Calls without resolved compiler metadata show the generic call signature.
+types. The tooltip uses the callable name from the selected source line and wraps long signatures between parameters,
+keeping each name/type pair together. A pair wider than the normal wrap width expands the tooltip to fit. Parameters
+expanded by `paramShape` appear in declaration order. Calls without resolved compiler metadata show the generic call
+signature.
 
 The plugin uses the existing tooltip font and fill entries in the sprite palette.
 

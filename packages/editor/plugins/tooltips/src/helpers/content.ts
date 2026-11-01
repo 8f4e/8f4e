@@ -17,15 +17,27 @@ interface SelectedLineTooltipTextContent {
 	highlightTargets: SelectedLineTooltipContent['highlightTargets'];
 }
 
+interface SelectedLineTooltipTextOptions {
+	line: string | undefined;
+	maxLength?: number;
+	stackAnalysisLine?: CompiledStackAnalysisLine;
+	moduleExecutionOrder?: number;
+}
+
+interface SelectedLineTooltipOptions extends SelectedLineTooltipTextOptions {
+	moduleId?: string;
+	memory?: PlannedMemoryDeclaration;
+}
+
 /**
  * Builds wrapped tooltip text for instruction docs and stack analysis.
  */
-export function getSelectedLineTooltipTextContent(
-	line: string | undefined,
+export function getSelectedLineTooltipTextContent({
+	line,
 	maxLength = TOOLTIP_WRAP_WIDTH,
-	stackAnalysisLine?: CompiledStackAnalysisLine,
-	moduleExecutionOrder?: number
-): SelectedLineTooltipTextContent {
+	stackAnalysisLine,
+	moduleExecutionOrder,
+}: SelectedLineTooltipTextOptions): SelectedLineTooltipTextContent {
 	if (!line) {
 		return { text: [], signatureLineCount: 0, highlightTargets: [] };
 	}
@@ -65,31 +77,19 @@ export function getSelectedLineTooltipTextContent(
 /**
  * Builds wrapped tooltip text for instruction docs and stack analysis.
  */
-export function getSelectedLineTooltipText(
-	line: string | undefined,
-	maxLength = TOOLTIP_WRAP_WIDTH,
-	stackAnalysisLine?: CompiledStackAnalysisLine,
-	moduleExecutionOrder?: number
-): string[] {
-	return getSelectedLineTooltipTextContent(line, maxLength, stackAnalysisLine, moduleExecutionOrder).text;
+export function getSelectedLineTooltipText(options: SelectedLineTooltipTextOptions): string[] {
+	return getSelectedLineTooltipTextContent(options).text;
 }
 
 /**
  * Assembles the complete selected-line tooltip payload consumed by the drawer.
  */
-export function getSelectedLineTooltipContent(
-	line: string | undefined,
-	maxLength = TOOLTIP_WRAP_WIDTH,
-	stackAnalysisLine?: CompiledStackAnalysisLine,
-	moduleId?: string,
-	memory?: PlannedMemoryDeclaration,
-	moduleExecutionOrder?: number
-): SelectedLineTooltipContent {
-	const textContent = getSelectedLineTooltipTextContent(line, maxLength, stackAnalysisLine, moduleExecutionOrder);
+export function getSelectedLineTooltipContent(options: SelectedLineTooltipOptions): SelectedLineTooltipContent {
+	const textContent = getSelectedLineTooltipTextContent(options);
 	const text = textContent.text;
-	const memoryId = getMemoryDeclarationIdFromSourceLine(line);
+	const memoryId = getMemoryDeclarationIdFromSourceLine(options.line);
 	const colors = getSelectedLineTooltipColors(text, textContent.signatureLineCount);
-	const liveTooltipContent = getLiveTooltipContent(memory, moduleId, memoryId, text.length);
+	const liveTooltipContent = getLiveTooltipContent(options.memory, options.moduleId, memoryId, text.length);
 
 	text.push(...liveTooltipContent.text);
 	colors.push(...liveTooltipContent.colors);

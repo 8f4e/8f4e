@@ -2,7 +2,6 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import { TOOLTIP_WRAP_WIDTH } from './constants';
 import { getSelectedLineTooltipContent, getSelectedLineTooltipText } from './content';
 
 function toCharacters(text: string): number[] {
@@ -11,7 +10,7 @@ function toCharacters(text: string): number[] {
 
 describe('selected line tooltip content', () => {
 	it('wraps selected line documentation', () => {
-		expect(getSelectedLineTooltipText('push 1', 24)).toEqual([
+		expect(getSelectedLineTooltipText({ line: 'push 1', maxLength: 24 })).toEqual([
 			'push ( -- T)',
 			'Pushes a literal, memory',
 			'value, local value,',
@@ -21,7 +20,7 @@ describe('selected line tooltip content', () => {
 	});
 
 	it('adds module execution order when provided', () => {
-		expect(getSelectedLineTooltipText('module synth', TOOLTIP_WRAP_WIDTH, undefined, 3)).toEqual([
+		expect(getSelectedLineTooltipText({ line: 'module synth', moduleExecutionOrder: 3 })).toEqual([
 			'Starts a module block.',
 			'execution order: 3',
 		]);
@@ -30,20 +29,23 @@ describe('selected line tooltip content', () => {
 	it('generates tooltip color transitions for instructions and stack values', () => {
 		const fontInverseInk = PALETTE_INDICES.inverseInk;
 		const fontInverseAccent = PALETTE_INDICES.inverseAccent;
-		const content = getSelectedLineTooltipContent('add', TOOLTIP_WRAP_WIDTH, {
-			lineNumber: 2,
-			instruction: 'add',
-			stackAnalysis: {
-				stackBefore: [
-					{ kind: 'value', valueType: 'int', knownValue: 1 },
-					{ kind: 'value', valueType: 'int', knownValue: 2 },
-				],
-				consumedOperands: [
-					{ kind: 'value', valueType: 'int', knownValue: 1 },
-					{ kind: 'value', valueType: 'int', knownValue: 2 },
-				],
-				producedStackItems: [{ kind: 'value', valueType: 'int' }],
-				stackAfter: [{ kind: 'value', valueType: 'int' }],
+		const content = getSelectedLineTooltipContent({
+			line: 'add',
+			stackAnalysisLine: {
+				lineNumber: 2,
+				instruction: 'add',
+				stackAnalysis: {
+					stackBefore: [
+						{ kind: 'value', valueType: 'int', knownValue: 1 },
+						{ kind: 'value', valueType: 'int', knownValue: 2 },
+					],
+					consumedOperands: [
+						{ kind: 'value', valueType: 'int', knownValue: 1 },
+						{ kind: 'value', valueType: 'int', knownValue: 2 },
+					],
+					producedStackItems: [{ kind: 'value', valueType: 'int' }],
+					stackAfter: [{ kind: 'value', valueType: 'int' }],
+				},
 			},
 		});
 
@@ -90,22 +92,30 @@ const callAnalysis = {
 
 describe('call signature tooltips', () => {
 	it('uses the source callable name and the concrete overload parameter names', () => {
-		const content = getSelectedLineTooltipContent('  call blend 0.2 0.8 ; mix', 80, callAnalysis);
+		const content = getSelectedLineTooltipContent({
+			line: '  call blend 0.2 0.8 ; mix',
+			maxLength: 80,
+			stackAnalysisLine: callAnalysis,
+		});
 		expect(content.text[0]).toBe('call blend (a: float b: float -- float)');
 		expect(content.colors[0][0]).toBe(PALETTE_INDICES.inverseAccent);
 	});
 
 	it('wraps and highlights every signature line and offsets stack highlights below it', () => {
-		const content = getSelectedLineTooltipContent('call mix', 24, {
-			...callAnalysis,
-			stackAnalysis: {
-				stackBefore: [{ kind: 'value', valueType: 'float' }],
-				stackAfter: [],
-				consumedOperands: [{ kind: 'value', valueType: 'float' }],
-				producedStackItems: [],
+		const content = getSelectedLineTooltipContent({
+			line: 'call mix',
+			maxLength: 24,
+			stackAnalysisLine: {
+				...callAnalysis,
+				stackAnalysis: {
+					stackBefore: [{ kind: 'value', valueType: 'float' }],
+					stackAfter: [],
+					consumedOperands: [{ kind: 'value', valueType: 'float' }],
+					producedStackItems: [],
+				},
 			},
 		});
-		expect(content.text.slice(0, 2)).toEqual(['call mix (a: float b:', 'float -- float)']);
+		expect(content.text.slice(0, 2)).toEqual(['call mix (a: float', 'b: float -- float)']);
 		expect(content.text.every(line => line.length <= 24)).toBe(true);
 		expect(content.colors.slice(0, 2).map(line => line[0])).toEqual([
 			PALETTE_INDICES.inverseAccent,
@@ -118,24 +128,34 @@ describe('call signature tooltips', () => {
 
 	it('shows empty parameter lists, pointer types, and multiple return types', () => {
 		expect(
-			getSelectedLineTooltipText('call init', 80, {
-				...callAnalysis,
-				resolvedCall: { targetFunctionId: 'init__void', signature: { parameters: [], returns: [] } },
+			getSelectedLineTooltipText({
+				line: 'call init',
+				maxLength: 80,
+				stackAnalysisLine: {
+					...callAnalysis,
+					resolvedCall: { targetFunctionId: 'init__void', signature: { parameters: [], returns: [] } },
+				},
 			})[0]
 		).toBe('call init ( -- )');
 		expect(
-			getSelectedLineTooltipText('call read', 80, {
-				...callAnalysis,
-				resolvedCall: {
-					targetFunctionId: 'read__float_p',
-					signature: { parameters: [{ name: 'buffer', type: 'float*' }], returns: ['int', 'float64'] },
+			getSelectedLineTooltipText({
+				line: 'call read',
+				maxLength: 80,
+				stackAnalysisLine: {
+					...callAnalysis,
+					resolvedCall: {
+						targetFunctionId: 'read__float_p',
+						signature: { parameters: [{ name: 'buffer', type: 'float*' }], returns: ['int', 'float64'] },
+					},
 				},
 			})[0]
 		).toBe('call read (buffer: float* -- int float64)');
 	});
 
 	it('keeps the generic signature until resolved call metadata is available', () => {
-		expect(getSelectedLineTooltipText('call mix')[0]).toBe('call (args... -- returns...)');
-		expect(getSelectedLineTooltipText('add', 80, callAnalysis)[0]).toBe('add (T T -- T)');
+		expect(getSelectedLineTooltipText({ line: 'call mix' })[0]).toBe('call (args... -- returns...)');
+		expect(getSelectedLineTooltipText({ line: 'add', maxLength: 80, stackAnalysisLine: callAnalysis })[0]).toBe(
+			'add (T T -- T)'
+		);
 	});
 });

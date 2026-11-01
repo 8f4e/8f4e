@@ -30,10 +30,10 @@ drop
 moduleEnd
 entryEnd
 function mix
-param float a
-param float b
-push a
-push b
+param float left
+param float right
+push left
+push right
 add
 functionEnd float`
 			: `8f4e/v1
