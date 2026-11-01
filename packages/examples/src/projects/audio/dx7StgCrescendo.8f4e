@@ -1,372 +1,46 @@
 8f4e/v1
 
-function dxLevel
-; @pos -160 0
-; DX7 0..99 level to logarithmic
-; microsteps before output scaling.
-param int value
-push value
-push 0
-max
-push 99
-min
-localSet value
-push value
-push 20
-greaterOrEqual
-if
-push value
-push 28
-add
-else
-push value
-mapBegin int
-map 0 0
-map 1 5
-map 2 9
-map 3 13
-map 4 17
-map 5 20
-map 6 23
-map 7 25
-map 8 27
-map 9 29
-map 10 31
-map 11 33
-map 12 35
-map 13 37
-map 14 39
-map 15 41
-map 16 42
-map 17 43
-map 18 45
-map 19 46
-mapEnd int
-ifEnd int
-functionEnd int
+includes
+; @pos -160 -15
+include std/math/exp2
+include std/math/trig/sine
+includesEnd
 
-function exp2
-; @pos -160 60
-; Range reduction and Taylor
-; approximation of 2^x. Used for
-; logarithmic amplitude and pitch.
-param float x
-local int exponent
-local float fraction
-push x
-push -24.0
-max
-push 6.0
-min
-localSet x
-push x
+function wrapPhase
+; @pos -160 45
+; Wrap full phase modulation to [-PI, PI].
+param float phase
+use math
+push phase
+push phase
+mul INV_TAU
 round
-castToInt
-localSet exponent
-push x
-push exponent
-castToFloat
+mul TAU
 sub
-localSet fraction
-push 0.0001540353039
-push fraction
-mul
-push 0.0013333558146
-add
-push fraction
-mul
-push 0.0096181291076
-add
-push fraction
-mul
-push 0.0555041086648
-add
-push fraction
-mul
-push 0.2402265069591
-add
-push fraction
-mul
-push 0.6931471805599
-add
-push fraction
-mul
-push 1.0
-add
-push 1
-push exponent
-push 24
-add
-shiftLeft
-castToFloat
-push 0.000000059604644775390625
-mul
-mul
 functionEnd float
 
-function dxEnvelopeSegment
-; @pos -115 0
+function advanceWrappedPhase
+; @pos -160 75
 #impure
-paramShape dxEnvelopeState
-param int nextStage
-use env
-local int rate
-local int level
-local int qrate
-
-push _stage
-push nextStage
-store
-push rates
-push nextStage
-push 4
-mul
-add
-load
-localSet rate
-push levels
-push nextStage
-push 4
-mul
-add
-load
-localSet level
-
-push _target
-push level
-call dxLevel
-push 1
-shiftRight
-push 6
-shiftLeft
+; Preserve the full-range wrapping used
+; by this patch's feedback oscillators.
+param float* phase
+param float frequency
+param int sampleRate
+use math
+push phase
+push *phase
+push frequency
+mul TAU
+push sampleRate
 castToFloat
-push *_outputOffset
-add
-push 16.0
-max
-store
-push _rising
-push *_target
-push *_level
-greaterThan
-store
-
-; Rates are calibrated at 44100 Hz;
-; convert logarithmic steps to one
-; sample at the selected rate.
-push rate
-push 41
-mul
-push 6
-shiftRight
-push 63
-min
-localSet qrate
-push _increment
-push qrate
-push 3
-and
-push 4
-add
-castToFloat
-push 1
-push qrate
-push 2
-shiftRight
-shiftLeft
-castToFloat
-mul
-push 16384.0
+ensureNonZero
 div
-push 44100.0
-mul
-push SAMPLE_RATE
-castToFloat
-div
-store
-functionEnd
-
-function dxEnvelope
-; @pos -70 -70
-#impure
-paramShape dxEnvelopeState
-param int gate
-param int noteOn
-param int note
-local int attenuation
-
-push noteOn
-if
-; STG CRSNDO uses only negative
-; linear right-hand key scaling.
-push note
-push *breakpoint
-sub
-push 0
-max
-push 3
-div
-push *rightDepth
-mul
-push 329
-mul
-push 12
-shiftRight
-localSet attenuation
-push _outputOffset
-push *outputLevel
-call dxLevel
-push attenuation
-sub
-push 0
-max
-push 127
-min
-push 5
-shiftLeft
-push 4256
-sub
-castToFloat
-store
-push rates
-push levels
-push outputLevel
-push breakpoint
-push rightDepth
-push out
-push _stage
-push _level
-push _target
-push _increment
-push _rising
-push _outputOffset
-push 0
-call dxEnvelopeSegment
-ifEnd
-
-; Release starts immediately on
-; key-up, including during attack.
-push gate
-equalToZero
-push *_stage
-push 3
-lessThan
-and
-if
-push rates
-push levels
-push outputLevel
-push breakpoint
-push rightDepth
-push out
-push _stage
-push _level
-push _target
-push _increment
-push _rising
-push _outputOffset
-push 3
-call dxEnvelopeSegment
-ifEnd
-
-; Stage 3 holds L3 while the key
-; is down, then moves to L4.
-push *_stage
-push 3
-lessThan
-push *_stage
-push 3
-equal
-push gate
-equalToZero
-and
-or
-if
-push *_rising
-if
-push _level
-push *_level
-push 1716.0
-max
-store
-push _level
-push *_level
-push 4256.0
-push *_level
-sub
-push 256.0
-div
-push *_increment
-mul
 add
-push *_target
-min
+call wrapPhase
 store
-else
-push _level
-push *_level
-push *_increment
-sub
-push *_target
-max
-store
-ifEnd
-
-push *_level
-push *_target
-equal
-if
-push *_stage
-push 2
-lessThan
-if
-push rates
-push levels
-push outputLevel
-push breakpoint
-push rightDepth
-push out
-push _stage
-push _level
-push _target
-push _increment
-push _rising
-push _outputOffset
-push *_stage
-push 1
-add
-call dxEnvelopeSegment
-else
-push _stage
-push *_stage
-push 1
-add
-store
-ifEnd
-ifEnd
-ifEnd
-
-push out
-; L4=0 is silent after release.
-push *_stage
-push 4
-lessThan
-push *_level
-push 16.0
-greaterThan
-and
-if
-push *_level
-push 256.0
-div
-push 14.0
-sub
-call exp2
-else
-push 0.0
-ifEnd float
-store
-functionEnd
+push *phase
+functionEnd float
 
 function dxOperator
 ; @pos -25 -70
@@ -388,48 +62,23 @@ push 0.0
 store
 ifEnd
 
-push phase
-push *phase
-push **frequency
-push *ratio
-mul
-push *tuning
-mul
-push TAU
-mul
-push SAMPLE_RATE
-castToFloat
-div
-add
-store
-; Preserve the fractional phase
-; when wrapping, including PM.
-push phase
-push *phase
-push *phase
-push INV_TAU
-mul
-round
-push TAU
-mul
-sub
-store
-
 push out
-push *phase
+push phase
+push **frequency
+mul *ratio
+mul *tuning
+push SAMPLE_RATE
+call advanceWrappedPhase
 push **phaseMod
 push *_feedback1
-push *_feedback2
+add *_feedback2
+mul *feedback
 add
-push *feedback
-mul
+mul TAU
 add
-push TAU
-mul
-add
+call wrapPhase
 call sine
-push **amplitude
-mul
+mul **amplitude
 store
 push _feedback2
 push *_feedback1
@@ -438,83 +87,6 @@ push _feedback1
 push *out
 store
 functionEnd
-
-function sine
-; @pos -25 16
-; Polynomial approximation
-; of the sine function with
-; Taylor series (7th order)
-; Only works in the range of
-; [-PI, PI]
-
-param float x
-
-use math
-
-; Wrap phase modulation to [-PI, PI].
-push x
-push x
-push INV_TAU
-mul
-round
-push TAU
-mul
-sub
-localSet x
-
-; Fold to [-pi/2, pi/2]
-push x
-push HALF_PI
-greaterThan
-if
-push PI
-push x
-sub
-localSet x
-ifEnd
-
-push x
-push HALF_PI
-push -1.0
-mul
-lessThan
-if
-push PI
-push -1.0
-mul
-push x
-sub
-localSet x
-ifEnd
-
-local float x2
-push x
-push x
-mul
-localSet x2
-
-; Taylor coefficients
-const T1 -0.1666666666
-const T2 0.0083333333
-const T3 -0.000198412
-
-push x2
-push T3
-mul
-push T2
-add
-push x2
-mul
-push T1
-add
-push x2
-mul
-push 1.0
-add
-push x
-mul
-
-functionEnd float
 
 function buffer
 ; @pos 25 68
@@ -525,39 +97,6 @@ loop AUDIO_BUFFER_SIZE
 call main
 loopEnd
 functionEnd
-
-function jankoMap
-; @pos 75 0
-; @group janko
-param int keycode
-use midiCodes
-push keycode
-mapBegin int
-map 53 C3  ; Maps HID
-map 4  C#3 ; keycodes
-map 29 D3  ; to MIDI note
-map 22 D#3 ; numbers
-map 27 E3  ; based on
-map 7  F3  ; the Janko
-map 6  F#3 ; piano layout
-map 9  G3  ;
-map 25 G#3 ; These key
-map 10 A3  ; positions
-map 5  A#3 ; are based on
-map 11 B3  ; my Apple
-map 17 C4  ; Magic
-map 13 C#4 ; Keyboard's
-map 16 D4  ; layout, feel
-map 14 D#4 ; free to
-map 54 E4  ; adjust them
-map 15 F4  ; to your own.
-map 55 F#4
-map 51 G4
-map 56 G#4
-map 52 A4
-map 49 B4
-mapEnd int
-functionEnd int
 
 constants env
 ; @pos 25 45
@@ -571,24 +110,8 @@ constantsEnd
 
 constants math
 ; @pos 25 90
-
-const PI      3.141592653589793
-const NEG_PI -3.141592653589793
-const TAU     6.283185307179586
-const HALF_PI 1.570796326794896
-const INV_PI  0.318309886183790
+const TAU 6.283185307179586
 const INV_TAU 0.159154943091895
-const PHI     1.618033988749895
-const DEG2RAD 0.017453292519943
-const RAD2DEG 57.29577951308232
-const SQRT2   1.414213562373095
-const SQRT1_2 0.707106781186547
-const LN2     0.693147180559945
-const LN10    2.302585092994046
-const LOG2E   1.442695040888963
-const LOG10E  0.434294481903251
-const E       2.718281828459045
-
 constantsEnd
 
 constants midiCodes
@@ -748,22 +271,6 @@ const G9  127
 
 constantsEnd
 
-prototype dxEnvelopeState
-; @pos -115 100
-int[] rates 4
-int[] levels 4
-int outputLevel
-int breakpoint 21
-int rightDepth
-float out
-int _stage 4
-float _level
-float _target
-float _increment
-int _rising
-float _outputOffset
-prototypeEnd
-
 prototype dxOperatorState
 ; @pos -70 130
 float* frequency
@@ -821,6 +328,9 @@ note preset
 ; Fine tuning is zero for every operator.
 ; Detune OP1..6: -1, +7, +7, 0, 0, 0.
 ; Envelope rates and levels below are raw 0..99.
+; Each operator has a grouped four-rate/four-level EG.
+; Exact level mapping and full phase wrapping are local helpers.
+; Sine, exp2, ramps and indexed loads use the stdlib.
 ; Rate scaling and velocity sensitivity are zero.
 ; All left key depths and all AM sensitivities are zero.
 ; Only OP3 has right scaling: breakpoint B5, depth 99, -LIN.
@@ -832,6 +342,17 @@ note preset
 ; Envelope/LFO calibration reference (Apache-2.0):
 ; github.com/google/music-synthesizer-for-android
 ; This does not reproduce the DX7 DAC or fixed-point engine.
+noteEnd
+
+note algorithm
+; @pos 320 -22
+; STG CRSNDO / DX7 algorithm 2
+;
+;                 [2]*--> [1] --+
+;                               +--> mixer --> reverb
+; [6] --> [5] --> [4] --> [3] --+
+; * Feedback on operator 2.
+; Envelopes feed their operators from the left.
 noteEnd
 
 entry main
@@ -851,7 +372,7 @@ int keyCode
 ; @watch keyCode
 
 moduleEnd
-module janko
+group noteInput
 ; @pos 153 22
 ; @home left
 ; Converts HID keycodes to MIDI note numbers              .---------.
@@ -863,23 +384,69 @@ module janko
 ;| Shift  | C | D | E | F#| G#| A#| C | D | E | F#| G#|    Shift    |
 ;'--------+---+---+---+---+---+---+---+---+---+---+---+-------------'
 ;
+expose keyCode &janko:in
+expose gate &noteEvents:gate
+expose note &janko:out
+expose noteOn &noteEvents:noteOn
+expose noteOff &noteEvents:noteOff
+
+init &keyCode &keyboard:keyCode
+init &gate &keyboard:keyPressed
+
+pass midiCodes
+
+function jankoMap
+; @pos -55 0
+param int keycode
+use midiCodes
+push keycode
+mapBegin int
+map 53 C3  ; Maps HID
+map 4  C#3 ; keycodes
+map 29 D3  ; to MIDI note
+map 22 D#3 ; numbers
+map 27 E3  ; based on
+map 7  F3  ; the Janko
+map 6  F#3 ; piano layout
+map 9  G3  ;
+map 25 G#3 ; These key
+map 10 A3  ; positions
+map 5  A#3 ; are based on
+map 11 B3  ; my Apple
+map 17 C4  ; Magic
+map 13 C#4 ; Keyboard's
+map 16 D4  ; layout, feel
+map 14 D#4 ; free to
+map 54 E4  ; adjust them
+map 15 F4  ; to your own.
+map 55 F#4
+map 51 G4
+map 56 G#4
+map 52 A4
+map 49 B4
+mapEnd int
+functionEnd int
+module janko
+; @pos 0 0
+; @home left
 ; @group janko
-int* in &keyboard:keyCode; Keycode
+int* in ; Keycode
 int out ; MIDI note number
 push &out
-push *in
-call jankoMap
+call jankoMap *in
 
 ; @watch out
 store
 moduleEnd
-module articulation
-; @pos 153 55
-int* gate &keyboard:keyPressed
+module noteEvents
+; @pos 55 0
+; Keyboard note-on and note-off pulses.
+int* gate
 int* note &janko:out
 int previousGate
 int previousNote -1
 int noteOn
+int noteOff
 
 push &noteOn
 push *gate
@@ -891,6 +458,14 @@ notEqual
 or
 and
 store
+push &noteOff
+push *gate
+equalToZero
+push previousGate
+push 0
+greaterThan
+and
+store
 push &previousGate
 push *gate
 store
@@ -898,10 +473,11 @@ push &previousNote
 push *note
 store
 moduleEnd
+groupEnd
 module midiNote2Freq
 ; @pos 211 55
 
-int* in &janko:out
+int* in &noteInput:note
 float* notes &midiLUT:
 float* pitchRatio &vibrato:ratio
 float out
@@ -911,16 +487,12 @@ float out
 push &out
 push notes
 push *in
-push 0
-max
-push 127
-min
-push 4
-mul
+max 0
+min 127
+mul 4
 add
 loadFloat
-push *pitchRatio
-mul
+mul *pitchRatio
 store
 
 moduleEnd
@@ -1060,11 +632,10 @@ moduleEnd
 module vibrato
 ; @pos 262 -55
 use env
-use math
 ; Raw DX7 speed=35, delay=73,
 ; PMD=14, PMS=1; free-running sine.
 ; Two-stage delay: wait, then fade in.
-int* noteOn &articulation:noteOn
+int* noteOn &noteInput:noteOn
 float phase
 float delayPhase
 float delayGain
@@ -1090,52 +661,26 @@ push delayStep
 else
 push fadeStep
 ifEnd float
-push 48000.0
-mul
+mul 48000.0
 push SAMPLE_RATE
 castToFloat
 div
 add
-push 1.0
-min
+min 1.0
 store
 push &delayGain
 push delayPhase
-push 0.5
-sub
-push 2.0
-mul
-push 0.0
-max
+sub 0.5
+mul 2.0
+max 0.0
 store
 
-push &phase
-push phase
-push speedHz
-push TAU
-mul
-push SAMPLE_RATE
-castToFloat
-div
-add
-store
-push &phase
-push phase
-push phase
-push INV_TAU
-mul
-round
-push TAU
-mul
-sub
-store
 push &ratio
-push phase
+call advanceWrappedPhase &phase speedHz SAMPLE_RATE
+call wrapPhase
 call sine
-push depthOctaves
-mul
-push delayGain
-mul
+mul depthOctaves
+mul delayGain
 call exp2
 store
 moduleEnd
@@ -1143,230 +688,1760 @@ module silence
 ; @pos 307 -55
 float out
 moduleEnd
-module dxEnv6
-; @pos 317 109
+group envelope6
+; @pos 320 30
 ; @group operator6
-shape dxEnvelopeState
-int* gate &keyboard:keyPressed
-int* noteOn &articulation:noteOn
-int* note &janko:out
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+push level
+max 0
+min 99
+localSet level
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original STG CRSNDO envelope data.
 int[] rates 4 43 15 10 46
 int[] levels 4 99 92 0 0
+int rateScaling 0
 int outputLevel 62
 int breakpoint 21
 int rightDepth 0
-; @watch out
-; @watch _stage
-pushShape dxEnvelopeState
-push *gate
-push *noteOn
-push *note
-call dxEnvelope
 moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7KeyLevelScaling
+; @pos 110 0
+; STG CRSNDO uses negative linear
+; key-level scaling above a breakpoint.
+int** note &dx7PitchRateScaling:note
+int* breakpoint &dx7Settings:breakpoint
+int* depth &dx7Settings:rightDepth
+int out
+
+push &out
+push **note
+sub *breakpoint
+max 0
+div 3
+mul *depth
+mul 329
+shiftRight 12
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 165 0
+; Latch the scaled output level on note-on.
+int* in &dx7Settings:outputLevel
+int* attenuation &dx7KeyLevelScaling:out
+int** trigger &envelope4Stage:trigger
+float out
+
+push **trigger
+if
+push &out
+call dx7Level *in
+sub *attenuation
+max 0
+min 127
+shiftLeft 5
+sub 4256
+castToFloat
+store
+ifEnd
+moduleEnd
+module envelope4Stage
+; @pos 225 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 285 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 345 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 405 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 465 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 525 0
+; Absolute DX7 log-to-linear amplitude.
+float* in &envelopeRamp:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+div 256.0
+sub 14.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
 module modulator6
-; @pos 365 109
+; @pos 367 30
 ; @group operator6
 shape dxOperatorState
-int* noteOn &articulation:noteOn
+int* noteOn &noteInput:noteOn
 float* frequency &midiNote2Freq:out
 float* phaseMod &silence:out
-float* amplitude &dxEnv6:out
+float* amplitude &envelope6:out
 float ratio 4.0
 ; DX7 detune +0; calibrated pitch multiplier.
 float tuning 1.0
 ; Feedback uses the previous two samples.
 float feedback 0.0
 pushShape dxOperatorState
-push *noteOn
-call dxOperator
+call dxOperator *noteOn
 moduleEnd
-module dxEnv5
-; @pos 418 109
+group envelope5
+; @pos 423 30
 ; @group operator5
-shape dxEnvelopeState
-int* gate &keyboard:keyPressed
-int* noteOn &articulation:noteOn
-int* note &janko:out
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+push level
+max 0
+min 99
+localSet level
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original STG CRSNDO envelope data.
 int[] rates 4 43 15 10 46
 int[] levels 4 99 92 0 0
+int rateScaling 0
 int outputLevel 66
 int breakpoint 21
 int rightDepth 0
-; @watch out
-; @watch _stage
-pushShape dxEnvelopeState
-push *gate
-push *noteOn
-push *note
-call dxEnvelope
 moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7KeyLevelScaling
+; @pos 110 0
+; STG CRSNDO uses negative linear
+; key-level scaling above a breakpoint.
+int** note &dx7PitchRateScaling:note
+int* breakpoint &dx7Settings:breakpoint
+int* depth &dx7Settings:rightDepth
+int out
+
+push &out
+push **note
+sub *breakpoint
+max 0
+div 3
+mul *depth
+mul 329
+shiftRight 12
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 165 0
+; Latch the scaled output level on note-on.
+int* in &dx7Settings:outputLevel
+int* attenuation &dx7KeyLevelScaling:out
+int** trigger &envelope4Stage:trigger
+float out
+
+push **trigger
+if
+push &out
+call dx7Level *in
+sub *attenuation
+max 0
+min 127
+shiftLeft 5
+sub 4256
+castToFloat
+store
+ifEnd
+moduleEnd
+module envelope4Stage
+; @pos 225 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 285 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 345 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 405 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 465 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 525 0
+; Absolute DX7 log-to-linear amplitude.
+float* in &envelopeRamp:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+div 256.0
+sub 14.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
 module modulator5
-; @pos 468 109
+; @pos 470 30
 ; @group operator5
 shape dxOperatorState
-int* noteOn &articulation:noteOn
+int* noteOn &noteInput:noteOn
 float* frequency &midiNote2Freq:out
 float* phaseMod &modulator6:out
-float* amplitude &dxEnv5:out
+float* amplitude &envelope5:out
 float ratio 2.0
 ; DX7 detune +0; calibrated pitch multiplier.
 float tuning 1.0
 ; Feedback uses the previous two samples.
 float feedback 0.0
 pushShape dxOperatorState
-push *noteOn
-call dxOperator
+call dxOperator *noteOn
 moduleEnd
-module dxEnv2
-; @pos 519 13
+group envelope2
+; @pos 526 0
 ; @group operator2
-shape dxEnvelopeState
-int* gate &keyboard:keyPressed
-int* noteOn &articulation:noteOn
-int* note &janko:out
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+push level
+max 0
+min 99
+localSet level
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original STG CRSNDO envelope data.
 int[] rates 4 84 15 10 46
 int[] levels 4 99 92 0 0
+int rateScaling 0
 int outputLevel 75
 int breakpoint 21
 int rightDepth 0
-; @watch out
-; @watch _stage
-pushShape dxEnvelopeState
-push *gate
-push *noteOn
-push *note
-call dxEnvelope
 moduleEnd
-module dxEnv4
-; @pos 519 109
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7KeyLevelScaling
+; @pos 110 0
+; STG CRSNDO uses negative linear
+; key-level scaling above a breakpoint.
+int** note &dx7PitchRateScaling:note
+int* breakpoint &dx7Settings:breakpoint
+int* depth &dx7Settings:rightDepth
+int out
+
+push &out
+push **note
+sub *breakpoint
+max 0
+div 3
+mul *depth
+mul 329
+shiftRight 12
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 165 0
+; Latch the scaled output level on note-on.
+int* in &dx7Settings:outputLevel
+int* attenuation &dx7KeyLevelScaling:out
+int** trigger &envelope4Stage:trigger
+float out
+
+push **trigger
+if
+push &out
+call dx7Level *in
+sub *attenuation
+max 0
+min 127
+shiftLeft 5
+sub 4256
+castToFloat
+store
+ifEnd
+moduleEnd
+module envelope4Stage
+; @pos 225 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 285 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 345 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 405 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 465 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 525 0
+; Absolute DX7 log-to-linear amplitude.
+float* in &envelopeRamp:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+div 256.0
+sub 14.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
+group envelope4
+; @pos 526 30
 ; @group operator4
-shape dxEnvelopeState
-int* gate &keyboard:keyPressed
-int* noteOn &articulation:noteOn
-int* note &janko:out
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+push level
+max 0
+min 99
+localSet level
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original STG CRSNDO envelope data.
 int[] rates 4 43 15 10 46
 int[] levels 4 99 92 0 0
+int rateScaling 0
 int outputLevel 71
 int breakpoint 21
 int rightDepth 0
-; @watch out
-; @watch _stage
-pushShape dxEnvelopeState
-push *gate
-push *noteOn
-push *note
-call dxEnvelope
 moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7KeyLevelScaling
+; @pos 110 0
+; STG CRSNDO uses negative linear
+; key-level scaling above a breakpoint.
+int** note &dx7PitchRateScaling:note
+int* breakpoint &dx7Settings:breakpoint
+int* depth &dx7Settings:rightDepth
+int out
+
+push &out
+push **note
+sub *breakpoint
+max 0
+div 3
+mul *depth
+mul 329
+shiftRight 12
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 165 0
+; Latch the scaled output level on note-on.
+int* in &dx7Settings:outputLevel
+int* attenuation &dx7KeyLevelScaling:out
+int** trigger &envelope4Stage:trigger
+float out
+
+push **trigger
+if
+push &out
+call dx7Level *in
+sub *attenuation
+max 0
+min 127
+shiftLeft 5
+sub 4256
+castToFloat
+store
+ifEnd
+moduleEnd
+module envelope4Stage
+; @pos 225 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 285 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 345 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 405 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 465 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 525 0
+; Absolute DX7 log-to-linear amplitude.
+float* in &envelopeRamp:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+div 256.0
+sub 14.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
 module modulator2
-; @pos 571 13
+; @pos 573 0
 ; @group operator2
 shape dxOperatorState
-int* noteOn &articulation:noteOn
+int* noteOn &noteInput:noteOn
 float* frequency &midiNote2Freq:out
 float* phaseMod &silence:out
-float* amplitude &dxEnv2:out
+float* amplitude &envelope2:out
 float ratio 1.0
 ; DX7 detune +7; calibrated pitch multiplier.
 float tuning 1.00365235348
 ; Feedback uses the previous two samples.
 float feedback 0.25
 pushShape dxOperatorState
-push *noteOn
-call dxOperator
+call dxOperator *noteOn
 moduleEnd
 module modulator4
-; @pos 571 109
+; @pos 573 30
 ; @group operator4
 shape dxOperatorState
-int* noteOn &articulation:noteOn
+int* noteOn &noteInput:noteOn
 float* frequency &midiNote2Freq:out
 float* phaseMod &modulator5:out
-float* amplitude &dxEnv4:out
+float* amplitude &envelope4:out
 float ratio 1.0
 ; DX7 detune +0; calibrated pitch multiplier.
 float tuning 1.0
 ; Feedback uses the previous two samples.
 float feedback 0.0
 pushShape dxOperatorState
-push *noteOn
-call dxOperator
+call dxOperator *noteOn
 moduleEnd
-module dxEnv1
-; @pos 620 13
+group envelope1
+; @pos 629 0
 ; @group operator1
-shape dxEnvelopeState
-int* gate &keyboard:keyPressed
-int* noteOn &articulation:noteOn
-int* note &janko:out
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+push level
+max 0
+min 99
+localSet level
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original STG CRSNDO envelope data.
 int[] rates 4 27 15 10 46
 int[] levels 4 99 92 0 0
+int rateScaling 0
 int outputLevel 87
 int breakpoint 21
 int rightDepth 0
-; @watch out
-; @watch _stage
-pushShape dxEnvelopeState
-push *gate
-push *noteOn
-push *note
-call dxEnvelope
 moduleEnd
-module dxEnv3
-; @pos 620 109
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7KeyLevelScaling
+; @pos 110 0
+; STG CRSNDO uses negative linear
+; key-level scaling above a breakpoint.
+int** note &dx7PitchRateScaling:note
+int* breakpoint &dx7Settings:breakpoint
+int* depth &dx7Settings:rightDepth
+int out
+
+push &out
+push **note
+sub *breakpoint
+max 0
+div 3
+mul *depth
+mul 329
+shiftRight 12
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 165 0
+; Latch the scaled output level on note-on.
+int* in &dx7Settings:outputLevel
+int* attenuation &dx7KeyLevelScaling:out
+int** trigger &envelope4Stage:trigger
+float out
+
+push **trigger
+if
+push &out
+call dx7Level *in
+sub *attenuation
+max 0
+min 127
+shiftLeft 5
+sub 4256
+castToFloat
+store
+ifEnd
+moduleEnd
+module envelope4Stage
+; @pos 225 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 285 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 345 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 405 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 465 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 525 0
+; Absolute DX7 log-to-linear amplitude.
+float* in &envelopeRamp:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+div 256.0
+sub 14.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
+group envelope3
+; @pos 629 30
 ; @group operator3
-shape dxEnvelopeState
-int* gate &keyboard:keyPressed
-int* noteOn &articulation:noteOn
-int* note &janko:out
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+push level
+max 0
+min 99
+localSet level
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original STG CRSNDO envelope data.
 int[] rates 4 28 15 10 46
 int[] levels 4 99 92 0 0
+int rateScaling 0
 int outputLevel 92
 int breakpoint 83
 int rightDepth 99
-; @watch out
-; @watch _stage
-pushShape dxEnvelopeState
-push *gate
-push *noteOn
-push *note
-call dxEnvelope
 moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7KeyLevelScaling
+; @pos 110 0
+; STG CRSNDO uses negative linear
+; key-level scaling above a breakpoint.
+int** note &dx7PitchRateScaling:note
+int* breakpoint &dx7Settings:breakpoint
+int* depth &dx7Settings:rightDepth
+int out
+
+push &out
+push **note
+sub *breakpoint
+max 0
+div 3
+mul *depth
+mul 329
+shiftRight 12
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 165 0
+; Latch the scaled output level on note-on.
+int* in &dx7Settings:outputLevel
+int* attenuation &dx7KeyLevelScaling:out
+int** trigger &envelope4Stage:trigger
+float out
+
+push **trigger
+if
+push &out
+call dx7Level *in
+sub *attenuation
+max 0
+min 127
+shiftLeft 5
+sub 4256
+castToFloat
+store
+ifEnd
+moduleEnd
+module envelope4Stage
+; @pos 225 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 285 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 345 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 405 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 465 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 525 0
+; Absolute DX7 log-to-linear amplitude.
+float* in &envelopeRamp:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+div 256.0
+sub 14.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
 module carrier1
-; @pos 672 13
+; @pos 676 0
 ; @group operator1
 shape dxOperatorState
-int* noteOn &articulation:noteOn
+int* noteOn &noteInput:noteOn
 float* frequency &midiNote2Freq:out
 float* phaseMod &modulator2:out
-float* amplitude &dxEnv1:out
+float* amplitude &envelope1:out
 float ratio 1.0
 ; DX7 detune -1; calibrated pitch multiplier.
 float tuning 0.999479321339
 ; Feedback uses the previous two samples.
 float feedback 0.0
 pushShape dxOperatorState
-push *noteOn
-call dxOperator
+call dxOperator *noteOn
 moduleEnd
 module carrier3
-; @pos 672 109
+; @pos 676 30
 ; @group operator3
 shape dxOperatorState
-int* noteOn &articulation:noteOn
+int* noteOn &noteInput:noteOn
 float* frequency &midiNote2Freq:out
 float* phaseMod &modulator4:out
-float* amplitude &dxEnv3:out
+float* amplitude &envelope3:out
 float ratio 1.0
 ; DX7 detune +7; calibrated pitch multiplier.
 float tuning 1.00365235348
 ; Feedback uses the previous two samples.
 float feedback 0.0
 pushShape dxOperatorState
-push *noteOn
-call dxOperator
+call dxOperator *noteOn
 moduleEnd
 module mixer
-; @pos 749 61
+; @pos 732 15
 ; Algorithm 2 has two carriers.
 float* in1 &carrier1:out
 float* in2 &carrier3:out
@@ -1374,114 +2449,22 @@ float gain 0.35
 float out
 push &out
 push *in1
-push *in2
-add
-push gain
-mul
+add *in2
+mul gain
 store
 moduleEnd
 module limiter
-; @pos 788 61
+; @pos 774 15
 float* in &mixer:out
 float out
 push &out
 push *in
-push -1.0
-max
-push 1.0
-min
+max -1.0
+min 1.0
 store
-moduleEnd
-module audiooutL
-; @pos 882 22
-use env
-
-float* in &reverb:outL
-
-; Audio buffer
-float[] buffer AUDIO_BUFFER_SIZE
-int pointer &buffer
-
-; @plot &buffer count(buffer)
-
-; Store the input value
-; in the buffer
-push pointer
-push *in
-push -1.0
-max
-push 1.0
-min
-store
-
-; Increment the buffer
-; pointer by the
-; buffer word size
-push &pointer
-push pointer
-push sizeof(buffer)
-add
-store
-
-; Reset the buffer pointer
-; when it reaches the end
-; of the buffer
-push pointer
-push buffer&
-greaterThan
-if
-push &pointer
-push &buffer
-store
-ifEnd
-
-moduleEnd
-module audiooutR
-; @pos 882 95
-use env
-
-float* in &reverb:outR
-
-; Audio buffer
-float[] buffer AUDIO_BUFFER_SIZE
-int pointer &buffer
-
-; @plot &buffer count(buffer)
-
-; Store the input value
-; in the buffer
-push pointer
-push *in
-push -1.0
-max
-push 1.0
-min
-store
-
-; Increment the buffer
-; pointer by the
-; buffer word size
-push &pointer
-push pointer
-push sizeof(buffer)
-add
-store
-
-; Reset the buffer pointer
-; when it reaches the end
-; of the buffer
-push pointer
-push buffer&
-greaterThan
-if
-push &pointer
-push &buffer
-store
-ifEnd
-
 moduleEnd
 group reverb
-; @pos 828 55
+; @pos 810 15
 expose in &reverbInput:in
 expose outL &tank1OutputMix:out
 expose outR &tank2OutputMix:out
@@ -2300,4 +3283,86 @@ store
 
 moduleEnd
 groupEnd
+module audiooutL
+; @pos 862 0
+use env
+
+float* in &reverb:outL
+
+; Audio buffer
+float[] buffer AUDIO_BUFFER_SIZE
+int pointer &buffer
+
+; @plot &buffer count(buffer)
+
+; Store the input value
+; in the buffer
+push pointer
+push *in
+max -1.0
+min 1.0
+store
+
+; Increment the buffer
+; pointer by the
+; buffer word size
+push &pointer
+push pointer
+add sizeof(buffer)
+store
+
+; Reset the buffer pointer
+; when it reaches the end
+; of the buffer
+push pointer
+push buffer&
+greaterThan
+if
+push &pointer
+push &buffer
+store
+ifEnd
+
+moduleEnd
+module audiooutR
+; @pos 862 50
+use env
+
+float* in &reverb:outR
+
+; Audio buffer
+float[] buffer AUDIO_BUFFER_SIZE
+int pointer &buffer
+
+; @plot &buffer count(buffer)
+
+; Store the input value
+; in the buffer
+push pointer
+push *in
+max -1.0
+min 1.0
+store
+
+; Increment the buffer
+; pointer by the
+; buffer word size
+push &pointer
+push pointer
+add sizeof(buffer)
+store
+
+; Reset the buffer pointer
+; when it reaches the end
+; of the buffer
+push pointer
+push buffer&
+greaterThan
+if
+push &pointer
+push &buffer
+store
+ifEnd
+
+moduleEnd
 entryEnd

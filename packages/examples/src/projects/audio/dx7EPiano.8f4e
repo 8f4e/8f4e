@@ -1,0 +1,2221 @@
+8f4e/v1
+
+includes
+; @pos -25 -70
+include std/math/trig/sine
+include std/math/trig/advancePhase
+includesEnd
+
+function buffer
+; @pos 2 72
+#export buffer
+use env
+
+loop AUDIO_BUFFER_SIZE
+call main
+loopEnd
+functionEnd
+
+constants env
+; @pos 2 60
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+
+constantsEnd
+
+constants midiCodes
+; @pos 42 74
+; @hide
+const A0  21
+const A#0 22
+const BB0 22
+const B0  23
+const C1  24
+const C#1 25
+const DB1 25
+const D1  26
+const D#1 27
+const EB1 27
+const E1  28
+const F1  29
+const F#1 30
+const GB1 30
+const G1  31
+const G#1 32
+const AB1 32
+const A1  33
+const A#1 34
+const BB1 34
+const B1  35
+const C2  36
+const C#2 37
+const DB2 37
+const D2  38
+const D#2 39
+const EB2 39
+const E2  40
+const F2  41
+const F#2 42
+const GB2 42
+const G2  43
+const G#2 44
+const AB2 44
+const A2  45
+const A#2 46
+const BB2 46
+const B2  47
+const C3  48
+const C#3 49
+const DB3 49
+const D3  50
+const D#3 51
+const EB3 51
+const E3  52
+const F3  53
+const F#3 54
+const GB3 54
+const G3  55
+const G#3 56
+const AB3 56
+const A3  57
+const A#3 58
+const BB3 58
+const B3  59
+const C4  60
+const C#4 61
+const DB4 61
+const D4  62
+const D#4 63
+const EB4 63
+const E4  64
+const F4  65
+const F#4 66
+const GB4 66
+const G4  67
+const G#4 68
+const AB4 68
+const A4  69
+const A#4 70
+const BB4 70
+const B4  71
+const C5  72
+const C#5 73
+const DB5 73
+const D5  74
+const D#5 75
+const EB5 75
+const E5  76
+const F5  77
+const F#5 78
+const GB5 78
+const G5  79
+const G#5 80
+const AB5 80
+const A5  81
+const A#5 82
+const BB5 82
+const B5  83
+const C6  84
+const C#6 85
+const DB6 85
+const D6  86
+const D#6 87
+const EB6 87
+const E6  88
+const F6  89
+const F#6 90
+const GB6 90
+const G6  91
+const G#6 92
+const AB6 92
+const A6  93
+const A#6 94
+const BB6 94
+const B6  95
+const C7  96
+const C#7 97
+const DB7 97
+const D7  98
+const D#7 99
+const EB7 99
+const E7  100
+const F7  101
+const F#7 102
+const GB7 102
+const G7  103
+const G#7 104
+const AB7 104
+const A7  105
+const A#7 106
+const BB7 106
+const B7  107
+const C8  108
+const C#8 109
+const DB8 109
+const D8  110
+const D#8 111
+const EB8 111
+const E8  112
+const F8  113
+const F#8 114
+const GB8 114
+const G8  115
+const G#8 116
+const AB8 116
+const A8  117
+const A#8 118
+const AB8 118
+const B8  119
+const C9  120
+const C#9 121
+const DB9 121
+const D9  122
+const D#9 123
+const EB9 123
+const E9  124
+const F9  125
+const F#9 126
+const GB9 126
+const G9  127
+
+constantsEnd
+
+note
+; @pos 2 41
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRate 48000
+; @config audioRuntime.audioOutBufferLAddress audioout:buffer
+; @config audioRuntime.audioOutBufferRAddress audioout:buffer
+; @config export.fileName dx7EPiano
+
+noteEnd
+
+note colors
+; @pos 2 51
+; @config color.canvas #151210
+; @config color.surface #25211e
+; @config color.ink #e5e1d8
+; @config color.primary #64d1ad
+; @config color.secondary #c7df8a
+; @config color.positive #64d1ad
+; @config color.warning #d9c66f
+; @config color.negative #d66b5f
+; @config color.muted #898178
+; @config color.stroke rgba(100,209,173,0.24)
+; @config color.tertiary #aaa195
+; @config color.highlight #c7df8a
+; @config color.detail #64d1ad
+noteEnd
+
+note algorithm
+; @pos 186 50
+;
+; E.PIANO 1 / DX7 algorithm 5
+;
+; [2] --> [1] --+
+;               |
+; [4] --> [3] --+--> mixer
+;               |
+; [6] --> [5] --+
+;
+noteEnd
+
+entry main
+module keyboard
+; @pos 113 46
+; @config
+; - keyboard.keyPressedMemory
+; - keyPressed
+; @config
+; - keyboard.keyCodeMemory
+; - keyCode
+
+int keyPressed
+int keyCode
+
+; @watch keyPressed
+; @watch keyCode
+
+moduleEnd
+module midiNote2Freq
+; @pos 252 40
+
+int* in &noteInput:note
+float* notes &midiLUT:
+float out
+
+; @watch out
+
+push &out
+push notes
+push *in
+mul 4
+add
+load
+store
+
+moduleEnd
+module midiLUT
+; @pos 252 100
+; @tab 8
+float	8.1758
+float	8.6620
+float	9.1770
+float	9.7227
+float	10.3009
+float	10.9134
+float	11.5623
+float	12.2499
+float	12.9783
+float	13.7500
+float	14.5676
+float	15.4339
+float	16.3516
+float	17.3239
+float	18.3540
+float	19.4454
+float	20.6017
+float	21.8268
+float	23.1247
+float	24.4997
+float	25.9565
+float	27.5000
+float	29.1352
+float	30.8677
+float	32.7032
+float	34.6478
+float	36.7081
+float	38.8909
+float	41.2034
+float	43.6535
+float	46.2493
+float	48.9994
+float	51.9131
+float	55.0000
+float	58.2705
+float	61.7354
+float	65.4064
+float	69.2957
+float	73.4162
+float	77.7817
+float	82.4069
+float	87.3071
+float	92.4986
+float	97.9989
+float	103.8262
+float	110.0000
+float	116.5409
+float	123.4708
+float	130.8128
+float	138.5913
+float	146.8324
+float	155.5635
+float	164.8138
+float	174.6141
+float	184.9972
+float	195.9977
+float	207.6523
+float	220.0000
+float	233.0819
+float	246.9417
+float	261.6256
+float	277.1826
+float	293.6648
+float	311.1270
+float	329.6276
+float	349.2282
+float	369.9944
+float	391.9954
+float	415.3047
+float	440.0000
+float	466.1638
+float	493.8833
+float	523.2511
+float	554.3653
+float	587.3295
+float	622.2540
+float	659.2551
+float	698.4565
+float	739.9888
+float	783.9909
+float	830.6094
+float	880.0000
+float	932.3275
+float	987.7666
+float	1046.5023
+float	1108.7305
+float	1174.6591
+float	1244.5079
+float	1318.5102
+float	1396.9129
+float	1479.9777
+float	1567.9817
+float	1661.2188
+float	1760.0000
+float	1864.6550
+float	1975.5332
+float	2093.0045
+float	2217.4610
+float	2349.3181
+float	2489.0159
+float	2637.0205
+float	2793.8259
+float	2959.9554
+float	3135.9635
+float	3322.4376
+float	3520.0000
+float	3729.3101
+float	3951.0664
+float	4186.0090
+float	4434.9221
+float	4698.6363
+float	4978.0317
+float	5274.0409
+float	5587.6517
+float	5919.9108
+float	6271.9270
+float	6644.8752
+float	7040.0000
+float	7458.6202
+float	7902.1328
+float	8372.0181
+float	8869.8442
+float	9397.2726
+float	9956.0635
+float	10548.0818
+float	11175.3034
+float	11839.8215
+float	12543.8540
+
+moduleEnd
+module modulator2
+; @pos 367 0
+; @group operator2
+use env
+float* frequency &midiNote2Freq:out
+float phase 0.0
+float out
+float ratio 14.0
+float* amplitude &envelope2:out
+float level 0.58
+
+; @hide
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitude
+mul level
+store
+
+moduleEnd
+module modulator4
+; @pos 367 22
+; @group operator4
+use env
+float* frequency &midiNote2Freq:out
+float phase 0.0
+float out
+float ratio 1.0
+float* amplitude &envelope4:out
+float level 0.89
+
+; @hide
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitude
+mul level
+store
+
+moduleEnd
+module modulator6
+; @pos 367 44
+; @group operator6
+use env
+float* frequency &midiNote2Freq:out
+float phase 0.0
+float out
+float ratio 1.01
+float* amplitude &envelope6:out
+float level 0.79
+
+; @hide
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitude
+mul level
+store
+
+moduleEnd
+module carrier1
+; @pos 469 0
+; @group operator1
+use env
+float* frequency &midiNote2Freq:out
+float* phaseMod &modulator2:out
+float phase 0.0
+float ratio 1.005
+float level 0.99
+float out
+float* amplitudeMod &envelope1:out
+
+; @hide
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+add *phaseMod
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitudeMod
+mul level
+store
+
+moduleEnd
+module carrier3
+; @pos 469 22
+; @group operator3
+use env
+float* frequency &midiNote2Freq:out
+float* phaseMod &modulator4:out
+float phase 0.0
+float ratio 1.0
+float level 0.99
+float out
+float* amplitudeMod &envelope3:out
+
+; @hide
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+add *phaseMod
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitudeMod
+mul level
+store
+
+moduleEnd
+module carrier5
+; @pos 469 44
+; @group operator5
+use env
+float* frequency &midiNote2Freq:out
+float* phaseMod &modulator6:out
+float phase 0.0
+float ratio 0.99
+float out
+float* amplitude &envelope5:out
+float level 0.99
+
+; @hide
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+add *phaseMod
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitude
+mul level
+store
+
+moduleEnd
+module mixer
+; @pos 524 22
+
+float* in1 &carrier1:out
+float* in2 &carrier3:out
+float* in3 &carrier5:out
+float out
+
+push &out
+push *in1
+mul 0.5
+push *in2
+mul 0.5
+add
+push *in3
+mul 0.5
+add
+; Headroom for three attack peaks.
+mul 0.65
+store
+
+moduleEnd
+module limiter
+; @pos 569 22
+float* in &mixer:out
+float out
+
+push &out
+push *in
+max -1.0
+min 1.0
+store
+moduleEnd
+module audioout
+; @pos 605 22
+use env
+
+float* in &limiter:out
+
+; Audio buffer
+float[] buffer AUDIO_BUFFER_SIZE
+int pointer &buffer
+
+; @plot &buffer count(buffer)
+
+; Store the input value
+; in the buffer
+push pointer
+push *in
+store
+
+; Increment the buffer
+; pointer by the
+; buffer word size
+push &pointer
+push pointer
+add sizeof(buffer)
+store
+
+; Reset the buffer pointer
+; when it reaches the end
+; of the buffer
+push pointer
+push buffer&
+greaterThan
+if
+push &pointer
+push &buffer
+store
+ifEnd
+
+moduleEnd
+group noteInput
+; @pos 153 22
+; @home left
+; Converts HID keycodes to MIDI note numbers              .---------.
+; based on the Janko layout                               |  Enter  |
+;                                                         |       | |
+;.----------+---+---+---+---+---+---+---+---+---+---+---+-+-+  <--' |
+;| CapsLock | C#| D#| F | G | A | B | C#| D#| F | G | A | B |       |
+;+--------+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+---+-------+
+;| Shift  | C | D | E | F#| G#| A#| C | D | E | F#| G#|    Shift    |
+;'--------+---+---+---+---+---+---+---+---+---+---+---+-------------'
+;
+expose keyCode &janko:in
+expose gate &noteEvents:gate
+expose note &janko:out
+expose noteOn &noteEvents:noteOn
+expose noteOff &noteEvents:noteOff
+
+init &keyCode &keyboard:keyCode
+init &gate &keyboard:keyPressed
+
+pass midiCodes
+
+function jankoMap
+; @pos -55 0
+param int keycode
+use midiCodes
+push keycode
+mapBegin int
+map 53 C3  ; Maps HID
+map 4  C#3 ; keycodes
+map 29 D3  ; to MIDI note
+map 22 D#3 ; numbers
+map 27 E3  ; based on
+map 7  F3  ; the Janko
+map 6  F#3 ; piano layout
+map 9  G3  ;
+map 25 G#3 ; These key
+map 10 A3  ; positions
+map 5  A#3 ; are based on
+map 11 B3  ; my Apple
+map 17 C4  ; Magic
+map 13 C#4 ; Keyboard's
+map 16 D4  ; layout, feel
+map 14 D#4 ; free to
+map 54 E4  ; adjust them
+map 15 F4  ; to your own.
+map 55 F#4
+map 51 G4
+map 56 G#4
+map 52 A4
+map 49 B4
+mapEnd int
+functionEnd int
+module janko
+; @pos 0 0
+; @home left
+int* in ; Keycode
+int out ; MIDI note number
+push &out
+push *in
+call jankoMap
+
+; @watch out
+store
+moduleEnd
+module noteEvents
+; @pos 55 0
+; Keyboard note-on and note-off pulses.
+int* gate
+int* note &janko:out
+int previousGate
+int previousNote -1
+int noteOn
+int noteOff
+
+push &noteOn
+push *gate
+push previousGate
+equalToZero
+push *note
+push previousNote
+notEqual
+or
+and
+store
+push &noteOff
+push *gate
+equalToZero
+push previousGate
+push 0
+greaterThan
+and
+store
+push &previousGate
+push *gate
+store
+push &previousNote
+push *note
+store
+moduleEnd
+groupEnd
+group envelope2
+; @pos 320 0
+; @group operator2
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original E.PIANO 1 envelope data.
+int[] rates 4 95 50 35 78
+int[] levels 4 99 75 0 0
+int rateScaling 3
+int outputLevel 58
+moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 110 0
+; Output-level offset for log targets.
+int* in &dx7Settings:outputLevel
+float out
+
+push &out
+call dx7Level *in
+shiftLeft 5
+sub 4256
+castToFloat
+store
+moduleEnd
+module envelope4Stage
+; @pos 165 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 225 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 285 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 345 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 405 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 465 0
+; Normalized log-to-linear amplitude.
+float* in &envelopeRamp:out
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+push *offset
+add 4032.0
+sub
+div 256.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
+group envelope4
+; @pos 320 22
+; @group operator4
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original E.PIANO 1 envelope data.
+int[] rates 4 95 29 20 50
+int[] levels 4 99 95 0 0
+int rateScaling 3
+int outputLevel 89
+moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 110 0
+; Output-level offset for log targets.
+int* in &dx7Settings:outputLevel
+float out
+
+push &out
+call dx7Level *in
+shiftLeft 5
+sub 4256
+castToFloat
+store
+moduleEnd
+module envelope4Stage
+; @pos 165 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 225 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 285 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 345 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 405 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 465 0
+; Normalized log-to-linear amplitude.
+float* in &envelopeRamp:out
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+push *offset
+add 4032.0
+sub
+div 256.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
+group envelope6
+; @pos 320 44
+; @group operator6
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original E.PIANO 1 envelope data.
+int[] rates 4 95 29 20 50
+int[] levels 4 99 95 0 0
+int rateScaling 3
+int outputLevel 79
+moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 110 0
+; Output-level offset for log targets.
+int* in &dx7Settings:outputLevel
+float out
+
+push &out
+call dx7Level *in
+shiftLeft 5
+sub 4256
+castToFloat
+store
+moduleEnd
+module envelope4Stage
+; @pos 165 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 225 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 285 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 345 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 405 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 465 0
+; Normalized log-to-linear amplitude.
+float* in &envelopeRamp:out
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+push *offset
+add 4032.0
+sub
+div 256.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
+group envelope1
+; @pos 422 0
+; @group operator1
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original E.PIANO 1 envelope data.
+int[] rates 4 96 25 25 67
+int[] levels 4 99 75 0 0
+int rateScaling 3
+int outputLevel 99
+moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 110 0
+; Output-level offset for log targets.
+int* in &dx7Settings:outputLevel
+float out
+
+push &out
+call dx7Level *in
+shiftLeft 5
+sub 4256
+castToFloat
+store
+moduleEnd
+module envelope4Stage
+; @pos 165 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 225 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 285 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 345 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 405 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 465 0
+; Normalized log-to-linear amplitude.
+float* in &envelopeRamp:out
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+push *offset
+add 4032.0
+sub
+div 256.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
+group envelope3
+; @pos 422 22
+; @group operator3
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original E.PIANO 1 envelope data.
+int[] rates 4 95 20 20 50
+int[] levels 4 99 95 0 0
+int rateScaling 3
+int outputLevel 99
+moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 110 0
+; Output-level offset for log targets.
+int* in &dx7Settings:outputLevel
+float out
+
+push &out
+call dx7Level *in
+shiftLeft 5
+sub 4256
+castToFloat
+store
+moduleEnd
+module envelope4Stage
+; @pos 165 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 225 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 285 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 345 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 405 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 465 0
+; Normalized log-to-linear amplitude.
+float* in &envelopeRamp:out
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+push *offset
+add 4032.0
+sub
+div 256.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
+group envelope5
+; @pos 422 44
+; @group operator5
+expose note &dx7PitchRateScaling:note
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &note &noteInput:note
+init &trigger &noteInput:noteOn
+init &release &noteInput:noteOff
+
+pass env
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+function dx7Level
+; @pos -65 0
+; Exact raw DX7 level mapping for 0..99.
+param int level
+
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+module dx7Settings
+; @home left
+; @pos 0 0
+; Original E.PIANO 1 envelope data.
+int[] rates 4 95 20 20 50
+int[] levels 4 99 95 0 0
+int rateScaling 3
+int outputLevel 99
+moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* note
+int* amount &dx7Settings:rateScaling
+int out
+
+push &out
+push *note
+div 3
+sub 7
+max 0
+min 31
+mul *amount
+shiftRight 3
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 110 0
+; Output-level offset for log targets.
+int* in &dx7Settings:outputLevel
+float out
+
+push &out
+call dx7Level *in
+shiftLeft 5
+sub 4256
+castToFloat
+store
+moduleEnd
+module envelope4Stage
+; @pos 165 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 225 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int* rates &dx7Settings:rates
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt rates *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 285 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+int* levels &dx7Settings:levels
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+call loadAt levels *stage
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 345 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 405 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7Gain
+; @pos 465 0
+; Normalized log-to-linear amplitude.
+float* in &envelopeRamp:out
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+push *offset
+add 4032.0
+sub
+div 256.0
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+groupEnd
+entryEnd

@@ -85,9 +85,16 @@ export const projects = [
 	},
 	{
 		id: 'fm-synth',
-		title: 'Six-operator FM synthesizer',
-		description: 'Play a keyboard-controlled FM synthesizer with six operators and individual envelopes.',
+		title: 'E-piano approximation',
+		description:
+			'Play the original six-operator electric piano with simple one-shot envelopes inspired by DX7 E.PIANO 1.',
 		path: 'audio/keyboardController6OperatorFMSynth.8f4e',
+	},
+	{
+		id: 'dx7-e-piano',
+		title: 'DX7 E.PIANO 1',
+		description: 'Play a six-operator electric piano using the original DX7 E.PIANO 1 envelope settings.',
+		path: 'audio/dx7EPiano.8f4e',
 	},
 	{
 		id: 'dx7-stg-crescendo',

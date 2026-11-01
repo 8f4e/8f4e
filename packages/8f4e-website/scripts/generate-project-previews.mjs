@@ -13,7 +13,7 @@ const compilerTestRoot = path.join(workspaceRoot, 'packages', 'compiler', 'tests
 const exampleProjectRoot = path.join(workspaceRoot, 'packages', 'examples', 'src', 'projects');
 const compilerTestPreviewSource = path.join(compilerTestRoot, 'argument-continuation.test.8f4e');
 const featuredProjectIds = [
-	'fm-synth',
+	'dx7-e-piano',
 	'reverb',
 	'hymn-to-aurora',
 	'lower-intentions',
