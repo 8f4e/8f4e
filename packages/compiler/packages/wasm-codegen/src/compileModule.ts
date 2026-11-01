@@ -61,6 +61,7 @@ export function compileModule(
 
 	return {
 		id: ast.id,
+		executionEntryName: ast.executionEntryName,
 		cycleFunction: createFunction(
 			Object.values(context.locals).map(local => {
 				return createLocalDeclaration(

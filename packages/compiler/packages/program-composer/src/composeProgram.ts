@@ -221,16 +221,18 @@ function appendUnit(
 		if (module.disabled) continue;
 		const index = moduleIndexByEntry.get(module.entry) ?? 0;
 		moduleIndexByEntry.set(module.entry, index + 1);
-		const ast = qualify(
-			compileSourceToAST<ValidatedModuleAST>(
-				createCompilerSource(module, projectPath, `entry:${module.entry}:module:${index}`),
-				program.cache
-			)
-		);
-		program.ast.modules.push(ast);
 		const entry = entries.get(module.entry)!;
+		const ast = {
+			...qualify(
+				compileSourceToAST<ValidatedModuleAST>(
+					createCompilerSource(module, projectPath, `entry:${module.entry}:module:${index}`),
+					program.cache
+				)
+			),
+			executionEntryName: entry.id,
+		};
+		program.ast.modules.push(ast);
 		entry.steps.push({ type: 'module', id: ast.id });
-		program.moduleEntryNames.push(entry.id);
 	}
 	return entries;
 }
@@ -246,7 +248,6 @@ export function composeProgram(
 ): ComposedProgram {
 	const program: ComposedProgram = {
 		entries: [],
-		moduleEntryNames: [],
 		ast: {
 			prototypes: [],
 			modules: [],

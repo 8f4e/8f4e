@@ -4,6 +4,7 @@
     "functions": [],
     "modules": [
       {
+        "executionEntryName": "main",
         "id": "outer",
         "lines": [
           {
@@ -65,6 +66,7 @@
         "type": "module",
       },
       {
+        "executionEntryName": "audio/main",
         "id": "audio/source",
         "lines": [
           {
@@ -122,6 +124,7 @@
         "type": "module",
       },
       {
+        "executionEntryName": "audio/main",
         "id": "audio/consumer",
         "lines": [
           {
@@ -243,10 +246,5 @@
       "targetModuleId": "audio/consumer",
       "targetModuleName": "consumer",
     },
-  ],
-  "moduleEntryNames": [
-    "main",
-    "audio/main",
-    "audio/main",
   ],
 }

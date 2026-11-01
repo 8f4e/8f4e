@@ -18,7 +18,7 @@ export interface CompiledModule {
 	index: number;
 	cycleFunction: number[];
 	id: string;
-	executionEntryName?: string;
+	executionEntryName: string;
 	ast: ComposedModuleAST;
 	stackAnalysis?: CompiledStackAnalysisLine[];
 	skipExecutionInCycle?: boolean;

@@ -62,6 +62,7 @@
     "functions": [],
     "modules": [
       {
+        "executionEntryName": "main",
         "id": "root",
         "lines": [
           {
@@ -132,6 +133,7 @@
         "type": "module",
       },
       {
+        "executionEntryName": "child/main",
         "id": "child/voice",
         "lines": [
           {
@@ -202,6 +204,7 @@
         "type": "module",
       },
       {
+        "executionEntryName": "child/nested/main",
         "id": "child/nested/nestedVoice",
         "lines": [
           {
@@ -325,11 +328,6 @@
     },
   ],
   "memoryExposures": [],
-  "moduleEntryNames": [
-    "main",
-    "child/main",
-    "child/nested/main",
-  ],
   "projectConstantNamespaceScopes": [
     {
       "groupPath": "child",

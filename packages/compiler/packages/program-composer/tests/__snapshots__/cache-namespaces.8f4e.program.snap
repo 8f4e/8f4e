@@ -4,6 +4,7 @@
     "functions": [],
     "modules": [
       {
+        "executionEntryName": "main",
         "id": "same",
         "lines": [
           {
@@ -44,6 +45,7 @@
         "type": "module",
       },
       {
+        "executionEntryName": "child/main",
         "id": "child/same",
         "lines": [
           {
@@ -122,8 +124,4 @@
     },
   ],
   "memoryExposures": [],
-  "moduleEntryNames": [
-    "main",
-    "child/main",
-  ],
 }

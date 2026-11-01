@@ -147,6 +147,7 @@
     ],
     "modules": [
       {
+        "executionEntryName": "left/main",
         "id": "left/shared",
         "lines": [
           {
@@ -204,6 +205,7 @@
         "type": "module",
       },
       {
+        "executionEntryName": "right/main",
         "id": "right/shared",
         "lines": [
           {
@@ -310,8 +312,4 @@
     },
   ],
   "memoryExposures": [],
-  "moduleEntryNames": [
-    "left/main",
-    "right/main",
-  ],
 }

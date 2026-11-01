@@ -6,6 +6,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
   "compiledModules": {
     "audioout": {
       "ast": {
+        "executionEntryName": "main",
         "id": "audioout",
         "lines": [
           {
@@ -397,6 +398,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
     },
     "phaseAccumulator": {
       "ast": {
+        "executionEntryName": "main",
         "id": "phaseAccumulator",
         "lines": [
           {

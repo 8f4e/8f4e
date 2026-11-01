@@ -183,7 +183,7 @@ function serializeCompiledModuleOverview(
 	return {
 		id: module.id,
 		index: module.index,
-		...(module.executionEntryName ? { executionEntryName: module.executionEntryName } : {}),
+		executionEntryName: module.executionEntryName,
 		byteAddress: plannedModule.byteAddress,
 		allocationUnitAddress: plannedModule.byteAddress / 4,
 		allocationUnitCount: plannedModule.allocationUnitCount,

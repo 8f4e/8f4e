@@ -4,6 +4,7 @@
     "functions": [],
     "modules": [
       {
+        "executionEntryName": "audio/main",
         "id": "audio/source",
         "lines": [
           {
@@ -56,6 +57,7 @@
         "type": "module",
       },
       {
+        "executionEntryName": "audio/main",
         "id": "audio/consumer",
         "lines": [
           {
@@ -154,8 +156,4 @@
     },
   ],
   "memoryExposures": [],
-  "moduleEntryNames": [
-    "audio/main",
-    "audio/main",
-  ],
 }

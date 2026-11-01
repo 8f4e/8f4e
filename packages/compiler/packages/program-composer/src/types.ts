@@ -37,7 +37,6 @@ export interface ComposedProjectMemoryExposure extends ProjectMemoryExposure {
 /** One globally planned AST assembled from a recursive project tree. */
 export interface ComposedProgram {
 	entries: ComposedEntry[];
-	moduleEntryNames: string[];
 	ast: {
 		prototypes: ComposedPrototypeAST[];
 		modules: ComposedModuleAST[];

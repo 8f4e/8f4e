@@ -113,7 +113,8 @@ references do not reorder execution. The editor creates this ordered model from 
 Composition qualifies nested module, function, constant-namespace, and prototype names so sibling groups may reuse
 source-level names safely. It hands one flattened validated-AST program to the compiler, allowing memory addresses,
 function indexes and type indexes to be planned once. Resolved entry plans pass through semantic compilation to
-emission without reconstructing project scopes. Project parsing establishes structure and parsed group
+emission without reconstructing project scopes. Each composed module carries its canonical `executionEntryName`,
+which code generation forwards to the compiled module result. Project parsing establishes structure and parsed group
 metadata; composition consumes those typed nodes directly. Module/function syntax is parsed at its own tokenizer
 boundary. Later stages trust these outputs and consume the established order without reclassifying source blocks or
 reconstructing group structure.

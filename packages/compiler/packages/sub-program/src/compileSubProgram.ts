@@ -199,7 +199,7 @@ function wrapMemoryPlannerError(error: unknown, subProgramAst: ResolveConstantsS
  * @returns The compiled sub-program artifacts.
  */
 export function compileSubProgram(program: ComposedProgram, options: CompileOptions): CompiledSubProgram {
-	const { ast: subProgramAst, entries, moduleEntryNames, cache } = program;
+	const { ast: subProgramAst, entries, cache } = program;
 	const entryNames = entries.map(entry => entry.id);
 	assertUniqueModuleIds(subProgramAst.modules);
 	let constantResolution: ReturnType<typeof resolveConstants>;
@@ -306,10 +306,7 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		functionLayout,
 		functionTypeRegistry,
 		assertionPlan?.calls
-	).map((module, index) => ({
-		...module,
-		executionEntryName: moduleEntryNames[index],
-	}));
+	);
 
 	return {
 		functionLayout,
