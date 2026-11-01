@@ -2,6 +2,9 @@
 
 includes
 include std/events/risingEdge
+include std/math/clamp
+include std/math/trig/advancePhase
+include std/math/trig/sine
 includesEnd
 
 function adsrEnv
@@ -142,72 +145,6 @@ ifEnd
 
 functionEnd
 
-function sine
-; @pos -35 72
-; Polynomial approximation
-; of the sine function with
-; Taylor series (7th order)
-; Only works in the range of
-; [-PI, PI]
-
-param float x
-
-use math
-
-; Fold to [-pi/2, pi/2]
-push x
-push HALF_PI
-greaterThan
-if
-push PI
-push x
-sub
-localSet x
-ifEnd
-
-push x
-push HALF_PI
-push -1.0
-mul
-lessThan
-if
-push PI
-push -1.0
-mul
-push x
-sub
-localSet x
-ifEnd
-
-local float x2
-push x
-push x
-mul
-localSet x2
-
-; Taylor coefficients
-const T1 -0.1666666666
-const T2 0.0083333333
-const T3 -0.000198412
-
-push x2
-push T3
-mul
-push T2
-add
-push x2
-mul
-push T1
-add
-push x2
-mul
-push 1.0
-add
-push x
-mul
-
-functionEnd float
-
 function buffer
 ; @pos 2 72
 #export buffer
@@ -253,34 +190,11 @@ functionEnd int
 
 constants env
 ; @pos 2 60
-; @favorite
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
 const SAMPLE_RATE 48000
 const AUDIO_BUFFER_SIZE 128
-
-constantsEnd
-
-constants math
-; @pos 2 74
-
-const PI      3.141592653589793
-const NEG_PI -3.141592653589793
-const TAU     6.283185307179586
-const HALF_PI 1.570796326794896
-const INV_PI  0.318309886183790
-const INV_TAU 0.159154943091895
-const PHI     1.618033988749895
-const DEG2RAD 0.017453292519943
-const RAD2DEG 57.29577951308232
-const SQRT2   1.414213562373095
-const SQRT1_2 0.707106781186547
-const LN2     0.693147180559945
-const LN10    2.302585092994046
-const LOG2E   1.442695040888963
-const LOG10E  0.434294481903251
-const E       2.718281828459045
 
 constantsEnd
 
@@ -479,6 +393,14 @@ note colors
 ; @config color.tertiary #aaa195
 ; @config color.highlight #c7df8a
 ; @config color.detail #64d1ad
+noteEnd
+
+note
+; @pos 232 29
+; Original six-operator FM electric piano.
+; Uses simple one-shot envelopes inspired by DX7 E.PIANO 1.
+; Envelope timing and level response are approximate.
+; See dx7EPiano for DX7 envelope groups.
 noteEnd
 
 entry main
@@ -737,7 +659,6 @@ module modulator4
 ; @pos 365 44
 ; @group operator4
 use env
-use math
 float* frequency &midiNote2Freq:out
 float phase 0.0
 float out
@@ -746,36 +667,12 @@ float* amplitude &adsrEnv4:out
 float level 0.89
 
 ; @hide
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase and preserve overshoot
-push phase
-push PI
-greaterThan
-if
-push &phase
-push phase
-push TAU
-sub
-store
-ifEnd
-
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 ; You can swap this call
 ; with any periodic function
 call sine
@@ -790,7 +687,6 @@ module modulator6
 ; @pos 365 74
 ; @group operator5
 use env
-use math
 float* frequency &midiNote2Freq:out
 float phase 0.0
 float out
@@ -799,36 +695,12 @@ float* amplitude &adsrEnv6:out
 float level 0.79
 
 ; @hide
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase and preserve overshoot
-push phase
-push PI
-greaterThan
-if
-push &phase
-push phase
-push TAU
-sub
-store
-ifEnd
-
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 ; You can swap this call
 ; with any periodic function
 call sine
@@ -843,7 +715,6 @@ module modulator2
 ; @pos 366 13
 ; @group operator2
 use env
-use math
 float* frequency &midiNote2Freq:out
 float phase 0.0
 float out
@@ -852,36 +723,12 @@ float* amplitude &adsrEnv2:out
 float level 0.58
 
 ; @hide
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase and preserve overshoot
-push phase
-push PI
-greaterThan
-if
-push &phase
-push phase
-push TAU
-sub
-store
-ifEnd
-
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 ; You can swap this call
 ; with any periodic function
 call sine
@@ -968,38 +815,13 @@ float out
 float* amplitudeMod &adsrEnv1:out
 
 ; @hide
-use math
-
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase and preserve overshoot
-push phase
-push PI
-greaterThan
-if
-push &phase
-push phase
-push TAU
-sub
-store
-ifEnd
 
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 push *phaseMod
 add
 ; You can swap this call
@@ -1025,38 +847,13 @@ float out
 float* amplitudeMod &adsrEnv3:out
 
 ; @hide
-use math
-
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase and preserve overshoot
-push phase
-push PI
-greaterThan
-if
-push &phase
-push phase
-push TAU
-sub
-store
-ifEnd
 
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 push *phaseMod
 add
 ; You can swap this call
@@ -1082,38 +879,13 @@ float* amplitude &adsrEnv5:out
 float level 0.99
 
 ; @hide
-use math
-
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
-push &phase
-push phase
-push TAU
-push *frequency
-push ratio
-mul
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
-add
-store
-
-; Wrap phase and preserve overshoot
-push phase
-push PI
-greaterThan
-if
-push &phase
-push phase
-push TAU
-sub
-store
-ifEnd
 
 push &out
-push phase
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
 push *phaseMod
 add
 ; You can swap this call
@@ -1157,21 +929,7 @@ float* in &mixer:out
 float out
 
 push &out
-push *in
-push 1.0
-greaterThan
-if
-push 1.0
-else
-push *in
-ifEnd float
-push -1.0
-lessThan
-if
-push -1.0
-else
-push *in
-ifEnd float
+call clamp *in -1.0 1.0
 store
 
 moduleEnd
