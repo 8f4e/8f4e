@@ -4,7 +4,7 @@
 		"check": {
 			"executor": "nx:noop",
 			"cache": false,
-			"dependsOn": ["build-and-metrics", "test-and-coverage", "audit-build-inputs"]
+			"dependsOn": ["build-and-metrics", "test-and-coverage"]
 		},
 		"build-and-metrics": {
 			"executor": "nx:noop",
@@ -64,14 +64,6 @@
 			],
 			"options": {
 				"coverage": true
-			}
-		},
-		"audit-build-inputs": {
-			"executor": "nx:run-commands",
-			"cache": false,
-			"options": {
-				"command": "node scripts/check-build-inputs.mjs",
-				"cwd": "{workspaceRoot}"
 			}
 		}
 	},

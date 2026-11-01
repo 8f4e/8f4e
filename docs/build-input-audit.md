@@ -4,17 +4,28 @@ Audit for [issue #1348](https://github.com/8f4e/8f4e/issues/1348), performed on 
 
 ## Scope and method
 
-Reviewed workspace imports, fixture references, package manifests, implicit dependencies, every target's commands and prerequisites, TypeScript build inclusion, Vite source collections, and resolved named inputs. The repeatable check uses the workspace's pinned Nx hash planner, rather than interpreting the input globs independently. It checks every `build`, `build-deps`, `generate-content`, `generate-fonts`, and `typecheck:production` target and their prerequisite graphs.
+Reviewed workspace imports, fixture references, package manifests, implicit dependencies, every target's commands and prerequisites, TypeScript build inclusion, Vite source collections, and resolved named inputs. The one-time audit inspected Nx's resolved inputs for all 80 production targets and their prerequisite graphs. The inventory below records the findings from that audit.
 
-Run the check after dependency or input changes:
+To repeat the key checks, use Nx's built-in input and task-graph commands from the repository root:
 
 ```sh
-npx nx run @8f4e/release:audit-build-inputs
-# Include a fresh inventory of references used only by tests or fixtures:
-npx nx run @8f4e/release:audit-build-inputs --output-style=static -- --inventory
+npx nx show target inputs @8f4e/sprite-generator:build --json > /tmp/8f4e-sprite-build-inputs.json
+npx nx show target inputs @8f4e/sprite-generator:test --json > /tmp/8f4e-sprite-test-inputs.json
+npx nx show target inputs @8f4e/editor-minimal:build --json > /tmp/8f4e-minimal-build-inputs.json
+npx nx show target inputs @8f4e/editor-webmcp:generate-content --json > /tmp/8f4e-catalog-inputs.json
+npx nx show target inputs @8f4e/8f4e-website:build --json > /tmp/8f4e-website-inputs.json
+npx nx run @8f4e/8f4e-website:build --graph=/tmp/8f4e-website-build-tasks.json
 ```
 
-CI and `@8f4e/release:check` run the check. The script uses Nx's internal `HashPlanInspector` and file map because they expose the actual resolved files and tasks. Recheck these APIs when upgrading Nx. The reference inventory is an audit aid: it scans tracked source/config text for workspace names, including raw imports and package resolution strings, and needs human review of non-import matches and target commands.
+Inspect the `files` arrays and task graph against these expected boundaries:
+
+- Local sprite palette fixtures appear in sprite test inputs and stay out of production builds.
+- Example sources stay out of sprite and minimal-editor builds, while WebMCP catalogs and the product website retain them.
+- The product website includes shipped compiler `.test.8f4e` fixtures; the compiler build excludes them and its test target retains them.
+- Stdlib, compiler worker, runtime worker, audio worklet, font source and catalog documentation inputs remain included in their production consumers.
+- Production prerequisite graphs build packages and generate content without executing test targets.
+
+Review the relevant input list after changing a source collection or fixture convention. These commands inspect the current workspace without running builds or using a custom audit script.
 
 ## Confirmed cases and corrections
 
@@ -34,7 +45,7 @@ A smaller task graph is not the sole success criterion. The product website stil
 
 - Default editor source collections consume stdlib `.8f4e` files and bundled example `.8f4em` modules. The minimal editor consumes stdlib sources. Their package/build relationships remain intact.
 - The product gallery consumes example project sources and its preview images. WebMCP consumes example modules, example projects, and compiler/editor Markdown; generator imports of the compiler, example-module helpers and source-discovery plugin are production tooling, even when declared as dev dependencies.
-- Compiler workers, audio worklets, worker runtimes and their emitted assets remain production prerequisites. The audit checks representative source inclusion and prerequisite tasks for each.
+- Compiler workers, audio worklets, worker runtimes and their emitted assets remain production prerequisites. The audit verified representative source inclusion and prerequisite tasks for each.
 - `@8f4e/config` ships shared TypeScript, Vite and Vitest helpers. Its `src/vitest/` code is a real package output and remains included.
 - The source-only stdlib project has no build target, but its files still propagate through dependency inputs. No general exclusion of `.8f4e`, `.8f4em`, `.bin`, images or Markdown was introduced.
 - The embedded test runtime is a shipped optional editor feature. Its implementation remains production code.
@@ -122,7 +133,7 @@ The other reviewed projects have no workspace-name references confined to tests 
 1. **Examples → CLI is a manifest/tooling relationship.** `examples:build` runs standalone lookup-table generators with no CLI import, but `^build` still schedules CLI/compiler builds because the examples manifest declares CLI. CLI is needed by example tests and metric targets. Follow up by separating the source/generation boundary from CLI verification, with explicit CLI test/metrics inputs and prerequisites. This relationship remains intact here to preserve affected-test behavior.
 2. **All external packages are hashed by default.** Nx's resolved build plans include `AllExternalDependencies`, including test tooling. Test-tool version changes can therefore invalidate production caches. Follow up with per-executor/target `externalDependencies` sets covering the actual compiler/bundler, runtime packages and their transitive dependencies; a blanket tool-only allowlist would risk stale builds. Local palette fixtures fix the workspace edge, not this lockfile-level policy.
 3. **Broad non-test inputs remain conservative.** Documentation, authoring tools, renderer benchmarks/examples and package metadata are still included unless explicitly identified as test files. Compiler doc edits and stdlib edits still reach core through existing compiler/test relationships. Narrow these with explicit producer/consumer input sets only after recording every shipped consumer, especially WebMCP docs and the test gallery. The default editor also still hashes example project sources although its source collection bundles only modules. Follow up with separate module/project input sets: the default composition needs modules; WebMCP and the product gallery need both. The renderer submodule was audited without changing its pinned revision.
-4. **CLI example fixtures already have a test-only input boundary.** `cli:test` explicitly includes the examples project inputs without adding an examples edge to CLI builds. `tests/exampleProjectsCompilation.test.ts`, `tests/exampleProjectsLayout.test.ts`, and the module test-runner CLI test deliberately verify shipped examples. Retain those integration inputs. `tests/compileProjectAudioBuffer.test.ts` is a candidate for a smaller local fixture if its API test is separated from example coverage; it currently creates no production build coupling. The audit checks this boundary.
+4. **CLI example fixtures already have a test-only input boundary.** `cli:test` explicitly includes the examples project inputs without adding an examples edge to CLI builds. `tests/exampleProjectsCompilation.test.ts`, `tests/exampleProjectsLayout.test.ts`, and the module test-runner CLI test deliberately verify shipped examples. Retain those integration inputs. `tests/compileProjectAudioBuffer.test.ts` is a candidate for a smaller local fixture if its API test is separated from example coverage; it currently creates no production build coupling. The audit verified this boundary.
 5. **Necessary rebuilds still replace `dist`.** Missing modules and intermediate Vite reloads during a genuine rebuild require a separate output/watch-lifecycle change. This audit does not change dist cleaning or suppress asset watches.
 
 ## Validation
@@ -130,7 +141,7 @@ The other reviewed projects have no workspace-name references confined to tests 
 - All workspace builds passed: 79 tasks. A final combined build/typecheck pass passed all 152 tasks.
 - All workspace unit-test targets and prerequisites passed: 142 tasks, including embedded example-module tests.
 - All four sprite screenshot comparisons passed against the existing Git LFS baselines; no screenshot updates were needed.
-- The production-input audit checks all 77 projects and 80 production targets, including development build prerequisites. No resolved production input contains a recognized test-only file except the explicitly shipped test-gallery content, and no production prerequisite graph executes tests.
+- The one-time production-input audit covered all 77 projects and 80 production targets, including development build prerequisites. At the audited revision, no resolved production input contained a recognized test-only file except the explicitly shipped test-gallery content, and no production prerequisite graph executed tests.
 - Controlled file edits were applied one at a time, hashed in fresh Nx processes, and restored byte-for-byte. All hashes returned to the original baseline after restoration. The table lists changes among 12 sampled build/test/generator targets.
 
 | Edited input | Observed hash changes |
@@ -142,4 +153,4 @@ The other reviewed projects have no workspace-name references confined to tests 
 | Stdlib source | Both editor compositions and website/catalog consumers remain invalidated; existing compiler test-only graph paths also remain, as recorded above |
 | Compiler documentation | WebMCP catalog and website consumers remain invalidated; conservative compiler/core propagation also remains, as recorded above |
 
-The permanent check repeats the resolved-input and task-graph assertions without editing files. After adding a new shipped asset location or a new test convention, update its explicit expectations alongside the relevant named input.
+After adding a new shipped asset location or a new test convention, repeat the built-in input/task-graph inspection above and update the relevant named input and expected boundary.

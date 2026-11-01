@@ -30,7 +30,7 @@
 ## Testing
 - Vitest (via Nx). Prefer unit tests and golden/snapshot tests for outputs.
 - Keep palette sample data in `tests/fixtures/palettes.ts`; unit tests and screenshot previews share these local color directives. Do not import example programs/modules just to provide renderer fixture data or add an examples package dependency.
-- `generate-fonts` uses production inputs. Tests and screenshot baselines must not invalidate font generation or downstream editor builds. Run `npx nx run @8f4e/release:audit-build-inputs` after changing these boundaries.
+- `generate-fonts` uses production inputs. Tests and screenshot baselines must not invalidate font generation or downstream editor builds. Inspect resolved build/test inputs with `nx show target inputs @8f4e/sprite-generator:<target> --json` after changing these boundaries.
 - To update snapshots after intentional changes, use `npx nx run @8f4e/sprite-generator:test -- --update` (or the `:update` variant for screenshot tests).
 
 ## Commits & PRs

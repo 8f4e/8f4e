@@ -106,7 +106,8 @@ Nx uses the project graph to decide task ordering, affected projects, and cache 
 6. Check production versus test inputs.
 
    ```sh
-   npx nx run @8f4e/release:audit-build-inputs --output-style=static -- --inventory
+   npx nx show target inputs @8f4e/sprite-generator:build --json
+   npx nx show target inputs @8f4e/sprite-generator:test --json
    ```
 
    A dev dependency still creates an Nx graph edge. Prefer local sample fixtures when the dependency only supplies test data. Keep real implementation dependencies and affected-test coverage; do not remove edges solely because their imports live in tests. See `docs/build-input-audit.md` for shipped-asset exceptions and package-boundary follow-ups.

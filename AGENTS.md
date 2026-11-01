@@ -78,7 +78,6 @@
 - `npx nx run-many --target=typecheck --all`: Type-check all packages; also run on pre-commit via Husky/lint-staged.
 - `npx nx run-many --target=lint --projects=@8f4e/editor-default,@8f4e/editor-website`: Biome check/fix for the
   composition and website. Use `run-many --target=lint --all` to lint every project if needed.
-- `npx nx run @8f4e/release:audit-build-inputs`: Verify production/test input separation across the workspace; add `--output-style=static -- --inventory` for test-only dependency references. See `docs/build-input-audit.md` for confirmed cases and follow-ups.
 - `npx nx graph`: Open Nx project dependency graph.
 - `npx nx run @8f4e/editor-website:kill-dev`: Kill any dev server on port 3000.
 - Production deployments run only in the manually dispatched `Release` GitHub Actions workflow on `main`, after
@@ -95,7 +94,7 @@
 ## Build Inputs and Test Dependencies
 - Production builds and generators use `production` inputs; tests retain their own `default` inputs and consume dependency `production` inputs. Type checks retain their own test files.
 - Keep sample data local to the consuming tests when an integration with the source package is not under test. Do not copy dependency implementations or remove required test/build relationships. `devDependencies` still create Nx project graph edges.
-- Test paths are excluded narrowly. Shipped compiler fixtures in the product test gallery, WebMCP catalogs/docs/examples, stdlib sources, bundled modules, workers, and worklets must remain explicit production inputs. Update the audit check when adding shipped assets or test conventions.
+- Test paths are excluded narrowly. Shipped compiler fixtures in the product test gallery, WebMCP catalogs/docs/examples, stdlib sources, bundled modules, workers, and worklets must remain explicit production inputs. Verify resolved inputs with `nx show target inputs <project>:<target> --json` after adding shipped assets or test conventions; see `docs/build-input-audit.md`.
 
 ## Testing Guidelines
 - Framework: Vitest with built-in ESM support and first-class Vite integration.
