@@ -182,8 +182,14 @@
       "id": "copy__float_p__float_p",
       "signature": {
         "parameters": [
-          "float*",
-          "float*",
+          {
+            "name": "source",
+            "type": "float*",
+          },
+          {
+            "name": "dest",
+            "type": "float*",
+          },
         ],
         "returns": [],
       },
@@ -192,8 +198,14 @@
       "id": "copy__int_p__int_p",
       "signature": {
         "parameters": [
-          "int*",
-          "int*",
+          {
+            "name": "source",
+            "type": "int*",
+          },
+          {
+            "name": "dest",
+            "type": "int*",
+          },
         ],
         "returns": [],
       },

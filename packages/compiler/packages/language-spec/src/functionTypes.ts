@@ -107,9 +107,15 @@ export function stackItemMatchesFunctionValueType(stackItem: StackItem, type: Fu
 /** Default WebAssembly import module namespace for 8f4e host-provided imports. */
 export const DEFAULT_HOST_IMPORT_MODULE_NAME = 'host';
 
-/** Language-level function parameter and return value types. */
+/** A named parameter in declaration order, including expanded prototype fields. */
+export interface FunctionParameter {
+	name: string;
+	type: FunctionValueType;
+}
+
+/** Language-level function parameters and return value types. */
 export interface FunctionSignature {
-	parameters: FunctionValueType[];
+	parameters: FunctionParameter[];
 	returns: FunctionValueType[];
 }
 

@@ -91,7 +91,10 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
         "name": "increment",
         "signature": {
           "parameters": [
-            "int",
+            {
+              "name": "value",
+              "type": "int",
+            },
           ],
           "returns": [
             "int",

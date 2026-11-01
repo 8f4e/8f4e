@@ -213,7 +213,7 @@ describe('analyzeStack integration', () => {
 					id: 'increment__int',
 					name: 'increment',
 					signature: {
-						parameters: ['int'],
+						parameters: [{ name: 'value', type: 'int' }],
 						returns: ['int'],
 					},
 				},

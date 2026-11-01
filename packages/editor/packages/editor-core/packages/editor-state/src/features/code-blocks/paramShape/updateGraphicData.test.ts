@@ -23,7 +23,13 @@ function createCompiledFunction(projectBlockId: number): CompiledFunction {
 	return {
 		id: functionId,
 		name: 'foo',
-		signature: { parameters: ['int*', 'float*'], returns: [] },
+		signature: {
+			parameters: [
+				{ name: 'arg1', type: 'int*' },
+				{ name: 'arg2', type: 'float*' },
+			],
+			returns: [],
+		},
 		wasmIndex: 0,
 		typeIndex: 0,
 		body: [],
@@ -43,7 +49,13 @@ function createCompiledFunction(projectBlockId: number): CompiledFunction {
 			projectBlockId,
 			functionLine: { lineNumber: 0, instruction: 'function', arguments: [{ value: 'foo' }] },
 			functionEndLine: { lineNumber: 4, instruction: 'functionEnd', arguments: [] },
-			signature: { parameters: ['int*', 'float*'], returns: [] },
+			signature: {
+				parameters: [
+					{ name: 'arg1', type: 'int*' },
+					{ name: 'arg2', type: 'float*' },
+				],
+				returns: [],
+			},
 			lines: [
 				{ lineNumber: 0, instruction: 'function', arguments: [{ value: 'foo' }] },
 				{ lineNumber: 1, instruction: '#impure', arguments: [] },

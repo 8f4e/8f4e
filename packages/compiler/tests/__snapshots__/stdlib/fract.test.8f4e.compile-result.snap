@@ -85,7 +85,10 @@
       "id": "fract__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",

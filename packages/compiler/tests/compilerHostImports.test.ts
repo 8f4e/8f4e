@@ -99,7 +99,10 @@ functionEnd
 
 		expect(calls).toEqual([[memory.left.byteAddress, memory.right.byteAddress]]);
 		const functionId = createFunctionId('recordShape', ['int*', 'float*']);
-		expect(fixture.compileResult.compiledFunctions![functionId].signature.parameters).toEqual(['int*', 'float*']);
+		expect(fixture.compileResult.compiledFunctions![functionId].signature.parameters).toEqual([
+			{ name: 'left', type: 'int*' },
+			{ name: 'right', type: 'float*' },
+		]);
 		expect(fixture.compileResult.compiledFunctions![functionId].import).toEqual({
 			moduleName: 'host',
 			fieldName: 'recordShape',

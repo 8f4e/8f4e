@@ -426,7 +426,7 @@ describe('resolveLineReferences', () => {
 		const targetFunction = {
 			id: 'knownFn__int',
 			name: 'knownFn',
-			signature: { parameters: ['int'], returns: [] },
+			signature: { parameters: [{ name: 'value', type: 'int' }], returns: [] },
 		};
 		const context = {
 			namespace: {
@@ -503,7 +503,7 @@ describe('resolveSemanticReferences', () => {
 		const metadata = {
 			id: functionId,
 			name: 'echo',
-			signature: { parameters: ['int'], returns: ['int'] },
+			signature: { parameters: [{ name: 'value', type: 'int' }], returns: ['int'] },
 		} satisfies FunctionMetadata;
 
 		const result = resolveSemanticReferences({

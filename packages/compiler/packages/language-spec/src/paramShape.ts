@@ -91,12 +91,12 @@ export function getEffectiveFunctionMetadata(
 
 	for (const line of ast.lines) {
 		if (line.instruction === 'param') {
-			parameters.push(line.arguments[0].value as FunctionValueType);
+			parameters.push({ name: line.arguments[1].value, type: line.arguments[0].value as FunctionValueType });
 		}
 		if (line.instruction === 'paramShape') {
 			const expansion = getParamShapeExpansion(line, prototypeShapes, context);
 			paramShapeExpansions.push(expansion);
-			parameters.push(...expansion.parameters.map(parameter => parameter.type));
+			parameters.push(...expansion.parameters);
 		}
 		if (parameters.length > MAX_FUNCTION_PARAMETERS)
 			throw getError(ErrorCode.FUNCTION_SIGNATURE_OVERFLOW, line, context);

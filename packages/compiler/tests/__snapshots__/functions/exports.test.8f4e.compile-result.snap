@@ -494,8 +494,14 @@
       "id": "addForExportSnapshot__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "a",
+            "type": "int",
+          },
+          {
+            "name": "b",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -527,8 +533,14 @@
       "id": "multiplyExportedByOwnName__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "a",
+            "type": "int",
+          },
+          {
+            "name": "b",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

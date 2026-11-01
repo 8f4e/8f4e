@@ -2,15 +2,22 @@ import type { FunctionType, WasmTypeValue } from '@8f4e/compiler-wasm-utils';
 import type { AssertionSite } from './assertions';
 import type { ComposedFunctionAST, ComposedModuleAST, FunctionAST, ValidatedAST, ValidatedFunctionAST } from './ast';
 import type { ASTCache } from './cache';
-import type { FunctionImportMetadata, FunctionSignature, FunctionValueType } from './functionTypes';
+import type { FunctionImportMetadata, FunctionParameter, FunctionSignature } from './functionTypes';
 import type { MemoryDefaults, MemoryLayoutPlan, MemoryPointerMetadataMap } from './memory';
 import type { ProjectMemoryExposuresByGroupPath } from './project';
 import type { StackAnalysisResult } from './semantic';
+
+/** The concrete overload selected for a call, also available for generated entry dispatchers. */
+export interface ResolvedCall {
+	targetFunctionId: string;
+	signature: FunctionSignature;
+}
 
 export type CompiledStackAnalysisLine = {
 	lineNumber: number;
 	instruction: string;
 	stackAnalysis: StackAnalysisResult;
+	resolvedCall?: ResolvedCall;
 };
 
 /** Code generation output and metadata for a compiled executable module. */
@@ -47,10 +54,7 @@ export interface FunctionTypeRegistry {
 /** Expanded parameter declarations for a source `paramShape` instruction. */
 export interface FunctionParamShapeExpansion {
 	lineNumber: number;
-	parameters: Array<{
-		name: string;
-		type: FunctionValueType;
-	}>;
+	parameters: FunctionParameter[];
 }
 
 /** Semantic function symbol, independent of WebAssembly layout. */

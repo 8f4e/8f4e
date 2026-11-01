@@ -1,3 +1,4 @@
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import { type CompiledStackAnalysisLine, createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
@@ -445,5 +446,44 @@ describe('tooltip lifecycle', () => {
 		expect(tooltip.getState().text).not.toContain('execution order: 2');
 		store.set('compiler.result.compiledModules', { first: {} as never, test: {} as never });
 		expect(tooltip.getState().text).toContain('execution order: 2');
+	});
+});
+
+describe('call signature updates', () => {
+	it('refreshes named signatures after compilation and clears them on reset and selection changes', async () => {
+		const source = `8f4e/v1
+entry main
+module caller
+call identity 1
+drop
+moduleEnd
+entryEnd
+function identity
+param int value
+push value
+functionEnd int`;
+		const compile = (text: string) =>
+			compileProject(parseProjectSource(text), { disableSharedMemory: true, includeStackAnalysis: true });
+		const first = await compile(source);
+		const block = createMockCodeBlock({
+			name: 'caller',
+			code: ['module caller', 'call identity 1', 'drop', 'moduleEnd'],
+			cursor: { row: 1, col: 0, x: 0, y: 0 },
+		});
+		const state = createMockState({ compiler: { result: first }, codeBlockRendering: { selectedCodeBlock: block } });
+		const store = createStateManager(state);
+		const tooltip = createTooltip(store, createEvents());
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
+		expect(tooltip.getState().text.slice(0, 2).join(' ')).toBe('call identity (value: int -- int)');
+		store.set('compiler.result', await compile(source.replaceAll('value', 'input')));
+		expect(tooltip.getState().text.slice(0, 2).join(' ')).toBe('call identity (input: int -- int)');
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		expect(tooltip.getState().text[0]).toBe('drop (T -- )');
+		store.set('compiler.result', { ...state.compiler.result, compiledModules: {}, compiledFunctions: {} });
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		expect(tooltip.getState().text[0]).toBe('call (args... -- returns...)');
 	});
 });

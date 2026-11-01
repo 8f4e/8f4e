@@ -4,7 +4,6 @@ import { getCodeBlockMemoryScope, resolveMemoryTarget } from '@8f4e/editor-state
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
 import { createProjectModuleId } from '@8f4e/language-spec';
-import { TOOLTIP_WRAP_WIDTH } from '../helpers/constants';
 import { getSelectedLineTooltipContent } from '../helpers/content';
 import { getInstructionNameFromSourceLine, getMemoryDeclarationIdFromSourceLine } from '../helpers/sourceLine';
 import { createEmptyTooltipState, getTooltipState } from './layout';
@@ -73,14 +72,13 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 
 		const line = selectedCodeBlock.code[selectedCodeBlock.cursor.row];
 		const memoryId = getMemoryDeclarationIdFromSourceLine(line);
-		const content = getSelectedLineTooltipContent(
+		const content = getSelectedLineTooltipContent({
 			line,
-			TOOLTIP_WRAP_WIDTH,
-			getSelectedCodeBlockStackAnalysisLine(state, selectedCodeBlock),
-			createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name),
-			getSelectedMemoryDeclaration(state, selectedCodeBlock, memoryId),
-			getSelectedModuleExecutionOrder(state, selectedCodeBlock, line)
-		);
+			stackAnalysisLine: getSelectedCodeBlockStackAnalysisLine(state, selectedCodeBlock),
+			moduleId: createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name),
+			memory: getSelectedMemoryDeclaration(state, selectedCodeBlock, memoryId),
+			moduleExecutionOrder: getSelectedModuleExecutionOrder(state, selectedCodeBlock, line),
+		});
 		tooltip = getTooltipState(content, state, selectedCodeBlock, tooltip);
 	}
 

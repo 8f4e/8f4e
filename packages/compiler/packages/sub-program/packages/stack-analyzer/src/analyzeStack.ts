@@ -59,11 +59,23 @@ export interface StackAnalysisSubProgramReport {
 	functions: Record<string, StackAnalyzedFunction>;
 }
 
-function toCompiledStackAnalysisLine(line: CompilerASTLine, facts: StackAnalysisLineFacts): CompiledStackAnalysisLine {
+function toCompiledStackAnalysisLine(
+	line: CompilerASTLine,
+	facts: StackAnalysisLineFacts,
+	functions: FunctionRegistry
+): CompiledStackAnalysisLine {
 	return {
 		lineNumber: line.lineNumber,
 		instruction: line.instruction,
 		stackAnalysis: facts.stackAnalysis,
+		...(facts.targetFunctionId
+			? {
+					resolvedCall: {
+						targetFunctionId: facts.targetFunctionId,
+						signature: functions.byId[facts.targetFunctionId].signature,
+					},
+				}
+			: {}),
 	};
 }
 
@@ -212,13 +224,21 @@ function analyzeBodyOperations(
 				Math.max(operation.consumedOperands.length, operation.droppedStackItems?.length ?? 0)
 		);
 		if (sourceLineIndex !== previousSourceLineIndex) {
-			stackAnalysis.push(toCompiledStackAnalysisLine(sourceLines[sourceLineIndex], facts));
+			stackAnalysis.push(
+				toCompiledStackAnalysisLine(sourceLines[sourceLineIndex], facts, context.namespace.functions!)
+			);
 			previousSourceLineIndex = sourceLineIndex;
 			untouchedSourceValues = preservedInputCount;
 			continue;
 		}
 		untouchedSourceValues = Math.min(untouchedSourceValues, preservedInputCount);
 		const source = stackAnalysis[stackAnalysis.length - 1];
+		if (facts.targetFunctionId) {
+			source.resolvedCall = {
+				targetFunctionId: facts.targetFunctionId,
+				signature: context.namespace.functions!.byId[facts.targetFunctionId].signature,
+			};
+		}
 		source.stackAnalysis = {
 			stackBefore: source.stackAnalysis.stackBefore,
 			stackAfter: operation.stackAfter,
@@ -309,7 +329,7 @@ function analyzeFunction(
 	const { operationFacts, stackAnalysis } = analyzeBodyOperations(ast.lines, body, context);
 	if (!metadata.import) {
 		const facts = analyzeInstruction(ast.functionEndLine, context);
-		stackAnalysis.push(toCompiledStackAnalysisLine(ast.functionEndLine, facts));
+		stackAnalysis.push(toCompiledStackAnalysisLine(ast.functionEndLine, facts, input.functions));
 	}
 	return { functionId: metadata.id, operationFacts, stackAnalysis, finalStack: cloneStack(context.stack) };
 }

@@ -250,8 +250,14 @@
       "id": "hasChanged__float__float_p",
       "signature": {
         "parameters": [
-          "float",
-          "float*",
+          {
+            "name": "currentValue",
+            "type": "float",
+          },
+          {
+            "name": "previousValue",
+            "type": "float*",
+          },
         ],
         "returns": [
           "int",
@@ -262,8 +268,14 @@
       "id": "hasChanged__int__int_p",
       "signature": {
         "parameters": [
-          "int",
-          "int*",
+          {
+            "name": "currentValue",
+            "type": "int",
+          },
+          {
+            "name": "previousValue",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",

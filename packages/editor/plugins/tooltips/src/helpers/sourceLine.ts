@@ -1,11 +1,12 @@
 import {
 	ArgumentType,
+	type CompiledStackAnalysisLine,
 	getInstructionSpec,
 	type InstructionSpec,
 	memoryDeclarationInstructions,
 } from '@8f4e/language-spec';
 
-import { getInstructionStackSignature } from './stackSignature';
+import { formatStackSignature, formatStackSignatureLines, getInstructionStackSignature } from './stackSignature';
 
 const memoryIdentifierRegExp = /^[a-z_]\w*$/i;
 const memoryDeclarationInstructionSet = new Set<string>(memoryDeclarationInstructions);
@@ -74,10 +75,34 @@ function getStackSignatureLineFromSourceLine(line: string, instruction: string):
 	};
 }
 
+/** Resolves the source callable name and the selected overload's labels for formatting. */
+function getCallSignatureFromSourceLine(line: string, stackAnalysisLine?: CompiledStackAnalysisLine) {
+	if (
+		getInstructionNameFromSourceLine(line) === 'call' &&
+		stackAnalysisLine?.instruction === 'call' &&
+		stackAnalysisLine.resolvedCall
+	) {
+		const targetName = line.split(';')[0].trim().split(/\s+/)[1];
+		if (targetName) {
+			const { parameters, returns } = stackAnalysisLine.resolvedCall.signature;
+			return {
+				instruction: `call ${targetName}`,
+				stackEffect: {
+					inputs: parameters.map(parameter => `${parameter.name}: ${parameter.type}`),
+					outputs: returns,
+				},
+			};
+		}
+	}
+}
+
 /**
  * Formats the stack signature for the instruction on a source line.
  */
-export function getStackSignatureFromSourceLine(line: string): string | undefined {
+export function getStackSignatureFromSourceLine(
+	line: string,
+	stackAnalysisLine?: CompiledStackAnalysisLine
+): string | undefined {
 	const instruction = getInstructionNameFromSourceLine(line);
 	const spec = getInstructionSpecFromSourceLine(line);
 
@@ -85,5 +110,25 @@ export function getStackSignatureFromSourceLine(line: string): string | undefine
 		return undefined;
 	}
 
+	const callSignature = getCallSignatureFromSourceLine(line, stackAnalysisLine);
+	if (callSignature) {
+		return formatStackSignature(callSignature.instruction, callSignature.stackEffect);
+	}
+
 	return getInstructionStackSignature(instruction, getStackSignatureLineFromSourceLine(line, instruction));
+}
+
+/** Wraps concrete call signatures while preserving the existing instruction headers. */
+export function getStackSignatureTooltipLines(
+	line: string,
+	maxLength: number,
+	stackAnalysisLine?: CompiledStackAnalysisLine
+): string[] {
+	const callSignature = getCallSignatureFromSourceLine(line, stackAnalysisLine);
+	if (callSignature) {
+		return formatStackSignatureLines(callSignature.instruction, callSignature.stackEffect, maxLength);
+	}
+	const signature = getStackSignatureFromSourceLine(line);
+	if (!signature) return [];
+	return [signature];
 }

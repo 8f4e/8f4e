@@ -80,7 +80,10 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 	for (const ast of asts) {
 		const name = ast.name;
 		const functionMetadata = getEffectiveFunctionMetadata(ast, options.prototypeShapes);
-		const id = createFunctionId(name, functionMetadata.signature.parameters);
+		const id = createFunctionId(
+			name,
+			functionMetadata.signature.parameters.map(parameter => parameter.type)
+		);
 		if (reservedFunctionNames.has(name)) {
 			throw getError(ErrorCode.DUPLICATE_IDENTIFIER, ast.functionLine, getAstDiagnosticContext(ast), {
 				identifier: name,

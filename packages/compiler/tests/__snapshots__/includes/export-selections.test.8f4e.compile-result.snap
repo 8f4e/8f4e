@@ -343,7 +343,10 @@
       "id": "__8f4e_test_math__nonexported__helper__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -354,7 +357,10 @@
       "id": "__8f4e_test_math__nonexported__helper__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -365,7 +371,10 @@
       "id": "addOne__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -376,7 +385,10 @@
       "id": "addOne__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -387,7 +399,10 @@
       "id": "addTwo__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

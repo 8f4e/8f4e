@@ -1164,9 +1164,18 @@
       "id": "nearestValue__float__float_p__int",
       "signature": {
         "parameters": [
-          "float",
-          "float*",
-          "int",
+          {
+            "name": "value",
+            "type": "float",
+          },
+          {
+            "name": "buffer",
+            "type": "float*",
+          },
+          {
+            "name": "itemCount",
+            "type": "int",
+          },
         ],
         "returns": [
           "float",
@@ -1177,9 +1186,18 @@
       "id": "nearestValue__int__int_p__int",
       "signature": {
         "parameters": [
-          "int",
-          "int*",
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
+          {
+            "name": "buffer",
+            "type": "int*",
+          },
+          {
+            "name": "itemCount",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

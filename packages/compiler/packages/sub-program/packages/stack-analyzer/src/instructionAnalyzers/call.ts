@@ -41,7 +41,12 @@ function resolveTargetFunction(line: SemanticCallLine, context: CompilationConte
 	const inferredParameterTypes = operands.map(stackItemToFunctionValueType);
 	const availableOverloadSignatures = Object.values(functionRegistry.byId)
 		.filter(functionMetadata => functionMetadata.name === functionName)
-		.map(functionMetadata => formatFunctionCallSignature(functionName, functionMetadata.signature.parameters))
+		.map(functionMetadata =>
+			formatFunctionCallSignature(
+				functionName,
+				functionMetadata.signature.parameters.map(parameter => parameter.type)
+			)
+		)
 		.sort((left, right) => left.localeCompare(right));
 
 	throw getError(ErrorCode.FUNCTION_OVERLOAD_NO_MATCH, line, context, {

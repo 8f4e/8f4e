@@ -115,8 +115,14 @@
       "id": "extractNibble__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "word",
+            "type": "int",
+          },
+          {
+            "name": "nibbleIndex",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
