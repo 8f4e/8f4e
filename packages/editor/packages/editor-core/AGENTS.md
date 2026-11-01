@@ -37,6 +37,10 @@
   do not publish. Project loading and history restore snapshots through the shared project-changes helper, which
   publishes after derived state is ready. API batches, undo/redo, and project replacement all advance the shared
   revision. Keep `compilerInputRevision` independent and avoid separate API fingerprints or revision counters.
+- Project levels use `ProjectLevel { path, blocks, viewport? }`, with `rootProject` and `currentProject` references in
+  code-block rendering state and `childProject` on group blocks. Keep remembered viewports in browser memory only;
+  serializers omit them. Same-project restoration preserves active levels and views by path. Share tree operations
+  through `pureHelpers/projectTree` and home/remembered viewport placement through `getProjectViewportPosition`.
 - Project operations own `applyProjectEdit`, including canonical no-op comparison and snapshot application. History
   listens to `beforeProjectEdit` to flush pending typing and to completed changes for checkpoint bookkeeping; API
   writes must work without the history effect installed.

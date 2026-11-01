@@ -83,7 +83,7 @@ test('renders connectors and wires through the editor and restores them after GP
 
 test('renders a wire crossing the viewport when both connected blocks are offscreen', async () => {
 	const { editor, canvas, render } = await setup();
-	const blocks = editor.state.codeBlockRendering.codeBlocks;
+	const blocks = editor.state.codeBlockRendering.currentProject.blocks;
 	blocks.find(block => block.name === 'oscillator')!.x = -600;
 	blocks.find(block => block.name === 'amplifier')!.x = 1200;
 	blocks.find(block => block.name === 'speaker')!.x = -600;

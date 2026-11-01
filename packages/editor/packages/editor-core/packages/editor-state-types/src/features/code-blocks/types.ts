@@ -4,6 +4,7 @@ import type { PaletteToken } from '@8f4e/editor-palette';
  */
 
 import type { DocumentBlockType, PlannedMemoryDeclaration, ProjectGroupPath } from '@8f4e/language-spec';
+import type { Position } from '../../shared/types';
 import type { ViewportBlockAlignment } from '../viewport/blockAlignment';
 import type { CodeBlockDisplayModel } from './buildDisplayModel';
 
@@ -128,8 +129,8 @@ export interface CodeBlockGraphicData {
 	entry?: string;
 	/** Canonical path of the project group that owns this block. */
 	projectPath: ProjectGroupPath;
-	/** Child project slice owned by a project-group block. Its array identity remains stable while editing. */
-	nestedProjectCodeBlocks?: CodeBlockGraphicData[];
+	/** Child project level owned by a language-level project-group block. */
+	childProject?: ProjectLevel;
 	/**
 	 * When true, the block is excluded from compilation and rendered with a transparent background.
 	 * Defaults to false.
@@ -175,14 +176,21 @@ export interface CodeBlockEntryOutline {
 	bottomLeft: { x: number; y: number };
 }
 
+/** An editor-owned project level. Viewport positions live only in browser memory. */
+export interface ProjectLevel {
+	path: ProjectGroupPath;
+	blocks: CodeBlockGraphicData[];
+	viewport?: Position;
+}
+
 /**
  * Code block rendering state for rendering code blocks and UI elements.
  */
 export type CodeBlockRendering = {
-	/** Recursive project-tree root. Project-owned array identities remain stable while editing. */
-	rootCodeBlocks: CodeBlockGraphicData[];
-	/** Direct pointer to the project slice currently rendered by the editor. */
-	codeBlocks: CodeBlockGraphicData[];
+	/** Recursive project-tree root. */
+	rootProject: ProjectLevel;
+	/** Direct reference to the project level currently rendered by the editor. */
+	currentProject: ProjectLevel;
 	/**
 	 * Derived outline corners for execution entries containing visible module or project-group blocks.
 	 * Maintained from code block geometry so renderers can draw entry grouping without

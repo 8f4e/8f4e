@@ -69,9 +69,9 @@ function restoreSession(directive: string, nested = false) {
 	for (const entry of entries) expect(entry.load).not.toHaveBeenCalled();
 	events.dispatch('init');
 	const state = store.getState();
-	const outer = state.codeBlockRendering.codeBlocks.find(block => block.name === 'outer');
-	const inner = outer?.nestedProjectCodeBlocks?.find(block => block.name === 'inner');
-	const blocks = inner?.nestedProjectCodeBlocks ?? state.codeBlockRendering.codeBlocks;
+	const outer = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'outer');
+	const inner = outer?.childProject?.blocks.find(block => block.name === 'inner');
+	const blocks = inner?.childProject?.blocks ?? state.codeBlockRendering.currentProject.blocks;
 	const block = blocks.find(block => block.name === 'audio')!;
 	return { block, entries, state, events, outer, inner };
 }
@@ -131,7 +131,7 @@ it('loads binary assets from a restored session and announces their size as comp
 	);
 	const revision = state.compilerInputRevision;
 	await vi.waitFor(() =>
-		expect(state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'env')!.code).toContain(
+		expect(state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')!.code).toContain(
 			'const ASSET_SOUND_SIZE 6'
 		)
 	);

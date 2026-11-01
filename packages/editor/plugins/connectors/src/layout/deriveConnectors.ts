@@ -17,7 +17,7 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 
 	const width = state.viewport.vGrid * 3;
 	const height = state.viewport.hGrid;
-	const isProjectGroup = codeBlock.nestedProjectCodeBlocks !== undefined;
+	const isProjectGroup = codeBlock.childProject !== undefined;
 	const addConnector = (memory: PlannedMemoryDeclaration, row: number) => {
 		const y = row * height;
 		const wireY = Math.round(y + height / 2);

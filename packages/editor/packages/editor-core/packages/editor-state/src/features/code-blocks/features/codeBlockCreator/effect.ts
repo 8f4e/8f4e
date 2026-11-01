@@ -17,7 +17,6 @@ import upsertDisabled from '../directives/disabled/upsert';
 import upsertPos from '../directives/pos/upsert';
 import { hasDirective } from '../directives/utils';
 import findEntryNameAtPosition from '../entryOutlines/findEntryNameAtPosition';
-import { findProjectSlicePath } from '../projectGroupNavigation/effect';
 import { pasteMultipleBlocks } from './pasteMultipleBlocks';
 
 type NewCodeBlockType = Extract<DocumentBlockType, 'module' | 'function' | 'note' | 'prototype'>;
@@ -100,7 +99,7 @@ function incrementCodeBlockName(name: string) {
 
 function incrementCodeBlockNameUntilUnique(state: State, blockType: RenameableCodeBlockType, blockName: string) {
 	while (
-		state.codeBlockRendering.codeBlocks.some(
+		state.codeBlockRendering.currentProject.blocks.some(
 			codeBlock => codeBlock.blockType === blockType && codeBlock.name === blockName
 		)
 	) {
@@ -111,7 +110,9 @@ function incrementCodeBlockNameUntilUnique(state: State, blockType: RenameableCo
 
 function getUniqueEntryName(state: State): string {
 	const usedEntryNames = new Set(
-		state.codeBlockRendering.codeBlocks.filter(block => block.blockType === moduleBlock.type).map(block => block.entry)
+		state.codeBlockRendering.currentProject.blocks
+			.filter(block => block.blockType === moduleBlock.type)
+			.map(block => block.entry)
 	);
 	let entryName = 'entry';
 
@@ -176,15 +177,8 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 			);
 		}
 		const updatedBlockName = getCodeBlockNameFromSource(code);
-		const projectPath = findProjectSlicePath(
-			state.codeBlockRendering.rootCodeBlocks,
-			state.codeBlockRendering.codeBlocks
-		)!;
-
-		const creationIndex = state.codeBlockRendering.nextCodeBlockCreationIndex;
-		state.codeBlockRendering.nextCodeBlockCreationIndex++;
-
-		// Calculate grid position
+		const projectPath = state.codeBlockRendering.currentProject.path;
+		const creationIndex = state.codeBlockRendering.nextCodeBlockCreationIndex++;
 		const gridX = Math.round((state.viewport.x + x) / state.viewport.vGrid);
 		const gridY = Math.round((state.viewport.y + y) / state.viewport.hGrid);
 		const pixelX = state.viewport.x + x;
@@ -219,9 +213,9 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 		});
 
 		// Insert new block into its z-order partition (normal blocks first, always-on-top last).
-		const existingBlocks = state.codeBlockRendering.codeBlocks;
+		const existingBlocks = state.codeBlockRendering.currentProject.blocks;
 		replaceCodeBlocksInPlace(existingBlocks, insertCodeBlockRespectingAlwaysOnTop(existingBlocks, codeBlock));
-		store.set('codeBlockRendering.codeBlocks', existingBlocks);
+		store.set('codeBlockRendering.currentProject.blocks', existingBlocks);
 		incrementCompilerInputRevision(store);
 		publishProjectChange(store);
 	}
@@ -238,7 +232,7 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 		// Use callback if available, otherwise fail silently
 		if (state.callbacks.writeClipboardText) {
 			const clipboardText =
-				codeBlock.nestedProjectCodeBlocks === undefined
+				codeBlock.childProject === undefined
 					? codeBlock.code.join('\n')
 					: serializeCodeBlocksToClipboard([codeBlock], codeBlock);
 			state.callbacks.writeClipboardText(clipboardText).catch(() => {

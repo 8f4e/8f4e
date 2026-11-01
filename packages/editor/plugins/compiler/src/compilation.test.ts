@@ -40,7 +40,7 @@ describe('compilation scheduling and publication', () => {
 			blockType: 'function',
 		});
 
-		mockState.codeBlockRendering.codeBlocks.push(helperBlock);
+		mockState.codeBlockRendering.currentProject.blocks.push(helperBlock);
 
 		store = createStateManager(mockState);
 	});
@@ -70,7 +70,7 @@ describe('compilation scheduling and publication', () => {
 		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(300);
-		const block = mockState.codeBlockRendering.rootCodeBlocks[0];
+		const block = mockState.codeBlockRendering.rootProject.blocks[0];
 		block.code = ['function helper', 'push 2', 'functionEnd'];
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(499);
@@ -85,7 +85,7 @@ describe('compilation scheduling and publication', () => {
 	});
 
 	it.each([false, true])('enables assertions for a test module with disabled=%s', async disabled => {
-		mockState.codeBlockRendering.rootCodeBlocks.push(
+		mockState.codeBlockRendering.rootProject.blocks.push(
 			createMockCodeBlock({
 				blockType: 'module',
 				entry: 'test',
@@ -104,17 +104,20 @@ describe('compilation scheduling and publication', () => {
 	});
 
 	it('enables assertions for a test module in a nested project', async () => {
-		mockState.codeBlockRendering.rootCodeBlocks.push(
+		mockState.codeBlockRendering.rootProject.blocks.push(
 			createMockCodeBlock({
 				name: 'nested',
 				code: ['project nested', 'projectEnd'],
-				nestedProjectCodeBlocks: [
-					createMockCodeBlock({
-						blockType: 'module',
-						entry: 'test',
-						code: ['module checks', 'push 1', 'assert', 'moduleEnd'],
-					}),
-				],
+				childProject: {
+					path: '',
+					blocks: [
+						createMockCodeBlock({
+							blockType: 'module',
+							entry: 'test',
+							code: ['module checks', 'push 1', 'assert', 'moduleEnd'],
+						}),
+					],
+				},
 			})
 		);
 
@@ -132,7 +135,7 @@ describe('compilation scheduling and publication', () => {
 		['checks', '#export test', true],
 		['test', '', false],
 	])('detects a root test function %s with directive %s', async (name, directive, enabled) => {
-		mockState.codeBlockRendering.rootCodeBlocks.push(
+		mockState.codeBlockRendering.rootProject.blocks.push(
 			createMockCodeBlock({
 				blockType: 'function',
 				code: [`function ${name}`, directive, 'push 1', 'assert', 'functionEnd'],
@@ -377,7 +380,7 @@ describe('compilation scheduling and publication', () => {
 			creationIndex: 10,
 			blockType: 'includes',
 		});
-		mockState.codeBlockRendering.codeBlocks.unshift(includesBlock);
+		mockState.codeBlockRendering.currentProject.blocks.unshift(includesBlock);
 
 		await triggerCompile();
 

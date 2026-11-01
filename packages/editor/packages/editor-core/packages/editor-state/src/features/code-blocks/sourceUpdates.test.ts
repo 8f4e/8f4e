@@ -21,7 +21,7 @@ function setup(projectSource = source) {
 	load(projectSource);
 	events.dispatch('enterEditMode');
 	const state = store.getState();
-	const audio = () => state.codeBlockRendering.codeBlocks.find(block => block.name === 'audio')!;
+	const audio = () => state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
 	return { store, state, events, load, audio };
 }
 
@@ -117,7 +117,7 @@ describe('cached directive records', () => {
 		const { store, state, events, audio } = setup(
 			'8f4e/v1\nentry main\ngroup voices\nmodule audio\nint gate 0 ; @future nested\nmoduleEnd\ngroupEnd\nentryEnd'
 		);
-		const group = state.codeBlockRendering.codeBlocks.find(block => block.name === 'voices')!;
+		const group = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'voices')!;
 		events.dispatch('openProjectGroup', { codeBlock: group });
 		const block = audio();
 		expect(matched(block)[0].args).toEqual(['nested']);

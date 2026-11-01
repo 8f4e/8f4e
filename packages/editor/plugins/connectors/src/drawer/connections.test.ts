@@ -68,7 +68,7 @@ describe('drawConnections', () => {
 				hGrid: 18,
 			},
 			codeBlockRendering: {
-				codeBlocks: [inputBlock, outputBlock],
+				currentProject: { path: '', blocks: [inputBlock, outputBlock] },
 				selectedCodeBlock: inputBlock,
 			},
 		});

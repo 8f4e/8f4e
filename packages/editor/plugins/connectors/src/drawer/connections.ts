@@ -17,7 +17,7 @@ export default function drawConnections(
 	widgetsByBlock: WeakMap<CodeBlockGraphicData, ConnectorWidgets>,
 	outputsByByteAddress: ReadonlyMap<number, Output>
 ): void {
-	for (const codeBlock of state.codeBlockRendering.codeBlocks) {
+	for (const codeBlock of state.codeBlockRendering.currentProject.blocks) {
 		const isSelected = codeBlock === state.codeBlockRendering.selectedCodeBlock;
 
 		if (!codeBlock.name) {

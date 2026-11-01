@@ -76,7 +76,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 			() => expect(compiler.getCodeBuffer().byteLength, JSON.stringify(compiler.getDiagnostics())).toBeGreaterThan(0),
 			{ timeout: 10000 }
 		);
-		const block = editor.state.codeBlockRendering.codeBlocks.find(block => block.name === 'views')!;
+		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'views')!;
 		const gl = canvas.getContext('webgl2')!;
 		const origin = (name: string) => {
 			const line = block.code.findIndex(line => line.includes(`@texture &screen:${name} `));
@@ -144,9 +144,9 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 			],
 		});
 		editor.renderFrame();
-		expect(editor.state.codeBlockRendering.codeBlocks.find(block => block.name === 'views')!.height).toBeLessThan(
-			height
-		);
+		expect(
+			editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'views')!.height
+		).toBeLessThan(height);
 		expect(gl.getError()).toBe(gl.NO_ERROR);
 	} finally {
 		editor?.dispose();
@@ -201,7 +201,7 @@ entryEnd`),
 		);
 		expect(updates.mock.calls.filter(call => call[4] === 2 && call[5] === 2 && call[6] === gl.RGBA)).toHaveLength(1);
 		for (const name of ['screen', 'viewer']) {
-			const block = editor.state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
+			const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 			const line = block.code.findIndex(line => line.includes('@texture '));
 			const x = block.x - editor.state.viewport.x + (block.lineNumberColumnWidth + 2) * editor.state.viewport.vGrid;
 			const y =

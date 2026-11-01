@@ -28,7 +28,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 			codeBlockCreator(store, mockEvents);
 			const create = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'createCodeBlock')![1];
 			create({ x: 100, y: 100, blockType });
-			const block = mockState.codeBlockRendering.codeBlocks[0];
+			const block = mockState.codeBlockRendering.currentProject.blocks[0];
 			expect(block.blockType).toBe(blockType);
 			expect(block.code[0]).toMatch(new RegExp(`^${blockType}(?: |$)`));
 			expect(block.code.at(-1)).toBe(end);
@@ -41,7 +41,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 			codeBlockCreator(store, mockEvents);
 			const insert = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'insertCodeBlock')![1];
 			insert({ x: 100, y: 100, code: ['; Supplied source'] });
-			expect(mockState.codeBlockRendering.codeBlocks[0].code).toContain('; Supplied source');
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code).toContain('; Supplied source');
 			expect(readClipboardText).not.toHaveBeenCalled();
 		});
 
@@ -57,7 +57,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 			await vi
 				.mocked(mockEvents.on)
 				.mock.calls.find(([name]) => name === action)![1](payload);
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(0);
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(0);
 			expect(readClipboardText).not.toHaveBeenCalled();
 		});
 	});
@@ -83,11 +83,11 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 			expect(mockReadClipboard).toHaveBeenCalled();
 
 			// Verify code block was added with clipboard content (now includes @pos)
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[0]).toBe('module test');
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[1]).toMatch(/^; @pos \d+ \d+$/);
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[2]).toBe('');
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[3]).toBe('moduleEnd');
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(1);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[0]).toBe('module test');
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[1]).toMatch(/^; @pos \d+ \d+$/);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[2]).toBe('');
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[3]).toBe('moduleEnd');
 		});
 
 		it('should fail silently when readClipboardText is not provided', async () => {
@@ -103,7 +103,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Verify no code block was added
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(0);
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(0);
 		});
 
 		it('should fail silently when clipboard read fails', async () => {
@@ -123,7 +123,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 			expect(mockReadClipboard).toHaveBeenCalled();
 
 			// Verify no code block was added (silent failure)
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(0);
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(0);
 		});
 	});
 
@@ -137,15 +137,15 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 
 			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
 
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
-			expect(mockState.codeBlockRendering.codeBlocks[0].entry).toBe('entry');
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[0]).toMatch(/^module \w+$/);
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[1]).toMatch(/^; @pos \d+ \d+$/);
-			expect(mockState.codeBlockRendering.codeBlocks[0].code.at(-1)).toBe('moduleEnd');
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(1);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].entry).toBe('entry');
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[0]).toMatch(/^module \w+$/);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[1]).toMatch(/^; @pos \d+ \d+$/);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code.at(-1)).toBe('moduleEnd');
 		});
 
 		it('increments the entry name when creating outside entries and the default new entry name is already used', async () => {
-			mockState.codeBlockRendering.codeBlocks = [
+			mockState.codeBlockRendering.currentProject.blocks = [
 				createMockCodeBlock({
 					code: ['module existing', 'moduleEnd'],
 					blockType: 'module',
@@ -161,8 +161,8 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 
 			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
 
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(2);
-			expect(mockState.codeBlockRendering.codeBlocks[1].entry).toBe('entry2');
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(2);
+			expect(mockState.codeBlockRendering.currentProject.blocks[1].entry).toBe('entry2');
 		});
 
 		it('assigns a regular new module to the containing non-main entry', async () => {
@@ -184,8 +184,8 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 
 			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
 
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
-			expect(mockState.codeBlockRendering.codeBlocks[0].entry).toBe('fx');
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(1);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].entry).toBe('fx');
 		});
 
 		it('uses the first overlapping entry outline at the new module position', async () => {
@@ -214,8 +214,8 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 
 			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
 
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
-			expect(mockState.codeBlockRendering.codeBlocks[0].entry).toBe('first');
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(1);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].entry).toBe('first');
 		});
 
 		it('stores the main entry explicitly', async () => {
@@ -237,8 +237,8 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 
 			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
 
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
-			expect(mockState.codeBlockRendering.codeBlocks[0].entry).toBe('main');
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(1);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].entry).toBe('main');
 		});
 	});
 
@@ -253,7 +253,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 				code: ['module test', '', 'moduleEnd'],
 				blockType: 'module',
 			});
-			mockState.codeBlockRendering.codeBlocks = [testCodeBlock];
+			mockState.codeBlockRendering.currentProject.blocks = [testCodeBlock];
 
 			codeBlockCreator(store, mockEvents);
 
@@ -265,7 +265,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 			const copyCodeBlockCallback = copyCodeBlockCall![1];
 
 			// Trigger copy
-			copyCodeBlockCallback({ codeBlock: mockState.codeBlockRendering.codeBlocks[0] });
+			copyCodeBlockCallback({ codeBlock: mockState.codeBlockRendering.currentProject.blocks[0] });
 
 			// Wait for async operation
 			await new Promise(resolve => setTimeout(resolve, 0));
@@ -283,7 +283,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 				code: ['module test', '', 'moduleEnd'],
 				blockType: 'module',
 			});
-			mockState.codeBlockRendering.codeBlocks = [testCodeBlock];
+			mockState.codeBlockRendering.currentProject.blocks = [testCodeBlock];
 
 			codeBlockCreator(store, mockEvents);
 
@@ -293,7 +293,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 
 			// Trigger copy - should not throw
 			expect(() => {
-				copyCodeBlockCallback({ codeBlock: mockState.codeBlockRendering.codeBlocks[0] });
+				copyCodeBlockCallback({ codeBlock: mockState.codeBlockRendering.currentProject.blocks[0] });
 			}).not.toThrow();
 		});
 
@@ -307,7 +307,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 				code: ['module test', '', 'moduleEnd'],
 				blockType: 'module',
 			});
-			mockState.codeBlockRendering.codeBlocks = [testCodeBlock];
+			mockState.codeBlockRendering.currentProject.blocks = [testCodeBlock];
 
 			codeBlockCreator(store, mockEvents);
 
@@ -316,7 +316,7 @@ describe('codeBlockCreator - creation and clipboard actions', () => {
 			const copyCodeBlockCallback = copyCodeBlockCall![1];
 
 			// Trigger copy
-			copyCodeBlockCallback({ codeBlock: mockState.codeBlockRendering.codeBlocks[0] });
+			copyCodeBlockCallback({ codeBlock: mockState.codeBlockRendering.currentProject.blocks[0] });
 
 			// Wait for async operation
 			await new Promise(resolve => setTimeout(resolve, 0));
@@ -341,7 +341,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 
 	it('should toggle disabled state from false to true', () => {
 		const codeBlock = createMockCodeBlock({ disabled: false });
-		mockState.codeBlockRendering.codeBlocks = [codeBlock];
+		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
 		codeBlockCreator(store, mockEvents);
 
@@ -357,7 +357,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 
 	it('should toggle disabled state from true to false', () => {
 		const codeBlock = createMockCodeBlock({ disabled: true });
-		mockState.codeBlockRendering.codeBlocks = [codeBlock];
+		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
 		codeBlockCreator(store, mockEvents);
 
@@ -372,7 +372,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 
 	it('should update lastUpdated for cache invalidation', () => {
 		const codeBlock = createMockCodeBlock({ disabled: false, lastUpdated: 1000 });
-		mockState.codeBlockRendering.codeBlocks = [codeBlock];
+		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
 		codeBlockCreator(store, mockEvents);
 
@@ -387,7 +387,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 
 	it('should trigger store update', () => {
 		const codeBlock = createMockCodeBlock({ disabled: false });
-		mockState.codeBlockRendering.codeBlocks = [codeBlock];
+		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
 		codeBlockCreator(store, mockEvents);
 
@@ -404,7 +404,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 
 	it('should not toggle when editing is disabled', () => {
 		const codeBlock = createMockCodeBlock({ disabled: false });
-		mockState.codeBlockRendering.codeBlocks = [codeBlock];
+		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 		mockState.editorMode = 'view';
 
 		codeBlockCreator(store, mockEvents);
@@ -420,7 +420,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 
 	it('should add @disabled directive when enabling disabled', () => {
 		const codeBlock = createMockCodeBlock({ code: ['module test', 'moduleEnd'], disabled: false });
-		mockState.codeBlockRendering.codeBlocks = [codeBlock];
+		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
 		codeBlockCreator(store, mockEvents);
 
@@ -436,7 +436,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 
 	it('should remove @disabled directive when disabling disabled', () => {
 		const codeBlock = createMockCodeBlock({ code: ['module test', '; @disabled', 'moduleEnd'], disabled: true });
-		mockState.codeBlockRendering.codeBlocks = [codeBlock];
+		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
 		codeBlockCreator(store, mockEvents);
 
@@ -465,7 +465,7 @@ describe('codeBlockCreator - alwaysOnTop z-order partitioning', () => {
 	it('inserts a normal block before existing always-on-top blocks', async () => {
 		const existingNormal = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
 		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
-		mockState.codeBlockRendering.codeBlocks = [existingNormal, existingTop];
+		mockState.codeBlockRendering.currentProject.blocks = [existingNormal, existingTop];
 
 		codeBlockCreator(store, mockEvents);
 
@@ -478,14 +478,18 @@ describe('codeBlockCreator - alwaysOnTop z-order partitioning', () => {
 			code: ['module normal2', 'moduleEnd'],
 		});
 
-		expect(mockState.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['normal1', 'normal2', 'top1']);
-		expect(mockState.codeBlockRendering.codeBlocks[1].alwaysOnTop).toBe(false);
+		expect(mockState.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
+			'normal1',
+			'normal2',
+			'top1',
+		]);
+		expect(mockState.codeBlockRendering.currentProject.blocks[1].alwaysOnTop).toBe(false);
 	});
 
 	it('derives alwaysOnTop and inserts an @alwaysOnTop block directly into the top partition', async () => {
 		const existingNormal = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
 		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
-		mockState.codeBlockRendering.codeBlocks = [existingNormal, existingTop];
+		mockState.codeBlockRendering.currentProject.blocks = [existingNormal, existingTop];
 
 		codeBlockCreator(store, mockEvents);
 
@@ -498,7 +502,11 @@ describe('codeBlockCreator - alwaysOnTop z-order partitioning', () => {
 			code: ['module top2', '; @alwaysOnTop', 'moduleEnd'],
 		});
 
-		expect(mockState.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['normal1', 'top1', 'top2']);
-		expect(mockState.codeBlockRendering.codeBlocks[2].alwaysOnTop).toBe(true);
+		expect(mockState.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
+			'normal1',
+			'top1',
+			'top2',
+		]);
+		expect(mockState.codeBlockRendering.currentProject.blocks[2].alwaysOnTop).toBe(true);
 	});
 });

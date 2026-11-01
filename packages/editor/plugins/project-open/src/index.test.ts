@@ -93,7 +93,7 @@ function setup({
 	events.dispatch('loadProject', { project: parseProjectSource(source) });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const setCode = (comment: string) => {
-		state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'test')!.code = [
+		state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'test')!.code = [
 			'module test',
 			`; ${comment}`,
 			'moduleEnd',
@@ -376,16 +376,18 @@ entryEnd`),
 			entry: 'main',
 			creationIndex: 2,
 		});
-		test.state.codeBlockRendering.rootCodeBlocks.push(
+		test.state.codeBlockRendering.rootProject.blocks.push(
 			createMockCodeBlock({
 				name: 'Audio',
 				code: ['group Audio', 'groupEnd'],
 				entry: 'main',
-				nestedProjectCodeBlocks: [nested],
+				childProject: { path: '', blocks: [nested] },
 				creationIndex: 1,
 			})
 		);
-		test.state.codeBlockRendering.codeBlocks = [nested];
+		test.state.codeBlockRendering.currentProject = test.state.codeBlockRendering.rootProject.blocks.find(
+			block => block.name === 'Audio'
+		)!.childProject!;
 		await test.events.dispatchAsync('saveProject');
 		const project = parseProjectSource(await test.handle.writable.write.mock.calls[0][0].text());
 		expect(getProjectModules(project)[0].code).toContain('int value 1');
@@ -393,7 +395,7 @@ entryEnd`),
 	});
 	it.each(['saveProject', 'exportProject'])('reports incomplete source before %s opens a picker', async action => {
 		const test = setup();
-		test.state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'test')!.code = ['module unfinished'];
+		test.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'test')!.code = ['module unfinished'];
 		await test.events.dispatchAsync(action);
 		expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
 		expect(test.state.console.logs.at(-1)?.message).toContain('Failed to serialize project');

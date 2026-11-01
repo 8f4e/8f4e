@@ -42,7 +42,7 @@ export const favoritesPlugin: EditorPlugin = {
 			close: false,
 		}));
 		const unregisterFavoritesMenu = menus.registerMenu('favoritesMenu', state => {
-			const favorites = state.codeBlockRendering.codeBlocks
+			const favorites = state.codeBlockRendering.currentProject.blocks
 				.filter(isFavorite)
 				.sort((a, b) => a.creationIndex - b.creationIndex);
 			return favorites.length

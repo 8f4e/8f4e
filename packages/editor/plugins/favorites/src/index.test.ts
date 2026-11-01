@@ -39,7 +39,7 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 	});
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
-	const block = state.codeBlockRendering.rootCodeBlocks.find(candidate => candidate.code.includes(code[0]))!;
+	const block = state.codeBlockRendering.rootProject.blocks.find(candidate => candidate.code.includes(code[0]))!;
 
 	const openMenu = async () => {
 		events.dispatch('contextmenu', { x: block.x + 8, y: block.y + 8 });
@@ -98,18 +98,18 @@ describe('favorites plugin', () => {
 		expect(test.state.historyStack[0].execution[0].code).not.toContain('; @favorite');
 		expect(test.state.historyStack[1].execution[0].code).toContain('; @favorite');
 		test.events.dispatch('undo');
-		expect(test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'target')!.code).toContain(
+		expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!.code).toContain(
 			'; @favorite'
 		);
 		test.events.dispatch('undo');
-		expect(test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'target')!.code).not.toContain(
-			'; @favorite'
-		);
+		expect(
+			test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!.code
+		).not.toContain('; @favorite');
 	});
 
 	it('uses the clicked block and updates the menu label after toggling', async () => {
 		const test = setup();
-		const other = test.state.codeBlockRendering.rootCodeBlocks.find(block => block !== test.block)!;
+		const other = test.state.codeBlockRendering.rootProject.blocks.find(block => block !== test.block)!;
 		test.state.codeBlockRendering.selectedCodeBlock = other;
 		const originalOtherCode = [...other.code];
 		await test.openMenu();
@@ -159,7 +159,7 @@ describe('favorites plugin', () => {
 		await Promise.resolve();
 		expect(test.state.contextMenu.items.some(item => item.payload?.menu === 'favoritesMenu')).toBe(false);
 		expect(test.state.envConstantContributions.favorites).toBeUndefined();
-		expect(test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'env')!.code).not.toContain(
+		expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!.code).not.toContain(
 			'; @favorite'
 		);
 		test.events.dispatch('jumpToFavoriteCodeBlock', { creationIndex: test.block.creationIndex });
@@ -188,7 +188,7 @@ describe('favorites plugin', () => {
 		]);
 		expect(items.map(item => item.payload?.creationIndex)).toEqual(
 			['env', 'target', 'second'].map(
-				name => test.state.codeBlockRendering.codeBlocks.find(block => block.name === name)!.creationIndex
+				name => test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!.creationIndex
 			)
 		);
 	});
@@ -222,7 +222,7 @@ describe('favorites plugin', () => {
 		expect(test.state.contextMenu.items.some(item => item.title?.includes('nested'))).toBe(false);
 		test.events.dispatch('openProjectGroup', { codeBlock: test.block });
 		await openFavorites();
-		const nested = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'nested')!;
+		const nested = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nested')!;
 		expect(test.state.contextMenu.items).toContainEqual(
 			expect.objectContaining({ payload: { creationIndex: nested.creationIndex } })
 		);

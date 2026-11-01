@@ -60,8 +60,8 @@ entryEnd`);
 	state.compiler.result.compiledModules = compiled.compiledModules;
 	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
 	store.set('initialProjectState', project);
-	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
-	store.set('codeBlockRendering.codeBlocks', [codeBlock]);
+	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
+	store.set('codeBlockRendering.currentProject.blocks', [codeBlock]);
 	state.editorConfig.color = {
 		canvas: '#000',
 		surface: '#111',

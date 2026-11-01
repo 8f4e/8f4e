@@ -28,7 +28,7 @@ export default function drawModules(
 	engine.startGroup(offsetX, offsetY);
 	drawEntryOutlines(engine, state);
 
-	for (const codeBlock of state.codeBlockRendering.codeBlocks) {
+	for (const codeBlock of state.codeBlockRendering.currentProject.blocks) {
 		const codeCells = renderData.codeBlocks.get(codeBlock.creationIndex)?.codeCells ?? [];
 
 		if (

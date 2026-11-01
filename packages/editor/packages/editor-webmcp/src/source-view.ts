@@ -1,30 +1,23 @@
 import type { CodeBlockGraphicData, Editor } from '@8f4e/editor-core';
-import { createChildProjectGroupPath } from '@8f4e/language-spec';
+import { findParentProjectLevel } from '@8f4e/editor-state';
 
 function currentGroup(state: Editor['state']): CodeBlockGraphicData | undefined {
-	const { rootCodeBlocks, codeBlocks } = state.codeBlockRendering;
-	if (rootCodeBlocks === codeBlocks) return undefined;
-	const find = (blocks: CodeBlockGraphicData[]): CodeBlockGraphicData | undefined => {
-		for (const block of blocks) {
-			if (block.nestedProjectCodeBlocks === codeBlocks) return block;
-			const found = block.nestedProjectCodeBlocks && find(block.nestedProjectCodeBlocks);
-			if (found) return found;
-		}
-	};
-	const group = find(rootCodeBlocks);
+	const { rootProject, currentProject } = state.codeBlockRendering;
+	if (rootProject === currentProject) return undefined;
+	const parent = findParentProjectLevel(rootProject, currentProject);
+	const group = parent?.blocks.find(block => block.childProject === currentProject);
 	if (!group) throw new Error('The currently expanded group is unavailable');
 	return group;
 }
 
 export function getCurrentProjectPath(state: Editor['state']): string {
-	const group = currentGroup(state);
-	return group ? createChildProjectGroupPath(group.projectPath, group.name) : '';
+	return state.codeBlockRendering.currentProject.path;
 }
 
 /** Read one source level synchronously from the live editor, without recursive file export. */
 export function createSourceView(state: Editor['state']): string {
 	const group = currentGroup(state);
-	const directBlocks = state.codeBlockRendering.codeBlocks;
+	const directBlocks = state.codeBlockRendering.currentProject.blocks;
 	const ordered = [...directBlocks].sort(
 		(a, b) => a.gridX - b.gridX || a.gridY - b.gridY || a.creationIndex - b.creationIndex
 	);
@@ -43,7 +36,7 @@ export function createSourceView(state: Editor['state']): string {
 	} else {
 		lines.push('8f4e/v1');
 		const executable = (block: CodeBlockGraphicData) =>
-			block.blockType === 'module' || block.nestedProjectCodeBlocks !== undefined;
+			block.blockType === 'module' || block.childProject !== undefined;
 		for (const block of ordered.filter(block => !executable(block))) append(block);
 		const entries = new Map<string, CodeBlockGraphicData[]>();
 		for (const block of ordered.filter(executable)) {

@@ -13,8 +13,8 @@ function setup() {
 		creationIndex: 7,
 	});
 	const state = createMockState();
-	state.codeBlockRendering.codeBlocks = [block];
-	state.codeBlockRendering.rootCodeBlocks = [block];
+	state.codeBlockRendering.currentProject.blocks = [block];
+	state.codeBlockRendering.rootProject.blocks = [block];
 	const store = createStateManager(state);
 	const result: AssertionResult[] = [
 		{
@@ -82,7 +82,7 @@ describe('assertion error messages', () => {
 	it('shows failures in their owning project slice and omits disabled and included-source assertions', () => {
 		const { store, state, block, result } = setup();
 		block.projectPath = 'nested';
-		state.codeBlockRendering.codeBlocks = [];
+		state.codeBlockRendering.currentProject.blocks = [];
 		codeBlockRendering(
 			store,
 			createMockEventDispatcher(),
@@ -104,7 +104,7 @@ describe('assertion error messages', () => {
 			},
 		]);
 		expect(block.widgets.errorMessages).toEqual([]);
-		store.set('codeBlockRendering.codeBlocks', [block]);
+		store.set('codeBlockRendering.currentProject.blocks', [block]);
 		expect(block.widgets.errorMessages).toHaveLength(1);
 		block.code.splice(1, 0, '; @disabled');
 		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);

@@ -105,16 +105,17 @@ describe('serializeCodeBlocksToClipboard', () => {
 			gridX: -3,
 			gridY: 8,
 			entry: 'main',
-			nestedProjectCodeBlocks: [nestedModule],
+			childProject: { path: '', blocks: [nestedModule] },
 		});
 		const group = createMockCodeBlock({
 			code: ['group audio', '; keep me', 'groupEnd'],
 			gridX: 10,
 			gridY: 20,
 			entry: 'main',
-			nestedProjectCodeBlocks: [nestedGroup],
+			childProject: { path: '', blocks: [nestedGroup] },
 		});
 
+		group.childProject!.viewport = { x: 256, y: -128 };
 		const parsed = JSON.parse(serializeCodeBlocksToClipboard([group], group));
 
 		expect(parsed).toEqual([
@@ -122,20 +123,24 @@ describe('serializeCodeBlocksToClipboard', () => {
 				code: ['group audio', '; keep me', 'groupEnd'],
 				gridCoordinates: { x: 0, y: 0 },
 				entry: 'main',
-				nestedProjectCodeBlocks: [
-					{
-						code: ['group modulation', 'groupEnd'],
-						gridCoordinates: { x: -3, y: 8 },
-						entry: 'main',
-						nestedProjectCodeBlocks: [
-							{
-								code: ['module voice', 'moduleEnd'],
-								gridCoordinates: { x: 4, y: 6 },
-								entry: 'main',
+				childProject: {
+					blocks: [
+						{
+							code: ['group modulation', 'groupEnd'],
+							gridCoordinates: { x: -3, y: 8 },
+							entry: 'main',
+							childProject: {
+								blocks: [
+									{
+										code: ['module voice', 'moduleEnd'],
+										gridCoordinates: { x: 4, y: 6 },
+										entry: 'main',
+									},
+								],
 							},
-						],
-					},
-				],
+						},
+					],
+				},
 			},
 		]);
 	});
@@ -148,7 +153,10 @@ describe('parseClipboardData', () => {
 				{
 					code: ['group audio', 'groupEnd'],
 					gridCoordinates: { x: 0, y: 0 },
-					nestedProjectCodeBlocks: [{ code: ['module voice', 'moduleEnd'], gridCoordinates: { x: 4, y: 6 } }],
+					childProject: {
+						path: '',
+						blocks: [{ code: ['module voice', 'moduleEnd'], gridCoordinates: { x: 4, y: 6 } }],
+					},
 				},
 			]);
 
@@ -156,7 +164,7 @@ describe('parseClipboardData', () => {
 
 			expect(result.type).toBe('multi');
 			if (result.type === 'multi') {
-				expect(result.blocks[0].nestedProjectCodeBlocks?.[0].code).toEqual(['module voice', 'moduleEnd']);
+				expect(result.blocks[0].childProject?.blocks?.[0].code).toEqual(['module voice', 'moduleEnd']);
 			}
 		});
 

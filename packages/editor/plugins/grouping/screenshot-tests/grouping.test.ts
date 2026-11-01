@@ -34,8 +34,8 @@ entryEnd`),
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		editor.pauseRendering();
 		const state = editor.state;
-		const first = state.codeBlockRendering.codeBlocks.find(block => block.name === 'source')!;
-		const second = state.codeBlockRendering.codeBlocks.find(block => block.name === 'destination')!;
+		const first = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
+		const second = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'destination')!;
 		const mouse = (type: string, x: number, y: number, altKey = false) => {
 			const rect = canvas.getBoundingClientRect();
 			canvas.dispatchEvent(

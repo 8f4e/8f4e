@@ -128,7 +128,7 @@ function findClosestCodeBlockHorizontally(
  * @example
  * ```typescript
  * const closestBlock = findClosestCodeBlockInDirection(
- *   codeBlockRendering.codeBlocks,
+ *   codeBlockRendering.currentProject.blocks,
  *   codeBlockRendering.selectedCodeBlock,
  *   'right'
  * );

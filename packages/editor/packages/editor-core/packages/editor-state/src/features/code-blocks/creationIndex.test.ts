@@ -42,7 +42,7 @@ describe('creationIndex', () => {
 			createCodeBlockHandler({ x: 0, y: 0, blockType: 'module' });
 
 			// Verify first code block got creationIndex 0
-			const codeBlocks = mockState.codeBlockRendering.codeBlocks;
+			const codeBlocks = mockState.codeBlockRendering.currentProject.blocks;
 			expect(codeBlocks.length).toBe(1);
 			expect(codeBlocks[0].creationIndex).toBe(0);
 			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(1);
@@ -60,7 +60,7 @@ describe('creationIndex', () => {
 			createCodeBlockHandler({ x: 100, y: 0, blockType: 'module' });
 			createCodeBlockHandler({ x: 200, y: 0, blockType: 'module' });
 
-			const codeBlocks = mockState.codeBlockRendering.codeBlocks;
+			const codeBlocks = mockState.codeBlockRendering.currentProject.blocks;
 			expect(codeBlocks.length).toBe(3);
 
 			// Verify each block has a unique, incrementing creationIndex
@@ -84,7 +84,7 @@ describe('creationIndex', () => {
 			createCodeBlockHandler({ x: 200, y: 0, blockType: 'module' });
 
 			// Delete the middle one (creationIndex 1)
-			const codeBlocks = mockState.codeBlockRendering.codeBlocks;
+			const codeBlocks = mockState.codeBlockRendering.currentProject.blocks;
 			const middleBlock = codeBlocks.find(b => b.creationIndex === 1);
 			deleteCodeBlockHandler({ codeBlock: middleBlock });
 
@@ -92,7 +92,7 @@ describe('creationIndex', () => {
 			createCodeBlockHandler({ x: 300, y: 0, blockType: 'module' });
 
 			// Verify the new block gets creationIndex 3 (not 1, leaving a gap)
-			const updatedCodeBlocks = mockState.codeBlockRendering.codeBlocks;
+			const updatedCodeBlocks = mockState.codeBlockRendering.currentProject.blocks;
 			const creationIndexes = updatedCodeBlocks.map(b => b.creationIndex).sort((a, b) => a - b);
 			expect(creationIndexes).toEqual([0, 2, 3]);
 			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(4);
@@ -124,7 +124,7 @@ describe('creationIndex', () => {
 
 			loadProjectCallback({ project: projectWithBlocks });
 
-			const codeBlocks = mockState.codeBlockRendering.codeBlocks;
+			const codeBlocks = mockState.codeBlockRendering.currentProject.blocks;
 			expect(codeBlocks.length).toBe(3);
 
 			// Verify each block has a creationIndex

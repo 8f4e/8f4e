@@ -51,7 +51,7 @@ is registered independently of plugins so all export features can use the same c
 ## State Sources
 
 Serializes from:
-- `state.codeBlockRendering.rootCodeBlocks` - Recursive root code-block tree
+- `state.codeBlockRendering.rootProject.blocks` - Blocks owned by the recursive root project level
 
 ## Integration Points
 
@@ -62,30 +62,16 @@ Serializes from:
 
 The canonical structure is defined by `@8f4e/language-spec`:
 
-```typescript
-interface ProjectObjectModel {
-	modules: ProjectModuleBlock[];
-	functions: ProjectBlock[];
-	constants: ProjectBlock[];
-	prototypes: ProjectBlock[];
-	includes: ProjectBlock[];
-	notes: ProjectBlock[];
-	unknown: ProjectBlock[];
-	groups: ProjectGroupObjectModel[];
-}
-
-interface ProjectGroupObjectModel extends ProjectObjectModel {
-	name: ProjectGroupName;
-	entry: ProjectEntryName;
-	code: string[];
-	exposures: ProjectMemoryExposure[];
-}
-```
+Projects contain root-owned `code`, an ordered `execution` list of modules and groups, and separate function,
+constant, prototype, include, note, and unknown-block collections. Each group recursively owns the same project
+structure plus its name, entry, source, and exposures. See the language-spec `ProjectObjectModel` definition for the
+complete contract.
 
 Collection membership defines block type. The adapter uses the editor's already-known block type and does not make the
 compiler rediscover it from source text. Project groups are rendered as ordinary `CodeBlockGraphicData` values whose
-optional `nestedProjectCodeBlocks` field owns the child project slice. Export recursively traverses that tree from
-`rootCodeBlocks`, regardless of which slice `codeBlocks` currently points to. A group's `code` retains all source lines
+optional `childProject` field owns a child `ProjectLevel`. Export recursively traverses its `blocks` from
+`rootProject`, regardless of which level `currentProject` references. Level paths and browser-memory viewport positions
+are runtime data and are excluded from project exports, history snapshots, and session storage. A group's `code` retains all source lines
 owned by its visible wrapper, including comments and editor directives, while its nested blocks stay in the recursive
 collections. Compilation recursively composes those collections into one program.
 

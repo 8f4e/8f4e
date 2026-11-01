@@ -11,8 +11,8 @@ function setup() {
 	const second = createMockCodeBlock({ code: ['module second', 'moduleEnd'], lastUpdated: 1 });
 	const untouched = createMockCodeBlock({ code: ['module untouched', 'moduleEnd'], lastUpdated: 1 });
 	const state = createMockState();
-	state.codeBlockRendering.rootCodeBlocks.push(first, second, untouched);
-	state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
+	state.codeBlockRendering.rootProject.blocks.push(first, second, untouched);
+	state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
 	const store = createStateManager<State>(state);
 	cleanups.push(store.dispose);
 	return { store, state, first, second, untouched };
@@ -83,10 +83,10 @@ describe('block deletion', () => {
 	it('removes a batch from the visible nested slice in place and clears deleted references before publishing', () => {
 		const { store, state, first, second, untouched } = setup();
 		const nested = [first, second, untouched];
-		const owner = createMockCodeBlock({ name: 'owner', nestedProjectCodeBlocks: nested });
-		const root = state.codeBlockRendering.rootCodeBlocks;
+		const owner = createMockCodeBlock({ name: 'owner', childProject: { path: '', blocks: nested } });
+		const root = state.codeBlockRendering.rootProject.blocks;
 		root.splice(0, root.length, owner);
-		state.codeBlockRendering.codeBlocks = nested;
+		state.codeBlockRendering.currentProject = owner.childProject!;
 		state.codeBlockRendering.selectedCodeBlock = first;
 		state.codeBlockRendering.draggedCodeBlock = second;
 		state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit = first;
@@ -99,9 +99,9 @@ describe('block deletion', () => {
 		});
 		store.subscribe('projectChange', onProjectChange);
 		expect(deleteCodeBlocks(store, [first, second])).toBe(true);
-		expect(owner.nestedProjectCodeBlocks).toBe(nested);
-		expect(state.codeBlockRendering.codeBlocks).toBe(nested);
-		expect(state.codeBlockRendering.rootCodeBlocks).toBe(root);
+		expect(owner.childProject?.blocks).toBe(nested);
+		expect(state.codeBlockRendering.currentProject.blocks).toBe(nested);
+		expect(state.codeBlockRendering.rootProject.blocks).toBe(root);
 		expect(root).toEqual([owner]);
 		expect(onProjectChange).toHaveBeenCalledTimes(1);
 	});

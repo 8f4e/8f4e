@@ -9,7 +9,7 @@ export interface ClipboardCodeBlock {
 	code: string[];
 	gridCoordinates: { x: number; y: number };
 	entry?: string;
-	nestedProjectCodeBlocks?: ClipboardCodeBlock[];
+	childProject?: { blocks: ClipboardCodeBlock[] };
 }
 
 function createClipboardCodeBlock(block: CodeBlockGraphicData, origin: { x: number; y: number }): ClipboardCodeBlock {
@@ -20,12 +20,12 @@ function createClipboardCodeBlock(block: CodeBlockGraphicData, origin: { x: numb
 			y: block.gridY - origin.y,
 		},
 		...(block.entry === undefined ? {} : { entry: block.entry }),
-		...(block.nestedProjectCodeBlocks === undefined
+		...(block.childProject === undefined
 			? {}
 			: {
-					nestedProjectCodeBlocks: block.nestedProjectCodeBlocks.map(child =>
-						createClipboardCodeBlock(child, { x: 0, y: 0 })
-					),
+					childProject: {
+						blocks: block.childProject?.blocks.map(child => createClipboardCodeBlock(child, { x: 0, y: 0 })),
+					},
 				}),
 	};
 }
@@ -79,11 +79,10 @@ function isValidClipboardCodeBlock(obj: unknown): obj is ClipboardCodeBlock {
 	if (block.entry !== undefined && typeof block.entry !== 'string') {
 		return false;
 	}
-	if (
-		block.nestedProjectCodeBlocks !== undefined &&
-		(!Array.isArray(block.nestedProjectCodeBlocks) || !block.nestedProjectCodeBlocks.every(isValidClipboardCodeBlock))
-	) {
-		return false;
+	if (block.childProject !== undefined) {
+		if (typeof block.childProject !== 'object' || block.childProject === null) return false;
+		const project = block.childProject as Record<string, unknown>;
+		if (!Array.isArray(project.blocks) || !project.blocks.every(isValidClipboardCodeBlock)) return false;
 	}
 
 	return true;
@@ -115,7 +114,7 @@ export function parseClipboardData(
 	if (!parsed.every(isValidClipboardCodeBlock)) {
 		return { type: 'single', text: clipboardText };
 	}
-	if (parsed.length === 1 && parsed[0].nestedProjectCodeBlocks === undefined) {
+	if (parsed.length === 1 && parsed[0].childProject === undefined) {
 		return { type: 'single', text: clipboardText };
 	}
 

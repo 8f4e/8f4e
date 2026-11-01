@@ -25,7 +25,7 @@ test.each(['view', 'edit'] as const)('selected outline in %s mode', async editor
 		height: 112,
 		code: ['module selected', 'int value 1', '', 'push value', 'drop', 'moduleEnd'],
 	});
-	state.codeBlockRendering.codeBlocks = [block];
+	state.codeBlockRendering.currentProject.blocks = [block];
 	state.codeBlockRendering.selectedCodeBlock = block;
 	const renderData: WebUiRenderDataSource = {
 		getSnapshot: () => ({

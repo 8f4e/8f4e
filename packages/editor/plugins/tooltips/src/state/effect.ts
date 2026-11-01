@@ -87,7 +87,7 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 	const selectors = [
 		'codeBlockRendering.selectedCodeBlock',
 		'codeBlockRendering.selectedCodeBlockForProgrammaticEdit',
-		'codeBlockRendering.codeBlocks',
+		'codeBlockRendering.currentProject.blocks',
 		'featureFlags.codeLineSelection',
 		'compiler',
 		'viewport.vGrid',

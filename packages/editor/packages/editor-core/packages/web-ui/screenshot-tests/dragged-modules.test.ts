@@ -49,7 +49,7 @@ test('dragged module', async () => {
 
 		mockState.codeBlockRendering.draggedCodeBlock = codeBlockMock;
 
-		mockState.codeBlockRendering.codeBlocks.push(codeBlockMock);
+		mockState.codeBlockRendering.currentProject.blocks.push(codeBlockMock);
 		codeBlocks.set(codeBlockMock.creationIndex, { codeCells: codeToRender });
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();

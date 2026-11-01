@@ -10,7 +10,7 @@ export const moduleMenu = (
 	items: readonly ContextMenuItem[]
 ): ContextMenuItem[] => {
 	const blockType = codeBlock.blockType;
-	const isProjectGroup = codeBlock.nestedProjectCodeBlocks !== undefined;
+	const isProjectGroup = codeBlock.childProject !== undefined;
 	let blockLabel = 'module';
 
 	if (isProjectGroup) {
@@ -24,7 +24,7 @@ export const moduleMenu = (
 	const isDisabled = codeBlock.disabled;
 
 	return [
-		...(state.codeBlockRendering.codeBlocks !== state.codeBlockRendering.rootCodeBlocks
+		...(state.codeBlockRendering.currentProject.blocks !== state.codeBlockRendering.rootProject.blocks
 			? [{ title: 'Go back', action: 'goToParentProjectGroup', close: true }]
 			: []),
 		...(isProjectGroup

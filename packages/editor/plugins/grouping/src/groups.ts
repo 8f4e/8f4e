@@ -14,6 +14,8 @@ export function getGroup(directives: ParsedDirectiveRecord[]): Group | undefined
 export function getGroupBlocks(state: State, block: CodeBlockGraphicData): CodeBlockGraphicData[] {
 	const group = getGroup(block.parsedDirectives);
 	return group
-		? state.codeBlockRendering.codeBlocks.filter(candidate => getGroup(candidate.parsedDirectives)?.name === group.name)
+		? state.codeBlockRendering.currentProject.blocks.filter(
+				candidate => getGroup(candidate.parsedDirectives)?.name === group.name
+			)
 		: [];
 }

@@ -1,6 +1,7 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import { createChildProjectGroupPath, type ProjectGroupPath } from '@8f4e/language-spec';
+import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
+import { updateProjectLevelPath } from '../../pureHelpers/projectTree';
 import resolveEditorConfig from '../global-editor-directives/resolve';
 import { updateEnvConstantsBlock } from './features/auto-env-constants/effect';
 import parsePos from './features/directives/pos/data';
@@ -19,25 +20,13 @@ function isProjectScopeSourceLine(line: string): boolean {
 	);
 }
 
-function updateProjectSliceIdentity(blocks: CodeBlockGraphicData[], projectPath: ProjectGroupPath): void {
-	for (const block of blocks) {
-		block.projectPath = projectPath;
-		if (block.nestedProjectCodeBlocks !== undefined) {
-			updateProjectSliceIdentity(block.nestedProjectCodeBlocks, createChildProjectGroupPath(projectPath, block.name));
-		}
-	}
-}
-
 /** Refresh source-owned metadata without clearing the last valid position during incomplete edits. */
 export function updateBlockSource(block: CodeBlockGraphicData): void {
 	block.parsedDirectives = parseBlockDirectives(block.code);
 	const previousName = block.name;
 	block.name = getCodeBlockNameFromSource(block.code);
-	if (block.nestedProjectCodeBlocks !== undefined && block.name !== previousName) {
-		updateProjectSliceIdentity(
-			block.nestedProjectCodeBlocks,
-			createChildProjectGroupPath(block.projectPath, block.name)
-		);
+	if (block.childProject !== undefined && block.name !== previousName) {
+		updateProjectLevelPath(block.childProject, createChildProjectGroupPath(block.projectPath, block.name));
 	}
 	const position = parsePos(block.parsedDirectives);
 	if (position) {
@@ -48,11 +37,11 @@ export function updateBlockSource(block: CodeBlockGraphicData): void {
 	const hasProjectScopeInstruction = block.code.some(line => /^\s*pass(?:\s|$)/.test(line));
 	block.isProjectScope =
 		block.projectPath === '' &&
-		block.nestedProjectCodeBlocks === undefined &&
+		block.childProject === undefined &&
 		block.blockType === 'unknown' &&
 		block.code.every(isProjectScopeSourceLine) &&
 		(hasProjectScopeInstruction || block.isProjectScope === true);
-	for (const child of block.nestedProjectCodeBlocks ?? []) updateBlockSource(child);
+	for (const child of block.childProject?.blocks ?? []) updateBlockSource(child);
 }
 
 /** One source-update path: metadata, generated environment source, global configuration, then layout. */
