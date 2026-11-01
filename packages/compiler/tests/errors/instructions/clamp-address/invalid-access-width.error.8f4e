@@ -1,0 +1,8 @@
+8f4e/v1
+
+entry main
+module invalidAccessWidth
+push 0
+clampAddress 3
+moduleEnd
+entryEnd
