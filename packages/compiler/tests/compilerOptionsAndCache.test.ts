@@ -165,4 +165,40 @@ constantsEnd
 		const cachedMemoryDeclaration = cachedModuleAst?.lines.find(isMemoryDeclarationLine);
 		expect(cachedMemoryDeclaration?.arguments[1]).toEqual(expect.objectContaining({ value: 'SIZE' }));
 	});
+
+	test('re-resolves overrides after reordering constants blocks with a cached consumer', async () => {
+		const project = parseProjectSource(`8f4e/v1
+constants preset
+const SIZE 2
+const KEPT 7
+constantsEnd
+
+constants preset
+const SIZE 4
+const KEPT 9
+constantsEnd
+
+entry main
+module consumer
+use preset
+int[] buffer SIZE
+int kept KEPT
+moduleEnd
+entryEnd`);
+		const first = await compileProject(project, { disableSharedMemory: true });
+		const cachedModuleAst = first.cache.ast.entries.get('root:entry:main:module:0')?.ast;
+		expect(first.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(4);
+
+		project.constants.reverse();
+		const reordered = await compileProject(project, { disableSharedMemory: true, cache: first.cache });
+		expect(reordered.cache.ast.entries.get('root:entry:main:module:0')?.ast).toBe(cachedModuleAst);
+		expect(reordered.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(2);
+		expect(reordered.memoryDefaultsByModuleId.consumer!.kept!.value).toBe(7);
+		expect(first.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(4);
+
+		project.constants[1]!.disabled = true;
+		const disabled = await compileProject(project, { disableSharedMemory: true, cache: reordered.cache });
+		expect(disabled.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(4);
+		expect(disabled.memoryDefaultsByModuleId.consumer!.kept!.value).toBe(9);
+	});
 });

@@ -1,0 +1,22 @@
+8f4e/v1
+
+constants preset
+const VALUE 1
+constantsEnd
+
+constants derived
+use preset
+const DOUBLE VALUE*2
+constantsEnd
+
+constants preset
+use derived
+const VALUE DOUBLE
+constantsEnd
+
+entry main
+module consumer
+use preset
+int value VALUE
+moduleEnd
+entryEnd

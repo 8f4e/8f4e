@@ -1,0 +1,737 @@
+{
+  "functionAst": {
+    "getValue__void": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "getValue",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "preset",
+            },
+          ],
+          "instruction": "use",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "VALUE",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "getValue",
+      "type": "function",
+    },
+  },
+  "functionOverview": {
+    "getValue__void": {
+      "id": "getValue__void",
+      "signature": {
+        "parameters": [],
+        "returns": [
+          "int",
+        ],
+      },
+    },
+  },
+  "moduleAst": {
+    "child/inheritedValues": {
+      "id": "child/inheritedValues",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "child/inheritedValues",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "child/preset",
+            },
+          ],
+          "instruction": "use",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "child/derived",
+            },
+          ],
+          "instruction": "use",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "VALUE",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 40,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "DOUBLE",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 80,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "child/nested/localValues": {
+      "id": "child/nested/localValues",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "child/nested/localValues",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "child/nested/tuning",
+            },
+          ],
+          "instruction": "use",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "VALUE",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 24,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "KEPT",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 5,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "finalValues": {
+      "id": "finalValues",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "finalValues",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "preset",
+            },
+          ],
+          "instruction": "use",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "derived",
+            },
+          ],
+          "instruction": "use",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "values",
+            },
+          ],
+          "instruction": "shape",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 40,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "level",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.5,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "KEPT",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 7,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "SNAPSHOT",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 10,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "STEP",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "ADDED",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 9,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "DOUBLE",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 80,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "getValue",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 40,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "localOverrides": {
+      "id": "localOverrides",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "localOverrides",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "VALUE",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "const",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "before",
+            },
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "VALUE",
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "VALUE",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+          ],
+          "instruction": "const",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "after",
+            },
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "VALUE",
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "before",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "after",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "preset",
+            },
+          ],
+          "instruction": "use",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "VALUE",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 40,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "VALUE",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+          ],
+          "instruction": "const",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "VALUE",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+  },
+  "moduleMemory": {
+    "child/inheritedValues": {
+      "memory": {},
+    },
+    "child/nested/localValues": {
+      "memory": {},
+    },
+    "finalValues": {
+      "memory": {
+        "level": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
+          "byteAddress": 8,
+          "default": 1.5,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "level",
+          "isInherited": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "float",
+        },
+        "value": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
+          "byteAddress": 4,
+          "default": 40,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "value",
+          "isInherited": true,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
+    "localOverrides": {
+      "memory": {
+        "after": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
+          "byteAddress": 16,
+          "default": 2,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "after",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "before": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
+          "byteAddress": 12,
+          "default": 1,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "before",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
+  },
+  "overview": {
+    "compiledFunctions": [
+      "getValue__void",
+    ],
+    "compiledModules": [
+      "child/inheritedValues",
+      "child/nested/localValues",
+      "finalValues",
+      "localOverrides",
+    ],
+    "requiredMemoryBytes": 20,
+    "wasmExports": [
+      "initDefaults",
+      "main",
+      "test",
+    ],
+  },
+}

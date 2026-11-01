@@ -18,6 +18,7 @@ import { ArgumentType, createProjectModuleId, isBinaryCompileTimeExpression } fr
 import { resolveCompileTimeExpression } from '@8f4e/semantic-utils';
 
 type ConstantResolvableAST = ValidatedModuleAST | ValidatedConstantsAST | ValidatedFunctionAST | ValidatedPrototypeAST;
+type ConstantNamespaceAST = ValidatedModuleAST | ValidatedConstantsAST;
 export type ConstantEnvironment = Readonly<Record<string, Const>>;
 export type ConstantNamespaceMap = Readonly<Record<string, ConstantEnvironment>>;
 
@@ -201,18 +202,20 @@ function importConstants(
 }
 
 function tryCollectConstants(
-	ast: ValidatedModuleAST | ValidatedConstantsAST,
+	asts: readonly ConstantNamespaceAST[],
 	namespaces: ConstantNamespaceMap,
 	namespaceAliases: ConstantNamespaceAliases
 ) {
 	const constants: Record<string, Const> = {};
 
-	for (const line of ast.lines) {
-		if (!importConstants(line, constants, namespaces, namespaceAliases)) {
-			return undefined;
-		}
-		if (line.instruction === 'const') {
-			resolveConstLine(line, constants);
+	for (const ast of asts) {
+		for (const line of ast.lines) {
+			if (!importConstants(line, constants, namespaces, namespaceAliases)) {
+				return undefined;
+			}
+			if (line.instruction === 'const') {
+				resolveConstLine(line, constants);
+			}
 		}
 	}
 
@@ -220,7 +223,7 @@ function tryCollectConstants(
 }
 
 function findUnresolvedUseLine(
-	asts: readonly (ValidatedModuleAST | ValidatedConstantsAST)[],
+	asts: readonly ConstantNamespaceAST[],
 	namespaces: ConstantNamespaceMap,
 	namespaceAliases: ConstantNamespaceAliases
 ): CompilerASTLine | undefined {
@@ -245,30 +248,43 @@ function collectConstantNamespacesFromAsts(
 	options: ResolveConstantsOptions = {}
 ): ConstantNamespaceMap {
 	const namespaces: Record<string, ConstantEnvironment> = { ...(options.namespaces ?? {}) };
-	const pending = asts.filter((ast): ast is ValidatedModuleAST | ValidatedConstantsAST => {
+	const namespaceAsts = asts.filter((ast): ast is ConstantNamespaceAST => {
 		return ast.type === 'module' || ast.type === 'constants';
 	});
-	const namespaceAliases = buildProjectNamespaceAliases(projectConstantNamespaceScopes, pending, namespaces);
+	const namespaceAliases = buildProjectNamespaceAliases(projectConstantNamespaceScopes, namespaceAsts, namespaces);
+	const astsByNamespace = new Map<string, ConstantNamespaceAST[]>();
+	for (const ast of namespaceAsts) {
+		const previous = astsByNamespace.get(ast.id);
+		if (
+			Object.hasOwn(namespaces, ast.id) ||
+			(previous && (ast.type !== 'constants' || previous[0].type !== 'constants'))
+		) {
+			throw new ConstantResolverError(
+				ConstantResolverErrorCode.DUPLICATE_NAMESPACE,
+				`Duplicate constant namespace ${ast.id}`,
+				previous?.[0].lines[0] ?? ast.lines[0]
+			);
+		}
+		if (previous) {
+			previous.push(ast);
+		} else {
+			astsByNamespace.set(ast.id, [ast]);
+		}
+	}
+	// Publish each namespace only after all its declarations have resolved.
+	const pending = [...astsByNamespace.values()];
 
 	while (pending.length > 0) {
 		let madeProgress = false;
 
 		for (let index = pending.length - 1; index >= 0; index--) {
-			const ast = pending[index];
-			if (Object.hasOwn(namespaces, ast.id)) {
-				throw new ConstantResolverError(
-					ConstantResolverErrorCode.DUPLICATE_NAMESPACE,
-					`Duplicate constant namespace ${ast.id}`,
-					ast.lines[0]
-				);
-			}
-
-			const constants = tryCollectConstants(ast, namespaces, namespaceAliases);
+			const namespaceAsts = pending[index];
+			const constants = tryCollectConstants(namespaceAsts, namespaces, namespaceAliases);
 			if (!constants) {
 				continue;
 			}
 
-			namespaces[ast.id] = constants;
+			namespaces[namespaceAsts[0].id] = constants;
 			pending.splice(index, 1);
 			madeProgress = true;
 		}
@@ -277,7 +293,7 @@ function collectConstantNamespacesFromAsts(
 			throw new ConstantResolverError(
 				ConstantResolverErrorCode.UNRESOLVED_NAMESPACE,
 				'Unable to resolve constant namespace dependencies',
-				findUnresolvedUseLine(pending, namespaces, namespaceAliases) ?? pending[0].lines[0]
+				findUnresolvedUseLine(pending.flat(), namespaces, namespaceAliases) ?? pending[0][0].lines[0]
 			);
 		}
 	}
@@ -387,9 +403,9 @@ function collectLineFacts(
 
 function resolveConstantsInASTWithNamespaces(
 	ast: ConstantResolvableAST,
-	namespaces: ConstantNamespaceMap
+	namespaces: ConstantNamespaceMap,
+	constants: Record<string, Const> = {}
 ): ConstantResolutionBlockFacts {
-	const constants: Record<string, Const> = {};
 	const lineFacts = ast.lines.map(line => {
 		if (!importConstants(line, constants, namespaces, EMPTY_CONSTANT_NAMESPACE_ALIASES)) {
 			throw new ConstantResolverError(
@@ -425,12 +441,17 @@ export function resolveConstants<
 	options: ResolveConstantsOptions = {}
 ): ResolveConstantsResult {
 	const namespaces = collectConstantNamespaces(input, options);
+	const constantsByNamespace = new Map<string, Record<string, Const>>();
 	return {
 		namespaces,
 		references: {
 			prototypes: input.ast.prototypes.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
 			modules: input.ast.modules.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
-			constants: input.ast.constants.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
+			constants: input.ast.constants.map(ast => {
+				const constants = constantsByNamespace.get(ast.id) ?? {};
+				constantsByNamespace.set(ast.id, constants);
+				return resolveConstantsInASTWithNamespaces(ast, namespaces, constants);
+			}),
 			functions: input.ast.functions.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
 		},
 	};

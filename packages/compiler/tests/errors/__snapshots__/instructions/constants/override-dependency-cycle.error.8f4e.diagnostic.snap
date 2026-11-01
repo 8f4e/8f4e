@@ -1,0 +1,21 @@
+{
+  "code": 69,
+  "context": {
+    "codeBlockId": "consumer",
+    "codeBlockType": "module",
+    "projectBlockId": 18,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "preset",
+      },
+    ],
+    "instruction": "use",
+    "lineNumber": 1,
+  },
+  "message": "Unable to resolve constant namespace dependencies (UNRESOLVED_NAMESPACE). (69)",
+}

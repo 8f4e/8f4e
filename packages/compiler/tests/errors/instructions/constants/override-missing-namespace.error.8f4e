@@ -1,0 +1,17 @@
+8f4e/v1
+
+constants preset
+const VALUE 1
+constantsEnd
+
+constants preset
+use missing
+const VALUE 2
+constantsEnd
+
+entry main
+module consumer
+use preset
+int value VALUE
+moduleEnd
+entryEnd
