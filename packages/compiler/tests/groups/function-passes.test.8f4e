@@ -1,0 +1,104 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/math/clamp
+includesEnd
+
+constants env
+const FACTOR 3
+constantsEnd
+
+constants scaled
+const LABEL 7
+constantsEnd
+
+function bias
+push 5
+functionEnd int
+
+function scaled
+param int value
+use env
+push value
+mul FACTOR
+call bias
+add
+functionEnd int
+
+function scaled
+param float value
+use env
+push value
+push FACTOR
+castToFloat
+mul
+add 5.0
+functionEnd float
+
+entry test
+group first
+pass scaled
+pass clamp
+
+; Passing a function keeps its parent's
+; helpers and constants, not this bias.
+function bias
+push 99
+functionEnd int
+
+function wrapped
+param int value
+call scaled value
+functionEnd int
+
+entry main
+module checks
+use scaled
+push LABEL
+assertEqual 7
+call scaled 4
+assertEqual 17
+call scaled 2.5
+assertEqual 12.5
+call wrapped 2
+assertEqual 11
+call clamp -3 0 64
+assertEqual 0
+call clamp 0.25 0.0 1.0
+assertEqual 0.25
+moduleEnd
+
+group nested
+pass scaled
+pass clamp
+entry main
+module checks
+use scaled
+push LABEL
+assertEqual 7
+call scaled 3
+assertEqual 14
+call scaled 1.5
+assertEqual 9.5
+call clamp 70 0 64
+assertEqual 64
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+groupEnd
+
+group second
+pass scaled
+entry main
+module checks
+call scaled 1
+assertEqual 8
+moduleEnd
+entryEnd
+groupEnd
+entryEnd

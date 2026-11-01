@@ -38,3 +38,41 @@ The instruction and its continuation lines can each have an inline comment. Semi
 push; instruction comment
 - "hello; world" ; argument comment
 ```
+
+## Group scope passes
+
+Groups have isolated scopes. Use `pass NAME` in a child group to share a function or constant namespace from its
+immediate parent. Repeat the pass at each group boundary when forwarding a name to deeper groups.
+
+Passed functions are called normally, without `use`. A pass shares the complete overload set and retains the
+definition's original scope, including its helper functions and constants; it does not copy the function into the child.
+A passed function cannot collide with a local function, local entry, or another function pass. If a name identifies both
+a function and a constant namespace in the parent, `pass NAME` forwards both. Passed constant namespaces still require
+`use NAME` in the blocks that consume their constants.
+
+```8f4e
+8f4e/v1
+entry main
+group voice
+function double
+param int value
+push value
+mul 2
+functionEnd int
+
+entry main
+group envelope
+pass double
+entry main
+module output
+int out
+push &out
+call double 3
+store
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+groupEnd
+entryEnd
+```

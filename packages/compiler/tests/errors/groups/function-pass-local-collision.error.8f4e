@@ -1,0 +1,14 @@
+8f4e/v1
+function helper
+push 1
+functionEnd int
+entry main
+group child
+pass helper
+function helper
+push 2
+functionEnd int
+entry main
+entryEnd
+groupEnd
+entryEnd

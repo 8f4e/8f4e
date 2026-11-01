@@ -27,9 +27,10 @@ import {
 import { compileSourceToAST, createCompilerSource } from './compilerSource';
 import { createCompilerCache } from './createCompilerCache';
 import { qualifyAst } from './qualifyAst';
+import { resolveFunctionPasses } from './resolveFunctionPasses';
 import type { ComposedProgram, IncludedFunctionsByProjectGroupPath } from './types';
 
-function collectProjectConstantNamespacePasses(
+function collectProjectScopePasses(
 	code: readonly string[],
 	projectPath: ProjectGroupPath
 ): ProjectConstantNamespacePassLine[] {
@@ -143,7 +144,7 @@ function appendUnit(
 			initializers: memoryInitializers,
 		});
 	}
-	const constantNamespacePasses = collectProjectConstantNamespacePasses(project.code, projectPath);
+	const constantNamespacePasses = collectProjectScopePasses(project.code, projectPath);
 	if (constantNamespacePasses.length > 0) {
 		program.projectConstantNamespaceScopes.push({
 			groupPath: projectPath,
@@ -262,5 +263,6 @@ export function composeProgram(
 	};
 
 	appendUnit(project, ROOT_PROJECT_GROUP_PATH, undefined, program, includedFunctionsByProjectPath);
+	resolveFunctionPasses(program);
 	return program;
 }

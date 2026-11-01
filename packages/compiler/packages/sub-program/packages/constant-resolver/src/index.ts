@@ -344,7 +344,7 @@ function buildProjectNamespaceAliases(
 			if (scope.parentGroupPath === undefined) {
 				throw new ConstantResolverError(
 					ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE,
-					`Passed constant namespace ${name} is undefined in the parent project scope`,
+					`Passed name ${name} is undefined in the parent project scope`,
 					line
 				);
 			}
@@ -361,7 +361,7 @@ function buildProjectNamespaceAliases(
 			const line = passLinesByAlias.get(alias)!;
 			throw new ConstantResolverError(
 				ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE,
-				`Passed constant namespace ${line.arguments[0].value} is undefined in the parent project scope`,
+				`Passed name ${line.arguments[0].value} is undefined in the parent project scope`,
 				line
 			);
 		}

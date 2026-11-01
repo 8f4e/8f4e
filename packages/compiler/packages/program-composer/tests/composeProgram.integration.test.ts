@@ -51,6 +51,21 @@ describe('composeProgram fixtures', () => {
 		expect(fixtureNames.length).toBeGreaterThan(0);
 	});
 
+	it('recomputes function passes without changing cached source calls', () => {
+		const source = readFileSync(path.join(fixtureDirectory, 'function-passes.8f4e'), 'utf8');
+		const project = parseProjectSource(source);
+		const cache = createCompilerCache();
+		const shared = composeProgram(project, cache);
+		const callTarget = (program: ReturnType<typeof composeProgram>) =>
+			program.ast.modules.find(ast => ast.id === 'voice/output')!.lines.find(line => line.instruction === 'call')!
+				.arguments[0].value;
+		expect(callTarget(shared)).toBe('double');
+		const voice = project.execution.find(block => block.type === 'group')!;
+		voice.code = voice.code.filter(line => line.trim() !== 'pass double');
+		expect(callTarget(composeProgram(project, cache))).toBe('voice/double');
+		expect(callTarget(shared)).toBe('double');
+	});
+
 	it.each(fixtureNames)('matches the composed program snapshot for %s', async fixtureName => {
 		await expect(createCompositionSnapshot(fixtureName)).toMatchFileSnapshot(
 			path.join(snapshotDirectory, `${fixtureName}.program.snap`)

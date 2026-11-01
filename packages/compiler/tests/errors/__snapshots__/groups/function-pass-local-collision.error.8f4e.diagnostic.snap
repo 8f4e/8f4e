@@ -1,0 +1,19 @@
+{
+  "code": 45,
+  "context": {
+    "projectGroupPath": "child",
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "helper",
+      },
+    ],
+    "instruction": "pass",
+    "lineNumber": 1,
+  },
+  "message": "Duplicate identifier: helper. Module and function names must be unique. (45)",
+}
