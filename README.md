@@ -117,15 +117,15 @@ Thanks to everyone who has contributed to 8f4e.
 </td>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/masyarakatai"><img src="https://github.com/masyarakatai.png?size=96" width="72" alt="@masyarakatai"><br><sub><b>Masyarakat AI</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Amasyarakatai">🔀 12</a></sub>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Amasyarakatai">🔀 13</a></sub>
+</td>
+<td align="center" valign="top" width="25%">
+<a href="https://github.com/aazminu"><img src="https://github.com/aazminu.png?size=96" width="72" alt="@aazminu"><br><sub><b>Abdullah Azmi</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Aaazminu">🔀 8</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/Erfouni"><img src="https://github.com/Erfouni.png?size=96" width="72" alt="@Erfouni"><br><sub><b>erfouni</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AErfouni">🔀 8</a></sub>
-</td>
-<td align="center" valign="top" width="25%">
-<a href="https://github.com/aazminu"><img src="https://github.com/aazminu.png?size=96" width="72" alt="@aazminu"><br><sub><b>Abdullah Azmi</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Aaazminu">🔀 7</a></sub>
 </td>
 </tr>
 <tr>
