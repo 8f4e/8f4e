@@ -8,12 +8,11 @@ Each entity kind retains its naming rules: module names match `[A-Za-z_][A-Za-z0
 
 ## Argument Continuation Lines
 
-Use `- <argument>` to append one argument to the previous instruction. This is parser sugar; the compiler sees the same instruction it would have seen if the arguments had been written on one line.
+Use `- <arguments...>` to append one or more arguments to the previous instruction. This is parser sugar; the compiler sees the same instruction it would have seen if the arguments had been written on one line.
 
 ```8f4e
 float*
-- readHead
-- &source:samples
+- readHead &source:samples
 ```
 
 is equivalent to:
@@ -22,7 +21,16 @@ is equivalent to:
 float* readHead &source:samples
 ```
 
-Each continuation line accepts exactly one argument. A bare `-`, a continuation with multiple arguments, or a continuation without a previous instruction is a syntax error.
+Arguments can be grouped across several continuation lines:
+
+```8f4e
+int[] values
+- 4 1 -2
+- 3 4
+```
+
+is equivalent to `int[] values 4 1 -2 3 4`. Grouping does not change how many arguments an instruction accepts.
+A bare `-`, a comment-only continuation, or a continuation without a previous instruction is a syntax error.
 
 The instruction and its continuation lines can each have an inline comment. Semicolons inside quoted strings remain part of the argument:
 

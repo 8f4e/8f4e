@@ -14,9 +14,19 @@ note
 ; @config testRuntime.enabled true
 
 Continuation lines append one
-argument to the previous
-instruction.
+or more arguments to the
+previous instruction.
 noteEnd
+
+function sumThree
+param int a
+param int b
+param int c
+
+push a
+add b
+add c
+functionEnd int
 
 entry test
 module continuationPointerSource
@@ -60,5 +70,35 @@ module continuedNegativeLiteralAssertions
 push ; continued negative literal
 - -1; literal value
 assertEqual -1
+moduleEnd
+module groupedArgumentAssertions
+; @pos 100 28
+; Groups can supply declaration
+; defaults and function arguments.
+int[] values ; declaration comment
+- 4 1 -2 ; count and first values
+- 3 4 ; remaining values
+
+push &values
+load
+assertEqual 1
+
+push &values
+add sizeof(values)
+load
+assertEqual -2
+
+push &values
+add sizeof(values)*3
+load
+assertEqual 4
+
+call sumThree
+- 1 -2 3 ; all call arguments
+assertEqual 2
+
+call sumThree 1
+- -2 3 ; remaining call arguments
+assertEqual 2
 moduleEnd
 entryEnd

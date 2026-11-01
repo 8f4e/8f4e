@@ -1,6 +1,133 @@
 {
-  "functionAst": {},
-  "functionOverview": {},
+  "functionAst": {
+    "sumThree__int__int__int": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "sumThree",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "a",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "b",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "c",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "a",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "b",
+            },
+          ],
+          "instruction": "add",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "c",
+            },
+          ],
+          "instruction": "add",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "sumThree",
+      "type": "function",
+    },
+  },
+  "functionOverview": {
+    "sumThree__int__int__int": {
+      "id": "sumThree__int__int__int",
+      "signature": {
+        "parameters": [
+          "int",
+          "int",
+          "int",
+        ],
+        "returns": [
+          "int",
+        ],
+      },
+    },
+  },
   "moduleAst": {
     "continuationPointerSource": {
       "id": "continuationPointerSource",
@@ -74,6 +201,249 @@
               "isInteger": true,
               "type": "literal",
               "value": -1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "groupedArgumentAssertions": {
+      "id": "groupedArgumentAssertions",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "groupedArgumentAssertions",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "values",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "int[]",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "values",
+              "type": "identifier",
+              "value": "&values",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "values",
+              "type": "identifier",
+              "value": "&values",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-word-size",
+              "scope": "local",
+              "targetMemoryId": "values",
+              "type": "identifier",
+              "value": "sizeof(values)",
+            },
+          ],
+          "instruction": "add",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -2,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "values",
+              "type": "identifier",
+              "value": "&values",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "left": {
+                "referenceKind": "element-word-size",
+                "scope": "local",
+                "targetMemoryId": "values",
+                "type": "identifier",
+                "value": "sizeof(values)",
+              },
+              "operator": "*",
+              "right": {
+                "isInteger": true,
+                "type": "literal",
+                "value": 3,
+              },
+              "type": "compile_time_expression",
+            },
+          ],
+          "instruction": "add",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "sumThree",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "sumThree",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
             },
           ],
           "instruction": "assertEqual",
@@ -241,12 +611,35 @@
     "continuedNegativeLiteralAssertions": {
       "memory": {},
     },
+    "groupedArgumentAssertions": {
+      "memory": {
+        "values": {
+          "allocationUnitAddress": 9,
+          "allocationUnitCount": 4,
+          "byteAddress": 36,
+          "default": {
+            "0": 1,
+            "1": -2,
+            "2": 3,
+            "3": 4,
+          },
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "values",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 4,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
     "splitByteDefaultAssertions": {
       "memory": {
         "color": {
-          "allocationUnitAddress": 9,
+          "allocationUnitAddress": 13,
           "allocationUnitCount": 1,
-          "byteAddress": 36,
+          "byteAddress": 52,
           "default": 2835283968,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
@@ -262,9 +655,9 @@
     "splitPointerDeclarationAssertions": {
       "memory": {
         "readHead": {
-          "allocationUnitAddress": 10,
+          "allocationUnitAddress": 14,
           "allocationUnitCount": 1,
-          "byteAddress": 40,
+          "byteAddress": 56,
           "default": 4,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
@@ -281,14 +674,17 @@
     },
   },
   "overview": {
-    "compiledFunctions": [],
+    "compiledFunctions": [
+      "sumThree__int__int__int",
+    ],
     "compiledModules": [
       "continuationPointerSource",
       "continuedNegativeLiteralAssertions",
+      "groupedArgumentAssertions",
       "splitByteDefaultAssertions",
       "splitPointerDeclarationAssertions",
     ],
-    "requiredMemoryBytes": 44,
+    "requiredMemoryBytes": 60,
     "wasmExports": [
       "initDefaults",
       "main",

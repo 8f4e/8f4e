@@ -9,7 +9,7 @@ export type SourceLine = {
 	lineNumber: number;
 };
 
-/** Detects physical lines that append one argument to the preceding instruction. */
+/** Detects physical lines that append arguments to the preceding instruction. */
 function isArgumentContinuationCandidate(line: string): boolean {
 	return /^\s*-(?=\s|;|$)/.test(line);
 }
@@ -59,17 +59,6 @@ export function foldArgumentContinuationLines(code: string[]): SourceLine[] {
 			});
 		}
 
-		if (tokens.length > 2) {
-			throw new SyntaxRulesError(
-				SyntaxErrorCode.INVALID_ARGUMENT,
-				'Argument continuation accepts exactly one argument.',
-				{
-					lineNumber,
-					instruction,
-				}
-			);
-		}
-
 		if (!previousLineHasContinuations) {
 			// Remove the original comment once so appended arguments cannot become comment text.
 			previousSourceLine.line = parseInstructionTokens(previousSourceLine.line, previousSourceLine.lineNumber).join(
@@ -77,7 +66,7 @@ export function foldArgumentContinuationLines(code: string[]): SourceLine[] {
 			);
 			previousLineHasContinuations = true;
 		}
-		previousSourceLine.line = `${previousSourceLine.line} ${tokens[1]}`;
+		previousSourceLine.line = `${previousSourceLine.line} ${tokens.slice(1).join(' ')}`;
 	}
 
 	return sourceLines;

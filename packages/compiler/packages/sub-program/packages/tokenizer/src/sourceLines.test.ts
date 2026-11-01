@@ -39,6 +39,40 @@ describe('foldArgumentContinuationLines', () => {
 		]);
 	});
 
+	it('folds argument groups across comments and blanks without changing source lines', () => {
+		const code = [
+			'; heading',
+			'int[] values ; declaration comment',
+			' - 4 1 -2 ; first group',
+			'',
+			'; between groups',
+			'\t- 3 4',
+			'push 5',
+		];
+		const original = [...code];
+		Object.freeze(code);
+
+		expect(foldArgumentContinuationLines(code)).toEqual([
+			{ line: 'int[] values 4 1 -2 3 4', lineNumber: 1 },
+			{ line: 'push 5', lineNumber: 6 },
+		]);
+		expect(code).toEqual(original);
+	});
+
+	it('preserves quoted strings, escaped quotes, and negative values in argument groups', () => {
+		expect(
+			foldArgumentContinuationLines([
+				'call write ; instruction comment',
+				'- "hello; world" -1 ; argument comment',
+				'- "a \\"quoted\\" value" 2*4',
+				'drop',
+			])
+		).toEqual([
+			{ line: 'call write "hello; world" -1 "a \\"quoted\\" value" 2*4', lineNumber: 0 },
+			{ line: 'drop', lineNumber: 3 },
+		]);
+	});
+
 	it.each([
 		{
 			name: 'orphaned continuation',
@@ -59,13 +93,6 @@ describe('foldArgumentContinuationLines', () => {
 			code: ['push', '; comment', '', '\t- ; no argument'],
 			codeNumber: SyntaxErrorCode.MISSING_ARGUMENT,
 			message: 'Missing argument for continuation.',
-			lineNumber: 3,
-		},
-		{
-			name: 'continuation with multiple arguments',
-			code: ['push', '; comment', '', ' - 1 2'],
-			codeNumber: SyntaxErrorCode.INVALID_ARGUMENT,
-			message: 'Argument continuation accepts exactly one argument.',
 			lineNumber: 3,
 		},
 	])('preserves diagnostics and source for a $name', ({ code, codeNumber, message, lineNumber }) => {

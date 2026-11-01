@@ -3,6 +3,26 @@ import { describe, expect, it } from 'vitest';
 import { compileToAST, SyntaxErrorCode } from '../src';
 
 describe('argument continuations with inline comments', () => {
+	it.each([
+		{
+			name: 'grouped pointer declaration arguments',
+			split: ['module test', 'float*', '- readHead &source:samples', 'moduleEnd'],
+			singleLine: ['module test', 'float* readHead &source:samples', 'moduleEnd'],
+		},
+		{
+			name: 'array initializer groups and inline comments',
+			split: ['module test', 'int[] values ; declaration', '- 4 0xA8 -1 ; first group', '- 2*4 0', 'moduleEnd'],
+			singleLine: ['module test', 'int[] values 4 0xA8 -1 2*4 0', 'moduleEnd'],
+		},
+		{
+			name: 'call arguments with a quoted semicolon',
+			split: ['module test', 'call write', '- -1 "hello; world" 2*4 ; comment', 'moduleEnd'],
+			singleLine: ['module test', 'call write -1 "hello; world" 2*4', 'moduleEnd'],
+		},
+	])('matches the single-line AST for $name', ({ split, singleLine }) => {
+		expect(compileToAST(split).lines[1]).toEqual(compileToAST(singleLine).lines[1]);
+	});
+
 	it.each(['push ; explanatory comment', 'push; explanatory comment'])(
 		'keeps the continued argument after %s',
 		instruction => {
@@ -81,6 +101,15 @@ describe('argument continuations with inline comments', () => {
 		expect(ast.lines[1].arguments).toEqual([{ type: ArgumentType.LITERAL, value: 7, isInteger: true }]);
 	});
 
+	it('validates instruction argument counts after folding the continuation', () => {
+		expect(() => compileToAST(['module test', 'push ; comment', '- 7 9 ; two arguments', 'moduleEnd'])).toThrow(
+			expect.objectContaining({
+				code: SyntaxErrorCode.INVALID_ARGUMENT,
+				line: expect.objectContaining({ lineNumber: 1, instruction: 'push' }),
+			})
+		);
+	});
+
 	it.each([
 		{
 			name: 'bare continuation',
@@ -98,12 +127,6 @@ describe('argument continuations with inline comments', () => {
 			name: 'comment-only continuation without a space',
 			source: ['module test', 'push ; comment', '-; no argument', 'moduleEnd'],
 			code: SyntaxErrorCode.MISSING_ARGUMENT,
-			lineNumber: 2,
-		},
-		{
-			name: 'multiple arguments on one continuation',
-			source: ['module test', 'push ; comment', '- 7 9 ; two arguments', 'moduleEnd'],
-			code: SyntaxErrorCode.INVALID_ARGUMENT,
 			lineNumber: 2,
 		},
 		{

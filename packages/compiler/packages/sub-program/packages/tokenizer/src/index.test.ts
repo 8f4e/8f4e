@@ -332,12 +332,6 @@ describe('compileToAST line parsing', () => {
 		);
 	});
 
-	it('rejects dash argument continuation lines with multiple arguments', () => {
-		expect(() => compileLinesFromAST(['module test', 'push', '- 1 2', 'moduleEnd'])).toThrow(
-			expect.objectContaining({ code: SyntaxErrorCode.INVALID_ARGUMENT })
-		);
-	});
-
 	it('rejects dash argument continuation lines without a previous instruction', () => {
 		expect(() => compileLinesFromAST(['- 1'])).toThrow(
 			expect.objectContaining({ code: SyntaxErrorCode.INVALID_ARGUMENT })
