@@ -159,4 +159,20 @@ describe('pushMemoryPointer', () => {
 
 		expect(context.byteCode).toEqual([...i32const(4), ...i32load(), ...i32load(), ...i32load16s()]);
 	});
+	it('pushes the stored pointer address for &*ptr without loading the pointee', () => {
+		const context = createInstructionCompilerTestContext();
+		const ptr = createPointerMemoryItem({
+			id: 'ptr',
+			byteAddress: 12,
+			pointeeBaseType: 'int',
+			pointerDepth: 1,
+			type: 'int*',
+		});
+		const line = createResolvedMemoryPointerPushLine('ptr', ptr, 0);
+		line.arguments = [classifyIdentifier('&*ptr')];
+
+		pushMemoryPointer(line, context);
+
+		expect(context.byteCode).toEqual([...i32const(12), ...i32load()]);
+	});
 });
