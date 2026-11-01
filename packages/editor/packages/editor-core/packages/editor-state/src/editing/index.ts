@@ -6,7 +6,7 @@ import getBlockType from '../features/code-blocks/utils/codeParsers/getBlockType
 import { createCodeBlockGraphicData } from '../features/code-blocks/utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from '../features/code-blocks/utils/getCodeBlockNameFromSource';
 import { parseBlockDirectives } from '../features/code-blocks/utils/parseBlockDirectives';
-import serializeCodeBlocks from '../pureHelpers/projectSerialization/serializeCodeBlocks';
+import serializeProjectLevel from '../pureHelpers/projectSerialization/serializeProjectLevel';
 import { copyProjectLevel, findProjectLevel, walkProjectBlocks } from '../pureHelpers/projectTree';
 import { type EditorEdit, EditorEditingError, type EditorEditingHandle, type EditorNavigationHandle } from './types';
 
@@ -129,7 +129,7 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 					else if (target.childProject && edit.entry !== undefined) target.entry = edit.entry;
 				}
 			}
-			events.dispatch('applyProjectEdit', { project: serializeCodeBlocks(draft.blocks, draft.entries) });
+			events.dispatch('applyProjectEdit', { project: serializeProjectLevel(draft) });
 			return { revision: revision(), createdBlockIds };
 		},
 		undo({ expectedRevision }) {

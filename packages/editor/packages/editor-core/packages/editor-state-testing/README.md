@@ -16,7 +16,7 @@ import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing
 const blocks = [createMockCodeBlock({ code: ['module voice', 'moduleEnd'] })];
 const state = createMockState({
 	compiler: { isCompiling: true },
-	codeBlockRendering: { rootProject: { path: '', blocks } },
+	codeBlockRendering: { rootProject: { path: '', blocks, entries: [] } },
 	callbacks: {},
 });
 ```
@@ -28,8 +28,8 @@ project, provide a root level and select its child level:
 
 ```typescript
 const nested = [createMockCodeBlock({ name: 'voice', projectPath: 'Audio' })];
-const audio = { path: 'Audio', blocks: nested };
-const root = { path: '', blocks: [createMockCodeBlock({ name: 'Audio', childProject: audio })] };
+const audio = { path: 'Audio', blocks: nested, entries: [] };
+const root = { path: '', blocks: [createMockCodeBlock({ name: 'Audio', childProject: audio })], entries: [] };
 const state = createMockState({
 	codeBlockRendering: { rootProject: root, currentProject: audio },
 });
@@ -37,5 +37,7 @@ const state = createMockState({
 
 The generic code-block builder leaves `parsedDirectives` empty. Tests inside editor-state that need parsed source or
 directive derivation should use its local `pureHelpers/testingUtils/testUtils` helpers. Those helpers retain the
-editor-specific parsing behavior and re-export the shared state builder; they do not own a second set of state defaults.
+editor-specific parsing behavior through a small wrapper around the shared block builder. All generic block defaults
+and geometry live here, together with their tests. The local helpers also re-export the shared state, viewport, and
+event-dispatcher builders. Explicit names and already parsed directives remain caller-owned overrides.
 For a genuinely narrow API, prefer a fixture typed to that API's narrow contract rather than asserting it is a full state.

@@ -24,9 +24,10 @@ history snapshots, and project files, regardless of their names.
 
 ### Ownership and Ordering
 
-`serializeToProject(state)` and `serializeCodeBlocksToProject(blocks, entries)` return detached project data. Entry
-definitions come from each level's `entries` table, including empty entries. Every source array is copied, including group wrappers, nested blocks, and project-scope code. Callers can retain or edit the returned
-model without changing live editor state, and later live edits leave previously returned models unchanged.
+`serializeToProject(state)` and `serializeProjectLevel(level)` return detached project data. The latter requires a
+complete `ProjectLevel`, keeping its blocks and entry definitions together, including empty entries. Every source
+array is copied, including group wrappers, nested blocks, and project-scope code. Callers can retain or edit the
+returned model without changing live editor state, and later live edits leave previously returned models unchanged.
 
 Object fields are emitted in a fixed order. Blocks are ordered by grid X, grid Y, and creation index within each
 project slice, recursively through nested groups. Equivalent live data therefore produces identical JSON regardless

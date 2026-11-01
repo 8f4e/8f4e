@@ -4,7 +4,7 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
-import convertGraphicDataToProjectStructure from '../../../../pureHelpers/projectSerialization/serializeCodeBlocks';
+import serializeProjectLevel from '../../../../pureHelpers/projectSerialization/serializeProjectLevel';
 import codeBlockCreator from './effect';
 
 describe('codeBlockCreator - copy/paste', () => {
@@ -136,7 +136,7 @@ describe('codeBlockCreator - copy/paste', () => {
 			expect(new Set(pastedCreationIndexes).size).toBe(pastedCreationIndexes.length);
 			expect(Math.min(...pastedCreationIndexes)).toBe(20);
 
-			const pastedProjectGroup = getProjectGroups(convertGraphicDataToProjectStructure(rootCodeBlocks))[1];
+			const pastedProjectGroup = getProjectGroups(serializeProjectLevel(mockState.codeBlockRendering.rootProject))[1];
 			expect(pastedProjectGroup).toMatchObject({
 				entries: ['main', 'foo', 'bar'],
 				name: 'audio1',

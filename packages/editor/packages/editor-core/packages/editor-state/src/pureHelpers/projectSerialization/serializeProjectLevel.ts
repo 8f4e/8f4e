@@ -1,17 +1,14 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import type { ProjectBlock, ProjectEntryName, ProjectObjectModel } from '@8f4e/language-spec';
+import type { ProjectLevel } from '@8f4e/editor-state-types';
+import type { ProjectBlock, ProjectObjectModel } from '@8f4e/language-spec';
 import { createProjectObjectModel } from '@8f4e/language-spec';
 import { tryParseProjectMemoryExposureLine } from '@8f4e/project-preparser';
 import compareCodeBlocksByPosition from '../compareCodeBlocksByPosition';
 
 /** Returns detached project data in canonical key and grid/creation order, recursively through project groups. */
-export default function convertGraphicDataToProjectStructure(
-	codeBlocks: CodeBlockGraphicData[],
-	entries: readonly ProjectEntryName[] = []
-): ProjectObjectModel {
+export default function serializeProjectLevel(level: ProjectLevel): ProjectObjectModel {
 	const project = createProjectObjectModel();
-	project.entries = [...entries];
-	const sortedBlocks = [...codeBlocks].sort(compareCodeBlocksByPosition);
+	project.entries = [...level.entries];
+	const sortedBlocks = [...level.blocks].sort(compareCodeBlocksByPosition);
 
 	for (const codeBlock of sortedBlocks) {
 		if (codeBlock.isProjectScope) {
@@ -21,7 +18,7 @@ export default function convertGraphicDataToProjectStructure(
 		if (codeBlock.childProject !== undefined) {
 			if (!project.entries.includes(codeBlock.entry!)) project.entries.push(codeBlock.entry!);
 			project.execution.push({
-				...convertGraphicDataToProjectStructure(codeBlock.childProject.blocks, codeBlock.childProject.entries),
+				...serializeProjectLevel(codeBlock.childProject),
 				type: 'group',
 				id: codeBlock.creationIndex,
 				name: codeBlock.name,
