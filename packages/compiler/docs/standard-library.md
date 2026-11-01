@@ -26,6 +26,7 @@ include std/math/trig/sine
 include std/math/trig/triangle
 include std/bitwise/extractBit
 include std/bitwise/extractByte
+include std/bitwise/extractNibble
 include std/events/gateToTrigger
 include std/events/risingEdge
 include std/events/hasChanged
@@ -876,6 +877,31 @@ push 0x12345678
 push 1
 call extractByte
 ; stack: 0x56
+moduleEnd
+entryEnd
+```
+
+## `std/bitwise/extractNibble`
+
+Provides `extractNibble`, which extracts four bits from a 32-bit integer as a value in `0..15`.
+
+Available overloads:
+
+- `extractNibble(int word, int nibbleIndex) -> int`
+
+`nibbleIndex` is `0..7`, where `0` is the least-significant nibble. Extraction uses an unsigned shift, including for negative words.
+
+Example:
+
+```8f4e
+includes
+include std/bitwise/extractNibble
+includesEnd
+
+entry test
+module extractNibbleExample
+call extractNibble 0x89ABCDEF 7
+; stack: 0x8
 moduleEnd
 entryEnd
 ```
