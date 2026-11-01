@@ -1,6 +1,9 @@
 {
   "code": [],
   "constants": [],
+  "entries": [
+    "main",
+  ],
   "execution": [
     {
       "code": [
@@ -27,8 +30,11 @@
             "const SAMPLE_RATE 48000",
             "constantsEnd",
           ],
-          "id": 18,
+          "id": 20,
         },
+      ],
+      "entries": [
+        "main",
       ],
       "entry": "main",
       "execution": [
@@ -39,7 +45,7 @@
             "moduleEnd",
           ],
           "entry": "main",
-          "id": 9,
+          "id": 10,
           "type": "module",
         },
         {
@@ -49,11 +55,14 @@
             "groupEnd",
           ],
           "constants": [],
+          "entries": [
+            "main",
+          ],
           "entry": "main",
           "execution": [],
           "exposures": [],
           "functions": [],
-          "id": 22,
+          "id": 25,
           "includes": [],
           "name": "oscillator",
           "notes": [],
@@ -65,7 +74,7 @@
                 "float frequency 440",
                 "prototypeEnd",
               ],
-              "id": 23,
+              "id": 26,
             },
           ],
           "type": "group",
@@ -81,7 +90,7 @@
             "push x",
             "functionEnd float",
           ],
-          "id": 13,
+          "id": 15,
         },
       ],
       "id": 8,

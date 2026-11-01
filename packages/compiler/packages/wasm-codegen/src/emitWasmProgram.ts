@@ -28,6 +28,7 @@ import type {
 	CompileOptions,
 	CompileResult,
 	CompilerCache,
+	ComposedEntry,
 	FunctionTypeRegistry,
 	MemoryDefaults,
 	MemoryLayoutPlan,
@@ -41,7 +42,7 @@ import createInitialMemoryDataSegments from './initialMemoryDataSegments/createI
 interface EmissionProgram {
 	functionLayout: WasmFunctionLayout;
 	assertionSites?: AssertionSite[];
-	entryNames: string[];
+	entries: ComposedEntry[];
 	compiledModules: CompiledModule[];
 	compiledFunctions: CompiledFunction[];
 	functionTypeRegistry: FunctionTypeRegistry;
@@ -66,7 +67,7 @@ export function emitWasmProgram(
 	const {
 		functionLayout,
 		assertionSites,
-		entryNames,
+		entries,
 		compiledModules,
 		compiledFunctions,
 		functionTypeRegistry,
@@ -86,13 +87,18 @@ export function emitWasmProgram(
 	const definedFunctions = compiledFunctions.filter(func => !func.import);
 	const uniqueUserFunctionTypes = functionTypeRegistry.types;
 	const userFunctionSignatureIndices = definedFunctions.map(func => func.typeIndex);
-	const entryDispatcherFunctions = entryNames.map(entryName =>
+	const skippedModules = new Set(
+		compiledModules.filter(module => module.skipExecutionInCycle).map(module => module.id)
+	);
+	const entryDispatcherFunctions = entries.map(entry =>
 		createFunction(
 			[],
-			compiledModules.flatMap(module =>
-				module.executionEntryName === entryName && !module.skipExecutionInCycle
-					? call(functionLayout.moduleFunctionIndices[module.id])
-					: []
+			entry.steps.flatMap(step =>
+				step.type === 'module'
+					? skippedModules.has(step.id)
+						? []
+						: call(functionLayout.moduleFunctionIndices[step.id])
+					: call(functionLayout.functions[createFunctionId(step.id, [])].wasmIndex)
 			)
 		)
 	);
@@ -118,12 +124,14 @@ export function emitWasmProgram(
 	const functionImports = functionLayout.imports.map(func =>
 		createFunctionImport(func.moduleName, func.fieldName, func.typeIndex)
 	);
-	const builtInFunctionSignatures = [0x00, ...entryNames.map(() => 0x00)];
+	const builtInFunctionSignatures = [0x00, ...entries.map(() => 0x00)];
 	const builtInFunctionBodies = [createFunction([], memoryInitiatorFunction), ...entryDispatcherFunctions];
 	const builtInExports = [
 		createFunctionExport('initDefaults', functionLayout.initDefaultsIndex),
-		...entryNames.map(entryName =>
-			createFunctionExport(entryName, functionLayout.functions[createFunctionId(entryName, [])].wasmIndex)
+		...entries.flatMap(entry =>
+			entry.exportName === undefined
+				? []
+				: [createFunctionExport(entry.exportName, functionLayout.functions[createFunctionId(entry.id, [])].wasmIndex)]
 		),
 	];
 	const wasmVersion = createWasmVersion(1);

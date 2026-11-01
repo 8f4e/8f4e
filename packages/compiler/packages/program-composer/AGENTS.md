@@ -15,6 +15,10 @@ This file extends the root and `packages/compiler/AGENTS.md` guidance for
 - Trust project structure and parsed metadata from upstream; keep syntax validation in the tokenizer and pass parsed data downstream.
 - Keep source-shaped integration fixtures and their file snapshots under `tests/`; keep `src/` limited to package code.
 
+- Root and group scopes share an explicit local `entries` table, including empty entries. Group `main` joins the
+  enclosing entry at the group's position; group `init` joins parent `init`. Other entries require local calls.
+  Missing `main` is valid. Composition resolves dispatcher steps once; later stages consume those plans directly.
+
 ## Commands
 
 - From the repository root, prefer Nx:

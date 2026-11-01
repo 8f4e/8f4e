@@ -58,7 +58,9 @@ describe('assertion marker derivation', () => {
 		block.entry = 'test';
 		block.projectPath = '';
 		const compiled = await compileProject(
-			serializeToProject(createMockState({ codeBlockRendering: { rootProject: { path: '', blocks: [block] } } })),
+			serializeToProject(
+				createMockState({ codeBlockRendering: { rootProject: { entries: [], path: '', blocks: [block] } } })
+			),
 			{
 				enableAssertions: true,
 				disableSharedMemory: true,

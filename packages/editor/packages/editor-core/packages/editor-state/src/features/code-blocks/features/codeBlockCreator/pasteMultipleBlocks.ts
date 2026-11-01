@@ -90,6 +90,7 @@ function createPastedCodeBlock(
 		const childProjectPath = createChildProjectGroupPath(projectPath, name);
 		codeBlock.childProject = {
 			path: childProjectPath,
+			entries: [...clipboardBlock.childProject.entries],
 			blocks: clipboardBlock.childProject.blocks.map(child => {
 				const childGridX = child.gridCoordinates.x;
 				const childGridY = child.gridCoordinates.y;

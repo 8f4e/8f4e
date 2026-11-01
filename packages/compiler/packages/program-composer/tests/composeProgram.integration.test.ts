@@ -24,8 +24,7 @@ function createCompositionSnapshot(fixtureName: string) {
 	const program = composeProgram(project, cache);
 
 	return {
-		entryNames: program.entryNames,
-		moduleEntryNames: program.moduleEntryNames,
+		entries: program.entries,
 		...(program.projectConstantNamespaceScopes.length > 0
 			? { projectConstantNamespaceScopes: program.projectConstantNamespaceScopes }
 			: {}),

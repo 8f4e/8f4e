@@ -9,6 +9,7 @@ noteEnd
 
 entry test
 group processing
+entry main
 module root
 int* groupedValue &audio:exposedValue
 int observed
@@ -30,9 +31,12 @@ moduleEnd
 group audio
 expose exposedValue &source:value
 
+entry main
 module source
 int value 41
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd

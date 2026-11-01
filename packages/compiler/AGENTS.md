@@ -15,6 +15,10 @@ This file extends the repository-level guidance for `packages/compiler`.
 - `@8f4e/wasm-codegen` generates function and module bodies and emits the final WebAssembly binary.
 - `@8f4e/stdlib` contains source-only standard-library functions. Include IDs are paths under `std/` without `.8f4e`.
 
+- Root and group scopes share an explicit local `entries` table, including empty entries. Group `main` joins the
+  enclosing entry at the group's position; group `init` joins parent `init`. Other entries require local calls.
+  Missing `main` is valid. Composition resolves dispatcher steps once; later stages consume those plans directly.
+
 ## Commands and Style
 
 - Keep compiler stage dependencies external in library bundles so consumers share their implementations and error classes.

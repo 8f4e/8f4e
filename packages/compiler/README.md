@@ -94,20 +94,27 @@ editor state ---------------------/         |
 `compileProject(project, options)` compiles that object model directly. Editors that already hold typed blocks can skip
 the text representation without invoking a second block-classification or whole-project preparation step.
 
-`ProjectObjectModel` is defined by `@8f4e/language-spec`. Each scope owns one `execution` sequence containing
+`ProjectObjectModel` is defined by `@8f4e/language-spec`. Each scope owns an `entries` name table (including empty entries)
+and one `execution` sequence containing
 `type: 'module'` and `type: 'group'` nodes, each with an id and entry membership. Modules and groups share declaration
 order. The separate `functions`, `constants`, `prototypes`, `includes`, `notes`, and `unknown` collections retain
 hoisted declarations and non-executable blocks. `getProjectModules(project)` and `getProjectGroups(project)` select
 only direct children of the corresponding type, retaining their relative order.
 
-The composer walks `execution` in order. At a group node it recursively expands that group's sequence before continuing
-with the next sibling. For example, `rootA`, `synth { voiceA, voiceB }`, `rootB` executes as
-`rootA -> synth/voiceA -> synth/voiceB -> rootB`. Entry dispatchers retain this order for their own modules. Functions,
-constants, and prototypes remain hoisted, and memory references do not reorder execution.
+The composer walks `execution` in order and builds a dispatcher plan for every local entry. At a group node, the
+child's `main`, when present, is called from the node's parent entry; the child's `init`, when present, is called from
+the parent's `init`. Other child entries run only through explicit local calls. Missing `main` is valid and contributes
+no automatic work. Root entries are host exports; child entries have scoped identities. Empty entries remain valid.
+
+For example, with `voiceA` and `voiceB` in `synth`'s `main`, `rootA`, `synth`, `rootB` executes as
+`rootA -> synth/voiceA -> synth/voiceB -> rootB`. Functions, constants, and prototypes remain hoisted, and memory
+references do not reorder execution. The editor creates this ordered model from spatial position at each scope.
 
 Composition qualifies nested module, function, constant-namespace, and prototype names so sibling groups may reuse
 source-level names safely. It hands one flattened validated-AST program to the compiler, allowing memory addresses,
-function indexes, type indexes, and entries to be planned once. Project parsing establishes structure and parsed group
+function indexes and type indexes to be planned once. Resolved entry plans pass through semantic compilation to
+emission without reconstructing project scopes. Each composed module carries its canonical `executionEntryName`,
+which code generation forwards to the compiled module result. Project parsing establishes structure and parsed group
 metadata; composition consumes those typed nodes directly. Module/function syntax is parsed at its own tokenizer
 boundary. Later stages trust these outputs and consume the established order without reclassifying source blocks or
 reconstructing group structure.

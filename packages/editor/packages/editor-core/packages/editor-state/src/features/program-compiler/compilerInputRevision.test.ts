@@ -206,7 +206,7 @@ describe('compiler input revision', () => {
 
 	it('ignores opening and leaving a nested project, but advances for edits inside it', () => {
 		const child = createMockCodeBlock({ code: ['module child', 'moduleEnd'] });
-		block.childProject = { path: 'Audio', blocks: [child] };
+		block.childProject = { entries: [], path: 'Audio', blocks: [child] };
 		projectGroupNavigation(store, events);
 		codeEditing(store, events);
 		dispatch('openProjectGroup', { codeBlock: block });

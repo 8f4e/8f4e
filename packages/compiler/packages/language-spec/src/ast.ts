@@ -296,7 +296,10 @@ export interface SourceBlockIdentity {
 export type ComposedAST<TAST extends ValidatedAST = ValidatedAST> = TAST & {
 	sourceIdentity: SourceBlockIdentity;
 };
-export type ComposedModuleAST = ComposedAST<ValidatedModuleAST>;
+export type ComposedModuleAST = ComposedAST<ValidatedModuleAST> & {
+	/** Canonical identity of the owning entry, established by composition. */
+	executionEntryName: string;
+};
 export type ComposedFunctionAST = ComposedAST<ValidatedFunctionAST>;
 export type ComposedConstantsAST = ComposedAST<ValidatedConstantsAST>;
 export type ComposedPrototypeAST = ComposedAST<ValidatedPrototypeAST>;

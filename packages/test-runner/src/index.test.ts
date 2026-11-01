@@ -10,10 +10,14 @@ describe('hasTestEntry', () => {
 				parseProjectSource(`8f4e/v1
 entry test
 group outer
+entry main
 group inner
+entry main
 module testModule
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd`)
 			)
@@ -39,7 +43,7 @@ functionEnd`)
 		).toBe(true);
 	});
 
-	it('ignores disabled test blocks and unexported or group-local test functions', () => {
+	it('preserves declared test entries even when their modules are disabled', () => {
 		const project = parseProjectSource(`8f4e/v1
 entry test
 module disabledTest
@@ -50,6 +54,8 @@ function test
 functionEnd`);
 		getProjectModules(project)[0].disabled = true;
 		project.functions[0].disabled = true;
+		expect(hasTestEntry(project)).toBe(true);
+		project.entries = [];
 		expect(hasTestEntry(project)).toBe(false);
 		expect(
 			hasTestEntry(
@@ -66,6 +72,8 @@ group inner
 function test
 #export
 functionEnd
+entry main
+entryEnd
 groupEnd
 entryEnd`)
 			)

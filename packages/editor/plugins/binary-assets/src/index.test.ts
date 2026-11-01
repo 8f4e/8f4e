@@ -144,7 +144,7 @@ describe('binary assets plugin', () => {
 	it('resolves exposed project memory aliases', async () => {
 		const source = SOURCE.replace('player:buffer', 'audio:publicBuffer').replace(
 			'module player\nint[] buffer 4\nmoduleEnd',
-			'group audio\nexpose publicBuffer &player:buffer\nmodule player\nint[] buffer 4\nmoduleEnd\ngroupEnd'
+			'group audio\nexpose publicBuffer &player:buffer\nentry main\nmodule player\nint[] buffer 4\nmoduleEnd\nentryEnd\ngroupEnd'
 		);
 		const test = await setup({ source });
 		await vi.waitFor(() => expect(test.state.dialogStack).toEqual([]));

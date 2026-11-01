@@ -5,6 +5,7 @@
   "compiledModules": {
     "result": {
       "id": "result",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -69,13 +70,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "result"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 0,
-      "executionEntryName": "main"
+      "index": 0
     },
     "notes": {
       "id": "notes",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -119,13 +121,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "notes"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 1,
-      "executionEntryName": "main"
+      "index": 1
     },
     "inputs": {
       "id": "inputs",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -203,13 +206,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "inputs"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 2,
-      "executionEntryName": "main"
+      "index": 2
     },
     "perceptron": {
       "id": "perceptron",
+      "executionEntryName": "main",
       "cycleFunction": [
         42,
         0,
@@ -501,13 +505,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 3,
-      "executionEntryName": "main"
+      "index": 3
     },
     "perceptron2": {
       "id": "perceptron2",
+      "executionEntryName": "main",
       "cycleFunction": [
         42,
         0,
@@ -799,13 +804,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron2"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 4,
-      "executionEntryName": "main"
+      "index": 4
     },
     "activationFn": {
       "id": "activationFn",
+      "executionEntryName": "main",
       "cycleFunction": [
         17,
         0,
@@ -942,13 +948,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 5,
-      "executionEntryName": "main"
+      "index": 5
     },
     "activationFn2": {
       "id": "activationFn2",
+      "executionEntryName": "main",
       "cycleFunction": [
         17,
         0,
@@ -1085,13 +1092,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn2"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 6,
-      "executionEntryName": "main"
+      "index": 6
     },
     "perceptron3": {
       "id": "perceptron3",
+      "executionEntryName": "main",
       "cycleFunction": [
         43,
         0,
@@ -1384,13 +1392,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron3"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 7,
-      "executionEntryName": "main"
+      "index": 7
     },
     "activationFn3": {
       "id": "activationFn3",
+      "executionEntryName": "main",
       "cycleFunction": [
         31,
         0,
@@ -1614,10 +1623,10 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn3"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 8,
-      "executionEntryName": "main"
+      "index": 8
     }
   },
   "memoryPlan": {

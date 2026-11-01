@@ -9,6 +9,7 @@ expose gateAlias &voice:gate
 expose input &voice:pointer
 expose keys &notesData:notes
 
+entry main
 module voice
 float level 0.25
 float wet 0.75
@@ -22,17 +23,22 @@ moduleEnd
 
 group nested
 expose gain &voice:level
+entry main
 module voice
 int level 7
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 
 group other
 expose gain &voice:level
+entry main
 module voice
 float level 0.9
 moduleEnd
+entryEnd
 groupEnd
 
 module controls

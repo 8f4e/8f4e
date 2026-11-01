@@ -25,7 +25,11 @@ function createBlocks(project: ProjectObjectModel, projectPath = ''): CodeBlockG
 				name: group.name,
 				code: group.code,
 				projectPath,
-				childProject: { path: '', blocks: createBlocks(group, createChildProjectGroupPath(projectPath, group.name)) },
+				childProject: {
+					entries: [],
+					path: '',
+					blocks: createBlocks(group, createChildProjectGroupPath(projectPath, group.name)),
+				},
 			})
 		),
 	];

@@ -37,10 +37,11 @@
   do not publish. Project loading and history restore snapshots through the shared project-changes helper, which
   publishes after derived state is ready. API batches, undo/redo, and project replacement all advance the shared
   revision. Keep `compilerInputRevision` independent and avoid separate API fingerprints or revision counters.
-- Project levels use `ProjectLevel { path, blocks, viewport?, selectedBlock? }`, with `rootProject` and
-  `currentProject` references in code-block rendering state and `childProject` on group blocks. Keep remembered viewports and selections in browser
-  memory only; serializers omit them. Same-project restoration preserves active levels and views by path and resolves
-  remembered selections to rebuilt blocks. Share tree operations through `pureHelpers/projectTree` and home/remembered viewport placement through `getProjectViewportPosition`.
+- Project levels use `ProjectLevel { path, blocks, entries, viewport?, selectedBlock? }`, with `rootProject` and
+  `currentProject` references in code-block rendering state and `childProject` on group blocks. Keep remembered views
+  and selections in browser memory only; serializers omit them. Same-project restoration preserves active levels and
+  views by path and resolves remembered selections to rebuilt blocks. Share tree operations through
+  `pureHelpers/projectTree` and home/remembered viewport placement through `getProjectViewportPosition`.
 - Project operations own `applyProjectEdit`, including canonical no-op comparison and snapshot application. History
   listens to `beforeProjectEdit` to flush pending typing and to completed changes for checkpoint bookkeeping; API
   writes must work without the history effect installed.
@@ -72,6 +73,8 @@
 
 - Meter, plot, bars, crossfade, watch, and stack own their data and drawers in plugin packages. Keep memory scope,
   typed-value resolution, tab layout, and compiler lookups generic and available through public helper exports.
+- Preserve root and group entry tables through loading, editing/history, clipboard, and serialization, including empty
+  entries and groups without `main`. Keep module entry membership local to its owning project scope.
 - Keep canonical project-model serialization under editor-state's `pureHelpers/projectSerialization`, filename
   configuration under `features/editor-config`, and `.8f4e` text formatting private to project-save.
   Session persistence belongs to its plugin. Project-open owns reading/parsing; project-save owns Save/Export,

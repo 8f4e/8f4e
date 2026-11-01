@@ -137,7 +137,7 @@
           },
         ],
         "name": "right/helper",
-        "projectBlockId": 16,
+        "projectBlockId": 18,
         "sourceIdentity": {
           "codeBlockId": "helper",
           "projectGroupPath": "right",
@@ -147,6 +147,7 @@
     ],
     "modules": [
       {
+        "executionEntryName": "left/main",
         "id": "left/shared",
         "lines": [
           {
@@ -196,7 +197,7 @@
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 9,
+        "projectBlockId": 10,
         "sourceIdentity": {
           "codeBlockId": "shared",
           "projectGroupPath": "left",
@@ -204,6 +205,7 @@
         "type": "module",
       },
       {
+        "executionEntryName": "right/main",
         "id": "right/shared",
         "lines": [
           {
@@ -253,7 +255,7 @@
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 20,
+        "projectBlockId": 23,
         "sourceIdentity": {
           "codeBlockId": "shared",
           "projectGroupPath": "right",
@@ -275,12 +277,39 @@
       "misses": 4,
     },
   },
-  "entryNames": [
-    "main",
+  "entries": [
+    {
+      "exportName": "main",
+      "id": "main",
+      "steps": [
+        {
+          "id": "left/main",
+          "type": "entry",
+        },
+        {
+          "id": "right/main",
+          "type": "entry",
+        },
+      ],
+    },
+    {
+      "id": "left/main",
+      "steps": [
+        {
+          "id": "left/shared",
+          "type": "module",
+        },
+      ],
+    },
+    {
+      "id": "right/main",
+      "steps": [
+        {
+          "id": "right/shared",
+          "type": "module",
+        },
+      ],
+    },
   ],
   "memoryExposures": [],
-  "moduleEntryNames": [
-    "main",
-    "main",
-  ],
 }

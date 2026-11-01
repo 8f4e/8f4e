@@ -43,6 +43,7 @@ prototype state
 int inherited 7
 prototypeEnd
 
+entry main
 module processor
 shape state
 int foo 3
@@ -83,11 +84,14 @@ moduleEnd
 group nested
 expose foo &processor:foo
 init &foo 22
+entry main
 module processor
 int foo 1
 push foo
 assertEqual 22
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd

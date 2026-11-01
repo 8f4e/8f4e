@@ -83,7 +83,7 @@ describe('block deletion', () => {
 	it('removes a batch from the visible nested slice in place and clears deleted references before publishing', () => {
 		const { store, state, first, second, untouched } = setup();
 		const nested = [first, second, untouched];
-		const owner = createMockCodeBlock({ name: 'owner', childProject: { path: '', blocks: nested } });
+		const owner = createMockCodeBlock({ name: 'owner', childProject: { entries: [], path: '', blocks: nested } });
 		const root = state.codeBlockRendering.rootProject.blocks;
 		root.splice(0, root.length, owner);
 		state.codeBlockRendering.currentProject = owner.childProject!;

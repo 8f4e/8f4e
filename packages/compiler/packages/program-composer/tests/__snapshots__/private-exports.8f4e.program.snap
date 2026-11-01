@@ -102,9 +102,21 @@
       "misses": 1,
     },
   },
-  "entryNames": [
-    "main",
+  "entries": [
+    {
+      "exportName": "main",
+      "id": "main",
+      "steps": [
+        {
+          "id": "helpers/main",
+          "type": "entry",
+        },
+      ],
+    },
+    {
+      "id": "helpers/main",
+      "steps": [],
+    },
   ],
   "memoryExposures": [],
-  "moduleEntryNames": [],
 }

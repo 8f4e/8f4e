@@ -5,6 +5,7 @@
   "compiledModules": {
     "keyboard": {
       "id": "keyboard",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -72,13 +73,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "keyboard"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 0,
-      "executionEntryName": "main"
+      "index": 0
     },
     "janko": {
       "id": "janko",
+      "executionEntryName": "main",
       "cycleFunction": [
         19,
         0,
@@ -217,13 +219,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "janko"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 1,
-      "executionEntryName": "main"
+      "index": 1
     },
     "midiLUT": {
       "id": "midiLUT",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -1675,13 +1678,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "midiLUT"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 2,
-      "executionEntryName": "main"
+      "index": 2
     },
     "midiNote2Freq": {
       "id": "midiNote2Freq",
+      "executionEntryName": "main",
       "cycleFunction": [
         61,
         1,
@@ -1908,13 +1912,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "midiNote2Freq"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 3,
-      "executionEntryName": "main"
+      "index": 3
     },
     "arEnv": {
       "id": "arEnv",
+      "executionEntryName": "main",
       "cycleFunction": [
         119,
         0,
@@ -2600,13 +2605,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "arEnv"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 4,
-      "executionEntryName": "main"
+      "index": 4
     },
     "phaseAccumulator": {
       "id": "phaseAccumulator",
+      "executionEntryName": "main",
       "cycleFunction": [
         100,
         1,
@@ -3050,13 +3056,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "phaseAccumulator"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 5,
-      "executionEntryName": "main"
+      "index": 5
     },
     "vca": {
       "id": "vca",
+      "executionEntryName": "main",
       "cycleFunction": [
         27,
         0,
@@ -3231,13 +3238,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "vca"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 6,
-      "executionEntryName": "main"
+      "index": 6
     },
     "audioout": {
       "id": "audioout",
+      "executionEntryName": "main",
       "cycleFunction": [
         87,
         2,
@@ -3600,10 +3608,10 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "audioout"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 7,
-      "executionEntryName": "main"
+      "index": 7
     }
   },
   "memoryPlan": {

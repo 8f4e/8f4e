@@ -115,7 +115,7 @@ describe('cached directive records', () => {
 
 	it('refreshes programmatic edits in nested project groups', () => {
 		const { store, state, events, audio } = setup(
-			'8f4e/v1\nentry main\ngroup voices\nmodule audio\nint gate 0 ; @future nested\nmoduleEnd\ngroupEnd\nentryEnd'
+			'8f4e/v1\nentry main\ngroup voices\nentry main\nmodule audio\nint gate 0 ; @future nested\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd'
 		);
 		const group = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'voices')!;
 		events.dispatch('openProjectGroup', { codeBlock: group });

@@ -4,6 +4,7 @@
     "functions": [],
     "modules": [
       {
+        "executionEntryName": "audio/main",
         "id": "audio/source",
         "lines": [
           {
@@ -48,7 +49,7 @@
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 5,
+        "projectBlockId": 6,
         "sourceIdentity": {
           "codeBlockId": "source",
           "projectGroupPath": "audio",
@@ -56,6 +57,7 @@
         "type": "module",
       },
       {
+        "executionEntryName": "audio/main",
         "id": "audio/consumer",
         "lines": [
           {
@@ -108,7 +110,7 @@
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 9,
+        "projectBlockId": 10,
         "sourceIdentity": {
           "codeBlockId": "consumer",
           "projectGroupPath": "audio",
@@ -128,12 +130,30 @@
       "misses": 2,
     },
   },
-  "entryNames": [
-    "main",
+  "entries": [
+    {
+      "exportName": "main",
+      "id": "main",
+      "steps": [
+        {
+          "id": "audio/main",
+          "type": "entry",
+        },
+      ],
+    },
+    {
+      "id": "audio/main",
+      "steps": [
+        {
+          "id": "audio/source",
+          "type": "module",
+        },
+        {
+          "id": "audio/consumer",
+          "type": "module",
+        },
+      ],
+    },
   ],
   "memoryExposures": [],
-  "moduleEntryNames": [
-    "main",
-    "main",
-  ],
 }

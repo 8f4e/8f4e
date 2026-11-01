@@ -22,6 +22,9 @@ constants env
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+
 ; Binary asset sizes in bytes
 ; '808-kick-48khz-s16le.pcm'
 const ASSET_KICK_SIZE 29410
@@ -29,9 +32,6 @@ const ASSET_KICK_SIZE 29410
 const ASSET_SNARE_SIZE 19688
 ; '808-hihat-48khz-s16le.pcm'
 const ASSET_HIHAT_SIZE 21500
-
-const SAMPLE_RATE 48000
-const AUDIO_BUFFER_SIZE 128
 
 constantsEnd
 
@@ -94,6 +94,1416 @@ push 1
 store
 ifEnd
 moduleEnd
+group grids
+; @pos 33 -2
+; @home
+expose trigger &sequencer:trigger
+init &trigger &clock:out
+
+expose bd &outputs:bd
+expose sd &outputs:sd
+expose hh &outputs:hh
+
+expose x &mapReader:x
+; @slider &x 0 255 1
+expose y &mapReader:y
+; @slider &y 0 255 1
+expose densityBD &outputs:densityBD
+; @slider &densityBD 0 255 1
+expose densitySD &outputs:densitySD
+; @slider &densitySD 0 255 1
+expose densityHH &outputs:densityHH
+; @slider &densityHH 0 255 1
+
+expose accentBD &outputs:accentBD
+expose accentSD &outputs:accentSD
+expose accentHH &outputs:accentHH
+
+
+includes
+; @pos -242 0
+include std/events/risingEdge
+includesEnd
+function mapBalance
+; @pos -204 0
+; Converts a coordinate
+; to a cell blend weight.
+param int coordinate
+
+push coordinate
+push 63
+and
+push 2
+shiftLeft
+functionEnd int
+function accentHit
+; @pos -204 14
+; Flags hits whose level
+; is greater than 192.
+param int hit
+param int level
+
+push hit
+push level
+push 192
+greaterThan
+and
+functionEnd int
+function patternRow
+; @pos -204 29
+; Finds the step address
+; for a chosen map cell.
+param int cellX
+param int cellY
+param int step
+
+push cellX
+push 5
+mul
+push cellY
+add
+mapBegin int
+map 0 &pattern10:0
+map 1 &pattern08:0
+map 2 &pattern00:0
+map 3 &pattern09:0
+map 4 &pattern11:0
+map 5 &pattern15:0
+map 6 &pattern07:0
+map 7 &pattern13:0
+map 8 &pattern12:0
+map 9 &pattern06:0
+map 10 &pattern18:0
+map 11 &pattern14:0
+map 12 &pattern04:0
+map 13 &pattern05:0
+map 14 &pattern03:0
+map 15 &pattern23:0
+map 16 &pattern16:0
+map 17 &pattern21:0
+map 18 &pattern01:0
+map 19 &pattern02:0
+map 20 &pattern24:0
+map 21 &pattern19:0
+map 22 &pattern17:0
+map 23 &pattern20:0
+map 24 &pattern22:0
+mapEnd int
+
+push step
+push 4
+mul
+add
+functionEnd int
+function selectRows
+; @pos -204 77
+; Sets four row pointers
+; from X/Y and step.
+#impure
+param int x
+param int y
+param int step
+param int** rowA
+param int** rowB
+param int** rowC
+param int** rowD
+local int cellX
+local int cellY
+
+push x
+push 6
+shiftRightUnsigned
+localSet cellX
+push y
+push 6
+shiftRightUnsigned
+localSet cellY
+
+push rowA
+push cellX
+push cellY
+push step
+call patternRow
+store
+
+push rowB
+push cellX
+push 1
+add
+push cellY
+push step
+call patternRow
+store
+
+push rowC
+push cellX
+push cellY
+push 1
+add
+push step
+call patternRow
+store
+
+push rowD
+push cellX
+push 1
+add
+push cellY
+push 1
+add
+push step
+call patternRow
+store
+functionEnd
+function readPattern
+; @pos -170 0
+; Reads one drum channel
+; from a packed step row.
+#impure
+param int* row
+param int shift
+
+push row
+load
+push shift
+shiftRightUnsigned
+push 255
+and
+functionEnd int
+function mixByte
+; @pos -170 19
+; Blends two byte values
+; using integer weights.
+param int startValue
+param int endValue
+param int balance
+
+push startValue
+push 255
+push balance
+sub
+mul
+push endValue
+push balance
+mul
+add
+push 8
+shiftRightUnsigned
+functionEnd int
+function densityHit
+; @pos -170 40
+; Tests whether a level
+; passes a density limit.
+param int level
+param int density
+
+push level
+push 255
+push density
+sub
+greaterThan
+functionEnd int
+function readMap
+; @pos -170 58
+; Blends one drum channel
+; from four pattern rows.
+#impure
+param int* rowA
+param int* rowB
+param int* rowC
+param int* rowD
+param int shift
+param int balanceX
+param int balanceY
+
+push rowA
+push shift
+call readPattern
+
+push rowB
+push shift
+call readPattern
+
+push balanceX
+call mixByte
+
+push rowC
+push shift
+call readPattern
+
+push rowD
+push shift
+call readPattern
+
+push balanceX
+call mixByte
+
+push balanceY
+call mixByte
+functionEnd int
+note attribution
+; @pos -42 -16
+The algorithm is based on the
+original source of the Mutable
+Instruments Grids firmware.
+
+Converted to 8f4e by Andor Polgar.
+noteEnd
+note license
+; @pos 0 -21
+Copyright 2009, 2011, 2012 Emilie Gillet.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+noteEnd
+note patterns
+; @pos 78 -36
+Mutable Instruments Grids patterns
+
+25 patterns with 32 steps each.
+One row per step; columns are
+bass drum (BD), snare drum (SD),
+and hi-hat / percussion (HH).
+Values are rhythmic importance
+levels in the range 0 to 255.
+
+Each patternNN matches node_N
+in the original source.
+Modules follow the original
+X/Y map: X increases right,
+and Y increases downward.
+
+X and Y blend nearby patterns
+using the original drum map.
+All five controls range from
+0 to 255. Density zero mutes
+that channel; higher values
+include weaker rhythmic steps.
+Gate calculations run only on rising clock edges.
+The BD, SD and HH outputs pulse
+once per triggered step.
+The accent outputs pulse on
+hits with a level above 192.
+Step numbers run from 0 to 31.
+noteEnd
+entry main
+module sequencer
+; @pos -128 0
+
+int* trigger
+int step
+int nextStep
+int previousTrigger
+int tick
+
+; Trigger outputs last one sample.
+push &outputs:bd
+push 0
+store
+
+push &outputs:sd
+push 0
+store
+
+push &outputs:hh
+push 0
+store
+
+push &outputs:accentBD
+push 0
+store
+
+push &outputs:accentSD
+push 0
+store
+
+push &outputs:accentHH
+push 0
+store
+
+push &tick
+push *trigger
+call risingEdge
+- &previousTrigger
+store
+
+push tick
+if
+push &step
+push nextStep
+store
+
+push &nextStep
+push step
+push 1
+add
+push 31
+and
+store
+
+call gate
+ifEnd
+moduleEnd
+entryEnd
+entry gate
+module mapReader
+; @pos -68 0
+; @home left
+int* step &sequencer:step
+int x 128
+int y 128
+; Corners: A B
+;          C D
+int* rowA &pattern04:0
+int* rowB &pattern21:0
+int* rowC &pattern05:0
+int* rowD &pattern01:0
+int levelBD
+int levelSD
+int levelHH
+
+local int balanceX
+local int balanceY
+
+push x
+push y
+push *step
+call selectRows
+- &rowA
+- &rowB
+- &rowC
+- &rowD
+
+push x
+call mapBalance
+localSet balanceX
+push y
+call mapBalance
+localSet balanceY
+
+push &levelBD
+push rowA
+push rowB
+push rowC
+push rowD
+push 24
+push balanceX
+push balanceY
+call readMap
+store
+
+push &levelSD
+push rowA
+push rowB
+push rowC
+push rowD
+push 16
+push balanceX
+push balanceY
+call readMap
+store
+
+push &levelHH
+push rowA
+push rowB
+push rowC
+push rowD
+push 8
+push balanceX
+push balanceY
+call readMap
+store
+moduleEnd
+module outputs
+; @pos -34 0
+
+int* levelBD
+- &mapReader:levelBD
+int* levelSD
+- &mapReader:levelSD
+int* levelHH
+- &mapReader:levelHH
+int densityBD 128
+int densitySD 128
+int densityHH 128
+int bd
+int sd
+int hh
+int accentBD
+int accentSD
+int accentHH
+
+push &bd
+push *levelBD
+push densityBD
+call densityHit
+store
+
+push &sd
+push *levelSD
+push densitySD
+call densityHit
+store
+
+push &hh
+push *levelHH
+push densityHH
+call densityHit
+store
+
+push &accentBD
+push bd
+push *levelBD
+call accentHit
+store
+
+push &accentSD
+push sd
+push *levelSD
+call accentHit
+store
+
+push &accentHH
+push hh
+push *levelHH
+call accentHit
+store
+moduleEnd
+module pattern10
+; @pos 0 0
+
+;   BD  SD  HH
+int 145   0 255
+int   0   0   0
+int   0 127   0
+int   0   0   0
+int   0 159 145
+int   0   0   0
+int 109 127   0
+int   0   0   0
+int   0 159 182
+int   0   0   0
+int   0 191 109
+int   0   0   0
+int 255 223 109
+int   0   0   0
+int 109  63 109
+int   0   0   0
+int  72 255 218
+int   0   0   0
+int 218  95   0
+int   0   0   0
+int   0  31  72
+int   0   0   0
+int   0  95   0
+int   0   0   0
+int  36  31 182
+int   0   0   0
+int   0   8  72
+int   0   0   0
+int 182  63 182
+int   0   0   0
+int   0   8  36
+int   0   0   0
+moduleEnd
+module pattern08
+; @pos 0 38
+
+;   BD  SD  HH
+int 255 159 255
+int   0   0   0
+int   0   0  31
+int   0   0   0
+int 218  31  63
+int   0   0   0
+int   0 127  31
+int   0   0   0
+int  36 255  95
+int   0   0   0
+int   0  31  31
+int   0   0   0
+int 218   0  63
+int   0   0   0
+int   0  95 127
+int   0   0   0
+int 182   8 159
+int   0   0   0
+int 109   0  31
+int   0   0   0
+int 255 191  63
+int   0   0   0
+int   0  31  31
+int   0   0   0
+int   0 255 223
+int   0   0   0
+int   0  31 223
+int   0   0   0
+int 145 223 191
+int   0   0   0
+int  72  63 191
+int   0   0   0
+moduleEnd
+module pattern00
+; @pos 0 76
+
+;   BD  SD  HH
+int 255  36 170
+int   0   0   0
+int   0 109 113
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int 145   8  56
+int   0   0   0
+int   0 255 170
+int   0   0   0
+int   0   0 141
+int   0   0   0
+int 218   0 198
+int   0   0   0
+int   0  72  56
+int   0   0   0
+int  72   0 170
+int   0   0   0
+int  36 182 113
+int   0   0   0
+int 182   0 226
+int   0   0   0
+int   0  36  28
+int   0   0   0
+int 109 218 170
+int   0   0   0
+int   0   0 113
+int   0   0   0
+int  72 145 198
+int   0   0   0
+int   0   0  85
+int   0   0   0
+moduleEnd
+module pattern09
+; @pos 0 114
+
+;   BD  SD  HH
+int 226   8 115
+int   0   0   0
+int  28  95  46
+int   0   0   0
+int  28   8 255
+int   0   0   0
+int 141   8 185
+int   0   0   0
+int   8 255 139
+int   0   0   0
+int   8  63  23
+int   0   0   0
+int 255  31 208
+int   0   0   0
+int   8 223 115
+int   0   0   0
+int 113   8 231
+int   0   0   0
+int  28  31  69
+int   0   0   0
+int 198 191 255
+int   0   0   0
+int  85   8 162
+int   0   0   0
+int  56 255 139
+int   0   0   0
+int 198 127 115
+int   0   0   0
+int 170 127 231
+int   0   0   0
+int  28 159  92
+int   0   0   0
+moduleEnd
+module pattern11
+; @pos 0 152
+
+;   BD  SD  HH
+int 255   0 145
+int   0   0   0
+int   0 127 109
+int   0   0 109
+int   0   0 218
+int   0   0 109
+int   0  42  72
+int   0   0   0
+int   0 212 145
+int   0   0   0
+int   0   0  72
+int   0 212   0
+int   0   0 218
+int   0   0   0
+int   0 212 109
+int   0   0   0
+int 255   0 182
+int   0   0   0
+int   0   0 109
+int   0   0   0
+int 218  42 255
+int   0   0   0
+int  72   0  72
+int  36   0   0
+int   0 255 182
+int   0   0 109
+int 182   0  36
+int   0   0 109
+int   0 170 255
+int   0 170 109
+int 145 127 109
+int 109  85   0
+moduleEnd
+module pattern15
+; @pos 34 0
+
+;   BD  SD  HH
+int 255  36 255
+int   0   0   0
+int   0  36  28
+int   0   0   0
+int   0   0 226
+int   0   0   0
+int   0   0  56
+int   0   0   0
+int  36 255 198
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 182 182   0
+int   0   0   0
+int   0   0  28
+int   0   0  28
+int 218   0 170
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int   0   0 141
+int   0   0   0
+int   0   0   0
+int   0 109   0
+int  72 218 113
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 145 145  85
+int   0   0  85
+int 109  72  85
+int   0  72  85
+moduleEnd
+module pattern07
+; @pos 34 38
+
+;   BD  SD  HH
+int 223   0 255
+int   0   0   0
+int   0   0  72
+int   0   0   0
+int  63 109 218
+int   0   0   0
+int   0   0  36
+int   0   0   0
+int  95 218 218
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 223 182 145
+int   0   0   0
+int  31  72   0
+int   0   0   0
+int 255   8 255
+int   0   0   0
+int   0  36  36
+int   0   0   0
+int 159 145 182
+int   0   0   0
+int   0  36  36
+int   0   0   0
+int 127 255 182
+int   0   0   0
+int  31   8   0
+int   0   0   0
+int 191 182 109
+int   0   0   0
+int  31  72   0
+int   0   0   0
+moduleEnd
+module pattern13
+; @pos 34 76
+
+;   BD  SD  HH
+int 255  72 255
+int   0   0   0
+int   0   0 162
+int   0   0   0
+int   0   0 231
+int   0   0   0
+int  63   0 162
+int   0   0   0
+int 191 255 231
+int   0   0   0
+int  95   0 115
+int   0   0   0
+int  31   0 208
+int   0   0   0
+int 223   0 139
+int   0   0   0
+int 255  72 185
+int   0   0   0
+int  63  72  92
+int   0   0   0
+int  95  36 185
+int   0   0   0
+int  63   8  46
+int   0   0   0
+int 159 218 162
+int   0   0   0
+int   0 182  69
+int   0   0   0
+int   0 145 162
+int   0   0   0
+int 127 109  23
+int   0   0   0
+moduleEnd
+module pattern12
+; @pos 34 114
+
+;   BD  SD  HH
+int 255   0 255
+int   0   0   0
+int   0  85  42
+int   0   0   0
+int 255  56 233
+int   0   0   0
+int 191  28  63
+int   0   0   0
+int   0 255 212
+int   0   0   0
+int   0  28  85
+int   0   0   0
+int  95   0 191
+int   0   0   0
+int  63 226 106
+int   0   0   0
+int  31   0 191
+int   0   0   0
+int   0 170  21
+int   0   0   0
+int 223  56 170
+int   0   0   0
+int 223 113   8
+int   0   0   0
+int   0 198 170
+int   0   0   0
+int   8   0 127
+int   0   0   0
+int 159 113 148
+int   0   0   0
+int 127 141 148
+int   0   0   0
+moduleEnd
+module pattern06
+; @pos 34 152
+
+;   BD  SD  HH
+int 255  51 255
+int   0   0   0
+int   0 204 226
+int   0   0   0
+int 223   0 255
+int   0   0   0
+int   0 102 255
+int   0   0   0
+int  31 255 198
+int   0   0   0
+int   8 127  28
+int   0   0   0
+int 127   8 141
+int   0   0   0
+int   0 178  56
+int   0   0   0
+int  95  25 170
+int   0   0   0
+int   0 229  56
+int   0   0   0
+int 159   0  85
+int   0   0   0
+int   0  76  28
+int   0   0   0
+int  95 204 170
+int   0   0   0
+int  63 153  28
+int   0   0   0
+int 191  51 113
+int   0   0   0
+int   0  25  56
+int   0   0   0
+moduleEnd
+module pattern18
+; @pos 68 0
+
+;   BD  SD  HH
+int 255   0 255
+int   0   0   0
+int   8   0   0
+int   0   0   0
+int  28   0 255
+int   0   0   0
+int  28   0 127
+int   0   0   0
+int 198 255   0
+int   0   0   0
+int  56   0  85
+int   0   0   0
+int  56 127   0
+int   0   0   0
+int  85   0 212
+int   0   0   0
+int 255   0   0
+int   0   0   0
+int  85   0 212
+int   0   0   0
+int 113   0  42
+int   0   0   0
+int 113   0 170
+int   0   0   0
+int 226  63   0
+int   0   0   0
+int 141   0 127
+int   0   0   0
+int 170 191   0
+int   0   0   0
+int 141   0   0
+int   0   0   0
+moduleEnd
+module pattern14
+; @pos 68 38
+
+;   BD  SD  HH
+int 255   0 212
+int   0   0   0
+int   0   0   8
+int   0   0   0
+int  51   8 170
+int   0   0   0
+int   0  36   0
+int   0   0   0
+int   0 255 127
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 102 182  85
+int   0   0   0
+int   0   8   8
+int   0   0   0
+int 204   0 255
+int   0   0   0
+int   0   0   8
+int   0   0   0
+int 153  72 170
+int   0   0   0
+int   0 109   0
+int   0   0   0
+int   0 145 127
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int  51 255  42
+int   0   0   0
+int   0 218   8
+int   0   0   0
+moduleEnd
+module pattern04
+; @pos 68 76
+
+;   BD  SD  HH
+int 255   8  76
+int   0   0   0
+int  31   0  25
+int   0   0   0
+int  63  95 255
+int   0   0   0
+int  63  63 127
+int   0   0   0
+int 127 255 153
+int   0   0   0
+int  95   0  51
+int   0   0   0
+int 191 127 204
+int   0   0   0
+int  63   0 102
+int   0   0   0
+int 223   8  76
+int   0   0   0
+int  31   0  51
+int   0   0   0
+int 159 159 229
+int   0   0   0
+int  63  63 127
+int   0   0   0
+int  31 255 153
+int   0   0   0
+int  63 223  51
+int   0   0   0
+int  95 191 178
+int   0   0   0
+int  31  31 102
+int   0   0   0
+moduleEnd
+module pattern05
+; @pos 68 114
+
+;   BD  SD  HH
+int 255 178 178
+int   0   0   0
+int  51 127 102
+int   0   0   0
+int  25 153 255
+int   0   0   0
+int  76 204  76
+int   0   0   0
+int   0 255 127
+int   0   0   0
+int   0   0  76
+int   0   0   0
+int 102  25 229
+int   0   0   0
+int   0  76  76
+int   0   0   0
+int 204 102 153
+int   0   0   0
+int 229  51 102
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int 178   0  25
+int   0   0   0
+int   0 229 127
+int   0   0   0
+int 153  25  51
+int   0   0   0
+int 127  25 204
+int   0   0   0
+int   8 204  51
+int   0   0   0
+moduleEnd
+module pattern03
+; @pos 68 152
+
+;   BD  SD  HH
+int 255   0 255
+int   0   0   0
+int 212   0 231
+int   0   0   0
+int  63 141 255
+int   0   0   0
+int   0 113 208
+int   0   0   0
+int 106 255 139
+int   0   0   0
+int 148 198  92
+int   0   0   0
+int  85   0 115
+int   0   0   0
+int 127  56  92
+int   0   0   0
+int 191   0 185
+int   0   0   0
+int  21  85  69
+int   0   0   0
+int 233  56  46
+int   0   0   0
+int   0  28  46
+int   0   0   0
+int  21 226 162
+int   0   0   0
+int 170  28  23
+int   0   0   0
+int   0 170 208
+int   0   0   0
+int  42  56  46
+int   0   0   0
+moduleEnd
+module pattern23
+; @pos 102 0
+
+;   BD  SD  HH
+int 255   0 255
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int 229   0 204
+int   0   0 204
+int   0   0 204
+int   0  31 204
+int 204   0   0
+int   0   0   0
+int 204   0  51
+int   0   0  51
+int   0 255  51
+int   0   0  51
+int  76   0   0
+int   0  31   0
+int 178   0 204
+int   0   0   0
+int 153   8 204
+int   0   0   0
+int  51   0 153
+int   0   0 153
+int 178 191 153
+int   0 159 153
+int 178 127 153
+int   0  95   0
+int 127  95   0
+int   0   0   0
+int 102 223 102
+int  51   0 102
+int  51  63 102
+int  25   0 102
+moduleEnd
+module pattern16
+; @pos 102 38
+
+;   BD  SD  HH
+int 255   0 141
+int   0   0   0
+int   0  31  28
+int   0   0   0
+int   0 255  28
+int   0   0   0
+int  95   0  28
+int   0   0   0
+int   0   0 113
+int   0   0   0
+int 127  95   8
+int   0   0   0
+int   0 223   8
+int   0   0   0
+int   0   0   8
+int   0   0   0
+int 223   0 255
+int   0   0   0
+int  95  63   0
+int   0   0   0
+int  63 191 226
+int   0   0   0
+int  31   0   0
+int   0   0   0
+int 191   0 198
+int   0   0   0
+int   0   0  56
+int   0   0   0
+int 159 159 170
+int   0   0   0
+int   0 127  85
+int   0   0   0
+moduleEnd
+module pattern21
+; @pos 102 76
+
+;   BD  SD  HH
+int 255   0 109
+int   0   0   0
+int   0   0 109
+int   0   0   0
+int 218   8 255
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 145 255  72
+int   0   0   0
+int   0  85  72
+int   0   0   0
+int  36 212 218
+int   0   0   0
+int   0  42   0
+int   0   0   0
+int 218   0 145
+int   0   0   0
+int   0   0 182
+int   0   0   0
+int  36   8 255
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 182  85  36
+int   0   0   0
+int  72 170  36
+int   0   0   0
+int   0 127 218
+int   0   0   0
+int 109  42   8
+int   0   0   0
+moduleEnd
+module pattern01
+; @pos 102 114
+
+;   BD  SD  HH
+int 229  28 159
+int   0   0   0
+int  25 198 159
+int   0   0   0
+int 102  56 255
+int   0   0   0
+int  25  56  63
+int   0   0   0
+int 204 226 159
+int   0   0   0
+int  25  28 159
+int   0   0   0
+int  76 141 191
+int   0   0   0
+int   8  28  31
+int   0   0   0
+int 255  28 159
+int   0   0   0
+int   8 170 127
+int   0   0   0
+int  51  28 255
+int   0   0   0
+int  25  28  31
+int   0   0   0
+int 178 255 159
+int   0   0   0
+int  25 113 127
+int   0   0   0
+int 153  85 223
+int   0   0   0
+int 127  85  95
+int   0   0   0
+moduleEnd
+module pattern02
+; @pos 102 152
+
+;   BD  SD  HH
+int 255   0 255
+int   0   0   0
+int   0 127  85
+int   0   0   0
+int 127   0 148
+int   0   0   0
+int   0   0  85
+int   0   0   0
+int   0 255 127
+int   0   0   0
+int 102 191  85
+int   0   0   0
+int   0  31 106
+int   0   0   0
+int 229  63  63
+int   0   0   0
+int   0   0 212
+int   0   0   0
+int 178  95 170
+int   0   0   0
+int 204   0 191
+int   0   0   0
+int   0   0 170
+int   0   0   0
+int  76 223  85
+int   0   0   0
+int  51   0  42
+int   0   0   0
+int 153  31 233
+int   0   0   0
+int  25 159  21
+int   0   0   0
+moduleEnd
+module pattern24
+; @pos 136 0
+
+;   BD  SD  HH
+int 170 255 255
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 255 113 191
+int   0   0   0
+int   0   0   0
+int 198  85 159
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int  28 226 223
+int   0   0   0
+int   0   0   0
+int 141 141  95
+int   0   0   0
+int   0   0   0
+int   0   8   0
+int   0   0   0
+int 226 170  63
+int   0  56   0
+int   0  56   0
+int  56 198 127
+int   0   0   0
+int   0   0   0
+int 113  56   0
+int   0   0   0
+int  85 141  31
+int   0  28   0
+int   0   0   0
+moduleEnd
+module pattern19
+; @pos 136 38
+
+;   BD  SD  HH
+int 255   0 255
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int   0 109   0
+int   0   0   0
+int 218   8 226
+int   0   0   0
+int 182  72  85
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int   0 255 141
+int   0   0   0
+int 145 182   0
+int   0   0   0
+int 145   0   0
+int   0   0   0
+int  36   0   0
+int   0   0   0
+int   0 145 170
+int   0   0   0
+int 109   8  56
+int   0   0   0
+int 109  36 198
+int   0   0   0
+int   0   8   0
+int   0   0   0
+int  72 218 113
+int   0   0   0
+int  36 182  28
+int   0   0   0
+moduleEnd
+module pattern17
+; @pos 136 76
+
+;   BD  SD  HH
+int 255   0 113
+int   0   0   0
+int   0  51   0
+int   0  25   0
+int   8  76 141
+int   0  25   0
+int   0  25  85
+int   0   0   0
+int 182 153   0
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int  72 127 170
+int   0 102   0
+int   0 178   0
+int   0   0   0
+int 218 204  56
+int   0   0  28
+int   0   0 255
+int   0   0   0
+int  36   0   0
+int   0   0   0
+int   0 255   0
+int   0   0   0
+int 145   0 198
+int   0   0   0
+int   0 102   0
+int   0   0   0
+int 109 229 226
+int   0   0   0
+int   0  76   0
+int   0   0   0
+moduleEnd
+module pattern20
+; @pos 136 114
+
+;   BD  SD  HH
+int 255   0  36
+int   0   0   0
+int   0   0  36
+int   0   0   0
+int 113   0 145
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 198 255  72
+int   0   0   0
+int  56 145  72
+int   0   0   0
+int  85 109 182
+int   0   0   0
+int  28 218   0
+int   0   0   0
+int 255  36  72
+int   0   0   0
+int   0 182  72
+int   0   0   0
+int 226  72 218
+int   0   0   0
+int   0  72   0
+int   0   0   0
+int 170 255 109
+int   0   0   0
+int   0   0 109
+int   0   0   0
+int 141   0 255
+int   0   0   0
+int   0 109   0
+int   0   0   0
+moduleEnd
+module pattern22
+; @pos 136 152
+
+;   BD  SD  HH
+int 255 255 113
+int   0   0   0
+int   0  85  56
+int   0   0   0
+int  42   0 255
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 212 226  85
+int   0   0   0
+int   0  85  56
+int   0   0   0
+int   8   0 226
+int   0   0   0
+int 212 198   0
+int   0   0   0
+int 170   0   0
+int   0   0   0
+int   0 141 170
+int   0   0   0
+int  85  56   0
+int   0   0   0
+int   0   0 141
+int   0   0   0
+int 212 170  28
+int   0   0   0
+int   8  28  28
+int   0   0   0
+int 127   0 198
+int   0   0   0
+int   8 113  28
+int   0   0   0
+moduleEnd
+entryEnd
+groupEnd
 module kick
 ; @pos 90 -2
 use env
@@ -357,1392 +1767,4 @@ push count(buffer)
 remainder
 store
 moduleEnd
-group grids
-; @pos 33 -2
-; @home
-expose trigger &sequencer:trigger
-init &trigger &clock:out
-
-expose bd &outputs:bd
-expose sd &outputs:sd
-expose hh &outputs:hh
-
-expose x &mapReader:x
-; @slider &x 0 255 1
-expose y &mapReader:y
-; @slider &y 0 255 1
-expose densityBD &outputs:densityBD
-; @slider &densityBD 0 255 1
-expose densitySD &outputs:densitySD
-; @slider &densitySD 0 255 1
-expose densityHH &outputs:densityHH
-; @slider &densityHH 0 255 1
-
-expose accentBD &outputs:accentBD
-expose accentSD &outputs:accentSD
-expose accentHH &outputs:accentHH
-
-includes
-; @pos -242 0
-include std/events/risingEdge
-includesEnd
-function mapBalance
-; @pos -204 0
-; Converts a coordinate
-; to a cell blend weight.
-param int coordinate
-
-push coordinate
-push 63
-and
-push 2
-shiftLeft
-functionEnd int
-function accentHit
-; @pos -204 14
-; Flags hits whose level
-; is greater than 192.
-param int hit
-param int level
-
-push hit
-push level
-push 192
-greaterThan
-and
-functionEnd int
-function readPattern
-; @pos -170 0
-; Reads one drum channel
-; from a packed step row.
-#impure
-param int* row
-param int shift
-
-push row
-load
-push shift
-shiftRightUnsigned
-push 255
-and
-functionEnd int
-function mixByte
-; @pos -170 19
-; Blends two byte values
-; using integer weights.
-param int startValue
-param int endValue
-param int balance
-
-push startValue
-push 255
-push balance
-sub
-mul
-push endValue
-push balance
-mul
-add
-push 8
-shiftRightUnsigned
-functionEnd int
-function densityHit
-; @pos -170 40
-; Tests whether a level
-; passes a density limit.
-param int level
-param int density
-
-push level
-push 255
-push density
-sub
-greaterThan
-functionEnd int
-function readMap
-; @pos -170 58
-; Blends one drum channel
-; from four pattern rows.
-#impure
-param int* rowA
-param int* rowB
-param int* rowC
-param int* rowD
-param int shift
-param int balanceX
-param int balanceY
-
-push rowA
-push shift
-call readPattern
-
-push rowB
-push shift
-call readPattern
-
-push balanceX
-call mixByte
-
-push rowC
-push shift
-call readPattern
-
-push rowD
-push shift
-call readPattern
-
-push balanceX
-call mixByte
-
-push balanceY
-call mixByte
-functionEnd int
-function patternRow
-; @pos -136 0
-; Finds the step address
-; for a chosen map cell.
-param int cellX
-param int cellY
-param int step
-
-push cellX
-push 5
-mul
-push cellY
-add
-mapBegin int
-map 0 &pattern10:0
-map 1 &pattern08:0
-map 2 &pattern00:0
-map 3 &pattern09:0
-map 4 &pattern11:0
-map 5 &pattern15:0
-map 6 &pattern07:0
-map 7 &pattern13:0
-map 8 &pattern12:0
-map 9 &pattern06:0
-map 10 &pattern18:0
-map 11 &pattern14:0
-map 12 &pattern04:0
-map 13 &pattern05:0
-map 14 &pattern03:0
-map 15 &pattern23:0
-map 16 &pattern16:0
-map 17 &pattern21:0
-map 18 &pattern01:0
-map 19 &pattern02:0
-map 20 &pattern24:0
-map 21 &pattern19:0
-map 22 &pattern17:0
-map 23 &pattern20:0
-map 24 &pattern22:0
-mapEnd int
-
-push step
-push 4
-mul
-add
-functionEnd int
-function selectRows
-; @pos -136 47
-; Sets four row pointers
-; from X/Y and step.
-#impure
-param int x
-param int y
-param int step
-param int** rowA
-param int** rowB
-param int** rowC
-param int** rowD
-local int cellX
-local int cellY
-
-push x
-push 6
-shiftRightUnsigned
-localSet cellX
-push y
-push 6
-shiftRightUnsigned
-localSet cellY
-
-push rowA
-push cellX
-push cellY
-push step
-call patternRow
-store
-
-push rowB
-push cellX
-push 1
-add
-push cellY
-push step
-call patternRow
-store
-
-push rowC
-push cellX
-push cellY
-push 1
-add
-push step
-call patternRow
-store
-
-push rowD
-push cellX
-push 1
-add
-push cellY
-push 1
-add
-push step
-call patternRow
-store
-functionEnd
-note attribution
-; @pos -42 -16
-The algorithm is based on the
-original source of the Mutable
-Instruments Grids firmware.
-
-Converted to 8f4e by Andor Polgar.
-noteEnd
-note license
-; @pos 0 -16
-Copyright 2009, 2011, 2012 Emilie Gillet.
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-noteEnd
-note patterns
-; @pos 78 -30
-Mutable Instruments Grids patterns
-
-25 patterns with 32 steps each.
-One row per step; columns are
-bass drum (BD), snare drum (SD),
-and hi-hat / percussion (HH).
-Values are rhythmic importance
-levels in the range 0 to 255.
-
-Each patternNN matches node_N
-in the original source.
-Modules are arranged in numeric
-order, from left to right,
-in a 5 by 5 grid.
-
-X and Y blend nearby patterns
-using the original drum map.
-All five controls range from
-0 to 255. Density zero mutes
-that channel; higher values
-include weaker rhythmic steps.
-The BD, SD and HH outputs pulse
-once per triggered step.
-The accent outputs pulse on
-hits with a level above 192.
-Step numbers run from 0 to 31.
-noteEnd
-module sequencer
-; @pos -102 0
-
-int* trigger
-int step
-int nextStep
-int previousTrigger
-int tick
-
-push &tick
-push *trigger
-call risingEdge
-- &previousTrigger
-store
-
-push tick
-if
-push &step
-push nextStep
-store
-
-push &nextStep
-push step
-push 1
-add
-push 31
-and
-store
-ifEnd
-moduleEnd
-module mapReader
-; @pos -68 0
-
-int* tick &sequencer:tick
-int* step &sequencer:step
-int x 128
-int y 128
-; Corners: A B
-;          C D
-int* rowA &pattern04:0
-int* rowB &pattern21:0
-int* rowC &pattern05:0
-int* rowD &pattern01:0
-int levelBD
-int levelSD
-int levelHH
-
-local int balanceX
-local int balanceY
-
-push *tick
-if
-push x
-push y
-push *step
-call selectRows
-- &rowA
-- &rowB
-- &rowC
-- &rowD
-
-push x
-call mapBalance
-localSet balanceX
-push y
-call mapBalance
-localSet balanceY
-
-push &levelBD
-push rowA
-push rowB
-push rowC
-push rowD
-push 24
-push balanceX
-push balanceY
-call readMap
-store
-
-push &levelSD
-push rowA
-push rowB
-push rowC
-push rowD
-push 16
-push balanceX
-push balanceY
-call readMap
-store
-
-push &levelHH
-push rowA
-push rowB
-push rowC
-push rowD
-push 8
-push balanceX
-push balanceY
-call readMap
-store
-ifEnd
-moduleEnd
-module outputs
-; @pos -34 0
-
-int* tick &sequencer:tick
-int* levelBD
-- &mapReader:levelBD
-int* levelSD
-- &mapReader:levelSD
-int* levelHH
-- &mapReader:levelHH
-int densityBD 128
-int densitySD 128
-int densityHH 128
-int bd
-int sd
-int hh
-int accentBD
-int accentSD
-int accentHH
-
-push &bd
-push *levelBD
-push densityBD
-call densityHit
-push *tick
-and
-store
-
-push &sd
-push *levelSD
-push densitySD
-call densityHit
-push *tick
-and
-store
-
-push &hh
-push *levelHH
-push densityHH
-call densityHit
-push *tick
-and
-store
-
-push &accentBD
-push bd
-push *levelBD
-call accentHit
-store
-
-push &accentSD
-push sd
-push *levelSD
-call accentHit
-store
-
-push &accentHH
-push hh
-push *levelHH
-call accentHit
-store
-moduleEnd
-module pattern00
-; @pos 0 0
-; @home left
-;   BD  SD  HH
-int 255  36 170
-int   0   0   0
-int   0 109 113
-int   0   0   0
-int   0   0 255
-int   0   0   0
-int 145   8  56
-int   0   0   0
-int   0 255 170
-int   0   0   0
-int   0   0 141
-int   0   0   0
-int 218   0 198
-int   0   0   0
-int   0  72  56
-int   0   0   0
-int  72   0 170
-int   0   0   0
-int  36 182 113
-int   0   0   0
-int 182   0 226
-int   0   0   0
-int   0  36  28
-int   0   0   0
-int 109 218 170
-int   0   0   0
-int   0   0 113
-int   0   0   0
-int  72 145 198
-int   0   0   0
-int   0   0  85
-int   0   0   0
-moduleEnd
-module pattern05
-; @pos 0 38
-
-;   BD  SD  HH
-int 255 178 178
-int   0   0   0
-int  51 127 102
-int   0   0   0
-int  25 153 255
-int   0   0   0
-int  76 204  76
-int   0   0   0
-int   0 255 127
-int   0   0   0
-int   0   0  76
-int   0   0   0
-int 102  25 229
-int   0   0   0
-int   0  76  76
-int   0   0   0
-int 204 102 153
-int   0   0   0
-int 229  51 102
-int   0   0   0
-int   0   0 255
-int   0   0   0
-int 178   0  25
-int   0   0   0
-int   0 229 127
-int   0   0   0
-int 153  25  51
-int   0   0   0
-int 127  25 204
-int   0   0   0
-int   8 204  51
-int   0   0   0
-moduleEnd
-module pattern10
-; @pos 0 76
-
-;   BD  SD  HH
-int 145   0 255
-int   0   0   0
-int   0 127   0
-int   0   0   0
-int   0 159 145
-int   0   0   0
-int 109 127   0
-int   0   0   0
-int   0 159 182
-int   0   0   0
-int   0 191 109
-int   0   0   0
-int 255 223 109
-int   0   0   0
-int 109  63 109
-int   0   0   0
-int  72 255 218
-int   0   0   0
-int 218  95   0
-int   0   0   0
-int   0  31  72
-int   0   0   0
-int   0  95   0
-int   0   0   0
-int  36  31 182
-int   0   0   0
-int   0   8  72
-int   0   0   0
-int 182  63 182
-int   0   0   0
-int   0   8  36
-int   0   0   0
-moduleEnd
-module pattern15
-; @pos 0 114
-
-;   BD  SD  HH
-int 255  36 255
-int   0   0   0
-int   0  36  28
-int   0   0   0
-int   0   0 226
-int   0   0   0
-int   0   0  56
-int   0   0   0
-int  36 255 198
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int 182 182   0
-int   0   0   0
-int   0   0  28
-int   0   0  28
-int 218   0 170
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int   0   0 141
-int   0   0   0
-int   0   0   0
-int   0 109   0
-int  72 218 113
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int 145 145  85
-int   0   0  85
-int 109  72  85
-int   0  72  85
-moduleEnd
-module pattern20
-; @pos 0 152
-
-;   BD  SD  HH
-int 255   0  36
-int   0   0   0
-int   0   0  36
-int   0   0   0
-int 113   0 145
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int 198 255  72
-int   0   0   0
-int  56 145  72
-int   0   0   0
-int  85 109 182
-int   0   0   0
-int  28 218   0
-int   0   0   0
-int 255  36  72
-int   0   0   0
-int   0 182  72
-int   0   0   0
-int 226  72 218
-int   0   0   0
-int   0  72   0
-int   0   0   0
-int 170 255 109
-int   0   0   0
-int   0   0 109
-int   0   0   0
-int 141   0 255
-int   0   0   0
-int   0 109   0
-int   0   0   0
-moduleEnd
-module pattern01
-; @pos 34 0
-
-;   BD  SD  HH
-int 229  28 159
-int   0   0   0
-int  25 198 159
-int   0   0   0
-int 102  56 255
-int   0   0   0
-int  25  56  63
-int   0   0   0
-int 204 226 159
-int   0   0   0
-int  25  28 159
-int   0   0   0
-int  76 141 191
-int   0   0   0
-int   8  28  31
-int   0   0   0
-int 255  28 159
-int   0   0   0
-int   8 170 127
-int   0   0   0
-int  51  28 255
-int   0   0   0
-int  25  28  31
-int   0   0   0
-int 178 255 159
-int   0   0   0
-int  25 113 127
-int   0   0   0
-int 153  85 223
-int   0   0   0
-int 127  85  95
-int   0   0   0
-moduleEnd
-module pattern06
-; @pos 34 38
-
-;   BD  SD  HH
-int 255  51 255
-int   0   0   0
-int   0 204 226
-int   0   0   0
-int 223   0 255
-int   0   0   0
-int   0 102 255
-int   0   0   0
-int  31 255 198
-int   0   0   0
-int   8 127  28
-int   0   0   0
-int 127   8 141
-int   0   0   0
-int   0 178  56
-int   0   0   0
-int  95  25 170
-int   0   0   0
-int   0 229  56
-int   0   0   0
-int 159   0  85
-int   0   0   0
-int   0  76  28
-int   0   0   0
-int  95 204 170
-int   0   0   0
-int  63 153  28
-int   0   0   0
-int 191  51 113
-int   0   0   0
-int   0  25  56
-int   0   0   0
-moduleEnd
-module pattern11
-; @pos 34 76
-
-;   BD  SD  HH
-int 255   0 145
-int   0   0   0
-int   0 127 109
-int   0   0 109
-int   0   0 218
-int   0   0 109
-int   0  42  72
-int   0   0   0
-int   0 212 145
-int   0   0   0
-int   0   0  72
-int   0 212   0
-int   0   0 218
-int   0   0   0
-int   0 212 109
-int   0   0   0
-int 255   0 182
-int   0   0   0
-int   0   0 109
-int   0   0   0
-int 218  42 255
-int   0   0   0
-int  72   0  72
-int  36   0   0
-int   0 255 182
-int   0   0 109
-int 182   0  36
-int   0   0 109
-int   0 170 255
-int   0 170 109
-int 145 127 109
-int 109  85   0
-moduleEnd
-module pattern16
-; @pos 34 114
-
-;   BD  SD  HH
-int 255   0 141
-int   0   0   0
-int   0  31  28
-int   0   0   0
-int   0 255  28
-int   0   0   0
-int  95   0  28
-int   0   0   0
-int   0   0 113
-int   0   0   0
-int 127  95   8
-int   0   0   0
-int   0 223   8
-int   0   0   0
-int   0   0   8
-int   0   0   0
-int 223   0 255
-int   0   0   0
-int  95  63   0
-int   0   0   0
-int  63 191 226
-int   0   0   0
-int  31   0   0
-int   0   0   0
-int 191   0 198
-int   0   0   0
-int   0   0  56
-int   0   0   0
-int 159 159 170
-int   0   0   0
-int   0 127  85
-int   0   0   0
-moduleEnd
-module pattern21
-; @pos 34 152
-
-;   BD  SD  HH
-int 255   0 109
-int   0   0   0
-int   0   0 109
-int   0   0   0
-int 218   8 255
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int 145 255  72
-int   0   0   0
-int   0  85  72
-int   0   0   0
-int  36 212 218
-int   0   0   0
-int   0  42   0
-int   0   0   0
-int 218   0 145
-int   0   0   0
-int   0   0 182
-int   0   0   0
-int  36   8 255
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int 182  85  36
-int   0   0   0
-int  72 170  36
-int   0   0   0
-int   0 127 218
-int   0   0   0
-int 109  42   8
-int   0   0   0
-moduleEnd
-module pattern02
-; @pos 68 0
-
-;   BD  SD  HH
-int 255   0 255
-int   0   0   0
-int   0 127  85
-int   0   0   0
-int 127   0 148
-int   0   0   0
-int   0   0  85
-int   0   0   0
-int   0 255 127
-int   0   0   0
-int 102 191  85
-int   0   0   0
-int   0  31 106
-int   0   0   0
-int 229  63  63
-int   0   0   0
-int   0   0 212
-int   0   0   0
-int 178  95 170
-int   0   0   0
-int 204   0 191
-int   0   0   0
-int   0   0 170
-int   0   0   0
-int  76 223  85
-int   0   0   0
-int  51   0  42
-int   0   0   0
-int 153  31 233
-int   0   0   0
-int  25 159  21
-int   0   0   0
-moduleEnd
-module pattern07
-; @pos 68 38
-
-;   BD  SD  HH
-int 223   0 255
-int   0   0   0
-int   0   0  72
-int   0   0   0
-int  63 109 218
-int   0   0   0
-int   0   0  36
-int   0   0   0
-int  95 218 218
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int 223 182 145
-int   0   0   0
-int  31  72   0
-int   0   0   0
-int 255   8 255
-int   0   0   0
-int   0  36  36
-int   0   0   0
-int 159 145 182
-int   0   0   0
-int   0  36  36
-int   0   0   0
-int 127 255 182
-int   0   0   0
-int  31   8   0
-int   0   0   0
-int 191 182 109
-int   0   0   0
-int  31  72   0
-int   0   0   0
-moduleEnd
-module pattern12
-; @pos 68 76
-
-;   BD  SD  HH
-int 255   0 255
-int   0   0   0
-int   0  85  42
-int   0   0   0
-int 255  56 233
-int   0   0   0
-int 191  28  63
-int   0   0   0
-int   0 255 212
-int   0   0   0
-int   0  28  85
-int   0   0   0
-int  95   0 191
-int   0   0   0
-int  63 226 106
-int   0   0   0
-int  31   0 191
-int   0   0   0
-int   0 170  21
-int   0   0   0
-int 223  56 170
-int   0   0   0
-int 223 113   8
-int   0   0   0
-int   0 198 170
-int   0   0   0
-int   8   0 127
-int   0   0   0
-int 159 113 148
-int   0   0   0
-int 127 141 148
-int   0   0   0
-moduleEnd
-module pattern17
-; @pos 68 114
-
-;   BD  SD  HH
-int 255   0 113
-int   0   0   0
-int   0  51   0
-int   0  25   0
-int   8  76 141
-int   0  25   0
-int   0  25  85
-int   0   0   0
-int 182 153   0
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int  72 127 170
-int   0 102   0
-int   0 178   0
-int   0   0   0
-int 218 204  56
-int   0   0  28
-int   0   0 255
-int   0   0   0
-int  36   0   0
-int   0   0   0
-int   0 255   0
-int   0   0   0
-int 145   0 198
-int   0   0   0
-int   0 102   0
-int   0   0   0
-int 109 229 226
-int   0   0   0
-int   0  76   0
-int   0   0   0
-moduleEnd
-module pattern22
-; @pos 68 152
-
-;   BD  SD  HH
-int 255 255 113
-int   0   0   0
-int   0  85  56
-int   0   0   0
-int  42   0 255
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int 212 226  85
-int   0   0   0
-int   0  85  56
-int   0   0   0
-int   8   0 226
-int   0   0   0
-int 212 198   0
-int   0   0   0
-int 170   0   0
-int   0   0   0
-int   0 141 170
-int   0   0   0
-int  85  56   0
-int   0   0   0
-int   0   0 141
-int   0   0   0
-int 212 170  28
-int   0   0   0
-int   8  28  28
-int   0   0   0
-int 127   0 198
-int   0   0   0
-int   8 113  28
-int   0   0   0
-moduleEnd
-module pattern03
-; @pos 102 0
-
-;   BD  SD  HH
-int 255   0 255
-int   0   0   0
-int 212   0 231
-int   0   0   0
-int  63 141 255
-int   0   0   0
-int   0 113 208
-int   0   0   0
-int 106 255 139
-int   0   0   0
-int 148 198  92
-int   0   0   0
-int  85   0 115
-int   0   0   0
-int 127  56  92
-int   0   0   0
-int 191   0 185
-int   0   0   0
-int  21  85  69
-int   0   0   0
-int 233  56  46
-int   0   0   0
-int   0  28  46
-int   0   0   0
-int  21 226 162
-int   0   0   0
-int 170  28  23
-int   0   0   0
-int   0 170 208
-int   0   0   0
-int  42  56  46
-int   0   0   0
-moduleEnd
-module pattern08
-; @pos 102 38
-
-;   BD  SD  HH
-int 255 159 255
-int   0   0   0
-int   0   0  31
-int   0   0   0
-int 218  31  63
-int   0   0   0
-int   0 127  31
-int   0   0   0
-int  36 255  95
-int   0   0   0
-int   0  31  31
-int   0   0   0
-int 218   0  63
-int   0   0   0
-int   0  95 127
-int   0   0   0
-int 182   8 159
-int   0   0   0
-int 109   0  31
-int   0   0   0
-int 255 191  63
-int   0   0   0
-int   0  31  31
-int   0   0   0
-int   0 255 223
-int   0   0   0
-int   0  31 223
-int   0   0   0
-int 145 223 191
-int   0   0   0
-int  72  63 191
-int   0   0   0
-moduleEnd
-module pattern13
-; @pos 102 76
-
-;   BD  SD  HH
-int 255  72 255
-int   0   0   0
-int   0   0 162
-int   0   0   0
-int   0   0 231
-int   0   0   0
-int  63   0 162
-int   0   0   0
-int 191 255 231
-int   0   0   0
-int  95   0 115
-int   0   0   0
-int  31   0 208
-int   0   0   0
-int 223   0 139
-int   0   0   0
-int 255  72 185
-int   0   0   0
-int  63  72  92
-int   0   0   0
-int  95  36 185
-int   0   0   0
-int  63   8  46
-int   0   0   0
-int 159 218 162
-int   0   0   0
-int   0 182  69
-int   0   0   0
-int   0 145 162
-int   0   0   0
-int 127 109  23
-int   0   0   0
-moduleEnd
-module pattern18
-; @pos 102 114
-
-;   BD  SD  HH
-int 255   0 255
-int   0   0   0
-int   8   0   0
-int   0   0   0
-int  28   0 255
-int   0   0   0
-int  28   0 127
-int   0   0   0
-int 198 255   0
-int   0   0   0
-int  56   0  85
-int   0   0   0
-int  56 127   0
-int   0   0   0
-int  85   0 212
-int   0   0   0
-int 255   0   0
-int   0   0   0
-int  85   0 212
-int   0   0   0
-int 113   0  42
-int   0   0   0
-int 113   0 170
-int   0   0   0
-int 226  63   0
-int   0   0   0
-int 141   0 127
-int   0   0   0
-int 170 191   0
-int   0   0   0
-int 141   0   0
-int   0   0   0
-moduleEnd
-module pattern23
-; @pos 102 152
-
-;   BD  SD  HH
-int 255   0 255
-int   0   0   0
-int   0   0 255
-int   0   0   0
-int 229   0 204
-int   0   0 204
-int   0   0 204
-int   0  31 204
-int 204   0   0
-int   0   0   0
-int 204   0  51
-int   0   0  51
-int   0 255  51
-int   0   0  51
-int  76   0   0
-int   0  31   0
-int 178   0 204
-int   0   0   0
-int 153   8 204
-int   0   0   0
-int  51   0 153
-int   0   0 153
-int 178 191 153
-int   0 159 153
-int 178 127 153
-int   0  95   0
-int 127  95   0
-int   0   0   0
-int 102 223 102
-int  51   0 102
-int  51  63 102
-int  25   0 102
-moduleEnd
-module pattern04
-; @pos 136 0
-
-;   BD  SD  HH
-int 255   8  76
-int   0   0   0
-int  31   0  25
-int   0   0   0
-int  63  95 255
-int   0   0   0
-int  63  63 127
-int   0   0   0
-int 127 255 153
-int   0   0   0
-int  95   0  51
-int   0   0   0
-int 191 127 204
-int   0   0   0
-int  63   0 102
-int   0   0   0
-int 223   8  76
-int   0   0   0
-int  31   0  51
-int   0   0   0
-int 159 159 229
-int   0   0   0
-int  63  63 127
-int   0   0   0
-int  31 255 153
-int   0   0   0
-int  63 223  51
-int   0   0   0
-int  95 191 178
-int   0   0   0
-int  31  31 102
-int   0   0   0
-moduleEnd
-module pattern09
-; @pos 136 38
-
-;   BD  SD  HH
-int 226   8 115
-int   0   0   0
-int  28  95  46
-int   0   0   0
-int  28   8 255
-int   0   0   0
-int 141   8 185
-int   0   0   0
-int   8 255 139
-int   0   0   0
-int   8  63  23
-int   0   0   0
-int 255  31 208
-int   0   0   0
-int   8 223 115
-int   0   0   0
-int 113   8 231
-int   0   0   0
-int  28  31  69
-int   0   0   0
-int 198 191 255
-int   0   0   0
-int  85   8 162
-int   0   0   0
-int  56 255 139
-int   0   0   0
-int 198 127 115
-int   0   0   0
-int 170 127 231
-int   0   0   0
-int  28 159  92
-int   0   0   0
-moduleEnd
-module pattern14
-; @pos 136 76
-
-;   BD  SD  HH
-int 255   0 212
-int   0   0   0
-int   0   0   8
-int   0   0   0
-int  51   8 170
-int   0   0   0
-int   0  36   0
-int   0   0   0
-int   0 255 127
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int 102 182  85
-int   0   0   0
-int   0   8   8
-int   0   0   0
-int 204   0 255
-int   0   0   0
-int   0   0   8
-int   0   0   0
-int 153  72 170
-int   0   0   0
-int   0 109   0
-int   0   0   0
-int   0 145 127
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int  51 255  42
-int   0   0   0
-int   0 218   8
-int   0   0   0
-moduleEnd
-module pattern19
-; @pos 136 114
-
-;   BD  SD  HH
-int 255   0 255
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int   0 109   0
-int   0   0   0
-int 218   8 226
-int   0   0   0
-int 182  72  85
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int   0 255 141
-int   0   0   0
-int 145 182   0
-int   0   0   0
-int 145   0   0
-int   0   0   0
-int  36   0   0
-int   0   0   0
-int   0 145 170
-int   0   0   0
-int 109   8  56
-int   0   0   0
-int 109  36 198
-int   0   0   0
-int   0   8   0
-int   0   0   0
-int  72 218 113
-int   0   0   0
-int  36 182  28
-int   0   0   0
-moduleEnd
-module pattern24
-; @pos 136 152
-
-;   BD  SD  HH
-int 170 255 255
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int 255 113 191
-int   0   0   0
-int   0   0   0
-int 198  85 159
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int   0   0   0
-int  28 226 223
-int   0   0   0
-int   0   0   0
-int 141 141  95
-int   0   0   0
-int   0   0   0
-int   0   8   0
-int   0   0   0
-int 226 170  63
-int   0  56   0
-int   0  56   0
-int  56 198 127
-int   0   0   0
-int   0   0   0
-int 113  56   0
-int   0   0   0
-int  85 141  31
-int   0  28   0
-int   0   0   0
-moduleEnd
-groupEnd
 entryEnd

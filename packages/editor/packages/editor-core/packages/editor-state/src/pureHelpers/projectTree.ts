@@ -27,6 +27,7 @@ export function* walkProjectBlocks(project: ProjectLevel): Generator<CodeBlockGr
 export function copyProjectLevel(project: ProjectLevel): ProjectLevel {
 	return {
 		path: project.path,
+		entries: [...project.entries],
 		blocks: project.blocks.map(block => ({
 			...block,
 			code: [...block.code],

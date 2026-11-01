@@ -381,7 +381,7 @@ entryEnd`),
 				name: 'Audio',
 				code: ['group Audio', 'groupEnd'],
 				entry: 'main',
-				childProject: { path: '', blocks: [nested] },
+				childProject: { entries: [], path: '', blocks: [nested] },
 				creationIndex: 1,
 			})
 		);

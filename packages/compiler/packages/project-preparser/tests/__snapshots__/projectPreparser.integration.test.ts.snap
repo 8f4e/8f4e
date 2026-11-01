@@ -70,6 +70,9 @@ exports[`project-preparser integration > parses project source into typed collec
         "id": 8,
       },
     ],
+    "entries": [
+      "main",
+    ],
     "execution": [
       {
         "code": [
@@ -88,6 +91,9 @@ exports[`project-preparser integration > parses project source into typed collec
           "groupEnd",
         ],
         "constants": [],
+        "entries": [
+          "main",
+        ],
         "entry": "main",
         "execution": [
           {
@@ -97,7 +103,7 @@ exports[`project-preparser integration > parses project source into typed collec
               "moduleEnd",
             ],
             "entry": "main",
-            "id": 31,
+            "id": 32,
             "type": "module",
           },
         ],
@@ -108,7 +114,7 @@ exports[`project-preparser integration > parses project source into typed collec
               "function groupedHelper",
               "functionEnd int",
             ],
-            "id": 34,
+            "id": 36,
           },
         ],
         "id": 30,

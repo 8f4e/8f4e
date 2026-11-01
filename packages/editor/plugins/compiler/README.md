@@ -34,7 +34,8 @@ advance that revision after their derived state is updated. Visual edits and nav
 The plugin listens to that event, debounces it, and serializes the latest root code-block tree, including nested
 projects. The default delay is 500ms; projects can set `; @config recompileDebounceDelay 120`. The plugin contributes an integer schema with a minimum of zero through
 `editorConfigSchemaContributions.compiler`, and removes that contribution on disposal. Compilation always requests stack analysis and enables assertions when the
-project has an enabled test entry, including nested tests and a root function exported as `test`.
+root project declares a `test` entry or an enabled function exported as `test`. Group entries named `test` remain
+local; groups placed inside the root test entry run their own `main` as part of that test.
 
 For an accepted result, the plugin first updates its artifact handles and emits `compilationSucceeded` with the
 `ProgramArtifacts` needed for rendering: `memoryRef`. Core consumes that event to refresh memory views; bytecode stays

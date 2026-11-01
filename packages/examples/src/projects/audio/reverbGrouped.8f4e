@@ -241,6 +241,7 @@ const CLOUDS_SAMPLE_RATE 32000
 const CLOUDS_RATIO SAMPLE_RATE/CLOUDS_SAMPLE_RATE
 
 constantsEnd
+entry main
 module controlValues
 ; @pos 46 -27
 
@@ -1017,5 +1018,6 @@ add
 store
 
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

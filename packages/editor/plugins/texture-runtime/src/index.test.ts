@@ -351,16 +351,20 @@ it('resolves group exposures locally and from a qualified reference on a note', 
 		source: `8f4e/v1
 note viewer
 ; @pos 4 4
-; @textureUpload &visuals:picture rgba 1 1\n; @texture &visuals:picture 16 1 1
+; @textureUpload &visuals:picture rgba 1 1
+; @texture &visuals:picture 16 1 1
 noteEnd
 entry main
 group visuals
 ; @pos 4 12
 expose picture &screen:rgba
-; @textureUpload &picture rgba 1 1\n; @texture &picture 16 1 1
+; @textureUpload &picture rgba 1 1
+; @texture &picture 16 1 1
+entry main
 module screen
 int rgba 0x44332211
 moduleEnd
+entryEnd
 groupEnd
 entryEnd`,
 	});
@@ -453,10 +457,12 @@ noteEnd
 entry main
 group visuals
 expose picture &screen:rgba
+entry main
 module screen
 int rgba 0x44332211
 ; @textureUpload &rgba rgba 1 1
 moduleEnd
+entryEnd
 groupEnd
 entryEnd`,
 	});

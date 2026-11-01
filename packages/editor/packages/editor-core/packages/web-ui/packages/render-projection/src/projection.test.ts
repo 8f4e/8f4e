@@ -12,7 +12,7 @@ const cell = (id: number, color: number) => createSpriteCell(id as SpriteId, col
 it('projects completed layouts and stops refreshing after disposal', () => {
 	const block = createMockCodeBlock({ creationIndex: 7, code: ['x'] });
 	const store = createStateManager(
-		createMockState({ codeBlockRendering: { currentProject: { path: '', blocks: [block] } } })
+		createMockState({ codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [block] } } })
 	);
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter) };

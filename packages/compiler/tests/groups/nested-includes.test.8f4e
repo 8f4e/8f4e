@@ -12,6 +12,7 @@ includes
 include test/math inc includedValue
 includesEnd
 
+entry main
 module included
 int output
 push &output
@@ -21,5 +22,6 @@ store
 push output
 assertEqual 13
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

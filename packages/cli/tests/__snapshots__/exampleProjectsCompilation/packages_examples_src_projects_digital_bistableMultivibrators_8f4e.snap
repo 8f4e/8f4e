@@ -5,6 +5,7 @@
   "compiledModules": {
     "resetButton": {
       "id": "resetButton",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -60,13 +61,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "resetButton"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 0,
-      "executionEntryName": "main"
+      "index": 0
     },
     "setButton": {
       "id": "setButton",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -122,13 +124,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "setButton"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 1,
-      "executionEntryName": "main"
+      "index": 1
     },
     "norGate2": {
       "id": "norGate2",
+      "executionEntryName": "main",
       "cycleFunction": [
         35,
         0,
@@ -384,13 +387,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "norGate2"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 2,
-      "executionEntryName": "main"
+      "index": 2
     },
     "norGate": {
       "id": "norGate",
+      "executionEntryName": "main",
       "cycleFunction": [
         35,
         0,
@@ -646,13 +650,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "norGate"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 3,
-      "executionEntryName": "main"
+      "index": 3
     },
     "scope": {
       "id": "scope",
+      "executionEntryName": "main",
       "cycleFunction": [
         89,
         2,
@@ -1004,13 +1009,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "scope"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 4,
-      "executionEntryName": "main"
+      "index": 4
     },
     "buttons": {
       "id": "buttons",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -1078,13 +1084,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "buttons"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 5,
-      "executionEntryName": "main"
+      "index": 5
     },
     "negate": {
       "id": "negate",
+      "executionEntryName": "main",
       "cycleFunction": [
         26,
         0,
@@ -1291,13 +1298,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "negate"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 6,
-      "executionEntryName": "main"
+      "index": 6
     },
     "orGate": {
       "id": "orGate",
+      "executionEntryName": "main",
       "cycleFunction": [
         35,
         0,
@@ -1553,13 +1561,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "orGate"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 7,
-      "executionEntryName": "main"
+      "index": 7
     },
     "andGate": {
       "id": "andGate",
+      "executionEntryName": "main",
       "cycleFunction": [
         35,
         0,
@@ -1815,13 +1824,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "andGate"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 8,
-      "executionEntryName": "main"
+      "index": 8
     },
     "scope2": {
       "id": "scope2",
+      "executionEntryName": "main",
       "cycleFunction": [
         89,
         2,
@@ -2173,10 +2183,10 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "scope2"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 9,
-      "executionEntryName": "main"
+      "index": 9
     }
   },
   "memoryPlan": {

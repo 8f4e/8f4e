@@ -1,5 +1,5 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { logMessage, serializeCodeBlocksToProject } from '@8f4e/editor-state';
+import { logMessage, serializeProjectLevel } from '@8f4e/editor-state';
 import type { CodeError, InfoRecord } from '@8f4e/editor-state-types';
 import type { CompilerDiagnostic } from '@8f4e/language-spec';
 import { WASM_MEMORY_PAGE_SIZE } from '@8f4e/language-spec';
@@ -60,7 +60,7 @@ export default function installCompilation(
 		setCompilerInfo({ isCompiling: true });
 
 		try {
-			const project = serializeCodeBlocksToProject(state.codeBlockRendering.rootProject.blocks);
+			const project = serializeProjectLevel(state.codeBlockRendering.rootProject);
 			const compilerOptions = {
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,

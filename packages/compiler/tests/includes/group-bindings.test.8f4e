@@ -16,12 +16,14 @@ includes
 include test/math inc adjusted
 includesEnd
 
+entry main
 module calculation
 int result
 push &result
 call adjusted 10
 store
 moduleEnd
+entryEnd
 groupEnd
 
 group right
@@ -31,12 +33,14 @@ includes
 include test/math twice adjusted
 includesEnd
 
+entry main
 module calculation
 int result
 push &result
 call adjusted 10
 store
 moduleEnd
+entryEnd
 groupEnd
 
 module groupBindingAssertions

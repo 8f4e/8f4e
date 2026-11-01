@@ -18,7 +18,7 @@ function restoreSession(directive: string, nested = false) {
 		[
 			'8f4e/v1',
 			'entry main',
-			...(nested ? ['group outer', 'group inner'] : []),
+			...(nested ? ['group outer', 'entry main', 'group inner', 'entry main'] : []),
 			'module audio',
 			'int[] points 4',
 			'int value 0',
@@ -28,7 +28,7 @@ function restoreSession(directive: string, nested = false) {
 			'int pressed 0',
 			`; @${directive}`,
 			'moduleEnd',
-			...(nested ? ['groupEnd', 'groupEnd'] : []),
+			...(nested ? ['entryEnd', 'groupEnd', 'entryEnd', 'groupEnd'] : []),
 			'entryEnd',
 		].join('\n')
 	);

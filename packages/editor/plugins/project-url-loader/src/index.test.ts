@@ -56,7 +56,11 @@ describe('project URL loader plugin', () => {
 		await vi.waitFor(() =>
 			expect(test.state.console.logs.some(log => log.message.includes('Failed to load project'))).toBe(true)
 		);
-		expect(test.state.initialProjectState).toMatchObject({ execution: [], notes: [] });
+		expect(test.state.initialProjectState).toMatchObject({
+			entries: [],
+			execution: [],
+			notes: [],
+		});
 		expect(test.onError).toHaveBeenCalledExactlyOnceWith(expect.any(Error));
 		expect(test.onLoaded).not.toHaveBeenCalled();
 	});
@@ -66,7 +70,11 @@ describe('project URL loader plugin', () => {
 		await test.dispatchAsync('init');
 		expect(test.onLoaded).toHaveBeenCalledOnce();
 		expect(test.onError).not.toHaveBeenCalled();
-		expect(test.state.initialProjectState).toMatchObject({ execution: [], notes: [] });
+		expect(test.state.initialProjectState).toMatchObject({
+			entries: [],
+			execution: [],
+			notes: [],
+		});
 	});
 
 	it('removes its startup listener on disposal', () => {
@@ -95,6 +103,10 @@ describe('project URL loader plugin', () => {
 		expect(test.onLoaded).not.toHaveBeenCalled();
 		expect(test.onError).not.toHaveBeenCalled();
 		expect(test.fetch).toHaveBeenCalledOnce();
-		expect(test.state.initialProjectState).toMatchObject({ execution: [], notes: [] });
+		expect(test.state.initialProjectState).toMatchObject({
+			entries: [],
+			execution: [],
+			notes: [],
+		});
 	});
 });

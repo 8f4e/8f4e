@@ -112,11 +112,15 @@ group outer
 note settings
 ; @outer
 noteEnd
+entry main
 group inner
+entry main
 module audio
 ; @custom
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd`
 		);
@@ -150,11 +154,15 @@ entryEnd`
 			`8f4e/v1
 entry main
 group outer
+entry main
 group inner
 note settings
 ; @config customSettings.enabled false
 noteEnd
+entry main
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd`
 		);

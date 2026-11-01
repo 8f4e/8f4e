@@ -3,7 +3,12 @@ import type { PaletteToken } from '@8f4e/editor-palette';
  * Types for code-blocks feature - manages code block entities, rendering, and interactions.
  */
 
-import type { DocumentBlockType, PlannedMemoryDeclaration, ProjectGroupPath } from '@8f4e/language-spec';
+import type {
+	DocumentBlockType,
+	PlannedMemoryDeclaration,
+	ProjectEntryName,
+	ProjectGroupPath,
+} from '@8f4e/language-spec';
 import type { Position } from '../../shared/types';
 import type { ViewportBlockAlignment } from '../viewport/blockAlignment';
 import type { CodeBlockDisplayModel } from './buildDisplayModel';
@@ -178,6 +183,8 @@ export interface CodeBlockEntryOutline {
 
 /** An editor-owned project level. Remembered views and selections live only in browser memory. */
 export interface ProjectLevel {
+	/** Entry definitions local to this level, including empty entries. */
+	entries: ProjectEntryName[];
 	path: ProjectGroupPath;
 	blocks: CodeBlockGraphicData[];
 	viewport?: Position;

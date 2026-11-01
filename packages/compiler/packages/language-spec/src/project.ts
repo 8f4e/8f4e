@@ -25,8 +25,15 @@ export type ProjectInstructionName = (typeof projectInstructionNames)[number];
 /** Stable identity shared by project actors and compiler diagnostics. */
 export type ProjectBlockId = number;
 
-/** Host-callable entry that owns an ordered module block. */
+/** Name of an entry local to one project scope. */
 export type ProjectEntryName = string;
+
+/** Resolved dispatcher input. Code generation consumes these identities and steps without resolving scope again. */
+export interface ComposedEntry {
+	id: string;
+	exportName?: string;
+	steps: Array<{ type: 'module' | 'entry'; id: string }>;
+}
 
 /** Human-readable name of one project group within its parent project. */
 export type ProjectGroupName = string;
@@ -113,6 +120,8 @@ export type ProjectExecutableBlock = ProjectModuleBlock | ProjectGroupObjectMode
 
 /** Canonical in-memory representation shared by all 8f4e project actors. */
 export interface ProjectObjectModel {
+	/** Entry definitions local to this scope, including empty entries. */
+	entries: ProjectEntryName[];
 	/** Source lines owned directly by this project scope, excluding recursively owned document and group blocks. */
 	code: string[];
 	/** Ordered modules and groups. A group expands recursively at its position in this sequence. */
@@ -167,9 +176,25 @@ export interface ProjectGroupObjectModel extends ProjectObjectModel {
 	type: 'group';
 	id: ProjectBlockId;
 	name: ProjectGroupName;
+	/** Entry in the parent scope that invokes this project's main entry. */
 	entry: ProjectEntryName;
 	/** Ordered public memory aliases exposed to the enclosing project. */
 	exposures: ProjectMemoryExposure[];
+}
+
+/** Creates an empty root or child project scope without introducing editor or compiler-stage policy. */
+export function createProjectObjectModel(): ProjectObjectModel {
+	return {
+		entries: [],
+		code: [],
+		execution: [],
+		functions: [],
+		constants: [],
+		prototypes: [],
+		includes: [],
+		notes: [],
+		unknown: [],
+	};
 }
 
 /** Selects direct modules without changing their execution order. */

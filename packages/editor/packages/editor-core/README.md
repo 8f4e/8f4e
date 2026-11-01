@@ -208,8 +208,8 @@ Plugins use these public exports rather than importing core files.
 independently of the export and persistence plugins.
 Project-model serialization lives under `pureHelpers/projectSerialization`; filename configuration belongs to
 `features/editor-config`. The project-save plugin owns its private `.8f4e` text formatter.
-`serializeToProject` and `serializeCodeBlocksToProject` return detached models with independent source arrays throughout
-nested groups. Their fixed field order and grid/creation ordering support direct JSON comparison of canonical models.
+`serializeToProject(state)` and `serializeProjectLevel(level)` return detached models with independent source arrays
+throughout nested groups. Their fixed field order and grid/creation ordering support direct JSON comparison of canonical models.
 
 ## Project changes
 

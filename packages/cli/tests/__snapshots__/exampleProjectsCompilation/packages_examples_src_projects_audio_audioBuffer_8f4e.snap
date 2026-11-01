@@ -5,6 +5,7 @@
   "compiledModules": {
     "phaseAccumulator": {
       "id": "phaseAccumulator",
+      "executionEntryName": "main",
       "cycleFunction": [
         100,
         1,
@@ -447,13 +448,14 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "phaseAccumulator"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 0,
-      "executionEntryName": "main"
+      "index": 0
     },
     "audioout": {
       "id": "audioout",
+      "executionEntryName": "main",
       "cycleFunction": [
         93,
         2,
@@ -838,10 +840,10 @@
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "audioout"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 1,
-      "executionEntryName": "main"
+      "index": 1
     }
   },
   "memoryPlan": {

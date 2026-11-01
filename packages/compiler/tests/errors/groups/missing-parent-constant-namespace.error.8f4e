@@ -3,5 +3,7 @@
 entry main
 group audio
 pass env
+entry main
+entryEnd
 groupEnd
 entryEnd

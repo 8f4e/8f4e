@@ -39,6 +39,7 @@ use env
 int[] samples BLOCK_SIZE
 prototypeEnd
 
+entry main
 module voice
 use env
 use derived
@@ -63,6 +64,7 @@ group nested
 pass env
 pass derived
 
+entry main
 module nestedVoice
 use env
 int blockSize BLOCK_SIZE
@@ -74,6 +76,8 @@ assertEqual 48
 push doubleBlock
 assertEqual 96
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd

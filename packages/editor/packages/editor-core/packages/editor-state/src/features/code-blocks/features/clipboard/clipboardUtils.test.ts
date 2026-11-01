@@ -105,14 +105,14 @@ describe('serializeCodeBlocksToClipboard', () => {
 			gridX: -3,
 			gridY: 8,
 			entry: 'main',
-			childProject: { path: '', blocks: [nestedModule] },
+			childProject: { entries: ['main'], path: '', blocks: [nestedModule] },
 		});
 		const group = createMockCodeBlock({
 			code: ['group audio', '; keep me', 'groupEnd'],
 			gridX: 10,
 			gridY: 20,
 			entry: 'main',
-			childProject: { path: '', blocks: [nestedGroup] },
+			childProject: { entries: ['main', 'foo', 'bar'], path: '', blocks: [nestedGroup] },
 		});
 
 		group.childProject!.viewport = { x: 256, y: -128 };
@@ -124,12 +124,14 @@ describe('serializeCodeBlocksToClipboard', () => {
 				gridCoordinates: { x: 0, y: 0 },
 				entry: 'main',
 				childProject: {
+					entries: ['main', 'foo', 'bar'],
 					blocks: [
 						{
 							code: ['group modulation', 'groupEnd'],
 							gridCoordinates: { x: -3, y: 8 },
 							entry: 'main',
 							childProject: {
+								entries: ['main'],
 								blocks: [
 									{
 										code: ['module voice', 'moduleEnd'],
@@ -154,6 +156,7 @@ describe('parseClipboardData', () => {
 					code: ['group audio', 'groupEnd'],
 					gridCoordinates: { x: 0, y: 0 },
 					childProject: {
+						entries: [],
 						path: '',
 						blocks: [{ code: ['module voice', 'moduleEnd'], gridCoordinates: { x: 4, y: 6 } }],
 					},

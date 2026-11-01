@@ -98,37 +98,46 @@ describe('compilation scheduling and publication', () => {
 
 		expect(mockCompileCode).toHaveBeenCalledWith(
 			expect.anything(),
-			expect.objectContaining({ enableAssertions: !disabled }),
-			expect.any(Function)
-		);
-	});
-
-	it('enables assertions for a test module in a nested project', async () => {
-		mockState.codeBlockRendering.rootProject.blocks.push(
-			createMockCodeBlock({
-				name: 'nested',
-				code: ['project nested', 'projectEnd'],
-				childProject: {
-					path: '',
-					blocks: [
-						createMockCodeBlock({
-							blockType: 'module',
-							entry: 'test',
-							code: ['module checks', 'push 1', 'assert', 'moduleEnd'],
-						}),
-					],
-				},
-			})
-		);
-
-		await triggerCompile();
-
-		expect(mockCompileCode).toHaveBeenCalledWith(
-			expect.anything(),
 			expect.objectContaining({ enableAssertions: true }),
 			expect.any(Function)
 		);
 	});
+
+	it.each([
+		['test', 'main', true],
+		['main', 'test', false],
+	] as const)(
+		'uses the root entry %s rather than local entry %s to enable assertions',
+		async (parentEntry, localEntry, enabled) => {
+			mockState.codeBlockRendering.rootProject.blocks.push(
+				createMockCodeBlock({
+					name: 'nested',
+					code: ['group nested', 'groupEnd'],
+					entry: parentEntry,
+
+					childProject: {
+						path: '',
+						entries: [localEntry],
+						blocks: [
+							createMockCodeBlock({
+								blockType: 'module',
+								entry: localEntry,
+								code: ['module checks', 'push 1', 'assert', 'moduleEnd'],
+							}),
+						],
+					},
+				})
+			);
+
+			await triggerCompile();
+
+			expect(mockCompileCode).toHaveBeenCalledWith(
+				expect.anything(),
+				expect.objectContaining({ enableAssertions: enabled }),
+				expect.any(Function)
+			);
+		}
+	);
 
 	it.each([
 		['test', '#export', true],
@@ -250,6 +259,7 @@ describe('compilation scheduling and publication', () => {
 
 		expect(mockCompileCode).toHaveBeenCalledWith(
 			expect.objectContaining({
+				entries: [],
 				execution: expect.any(Array),
 				constants: expect.any(Array),
 				functions: expect.any(Array),
@@ -296,6 +306,7 @@ describe('compilation scheduling and publication', () => {
 
 		expect(mockCompileCode).toHaveBeenCalledWith(
 			expect.objectContaining({
+				entries: [],
 				execution: expect.any(Array),
 				constants: expect.any(Array),
 				functions: expect.any(Array),

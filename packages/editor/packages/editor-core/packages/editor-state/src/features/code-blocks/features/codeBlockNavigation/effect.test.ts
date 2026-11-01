@@ -52,7 +52,7 @@ describe('codeBlockNavigation', () => {
 		state = createMockState({
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
-				currentProject: { path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
+				currentProject: { entries: [], path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
 			},
 		});
 
@@ -311,7 +311,7 @@ describe('codeBlockNavigation', () => {
 			},
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
-				currentProject: { path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
+				currentProject: { entries: [], path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
 			},
 			viewport: {
 				x: 0,
@@ -419,7 +419,7 @@ describe('codeBlockNavigation', () => {
 			});
 
 			state = createMockState({
-				codeBlockRendering: { currentProject: { path: '', blocks: [firstHome, secondHome] } },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [firstHome, secondHome] } },
 				viewport: {
 					x: 10,
 					y: 20,
@@ -448,7 +448,7 @@ describe('codeBlockNavigation', () => {
 				homeAlignment: 'bottom',
 			});
 			state = createMockState({
-				codeBlockRendering: { currentProject: { path: '', blocks: [homeBlock] } },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [homeBlock] } },
 				viewport: {
 					x: 0,
 					y: 0,
@@ -475,7 +475,7 @@ describe('codeBlockNavigation', () => {
 				y: 100,
 			});
 			state = createMockState({
-				codeBlockRendering: { currentProject: { path: '', blocks: [homeBlock] } },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [homeBlock] } },
 			});
 
 			goHome(createStateManager(state), events);
@@ -498,7 +498,7 @@ describe('codeBlockNavigation', () => {
 			const otherHome = createMockCodeBlock({ name: 'home-other', isHome: true });
 
 			state = createMockState({
-				codeBlockRendering: { currentProject: { path: '', blocks: [disabledHome, otherHome] } },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [disabledHome, otherHome] } },
 			});
 
 			goHome(createStateManager(state), events);
@@ -510,7 +510,7 @@ describe('codeBlockNavigation', () => {
 			state = createMockState({
 				viewport: { x: 25, y: -10 },
 				codeBlockRendering: {
-					currentProject: { path: '', blocks: [selectedBlock] },
+					currentProject: { entries: [], path: '', blocks: [selectedBlock] },
 					selectedCodeBlock: selectedBlock,
 				},
 			});

@@ -100,23 +100,28 @@ describe('editor-state testing utilities', () => {
 
 	it('uses a root-only block override as the active slice without copying it', () => {
 		const blocks = [createMockCodeBlock()];
-		const state = createMockState({ codeBlockRendering: { rootProject: { path: '', blocks: blocks } } });
+		const state = createMockState({ codeBlockRendering: { rootProject: { entries: [], path: '', blocks: blocks } } });
 		expect(state.codeBlockRendering.rootProject.blocks).toBe(blocks);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(blocks);
 	});
 
 	it('owns an active-only block override in the root tree', () => {
 		const blocks = [createMockCodeBlock()];
-		const state = createMockState({ codeBlockRendering: { currentProject: { path: '', blocks: blocks } } });
+		const state = createMockState({
+			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: blocks } },
+		});
 		expect(state.codeBlockRendering.rootProject.blocks).toBe(blocks);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(blocks);
 	});
 
 	it('preserves an explicitly selected nested slice and its project ownership', () => {
 		const nested = [createMockCodeBlock({ projectPath: 'group' })];
-		const root = [createMockCodeBlock({ name: 'group', childProject: { path: '', blocks: nested } })];
+		const root = [createMockCodeBlock({ name: 'group', childProject: { entries: [], path: '', blocks: nested } })];
 		const state = createMockState({
-			codeBlockRendering: { rootProject: { path: '', blocks: root }, currentProject: { path: '', blocks: nested } },
+			codeBlockRendering: {
+				rootProject: { entries: [], path: '', blocks: root },
+				currentProject: { entries: [], path: '', blocks: nested },
+			},
 		});
 		expect(state.codeBlockRendering.rootProject.blocks).toBe(root);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(root[0].childProject?.blocks);
@@ -127,7 +132,7 @@ describe('editor-state testing utilities', () => {
 		const blocks = [createMockCodeBlock()];
 		const state = createMockState({
 			callbacks: { writeClipboardText },
-			codeBlockRendering: { currentProject: { path: '', blocks: blocks } },
+			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: blocks } },
 			compiler: { isCompiling: true },
 		});
 		expect(state.callbacks.writeClipboardText).toBe(writeClipboardText);

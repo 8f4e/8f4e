@@ -72,19 +72,25 @@ functionEnd`);
 		const project = parseProjectSource(`8f4e/v1
 entry test
 group parent
+entry main
 module repeated
 call helper
 moduleEnd
+entryEnd
 function helper
 push 1
 assertEqual 2
 functionEnd
+entry main
 group child
+entry main
 module repeated
 push 3
 assertEqual 4
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd`);
 		const compiled = await compileProject(project, { enableAssertions: true, disableSharedMemory: true });

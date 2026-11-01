@@ -21,7 +21,10 @@ function setup() {
 	const state = createMockState({
 		editorMode: 'edit',
 		featureFlags: { historyTracking: true },
-		codeBlockRendering: { rootProject: { path: '', blocks: blocks }, currentProject: { path: '', blocks: blocks } },
+		codeBlockRendering: {
+			rootProject: { entries: [], path: '', blocks: blocks },
+			currentProject: { entries: [], path: '', blocks: blocks },
+		},
 	});
 	const store = createStateManager(state);
 	const emitter = new EventEmitter();

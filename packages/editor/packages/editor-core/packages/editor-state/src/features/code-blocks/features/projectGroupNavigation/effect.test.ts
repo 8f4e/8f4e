@@ -10,8 +10,8 @@ describe('projectGroupNavigation', () => {
 	function setupNavigation(rootCodeBlocks: CodeBlockGraphicData[]) {
 		const state = createMockState({
 			codeBlockRendering: {
-				rootProject: { path: '', blocks: rootCodeBlocks },
-				currentProject: { path: '', blocks: rootCodeBlocks },
+				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
+				currentProject: { entries: [], path: '', blocks: rootCodeBlocks },
 			},
 			viewport: { x: 64, y: -96, width: 800, height: 600 },
 		});
@@ -28,7 +28,7 @@ describe('projectGroupNavigation', () => {
 
 	it('restores the latest selection at each level, including an explicitly cleared selection', () => {
 		const child = createMockCodeBlock({ name: 'oscillator' });
-		const group = createMockCodeBlock({ name: 'Audio', childProject: { path: 'Audio', blocks: [child] } });
+		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: 'Audio', blocks: [child] } });
 		const { state, dispatch } = setupNavigation([group]);
 		state.codeBlockRendering.selectedCodeBlock = group;
 		const revision = state.projectChange.revision;
@@ -52,7 +52,7 @@ describe('projectGroupNavigation', () => {
 	});
 
 	it('does not restore a remembered block that was deleted while viewing another level', () => {
-		const group = createMockCodeBlock({ name: 'Audio', childProject: { path: 'Audio', blocks: [] } });
+		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: 'Audio', blocks: [] } });
 		const removed = createMockCodeBlock({ name: 'removed' });
 		const { state, dispatch } = setupNavigation([group, removed]);
 		state.codeBlockRendering.selectedCodeBlock = removed;
@@ -70,7 +70,7 @@ describe('projectGroupNavigation', () => {
 			name: 'Audio',
 			isHome: true,
 			x: 2000,
-			childProject: { path: '', blocks: [createMockCodeBlock({ isHome: true, x: 1000 })] },
+			childProject: { entries: [], path: '', blocks: [createMockCodeBlock({ isHome: true, x: 1000 })] },
 		});
 		const { state, events, dispatch } = setupNavigation([group]);
 		const revision = state.projectChange.revision;
@@ -96,8 +96,11 @@ describe('projectGroupNavigation', () => {
 	});
 
 	it('keeps independent positions at each depth when jumping directly to the root', () => {
-		const nestedGroup = createMockCodeBlock({ name: 'Voices', childProject: { path: '', blocks: [] } });
-		const group = createMockCodeBlock({ name: 'Audio', childProject: { path: '', blocks: [nestedGroup] } });
+		const nestedGroup = createMockCodeBlock({ name: 'Voices', childProject: { entries: [], path: '', blocks: [] } });
+		const group = createMockCodeBlock({
+			name: 'Audio',
+			childProject: { entries: [], path: '', blocks: [nestedGroup] },
+		});
 		const { state, dispatch } = setupNavigation([group]);
 
 		state.codeBlockRendering.selectedCodeBlock = group;
@@ -128,7 +131,7 @@ describe('projectGroupNavigation', () => {
 			width: 80,
 			height: 80,
 		});
-		const group = createMockCodeBlock({ name: 'Audio', childProject: { path: '', blocks: [homeBlock] } });
+		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: '', blocks: [homeBlock] } });
 		const { state, dispatch } = setupNavigation([group]);
 
 		dispatch('openProjectGroup', { codeBlock: group });
@@ -150,7 +153,7 @@ describe('projectGroupNavigation', () => {
 	});
 
 	it('cancels an active viewport animation before switching groups', () => {
-		const group = createMockCodeBlock({ name: 'Audio', childProject: { path: '', blocks: [] } });
+		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: '', blocks: [] } });
 		const { state, events, dispatch } = setupNavigation([group]);
 		state.callbacks.requestAnimationFrame = vi.fn(() => 7);
 		state.callbacks.cancelAnimationFrame = vi.fn();
@@ -167,12 +170,14 @@ describe('projectGroupNavigation', () => {
 
 	it('opens a project group by pointing the rendered slice at its nested blocks', () => {
 		const nestedProjectCodeBlocks = [createMockCodeBlock({ name: 'nested' })];
-		const groupBlock = createMockCodeBlock({ childProject: { path: '', blocks: nestedProjectCodeBlocks } });
+		const groupBlock = createMockCodeBlock({
+			childProject: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
+		});
 		const rootCodeBlocks = [groupBlock];
 		const state = createMockState({
 			codeBlockRendering: {
-				rootProject: { path: '', blocks: rootCodeBlocks },
-				currentProject: { path: '', blocks: rootCodeBlocks },
+				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
+				currentProject: { entries: [], path: '', blocks: rootCodeBlocks },
 				selectedCodeBlock: groupBlock,
 				selectedCodeBlockForProgrammaticEdit: groupBlock,
 				draggedCodeBlock: groupBlock,
@@ -199,7 +204,9 @@ describe('projectGroupNavigation', () => {
 
 	it('opens empty project groups', () => {
 		const nestedProjectCodeBlocks: [] = [];
-		const groupBlock = createMockCodeBlock({ childProject: { path: '', blocks: nestedProjectCodeBlocks } });
+		const groupBlock = createMockCodeBlock({
+			childProject: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
+		});
 		const state = createMockState();
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
@@ -215,14 +222,14 @@ describe('projectGroupNavigation', () => {
 
 	it('returns to the immediate parent slice one level at a time', () => {
 		const deepestSlice = [createMockCodeBlock({ name: 'deepest' })];
-		const nestedGroup = createMockCodeBlock({ childProject: { path: '', blocks: deepestSlice } });
+		const nestedGroup = createMockCodeBlock({ childProject: { entries: [], path: '', blocks: deepestSlice } });
 		const firstLevelSlice = [nestedGroup];
-		const rootGroup = createMockCodeBlock({ childProject: { path: '', blocks: firstLevelSlice } });
+		const rootGroup = createMockCodeBlock({ childProject: { entries: [], path: '', blocks: firstLevelSlice } });
 		const rootCodeBlocks = [rootGroup];
 		const state = createMockState({
 			codeBlockRendering: {
-				rootProject: { path: '', blocks: rootCodeBlocks },
-				currentProject: { path: '', blocks: deepestSlice },
+				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
+				currentProject: { entries: [], path: '', blocks: deepestSlice },
 			},
 		});
 		const store = createStateManager(state);

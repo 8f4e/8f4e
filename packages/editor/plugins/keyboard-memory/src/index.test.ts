@@ -13,10 +13,12 @@ entry main
 group keyboard
 expose code &keys:code
 expose pressed &keys:pressed
+entry main
 module keys
 int code
 int pressed
 moduleEnd
+entryEnd
 groupEnd
 entryEnd`
 			: `8f4e/v1

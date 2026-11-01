@@ -60,6 +60,7 @@ describe('grouping copy and paste', () => {
 		const nested = `group nested
 ; @pos 90 3
 ; @group audio
+entry main
 module child
 ; @pos 4 3
 ; @group audio
@@ -68,6 +69,7 @@ module child2
 ; @pos 30 3
 ; @group audio
 moduleEnd
+entryEnd
 groupEnd`;
 		const test = setup({ code: source.replace('entry main', `entry main\n${nested}`) });
 		const root = test.state.codeBlockRendering.currentProject.blocks;
