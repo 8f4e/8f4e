@@ -2,14 +2,11 @@
 
 includes
 ; @pos -64 3
-include std/events/risingEdge
+include std/math/lerp
 include std/memory/wrapPointer
 include std/math/fract
 include std/memory/readInterpolated
 include std/math/trig/cosine
-include std/math/trig/sine
-include std/math/trig/triangle
-include std/math/trig/saw
 include std/memory/advancePointer
 include std/math/trig/advancePhase
 
@@ -105,6 +102,39 @@ note
 ;
 noteEnd
 
+function allpassStep
+; @pos -116 8
+#impure
+; Runs one all-pass stage using
+; a signed gain and delay state.
+param float input
+param float gain
+param float* buffer
+param float** pointer
+param int itemCount
+local float writeValue
+
+; input + delayed * gain
+push input
+push **pointer
+mul gain
+add
+localSet writeValue
+
+; delayed - writeValue * gain
+push **pointer
+push writeValue
+mul gain
+sub
+
+push *pointer
+push writeValue
+store
+call advancePointer
+- pointer buffer itemCount
+
+functionEnd float
+
 entry main
 module pcmPlayer
 ; @pos -5 -27
@@ -170,18 +200,15 @@ float phase
 float out
 
 push &out
-push &phase
-push frequency
-push SAMPLE_RATE
 call advancePhase
-; You can swap this call
-; with any periodic function
+- &phase frequency
+- SAMPLE_RATE
+; Include another waveform
+; to change the LFO shape.
 call cosine
 
-push 1.0
-add
-push 2.0
-div
+add 1.0
+div 2.0
 
 store
 
@@ -189,36 +216,34 @@ moduleEnd
 module modulatedDelayTap
 ; @pos 127 -27
 ; @group smearStage1
-; Reads a modulated, 
-; interpolated tap 
+; Reads a modulated,
+; interpolated tap
 ; from a delay buffer
 use cloudsReverb
 
-float* buffer 
+float* buffer
 - &allpassDiffuser:buffer
-float** pointer 
+float** pointer
 - &allpassDiffuser:pointer
 float* mod &lfo1:out
 float out
 
-const MOD_BASE_OFFSET 
+const MOD_BASE_OFFSET
 - 10.0*CLOUDS_RATIO
-const MOD_DEPTH 
+const MOD_DEPTH
 - 60.0*CLOUDS_RATIO
 
 push &out
-; pointer + 
+; pointer +
 ; int((10 + mod * 60) * ratio)
 ; * sizeof(*buffer)
 push *pointer
 push MOD_BASE_OFFSET
 push *mod
-push MOD_DEPTH
-mul
+mul MOD_DEPTH
 add
 castToInt
-push sizeof(*buffer)
-mul
+mul sizeof(*buffer)
 add
 
 ; Circular buffer range
@@ -228,8 +253,7 @@ push count(*buffer)
 ; fraction((10 + mod * 60) * ratio)
 push MOD_BASE_OFFSET
 push *mod
-push MOD_DEPTH
-mul
+mul MOD_DEPTH
 add
 call fract
 
@@ -246,24 +270,22 @@ module delayOffsetWriter
 ; circular pointer.
 use cloudsReverb
 
-float* buffer 
+float* buffer
 - &allpassDiffuser:buffer
-float** pointer 
+float** pointer
 - &allpassDiffuser:pointer
 float* in &modulatedDelayTap:out
 
-const WRITE_OFFSET_SAMPLES 
+const WRITE_OFFSET_SAMPLES
 - 100.0*CLOUDS_RATIO
 
 push *pointer
 push WRITE_OFFSET_SAMPLES
 castToInt
-push sizeof(*buffer)
-mul
+mul sizeof(*buffer)
 add
-push buffer
-push count(*buffer)
 call wrapPointer
+- buffer count(*buffer)
 push *in
 store
 
@@ -278,41 +300,17 @@ const DELAY_SIZE round(113*CLOUDS_RATIO)
 float* in &pcmPlayer:out
 float out
 float[] buffer DELAY_SIZE
-float* pointer &buffer 
-float* diffusion 
+float* pointer &buffer
+float* diffusion
 - &controlValues:diffusion
 
 ; @wave2 &buffer count(buffer) pointer
 
-local float writeValue 
-
-push *in
-push *pointer
-push *diffusion
-mul
-add
-localSet writeValue
-
 push &out
-push *pointer
-push writeValue
-push *diffusion
-mul
-sub
+call allpassStep
+- *in *diffusion &buffer &pointer
+- count(buffer)
 store
-
-; Store the allpass
-; write value
-push pointer
-push writeValue
-store 
-
-; Advance and wrap
-; circular buffer pointer
-push &pointer
-push &buffer
-push count(buffer)
-call advancePointer
 
 moduleEnd
 module allpassDiffuser2
@@ -325,41 +323,17 @@ const DELAY_SIZE round(162*CLOUDS_RATIO)
 float* in &allpassDiffuser:out
 float out
 float[] buffer DELAY_SIZE
-float* pointer &buffer 
-float* diffusion 
+float* pointer &buffer
+float* diffusion
 - &controlValues:diffusion
 
 ; @wave2 &buffer count(buffer) pointer
 
-local float writeValue 
-
-; input + delayed * gain
-push *in
-push *pointer
-push *diffusion
-mul
-add
-localSet writeValue
-
-; delayed - writeValue * gain
 push &out
-push *pointer
-push writeValue
-push *diffusion
-mul
-sub
+call allpassStep
+- *in *diffusion &buffer &pointer
+- count(buffer)
 store
-
-; Store allpass write value
-push pointer
-push writeValue
-store 
-
-; Advance circular buffer pointer
-push &pointer
-push &buffer
-push count(buffer)
-call advancePointer
 
 moduleEnd
 module allpassDiffuser3
@@ -372,41 +346,17 @@ const DELAY_SIZE round(241*CLOUDS_RATIO)
 float* in &allpassDiffuser2:out
 float out
 float[] buffer DELAY_SIZE
-float* pointer &buffer 
+float* pointer &buffer
 float* diffusion
 - &controlValues:diffusion
 
 ; @wave2 &buffer count(buffer) pointer
 
-local float writeValue 
-
-; input + delayed * gain
-push *in
-push *pointer
-push *diffusion
-mul
-add
-localSet writeValue
-
-; delayed - writeValue * gain
 push &out
-push *pointer
-push writeValue
-push *diffusion
-mul
-sub
+call allpassStep
+- *in *diffusion &buffer &pointer
+- count(buffer)
 store
-
-; Store allpass write value
-push pointer
-push writeValue
-store 
-
-; Advance circular buffer pointer
-push &pointer
-push &buffer
-push count(buffer)
-call advancePointer
 
 moduleEnd
 module allpassDiffuser4
@@ -419,41 +369,17 @@ const DELAY_SIZE round(399*CLOUDS_RATIO)
 float* in &allpassDiffuser3:out
 float out
 float[] buffer DELAY_SIZE
-float* pointer &buffer 
+float* pointer &buffer
 float* diffusion
 - &controlValues:diffusion
 
 ; @wave2 &buffer count(buffer) pointer
 
-local float writeValue 
-
-; input + delayed * gain
-push *in
-push *pointer
-push *diffusion
-mul
-add
-localSet writeValue
-
-; delayed - writeValue * gain
 push &out
-push *pointer
-push writeValue
-push *diffusion
-mul
-sub
+call allpassStep
+- *in *diffusion &buffer &pointer
+- count(buffer)
 store
-
-; Store allpass write value
-push pointer
-push writeValue
-store 
-
-; Advance circular buffer pointer
-push &pointer
-push &buffer
-push count(buffer)
-call advancePointer
 
 moduleEnd
 module tank1DelayRead
@@ -487,18 +413,15 @@ float phase
 float out
 
 push &out
-push &phase
-push frequency
-push SAMPLE_RATE
 call advancePhase
-; You can swap this call
-; with any periodic function
+- &phase frequency
+- SAMPLE_RATE
+; Include another waveform
+; to change the LFO shape.
 call cosine
 
-push 1.0
-add
-push 2.0
-div
+add 1.0
+div 2.0
 
 store
 
@@ -506,13 +429,13 @@ moduleEnd
 module tank1ModulatedTap
 ; @pos 500 -60
 ; @group tank1
-; Reads a modulated, 
-; interpolated tap 
+; Reads a modulated,
+; interpolated tap
 ; from a delay buffer
 use cloudsReverb
 
 float* buffer &tank1DelayRead:buffer
-float** pointer 
+float** pointer
 - &tank1DelayRead:pointer
 float* mod &tank1DelayLfo:out
 float out
@@ -521,18 +444,16 @@ const MOD_BASE_OFFSET 4680.0*CLOUDS_RATIO
 const MOD_DEPTH 100.0*CLOUDS_RATIO
 
 push &out
-; pointer + 
+; pointer +
 ; int((4680 + mod * 100) * ratio)
 ; * sizeof(*buffer)
 push *pointer
 push MOD_BASE_OFFSET
 push *mod
-push MOD_DEPTH
-mul
+mul MOD_DEPTH
 add
 castToInt
-push sizeof(*buffer)
-mul
+mul sizeof(*buffer)
 add
 
 ; Circular buffer range
@@ -542,8 +463,7 @@ push count(*buffer)
 ; fraction((4680 + mod * 100) * ratio)
 push MOD_BASE_OFFSET
 push *mod
-push MOD_DEPTH
-mul
+mul MOD_DEPTH
 add
 call fract
 
@@ -559,7 +479,7 @@ use cloudsReverb
 
 const DELAY_SIZE round(3411*CLOUDS_RATIO)
 
-float[] buffer DELAY_SIZE 
+float[] buffer DELAY_SIZE
 float out
 float* pointer &buffer
 
@@ -582,8 +502,7 @@ float out
 push &out
 push *in1
 push *in2
-push *decay
-mul
+mul *decay
 add
 store
 
@@ -593,15 +512,14 @@ module tank2Mixer
 ; @group tank2
 float* in1 &allpassDiffuser4:out
 float* in2 &tank2DelayRead:out
-float* decay 
+float* decay
 - &controlValues:decay
 float out
 
 push &out
 push *in1
 push *in2
-push *decay
-mul
+mul *decay
 add
 store
 
@@ -615,13 +533,8 @@ float* damping
 float out
 
 push &out
-push out
-push *in
-push out
-sub
-push *damping
-mul
-add
+call lerp
+- out *in *damping
 store
 
 moduleEnd
@@ -634,13 +547,8 @@ float* damping
 float out
 
 push &out
-push out
-push *in
-push out
-sub
-push *damping
-mul
-add
+call lerp
+- out *in *damping
 store
 
 moduleEnd
@@ -654,40 +562,16 @@ const DELAY_SIZE round(1913*CLOUDS_RATIO)
 float* in &tank2Damping:out
 float out
 float[] buffer DELAY_SIZE
-float* pointer &buffer 
+float* pointer &buffer
 float* diffusion
 - &controlValues:diffusion
 
 ; @wave &buffer count(buffer) pointer
-local float writeValue 
-
-; input + delayed * gain
-push *in
-push *pointer
-push *diffusion
-mul
-add
-localSet writeValue
-
-; delayed - writeValue * gain
 push &out
-push *pointer
-push writeValue
-push *diffusion
-mul
-sub
+call allpassStep
+- *in *diffusion &buffer &pointer
+- count(buffer)
 store
-
-; Store allpass write value
-push pointer
-push writeValue
-store 
-
-; Advance circular buffer pointer
-push &pointer
-push &buffer
-push count(buffer)
-call advancePointer
 
 moduleEnd
 module tank1AllpassA
@@ -700,44 +584,18 @@ const DELAY_SIZE round(1653*CLOUDS_RATIO)
 float* in &tank1Damping:out
 float out
 float[] buffer DELAY_SIZE
-float* pointer &buffer 
+float* pointer &buffer
 float* diffusion
 - &controlValues:diffusion
 
 ; @wave &buffer count(buffer) pointer
-local float writeValue 
-
-; input - delayed * gain
-push *in
-push *pointer
-push *diffusion
-push -1.0
-mul
-mul
-add
-localSet writeValue
-
-; delayed + writeValue * gain
 push &out
-push *pointer
-push writeValue
+push *in
 push *diffusion
-push -1.0
-mul
-mul
-sub
+mul -1.0
+call allpassStep
+- &buffer &pointer count(buffer)
 store
-
-; Store allpass write value
-push pointer
-push writeValue
-store 
-
-; Advance circular buffer pointer
-push &pointer
-push &buffer
-push count(buffer)
-call advancePointer
 
 moduleEnd
 module tank2AllpassB
@@ -752,42 +610,16 @@ float out
 float[] buffer DELAY_SIZE
 float* pointer &buffer
 float* diffusion
-- &controlValues:diffusion 
+- &controlValues:diffusion
 
 ; @wave2 &buffer count(buffer) pointer
-local float writeValue 
-
-; input - delayed * gain
-push *in
-push *pointer
-push *diffusion
-push -1.0
-mul
-mul
-add
-localSet writeValue
-
-; delayed + writeValue * gain
 push &out
-push *pointer
-push writeValue
+push *in
 push *diffusion
-push -1.0
-mul
-mul
-sub
+mul -1.0
+call allpassStep
+- &buffer &pointer count(buffer)
 store
-
-; Store allpass write value
-push pointer
-push writeValue
-store 
-
-; Advance circular buffer pointer
-push &pointer
-push &buffer
-push count(buffer)
-call advancePointer
 
 moduleEnd
 module tank1AllpassB
@@ -800,40 +632,16 @@ const DELAY_SIZE round(2038*CLOUDS_RATIO)
 float* in &tank1AllpassA:out
 float out
 float[] buffer DELAY_SIZE
-float* pointer &buffer 
-float* diffusion 
+float* pointer &buffer
+float* diffusion
 - &controlValues:diffusion
 
 ; @wave &buffer count(buffer) pointer
-local float writeValue 
-
-; input + delayed * gain
-push *in
-push *pointer
-push *diffusion
-mul
-add
-localSet writeValue
-
-; delayed - writeValue * gain
 push &out
-push *pointer
-push writeValue
-push *diffusion
-mul
-sub
+call allpassStep
+- *in *diffusion &buffer &pointer
+- count(buffer)
 store
-
-; Store allpass write value
-push pointer
-push writeValue
-store 
-
-; Advance circular buffer pointer
-push &pointer
-push &buffer
-push count(buffer)
-call advancePointer
 
 moduleEnd
 module tank2DelayWrite
@@ -849,10 +657,8 @@ push *pointer
 push *in
 store
 
-push pointer
-push buffer
-push count(*buffer)
 call advancePointer
+- pointer buffer count(*buffer)
 
 moduleEnd
 module tank1DelayWrite
@@ -868,10 +674,8 @@ push *pointer
 push *in
 store
 
-push pointer
-push buffer
-push count(*buffer)
 call advancePointer
+- pointer buffer count(*buffer)
 
 moduleEnd
 module tank1OutputMix
@@ -884,15 +688,7 @@ float* amount &controlValues:amount
 float out
 
 push &out
-push *dry
-push 1.0
-push *amount
-sub
-mul
-push *wet
-push *amount
-mul
-add
+call lerp *dry *wet *amount
 store
 
 moduleEnd
@@ -906,15 +702,7 @@ float* amount &controlValues:amount
 float out
 
 push &out
-push *dry
-push 1.0
-push *amount
-sub
-mul
-push *wet
-push *amount
-mul
-add
+call lerp *dry *wet *amount
 store
 
 moduleEnd
@@ -935,11 +723,11 @@ push pointer
 push *in
 store
 
-; Increment the buffer 
+; Increment the buffer
 ; pointer by the word size
 push &pointer
 push pointer
-push sizeof(buffer) 
+push sizeof(buffer)
 add
 store
 
@@ -947,8 +735,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer& 
-greaterThan 
+push buffer&
+greaterThan
 if
 push &pointer
 push &buffer
@@ -973,11 +761,11 @@ push pointer
 push *in
 store
 
-; Increment the buffer 
+; Increment the buffer
 ; pointer by the word size
 push &pointer
 push pointer
-push sizeof(buffer) 
+push sizeof(buffer)
 add
 store
 
@@ -985,8 +773,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer& 
-greaterThan 
+push buffer&
+greaterThan
 if
 push &pointer
 push &buffer
