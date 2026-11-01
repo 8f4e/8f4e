@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-minimal",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "8f4e editor composition for embedded examples and tests",
   "type": "module",

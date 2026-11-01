@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-default",
-  "version": "6.2.1",
+  "version": "6.2.2",
   "private": true,
   "description": "8f4e default editor composition",
   "type": "module",

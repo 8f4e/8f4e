@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-connectors",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "description": "Input/output connectors and wire rendering for the 8f4e editor",
   "type": "module",
