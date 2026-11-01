@@ -85,7 +85,7 @@ export function createTextureRuntimePlugin({
 								logError(state, `Conflicting @textureUpload definitions at byte address ${address}`);
 						previousConflicts = conflicts;
 						visibleAddresses.clear();
-						for (const block of state.codeBlockRendering.codeBlocks) {
+						for (const block of state.codeBlockRendering.currentProject.blocks) {
 							for (const texture of textures.viewsByBlock.get(block) ?? []) {
 								const x = block.x - state.viewport.x + texture.x;
 								const y = block.y - state.viewport.y + texture.y;

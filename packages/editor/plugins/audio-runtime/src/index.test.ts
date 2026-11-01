@@ -112,7 +112,7 @@ describe('AudioWorklet context lifetime', () => {
 		);
 		events.dispatch('loadProject', { project });
 		const state = store.getState();
-		const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'settings')!;
+		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'settings')!;
 		return {
 			cleanup,
 			store,

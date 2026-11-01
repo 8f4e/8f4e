@@ -22,7 +22,7 @@ describe('codeBlockDragger', () => {
 				moduleDragging: true,
 			},
 			codeBlockRendering: {
-				codeBlocks: [],
+				currentProject: { entries: [], path: '', blocks: [] },
 				viewportAnchoredCodeBlocks: [],
 				draggedCodeBlock: undefined,
 				selectedCodeBlock: undefined,
@@ -77,7 +77,7 @@ describe('codeBlockDragger', () => {
 				blockType: 'module',
 			});
 
-			state.codeBlockRendering.codeBlocks = [block1];
+			state.codeBlockRendering.currentProject.blocks = [block1];
 
 			codeBlockDragger(store, events);
 
@@ -138,7 +138,7 @@ describe('codeBlockDragger', () => {
 			x: 200,
 			y: 200,
 		});
-		state.codeBlockRendering.codeBlocks = [first, second];
+		state.codeBlockRendering.currentProject.blocks = [first, second];
 		vi.mocked(events.dispatch).mockImplementation((name, payload) => {
 			if (name !== 'resolveCodeBlockDragTargets') return;
 			const request = payload as import('./effect').ResolveCodeBlockDragTargetsEvent;
@@ -178,7 +178,7 @@ describe('codeBlockDragger', () => {
 				blockType: 'module',
 			});
 
-			state.codeBlockRendering.codeBlocks = [block1];
+			state.codeBlockRendering.currentProject.blocks = [block1];
 
 			codeBlockDragger(store, events);
 
@@ -227,7 +227,7 @@ describe('codeBlockDragger', () => {
 				blockType: 'module',
 			});
 
-			state.codeBlockRendering.codeBlocks = [block1];
+			state.codeBlockRendering.currentProject.blocks = [block1];
 
 			codeBlockDragger(store, events);
 
@@ -269,7 +269,7 @@ describe('codeBlockDragger', () => {
 				blockType: 'module',
 			});
 
-			state.codeBlockRendering.codeBlocks = [block1, blockBehind];
+			state.codeBlockRendering.currentProject.blocks = [block1, blockBehind];
 
 			codeBlockDragger(store, events);
 
@@ -305,7 +305,7 @@ describe('codeBlockDragger', () => {
 			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 			expect(block1.x).toBe(50);
 			expect(block1.y).toBe(100);
-			expect(state.codeBlockRendering.codeBlocks).toEqual([blockBehind, block1]);
+			expect(state.codeBlockRendering.currentProject.blocks).toEqual([blockBehind, block1]);
 		});
 	});
 
@@ -321,7 +321,7 @@ describe('codeBlockDragger', () => {
 				blockType: 'module',
 			});
 
-			state.codeBlockRendering.codeBlocks = [block1];
+			state.codeBlockRendering.currentProject.blocks = [block1];
 
 			codeBlockDragger(store, events);
 
@@ -354,7 +354,7 @@ describe('codeBlockDragger', () => {
 			});
 			const originalCode = [...block1.code];
 
-			state.codeBlockRendering.codeBlocks = [block1];
+			state.codeBlockRendering.currentProject.blocks = [block1];
 
 			codeBlockDragger(store, events);
 
@@ -390,7 +390,7 @@ describe('codeBlockDragger', () => {
 				blockType: 'module',
 			});
 
-			state.codeBlockRendering.codeBlocks = [block1];
+			state.codeBlockRendering.currentProject.blocks = [block1];
 			state.codeBlockRendering.selectedCodeBlock = block1;
 
 			codeBlockDragger(store, events);
@@ -455,7 +455,7 @@ describe('codeBlockDragger', () => {
 				alwaysOnTop: true,
 			});
 
-			state.codeBlockRendering.codeBlocks = [normal1, normal2, top1];
+			state.codeBlockRendering.currentProject.blocks = [normal1, normal2, top1];
 
 			codeBlockDragger(store, events);
 
@@ -471,7 +471,7 @@ describe('codeBlockDragger', () => {
 				altKey: false,
 			});
 
-			expect(state.codeBlockRendering.codeBlocks).toEqual([normal2, normal1, top1]);
+			expect(state.codeBlockRendering.currentProject.blocks).toEqual([normal2, normal1, top1]);
 		});
 
 		it('brings an always-on-top block forward within the always-on-top partition', () => {
@@ -515,7 +515,7 @@ describe('codeBlockDragger', () => {
 				alwaysOnTop: true,
 			});
 
-			state.codeBlockRendering.codeBlocks = [normal1, top1, top2];
+			state.codeBlockRendering.currentProject.blocks = [normal1, top1, top2];
 
 			codeBlockDragger(store, events);
 
@@ -531,7 +531,7 @@ describe('codeBlockDragger', () => {
 				altKey: false,
 			});
 
-			expect(state.codeBlockRendering.codeBlocks).toEqual([normal1, top2, top1]);
+			expect(state.codeBlockRendering.currentProject.blocks).toEqual([normal1, top2, top1]);
 		});
 	});
 });

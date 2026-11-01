@@ -45,8 +45,7 @@ describe('codeBlockCreator - copy/paste', () => {
 				gridX: -3,
 				gridY: 8,
 				creationIndex: 3,
-				projectEntries: ['main', 'empty'],
-				nestedProjectCodeBlocks: [nestedModule],
+				childProject: { entries: ['main', 'empty'], path: '', blocks: [nestedModule] },
 			});
 			const module = createMockCodeBlock({
 				name: 'output',
@@ -74,12 +73,11 @@ describe('codeBlockCreator - copy/paste', () => {
 				gridX: 10,
 				gridY: 20,
 				creationIndex: 0,
-				projectEntries: ['main', 'foo', 'bar'],
-				nestedProjectCodeBlocks: [module, functionBlock, nestedGroup],
+				childProject: { entries: ['main', 'foo', 'bar'], path: '', blocks: [module, functionBlock, nestedGroup] },
 			});
 			const rootCodeBlocks = [group];
-			mockState.codeBlockRendering.rootCodeBlocks = rootCodeBlocks;
-			mockState.codeBlockRendering.codeBlocks = rootCodeBlocks;
+			mockState.codeBlockRendering.rootProject.blocks = rootCodeBlocks;
+			mockState.codeBlockRendering.currentProject.blocks = rootCodeBlocks;
 
 			codeBlockCreator(store, mockEvents);
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
@@ -88,7 +86,7 @@ describe('codeBlockCreator - copy/paste', () => {
 
 			copyCodeBlock({ codeBlock: group });
 			await new Promise(resolve => setTimeout(resolve, 0));
-			expect(JSON.parse(clipboardText)[0].nestedProjectCodeBlocks).toHaveLength(3);
+			expect(JSON.parse(clipboardText)[0].childProject?.blocks).toHaveLength(3);
 
 			await pasteCodeBlocks({ x: 100, y: 100 });
 
@@ -100,8 +98,8 @@ describe('codeBlockCreator - copy/paste', () => {
 				projectPath: '',
 			});
 			expect(pastedGroup.code).toContain('; root comment');
-			expect(pastedGroup.nestedProjectCodeBlocks).toHaveLength(3);
-			expect(pastedGroup.nestedProjectCodeBlocks?.[0]).toMatchObject({
+			expect(pastedGroup.childProject?.blocks).toHaveLength(3);
+			expect(pastedGroup.childProject?.blocks?.[0]).toMatchObject({
 				name: 'output',
 				blockType: 'module',
 				entry: 'main',
@@ -109,18 +107,18 @@ describe('codeBlockCreator - copy/paste', () => {
 				gridX: 2,
 				gridY: 3,
 			});
-			expect(pastedGroup.nestedProjectCodeBlocks?.[1]).toMatchObject({
+			expect(pastedGroup.childProject?.blocks?.[1]).toMatchObject({
 				name: 'process',
 				blockType: 'function',
 				projectPath: 'audio1',
 			});
-			const pastedNestedGroup = pastedGroup.nestedProjectCodeBlocks?.[2];
+			const pastedNestedGroup = pastedGroup.childProject?.blocks?.[2];
 			expect(pastedNestedGroup).toMatchObject({
 				name: 'modulation',
 				projectPath: 'audio1',
 			});
 			expect(pastedNestedGroup?.code).toContain('; nested comment');
-			expect(pastedNestedGroup?.nestedProjectCodeBlocks?.[0]).toMatchObject({
+			expect(pastedNestedGroup?.childProject?.blocks[0]).toMatchObject({
 				name: 'voice',
 				blockType: 'module',
 				entry: 'main',
@@ -130,9 +128,9 @@ describe('codeBlockCreator - copy/paste', () => {
 			});
 			const pastedCreationIndexes = [
 				pastedGroup.creationIndex,
-				...pastedGroup.nestedProjectCodeBlocks!.flatMap(block => [
+				...pastedGroup.childProject!.blocks.flatMap(block => [
 					block.creationIndex,
-					...(block.nestedProjectCodeBlocks?.map(child => child.creationIndex) ?? []),
+					...(block.childProject?.blocks?.map(child => child.creationIndex) ?? []),
 				]),
 			];
 			expect(new Set(pastedCreationIndexes).size).toBe(pastedCreationIndexes.length);
@@ -145,9 +143,8 @@ describe('codeBlockCreator - copy/paste', () => {
 				entry: 'main',
 				execution: [
 					{
-						entry: 'main',
-						entries: ['main', 'empty'],
 						type: 'group',
+						entries: ['main', 'empty'],
 						name: 'modulation',
 						execution: [{ type: 'module', entry: 'main', code: expect.arrayContaining(['module voice']) }],
 					},
@@ -194,12 +191,14 @@ describe('codeBlockCreator - copy/paste', () => {
 			codeBlockCreator(store, events);
 			events.dispatch('pasteCodeBlocks', { x: 100, y: 100 });
 			await vi.waitFor(() => {
-				expect(mockState.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual([
+				expect(mockState.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
 					'transformed',
 					'transformed2',
 				]);
 			});
-			expect(mockState.codeBlockRendering.codeBlocks.every(block => block.code.includes('; @custom data'))).toBe(true);
+			expect(
+				mockState.codeBlockRendering.currentProject.blocks.every(block => block.code.includes('; @custom data'))
+			).toBe(true);
 			expect(mockState.projectChange.revision).toBe(1);
 		});
 
@@ -224,17 +223,17 @@ describe('codeBlockCreator - copy/paste', () => {
 			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Verify two blocks were created
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(2);
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(2);
 
 			// Verify first block is at paste anchor position
 			const anchorGridX = Math.round(100 / 8);
 			const anchorGridY = Math.round(100 / 8);
-			expect(mockState.codeBlockRendering.codeBlocks[0].gridX).toBe(anchorGridX);
-			expect(mockState.codeBlockRendering.codeBlocks[0].gridY).toBe(anchorGridY);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].gridX).toBe(anchorGridX);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].gridY).toBe(anchorGridY);
 
 			// Verify second block has relative offset
-			expect(mockState.codeBlockRendering.codeBlocks[1].gridX).toBe(anchorGridX + 5);
-			expect(mockState.codeBlockRendering.codeBlocks[1].gridY).toBe(anchorGridY + 3);
+			expect(mockState.codeBlockRendering.currentProject.blocks[1].gridX).toBe(anchorGridX + 5);
+			expect(mockState.codeBlockRendering.currentProject.blocks[1].gridY).toBe(anchorGridY + 3);
 		});
 
 		it('should parse disabled state from @disabled directive on pasted blocks', async () => {
@@ -254,8 +253,8 @@ describe('codeBlockCreator - copy/paste', () => {
 
 			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
-			expect(mockState.codeBlockRendering.codeBlocks[0].disabled).toBe(true);
-			expect(mockState.codeBlockRendering.codeBlocks[1].disabled).toBe(false);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].disabled).toBe(true);
+			expect(mockState.codeBlockRendering.currentProject.blocks[1].disabled).toBe(false);
 		});
 
 		it('should fallback to single-block paste for invalid JSON', async () => {
@@ -273,11 +272,11 @@ describe('codeBlockCreator - copy/paste', () => {
 			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Should create one block with plain text (now includes @pos)
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[0]).toBe('module test');
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[1]).toMatch(/^; @pos \d+ \d+$/);
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[2]).toBe('');
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[3]).toBe('moduleEnd');
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(1);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[0]).toBe('module test');
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[1]).toMatch(/^; @pos \d+ \d+$/);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[2]).toBe('');
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[3]).toBe('moduleEnd');
 		});
 
 		it('should fallback to single-block paste for array with only 1 item', async () => {
@@ -295,7 +294,7 @@ describe('codeBlockCreator - copy/paste', () => {
 			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Should fallback to single paste
-			expect(mockState.codeBlockRendering.codeBlocks).toHaveLength(1);
+			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(1);
 		});
 
 		it('should update module names to avoid collisions', async () => {
@@ -303,7 +302,7 @@ describe('codeBlockCreator - copy/paste', () => {
 				name: 'foo',
 				code: ['module foo', 'moduleEnd'],
 			});
-			mockState.codeBlockRendering.codeBlocks = [existingBlock];
+			mockState.codeBlockRendering.currentProject.blocks = [existingBlock];
 
 			const clipboardData = JSON.stringify([
 				{ code: ['module foo', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } },
@@ -322,9 +321,11 @@ describe('codeBlockCreator - copy/paste', () => {
 			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Pasted blocks should have unique names
-			expect(mockState.codeBlockRendering.codeBlocks[1].name).not.toBe('foo');
-			expect(mockState.codeBlockRendering.codeBlocks[2].name).not.toBe('foo');
-			expect(mockState.codeBlockRendering.codeBlocks[1].name).not.toBe(mockState.codeBlockRendering.codeBlocks[2].name);
+			expect(mockState.codeBlockRendering.currentProject.blocks[1].name).not.toBe('foo');
+			expect(mockState.codeBlockRendering.currentProject.blocks[2].name).not.toBe('foo');
+			expect(mockState.codeBlockRendering.currentProject.blocks[1].name).not.toBe(
+				mockState.codeBlockRendering.currentProject.blocks[2].name
+			);
 		});
 
 		it('should update inter-module references when pasted module names are renamed', async () => {
@@ -332,7 +333,7 @@ describe('codeBlockCreator - copy/paste', () => {
 				name: 'foo',
 				code: ['module foo', 'moduleEnd'],
 			});
-			mockState.codeBlockRendering.codeBlocks = [existingBlock];
+			mockState.codeBlockRendering.currentProject.blocks = [existingBlock];
 
 			const clipboardData = JSON.stringify([
 				{ code: ['module foo', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } },
@@ -353,9 +354,9 @@ describe('codeBlockCreator - copy/paste', () => {
 
 			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
-			expect(mockState.codeBlockRendering.codeBlocks[1].code[0]).toBe('module foo2');
-			expect(mockState.codeBlockRendering.codeBlocks[2].code[2]).toBe('int* source &foo2:memoryItem');
-			expect(mockState.codeBlockRendering.codeBlocks[2].code[3]).toBe('push count(foo2:buffer)');
+			expect(mockState.codeBlockRendering.currentProject.blocks[1].code[0]).toBe('module foo2');
+			expect(mockState.codeBlockRendering.currentProject.blocks[2].code[2]).toBe('int* source &foo2:memoryItem');
+			expect(mockState.codeBlockRendering.currentProject.blocks[2].code[3]).toBe('push count(foo2:buffer)');
 		});
 
 		it('preserves arbitrary directive source when pasting', async () => {
@@ -376,8 +377,8 @@ describe('codeBlockCreator - copy/paste', () => {
 			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			// Unregistered directive source remains intact after position insertion.
-			expect(mockState.codeBlockRendering.codeBlocks[0].code[2]).toBe('; @custom audio mode');
-			expect(mockState.codeBlockRendering.codeBlocks[1].code[2]).toBe('; @custom audio mode');
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[2]).toBe('; @custom audio mode');
+			expect(mockState.codeBlockRendering.currentProject.blocks[1].code[2]).toBe('; @custom audio mode');
 		});
 	});
 });

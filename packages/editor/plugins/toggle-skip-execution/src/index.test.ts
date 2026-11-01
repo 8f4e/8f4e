@@ -56,7 +56,7 @@ function createContext(code = ['module test', '', 'moduleEnd']) {
 	events.dispatch('enterEditMode');
 	const state = store.getState();
 	const codeBlock = createMockCodeBlock({ code, blockType: 'module', entry: 'main', lastUpdated: 1000 });
-	state.codeBlockRendering.rootCodeBlocks.push(codeBlock);
+	state.codeBlockRendering.rootProject.blocks.push(codeBlock);
 	return { state, store, events, codeBlock, dispose };
 }
 
@@ -138,7 +138,7 @@ describe('toggle skip execution plugin', () => {
 			try {
 				const code = blockType === 'module' ? ['module test', 'moduleEnd'] : ['note test', 'noteEnd'];
 				const block = createMockCodeBlock({ code, blockType, entry: 'main' });
-				store.getState().codeBlockRendering.rootCodeBlocks.push(block);
+				store.getState().codeBlockRendering.rootProject.blocks.push(block);
 				events.dispatch('contextmenu', { x: 16, y: 16 });
 				await Promise.resolve();
 				expect(
@@ -166,7 +166,7 @@ describe('toggle skip execution plugin', () => {
 				creationIndex: 1,
 			});
 			const state = store.getState();
-			state.codeBlockRendering.rootCodeBlocks.push(block, selected);
+			state.codeBlockRendering.rootProject.blocks.push(block, selected);
 			state.codeBlockRendering.selectedCodeBlock = selected;
 			events.dispatch('contextmenu', { x: 16, y: 16 });
 			await Promise.resolve();
@@ -202,7 +202,7 @@ describe('toggle skip execution plugin', () => {
 		events.dispatch('enterEditMode');
 		try {
 			const block = createMockCodeBlock({ code: ['module test', 'moduleEnd'], blockType: 'module', entry: 'main' });
-			store.getState().codeBlockRendering.rootCodeBlocks.push(block);
+			store.getState().codeBlockRendering.rootProject.blocks.push(block);
 			changed.mockImplementation(() => [...block.code]);
 			events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
 			expect(changed).toHaveBeenCalledOnce();

@@ -3,7 +3,7 @@
 - Own automatic signal matching, per-editor imports/installation, and loaded-plugin disposal.
 - Accept `LazyEditorPlugin` entries with `id`, required `scope: 'view' | 'project'`, `matches(directives)`, and
   `load()`. Keep feature signals and browser dependencies in the host registry; imports belong inside loader callbacks.
-- Scan at setup and schedule scans on completed `projectChange` notifications and `codeBlockRendering.codeBlocks`
+- Scan at setup and schedule scans on completed `projectChange` notifications and `codeBlockRendering.currentProject.blocks`
   changes. Coalesce synchronous notifications in a microtask so API edits finish restoring their current group first.
 - Match cached `parsedDirectives`; do not serialize or reparse source. View scope covers the current project level
   without descending into groups. Project scope covers root blocks and all nested groups. Match raw `@config` records

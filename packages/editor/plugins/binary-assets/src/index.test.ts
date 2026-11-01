@@ -56,7 +56,7 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 		store.set('compiler.result.memoryPlan', compiled.memoryPlan);
 	}
 	const state = store.getState();
-	const env = () => state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'env')!;
+	const env = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')!;
 	return { events, store, state, memory, getMemoryBytes, disposePlugin, env };
 }
 

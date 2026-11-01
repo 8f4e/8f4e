@@ -70,8 +70,8 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		// Normal blocks move to the end of the normal segment (before always-on-top blocks).
 		// Always-on-top blocks move to the end of the always-on-top segment (end of array).
 		replaceCodeBlocksInPlace(
-			state.codeBlockRendering.codeBlocks,
-			bringCodeBlockToFrontWithinPartition(state.codeBlockRendering.codeBlocks, draggedCodeBlock)
+			state.codeBlockRendering.currentProject.blocks,
+			bringCodeBlockToFrontWithinPartition(state.codeBlockRendering.currentProject.blocks, draggedCodeBlock)
 		);
 
 		if (state.editorMode !== 'edit') {

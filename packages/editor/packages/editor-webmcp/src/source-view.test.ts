@@ -19,8 +19,7 @@ function fixture() {
 		creationIndex: 2,
 		entry: 'main',
 		code: ['group voices', '; voice settings', 'groupEnd'],
-		projectEntries: ['main'],
-		nestedProjectCodeBlocks: [deep],
+		childProject: { path: 'audio/voices', entries: ['main'], blocks: [deep] },
 	});
 	const direct = module('oscillator', 'audio', 1);
 	const audio = createMockCodeBlock({
@@ -29,13 +28,12 @@ function fixture() {
 		creationIndex: 0,
 		entry: 'main',
 		code: ['group audio', 'expose oscillator:value', 'groupEnd'],
-		projectEntries: ['main'],
-		nestedProjectCodeBlocks: [direct, voices],
+		childProject: { path: 'audio', entries: ['main'], blocks: [direct, voices] },
 	});
 	const root = module('rootModule', '', 4);
-	const state = createMockState();
-	state.codeBlockRendering.rootCodeBlocks = [audio, root];
-	state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
+	const state = createMockState({
+		codeBlockRendering: { rootProject: { entries: [], path: '', blocks: [audio, root] } },
+	});
 	return { state, audio, voices, root };
 }
 
@@ -52,13 +50,13 @@ describe('one-level 8f4e source views', () => {
 
 	it('reads only the currently expanded group, including nested group shells', () => {
 		const { state, audio, voices } = fixture();
-		state.codeBlockRendering.codeBlocks = audio.nestedProjectCodeBlocks!;
+		state.codeBlockRendering.currentProject = audio.childProject!;
 		const view = createSourceView(state);
 		expect(view).toBe(
 			'group audio\nexpose oscillator:value\n\nentry main\n\nmodule oscillator\nint value 1\nmoduleEnd\n\ngroup voices\n; voice settings\nentry main\nentryEnd\ngroupEnd\nentryEnd\ngroupEnd'
 		);
 		expect(view).not.toContain('deepSecret');
-		state.codeBlockRendering.codeBlocks = voices.nestedProjectCodeBlocks!;
+		state.codeBlockRendering.currentProject = voices.childProject!;
 		const nested = createSourceView(state);
 		expect(nested).toContain('module deepSecret');
 		expect(nested).not.toContain('module oscillator');
@@ -67,12 +65,12 @@ describe('one-level 8f4e source views', () => {
 	it('retains empty named entries and unfinished group shells', () => {
 		const { state, audio } = fixture();
 		audio.code = ['group audio', '; unfinished settings'];
-		audio.nestedProjectCodeBlocks = [];
-		audio.projectEntries = ['foo', 'bar'];
+		audio.childProject!.blocks = [];
+		audio.childProject!.entries = ['foo', 'bar'];
 		expect(createSourceView(state)).toContain(
 			'group audio\n; unfinished settings\nentry foo\nentryEnd\nentry bar\nentryEnd'
 		);
-		state.codeBlockRendering.codeBlocks = audio.nestedProjectCodeBlocks;
+		state.codeBlockRendering.currentProject = audio.childProject!;
 		const view = createSourceView(state);
 		expect(view).toContain('entry foo\nentryEnd');
 		expect(view).toContain('entry bar\nentryEnd');
@@ -83,13 +81,13 @@ describe('one-level 8f4e source views', () => {
 		const { state, root } = fixture();
 		root.code = ['module unfinished', 'push'];
 		expect(createSourceView(state)).toContain('module unfinished\npush');
-		state.codeBlockRendering.codeBlocks = [];
+		state.codeBlockRendering.currentProject = { entries: [], path: 'missing', blocks: [] };
 		expect(() => createSourceView(state)).toThrow('currently expanded group is unavailable');
 	});
 
 	it('preserves root-owned source, entry boundaries, blank lines, and empty group shells', () => {
 		const { state, audio, root } = fixture();
-		audio.nestedProjectCodeBlocks = [];
+		audio.childProject!.blocks = [];
 		root.entry = 'secondary';
 		const scope = createMockCodeBlock({
 			isProjectScope: true,
@@ -97,12 +95,12 @@ describe('one-level 8f4e source views', () => {
 			code: ['pass shared', '', '; root comment'],
 			creationIndex: 5,
 		});
-		state.codeBlockRendering.rootCodeBlocks.push(scope);
+		state.codeBlockRendering.rootProject.blocks.push(scope);
 		const view = createSourceView(state);
 		expect(view).toContain('pass shared\n\n; root comment');
 		expect(view).toContain('entry main\n');
 		expect(view).toContain('entry secondary\n');
-		state.codeBlockRendering.codeBlocks = audio.nestedProjectCodeBlocks!;
+		state.codeBlockRendering.currentProject = audio.childProject!;
 		expect(createSourceView(state)).toBe('group audio\nexpose oscillator:value\n\nentry main\nentryEnd\ngroupEnd');
 	});
 });

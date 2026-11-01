@@ -66,13 +66,15 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 			expect(
 				store
 					.getState()
-					.codeBlockRendering.codeBlocks.find(block => block.name === 'remote')
+					.codeBlockRendering.currentProject.blocks.find(block => block.name === 'remote')
 					?.gaps.get(2)?.size
 			).toBe(8)
 		);
 		expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
 		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
-		expect(store.getState().codeBlockRendering.codeBlocks.some(block => block.name === 'oldSession')).toBe(false);
+		expect(store.getState().codeBlockRendering.currentProject.blocks.some(block => block.name === 'oldSession')).toBe(
+			false
+		);
 	} finally {
 		while (disposers.length) disposers.pop()!();
 		store.dispose();

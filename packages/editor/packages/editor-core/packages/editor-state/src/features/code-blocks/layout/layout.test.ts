@@ -19,7 +19,7 @@ function setup() {
 	});
 	events.dispatch('enterEditMode');
 	const state = store.getState();
-	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'audio')!;
+	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
 	return { store, state, block, events, layout: store.layout };
 }
 

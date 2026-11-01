@@ -78,11 +78,11 @@ export function getMemoryDefaultEdits(state: State, groups: MemoryDefaultValue[]
 	const owners = new Map<string, CodeBlockGraphicData>();
 	const collectOwners = (blocks: CodeBlockGraphicData[]) => {
 		for (const block of blocks) {
-			if (block.nestedProjectCodeBlocks !== undefined) collectOwners(block.nestedProjectCodeBlocks);
+			if (block.childProject !== undefined) collectOwners(block.childProject?.blocks);
 			else if (block.blockType === 'module') owners.set(getCodeBlockModuleId(block), block);
 		}
 	};
-	collectOwners(state.codeBlockRendering.rootCodeBlocks);
+	collectOwners(state.codeBlockRendering.rootProject.blocks);
 
 	const updates = new Map<CodeBlockGraphicData, string[]>();
 	for (const group of groups) {

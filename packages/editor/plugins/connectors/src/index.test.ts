@@ -90,8 +90,8 @@ describe('connectors plugin', () => {
 		const { state, memoryViews, gl, render } = await setup();
 		const output = state.compiler.result.memoryPlan.modules.source.memory.output;
 		const input = state.compiler.result.memoryPlan.modules.sink.memory.input;
-		state.codeBlockRendering.codeBlocks[0].x = -10000;
-		state.codeBlockRendering.codeBlocks[1].x = 10000;
+		state.codeBlockRendering.currentProject.blocks[0].x = -10000;
+		state.codeBlockRendering.currentProject.blocks[1].x = 10000;
 		render();
 		expect(gl.drawArraysInstanced).toHaveBeenCalledWith(gl.TRIANGLE_STRIP, 0, 4, 1);
 		memoryViews.int32[input.allocationUnitAddress] = 123456;
@@ -108,7 +108,7 @@ describe('connectors plugin', () => {
 		render();
 		expect(gl.drawArraysInstanced).not.toHaveBeenCalled();
 		state.dialogStack = [];
-		state.codeBlockRendering.selectedCodeBlock = state.codeBlockRendering.codeBlocks.find(
+		state.codeBlockRendering.selectedCodeBlock = state.codeBlockRendering.currentProject.blocks.find(
 			block => block.name === 'sink'
 		);
 		render();
@@ -120,7 +120,7 @@ describe('connectors plugin', () => {
 		const { state, store, events, gl, render } = await setup();
 		render();
 		expect(gl.drawArraysInstanced).toHaveBeenCalledOnce();
-		deleteCodeBlocks(store, [state.codeBlockRendering.codeBlocks.find(block => block.name === 'source')!]);
+		deleteCodeBlocks(store, [state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!]);
 		render();
 		expect(gl.drawArraysInstanced).not.toHaveBeenCalled();
 		events.dispatch('loadProject', { project: parseProjectSource(source) });
@@ -160,10 +160,10 @@ module outerSink
 float* input &patch:output
 moduleEnd
 entryEnd`);
-		const root = state.codeBlockRendering.codeBlocks;
+		const root = state.codeBlockRendering.currentProject.blocks;
 		const group = root.find(block => block.name === 'patch')!;
 		const outerSink = root.find(block => block.name === 'outerSink')!;
-		const nested = group.nestedProjectCodeBlocks!;
+		const nested = group.childProject!.blocks;
 		const innerSink = nested.find(block => block.name === 'innerSink')!;
 		const innerSource = nested.find(block => block.name === 'source')!;
 		const expectConnection = (input: CodeBlockGraphicData, output: CodeBlockGraphicData) => {
@@ -181,9 +181,9 @@ entryEnd`);
 			]);
 		};
 		expectConnection(outerSink, group);
-		store.set('codeBlockRendering.codeBlocks', nested);
+		store.set('codeBlockRendering.currentProject.blocks', nested);
 		expectConnection(innerSink, innerSource);
-		store.set('codeBlockRendering.codeBlocks', root);
+		store.set('codeBlockRendering.currentProject.blocks', root);
 		expectConnection(outerSink, group);
 	});
 

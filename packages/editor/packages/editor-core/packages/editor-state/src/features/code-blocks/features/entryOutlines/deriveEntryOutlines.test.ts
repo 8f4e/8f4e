@@ -130,7 +130,7 @@ describe('deriveEntryOutlines', () => {
 			createMockCodeBlock({
 				code: ['group audio', 'groupEnd'],
 				entry: 'main',
-				nestedProjectCodeBlocks: [],
+				childProject: { entries: [], path: '', blocks: [] },
 				x: 160,
 				y: -16,
 				width: 96,
@@ -139,7 +139,7 @@ describe('deriveEntryOutlines', () => {
 			createMockCodeBlock({
 				code: ['group checks', 'groupEnd'],
 				entry: 'test',
-				nestedProjectCodeBlocks: [],
+				childProject: { entries: [], path: '', blocks: [] },
 				x: -80,
 				y: 96,
 				width: 64,
@@ -175,9 +175,13 @@ describe('deriveEntryOutlines', () => {
 					y: 20,
 					width: 30,
 					height: 40,
-					nestedProjectCodeBlocks: [
-						createMockCodeBlock({ blockType: 'module', entry: 'main', x: 1000, y: 1000, width: 100, height: 100 }),
-					],
+					childProject: {
+						entries: [],
+						path: '',
+						blocks: [
+							createMockCodeBlock({ blockType: 'module', entry: 'main', x: 1000, y: 1000, width: 100, height: 100 }),
+						],
+					},
 				}),
 			],
 			8,

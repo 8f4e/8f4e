@@ -1,7 +1,7 @@
 import type { ContextMenuItem, State } from '@8f4e/editor-state-types';
 
 export const mainMenu = (state: State): ContextMenuItem[] => [
-	...(state.codeBlockRendering.codeBlocks !== state.codeBlockRendering.rootCodeBlocks
+	...(state.codeBlockRendering.currentProject.blocks !== state.codeBlockRendering.rootProject.blocks
 		? [{ title: 'Go back', action: 'goToParentProjectGroup', close: true }, { divider: true }]
 		: []),
 	...(state.editorMode === 'edit'

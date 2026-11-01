@@ -17,15 +17,15 @@ Shared conversion from live editor blocks to the canonical project model.
 `serializeToProject` creates the compiler-owned `ProjectObjectModel` used for session saving, history, and live
 compilation. It is not a separate editor schema and it is not the exported `.8f4e` file format.
 
-Each known editor block is placed directly into the model's `modules`, `functions`, `constants`, `prototypes`,
+Each known editor block is placed directly into the model's `execution`, `functions`, `constants`, `prototypes`,
 `includes`, or `notes` collection. Incomplete blocks go to `unknown`; modules carry their required `entry`. Asset
 directives remain embedded in block source. All notes belong to the project and are included in session saves,
 history snapshots, and project files, regardless of their names.
 
 ### Ownership and Ordering
 
-`serializeToProject(state)` and `serializeCodeBlocksToProject(blocks)` return detached project data. Every source array
-is copied, including group wrappers, nested blocks, and project-scope code. Callers can retain or edit the returned
+`serializeToProject(state)` and `serializeCodeBlocksToProject(blocks, entries)` return detached project data. Entry
+definitions come from each level's `entries` table, including empty entries. Every source array is copied, including group wrappers, nested blocks, and project-scope code. Callers can retain or edit the returned
 model without changing live editor state, and later live edits leave previously returned models unchanged.
 
 Object fields are emitted in a fixed order. Blocks are ordered by grid X, grid Y, and creation index within each
@@ -51,7 +51,7 @@ is registered independently of plugins so all export features can use the same c
 ## State Sources
 
 Serializes from:
-- `state.codeBlockRendering.rootCodeBlocks` - Recursive root code-block tree
+- `state.codeBlockRendering.rootProject.blocks` - Blocks owned by the recursive root project level
 
 ## Integration Points
 
@@ -62,30 +62,17 @@ Serializes from:
 
 The canonical structure is defined by `@8f4e/language-spec`:
 
-```typescript
-interface ProjectObjectModel {
-	modules: ProjectModuleBlock[];
-	functions: ProjectBlock[];
-	constants: ProjectBlock[];
-	prototypes: ProjectBlock[];
-	includes: ProjectBlock[];
-	notes: ProjectBlock[];
-	unknown: ProjectBlock[];
-	groups: ProjectGroupObjectModel[];
-}
-
-interface ProjectGroupObjectModel extends ProjectObjectModel {
-	name: ProjectGroupName;
-	entry: ProjectEntryName;
-	code: string[];
-	exposures: ProjectMemoryExposure[];
-}
-```
+Projects contain local `entries`, root-owned `code`, an ordered `execution` list of modules and groups, and separate
+function,
+constant, prototype, include, note, and unknown-block collections. Each group recursively owns the same project
+structure plus its name, entry, source, and exposures. See the language-spec `ProjectObjectModel` definition for the
+complete contract.
 
 Collection membership defines block type. The adapter uses the editor's already-known block type and does not make the
 compiler rediscover it from source text. Project groups are rendered as ordinary `CodeBlockGraphicData` values whose
-optional `nestedProjectCodeBlocks` field owns the child project slice. Export recursively traverses that tree from
-`rootCodeBlocks`, regardless of which slice `codeBlocks` currently points to. A group's `code` retains all source lines
+optional `childProject` field owns a child `ProjectLevel`. Export recursively traverses its `blocks` and preserves
+its `entries` from `rootProject`, regardless of which level `currentProject` references. Level paths and browser-memory viewport positions
+are runtime data and are excluded from project exports, history snapshots, and session storage. A group's `code` retains all source lines
 owned by its visible wrapper, including comments and editor directives, while its nested blocks stay in the recursive
 collections. Compilation recursively composes those collections into one program.
 

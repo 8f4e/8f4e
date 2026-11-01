@@ -11,7 +11,7 @@ export default function deriveErrorMessages(
 ): CodeBlockGraphicData['widgets']['errorMessages'] {
 	const projectScopePath = codeBlock.isProjectScope
 		? codeBlock.projectPath
-		: codeBlock.nestedProjectCodeBlocks !== undefined
+		: codeBlock.childProject !== undefined
 			? createChildProjectGroupPath(codeBlock.projectPath, codeBlock.name)
 			: undefined;
 	const errors: Array<{ lineNumber: number; message: string }> = [

@@ -47,10 +47,10 @@ note second
 ; @config export.fileName second
 noteEnd`);
 		expect(state.editorConfig.export?.fileName).toBe(winner);
-		const blocks = state.codeBlockRendering.rootCodeBlocks;
+		const blocks = state.codeBlockRendering.rootProject.blocks;
 		const reversed = [...blocks].reverse();
 		blocks.splice(0, blocks.length, ...reversed);
-		store.set('codeBlockRendering.codeBlocks', blocks);
+		store.set('codeBlockRendering.currentProject.blocks', blocks);
 		expect(state.editorConfig.export?.fileName).toBe(winner);
 		expect(blocks).toEqual(reversed);
 		load(serializeToProject(state));
@@ -96,7 +96,7 @@ noteEnd`);
 
 	it.each(['typing', 'programmatic edit'] as const)('refreshes precedence after a position-only %s', editKind => {
 		const { state, store, events } = setup(twoNotes);
-		const left = state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'left')!;
+		const left = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'left')!;
 		expect(state.editorConfig.export?.fileName).toBe('right');
 		if (editKind === 'typing') {
 			store.set('codeBlockRendering.selectedCodeBlock', left);
@@ -144,7 +144,7 @@ noteEnd`);
 
 	it('keeps precedence on selection and updates it when a drag completes', () => {
 		const { state, events, load } = setup(twoNotes);
-		const left = state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'left')!;
+		const left = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'left')!;
 		const pointer = {
 			x: left.x - state.viewport.x + 1,
 			y: left.y - state.viewport.y + 1,
@@ -157,7 +157,7 @@ noteEnd`);
 			altKey: false,
 		};
 		events.dispatch('mousedown', pointer);
-		expect(state.codeBlockRendering.rootCodeBlocks.at(-1)).toBe(left);
+		expect(state.codeBlockRendering.rootProject.blocks.at(-1)).toBe(left);
 		expect(state.editorConfig.export?.fileName).toBe('right');
 		events.dispatch('mouseup');
 		events.dispatch('mousedown', pointer);
@@ -199,7 +199,7 @@ entryEnd
 groupEnd
 entryEnd`);
 		expect(state.editorConfig.export?.fileName).toBe('rootRight');
-		const outer = state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'outer')!;
+		const outer = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'outer')!;
 		applyCodeBlockSourceEdits(
 			store,
 			[{ codeBlock: outer, code: outer.code.map(line => line.replace('@pos 10 0', '@pos 30 0')) }],
@@ -210,7 +210,7 @@ entryEnd`);
 		expect(state.editorConfig.export?.fileName).toBe('childRight');
 		events.dispatch('openProjectGroup', { codeBlock: outer });
 		expect(state.editorConfig.export?.fileName).toBe('childRight');
-		const childRight = state.codeBlockRendering.codeBlocks.find(block => block.name === 'childRight')!;
+		const childRight = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'childRight')!;
 		applyCodeBlockSourceEdits(
 			store,
 			[{ codeBlock: childRight, code: childRight.code.map(line => line.replace('@pos 1000 0', '@pos -10 0')) }],

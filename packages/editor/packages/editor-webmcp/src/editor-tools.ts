@@ -41,7 +41,7 @@ const editsInput = objectInput({ edits: { type: 'array', minItems: 1, items: { o
 const helpHint = ' If you are unfamiliar with 8f4e, start with get_help.';
 const normalizeNewlines = (text: string) => text.replace(/\r\n|\r/g, '\n');
 const blockType = (block: CodeBlockGraphicData) =>
-	block.nestedProjectCodeBlocks !== undefined ? 'group' : block.isProjectScope ? 'project' : block.blockType;
+	block.childProject !== undefined ? 'group' : block.isProjectScope ? 'project' : block.blockType;
 export function createEditorTools(
 	editor: Pick<Editor, 'editing' | 'navigation' | 'state'>,
 	getCompilerDiagnostics?: () => unknown
@@ -50,7 +50,7 @@ export function createEditorTools(
 	let observedRevision: string | undefined;
 	const namedBlock = (type: unknown, name: unknown) => {
 		if (typeof type !== 'string' || typeof name !== 'string') throw new Error('Block type and name are required');
-		const matches = state.codeBlockRendering.codeBlocks.filter(
+		const matches = state.codeBlockRendering.currentProject.blocks.filter(
 			block => blockType(block) === type && block.name === name
 		);
 		if (matches.length === 0)

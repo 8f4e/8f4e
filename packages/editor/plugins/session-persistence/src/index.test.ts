@@ -44,7 +44,7 @@ describe('session persistence plugin', () => {
 		expect(storage.getItem).not.toHaveBeenCalled();
 		expect(storage.setItem).not.toHaveBeenCalled();
 		test.events.dispatch('init');
-		expect(test.state.codeBlockRendering.codeBlocks.some(block => block.name === 'retained')).toBe(true);
+		expect(test.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'retained')).toBe(true);
 		expect(getProjectModules(JSON.parse(storage.getItem('session')!))[0].code).toContain('module retained');
 		expect(storage.setItem).toHaveBeenCalledOnce();
 	});
@@ -66,7 +66,7 @@ describe('session persistence plugin', () => {
 		const test = setup(storage, false);
 		test.boot();
 		expect(storage.getItem).not.toHaveBeenCalled();
-		expect(test.state.codeBlockRendering.codeBlocks.some(block => block.name === 'retained')).toBe(false);
+		expect(test.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'retained')).toBe(false);
 		expect(storage.setItem).toHaveBeenCalledWith('session', expect.any(String));
 		test.events.dispatch('loadProject', { project });
 		test.events.dispatch('enterEditMode');
@@ -78,7 +78,7 @@ describe('session persistence plugin', () => {
 		test.boot();
 		test.events.dispatch('loadProject', { project });
 		test.events.dispatch('enterEditMode');
-		const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!;
+		const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!;
 		test.store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
@@ -98,7 +98,7 @@ describe('session persistence plugin', () => {
 		test.events.dispatch('redo');
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 3');
 		test.events.dispatch('deleteCodeBlock', {
-			codeBlock: test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!,
+			codeBlock: test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!,
 		});
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))).toEqual([]);
 	});
@@ -108,7 +108,7 @@ describe('session persistence plugin', () => {
 		test.boot();
 		test.events.dispatch('loadProject', { project });
 		test.events.dispatch('enterEditMode');
-		const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!;
+		const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!;
 		const editing = createEditorEditingHandle(test.store, test.events);
 		cleanups.push(editing.dispose);
 		const revision = editing.handle.getRevision();
@@ -128,13 +128,13 @@ describe('session persistence plugin', () => {
 		test.boot();
 		test.events.dispatch('loadProject', { project });
 		test.events.dispatch('enterEditMode');
-		const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!;
+		const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!;
 		test.store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
 		test.events.dispatch('insertText', { text: '2' });
 		test.events.dispatch('undo');
-		const restored = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!;
+		const restored = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!;
 		test.storage.setItem.mockClear();
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
@@ -154,7 +154,7 @@ describe('session persistence plugin', () => {
 		test.events.dispatch('enterEditMode');
 		const editing = createEditorEditingHandle(test.store, test.events);
 		cleanups.push(editing.dispose);
-		const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!;
+		const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!;
 		const changes: Array<typeof test.state.projectChange> = [];
 		test.store.subscribe('projectChange', change => changes.push(change));
 		const startRevision = test.state.projectChange.revision;
@@ -235,7 +235,7 @@ describe('session persistence plugin', () => {
 		test.events.dispatch('enterEditMode');
 		const editing = createEditorEditingHandle(test.store, test.events);
 		cleanups.push(editing.dispose);
-		const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'retained')!;
+		const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!;
 		const token = editing.handle.getRevision();
 		const compilerRevision = test.state.compilerInputRevision;
 		const projectRevision = test.state.projectChange.revision;
@@ -278,8 +278,14 @@ describe('session persistence plugin', () => {
 		);
 		test.events.dispatch('loadProject', { project: grouped });
 		test.events.dispatch('enterEditMode');
-		const group = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'voice')!;
-		test.store.set('codeBlockRendering.codeBlocks', group.nestedProjectCodeBlocks!);
+		const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'voice')!;
+		test.storage.setItem.mockClear();
+		Object.assign(test.state.viewport, { x: 256, y: -128 });
+		test.events.dispatch('openProjectGroup', { codeBlock: group });
+		expect(test.state.codeBlockRendering.rootProject.viewport).toEqual({ x: 256, y: -128 });
+		expect(test.storage.setItem).not.toHaveBeenCalled();
+		test.store.set('projectChange', { revision: test.state.projectChange.revision + 1, kind: 'edit' });
+		expect(test.storage.getItem('session')).not.toContain('viewport');
 		expect(getProjectGroups(JSON.parse(test.storage.getItem('session')!))[0].name).toBe('voice');
 	});
 
@@ -324,7 +330,7 @@ describe('session persistence plugin', () => {
 		test.boot();
 		test.events.dispatch('loadProject', { project });
 		test.events.dispatch('enterEditMode');
-		expect(test.state.codeBlockRendering.codeBlocks.some(block => block.name === 'retained')).toBe(true);
+		expect(test.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'retained')).toBe(true);
 		expect(test.state.console.logs.some(log => log.message.includes('Storage full'))).toBe(true);
 	});
 });

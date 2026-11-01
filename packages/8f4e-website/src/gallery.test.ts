@@ -228,7 +228,7 @@ entryEnd`),
 		timeout: 10000,
 	});
 	const state = editor.state;
-	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
+	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 	await vi.waitFor(
 		() => expect([10, 11, 12, 13, 14, 15].map(row => block.gaps.get(row)?.size)).toEqual([2, 1, 8, 6, 2, 2]),
 		{ timeout: 10000 }
@@ -364,11 +364,13 @@ test('replaces site tools and requires a fresh source read for the replacement e
 	expect(await retained.execute(args)).toMatchObject({ error: { code: 'disposed' } });
 	await tools.get('get_project_metadata')!.execute({});
 	expect(await tools.get('apply_edits')!.execute(args)).toMatchObject({ error: { code: 'source_required' } });
-	expect(editor.state.codeBlockRendering.codeBlocks.find(block => block.blockType === 'module')!.code[0]).toBe(
-		'module secondExample ; @mode edit'
-	);
+	expect(
+		editor.state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'module')!.code[0]
+	).toBe('module secondExample ; @mode edit');
 	expect(await tools.get('get_project')!.execute({})).toContain('module secondExample');
 	expect(await tools.get('apply_edits')!.execute(args)).toBe('Edits applied.');
-	expect(editor.state.codeBlockRendering.codeBlocks.filter(block => block.blockType === 'module')).toHaveLength(0);
+	expect(
+		editor.state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'module')
+	).toHaveLength(0);
 	expect(tools.size).toBe(18);
 });

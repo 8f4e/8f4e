@@ -9,7 +9,7 @@ import { getGroup } from './groups';
 
 export function renamePastedGroups(incoming: TransformPastedCodeBlocksEvent, state: State): void {
 	const existingNames = new Set(
-		state.codeBlockRendering.codeBlocks.flatMap(block => {
+		state.codeBlockRendering.currentProject.blocks.flatMap(block => {
 			const group = getGroup(block.parsedDirectives);
 			return group ? [group.name] : [];
 		})

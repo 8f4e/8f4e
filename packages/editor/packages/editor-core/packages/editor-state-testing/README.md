@@ -16,21 +16,22 @@ import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing
 const blocks = [createMockCodeBlock({ code: ['module voice', 'moduleEnd'] })];
 const state = createMockState({
 	compiler: { isCompiling: true },
-	codeBlockRendering: { rootCodeBlocks: blocks },
+	codeBlockRendering: { rootProject: { path: '', blocks } },
 	callbacks: {},
 });
 ```
 
 Nested object overrides preserve unrelated defaults. Arrays, maps, sets, typed arrays, and callbacks replace their
 defaults and retain the supplied identity; do not reuse mutable overrides across tests unless that sharing is intentional.
-For a root-only or active-only block override, both block lists reference that same array. To model a nested project,
-provide both the root tree and its active nested array explicitly:
+For a root-only or current-only project override, both project references select the same level. To model a nested
+project, provide a root level and select its child level:
 
 ```typescript
 const nested = [createMockCodeBlock({ name: 'voice', projectPath: 'Audio' })];
-const root = [createMockCodeBlock({ name: 'Audio', nestedProjectCodeBlocks: nested })];
+const audio = { path: 'Audio', blocks: nested };
+const root = { path: '', blocks: [createMockCodeBlock({ name: 'Audio', childProject: audio })] };
 const state = createMockState({
-	codeBlockRendering: { rootCodeBlocks: root, codeBlocks: nested },
+	codeBlockRendering: { rootProject: root, currentProject: audio },
 });
 ```
 

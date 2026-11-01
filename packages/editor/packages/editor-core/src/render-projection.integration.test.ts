@@ -19,7 +19,7 @@ function setup() {
 		},
 	});
 	const projection = createWebUiRenderProjection(store, events);
-	const block = store.getState().codeBlockRendering.codeBlocks.find(block => block.name === 'audio')!;
+	const block = store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
 	cleanups.push(() => {
 		projection.dispose();
 		store.dispose();

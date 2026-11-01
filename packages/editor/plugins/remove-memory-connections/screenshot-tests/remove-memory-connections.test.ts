@@ -29,10 +29,10 @@ entryEnd`;
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		const state = editor.state;
 		await vi.waitFor(() =>
-			expect(state.codeBlockRendering.codeBlocks.some(block => block.name === 'target')).toBe(true)
+			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'target')).toBe(true)
 		);
 		editor.pauseRendering();
-		const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'target')!;
+		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
 		const mouse = (type: string, x: number, y: number) => {
 			const rect = canvas.getBoundingClientRect();
 			canvas.dispatchEvent(new MouseEvent(type, { clientX: rect.x + x, clientY: rect.y + y, bubbles: true }));

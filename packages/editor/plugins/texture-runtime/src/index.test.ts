@@ -111,7 +111,9 @@ async function setup({
 	const gl = createFakeWebGl();
 	Object.assign(gl, { drawingBufferHeight: 180 });
 	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette() });
-	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'screen' || block.name === 'visuals')!;
+	const block = state.codeBlockRendering.currentProject.blocks.find(
+		block => block.name === 'screen' || block.name === 'visuals'
+	)!;
 	const frame = () => {
 		const buffer = current.memory.buffer;
 		layers.draw({
@@ -159,7 +161,7 @@ async function setup({
 			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }], { affectsCompilation: false });
 		},
 		editConfig: (source: string) => {
-			const block = state.codeBlockRendering.codeBlocks.find(block => block.name === 'config')!;
+			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'config')!;
 			applyCodeBlockSourceEdits(
 				store,
 				[{ codeBlock: block, code: ['note config', ...source.split('\n'), 'noteEnd'] }],
@@ -493,7 +495,7 @@ int8u* pixels &screen:rgba
 moduleEnd
 entryEnd`,
 	});
-	const block = test.state.codeBlockRendering.codeBlocks.find(block => block.name === 'viewer')!;
+	const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'viewer')!;
 	expect(block.gaps.get(3)?.size).toBe(1);
 	const height = block.height;
 	test.frame();

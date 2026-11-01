@@ -140,8 +140,9 @@ moduleEnd
 
 In the visual editor, **Open group** enters a project's nested group and **Go back** returns to its parent.
 The editor remembers each level's viewport position, including the root, and restores it when you return or reopen
-a visited group. On the first visit, it uses the group's `@home` block or the origin. Loading another project clears
-these remembered positions.
+a visited group. Remembered positions take precedence over `@home`. On the first visit, it uses the group's `@home`
+block or the origin. Positions stay only in browser memory and are excluded from saved projects and session storage.
+Loading another project clears these remembered positions.
 
 ## Live Variable Editing
 

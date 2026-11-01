@@ -72,14 +72,14 @@ moduleEnd
 entryEnd
 groupEnd`;
 		const test = setup({ code: source.replace('entry main', `entry main\n${nested}`) });
-		const root = test.state.codeBlockRendering.codeBlocks;
+		const root = test.state.codeBlockRendering.currentProject.blocks;
 		const owner = test.block('nested');
 		test.events.dispatch('copyGroupBlocks', { codeBlock: test.block('first') });
 		const clipboard = test.writeClipboardText.mock.calls[0][0];
 		await test.paste(clipboard);
 		const pasted = test.block('nested1');
 		expect(pasted.code).toContain('; @group audio1');
-		expect(pasted.nestedProjectCodeBlocks?.find(block => block.name === 'child')?.code).toContain('; @group audio');
+		expect(pasted.childProject?.blocks?.find(block => block.name === 'child')?.code).toContain('; @group audio');
 		const rootCode = [...test.block('first').code];
 		test.events.dispatch('openProjectGroup', { codeBlock: owner });
 		const child = test.block('child');
@@ -89,7 +89,7 @@ groupEnd`;
 		test.events.dispatch('ungroupByName', { codeBlock: child });
 		expect(test.block('child2').code).not.toContain('; @group audio');
 		test.events.dispatch('goToParentProjectGroup');
-		expect(test.state.codeBlockRendering.codeBlocks).toBe(root);
+		expect(test.state.codeBlockRendering.currentProject.blocks).toBe(root);
 		expect(test.block('first').code).toEqual(rootCode);
 	});
 

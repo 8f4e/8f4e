@@ -50,7 +50,7 @@ describe('viewport-anchored dragging', () => {
 			blockType: 'module',
 		});
 
-		state.codeBlockRendering.codeBlocks = [block];
+		state.codeBlockRendering.currentProject.blocks = [block];
 
 		codeBlockDragger(store, events);
 
@@ -103,7 +103,7 @@ describe('viewport-anchored dragging', () => {
 			blockType: 'module',
 		});
 
-		state.codeBlockRendering.codeBlocks = [block];
+		state.codeBlockRendering.currentProject.blocks = [block];
 
 		codeBlockDragger(store, events);
 
@@ -153,7 +153,7 @@ describe('viewport-anchored dragging', () => {
 			blockType: 'module',
 		});
 
-		state.codeBlockRendering.codeBlocks = [block];
+		state.codeBlockRendering.currentProject.blocks = [block];
 
 		codeBlockDragger(store, events);
 

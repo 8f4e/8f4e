@@ -53,6 +53,7 @@ export type {
 	MenuGenerator,
 	Options,
 	ParsedDirectiveRecord,
+	ProjectLevel,
 	State,
 } from '@8f4e/editor-state-types';
 export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from '@8f4e/web-ui';

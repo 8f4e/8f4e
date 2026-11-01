@@ -57,14 +57,16 @@ describe('editor state lifecycle', () => {
 		expect(
 			store
 				.getState()
-				.codeBlockRendering.rootCodeBlocks.filter(block => block.blockType === 'note')
+				.codeBlockRendering.rootProject.blocks.filter(block => block.blockType === 'note')
 				.map(block => block.code)
 		).toEqual([code]);
 		expect(store.getState().editorConfig.font).toBe('terminus8x16');
 
 		store.set('initialProjectState', EMPTY_DEFAULT_PROJECT);
 
-		expect(store.getState().codeBlockRendering.rootCodeBlocks.filter(block => block.blockType === 'note')).toEqual([]);
+		expect(store.getState().codeBlockRendering.rootProject.blocks.filter(block => block.blockType === 'note')).toEqual(
+			[]
+		);
 		expect(store.getState().editorConfig.font).toBeUndefined();
 		store.dispose();
 	});
@@ -105,7 +107,7 @@ describe('editor state lifecycle', () => {
 			});
 			state.viewport.x = 0;
 			state.viewport.y = 0;
-			state.codeBlockRendering.codeBlocks = [codeBlock];
+			state.codeBlockRendering.currentProject.blocks = [codeBlock];
 			state.codeBlockRendering.selectedCodeBlock = codeBlock;
 			state.contextMenu.open = true;
 			state.contextMenu.highlightedItem = highlightedItem;

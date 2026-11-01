@@ -18,10 +18,10 @@ export default function convertGraphicDataToProjectStructure(
 			project.code.push(...codeBlock.code);
 			continue;
 		}
-		if (codeBlock.nestedProjectCodeBlocks !== undefined) {
+		if (codeBlock.childProject !== undefined) {
 			if (!project.entries.includes(codeBlock.entry!)) project.entries.push(codeBlock.entry!);
 			project.execution.push({
-				...convertGraphicDataToProjectStructure(codeBlock.nestedProjectCodeBlocks, codeBlock.projectEntries!),
+				...convertGraphicDataToProjectStructure(codeBlock.childProject.blocks, codeBlock.childProject.entries),
 				type: 'group',
 				id: codeBlock.creationIndex,
 				name: codeBlock.name,

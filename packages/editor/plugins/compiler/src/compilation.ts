@@ -61,8 +61,8 @@ export default function installCompilation(
 
 		try {
 			const project = serializeCodeBlocksToProject(
-				state.codeBlockRendering.rootCodeBlocks,
-				state.codeBlockRendering.rootProjectEntries
+				state.codeBlockRendering.rootProject.blocks,
+				state.codeBlockRendering.rootProject.entries
 			);
 			const compilerOptions = {
 				startingMemoryAllocationUnitAddress: 0,

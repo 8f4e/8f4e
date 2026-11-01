@@ -22,7 +22,7 @@ describe('module menu', () => {
 	it('adds an open action for project-group blocks', async () => {
 		const codeBlock = createMockCodeBlock({
 			name: 'Audio',
-			nestedProjectCodeBlocks: [],
+			childProject: { entries: [], path: '', blocks: [] },
 		});
 		const state = createMockState({
 			codeBlockRendering: {
@@ -59,8 +59,8 @@ describe('module menu', () => {
 		const codeBlock = nestedProjectCodeBlocks[0];
 		const state = createMockState({
 			codeBlockRendering: {
-				rootCodeBlocks,
-				codeBlocks: nestedProjectCodeBlocks,
+				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
+				currentProject: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
 				selectedCodeBlock: nestedProjectCodeBlocks[0],
 			},
 		});

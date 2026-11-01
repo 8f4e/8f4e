@@ -75,10 +75,13 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			editor.pauseRendering();
 			if (trigger === 'group navigation') {
 				expect(load).not.toHaveBeenCalled();
-				const group = editor.state.codeBlockRendering.codeBlocks.find(block => block.name === 'audioGroup')!;
+				context.events.dispatch('mousemove', { buttons: 1, movementX: 64, movementY: 96 });
+				editor.renderFrame();
+				await expect(canvas).toMatchScreenshot('parent-viewport-before-group');
+				const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audioGroup')!;
 				editor.navigation.openGroup(getEditorBlockId(group));
 			}
-			const block = editor.state.codeBlockRendering.codeBlocks.find(block => block.name === 'audio')!;
+			const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
 			if (trigger === 'source edit') {
 				expect(load).not.toHaveBeenCalled();
 				applyCodeBlockSourceEdits(context.store, [{ codeBlock: block, code: project.execution[0].code }], {
@@ -90,9 +93,14 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			editor.renderFrame();
 			await expect(canvas).toMatchScreenshot(`plot-after-${trigger.replace(' ', '-')}`);
 			if (trigger === 'group navigation') {
+				context.events.dispatch('mousemove', { buttons: 1, movementX: 128, movementY: 160 });
 				editor.navigation.goToRoot();
-				const group = editor.state.codeBlockRendering.codeBlocks.find(block => block.name === 'audioGroup')!;
+				expect(editor.state.viewport).toMatchObject({ x: -64, y: -96 });
+				editor.renderFrame();
+				await expect(canvas).toMatchScreenshot('parent-viewport-before-group');
+				const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audioGroup')!;
 				editor.navigation.openGroup(getEditorBlockId(group));
+				expect(editor.state.viewport).toMatchObject({ x: -128, y: -160 });
 				await expect.poll(() => block.gaps.get(3)?.size).toBe(8);
 				expect(load).toHaveBeenCalledOnce();
 			}

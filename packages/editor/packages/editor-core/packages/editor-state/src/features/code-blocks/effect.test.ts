@@ -23,11 +23,11 @@ describe('code block rendering error mapping', () => {
 			name: 'audio',
 			code: ['group audio', 'pass env', 'groupEnd'],
 			projectPath: '',
-			nestedProjectCodeBlocks: [],
+			childProject: { entries: [], path: '', blocks: [] },
 			creationIndex: 8,
 		});
 		const state = createMockState({
-			codeBlockRendering: { codeBlocks: [rootScope, group] },
+			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [rootScope, group] } },
 			codeErrors: {
 				compilationErrors: [
 					{ lineNumber: 0, codeBlockId: -1, projectGroupPath: '', message: 'Undefined root constant' },
@@ -58,7 +58,7 @@ describe('code block rendering error mapping', () => {
 		});
 		const state = createMockState({
 			codeBlockRendering: {
-				codeBlocks: [functionBlock],
+				currentProject: { entries: [], path: '', blocks: [functionBlock] },
 			},
 			codeErrors: {
 				compilationErrors: [
@@ -97,7 +97,7 @@ describe('code block rendering cursor selection', () => {
 				codeLineSelection: true,
 			},
 			codeBlockRendering: {
-				codeBlocks: [selectedBlock],
+				currentProject: { entries: [], path: '', blocks: [selectedBlock] },
 				selectedCodeBlock: selectedBlock,
 			},
 			viewport: {
@@ -151,8 +151,8 @@ describe('code block rendering home directive', () => {
 		);
 		store.set('initialProjectState', state.initialProjectState);
 
-		expect(state.codeBlockRendering.codeBlocks).toHaveLength(1);
-		expect(state.codeBlockRendering.codeBlocks[0]).toMatchObject({
+		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(1);
+		expect(state.codeBlockRendering.currentProject.blocks[0]).toMatchObject({
 			code: ['pass env'],
 			isProjectScope: true,
 			projectPath: '',
@@ -179,8 +179,10 @@ describe('code block rendering home directive', () => {
 		);
 		store.set('initialProjectState', state.initialProjectState);
 
-		expect(state.codeBlockRendering.codeBlocks).toHaveLength(2);
-		const renderedIncludes = state.codeBlockRendering.codeBlocks.find(block => block.blockType === 'includes');
+		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(2);
+		const renderedIncludes = state.codeBlockRendering.currentProject.blocks.find(
+			block => block.blockType === 'includes'
+		);
 		expect(renderedIncludes?.code).toEqual(includesBlock);
 	});
 
@@ -224,20 +226,20 @@ describe('code block rendering home directive', () => {
 		);
 		store.set('initialProjectState', state.initialProjectState);
 
-		expect(state.codeBlockRendering.codeBlocks).toBe(state.codeBlockRendering.rootCodeBlocks);
-		expect(state.codeBlockRendering.codeBlocks).toHaveLength(2);
-		expect(state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['root', 'Audio']);
-		const groupBlock = state.codeBlockRendering.codeBlocks[1];
+		expect(state.codeBlockRendering.currentProject.blocks).toBe(state.codeBlockRendering.rootProject.blocks);
+		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(2);
+		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['root', 'Audio']);
+		const groupBlock = state.codeBlockRendering.currentProject.blocks[1];
 		expect(groupBlock.projectPath).toBe('');
 		expect(groupBlock.code).toEqual(['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd']);
-		expect(groupBlock.nestedProjectCodeBlocks).toHaveLength(1);
-		expect(groupBlock.nestedProjectCodeBlocks?.[0]).toMatchObject({
+		expect(groupBlock.childProject?.blocks).toHaveLength(1);
+		expect(groupBlock.childProject?.blocks?.[0]).toMatchObject({
 			name: 'voice',
 			entry: 'main',
 			projectPath: 'Audio',
 			code: ['module voice', 'moduleEnd'],
 		});
-		expect(state.codeBlockRendering.codeBlocks.some(block => block.name === 'voice')).toBe(false);
+		expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'voice')).toBe(false);
 	});
 
 	it('outlines imported group entries in the root and nested project views', () => {
@@ -278,7 +280,7 @@ entryEnd`);
 		projectGroupNavigation(store, events);
 		store.set('initialProjectState', project);
 
-		const root = state.codeBlockRendering.rootCodeBlocks;
+		const root = state.codeBlockRendering.rootProject.blocks;
 		const audio = root.find(block => block.name === 'audio')!;
 		expect(audio.entry).toBe('main');
 		expect(state.codeBlockRendering.entryOutlines.map(outline => outline.entryName)).toEqual(['main', 'test']);
@@ -287,7 +289,7 @@ entryEnd`);
 		const openGroup = vi.mocked(events.on).mock.calls.find(([name]) => name === 'openProjectGroup')![1];
 		const goBack = vi.mocked(events.on).mock.calls.find(([name]) => name === 'goToParentProjectGroup')![1];
 		openGroup({ codeBlock: audio });
-		const voices = state.codeBlockRendering.codeBlocks[0];
+		const voices = state.codeBlockRendering.currentProject.blocks[0];
 		expect(voices.name).toBe('voices');
 		expect(state.codeBlockRendering.entryOutlines).toHaveLength(1);
 		expect(state.codeBlockRendering.entryOutlines[0]).toMatchObject({
@@ -296,7 +298,7 @@ entryEnd`);
 		});
 
 		openGroup({ codeBlock: voices });
-		expect(state.codeBlockRendering.codeBlocks[0].name).toBe('voice');
+		expect(state.codeBlockRendering.currentProject.blocks[0].name).toBe('voice');
 		expect(state.codeBlockRendering.entryOutlines).toHaveLength(1);
 		expect(state.codeBlockRendering.entryOutlines[0]).toMatchObject({
 			entryName: 'main',
@@ -305,7 +307,7 @@ entryEnd`);
 
 		goBack(undefined);
 		goBack(undefined);
-		expect(state.codeBlockRendering.codeBlocks).toBe(root);
+		expect(state.codeBlockRendering.currentProject.blocks).toBe(root);
 		expect(state.codeBlockRendering.entryOutlines.map(outline => outline.entryName)).toEqual(['main', 'test']);
 		store.dispose();
 	});
@@ -343,20 +345,20 @@ entryEnd`);
 		);
 		store.set('initialProjectState', state.initialProjectState);
 		expect(state.compilerInputRevision).toBe(1);
-		const firstRoot = state.codeBlockRendering.rootCodeBlocks;
-		const nestedSlice = firstRoot[0].nestedProjectCodeBlocks;
+		const firstRoot = state.codeBlockRendering.rootProject.blocks;
+		const nestedSlice = firstRoot[0].childProject?.blocks;
 		expect(nestedSlice).toBeDefined();
-		store.set('codeBlockRendering.codeBlocks', nestedSlice!);
+		store.set('codeBlockRendering.currentProject.blocks', nestedSlice!);
 
 		store.set('initialProjectState', {
 			...EMPTY_DEFAULT_PROJECT,
 			execution: [{ type: 'module', id: 2, entry: 'main', code: ['module replacement', 'moduleEnd'] }],
 		});
 
-		expect(state.codeBlockRendering.rootCodeBlocks).not.toBe(firstRoot);
-		expect(state.codeBlockRendering.codeBlocks).toBe(state.codeBlockRendering.rootCodeBlocks);
+		expect(state.codeBlockRendering.rootProject.blocks).not.toBe(firstRoot);
+		expect(state.codeBlockRendering.currentProject.blocks).toBe(state.codeBlockRendering.rootProject.blocks);
 		expect(state.compilerInputRevision).toBe(2);
-		expect(state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['replacement']);
+		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['replacement']);
 	});
 
 	it('centers the initial viewport using the home alignment hint without selecting the block', () => {
@@ -389,8 +391,8 @@ entryEnd`);
 		);
 		store.set('initialProjectState', state.initialProjectState);
 
-		expect(state.codeBlockRendering.codeBlocks).toHaveLength(1);
-		const [homeBlock] = state.codeBlockRendering.codeBlocks;
+		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(1);
+		const [homeBlock] = state.codeBlockRendering.currentProject.blocks;
 		expect(homeBlock.isHome).toBe(true);
 		expect(homeBlock.homeAlignment).toBe('top');
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
@@ -421,8 +423,8 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		const codeBlocks = [normalA, normalB, topA];
 		const state = createMockState({
 			codeBlockRendering: {
-				rootCodeBlocks: codeBlocks,
-				codeBlocks,
+				rootProject: { entries: [], path: '', blocks: codeBlocks },
+				currentProject: { entries: [], path: '', blocks: codeBlocks },
 				selectedCodeBlock: normalA,
 			},
 		});
@@ -439,8 +441,12 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		store.set('codeBlockRendering.selectedCodeBlock.code', ['module normalA', '; @alwaysOnTop', 'moduleEnd']);
 
 		expect(normalA.alwaysOnTop).toBe(true);
-		expect(state.codeBlockRendering.codeBlocks).toBe(codeBlocks);
-		expect(state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['normalB', 'normalA', 'topA']);
+		expect(state.codeBlockRendering.currentProject.blocks).toBe(codeBlocks);
+		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
+			'normalB',
+			'normalA',
+			'topA',
+		]);
 	});
 
 	it('re-partitions codeBlocks when @alwaysOnTop is removed from the last of multiple top blocks via live code edit', () => {
@@ -467,8 +473,8 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		const codeBlocks = [normalA, normalB, topA, topB];
 		const state = createMockState({
 			codeBlockRendering: {
-				rootCodeBlocks: codeBlocks,
-				codeBlocks,
+				rootProject: { entries: [], path: '', blocks: codeBlocks },
+				currentProject: { entries: [], path: '', blocks: codeBlocks },
 				selectedCodeBlock: topB,
 			},
 		});
@@ -485,8 +491,8 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		store.set('codeBlockRendering.selectedCodeBlock.code', ['module topB', 'moduleEnd']);
 
 		expect(topB.alwaysOnTop).toBe(false);
-		expect(state.codeBlockRendering.codeBlocks).toBe(codeBlocks);
-		expect(state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual([
+		expect(state.codeBlockRendering.currentProject.blocks).toBe(codeBlocks);
+		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
 			'normalA',
 			'normalB',
 			'topB',

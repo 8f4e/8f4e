@@ -1,8 +1,8 @@
-import type { CodeBlockGraphicData, ProjectChange } from '@8f4e/editor-state-types';
+import type { ProjectChange, ProjectLevel } from '@8f4e/editor-state-types';
 import { defaultFeatureFlags } from './featureFlags';
 
 export default function createDefaultState() {
-	const rootCodeBlocks: CodeBlockGraphicData[] = [];
+	const rootProject: ProjectLevel = { entries: [], path: '', blocks: [] };
 
 	return {
 		compilerInputRevision: 0,
@@ -20,9 +20,8 @@ export default function createDefaultState() {
 			},
 		},
 		codeBlockRendering: {
-			rootCodeBlocks,
-			rootProjectEntries: [],
-			codeBlocks: rootCodeBlocks,
+			rootProject,
+			currentProject: rootProject,
 			entryOutlines: [],
 			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,

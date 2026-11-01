@@ -44,7 +44,7 @@ entryEnd`);
 	const state = store.getState();
 	Object.assign(state.compiler.result, compiled);
 	store.set('initialProjectState', project);
-	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'controls')!;
+	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.selectedCodeBlock', codeBlock);
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 4);
 	const buffer = new ArrayBuffer(65536);

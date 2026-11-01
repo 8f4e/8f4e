@@ -170,6 +170,12 @@ export { getUniqueName } from './pureHelpers/getUniqueName';
 export { default as serializeCodeBlocksToProject } from './pureHelpers/projectSerialization/serializeCodeBlocks';
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
 export {
+	findParentProjectLevel,
+	findProjectLevel,
+	walkProjectBlocks,
+	walkProjectLevels,
+} from './pureHelpers/projectTree';
+export {
 	isMemoryAddress,
 	isMemoryId,
 	isPointerSource,

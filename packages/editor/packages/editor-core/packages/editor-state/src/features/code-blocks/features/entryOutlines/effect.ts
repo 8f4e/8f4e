@@ -8,11 +8,15 @@ export default function entryOutlines(store: StateManager<State>): void {
 	function syncEntryOutlines(): void {
 		store.set(
 			'codeBlockRendering.entryOutlines',
-			deriveEntryOutlines(state.codeBlockRendering.codeBlocks, state.viewport.vGrid * 8, state.viewport.hGrid * 4)
+			deriveEntryOutlines(
+				state.codeBlockRendering.currentProject.blocks,
+				state.viewport.vGrid * 8,
+				state.viewport.hGrid * 4
+			)
 		);
 	}
 
-	store.subscribe('codeBlockRendering.codeBlocks', syncEntryOutlines);
+	store.subscribe('codeBlockRendering.currentProject.blocks', syncEntryOutlines);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.code', syncEntryOutlines);
 	store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', syncEntryOutlines);
 

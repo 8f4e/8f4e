@@ -132,21 +132,29 @@ describe('convertGraphicDataToProjectStructure', () => {
 				name: 'Audio',
 				entry: 'main',
 				code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
-				nestedProjectCodeBlocks: [
-					createMockCodeBlock({
-						name: 'Oscillator',
-						entry: 'main',
-						code: ['group Oscillator', 'groupEnd'],
-						nestedProjectCodeBlocks: [
-							createMockCodeBlock({
-								creationIndex: 1,
-								blockType: 'module',
-								entry: 'main',
-								code: ['module voice', 'moduleEnd'],
-							}),
-						],
-					}),
-				],
+				childProject: {
+					entries: [],
+					path: '',
+					blocks: [
+						createMockCodeBlock({
+							name: 'Oscillator',
+							entry: 'main',
+							code: ['group Oscillator', 'groupEnd'],
+							childProject: {
+								entries: [],
+								path: '',
+								blocks: [
+									createMockCodeBlock({
+										creationIndex: 1,
+										blockType: 'module',
+										entry: 'main',
+										code: ['module voice', 'moduleEnd'],
+									}),
+								],
+							},
+						}),
+					],
+				},
 			}),
 		]);
 
@@ -183,7 +191,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 				name: 'Empty',
 				entry: 'main',
 				code: ['group Empty', 'groupEnd'],
-				nestedProjectCodeBlocks: [],
+				childProject: { entries: [], path: '', blocks: [] },
 			}),
 		]);
 
@@ -223,7 +231,7 @@ describe('convertGraphicDataToProjectStructure', () => {
 			name: 'voice',
 			entry: 'main',
 			code: ['group voice', 'groupEnd'],
-			nestedProjectCodeBlocks: [child],
+			childProject: { entries: [], path: '', blocks: [child] },
 		});
 		const blocks = [scope, module, group];
 		const saved = convertGraphicDataToProjectStructure(blocks);
@@ -277,15 +285,15 @@ describe('convertGraphicDataToProjectStructure', () => {
 			gridX: 4,
 			gridY: 8,
 			code: ['group voice', 'expose value &first:value', 'groupEnd'],
-			nestedProjectCodeBlocks: [second, first],
+			childProject: { entries: [], path: '', blocks: [second, first] },
 		});
 		const blocks = [second, group, first];
 		const reorder = (block: CodeBlockGraphicData): CodeBlockGraphicData =>
 			({
 				...Object.fromEntries(Object.entries(block).reverse()),
-				...(block.nestedProjectCodeBlocks === undefined
+				...(block.childProject === undefined
 					? {}
-					: { nestedProjectCodeBlocks: [...block.nestedProjectCodeBlocks].reverse().map(reorder) }),
+					: { childProject: { entries: [], path: '', blocks: [...block.childProject.blocks].reverse().map(reorder) } }),
 			}) as CodeBlockGraphicData;
 		const original = convertGraphicDataToProjectStructure(blocks);
 		const reordered = convertGraphicDataToProjectStructure([...blocks].reverse().map(reorder));

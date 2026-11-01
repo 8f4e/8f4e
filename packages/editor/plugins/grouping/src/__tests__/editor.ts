@@ -51,7 +51,8 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 	events.dispatch('loadProject', { project: parseProjectSource(code) });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
-	const block = (name: string) => state.codeBlockRendering.codeBlocks.find(candidate => candidate.name === name)!;
+	const block = (name: string) =>
+		state.codeBlockRendering.currentProject.blocks.find(candidate => candidate.name === name)!;
 	const openMenu = async (target: CodeBlockGraphicData = block('first')) => {
 		events.dispatch('contextmenu', { x: target.x - state.viewport.x + 8, y: target.y - state.viewport.y + 8 });
 		await Promise.resolve();

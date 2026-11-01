@@ -1,5 +1,5 @@
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
-import { createChildProjectGroupPath, type ProjectGroupPath, ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
+import { createChildProjectGroupPath, type ProjectGroupPath } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import { getUniqueName } from '../../../../pureHelpers/getUniqueName';
 import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
@@ -13,7 +13,6 @@ import { renameInterModuleReferences } from '../../utils/renameInterModuleRefere
 import type { ClipboardCodeBlock } from '../clipboard/clipboardUtils';
 import upsertPos from '../directives/pos/upsert';
 import { hasDirective } from '../directives/utils';
-import { findProjectSlicePath } from '../projectGroupNavigation/effect';
 
 /**
  * Updates inter-module references in code when pasting multiple blocks.
@@ -87,15 +86,18 @@ function createPastedCodeBlock(
 		alwaysOnTop: hasDirective(code, 'alwaysOnTop'),
 	});
 
-	if (clipboardBlock.nestedProjectCodeBlocks !== undefined) {
-		codeBlock.projectEntries = [...clipboardBlock.projectEntries!];
+	if (clipboardBlock.childProject !== undefined) {
 		const childProjectPath = createChildProjectGroupPath(projectPath, name);
-		codeBlock.nestedProjectCodeBlocks = clipboardBlock.nestedProjectCodeBlocks.map(child => {
-			const childGridX = child.gridCoordinates.x;
-			const childGridY = child.gridCoordinates.y;
-			const childCode = upsertPos([...child.code], childGridX, childGridY);
-			return createPastedCodeBlock(state, child, childCode, childGridX, childGridY, childProjectPath);
-		});
+		codeBlock.childProject = {
+			path: childProjectPath,
+			entries: [...clipboardBlock.childProject.entries],
+			blocks: clipboardBlock.childProject.blocks.map(child => {
+				const childGridX = child.gridCoordinates.x;
+				const childGridY = child.gridCoordinates.y;
+				const childCode = upsertPos([...child.code], childGridX, childGridY);
+				return createPastedCodeBlock(state, child, childCode, childGridX, childGridY, childProjectPath);
+			}),
+		};
 	}
 
 	return codeBlock;
@@ -125,9 +127,7 @@ export function pasteMultipleBlocks(
 	if (state.editorMode !== 'edit') {
 		return;
 	}
-	const projectPath =
-		findProjectSlicePath(state.codeBlockRendering.rootCodeBlocks, state.codeBlockRendering.codeBlocks) ??
-		ROOT_PROJECT_GROUP_PATH;
+	const projectPath = state.codeBlockRendering.currentProject.path;
 
 	// Calculate paste anchor grid position
 	const anchorGridX = Math.round((state.viewport.x + x) / state.viewport.vGrid);
@@ -137,13 +137,13 @@ export function pasteMultipleBlocks(
 	events.dispatch('transformPastedCodeBlocks', incoming);
 	blocks = incoming.blocks;
 	const existingProjectGroupNames = new Set(
-		state.codeBlockRendering.codeBlocks
-			.filter(block => block.nestedProjectCodeBlocks !== undefined)
+		state.codeBlockRendering.currentProject.blocks
+			.filter(block => block.childProject !== undefined)
 			.map(block => block.name)
 	);
 	const projectGroupNameMapping = new Map<string, string>();
 	for (const block of blocks) {
-		if (block.nestedProjectCodeBlocks === undefined) continue;
+		if (block.childProject === undefined) continue;
 		const originalName = getCodeBlockNameFromSource(block.code);
 		const newName = getUniqueName(originalName, existingProjectGroupNames);
 		projectGroupNameMapping.set(originalName, newName);
@@ -171,7 +171,7 @@ export function pasteMultipleBlocks(
 	for (const { type, name: originalName } of originalNames) {
 		let newName = originalName;
 		while (
-			state.codeBlockRendering.codeBlocks.some(
+			state.codeBlockRendering.currentProject.blocks.some(
 				codeBlock =>
 					(codeBlock.blockType === type || codeBlock.code[0]?.trim().startsWith(`${type} `)) &&
 					codeBlock.name === newName
@@ -207,7 +207,7 @@ export function pasteMultipleBlocks(
 
 		// Process code: update names, inter-module references, and rename groups.
 		let code = [...clipboardBlock.code];
-		const isProjectGroup = clipboardBlock.nestedProjectCodeBlocks !== undefined;
+		const isProjectGroup = clipboardBlock.childProject !== undefined;
 		const originalProjectGroupName = isProjectGroup ? getCodeBlockNameFromSource(code) : undefined;
 		if (originalProjectGroupName) {
 			const newProjectGroupName = projectGroupNameMapping.get(originalProjectGroupName)!;
@@ -244,16 +244,16 @@ export function pasteMultipleBlocks(
 		const codeBlock = createPastedCodeBlock(state, clipboardBlock, code, gridX, gridY, projectPath);
 
 		// Add block immediately so next iteration's ID uniqueness check sees it
-		state.codeBlockRendering.codeBlocks.push(codeBlock);
+		state.codeBlockRendering.currentProject.blocks.push(codeBlock);
 		newBlocks.push(codeBlock);
 	}
 
 	// Stable-sort to maintain the partition: normal blocks first, always-on-top last.
-	const sorted = partitionCodeBlocksByAlwaysOnTop(state.codeBlockRendering.codeBlocks);
+	const sorted = partitionCodeBlocksByAlwaysOnTop(state.codeBlockRendering.currentProject.blocks);
 
 	// Trigger single store update with all new blocks
-	replaceCodeBlocksInPlace(state.codeBlockRendering.codeBlocks, sorted);
-	store.set('codeBlockRendering.codeBlocks', state.codeBlockRendering.codeBlocks);
+	replaceCodeBlocksInPlace(state.codeBlockRendering.currentProject.blocks, sorted);
+	store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);
 	if (newBlocks.length > 0) {
 		incrementCompilerInputRevision(store);
 		publishProjectChange(store);

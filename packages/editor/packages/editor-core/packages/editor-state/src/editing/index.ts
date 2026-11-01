@@ -1,49 +1,21 @@
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
-import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import parsePos from '../features/code-blocks/features/directives/pos/data';
 import { hasDirective } from '../features/code-blocks/features/directives/utils';
-import { findProjectSlicePath } from '../features/code-blocks/features/projectGroupNavigation/effect';
 import getBlockType from '../features/code-blocks/utils/codeParsers/getBlockType';
 import { createCodeBlockGraphicData } from '../features/code-blocks/utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from '../features/code-blocks/utils/getCodeBlockNameFromSource';
 import { parseBlockDirectives } from '../features/code-blocks/utils/parseBlockDirectives';
-import updateViewport from '../features/viewport/updateViewport';
 import serializeCodeBlocks from '../pureHelpers/projectSerialization/serializeCodeBlocks';
+import { copyProjectLevel, findProjectLevel, walkProjectBlocks } from '../pureHelpers/projectTree';
 import { type EditorEdit, EditorEditingError, type EditorEditingHandle, type EditorNavigationHandle } from './types';
 
 export * from './types';
-
-function flatten(blocks: CodeBlockGraphicData[]): CodeBlockGraphicData[] {
-	return blocks.flatMap(block => [block, ...flatten(block.nestedProjectCodeBlocks ?? [])]);
-}
-
-function copyBlocks(blocks: CodeBlockGraphicData[]): CodeBlockGraphicData[] {
-	return blocks.map(block => ({
-		...block,
-		code: [...block.code],
-		...(block.nestedProjectCodeBlocks === undefined
-			? {}
-			: {
-					nestedProjectCodeBlocks: copyBlocks(block.nestedProjectCodeBlocks),
-					projectEntries: [...block.projectEntries!],
-				}),
-	}));
-}
 
 /** Command handle for a block read directly from editor state. */
 export const getEditorBlockId = (block: CodeBlockGraphicData): string =>
 	JSON.stringify([block.projectPath, block.creationIndex]);
 let nextEditorInstance = 0;
-
-function findSlice(blocks: CodeBlockGraphicData[], path: string, currentPath = ''): CodeBlockGraphicData[] | undefined {
-	if (path === currentPath) return blocks;
-	for (const block of blocks) {
-		if (block.nestedProjectCodeBlocks === undefined) continue;
-		const result = findSlice(block.nestedProjectCodeBlocks, path, createChildProjectGroupPath(currentPath, block.name));
-		if (result) return result;
-	}
-}
 
 /** Public commands reuse project restoration, without dispatching an unrelated loadProject. */
 export function createEditorEditingHandle(store: StateManager<State>, events: EventDispatcher) {
@@ -96,7 +68,7 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 		applyEdits({ expectedRevision, edits }) {
 			checkWrite(expectedRevision);
 			if (!Array.isArray(edits) || edits.length === 0) invalid('Provide at least one edit');
-			const draft = copyBlocks(state.codeBlockRendering.rootCodeBlocks);
+			const draft = copyProjectLevel(state.codeBlockRendering.rootProject);
 			let nextId = state.codeBlockRendering.nextCodeBlockCreationIndex;
 			const createdBlockIds: string[] = [];
 			for (const edit of edits as readonly EditorEdit[]) {
@@ -107,7 +79,7 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 						invalid('Create project groups through project loading; inserts add ordinary code blocks');
 					validateEntry(edit.entry);
 					const path = edit.projectPath ?? '';
-					const slice = findSlice(draft, path);
+					const slice = findProjectLevel(draft, path);
 					if (!slice) invalid('Unknown projectPath');
 					const code = [...edit.code];
 					const pos = parsePos(parseBlockDirectives(code));
@@ -123,23 +95,23 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 						entry: type === 'module' ? (edit.entry ?? 'main') : undefined,
 						disabled: hasDirective(code, 'disabled'),
 					});
-					slice!.push(block);
+					slice!.blocks.push(block);
 					createdBlockIds.push(getEditorBlockId(block));
 					continue;
 				}
 				if (!['update', 'delete'].includes(edit.type)) invalid('Unknown edit type');
-				const target = flatten(draft).find(block => getEditorBlockId(block) === edit.blockId);
+				const target = [...walkProjectBlocks(draft)].find(block => getEditorBlockId(block) === edit.blockId);
 				if (!target)
 					throw new EditorEditingError('block_not_found', 'Read the project for a current blockId', revision());
 				if (edit.type === 'delete') {
-					const slice = findSlice(draft, target.projectPath)!;
-					slice.splice(slice.indexOf(target), 1);
+					const slice = findProjectLevel(draft, target.projectPath)!;
+					slice.blocks.splice(slice.blocks.indexOf(target), 1);
 				} else if (edit.type === 'update') {
 					validateCode(edit.code);
-					if (!target.nestedProjectCodeBlocks && edit.code.some(line => /^\s*group(?:\s|$)/.test(line)))
+					if (!target.childProject && edit.code.some(line => /^\s*group(?:\s|$)/.test(line)))
 						invalid('Converting a code block into a project group is not supported');
 					validateEntry(edit.entry);
-					if (target.nestedProjectCodeBlocks && getCodeBlockNameFromSource(edit.code) !== target.name) {
+					if (target.childProject && getCodeBlockNameFromSource(edit.code) !== target.name) {
 						invalid('Keep the project group name when updating its source; edit child blocks through their handles');
 					}
 					const pos = parsePos(parseBlockDirectives(edit.code));
@@ -151,23 +123,13 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 					target.blockType = getBlockType(target.code);
 					if (target.blockType !== 'unknown') target.isProjectScope = false;
 					target.disabled = hasDirective(target.code, 'disabled');
-					if (edit.entry !== undefined && target.blockType !== 'module' && !target.nestedProjectCodeBlocks)
+					if (edit.entry !== undefined && target.blockType !== 'module' && !target.childProject)
 						invalid('Only modules and project groups accept an entry');
 					if (target.blockType === 'module') target.entry = edit.entry ?? target.entry ?? 'main';
-					else if (target.nestedProjectCodeBlocks && edit.entry !== undefined) target.entry = edit.entry;
+					else if (target.childProject && edit.entry !== undefined) target.entry = edit.entry;
 				}
 			}
-			const currentPath = findProjectSlicePath(
-				state.codeBlockRendering.rootCodeBlocks,
-				state.codeBlockRendering.codeBlocks
-			);
-			const { x, y } = state.viewport;
-			events.dispatch('applyProjectEdit', {
-				project: serializeCodeBlocks(draft, state.codeBlockRendering.rootProjectEntries),
-			});
-			const slice = findSlice(state.codeBlockRendering.rootCodeBlocks, currentPath ?? '');
-			if (slice && slice !== state.codeBlockRendering.codeBlocks) store.set('codeBlockRendering.codeBlocks', slice);
-			updateViewport(state, x, y, events);
+			events.dispatch('applyProjectEdit', { project: serializeCodeBlocks(draft.blocks, draft.entries) });
 			return { revision: revision(), createdBlockIds };
 		},
 		undo({ expectedRevision }) {
@@ -184,9 +146,11 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 	const navigation: EditorNavigationHandle = {
 		openGroup(id) {
 			assertAlive();
-			const block = flatten(state.codeBlockRendering.rootCodeBlocks).find(block => getEditorBlockId(block) === id);
+			const block = [...walkProjectBlocks(state.codeBlockRendering.rootProject)].find(
+				block => getEditorBlockId(block) === id
+			);
 			if (!block) throw new EditorEditingError('block_not_found', 'Read state for a current group blockId', revision());
-			if (block.nestedProjectCodeBlocks === undefined)
+			if (block.childProject === undefined)
 				throw new EditorEditingError('invalid_edit', 'The selected block is not a project group', revision());
 			events.dispatch('openProjectGroup', { codeBlock: block });
 		},

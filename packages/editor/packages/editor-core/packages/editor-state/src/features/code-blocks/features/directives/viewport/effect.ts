@@ -3,7 +3,7 @@ import type { StateManager } from '@8f4e/state-manager';
 import { resolveViewportAnchoredPosition } from './resolve';
 
 function syncViewportAnchoredBlockList(state: State): void {
-	state.codeBlockRendering.viewportAnchoredCodeBlocks = state.codeBlockRendering.codeBlocks.filter(
+	state.codeBlockRendering.viewportAnchoredCodeBlocks = state.codeBlockRendering.currentProject.blocks.filter(
 		block => block.viewportAnchor !== undefined
 	);
 }
@@ -78,7 +78,7 @@ export default function viewportDirectiveEffect(store: StateManager<State>, even
 		recomputeViewportAnchoredPositions(state);
 	};
 
-	store.subscribe('codeBlockRendering.codeBlocks', syncAllBlocks);
+	store.subscribe('codeBlockRendering.currentProject.blocks', syncAllBlocks);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.code', syncSelectedCodeBlock);
 	store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', syncProgrammaticSelectedCodeBlock);
 	events.on('codeBlockLayoutsChanged', syncAllBlocks);

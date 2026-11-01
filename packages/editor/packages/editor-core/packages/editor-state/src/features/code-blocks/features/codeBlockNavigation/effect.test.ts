@@ -52,7 +52,7 @@ describe('codeBlockNavigation', () => {
 		state = createMockState({
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
-				codeBlocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock],
+				currentProject: { entries: [], path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
 			},
 		});
 
@@ -116,7 +116,7 @@ describe('codeBlockNavigation', () => {
 			name: 'anchored-right',
 			viewportAnchor: 'top-right',
 		});
-		state.codeBlockRendering.codeBlocks = [selectedBlock, anchoredRight, rightBlock];
+		state.codeBlockRendering.currentProject.blocks = [selectedBlock, anchoredRight, rightBlock];
 
 		codeBlockNavigation(createStateManager(state), events);
 
@@ -134,7 +134,7 @@ describe('codeBlockNavigation', () => {
 			viewportAnchor: 'top-left',
 		});
 		state.codeBlockRendering.selectedCodeBlock = anchoredSelected;
-		state.codeBlockRendering.codeBlocks = [anchoredSelected, rightBlock];
+		state.codeBlockRendering.currentProject.blocks = [anchoredSelected, rightBlock];
 
 		codeBlockNavigation(createStateManager(state), events);
 
@@ -311,7 +311,7 @@ describe('codeBlockNavigation', () => {
 			},
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
-				codeBlocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock],
+				currentProject: { entries: [], path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
 			},
 			viewport: {
 				x: 0,
@@ -366,7 +366,7 @@ describe('codeBlockNavigation', () => {
 		codeBlockNavigation(createStateManager(state), events);
 
 		// Remove all blocks except selected
-		state.codeBlockRendering.codeBlocks = [selectedBlock];
+		state.codeBlockRendering.currentProject.blocks = [selectedBlock];
 
 		onNavigateCodeBlockHandler({ direction: 'right' });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
@@ -419,7 +419,7 @@ describe('codeBlockNavigation', () => {
 			});
 
 			state = createMockState({
-				codeBlockRendering: { codeBlocks: [firstHome, secondHome] },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [firstHome, secondHome] } },
 				viewport: {
 					x: 10,
 					y: 20,
@@ -448,7 +448,7 @@ describe('codeBlockNavigation', () => {
 				homeAlignment: 'bottom',
 			});
 			state = createMockState({
-				codeBlockRendering: { codeBlocks: [homeBlock] },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [homeBlock] } },
 				viewport: {
 					x: 0,
 					y: 0,
@@ -475,7 +475,7 @@ describe('codeBlockNavigation', () => {
 				y: 100,
 			});
 			state = createMockState({
-				codeBlockRendering: { codeBlocks: [homeBlock] },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [homeBlock] } },
 			});
 
 			goHome(createStateManager(state), events);
@@ -498,7 +498,7 @@ describe('codeBlockNavigation', () => {
 			const otherHome = createMockCodeBlock({ name: 'home-other', isHome: true });
 
 			state = createMockState({
-				codeBlockRendering: { codeBlocks: [disabledHome, otherHome] },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [disabledHome, otherHome] } },
 			});
 
 			goHome(createStateManager(state), events);
@@ -510,7 +510,7 @@ describe('codeBlockNavigation', () => {
 			state = createMockState({
 				viewport: { x: 25, y: -10 },
 				codeBlockRendering: {
-					codeBlocks: [selectedBlock],
+					currentProject: { entries: [], path: '', blocks: [selectedBlock] },
 					selectedCodeBlock: selectedBlock,
 				},
 			});
@@ -529,7 +529,7 @@ describe('codeBlockNavigation', () => {
 				x: 160,
 				y: 80,
 			});
-			state.codeBlockRendering.codeBlocks = [homeBlock, ...state.codeBlockRendering.codeBlocks];
+			state.codeBlockRendering.currentProject.blocks = [homeBlock, ...state.codeBlockRendering.currentProject.blocks];
 
 			codeBlockNavigation(createStateManager(state), events);
 

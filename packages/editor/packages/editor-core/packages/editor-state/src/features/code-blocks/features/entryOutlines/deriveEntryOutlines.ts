@@ -55,7 +55,7 @@ export default function deriveEntryOutlines(
 	const boundsByEntry = new Map<string, EntryBounds>();
 
 	for (const codeBlock of codeBlocks) {
-		if (codeBlock.blockType !== 'module' && codeBlock.nestedProjectCodeBlocks === undefined) {
+		if (codeBlock.blockType !== 'module' && codeBlock.childProject === undefined) {
 			continue;
 		}
 

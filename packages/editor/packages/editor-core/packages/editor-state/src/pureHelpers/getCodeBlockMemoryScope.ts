@@ -5,9 +5,9 @@ import type { MemoryScope } from './resolveMemoryTarget';
 
 /** Converts an editor block into the scope in which its memory references are evaluated. */
 export default function getCodeBlockMemoryScope(
-	codeBlock: Pick<CodeBlockGraphicData, 'name' | 'projectPath' | 'nestedProjectCodeBlocks'>
+	codeBlock: Pick<CodeBlockGraphicData, 'name' | 'projectPath' | 'childProject'>
 ): MemoryScope {
-	return codeBlock.nestedProjectCodeBlocks === undefined
+	return codeBlock.childProject === undefined
 		? { kind: 'module', moduleId: getCodeBlockModuleId(codeBlock) }
 		: { kind: 'project', groupPath: createChildProjectGroupPath(codeBlock.projectPath, codeBlock.name) };
 }

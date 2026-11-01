@@ -25,7 +25,11 @@ function createBlocks(project: ProjectObjectModel, projectPath = ''): CodeBlockG
 				name: group.name,
 				code: group.code,
 				projectPath,
-				nestedProjectCodeBlocks: createBlocks(group, createChildProjectGroupPath(projectPath, group.name)),
+				childProject: {
+					entries: [],
+					path: '',
+					blocks: createBlocks(group, createChildProjectGroupPath(projectPath, group.name)),
+				},
 			})
 		),
 	];
@@ -42,10 +46,10 @@ async function setup() {
 	(instance.exports.initDefaults as CallableFunction)();
 	const int32 = new Int32Array(memory.buffer);
 	state.callbacks.getWordFromMemory = address => int32[address];
-	state.codeBlockRendering.rootCodeBlocks = createBlocks(project);
-	state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
-	const audio = state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'audio')!;
-	const controls = state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'controls')!;
+	state.codeBlockRendering.rootProject.blocks = createBlocks(project);
+	state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
+	const audio = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'audio')!;
+	const controls = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'controls')!;
 	return { state, audio, controls };
 }
 
@@ -74,7 +78,7 @@ describe('shared exposed memory resolution', () => {
 
 	it('resolves nested and sibling namespaces without searching unrelated scopes', () => {
 		const { state, audio } = test;
-		const nested = audio.nestedProjectCodeBlocks!.find(block => block.name === 'nested')!;
+		const nested = audio.childProject!.blocks.find(block => block.name === 'nested')!;
 		expect(resolveMemoryTarget(state, getCodeBlockMemoryScope(audio), 'nested:gain')?.moduleId).toBe(
 			'audio/nested/voice'
 		);

@@ -78,8 +78,8 @@ export async function setup(
 	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	events.dispatch('loadProject', { project });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
-	const block = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
-	store.set('codeBlockRendering.codeBlocks', [block]);
+	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	store.set('codeBlockRendering.currentProject.blocks', [block]);
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();

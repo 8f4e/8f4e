@@ -14,7 +14,7 @@ function setup() {
 	const document = { modelContext: { registerTool } } as unknown as Document;
 	const code = ['module counter', '; @pos 10 20', 'int value 0', 'moduleEnd'];
 	const state = createMockState({ compilerInputRevision: 1, editorMode: 'edit' });
-	state.codeBlockRendering.rootCodeBlocks = [
+	state.codeBlockRendering.rootProject.blocks = [
 		createMockCodeBlock({
 			creationIndex: 7,
 			projectPath: '',
@@ -26,7 +26,7 @@ function setup() {
 			entry: 'main',
 		}),
 	];
-	state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
+	state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
 	let currentRevision = 'editor-one:1';
 	let version = 1;
 	const advance = () => {
@@ -99,7 +99,7 @@ describe('single-editor WebMCP bridge', () => {
 
 	it('returns source strings and leaves revisions out of tool inputs', async () => {
 		const view = setup();
-		const before = structuredClone(view.state.codeBlockRendering.rootCodeBlocks);
+		const before = structuredClone(view.state.codeBlockRendering.rootProject.blocks);
 		const { bridge, call } = await connect(view, {
 			readSource: false,
 			getCompilerDiagnostics: () => ({ status: 'pending', completedRevision: null }),
@@ -125,10 +125,10 @@ describe('single-editor WebMCP bridge', () => {
 			'get_compiler_diagnostics',
 		]);
 		expect(await call('get_project')).toBe(
-			'8f4e/v1\n\nentry main\n\n' + view.state.codeBlockRendering.rootCodeBlocks[0].code.join('\n') + '\nentryEnd'
+			'8f4e/v1\n\nentry main\n\n' + view.state.codeBlockRendering.rootProject.blocks[0].code.join('\n') + '\nentryEnd'
 		);
 		expect(await call('get_block', { type: 'module', name: 'counter' })).toBe(
-			view.state.codeBlockRendering.rootCodeBlocks[0].code.join('\n')
+			view.state.codeBlockRendering.rootProject.blocks[0].code.join('\n')
 		);
 		expect(await call('get_project_metadata')).toEqual({
 			revision: 'editor-one:1',
@@ -148,7 +148,7 @@ describe('single-editor WebMCP bridge', () => {
 		});
 		for (const tool of view.tools.values())
 			expect(JSON.stringify(tool.inputSchema)).not.toMatch(/blockId|createdBlockIds|expectedRevision/);
-		expect(view.state.codeBlockRendering.rootCodeBlocks).toEqual(before);
+		expect(view.state.codeBlockRendering.rootProject.blocks).toEqual(before);
 		bridge.dispose();
 	});
 
@@ -162,12 +162,12 @@ describe('single-editor WebMCP bridge', () => {
 			['search_examples', { query: 'low pass filter', kind: 'block' }],
 			['get_example', { kind: 'block', path: 'filters/lowPassFilter' }],
 		] as const;
-		const before = structuredClone(view.state.codeBlockRendering.rootCodeBlocks);
+		const before = structuredClone(view.state.codeBlockRendering.rootProject.blocks);
 		for (const [name, args] of referenceCalls) {
 			expect(view.tools.get(name)!.annotations.readOnlyHint).toBe(true);
 			expect(await call(name, args)).not.toHaveProperty('error');
 		}
-		expect(view.state.codeBlockRendering.rootCodeBlocks).toEqual(before);
+		expect(view.state.codeBlockRendering.rootProject.blocks).toEqual(before);
 		expect(view.state.historyStack).toHaveLength(0);
 		expect(view.editing.getRevision).not.toHaveBeenCalled();
 		expect(view.navigation.openGroup).not.toHaveBeenCalled();
@@ -249,8 +249,8 @@ describe('single-editor WebMCP bridge', () => {
 			const { bridge, call } = await connect(view, { getCompilerDiagnostics: () => ({ status: 'ready' }) });
 			await call('update_block', update);
 			view.revision = 'external-editor:80';
-			view.state.codeBlockRendering.rootCodeBlocks[0].code[2] = 'int value 9';
-			const changedSource = structuredClone(view.state.codeBlockRendering.rootCodeBlocks);
+			view.state.codeBlockRendering.rootProject.blocks[0].code[2] = 'int value 9';
+			const changedSource = structuredClone(view.state.codeBlockRendering.rootProject.blocks);
 			for (const [name, args] of writes)
 				expect(await call(name, args)).toMatchObject({
 					error: { code: 'stale_revision', message: expect.stringContaining('Re-fetch') },
@@ -266,7 +266,7 @@ describe('single-editor WebMCP bridge', () => {
 			expect(view.editing.applyEdits).toHaveBeenCalledTimes(1);
 			expect(view.editing.undo).not.toHaveBeenCalled();
 			expect(view.editing.redo).not.toHaveBeenCalled();
-			expect(view.state.codeBlockRendering.rootCodeBlocks).toEqual(changedSource);
+			expect(view.state.codeBlockRendering.rootProject.blocks).toEqual(changedSource);
 			expect(await call(sourceTool, sourceTool === 'get_block' ? { type: 'module', name: 'counter' } : {})).toContain(
 				'int value 9'
 			);
@@ -352,14 +352,14 @@ describe('single-editor WebMCP bridge', () => {
 		{ oldText: 'int value 0\n', newText: '', expected: ['module counter', '; @pos 10 20', 'moduleEnd'] },
 	])('patches one literal source span and preserves the rest: $oldText', async ({ oldText, newText, expected }) => {
 		const view = setup();
-		const before = structuredClone(view.state.codeBlockRendering.rootCodeBlocks);
+		const before = structuredClone(view.state.codeBlockRendering.rootProject.blocks);
 		const { bridge, call } = await connect(view);
 		expect(await call('patch_block', { type: 'module', name: 'counter', oldText, newText })).toBe('Block patched.');
 		expect(view.editing.applyEdits).toHaveBeenCalledExactlyOnceWith({
 			expectedRevision: 'editor-one:1',
 			edits: [{ type: 'update', blockId: '["",7]', code: expected }],
 		});
-		expect(view.state.codeBlockRendering.rootCodeBlocks).toEqual(before);
+		expect(view.state.codeBlockRendering.rootProject.blocks).toEqual(before);
 		expect(view.tools.get('patch_block')!.annotations.readOnlyHint).toBe(false);
 		bridge.dispose();
 	});
@@ -379,7 +379,7 @@ describe('single-editor WebMCP bridge', () => {
 		expect(await call('patch_block', { ...patch, oldText: 'absent source' })).toMatchObject({
 			error: { code: 'match_not_found' },
 		});
-		view.state.codeBlockRendering.rootCodeBlocks[0].code = ['module counter', '; aaa', 'moduleEnd'];
+		view.state.codeBlockRendering.rootProject.blocks[0].code = ['module counter', '; aaa', 'moduleEnd'];
 		for (const oldText of ['aa', 'module'])
 			expect(await call('patch_block', { ...patch, oldText })).toMatchObject({ error: { code: 'ambiguous_match' } });
 		expect(view.editing.applyEdits).not.toHaveBeenCalled();
@@ -407,9 +407,9 @@ describe('single-editor WebMCP bridge', () => {
 			projectPath: '',
 			name: 'audio',
 			code: ['group audio', 'groupEnd'],
-			nestedProjectCodeBlocks: [child, note],
+			childProject: { entries: [], path: 'audio', blocks: [child, note] },
 		});
-		view.state.codeBlockRendering.rootCodeBlocks.push(
+		view.state.codeBlockRendering.rootProject.blocks.push(
 			group,
 			createMockCodeBlock({
 				creationIndex: 4,
@@ -420,13 +420,13 @@ describe('single-editor WebMCP bridge', () => {
 			})
 		);
 		view.navigation.openGroup.mockImplementation(() => {
-			view.state.codeBlockRendering.codeBlocks = group.nestedProjectCodeBlocks!;
+			view.state.codeBlockRendering.currentProject = group.childProject!;
 		});
 		view.navigation.goToParentGroup.mockImplementation(() => {
-			view.state.codeBlockRendering.codeBlocks = view.state.codeBlockRendering.rootCodeBlocks;
+			view.state.codeBlockRendering.currentProject = view.state.codeBlockRendering.rootProject;
 		});
 		view.navigation.goToRoot.mockImplementation(() => {
-			view.state.codeBlockRendering.codeBlocks = view.state.codeBlockRendering.rootCodeBlocks;
+			view.state.codeBlockRendering.currentProject = view.state.codeBlockRendering.rootProject;
 		});
 		const { bridge, call } = await connect(view);
 		await call('expand_group', { name: 'audio' });
@@ -471,7 +471,7 @@ describe('single-editor WebMCP bridge', () => {
 			})
 		).toMatchObject({ error: { code: 'block_not_found' } });
 		expect(view.editing.applyEdits).not.toHaveBeenCalled();
-		group.nestedProjectCodeBlocks!.push(createMockCodeBlock({ ...child, creationIndex: 5 }));
+		group.childProject!.blocks.push(createMockCodeBlock({ ...child, creationIndex: 5 }));
 		for (const tool of ['get_block', 'get_block_metadata', 'update_block', 'patch_block'])
 			expect(await call(tool, argsFor(tool, 'counter'))).toMatchObject({ error: { code: 'ambiguous_block' } });
 		expect(

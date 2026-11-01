@@ -92,7 +92,7 @@ entryEnd`,
 	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
 	expect(fetchAsset).not.toHaveBeenCalled();
 	expect(editor.state.editorConfigSchemaContributions.binaryAssets).toBeUndefined();
-	const config = editor.state.codeBlockRendering.codeBlocks.find(block => block.blockType === 'note')!;
+	const config = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'note')!;
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
 		edits: [
@@ -152,7 +152,7 @@ functionEnd`);
 	});
 	expect(requestAccess).not.toHaveBeenCalled();
 	expect(editor.state.editorConfigSchemaContributions.midi).toBeUndefined();
-	const config = editor.state.codeBlockRendering.codeBlocks.find(block => block.blockType === 'note')!;
+	const config = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'note')!;
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
 		edits: [

@@ -105,18 +105,17 @@ describe('serializeCodeBlocksToClipboard', () => {
 			gridX: -3,
 			gridY: 8,
 			entry: 'main',
-			projectEntries: ['main'],
-			nestedProjectCodeBlocks: [nestedModule],
+			childProject: { entries: ['main'], path: '', blocks: [nestedModule] },
 		});
 		const group = createMockCodeBlock({
 			code: ['group audio', '; keep me', 'groupEnd'],
 			gridX: 10,
 			gridY: 20,
 			entry: 'main',
-			projectEntries: ['main'],
-			nestedProjectCodeBlocks: [nestedGroup],
+			childProject: { entries: ['main', 'foo', 'bar'], path: '', blocks: [nestedGroup] },
 		});
 
+		group.childProject!.viewport = { x: 256, y: -128 };
 		const parsed = JSON.parse(serializeCodeBlocksToClipboard([group], group));
 
 		expect(parsed).toEqual([
@@ -124,22 +123,26 @@ describe('serializeCodeBlocksToClipboard', () => {
 				code: ['group audio', '; keep me', 'groupEnd'],
 				gridCoordinates: { x: 0, y: 0 },
 				entry: 'main',
-				projectEntries: ['main'],
-				nestedProjectCodeBlocks: [
-					{
-						code: ['group modulation', 'groupEnd'],
-						gridCoordinates: { x: -3, y: 8 },
-						entry: 'main',
-						projectEntries: ['main'],
-						nestedProjectCodeBlocks: [
-							{
-								code: ['module voice', 'moduleEnd'],
-								gridCoordinates: { x: 4, y: 6 },
-								entry: 'main',
+				childProject: {
+					entries: ['main', 'foo', 'bar'],
+					blocks: [
+						{
+							code: ['group modulation', 'groupEnd'],
+							gridCoordinates: { x: -3, y: 8 },
+							entry: 'main',
+							childProject: {
+								entries: ['main'],
+								blocks: [
+									{
+										code: ['module voice', 'moduleEnd'],
+										gridCoordinates: { x: 4, y: 6 },
+										entry: 'main',
+									},
+								],
 							},
-						],
-					},
-				],
+						},
+					],
+				},
 			},
 		]);
 	});
@@ -152,8 +155,11 @@ describe('parseClipboardData', () => {
 				{
 					code: ['group audio', 'groupEnd'],
 					gridCoordinates: { x: 0, y: 0 },
-					projectEntries: ['main'],
-					nestedProjectCodeBlocks: [{ code: ['module voice', 'moduleEnd'], gridCoordinates: { x: 4, y: 6 } }],
+					childProject: {
+						entries: [],
+						path: '',
+						blocks: [{ code: ['module voice', 'moduleEnd'], gridCoordinates: { x: 4, y: 6 } }],
+					},
 				},
 			]);
 
@@ -161,7 +167,7 @@ describe('parseClipboardData', () => {
 
 			expect(result.type).toBe('multi');
 			if (result.type === 'multi') {
-				expect(result.blocks[0].nestedProjectCodeBlocks?.[0].code).toEqual(['module voice', 'moduleEnd']);
+				expect(result.blocks[0].childProject?.blocks?.[0].code).toEqual(['module voice', 'moduleEnd']);
 			}
 		});
 

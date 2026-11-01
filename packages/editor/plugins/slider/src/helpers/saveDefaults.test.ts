@@ -6,8 +6,8 @@ import { getSliderDefaultEdits } from './saveDefaults';
 
 function createProjectState(blocks: CodeBlockGraphicData[], read: State['callbacks']['getWordFromMemory']): State {
 	const state = createMockState();
-	state.codeBlockRendering.rootCodeBlocks = blocks;
-	state.codeBlockRendering.codeBlocks = blocks;
+	state.codeBlockRendering.rootProject.blocks = blocks;
+	state.codeBlockRendering.currentProject.blocks = blocks;
 	state.callbacks.getWordFromMemory = read;
 	return state;
 }
