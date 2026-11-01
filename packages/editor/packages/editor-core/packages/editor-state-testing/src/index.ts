@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, EventDispatcher, State, Viewport } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EventDispatcher, ProjectLevel, State, Viewport } from '@8f4e/editor-state-types';
 import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
 
 type DeepPartial<T> = T extends (...args: never[]) => unknown
@@ -110,7 +110,7 @@ export function createMockEventDispatcher(): EventDispatcher {
 }
 
 export function createMockState(overrides: StateOverrides = {}): State {
-	const rootCodeBlocks: CodeBlockGraphicData[] = [];
+	const rootProject: ProjectLevel = { path: '', blocks: [] };
 
 	const defaults: State = {
 		compilerInputRevision: 0,
@@ -129,8 +129,8 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		},
 		callbacks: {},
 		codeBlockRendering: {
-			rootCodeBlocks,
-			codeBlocks: rootCodeBlocks,
+			rootProject,
+			currentProject: rootProject,
 			entryOutlines: [],
 			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,
@@ -226,11 +226,23 @@ export function createMockState(overrides: StateOverrides = {}): State {
 
 	const state = mergeDeep<State>(defaults, overrides);
 	const rendering = overrides.codeBlockRendering;
-	if (rendering?.rootCodeBlocks !== undefined && rendering.codeBlocks === undefined) {
-		state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
-	} else if (rendering?.codeBlocks !== undefined && rendering.rootCodeBlocks === undefined) {
-		state.codeBlockRendering.rootCodeBlocks = state.codeBlockRendering.codeBlocks;
+	if (rendering?.currentProject && !rendering.rootProject) {
+		state.codeBlockRendering.rootProject = state.codeBlockRendering.currentProject;
 	}
+	const initialize = (level: ProjectLevel, path: string): ProjectLevel[] => {
+		level.path = path;
+		return [
+			level,
+			...level.blocks.flatMap(block =>
+				block.childProject ? initialize(block.childProject, path ? `${path}/${block.name}` : block.name) : []
+			),
+		];
+	};
+	const levels = initialize(state.codeBlockRendering.rootProject, '');
+	state.codeBlockRendering.currentProject = rendering?.currentProject
+		? (levels.find(level => level.blocks === state.codeBlockRendering.currentProject.blocks) ??
+			state.codeBlockRendering.currentProject)
+		: state.codeBlockRendering.rootProject;
 	return state;
 }
 

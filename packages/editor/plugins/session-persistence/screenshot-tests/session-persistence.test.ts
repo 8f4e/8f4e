@@ -34,7 +34,7 @@ test('restores a retained project in a new editor instance', async () => {
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		await vi.waitFor(() =>
 			expect(
-				editor!.state.codeBlockRendering.codeBlocks.some(block =>
+				editor!.state.codeBlockRendering.currentProject.blocks.some(block =>
 					block.code.includes('Retained across editor instances.')
 				)
 			).toBe(true)

@@ -28,7 +28,7 @@ export default function createWebUiRenderProjection(
 		const state = store.getState();
 		snapshot = {
 			codeBlocks: new Map(
-				state.codeBlockRendering.codeBlocks.map(block => [
+				state.codeBlockRendering.currentProject.blocks.map(block => [
 					block.creationIndex,
 					{ codeCells: deriveCodeBlockCodeCells(block) },
 				])

@@ -104,9 +104,9 @@ describe('autoEnvConstants', () => {
 
 		// Simulate codeBlockRendering populating codeBlocks from initialProjectState.
 		const envSource = state.initialProjectState!.constants.find(block => block.code[0] === 'constants env')!;
-		store.set('codeBlockRendering.codeBlocks', [createGraphicEnvBlock(envSource.code)]);
+		store.set('codeBlockRendering.currentProject.blocks', [createGraphicEnvBlock(envSource.code)]);
 		store.set('envConstantContributions.provider', ['const PROVIDED 77']);
-		expect(state.codeBlockRendering.codeBlocks[0].code.filter(line => line.startsWith('const '))).toEqual([
+		expect(state.codeBlockRendering.currentProject.blocks[0].code.filter(line => line.startsWith('const '))).toEqual([
 			'const PROVIDED 77',
 		]);
 	});
@@ -133,11 +133,11 @@ describe('autoEnvConstants', () => {
 
 	test('refreshes contributed constants and removes contributions without changing the env position', () => {
 		autoEnvConstants(store);
-		store.set('codeBlockRendering.codeBlocks', [
+		store.set('codeBlockRendering.currentProject.blocks', [
 			createGraphicEnvBlock(['constants env', '; @pos 7 9', 'constantsEnd']),
 		]);
 		store.set('envConstantContributions.example', ['const PROVIDED 42']);
-		const env = state.codeBlockRendering.codeBlocks[0];
+		const env = state.codeBlockRendering.currentProject.blocks[0];
 		expect(env.code).toContain('const PROVIDED 42');
 		expect(env.code).toContain('; @pos 7 9');
 		store.set('envConstantContributions', { provider: state.envConstantContributions.provider });
@@ -152,10 +152,12 @@ describe('autoEnvConstants', () => {
 		const envCodeBlock = state.initialProjectState!.constants.find(block => block.code[0] === 'constants env')!;
 		const codeWithCustomPos = [...envCodeBlock.code];
 		codeWithCustomPos[1] = '; @pos 12 -7';
-		store.set('codeBlockRendering.codeBlocks', [createGraphicEnvBlock(codeWithCustomPos, { gridX: 12, gridY: -7 })]);
+		store.set('codeBlockRendering.currentProject.blocks', [
+			createGraphicEnvBlock(codeWithCustomPos, { gridX: 12, gridY: -7 }),
+		]);
 		store.set('envConstantContributions.provider', ['const PROVIDED 77']);
 
-		const envBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === AUTO_ENV_BLOCK_NAME);
+		const envBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === AUTO_ENV_BLOCK_NAME);
 		expect(envBlock?.code).toContain('; @pos 12 -7');
 	});
 
@@ -165,10 +167,10 @@ describe('autoEnvConstants', () => {
 
 		const envCodeBlock = state.initialProjectState!.constants.find(block => block.code[0] === 'constants env')!;
 		const codeWithoutPos = envCodeBlock.code.filter(line => !line.includes('@pos'));
-		store.set('codeBlockRendering.codeBlocks', [createGraphicEnvBlock(codeWithoutPos)]);
+		store.set('codeBlockRendering.currentProject.blocks', [createGraphicEnvBlock(codeWithoutPos)]);
 		store.set('envConstantContributions.provider', ['const PROVIDED 77']);
 
-		const envBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === AUTO_ENV_BLOCK_NAME);
+		const envBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === AUTO_ENV_BLOCK_NAME);
 		expect(envBlock?.code).toContain('; @pos 0 0');
 	});
 

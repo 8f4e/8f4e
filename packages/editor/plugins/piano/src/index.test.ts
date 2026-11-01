@@ -56,7 +56,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
-	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
+	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
@@ -321,10 +321,10 @@ describe('piano plugin', () => {
 		test.render();
 		expect(test.draw.drawText).toHaveBeenCalledWith(32, 16, ';;', PALETTE_INDICES.darkOverlaySoft);
 		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
-		expect(test.codeBlock.nestedProjectCodeBlocks!.find(block => block.name === 'notesData')!.code).toContain(
+		expect(test.codeBlock.childProject!.blocks.find(block => block.name === 'notesData')!.code).toContain(
 			'int[] notes 4 50 52'
 		);
-		expect(test.codeBlock.nestedProjectCodeBlocks!.find(block => block.name === 'countData')!.code).toContain(
+		expect(test.codeBlock.childProject!.blocks.find(block => block.name === 'countData')!.code).toContain(
 			'int count 2'
 		);
 		expect(test.codeBlock.code).toContain('expose keys &notesData:notes');

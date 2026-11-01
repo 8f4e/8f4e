@@ -26,9 +26,9 @@ export default function convertGraphicDataToProjectStructure(codeBlocks: CodeBlo
 			project.code.push(...codeBlock.code);
 			continue;
 		}
-		if (codeBlock.nestedProjectCodeBlocks !== undefined) {
+		if (codeBlock.childProject !== undefined) {
 			project.execution.push({
-				...convertGraphicDataToProjectStructure(codeBlock.nestedProjectCodeBlocks),
+				...convertGraphicDataToProjectStructure(codeBlock.childProject?.blocks),
 				type: 'group',
 				id: codeBlock.creationIndex,
 				name: codeBlock.name,

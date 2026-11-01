@@ -50,7 +50,9 @@ functionEnd float`,
 		});
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		const state = editor.state;
-		await vi.waitFor(() => expect(state.codeBlockRendering.codeBlocks.some(block => block.name === 'env')).toBe(true));
+		await vi.waitFor(() =>
+			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'env')).toBe(true)
+		);
 		editor.pauseRendering();
 		const click = async (title: string) => {
 			await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.title?.includes(title))).toBe(true));
@@ -76,10 +78,15 @@ functionEnd float`,
 		await expect(canvas).toMatchScreenshot('example-modules-categories');
 		await click('Gain');
 		await vi.waitFor(() =>
-			expect(state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['env', 'gain', 'scales', 'shape'])
+			expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
+				'env',
+				'gain',
+				'scales',
+				'shape',
+			])
 		);
 		expect(state.contextMenu.open).toBe(false);
-		for (const block of state.codeBlockRendering.codeBlocks) expect(block.code).not.toContain('; @public');
+		for (const block of state.codeBlockRendering.currentProject.blocks) expect(block.code).not.toContain('; @public');
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('example-modules-inserted');
 	} finally {

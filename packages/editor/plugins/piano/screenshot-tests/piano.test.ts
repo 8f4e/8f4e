@@ -47,8 +47,8 @@ entryEnd`);
 	state.compiler.result.compiledModules = compiled.compiledModules;
 	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
 	store.set('initialProjectState', project);
-	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === 'audio')!;
-	store.set('codeBlockRendering.codeBlocks', [codeBlock]);
+	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+	store.set('codeBlockRendering.currentProject.blocks', [codeBlock]);
 	const buffer = new ArrayBuffer(65536);
 	const memoryViews: MemoryViews = {
 		int8: new Int8Array(buffer),

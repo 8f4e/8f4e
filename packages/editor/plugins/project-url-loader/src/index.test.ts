@@ -25,12 +25,12 @@ describe('project URL loader plugin', () => {
 	it('loads an explicit initial URL through the generic initialization hook', async () => {
 		const test = setup(undefined, url);
 		test.onLoaded.mockImplementation(() => {
-			expect(test.state.codeBlockRendering.codeBlocks.some(block => block.name === 'remote')).toBe(true);
+			expect(test.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'remote')).toBe(true);
 		});
 		expect(test.fetch).not.toHaveBeenCalled();
 		test.events.dispatch('init');
 		await vi.waitFor(() =>
-			expect(test.state.codeBlockRendering.codeBlocks.some(block => block.name === 'remote')).toBe(true)
+			expect(test.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'remote')).toBe(true)
 		);
 		expect(test.fetch).toHaveBeenCalledWith(url, { cache: 'no-store' });
 		expect(test.onLoaded).toHaveBeenCalledOnce();

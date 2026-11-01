@@ -1,4 +1,10 @@
-import type { CodeBlockGraphicData, EditorDirectiveDefinition, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	EditorDirectiveDefinition,
+	EventDispatcher,
+	ProjectLevel,
+	State,
+} from '@8f4e/editor-state-types';
 import {
 	createChildProjectGroupPath,
 	type ProjectBlock,
@@ -7,6 +13,7 @@ import {
 	ROOT_PROJECT_GROUP_PATH,
 } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
+import { findProjectLevel, walkProjectLevels } from '../../pureHelpers/projectTree';
 import gapCalculator from '../code-editing/gapCalculator';
 import { moveCaret } from '../code-editing/moveCaret';
 import reverseGapCalculator from '../code-editing/reverseGapCalculator';
@@ -14,7 +21,8 @@ import { getRawIndexForVisualColumn, getTabStopsByLine, getVisualColumnForRawInd
 import resolveEditorConfig from '../global-editor-directives/resolve';
 import incrementCompilerInputRevision from '../program-compiler/incrementCompilerInputRevision';
 import { isRestoringProjectEdit } from '../project-changes';
-import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';
+import { stopViewportAnimation } from '../viewport/animateViewport';
+import getProjectViewportPosition from '../viewport/getProjectViewportPosition';
 import updateViewport from '../viewport/updateViewport';
 import deriveErrorMessages from './deriveErrorMessages';
 import blockHighlights from './features/blockHighlights/updateGraphicData';
@@ -144,8 +152,8 @@ export default function codeBlockRendering(
 
 	const repartitionRenderedCodeBlocks = () => {
 		replaceCodeBlocksInPlace(
-			state.codeBlockRendering.codeBlocks,
-			partitionCodeBlocksByAlwaysOnTop(state.codeBlockRendering.codeBlocks)
+			state.codeBlockRendering.currentProject.blocks,
+			partitionCodeBlocksByAlwaysOnTop(state.codeBlockRendering.currentProject.blocks)
 		);
 	};
 
@@ -171,21 +179,21 @@ export default function codeBlockRendering(
 	};
 
 	const updateAllBlockDerivedState = () => {
-		refreshBlockLayouts(state.codeBlockRendering.codeBlocks);
+		refreshBlockLayouts(state.codeBlockRendering.currentProject.blocks);
 	};
 
 	const updateAllBlockSources = () => {
-		refreshBlockSources(store, state.codeBlockRendering.codeBlocks, updateAllBlockDerivedState);
+		refreshBlockSources(store, state.codeBlockRendering.currentProject.blocks, updateAllBlockDerivedState);
 	};
 
 	const recomputePixelCoordinatesAndBlockDerivedState = () => {
-		for (const codeBlock of state.codeBlockRendering.codeBlocks) {
+		for (const codeBlock of state.codeBlockRendering.currentProject.blocks) {
 			if (!codeBlock.viewportAnchor) {
 				codeBlock.x = codeBlock.gridX * state.viewport.vGrid;
 				codeBlock.y = codeBlock.gridY * state.viewport.hGrid;
 			}
 		}
-		refreshBlockLayouts(state.codeBlockRendering.codeBlocks);
+		refreshBlockLayouts(state.codeBlockRendering.currentProject.blocks);
 	};
 
 	const updateEditedCodeBlock = (block: CodeBlockGraphicData | undefined) => {
@@ -233,20 +241,26 @@ export default function codeBlockRendering(
 		}
 
 		state.codeBlockRendering.draggedCodeBlock = undefined;
+		const sameProject = isRestoringProjectEdit(state);
+		const previousCurrent = state.codeBlockRendering.currentProject;
+		const previousLevels = new Map<string, ProjectLevel>();
 		const previousBlocks = new Map<string, CodeBlockGraphicData>();
 		const previousGroups = new Map<string, CodeBlockGraphicData>();
-		const rememberBlocks = (blocks: CodeBlockGraphicData[]) => {
-			for (const block of blocks) {
-				if (block.nestedProjectCodeBlocks !== undefined) {
-					previousGroups.set(createChildProjectGroupPath(block.projectPath, block.name), block);
-					rememberBlocks(block.nestedProjectCodeBlocks);
-				} else {
-					const key = block.isProjectScope ? 'project-scope' : JSON.stringify([block.projectPath, block.creationIndex]);
-					previousBlocks.set(key, block);
+		if (sameProject) {
+			previousCurrent.viewport = { x: state.viewport.x, y: state.viewport.y };
+			for (const level of walkProjectLevels(state.codeBlockRendering.rootProject)) {
+				previousLevels.set(level.path, level);
+				for (const block of level.blocks) {
+					if (block.childProject) previousGroups.set(block.childProject.path, block);
+					else {
+						const key = block.isProjectScope
+							? 'project-scope'
+							: JSON.stringify([block.projectPath, block.creationIndex]);
+						previousBlocks.set(key, block);
+					}
 				}
 			}
-		};
-		if (isRestoringProjectEdit(state)) rememberBlocks(state.codeBlockRendering.rootCodeBlocks);
+		}
 		const project = state.initialProjectState;
 		type ClassifiedProjectBlock = ProjectBlock & {
 			blockType: CodeBlockGraphicData['blockType'];
@@ -282,7 +296,7 @@ export default function codeBlockRendering(
 			const projectPath = overrides.projectPath ?? ROOT_PROJECT_GROUP_PATH;
 			const name = overrides.name ?? getCodeBlockNameFromSource(codeBlock.code);
 			const previousBlock =
-				overrides.nestedProjectCodeBlocks !== undefined
+				overrides.childProject !== undefined
 					? previousGroups.get(createChildProjectGroupPath(projectPath, name))
 					: previousBlocks.get(
 							overrides.isProjectScope ? 'project-scope' : JSON.stringify([projectPath, codeBlock.id])
@@ -322,10 +336,7 @@ export default function codeBlockRendering(
 				...overrides,
 			});
 		};
-		const createProjectCodeBlockSlice = (
-			currentProject: ProjectObjectModel,
-			projectPath: ProjectGroupPath
-		): CodeBlockGraphicData[] => {
+		const createProjectLevel = (currentProject: ProjectObjectModel, projectPath: ProjectGroupPath): ProjectLevel => {
 			const projectScopeBlocks =
 				projectPath === ROOT_PROJECT_GROUP_PATH && currentProject.code.length > 0
 					? [
@@ -358,34 +369,27 @@ export default function codeBlockRendering(
 					{
 						name: groupName,
 						projectPath,
-						nestedProjectCodeBlocks: createProjectCodeBlockSlice(
-							group,
-							createChildProjectGroupPath(projectPath, groupName)
-						),
+						childProject: createProjectLevel(group, createChildProjectGroupPath(projectPath, groupName)),
 					}
 				);
 			});
 			const projectCodeBlocks = [...projectScopeBlocks, ...codeBlocks, ...executionBlocks];
 
 			// Stable-sort to maintain the partition: normal blocks first, always-on-top last.
-			return partitionCodeBlocksByAlwaysOnTop(projectCodeBlocks);
+			return {
+				path: projectPath,
+				blocks: partitionCodeBlocksByAlwaysOnTop(projectCodeBlocks),
+				viewport: previousLevels.get(projectPath)?.viewport,
+			};
 		};
-		const rootCodeBlocks = createProjectCodeBlockSlice(project, ROOT_PROJECT_GROUP_PATH);
+		const rootProject = createProjectLevel(project, ROOT_PROJECT_GROUP_PATH);
+		const currentProject = (sameProject && findProjectLevel(rootProject, previousCurrent.path)) || rootProject;
 		state.codeBlockRendering.nextCodeBlockCreationIndex = nextCodeBlockCreationIndex;
-
-		store.set('codeBlockRendering.rootCodeBlocks', rootCodeBlocks);
-		store.set('codeBlockRendering.codeBlocks', rootCodeBlocks);
-
-		// Center viewport on first @home block without selecting it, or default to (0,0).
-		const homeBlock = rootCodeBlocks.find(block => block.isHome);
-		if (homeBlock) {
-			const { x, y } = centerViewportOnCodeBlock(state.viewport, homeBlock, {
-				alignment: homeBlock.homeAlignment,
-			});
-			updateViewport(state, x, y, events);
-		} else {
-			updateViewport(state, 0, 0, events);
-		}
+		stopViewportAnimation(state);
+		store.set('codeBlockRendering.rootProject', rootProject);
+		store.set('codeBlockRendering.currentProject', currentProject);
+		const { x, y } = getProjectViewportPosition(currentProject, state.viewport);
+		updateViewport(state, x, y, events);
 		incrementCompilerInputRevision(store);
 	};
 
@@ -396,7 +400,7 @@ export default function codeBlockRendering(
 	events.on('memoryValuesChanged', updateAllBlockDerivedState);
 	events.on('codeBlockLayoutContributionsChanged', ({ codeBlock }: { codeBlock?: CodeBlockGraphicData }) => {
 		if (codeBlock) {
-			if (state.codeBlockRendering.codeBlocks.includes(codeBlock)) refreshBlockLayouts([codeBlock]);
+			if (state.codeBlockRendering.currentProject.blocks.includes(codeBlock)) refreshBlockLayouts([codeBlock]);
 		} else updateAllBlockDerivedState();
 	});
 	events.on('spriteSheetRerendered', recomputePixelCoordinatesAndBlockDerivedState);
@@ -404,7 +408,7 @@ export default function codeBlockRendering(
 	store.subscribe('assertionResults', updateAllBlockDerivedState);
 	store.subscribe('compiler.isCompiling', updateAllBlockDerivedState);
 	store.subscribe('initialProjectState', populateCodeBlocks);
-	store.subscribe('codeBlockRendering.codeBlocks', updateAllBlockSources);
+	store.subscribe('codeBlockRendering.currentProject.blocks', updateAllBlockSources);
 	store.subscribe('editorConfigSchemaContributions', () => {
 		resolveEditorConfig(store);
 		updateAllBlockDerivedState();

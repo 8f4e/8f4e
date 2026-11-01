@@ -47,7 +47,7 @@ noteEnd`;
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		const state = editor.state;
 		await vi.waitFor(() =>
-			expect(state.codeBlockRendering.codeBlocks.some(block => block.code.includes('note patch'))).toBe(true)
+			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.code.includes('note patch'))).toBe(true)
 		);
 		editor.pauseRendering();
 		const original = state.initialProjectState;

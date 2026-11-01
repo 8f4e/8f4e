@@ -31,7 +31,7 @@ describe('entryOutlines effect', () => {
 		});
 
 		entryOutlines(store);
-		store.set('codeBlockRendering.codeBlocks', [first, second]);
+		store.set('codeBlockRendering.currentProject.blocks', [first, second]);
 
 		expect(state.codeBlockRendering.entryOutlines).toEqual([
 			{

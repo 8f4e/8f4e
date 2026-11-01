@@ -52,7 +52,11 @@ export function createExampleModulesPlugin({
 					const dependencyCode = extractPublicBlockFromModuleSource(dependencySource);
 					const name = getCodeBlockNameFromSource(dependencyCode);
 					const type = getBlockType(dependencyCode);
-					if (state.codeBlockRendering.codeBlocks.some(block => block.name === name && block.blockType === type))
+					if (
+						state.codeBlockRendering.currentProject.blocks.some(
+							block => block.name === name && block.blockType === type
+						)
+					)
 						continue;
 					events.dispatch('insertCodeBlock', {
 						code: dependencyCode,

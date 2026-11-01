@@ -13,7 +13,7 @@ export interface LazyEditorPlugin {
 function collectProjectDirectives(blocks: readonly CodeBlockGraphicData[]): ParsedDirectiveRecord[] {
 	return blocks.flatMap(block => [
 		...block.parsedDirectives,
-		...collectProjectDirectives(block.nestedProjectCodeBlocks ?? []),
+		...collectProjectDirectives(block.childProject?.blocks ?? []),
 	]);
 }
 
@@ -45,10 +45,10 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 				}
 			};
 			const scan = () => {
-				const { codeBlocks, rootCodeBlocks } = store.getState().codeBlockRendering;
+				const { currentProject, rootProject } = store.getState().codeBlockRendering;
 				const directives = {
-					view: codeBlocks.flatMap(block => block.parsedDirectives),
-					project: collectProjectDirectives(rootCodeBlocks),
+					view: currentProject.blocks.flatMap(block => block.parsedDirectives),
+					project: collectProjectDirectives(rootProject.blocks),
 				};
 				for (const entry of plugins) {
 					if (!installed.has(entry.id) && !pending.has(entry.id) && entry.matches(directives[entry.scope])) {
@@ -66,13 +66,13 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 				});
 			};
 			store.subscribe('projectChange', scheduleScan);
-			store.subscribe('codeBlockRendering.codeBlocks', scheduleScan);
+			store.subscribe('codeBlockRendering.currentProject.blocks', scheduleScan);
 			scan();
 
 			return () => {
 				disposed = true;
 				store.unsubscribe('projectChange', scheduleScan);
-				store.unsubscribe('codeBlockRendering.codeBlocks', scheduleScan);
+				store.unsubscribe('codeBlockRendering.currentProject.blocks', scheduleScan);
 				const errors: unknown[] = [];
 				for (const cleanup of [...installed.values()].reverse()) {
 					try {

@@ -68,7 +68,7 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 				height: block.height,
 				color: r + g + b > 1.5 ? 'black' : 'white',
 			});
-			state.codeBlockRendering.codeBlocks.push(block);
+			state.codeBlockRendering.currentProject.blocks.push(block);
 			codeBlocks.set(index, { codeCells: resolveFixtureCodeCells(codeLines, PALETTE_INDICES[token]) });
 		}
 		renderer.renderFrame();

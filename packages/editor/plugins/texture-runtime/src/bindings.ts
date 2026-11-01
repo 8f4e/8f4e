@@ -38,13 +38,13 @@ export function createTextureBindings(store: EditorPluginContext['store']) {
 					bindings.set(data.address, resolveMemoryIdentifier(state, scope, data.address));
 			}
 			bindingsByBlock.set(block, bindings);
-			collect(block.nestedProjectCodeBlocks ?? []);
+			collect(block.childProject?.blocks ?? []);
 		}
 	}
 
 	function refresh() {
 		uploads = [];
-		collect(state.codeBlockRendering.rootCodeBlocks);
+		collect(state.codeBlockRendering.rootProject.blocks);
 	}
 
 	function resolveUploads(memory: Int32Array) {

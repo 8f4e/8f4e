@@ -17,10 +17,7 @@ function withOwnerId(errors: CodeError[]): CodeError[] {
 function collectProjectCodeBlocks(codeBlocks: CodeBlockGraphicData[]): CodeBlockGraphicData[] {
 	return [...codeBlocks]
 		.sort(compareCodeBlocksByPosition)
-		.flatMap(block => [
-			block,
-			...(block.nestedProjectCodeBlocks ? collectProjectCodeBlocks(block.nestedProjectCodeBlocks) : []),
-		]);
+		.flatMap(block => [block, ...(block.childProject ? collectProjectCodeBlocks(block.childProject?.blocks) : [])]);
 }
 
 /**
@@ -34,7 +31,7 @@ function collectProjectCodeBlocks(codeBlocks: CodeBlockGraphicData[]): CodeBlock
  */
 export default function resolveEditorConfig(store: StateManager<State>): void {
 	const state = store.getState();
-	const projectCodeBlocks = collectProjectCodeBlocks(state.codeBlockRendering.rootCodeBlocks);
+	const projectCodeBlocks = collectProjectCodeBlocks(state.codeBlockRendering.rootProject.blocks);
 	const { resolved, errors } = resolveGlobalEditorDirectives(projectCodeBlocks);
 	const { configEntries, ...globalEditorDirectives } = resolved;
 	const nextEditorConfig = resolveEditorConfigEntries(configEntries ?? [], state.editorConfigValidators);

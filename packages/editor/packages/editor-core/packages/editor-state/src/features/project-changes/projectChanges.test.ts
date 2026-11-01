@@ -50,8 +50,8 @@ describe('project revision', () => {
 			blockType: 'module',
 			cursor: { row: 1, col: 6, x: 0, y: 16 },
 		});
-		state.codeBlockRendering.rootCodeBlocks.push(block);
-		state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
+		state.codeBlockRendering.rootProject.blocks.push(block);
+		state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
 		state.codeBlockRendering.selectedCodeBlock = block;
 	});
 
@@ -96,7 +96,7 @@ describe('project revision', () => {
 		codeBlockNavigation(store, events);
 		codeEditing(store, events);
 		const target = createMockCodeBlock({ code: ['module target', 'moduleEnd'], x: 400, blockType: 'module' });
-		state.codeBlockRendering.codeBlocks.push(target);
+		state.codeBlockRendering.currentProject.blocks.push(target);
 		dispatch('mousedown', { x: 32, y: 8 });
 		dispatch('mouseup');
 		dispatch('mousedown', { x: 32, y: 24 });
@@ -116,7 +116,7 @@ describe('project revision', () => {
 			createLayoutRegistry(() => {})
 		);
 		codeBlockDragger(store, events);
-		store.set('codeBlockRendering.codeBlocks', state.codeBlockRendering.codeBlocks);
+		store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);
 		dispatch('mousedown', { x: 32, y: 8 });
 		dispatch('mousemove', { movementX: 16, movementY: 32 });
 		dispatch('mouseup');
@@ -145,7 +145,7 @@ describe('project revision', () => {
 			gridCoordinates: { x: 0, y: 0 },
 		}));
 		pasteMultipleBlocks(store, events, { x: 0, y: 0, blocks });
-		expect(state.codeBlockRendering.codeBlocks).toHaveLength(3);
+		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(3);
 		expect(state.projectChange.revision).toBe(1);
 		pasteMultipleBlocks(store, events, { x: 0, y: 0, blocks: [] });
 		expect(state.projectChange.revision).toBe(1);
@@ -154,7 +154,7 @@ describe('project revision', () => {
 	it('advances for regenerated environment constants and ignores identical regeneration', () => {
 		autoEnvConstants(store);
 		const env = createMockCodeBlock({ name: 'env', blockType: 'constants', code: ['constants env', 'constantsEnd'] });
-		state.codeBlockRendering.codeBlocks.push(env);
+		state.codeBlockRendering.currentProject.blocks.push(env);
 		store.set('envConstantContributions', { assets: ['const SOUND_SIZE 100'] });
 		expect(state.projectChange.revision).toBe(1);
 		store.set('envConstantContributions', state.envConstantContributions);
@@ -163,7 +163,7 @@ describe('project revision', () => {
 
 	it('does not advance for opening and leaving a nested project, but advances for edits inside it', () => {
 		const child = createMockCodeBlock({ code: ['module child', 'moduleEnd'] });
-		block.nestedProjectCodeBlocks = [child];
+		block.childProject = { path: 'Audio', blocks: [child] };
 		projectGroupNavigation(store, events);
 		codeEditing(store, events);
 		dispatch('openProjectGroup', { codeBlock: block });

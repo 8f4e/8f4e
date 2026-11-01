@@ -54,7 +54,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	store.set('initialProjectState', project);
-	const codeBlock = state.codeBlockRendering.codeBlocks.find(block => block.name === name)!;
+	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();

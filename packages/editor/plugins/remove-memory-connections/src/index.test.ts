@@ -39,7 +39,7 @@ function setup(
 	});
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
-	const block = state.codeBlockRendering.rootCodeBlocks.find(candidate => candidate.name === 'target')!;
+	const block = state.codeBlockRendering.rootProject.blocks.find(candidate => candidate.name === 'target')!;
 
 	const openMenu = async () => {
 		events.dispatch('contextmenu', { x: block.x + 8, y: block.y + 8 });
@@ -75,7 +75,7 @@ describe('remove memory connections plugin', () => {
 
 	it('targets the clicked block through the menu and disables the action after removal', async () => {
 		const test = setup();
-		const other = test.state.codeBlockRendering.rootCodeBlocks.find(block => block !== test.block)!;
+		const other = test.state.codeBlockRendering.rootProject.blocks.find(block => block !== test.block)!;
 		test.state.codeBlockRendering.selectedCodeBlock = other;
 		const originalOtherCode = [...other.code];
 		await test.openMenu();

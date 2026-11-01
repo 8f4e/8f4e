@@ -136,6 +136,12 @@ store
 moduleEnd
 ```
 
+In the visual editor, **Open group** enters a project's nested group and **Go back** returns to its parent.
+The editor remembers each level's viewport position, including the root, and restores it when you return or reopen
+a visited group. Remembered positions take precedence over `@home`. On the first visit, it uses the group's `@home`
+block or the origin. Positions stay only in browser memory and are excluded from saved projects and session storage.
+Loading another project clears these remembered positions.
+
 ## Live Variable Editing
 
 8f4e supports real time manual modification of variable values while the program is running, without requiring recompilation. This is made possible by the deterministic allocation strategy: because memory addresses are fixed at compile time, the compiler can provide the exact address of every memory item, allowing the editor to locate and update any variable directly in memory without restarting or recompiling the program.

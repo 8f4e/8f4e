@@ -14,7 +14,7 @@ export function getProjectMemoryExposureConnectors(
 	graphicData: CodeBlockGraphicData,
 	state: State
 ): ProjectMemoryExposureConnector[] {
-	if (graphicData.nestedProjectCodeBlocks === undefined) {
+	if (graphicData.childProject === undefined) {
 		return [];
 	}
 

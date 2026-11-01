@@ -96,10 +96,14 @@ describe('example modules plugin', () => {
 		);
 		click('Target');
 		await vi.waitFor(() =>
-			expect(test.state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['env', 'target', 'dep'])
+			expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
+				'env',
+				'target',
+				'dep',
+			])
 		);
 		expect(test.state.contextMenu.open).toBe(false);
-		const [target, dep] = test.state.codeBlockRendering.codeBlocks.slice(1);
+		const [target, dep] = test.state.codeBlockRendering.currentProject.blocks.slice(1);
 		expect(target.code).not.toContain('; @public');
 		expect(target.gridX).toBe(Math.round((test.state.viewport.x + 100) / test.state.viewport.vGrid));
 		expect(dep.gridX).toBe(
@@ -112,7 +116,7 @@ describe('example modules plugin', () => {
 		const test = setup();
 		await test.addModule();
 		await test.addModule();
-		expect(test.state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual([
+		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
 			'env',
 			'target',
 			'dep',
@@ -125,7 +129,9 @@ describe('example modules plugin', () => {
 		test.events.dispatch('insertCodeBlock', { code: ['module dep', 'moduleEnd'], x: 400, y: 100 });
 		await test.addModule();
 		expect(
-			test.state.codeBlockRendering.codeBlocks.filter(block => block.name === 'dep').map(block => block.blockType)
+			test.state.codeBlockRendering.currentProject.blocks
+				.filter(block => block.name === 'dep')
+				.map(block => block.blockType)
 		).toEqual(['module', 'constants']);
 	});
 
@@ -134,7 +140,7 @@ describe('example modules plugin', () => {
 			sources: new Map([['audio/simple', async () => publicSource('module simple\n; @public\nmoduleEnd')]]),
 		});
 		await test.addModule('simple');
-		expect(test.state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['env', 'simple']);
+		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'simple']);
 	});
 
 	it('inserts a palette note and applies its colors without creating executable modules', async () => {
@@ -148,9 +154,12 @@ describe('example modules plugin', () => {
 		});
 		await test.addModule('copper');
 
-		expect(test.state.codeBlockRendering.codeBlocks.map(block => block.blockType)).toEqual(['constants', 'note']);
-		expect(test.state.codeBlockRendering.codeBlocks[1].name).toBe('copperColors');
-		expect(test.state.codeBlockRendering.codeBlocks[1].code).not.toContain('; @public');
+		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.blockType)).toEqual([
+			'constants',
+			'note',
+		]);
+		expect(test.state.codeBlockRendering.currentProject.blocks[1].name).toBe('copperColors');
+		expect(test.state.codeBlockRendering.currentProject.blocks[1].code).not.toContain('; @public');
 		expect(test.state.editorConfig.color).toMatchObject({ primary: '#e1843d' });
 	});
 
@@ -169,7 +178,11 @@ describe('example modules plugin', () => {
 			]),
 		});
 		await test.addModule();
-		expect(test.state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['env', 'target', 'dep']);
+		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
+			'env',
+			'target',
+			'dep',
+		]);
 		expect(warning).toHaveBeenCalledWith('Failed to load dependency: unavailable', expect.any(Error));
 	});
 
@@ -195,7 +208,7 @@ describe('example modules plugin', () => {
 			);
 			expect(test.state.contextMenu.items.some(item => item.payload?.menu === EXAMPLE_MODULES_MENU)).toBe(false);
 			test.events.dispatch(ADD_EXAMPLE_MODULE, { slug: 'target', x: 100, y: 112 });
-			expect(test.state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['env']);
+			expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env']);
 		}
 	);
 
@@ -209,7 +222,7 @@ describe('example modules plugin', () => {
 		test.disposePlugin();
 		finish(publicSource(mainCode));
 		await insertion;
-		expect(test.state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['env']);
+		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env']);
 	});
 
 	it('does not insert a dependency whose load finishes after disposal', async () => {
@@ -229,7 +242,7 @@ describe('example modules plugin', () => {
 		test.disposePlugin();
 		finish(publicSource(dependencyCode, 'constants'));
 		await insertion;
-		expect(test.state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['env', 'target']);
+		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'target']);
 	});
 
 	it('isolates menus, source caches, and disposal between editors', async () => {
@@ -241,6 +254,6 @@ describe('example modules plugin', () => {
 		first.disposePlugin();
 		await second.addModule();
 		expect(load).toHaveBeenCalledTimes(2);
-		expect(second.state.codeBlockRendering.codeBlocks.map(block => block.name)).toEqual(['env', 'target']);
+		expect(second.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'target']);
 	});
 });

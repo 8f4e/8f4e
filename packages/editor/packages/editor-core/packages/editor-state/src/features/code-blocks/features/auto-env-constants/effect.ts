@@ -41,7 +41,7 @@ function generateEnvConstantsBlock(state: State, position: { x: number; y: numbe
 /** Regenerate environment source using the block position established by source metadata refresh. */
 export function updateEnvConstantsBlock(store: StateManager<State>): void {
 	const state = store.getState();
-	const targetBlock = state.codeBlockRendering.codeBlocks.find(block => isEnvBlock(block));
+	const targetBlock = state.codeBlockRendering.currentProject.blocks.find(block => isEnvBlock(block));
 
 	if (!targetBlock) {
 		return;
@@ -104,7 +104,7 @@ export default function autoEnvConstants(store: StateManager<State>): void {
 	// Ensure env block exists when project is loaded
 	store.subscribe('initialProjectState', ensureEnvBlockInProject);
 
-	// Update env block code in codeBlockRendering.codeBlocks when contributed environment constants change.
+	// Update env block code in codeBlockRendering.currentProject.blocks when contributed environment constants change.
 	// This avoids the infinite loop caused by modifying initialProjectState.
 	store.subscribe('editorConfig', () => updateEnvConstantsBlock(store));
 	store.subscribe('envConstantContributions', () => updateEnvConstantsBlock(store));

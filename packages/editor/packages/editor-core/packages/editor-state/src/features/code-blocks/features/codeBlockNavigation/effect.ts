@@ -139,7 +139,7 @@ export function navigateToCodeBlockInDirection(
 	}
 
 	// Get the current viewport's code blocks
-	const codeBlocks = state.codeBlockRendering.codeBlocks;
+	const codeBlocks = state.codeBlockRendering.currentProject.blocks;
 	const currentBlock = state.codeBlockRendering.selectedCodeBlock;
 
 	// Find the closest code block in the specified direction
@@ -188,7 +188,7 @@ export function jumpToCodeBlock(
 	events: EventDispatcher
 ): boolean {
 	const state = store.getState();
-	const codeBlocks = state.codeBlockRendering.codeBlocks;
+	const codeBlocks = state.codeBlockRendering.currentProject.blocks;
 
 	const targetBlock = codeBlocks.find(block => block.creationIndex === creationIndex);
 
@@ -214,7 +214,7 @@ export function jumpToCodeBlock(
  */
 export function goHome(store: StateManager<State>, events: EventDispatcher): void {
 	const state = store.getState();
-	const homeBlock = state.codeBlockRendering.codeBlocks.find(block => block.isHome);
+	const homeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.isHome);
 
 	if (homeBlock) {
 		store.set('codeBlockRendering.selectedCodeBlock', homeBlock);

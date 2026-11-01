@@ -11,8 +11,8 @@ export function deleteCodeBlocks(
 ): boolean {
 	const rendering = store.getState().codeBlockRendering;
 	const removed = new Set(blocks);
-	const remaining = rendering.codeBlocks.filter(block => !removed.has(block));
-	if (remaining.length === rendering.codeBlocks.length) return false;
+	const remaining = rendering.currentProject.blocks.filter(block => !removed.has(block));
+	if (remaining.length === rendering.currentProject.blocks.length) return false;
 	if (rendering.selectedCodeBlock && removed.has(rendering.selectedCodeBlock)) {
 		store.set('codeBlockRendering.selectedCodeBlock', undefined);
 	}
@@ -20,8 +20,8 @@ export function deleteCodeBlocks(
 	if (rendering.selectedCodeBlockForProgrammaticEdit && removed.has(rendering.selectedCodeBlockForProgrammaticEdit)) {
 		rendering.selectedCodeBlockForProgrammaticEdit = undefined;
 	}
-	replaceCodeBlocksInPlace(rendering.codeBlocks, remaining);
-	store.set('codeBlockRendering.codeBlocks', rendering.codeBlocks);
+	replaceCodeBlocksInPlace(rendering.currentProject.blocks, remaining);
+	store.set('codeBlockRendering.currentProject.blocks', rendering.currentProject.blocks);
 	incrementCompilerInputRevision(store);
 	publishProjectChange(store);
 	return true;

@@ -15,7 +15,7 @@ export const connectorsPlugin: EditorPlugin = {
 		const outputsByByteAddress = new Map<number, Output>();
 		const rebuildOutputIndex = () => {
 			outputsByByteAddress.clear();
-			for (const block of store.getState().codeBlockRendering.codeBlocks) {
+			for (const block of store.getState().codeBlockRendering.currentProject.blocks) {
 				for (const output of widgetsByBlock.get(block)?.outputs ?? []) {
 					outputsByByteAddress.set(output.memory.byteAddress, output);
 				}

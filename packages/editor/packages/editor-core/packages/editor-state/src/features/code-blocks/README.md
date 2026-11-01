@@ -76,18 +76,23 @@ path; ordinary layout invalidations do not reparse source.
 
 ### State Touched
 
-- `state.codeBlockRendering.rootCodeBlocks` - Recursive root tree of project-owned code-block arrays
-- `state.codeBlockRendering.codeBlocks` - Direct pointer to the project slice currently rendered
+- `state.codeBlockRendering.rootProject` - Recursive root project level
+- `state.codeBlockRendering.currentProject` - Direct reference to the project level currently rendered
 - `state.codeBlockRendering.selectedCodeBlock` - Currently selected block reference
 - Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs)
 
 Project-group blocks use the same `CodeBlockGraphicData` representation as other blocks. Their optional
-`nestedProjectCodeBlocks` field points to the child project slice. Project-owned arrays keep stable identity; add,
-delete, paste, and reorder operations replace their contents in place so the root tree and rendered-slice pointer do
-not diverge. Loading a project rebuilds the recursive tree and resets `codeBlocks` to `rootCodeBlocks`.
-Project-group blocks expose an **Open group** context-menu action that points `codeBlocks` directly at their child
-slice. Nested-slice context menus expose **Go back**, which finds the immediate parent through those stable array
-references.
+`childProject` field owns a `ProjectLevel` with its canonical `path`, `blocks`, and optional remembered `viewport`.
+`rootProject` owns the recursive tree; `currentProject` refers directly to the level being rendered. Shared tree helpers
+resolve levels and parents by path, without recovering identity from block arrays.
+
+**Open group**, **Go back**, and root navigation save the departing level's position and restore the destination's
+remembered position. A remembered position always takes precedence over `@home`, including a remembered origin.
+Only first visits use the first `@home` block (including its alignment), or `(0, 0)` if none exists. Positions live only
+in browser memory: project serialization, clipboard payloads, and session storage exclude them. Same-project edits and
+undo/redo transfer remembered positions to rebuilt levels by path and preserve the active level, falling back to the
+root if that level was removed. Loading a different project creates fresh levels and positions. Switching levels stops
+active viewport animations; navigating to the current level leaves its view and selection alone.
 
 `@8f4e/editor-plugin-assertion-markers` owns assertion site aggregation, geometry, and drawing over line numbers.
 It reads `state.assertionResults` and current block layout through the generic drawer hook. Core block state

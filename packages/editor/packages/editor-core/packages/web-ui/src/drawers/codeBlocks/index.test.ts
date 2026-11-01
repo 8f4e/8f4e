@@ -38,7 +38,7 @@ describe('drawModules', () => {
 		const visible = createMockCodeBlock({ width: 96, height: 64, x: 16, y: 16 });
 		const offscreen = createMockCodeBlock({ creationIndex: 1, x: 10000 });
 		const state = createMockState({
-			codeBlockRendering: { codeBlocks: [visible, offscreen] },
+			codeBlockRendering: { currentProject: { path: '', blocks: [visible, offscreen] } },
 		});
 		const engine = createMockEngine();
 		const memoryViews = createMemoryViews();
@@ -75,7 +75,7 @@ describe('drawModules', () => {
 		const state = createMockState({
 			editorMode,
 			codeBlockRendering: {
-				codeBlocks: [selectedBlock, otherBlock],
+				currentProject: { path: '', blocks: [selectedBlock, otherBlock] },
 				selectedCodeBlock: selectedBlock,
 			},
 		});
@@ -107,7 +107,7 @@ describe('drawModules', () => {
 	it('draws resolved code cells from projected render data', () => {
 		const block = createMockCodeBlock({ creationIndex: 4, width: 100, height: 50 });
 		const state = createMockState({
-			codeBlockRendering: { codeBlocks: [block] },
+			codeBlockRendering: { currentProject: { path: '', blocks: [block] } },
 		});
 		const engine = createMockEngine();
 		const codeCells = [[1, null, 2]] as never;
@@ -126,7 +126,7 @@ describe('drawModules', () => {
 	it('draws precomputed entry outlines before rendering code blocks', () => {
 		const state = createMockState({
 			codeBlockRendering: {
-				codeBlocks: [],
+				currentProject: { path: '', blocks: [] },
 				entryOutlines: [
 					{
 						entryName: 'main',
@@ -167,7 +167,7 @@ describe('drawModules', () => {
 		});
 		const state = createMockState({
 			codeBlockRendering: {
-				codeBlocks: [offscreenBlock],
+				currentProject: { path: '', blocks: [offscreenBlock] },
 			},
 			viewport: {
 				width: 1024,

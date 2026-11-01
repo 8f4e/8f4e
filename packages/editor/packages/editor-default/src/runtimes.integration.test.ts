@@ -82,7 +82,7 @@ function setup() {
 			['8f4e/v1', ...source, 'entry main', 'module demo', 'moduleEnd', 'entryEnd'].join('\n')
 		),
 	});
-	const block = state.codeBlockRendering.codeBlocks.find(block => block.blockType === 'note')!;
+	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'note')!;
 	const edit = (from: string, to: string) =>
 		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: block.code.map(line => line.replace(from, to)) }], {
 			affectsCompilation: true,

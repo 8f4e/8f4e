@@ -12,6 +12,7 @@ import type {
 	CodeBlockType,
 	MemoryIdentifier,
 	ParsedDirectiveRecord,
+	ProjectLevel,
 	TypedValueKind,
 } from './features/code-blocks/types';
 import type { InsertTextEvent, MoveCaretEvent, NavigateCodeBlockEvent } from './features/code-editing/types';
@@ -80,6 +81,7 @@ export type {
 	NavigateCodeBlockEvent,
 	ParsedDirectiveRecord,
 	Position,
+	ProjectLevel,
 	ProjectViewport,
 	ResolvedGlobalEditorDirectives,
 	Size,

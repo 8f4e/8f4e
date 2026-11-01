@@ -191,7 +191,7 @@ describe('grouping plugin', () => {
 
 	it('deletes the whole group in place and clears references to deleted blocks', () => {
 		const test = setup();
-		const blocks = test.state.codeBlockRendering.codeBlocks;
+		const blocks = test.state.codeBlockRendering.currentProject.blocks;
 		const first = test.block('first');
 		test.state.codeBlockRendering.selectedCodeBlock = first;
 		test.state.codeBlockRendering.draggedCodeBlock = test.block('second');
@@ -199,7 +199,7 @@ describe('grouping plugin', () => {
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;
 		test.events.dispatch('deleteGroup', { codeBlock: first });
-		expect(test.state.codeBlockRendering.codeBlocks).toBe(blocks);
+		expect(test.state.codeBlockRendering.currentProject.blocks).toBe(blocks);
 		expect(blocks.some(block => ['first', 'second'].includes(block.name))).toBe(false);
 		expect(test.block('other')).toBeDefined();
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();

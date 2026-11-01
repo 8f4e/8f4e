@@ -36,7 +36,7 @@ async function setup(source: string) {
 		canvas.remove();
 	});
 	await vi.waitFor(() =>
-		expect(editor.state.codeBlockRendering.codeBlocks.some(block => block.name === 'checks')).toBe(true)
+		expect(editor.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'checks')).toBe(true)
 	);
 	editor.pauseRendering();
 	const compiled = await compileProject(serializeToProject(editor.state), {
