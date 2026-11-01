@@ -5,7 +5,22 @@
       "{projectRoot}/**/*",
       "sharedGlobals"
     ],
-    "sharedGlobals": []
+    "sharedGlobals": [],
+    "production": [
+      "default",
+      "!{projectRoot}/**/*.{test,spec}.{ts,tsx,js,jsx,mjs,cjs}",
+      "!{projectRoot}/**/__tests__/**/*",
+      "!{projectRoot}/**/__snapshots__/**/*",
+      "!{projectRoot}/tests/**/*",
+      "!{projectRoot}/screenshot-tests/**/*",
+      "!{projectRoot}/browser-tests/**/*",
+      "!{projectRoot}/src/fixtures/**/*",
+      "!{projectRoot}/**/vitest*.config.*",
+      "!{projectRoot}/**/playwright.config.*",
+      "!{projectRoot}/tsconfig.test.json",
+      "!{projectRoot}/**/__screenshots__/**/*",
+      "!{projectRoot}/jest.image.ts"
+    ]
   },
   "targetDefaults": {
     "build": {
@@ -13,8 +28,8 @@
         "^build"
       ],
       "inputs": [
-        "default",
-        "^default"
+        "production",
+        "^production"
       ],
       "cache": true
     },
@@ -24,7 +39,7 @@
     "test": {
       "inputs": [
         "default",
-        "^default"
+        "^production"
       ],
       "cache": true
     },
@@ -34,7 +49,7 @@
       ],
       "inputs": [
         "default",
-        "^default"
+        "^production"
       ],
       "cache": true
     },
@@ -44,6 +59,48 @@
         "^default"
       ],
       "cache": true
+    },
+    "test:browser": {
+      "inputs": [
+        "default",
+        "^production"
+      ]
+    },
+    "test:screenshot": {
+      "inputs": [
+        "default",
+        "^production"
+      ]
+    },
+    "test:screenshot:update": {
+      "inputs": [
+        "default",
+        "^production"
+      ]
+    },
+    "test:screenshot:ui": {
+      "inputs": [
+        "default",
+        "^production"
+      ]
+    },
+    "test:screenshot:headed": {
+      "inputs": [
+        "default",
+        "^production"
+      ]
+    },
+    "test:screenshot:debug": {
+      "inputs": [
+        "default",
+        "^production"
+      ]
+    },
+    "build-deps": {
+      "inputs": [
+        "production",
+        "^production"
+      ]
     }
   },
   "generators": {

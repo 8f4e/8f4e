@@ -7,5 +7,5 @@
 		"strictNullChecks": true
 	},
 	"include": ["src/**/*.ts"],
-	"exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/syntax-highlighting/testUtils.ts"]
+	"exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/**/__tests__/**"]
 }

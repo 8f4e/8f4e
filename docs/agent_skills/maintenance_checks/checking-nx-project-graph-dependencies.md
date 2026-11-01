@@ -103,7 +103,15 @@ Nx uses the project graph to decide task ordering, affected projects, and cache 
 
    Remove an implicit dependency only when Nx already detects the same edge from a real source import. Keep manual edges for worker query imports, generated artifacts, scripts, or other relationships Nx cannot infer.
 
-6. Verify after changes.
+6. Check production versus test inputs.
+
+   ```sh
+   npx nx run @8f4e/release:audit-build-inputs --output-style=static -- --inventory
+   ```
+
+   A dev dependency still creates an Nx graph edge. Prefer local sample fixtures when the dependency only supplies test data. Keep real implementation dependencies and affected-test coverage; do not remove edges solely because their imports live in tests. See `docs/build-input-audit.md` for shipped-asset exceptions and package-boundary follow-ups.
+
+7. Verify after changes.
 
    ```sh
    npm install

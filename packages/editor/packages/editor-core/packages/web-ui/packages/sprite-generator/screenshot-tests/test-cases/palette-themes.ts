@@ -1,19 +1,21 @@
 import type { PaletteConfig } from '@8f4e/editor-palette';
 import { PALETTE_INDICES, type PaletteIndex, resolvePalette, SHADES, toPaletteBytes } from '@8f4e/editor-palette';
-import cga from '@8f4e/examples/modules/color-schemes/cgaColors.8f4em?raw';
-import dx7 from '@8f4e/examples/modules/color-schemes/dx7.8f4em?raw';
-import temple from '@8f4e/examples/modules/color-schemes/templeOs.8f4em?raw';
-import aftertouch from '@8f4e/examples/projects/audio/amigaMods/aftertouch.8f4e?raw';
-import aurora from '@8f4e/examples/projects/audio/amigaMods/hymn_to_aurora.8f4e?raw';
-import translucent from '@8f4e/examples/projects/audio/amigaMods/lowerIntentions.8f4e?raw';
-import sampler from '@8f4e/examples/projects/audio/samplePlayer.8f4e?raw';
-import classifier from '@8f4e/examples/projects/machine-learning/digitClassifier.8f4e?raw';
-import blue from '@8f4e/examples/projects/misc/landingPageDemo1.8f4e?raw';
-import green from '@8f4e/examples/projects/misc/landingPageDemo2.8f4e?raw';
-import purple from '@8f4e/examples/projects/misc/landingPageDemo3.8f4e?raw';
-import amber from '@8f4e/examples/projects/misc/landingPageDemo4.8f4e?raw';
 import loadFontAtlas, { FILL_SPRITE_ID, getGlyphSpriteId } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
+import {
+	aftertouch,
+	amber,
+	aurora,
+	blue,
+	cga,
+	classifier,
+	dx7,
+	green,
+	purple,
+	sampler,
+	temple,
+	translucent,
+} from '../../tests/fixtures/palettes';
 
 function paletteFromSource(source: string): PaletteConfig {
 	return Object.fromEntries(

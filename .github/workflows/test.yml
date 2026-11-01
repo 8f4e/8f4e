@@ -37,6 +37,9 @@ jobs:
       - name: Build config package
         run: npx nx run @8f4e/config:build
 
+      - name: Audit production build inputs
+        run: npx nx run @8f4e/release:audit-build-inputs
+
       - name: Set Nx affected SHAs
         run: |
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then

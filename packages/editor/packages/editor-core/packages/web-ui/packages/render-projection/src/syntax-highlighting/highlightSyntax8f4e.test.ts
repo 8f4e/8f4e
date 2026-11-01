@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { syntaxFonts } from './__tests__/testUtils';
 import highlightSyntax8f4e from './highlightSyntax8f4e';
-import { syntaxFonts } from './testUtils';
 
 describe('highlightSyntax8f4e', () => {
 	it('highlights instructions, binary literals, comments, and editor directives', () => {

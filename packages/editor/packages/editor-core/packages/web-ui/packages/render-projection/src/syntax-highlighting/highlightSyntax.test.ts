@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { syntaxFonts } from './__tests__/testUtils';
 import highlightSyntax from './highlightSyntax';
-import { syntaxFonts } from './testUtils';
 
 describe('highlightSyntax', () => {
 	it('treats typed note content as ordinary note text', () => {

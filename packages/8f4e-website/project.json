@@ -48,7 +48,7 @@
 				"command": "vite build",
 				"cwd": "{projectRoot}"
 			},
-			"dependsOn": ["typecheck", "^build"]
+			"dependsOn": ["typecheck:production", "^build"]
 		},
 		"serve": {
 			"executor": "nx:run-commands",
@@ -66,6 +66,16 @@
 			},
 			"dependsOn": ["^build"]
 		},
+		"typecheck:production": {
+			"executor": "nx:run-commands",
+			"dependsOn": ["^build"],
+			"inputs": ["production", "^production"],
+			"cache": true,
+			"options": {
+				"command": "tsc --noEmit --project tsconfig.production.json",
+				"cwd": "{projectRoot}"
+			}
+		},
 		"kill-dev": {
 			"executor": "nx:run-commands",
 			"options": {
@@ -73,6 +83,13 @@
 				"cwd": "{workspaceRoot}"
 			}
 		}
+	},
+	"namedInputs": {
+		"default": [
+			"{projectRoot}/**/*",
+			"sharedGlobals",
+			"{workspaceRoot}/packages/compiler/tests/**/*.test.8f4e"
+		]
 	},
 	"tags": ["type:application", "scope:website"]
 }
