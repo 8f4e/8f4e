@@ -30,6 +30,13 @@ export type NoSourceArgumentInstructionName = {
 		: never;
 }[CodegenInstructionSpecName];
 
+/** Binary instructions that accept an optional push-style source operand. */
+export type InlineOperandInstructionName = {
+	[TInstruction in InstructionSpecName]: (typeof instructionSpecs)[TInstruction] extends { inlineOperand: true }
+		? TInstruction
+		: never;
+}[InstructionSpecName];
+
 /** Extracts memory-effect metadata from an instruction spec when present. */
 type MemoryOperationForSpec<TSpec> = TSpec extends { effects: { memory: infer TMemory } } ? TMemory : never;
 

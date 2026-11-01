@@ -1,5 +1,6 @@
 import {
 	ArgumentType,
+	type CodegenPushLine,
 	ErrorCode,
 	getError,
 	type LocalValueMetadata,
@@ -9,7 +10,6 @@ import {
 	type ResolvedLocalPushLine,
 	type ResolvedMemoryPointerPushLine,
 	type ResolvedMemoryPushLine,
-	type SemanticPushLine,
 } from '@8f4e/language-spec';
 import { getResolvedMemoryDeclaration } from '@8f4e/semantic-utils';
 import type { ReferenceResolutionContext } from '../context';
@@ -61,7 +61,7 @@ function throwIfPointeeCountIsUnknown(line: PushLine, context: ReferenceResoluti
  * @param context - Compilation context used by the operation.
  * @returns Push line with resolved target metadata where needed.
  */
-export default function resolvePushReferences(line: PushLine, context: ReferenceResolutionContext): SemanticPushLine {
+export default function resolvePushReferences(line: PushLine, context: ReferenceResolutionContext): CodegenPushLine {
 	throwIfPointeeCountIsUnknown(line, context);
 
 	const argument = line.arguments[0];
@@ -122,5 +122,5 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 		throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: value });
 	}
 
-	return line as SemanticPushLine;
+	return { ...line, arguments: [argument] };
 }

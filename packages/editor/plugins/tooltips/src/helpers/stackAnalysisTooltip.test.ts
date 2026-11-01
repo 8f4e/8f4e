@@ -4,6 +4,24 @@ import { describe, expect, it } from 'vitest';
 import { getStackAnalysisTooltipContent, getStackAnalysisTooltipText } from './stackAnalysisTooltip';
 
 describe('stack analysis tooltip text', () => {
+	it('keeps unrelated stack values unmarked when an operand is inline', () => {
+		const untouched = { kind: 'value', valueType: 'int', knownValue: 99 } as const;
+		const left = { kind: 'value', valueType: 'int', knownValue: 1 } as const;
+		const result = { kind: 'value', valueType: 'int', knownValue: 3 } as const;
+		expect(
+			getStackAnalysisTooltipText({
+				lineNumber: 3,
+				instruction: 'add',
+				stackAnalysis: {
+					stackBefore: [untouched, left],
+					consumedOperands: [left],
+					producedStackItems: [result],
+					stackAfter: [untouched, result],
+				},
+			})
+		).toEqual(['before [int=99, -int=1]', 'after: [int=99, +int=3]']);
+	});
+
 	it('formats selected line stack analysis', () => {
 		const stackAnalysisLine: CompiledStackAnalysisLine = {
 			lineNumber: 2,

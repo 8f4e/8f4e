@@ -18,9 +18,16 @@ import { ArgumentType, BlockType, ErrorCode, functionValueTypeToLocalMetadata, g
 import type {
 	FunctionSemanticReferences,
 	ModuleSemanticReferences,
+	ResolvedOperation,
 	SemanticReferenceReport,
 } from '@8f4e/semantic-reference-resolver';
-import { createCompilationContext, popBlock, pushBlock, resolveMapKind } from '@8f4e/semantic-utils';
+import {
+	createCompilationContext,
+	popBlock,
+	pushBlock,
+	resolveMapKind,
+	withSourceDiagnostic,
+} from '@8f4e/semantic-utils';
 import { analyzeInstruction } from './analyzeInstruction';
 import { cloneStack } from './instructionAnalyzers/stack';
 import { validateMapValueKind } from './mapValueKind';
@@ -34,14 +41,14 @@ export interface AnalyzeStackSubProgramInput {
 }
 
 export interface StackAnalyzedModule {
-	lineFacts: Array<StackAnalysisLineFacts | undefined>;
+	operationFacts: StackAnalysisLineFacts[];
 	stackAnalysis: CompiledStackAnalysisLine[];
 	finalStack: Stack;
 }
 
 export interface StackAnalyzedFunction {
 	functionId: string;
-	lineFacts: Array<StackAnalysisLineFacts | undefined>;
+	operationFacts: StackAnalysisLineFacts[];
 	stackAnalysis: CompiledStackAnalysisLine[];
 	finalStack: Stack;
 	used?: boolean;
@@ -185,6 +192,43 @@ function analyzeSemanticReferenceLine(
 	return facts;
 }
 
+/** Analyzes each executable operation independently and groups the public view by source line. */
+function analyzeBodyOperations(
+	sourceLines: readonly CompilerASTLine[],
+	body: readonly ResolvedOperation[],
+	context: CompilationContext
+): { operationFacts: StackAnalysisLineFacts[]; stackAnalysis: CompiledStackAnalysisLine[] } {
+	const operationFacts: StackAnalysisLineFacts[] = [];
+	const stackAnalysis: CompiledStackAnalysisLine[] = [];
+	let previousSourceLineIndex = -1;
+	let untouchedSourceValues = 0;
+	for (const { sourceLineIndex, line } of body) {
+		const facts = withSourceDiagnostic(sourceLines[sourceLineIndex], () => analyzeSemanticReferenceLine(line, context));
+		operationFacts.push(facts);
+		const operation = facts.stackAnalysis;
+		const preservedInputCount = Math.max(
+			0,
+			operation.stackBefore.length -
+				Math.max(operation.consumedOperands.length, operation.droppedStackItems?.length ?? 0)
+		);
+		if (sourceLineIndex !== previousSourceLineIndex) {
+			stackAnalysis.push(toCompiledStackAnalysisLine(sourceLines[sourceLineIndex], facts));
+			previousSourceLineIndex = sourceLineIndex;
+			untouchedSourceValues = preservedInputCount;
+			continue;
+		}
+		untouchedSourceValues = Math.min(untouchedSourceValues, preservedInputCount);
+		const source = stackAnalysis[stackAnalysis.length - 1];
+		source.stackAnalysis = {
+			stackBefore: source.stackAnalysis.stackBefore,
+			stackAfter: operation.stackAfter,
+			consumedOperands: source.stackAnalysis.stackBefore.slice(untouchedSourceValues),
+			producedStackItems: operation.stackAfter.slice(untouchedSourceValues),
+		};
+	}
+	return { operationFacts, stackAnalysis };
+}
+
 function createModuleContext(
 	input: AnalyzeStackSubProgramInput,
 	resolved: ModuleSemanticReferences
@@ -218,16 +262,10 @@ function createModuleContext(
 function analyzeModule(input: AnalyzeStackSubProgramInput, resolved: ModuleSemanticReferences): StackAnalyzedModule {
 	const { ast, body } = resolved;
 	const context = createModuleContext(input, resolved);
-	const lineFacts: Array<StackAnalysisLineFacts | undefined> = Array(ast.lines.length).fill(undefined);
-	const stackAnalysis: CompiledStackAnalysisLine[] = [];
-	for (const { sourceLineIndex, line } of body) {
-		const facts = analyzeSemanticReferenceLine(line, context);
-		lineFacts[sourceLineIndex] = facts;
-		stackAnalysis.push(toCompiledStackAnalysisLine(line, facts));
-	}
+	const { operationFacts, stackAnalysis } = analyzeBodyOperations(ast.lines, body, context);
 	if (context.stack.length > 0)
 		throw getError(ErrorCode.STACK_EXPECTED_ZERO_ELEMENTS, ast.lines[ast.lines.length - 1], context);
-	return { lineFacts, stackAnalysis, finalStack: cloneStack(context.stack) };
+	return { operationFacts, stackAnalysis, finalStack: cloneStack(context.stack) };
 }
 
 function createFunctionContext(
@@ -268,19 +306,12 @@ function analyzeFunction(
 ): StackAnalyzedFunction {
 	const { ast, metadata, body } = resolved;
 	const context = createFunctionContext(input, resolved);
-	const lineFacts: Array<StackAnalysisLineFacts | undefined> = Array(ast.lines.length).fill(undefined);
-	const stackAnalysis: CompiledStackAnalysisLine[] = [];
-	for (const { sourceLineIndex, line } of body) {
-		const facts = analyzeSemanticReferenceLine(line, context);
-		lineFacts[sourceLineIndex] = facts;
-		stackAnalysis.push(toCompiledStackAnalysisLine(line, facts));
-	}
+	const { operationFacts, stackAnalysis } = analyzeBodyOperations(ast.lines, body, context);
 	if (!metadata.import) {
 		const facts = analyzeInstruction(ast.functionEndLine, context);
-		lineFacts[ast.lines.indexOf(ast.functionEndLine)] = facts;
 		stackAnalysis.push(toCompiledStackAnalysisLine(ast.functionEndLine, facts));
 	}
-	return { functionId: metadata.id, lineFacts, stackAnalysis, finalStack: cloneStack(context.stack) };
+	return { functionId: metadata.id, operationFacts, stackAnalysis, finalStack: cloneStack(context.stack) };
 }
 
 export function analyzeStack(input: AnalyzeStackSubProgramInput): StackAnalysisSubProgramReport {
@@ -298,14 +329,14 @@ export function analyzeStack(input: AnalyzeStackSubProgramInput): StackAnalysisS
 		if (input.semanticReferences.functions[functionReport.functionId].metadata.exportName) {
 			usedFunctionIdSet.add(functionReport.functionId);
 		}
-		for (const facts of functionReport.lineFacts) {
+		for (const facts of functionReport.operationFacts) {
 			if (facts?.targetFunctionId) {
 				usedFunctionIdSet.add(facts.targetFunctionId);
 			}
 		}
 	}
 	for (const moduleReport of Object.values(modules)) {
-		for (const facts of moduleReport.lineFacts) {
+		for (const facts of moduleReport.operationFacts) {
 			if (facts?.targetFunctionId) {
 				usedFunctionIdSet.add(facts.targetFunctionId);
 			}

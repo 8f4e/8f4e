@@ -12,8 +12,10 @@ Add an `includes` block near the top of the project, after the `8f4e/v1` header 
 
 includes
 include std/math/clamp
+include std/math/exp2
 include std/math/fract
 include std/math/lerp
+include std/math/moveTowards
 include std/math/normalize
 include std/math/pow2
 include std/math/smoothstep
@@ -518,6 +520,36 @@ moduleEnd
 entryEnd
 ```
 
+## `std/math/moveTowards`
+
+Provides `moveTowards`, which moves a float value toward a target by at most a given step without overshooting.
+
+Available overloads:
+
+- `moveTowards(float current, float target, float maxStep) -> float`
+
+The function returns the next value and leaves state management to the caller. A zero or negative `maxStep` returns
+`current` unchanged. The step is a distance per call, so callers can supply a per-sample increment for ramps or slews.
+
+Examples:
+
+```8f4e
+includes
+include std/math/moveTowards
+includesEnd
+
+entry test
+module moveTowardsExamples
+float value 0.0
+
+push &value
+call moveTowards value 1.0 0.25
+store
+; value: 0.25
+moduleEnd
+entryEnd
+```
+
 ## `std/math/normalize`
 
 Provides `normalize`, which loads an integer value through a typed pointer and maps it to a float audio/control range
@@ -551,6 +583,33 @@ call normalize
 moduleEnd
 entryEnd
 ```
+
+## `std/math/exp2`
+
+Provides `exp2(float x) -> float`, a 32-bit float approximation of `2^x` for finite inputs.
+Inputs are clamped to `[-24.0, 6.0]`, so values outside that range return `2^-24` or `64.0` respectively.
+This helper uses range reduction and a sixth-order polynomial, followed by integer power reconstruction.
+It is independent of any synthesizer or envelope implementation.
+
+A sweep of 122,881 evenly spaced float inputs (step `1/4096`) across the supported range measured a maximum relative
+error of approximately `2.16e-7` against `2^x`. The numerical regression test allows `3e-7` on that grid; this is a
+measured approximation error rather than a correctly rounded result for every float input.
+
+```8f4e
+includes
+include std/math/exp2
+includesEnd
+
+entry test
+module exp2Example
+push -1.0
+call exp2
+; stack: 0.5
+moduleEnd
+entryEnd
+```
+
+Unlike `exp2`, `std/math/pow2` takes an integer exponent and returns an integer.
 
 ## `std/math/pow2`
 
@@ -605,13 +664,17 @@ entryEnd
 
 ## `std/math/trig/advancePhase`
 
-Provides `advancePhase`, which advances a mutable float phase by one sample and wraps it from `PI` back to `-PI`.
+Provides `advancePhase`, which advances a mutable float phase by one sample and preserves overshoot when wrapping across
+`PI`.
 
 Available overloads:
 
 - `advancePhase(float* phase, float frequency, int sampleRate) -> float`
 
-The phase increment is `TAU * frequency / sampleRate`, where `TAU` is derived from the built-in `[-PI, PI]` phase range. The `sampleRate` argument is cast to float inside the helper. The updated phase is stored through the `phase` pointer and returned on the stack.
+The phase increment is `TAU * frequency / sampleRate`, where `TAU` is a full cycle in radians. When the advanced phase
+exceeds `PI`, the helper subtracts one `TAU`, preserving the fractional cycle and the oscillator's tuning. It performs one
+wrap per call. The `sampleRate` argument is cast to float inside the helper. The updated phase is stored through the
+`phase` pointer and returned on the stack.
 
 Examples:
 

@@ -1,6 +1,5 @@
 import {
 	ArgumentType,
-	type CompilerASTLine,
 	getInstructionSpec,
 	type InstructionSpec,
 	memoryDeclarationInstructions,
@@ -53,7 +52,11 @@ export function getMemoryDeclarationIdFromSourceLine(line: string | undefined): 
 /**
  * Builds the synthetic line data needed by variadic stack signature formatters.
  */
-function getStackSignatureLineFromSourceLine(line: string, instruction: string): CompilerASTLine | undefined {
+function getStackSignatureLineFromSourceLine(line: string, instruction: string): unknown {
+	const spec = getInstructionSpec(instruction);
+	if (spec?.inlineOperand) {
+		return { arguments: line.split(';')[0].trim().split(/\s+/).slice(1) };
+	}
 	if (instruction !== 'storeBytes') {
 		return undefined;
 	}

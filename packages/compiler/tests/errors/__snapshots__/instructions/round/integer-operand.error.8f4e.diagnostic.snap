@@ -1,0 +1,14 @@
+{
+  "code": 3,
+  "context": {
+    "codeBlockId": "integerRoundOperand",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [],
+    "instruction": "round",
+    "lineNumber": 2,
+  },
+  "message": "The operation only accepts float values as operands. (3)",
+}

@@ -1,0 +1,10 @@
+8f4e/v1
+
+entry main
+module invalid
+int value 1
+int* pointer &value
+push 1
+add **pointer
+moduleEnd
+entryEnd

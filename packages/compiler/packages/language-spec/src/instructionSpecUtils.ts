@@ -54,7 +54,19 @@ export function withDocsAndStack<TSpec extends Partial<InstructionSpec>>(
 	return {
 		...spec,
 		docs: { shortDescription },
-		stack: { inputs, outputs, ...(effect ? { effect } : {}) },
+		stack: {
+			inputs,
+			outputs,
+			...(effect ? { effect } : {}),
+			...('inlineOperand' in spec && spec.inlineOperand
+				? {
+						resolve: (line: { arguments: readonly unknown[] }) => ({
+							inputs: line.arguments.length ? inputs.slice(0, -1) : inputs,
+							outputs,
+						}),
+					}
+				: {}),
+		},
 	};
 }
 

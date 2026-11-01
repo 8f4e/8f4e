@@ -15,6 +15,10 @@ describe('tooltip source line helpers', () => {
 
 	it('generates stack signatures from instruction specs', () => {
 		expect(getStackSignatureFromSourceLine('add')).toBe('add (T T -- T)');
+		expect(getStackSignatureFromSourceLine('add 3')).toBe('add (T -- T)');
+		expect(getStackSignatureFromSourceLine('mul *gain')).toBe('mul (T -- T)');
+		expect(getStackSignatureFromSourceLine('shiftRight 6')).toBe('shiftRight (int -- int)');
+		expect(getStackSignatureFromSourceLine('add ; comment')).toBe('add (T T -- T)');
 		expect(getStackSignatureFromSourceLine('drop')).toBe('drop (T -- )');
 		expect(getStackSignatureFromSourceLine('branchIfTrue 1')).toBe('branchIfTrue (int -- )');
 		expect(getStackSignatureFromSourceLine('load')).toBe('load (ptr -- int)');

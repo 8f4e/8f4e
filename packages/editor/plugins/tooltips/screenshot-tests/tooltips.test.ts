@@ -9,9 +9,10 @@ import { createEvents } from '../src/__tests__/events';
 import { tooltipsPlugin } from '../src/index';
 
 test.each([
-	{ name: 'instruction stack analysis', row: 4 },
-	{ name: 'live memory values', row: 1 },
-])('tooltips plugin draws $name', async ({ row }) => {
+	{ name: 'instruction stack analysis', row: 4, inline: false },
+	{ name: 'live memory values', row: 1, inline: false },
+	{ name: 'inline arithmetic operand', row: 3, inline: true },
+])('tooltips plugin draws $name', async ({ row, inline }) => {
 	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
@@ -23,8 +24,7 @@ entry main
 module controls
 int value 42
 push 1
-push 2
-add
+${inline ? 'add 2' : 'push 2\nadd'}
 drop
 moduleEnd
 entryEnd`);
