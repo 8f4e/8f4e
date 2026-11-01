@@ -26,6 +26,7 @@ function compile(fixture: ProjectFixture, options: CompileOptions) {
 		code: source.code,
 	});
 	const project: ProjectObjectModel = {
+		entries: Object.keys(fixture.entries),
 		code: [],
 		execution: [
 			...Object.entries(fixture.entries).flatMap(([entry, modules]) =>

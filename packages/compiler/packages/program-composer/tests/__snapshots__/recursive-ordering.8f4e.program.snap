@@ -76,7 +76,7 @@
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 8,
+        "projectBlockId": 9,
         "sourceIdentity": {
           "codeBlockId": "child",
           "projectGroupPath": "child",
@@ -116,7 +116,7 @@
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 12,
+        "projectBlockId": 14,
         "sourceIdentity": {
           "codeBlockId": "descendant",
           "projectGroupPath": "child/descendant",
@@ -137,13 +137,48 @@
       "misses": 3,
     },
   },
-  "entryNames": [
-    "main",
+  "entries": [
+    {
+      "exportName": "main",
+      "id": "main",
+      "steps": [
+        {
+          "id": "root",
+          "type": "module",
+        },
+        {
+          "id": "child/main",
+          "type": "entry",
+        },
+      ],
+    },
+    {
+      "id": "child/main",
+      "steps": [
+        {
+          "id": "child/child",
+          "type": "module",
+        },
+        {
+          "id": "child/descendant/main",
+          "type": "entry",
+        },
+      ],
+    },
+    {
+      "id": "child/descendant/main",
+      "steps": [
+        {
+          "id": "child/descendant/descendant",
+          "type": "module",
+        },
+      ],
+    },
   ],
   "memoryExposures": [],
   "moduleEntryNames": [
     "main",
-    "main",
-    "main",
+    "child/main",
+    "child/descendant/main",
   ],
 }

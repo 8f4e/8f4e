@@ -51,13 +51,17 @@ describe('public editor editing handle', () => {
 			...structuredClone(EMPTY_DEFAULT_PROJECT),
 			execution: [
 				{
+					entry: 'main',
+
 					...structuredClone(EMPTY_DEFAULT_PROJECT),
 					type: 'group',
 					id: 0,
 					name: 'synth',
-					entry: 'main',
+
 					exposures: [],
 					code: ['group synth', 'groupEnd'],
+
+					entries: ['main'],
 				},
 			],
 		});
@@ -78,27 +82,35 @@ describe('public editor editing handle', () => {
 			execution: [
 				module(1, 'rootA'),
 				{
+					entry: 'main',
+
 					...structuredClone(EMPTY_DEFAULT_PROJECT),
 					type: 'group',
 					id: 2,
 					name: 'synth',
-					entry: 'main',
+
 					exposures: [],
 					code: ['group synth', 'groupEnd'],
 					execution: [
 						module(3, 'voiceA'),
 						{
+							entry: 'main',
+
 							...structuredClone(EMPTY_DEFAULT_PROJECT),
 							type: 'group',
 							id: 4,
 							name: 'oscillator',
-							entry: 'main',
+
 							exposures: [],
 							code: ['group oscillator', 'groupEnd'],
 							execution: [module(5, 'tick')],
+
+							entries: ['main'],
 						},
 						module(6, 'voiceB'),
 					],
+
+					entries: ['main'],
 				},
 				module(7, 'rootB'),
 			],
@@ -119,6 +131,47 @@ describe('public editor editing handle', () => {
 		expect(serializeToProject(state)).toEqual(edited);
 		events.dispatch('loadProject', { project: edited });
 		expect(serializeToProject(state)).toEqual(edited);
+	});
+
+	it('preserves empty root and local entries through edits and history without adding group main', () => {
+		const project: ProjectObjectModel = {
+			...structuredClone(EMPTY_DEFAULT_PROJECT),
+			entries: ['main', 'rootEmpty'],
+			execution: [
+				{
+					...structuredClone(EMPTY_DEFAULT_PROJECT),
+					type: 'group',
+					id: 1,
+					name: 'worker',
+					entry: 'main',
+					code: ['group worker', 'groupEnd'],
+					exposures: [],
+					entries: ['foo', 'bar'],
+					execution: [{ type: 'module', id: 2, entry: 'foo', code: ['module work', 'moduleEnd'] }],
+				},
+			],
+		};
+		const { state, events, editing } = setup(project);
+		const group = state.codeBlockRendering.rootCodeBlocks.find(block => block.name === 'worker')!;
+		const work = group.nestedProjectCodeBlocks![0];
+		const check = () => {
+			const saved = serializeToProject(state);
+			expect(saved.entries).toEqual(['main', 'rootEmpty']);
+			expect(saved.execution[0]).toMatchObject({ entries: ['foo', 'bar'], execution: [{ entry: 'foo' }] });
+			return saved;
+		};
+		check();
+		editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [{ type: 'update', blockId: getEditorBlockId(work), code: ['module renamed', 'moduleEnd'] }],
+		});
+		check();
+		editing.undo({ expectedRevision: editing.getRevision() });
+		check();
+		editing.redo({ expectedRevision: editing.getRevision() });
+		const saved = check();
+		events.dispatch('loadProject', { project: saved });
+		check();
 	});
 
 	it('uses state reads and one undo step for a coordinated edit batch', () => {
@@ -278,14 +331,18 @@ describe('public editor editing handle', () => {
 		project.execution = [
 			{ type: 'module', id: 0, entry: 'main', code: ['module outer', 'moduleEnd'] },
 			{
+				entry: 'main',
+
 				...structuredClone(EMPTY_DEFAULT_PROJECT),
 				type: 'group',
 				id: 1,
 				name: 'voice',
 				exposures: [],
-				entry: 'main',
+
 				code: ['group voice', 'groupEnd'],
 				execution: [{ type: 'module', id: 0, entry: 'main', code: ['module inner', 'moduleEnd'] }],
+
+				entries: ['main'],
 			},
 		];
 		const { editing, events, state } = setup(project);
@@ -309,22 +366,29 @@ describe('public editor editing handle', () => {
 		const child = {
 			...structuredClone(EMPTY_DEFAULT_PROJECT),
 			type: 'group' as const,
+			entry: 'main',
 			id: 2,
 			exposures: [],
 			name: 'child',
-			entry: 'main',
+
 			code: ['group child', 'groupEnd'],
+
+			entries: [],
 		};
 		project.execution = [
 			{
+				entry: 'main',
+
 				...structuredClone(EMPTY_DEFAULT_PROJECT),
 				type: 'group',
 				id: 1,
 				name: 'parent',
 				exposures: [],
-				entry: 'main',
+
 				code: ['group parent', 'groupEnd'],
 				execution: [child],
+
+				entries: ['main'],
 			},
 		];
 		const { navigation, editing, state, dispose } = setup(project);

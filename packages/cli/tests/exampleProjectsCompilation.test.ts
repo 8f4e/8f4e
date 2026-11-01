@@ -16,9 +16,12 @@ const exampleProjects = [
 	'packages/examples/src/projects/machine-learning/xorProblem.8f4e',
 ] as const;
 
-const reverbProjects = [
+const additionalProjects = [
 	'packages/examples/src/projects/audio/reverb.8f4e',
 	'packages/examples/src/projects/audio/reverbGrouped.8f4e',
+	'packages/examples/src/projects/audio/dx7EPiano.8f4e',
+	'packages/examples/src/projects/audio/dx7StgCrescendo.8f4e',
+	'packages/examples/src/projects/audio/gridsPatterns.8f4e',
 	'packages/examples/src/projects/audio/reverbTweakable.8f4e',
 ] as const;
 
@@ -51,7 +54,7 @@ describe('compileProject (example projects)', () => {
 		await expect(JSON.stringify(snapshotPayload, null, 2)).toMatchFileSnapshot(getSnapshotPath(relativePath));
 	});
 
-	it.each(reverbProjects)('compiles %s', async relativePath => {
+	it.each(additionalProjects)('compiles %s', async relativePath => {
 		const project = await loadExampleProject(relativePath);
 		const cliModule = await import(pathToFileURL(path.join(packageRoot, 'dist', 'index.js')).href);
 		const result = await cliModule.compileProject(project);

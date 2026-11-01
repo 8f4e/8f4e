@@ -6,9 +6,11 @@ int tick
 moduleEnd
 
 group audio
+entry main
 module voice
 float phase
 moduleEnd
+entryEnd
 
 function sineApprox
 param float x
@@ -19,12 +21,16 @@ constants audioConstants
 const SAMPLE_RATE 48000
 constantsEnd
 
+entry main
 group oscillator
 prototype oscillatorState
 float phase
 float frequency 440
 prototypeEnd
 
+entry main
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd

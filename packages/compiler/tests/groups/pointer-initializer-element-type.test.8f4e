@@ -15,6 +15,7 @@ group reader
 expose input &processor:input
 init &input &source:values
 
+entry main
 module processor
 int8* input
 push *input
@@ -24,5 +25,6 @@ assertEqual 4
 push sizeof(*input)
 assertEqual 1
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

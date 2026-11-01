@@ -50,6 +50,7 @@ export function createMockCodeBlock(
 	};
 
 	const defaults: CodeBlockGraphicData = {
+		projectEntries: overrides.nestedProjectCodeBlocks === undefined ? undefined : [],
 		x,
 		y,
 		gridX,
@@ -130,6 +131,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		callbacks: {},
 		codeBlockRendering: {
 			rootCodeBlocks,
+			rootProjectEntries: [],
 			codeBlocks: rootCodeBlocks,
 			entryOutlines: [],
 			viewportAnchoredCodeBlocks: [],

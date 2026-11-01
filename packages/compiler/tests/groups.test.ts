@@ -14,18 +14,22 @@ entry main
 module rootA
 moduleEnd
 group synth
+entry main
 module voiceA
 moduleEnd
 module voiceB
 moduleEnd
+entryEnd
 groupEnd
 module rootB
 moduleEnd
 entryEnd
 entry alternate
 group other
+entry main
 module voiceA
 moduleEnd
+entryEnd
 groupEnd
 module alternateRoot
 moduleEnd
@@ -37,10 +41,10 @@ entryEnd`);
 				.map(module => [module.id, module.executionEntryName]);
 		expect(order(first)).toEqual([
 			['rootA', 'main'],
-			['synth/voiceA', 'main'],
-			['synth/voiceB', 'main'],
+			['synth/voiceA', 'synth/main'],
+			['synth/voiceB', 'synth/main'],
 			['rootB', 'main'],
-			['other/voiceA', 'alternate'],
+			['other/voiceA', 'other/main'],
 			['alternateRoot', 'alternate'],
 		]);
 		const [rootA, synth, rootB, ...alternate] = project.execution;
@@ -49,9 +53,9 @@ entryEnd`);
 		expect(order(second)).toEqual([
 			['rootA', 'main'],
 			['rootB', 'main'],
-			['synth/voiceA', 'main'],
-			['synth/voiceB', 'main'],
-			['other/voiceA', 'alternate'],
+			['synth/voiceA', 'synth/main'],
+			['synth/voiceB', 'synth/main'],
+			['other/voiceA', 'other/main'],
 			['alternateRoot', 'alternate'],
 		]);
 		expect(second.cache.ast.stats.hits).toBeGreaterThan(0);
@@ -139,7 +143,7 @@ entryEnd`);
 		]);
 		expect(result.compiledModules['synth/voiceA']).toMatchObject({
 			ast: { projectBlockId: getProjectModules(group)[0]!.id },
-			executionEntryName: 'test',
+			executionEntryName: 'synth/main',
 		});
 		expect(result.memoryPlan.modules['synth/voiceA']).toBeDefined();
 		expect(result.memoryDefaultsByModuleId['synth/voiceA']).toBeDefined();

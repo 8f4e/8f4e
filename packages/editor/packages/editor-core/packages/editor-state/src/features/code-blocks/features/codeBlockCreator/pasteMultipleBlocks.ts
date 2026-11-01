@@ -88,6 +88,7 @@ function createPastedCodeBlock(
 	});
 
 	if (clipboardBlock.nestedProjectCodeBlocks !== undefined) {
+		codeBlock.projectEntries = [...clipboardBlock.projectEntries!];
 		const childProjectPath = createChildProjectGroupPath(projectPath, name);
 		codeBlock.nestedProjectCodeBlocks = clipboardBlock.nestedProjectCodeBlocks.map(child => {
 			const childGridX = child.gridCoordinates.x;

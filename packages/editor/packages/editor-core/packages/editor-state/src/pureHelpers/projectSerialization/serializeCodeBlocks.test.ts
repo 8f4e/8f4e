@@ -151,8 +151,10 @@ describe('convertGraphicDataToProjectStructure', () => {
 		]);
 
 		expect(getProjectGroups(result)[0]).toMatchObject({
-			name: 'Audio',
+			entries: ['main'],
 			entry: 'main',
+			name: 'Audio',
+
 			code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
 			exposures: [
 				{
@@ -163,10 +165,12 @@ describe('convertGraphicDataToProjectStructure', () => {
 			],
 			execution: [
 				{
+					entry: 'main',
+					entries: ['main'],
 					id: 0,
 					type: 'group',
 					name: 'Oscillator',
-					entry: 'main',
+
 					execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
 				},
 			],
@@ -185,10 +189,12 @@ describe('convertGraphicDataToProjectStructure', () => {
 
 		expect(getProjectGroups(result)).toEqual([
 			{
+				entry: 'main',
+				entries: [],
 				type: 'group',
 				id: 0,
 				name: 'Empty',
-				entry: 'main',
+
 				code: ['group Empty', 'groupEnd'],
 				exposures: [],
 				execution: [],

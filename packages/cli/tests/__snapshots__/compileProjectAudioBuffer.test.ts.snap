@@ -889,6 +889,9 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
       "id": 89,
     },
   ],
+  "entries": [
+    "main",
+  ],
   "execution": [
     {
       "code": [

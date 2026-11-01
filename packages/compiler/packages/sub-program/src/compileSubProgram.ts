@@ -5,6 +5,7 @@ import type {
 	CompiledModule,
 	CompileOptions,
 	CompilerCache,
+	ComposedEntry,
 	ComposedPrototypeAST,
 	FunctionMetadata,
 	FunctionMetadataLookup,
@@ -37,7 +38,7 @@ import { assertUniqueModuleIds, registerFunctions } from './semantic/buildNamesp
 interface CompiledSubProgram {
 	functionLayout: WasmFunctionLayout;
 	assertionSites?: AssertionSite[];
-	entryNames: string[];
+	entries: ComposedEntry[];
 	compiledModules: CompiledModule[];
 	compiledFunctions: CompiledFunction[];
 	functionTypeRegistry: FunctionTypeRegistry;
@@ -198,7 +199,8 @@ function wrapMemoryPlannerError(error: unknown, subProgramAst: ResolveConstantsS
  * @returns The compiled sub-program artifacts.
  */
 export function compileSubProgram(program: ComposedProgram, options: CompileOptions): CompiledSubProgram {
-	const { ast: subProgramAst, entryNames, moduleEntryNames, cache } = program;
+	const { ast: subProgramAst, entries, moduleEntryNames, cache } = program;
+	const entryNames = entries.map(entry => entry.id);
 	assertUniqueModuleIds(subProgramAst.modules);
 	let constantResolution: ReturnType<typeof resolveConstants>;
 	try {
@@ -246,7 +248,10 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	const entryFunctionMetadata = createEntryFunctionMetadata(entryNames);
 	const registration = registerFunctions(subProgramAst.functions, {
 		reservedFunctionIds: entryNames,
-		reservedExportNames: [...RESERVED_EXPORT_NAMES, ...entryNames],
+		reservedExportNames: [
+			...RESERVED_EXPORT_NAMES,
+			...entries.flatMap(entry => (entry.exportName === undefined ? [] : [entry.exportName])),
+		],
 		prototypeShapes: prototypeShapesById,
 	});
 	const functionRegistry = mergeFunctionRegistries(entryFunctionMetadata, registration.registry);
@@ -309,7 +314,7 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	return {
 		functionLayout,
 		...(assertionPlan ? { assertionSites: assertionPlan.sites } : {}),
-		entryNames,
+		entries,
 		compiledModules,
 		compiledFunctions,
 		functionTypeRegistry,

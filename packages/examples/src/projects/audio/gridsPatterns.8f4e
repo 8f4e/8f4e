@@ -94,269 +94,7 @@ push 1
 store
 ifEnd
 moduleEnd
-module kick
-; @pos 90 -2
-use env
 
-int16[] buffer
-- ASSET_KICK_SIZE/2
-int* trigger &grids:bd
-int previous
-const BYTES ASSET_KICK_SIZE
-int16* playhead &buffer+BYTES
-float out
-; @wave2 &buffer count(buffer) playhead
-
-push *trigger
-call risingEdge &previous
-if
-push &playhead
-push &buffer
-store
-ifEnd
-
-push playhead
-push &buffer+BYTES
-lessThan
-if
-push &out
-push *playhead
-castToFloat
-push min(buffer)*-1.0
-div
-store
-
-push &playhead
-push playhead
-push sizeof(buffer)
-add
-store
-ifEnd
-moduleEnd
-module kickGain
-; @pos 118 51
-; Holds normal/accented
-; gain for each hit.
-
-int* trigger &grids:bd
-int* accent
-- &grids:accentBD
-int previous
-float normal 0.6
-float accented 1.0
-float out 1.0
-
-push *trigger
-call risingEdge &previous
-if
-push &out
-push *accent
-if
-push accented
-else
-push normal
-ifEnd float
-store
-ifEnd
-moduleEnd
-module snare
-; @pos 138 -2
-use env
-
-int16[] buffer
-- ASSET_SNARE_SIZE/2
-int* trigger &grids:sd
-int previous
-const BYTES ASSET_SNARE_SIZE
-int16* playhead &buffer+BYTES
-float out
-; @wave2 &buffer count(buffer) playhead
-
-push *trigger
-call risingEdge &previous
-if
-push &playhead
-push &buffer
-store
-ifEnd
-
-push playhead
-push &buffer+BYTES
-lessThan
-if
-push &out
-push *playhead
-castToFloat
-push min(buffer)*-1.0
-div
-store
-
-push &playhead
-push playhead
-push sizeof(buffer)
-add
-store
-ifEnd
-moduleEnd
-module snareGain
-; @pos 152 51
-; Holds normal/accented
-; gain for each hit.
-
-int* trigger &grids:sd
-int* accent
-- &grids:accentSD
-int previous
-float normal 0.6
-float accented 1.0
-float out 1.0
-
-push *trigger
-call risingEdge &previous
-if
-push &out
-push *accent
-if
-push accented
-else
-push normal
-ifEnd float
-store
-ifEnd
-moduleEnd
-module hiHat
-; @pos 186 -2
-use env
-
-int16[] buffer
-- ASSET_HIHAT_SIZE/2
-int* trigger &grids:hh
-int previous
-const BYTES ASSET_HIHAT_SIZE
-int16* playhead &buffer+BYTES
-float out
-; @wave2 &buffer count(buffer) playhead
-
-push *trigger
-call risingEdge &previous
-if
-push &playhead
-push &buffer
-store
-ifEnd
-
-push playhead
-push &buffer+BYTES
-lessThan
-if
-push &out
-push *playhead
-castToFloat
-push min(buffer)*-1.0
-div
-store
-
-push &playhead
-push playhead
-push sizeof(buffer)
-add
-store
-ifEnd
-moduleEnd
-module hiHatGain
-; @pos 186 51
-; Holds normal/accented
-; gain for each hit.
-
-int* trigger &grids:hh
-int* accent
-- &grids:accentHH
-int previous
-float normal 0.6
-float accented 1.0
-float out 1.0
-
-push *trigger
-call risingEdge &previous
-if
-push &out
-push *accent
-if
-push accented
-else
-push normal
-ifEnd float
-store
-ifEnd
-moduleEnd
-module mixer
-; @pos 276 1
-
-float* bd &kick:out
-float* sd &snare:out
-float* hh &hiHat:out
-float* hitGainBD &kickGain:out
-float* hitGainSD &snareGain:out
-float* hitGainHH &hiHatGain:out
-
-float gainBD 0.6
-; @slider &gainBD 0 1 0.01
-float gainSD 0.5
-; @slider &gainSD 0 1 0.01
-float gainHH 0.3
-; @slider &gainHH 0 1 0.01
-float out
-
-push &out
-push *bd
-push *hitGainBD
-mul
-push gainBD
-mul
-push *sd
-push *hitGainSD
-mul
-push gainSD
-mul
-add
-push *hh
-push *hitGainHH
-mul
-push gainHH
-mul
-add
-push -1.0
-max
-push 1.0
-min
-store
-moduleEnd
-module audioout
-; @pos 318 9
-use env
-
-float* in &mixer:out
-float[] buffer AUDIO_BUFFER_SIZE
-int position
-
-; @plot &buffer count(buffer)
-
-push &buffer
-push position
-push sizeof(buffer)
-mul
-add
-push *in
-store
-
-push &position
-push position
-push 1
-add
-push count(buffer)
-remainder
-store
-moduleEnd
 group grids
 ; @pos 33 -2
 ; @home
@@ -649,12 +387,14 @@ All five controls range from
 0 to 255. Density zero mutes
 that channel; higher values
 include weaker rhythmic steps.
+Gate calculations run only on rising clock edges.
 The BD, SD and HH outputs pulse
 once per triggered step.
 The accent outputs pulse on
 hits with a level above 192.
 Step numbers run from 0 to 31.
 noteEnd
+entry main
 module sequencer
 ; @pos -102 0
 
@@ -663,6 +403,31 @@ int step
 int nextStep
 int previousTrigger
 int tick
+
+; Trigger outputs last one sample.
+push &outputs:bd
+push 0
+store
+
+push &outputs:sd
+push 0
+store
+
+push &outputs:hh
+push 0
+store
+
+push &outputs:accentBD
+push 0
+store
+
+push &outputs:accentSD
+push 0
+store
+
+push &outputs:accentHH
+push 0
+store
 
 push &tick
 push *trigger
@@ -683,12 +448,16 @@ add
 push 31
 and
 store
+
+call gate
 ifEnd
 moduleEnd
+entryEnd
+
+entry gate
 module mapReader
 ; @pos -68 0
 
-int* tick &sequencer:tick
 int* step &sequencer:step
 int x 128
 int y 128
@@ -705,8 +474,6 @@ int levelHH
 local int balanceX
 local int balanceY
 
-push *tick
-if
 push x
 push y
 push *step
@@ -755,12 +522,10 @@ push balanceX
 push balanceY
 call readMap
 store
-ifEnd
 moduleEnd
 module outputs
 ; @pos -34 0
 
-int* tick &sequencer:tick
 int* levelBD
 - &mapReader:levelBD
 int* levelSD
@@ -781,24 +546,18 @@ push &bd
 push *levelBD
 push densityBD
 call densityHit
-push *tick
-and
 store
 
 push &sd
 push *levelSD
 push densitySD
 call densityHit
-push *tick
-and
 store
 
 push &hh
 push *levelHH
 push densityHH
 call densityHit
-push *tick
-and
 store
 
 push &accentBD
@@ -1744,5 +1503,271 @@ int  85 141  31
 int   0  28   0
 int   0   0   0
 moduleEnd
+entryEnd
 groupEnd
+
+module kick
+; @pos 90 -2
+use env
+
+int16[] buffer
+- ASSET_KICK_SIZE/2
+int* trigger &grids:bd
+int previous
+const BYTES ASSET_KICK_SIZE
+int16* playhead &buffer+BYTES
+float out
+; @wave2 &buffer count(buffer) playhead
+
+push *trigger
+call risingEdge &previous
+if
+push &playhead
+push &buffer
+store
+ifEnd
+
+push playhead
+push &buffer+BYTES
+lessThan
+if
+push &out
+push *playhead
+castToFloat
+push min(buffer)*-1.0
+div
+store
+
+push &playhead
+push playhead
+push sizeof(buffer)
+add
+store
+ifEnd
+moduleEnd
+module kickGain
+; @pos 118 51
+; Holds normal/accented
+; gain for each hit.
+
+int* trigger &grids:bd
+int* accent
+- &grids:accentBD
+int previous
+float normal 0.6
+float accented 1.0
+float out 1.0
+
+push *trigger
+call risingEdge &previous
+if
+push &out
+push *accent
+if
+push accented
+else
+push normal
+ifEnd float
+store
+ifEnd
+moduleEnd
+module snare
+; @pos 138 -2
+use env
+
+int16[] buffer
+- ASSET_SNARE_SIZE/2
+int* trigger &grids:sd
+int previous
+const BYTES ASSET_SNARE_SIZE
+int16* playhead &buffer+BYTES
+float out
+; @wave2 &buffer count(buffer) playhead
+
+push *trigger
+call risingEdge &previous
+if
+push &playhead
+push &buffer
+store
+ifEnd
+
+push playhead
+push &buffer+BYTES
+lessThan
+if
+push &out
+push *playhead
+castToFloat
+push min(buffer)*-1.0
+div
+store
+
+push &playhead
+push playhead
+push sizeof(buffer)
+add
+store
+ifEnd
+moduleEnd
+module snareGain
+; @pos 152 51
+; Holds normal/accented
+; gain for each hit.
+
+int* trigger &grids:sd
+int* accent
+- &grids:accentSD
+int previous
+float normal 0.6
+float accented 1.0
+float out 1.0
+
+push *trigger
+call risingEdge &previous
+if
+push &out
+push *accent
+if
+push accented
+else
+push normal
+ifEnd float
+store
+ifEnd
+moduleEnd
+module hiHat
+; @pos 186 -2
+use env
+
+int16[] buffer
+- ASSET_HIHAT_SIZE/2
+int* trigger &grids:hh
+int previous
+const BYTES ASSET_HIHAT_SIZE
+int16* playhead &buffer+BYTES
+float out
+; @wave2 &buffer count(buffer) playhead
+
+push *trigger
+call risingEdge &previous
+if
+push &playhead
+push &buffer
+store
+ifEnd
+
+push playhead
+push &buffer+BYTES
+lessThan
+if
+push &out
+push *playhead
+castToFloat
+push min(buffer)*-1.0
+div
+store
+
+push &playhead
+push playhead
+push sizeof(buffer)
+add
+store
+ifEnd
+moduleEnd
+module hiHatGain
+; @pos 186 51
+; Holds normal/accented
+; gain for each hit.
+
+int* trigger &grids:hh
+int* accent
+- &grids:accentHH
+int previous
+float normal 0.6
+float accented 1.0
+float out 1.0
+
+push *trigger
+call risingEdge &previous
+if
+push &out
+push *accent
+if
+push accented
+else
+push normal
+ifEnd float
+store
+ifEnd
+moduleEnd
+module mixer
+; @pos 276 1
+
+float* bd &kick:out
+float* sd &snare:out
+float* hh &hiHat:out
+float* hitGainBD &kickGain:out
+float* hitGainSD &snareGain:out
+float* hitGainHH &hiHatGain:out
+
+float gainBD 0.6
+; @slider &gainBD 0 1 0.01
+float gainSD 0.5
+; @slider &gainSD 0 1 0.01
+float gainHH 0.3
+; @slider &gainHH 0 1 0.01
+float out
+
+push &out
+push *bd
+push *hitGainBD
+mul
+push gainBD
+mul
+push *sd
+push *hitGainSD
+mul
+push gainSD
+mul
+add
+push *hh
+push *hitGainHH
+mul
+push gainHH
+mul
+add
+push -1.0
+max
+push 1.0
+min
+store
+moduleEnd
+module audioout
+; @pos 318 9
+use env
+
+float* in &mixer:out
+float[] buffer AUDIO_BUFFER_SIZE
+int position
+
+; @plot &buffer count(buffer)
+
+push &buffer
+push position
+push sizeof(buffer)
+mul
+add
+push *in
+store
+
+push &position
+push position
+push 1
+add
+push count(buffer)
+remainder
+store
+moduleEnd
+
 entryEnd

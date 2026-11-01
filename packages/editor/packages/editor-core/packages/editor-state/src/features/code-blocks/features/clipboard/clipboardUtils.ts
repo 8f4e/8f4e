@@ -10,6 +10,7 @@ export interface ClipboardCodeBlock {
 	gridCoordinates: { x: number; y: number };
 	entry?: string;
 	nestedProjectCodeBlocks?: ClipboardCodeBlock[];
+	projectEntries?: string[];
 }
 
 function createClipboardCodeBlock(block: CodeBlockGraphicData, origin: { x: number; y: number }): ClipboardCodeBlock {
@@ -23,6 +24,7 @@ function createClipboardCodeBlock(block: CodeBlockGraphicData, origin: { x: numb
 		...(block.nestedProjectCodeBlocks === undefined
 			? {}
 			: {
+					projectEntries: [...block.projectEntries!],
 					nestedProjectCodeBlocks: block.nestedProjectCodeBlocks.map(child =>
 						createClipboardCodeBlock(child, { x: 0, y: 0 })
 					),
@@ -58,6 +60,11 @@ function isValidClipboardCodeBlock(obj: unknown): obj is ClipboardCodeBlock {
 	}
 
 	const block = obj as Record<string, unknown>;
+	if (
+		block.nestedProjectCodeBlocks !== undefined &&
+		(!Array.isArray(block.projectEntries) || !block.projectEntries.every(entry => typeof entry === 'string'))
+	)
+		return false;
 
 	// Check required fields
 	if (!Array.isArray(block.code)) {

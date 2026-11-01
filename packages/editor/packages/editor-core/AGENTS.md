@@ -68,6 +68,8 @@
 
 - Meter, plot, bars, crossfade, watch, and stack own their data and drawers in plugin packages. Keep memory scope,
   typed-value resolution, tab layout, and compiler lookups generic and available through public helper exports.
+- Preserve root and group entry tables through loading, editing/history, clipboard, and serialization, including empty
+  entries and groups without `main`. Keep module entry membership local to its owning project scope.
 - Keep canonical project-model serialization under editor-state's `pureHelpers/projectSerialization`, filename
   configuration under `features/editor-config`, and `.8f4e` text formatting private to project-save.
   Session persistence belongs to its plugin. Project-open owns reading/parsing; project-save owns Save/Export,

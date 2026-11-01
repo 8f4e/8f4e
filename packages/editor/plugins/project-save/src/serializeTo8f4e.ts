@@ -1,4 +1,4 @@
-import type { ProjectExecutableBlock, ProjectGroupObjectModel, ProjectObjectModel } from '@8f4e/language-spec';
+import type { ProjectGroupObjectModel, ProjectObjectModel } from '@8f4e/language-spec';
 import {
 	FORMAT_HEADER,
 	getExpectedProjectCloserPrefix,
@@ -81,13 +81,33 @@ function serializeGroup(group: ProjectGroupObjectModel): string[] {
 	return [
 		...group.code.slice(0, closerIndex),
 		...getDocumentBlocks(group).flatMap(block => block.code),
-		...group.execution.flatMap(serializeExecutableBlock),
+		...serializeExecution(group),
 		...group.code.slice(closerIndex),
 	];
 }
 
-function serializeExecutableBlock(block: ProjectExecutableBlock): string[] {
-	return block.type === 'group' ? serializeGroup(block) : block.code;
+/** Entry sections can reopen, so group placement stays shared across all participating entries. */
+function serializeExecution(project: ProjectObjectModel): string[] {
+	const result: string[] = [];
+	const emitted = new Set<string>();
+	let current: string | undefined;
+	const close = () => {
+		if (current !== undefined) result.push('entryEnd');
+		current = undefined;
+	};
+	for (const block of project.execution) {
+		if (current !== block.entry) {
+			close();
+			current = block.entry;
+			result.push(`entry ${current}`);
+			emitted.add(current);
+		}
+		if (block.type === 'group') result.push(...serializeGroup(block));
+		else result.push(...block.code);
+	}
+	close();
+	for (const entry of project.entries) if (!emitted.has(entry)) result.push(`entry ${entry}`, 'entryEnd');
+	return result;
 }
 
 /**
@@ -106,15 +126,8 @@ export function serializeProjectTo8f4e(project: ProjectObjectModel): string {
 		...(project.code.length > 0 ? [project.code.join('\n')] : []),
 		...documentBlocks.map(block => block.code.join('\n')),
 	];
-	const executionByEntry = new Map<string, ProjectExecutableBlock[]>();
-	for (const block of project.execution) {
-		const sequence = executionByEntry.get(block.entry) ?? [];
-		sequence.push(block);
-		executionByEntry.set(block.entry, sequence);
-	}
-	for (const [entry, sequence] of executionByEntry) {
-		blockStrings.push([`entry ${entry}`, ...sequence.flatMap(serializeExecutableBlock), 'entryEnd'].join('\n'));
-	}
+	const execution = serializeExecution(project);
+	if (execution.length) blockStrings.push(execution.join('\n'));
 
 	return FORMAT_HEADER + '\n\n' + blockStrings.join('\n\n');
 }

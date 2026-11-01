@@ -52,7 +52,11 @@ describe('session persistence plugin', () => {
 	it('keeps an empty project when no session exists', () => {
 		const test = setup();
 		test.boot();
-		expect(test.state.initialProjectState).toMatchObject({ execution: [], notes: [] });
+		expect(test.state.initialProjectState).toMatchObject({
+			entries: [],
+			execution: [],
+			notes: [],
+		});
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))).toEqual([]);
 	});
 
@@ -270,7 +274,7 @@ describe('session persistence plugin', () => {
 		const test = setup();
 		test.boot();
 		const grouped = parseProjectSource(
-			'8f4e/v1\nentry main\ngroup voice\nmodule oscillator\nmoduleEnd\ngroupEnd\nentryEnd'
+			'8f4e/v1\nentry main\ngroup voice\nentry main\nmodule oscillator\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd'
 		);
 		test.events.dispatch('loadProject', { project: grouped });
 		test.events.dispatch('enterEditMode');
@@ -304,7 +308,11 @@ describe('session persistence plugin', () => {
 		const test = setup(storage);
 		test.boot();
 		expect(test.state.console.logs.some(log => log.message.includes('Failed to restore editor session'))).toBe(true);
-		expect(test.state.initialProjectState).toMatchObject({ execution: [], notes: [] });
+		expect(test.state.initialProjectState).toMatchObject({
+			entries: [],
+			execution: [],
+			notes: [],
+		});
 	});
 
 	it('reports storage write failures without interrupting source edits', () => {

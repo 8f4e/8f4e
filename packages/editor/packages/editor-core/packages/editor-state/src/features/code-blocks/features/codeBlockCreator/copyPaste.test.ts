@@ -45,6 +45,7 @@ describe('codeBlockCreator - copy/paste', () => {
 				gridX: -3,
 				gridY: 8,
 				creationIndex: 3,
+				projectEntries: ['main', 'empty'],
 				nestedProjectCodeBlocks: [nestedModule],
 			});
 			const module = createMockCodeBlock({
@@ -73,6 +74,7 @@ describe('codeBlockCreator - copy/paste', () => {
 				gridX: 10,
 				gridY: 20,
 				creationIndex: 0,
+				projectEntries: ['main', 'foo', 'bar'],
 				nestedProjectCodeBlocks: [module, functionBlock, nestedGroup],
 			});
 			const rootCodeBlocks = [group];
@@ -138,10 +140,13 @@ describe('codeBlockCreator - copy/paste', () => {
 
 			const pastedProjectGroup = getProjectGroups(convertGraphicDataToProjectStructure(rootCodeBlocks))[1];
 			expect(pastedProjectGroup).toMatchObject({
+				entries: ['main', 'foo', 'bar'],
 				name: 'audio1',
 				entry: 'main',
 				execution: [
 					{
+						entry: 'main',
+						entries: ['main', 'empty'],
 						type: 'group',
 						name: 'modulation',
 						execution: [{ type: 'module', entry: 'main', code: expect.arrayContaining(['module voice']) }],

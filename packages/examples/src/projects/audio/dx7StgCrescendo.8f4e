@@ -426,6 +426,7 @@ map 52 A4
 map 49 B4
 mapEnd int
 functionEnd int
+entry main
 module janko
 ; @pos 0 0
 ; @home left
@@ -473,6 +474,7 @@ push &previousNote
 push *note
 store
 moduleEnd
+entryEnd
 groupEnd
 module midiNote2Freq
 ; @pos 211 55
@@ -739,6 +741,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -963,6 +966,7 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 module modulator6
 ; @pos 367 30
@@ -1031,6 +1035,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -1255,6 +1260,7 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 module modulator5
 ; @pos 470 30
@@ -1323,6 +1329,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -1547,6 +1554,7 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 group envelope4
 ; @pos 526 30
@@ -1599,6 +1607,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -1823,6 +1832,7 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 module modulator2
 ; @pos 573 0
@@ -1907,6 +1917,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -2131,6 +2142,7 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 group envelope3
 ; @pos 629 30
@@ -2183,6 +2195,7 @@ push level
 add 28
 min
 functionEnd int
+entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
@@ -2407,6 +2420,7 @@ push 0.0
 ifEnd float
 store
 moduleEnd
+entryEnd
 groupEnd
 module carrier1
 ; @pos 676 0
@@ -2506,6 +2520,7 @@ const CLOUDS_SAMPLE_RATE 32000
 const CLOUDS_RATIO SAMPLE_RATE/CLOUDS_SAMPLE_RATE
 
 constantsEnd
+entry main
 module controlValues
 ; @pos 46 -27
 
@@ -3282,6 +3297,7 @@ add
 store
 
 moduleEnd
+entryEnd
 groupEnd
 module audiooutL
 ; @pos 862 0

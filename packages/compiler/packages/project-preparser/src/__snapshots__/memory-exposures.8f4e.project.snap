@@ -1,6 +1,9 @@
 {
   "code": [],
   "constants": [],
+  "entries": [
+    "main",
+  ],
   "execution": [
     {
       "code": [
@@ -18,10 +21,12 @@
         "expose exposedValue &source:value",
         "expose exposedInput &consumer:input",
         "",
-        "",
         "groupEnd",
       ],
       "constants": [],
+      "entries": [
+        "main",
+      ],
       "entry": "main",
       "execution": [
         {
@@ -31,7 +36,7 @@
             "moduleEnd",
           ],
           "entry": "main",
-          "id": 12,
+          "id": 13,
           "type": "module",
         },
         {
@@ -41,7 +46,7 @@
             "moduleEnd",
           ],
           "entry": "main",
-          "id": 16,
+          "id": 17,
           "type": "module",
         },
       ],

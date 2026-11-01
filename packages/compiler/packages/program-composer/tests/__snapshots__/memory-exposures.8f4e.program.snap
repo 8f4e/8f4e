@@ -114,7 +114,7 @@
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 12,
+        "projectBlockId": 13,
         "sourceIdentity": {
           "codeBlockId": "source",
           "projectGroupPath": "audio",
@@ -166,7 +166,7 @@
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 16,
+        "projectBlockId": 17,
         "sourceIdentity": {
           "codeBlockId": "consumer",
           "projectGroupPath": "audio",
@@ -187,8 +187,34 @@
       "misses": 3,
     },
   },
-  "entryNames": [
-    "main",
+  "entries": [
+    {
+      "exportName": "main",
+      "id": "main",
+      "steps": [
+        {
+          "id": "outer",
+          "type": "module",
+        },
+        {
+          "id": "audio/main",
+          "type": "entry",
+        },
+      ],
+    },
+    {
+      "id": "audio/main",
+      "steps": [
+        {
+          "id": "audio/source",
+          "type": "module",
+        },
+        {
+          "id": "audio/consumer",
+          "type": "module",
+        },
+      ],
+    },
   ],
   "memoryAliases": {
     "audio": {
@@ -220,7 +246,7 @@
   ],
   "moduleEntryNames": [
     "main",
-    "main",
-    "main",
+    "audio/main",
+    "audio/main",
   ],
 }

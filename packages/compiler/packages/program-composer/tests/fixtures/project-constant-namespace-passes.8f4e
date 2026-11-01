@@ -13,6 +13,7 @@ moduleEnd
 group child
 pass env
 
+entry main
 module voice
 use env
 int rate SAMPLE_RATE
@@ -21,10 +22,13 @@ moduleEnd
 group nested
 pass env
 
+entry main
 module nestedVoice
 use env
 int rate SAMPLE_RATE
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd

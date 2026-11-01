@@ -21,6 +21,7 @@ export default function createDefaultState() {
 		},
 		codeBlockRendering: {
 			rootCodeBlocks,
+			rootProjectEntries: [],
 			codeBlocks: rootCodeBlocks,
 			entryOutlines: [],
 			viewportAnchoredCodeBlocks: [],

@@ -191,11 +191,13 @@ describe('code block rendering home directive', () => {
 				execution: [
 					{ type: 'module', id: 0, entry: 'main', code: ['module root', 'moduleEnd'] },
 					{
+						entry: 'main',
+
 						id: 0,
 						type: 'group',
 						...EMPTY_DEFAULT_PROJECT,
 						name: 'Audio',
-						entry: 'main',
+
 						code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
 						exposures: [
 							{
@@ -205,6 +207,8 @@ describe('code block rendering home directive', () => {
 							},
 						],
 						execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
+
+						entries: ['main'],
 					},
 				],
 			},
@@ -241,18 +245,24 @@ describe('code block rendering home directive', () => {
 entry main
 group audio
 ; @pos 10 20
+entry main
 group voices
 ; @pos 30 40
+entry main
 module voice
 ; @pos 50 60
 float out
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd
 entry test
 group checks
 ; @pos -20 -10
+entry main
+entryEnd
 groupEnd
 entryEnd`);
 		const state = createMockState({ initialProjectState: project });
@@ -306,14 +316,18 @@ entryEnd`);
 				...EMPTY_DEFAULT_PROJECT,
 				execution: [
 					{
+						entry: 'main',
+
 						id: 0,
 						type: 'group',
 						...EMPTY_DEFAULT_PROJECT,
 						name: 'Audio',
-						entry: 'main',
+
 						code: ['group Audio', 'groupEnd'],
 						exposures: [],
 						execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
+
+						entries: ['main'],
 					},
 				],
 			},

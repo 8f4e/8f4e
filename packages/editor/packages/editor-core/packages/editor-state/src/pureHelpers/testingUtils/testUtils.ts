@@ -77,6 +77,7 @@ export function createMockCodeBlock(
 	};
 
 	const defaults: CodeBlockGraphicData = {
+		...(overrides.nestedProjectCodeBlocks === undefined ? {} : { projectEntries: [] }),
 		x,
 		y,
 		gridX,

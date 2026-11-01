@@ -184,6 +184,7 @@ note childRight
 ; @pos 1000 0
 ; @config export.fileName childRight
 noteEnd
+entry main
 group inner
 ; @pos 0 0
 ; @config export.fileName inner
@@ -191,7 +192,10 @@ note leaf
 ; @pos 2000 0
 ; @config export.fileName leaf
 noteEnd
+entry main
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd`);
 		expect(state.editorConfig.export?.fileName).toBe('rootRight');

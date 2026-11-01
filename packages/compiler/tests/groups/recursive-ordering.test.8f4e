@@ -20,6 +20,7 @@ expose input &voiceA:input
 expose output &voiceB:output
 init &input &rootA:output
 
+entry main
 module voiceA
 int* input
 int output
@@ -35,6 +36,7 @@ expose input &tick:input
 expose output &tick:output
 init &input &voiceA:output
 
+entry main
 module tick
 int* input
 int output
@@ -44,6 +46,7 @@ push &output
 push 3
 store
 moduleEnd
+entryEnd
 groupEnd
 
 module skipped
@@ -61,6 +64,7 @@ push &output
 push 4
 store
 moduleEnd
+entryEnd
 groupEnd
 
 module rootB
@@ -78,6 +82,7 @@ expose input &last:input
 expose output &last:output
 init &input &rootB:output
 
+entry main
 module last
 int* input
 int output
@@ -87,6 +92,7 @@ push &output
 push 6
 store
 moduleEnd
+entryEnd
 groupEnd
 
 module rootC

@@ -3,7 +3,12 @@ import type { PaletteToken } from '@8f4e/editor-palette';
  * Types for code-blocks feature - manages code block entities, rendering, and interactions.
  */
 
-import type { DocumentBlockType, PlannedMemoryDeclaration, ProjectGroupPath } from '@8f4e/language-spec';
+import type {
+	DocumentBlockType,
+	PlannedMemoryDeclaration,
+	ProjectEntryName,
+	ProjectGroupPath,
+} from '@8f4e/language-spec';
 import type { ViewportBlockAlignment } from '../viewport/blockAlignment';
 import type { CodeBlockDisplayModel } from './buildDisplayModel';
 
@@ -130,6 +135,8 @@ export interface CodeBlockGraphicData {
 	projectPath: ProjectGroupPath;
 	/** Child project slice owned by a project-group block. Its array identity remains stable while editing. */
 	nestedProjectCodeBlocks?: CodeBlockGraphicData[];
+	/** Entry definitions owned by the child project scope. */
+	projectEntries?: ProjectEntryName[];
 	/**
 	 * When true, the block is excluded from compilation and rendered with a transparent background.
 	 * Defaults to false.
@@ -181,6 +188,7 @@ export interface CodeBlockEntryOutline {
 export type CodeBlockRendering = {
 	/** Recursive project-tree root. Project-owned array identities remain stable while editing. */
 	rootCodeBlocks: CodeBlockGraphicData[];
+	rootProjectEntries: ProjectEntryName[];
 	/** Direct pointer to the project slice currently rendered by the editor. */
 	codeBlocks: CodeBlockGraphicData[];
 	/**

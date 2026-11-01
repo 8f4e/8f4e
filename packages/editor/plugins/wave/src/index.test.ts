@@ -159,9 +159,11 @@ describe('wave plugin', () => {
 			'group audio',
 			'expose samples &voice:samples',
 			'; @wave &samples count(samples)',
+			'entry main',
 			'module voice',
 			'float[] samples 4 -1 0 1 0',
 			'moduleEnd',
+			'entryEnd',
 			'groupEnd',
 		]);
 		test.render();

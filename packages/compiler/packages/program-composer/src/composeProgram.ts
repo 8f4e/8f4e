@@ -2,6 +2,7 @@ import {
 	type CallLine,
 	type CompilerCache,
 	type ComposedAST,
+	type ComposedEntry,
 	createChildProjectGroupPath,
 	createProjectModuleId,
 	type FunctionLine,
@@ -117,7 +118,23 @@ function appendUnit(
 	parentProjectPath: ProjectGroupPath | undefined,
 	program: ComposedProgram,
 	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath
-): void {
+): Map<string, ComposedEntry> {
+	const entries = new Map<string, ComposedEntry>();
+	const ensureEntry = (name: string): ComposedEntry => {
+		let entry = entries.get(name);
+		if (!entry) {
+			entry = {
+				id: projectPath ? `${projectPath}/${name}` : name,
+				steps: [],
+				...(projectPath === ROOT_PROJECT_GROUP_PATH ? { exportName: name } : {}),
+			};
+			entries.set(name, entry);
+			program.entries.push(entry);
+		}
+		return entry;
+	};
+	for (const name of project.entries) ensureEntry(name);
+	if (projectPath === ROOT_PROJECT_GROUP_PATH) ensureEntry('main');
 	const memoryInitializers = collectProjectMemoryInitializers(project.code, projectPath);
 	if (memoryInitializers.length > 0) {
 		program.projectMemoryInitializerScopes.push({
@@ -193,26 +210,29 @@ function appendUnit(
 		if (block.type === 'group') {
 			const groupPath = createChildProjectGroupPath(projectPath, block.name);
 			appendMemoryExposureAliases(program, groupPath, block.exposures);
-			appendUnit(block, groupPath, projectPath, program, includedFunctionsByProjectPath);
+			const childEntries = appendUnit(block, groupPath, projectPath, program, includedFunctionsByProjectPath);
+			const childMain = childEntries.get('main');
+			if (childMain) ensureEntry(block.entry).steps.push({ type: 'entry', id: childMain.id });
+			const childInit = childEntries.get('init');
+			if (childInit) ensureEntry('init').steps.push({ type: 'entry', id: childInit.id });
 			continue;
 		}
 		const module = block;
 		if (module.disabled) continue;
 		const index = moduleIndexByEntry.get(module.entry) ?? 0;
 		moduleIndexByEntry.set(module.entry, index + 1);
-		program.ast.modules.push(
-			qualify(
-				compileSourceToAST<ValidatedModuleAST>(
-					createCompilerSource(module, projectPath, `entry:${module.entry}:module:${index}`),
-					program.cache
-				)
+		const ast = qualify(
+			compileSourceToAST<ValidatedModuleAST>(
+				createCompilerSource(module, projectPath, `entry:${module.entry}:module:${index}`),
+				program.cache
 			)
 		);
-		program.moduleEntryNames.push(module.entry);
-		if (!program.entryNames.includes(module.entry)) {
-			program.entryNames.push(module.entry);
-		}
+		program.ast.modules.push(ast);
+		const entry = entries.get(module.entry)!;
+		entry.steps.push({ type: 'module', id: ast.id });
+		program.moduleEntryNames.push(entry.id);
 	}
+	return entries;
 }
 
 /**
@@ -225,7 +245,7 @@ export function composeProgram(
 	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath = new Map()
 ): ComposedProgram {
 	const program: ComposedProgram = {
-		entryNames: ['main'],
+		entries: [],
 		moduleEntryNames: [],
 		ast: {
 			prototypes: [],

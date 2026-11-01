@@ -22,8 +22,8 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 		const project = parseProjectSource(
 			trigger === 'group navigation'
 				? source
-						.replace('module audio', 'group audioGroup\nmodule audio')
-						.replace('moduleEnd\nentryEnd', 'moduleEnd\ngroupEnd\nentryEnd')
+						.replace('module audio', 'group audioGroup\nentry main\nmodule audio')
+						.replace('moduleEnd\nentryEnd', 'moduleEnd\nentryEnd\ngroupEnd\nentryEnd')
 				: source
 		);
 		const compiled = await compileProject(project, { disableSharedMemory: true });

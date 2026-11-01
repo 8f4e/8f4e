@@ -19,6 +19,7 @@ function fixture() {
 		creationIndex: 2,
 		entry: 'main',
 		code: ['group voices', '; voice settings', 'groupEnd'],
+		projectEntries: ['main'],
 		nestedProjectCodeBlocks: [deep],
 	});
 	const direct = module('oscillator', 'audio', 1);
@@ -28,6 +29,7 @@ function fixture() {
 		creationIndex: 0,
 		entry: 'main',
 		code: ['group audio', 'expose oscillator:value', 'groupEnd'],
+		projectEntries: ['main'],
 		nestedProjectCodeBlocks: [direct, voices],
 	});
 	const root = module('rootModule', '', 4);
@@ -42,7 +44,7 @@ describe('one-level 8f4e source views', () => {
 		const { state } = fixture();
 		const view = createSourceView(state);
 		expect(view).toBe(
-			'8f4e/v1\n\nentry main\n\ngroup audio\nexpose oscillator:value\ngroupEnd\n\nmodule rootModule\nint value 1\nmoduleEnd\nentryEnd'
+			'8f4e/v1\n\nentry main\n\ngroup audio\nexpose oscillator:value\nentry main\nentryEnd\ngroupEnd\n\nmodule rootModule\nint value 1\nmoduleEnd\nentryEnd'
 		);
 		expect(view).not.toContain('module oscillator');
 		expect(view).not.toContain('group voices');
@@ -53,13 +55,28 @@ describe('one-level 8f4e source views', () => {
 		state.codeBlockRendering.codeBlocks = audio.nestedProjectCodeBlocks!;
 		const view = createSourceView(state);
 		expect(view).toBe(
-			'group audio\nexpose oscillator:value\n\nmodule oscillator\nint value 1\nmoduleEnd\n\ngroup voices\n; voice settings\ngroupEnd\ngroupEnd'
+			'group audio\nexpose oscillator:value\n\nentry main\n\nmodule oscillator\nint value 1\nmoduleEnd\n\ngroup voices\n; voice settings\nentry main\nentryEnd\ngroupEnd\nentryEnd\ngroupEnd'
 		);
 		expect(view).not.toContain('deepSecret');
 		state.codeBlockRendering.codeBlocks = voices.nestedProjectCodeBlocks!;
 		const nested = createSourceView(state);
 		expect(nested).toContain('module deepSecret');
 		expect(nested).not.toContain('module oscillator');
+	});
+
+	it('retains empty named entries and unfinished group shells', () => {
+		const { state, audio } = fixture();
+		audio.code = ['group audio', '; unfinished settings'];
+		audio.nestedProjectCodeBlocks = [];
+		audio.projectEntries = ['foo', 'bar'];
+		expect(createSourceView(state)).toContain(
+			'group audio\n; unfinished settings\nentry foo\nentryEnd\nentry bar\nentryEnd'
+		);
+		state.codeBlockRendering.codeBlocks = audio.nestedProjectCodeBlocks;
+		const view = createSourceView(state);
+		expect(view).toContain('entry foo\nentryEnd');
+		expect(view).toContain('entry bar\nentryEnd');
+		expect(view).not.toContain('entry main');
 	});
 
 	it('reads unfinished code without export validation and rejects an unavailable current scope', () => {
@@ -86,6 +103,6 @@ describe('one-level 8f4e source views', () => {
 		expect(view).toContain('entry main\n');
 		expect(view).toContain('entry secondary\n');
 		state.codeBlockRendering.codeBlocks = audio.nestedProjectCodeBlocks!;
-		expect(createSourceView(state)).toBe(audio.code.join('\n'));
+		expect(createSourceView(state)).toBe('group audio\nexpose oscillator:value\n\nentry main\nentryEnd\ngroupEnd');
 	});
 });

@@ -24,7 +24,10 @@ function copyBlocks(blocks: CodeBlockGraphicData[]): CodeBlockGraphicData[] {
 		code: [...block.code],
 		...(block.nestedProjectCodeBlocks === undefined
 			? {}
-			: { nestedProjectCodeBlocks: copyBlocks(block.nestedProjectCodeBlocks) }),
+			: {
+					nestedProjectCodeBlocks: copyBlocks(block.nestedProjectCodeBlocks),
+					projectEntries: [...block.projectEntries!],
+				}),
 	}));
 }
 
@@ -159,7 +162,9 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 				state.codeBlockRendering.codeBlocks
 			);
 			const { x, y } = state.viewport;
-			events.dispatch('applyProjectEdit', { project: serializeCodeBlocks(draft) });
+			events.dispatch('applyProjectEdit', {
+				project: serializeCodeBlocks(draft, state.codeBlockRendering.rootProjectEntries),
+			});
 			const slice = findSlice(state.codeBlockRendering.rootCodeBlocks, currentPath ?? '');
 			if (slice && slice !== state.codeBlockRendering.codeBlocks) store.set('codeBlockRendering.codeBlocks', slice);
 			updateViewport(state, x, y, events);

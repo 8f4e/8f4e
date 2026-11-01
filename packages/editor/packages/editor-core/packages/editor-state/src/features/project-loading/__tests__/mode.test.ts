@@ -49,7 +49,9 @@ describe('project initial mode', () => {
 
 	it('finds a directive in a nested project group even when mode toggling is disabled', () => {
 		const { state, load } = setup(false);
-		load('8f4e/v1\nentry main\ngroup child\nnote mode\n; @mode edit\nnoteEnd\ngroupEnd\nentryEnd');
+		load(
+			'8f4e/v1\nentry main\ngroup child\nnote mode\n; @mode edit\nnoteEnd\nentry main\nentryEnd\ngroupEnd\nentryEnd'
+		);
 		expect(state.editorMode).toBe('edit');
 		expect(state.featureFlags.modeToggling).toBe(false);
 	});

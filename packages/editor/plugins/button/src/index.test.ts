@@ -208,9 +208,11 @@ describe('button plugin', () => {
 			'group controls',
 			'expose gate &voice:gate',
 			'; @button &gate',
+			'entry main',
 			'module voice',
 			'int gate 0',
 			'moduleEnd',
+			'entryEnd',
 			'groupEnd',
 		]);
 		const address = test.state.compiler.result.memoryPlan.modules['controls/voice'].memory.gate.allocationUnitAddress;

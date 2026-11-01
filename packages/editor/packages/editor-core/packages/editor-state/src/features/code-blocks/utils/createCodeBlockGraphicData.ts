@@ -33,6 +33,7 @@ export function createCodeBlockGraphicData(
 	};
 
 	const defaults: CodeBlockGraphicData = {
+		projectEntries: [],
 		x,
 		y,
 		gridX,

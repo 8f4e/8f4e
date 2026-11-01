@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { compileSubProgram } from '.';
 
 const emptyProject: ProjectObjectModel = {
+	entries: [],
 	code: [],
 	execution: [],
 	functions: [],
@@ -18,7 +19,7 @@ describe('compileSubProgram', () => {
 	it('compiles one closed source unit into emission-ready artifacts', () => {
 		const compiled = compileSubProgram(composeProgram(emptyProject), { disableSharedMemory: true });
 
-		expect(compiled.entryNames).toEqual(['main']);
+		expect(compiled.entries).toEqual([{ id: 'main', exportName: 'main', steps: [] }]);
 		expect(compiled.compiledModules).toEqual([]);
 		expect(compiled.compiledFunctions).toEqual([]);
 		expect(compiled.memoryPlan.moduleList).toEqual([]);

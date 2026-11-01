@@ -105,6 +105,7 @@ describe('serializeCodeBlocksToClipboard', () => {
 			gridX: -3,
 			gridY: 8,
 			entry: 'main',
+			projectEntries: ['main'],
 			nestedProjectCodeBlocks: [nestedModule],
 		});
 		const group = createMockCodeBlock({
@@ -112,6 +113,7 @@ describe('serializeCodeBlocksToClipboard', () => {
 			gridX: 10,
 			gridY: 20,
 			entry: 'main',
+			projectEntries: ['main'],
 			nestedProjectCodeBlocks: [nestedGroup],
 		});
 
@@ -122,11 +124,13 @@ describe('serializeCodeBlocksToClipboard', () => {
 				code: ['group audio', '; keep me', 'groupEnd'],
 				gridCoordinates: { x: 0, y: 0 },
 				entry: 'main',
+				projectEntries: ['main'],
 				nestedProjectCodeBlocks: [
 					{
 						code: ['group modulation', 'groupEnd'],
 						gridCoordinates: { x: -3, y: 8 },
 						entry: 'main',
+						projectEntries: ['main'],
 						nestedProjectCodeBlocks: [
 							{
 								code: ['module voice', 'moduleEnd'],
@@ -148,6 +152,7 @@ describe('parseClipboardData', () => {
 				{
 					code: ['group audio', 'groupEnd'],
 					gridCoordinates: { x: 0, y: 0 },
+					projectEntries: ['main'],
 					nestedProjectCodeBlocks: [{ code: ['module voice', 'moduleEnd'], gridCoordinates: { x: 4, y: 6 } }],
 				},
 			]);

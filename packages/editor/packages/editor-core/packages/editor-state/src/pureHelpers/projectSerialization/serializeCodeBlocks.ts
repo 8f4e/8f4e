@@ -1,24 +1,16 @@
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import type { ProjectBlock, ProjectObjectModel } from '@8f4e/language-spec';
+import type { ProjectBlock, ProjectEntryName, ProjectObjectModel } from '@8f4e/language-spec';
+import { createProjectObjectModel } from '@8f4e/language-spec';
 import { tryParseProjectMemoryExposureLine } from '@8f4e/project-preparser';
 import compareCodeBlocksByPosition from '../compareCodeBlocksByPosition';
 
-function createEmptyProject(): ProjectObjectModel {
-	return {
-		code: [],
-		execution: [],
-		functions: [],
-		constants: [],
-		prototypes: [],
-		includes: [],
-		notes: [],
-		unknown: [],
-	};
-}
-
 /** Returns detached project data in canonical key and grid/creation order, recursively through project groups. */
-export default function convertGraphicDataToProjectStructure(codeBlocks: CodeBlockGraphicData[]): ProjectObjectModel {
-	const project = createEmptyProject();
+export default function convertGraphicDataToProjectStructure(
+	codeBlocks: CodeBlockGraphicData[],
+	entries: readonly ProjectEntryName[] = []
+): ProjectObjectModel {
+	const project = createProjectObjectModel();
+	project.entries = [...entries];
 	const sortedBlocks = [...codeBlocks].sort(compareCodeBlocksByPosition);
 
 	for (const codeBlock of sortedBlocks) {
@@ -27,12 +19,14 @@ export default function convertGraphicDataToProjectStructure(codeBlocks: CodeBlo
 			continue;
 		}
 		if (codeBlock.nestedProjectCodeBlocks !== undefined) {
+			if (!project.entries.includes(codeBlock.entry!)) project.entries.push(codeBlock.entry!);
 			project.execution.push({
-				...convertGraphicDataToProjectStructure(codeBlock.nestedProjectCodeBlocks),
+				...convertGraphicDataToProjectStructure(codeBlock.nestedProjectCodeBlocks, codeBlock.projectEntries!),
 				type: 'group',
 				id: codeBlock.creationIndex,
 				name: codeBlock.name,
 				entry: codeBlock.entry!,
+
 				code: [...codeBlock.code],
 				exposures: codeBlock.code.flatMap(line => {
 					const exposure = tryParseProjectMemoryExposureLine(line);
@@ -50,6 +44,7 @@ export default function convertGraphicDataToProjectStructure(codeBlocks: CodeBlo
 
 		if (codeBlock.blockType === 'module') {
 			project.execution.push({ ...block, type: 'module', entry: codeBlock.entry! });
+			if (!project.entries.includes(codeBlock.entry!)) project.entries.push(codeBlock.entry!);
 		} else if (codeBlock.blockType === 'function') {
 			project.functions.push(block);
 		} else if (codeBlock.blockType === 'constants') {

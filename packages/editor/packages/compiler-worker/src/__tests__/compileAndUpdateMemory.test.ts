@@ -7,6 +7,7 @@ const compilerOptions = { startingMemoryAllocationUnitAddress: 1 };
 let compileAndUpdateMemory: typeof compileAndUpdateMemoryType;
 
 const createInput = (modules: Array<{ code: string[] }>, entry = 'main'): ProjectObjectModel => ({
+	entries: [entry],
 	code: [],
 	execution: [...modules.map((module, id) => ({ ...module, type: 'module' as const, id, entry }))],
 	constants: [],
@@ -94,6 +95,7 @@ moduleEnd`.split('\n'),
 			},
 		]);
 		getProjectModules(project)[0].entry = 'test';
+		project.entries = ['test'];
 		const result = await compileAndUpdateMemory(project, { ...compilerOptions, enableAssertions: true });
 		const imports = WebAssembly.Module.imports(new WebAssembly.Module(new Uint8Array(result.codeBuffer)));
 		expect(result.assertionSites).toMatchObject([

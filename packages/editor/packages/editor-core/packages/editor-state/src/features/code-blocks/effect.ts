@@ -352,11 +352,12 @@ export default function codeBlockRendering(
 					{
 						id: group.id,
 						code: [...group.code],
-						blockType: 'unknown',
 						entry: group.entry,
+						blockType: 'unknown',
 					},
 					{
 						name: groupName,
+						projectEntries: [...group.entries],
 						projectPath,
 						nestedProjectCodeBlocks: createProjectCodeBlockSlice(
 							group,
@@ -373,6 +374,7 @@ export default function codeBlockRendering(
 		const rootCodeBlocks = createProjectCodeBlockSlice(project, ROOT_PROJECT_GROUP_PATH);
 		state.codeBlockRendering.nextCodeBlockCreationIndex = nextCodeBlockCreationIndex;
 
+		store.set('codeBlockRendering.rootProjectEntries', [...project.entries]);
 		store.set('codeBlockRendering.rootCodeBlocks', rootCodeBlocks);
 		store.set('codeBlockRendering.codeBlocks', rootCodeBlocks);
 

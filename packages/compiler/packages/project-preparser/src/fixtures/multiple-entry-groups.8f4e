@@ -2,12 +2,15 @@
 
 entry main
 group audio
+entry main
 module kick
 int trigger
 moduleEnd
+entryEnd
 groupEnd
 
 group visuals
+entry main
 module scope
 int brightness
 moduleEnd
@@ -17,7 +20,10 @@ function clamp01
 param float value
 push value
 functionEnd float
+entry main
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd
 
@@ -34,5 +40,7 @@ push left
 push right
 equal
 functionEnd int
+entry main
+entryEnd
 groupEnd
 entryEnd

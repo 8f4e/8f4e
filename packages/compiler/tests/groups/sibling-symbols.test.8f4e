@@ -13,6 +13,7 @@ function value
 push 7
 functionEnd int
 
+entry main
 module shared
 int output
 push &output
@@ -22,6 +23,7 @@ store
 push output
 assertEqual 7
 moduleEnd
+entryEnd
 groupEnd
 
 group right
@@ -29,6 +31,7 @@ function value
 push 11
 functionEnd int
 
+entry main
 module shared
 int output
 push &output
@@ -38,5 +41,6 @@ store
 push output
 assertEqual 11
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

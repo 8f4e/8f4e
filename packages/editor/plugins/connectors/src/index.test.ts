@@ -147,12 +147,14 @@ describe('connectors plugin', () => {
 entry main
 group patch
 expose output &source:value
+entry main
 module source
 float value 1
 moduleEnd
 module innerSink
 float* input &source:value
 moduleEnd
+entryEnd
 groupEnd
 module outerSink
 float* input &patch:output

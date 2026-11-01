@@ -86,9 +86,11 @@ Because all addresses are known at compile time, the compiler can inline them di
 
 The code is organized into modules, each containing variable declarations and a sequence of commands.
 
-Within each execution entry, modules and groups share declaration order. A group executes its contents recursively
+Within each execution entry, modules and groups share declaration order. A group calls its own `main` entry, when present,
 where the group is declared: `rootA`, `synth { voiceA, voiceB }`, `rootB` runs as
-`rootA -> synth/voiceA -> synth/voiceB -> rootB`. The same rule applies inside nested groups. A memory reference does
+`rootA -> synth/voiceA -> synth/voiceB -> rootB`. The same rule applies inside nested groups. Other named entries run when called, while child `init` entries join the
+parent initialization entry. Groups without `main` perform no automatic main work. In the editor, spatial position
+defines declaration order at each project level. A memory reference does
 not reorder execution: if a module reads a producer's memory, the producer is not moved earlier. See the
 [compiler documentation](../packages/compiler/README.md) for recursive composition details.
 
@@ -135,6 +137,11 @@ add
 store
 moduleEnd
 ```
+
+In the visual editor, **Open group** enters a project's nested group and **Go back** returns to its parent.
+The editor remembers each level's viewport position, including the root, and restores it when you return or reopen
+a visited group. On the first visit, it uses the group's `@home` block or the origin. Loading another project clears
+these remembered positions.
 
 ## Live Variable Editing
 
