@@ -1,11 +1,5 @@
 8f4e/v1
 
-includes
-; @pos -25 -70
-include std/math/trig/sine
-include std/math/trig/advancePhase
-includesEnd
-
 function buffer
 ; @pos 2 72
 #export buffer
@@ -210,19 +204,6 @@ note colors
 ; @config color.detail #64d1ad
 noteEnd
 
-note algorithm
-; @pos 186 50
-;
-; E.PIANO 1 / DX7 algorithm 5
-;
-; [2] --> [1] --+
-;               |
-; [4] --> [3] --+--> mixer
-;               |
-; [6] --> [5] --+
-;
-noteEnd
-
 entry main
 module keyboard
 ; @pos 113 46
@@ -240,10 +221,113 @@ int keyCode
 ; @watch keyCode
 
 moduleEnd
-module midiNote2Freq
-; @pos 252 40
+group noteInput
+; @pos 153 22
+; @home left
+; Converts HID keycodes to MIDI note numbers              .---------.
+; based on the Janko layout                               |  Enter  |
+;                                                         |       | |
+;.----------+---+---+---+---+---+---+---+---+---+---+---+-+-+  <--' |
+;| CapsLock | C#| D#| F | G | A | B | C#| D#| F | G | A | B |       |
+;+--------+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+---+-------+
+;| Shift  | C | D | E | F#| G#| A#| C | D | E | F#| G#|    Shift    |
+;'--------+---+---+---+---+---+---+---+---+---+---+---+-------------'
+;
+expose keyCode &janko:in
+expose gate &noteEvents:gate
+expose note &janko:out
+expose frequency &midiNote2Freq:out
+expose noteOn &noteEvents:noteOn
+expose noteOff &noteEvents:noteOff
 
-int* in &noteInput:note
+init &keyCode &keyboard:keyCode
+init &gate &keyboard:keyPressed
+
+pass midiCodes
+
+function jankoMap
+; @pos -55 0
+param int keycode
+use midiCodes
+push keycode
+mapBegin int
+map 53 C3  ; Maps HID
+map 4  C#3 ; keycodes
+map 29 D3  ; to MIDI note
+map 22 D#3 ; numbers
+map 27 E3  ; based on
+map 7  F3  ; the Janko
+map 6  F#3 ; piano layout
+map 9  G3  ;
+map 25 G#3 ; These key
+map 10 A3  ; positions
+map 5  A#3 ; are based on
+map 11 B3  ; my Apple
+map 17 C4  ; Magic
+map 13 C#4 ; Keyboard's
+map 16 D4  ; layout, feel
+map 14 D#4 ; free to
+map 54 E4  ; adjust them
+map 15 F4  ; to your own.
+map 55 F#4
+map 51 G4
+map 56 G#4
+map 52 A4
+map 49 B4
+mapEnd int
+functionEnd int
+entry main
+module janko
+; @pos 0 0
+; @home left
+int* in ; Keycode
+int out ; MIDI note number
+push &out
+push *in
+call jankoMap
+
+; @watch out
+store
+moduleEnd
+module noteEvents
+; @pos 55 0
+; Keyboard note-on and note-off pulses.
+int* gate
+int* note &janko:out
+int previousGate
+int previousNote -1
+int noteOn
+int noteOff
+
+push &noteOn
+push *gate
+push previousGate
+equalToZero
+push *note
+push previousNote
+notEqual
+or
+and
+store
+push &noteOff
+push *gate
+equalToZero
+push previousGate
+push 0
+greaterThan
+and
+store
+push &previousGate
+push *gate
+store
+push &previousNote
+push *note
+store
+moduleEnd
+module midiNote2Freq
+; @pos 105 0
+
+int* in &janko:out
 float* notes &midiLUT:
 float out
 
@@ -259,7 +343,7 @@ store
 
 moduleEnd
 module midiLUT
-; @pos 252 100
+; @pos 105 60
 ; @tab 8
 float	8.1758
 float	8.6620
@@ -391,375 +475,28 @@ float	11839.8215
 float	12543.8540
 
 moduleEnd
-module modulator2
-; @pos 367 0
-; @group operator2
-use env
-float* frequency &midiNote2Freq:out
-float phase 0.0
-float out
-float ratio 14.0
-float* amplitude &envelope2:out
-float level 0.58
-
-; @hide
-; Advance and wrap without losing overshoot.
-push &out
-push &phase
-push *frequency
-mul ratio
-push SAMPLE_RATE
-call advancePhase
-; You can swap this call
-; with any periodic function
-call sine
-mul *amplitude
-mul level
-store
-
-moduleEnd
-module modulator4
-; @pos 367 22
-; @group operator4
-use env
-float* frequency &midiNote2Freq:out
-float phase 0.0
-float out
-float ratio 1.0
-float* amplitude &envelope4:out
-float level 0.89
-
-; @hide
-; Advance and wrap without losing overshoot.
-push &out
-push &phase
-push *frequency
-mul ratio
-push SAMPLE_RATE
-call advancePhase
-; You can swap this call
-; with any periodic function
-call sine
-mul *amplitude
-mul level
-store
-
-moduleEnd
-module modulator6
-; @pos 367 44
-; @group operator6
-use env
-float* frequency &midiNote2Freq:out
-float phase 0.0
-float out
-float ratio 1.01
-float* amplitude &envelope6:out
-float level 0.79
-
-; @hide
-; Advance and wrap without losing overshoot.
-push &out
-push &phase
-push *frequency
-mul ratio
-push SAMPLE_RATE
-call advancePhase
-; You can swap this call
-; with any periodic function
-call sine
-mul *amplitude
-mul level
-store
-
-moduleEnd
-module carrier1
-; @pos 469 0
-; @group operator1
-use env
-float* frequency &midiNote2Freq:out
-float* phaseMod &modulator2:out
-float phase 0.0
-float ratio 1.005
-float level 0.99
-float out
-float* amplitudeMod &envelope1:out
-
-; @hide
-
-; Advance and wrap without losing overshoot.
-push &out
-push &phase
-push *frequency
-mul ratio
-push SAMPLE_RATE
-call advancePhase
-add *phaseMod
-; You can swap this call
-; with any periodic function
-call sine
-mul *amplitudeMod
-mul level
-store
-
-moduleEnd
-module carrier3
-; @pos 469 22
-; @group operator3
-use env
-float* frequency &midiNote2Freq:out
-float* phaseMod &modulator4:out
-float phase 0.0
-float ratio 1.0
-float level 0.99
-float out
-float* amplitudeMod &envelope3:out
-
-; @hide
-
-; Advance and wrap without losing overshoot.
-push &out
-push &phase
-push *frequency
-mul ratio
-push SAMPLE_RATE
-call advancePhase
-add *phaseMod
-; You can swap this call
-; with any periodic function
-call sine
-mul *amplitudeMod
-mul level
-store
-
-moduleEnd
-module carrier5
-; @pos 469 44
-; @group operator5
-use env
-float* frequency &midiNote2Freq:out
-float* phaseMod &modulator6:out
-float phase 0.0
-float ratio 0.99
-float out
-float* amplitude &envelope5:out
-float level 0.99
-
-; @hide
-
-; Advance and wrap without losing overshoot.
-push &out
-push &phase
-push *frequency
-mul ratio
-push SAMPLE_RATE
-call advancePhase
-add *phaseMod
-; You can swap this call
-; with any periodic function
-call sine
-mul *amplitude
-mul level
-store
-
-moduleEnd
-module mixer
-; @pos 524 22
-
-float* in1 &carrier1:out
-float* in2 &carrier3:out
-float* in3 &carrier5:out
-float out
-
-push &out
-push *in1
-mul 0.5
-push *in2
-mul 0.5
-add
-push *in3
-mul 0.5
-add
-; Headroom for three attack peaks.
-mul 0.65
-store
-
-moduleEnd
-module limiter
-; @pos 569 22
-float* in &mixer:out
-float out
-
-push &out
-push *in
-max -1.0
-min 1.0
-store
-moduleEnd
-module audioout
-; @pos 605 22
-use env
-
-float* in &limiter:out
-
-; Audio buffer
-float[] buffer AUDIO_BUFFER_SIZE
-int pointer &buffer
-
-; @plot &buffer count(buffer)
-
-; Store the input value
-; in the buffer
-push pointer
-push *in
-store
-
-; Increment the buffer
-; pointer by the
-; buffer word size
-push &pointer
-push pointer
-add sizeof(buffer)
-store
-
-; Reset the buffer pointer
-; when it reaches the end
-; of the buffer
-push pointer
-push buffer&
-greaterThan
-if
-push &pointer
-push &buffer
-store
-ifEnd
-
-moduleEnd
-group noteInput
-; @pos 153 22
-; @home left
-; Converts HID keycodes to MIDI note numbers              .---------.
-; based on the Janko layout                               |  Enter  |
-;                                                         |       | |
-;.----------+---+---+---+---+---+---+---+---+---+---+---+-+-+  <--' |
-;| CapsLock | C#| D#| F | G | A | B | C#| D#| F | G | A | B |       |
-;+--------+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+---+-------+
-;| Shift  | C | D | E | F#| G#| A#| C | D | E | F#| G#|    Shift    |
-;'--------+---+---+---+---+---+---+---+---+---+---+---+-------------'
-;
-expose keyCode &janko:in
-expose gate &noteEvents:gate
-expose note &janko:out
-expose noteOn &noteEvents:noteOn
-expose noteOff &noteEvents:noteOff
-
-init &keyCode &keyboard:keyCode
-init &gate &keyboard:keyPressed
-
-pass midiCodes
-
-function jankoMap
-; @pos -55 0
-param int keycode
-use midiCodes
-push keycode
-mapBegin int
-map 53 C3  ; Maps HID
-map 4  C#3 ; keycodes
-map 29 D3  ; to MIDI note
-map 22 D#3 ; numbers
-map 27 E3  ; based on
-map 7  F3  ; the Janko
-map 6  F#3 ; piano layout
-map 9  G3  ;
-map 25 G#3 ; These key
-map 10 A3  ; positions
-map 5  A#3 ; are based on
-map 11 B3  ; my Apple
-map 17 C4  ; Magic
-map 13 C#4 ; Keyboard's
-map 16 D4  ; layout, feel
-map 14 D#4 ; free to
-map 54 E4  ; adjust them
-map 15 F4  ; to your own.
-map 55 F#4
-map 51 G4
-map 56 G#4
-map 52 A4
-map 49 B4
-mapEnd int
-functionEnd int
-entry main
-module janko
-; @pos 0 0
-; @home left
-int* in ; Keycode
-int out ; MIDI note number
-push &out
-push *in
-call jankoMap
-
-; @watch out
-store
-moduleEnd
-module noteEvents
-; @pos 55 0
-; Keyboard note-on and note-off pulses.
-int* gate
-int* note &janko:out
-int previousGate
-int previousNote -1
-int noteOn
-int noteOff
-
-push &noteOn
-push *gate
-push previousGate
-equalToZero
-push *note
-push previousNote
-notEqual
-or
-and
-store
-push &noteOff
-push *gate
-equalToZero
-push previousGate
-push 0
-greaterThan
-and
-store
-push &previousGate
-push *gate
-store
-push &previousNote
-push *note
-store
-moduleEnd
 entryEnd
 groupEnd
-group envelope2
-; @pos 320 0
-; @group operator2
-expose note &dx7PitchRateScaling:note
-expose trigger &envelope4Stage:trigger
-expose release &envelope4Stage:release
-expose out &dx7Gain:out
+group voice
+; @pos 240 22
+expose frequency &voiceInput:frequency
+expose trigger &voiceInput:trigger
+expose release &voiceInput:release
+expose out &limiter:out
 
-init &note &noteInput:note
+init &frequency &noteInput:frequency
 init &trigger &noteInput:noteOn
 init &release &noteInput:noteOff
 
 pass env
 
 includes
-; @pos 0 -16
-include std/memory/loadAt
-include std/math/exp2
-include std/math/moveTowards
+; @pos -25 -70
+include std/math/trig/sine
+include std/math/trig/advancePhase
 includesEnd
 function dx7Level
-; @pos -65 0
+; @pos 150 22
 ; Exact raw DX7 level mapping for 0..99.
 param int level
 
@@ -786,6 +523,103 @@ push level
 add 28
 min
 functionEnd int
+function frequencyToRateKey
+; @pos 153 -10
+; DX7 rate scaling uses 3-key bands.
+; Oscillator pitch stays unquantized.
+param float frequency
+local float boundary
+local int key
+
+; The first band starts halfway
+; between MIDI notes 23 and 24.
+push 31.7721991639875
+localSet boundary
+loop 31
+push frequency
+push boundary
+lessThan
+if
+push key
+return
+ifEnd
+push boundary
+; Quarter-octave steps: 2^(3/12).
+mul 1.189207115002721
+localSet boundary
+push key
+add 1
+localSet key
+loopEnd
+push key
+functionEnd int
+note algorithm
+; @pos 254 3
+;
+; E.PIANO 1 / DX7 algorithm 5
+;
+; [2] --> [1] --+
+;               |
+; [4] --> [3] --+--> mixer
+;               |
+; [6] --> [5] --+
+;
+noteEnd
+entry main
+module voiceInput
+; @pos 254 19
+; @home left
+float* frequency ; Hz
+int* trigger
+int* release
+float latchedFrequency 8.1758
+int latchedTrigger
+int latchedRelease
+int rateKey
+
+; Synthesis uses the previous pitch.
+; Latch current inputs before the
+; envelopes run for the next sample.
+push *frequency
+push latchedFrequency
+notEqual
+if
+push &rateKey
+call frequencyToRateKey *frequency
+store
+ifEnd
+push &latchedFrequency
+push *frequency
+store
+push &latchedTrigger
+push *trigger
+store
+push &latchedRelease
+push *release
+store
+
+moduleEnd
+group envelope2
+; @pos 320 0
+; @group operator2
+expose key &dx7PitchRateScaling:key
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+
+init &key &voiceInput:rateKey
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
+
+pass env
+pass dx7Level
+
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
 entry main
 module dx7Settings
 ; @home left
@@ -799,16 +633,12 @@ moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
 ; Pitch-dependent DX7 speed offset.
-int* note
+int* key
 int* amount &dx7Settings:rateScaling
 int out
 
 push &out
-push *note
-div 3
-sub 7
-max 0
-min 31
+push *key
 mul *amount
 shiftRight 3
 store
@@ -990,16 +820,17 @@ groupEnd
 group envelope4
 ; @pos 320 22
 ; @group operator4
-expose note &dx7PitchRateScaling:note
+expose key &dx7PitchRateScaling:key
 expose trigger &envelope4Stage:trigger
 expose release &envelope4Stage:release
 expose out &dx7Gain:out
 
-init &note &noteInput:note
-init &trigger &noteInput:noteOn
-init &release &noteInput:noteOff
+init &key &voiceInput:rateKey
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
 
 pass env
+pass dx7Level
 
 includes
 ; @pos 0 -16
@@ -1007,34 +838,6 @@ include std/memory/loadAt
 include std/math/exp2
 include std/math/moveTowards
 includesEnd
-function dx7Level
-; @pos -65 0
-; Exact raw DX7 level mapping for 0..99.
-param int level
-
-push level
-mul 5
-push level
-mul 4
-add 1
-min
-push level
-mul 3
-add 5
-min
-push level
-mul 2
-add 11
-min
-push level
-mul 7
-div 5
-add 20
-min
-push level
-add 28
-min
-functionEnd int
 entry main
 module dx7Settings
 ; @home left
@@ -1048,16 +851,12 @@ moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
 ; Pitch-dependent DX7 speed offset.
-int* note
+int* key
 int* amount &dx7Settings:rateScaling
 int out
 
 push &out
-push *note
-div 3
-sub 7
-max 0
-min 31
+push *key
 mul *amount
 shiftRight 3
 store
@@ -1239,16 +1038,17 @@ groupEnd
 group envelope6
 ; @pos 320 44
 ; @group operator6
-expose note &dx7PitchRateScaling:note
+expose key &dx7PitchRateScaling:key
 expose trigger &envelope4Stage:trigger
 expose release &envelope4Stage:release
 expose out &dx7Gain:out
 
-init &note &noteInput:note
-init &trigger &noteInput:noteOn
-init &release &noteInput:noteOff
+init &key &voiceInput:rateKey
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
 
 pass env
+pass dx7Level
 
 includes
 ; @pos 0 -16
@@ -1256,34 +1056,6 @@ include std/memory/loadAt
 include std/math/exp2
 include std/math/moveTowards
 includesEnd
-function dx7Level
-; @pos -65 0
-; Exact raw DX7 level mapping for 0..99.
-param int level
-
-push level
-mul 5
-push level
-mul 4
-add 1
-min
-push level
-mul 3
-add 5
-min
-push level
-mul 2
-add 11
-min
-push level
-mul 7
-div 5
-add 20
-min
-push level
-add 28
-min
-functionEnd int
 entry main
 module dx7Settings
 ; @home left
@@ -1297,16 +1069,12 @@ moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
 ; Pitch-dependent DX7 speed offset.
-int* note
+int* key
 int* amount &dx7Settings:rateScaling
 int out
 
 push &out
-push *note
-div 3
-sub 7
-max 0
-min 31
+push *key
 mul *amount
 shiftRight 3
 store
@@ -1485,19 +1253,101 @@ store
 moduleEnd
 entryEnd
 groupEnd
+module modulator2
+; @pos 369 0
+; @group operator2
+use env
+float* frequency &voiceInput:latchedFrequency
+float phase 0.0
+float out
+float ratio 14.0
+float* amplitude &envelope2:out
+float level 0.58
+
+; @hide
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitude
+mul level
+store
+
+moduleEnd
+module modulator4
+; @pos 369 22
+; @group operator4
+use env
+float* frequency &voiceInput:latchedFrequency
+float phase 0.0
+float out
+float ratio 1.0
+float* amplitude &envelope4:out
+float level 0.89
+
+; @hide
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitude
+mul level
+store
+
+moduleEnd
+module modulator6
+; @pos 369 44
+; @group operator6
+use env
+float* frequency &voiceInput:latchedFrequency
+float phase 0.0
+float out
+float ratio 1.01
+float* amplitude &envelope6:out
+float level 0.79
+
+; @hide
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitude
+mul level
+store
+
+moduleEnd
 group envelope1
-; @pos 422 0
+; @pos 423 0
 ; @group operator1
-expose note &dx7PitchRateScaling:note
+expose key &dx7PitchRateScaling:key
 expose trigger &envelope4Stage:trigger
 expose release &envelope4Stage:release
 expose out &dx7Gain:out
 
-init &note &noteInput:note
-init &trigger &noteInput:noteOn
-init &release &noteInput:noteOff
+init &key &voiceInput:rateKey
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
 
 pass env
+pass dx7Level
 
 includes
 ; @pos 0 -16
@@ -1505,34 +1355,6 @@ include std/memory/loadAt
 include std/math/exp2
 include std/math/moveTowards
 includesEnd
-function dx7Level
-; @pos -65 0
-; Exact raw DX7 level mapping for 0..99.
-param int level
-
-push level
-mul 5
-push level
-mul 4
-add 1
-min
-push level
-mul 3
-add 5
-min
-push level
-mul 2
-add 11
-min
-push level
-mul 7
-div 5
-add 20
-min
-push level
-add 28
-min
-functionEnd int
 entry main
 module dx7Settings
 ; @home left
@@ -1546,16 +1368,12 @@ moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
 ; Pitch-dependent DX7 speed offset.
-int* note
+int* key
 int* amount &dx7Settings:rateScaling
 int out
 
 push &out
-push *note
-div 3
-sub 7
-max 0
-min 31
+push *key
 mul *amount
 shiftRight 3
 store
@@ -1735,18 +1553,19 @@ moduleEnd
 entryEnd
 groupEnd
 group envelope3
-; @pos 422 22
+; @pos 423 22
 ; @group operator3
-expose note &dx7PitchRateScaling:note
+expose key &dx7PitchRateScaling:key
 expose trigger &envelope4Stage:trigger
 expose release &envelope4Stage:release
 expose out &dx7Gain:out
 
-init &note &noteInput:note
-init &trigger &noteInput:noteOn
-init &release &noteInput:noteOff
+init &key &voiceInput:rateKey
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
 
 pass env
+pass dx7Level
 
 includes
 ; @pos 0 -16
@@ -1754,34 +1573,6 @@ include std/memory/loadAt
 include std/math/exp2
 include std/math/moveTowards
 includesEnd
-function dx7Level
-; @pos -65 0
-; Exact raw DX7 level mapping for 0..99.
-param int level
-
-push level
-mul 5
-push level
-mul 4
-add 1
-min
-push level
-mul 3
-add 5
-min
-push level
-mul 2
-add 11
-min
-push level
-mul 7
-div 5
-add 20
-min
-push level
-add 28
-min
-functionEnd int
 entry main
 module dx7Settings
 ; @home left
@@ -1795,16 +1586,12 @@ moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
 ; Pitch-dependent DX7 speed offset.
-int* note
+int* key
 int* amount &dx7Settings:rateScaling
 int out
 
 push &out
-push *note
-div 3
-sub 7
-max 0
-min 31
+push *key
 mul *amount
 shiftRight 3
 store
@@ -1984,18 +1771,19 @@ moduleEnd
 entryEnd
 groupEnd
 group envelope5
-; @pos 422 44
+; @pos 423 44
 ; @group operator5
-expose note &dx7PitchRateScaling:note
+expose key &dx7PitchRateScaling:key
 expose trigger &envelope4Stage:trigger
 expose release &envelope4Stage:release
 expose out &dx7Gain:out
 
-init &note &noteInput:note
-init &trigger &noteInput:noteOn
-init &release &noteInput:noteOff
+init &key &voiceInput:rateKey
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
 
 pass env
+pass dx7Level
 
 includes
 ; @pos 0 -16
@@ -2003,34 +1791,6 @@ include std/memory/loadAt
 include std/math/exp2
 include std/math/moveTowards
 includesEnd
-function dx7Level
-; @pos -65 0
-; Exact raw DX7 level mapping for 0..99.
-param int level
-
-push level
-mul 5
-push level
-mul 4
-add 1
-min
-push level
-mul 3
-add 5
-min
-push level
-mul 2
-add 11
-min
-push level
-mul 7
-div 5
-add 20
-min
-push level
-add 28
-min
-functionEnd int
 entry main
 module dx7Settings
 ; @home left
@@ -2044,16 +1804,12 @@ moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
 ; Pitch-dependent DX7 speed offset.
-int* note
+int* key
 int* amount &dx7Settings:rateScaling
 int out
 
 push &out
-push *note
-div 3
-sub 7
-max 0
-min 31
+push *key
 mul *amount
 shiftRight 3
 store
@@ -2232,4 +1988,168 @@ store
 moduleEnd
 entryEnd
 groupEnd
+module carrier1
+; @pos 472 0
+; @group operator1
+use env
+float* frequency &voiceInput:latchedFrequency
+float* phaseMod &modulator2:out
+float phase 0.0
+float ratio 1.005
+float level 0.99
+float out
+float* amplitudeMod &envelope1:out
+
+; @hide
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+add *phaseMod
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitudeMod
+mul level
+store
+
+moduleEnd
+module carrier3
+; @pos 472 22
+; @group operator3
+use env
+float* frequency &voiceInput:latchedFrequency
+float* phaseMod &modulator4:out
+float phase 0.0
+float ratio 1.0
+float level 0.99
+float out
+float* amplitudeMod &envelope3:out
+
+; @hide
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+add *phaseMod
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitudeMod
+mul level
+store
+
+moduleEnd
+module carrier5
+; @pos 472 44
+; @group operator5
+use env
+float* frequency &voiceInput:latchedFrequency
+float* phaseMod &modulator6:out
+float phase 0.0
+float ratio 0.99
+float out
+float* amplitude &envelope5:out
+float level 0.99
+
+; @hide
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+push SAMPLE_RATE
+call advancePhase
+add *phaseMod
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitude
+mul level
+store
+
+moduleEnd
+module mixer
+; @pos 529 22
+
+float* in1 &carrier1:out
+float* in2 &carrier3:out
+float* in3 &carrier5:out
+float out
+
+push &out
+push *in1
+mul 0.5
+push *in2
+mul 0.5
+add
+push *in3
+mul 0.5
+add
+; Headroom for three attack peaks.
+mul 0.65
+store
+
+moduleEnd
+module limiter
+; @pos 574 22
+float* in &mixer:out
+float out
+
+push &out
+push *in
+max -1.0
+min 1.0
+store
+moduleEnd
+entryEnd
+groupEnd
+module audioout
+; @pos 292 22
+use env
+
+float* in &voice:out
+
+; Audio buffer
+float[] buffer AUDIO_BUFFER_SIZE
+int pointer &buffer
+
+; @plot &buffer count(buffer)
+
+; Store the input value
+; in the buffer
+push pointer
+push *in
+store
+
+; Increment the buffer
+; pointer by the
+; buffer word size
+push &pointer
+push pointer
+add sizeof(buffer)
+store
+
+; Reset the buffer pointer
+; when it reaches the end
+; of the buffer
+push pointer
+push buffer&
+greaterThan
+if
+push &pointer
+push &buffer
+store
+ifEnd
+
+moduleEnd
 entryEnd
