@@ -90,7 +90,7 @@ editor state ---------------------/         |
   -> CompileResult
 ```
 
-`parseProjectSource(source)` converts the textual `.8f4e` representation to the compiler-owned `ProjectObjectModel`.
+`parseProjectSource(source)` inlines scope-local group templates in source text, then converts the expanded `.8f4e` representation to the compiler-owned `ProjectObjectModel`. See [group templates](docs/source-syntax.md#group-templates).
 `compileProject(project, options)` compiles that object model directly. Editors that already hold typed blocks can skip
 the text representation without invoking a second block-classification or whole-project preparation step.
 

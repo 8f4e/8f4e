@@ -83,6 +83,27 @@ export function getError(
 	details?: ErrorDetails
 ): CompilerStageError {
 	switch (code) {
+		case ErrorCode.UNDEFINED_TEMPLATE:
+			return {
+				code,
+				message: `Template "${details?.identifier}" is not defined in the directly containing scope. (${code})`,
+				line,
+				context,
+			};
+		case ErrorCode.DUPLICATE_TEMPLATE:
+			return {
+				code,
+				message: `Template "${details?.identifier}" is already defined in this scope. (${code})`,
+				line,
+				context,
+			};
+		case ErrorCode.RECURSIVE_TEMPLATE:
+			return {
+				code,
+				message: `Template "${details?.identifier}" cannot recursively reference itself across an isolated group scope. (${code})`,
+				line,
+				context,
+			};
 		case ErrorCode.INSTRUCTION_INVALID_OUTSIDE_BLOCK:
 			return {
 				code,

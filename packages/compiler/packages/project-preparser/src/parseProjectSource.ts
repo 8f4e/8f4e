@@ -4,17 +4,12 @@ import {
 	documentBlockInstructionByType,
 	documentBlockInstructionPairs,
 } from '@8f4e/language-spec';
-import { ENTRY_BLOCK_DELIMITER, FORMAT_HEADER, GROUP_BLOCK_DELIMITER } from './delimiters';
-import {
-	getExpectedProjectCloserPrefix,
-	getProjectCloserKeyword,
-	getProjectOpenerKeyword,
-	startsWithInstruction,
-} from './projectKeywords';
+import { FORMAT_HEADER } from './delimiters';
+import { startsWithInstruction } from './projectKeywords';
 import { getProjectBlockName, isProjectGapLine } from './projectLines';
 import { parseProjectMemoryExposureLine } from './projectMemoryExposure';
-
-type ParsedProjectBlock = { block: ProjectBlock; type: DocumentBlockType; nextIndex: number };
+import { isBlock, readProjectSource, type SourceBlock, type SourceNode, sourceLines } from './projectSource';
+import { inlineProjectTemplates } from './projectTemplates';
 
 function hasDisabledDirective(code: readonly string[]): boolean {
 	return code.some(line => /^\s*;\s*@disabled(?:\s|$)/.test(line));
@@ -22,182 +17,115 @@ function hasDisabledDirective(code: readonly string[]): boolean {
 
 /** Parses `.8f4e` text into the canonical compiler-owned project object model. */
 export function parseProjectSource(text: string): ProjectObjectModel {
-	const lines = text.split('\n');
-	if (lines[0]?.trim() !== FORMAT_HEADER) {
-		throw new Error(`Invalid .8f4e file: expected header "${FORMAT_HEADER}", got "${lines[0]?.trim() ?? ''}"`);
-	}
-
+	const source = inlineProjectTemplates(text);
+	const header = source.split('\n', 1)[0].trim();
+	if (header !== FORMAT_HEADER)
+		throw new Error(`Invalid .8f4e file: expected header "${FORMAT_HEADER}", got "${header}"`);
 	const project = createProjectObjectModel();
 
-	function addParsedBlock(targetProject: ProjectObjectModel, parsed: ParsedProjectBlock, entry?: string): void {
-		const { block, type } = parsed;
-		if (type === 'module') {
-			if (!entry) throw new Error(`Project module block ${block.id} is missing an entry`);
-			if (!targetProject.entries.includes(entry)) {
-				targetProject.entries.push(entry);
-			}
-			targetProject.execution.push({ ...block, type: 'module', entry });
-			return;
-		}
-		const collectionByType = {
-			function: targetProject.functions,
-			constants: targetProject.constants,
-			prototype: targetProject.prototypes,
-			includes: targetProject.includes,
-			note: targetProject.notes,
+	function addBlock(target: ProjectObjectModel, node: SourceBlock, type: DocumentBlockType, entry?: string): void {
+		const code = sourceLines([node]);
+		const block: ProjectBlock = {
+			id: node.start.lineNumber,
+			code,
+			...(hasDisabledDirective(code) ? { disabled: true } : {}),
 		};
-		collectionByType[type].push(block);
+		if (type === 'module') {
+			if (!entry)
+				throw new Error(`Parse error at line ${node.start.lineNumber}: module blocks must be inside an entry block`);
+			if (!target.entries.includes(entry)) target.entries.push(entry);
+			target.execution.push({ ...block, type: 'module', entry });
+		} else {
+			const collections = {
+				function: target.functions,
+				constants: target.constants,
+				prototype: target.prototypes,
+				includes: target.includes,
+				note: target.notes,
+			};
+			collections[type].push(block);
+		}
 	}
 
-	function readProjectBlock(startIndex: number): ParsedProjectBlock {
-		const openerLine = lines[startIndex];
-		const openerKeyword = getProjectOpenerKeyword(openerLine.trim());
-		if (
-			!openerKeyword ||
-			openerKeyword === ENTRY_BLOCK_DELIMITER.opener ||
-			openerKeyword === GROUP_BLOCK_DELIMITER.opener
-		) {
-			throw new Error(`Parse error at line ${startIndex + 1}: expected document block opener`);
-		}
-		const blockType = documentBlockInstructionPairs.find(({ start }) => start === openerKeyword)?.type;
-		if (!blockType) {
-			throw new Error(`Parse error at line ${startIndex + 1}: unknown document block opener "${openerKeyword}"`);
-		}
-
-		const expectedCloser = getExpectedProjectCloserPrefix(openerKeyword);
-		const currentBlockLines = [openerLine];
-		for (let i = startIndex + 1; i < lines.length; i += 1) {
-			const line = lines[i];
-			const trimmed = line.trim();
-			currentBlockLines.push(line);
-			const closer = getProjectCloserKeyword(trimmed);
-			if (blockType === 'note' && closer !== expectedCloser) {
-				continue;
-			}
-			if (closer) {
-				if (closer !== expectedCloser) {
-					throw new Error(`Parse error at line ${i + 1}: closer "${closer}" does not match opener "${openerKeyword}"`);
-				}
-				return {
-					block: {
-						id: startIndex + 1,
-						code: currentBlockLines,
-						...(hasDisabledDirective(currentBlockLines) ? { disabled: true } : {}),
-					},
-					type: blockType,
-					nextIndex: i + 1,
-				};
-			}
-			if (trimmed !== '' && getProjectOpenerKeyword(trimmed)) {
-				throw new Error(
-					`Parse error at line ${i + 1}: mixed block type markers (found opener "${trimmed}" inside "${openerKeyword}" block)`
-				);
-			}
-		}
-		throw new Error(`Parse error: unclosed block with opener "${openerKeyword}"`);
-	}
-
-	function readEntry(startIndex: number, scope: ProjectObjectModel): number {
-		const name = getProjectBlockName(lines[startIndex], startIndex + 1, 'entry');
-		if (!scope.entries.includes(name)) scope.entries.push(name);
-		return readScope(startIndex + 1, scope, { closer: ENTRY_BLOCK_DELIMITER.closer, entry: name });
-	}
-
-	function readGroup(startIndex: number, ambientEntry: string): { nextIndex: number; group: ProjectGroupObjectModel } {
-		const openerLine = lines[startIndex];
+	function readGroup(node: SourceBlock, entry: string): ProjectGroupObjectModel {
 		const group: ProjectGroupObjectModel = {
 			...createProjectObjectModel(),
 			type: 'group',
-			id: startIndex + 1,
-			name: getProjectBlockName(openerLine, startIndex + 1, 'group'),
-			entry: ambientEntry,
-			code: [openerLine],
+			id: node.start.lineNumber,
+			name: getProjectBlockName(node.start.text, node.start.lineNumber, 'group'),
+			entry,
+			code: [node.start.text],
 			exposures: [],
 		};
-		const nextIndex = readScope(startIndex + 1, group, { closer: GROUP_BLOCK_DELIMITER.closer, group });
-		return { nextIndex, group };
+		readScope(node.children, group, { group });
+		group.code.push(node.end.text);
+		return group;
 	}
 
-	/** Root and group scopes share structural parsing; entry sections only select module membership. */
 	function readScope(
-		startIndex: number,
+		nodes: SourceNode[],
 		scope: ProjectObjectModel,
-		options: { closer?: string; entry?: string; group?: ProjectGroupObjectModel } = {}
-	): number {
+		options: { entry?: string; group?: ProjectGroupObjectModel } = {}
+	): void {
 		let pendingGapLines: string[] = [];
-		for (let i = startIndex; i < lines.length; ) {
-			const line = lines[i];
-			const trimmed = line.trim();
-			const closer = getProjectCloserKeyword(trimmed);
-			if (closer) {
-				if (closer !== options.closer) throw new Error(`Parse error at line ${i + 1}: unexpected closer "${closer}"`);
-				if (options.group) scope.code.push(line);
-				else if (!options.entry && scope.code.length) scope.code.push(...pendingGapLines);
-				return i + 1;
-			}
-			if (isProjectGapLine(trimmed)) {
-				if (options.group) scope.code.push(line);
-				else if (!options.entry) pendingGapLines.push(line);
-				i += 1;
-				continue;
-			}
-			if (startsWithInstruction(trimmed, 'expose') && options.group) {
-				const exposure = parseProjectMemoryExposureLine(trimmed, i + 1);
-				if (options.group.exposures.some(item => item.name === exposure.name))
-					throw new Error(`Parse error at line ${i + 1}: duplicate exposure "${exposure.name}"`);
-				options.group.exposures.push(exposure);
-				scope.code.push(line);
-				i += 1;
-				continue;
-			}
-			const opener = getProjectOpenerKeyword(trimmed);
-			if (!opener) {
+		for (const node of nodes) {
+			if (!isBlock(node)) {
+				const line = node.text;
+				const trimmed = line.trim();
+				if (isProjectGapLine(trimmed)) {
+					if (options.group) scope.code.push(line);
+					else if (!options.entry) pendingGapLines.push(line);
+					continue;
+				}
+				if (startsWithInstruction(trimmed, 'expose') && options.group) {
+					const exposure = parseProjectMemoryExposureLine(trimmed, node.lineNumber);
+					if (options.group.exposures.some(item => item.name === exposure.name))
+						throw new Error(`Parse error at line ${node.lineNumber}: duplicate exposure "${exposure.name}"`);
+					options.group.exposures.push(exposure);
+					scope.code.push(line);
+					continue;
+				}
 				if (options.entry)
 					throw new Error(
-						`Parse error at line ${i + 1}: entry "${options.entry}" can only contain module or group blocks, got "${trimmed}"`
+						`Parse error at line ${node.lineNumber}: entry "${options.entry}" can only contain module or group blocks, got "${trimmed}"`
 					);
-				if (!options.group && !startsWithInstruction(trimmed, 'pass') && !startsWithInstruction(trimmed, 'init')) {
-					throw new Error(`Parse error at line ${i + 1}: expected opener keyword, got "${trimmed}"`);
-				}
+				if (!options.group && !startsWithInstruction(trimmed, 'pass') && !startsWithInstruction(trimmed, 'init'))
+					throw new Error(`Parse error at line ${node.lineNumber}: expected opener keyword, got "${trimmed}"`);
 				if (!options.group && scope.code.length === 0)
 					while (pendingGapLines[0]?.trim() === '') pendingGapLines.shift();
 				scope.code.push(...pendingGapLines, line);
 				pendingGapLines = [];
-				i += 1;
 				continue;
 			}
 			pendingGapLines = [];
-			if (opener === ENTRY_BLOCK_DELIMITER.opener) {
+			if (node.opener === 'entry') {
 				if (options.entry)
-					throw new Error(`Parse error at line ${i + 1}: entry blocks cannot be nested inside entries`);
-				i = readEntry(i, scope);
+					throw new Error(`Parse error at line ${node.start.lineNumber}: entry blocks cannot be nested inside entries`);
+				const name = getProjectBlockName(node.start.text, node.start.lineNumber, 'entry');
+				if (!scope.entries.includes(name)) scope.entries.push(name);
+				readScope(node.children, scope, { entry: name });
 				continue;
 			}
-			if (opener === GROUP_BLOCK_DELIMITER.opener) {
-				if (!options.entry) throw new Error(`Parse error at line ${i + 1}: group blocks must be inside an entry block`);
-				const nested = readGroup(i, options.entry);
-				if (scope.execution.some(block => block.type === 'group' && block.name === nested.group.name))
-					throw new Error(`Parse error at line ${i + 1}: duplicate sibling group "${nested.group.name}"`);
-				if (!scope.entries.includes(nested.group.entry)) scope.entries.push(nested.group.entry);
-				scope.execution.push(nested.group);
-				i = nested.nextIndex;
+			if (node.opener === 'group') {
+				if (!options.entry)
+					throw new Error(`Parse error at line ${node.start.lineNumber}: group blocks must be inside an entry block`);
+				const group = readGroup(node, options.entry);
+				if (scope.execution.some(block => block.type === 'group' && block.name === group.name))
+					throw new Error(`Parse error at line ${node.start.lineNumber}: duplicate sibling group "${group.name}"`);
+				if (!scope.entries.includes(group.entry)) scope.entries.push(group.entry);
+				scope.execution.push(group);
 				continue;
 			}
-			if (options.entry && opener !== documentBlockInstructionByType.module.start)
+			if (options.entry && node.opener !== documentBlockInstructionByType.module.start)
 				throw new Error(
-					`Parse error at line ${i + 1}: entry "${options.entry}" can only contain module or group blocks, got "${trimmed}"`
+					`Parse error at line ${node.start.lineNumber}: entry "${options.entry}" can only contain module or group blocks, got "${node.start.text.trim()}"`
 				);
-			const parsed = readProjectBlock(i);
-			if (parsed.type === 'module' && !options.entry)
-				throw new Error(`Parse error at line ${i + 1}: module blocks must be inside an entry block`);
-			addParsedBlock(scope, parsed, options.entry);
-			i = parsed.nextIndex;
+			const type = documentBlockInstructionPairs.find(({ start }) => start === node.opener)!.type;
+			addBlock(scope, node, type, options.entry);
 		}
-		if (options.closer) throw new Error(`Parse error: unclosed block with closer "${options.closer}"`);
-		if (scope.code.length) scope.code.push(...pendingGapLines);
-		return lines.length;
+		if (!options.entry && scope.code.length) scope.code.push(...pendingGapLines);
 	}
 
-	readScope(1, project);
+	readScope(readProjectSource(source).slice(1), project);
 	return project;
 }

@@ -71,6 +71,10 @@ describe('instruction name classification', () => {
 		expect(knownInstructionNameSet.has('init')).toBe(true);
 		expect(knownInstructionNameSet.has('bind')).toBe(false);
 		expect(knownInstructionNameSet.has('pass')).toBe(true);
+		for (const instruction of ['template', 'templateEnd', 'useTemplate']) {
+			expect(knownInstructionNameSet.has(instruction)).toBe(true);
+			expect(isSubProgramInstructionName(instruction)).toBe(false);
+		}
 		expect(isSubProgramInstructionName('group')).toBe(false);
 		expect(isSubProgramInstructionName('expose')).toBe(false);
 		expect(isSubProgramInstructionName('init')).toBe(false);

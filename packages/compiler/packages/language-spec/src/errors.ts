@@ -61,6 +61,9 @@ export const ErrorCode = {
 	INVALID_ADDRESS_ARITHMETIC: 78,
 	REFERENCE_SLOT_HAS_NO_STORAGE: 79,
 	REFERENCE_SLOT_CANNOT_BE_REBOUND: 80,
+	UNDEFINED_TEMPLATE: 81,
+	DUPLICATE_TEMPLATE: 82,
+	RECURSIVE_TEMPLATE: 83,
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];

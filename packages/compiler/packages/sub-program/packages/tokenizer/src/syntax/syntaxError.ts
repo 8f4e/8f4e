@@ -40,6 +40,10 @@ export const SyntaxErrorCode = {
 	PARAM_AFTER_FUNCTION_BODY: 17,
 	INVALID_PROJECT_MEMORY_INITIALIZER: 18,
 	INVALID_REFERENCE_SLOT: 19,
+	INVALID_TEMPLATE_NAME: 20,
+	MULTIPLE_TEMPLATE_REFERENCES: 21,
+	TEMPLATE_INSTANCE_HAS_CONTENT: 22,
+	INVALID_TEMPLATE_CONTENT: 23,
 } as const;
 
 export type SyntaxErrorCodeValue = (typeof SyntaxErrorCode)[keyof typeof SyntaxErrorCode];
@@ -50,6 +54,12 @@ export type SyntaxErrorCodeValue = (typeof SyntaxErrorCode)[keyof typeof SyntaxE
  * and this registry will supply the default.
  */
 const SyntaxErrorMessages: Record<SyntaxErrorCodeValue, string> = {
+	[SyntaxErrorCode.INVALID_TEMPLATE_NAME]:
+		'template and useTemplate require exactly one name matching [A-Za-z_][A-Za-z0-9_-]*.',
+	[SyntaxErrorCode.MULTIPLE_TEMPLATE_REFERENCES]: 'A group may contain only one useTemplate instruction.',
+	[SyntaxErrorCode.TEMPLATE_INSTANCE_HAS_CONTENT]:
+		'A source group using a template cannot also contain child blocks or entries.',
+	[SyntaxErrorCode.INVALID_TEMPLATE_CONTENT]: 'A template body may contain only child blocks, entries, and comments.',
 	[SyntaxErrorCode.INVALID_REFERENCE_SLOT]:
 		'A fixed reference requires a non-constant name and a memory start address: <type>& <name> &<memory>, &<module>:<memory>, or &<module>:<index>.',
 	[SyntaxErrorCode.INVALID_MEMORY_IDENTIFIER_PREFIX]: 'Invalid memory identifier prefix.',

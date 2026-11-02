@@ -8,6 +8,8 @@ export const projectInstructions = {
 	expose: 'expose',
 	init: 'init',
 	pass: 'pass',
+	template: { opener: 'template', closer: 'templateEnd' },
+	useTemplate: 'useTemplate',
 } as const;
 
 export const projectInstructionNames = [
@@ -18,6 +20,9 @@ export const projectInstructionNames = [
 	projectInstructions.expose,
 	projectInstructions.init,
 	projectInstructions.pass,
+	projectInstructions.template.opener,
+	projectInstructions.template.closer,
+	projectInstructions.useTemplate,
 ] as const;
 
 export type ProjectInstructionName = (typeof projectInstructionNames)[number];

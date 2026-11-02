@@ -51,8 +51,21 @@ describe('ProjectObjectModel', () => {
 			expose: 'expose',
 			init: 'init',
 			pass: 'pass',
+			template: { opener: 'template', closer: 'templateEnd' },
+			useTemplate: 'useTemplate',
 		});
-		expect(projectInstructionNames).toEqual(['entry', 'entryEnd', 'group', 'groupEnd', 'expose', 'init', 'pass']);
+		expect(projectInstructionNames).toEqual([
+			'entry',
+			'entryEnd',
+			'group',
+			'groupEnd',
+			'expose',
+			'init',
+			'pass',
+			'template',
+			'templateEnd',
+			'useTemplate',
+		]);
 	});
 
 	it('resolves structured project memory aliases', () => {
