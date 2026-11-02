@@ -404,7 +404,7 @@ store
 moduleEnd
 module blepSmoother
 ; @pos 213 -73
-float& minBLEPLUTItem0 &minBLEPLUT:0
+float& minBLEPLUTStart &minBLEPLUT:0
 
 float* raw &pcmPlayer:out
 float* position &pcmPlayer:readPosition
@@ -426,7 +426,7 @@ push index
 loopIndex
 add
 and 31
-push minBLEPLUTItem0
+push minBLEPLUTStart
 call positionIncrementToBlepPhase
 - *position *readIncrement
 loopIndex

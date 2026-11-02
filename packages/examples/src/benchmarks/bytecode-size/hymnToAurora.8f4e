@@ -400,24 +400,24 @@ function sampleNumberToAddr
 ; @tab 8
 param int sampleNumber
 param int* addressTable
+param int addressCount
+local int tableIndex
+
+; Entry zero is the fallback for unmapped sample numbers.
+push sampleNumber
+add 1
+localSet tableIndex
+push tableIndex
+push addressCount
+greaterOrEqualUnsigned
+if
+push 0
+localSet tableIndex
+ifEnd
 
 push addressTable
-push sampleNumber
-mapBegin int
-map 0 4
-map 1 8
-map 2 12
-map 3 16
-map 4 20
-map 5 24
-map 6 28
-map 7 32
-map 8 36
-map 9 40
-map 10 44
-map 11 48
-map 12 52
-mapEnd int
+push tableIndex
+mul sizeof(*addressTable)
 add
 load
 
@@ -546,7 +546,7 @@ functionEnd int
 entry main
 module sampleAddressTable
 ; @pos 795 -163
-; Address table passed explicitly to sampleNumberToAddr.
+; Default first, then one address per sample number.
 int[] addresses 14
 - 0
 - &samplePack:sample0
@@ -935,7 +935,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses
+call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
 store
 
 push &sampleSize
@@ -1035,7 +1035,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses
+call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
 store
 
 push &sampleSize
@@ -1136,7 +1136,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses
+call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
 store
 
 push &sampleSize
@@ -1237,7 +1237,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses
+call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
 store
 
 push &sampleSize

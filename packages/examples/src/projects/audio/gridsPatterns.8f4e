@@ -158,46 +158,30 @@ param int cellX
 param int cellY
 param int step
 param int* addressTable
+param int addressCount
+local int tableIndex
+
+push cellX
+mul 5
+add cellY
+add 1
+localSet tableIndex
+push tableIndex
+push addressCount
+greaterOrEqualUnsigned
+if
+push 0
+localSet tableIndex
+ifEnd
 
 push addressTable
-push cellX
-push 5
-mul
-push cellY
-add
-mapBegin int
-map 0 4
-map 1 8
-map 2 12
-map 3 16
-map 4 20
-map 5 24
-map 6 28
-map 7 32
-map 8 36
-map 9 40
-map 10 44
-map 11 48
-map 12 52
-map 13 56
-map 14 60
-map 15 64
-map 16 68
-map 17 72
-map 18 76
-map 19 80
-map 20 84
-map 21 88
-map 22 92
-map 23 96
-map 24 100
-mapEnd int
+push tableIndex
+mul sizeof(*addressTable)
 add
 load
 
 push step
-push 4
-mul
+mul sizeof(*addressTable)
 add
 functionEnd int
 function selectRows
@@ -213,6 +197,7 @@ param int** rowB
 param int** rowC
 param int** rowD
 param int* addressTable
+param int addressCount
 local int cellX
 local int cellY
 
@@ -229,7 +214,7 @@ push rowA
 push cellX
 push cellY
 push step
-call patternRow addressTable
+call patternRow addressTable addressCount
 store
 
 push rowB
@@ -238,7 +223,7 @@ push 1
 add
 push cellY
 push step
-call patternRow addressTable
+call patternRow addressTable addressCount
 store
 
 push rowC
@@ -247,7 +232,7 @@ push cellY
 push 1
 add
 push step
-call patternRow addressTable
+call patternRow addressTable addressCount
 store
 
 push rowD
@@ -258,7 +243,7 @@ push cellY
 push 1
 add
 push step
-call patternRow addressTable
+call patternRow addressTable addressCount
 store
 functionEnd
 function readPattern
@@ -403,7 +388,7 @@ noteEnd
 entry main
 module patternAddressTable
 ; @pos 383 -37
-; Address table passed explicitly to patternRow.
+; Default first, then one address per map cell.
 int[] addresses 26
 - 0
 - &pattern10:0
@@ -526,7 +511,7 @@ call selectRows
 - &rowB
 - &rowC
 - &rowD
-- patternAddresses
+- patternAddresses count(*patternAddresses)
 
 push x
 call mapBalance

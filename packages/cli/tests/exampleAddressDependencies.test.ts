@@ -36,10 +36,13 @@ function lookup
 #impure
 param int sampleNumber
 param int* addresses
-call sampleNumberToAddr sampleNumber addresses
+param int addressCount
+call sampleNumberToAddr sampleNumber addresses addressCount
 functionEnd int`);
-		const table = result.memoryPlan.modules.sampleAddressTable.memory.addresses.byteAddress;
-		for (const sample of [-1, ...Array.from({ length: 34 }, (_, i) => i), 1024]) {
+		const addresses = result.memoryPlan.modules.sampleAddressTable.memory.addresses;
+		const table = addresses.byteAddress;
+		const count = addresses.numberOfElements;
+		for (const sample of [-2147483648, -2, -1, ...Array.from({ length: 34 }, (_, i) => i), 1024, 2147483647]) {
 			const fallback = sample < 0 || sample > project.last || project.missing?.includes(sample);
 			const silent = project.silent?.includes(sample);
 			let expected: number;
@@ -50,7 +53,7 @@ functionEnd int`);
 				const pack = project.singlePack ? 'samplePack' : `samplePack${selected >= project.secondPack! ? 2 : 1}`;
 				expected = result.memoryPlan.modules[pack].memory[`sample${selected}`].byteAddress;
 			}
-			expect(lookup(sample, table), `sample ${sample}`).toBe(expected);
+			expect(lookup(sample, table, count), `sample ${sample}`).toBe(expected);
 		}
 	});
 
@@ -77,18 +80,23 @@ param int x
 param int y
 param int step
 param int* addresses
-call patternRow x y step addresses
+param int addressCount
+call patternRow x y step addresses addressCount
 functionEnd int`);
 		const patterns = [10, 8, 0, 9, 11, 15, 7, 13, 12, 6, 18, 14, 4, 5, 3, 23, 16, 21, 1, 2, 24, 19, 17, 20, 22];
-		const table = result.memoryPlan.modules.patternAddressTable.memory.addresses.byteAddress;
+		const addresses = result.memoryPlan.modules.patternAddressTable.memory.addresses;
+		const table = addresses.byteAddress;
+		const count = addresses.numberOfElements;
 		for (const [cell, pattern] of patterns.entries()) {
 			const name = `pattern${String(pattern).padStart(2, '0')}`;
 			const target = Object.values(result.memoryPlan.modules[name].memory)[0].byteAddress;
 			for (const step of [0, 17, 31]) {
-				expect(lookup(Math.floor(cell / 5), cell % 5, step, table)).toBe(target + step * 4);
+				expect(lookup(Math.floor(cell / 5), cell % 5, step, table, count)).toBe(target + step * 4);
 			}
 		}
-		expect(lookup(-1, 0, 3, table)).toBe(12);
-		expect(lookup(5, 0, 0, table)).toBe(0);
+		expect(lookup(-1, 0, 3, table, count)).toBe(12);
+		expect(lookup(5, 0, 0, table, count)).toBe(0);
+		expect(lookup(-2147483648, 0, 3, table, count)).toBe(12);
+		expect(lookup(2147483647, 0, 3, table, count)).toBe(12);
 	});
 });

@@ -31,12 +31,16 @@ Indexed formant and BLEP dependencies now use `float&` slots. Grids output reset
 slot, `slot` supplies the target address, `*slot` reads its current contents, and queries such as
 `count(*slot)` inspect its target declaration.
 
-`sampleNumberToAddr` and `patternRow` now receive an explicit `int* addressTable`; `selectRows` forwards
-that parameter. Each calling module binds the shared table with an `int&` reference. The address tables
-use legal declaration initializers, including indexed pattern references. They are runtime lookup data,
-not hidden lookups inside functions. Maps select table offsets before loading the address, preserving
-sparse keys, silence mappings, and explicit or implicit defaults. These tables add 56–132 bytes per
-sample project and 104 bytes to Grids, plus one load per lookup.
+`sampleNumberToAddr` and `patternRow` now receive an explicit `int* addressTable` and its element count;
+`selectRows` forwards both parameters. Each calling module binds the shared table with an `int&` reference
+and supplies `count(*slot)`. The address tables use legal declaration initializers, including indexed
+pattern references. Entry zero holds the fallback; subsequent entries correspond directly to sample
+numbers or flattened Grids cells. Sparse sample numbers and silence mappings occupy explicit entries.
+
+The helpers select the fallback for out-of-range indices, including negative values and integer overflow,
+using an unsigned bounds check. They calculate offsets with `sizeof(*addressTable)`, so no map of numeric
+byte offsets encodes the table layout. These tables add 56–132 bytes per sample project and 104 bytes to
+Grids, plus one load per lookup.
 
 The `lowerIntentions` fallback to `&samplePack1:` remains a declaration initializer in the table, where
 module-base addresses are supported. This does not add module-base support to fixed-reference initializers.
@@ -149,7 +153,7 @@ assertion functions and example lookup helpers now take explicit dependency para
 - Nx examples target: passed, including all 54 CLI tests. The module test runner currently reports
   “No tests found” for the reusable `.8f4em` catalog; it is not counted as additional executed assertions.
 - `exampleAddressDependencies.test.ts` executes every sample map key, unmapped/default cases, every Grids
-  cell, representative step offsets, and invalid cells against the shipped helpers and memory plans.
+  cell, representative step offsets, invalid cells, and integer bounds against the shipped helpers and memory plans.
   Existing Grids clock scheduling assertions still verify runtime pulses and pointer changes.
 - Nx editor-state tests: 698 passed; MIDI-input tests: 20 passed.
 - Browser homepage/gallery suite: all 19 tests passed against the existing screenshot reference.
