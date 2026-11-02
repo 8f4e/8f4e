@@ -77,7 +77,7 @@ use env
 int8[] buffer ASSET_AMEN_SIZE
 ; @config bin.amen.memory buffer
 float defSpeed 0.48
-float* speed &defSpeed
+float& speed &defSpeed
 float position
 int8* playhead &buffer
 float out
@@ -128,7 +128,7 @@ module audioout
 ; @pos 140 -63
 use env
 
-float* in &pcmPlayer8bit:out
+float& in &pcmPlayer8bit:out
 
 float[] buffer AUDIO_BUFFER_SIZE
 float* pointer &buffer

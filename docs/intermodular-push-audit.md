@@ -46,7 +46,7 @@ The `lowerIntentions` fallback to `&samplePack1:` is an allowed intermodular mod
 an impure function. Module-base support in fixed-reference initializers remains a separate limitation.
 Pattern-order pointers remain mutable because playback advances and resets them.
 
-## Per-file inventory
+## Direct-operand inventory
 
 The line numbers below refer to the baseline commit, before declarations were inserted. Repeated operands
 on one line appear once in the line list but each occurrence contributes to the count. Paths link to the
@@ -152,11 +152,106 @@ explicit end dependency, migrate these tests; retain direct forms as rejection t
   source-scope/exposure tests, memory-default tests, and declaration validation tests remain declaration
   coverage rather than pushed operands. Editor directive tests remain address-configuration coverage.
 
+## Allocated pointer follow-up
+
+Using commit `c01884e07` as its baseline, the pointer audit converts **2,431 allocated example bindings across 55 source files** and **17 bindings
+in nine ordinary compiler fixtures** to typed fixed references: **2,448 slots** and **9,792 bytes** of
+pointer storage removed across those catalog/fixture copies. Each converted slot was compiled before
+and after the edit, and its resolved target module, declaration, and pointee type were checked against
+the original binding. Example conversions remove 9,724 bytes; fixture conversions remove 68 bytes.
+
+A binding is converted when its initializer selects a compatible scalar/array start and the program
+uses its target address/value without requiring the pointer cell itself. The audit preserves:
+
+- Moving playback cursors and bindings whose storage is addressed, passed to a mutating helper, or
+  queried directly. Pointer tables, multiple indirection, reinterpretation of packed storage, and
+  numeric, module-base, or end-address initializers retain their allocated representation.
+- Unbound inputs, group-initialized inputs, and exposed pointer cells needed by group interfaces.
+- Prototype fields consumed by `pushShape`/`paramShape`; fixed slots cannot replace their allocated
+  fields or override an allocated field with the same name.
+- Bindings observed by watch/control/texture directives that resolve allocated memory, and modules
+  whose declaration indices or complete allocation bounds make removing a field observable.
+- Tests specifically exercising allocated pointer defaults, pointer metadata, rebinding, and
+  indirection. Ordinary read/interpolation, group ordering, and override tests use fixed references.
+
+`exampleFixedReferences.test.ts` compiles and validates WebAssembly for all 57 catalog sources containing
+fixed slots. Two pre-existing composition constraints are explicit in that test: the reusable resonant
+filter needs a containing project's `phaseAccumulator:out` input, and the granular sampler's delay sizes
+require an integral sample-rate ratio, so it is compiled at 32 kHz. Its shipped 48 kHz source currently
+produces fractional delay-array sizes; that existing issue is independent of the binding migration.
+
+| Source | Slots converted | Bytes removed |
+| --- | ---: | ---: |
+| [packages/examples/src/benchmarks/bytecode-size/digitClassifier.8f4e](../packages/examples/src/benchmarks/bytecode-size/digitClassifier.8f4e) | 442 | 1768 |
+| [packages/examples/src/benchmarks/bytecode-size/fmSynth.8f4e](../packages/examples/src/benchmarks/bytecode-size/fmSynth.8f4e) | 24 | 96 |
+| [packages/examples/src/benchmarks/bytecode-size/hymnToAurora.8f4e](../packages/examples/src/benchmarks/bytecode-size/hymnToAurora.8f4e) | 47 | 188 |
+| [packages/examples/src/benchmarks/bytecode-size/minBLEP.8f4e](../packages/examples/src/benchmarks/bytecode-size/minBLEP.8f4e) | 14 | 56 |
+| [packages/examples/src/benchmarks/bytecode-size/sineGenerator.8f4e](../packages/examples/src/benchmarks/bytecode-size/sineGenerator.8f4e) | 2 | 8 |
+| [packages/examples/src/modules/clock/clockDivider.8f4em](../packages/examples/src/modules/clock/clockDivider.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/effects/bitcrusher.8f4em](../packages/examples/src/modules/effects/bitcrusher.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/envelopes/arEnvelope.8f4em](../packages/examples/src/modules/envelopes/arEnvelope.8f4em) | 2 | 8 |
+| [packages/examples/src/modules/envelopes/asEnvelope.8f4em](../packages/examples/src/modules/envelopes/asEnvelope.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/filters/highPassFilter.8f4em](../packages/examples/src/modules/filters/highPassFilter.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/filters/resonantLowPassFilter.8f4em](../packages/examples/src/modules/filters/resonantLowPassFilter.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/modulation/ringModulator.8f4em](../packages/examples/src/modules/modulation/ringModulator.8f4em) | 2 | 8 |
+| [packages/examples/src/modules/oscillators/sawSignedFloat.8f4em](../packages/examples/src/modules/oscillators/sawSignedFloat.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/oscillators/sawUnsigned8bitInt.8f4em](../packages/examples/src/modules/oscillators/sawUnsigned8bitInt.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/oscillators/squareSignedFloat.8f4em](../packages/examples/src/modules/oscillators/squareSignedFloat.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/oscillators/triangleSignedFloat.8f4em](../packages/examples/src/modules/oscillators/triangleSignedFloat.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/pcm/pcmLooperV16bitSigned.8f4em](../packages/examples/src/modules/pcm/pcmLooperV16bitSigned.8f4em) | 2 | 8 |
+| [packages/examples/src/modules/pcm/pcmLooperVR16bitSigned.8f4em](../packages/examples/src/modules/pcm/pcmLooperVR16bitSigned.8f4em) | 2 | 8 |
+| [packages/examples/src/modules/pcm/pcmLooperVRP16bitSigned.8f4em](../packages/examples/src/modules/pcm/pcmLooperVRP16bitSigned.8f4em) | 3 | 12 |
+| [packages/examples/src/modules/sequencers/sequentialDemuxFloat.8f4em](../packages/examples/src/modules/sequencers/sequentialDemuxFloat.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/sequencers/sequentialDemuxInt.8f4em](../packages/examples/src/modules/sequencers/sequentialDemuxInt.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/sequencers/sequentialMuxFloat.8f4em](../packages/examples/src/modules/sequencers/sequentialMuxFloat.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/sequencers/sequentialMuxInt.8f4em](../packages/examples/src/modules/sequencers/sequentialMuxInt.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/trigger/changeDetectorInt.8f4em](../packages/examples/src/modules/trigger/changeDetectorInt.8f4em) | 1 | 4 |
+| [packages/examples/src/modules/utils/mapToVariableRangeFloat.8f4em](../packages/examples/src/modules/utils/mapToVariableRangeFloat.8f4em) | 2 | 8 |
+| [packages/examples/src/projects/audio/amigaMods/aftertouch.8f4e](../packages/examples/src/projects/audio/amigaMods/aftertouch.8f4e) | 76 | 304 |
+| [packages/examples/src/projects/audio/amigaMods/chiller.8f4e](../packages/examples/src/projects/audio/amigaMods/chiller.8f4e) | 76 | 304 |
+| [packages/examples/src/projects/audio/amigaMods/chronodemon.8f4e](../packages/examples/src/projects/audio/amigaMods/chronodemon.8f4e) | 84 | 336 |
+| [packages/examples/src/projects/audio/amigaMods/escapeFromSuicide.8f4e](../packages/examples/src/projects/audio/amigaMods/escapeFromSuicide.8f4e) | 76 | 304 |
+| [packages/examples/src/projects/audio/amigaMods/hymn_to_aurora.8f4e](../packages/examples/src/projects/audio/amigaMods/hymn_to_aurora.8f4e) | 47 | 188 |
+| [packages/examples/src/projects/audio/amigaMods/lowerIntentions.8f4e](../packages/examples/src/projects/audio/amigaMods/lowerIntentions.8f4e) | 76 | 304 |
+| [packages/examples/src/projects/audio/amigaMods/movinShadows.8f4e](../packages/examples/src/projects/audio/amigaMods/movinShadows.8f4e) | 84 | 336 |
+| [packages/examples/src/projects/audio/amigaMods/pneumatic.8f4e](../packages/examples/src/projects/audio/amigaMods/pneumatic.8f4e) | 73 | 292 |
+| [packages/examples/src/projects/audio/audioBuffer.8f4e](../packages/examples/src/projects/audio/audioBuffer.8f4e) | 2 | 8 |
+| [packages/examples/src/projects/audio/audioLoopback.8f4e](../packages/examples/src/projects/audio/audioLoopback.8f4e) | 2 | 8 |
+| [packages/examples/src/projects/audio/audioLoopbackWithDelay.8f4e](../packages/examples/src/projects/audio/audioLoopbackWithDelay.8f4e) | 2 | 8 |
+| [packages/examples/src/projects/audio/cyclicTimestretch.8f4e](../packages/examples/src/projects/audio/cyclicTimestretch.8f4e) | 2 | 8 |
+| [packages/examples/src/projects/audio/dx7StgCrescendo.8f4e](../packages/examples/src/projects/audio/dx7StgCrescendo.8f4e) | 174 | 696 |
+| [packages/examples/src/projects/audio/formantSynth.8f4e](../packages/examples/src/projects/audio/formantSynth.8f4e) | 14 | 56 |
+| [packages/examples/src/projects/audio/granularSampler.8f4e](../packages/examples/src/projects/audio/granularSampler.8f4e) | 55 | 220 |
+| [packages/examples/src/projects/audio/gridsPatterns.8f4e](../packages/examples/src/projects/audio/gridsPatterns.8f4e) | 20 | 80 |
+| [packages/examples/src/projects/audio/keyboardControlledMonoSynth.8f4e](../packages/examples/src/projects/audio/keyboardControlledMonoSynth.8f4e) | 9 | 36 |
+| [packages/examples/src/projects/audio/keyboardController6OperatorFMSynth.8f4e](../packages/examples/src/projects/audio/keyboardController6OperatorFMSynth.8f4e) | 22 | 88 |
+| [packages/examples/src/projects/audio/minBLEP.8f4e](../packages/examples/src/projects/audio/minBLEP.8f4e) | 14 | 56 |
+| [packages/examples/src/projects/audio/reverb.8f4e](../packages/examples/src/projects/audio/reverb.8f4e) | 44 | 176 |
+| [packages/examples/src/projects/audio/risen.8f4e](../packages/examples/src/projects/audio/risen.8f4e) | 11 | 44 |
+| [packages/examples/src/projects/audio/samplePlayer.8f4e](../packages/examples/src/projects/audio/samplePlayer.8f4e) | 1 | 4 |
+| [packages/examples/src/projects/audio/samplePlayerVariableSpeed.8f4e](../packages/examples/src/projects/audio/samplePlayerVariableSpeed.8f4e) | 2 | 8 |
+| [packages/examples/src/projects/digital/bistableMultivibrators.8f4e](../packages/examples/src/projects/digital/bistableMultivibrators.8f4e) | 11 | 44 |
+| [packages/examples/src/projects/machine-learning/digitClassifier-old-original.8f4e](../packages/examples/src/projects/machine-learning/digitClassifier-old-original.8f4e) | 442 | 1768 |
+| [packages/examples/src/projects/machine-learning/digitClassifier.8f4e](../packages/examples/src/projects/machine-learning/digitClassifier.8f4e) | 442 | 1768 |
+| [packages/examples/src/projects/machine-learning/xorProblem.8f4e](../packages/examples/src/projects/machine-learning/xorProblem.8f4e) | 9 | 36 |
+| [packages/examples/src/projects/misc/landingPageDemo4.8f4e](../packages/examples/src/projects/misc/landingPageDemo4.8f4e) | 2 | 8 |
+| [packages/examples/src/projects/misc/randomGenerators.8f4e](../packages/examples/src/projects/misc/randomGenerators.8f4e) | 2 | 8 |
+| [packages/examples/src/projects/visuals/overlayTexture.8f4e](../packages/examples/src/projects/visuals/overlayTexture.8f4e) | 1 | 4 |
+| [packages/compiler/tests/groups/local-entries.test.8f4e](../packages/compiler/tests/groups/local-entries.test.8f4e) | 4 | 16 |
+| [packages/compiler/tests/groups/memory-exposures.test.8f4e](../packages/compiler/tests/groups/memory-exposures.test.8f4e) | 1 | 4 |
+| [packages/compiler/tests/groups/recursive-ordering.test.8f4e](../packages/compiler/tests/groups/recursive-ordering.test.8f4e) | 3 | 12 |
+| [packages/compiler/tests/instructions/exit-if-true.test.8f4e](../packages/compiler/tests/instructions/exit-if-true.test.8f4e) | 1 | 4 |
+| [packages/compiler/tests/modules/module-overrides.test.8f4e](../packages/compiler/tests/modules/module-overrides.test.8f4e) | 2 | 8 |
+| [packages/compiler/tests/prototypes/shape-local-declarations.test.8f4e](../packages/compiler/tests/prototypes/shape-local-declarations.test.8f4e) | 3 | 12 |
+| [packages/compiler/tests/stdlib/read-interpolated-float.test.8f4e](../packages/compiler/tests/stdlib/read-interpolated-float.test.8f4e) | 1 | 4 |
+| [packages/compiler/tests/stdlib/read-interpolated-int.test.8f4e](../packages/compiler/tests/stdlib/read-interpolated-int.test.8f4e) | 1 | 4 |
+| [packages/compiler/tests/stdlib/read-interpolated-int16.test.8f4e](../packages/compiler/tests/stdlib/read-interpolated-int16.test.8f4e) | 1 | 4 |
+
 ## Validation
 
 - Nx compiler tests: 479 passed, including native assertions and refreshed compile/diagnostic snapshots.
 - Nx program-composer tests: 10 passed; tokenizer tests: 589 passed; affected snapshots refreshed.
-- Nx examples target: passed, including all 54 CLI tests. The module test runner currently reports
+- Nx examples target: passed, including all 111 CLI tests. The module test runner currently reports
   “No tests found” for the reusable `.8f4em` catalog; it is not counted as additional executed assertions.
 - `exampleAddressDependencies.test.ts` executes every sample map key, unmapped/default cases, every Grids
   cell, representative step offsets, invalid cells, and integer bounds against the shipped helpers and memory plans.

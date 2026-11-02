@@ -96,7 +96,7 @@ use env
 
 const BUFFER_SIZE SAMPLE_RATE*3
 
-float* in &audioin:out
+float& in &audioin:out
 float out
 float[] buffer BUFFER_SIZE
 float* pointer &buffer
@@ -133,7 +133,7 @@ module audioout
 ; @pos 99 1
 use env
 
-float* in &delay:out
+float& in &delay:out
 
 ; Audio buffer
 float[] buffer AUDIO_BUFFER_SIZE

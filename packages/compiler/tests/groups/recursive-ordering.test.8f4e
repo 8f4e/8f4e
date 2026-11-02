@@ -56,7 +56,7 @@ assert
 moduleEnd
 
 module voiceB
-int* input &oscillator:output
+int& input &oscillator:output
 int output
 push *input
 assertEqual 3
@@ -68,7 +68,7 @@ entryEnd
 groupEnd
 
 module rootB
-int* input &synth:output
+int& input &synth:output
 int output
 push *input
 assertEqual 4
@@ -96,7 +96,7 @@ entryEnd
 groupEnd
 
 module rootC
-int* input &tail:output
+int& input &tail:output
 push *input
 assertEqual 6
 moduleEnd

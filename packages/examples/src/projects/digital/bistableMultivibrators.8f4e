@@ -68,9 +68,9 @@ module norGate2
 ; @pos 95 8
 
                         ;   .---.
-int* in1 &norGate:out   ; --+    '
+int& in1 &norGate:out   ; --+    '
 int out                 ;   ) NOR |O---
-int* in2 &setButton:out ; --+    .
+int& in2 &setButton:out ; --+    .
                         ;   '---'
 ; @watch out
 
@@ -92,9 +92,9 @@ module norGate
 ; @pos 95 34
 
                           ;   .---.
-int* in1 &norGate2:out    ; --+    '
+int& in1 &norGate2:out    ; --+    '
 int out                   ;   ) NOR |O---
-int* in2 &resetButton:out ; --+    .
+int& in2 &resetButton:out ; --+    .
                           ;   '---'
 ; @watch out
 
@@ -115,7 +115,7 @@ moduleEnd
 module scope
 ; @pos 147 18
 
-int* in &norGate:out
+int& in &norGate:out
 int[] buffer 64
 int bufferPointer &buffer
 
@@ -159,7 +159,7 @@ moduleEnd
 module negate
 ; @pos 229 33
 
-int* in &buttons:reset
+int& in &buttons:reset
 int out
 
 push &out
@@ -178,9 +178,9 @@ module orGate
 ; @pos 264 6
 
                       ;   .---.
-int* in1 &andGate:out ; --+    '
+int& in1 &andGate:out ; --+    '
 int out               ;   ) OR  |---
-int* in2 &buttons:set ; --+    .
+int& in2 &buttons:set ; --+    .
                       ;   '---'
 
 push &out
@@ -201,9 +201,9 @@ module andGate
 ; @pos 265 31
 
                      ;   .---.
-int* in1 &orGate:out ; --+    '
+int& in1 &orGate:out ; --+    '
 int out              ;   | AND |---
-int* in2 &negate:out ; --+    .
+int& in2 &negate:out ; --+    .
                      ;   '---'
 
 push &out
@@ -223,7 +223,7 @@ moduleEnd
 module scope2
 ; @pos 316 16
 
-int* in &andGate:out
+int& in &andGate:out
 int[] buffer 64
 int bufferPointer &buffer
 

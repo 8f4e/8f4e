@@ -253,11 +253,11 @@ module modulatedDelayTap
 ; from a delay buffer
 use cloudsReverb
 
-float* buffer
+float& buffer
 - &allpassDiffuser:buffer
 float** pointer
 - &allpassDiffuser:pointer
-float* mod &lfo1:out
+float& mod &lfo1:out
 float out
 
 const MOD_BASE_OFFSET
@@ -302,11 +302,11 @@ module delayOffsetWriter
 ; circular pointer.
 use cloudsReverb
 
-float* buffer
+float& buffer
 - &allpassDiffuser:buffer
 float** pointer
 - &allpassDiffuser:pointer
-float* in &modulatedDelayTap:out
+float& in &modulatedDelayTap:out
 
 const WRITE_OFFSET_SAMPLES
 - 100.0*CLOUDS_RATIO
@@ -329,11 +329,11 @@ use cloudsReverb
 
 const DELAY_SIZE round(113*CLOUDS_RATIO)
 
-float* in &reverbInput:out
+float& in &reverbInput:out
 float out
 float[] buffer DELAY_SIZE
 float* pointer &buffer
-float* diffusion
+float& diffusion
 - &controlValues:diffusion
 
 ; @wave2 &buffer count(buffer) pointer
@@ -352,11 +352,11 @@ use cloudsReverb
 
 const DELAY_SIZE round(162*CLOUDS_RATIO)
 
-float* in &allpassDiffuser:out
+float& in &allpassDiffuser:out
 float out
 float[] buffer DELAY_SIZE
 float* pointer &buffer
-float* diffusion
+float& diffusion
 - &controlValues:diffusion
 
 ; @wave2 &buffer count(buffer) pointer
@@ -375,11 +375,11 @@ use cloudsReverb
 
 const DELAY_SIZE round(241*CLOUDS_RATIO)
 
-float* in &allpassDiffuser2:out
+float& in &allpassDiffuser2:out
 float out
 float[] buffer DELAY_SIZE
 float* pointer &buffer
-float* diffusion
+float& diffusion
 - &controlValues:diffusion
 
 ; @wave2 &buffer count(buffer) pointer
@@ -398,11 +398,11 @@ use cloudsReverb
 
 const DELAY_SIZE round(399*CLOUDS_RATIO)
 
-float* in &allpassDiffuser3:out
+float& in &allpassDiffuser3:out
 float out
 float[] buffer DELAY_SIZE
 float* pointer &buffer
-float* diffusion
+float& diffusion
 - &controlValues:diffusion
 
 ; @wave2 &buffer count(buffer) pointer
@@ -466,10 +466,10 @@ module tank1ModulatedTap
 ; from a delay buffer
 use cloudsReverb
 
-float* buffer &tank1DelayRead:buffer
+float& buffer &tank1DelayRead:buffer
 float** pointer
 - &tank1DelayRead:pointer
-float* mod &tank1DelayLfo:out
+float& mod &tank1DelayLfo:out
 float out
 
 const MOD_BASE_OFFSET 4680.0*CLOUDS_RATIO
@@ -525,9 +525,9 @@ moduleEnd
 module tank1Mixer
 ; @pos 550 -60
 ; @group tank1
-float* in1 &allpassDiffuser4:out
-float* in2 &tank1ModulatedTap:out
-float* decay
+float& in1 &allpassDiffuser4:out
+float& in2 &tank1ModulatedTap:out
+float& decay
 - &controlValues:decay
 float out
 
@@ -542,9 +542,9 @@ moduleEnd
 module tank2Mixer
 ; @pos 550 -6
 ; @group tank2
-float* in1 &allpassDiffuser4:out
-float* in2 &tank2DelayRead:out
-float* decay
+float& in1 &allpassDiffuser4:out
+float& in2 &tank2DelayRead:out
+float& decay
 - &controlValues:decay
 float out
 
@@ -559,8 +559,8 @@ moduleEnd
 module tank2Damping
 ; @pos 591 -6
 ; @group tank2
-float* in &tank2Mixer:out
-float* damping
+float& in &tank2Mixer:out
+float& damping
 - &controlValues:damping
 float out
 
@@ -573,8 +573,8 @@ moduleEnd
 module tank1Damping
 ; @pos 592 -60
 ; @group tank1
-float* in &tank1Mixer:out
-float* damping
+float& in &tank1Mixer:out
+float& damping
 - &controlValues:damping
 float out
 
@@ -591,11 +591,11 @@ use cloudsReverb
 
 const DELAY_SIZE round(1913*CLOUDS_RATIO)
 
-float* in &tank2Damping:out
+float& in &tank2Damping:out
 float out
 float[] buffer DELAY_SIZE
 float* pointer &buffer
-float* diffusion
+float& diffusion
 - &controlValues:diffusion
 
 ; @wave &buffer count(buffer) pointer
@@ -613,11 +613,11 @@ use cloudsReverb
 
 const DELAY_SIZE round(1653*CLOUDS_RATIO)
 
-float* in &tank1Damping:out
+float& in &tank1Damping:out
 float out
 float[] buffer DELAY_SIZE
 float* pointer &buffer
-float* diffusion
+float& diffusion
 - &controlValues:diffusion
 
 ; @wave &buffer count(buffer) pointer
@@ -637,11 +637,11 @@ use cloudsReverb
 
 const DELAY_SIZE round(1663*CLOUDS_RATIO)
 
-float* in &tank2AllpassA:out
+float& in &tank2AllpassA:out
 float out
 float[] buffer DELAY_SIZE
 float* pointer &buffer
-float* diffusion
+float& diffusion
 - &controlValues:diffusion
 
 ; @wave2 &buffer count(buffer) pointer
@@ -661,11 +661,11 @@ use cloudsReverb
 
 const DELAY_SIZE round(2038*CLOUDS_RATIO)
 
-float* in &tank1AllpassA:out
+float& in &tank1AllpassA:out
 float out
 float[] buffer DELAY_SIZE
 float* pointer &buffer
-float* diffusion
+float& diffusion
 - &controlValues:diffusion
 
 ; @wave &buffer count(buffer) pointer
@@ -681,9 +681,9 @@ module tank2DelayWrite
 ; @group tank2
 ; Writes Clouds del2.
 
-float* buffer &tank1DelayRead:buffer
+float& buffer &tank1DelayRead:buffer
 float** pointer &tank1DelayRead:pointer
-float* in &tank2AllpassB:out
+float& in &tank2AllpassB:out
 
 push *pointer
 push *in
@@ -698,9 +698,9 @@ module tank1DelayWrite
 ; @group tank1
 ; Writes Clouds del1.
 
-float* buffer &tank2DelayRead:buffer
+float& buffer &tank2DelayRead:buffer
 float** pointer &tank2DelayRead:pointer
-float* in &tank1AllpassB:out
+float& in &tank1AllpassB:out
 
 push *pointer
 push *in
@@ -714,9 +714,9 @@ module tank1OutputMix
 ; @pos 774 -60
 ; @group tank1
 
-float* dry &reverbInput:out
-float* wet &tank1AllpassB:out
-float* amount &controlValues:amount
+float& dry &reverbInput:out
+float& wet &tank1AllpassB:out
+float& amount &controlValues:amount
 float out
 
 push &out
@@ -728,9 +728,9 @@ module tank2OutputMix
 ; @pos 774 -6
 ; @group tank2
 
-float* dry &reverbInput:out
-float* wet &tank2AllpassB:out
-float* amount &controlValues:amount
+float& dry &reverbInput:out
+float& wet &tank2AllpassB:out
+float& amount &controlValues:amount
 float out
 
 push &out
@@ -744,7 +744,7 @@ module audiooutL
 ; @pos 101 -27
 use env
 
-float* in &reverb:outL
+float& in &reverb:outL
 
 float[] buffer AUDIO_BUFFER_SIZE
 float* pointer &buffer
@@ -782,7 +782,7 @@ module audiooutR
 ; @pos 142 -27
 use env
 
-float* in &reverb:outR
+float& in &reverb:outR
 
 float[] buffer AUDIO_BUFFER_SIZE
 float* pointer &buffer

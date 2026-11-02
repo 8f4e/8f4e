@@ -182,7 +182,7 @@ moduleEnd
 module scopeOriginal
 ; @pos 36 -73
 
-float* in &pcmPlayer:out
+float& in &pcmPlayer:out
 float[] buffer 128
 float* pointer &buffer
 
@@ -219,7 +219,7 @@ moduleEnd
 module scopeSmooth
 ; @pos 78 -73
 
-float* in &blepSmoother:out
+float& in &blepSmoother:out
 float[] buffer 128
 float* pointer &buffer
 
@@ -282,10 +282,10 @@ moduleEnd
 module mixer
 ; @pos 115 -103
 
-float* originalIn &pcmPlayer:out
-float* smoothedIn &blepLowpass:out
-float* volOriginal &params:volOriginal
-float* volSmoothed &params:volSmoothed
+float& originalIn &pcmPlayer:out
+float& smoothedIn &blepLowpass:out
+float& volOriginal &params:volOriginal
+float& volSmoothed &params:volSmoothed
 float out
 
 push &out
@@ -307,7 +307,7 @@ float position 0.0 ; @w
 float readPosition 0.0 ; @w
 float readIncrement 0.0
 float advanceIncrement 0.0
-float* increment &params:increment
+float& increment &params:increment
 float out
 
 ; @wave sample 128 playhead
@@ -369,7 +369,7 @@ module audioout
 ; @pos 164 -103
 use env
 
-float* in &mixer:out
+float& in &mixer:out
 
 float[] buffer AUDIO_BUFFER_SIZE
 float* pointer &buffer
@@ -388,7 +388,7 @@ call advancePointer
 moduleEnd
 module sampleDelta
 ; @pos 177 -73
-float* in &pcmPlayer:out
+float& in &pcmPlayer:out
 float previous 0.0
 float out
 
@@ -406,10 +406,10 @@ module blepSmoother
 ; @pos 213 -73
 float& minBLEPLUTStart &minBLEPLUT:0
 
-float* raw &pcmPlayer:out
-float* position &pcmPlayer:readPosition
-float* readIncrement &pcmPlayer:readIncrement
-float* delta &sampleDelta:out
+float& raw &pcmPlayer:out
+float& position &pcmPlayer:readPosition
+float& readIncrement &pcmPlayer:readIncrement
+float& delta &sampleDelta:out
 int index 0 ; @w
 float correction ; @w
 float out ; @w
@@ -466,7 +466,7 @@ store
 moduleEnd
 module blepLowpass
 ; @pos 269 -73
-float* in &blepSmoother:out
+float& in &blepSmoother:out
 float out 0.0 ; @w
 
 use math

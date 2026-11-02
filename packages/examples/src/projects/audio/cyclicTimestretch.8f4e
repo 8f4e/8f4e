@@ -164,7 +164,7 @@ ifEnd
 moduleEnd
 module lowpass
 ; @pos 142 -63
-float* in &pcmTimestretch8bit:out
+float& in &pcmTimestretch8bit:out
 float state 0.0 ; @w
 float out ; @w
 
@@ -197,7 +197,7 @@ module audioout
 ; @pos 191 -63
 use env
 
-float* in &lowpass:out
+float& in &lowpass:out
 
 float[] buffer AUDIO_BUFFER_SIZE
 float* pointer &buffer

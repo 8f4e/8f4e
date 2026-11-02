@@ -14,7 +14,7 @@ module readInterpolatedFloatAssertions
 ; between float samples in a
 ; circular buffer.
 float[] buffer 3 10.0 20.0 40.0
-float* pointer &buffer
+float& pointer &buffer
 
 push pointer
 push &buffer

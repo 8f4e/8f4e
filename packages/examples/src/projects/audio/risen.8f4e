@@ -436,7 +436,7 @@ module sequencer
 int* start &scroll:
 int* end scroll:&
 int* yad &scroll:
-int* tick &godClock:out
+int& tick &godClock:out
 int note
 int noteStart
 int noteEnd
@@ -672,7 +672,7 @@ float	12543.8540
 moduleEnd
 module piano
 ; @pos 12 -36
-int* note &sequencer:note
+int& note &sequencer:note
 int[] notes 1
 int noteCount 1
 ; @piano &notes &noteCount 0
@@ -691,7 +691,7 @@ module midiToFreq
 
 float* start &midiLUT:
 float* note &midiLUT:
-int* in &sequencer:note
+int& in &sequencer:note
 float out
 
 ; @w out
@@ -714,7 +714,7 @@ module adsrEnv
 ; @tab 8
 use env
 
-int*	trigger &sequencer:noteOn
+int&	trigger &sequencer:noteOn
 int	attackTime SAMPLE_RATE/1000
 int	decayTime SAMPLE_RATE/1000
 float	sustainLevel 0.8
@@ -889,11 +889,11 @@ module modulator
 use env
 use math
 
-float* frequency &midiToFreq:out
+float& frequency &midiToFreq:out
 float phase 0.0
 float out
 float ratio 4.0
-float* ampMod &adsrEnv:out
+float& ampMod &adsrEnv:out
 
 ; Advance phase by
 ; TAU * frequency / SAMPLE_RATE
@@ -935,12 +935,12 @@ module carrier
 ; @pos 162 -19
 use env
 
-float* frequency &midiToFreq:out
-float* phaseMod &modulator:out
+float& frequency &midiToFreq:out
+float& phaseMod &modulator:out
 float phase 0.0
 float out
 float ratio 2.0
-float* ampMod &adsrEnv:out
+float& ampMod &adsrEnv:out
 
 use math
 
@@ -985,7 +985,7 @@ moduleEnd
 module churchReverb
 ; @pos 205 -19
 
-float* in &carrier:out
+float& in &carrier:out
 float out
 
 const FEEDBACK 0.3
@@ -1035,7 +1035,7 @@ module shofar
 ; @home
 use env
 
-float* in &churchReverb:out
+float& in &churchReverb:out
 
 ; Audio buffer
 float[] buffer AUDIO_BUFFER_SIZE

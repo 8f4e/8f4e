@@ -95,8 +95,8 @@ int& movedCount &moved:count
 
 use oscillator
 use selected
-int* input &oscillator:out
-int* childInput &child:output
+int& input &oscillator:out
+int& childInput &child:output
 
 push *traceOrder
 assertEqual 2

@@ -358,7 +358,7 @@ module janko
 ;'--------+---+---+---+---+---+---+---+---+---+---+---+-------------'
 ;
 ; @group janko
-int* in &keyboard:keyCode; Keycode
+int& in &keyboard:keyCode; Keycode
 int out ; MIDI note number
 push &out
 push *in
@@ -503,7 +503,7 @@ moduleEnd
 module midiNote2Freq
 ; @pos 286 36
 
-int* in &janko:out
+int& in &janko:out
 float out
 float* notes &midiLUT:
 
@@ -527,10 +527,10 @@ module arEnv
 float dAttack 0.0001
 float dRelease 0.0001
 
-int* trigger &keyboard:keyPressed
+int& trigger &keyboard:keyPressed
 
-float* attackRate &dAttack
-float* releaseRate &dRelease
+float& attackRate &dAttack
+float& releaseRate &dRelease
 float out
 
 int attacking 0
@@ -585,7 +585,7 @@ module phaseAccumulator
 use env
 
 float defaultFreq 440
-float* frequency &midiNote2Freq:out
+float& frequency &midiNote2Freq:out
 float phase
 float out
 
@@ -626,8 +626,8 @@ moduleEnd
 module vca
 ; @pos 380 45
 
-float* in &phaseAccumulator:out
-float* volume &arEnv:out
+float& in &phaseAccumulator:out
+float& volume &arEnv:out
 float out
 
 push &out
@@ -641,7 +641,7 @@ module audioout
 ; @pos 424 44
 use env
 
-float* in &vca:out
+float& in &vca:out
 
 ; Audio buffer
 float[] buffer AUDIO_BUFFER_SIZE

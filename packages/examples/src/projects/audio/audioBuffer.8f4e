@@ -150,7 +150,7 @@ module phaseAccumulator
 use env
 
 float defaultFreq 440
-float* frequency &defaultFreq
+float& frequency &defaultFreq
 float phase
 float out
 
@@ -193,7 +193,7 @@ module audioout
 ; @home
 use env
 
-float* in &phaseAccumulator:out
+float& in &phaseAccumulator:out
 
 ; Audio buffer
 float[] buffer AUDIO_BUFFER_SIZE

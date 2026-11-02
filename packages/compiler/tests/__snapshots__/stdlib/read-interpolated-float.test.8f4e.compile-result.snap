@@ -1891,7 +1891,7 @@
               "value": "&buffer",
             },
           ],
-          "instruction": "float*",
+          "instruction": "float&",
         },
         {
           "arguments": [
@@ -2164,22 +2164,6 @@
           "pointerDepth": 0,
           "type": "float",
         },
-        "pointer": {
-          "allocationUnitAddress": 4,
-          "allocationUnitCount": 1,
-          "byteAddress": 16,
-          "default": 4,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "pointer",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "float",
-          "pointeeElementCount": 3,
-          "pointerDepth": 1,
-          "type": "float*",
-        },
       },
     },
   },
@@ -2195,7 +2179,7 @@
     "compiledModules": [
       "readInterpolatedFloatAssertions",
     ],
-    "requiredMemoryBytes": 20,
+    "requiredMemoryBytes": 16,
     "wasmExports": [
       "initDefaults",
       "main",

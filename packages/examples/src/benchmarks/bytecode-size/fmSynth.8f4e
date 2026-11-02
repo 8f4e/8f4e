@@ -53,7 +53,7 @@ module janko
 ;'--------+---+---+---+---+---+---+---+---+---+---+---+-------------'
 ;
 ; @group janko
-int* in &keyboard:keyCode; Keycode
+int& in &keyboard:keyCode; Keycode
 int out ; MIDI note number
 push &out
 push *in
@@ -65,7 +65,7 @@ moduleEnd
 module midiNote2Freq
 ; @pos 251 43
 
-int* in &janko:out
+int& in &janko:out
 float* notes &midiLUT:
 float out
 
@@ -279,11 +279,11 @@ module modulator4
 ; @group operator4
 use env
 use math
-float* frequency &midiNote2Freq:out
+float& frequency &midiNote2Freq:out
 float phase 0.0
 float out
 float ratio 1.0
-float* amplitude &adsrEnv4:out
+float& amplitude &adsrEnv4:out
 float level 0.89
 
 ; @hide
@@ -330,11 +330,11 @@ module modulator6
 ; @group operator5
 use env
 use math
-float* frequency &midiNote2Freq:out
+float& frequency &midiNote2Freq:out
 float phase 0.0
 float out
 float ratio 1.01
-float* amplitude &adsrEnv6:out
+float& amplitude &adsrEnv6:out
 float level 0.79
 
 ; @hide
@@ -381,11 +381,11 @@ module modulator2
 ; @group operator2
 use env
 use math
-float* frequency &midiNote2Freq:out
+float& frequency &midiNote2Freq:out
 float phase 0.0
 float out
 float ratio 14.0
-float* amplitude &adsrEnv2:out
+float& amplitude &adsrEnv2:out
 float level 0.58
 
 ; @hide
@@ -537,7 +537,7 @@ const	RELEASE 3
 
 use env
 
-int*	trigger &bpmClock:out
+int&	trigger &bpmClock:out
 int	previousTrigger
 int	attackTime SAMPLE_RATE
 int	decayTime SAMPLE_RATE/2
@@ -681,13 +681,13 @@ module carrier1
 ; @pos 465 13
 use env
 ; @group operator1
-float* frequency &midiNote2Freq:out
-float* phaseMod &modulator2:out
+float& frequency &midiNote2Freq:out
+float& phaseMod &modulator2:out
 float phase 0.0
 float ratio 1.005
 float level 0.99
 float out
-float* amplitudeMod &adsrEnv1:out
+float& amplitudeMod &adsrEnv1:out
 
 ; @hide
 use math
@@ -736,13 +736,13 @@ module carrier3
 ; @pos 465 41
 use env
 ; @group operator3
-float* frequency &midiNote2Freq:out
-float* phaseMod &modulator4:out
+float& frequency &midiNote2Freq:out
+float& phaseMod &modulator4:out
 float phase 0.0
 float ratio 1.0
 float level 0.99
 float out
-float* amplitudeMod &adsrEnv3:out
+float& amplitudeMod &adsrEnv3:out
 
 ; @hide
 use math
@@ -791,12 +791,12 @@ module carrier5
 ; @pos 465 69
 use env
 ; @group operator6
-float* frequency &midiNote2Freq:out
-float* phaseMod &modulator6:out
+float& frequency &midiNote2Freq:out
+float& phaseMod &modulator6:out
 float phase 0.0
 float ratio 0.99
 float out
-float* amplitude &adsrEnv5:out
+float& amplitude &adsrEnv5:out
 float level 0.99
 
 ; @hide
@@ -845,9 +845,9 @@ moduleEnd
 module mixer
 ; @pos 548 44
 
-float* in1 &carrier1:out
-float* in2 &carrier3:out
-float* in3 &carrier5:out
+float& in1 &carrier1:out
+float& in2 &carrier3:out
+float& in3 &carrier5:out
 float out
 
 push &out
@@ -869,7 +869,7 @@ store
 moduleEnd
 module limiter
 ; @pos 597 43
-float* in &mixer:out
+float& in &mixer:out
 float out
 
 push &out
@@ -894,7 +894,7 @@ moduleEnd
 module reverb
 ; @pos 637 50
 
-float* in &limiter:out
+float& in &limiter:out
 float out
 
 const FEEDBACK 0.5
@@ -943,7 +943,7 @@ module audioout
 ; @pos 675 39
 use env
 
-float* in &limiter:out
+float& in &limiter:out
 
 ; Audio buffer
 float[] buffer AUDIO_BUFFER_SIZE

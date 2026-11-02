@@ -9,7 +9,7 @@ module clockDiv
 ; @public
 
 int default 16
-int* divider &default
+int& divider &default
 int* trigger
 int previousTrigger
 int out

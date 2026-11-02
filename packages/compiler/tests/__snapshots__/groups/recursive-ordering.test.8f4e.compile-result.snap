@@ -93,7 +93,7 @@
               "value": "&synth:output",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -195,7 +195,7 @@
               "value": "&tail:output",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -445,7 +445,7 @@
               "value": "&oscillator:output",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -629,26 +629,10 @@
     },
     "rootB": {
       "memory": {
-        "input": {
+        "output": {
           "allocationUnitAddress": 2,
           "allocationUnitCount": 1,
           "byteAddress": 8,
-          "default": 40,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "input",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointeeElementCount": 1,
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-        "output": {
-          "allocationUnitAddress": 3,
-          "allocationUnitCount": 1,
-          "byteAddress": 12,
           "default": 0,
           "elementWordSize": 4,
           "id": "output",
@@ -661,12 +645,15 @@
       },
     },
     "rootC": {
+      "memory": {},
+    },
+    "synth/oscillator/tick": {
       "memory": {
         "input": {
-          "allocationUnitAddress": 4,
+          "allocationUnitAddress": 3,
           "allocationUnitCount": 1,
-          "byteAddress": 16,
-          "default": 48,
+          "byteAddress": 12,
+          "default": 24,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": "input",
@@ -678,15 +665,28 @@
           "pointerDepth": 1,
           "type": "int*",
         },
+        "output": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
+          "byteAddress": 16,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": "output",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
       },
     },
-    "synth/oscillator/tick": {
+    "synth/voiceA": {
       "memory": {
         "input": {
           "allocationUnitAddress": 5,
           "allocationUnitCount": 1,
           "byteAddress": 20,
-          "default": 32,
+          "default": 4,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": "input",
@@ -713,61 +713,12 @@
         },
       },
     },
-    "synth/voiceA": {
+    "synth/voiceB": {
       "memory": {
-        "input": {
+        "output": {
           "allocationUnitAddress": 7,
           "allocationUnitCount": 1,
           "byteAddress": 28,
-          "default": 4,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "input",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointeeElementCount": 1,
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-        "output": {
-          "allocationUnitAddress": 8,
-          "allocationUnitCount": 1,
-          "byteAddress": 32,
-          "default": 0,
-          "elementWordSize": 4,
-          "id": "output",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointerDepth": 0,
-          "type": "int",
-        },
-      },
-    },
-    "synth/voiceB": {
-      "memory": {
-        "input": {
-          "allocationUnitAddress": 9,
-          "allocationUnitCount": 1,
-          "byteAddress": 36,
-          "default": 24,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "input",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointeeElementCount": 1,
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-        "output": {
-          "allocationUnitAddress": 10,
-          "allocationUnitCount": 1,
-          "byteAddress": 40,
           "default": 0,
           "elementWordSize": 4,
           "id": "output",
@@ -782,10 +733,10 @@
     "tail/last": {
       "memory": {
         "input": {
-          "allocationUnitAddress": 11,
+          "allocationUnitAddress": 8,
           "allocationUnitCount": 1,
-          "byteAddress": 44,
-          "default": 12,
+          "byteAddress": 32,
+          "default": 8,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": "input",
@@ -798,9 +749,9 @@
           "type": "int*",
         },
         "output": {
-          "allocationUnitAddress": 12,
+          "allocationUnitAddress": 9,
           "allocationUnitCount": 1,
-          "byteAddress": 48,
+          "byteAddress": 36,
           "default": 0,
           "elementWordSize": 4,
           "id": "output",
@@ -824,7 +775,7 @@
       "synth/voiceB",
       "tail/last",
     ],
-    "requiredMemoryBytes": 52,
+    "requiredMemoryBytes": 40,
     "wasmExports": [
       "initDefaults",
       "main",

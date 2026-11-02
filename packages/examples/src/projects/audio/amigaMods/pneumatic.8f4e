@@ -990,7 +990,7 @@ moduleEnd
 module modRowClock
 ; @pos -107 -28
 use env
-int* tick &modTickClock:out
+int& tick &modTickClock:out
 int previousTick
 int ticks 6 ; @w
 int out
@@ -1028,7 +1028,7 @@ moduleEnd
 module modRowCounter
 ; @pos -71 -28
 use env
-int* trigger &modRowClock:out
+int& trigger &modRowClock:out
 int previousTrigger
 int rowCounter -1
 int* patternPointer &patternOrder:0
@@ -1084,7 +1084,7 @@ store
 moduleEnd
 module rowCount1
 ; @pos -2 19
-int* in &modRowCounter:out
+int& in &modRowCounter:out
 int out
 ; We can afford some reading
 ; and writing to memory
@@ -1095,7 +1095,7 @@ store
 moduleEnd
 module scope1
 ; @pos 28 -17
-float* in &amp1:out
+float& in &amp1:out
 float[] buffer 64
 ; @plot &buffer 64
 ; @hide
@@ -1165,7 +1165,7 @@ loopEnd
 moduleEnd
 module scope2
 ; @pos 65 -17
-float* in &amp2:out
+float& in &amp2:out
 float[] buffer 64
 ; @plot &buffer 64
 ; @hide
@@ -1236,7 +1236,7 @@ loopEnd
 moduleEnd
 module scope3
 ; @pos 102 -17
-float* in &amp3:out
+float& in &amp3:out
 float[] buffer 64
 ; @plot &buffer 64
 ; @hide
@@ -1307,7 +1307,7 @@ loopEnd
 moduleEnd
 module scope4
 ; @pos 139 -17
-float* in &amp4:out
+float& in &amp4:out
 float[] buffer 64
 ; @plot &buffer 64
 ; @hide
@@ -1378,7 +1378,7 @@ loopEnd
 moduleEnd
 module rowCount2
 ; @pos 152 -33
-int* in &modRowCounter:out
+int& in &modRowCounter:out
 int out
 
 push &out
@@ -1534,9 +1534,9 @@ module tempo1
 ; @group ch1
 use mod
 int* row &rowBuffer1:
-int* tempo &modTickClock:tempo
-int* ticks &modRowClock:ticks
-int* rowCounter &rowCount2:out
+int& tempo &modTickClock:tempo
+int& ticks &modRowClock:ticks
+int& rowCounter &rowCount2:out
 int prevRowCounter
 call hasChanged
 - *rowCounter &prevRowCounter
@@ -1569,9 +1569,9 @@ module tempo2
 ; @group ch2
 use mod
 int* row &rowBuffer2:
-int* tempo &modTickClock:tempo
-int* ticks &modRowClock:ticks
-int* rowCounter &rowCount2:out
+int& tempo &modTickClock:tempo
+int& ticks &modRowClock:ticks
+int& rowCounter &rowCount2:out
 int prevRowCounter
 call hasChanged
 - *rowCounter &prevRowCounter
@@ -1601,9 +1601,9 @@ module tempo3
 ; @group ch3
 use mod
 int* row &rowBuffer3:
-int* tempo &modTickClock:tempo
-int* ticks &modRowClock:ticks
-int* rowCounter &rowCount2:out
+int& tempo &modTickClock:tempo
+int& ticks &modRowClock:ticks
+int& rowCounter &rowCount2:out
 int prevRowCounter
 call hasChanged
 - *rowCounter &prevRowCounter
@@ -1633,9 +1633,9 @@ module tempo4
 ; @group ch4
 use mod
 int* row &rowBuffer4:
-int* tempo &modTickClock:tempo
-int* ticks &modRowClock:ticks
-int* rowCounter &rowCount2:out
+int& tempo &modTickClock:tempo
+int& ticks &modRowClock:ticks
+int& rowCounter &rowCount2:out
 int prevRowCounter
 call hasChanged
 - *rowCounter &prevRowCounter
@@ -1748,7 +1748,7 @@ module period1
 ; @pos 308 -73
 ; @group ch1
 int* row &rowBuffer1:
-int* sampleNumber &sampleNumber1:out
+int& sampleNumber &sampleNumber1:out
 int out
 
 ; @watch out
@@ -1774,7 +1774,7 @@ module period2
 ; @pos 308 -25
 ; @group ch2
 int* row &rowBuffer2:
-int* sampleNumber &sampleNumber2:out
+int& sampleNumber &sampleNumber2:out
 int out
 
 ; @watch out
@@ -1800,7 +1800,7 @@ module period3
 ; @pos 308 23
 ; @group ch3
 int* row &rowBuffer3:
-int* sampleNumber &sampleNumber3:out
+int& sampleNumber &sampleNumber3:out
 int out
 
 ; @watch out
@@ -1826,7 +1826,7 @@ module period4
 ; @pos 308 71
 ; @group ch4
 int* row &rowBuffer4:
-int* sampleNumber &sampleNumber4:out
+int& sampleNumber &sampleNumber4:out
 int out
 
 ; @watch out
@@ -1852,8 +1852,8 @@ module trigger1
 ; @pos 353 -73
 ; @group ch1
 int* row &rowBuffer1:
-int* rowCounter &rowCount2:out
-int* period &period1:out
+int& rowCounter &rowCount2:out
+int& period &period1:out
 int out
 
 ; @watch out
@@ -1877,8 +1877,8 @@ module trigger2
 ; @pos 353 -25
 ; @group ch2
 int* row &rowBuffer2:
-int* rowCounter &rowCount2:out
-int* period &period2:out
+int& rowCounter &rowCount2:out
+int& period &period2:out
 int out
 
 ; @watch out
@@ -1902,8 +1902,8 @@ module trigger3
 ; @pos 353 23
 ; @group ch3
 int* row &rowBuffer3:
-int* rowCounter &rowCount2:out
-int* period &period3:out
+int& rowCounter &rowCount2:out
+int& period &period3:out
 int out
 
 ; @watch out
@@ -1927,8 +1927,8 @@ module trigger4
 ; @pos 353 71
 ; @group ch4
 int* row &rowBuffer4:
-int* rowCounter &rowCount2:out
-int* period &period4:out
+int& rowCounter &rowCount2:out
+int& period &period4:out
 int out
 
 int prevRowCounter
@@ -1951,10 +1951,10 @@ module volume1
 ; @group ch1
 use mod
 int* row &rowBuffer1:
-int* tick &modTickClock:out
+int& tick &modTickClock:out
 int previousTick
-int* rowTrigger &modRowClock:out
-int* rowCounter &rowCount2:out
+int& rowTrigger &modRowClock:out
+int& rowCounter &rowCount2:out
 int out ; @w
 
 ; Reload base volume on
@@ -1994,10 +1994,10 @@ module volume2
 ; @group ch2
 use mod
 int* row &rowBuffer2:
-int* tick &modTickClock:out
+int& tick &modTickClock:out
 int previousTick
-int* rowTrigger &modRowClock:out
-int* rowCounter &rowCount2:out
+int& rowTrigger &modRowClock:out
+int& rowCounter &rowCount2:out
 int out ; @w
 
 ; Reload base volume on
@@ -2037,10 +2037,10 @@ module volume3
 ; @group ch3
 use mod
 int* row &rowBuffer3:
-int* tick &modTickClock:out
+int& tick &modTickClock:out
 int previousTick
-int* rowTrigger &modRowClock:out
-int* rowCounter &rowCount2:out
+int& rowTrigger &modRowClock:out
+int& rowCounter &rowCount2:out
 int out ; @w
 
 ; Reload base volume on
@@ -2080,10 +2080,10 @@ module volume4
 ; @group ch4
 use mod
 int* row &rowBuffer4:
-int* tick &modTickClock:out
+int& tick &modTickClock:out
 int previousTick
-int* rowTrigger &modRowClock:out
-int* rowCounter &rowCount2:out
+int& rowTrigger &modRowClock:out
+int& rowCounter &rowCount2:out
 int out ; @w
 
 ; Reload base volume on
@@ -2222,11 +2222,11 @@ module modSamplePlayer1
 ; @home
 use env
 ; @tab 6 20
-int*	period	&period1:out
-int*	offset	&sampleOffset1:out
-int*	trigger	&trigger1:out
+int&	period	&period1:out
+int&	offset	&sampleOffset1:out
+int&	trigger	&trigger1:out
 int	previousTrigger
-int*	sampleNumber	&sampleNumber1:out
+int&	sampleNumber	&sampleNumber1:out
 int8*	sampleAddress	; @w
 int8*	playhead	; @w
 int	sampleSize	; @w
@@ -2322,11 +2322,11 @@ moduleEnd
 module modSamplePlayer2
 ; @pos 549 15
 use env
-int*  period &period2:out
+int&  period &period2:out
 int* offset &sampleOffset2:out ; @w *
-int*  trigger &trigger2:out
+int&  trigger &trigger2:out
 int previousTrigger
-int*  sampleNumber &sampleNumber2:out
+int&  sampleNumber &sampleNumber2:out
 int8* sampleAddress ;@w
 int   sampleSize ; @w
 int8* playhead ; @w
@@ -2423,11 +2423,11 @@ module modSamplePlayer3
 ; @pos 601 -7
 use env
 
-int* period &period3:out
+int& period &period3:out
 int* offset &sampleOffset3:out ; @w *
-int* trigger &trigger3:out
+int& trigger &trigger3:out
 int previousTrigger
-int* sampleNumber &sampleNumber3:out
+int& sampleNumber &sampleNumber3:out
 int8* sampleAddress; @w
 int sampleSize; @w
 int8* playhead; @w
@@ -2524,11 +2524,11 @@ module modSamplePlayer4
 ; @pos 601 15
 use env
 
-int* period &period4:out
+int& period &period4:out
 int* offset &sampleOffset4:out ; @w *
-int* trigger &trigger4:out
+int& trigger &trigger4:out
 int previousTrigger
-int* sampleNumber &sampleNumber4:out
+int& sampleNumber &sampleNumber4:out
 int8* sampleAddress; @w
 int sampleSize; @w
 int8* playhead; @w
@@ -2624,8 +2624,8 @@ moduleEnd
 module amp1
 ; @pos 661 -22
 
-float* in &modSamplePlayer1:out
-int* volume &volume1:out
+float& in &modSamplePlayer1:out
+int& volume &volume1:out
 float out ; @meter
 push &out
 push *in
@@ -2638,8 +2638,8 @@ store
 moduleEnd
 module amp2
 ; @pos 661 -4
-float* in &modSamplePlayer2:out
-int* volume &volume2:out
+float& in &modSamplePlayer2:out
+int& volume &volume2:out
 float out; @meter
 push &out
 push *in
@@ -2652,8 +2652,8 @@ store
 moduleEnd
 module amp3
 ; @pos 662 13
-float* in &modSamplePlayer3:out
-int* volume &volume3:out
+float& in &modSamplePlayer3:out
+int& volume &volume3:out
 float out ; @meter
 push &out
 push *in
@@ -2666,8 +2666,8 @@ store
 moduleEnd
 module amp4
 ; @pos 662 30
-float* in &modSamplePlayer4:out
-int* volume &volume4:out
+float& in &modSamplePlayer4:out
+int& volume &volume4:out
 float out; @meter
 push &out
 push *in
@@ -2680,10 +2680,10 @@ store
 moduleEnd
 module mixer
 ; @pos 708 2
-float* in1 &amp1:out
-float* in2 &amp2:out
-float* in3 &amp3:out
-float* in4 &amp4:out
+float& in1 &amp1:out
+float& in2 &amp2:out
+float& in3 &amp3:out
+float& in4 &amp4:out
 
 float outL ; @meter
 float outR ; @meter
@@ -2712,7 +2712,7 @@ store
 moduleEnd
 module lowpassL
 ; @pos 744 -15
-float* in &mixer:outL
+float& in &mixer:outL
 float out 0.0 ; @w
 
 use outputFilter
@@ -2724,7 +2724,7 @@ store
 moduleEnd
 module lowpassR
 ; @pos 744 16
-float* in &mixer:outR
+float& in &mixer:outR
 float out 0.0 ; @w
 
 use outputFilter
@@ -2738,7 +2738,7 @@ module audiooutL
 ; @pos 797 -10
 use env
 
-float* in &lowpassL:out
+float& in &lowpassL:out
 float[] buffer AUDIO_BUFFER_SIZE
 int pointer &buffer
 
@@ -2774,7 +2774,7 @@ module audiooutR
 ; @pos 839 -10
 use env
 
-float* in &lowpassR:out
+float& in &lowpassR:out
 float[] buffer AUDIO_BUFFER_SIZE
 int pointer &buffer
 

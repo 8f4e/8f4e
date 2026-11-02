@@ -42,22 +42,22 @@ assertEqual 16
 moduleEnd
 
 module boson
-int* test2 &tau:foo
-int* test1 &tau:bar
-int* test3 &tau:he
+int& test2 &tau:foo
+int& test1 &tau:bar
+int& test3 &tau:he
 
-; intermodule pointers resolve
+; intermodule references resolve
 ; to the inherited declaration
 push *test2
 assertEqual 1
 
-; intermodule pointers resolve
+; intermodule references resolve
 ; to the final local declaration
 ; for repeated names
 push *test1
 assertEqual 16
 
-; intermodule pointers resolve
+; intermodule references resolve
 ; to the local declaration that
 ; overrides a shape field
 push *test3

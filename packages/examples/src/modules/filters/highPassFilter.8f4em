@@ -4,7 +4,7 @@ entry main
 module highPassFilter
 ; @public
 
-float* in &vca:out
+float& in &vca:out
 float out
 
 float alpha 0.1

@@ -86,7 +86,7 @@ moduleEnd
 module lowPassFilter
 ; @pos 55 0
 
-float* in &square:out
+float& in &square:out
 float out
 
 float alpha 0.04
@@ -113,7 +113,7 @@ store
 moduleEnd
 module scope
 ; @pos 91 0
-float* in &lowPassFilter:out
+float& in &lowPassFilter:out
 
 float[] buffer 128
 float* pointer &buffer

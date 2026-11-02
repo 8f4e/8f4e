@@ -138,10 +138,10 @@ entryEnd
 groupEnd
 
 module verify
-int* count &synth:count
-int* mainCalls &synth:mainCalls
-int* initialized &synth:initialized
-int* siblingCount &sibling:count
+int& count &synth:count
+int& mainCalls &synth:mainCalls
+int& initialized &synth:initialized
+int& siblingCount &sibling:count
 push *count
 assertEqual 3
 push *mainCalls

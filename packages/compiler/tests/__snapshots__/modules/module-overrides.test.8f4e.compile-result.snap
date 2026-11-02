@@ -157,7 +157,7 @@
               "value": "&oscillator:out",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -177,7 +177,7 @@
               "value": "&child:output",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -785,40 +785,7 @@
   },
   "moduleMemory": {
     "assertions": {
-      "memory": {
-        "childInput": {
-          "allocationUnitAddress": 2,
-          "allocationUnitCount": 1,
-          "byteAddress": 8,
-          "default": 12,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "childInput",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointeeElementCount": 1,
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-        "input": {
-          "allocationUnitAddress": 1,
-          "allocationUnitCount": 1,
-          "byteAddress": 4,
-          "default": 20,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "input",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointeeElementCount": 1,
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-      },
+      "memory": {},
     },
     "checkpoint": {
       "memory": {},
@@ -826,9 +793,9 @@
     "child/oscillator": {
       "memory": {
         "out": {
-          "allocationUnitAddress": 3,
+          "allocationUnitAddress": 1,
           "allocationUnitCount": 1,
-          "byteAddress": 12,
+          "byteAddress": 4,
           "default": 3,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
@@ -844,9 +811,9 @@
     "moved": {
       "memory": {
         "count": {
-          "allocationUnitAddress": 4,
+          "allocationUnitAddress": 2,
           "allocationUnitCount": 1,
-          "byteAddress": 16,
+          "byteAddress": 8,
           "default": 0,
           "elementWordSize": 4,
           "id": "count",
@@ -861,9 +828,9 @@
     "oscillator": {
       "memory": {
         "out": {
-          "allocationUnitAddress": 5,
+          "allocationUnitAddress": 3,
           "allocationUnitCount": 1,
-          "byteAddress": 20,
+          "byteAddress": 12,
           "default": 0,
           "elementWordSize": 4,
           "id": "out",
@@ -878,9 +845,9 @@
     "trace": {
       "memory": {
         "order": {
-          "allocationUnitAddress": 6,
+          "allocationUnitAddress": 4,
           "allocationUnitCount": 1,
-          "byteAddress": 24,
+          "byteAddress": 16,
           "default": 0,
           "elementWordSize": 4,
           "id": "order",
@@ -905,7 +872,7 @@
       "oscillator",
       "trace",
     ],
-    "requiredMemoryBytes": 28,
+    "requiredMemoryBytes": 20,
     "wasmExports": [
       "alternate",
       "initDefaults",
