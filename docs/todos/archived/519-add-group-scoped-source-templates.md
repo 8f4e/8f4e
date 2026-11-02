@@ -4,8 +4,8 @@ priority: Medium
 effort: TBD
 created: 2026-11-02
 issue: null
-status: Open
-completed: null
+status: Completed
+completed: 2026-11-02
 ---
 
 # TODO: Add group-scoped source templates
@@ -135,20 +135,20 @@ Live synchronization and stronger enforcement of equal contents between instance
 
 ## Success Criteria
 
-- [ ] Compiler/CLI and editor loading accept the same template source through the shared source front end.
-- [ ] Expanded groups retain `useTemplate` and compile without template resolution in later stages.
-- [ ] The template-inlining stage rejects multiple `useTemplate` instructions and authored child blocks or entries alongside a template reference in input source, while expanded editor groups remain valid.
-- [ ] No template-specific fields or registries are added to project-model or editor-state types.
-- [ ] Functions, includes, constants, prototypes, notes, empty entries, modules, and nested groups survive expansion and serialization.
-- [ ] Every instance retains its own outer name, position, exposures, initializers, passes, and other group-level lines.
-- [ ] Template lookup uses only the directly containing scope; ancestors and sibling private scopes are inaccessible.
-- [ ] Identical names in separate scopes resolve and serialize independently, including inside copied outer templates.
-- [ ] Divergent instances save silently using existing spatial serialization order: the rightmost instance wins, moving a group can change the winner, and reopening gives all corresponding instances that selected shared content.
-- [ ] Adding `useTemplate foo` to an existing expanded editor group creates the definition from its content on save without requiring an earlier definition.
-- [ ] Unused template definitions are omitted during save without introducing template storage in the project model or editor.
-- [ ] Saving, reopening, and saving again produces stable template source and preserves internal layout.
-- [ ] Nested block parsing, note text, missing references, duplicate definitions, and recursive expansion have focused coverage.
-- [ ] The four-voice DX7 example has one saved voice implementation and four independently wired and stateful instances, with existing playback checks passing.
+- [x] Compiler/CLI and editor loading accept the same template source through the shared source front end.
+- [x] Expanded groups retain `useTemplate` and compile without template resolution in later stages.
+- [x] The template-inlining stage rejects multiple `useTemplate` instructions and authored child blocks or entries alongside a template reference in input source, while expanded editor groups remain valid.
+- [x] No template-specific fields or registries are added to project-model or editor-state types.
+- [x] Functions, includes, constants, prototypes, notes, empty entries, modules, and nested groups survive expansion and serialization.
+- [x] Every instance retains its own outer name, position, exposures, initializers, passes, and other group-level lines.
+- [x] Template lookup uses only the directly containing scope; ancestors and sibling private scopes are inaccessible.
+- [x] Identical names in separate scopes resolve and serialize independently, including inside copied outer templates.
+- [x] Divergent instances save silently using existing spatial serialization order: the rightmost instance wins, moving a group can change the winner, and reopening gives all corresponding instances that selected shared content.
+- [x] Adding `useTemplate foo` to an existing expanded editor group creates the definition from its content on save without requiring an earlier definition.
+- [x] Unused template definitions are omitted during save without introducing template storage in the project model or editor.
+- [x] Saving, reopening, and saving again produces stable template source and preserves internal layout.
+- [x] Nested block parsing, note text, missing references, duplicate definitions, and recursive expansion have focused coverage.
+- [x] The four-voice DX7 example has one saved voice implementation and four independently wired and stateful instances, with existing playback checks passing.
 
 ## Affected Components
 
@@ -170,8 +170,8 @@ Live synchronization and stronger enforcement of equal contents between instance
 
 ## Related Items
 
-- [TODO 477: Establish compiler-owned ProjectObjectModel](archived/477-establish-project-object-model.md) - Preserve the canonical expanded project contract.
-- [TODO 499: Unify project instruction syntax parsing](499-unify-project-instruction-syntax-parsing.md) - Coordinate group-level source syntax ownership without adding template semantics to later compiler stages.
+- [TODO 477: Establish compiler-owned ProjectObjectModel](477-establish-project-object-model.md) - Preserve the canonical expanded project contract.
+- [TODO 499: Unify project instruction syntax parsing](../499-unify-project-instruction-syntax-parsing.md) - Coordinate group-level source syntax ownership without adding template semantics to later compiler stages.
 
 ## References
 
@@ -185,6 +185,19 @@ Live synchronization and stronger enforcement of equal contents between instance
 - Recorded on 2026-11-02 from the group-template design discussion following the four-voice DX7 example.
 - Clarified on 2026-11-02: remove unused definitions, create templates automatically from marked editor groups, validate one reference and no inline child content in the compiler inlining stage, and reuse rightmost spatial precedence.
 - Initial scope deliberately excludes synchronized editing, divergence checks, implicit ancestor visibility, template forwarding, and generated-code deduplication.
+
+## Implementation Result
+
+Completed on 2026-11-02:
+
+- Added compiler-owned source inlining and inverse extraction in `@8f4e/project-preparser`, preserving `useTemplate` without new project-model or editor-state fields.
+- Added isolated scope lookup, forward definitions, input-source validation, centralized diagnostics, automatic definition creation, unused-definition removal, and silent existing spatial precedence.
+- Connected extraction after ordinary project saving and documented the language and authoring rules. Notes preserve arbitrary block examples during save as well as load.
+- Recovered only the earlier four-voice DX7 example, its tests, and preview from the workspace stash, then replaced its four repeated voice bodies with one `dx7Voice` template. Other stashed work was left untouched.
+- Verified parser, language-spec, tokenizer, compiler, project-save, and project-open suites; all affected type checks and Biome checks; 23 DX7/example tests; and both website builds.
+- Verified all 19 product-website browser checks, including adding references through generic editing, editing child content, moving a group to change precedence, saving, and reopening selected template content.
+- Confirmed live four-voice keyboard allocation, sustained chords, sustain release, shared preset switching, no layout overlaps, and no browser page errors.
+- Audited shipped build inputs for the DX7 source/preview, compiler fixture, and documentation catalog.
 
 ## Archive Instructions
 
