@@ -7,6 +7,9 @@
   its own package named `@8f4e/editor-plugin-<feature>`. Keep plugin directories short and package names explicit.
 - `@8f4e/editor-core` is the minimal reusable editor.
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
+- `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, line-number drawing, and private
+  prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
+  `registerCodeBlockContentDrawer` before the cursor and diagnostics and owns generic sprite-cell drawing primitives.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
 - Keep `@8f4e/editor-palette` external in bundled editor libraries so the final composition can share one palette module.
 - External lists match exact import paths; include used dependency subpaths such as `glugglugglug/utils` explicitly.

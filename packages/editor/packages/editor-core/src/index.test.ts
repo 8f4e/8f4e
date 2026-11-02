@@ -50,18 +50,9 @@ const view = {
 	destroy: vi.fn(),
 };
 
-const renderProjection = {
-	getSnapshot: vi.fn(() => ({ codeBlocks: new Map() })),
-	dispose: vi.fn(),
-};
-
 const cleanupSpriteSheet = vi.fn();
 const cleanupPointer = vi.fn();
 const cleanupKeyboard = vi.fn();
-
-vi.mock('@8f4e/web-ui-render-projection', () => ({
-	createWebUiRenderProjection: vi.fn(() => renderProjection),
-}));
 
 vi.mock('@8f4e/editor-state', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/editor-state')>()),
@@ -156,7 +147,6 @@ describe('editor init', () => {
 			expect(cleanupPointer).toHaveBeenCalledOnce();
 			expect(cleanupKeyboard).toHaveBeenCalledOnce();
 			expect(events.dispose).toHaveBeenCalledOnce();
-			expect(renderProjection.dispose).toHaveBeenCalledTimes(stage === 'renderer' ? 1 : 0);
 			expect(view.destroy).not.toHaveBeenCalled();
 			expect(canvas.removeAttribute).toHaveBeenCalledWith('tabindex');
 		}
@@ -185,7 +175,7 @@ describe('editor init', () => {
 			plugins[0].setup.mock.invocationCallOrder[0]
 		);
 		expect(plugins[0].setup.mock.invocationCallOrder[0]).toBeLessThan(events.dispatch.mock.invocationCallOrder[0]);
-		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![6]!.drawers!;
+		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![5]!.drawers!;
 		expect(rendererDrawers).toBe(plugins[0].setup.mock.calls[0][0].drawers);
 		const drawContext = {} as Parameters<typeof rendererDrawers.drawCodeBlock>[0];
 		rendererDrawers.drawCodeBlock(drawContext);
@@ -211,7 +201,6 @@ describe('editor init', () => {
 		view.resumeRendering.mockClear();
 		view.renderFrame.mockClear();
 		view.destroy.mockClear();
-		renderProjection.dispose.mockClear();
 		cleanupSpriteSheet.mockClear();
 		cleanupPointer.mockClear();
 		cleanupKeyboard.mockClear();
@@ -348,7 +337,7 @@ describe('editor init', () => {
 		expect(canvas.tabIndex).toBe(-1);
 	});
 
-	it('disposes state, events, sprite subscriptions, projection, and view exactly once', async () => {
+	it('disposes state, events, sprite subscriptions, and view exactly once', async () => {
 		const { default: init } = await import('./index');
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {});
@@ -357,7 +346,6 @@ describe('editor init', () => {
 		editor.dispose();
 
 		expect(cleanupSpriteSheet).toHaveBeenCalledOnce();
-		expect(renderProjection.dispose).toHaveBeenCalledOnce();
 		expect(store.dispose).toHaveBeenCalledOnce();
 		expect(events.dispose).toHaveBeenCalledOnce();
 		expect(view.destroy).toHaveBeenCalledOnce();
@@ -384,8 +372,7 @@ describe('editor init', () => {
 		});
 
 		const viewCall = vi.mocked(initView).mock.calls.at(-1)!;
-		const viewOptions = viewCall[6]!;
-		expect(viewCall[1]).toBe(renderProjection);
+		const viewOptions = viewCall[5]!;
 		viewOptions.onRenderStats?.({
 			timeToRenderMs: 10,
 			fps: 50,

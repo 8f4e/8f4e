@@ -52,7 +52,8 @@
     "@8f4e/editor-plugin-connectors": "*",
     "@8f4e/editor-plugin-texture-runtime": "*",
     "@8f4e/editor-file-session": "*",
-    "@8f4e/editor-plugin-project-save": "*"
+    "@8f4e/editor-plugin-project-save": "*",
+    "@8f4e/editor-plugin-code-rendering": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

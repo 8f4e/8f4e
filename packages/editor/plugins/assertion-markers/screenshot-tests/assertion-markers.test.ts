@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { serializeToProject } from '@8f4e/editor-state';
 import { formatAssertionExpectation, runTests } from '@8f4e/test-runner';
 import { afterEach, expect, test, vi } from 'vitest';
@@ -21,6 +22,7 @@ async function setup(source: string) {
 	const editor: Editor = await initEditor(canvas, {
 		initialProject: parseProjectSource(source),
 		plugins: [
+			codeRenderingPlugin,
 			assertionMarkersPlugin,
 			{
 				id: 'test-state',

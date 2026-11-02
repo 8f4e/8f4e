@@ -32,6 +32,7 @@
     "@8f4e/sprite-generator": "*",
     "@8f4e/editor-palette": "*",
     "@8f4e/editor-plugin-compiler": "*",
-    "@8f4e/editor-plugin-lazy-loader": "*"
+    "@8f4e/editor-plugin-lazy-loader": "*",
+    "@8f4e/editor-plugin-code-rendering": "*"
   }
 }

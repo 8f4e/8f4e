@@ -1,30 +1,4 @@
-function parseTabDirectiveStops(line: string): number[] | undefined {
-	const match = line.match(/^\s*;\s*@tab\s+(.+?)\s*$/);
-	if (!match) return undefined;
-
-	const positions = new Set<number>();
-	for (const token of match[1].trim().split(/\s+/)) {
-		const value = Number.parseInt(token, 10);
-		if (!Number.isInteger(value) || value <= 0 || token !== value.toString()) return undefined;
-		positions.add(value);
-	}
-	return [...positions].sort((a, b) => a - b);
-}
-
-export function getTabStopsByLine(code: string[]): number[][] {
-	let activeTabStops: number[] = [];
-	return code.map(line => {
-		activeTabStops = parseTabDirectiveStops(line) ?? activeTabStops;
-		return activeTabStops;
-	});
-}
-
-function getTabAdvance(currentVisualColumn: number, tabStops: number[]): number {
-	return Math.max(
-		(tabStops.find(stop => stop > currentVisualColumn) ?? currentVisualColumn + 1) - currentVisualColumn,
-		1
-	);
-}
+import { getTabAdvance } from '@8f4e/editor-state';
 
 export function expandLineToCells(line: string, tabStops: number[]): Array<number> {
 	const cells: Array<number> = [];

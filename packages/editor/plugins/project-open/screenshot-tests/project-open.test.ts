@@ -1,6 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
 import { expect, test, vi } from 'vitest';
 import { createProjectOpenPlugin } from '../src/index';
@@ -39,6 +40,7 @@ noteEnd`;
 		editor = await initEditor(canvas, {
 			initialProject: parseProjectSource(source),
 			plugins: [
+				codeRenderingPlugin,
 				fileSession.plugin,
 				createProjectOpenPlugin({ document, fileSession }),
 				createProjectSavePlugin({ inputTarget: canvas, fileSession }),

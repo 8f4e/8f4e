@@ -1,6 +1,6 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import { getGlyphSpriteId } from '@8f4e/sprite-generator';
-import { createSpriteCell, type SpriteCell } from '@8f4e/web-ui-render-projection';
+import { createSpriteCell, type SpriteCell } from '@8f4e/web-ui';
 /** Resolve shared shapes and an explicit palette index into render-ready fixture cells. */
 export default function resolveFixtureCodeCells(
 	lines: string[],

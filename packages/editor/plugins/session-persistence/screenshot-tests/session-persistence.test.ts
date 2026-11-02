@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { expect, test, vi } from 'vitest';
 import { createSessionPersistencePlugin } from '../src/index';
 
@@ -23,13 +24,19 @@ test('restores a retained project in a new editor instance', async () => {
 			initialProject: parseProjectSource(
 				'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote retained\n; @pos 3 3\nRetained across editor instances.\nnoteEnd'
 			),
-			plugins: [createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true })],
+			plugins: [
+				codeRenderingPlugin,
+				createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true }),
+			],
 		});
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		expect(values.has('session')).toBe(true);
 		editor.dispose();
 		editor = await initEditor(canvas, {
-			plugins: [createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true })],
+			plugins: [
+				codeRenderingPlugin,
+				createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true }),
+			],
 		});
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		await vi.waitFor(() =>

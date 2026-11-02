@@ -1,6 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import type { WebUiRenderData } from '@8f4e/web-ui-render-projection';
 import type { DrawContext } from '../../drawContext';
 import type { MemoryViews } from '../../types';
 import type { EditorDrawerHost } from '../registry';
@@ -17,7 +16,6 @@ export default function drawModules(
 	engine: DrawContext,
 	state: State,
 	memoryViews: MemoryViews,
-	renderData: WebUiRenderData,
 	drawers?: EditorDrawerHost
 ): void {
 	const { x, y } = state.viewport;
@@ -29,8 +27,6 @@ export default function drawModules(
 	drawEntryOutlines(engine, state);
 
 	for (const codeBlock of state.codeBlockRendering.currentProject.blocks) {
-		const codeCells = renderData.codeBlocks.get(codeBlock.creationIndex)?.codeCells ?? [];
-
 		if (
 			codeBlock.x + offsetX > -1 * codeBlock.width &&
 			codeBlock.y + offsetY > -1 * codeBlock.height &&
@@ -67,9 +63,7 @@ export default function drawModules(
 				cornerColor
 			);
 
-			for (let i = 0; i < codeCells.length; i++) {
-				engine.drawResolvedText(state.viewport.vGrid, state.viewport.hGrid * i, codeCells[i]);
-			}
+			drawers?.drawCodeBlockContent({ draw: engine, state, codeBlock, memoryViews });
 
 			drawShapeDeclarations(engine, codeBlock);
 

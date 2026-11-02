@@ -1,7 +1,7 @@
+import { createSpriteCell } from '@8f4e/web-ui';
 import type { SpriteId } from 'glugglugglug';
 import { describe, expect, it } from 'vitest';
 import resolveCodeCells from './resolveCodeCells';
-import { createSpriteCell } from './spriteCell';
 
 const cell = (id: number, color: number) => createSpriteCell(id as SpriteId, color);
 

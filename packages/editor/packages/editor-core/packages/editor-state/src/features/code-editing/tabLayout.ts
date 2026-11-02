@@ -38,7 +38,7 @@ export function getTabStopsByLine(code: string[]): number[][] {
 	return tabStopsByLine;
 }
 
-function getTabAdvance(currentVisualColumn: number, tabStops: number[]): number {
+export function getTabAdvance(currentVisualColumn: number, tabStops: number[]): number {
 	const nextStop = tabStops.find(stop => stop > currentVisualColumn);
 	if (nextStop === undefined) {
 		return 1;
@@ -82,46 +82,4 @@ export function getRawIndexForVisualColumn(line: string, visualColumn: number, t
 
 export function getVisualLineWidth(line: string, tabStops: number[]): number {
 	return getVisualColumnForRawIndex(line, line.length, tabStops);
-}
-
-export function expandLineToCells(line: string, tabStops: number[]): Array<number | string> {
-	const cells: Array<number | string> = [];
-	let visualColumn = 0;
-
-	for (let i = 0; i < line.length; i += 1) {
-		if (line[i] === '\t') {
-			const advance = getTabAdvance(visualColumn, tabStops);
-			cells.push('\t', ...new Array(Math.max(advance - 1, 0)).fill(32));
-			visualColumn += advance;
-			continue;
-		}
-
-		cells.push(line.charCodeAt(i));
-		visualColumn += 1;
-	}
-
-	return cells;
-}
-
-export function expandLineColorsToCells<T>(
-	line: string,
-	rawColors: Array<T | undefined>,
-	tabStops: number[]
-): Array<T | undefined> {
-	const expandedColors: Array<T | undefined> = [];
-	let visualColumn = 0;
-
-	for (let i = 0; i < line.length; i += 1) {
-		if (line[i] === '\t') {
-			const advance = getTabAdvance(visualColumn, tabStops);
-			expandedColors.push(rawColors[i], ...new Array(Math.max(advance - 1, 0)).fill(undefined));
-			visualColumn += advance;
-			continue;
-		}
-
-		expandedColors.push(rawColors[i]);
-		visualColumn += 1;
-	}
-
-	return expandedColors;
 }

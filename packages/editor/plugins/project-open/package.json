@@ -29,6 +29,7 @@
     "@vitest/browser-playwright": "4.1.7",
     "@vitest/browser": "4.1.7",
     "@8f4e/editor-state-testing": "*",
-    "@8f4e/editor-plugin-project-save": "*"
+    "@8f4e/editor-plugin-project-save": "*",
+    "@8f4e/editor-plugin-code-rendering": "*"
   }
 }

@@ -32,7 +32,7 @@ submission so large, partially visible blocks do work proportional to their visi
   gaps. Source-line indices are not interchangeable with these display-row indices.
 - Compare a caller-owned visible range with a range-aware text submission method and choose the simpler ownership
   boundary. Avoid scanning hidden rows or allocating sliced cell arrays on each frame.
-- Leave projection generation and its cache invalidation unchanged during this investigation. The full projected
+- Leave code-rendering plugin preparation and its cache invalidation unchanged during this investigation. The full projected
   text can remain cached independently of the current viewport.
 
 Recording this TODO does not implement culling. The outcome should identify a concrete implementation approach,
@@ -81,9 +81,9 @@ verify rendering equivalence, and measure its benefit and overhead.
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/web-ui/src/drawers/codeBlocks/index.ts` - Text row submission.
+- `packages/editor/plugins/code-rendering/src/index.ts` - Text row submission.
 - `packages/editor/packages/editor-core/packages/web-ui/src/drawContext.ts` - Resolved cell submission and positioning.
-- `packages/editor/packages/editor-core/packages/web-ui/packages/render-projection/src/deriveCodeBlockCodeCells.ts` -
+- `packages/editor/plugins/code-rendering/src/deriveCodeBlockCodeCells.ts` -
   Existing display-row, prefix, tab, and gap contracts to preserve.
 - Code-block drawer tests, draw-context tests, browser fixtures, and benchmark tooling.
 

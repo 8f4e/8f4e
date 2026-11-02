@@ -1,27 +1,20 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { createMockCodeBlock } from '@8f4e/editor-state-testing';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import { createSpriteCell } from '@8f4e/web-ui';
 import type { SpriteId } from 'glugglugglug';
 import { describe, expect, it } from 'vitest';
-import deriveCodeBlockCodeCells, { type CodeBlockRenderSource } from './deriveCodeBlockCodeCells';
-import { createSpriteCell } from './spriteCell';
+import deriveCodeBlockCodeCells from './deriveCodeBlockCodeCells';
 
 const cell = (id: number, color: number) => createSpriteCell(id as SpriteId, color);
 
-function createSource(code: string[], overrides: Partial<CodeBlockRenderSource> = {}): CodeBlockRenderSource {
-	return {
-		creationIndex: 0,
+function createSource(code: string[], overrides: Partial<CodeBlockGraphicData> = {}): CodeBlockGraphicData {
+	return createMockCodeBlock({
 		code,
 		blockType: 'module',
-		disabled: false,
 		lineNumberColumnWidth: code.length.toString().length,
-		displayModel: {
-			lines: code.map((text, sourceLineIndex) => ({ text, sourceLineIndex })),
-			displayRowToSourceLineIndex: code.map((_, sourceLineIndex) => sourceLineIndex),
-			sourceLineIndexToDisplayRow: code.map((_, sourceLineIndex) => sourceLineIndex),
-			isCollapsed: false,
-		},
-		gaps: new Map(),
 		...overrides,
-	};
+	});
 }
 
 describe('deriveCodeBlockCodeCells', () => {

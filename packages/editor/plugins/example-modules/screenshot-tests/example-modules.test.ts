@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { expect, test, vi } from 'vitest';
 import { createExampleModulesPlugin } from '../src/index';
 
@@ -46,7 +47,7 @@ functionEnd float`,
 	try {
 		editor = await initEditor(canvas, {
 			initialProject: parseProjectSource(source),
-			plugins: [createExampleModulesPlugin({ sources })],
+			plugins: [codeRenderingPlugin, createExampleModulesPlugin({ sources })],
 		});
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		const state = editor.state;

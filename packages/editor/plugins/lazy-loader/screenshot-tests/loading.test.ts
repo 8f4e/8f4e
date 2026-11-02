@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { expect, test, vi } from 'vitest';
 import { createLazyPluginLoaderPlugin, hasDirective } from '../src/index';
@@ -48,6 +49,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 						? parseProjectSource(source.replace('; @plot &points count(points) -1 1\n', ''))
 						: project,
 				plugins: [
+					codeRenderingPlugin,
 					{
 						id: 'test-artifacts',
 						setup: services => {

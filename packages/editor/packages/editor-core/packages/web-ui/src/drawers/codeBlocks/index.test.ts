@@ -1,13 +1,10 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { WebUiRenderData } from '@8f4e/web-ui-render-projection';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DrawContext as Engine } from '../../drawContext';
 import type { MemoryViews } from '../../types';
 import { createEditorDrawerRegistry } from '../registry';
 import drawModules from './index';
-
-const emptyRenderData: WebUiRenderData = { codeBlocks: new Map() };
 
 function createMemoryViews({ int32 = [] }: { int32?: number[] } = {}): MemoryViews {
 	return {
@@ -44,6 +41,11 @@ describe('drawModules', () => {
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
 		const calls: string[] = [];
+		const unregisterContent = drawers.registerCodeBlockContentDrawer(context => {
+			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
+			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
+			calls.push('content');
+		});
 		const first = vi.fn(context => {
 			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
 			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
@@ -56,12 +58,13 @@ describe('drawModules', () => {
 			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
 			calls.push('overlay');
 		});
-		drawModules(engine, state, memoryViews, emptyRenderData, drawers);
-		expect(calls).toEqual(['first', 'second', 'overlay']);
+		drawModules(engine, state, memoryViews, drawers);
+		expect(calls).toEqual(['content', 'first', 'second', 'overlay']);
+		unregisterContent();
 		unregister();
 		unregisterOverlay();
-		drawModules(engine, state, memoryViews, emptyRenderData, drawers);
-		expect(calls).toEqual(['first', 'second', 'overlay', 'second']);
+		drawModules(engine, state, memoryViews, drawers);
+		expect(calls).toEqual(['content', 'first', 'second', 'overlay', 'second']);
 		expect(first).toHaveBeenCalledOnce();
 	});
 
@@ -83,44 +86,50 @@ describe('drawModules', () => {
 		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 		const outlineCalls = () => vi.mocked(engine.drawText).mock.calls.filter(call => call[2] !== '+' && call[2] !== '_');
 
-		drawModules(engine, state, createMemoryViews(), emptyRenderData);
+		drawModules(engine, state, createMemoryViews());
 		const initialOutline = outlineCalls();
 		expect(initialOutline).toHaveLength(4);
 
 		vi.mocked(engine.drawText).mockClear();
 		now.mockReturnValue(80);
-		drawModules(engine, state, createMemoryViews(), emptyRenderData);
+		drawModules(engine, state, createMemoryViews());
 		expect(outlineCalls()).toHaveLength(4);
 		expect(outlineCalls()).not.toEqual(initialOutline);
 
 		vi.mocked(engine.drawText).mockClear();
 		state.codeBlockRendering.selectedCodeBlock = otherBlock;
-		drawModules(engine, state, createMemoryViews(), emptyRenderData);
+		drawModules(engine, state, createMemoryViews());
 		expect(outlineCalls()).toHaveLength(4);
 
 		vi.mocked(engine.drawText).mockClear();
 		state.codeBlockRendering.selectedCodeBlock = undefined;
-		drawModules(engine, state, createMemoryViews(), emptyRenderData);
+		drawModules(engine, state, createMemoryViews());
 		expect(outlineCalls()).toHaveLength(0);
 	});
 
-	it('draws resolved code cells from projected render data', () => {
-		const block = createMockCodeBlock({ creationIndex: 4, width: 100, height: 50 });
+	it('draws content above highlights and below the cursor and diagnostics', () => {
+		const block = createMockCodeBlock({
+			width: 96,
+			height: 64,
+			widgets: {
+				blockHighlights: [],
+				shapeDeclarations: [],
+				errorMessages: [{ x: 8, y: 32, message: ['Diagnostic'] }],
+			},
+		});
 		const state = createMockState({
-			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [block] } },
+			editorMode: 'edit',
+			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [block] }, selectedCodeBlock: block },
 		});
 		const engine = createMockEngine();
-		const codeCells = [[1, null, 2]] as never;
-
-		drawModules(engine, state, createMemoryViews(), {
-			codeBlocks: new Map([[block.creationIndex, { codeCells }]]),
-		});
-
-		expect((engine as unknown as { drawResolvedText: ReturnType<typeof vi.fn> }).drawResolvedText).toHaveBeenCalledWith(
-			state.viewport.vGrid,
-			0,
-			codeCells[0]
-		);
+		const drawers = createEditorDrawerRegistry();
+		const content = vi.fn(() => engine.drawText(8, 0, 'Content', PALETTE_INDICES.inkBase));
+		drawers.registerCodeBlockContentDrawer(content);
+		drawModules(engine, state, createMemoryViews(), drawers);
+		const text = vi.mocked(engine.drawText).mock.calls.map(([, , text]) => text);
+		expect(text.indexOf('Content')).toBeLessThan(text.indexOf('_'));
+		expect(text.indexOf('_')).toBeLessThan(text.findIndex(text => text.includes('Diagnostic')));
+		expect(vi.mocked(engine.drawFill).mock.invocationCallOrder[1]).toBeLessThan(content.mock.invocationCallOrder[0]);
 	});
 
 	it('draws precomputed entry outlines before rendering code blocks', () => {
@@ -144,7 +153,7 @@ describe('drawModules', () => {
 		});
 		const engine = createMockEngine();
 
-		drawModules(engine, state, createMemoryViews(), emptyRenderData);
+		drawModules(engine, state, createMemoryViews());
 
 		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(1, 8, 16, PALETTE_INDICES.strokeBase, 96, 1);
 		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(2, 8, 95, PALETTE_INDICES.strokeBase, 96, 1);
@@ -188,7 +197,7 @@ describe('drawModules', () => {
 		});
 		const engine = createMockEngine();
 
-		drawModules(engine, state, createMemoryViews(), emptyRenderData);
+		drawModules(engine, state, createMemoryViews());
 
 		expect((engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText).not.toHaveBeenCalled();
 	});

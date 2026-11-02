@@ -1,7 +1,7 @@
 import { resolvePalette } from '@8f4e/editor-palette';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
-import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import { setup } from '../src/__tests__/setup';
 import { createCrossfadePlugin } from '../src/index';
@@ -34,10 +34,16 @@ test('crossfade plugin renders its directive', async () => {
 	test.state.viewport.width = canvas.width;
 	test.state.viewport.height = canvas.height;
 	const spriteData = await loadFontAtlas(test.state.editorConfig.font);
-	const projection = createWebUiRenderProjection(test.store, test.events);
+	const disposeCodeRendering = codeRenderingPlugin.setup({
+		store: test.store,
+		events: test.events,
+		menus: test.store.menus,
+		directives: test.store.directives,
+		layout: test.store.layout,
+		drawers,
+	});
 	const renderer = await initView(
 		test.state,
-		projection,
 		canvas,
 		test.memoryViews,
 		spriteData,
@@ -51,7 +57,7 @@ test('crossfade plugin renders its directive', async () => {
 		await expect(canvas).toMatchScreenshot();
 	} finally {
 		renderer.destroy();
-		projection.dispose();
+		disposeCodeRendering();
 		canvas.remove();
 	}
 });

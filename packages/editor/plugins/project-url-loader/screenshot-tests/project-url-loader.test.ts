@@ -1,4 +1,5 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { expect, test, vi } from 'vitest';
 import { createProjectUrlLoaderPlugin } from '../src/index';
 
@@ -15,7 +16,10 @@ test('loads an initial project URL after generic editor startup', async () => {
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
-			plugins: [createProjectUrlLoaderPlugin({ fetch, initialProjectUrl: 'https://example.com/project.8f4e' })],
+			plugins: [
+				codeRenderingPlugin,
+				createProjectUrlLoaderPlugin({ fetch, initialProjectUrl: 'https://example.com/project.8f4e' }),
+			],
 		});
 		await vi.waitFor(() =>
 			expect(

@@ -1,9 +1,9 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import initState from '@8f4e/editor-state';
 import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
-import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test, vi } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
 import { tooltipsPlugin } from '../src/index';
@@ -87,16 +87,17 @@ entryEnd`
 	};
 	if (!call) memoryViews.int32[compiled.memoryPlan.modules.controls.memory.value.allocationUnitAddress] = 42;
 	const spriteData = await loadFontAtlas(state.editorConfig.font);
-	const projection = createWebUiRenderProjection(store, events);
-	const renderer = await initView(
-		state,
-		projection,
-		canvas,
-		memoryViews,
-		spriteData,
-		resolvePalette(state.editorConfig.color),
-		{ drawers }
-	);
+	const disposeCodeRendering = codeRenderingPlugin.setup({
+		store: store,
+		events: events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		drawers,
+	});
+	const renderer = await initView(state, canvas, memoryViews, spriteData, resolvePalette(state.editorConfig.color), {
+		drawers,
+	});
 	renderer.pauseRendering();
 	events.dispatch('spriteSheetRerendered');
 	now.mockReturnValue(1000);
@@ -105,7 +106,7 @@ entryEnd`
 		await expect(canvas).toMatchScreenshot();
 	} finally {
 		renderer.destroy();
-		projection.dispose();
+		disposeCodeRendering();
 		disposePlugin();
 		store.dispose();
 		now.mockRestore();

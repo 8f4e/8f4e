@@ -1,11 +1,7 @@
 import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
-import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEditorDrawerRegistry } from './drawers/registry';
-
-const renderDataSnapshot = { codeBlocks: new Map() };
-const renderData: WebUiRenderDataSource = { getSnapshot: () => renderDataSnapshot };
 
 const mocks = vi.hoisted(() => {
 	const engine = {
@@ -116,7 +112,6 @@ describe('web-ui init', () => {
 
 		const view = await init(
 			state,
-			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
 			createFontAtlas(),
@@ -126,10 +121,8 @@ describe('web-ui init', () => {
 		view.renderFrame();
 
 		const frameState = mocks.drawCodeBlocks.mock.calls.at(-1)?.[1];
-		const frameRenderData = mocks.drawCodeBlocks.mock.calls.at(-1)?.[3];
 
 		expect(frameState).toBe(state);
-		expect(frameRenderData).toBe(renderDataSnapshot);
 		expect(mocks.drawModeOverlay).toHaveBeenCalledWith(expect.anything(), frameState);
 	});
 
@@ -152,7 +145,6 @@ describe('web-ui init', () => {
 		drawers.registerRenderLayer(() => ({ draw: drawTopLayer, destroy: vi.fn() }));
 		await init(
 			state,
-			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
 			createFontAtlas(),
@@ -181,7 +173,6 @@ describe('web-ui init', () => {
 		};
 		const view = await init(
 			state,
-			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
 			createFontAtlas(),
@@ -219,14 +210,7 @@ describe('web-ui init', () => {
 			float64: new Float64Array(0),
 		};
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
-		const view = await init(
-			state,
-			renderData,
-			canvas,
-			memoryViews,
-			createFontAtlas(),
-			resolvePalette(state.editorConfig.color)
-		);
+		const view = await init(state, canvas, memoryViews, createFontAtlas(), resolvePalette(state.editorConfig.color));
 
 		view.releaseRenderingResources();
 		view.releaseRenderingResources();
@@ -259,7 +243,6 @@ describe('web-ui init', () => {
 		};
 		const view = await init(
 			state,
-			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
 			createFontAtlas(),
@@ -293,7 +276,6 @@ describe('web-ui init', () => {
 
 		const view = await init(
 			state,
-			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
 			createFontAtlas(8, 16),
@@ -329,7 +311,6 @@ describe('web-ui init', () => {
 
 		const view = await init(
 			state,
-			renderData,
 			{} as HTMLCanvasElement,
 			memoryViews,
 			createFontAtlas(),

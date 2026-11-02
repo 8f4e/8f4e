@@ -1,6 +1,6 @@
 import type { PaletteIndex } from '@8f4e/editor-palette';
 import { getGlyphSpriteId } from '@8f4e/sprite-generator';
-import { createSpriteCell, type SpriteCell } from './spriteCell';
+import { createSpriteCell, type SpriteCell } from '@8f4e/web-ui';
 
 /** Resolve shared glyph IDs and palette transitions once, outside the frame submission loop. */
 export default function resolveCodeCells(

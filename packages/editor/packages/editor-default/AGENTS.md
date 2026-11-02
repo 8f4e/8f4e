@@ -73,6 +73,8 @@
   namespaces fixed: `info.audioRuntime`, `info.workerRuntime`, and `info.testRuntime`. Core has no runtime registry,
   selector, factory contract, or runtime values bag. Use `memoryValuesChanged` to refresh externally changed memory.
 
+- Install `codeRenderingPlugin` eagerly for code/notes text and syntax highlighting. Keep text preparation and caching
+  in the plugin and editing/layout geometry in core.
 - Install `connectorsPlugin` in the fixed plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
 

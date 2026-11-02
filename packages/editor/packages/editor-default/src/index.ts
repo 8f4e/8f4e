@@ -2,6 +2,7 @@ import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
@@ -59,6 +60,7 @@ export function createDefaultEditorPlugins(options: {
 			restoreOnStartup: !options.initialProjectUrl,
 		}),
 		createExampleModulesPlugin({ sources: exampleModuleSources }),
+		codeRenderingPlugin,
 		connectorsPlugin,
 		assertionMarkersPlugin,
 		createKeyboardMemoryPlugin({ inputTarget: options.canvas, writeMemory: options.writeMemory }),

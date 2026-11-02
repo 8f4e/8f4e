@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPlugin, type EditorPluginContext } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { afterEach, expect, test } from 'vitest';
 import { connectorsPlugin } from '../src/index';
 
@@ -58,7 +59,7 @@ async function setup(text = source) {
 	const editor: Editor = await initEditor(canvas, {
 		initialProject: project,
 		featureFlags: { offscreenBlockArrows: false },
-		plugins: [connectorsPlugin, installArtifacts],
+		plugins: [codeRenderingPlugin, connectorsPlugin, installArtifacts],
 	});
 	cleanups.push(() => {
 		editor.dispose();

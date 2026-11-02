@@ -44,7 +44,6 @@ The 8f4e project is organized as an Nx monorepo with the following package hiera
     │   │   │       └── <a href="./packages/editor/packages/editor-core/packages/web-ui/README.md">web-ui</a> (WebGL rendering for the editor interface)
     │   │   │           └── packages/
     │   │   │               ├── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/glugglugglug/README.md">glugglugglug</a> (2D WebGL graphics utilities)
-    │   │   │               ├── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/render-projection/README.md">render-projection</a> (Precalculates web UI-specific render data from editor state)
     │   │   │               └── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/README.md">sprite-generator</a> (All UI graphics are generative)
     │   │   ├── <a href="./packages/editor/packages/editor-website/README.md">editor-website</a> (Thin deployable website for the default editor)
     │   │   ├── <a href="./packages/editor/packages/runtime-audio-worklet/README.md">runtime-audio-worklet</a> (AudioWorklet editor runtime)
@@ -55,6 +54,7 @@ The 8f4e project is organized as an Nx monorepo with the following package hiera
     │       ├── <a href="./packages/editor/plugins/bars">bars</a> (Live memory bar displays)
     │       ├── <a href="./packages/editor/plugins/binary-assets">binary-assets</a> (Binary asset fetching, caching, and memory loading)
     │       ├── <a href="./packages/editor/plugins/button">button</a> (Momentary button controls)
+    │       ├── <a href="./packages/editor/plugins/code-rendering/README.md">code-rendering</a> (Code text, syntax highlighting, and sprite preparation)
     │       ├── <a href="./packages/editor/plugins/crossfade">crossfade</a> (Interactive crossfade controls)
     │       ├── <a href="./packages/editor/plugins/keyboard-memory">keyboard-memory</a> (Keyboard-to-memory input)
     │       ├── <a href="./packages/editor/plugins/meter">meter</a> (Live memory value meters)

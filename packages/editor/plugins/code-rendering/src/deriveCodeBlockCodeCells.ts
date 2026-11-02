@@ -1,22 +1,13 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
-import type { CodeBlockDisplayModel, CodeBlockType } from '@8f4e/editor-state-types';
+import { getTabStopsByLine } from '@8f4e/editor-state';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { SpriteCell } from '@8f4e/web-ui';
 import getLineNumberPrefix from './getLineNumberPrefix';
 import resolveCodeCells from './resolveCodeCells';
-import type { SpriteCell } from './spriteCell';
 import highlightSyntax from './syntax-highlighting/highlightSyntax';
-import { expandLineColorsToCells, expandLineToCells, getTabStopsByLine } from './tabExpansion';
+import { expandLineColorsToCells, expandLineToCells } from './tabExpansion';
 
-export interface CodeBlockRenderSource {
-	creationIndex: number;
-	code: string[];
-	blockType: CodeBlockType;
-	disabled: boolean;
-	lineNumberColumnWidth: number;
-	displayModel: CodeBlockDisplayModel;
-	gaps: ReadonlyMap<number, { size: number }>;
-}
-
-export default function deriveCodeBlockCodeCells(block: CodeBlockRenderSource): Array<Array<SpriteCell | null>> {
+export default function deriveCodeBlockCodeCells(block: CodeBlockGraphicData): Array<Array<SpriteCell | null>> {
 	const tabStopsByLine = getTabStopsByLine(block.code);
 	const characters = block.displayModel.lines.map(({ text, sourceLineIndex, isPlaceholder }, displayRow) => {
 		const prefix = getLineNumberPrefix(displayRow, block.lineNumberColumnWidth, text, isPlaceholder ?? false);

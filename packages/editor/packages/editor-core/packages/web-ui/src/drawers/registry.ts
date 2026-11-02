@@ -17,15 +17,18 @@ export type CodeBlockDrawer = (context: CodeBlockDrawerContext) => void;
 export interface EditorDrawerRegistry {
 	/** Register a GPU layer whose resources are bound to the renderer lifecycle. */
 	registerRenderLayer: (factory: RenderLayerFactory) => () => void;
-	/** Draw after error messages and before built-in block widgets. */
+	/** Draw inside the block after its background/highlights and before its cursor and diagnostics. */
+	registerCodeBlockContentDrawer: (drawer: CodeBlockDrawer) => () => void;
+	/** Draw after the block content, cursor, and error messages. */
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw after all built-in block widgets, inside the same block group. */
+	/** Draw after block drawers, inside the same block group. */
 	registerCodeBlockOverlay: (drawer: CodeBlockDrawer) => () => void;
 }
 
 /** Renderer-owned invocation and lifecycle of registered drawers and layers. */
 export interface EditorDrawerHost extends EditorDrawerRegistry {
 	attachRenderLayers: ReturnType<typeof createRenderLayerRegistry>['attachRenderLayers'];
+	drawCodeBlockContent: CodeBlockDrawer;
 	drawCodeBlock: CodeBlockDrawer;
 	drawCodeBlockOverlay: CodeBlockDrawer;
 }
@@ -47,12 +50,15 @@ function createDrawerSlot() {
 }
 
 export function createEditorDrawerRegistry(): EditorDrawerHost {
+	const content = createDrawerSlot();
 	const widgets = createDrawerSlot();
 	const overlays = createDrawerSlot();
 	return {
 		...createRenderLayerRegistry(),
+		registerCodeBlockContentDrawer: content.register,
 		registerCodeBlockDrawer: widgets.register,
 		registerCodeBlockOverlay: overlays.register,
+		drawCodeBlockContent: content.draw,
 		drawCodeBlock: widgets.draw,
 		drawCodeBlockOverlay: overlays.draw,
 	};

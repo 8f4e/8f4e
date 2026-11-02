@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { expect, test, vi } from 'vitest';
 import { groupingPlugin } from '../src/index';
 
@@ -13,7 +14,7 @@ test('contributes group menus and drag behavior through the real editor', async 
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
-			plugins: [groupingPlugin],
+			plugins: [codeRenderingPlugin, groupingPlugin],
 			initialProject: parseProjectSource(`8f4e/v1
 constants env
 ; @pos 120 60

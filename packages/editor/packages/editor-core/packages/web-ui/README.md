@@ -1,7 +1,6 @@
 # Web UI Package
 
-This package provides a web-based UI renderer for the editor. It renders from the editor state,
-web UI render data, and memory views, treating them as immutable inputs. It is designed to be
+This package provides a web-based UI renderer for the editor. It renders from the editor state and memory views, treating them as immutable inputs. It is designed to be
 replaceable by renderers for other platforms.
 
 Rendering is backed by `glugglugglug`. Glyph IDs are ASCII character codes 0–127 and fill is 128, so
@@ -21,17 +20,16 @@ owns wires; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer v
 
 ## API
 
-`createEditorDrawerRegistry()` creates the per-editor registry for code-block drawers, overlays, and canvas-wide
+`createEditorDrawerRegistry()` creates the per-editor registry for code-block content drawers, drawers, overlays, and canvas-wide
 render layers. Pass that registry through `options.drawers` when initializing the renderer.
 
-### `init(state, renderData, canvas, memoryViews, fontAtlas, palette, options?)`
+### `init(state, canvas, memoryViews, fontAtlas, palette, options?)`
 
 Initializes the web UI renderer.
 
 **Parameters:**
 
 - `state: State` - The editor state (read-only)
-- `renderData: WebUiRenderDataSource` - Precalculated, web-specific graphic data
 - `canvas: HTMLCanvasElement` - The canvas element to render to
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
 - `fontAtlas: FontAtlas` - Cached font masks and grid dimensions from `@8f4e/sprite-generator`
@@ -74,9 +72,13 @@ interface FontAtlas {
 
 ## State Usage
 
-The web-ui package reads from the editor state and render projection but does **not** mutate either. The nested
-`@8f4e/web-ui-render-projection` package subscribes to editor state changes and precalculates code-cell shape IDs and palette indices.
-Atlas and font changes are explicit and are applied through `loadFontAtlas()`. Theme-only changes use `loadPalette()` and retain the atlas and projected glyph IDs. Registered render layers receive the same resolved palette. `DrawContext.drawFill()` uses the shared fill mask, `drawText()` uses fixed ASCII glyph IDs,
+The web-ui package reads editor state without mutating it. `@8f4e/editor-plugin-code-rendering` owns code text,
+syntax highlighting, and its private cache of prepared sprite cells. It registers a content drawer through
+`registerCodeBlockContentDrawer()`, which runs after block backgrounds and highlights, before the cursor,
+shape declarations, diagnostics, ordinary block drawers, and overlays. Without a content plugin, blocks retain
+their backgrounds and editing affordances while no source text is drawn.
+
+Atlas and font changes are explicit and are applied through `loadFontAtlas()`. Theme-only changes use `loadPalette()` and retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette. `DrawContext.drawFill()` uses the shared fill mask, `drawText()` uses fixed ASCII glyph IDs,
 and both accept an explicit palette index. The renderer prepares up to 256 palette colors as premultiplied float32
 values in a 4 KiB uniform buffer, while `loadPalette()` continues accepting the resolved editor palette.
 The editor installs font grid dimensions into state before initializing or updating the view.

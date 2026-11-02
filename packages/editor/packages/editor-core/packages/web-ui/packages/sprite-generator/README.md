@@ -34,7 +34,8 @@ Import a BDF font with `node tools/import-bdf.mjs <bdf-path> <font-name>`, then 
 import in the catalog. Web-ui owns font-specific background dot settings in `src/plugins/background/dot-settings.ts`;
 configure those there. Backgrounds use a procedural pass, and connectors use ordinary glyphs and fill.
 
-Packed text cells and palette selection belong to `@8f4e/web-ui-render-projection`, separately from font loading.
+Code text preparation and syntax palette selection belong to `@8f4e/editor-plugin-code-rendering`. Web-ui owns the
+generic packed sprite-cell format, separately from font loading.
 Themes are resolved through `@8f4e/editor-palette` and never change mask pixels.
 
 From the repository root:

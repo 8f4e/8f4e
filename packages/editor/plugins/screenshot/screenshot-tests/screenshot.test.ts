@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { expect, test, vi } from 'vitest';
 import { createScreenshotPlugin } from '../src/index';
 
@@ -36,7 +37,7 @@ noteEnd`);
 	try {
 		editor = await initEditor(canvas, {
 			initialProject: project,
-			plugins: [createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })],
+			plugins: [codeRenderingPlugin, createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })],
 		});
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
 		await vi.waitFor(() =>
