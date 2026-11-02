@@ -167,7 +167,6 @@ export default function validateInstructionArguments(instruction: string, args: 
 		if (
 			name?.type !== ArgumentType.IDENTIFIER ||
 			name.referenceKind !== 'plain' ||
-			isConstantName(name.value) ||
 			name.value === 'this' ||
 			target?.type !== ArgumentType.IDENTIFIER ||
 			(target.referenceKind !== 'memory-reference' && target.referenceKind !== 'intermodular-reference') ||

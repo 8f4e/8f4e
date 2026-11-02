@@ -4,8 +4,8 @@ import {
 	getMemoryBaseType,
 	isReferenceSlotLine,
 	type ModuleAST,
-	type PointeeBaseType,
 	type ResolvedReferenceSlot,
+	referenceSlotBaseTypes,
 } from '@8f4e/language-spec';
 import {
 	type MemoryReferenceResolutionContext,
@@ -36,7 +36,7 @@ export function resolveReferenceSlots(ast: ModuleAST, context: MemoryReferenceRe
 		if (!memory) {
 			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, diagnosticContext, { identifier: target.value });
 		}
-		const baseType = line.instruction.slice(0, -1) as PointeeBaseType;
+		const baseType = referenceSlotBaseTypes[line.instruction];
 		if (memory.pointerDepth !== 0 || getMemoryBaseType(memory) !== baseType) {
 			throw getError(ErrorCode.TYPE_MISMATCH, line, diagnosticContext);
 		}

@@ -1,17 +1,20 @@
-import type { PlannedMemoryDeclaration } from './memory';
+import type { PlannedMemoryDeclaration, PointeeBaseType } from './memory';
 
-/** Fixed, typed references resolved after allocation; these declarations reserve no storage. */
-export const referenceSlotInstructions = [
-	'int&',
-	'int8&',
-	'int8u&',
-	'int16&',
-	'int16u&',
-	'float&',
-	'float64&',
-] as const;
+/** Declared element types for fixed references, independent of memory layout. */
+export const referenceSlotBaseTypes = {
+	'int&': 'int',
+	'int8&': 'int8',
+	'int8u&': 'int8u',
+	'int16&': 'int16',
+	'int16u&': 'int16u',
+	'float&': 'float',
+	'float64&': 'float64',
+} as const satisfies Record<string, PointeeBaseType>;
 
-export type ReferenceSlotInstruction = (typeof referenceSlotInstructions)[number];
+export type ReferenceSlotInstruction = keyof typeof referenceSlotBaseTypes;
+
+/** Fixed reference instructions reserve no storage and resolve after allocation. */
+export const referenceSlotInstructions = Object.keys(referenceSlotBaseTypes) as ReferenceSlotInstruction[];
 
 const referenceSlotInstructionSet: ReadonlySet<string> = new Set(referenceSlotInstructions);
 
