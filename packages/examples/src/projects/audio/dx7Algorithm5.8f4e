@@ -1403,7 +1403,353 @@ note algorithm
 ; +---+
 ;
 noteEnd
+template dx7Envelope
+constants dx7EnvelopeFields
+; @pos 0 -38
+; Integer record: 4 rates, 4 levels, then scaling.
+const LEVELS 4
+const RATE_SCALING 8
+const OUTPUT_LEVEL 9
+const VELOCITY_SENSITIVITY 10
+const BREAKPOINT 11
+const LEFT_DEPTH 12
+const RIGHT_DEPTH 13
+const LEFT_CURVE 14
+const RIGHT_CURVE 15
+const AMPLITUDE_SENSITIVITY 16
+constantsEnd
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
 entry main
+module dx7Settings
+; @home left
+; @pos 0 0
+; Wired preset record from the voice.
+int* in
+moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* key
+use dx7EnvelopeFields
+int** settings &dx7Settings:in
+int out
+
+push &out
+push *key
+call loadAt *settings RATE_SCALING
+mul
+shiftRight 3
+store
+moduleEnd
+module dx7KeyboardLevelScaling
+; @pos 110 0
+; Three-key scaling changes level, not pitch.
+int* key
+use dx7EnvelopeFields
+int** settings &dx7Settings:in
+int out
+; @hide
+push &out
+push *key
+call loadAt *settings BREAKPOINT
+call loadAt *settings LEFT_DEPTH
+call loadAt *settings RIGHT_DEPTH
+call loadAt *settings LEFT_CURVE
+call loadAt *settings RIGHT_CURVE
+call dx7LevelScale
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 175 0
+; Keep the base offset for gain normalization.
+; Velocity and key scaling remain audible.
+use dx7EnvelopeFields
+int** settings &dx7Settings:in
+int* velocityCurve
+int* keyScaling &dx7KeyboardLevelScaling:out
+float base
+float out
+local int level
+
+call loadAt *settings OUTPUT_LEVEL
+call dx7Level
+localSet level
+push &base
+push level
+shiftLeft 5
+sub 4256
+castToFloat
+store
+
+push &out
+push *velocityCurve
+call loadAt *settings VELOCITY_SENSITIVITY
+mul
+add 7
+shiftRight 3
+shiftLeft 4
+push level
+add *keyScaling
+max 0
+min 127
+shiftLeft 5
+add
+max 0
+sub 4256
+castToFloat
+store
+moduleEnd
+module envelope4Stage
+; @pos 250 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 310 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int** settings &dx7Settings:in
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt *settings *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 370 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+use dx7EnvelopeFields
+int** settings &dx7Settings:in
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+push *settings
+push *stage
+add LEVELS
+call loadAt
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 430 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 490 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7AmplitudeModulation
+; @pos 550 0
+; Per-operator sensitivity to the shared LFO.
+; Sensitivities measured in Hexter.
+float* in
+use dx7EnvelopeFields
+int** settings &dx7Settings:in
+float out
+; @hide
+push &out
+call loadAt *settings AMPLITUDE_SENSITIVITY
+max 0
+min 3
+mapBegin int
+map 0 0.0
+map 1 0.238058
+map 2 0.460510
+map 3 1.0
+mapEnd float
+mul *in
+store
+moduleEnd
+module dx7Gain
+; @pos 610 0
+; Normalized log-to-linear amplitude.
+float* in &envelopeRamp:out
+float* offset &dx7OutputLevel:base
+float* attenuation &dx7AmplitudeModulation:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+push *offset
+add 4032.0
+sub
+div 256.0
+sub *attenuation
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+entryEnd
+templateEnd
+entry main
+module envelopeSettings
+; @pos 254 130
+; One record per operator, wired to its envelope.
+; Fields: rates 1-4; levels 1-4; rate scaling;
+; output level; velocity; breakpoint; left/right
+; depths; left/right curves; AM sensitivity.
+use preset
+int[] operator1 17
+- OP1_RATE1 OP1_RATE2 OP1_RATE3 OP1_RATE4
+- OP1_LEVEL1 OP1_LEVEL2 OP1_LEVEL3 OP1_LEVEL4
+- OP1_RATE_SCALING OP1_OUTPUT_LEVEL
+- OP1_VELOCITY_SENSITIVITY OP1_BREAKPOINT
+- OP1_LEFT_DEPTH OP1_RIGHT_DEPTH
+- OP1_LEFT_CURVE OP1_RIGHT_CURVE
+- OP1_AMP_MOD_SENSITIVITY
+int[] operator2 17
+- OP2_RATE1 OP2_RATE2 OP2_RATE3 OP2_RATE4
+- OP2_LEVEL1 OP2_LEVEL2 OP2_LEVEL3 OP2_LEVEL4
+- OP2_RATE_SCALING OP2_OUTPUT_LEVEL
+- OP2_VELOCITY_SENSITIVITY OP2_BREAKPOINT
+- OP2_LEFT_DEPTH OP2_RIGHT_DEPTH
+- OP2_LEFT_CURVE OP2_RIGHT_CURVE
+- OP2_AMP_MOD_SENSITIVITY
+int[] operator3 17
+- OP3_RATE1 OP3_RATE2 OP3_RATE3 OP3_RATE4
+- OP3_LEVEL1 OP3_LEVEL2 OP3_LEVEL3 OP3_LEVEL4
+- OP3_RATE_SCALING OP3_OUTPUT_LEVEL
+- OP3_VELOCITY_SENSITIVITY OP3_BREAKPOINT
+- OP3_LEFT_DEPTH OP3_RIGHT_DEPTH
+- OP3_LEFT_CURVE OP3_RIGHT_CURVE
+- OP3_AMP_MOD_SENSITIVITY
+int[] operator4 17
+- OP4_RATE1 OP4_RATE2 OP4_RATE3 OP4_RATE4
+- OP4_LEVEL1 OP4_LEVEL2 OP4_LEVEL3 OP4_LEVEL4
+- OP4_RATE_SCALING OP4_OUTPUT_LEVEL
+- OP4_VELOCITY_SENSITIVITY OP4_BREAKPOINT
+- OP4_LEFT_DEPTH OP4_RIGHT_DEPTH
+- OP4_LEFT_CURVE OP4_RIGHT_CURVE
+- OP4_AMP_MOD_SENSITIVITY
+int[] operator5 17
+- OP5_RATE1 OP5_RATE2 OP5_RATE3 OP5_RATE4
+- OP5_LEVEL1 OP5_LEVEL2 OP5_LEVEL3 OP5_LEVEL4
+- OP5_RATE_SCALING OP5_OUTPUT_LEVEL
+- OP5_VELOCITY_SENSITIVITY OP5_BREAKPOINT
+- OP5_LEFT_DEPTH OP5_RIGHT_DEPTH
+- OP5_LEFT_CURVE OP5_RIGHT_CURVE
+- OP5_AMP_MOD_SENSITIVITY
+int[] operator6 17
+- OP6_RATE1 OP6_RATE2 OP6_RATE3 OP6_RATE4
+- OP6_LEVEL1 OP6_LEVEL2 OP6_LEVEL3 OP6_LEVEL4
+- OP6_RATE_SCALING OP6_OUTPUT_LEVEL
+- OP6_VELOCITY_SENSITIVITY OP6_BREAKPOINT
+- OP6_LEFT_DEPTH OP6_RIGHT_DEPTH
+- OP6_LEFT_CURVE OP6_RIGHT_CURVE
+- OP6_AMP_MOD_SENSITIVITY
+moduleEnd
 module voiceInput
 ; @pos 254 19
 ; @home left
@@ -2143,6 +2489,7 @@ groupEnd
 group envelope2
 ; @pos 320 0
 ; @group operator2
+expose settings &dx7Settings:in
 expose key &dx7PitchRateScaling:key
 expose levelKey &dx7KeyboardLevelScaling:key
 expose amplitudeLfo &dx7AmplitudeModulation:in
@@ -2152,6 +2499,7 @@ expose release &envelope4Stage:release
 expose out &dx7Gain:out
 ; @meter out 0 1
 
+init &settings &envelopeSettings:operator2
 init &key &voiceInput:rateKey
 init &levelKey &modulation:key
 init &amplitudeLfo &modulation:amplitude
@@ -2160,291 +2508,15 @@ init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
-pass preset
 pass dx7Level
 pass dx7LevelScale
 
-includes
-; @pos 0 -16
-include std/memory/loadAt
-include std/math/exp2
-include std/math/moveTowards
-includesEnd
-entry main
-module dx7Settings
-; @home left
-; @pos 0 0
-use preset
-int[] rates 4
-- OP2_RATE1 OP2_RATE2 OP2_RATE3 OP2_RATE4
-int[] levels 4
-- OP2_LEVEL1 OP2_LEVEL2 OP2_LEVEL3 OP2_LEVEL4
-int rateScaling OP2_RATE_SCALING
-int outputLevel OP2_OUTPUT_LEVEL
-int velocitySensitivity
-- OP2_VELOCITY_SENSITIVITY
-int breakpoint OP2_BREAKPOINT
-int leftDepth OP2_LEFT_DEPTH
-int rightDepth OP2_RIGHT_DEPTH
-int leftCurve OP2_LEFT_CURVE
-int rightCurve OP2_RIGHT_CURVE
-int amplitudeSensitivity
-- OP2_AMP_MOD_SENSITIVITY
-moduleEnd
-module dx7PitchRateScaling
-; @pos 55 0
-; Pitch-dependent DX7 speed offset.
-int* key
-int* amount &dx7Settings:rateScaling
-int out
-
-push &out
-push *key
-mul *amount
-shiftRight 3
-store
-moduleEnd
-module dx7KeyboardLevelScaling
-; @pos 110 0
-; Three-key scaling changes level, not pitch.
-int* key
-int* breakpoint &dx7Settings:breakpoint
-int* leftDepth &dx7Settings:leftDepth
-int* rightDepth &dx7Settings:rightDepth
-int* leftCurve &dx7Settings:leftCurve
-int* rightCurve &dx7Settings:rightCurve
-int out
-; @hide
-push &out
-call dx7LevelScale *key *breakpoint
-- *leftDepth *rightDepth *leftCurve *rightCurve
-store
-moduleEnd
-module dx7OutputLevel
-; @pos 175 0
-; Keep the base offset for gain normalization.
-; Velocity and key scaling remain audible.
-int* in &dx7Settings:outputLevel
-int* sensitivity &dx7Settings:velocitySensitivity
-int* velocityCurve
-int* keyScaling &dx7KeyboardLevelScaling:out
-float base
-float out
-local int level
-
-call dx7Level *in
-localSet level
-push &base
-push level
-shiftLeft 5
-sub 4256
-castToFloat
-store
-
-push &out
-push *velocityCurve
-mul *sensitivity
-add 7
-shiftRight 3
-shiftLeft 4
-push level
-add *keyScaling
-max 0
-min 127
-shiftLeft 5
-add
-max 0
-sub 4256
-castToFloat
-store
-moduleEnd
-module envelope4Stage
-; @pos 250 0
-; Generic four-stage EG selector.
-; Note-on starts 0; note-off selects 3.
-; Reach 0, 1, 2, then hold stage 2.
-int* trigger
-int* release
-float* value &envelopeRamp:out
-float* target &dx7Target:out
-int out 3
-
-push *trigger
-if
-push &out
-push 0
-store
-else
-push *release
-if
-push &out
-push 3
-store
-else
-push *value
-push *target
-equal
-push out
-push 2
-lessThan
-and
-if
-push &out
-push out
-add 1
-store
-ifEnd
-ifEnd
-ifEnd
-moduleEnd
-module dx7Rate
-; @pos 310 0
-; Current raw rate to log step/sample.
-use env
-int* stage &envelope4Stage:out
-int* rates &dx7Settings:rates
-int* scaling &dx7PitchRateScaling:out
-float out
-local int qrate
-
-call loadAt rates *stage
-mul 41
-shiftRight 6
-add *scaling
-min 63
-localSet qrate
-push &out
-push qrate
-and 3
-add 4
-castToFloat
-push 1
-push qrate
-shiftRight 2
-shiftLeft
-castToFloat
-mul
-div 16384.0
-mul 44100.0
-push SAMPLE_RATE
-castToFloat
-div
-store
-moduleEnd
-module dx7Target
-; @pos 370 0
-; Current raw level to log target.
-int* stage &envelope4Stage:out
-int* levels &dx7Settings:levels
-float* offset &dx7OutputLevel:out
-float out
-
-push &out
-call loadAt levels *stage
-call dx7Level
-shiftRight 1
-shiftLeft 6
-castToFloat
-add *offset
-max 16.0
-store
-moduleEnd
-module dx7Curve
-; @pos 430 0
-; DX7 rising curve and attack jump.
-; Falling segments use the base step.
-float* in &envelopeRamp:out
-float* target &dx7Target:out
-float* rate &dx7Rate:out
-float current
-float step
-
-push &current
-push *in
-store
-push &step
-push *rate
-store
-push *target
-push *in
-greaterThan
-if
-push &current
-push *in
-max 1716.0
-min *target
-store
-push &step
-push 4256.0
-sub current
-div 256.0
-mul *rate
-store
-ifEnd
-moduleEnd
-module envelopeRamp
-; @pos 490 0
-; Generic ramp toward a target.
-float* in &dx7Curve:current
-float* target &dx7Target:out
-float* step &dx7Curve:step
-float out
-
-push &out
-call moveTowards *in *target *step
-store
-moduleEnd
-module dx7AmplitudeModulation
-; @pos 550 0
-; Per-operator sensitivity to the shared LFO.
-; Sensitivities measured in Hexter.
-float* in
-int* sensitivity &dx7Settings:amplitudeSensitivity
-float out
-; @hide
-push &out
-push *sensitivity
-max 0
-min 3
-mapBegin int
-map 0 0.0
-map 1 0.238058
-map 2 0.460510
-map 3 1.0
-mapEnd float
-mul *in
-store
-moduleEnd
-module dx7Gain
-; @pos 610 0
-; Normalized log-to-linear amplitude.
-float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:base
-float* attenuation &dx7AmplitudeModulation:out
-float out
-
-push &out
-push *in
-push 16.0
-greaterThan
-if
-push *in
-push *offset
-add 4032.0
-sub
-div 256.0
-sub *attenuation
-call exp2
-else
-push 0.0
-ifEnd float
-store
-moduleEnd
-entryEnd
+useTemplate dx7Envelope
 groupEnd
 group envelope4
 ; @pos 320 36
 ; @group operator4
+expose settings &dx7Settings:in
 expose key &dx7PitchRateScaling:key
 expose levelKey &dx7KeyboardLevelScaling:key
 expose amplitudeLfo &dx7AmplitudeModulation:in
@@ -2454,6 +2526,7 @@ expose release &envelope4Stage:release
 expose out &dx7Gain:out
 ; @meter out 0 1
 
+init &settings &envelopeSettings:operator4
 init &key &voiceInput:rateKey
 init &levelKey &modulation:key
 init &amplitudeLfo &modulation:amplitude
@@ -2462,291 +2535,15 @@ init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
-pass preset
 pass dx7Level
 pass dx7LevelScale
 
-includes
-; @pos 0 -16
-include std/memory/loadAt
-include std/math/exp2
-include std/math/moveTowards
-includesEnd
-entry main
-module dx7Settings
-; @home left
-; @pos 0 0
-use preset
-int[] rates 4
-- OP4_RATE1 OP4_RATE2 OP4_RATE3 OP4_RATE4
-int[] levels 4
-- OP4_LEVEL1 OP4_LEVEL2 OP4_LEVEL3 OP4_LEVEL4
-int rateScaling OP4_RATE_SCALING
-int outputLevel OP4_OUTPUT_LEVEL
-int velocitySensitivity
-- OP4_VELOCITY_SENSITIVITY
-int breakpoint OP4_BREAKPOINT
-int leftDepth OP4_LEFT_DEPTH
-int rightDepth OP4_RIGHT_DEPTH
-int leftCurve OP4_LEFT_CURVE
-int rightCurve OP4_RIGHT_CURVE
-int amplitudeSensitivity
-- OP4_AMP_MOD_SENSITIVITY
-moduleEnd
-module dx7PitchRateScaling
-; @pos 55 0
-; Pitch-dependent DX7 speed offset.
-int* key
-int* amount &dx7Settings:rateScaling
-int out
-
-push &out
-push *key
-mul *amount
-shiftRight 3
-store
-moduleEnd
-module dx7KeyboardLevelScaling
-; @pos 110 0
-; Three-key scaling changes level, not pitch.
-int* key
-int* breakpoint &dx7Settings:breakpoint
-int* leftDepth &dx7Settings:leftDepth
-int* rightDepth &dx7Settings:rightDepth
-int* leftCurve &dx7Settings:leftCurve
-int* rightCurve &dx7Settings:rightCurve
-int out
-; @hide
-push &out
-call dx7LevelScale *key *breakpoint
-- *leftDepth *rightDepth *leftCurve *rightCurve
-store
-moduleEnd
-module dx7OutputLevel
-; @pos 175 0
-; Keep the base offset for gain normalization.
-; Velocity and key scaling remain audible.
-int* in &dx7Settings:outputLevel
-int* sensitivity &dx7Settings:velocitySensitivity
-int* velocityCurve
-int* keyScaling &dx7KeyboardLevelScaling:out
-float base
-float out
-local int level
-
-call dx7Level *in
-localSet level
-push &base
-push level
-shiftLeft 5
-sub 4256
-castToFloat
-store
-
-push &out
-push *velocityCurve
-mul *sensitivity
-add 7
-shiftRight 3
-shiftLeft 4
-push level
-add *keyScaling
-max 0
-min 127
-shiftLeft 5
-add
-max 0
-sub 4256
-castToFloat
-store
-moduleEnd
-module envelope4Stage
-; @pos 250 0
-; Generic four-stage EG selector.
-; Note-on starts 0; note-off selects 3.
-; Reach 0, 1, 2, then hold stage 2.
-int* trigger
-int* release
-float* value &envelopeRamp:out
-float* target &dx7Target:out
-int out 3
-
-push *trigger
-if
-push &out
-push 0
-store
-else
-push *release
-if
-push &out
-push 3
-store
-else
-push *value
-push *target
-equal
-push out
-push 2
-lessThan
-and
-if
-push &out
-push out
-add 1
-store
-ifEnd
-ifEnd
-ifEnd
-moduleEnd
-module dx7Rate
-; @pos 310 0
-; Current raw rate to log step/sample.
-use env
-int* stage &envelope4Stage:out
-int* rates &dx7Settings:rates
-int* scaling &dx7PitchRateScaling:out
-float out
-local int qrate
-
-call loadAt rates *stage
-mul 41
-shiftRight 6
-add *scaling
-min 63
-localSet qrate
-push &out
-push qrate
-and 3
-add 4
-castToFloat
-push 1
-push qrate
-shiftRight 2
-shiftLeft
-castToFloat
-mul
-div 16384.0
-mul 44100.0
-push SAMPLE_RATE
-castToFloat
-div
-store
-moduleEnd
-module dx7Target
-; @pos 370 0
-; Current raw level to log target.
-int* stage &envelope4Stage:out
-int* levels &dx7Settings:levels
-float* offset &dx7OutputLevel:out
-float out
-
-push &out
-call loadAt levels *stage
-call dx7Level
-shiftRight 1
-shiftLeft 6
-castToFloat
-add *offset
-max 16.0
-store
-moduleEnd
-module dx7Curve
-; @pos 430 0
-; DX7 rising curve and attack jump.
-; Falling segments use the base step.
-float* in &envelopeRamp:out
-float* target &dx7Target:out
-float* rate &dx7Rate:out
-float current
-float step
-
-push &current
-push *in
-store
-push &step
-push *rate
-store
-push *target
-push *in
-greaterThan
-if
-push &current
-push *in
-max 1716.0
-min *target
-store
-push &step
-push 4256.0
-sub current
-div 256.0
-mul *rate
-store
-ifEnd
-moduleEnd
-module envelopeRamp
-; @pos 490 0
-; Generic ramp toward a target.
-float* in &dx7Curve:current
-float* target &dx7Target:out
-float* step &dx7Curve:step
-float out
-
-push &out
-call moveTowards *in *target *step
-store
-moduleEnd
-module dx7AmplitudeModulation
-; @pos 550 0
-; Per-operator sensitivity to the shared LFO.
-; Sensitivities measured in Hexter.
-float* in
-int* sensitivity &dx7Settings:amplitudeSensitivity
-float out
-; @hide
-push &out
-push *sensitivity
-max 0
-min 3
-mapBegin int
-map 0 0.0
-map 1 0.238058
-map 2 0.460510
-map 3 1.0
-mapEnd float
-mul *in
-store
-moduleEnd
-module dx7Gain
-; @pos 610 0
-; Normalized log-to-linear amplitude.
-float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:base
-float* attenuation &dx7AmplitudeModulation:out
-float out
-
-push &out
-push *in
-push 16.0
-greaterThan
-if
-push *in
-push *offset
-add 4032.0
-sub
-div 256.0
-sub *attenuation
-call exp2
-else
-push 0.0
-ifEnd float
-store
-moduleEnd
-entryEnd
+useTemplate dx7Envelope
 groupEnd
 group envelope6
 ; @pos 320 72
 ; @group operator6
+expose settings &dx7Settings:in
 expose key &dx7PitchRateScaling:key
 expose levelKey &dx7KeyboardLevelScaling:key
 expose amplitudeLfo &dx7AmplitudeModulation:in
@@ -2756,6 +2553,7 @@ expose release &envelope4Stage:release
 expose out &dx7Gain:out
 ; @meter out 0 1
 
+init &settings &envelopeSettings:operator6
 init &key &voiceInput:rateKey
 init &levelKey &modulation:key
 init &amplitudeLfo &modulation:amplitude
@@ -2764,287 +2562,10 @@ init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
-pass preset
 pass dx7Level
 pass dx7LevelScale
 
-includes
-; @pos 0 -16
-include std/memory/loadAt
-include std/math/exp2
-include std/math/moveTowards
-includesEnd
-entry main
-module dx7Settings
-; @home left
-; @pos 0 0
-use preset
-int[] rates 4
-- OP6_RATE1 OP6_RATE2 OP6_RATE3 OP6_RATE4
-int[] levels 4
-- OP6_LEVEL1 OP6_LEVEL2 OP6_LEVEL3 OP6_LEVEL4
-int rateScaling OP6_RATE_SCALING
-int outputLevel OP6_OUTPUT_LEVEL
-int velocitySensitivity
-- OP6_VELOCITY_SENSITIVITY
-int breakpoint OP6_BREAKPOINT
-int leftDepth OP6_LEFT_DEPTH
-int rightDepth OP6_RIGHT_DEPTH
-int leftCurve OP6_LEFT_CURVE
-int rightCurve OP6_RIGHT_CURVE
-int amplitudeSensitivity
-- OP6_AMP_MOD_SENSITIVITY
-moduleEnd
-module dx7PitchRateScaling
-; @pos 55 0
-; Pitch-dependent DX7 speed offset.
-int* key
-int* amount &dx7Settings:rateScaling
-int out
-
-push &out
-push *key
-mul *amount
-shiftRight 3
-store
-moduleEnd
-module dx7KeyboardLevelScaling
-; @pos 110 0
-; Three-key scaling changes level, not pitch.
-int* key
-int* breakpoint &dx7Settings:breakpoint
-int* leftDepth &dx7Settings:leftDepth
-int* rightDepth &dx7Settings:rightDepth
-int* leftCurve &dx7Settings:leftCurve
-int* rightCurve &dx7Settings:rightCurve
-int out
-; @hide
-push &out
-call dx7LevelScale *key *breakpoint
-- *leftDepth *rightDepth *leftCurve *rightCurve
-store
-moduleEnd
-module dx7OutputLevel
-; @pos 175 0
-; Keep the base offset for gain normalization.
-; Velocity and key scaling remain audible.
-int* in &dx7Settings:outputLevel
-int* sensitivity &dx7Settings:velocitySensitivity
-int* velocityCurve
-int* keyScaling &dx7KeyboardLevelScaling:out
-float base
-float out
-local int level
-
-call dx7Level *in
-localSet level
-push &base
-push level
-shiftLeft 5
-sub 4256
-castToFloat
-store
-
-push &out
-push *velocityCurve
-mul *sensitivity
-add 7
-shiftRight 3
-shiftLeft 4
-push level
-add *keyScaling
-max 0
-min 127
-shiftLeft 5
-add
-max 0
-sub 4256
-castToFloat
-store
-moduleEnd
-module envelope4Stage
-; @pos 250 0
-; Generic four-stage EG selector.
-; Note-on starts 0; note-off selects 3.
-; Reach 0, 1, 2, then hold stage 2.
-int* trigger
-int* release
-float* value &envelopeRamp:out
-float* target &dx7Target:out
-int out 3
-
-push *trigger
-if
-push &out
-push 0
-store
-else
-push *release
-if
-push &out
-push 3
-store
-else
-push *value
-push *target
-equal
-push out
-push 2
-lessThan
-and
-if
-push &out
-push out
-add 1
-store
-ifEnd
-ifEnd
-ifEnd
-moduleEnd
-module dx7Rate
-; @pos 310 0
-; Current raw rate to log step/sample.
-use env
-int* stage &envelope4Stage:out
-int* rates &dx7Settings:rates
-int* scaling &dx7PitchRateScaling:out
-float out
-local int qrate
-
-call loadAt rates *stage
-mul 41
-shiftRight 6
-add *scaling
-min 63
-localSet qrate
-push &out
-push qrate
-and 3
-add 4
-castToFloat
-push 1
-push qrate
-shiftRight 2
-shiftLeft
-castToFloat
-mul
-div 16384.0
-mul 44100.0
-push SAMPLE_RATE
-castToFloat
-div
-store
-moduleEnd
-module dx7Target
-; @pos 370 0
-; Current raw level to log target.
-int* stage &envelope4Stage:out
-int* levels &dx7Settings:levels
-float* offset &dx7OutputLevel:out
-float out
-
-push &out
-call loadAt levels *stage
-call dx7Level
-shiftRight 1
-shiftLeft 6
-castToFloat
-add *offset
-max 16.0
-store
-moduleEnd
-module dx7Curve
-; @pos 430 0
-; DX7 rising curve and attack jump.
-; Falling segments use the base step.
-float* in &envelopeRamp:out
-float* target &dx7Target:out
-float* rate &dx7Rate:out
-float current
-float step
-
-push &current
-push *in
-store
-push &step
-push *rate
-store
-push *target
-push *in
-greaterThan
-if
-push &current
-push *in
-max 1716.0
-min *target
-store
-push &step
-push 4256.0
-sub current
-div 256.0
-mul *rate
-store
-ifEnd
-moduleEnd
-module envelopeRamp
-; @pos 490 0
-; Generic ramp toward a target.
-float* in &dx7Curve:current
-float* target &dx7Target:out
-float* step &dx7Curve:step
-float out
-
-push &out
-call moveTowards *in *target *step
-store
-moduleEnd
-module dx7AmplitudeModulation
-; @pos 550 0
-; Per-operator sensitivity to the shared LFO.
-; Sensitivities measured in Hexter.
-float* in
-int* sensitivity &dx7Settings:amplitudeSensitivity
-float out
-; @hide
-push &out
-push *sensitivity
-max 0
-min 3
-mapBegin int
-map 0 0.0
-map 1 0.238058
-map 2 0.460510
-map 3 1.0
-mapEnd float
-mul *in
-store
-moduleEnd
-module dx7Gain
-; @pos 610 0
-; Normalized log-to-linear amplitude.
-float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:base
-float* attenuation &dx7AmplitudeModulation:out
-float out
-
-push &out
-push *in
-push 16.0
-greaterThan
-if
-push *in
-push *offset
-add 4032.0
-sub
-div 256.0
-sub *attenuation
-call exp2
-else
-push 0.0
-ifEnd float
-store
-moduleEnd
-entryEnd
+useTemplate dx7Envelope
 groupEnd
 module modulator2
 ; @pos 382 0
@@ -3223,6 +2744,7 @@ moduleEnd
 group envelope1
 ; @pos 437 0
 ; @group operator1
+expose settings &dx7Settings:in
 expose key &dx7PitchRateScaling:key
 expose levelKey &dx7KeyboardLevelScaling:key
 expose amplitudeLfo &dx7AmplitudeModulation:in
@@ -3232,6 +2754,7 @@ expose release &envelope4Stage:release
 expose out &dx7Gain:out
 ; @meter out 0 1
 
+init &settings &envelopeSettings:operator1
 init &key &voiceInput:rateKey
 init &levelKey &modulation:key
 init &amplitudeLfo &modulation:amplitude
@@ -3240,291 +2763,15 @@ init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
-pass preset
 pass dx7Level
 pass dx7LevelScale
 
-includes
-; @pos 0 -16
-include std/memory/loadAt
-include std/math/exp2
-include std/math/moveTowards
-includesEnd
-entry main
-module dx7Settings
-; @home left
-; @pos 0 0
-use preset
-int[] rates 4
-- OP1_RATE1 OP1_RATE2 OP1_RATE3 OP1_RATE4
-int[] levels 4
-- OP1_LEVEL1 OP1_LEVEL2 OP1_LEVEL3 OP1_LEVEL4
-int rateScaling OP1_RATE_SCALING
-int outputLevel OP1_OUTPUT_LEVEL
-int velocitySensitivity
-- OP1_VELOCITY_SENSITIVITY
-int breakpoint OP1_BREAKPOINT
-int leftDepth OP1_LEFT_DEPTH
-int rightDepth OP1_RIGHT_DEPTH
-int leftCurve OP1_LEFT_CURVE
-int rightCurve OP1_RIGHT_CURVE
-int amplitudeSensitivity
-- OP1_AMP_MOD_SENSITIVITY
-moduleEnd
-module dx7PitchRateScaling
-; @pos 55 0
-; Pitch-dependent DX7 speed offset.
-int* key
-int* amount &dx7Settings:rateScaling
-int out
-
-push &out
-push *key
-mul *amount
-shiftRight 3
-store
-moduleEnd
-module dx7KeyboardLevelScaling
-; @pos 110 0
-; Three-key scaling changes level, not pitch.
-int* key
-int* breakpoint &dx7Settings:breakpoint
-int* leftDepth &dx7Settings:leftDepth
-int* rightDepth &dx7Settings:rightDepth
-int* leftCurve &dx7Settings:leftCurve
-int* rightCurve &dx7Settings:rightCurve
-int out
-; @hide
-push &out
-call dx7LevelScale *key *breakpoint
-- *leftDepth *rightDepth *leftCurve *rightCurve
-store
-moduleEnd
-module dx7OutputLevel
-; @pos 175 0
-; Keep the base offset for gain normalization.
-; Velocity and key scaling remain audible.
-int* in &dx7Settings:outputLevel
-int* sensitivity &dx7Settings:velocitySensitivity
-int* velocityCurve
-int* keyScaling &dx7KeyboardLevelScaling:out
-float base
-float out
-local int level
-
-call dx7Level *in
-localSet level
-push &base
-push level
-shiftLeft 5
-sub 4256
-castToFloat
-store
-
-push &out
-push *velocityCurve
-mul *sensitivity
-add 7
-shiftRight 3
-shiftLeft 4
-push level
-add *keyScaling
-max 0
-min 127
-shiftLeft 5
-add
-max 0
-sub 4256
-castToFloat
-store
-moduleEnd
-module envelope4Stage
-; @pos 250 0
-; Generic four-stage EG selector.
-; Note-on starts 0; note-off selects 3.
-; Reach 0, 1, 2, then hold stage 2.
-int* trigger
-int* release
-float* value &envelopeRamp:out
-float* target &dx7Target:out
-int out 3
-
-push *trigger
-if
-push &out
-push 0
-store
-else
-push *release
-if
-push &out
-push 3
-store
-else
-push *value
-push *target
-equal
-push out
-push 2
-lessThan
-and
-if
-push &out
-push out
-add 1
-store
-ifEnd
-ifEnd
-ifEnd
-moduleEnd
-module dx7Rate
-; @pos 310 0
-; Current raw rate to log step/sample.
-use env
-int* stage &envelope4Stage:out
-int* rates &dx7Settings:rates
-int* scaling &dx7PitchRateScaling:out
-float out
-local int qrate
-
-call loadAt rates *stage
-mul 41
-shiftRight 6
-add *scaling
-min 63
-localSet qrate
-push &out
-push qrate
-and 3
-add 4
-castToFloat
-push 1
-push qrate
-shiftRight 2
-shiftLeft
-castToFloat
-mul
-div 16384.0
-mul 44100.0
-push SAMPLE_RATE
-castToFloat
-div
-store
-moduleEnd
-module dx7Target
-; @pos 370 0
-; Current raw level to log target.
-int* stage &envelope4Stage:out
-int* levels &dx7Settings:levels
-float* offset &dx7OutputLevel:out
-float out
-
-push &out
-call loadAt levels *stage
-call dx7Level
-shiftRight 1
-shiftLeft 6
-castToFloat
-add *offset
-max 16.0
-store
-moduleEnd
-module dx7Curve
-; @pos 430 0
-; DX7 rising curve and attack jump.
-; Falling segments use the base step.
-float* in &envelopeRamp:out
-float* target &dx7Target:out
-float* rate &dx7Rate:out
-float current
-float step
-
-push &current
-push *in
-store
-push &step
-push *rate
-store
-push *target
-push *in
-greaterThan
-if
-push &current
-push *in
-max 1716.0
-min *target
-store
-push &step
-push 4256.0
-sub current
-div 256.0
-mul *rate
-store
-ifEnd
-moduleEnd
-module envelopeRamp
-; @pos 490 0
-; Generic ramp toward a target.
-float* in &dx7Curve:current
-float* target &dx7Target:out
-float* step &dx7Curve:step
-float out
-
-push &out
-call moveTowards *in *target *step
-store
-moduleEnd
-module dx7AmplitudeModulation
-; @pos 550 0
-; Per-operator sensitivity to the shared LFO.
-; Sensitivities measured in Hexter.
-float* in
-int* sensitivity &dx7Settings:amplitudeSensitivity
-float out
-; @hide
-push &out
-push *sensitivity
-max 0
-min 3
-mapBegin int
-map 0 0.0
-map 1 0.238058
-map 2 0.460510
-map 3 1.0
-mapEnd float
-mul *in
-store
-moduleEnd
-module dx7Gain
-; @pos 610 0
-; Normalized log-to-linear amplitude.
-float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:base
-float* attenuation &dx7AmplitudeModulation:out
-float out
-
-push &out
-push *in
-push 16.0
-greaterThan
-if
-push *in
-push *offset
-add 4032.0
-sub
-div 256.0
-sub *attenuation
-call exp2
-else
-push 0.0
-ifEnd float
-store
-moduleEnd
-entryEnd
+useTemplate dx7Envelope
 groupEnd
 group envelope3
 ; @pos 437 36
 ; @group operator3
+expose settings &dx7Settings:in
 expose key &dx7PitchRateScaling:key
 expose levelKey &dx7KeyboardLevelScaling:key
 expose amplitudeLfo &dx7AmplitudeModulation:in
@@ -3534,6 +2781,7 @@ expose release &envelope4Stage:release
 expose out &dx7Gain:out
 ; @meter out 0 1
 
+init &settings &envelopeSettings:operator3
 init &key &voiceInput:rateKey
 init &levelKey &modulation:key
 init &amplitudeLfo &modulation:amplitude
@@ -3542,291 +2790,15 @@ init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
-pass preset
 pass dx7Level
 pass dx7LevelScale
 
-includes
-; @pos 0 -16
-include std/memory/loadAt
-include std/math/exp2
-include std/math/moveTowards
-includesEnd
-entry main
-module dx7Settings
-; @home left
-; @pos 0 0
-use preset
-int[] rates 4
-- OP3_RATE1 OP3_RATE2 OP3_RATE3 OP3_RATE4
-int[] levels 4
-- OP3_LEVEL1 OP3_LEVEL2 OP3_LEVEL3 OP3_LEVEL4
-int rateScaling OP3_RATE_SCALING
-int outputLevel OP3_OUTPUT_LEVEL
-int velocitySensitivity
-- OP3_VELOCITY_SENSITIVITY
-int breakpoint OP3_BREAKPOINT
-int leftDepth OP3_LEFT_DEPTH
-int rightDepth OP3_RIGHT_DEPTH
-int leftCurve OP3_LEFT_CURVE
-int rightCurve OP3_RIGHT_CURVE
-int amplitudeSensitivity
-- OP3_AMP_MOD_SENSITIVITY
-moduleEnd
-module dx7PitchRateScaling
-; @pos 55 0
-; Pitch-dependent DX7 speed offset.
-int* key
-int* amount &dx7Settings:rateScaling
-int out
-
-push &out
-push *key
-mul *amount
-shiftRight 3
-store
-moduleEnd
-module dx7KeyboardLevelScaling
-; @pos 110 0
-; Three-key scaling changes level, not pitch.
-int* key
-int* breakpoint &dx7Settings:breakpoint
-int* leftDepth &dx7Settings:leftDepth
-int* rightDepth &dx7Settings:rightDepth
-int* leftCurve &dx7Settings:leftCurve
-int* rightCurve &dx7Settings:rightCurve
-int out
-; @hide
-push &out
-call dx7LevelScale *key *breakpoint
-- *leftDepth *rightDepth *leftCurve *rightCurve
-store
-moduleEnd
-module dx7OutputLevel
-; @pos 175 0
-; Keep the base offset for gain normalization.
-; Velocity and key scaling remain audible.
-int* in &dx7Settings:outputLevel
-int* sensitivity &dx7Settings:velocitySensitivity
-int* velocityCurve
-int* keyScaling &dx7KeyboardLevelScaling:out
-float base
-float out
-local int level
-
-call dx7Level *in
-localSet level
-push &base
-push level
-shiftLeft 5
-sub 4256
-castToFloat
-store
-
-push &out
-push *velocityCurve
-mul *sensitivity
-add 7
-shiftRight 3
-shiftLeft 4
-push level
-add *keyScaling
-max 0
-min 127
-shiftLeft 5
-add
-max 0
-sub 4256
-castToFloat
-store
-moduleEnd
-module envelope4Stage
-; @pos 250 0
-; Generic four-stage EG selector.
-; Note-on starts 0; note-off selects 3.
-; Reach 0, 1, 2, then hold stage 2.
-int* trigger
-int* release
-float* value &envelopeRamp:out
-float* target &dx7Target:out
-int out 3
-
-push *trigger
-if
-push &out
-push 0
-store
-else
-push *release
-if
-push &out
-push 3
-store
-else
-push *value
-push *target
-equal
-push out
-push 2
-lessThan
-and
-if
-push &out
-push out
-add 1
-store
-ifEnd
-ifEnd
-ifEnd
-moduleEnd
-module dx7Rate
-; @pos 310 0
-; Current raw rate to log step/sample.
-use env
-int* stage &envelope4Stage:out
-int* rates &dx7Settings:rates
-int* scaling &dx7PitchRateScaling:out
-float out
-local int qrate
-
-call loadAt rates *stage
-mul 41
-shiftRight 6
-add *scaling
-min 63
-localSet qrate
-push &out
-push qrate
-and 3
-add 4
-castToFloat
-push 1
-push qrate
-shiftRight 2
-shiftLeft
-castToFloat
-mul
-div 16384.0
-mul 44100.0
-push SAMPLE_RATE
-castToFloat
-div
-store
-moduleEnd
-module dx7Target
-; @pos 370 0
-; Current raw level to log target.
-int* stage &envelope4Stage:out
-int* levels &dx7Settings:levels
-float* offset &dx7OutputLevel:out
-float out
-
-push &out
-call loadAt levels *stage
-call dx7Level
-shiftRight 1
-shiftLeft 6
-castToFloat
-add *offset
-max 16.0
-store
-moduleEnd
-module dx7Curve
-; @pos 430 0
-; DX7 rising curve and attack jump.
-; Falling segments use the base step.
-float* in &envelopeRamp:out
-float* target &dx7Target:out
-float* rate &dx7Rate:out
-float current
-float step
-
-push &current
-push *in
-store
-push &step
-push *rate
-store
-push *target
-push *in
-greaterThan
-if
-push &current
-push *in
-max 1716.0
-min *target
-store
-push &step
-push 4256.0
-sub current
-div 256.0
-mul *rate
-store
-ifEnd
-moduleEnd
-module envelopeRamp
-; @pos 490 0
-; Generic ramp toward a target.
-float* in &dx7Curve:current
-float* target &dx7Target:out
-float* step &dx7Curve:step
-float out
-
-push &out
-call moveTowards *in *target *step
-store
-moduleEnd
-module dx7AmplitudeModulation
-; @pos 550 0
-; Per-operator sensitivity to the shared LFO.
-; Sensitivities measured in Hexter.
-float* in
-int* sensitivity &dx7Settings:amplitudeSensitivity
-float out
-; @hide
-push &out
-push *sensitivity
-max 0
-min 3
-mapBegin int
-map 0 0.0
-map 1 0.238058
-map 2 0.460510
-map 3 1.0
-mapEnd float
-mul *in
-store
-moduleEnd
-module dx7Gain
-; @pos 610 0
-; Normalized log-to-linear amplitude.
-float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:base
-float* attenuation &dx7AmplitudeModulation:out
-float out
-
-push &out
-push *in
-push 16.0
-greaterThan
-if
-push *in
-push *offset
-add 4032.0
-sub
-div 256.0
-sub *attenuation
-call exp2
-else
-push 0.0
-ifEnd float
-store
-moduleEnd
-entryEnd
+useTemplate dx7Envelope
 groupEnd
 group envelope5
 ; @pos 437 72
 ; @group operator5
+expose settings &dx7Settings:in
 expose key &dx7PitchRateScaling:key
 expose levelKey &dx7KeyboardLevelScaling:key
 expose amplitudeLfo &dx7AmplitudeModulation:in
@@ -3836,6 +2808,7 @@ expose release &envelope4Stage:release
 expose out &dx7Gain:out
 ; @meter out 0 1
 
+init &settings &envelopeSettings:operator5
 init &key &voiceInput:rateKey
 init &levelKey &modulation:key
 init &amplitudeLfo &modulation:amplitude
@@ -3844,287 +2817,10 @@ init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
-pass preset
 pass dx7Level
 pass dx7LevelScale
 
-includes
-; @pos 0 -16
-include std/memory/loadAt
-include std/math/exp2
-include std/math/moveTowards
-includesEnd
-entry main
-module dx7Settings
-; @home left
-; @pos 0 0
-use preset
-int[] rates 4
-- OP5_RATE1 OP5_RATE2 OP5_RATE3 OP5_RATE4
-int[] levels 4
-- OP5_LEVEL1 OP5_LEVEL2 OP5_LEVEL3 OP5_LEVEL4
-int rateScaling OP5_RATE_SCALING
-int outputLevel OP5_OUTPUT_LEVEL
-int velocitySensitivity
-- OP5_VELOCITY_SENSITIVITY
-int breakpoint OP5_BREAKPOINT
-int leftDepth OP5_LEFT_DEPTH
-int rightDepth OP5_RIGHT_DEPTH
-int leftCurve OP5_LEFT_CURVE
-int rightCurve OP5_RIGHT_CURVE
-int amplitudeSensitivity
-- OP5_AMP_MOD_SENSITIVITY
-moduleEnd
-module dx7PitchRateScaling
-; @pos 55 0
-; Pitch-dependent DX7 speed offset.
-int* key
-int* amount &dx7Settings:rateScaling
-int out
-
-push &out
-push *key
-mul *amount
-shiftRight 3
-store
-moduleEnd
-module dx7KeyboardLevelScaling
-; @pos 110 0
-; Three-key scaling changes level, not pitch.
-int* key
-int* breakpoint &dx7Settings:breakpoint
-int* leftDepth &dx7Settings:leftDepth
-int* rightDepth &dx7Settings:rightDepth
-int* leftCurve &dx7Settings:leftCurve
-int* rightCurve &dx7Settings:rightCurve
-int out
-; @hide
-push &out
-call dx7LevelScale *key *breakpoint
-- *leftDepth *rightDepth *leftCurve *rightCurve
-store
-moduleEnd
-module dx7OutputLevel
-; @pos 175 0
-; Keep the base offset for gain normalization.
-; Velocity and key scaling remain audible.
-int* in &dx7Settings:outputLevel
-int* sensitivity &dx7Settings:velocitySensitivity
-int* velocityCurve
-int* keyScaling &dx7KeyboardLevelScaling:out
-float base
-float out
-local int level
-
-call dx7Level *in
-localSet level
-push &base
-push level
-shiftLeft 5
-sub 4256
-castToFloat
-store
-
-push &out
-push *velocityCurve
-mul *sensitivity
-add 7
-shiftRight 3
-shiftLeft 4
-push level
-add *keyScaling
-max 0
-min 127
-shiftLeft 5
-add
-max 0
-sub 4256
-castToFloat
-store
-moduleEnd
-module envelope4Stage
-; @pos 250 0
-; Generic four-stage EG selector.
-; Note-on starts 0; note-off selects 3.
-; Reach 0, 1, 2, then hold stage 2.
-int* trigger
-int* release
-float* value &envelopeRamp:out
-float* target &dx7Target:out
-int out 3
-
-push *trigger
-if
-push &out
-push 0
-store
-else
-push *release
-if
-push &out
-push 3
-store
-else
-push *value
-push *target
-equal
-push out
-push 2
-lessThan
-and
-if
-push &out
-push out
-add 1
-store
-ifEnd
-ifEnd
-ifEnd
-moduleEnd
-module dx7Rate
-; @pos 310 0
-; Current raw rate to log step/sample.
-use env
-int* stage &envelope4Stage:out
-int* rates &dx7Settings:rates
-int* scaling &dx7PitchRateScaling:out
-float out
-local int qrate
-
-call loadAt rates *stage
-mul 41
-shiftRight 6
-add *scaling
-min 63
-localSet qrate
-push &out
-push qrate
-and 3
-add 4
-castToFloat
-push 1
-push qrate
-shiftRight 2
-shiftLeft
-castToFloat
-mul
-div 16384.0
-mul 44100.0
-push SAMPLE_RATE
-castToFloat
-div
-store
-moduleEnd
-module dx7Target
-; @pos 370 0
-; Current raw level to log target.
-int* stage &envelope4Stage:out
-int* levels &dx7Settings:levels
-float* offset &dx7OutputLevel:out
-float out
-
-push &out
-call loadAt levels *stage
-call dx7Level
-shiftRight 1
-shiftLeft 6
-castToFloat
-add *offset
-max 16.0
-store
-moduleEnd
-module dx7Curve
-; @pos 430 0
-; DX7 rising curve and attack jump.
-; Falling segments use the base step.
-float* in &envelopeRamp:out
-float* target &dx7Target:out
-float* rate &dx7Rate:out
-float current
-float step
-
-push &current
-push *in
-store
-push &step
-push *rate
-store
-push *target
-push *in
-greaterThan
-if
-push &current
-push *in
-max 1716.0
-min *target
-store
-push &step
-push 4256.0
-sub current
-div 256.0
-mul *rate
-store
-ifEnd
-moduleEnd
-module envelopeRamp
-; @pos 490 0
-; Generic ramp toward a target.
-float* in &dx7Curve:current
-float* target &dx7Target:out
-float* step &dx7Curve:step
-float out
-
-push &out
-call moveTowards *in *target *step
-store
-moduleEnd
-module dx7AmplitudeModulation
-; @pos 550 0
-; Per-operator sensitivity to the shared LFO.
-; Sensitivities measured in Hexter.
-float* in
-int* sensitivity &dx7Settings:amplitudeSensitivity
-float out
-; @hide
-push &out
-push *sensitivity
-max 0
-min 3
-mapBegin int
-map 0 0.0
-map 1 0.238058
-map 2 0.460510
-map 3 1.0
-mapEnd float
-mul *in
-store
-moduleEnd
-module dx7Gain
-; @pos 610 0
-; Normalized log-to-linear amplitude.
-float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:base
-float* attenuation &dx7AmplitudeModulation:out
-float out
-
-push &out
-push *in
-push 16.0
-greaterThan
-if
-push *in
-push *offset
-add 4032.0
-sub
-div 256.0
-sub *attenuation
-call exp2
-else
-push 0.0
-ifEnd float
-store
-moduleEnd
-entryEnd
+useTemplate dx7Envelope
 groupEnd
 module carrier1
 ; @pos 499 0
