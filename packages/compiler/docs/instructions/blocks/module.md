@@ -71,6 +71,8 @@ Selection follows declaration order across all entries in the same scope. The ed
 
 All memory references and `use` imports resolve against the selected module. Declarations from earlier versions are not merged; references to memory or constants absent from the selected version are errors. Modules in different groups remain independent even when they share a name.
 
+The editor preserves live memory across implementation switches when the program's module set and memory layout remain unchanged. Changed defaults are applied without resetting other values; changing only the generated code size does not reset memory.
+
 Every enabled definition is syntax-checked. Only selected definitions proceed to semantic resolution and compilation.
 
 ## moduleEnd

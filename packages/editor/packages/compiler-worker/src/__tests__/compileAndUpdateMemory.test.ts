@@ -134,6 +134,66 @@ moduleEnd`.split('\n'),
 	});
 });
 
+describe('compileAndUpdateMemory live code updates', () => {
+	it('preserves live memory when reordering replacements with different code lengths', async () => {
+		const project = createInput([
+			{ code: 'module voice\nint out\npush &out\npush out\nadd 1\nstore\nmoduleEnd'.split('\n') },
+			{ code: 'module sentinel\nint value 7\nmoduleEnd'.split('\n') },
+			{ code: 'module voice\nint out\npush &out\npush out\nmul 2\nadd 1\nstore\nmoduleEnd'.split('\n') },
+		]);
+		const run = async (result: CompileAndUpdateMemoryResult) => {
+			const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), {
+				host: { memory: result.memoryRef },
+			});
+			(instance.exports.main as CallableFunction)();
+		};
+		const first = await compileAndUpdateMemory(project, compilerOptions);
+		const out = first.memoryPlan.modules.voice!.memory.out!.byteAddress / 4;
+		const sentinel = first.memoryPlan.modules.sentinel!.memory.value!.byteAddress / 4;
+		const memory = new Int32Array(first.memoryRef.buffer);
+		memory[out] = 123;
+		memory[sentinel] = 456;
+		await run(first);
+		expect(memory[out]).toBe(247);
+
+		project.execution.reverse();
+		const second = await compileAndUpdateMemory(project, compilerOptions);
+		expect(second.compiledModules.voice.cycleFunction.length).not.toBe(
+			first.compiledModules.voice.cycleFunction.length
+		);
+		expect(second.memoryAction).toEqual({ action: 'reused' });
+		expect(second.memoryRef).toBe(first.memoryRef);
+		expect(memory[out]).toBe(247);
+		expect(memory[sentinel]).toBe(456);
+		await run(second);
+		expect(memory[out]).toBe(248);
+
+		project.execution.reverse();
+		const restored = await compileAndUpdateMemory(project, compilerOptions);
+		expect(restored.memoryAction).toEqual({ action: 'reused' });
+		expect(restored.memoryRef).toBe(first.memoryRef);
+		await run(restored);
+		expect(memory[out]).toBe(497);
+		expect(memory[sentinel]).toBe(456);
+	});
+
+	it('still resets memory when a declaration changes size', async () => {
+		const project = createInput([{ code: 'module voice\nint state\nmoduleEnd'.split('\n') }]);
+		const first = await compileAndUpdateMemory(project, compilerOptions);
+		const address = first.memoryPlan.modules.voice!.memory.state!.byteAddress / 4;
+		new Int32Array(first.memoryRef.buffer)[address] = 123;
+
+		getProjectModules(project)[0].code = 'module voice\nint[] state 2\nmoduleEnd'.split('\n');
+		const second = await compileAndUpdateMemory(project, compilerOptions);
+		expect(second.memoryAction).toEqual({ action: 'recreated', reason: { kind: 'memory-structure-changed' } });
+		expect(second.memoryRef).not.toBe(first.memoryRef);
+		const state = second.memoryPlan.modules.voice!.memory.state!;
+		expect(Array.from(new Int32Array(second.memoryRef.buffer, state.byteAddress, state.numberOfElements))).toEqual([
+			0, 0,
+		]);
+	});
+});
+
 describe('compileAndUpdateMemory float64 incremental patching', () => {
 	it('patches float64 scalar default correctly on incremental recompile', async () => {
 		const createModules = (val: number): Array<{ code: string[] }> => [
