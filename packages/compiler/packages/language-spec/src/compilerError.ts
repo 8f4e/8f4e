@@ -523,12 +523,7 @@ export function getError(
 		case ErrorCode.DUPLICATE_IDENTIFIER:
 			return {
 				code,
-				message:
-					'Duplicate identifier' +
-					(details?.identifier ? `: ${details.identifier}` : '') +
-					'. Module and function names must be unique. (' +
-					code +
-					')',
+				message: 'Duplicate identifier' + (details?.identifier ? `: ${details.identifier}` : '') + '. (' + code + ')',
 				line,
 				context,
 			};

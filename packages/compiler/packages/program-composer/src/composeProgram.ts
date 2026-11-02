@@ -11,13 +11,11 @@ import {
 	type ProjectGroupPath,
 	type ProjectMemoryExposure,
 	type ProjectMemoryInitializerLine,
-	type ProjectModuleBlock,
 	type ProjectObjectModel,
 	ROOT_PROJECT_GROUP_PATH,
 	type ValidatedAST,
 	type ValidatedConstantsAST,
 	type ValidatedFunctionAST,
-	type ValidatedModuleAST,
 	type ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import {
@@ -29,6 +27,7 @@ import { compileSourceToAST, createCompilerSource } from './compilerSource';
 import { createCompilerCache } from './createCompilerCache';
 import { qualifyAst } from './qualifyAst';
 import { resolveFunctionPasses } from './resolveFunctionPasses';
+import { selectModuleDefinitions } from './selectModuleDefinitions';
 import type { ComposedProgram, IncludedFunctionsByProjectGroupPath } from './types';
 
 function collectProjectScopePasses(
@@ -207,22 +206,7 @@ function appendUnit(
 		})
 	);
 
-	const moduleIndexByEntry = new Map<string, number>();
-	const moduleAsts = new Map<ProjectModuleBlock, ValidatedModuleAST>();
-	const lastModuleByName = new Map<string, ProjectModuleBlock>();
-	// Select definitions before building entry steps so replacements run at their own positions.
-	for (const module of project.execution) {
-		if (module.type !== 'module' || module.disabled) continue;
-		const index = moduleIndexByEntry.get(module.entry) ?? 0;
-		moduleIndexByEntry.set(module.entry, index + 1);
-		const ast = compileSourceToAST<ValidatedModuleAST>(
-			createCompilerSource(module, projectPath, `entry:${module.entry}:module:${index}`),
-			program.cache
-		);
-		moduleAsts.set(module, ast);
-		lastModuleByName.set(ast.id, module);
-	}
-
+	const selectedModules = selectModuleDefinitions(project.execution, projectPath, program.cache);
 	for (const block of project.execution) {
 		if (block.type === 'group') {
 			const groupPath = createChildProjectGroupPath(projectPath, block.name);
@@ -234,10 +218,9 @@ function appendUnit(
 			if (childInit) ensureEntry('init').steps.push({ type: 'entry', id: childInit.id });
 			continue;
 		}
-		const module = block;
-		const moduleAst = moduleAsts.get(module);
-		if (!moduleAst || lastModuleByName.get(moduleAst.id) !== module) continue;
-		const entry = entries.get(module.entry)!;
+		const moduleAst = selectedModules.get(block);
+		if (!moduleAst) continue;
+		const entry = entries.get(block.entry)!;
 		const ast = {
 			...qualify(moduleAst),
 			executionEntryName: entry.id,

@@ -21,29 +21,27 @@ Modules are the primary unit of code organization in 8f4e. Each module:
 
 ### Example Module
 
-```
+```8f4e
+8f4e/v1
+
+constants env
+const SAMPLE_RATE 48000
+constantsEnd
+
+entry main
 module oscillator
+use env
 const FREQUENCY 440.0
 float phase 0.0
-float increment 0.0
-
-; Calculate phase increment
-push increment
-push FREQUENCY
-push SAMPLE_RATE
-castToFloat
-div
-store
+float increment FREQUENCY/SAMPLE_RATE
 
 ; Update phase
+push &phase
 push phase
-push phase
-load
-push increment
-load
-add
+add increment
 store
 moduleEnd
+entryEnd
 ```
 
 ## Module overrides

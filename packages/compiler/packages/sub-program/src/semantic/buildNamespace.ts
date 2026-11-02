@@ -11,13 +11,10 @@ import {
 	getEffectiveFunctionMetadata,
 	getError,
 	type RegisteredFunction,
-	type ValidatedModuleAST,
 	type ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 
-function getAstDiagnosticContext(
-	ast: ComposedFunctionAST | ValidatedModuleAST | ValidatedPrototypeAST
-): CompilerDiagnosticContext {
+function getAstDiagnosticContext(ast: ComposedFunctionAST): CompilerDiagnosticContext {
 	return {
 		codeBlockType: ast.type,
 		...(ast.projectBlockId !== undefined ? { projectBlockId: ast.projectBlockId } : {}),
@@ -147,22 +144,4 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 	}
 
 	return { registry: { byId, arityByName }, declarations };
-}
-
-/**
- * Ensures module source blocks declare unique ids before namespace discovery.
- *
- * @param asts - Validated ASTs being processed.
- * @returns Nothing.
- */
-export function assertUniqueModuleIds(asts: readonly ValidatedModuleAST[]): void {
-	const seenModuleIds = new Set<string>();
-
-	for (const ast of asts) {
-		const id = ast.id;
-		if (seenModuleIds.has(id)) {
-			throw getError(ErrorCode.DUPLICATE_IDENTIFIER, ast.moduleLine, getAstDiagnosticContext(ast), { identifier: id });
-		}
-		seenModuleIds.add(id);
-	}
 }
