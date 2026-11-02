@@ -68,6 +68,7 @@ Active todo files are listed below.
 | 512 | Investigate integer sprite instance packing | 🟡 | TBD | 2026-10-26 | Evaluate a 12-byte integer sprite layout against the 20-byte baseline, checking coordinate limits, code complexity, and measured CPU/GPU costs. |
 | 513 | Benchmark fixed-grid glyph addressing | 🟡 | TBD | 2026-10-26 | Compare calculated glyph rectangles with the GPU rectangle lookup, verifying equivalent rendering and measured gains before restricting the atlas layout. |
 | 514 | Investigate viewport culling for code text | 🟡 | TBD | 2026-10-26 | Determine visible text row and column ranges before sprite submission, preserving partial glyphs and layout while measuring traversal, upload, and CPU/GPU savings. |
+| 519 | Add group-scoped source templates | 🟡 | TBD | 2026-11-02 | Inline scope-local group templates before parsing; validate source references and silently serialize the rightmost instance, creating definitions from marked groups and removing unused ones. |
 
 ### 🟢 Low Priority
 
