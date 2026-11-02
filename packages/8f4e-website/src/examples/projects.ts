@@ -93,7 +93,7 @@ export const projects = [
 	{
 		id: 'dx7-algorithm-5',
 		title: 'DX7 Algorithm 5',
-		description: 'Play a six-operator DX7-style voice with movable E.PIANO 1, Tub Bells, and E.ORGAN 4 presets.',
+		description: 'Play a six-operator DX7-style voice with movable factory presets.',
 		path: 'audio/dx7Algorithm5.8f4e',
 	},
 	{
