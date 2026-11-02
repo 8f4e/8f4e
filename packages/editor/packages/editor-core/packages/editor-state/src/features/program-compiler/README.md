@@ -8,11 +8,14 @@ Core has no compilation callback or built-in compilation effect.
 
 `state.compilerInputRevision` advances after source edits, block creation/deletion/paste, execution or disabled-state
 toggles, regenerated environment constants, saved control defaults, memory connection removal, and project loading.
+Dragging advances it once on drop when the canonical left-to-right, top-to-bottom order of non-note blocks changes,
+including constants precedence and execution order inside nested project groups.
 Group operations and multi-block paste advance it once after updating their inputs. The revision is monotonic across
 project loads and is not stored in project files.
 
-Selection, caret movement, block/project navigation, dragging, favorites, and visual grouping metadata do not advance
-the revision. Call `incrementCompilerInputRevision(store)` after updating compiler inputs and their derived state.
+Selection, caret movement, block/project navigation, dragging that preserves block order, note-only movement, favorites,
+and visual grouping metadata do not advance the revision. Call `incrementCompilerInputRevision(store)` after updating
+compiler inputs and their derived state.
 `selectedCodeBlockForProgrammaticEdit` refreshes programmatic edits independently of compilation scheduling.
 
 Core's input-change publisher observes the revision and emits `compilationInputChanged`. A compiler plugin can listen
