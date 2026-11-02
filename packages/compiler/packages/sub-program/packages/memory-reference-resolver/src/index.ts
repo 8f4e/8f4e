@@ -42,7 +42,7 @@ import type {
 	MemoryReferenceModuleNamespace,
 	MemoryReferencePointerMetadataByModuleId,
 	MemoryReferenceResolutionContext,
-} from './resolveMemoryExpressionOperand';
+} from './context';
 import { resolveProjectMemoryInitializers } from './resolveProjectMemoryInitializers';
 import { resolveReferenceSlots } from './resolveReferenceSlots';
 import { tryResolveValueArgument } from './tryResolveValueArgument';

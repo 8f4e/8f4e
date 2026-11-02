@@ -1,12 +1,10 @@
 import { ArgumentType, type ValidatedModuleAST } from '@8f4e/language-spec';
 import type { MemoryLayoutPlan, PlannedMemoryDeclaration, PlannedMemoryModule } from '@8f4e/memory-planner';
 import { describe, expect, it } from 'vitest';
+import type { MemoryReferenceResolutionContext } from './context';
 import { resolveMemoryReferences } from './index';
-import {
-	type MemoryReferenceResolutionContext,
-	resolveMemoryExpressionOperand,
-	resolveMetadataTarget,
-} from './resolveMemoryExpressionOperand';
+import { resolveMemoryExpressionOperand, resolveMetadataTarget } from './resolveMemoryExpressionOperand';
+import { type MemoryTargetRequest, resolveMemoryTarget } from './resolveMemoryTarget';
 import { tryResolveValueArgument } from './tryResolveValueArgument';
 
 const { classifyIdentifier, parseArgument, parseCompileTimeOperand } = await import('@8f4e/tokenizer');
@@ -848,6 +846,7 @@ describe('tryResolveValueArgument', () => {
 					source: 'memory-start',
 					byteAddress: 20,
 					safeByteLength: 12,
+					moduleId: 'main',
 					memoryId: 'arr',
 				},
 			},
@@ -871,6 +870,7 @@ describe('tryResolveValueArgument', () => {
 					source: 'memory-start',
 					byteAddress: 20,
 					safeByteLength: 12,
+					moduleId: 'main',
 					memoryId: 'arr',
 				},
 			},
@@ -917,6 +917,20 @@ describe('metadata query compatibility', () => {
 		memoryAliases: new Map([
 			['audio', new Map([['exported', { targetModuleId: 'audio/source', targetMemoryId: 'samples' }]])],
 		]),
+	});
+	const targetRequests: [MemoryTargetRequest, string][] = [
+		[{ scope: 'local', targetMemoryId: 'samples' }, 'main'],
+		[{ scope: 'intermodule', targetModuleId: 'this', targetMemoryId: 'samples' }, 'main'],
+		[{ scope: 'intermodule', targetModuleId: 'this', targetMemoryIndex: 0 }, 'main'],
+		[{ scope: 'intermodule', targetModuleId: 'audio/source', targetMemoryId: 'samples' }, 'audio/source'],
+		[{ scope: 'intermodule', targetModuleId: 'audio/source', targetMemoryIndex: 0 }, 'audio/source'],
+		[{ scope: 'intermodule', targetModuleId: 'audio', targetMemoryId: 'exported' }, 'audio/source'],
+	];
+
+	it.each(targetRequests)('resolves %j to the canonical backing objects', (request, moduleId) => {
+		const target = resolveMemoryTarget(request, context);
+		expect(target?.targetModule).toBe(context.memoryPlan.modules[moduleId]);
+		expect(target?.targetMemory).toBe(context.memoryPlan.modules[moduleId].memory.samples);
 	});
 
 	it('resolves one canonical target independently of the query kind', () => {
