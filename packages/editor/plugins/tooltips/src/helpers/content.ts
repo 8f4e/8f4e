@@ -1,4 +1,4 @@
-import type { CompiledStackAnalysisLine, PlannedMemoryDeclaration } from '@8f4e/language-spec';
+import type { CompiledStackAnalysisLine, CompilerASTLine, PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { SelectedLineTooltipContent } from '../types';
 import { getSelectedLineTooltipColors } from './colors';
 import { TOOLTIP_WRAP_WIDTH } from './constants';
@@ -21,6 +21,7 @@ interface SelectedLineTooltipTextOptions {
 	line: string | undefined;
 	maxLength?: number;
 	stackAnalysisLine?: CompiledStackAnalysisLine;
+	parsedLine?: CompilerASTLine;
 	moduleExecutionOrder?: number;
 }
 
@@ -36,6 +37,7 @@ export function getSelectedLineTooltipTextContent({
 	line,
 	maxLength = TOOLTIP_WRAP_WIDTH,
 	stackAnalysisLine,
+	parsedLine,
 	moduleExecutionOrder,
 }: SelectedLineTooltipTextOptions): SelectedLineTooltipTextContent {
 	if (!line) {
@@ -43,7 +45,7 @@ export function getSelectedLineTooltipTextContent({
 	}
 
 	const spec = getInstructionSpecFromSourceLine(line);
-	const signatureLines = getStackSignatureTooltipLines(line, maxLength, stackAnalysisLine);
+	const signatureLines = getStackSignatureTooltipLines(line, maxLength, stackAnalysisLine, parsedLine);
 	const shortDescription = spec?.docs?.shortDescription;
 	const tooltipText: string[] = [];
 	const highlightTargets: SelectedLineTooltipContent['highlightTargets'] = [];

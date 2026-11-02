@@ -12,8 +12,9 @@ test.each([
 	{ name: 'instruction stack analysis', row: 4, inline: false, call: false },
 	{ name: 'live memory values', row: 1, inline: false, call: false },
 	{ name: 'inline arithmetic operand', row: 3, inline: true, call: false },
+	{ name: 'continued arithmetic operand', row: 3, inline: true, call: false, continued: true },
 	{ name: 'named call signature', row: 1, inline: false, call: true },
-])('tooltips plugin draws $name', async ({ row, inline, call }) => {
+])('tooltips plugin draws $name', async ({ row, inline, call, continued }) => {
 	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
@@ -41,7 +42,7 @@ entry main
 module controls
 int value 42
 push 1
-${inline ? 'add 2' : 'push 2\nadd'}
+${inline ? (continued ? 'add ; operand below\n- 2 ; right operand' : 'add 2') : 'push 2\nadd'}
 drop
 moduleEnd
 entryEnd`

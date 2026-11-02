@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import initState from '@8f4e/editor-state';
 import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import { type CompiledStackAnalysisLine, createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
@@ -16,6 +17,53 @@ afterEach(() => {
 function toCharacters(text: string): number[] {
 	return [...text].map(char => char.charCodeAt(0));
 }
+
+describe.each(['module', 'function'] as const)('inline operand tooltips in a %s', blockType => {
+	it.each([
+		{ name: 'continued operand', lines: ['sub', '- 3'], signature: 'sub (T -- T)', before: 'before [-int=8]' },
+		{
+			name: 'continued operand with comments',
+			lines: ['sub ; subtract the continued operand', '; operand comment', '- 3 ; right operand'],
+			signature: 'sub (T -- T)',
+			before: 'before [-int=8]',
+		},
+		{ name: 'inline operand', lines: ['sub 3 ; right operand'], signature: 'sub (T -- T)', before: 'before [-int=8]' },
+		{
+			name: 'stack operands',
+			lines: ['push 3', 'sub ; use the stack'],
+			signature: 'sub (T T -- T)',
+			before: 'before [-int=8, -int=3]',
+		},
+	])('matches the parsed stack effect for $name', async ({ lines, signature, before }) => {
+		const body = ['push 8', ...lines, 'drop'].join('\n');
+		const project = parseProjectSource(
+			blockType === 'module'
+				? `8f4e/v1\nentry main\nmodule sample\n${body}\nmoduleEnd\nentryEnd`
+				: `8f4e/v1\nentry main\nmodule caller\ncall sample\nmoduleEnd\nentryEnd\nfunction sample\n${body}\nfunctionEnd`
+		);
+		const compiled = await compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+		const events = createEvents();
+		const store = initState(events, { callbacks: {} });
+		const tooltip = createTooltip(store, events);
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
+		events.dispatch('enterEditMode');
+		Object.assign(store.getState().compiler.result, compiled);
+		store.set('initialProjectState', project);
+		const block = store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		store.set(
+			'codeBlockRendering.selectedCodeBlock.cursor.row',
+			block.code.findIndex(line => line.startsWith('sub'))
+		);
+
+		expect(tooltip.getState().text[0]).toBe(signature);
+		expect(tooltip.getState().text).toContain(before);
+		expect(tooltip.getState().text).toContain('after: [+int=5]');
+	});
+});
 
 describe('tooltip effect', () => {
 	it('adds selected line stack analysis when compiler data is available', () => {
@@ -34,7 +82,7 @@ describe('tooltip effect', () => {
 				result: {
 					compiledModules: {
 						test: {
-							ast: { projectBlockId: 0 },
+							ast: { projectBlockId: 0, lines: [] },
 							stackAnalysis: [
 								{
 									lineNumber: 2,
@@ -122,13 +170,13 @@ describe('tooltip effect', () => {
 						[createFunctionId('helper', ['float'])]: {
 							id: createFunctionId('helper', ['float']),
 							name: 'helper',
-							ast: { projectBlockId: 99 },
+							ast: { projectBlockId: 99, lines: [] },
 							stackAnalysis: [],
 						} as never,
 						[functionId]: {
 							id: functionId,
 							name: 'helper',
-							ast: { projectBlockId: 42 },
+							ast: { projectBlockId: 42, lines: [] },
 							stackAnalysis: [
 								{
 									lineNumber: 3,
@@ -219,7 +267,7 @@ describe('tooltip effect', () => {
 		const state = createMockState({
 			compiler: {
 				result: {
-					compiledModules: { [moduleId]: { id: moduleId, ast: { projectBlockId: 0 } } },
+					compiledModules: { [moduleId]: { id: moduleId, ast: { projectBlockId: 0, lines: [] } } },
 					memoryDefaultsByModuleId: { [moduleId]: { value: { value: 0 } } },
 					memoryPlan: {
 						modules: {
@@ -337,8 +385,8 @@ describe('tooltip effect', () => {
 			compiler: {
 				result: {
 					compiledModules: {
-						'module-a': { id: 'module-a', index: 0, ast: { projectBlockId: 1 } },
-						'module-b': { id: 'module-b', index: 1, ast: { projectBlockId: 0 } },
+						'module-a': { id: 'module-a', index: 0, ast: { projectBlockId: 1, lines: [] } },
+						'module-b': { id: 'module-b', index: 1, ast: { projectBlockId: 0, lines: [] } },
 					},
 				},
 			},
@@ -453,8 +501,8 @@ describe('tooltip lifecycle', () => {
 				compiler: {
 					result: {
 						compiledModules: {
-							first: { id: 'first', index: 0, ast: { projectBlockId: 1 } },
-							test: { id: 'test', index: 1, ast: { projectBlockId: 0 } },
+							first: { id: 'first', index: 0, ast: { projectBlockId: 1, lines: [] } },
+							test: { id: 'test', index: 1, ast: { projectBlockId: 0, lines: [] } },
 						},
 					},
 				},

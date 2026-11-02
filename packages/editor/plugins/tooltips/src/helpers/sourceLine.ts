@@ -1,6 +1,7 @@
 import {
 	ArgumentType,
 	type CompiledStackAnalysisLine,
+	type CompilerASTLine,
 	getInstructionSpec,
 	type InstructionSpec,
 	memoryDeclarationInstructions,
@@ -101,7 +102,8 @@ function getCallSignatureFromSourceLine(line: string, stackAnalysisLine?: Compil
  */
 export function getStackSignatureFromSourceLine(
 	line: string,
-	stackAnalysisLine?: CompiledStackAnalysisLine
+	stackAnalysisLine?: CompiledStackAnalysisLine,
+	parsedLine?: CompilerASTLine
 ): string | undefined {
 	const instruction = getInstructionNameFromSourceLine(line);
 	const spec = getInstructionSpecFromSourceLine(line);
@@ -115,20 +117,24 @@ export function getStackSignatureFromSourceLine(
 		return formatStackSignature(callSignature.instruction, callSignature.stackEffect);
 	}
 
-	return getInstructionStackSignature(instruction, getStackSignatureLineFromSourceLine(line, instruction));
+	return getInstructionStackSignature(
+		instruction,
+		parsedLine?.instruction === instruction ? parsedLine : getStackSignatureLineFromSourceLine(line, instruction)
+	);
 }
 
 /** Wraps concrete call signatures while preserving the existing instruction headers. */
 export function getStackSignatureTooltipLines(
 	line: string,
 	maxLength: number,
-	stackAnalysisLine?: CompiledStackAnalysisLine
+	stackAnalysisLine?: CompiledStackAnalysisLine,
+	parsedLine?: CompilerASTLine
 ): string[] {
 	const callSignature = getCallSignatureFromSourceLine(line, stackAnalysisLine);
 	if (callSignature) {
 		return formatStackSignatureLines(callSignature.instruction, callSignature.stackEffect, maxLength);
 	}
-	const signature = getStackSignatureFromSourceLine(line);
+	const signature = getStackSignatureFromSourceLine(line, stackAnalysisLine, parsedLine);
 	if (!signature) return [];
 	return [signature];
 }

@@ -5,31 +5,24 @@ import {
 	getModuleCompilationForCodeBlock,
 } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
 import { createProjectModuleId } from '@8f4e/language-spec';
 import { getSelectedLineTooltipContent } from '../helpers/content';
 import { getInstructionNameFromSourceLine, getMemoryDeclarationIdFromSourceLine } from '../helpers/sourceLine';
 import { createEmptyTooltipState, getTooltipState } from './layout';
 
 /**
- * Finds stack analysis for the currently selected source line.
+ * Finds compiler metadata for the selected source block's active definition.
  */
-function getSelectedCodeBlockStackAnalysisLine(
-	state: State,
-	selectedCodeBlock: CodeBlockGraphicData
-): CompiledStackAnalysisLine | undefined {
+function getSelectedCodeBlockCompilation(state: State, selectedCodeBlock: CodeBlockGraphicData) {
 	if (!selectedCodeBlock.name) {
 		return undefined;
 	}
 
 	if (selectedCodeBlock.blockType === 'function') {
-		const compiledFunction = getCompiledFunctionForCodeBlock(selectedCodeBlock, state);
-		return compiledFunction?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row);
+		return getCompiledFunctionForCodeBlock(selectedCodeBlock, state);
 	}
 
-	return getCompiledModuleForCodeBlock(selectedCodeBlock, state)?.stackAnalysis?.find(
-		line => line.lineNumber === selectedCodeBlock.cursor.row
-	);
+	return getCompiledModuleForCodeBlock(selectedCodeBlock, state);
 }
 
 /**
@@ -73,9 +66,11 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 
 		const line = selectedCodeBlock.code[selectedCodeBlock.cursor.row];
 		const memoryId = getMemoryDeclarationIdFromSourceLine(line);
+		const compilation = getSelectedCodeBlockCompilation(state, selectedCodeBlock);
 		const content = getSelectedLineTooltipContent({
 			line,
-			stackAnalysisLine: getSelectedCodeBlockStackAnalysisLine(state, selectedCodeBlock),
+			parsedLine: compilation?.ast.lines.find(line => line.lineNumber === selectedCodeBlock.cursor.row),
+			stackAnalysisLine: compilation?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row),
 			moduleId: createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name),
 			memory: getSelectedMemoryDeclaration(state, selectedCodeBlock, memoryId),
 			moduleExecutionOrder: getSelectedModuleExecutionOrder(state, selectedCodeBlock, line),
