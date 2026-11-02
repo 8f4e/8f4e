@@ -1,0 +1,130 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+Only the last enabled module in each project scope contributes code,
+memory, and constants. It executes at its own position and entry.
+noteEnd
+
+constants selected
+use oscillator
+const EXPORTED_STEP STEP
+constantsEnd
+
+function selectedStep
+use oscillator
+push STEP
+functionEnd int
+
+entry test
+module trace
+int order
+moduleEnd
+
+module oscillator
+use missingNamespace
+const OLD_ONLY 99
+int obsolete 99
+call missingFunction
+push &trace:order
+push -1
+store
+moduleEnd
+
+module checkpoint
+push &trace:order
+load
+assertEqual 0
+push &trace:order
+push 1
+store
+moduleEnd
+
+group child
+expose output &oscillator:out
+
+entry main
+module oscillator
+int obsolete 99
+call missingChildFunction
+moduleEnd
+
+module oscillator
+int out 3
+moduleEnd
+entryEnd
+groupEnd
+
+module oscillator
+const STEP 2
+int out
+
+push &trace:order
+load
+assertEqual 1
+push &trace:order
+push STEP
+store
+push &out
+push STEP
+store
+moduleEnd
+
+module oscillator
+; @disabled
+const STEP 100
+call missingDisabledFunction
+moduleEnd
+
+module moved
+push &trace:order
+push -1
+store
+moduleEnd
+
+module assertions
+use oscillator
+use selected
+int* input &oscillator:out
+int* childInput &child:output
+
+push &trace:order
+load
+assertEqual 2
+push *input
+assertEqual 2
+push *childInput
+assertEqual 3
+push STEP
+assertEqual 2
+push EXPORTED_STEP
+assertEqual 2
+call selectedStep
+assertEqual 2
+
+; The replacement belongs to
+; alternate and has not run yet.
+push &moved:count
+load
+assertEqual 0
+call alternate
+push &moved:count
+load
+assertEqual 1
+call alternate
+push &moved:count
+load
+assertEqual 2
+moduleEnd
+entryEnd
+
+entry alternate
+module moved
+int count
+push &count
+push count
+add 1
+store
+moduleEnd
+entryEnd

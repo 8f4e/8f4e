@@ -16,7 +16,6 @@ import {
 	type ValidatedAST,
 	type ValidatedConstantsAST,
 	type ValidatedFunctionAST,
-	type ValidatedModuleAST,
 	type ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import {
@@ -28,6 +27,7 @@ import { compileSourceToAST, createCompilerSource } from './compilerSource';
 import { createCompilerCache } from './createCompilerCache';
 import { qualifyAst } from './qualifyAst';
 import { resolveFunctionPasses } from './resolveFunctionPasses';
+import { selectModuleDefinitions } from './selectModuleDefinitions';
 import type { ComposedProgram, IncludedFunctionsByProjectGroupPath } from './types';
 
 function collectProjectScopePasses(
@@ -206,7 +206,7 @@ function appendUnit(
 		})
 	);
 
-	const moduleIndexByEntry = new Map<string, number>();
+	const selectedModules = selectModuleDefinitions(project.execution, projectPath, program.cache);
 	for (const block of project.execution) {
 		if (block.type === 'group') {
 			const groupPath = createChildProjectGroupPath(projectPath, block.name);
@@ -218,18 +218,11 @@ function appendUnit(
 			if (childInit) ensureEntry('init').steps.push({ type: 'entry', id: childInit.id });
 			continue;
 		}
-		const module = block;
-		if (module.disabled) continue;
-		const index = moduleIndexByEntry.get(module.entry) ?? 0;
-		moduleIndexByEntry.set(module.entry, index + 1);
-		const entry = entries.get(module.entry)!;
+		const moduleAst = selectedModules.get(block);
+		if (!moduleAst) continue;
+		const entry = entries.get(block.entry)!;
 		const ast = {
-			...qualify(
-				compileSourceToAST<ValidatedModuleAST>(
-					createCompilerSource(module, projectPath, `entry:${module.entry}:module:${index}`),
-					program.cache
-				)
-			),
+			...qualify(moduleAst),
 			executionEntryName: entry.id,
 		};
 		program.ast.modules.push(ast);

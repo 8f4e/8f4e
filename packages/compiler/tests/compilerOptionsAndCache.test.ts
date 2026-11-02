@@ -1,4 +1,4 @@
-import { createFunctionId, isMemoryDeclarationLine } from '@8f4e/language-spec';
+import { createFunctionId, getProjectModules, isMemoryDeclarationLine } from '@8f4e/language-spec';
 import { describe, expect, test } from 'vitest';
 
 import { compileProject, parseProjectSource } from '../src';
@@ -200,5 +200,50 @@ entryEnd`);
 		const disabled = await compileProject(project, { disableSharedMemory: true, cache: reordered.cache });
 		expect(disabled.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(4);
 		expect(disabled.memoryDefaultsByModuleId.consumer!.kept!.value).toBe(9);
+	});
+
+	test('selects module replacements after reordering and disabling definitions with a cached consumer', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+module voice
+const SIZE 2
+int[] buffer SIZE
+int value 11
+moduleEnd
+
+module consumer
+use voice
+int[] buffer SIZE
+int* input &voice:value
+moduleEnd
+
+module voice
+const SIZE 4
+int[] buffer SIZE
+int value 22
+moduleEnd
+entryEnd`);
+		const first = await compileProject(project, { disableSharedMemory: true });
+		const cachedConsumer = first.cache.ast.entries.get('root:entry:main:module:1')?.ast;
+		expect(first.memoryPlan.modules.voice!.memory.buffer!.numberOfElements).toBe(4);
+		expect(first.memoryDefaultsByModuleId.voice!.value!.value).toBe(22);
+
+		project.execution.reverse();
+		const reordered = await compileProject(project, { disableSharedMemory: true, cache: first.cache });
+		expect(reordered.cache.ast.entries.get('root:entry:main:module:1')?.ast).toBe(cachedConsumer);
+		expect(reordered.compiledModules.voice!.ast.projectBlockId).toBe(project.execution[2]!.id);
+		expect(reordered.memoryPlan.modules.voice!.memory.buffer!.numberOfElements).toBe(2);
+		expect(reordered.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(2);
+		expect(reordered.memoryDefaultsByModuleId.voice!.value!.value).toBe(11);
+		expect(reordered.memoryDefaultsByModuleId.consumer!.input!.value).toBe(
+			reordered.memoryPlan.modules.voice!.memory.value!.byteAddress
+		);
+		expect(first.memoryDefaultsByModuleId.voice!.value!.value).toBe(22);
+
+		getProjectModules(project)[2]!.disabled = true;
+		const disabled = await compileProject(project, { disableSharedMemory: true, cache: reordered.cache });
+		expect(disabled.compiledModules.voice!.ast.projectBlockId).toBe(project.execution[0]!.id);
+		expect(disabled.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(4);
+		expect(disabled.memoryDefaultsByModuleId.voice!.value!.value).toBe(22);
 	});
 });

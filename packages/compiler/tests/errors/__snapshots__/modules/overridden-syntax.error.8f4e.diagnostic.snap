@@ -1,0 +1,11 @@
+{
+  "code": 5,
+  "context": {
+    "projectBlockId": 4,
+  },
+  "line": {
+    "instruction": "push",
+    "lineNumber": 1,
+  },
+  "message": "Missing required argument for push.",
+}

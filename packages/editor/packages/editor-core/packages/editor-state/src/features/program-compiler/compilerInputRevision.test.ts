@@ -133,7 +133,7 @@ describe('compiler input revision', () => {
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 	});
 
-	it('ignores dragging even though it saves a position directive in source', () => {
+	it('ignores dragging that preserves block order even though it saves a position directive in source', () => {
 		store.set(
 			'editorConfigValidators.example',
 			createSchemaEditorConfigValidator({ root: 'example', schema: { type: 'integer' } })

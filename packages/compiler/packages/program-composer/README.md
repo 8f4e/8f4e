@@ -4,6 +4,11 @@ Private compiler stage that parses recursive `ProjectObjectModel` trees, isolate
 ordered AST program for global allocation and code generation. It consumes the typed `execution` sequence directly,
 expanding each group recursively at its declaration position. Later compiler stages receive the flattened module order.
 
+Within each project or group, the last enabled module with a given name replaces earlier definitions across all entries.
+The composer syntax-checks enabled module blocks, then includes only the selected definitions in the AST and entry steps.
+Each selected module retains its own entry and declaration position; earlier definitions contribute no memory, constants,
+or executable code. Disabling a replacement restores the preceding enabled definition.
+
 Group names form canonical encoded paths. The root project keeps unqualified symbols, while nested symbols use readable
 identities such as `audio/counter` and `audio/voices/counter`; these identities flow unchanged into compiler result maps.
 Module-name segments use the language-spec character set `[A-Za-z_][A-Za-z0-9_-]*` and remain unencoded.

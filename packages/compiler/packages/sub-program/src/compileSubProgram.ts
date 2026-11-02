@@ -33,7 +33,7 @@ import { resolveSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import { analyzeStack } from '@8f4e/stack-analyzer';
 import { compileFunction, compileModules, planFunctionLayout } from '@8f4e/wasm-codegen';
 import { planAssertions } from './assertions';
-import { assertUniqueModuleIds, registerFunctions } from './semantic/buildNamespace';
+import { registerFunctions } from './semantic/buildNamespace';
 
 interface CompiledSubProgram {
 	functionLayout: WasmFunctionLayout;
@@ -201,7 +201,6 @@ function wrapMemoryPlannerError(error: unknown, subProgramAst: ResolveConstantsS
 export function compileSubProgram(program: ComposedProgram, options: CompileOptions): CompiledSubProgram {
 	const { ast: subProgramAst, entries, cache } = program;
 	const entryNames = entries.map(entry => entry.id);
-	assertUniqueModuleIds(subProgramAst.modules);
 	let constantResolution: ReturnType<typeof resolveConstants>;
 	try {
 		constantResolution = resolveConstants({
