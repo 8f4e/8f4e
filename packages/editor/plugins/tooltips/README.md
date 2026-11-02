@@ -18,6 +18,9 @@ Disposal removes its subscriptions, sprite-reload listener, and overlay contribu
 
 Module-specific stack analysis, execution order, and live-memory details belong only to the active source definition.
 Overridden blocks retain instruction documentation without displaying another definition's compiler metadata.
+Instruction signatures use the accepted parsed source arguments, including operands on `-` continuation lines, so
+their stack effects agree with the compiler's before/after analysis. Before compilation, signatures fall back to the
+selected source line.
 
 For `call` instructions, successful compilation supplies the selected overload's parameter names, types, and return
 types. The tooltip uses the callable name from the selected source line and wraps long signatures between parameters,

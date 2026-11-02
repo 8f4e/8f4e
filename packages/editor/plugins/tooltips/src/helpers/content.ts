@@ -1,14 +1,11 @@
-import type { CompiledStackAnalysisLine, PlannedMemoryDeclaration } from '@8f4e/language-spec';
+import type { CompiledStackAnalysisLine, CompilerASTLine, PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { SelectedLineTooltipContent } from '../types';
 import { getSelectedLineTooltipColors } from './colors';
 import { TOOLTIP_WRAP_WIDTH } from './constants';
 import { getLiveTooltipContent } from './liveValues';
-import {
-	getInstructionSpecFromSourceLine,
-	getMemoryDeclarationIdFromSourceLine,
-	getStackSignatureTooltipLines,
-} from './sourceLine';
+import { getMemoryDeclarationIdFromSourceLine, getSourceInstruction } from './sourceLine';
 import { getStackAnalysisTooltipContent } from './stackAnalysisTooltip';
+import { formatStackSignature, formatStackSignatureLines, resolveStackSignature } from './stackSignature';
 import { getMaxLineLength, getTooltipTextCharacters, wrapTooltipText } from './text';
 
 interface SelectedLineTooltipTextContent {
@@ -21,6 +18,7 @@ interface SelectedLineTooltipTextOptions {
 	line: string | undefined;
 	maxLength?: number;
 	stackAnalysisLine?: CompiledStackAnalysisLine;
+	parsedLine?: CompilerASTLine;
 	moduleExecutionOrder?: number;
 }
 
@@ -36,15 +34,21 @@ export function getSelectedLineTooltipTextContent({
 	line,
 	maxLength = TOOLTIP_WRAP_WIDTH,
 	stackAnalysisLine,
+	parsedLine,
 	moduleExecutionOrder,
 }: SelectedLineTooltipTextOptions): SelectedLineTooltipTextContent {
 	if (!line) {
 		return { text: [], signatureLineCount: 0, highlightTargets: [] };
 	}
 
-	const spec = getInstructionSpecFromSourceLine(line);
-	const signatureLines = getStackSignatureTooltipLines(line, maxLength, stackAnalysisLine);
-	const shortDescription = spec?.docs?.shortDescription;
+	const sourceInstruction = getSourceInstruction(line);
+	const signature = resolveStackSignature({ sourceInstruction, stackAnalysisLine, parsedLine });
+	const signatureLines = signature
+		? signature.kind === 'call'
+			? formatStackSignatureLines({ signature, maxLength })
+			: [formatStackSignature(signature)]
+		: [];
+	const shortDescription = sourceInstruction?.spec.docs?.shortDescription;
 	const tooltipText: string[] = [];
 	const highlightTargets: SelectedLineTooltipContent['highlightTargets'] = [];
 
