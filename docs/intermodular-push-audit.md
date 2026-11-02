@@ -5,6 +5,10 @@ This audit implements [#1364](https://github.com/8f4e/8f4e/issues/1364), followi
 `3c8801780a301ada416530550db9c607c637e0a2`. Direct intermodular operands remain legal; this change does not
 change compiler acceptance rules.
 
+Impure functions may retain direct intermodular addresses and target metadata, including exported host
+callbacks. Module operands and pure-function dependencies remain in scope for fixed references or
+explicit parameters; the eventual removal must preserve this impure-function exception.
+
 ## Scope and counting
 
 The inventory covers example projects, benchmark projects, reusable `.8f4em` modules, compiler fixtures,
@@ -13,15 +17,18 @@ starts, module bases, memory and module ends, and `count`, `sizeof`, `min`, and 
 string literals, literal arrays, and template strings were inspected as source. The review followed
 continuations back to their owning instruction and included inline operands and arithmetic expressions.
 
-Generated copies and build outputs are excluded. Counts are textual operand occurrences, including expected source strings in editor tests. A metadata
-expression containing two intermodular queries counts twice. Declaration initializers, project `expose`
-and `init` declarations, editor directives, and current-module operands such as `&this:0` are excluded.
+Generated copies and build outputs are excluded. Counts are textual operand occurrences, including
+expected source strings in editor tests. A metadata expression containing two intermodular queries counts
+twice. Declaration initializers, project `expose` and `init` declarations, editor directives, and
+current-module operands such as `&this:0` are excluded.
 For example, a continuation after `float*` initializes a declaration; a continuation after `push` supplies
 a pushed operand. Existing mutable pointers and their declaration initializers remain intact.
 
-There were **371 original occurrences in 39 files**. This migration replaces or relocates **318** and
-retains **53**, accounted for below. A dedicated compatibility fixture adds **16** intentional occurrences,
-so the resulting executable-source/fragment inventory contains **69** direct occurrences. Raw identifier
+There were **371 original occurrences in 39 files**. This migration replaces or relocates **62** and
+retains **309**, accounted for below: **264** allowed impure-function operands, **23** module-boundary or
+end-address blockers, and **22** legacy paste-test fragments. A dedicated module compatibility fixture
+adds **16** intentional occurrences, and the impure-function acceptance fixture adds **11**, yielding
+**336** direct occurrences in the resulting executable-source/fragment inventory. Raw identifier
 parser/resolver inputs are accounted for separately because they do not contain source push instructions.
 No pushed cross-module dependency was found in reusable `.8f4em` modules or screenshot-test source.
 
@@ -31,30 +38,23 @@ Indexed formant and BLEP dependencies now use `float&` slots. Grids output reset
 slot, `slot` supplies the target address, `*slot` reads its current contents, and queries such as
 `count(*slot)` inspect its target declaration.
 
-`sampleNumberToAddr` and `patternRow` now receive an explicit `int* addressTable` and its element count;
-`selectRows` forwards both parameters. Each calling module binds the shared table with an `int&` reference
-and supplies `count(*slot)`. The address tables use legal declaration initializers, including indexed
-pattern references. Entry zero holds the fallback; subsequent entries correspond directly to sample
-numbers or flattened Grids cells. Sparse sample numbers and silence mappings occupy explicit entries.
+`sampleNumberToAddr` and `patternRow` declare `#impure` and keep their original symbolic address maps.
+This preserves sparse keys, silence mappings, defaults, and Grids cell selection directly, without an
+allocated address table or table parameters. Their callers retain their original signatures.
 
-The helpers select the fallback for out-of-range indices, including negative values and integer overflow,
-using an unsigned bounds check. They calculate offsets with `sizeof(*addressTable)`, so no map of numeric
-byte offsets encodes the table layout. These tables add 56–132 bytes per sample project and 104 bytes to
-Grids, plus one load per lookup.
-
-The `lowerIntentions` fallback to `&samplePack1:` remains a declaration initializer in the table, where
-module-base addresses are supported. This does not add module-base support to fixed-reference initializers.
+The `lowerIntentions` fallback to `&samplePack1:` is an allowed intermodular module-base operand inside
+an impure function. Module-base support in fixed-reference initializers remains a separate limitation.
 Pattern-order pointers remain mutable because playback advances and resets them.
 
 ## Per-file inventory
 
 The line numbers below refer to the baseline commit, before declarations were inserted. Repeated operands
 on one line appear once in the line list but each occurrence contributes to the count. Paths link to the
-current files. “Boundary blocker” and “callback blocker” are described after the table.
+current files. Allowed impure-function uses and remaining boundary blockers are described after the table.
 
 | Source | Baseline lines | Before | Remaining | Resolution |
 | --- | --- | ---: | ---: | --- |
-| [packages/8f4e-website/src/lazy-plugins.test.ts](../packages/8f4e-website/src/lazy-plugins.test.ts) | 146 | 1 | 1 | Retain host callback writes; callback blocker. |
+| [packages/8f4e-website/src/lazy-plugins.test.ts](../packages/8f4e-website/src/lazy-plugins.test.ts) | 146 | 1 | 1 | Retain allowed intermodular writes in an impure host callback. |
 | [packages/compiler/packages/program-composer/tests/fixtures/intermodule-references.8f4e](../packages/compiler/packages/program-composer/tests/fixtures/intermodule-references.8f4e) | 11 | 1 | 0 | Use typed fixed slots and target metadata queries. |
 | [packages/compiler/packages/sub-program/packages/tokenizer/tests/compileToAST.integration.test.ts](../packages/compiler/packages/sub-program/packages/tokenizer/tests/compileToAST.integration.test.ts) | 32 | 1 | 0 | Use typed fixed slots and target metadata queries. |
 | [packages/compiler/tests/argument-continuation.test.8f4e](../packages/compiler/tests/argument-continuation.test.8f4e) | 50 | 1 | 0 | Use typed fixed slots and target metadata queries. |
@@ -78,21 +78,36 @@ current files. “Boundary blocker” and “callback blocker” are described a
 | [packages/compiler/tests/testRunner.test.ts](../packages/compiler/tests/testRunner.test.ts) | 203 | 1 | 0 | Use typed fixed slots and target metadata queries. |
 | [packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/codeBlockCreator/copyPaste.test.ts](../packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/codeBlockCreator/copyPaste.test.ts) | 341, 359 | 2 | 0 | Rename a fixed slot initializer; query local slot metadata. |
 | [packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/codeBlockCreator/pasteMultipleBlocks.test.ts](../packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/codeBlockCreator/pasteMultipleBlocks.test.ts) | 34, 39, 43, 48, 52, 57, 61, 66, 70, 78, 82, 90, 91, 104, 111 | 22 | 22 | Retain intentional legacy operand-renaming fragments. |
-| [packages/editor/plugins/midi-input/src/index.test.ts](../packages/editor/plugins/midi-input/src/index.test.ts) | 27, 30, 33 | 3 | 3 | Retain host callback writes; callback blocker. |
-| [packages/examples/src/benchmarks/bytecode-size/hymnToAurora.8f4e](../packages/examples/src/benchmarks/bytecode-size/hymnToAurora.8f4e) | 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 883, 887 | 15 | 2 | Sample maps take an explicit table; retain two pattern-order boundary operands. |
+| [packages/editor/plugins/midi-input/src/index.test.ts](../packages/editor/plugins/midi-input/src/index.test.ts) | 27, 30, 33 | 3 | 3 | Retain allowed intermodular writes in an impure host callback. |
+| [packages/examples/src/benchmarks/bytecode-size/hymnToAurora.8f4e](../packages/examples/src/benchmarks/bytecode-size/hymnToAurora.8f4e) | 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 883, 887 | 15 | 15 | Retain symbolic maps in impure helpers and two module-boundary blockers. |
 | [packages/examples/src/benchmarks/bytecode-size/minBLEP.8f4e](../packages/examples/src/benchmarks/bytecode-size/minBLEP.8f4e) | 326 | 1 | 0 | Use typed fixed slots and target metadata queries. |
-| [packages/examples/src/projects/audio/amigaMods/aftertouch.8f4e](../packages/examples/src/projects/audio/amigaMods/aftertouch.8f4e) | 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 1009, 1013 | 30 | 2 | Sample maps take an explicit table; retain two pattern-order boundary operands. |
-| [packages/examples/src/projects/audio/amigaMods/chiller.8f4e](../packages/examples/src/projects/audio/amigaMods/chiller.8f4e) | 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 1125, 1129 | 34 | 2 | Sample maps take an explicit table; retain two pattern-order boundary operands. |
-| [packages/examples/src/projects/audio/amigaMods/chronodemon.8f4e](../packages/examples/src/projects/audio/amigaMods/chronodemon.8f4e) | 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 1161, 1165 | 34 | 2 | Sample maps take an explicit table; retain two pattern-order boundary operands. |
-| [packages/examples/src/projects/audio/amigaMods/escapeFromSuicide.8f4e](../packages/examples/src/projects/audio/amigaMods/escapeFromSuicide.8f4e) | 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 1156, 1160 | 34 | 2 | Sample maps take an explicit table; retain two pattern-order boundary operands. |
-| [packages/examples/src/projects/audio/amigaMods/hymn_to_aurora.8f4e](../packages/examples/src/projects/audio/amigaMods/hymn_to_aurora.8f4e) | 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 687, 691 | 15 | 2 | Sample maps take an explicit table; retain two pattern-order boundary operands. |
-| [packages/examples/src/projects/audio/amigaMods/lowerIntentions.8f4e](../packages/examples/src/projects/audio/amigaMods/lowerIntentions.8f4e) | 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 939, 943 | 19 | 2 | Sample maps take an explicit table; retain two pattern-order boundary operands. |
-| [packages/examples/src/projects/audio/amigaMods/movinShadows.8f4e](../packages/examples/src/projects/audio/amigaMods/movinShadows.8f4e) | 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 1150, 1154 | 34 | 2 | Sample maps take an explicit table; retain two pattern-order boundary operands. |
-| [packages/examples/src/projects/audio/amigaMods/pneumatic.8f4e](../packages/examples/src/projects/audio/amigaMods/pneumatic.8f4e) | 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 1067, 1071 | 34 | 2 | Sample maps take an explicit table; retain two pattern-order boundary operands. |
+| [packages/examples/src/projects/audio/amigaMods/aftertouch.8f4e](../packages/examples/src/projects/audio/amigaMods/aftertouch.8f4e) | 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 1009, 1013 | 30 | 30 | Retain symbolic maps in impure helpers and two module-boundary blockers. |
+| [packages/examples/src/projects/audio/amigaMods/chiller.8f4e](../packages/examples/src/projects/audio/amigaMods/chiller.8f4e) | 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 1125, 1129 | 34 | 34 | Retain symbolic maps in impure helpers and two module-boundary blockers. |
+| [packages/examples/src/projects/audio/amigaMods/chronodemon.8f4e](../packages/examples/src/projects/audio/amigaMods/chronodemon.8f4e) | 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 1161, 1165 | 34 | 34 | Retain symbolic maps in impure helpers and two module-boundary blockers. |
+| [packages/examples/src/projects/audio/amigaMods/escapeFromSuicide.8f4e](../packages/examples/src/projects/audio/amigaMods/escapeFromSuicide.8f4e) | 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 1156, 1160 | 34 | 34 | Retain symbolic maps in impure helpers and two module-boundary blockers. |
+| [packages/examples/src/projects/audio/amigaMods/hymn_to_aurora.8f4e](../packages/examples/src/projects/audio/amigaMods/hymn_to_aurora.8f4e) | 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 687, 691 | 15 | 15 | Retain symbolic maps in impure helpers and two module-boundary blockers. |
+| [packages/examples/src/projects/audio/amigaMods/lowerIntentions.8f4e](../packages/examples/src/projects/audio/amigaMods/lowerIntentions.8f4e) | 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 939, 943 | 19 | 19 | Retain symbolic maps in impure helpers and two module-boundary blockers. |
+| [packages/examples/src/projects/audio/amigaMods/movinShadows.8f4e](../packages/examples/src/projects/audio/amigaMods/movinShadows.8f4e) | 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 1150, 1154 | 34 | 34 | Retain symbolic maps in impure helpers and two module-boundary blockers. |
+| [packages/examples/src/projects/audio/amigaMods/pneumatic.8f4e](../packages/examples/src/projects/audio/amigaMods/pneumatic.8f4e) | 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 1067, 1071 | 34 | 34 | Retain symbolic maps in impure helpers and two module-boundary blockers. |
 | [packages/examples/src/projects/audio/formantSynth.8f4e](../packages/examples/src/projects/audio/formantSynth.8f4e) | 214, 218, 247, 251, 323, 327 | 6 | 0 | Use typed fixed slots and target metadata queries. |
-| [packages/examples/src/projects/audio/gridsPatterns.8f4e](../packages/examples/src/projects/audio/gridsPatterns.8f4e) | 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 408, 412, 416, 420, 424, 428 | 31 | 0 | Fixed output slots and an explicit pattern-address table. |
+| [packages/examples/src/projects/audio/gridsPatterns.8f4e](../packages/examples/src/projects/audio/gridsPatterns.8f4e) | 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 408, 412, 416, 420, 424, 428 | 31 | 25 | Fixed output slots; retain 25 allowed operands in the impure pattern helper. |
 | [packages/examples/src/projects/audio/minBLEP.8f4e](../packages/examples/src/projects/audio/minBLEP.8f4e) | 427 | 1 | 0 | Use typed fixed slots and target metadata queries. |
-| [packages/examples/src/projects/midi/midiIn.8f4e](../packages/examples/src/projects/midi/midiIn.8f4e) | 61, 65, 70, 74 | 4 | 4 | Retain host callback writes; callback blocker. |
+| [packages/examples/src/projects/midi/midiIn.8f4e](../packages/examples/src/projects/midi/midiIn.8f4e) | 61, 65, 70, 74 | 4 | 4 | Retain allowed intermodular writes in an impure host callback. |
+
+## Allowed impure-function operands
+
+The example lookup maps retain **256** original occurrences: 231 in the nine sample helpers and 25 in
+Grids. The helpers declare `#impure`, making their direct cross-module dependencies part of the allowed
+function behavior. Preserve these acceptance cases when module-level direct pushes are removed.
+
+The MIDI example and integration fixtures retain **8** original writes: four in `onMidiEvent`, three in
+the MIDI plugin's `onMidi`, and one in the website lazy-plugin fixture. These callbacks already declare
+`#impure`, so they can address destination modules directly while keeping the host's MIDI argument ABI.
+They require no additional callback-environment mechanism.
+
+`functions/impure-intermodular-references.test.8f4e` adds **11** acceptance occurrences covering mutable
+reads and writes, named and indexed addresses, module boundaries, metadata expressions, and all four
+metadata queries. Keep this fixture as successful compilation/execution coverage after removal.
 
 ## Remaining language support
 
@@ -108,28 +123,19 @@ preserving their range metadata. Do not replace the live playback pointer with a
 ### End-address regression coverage: 5 compiler occurrences
 
 `intermodular-references/addresses.test.8f4e` retains four float64 end-address reads that verify alignment
-and the final four-byte word. `compilerFloat64AllocationBounds.test.ts` now binds its start through a fixed slot and retains the
-direct end operand. It compares the produced stack items' `memory-start` and `memory-end` ranges with identical allocation layouts. Converting the end to arithmetic
+and the final four-byte word. `compilerFloat64AllocationBounds.test.ts` now binds its start through a
+fixed slot and retains the direct end operand. It compares the produced stack items' `memory-start` and
+`memory-end` ranges with identical allocation layouts. Converting the end to arithmetic
 on a start slot would discard the exact end-range metadata under test. When the language supports an
 explicit end dependency, migrate these tests; retain direct forms as rejection tests when removal lands.
-
-### Host MIDI callbacks: 8 occurrences
-
-`midiIn.8f4e` retains four writes in `onMidiEvent`; the MIDI plugin fixture retains three writes in
-`onMidi`; the website lazy-plugin fixture retains one. The host supplies the fixed MIDI value arguments,
-and functions cannot declare module-owned fixed slots. An extra destination pointer would change that
-host contract. These need an explicit callback-environment binding or another language/runtime mechanism
-that makes the destination dependency available without changing the MIDI argument ABI. Existing callback
-execution assertions remain in place. This limitation does not apply to ordinary functions: entry-test
-assertion functions and example lookup helpers now take explicit dependency parameters.
 
 ## Deliberate compatibility tests and removal follow-up
 
 - `intermodular-references/legacy-direct-pushes.test.8f4e` is the dedicated acceptance fixture for named
   and indexed starts, module bases and ends, memory ends, inline operands, address arithmetic, pushed
   continuation lines, and all four metadata queries, including expressions and continued expressions.
-  Convert each form to a compiler rejection fixture when direct pushes are removed. Keep the modern
-  equivalents in `instructions/reference-slots.test.8f4e` as successful execution tests.
+  Convert each module-level form to a compiler rejection fixture when direct pushes are removed. Keep
+  the modern equivalents in `instructions/reference-slots.test.8f4e` as successful execution tests.
 - `pasteMultipleBlocks.test.ts` retains 22 direct occurrences across input and expected strings. These
   deliberately test renaming current-language projects, including multiple operands and partial-name
   matching. On removal, keep a narrowly named legacy-import test if old source remains supported by the
@@ -148,7 +154,7 @@ assertion functions and example lookup helpers now take explicit dependency para
 
 ## Validation
 
-- Nx compiler tests: 478 passed, including native assertions and refreshed compile/diagnostic snapshots.
+- Nx compiler tests: 479 passed, including native assertions and refreshed compile/diagnostic snapshots.
 - Nx program-composer tests: 10 passed; tokenizer tests: 589 passed; affected snapshots refreshed.
 - Nx examples target: passed, including all 54 CLI tests. The module test runner currently reports
   “No tests found” for the reusable `.8f4em` catalog; it is not counted as additional executed assertions.
@@ -158,4 +164,5 @@ assertion functions and example lookup helpers now take explicit dependency para
 - Nx editor-state tests: 698 passed; MIDI-input tests: 20 passed.
 - Browser homepage/gallery suite: all 19 tests passed against the existing screenshot reference.
 - Nx type checks for compiler, CLI, tokenizer, program-composer, editor-state, and MIDI-input: passed.
+- Resolved website build inputs include both the module compatibility and impure-function fixtures.
 - Biome checks and `git diff --check`: passed.

@@ -1,0 +1,792 @@
+{
+  "functionAst": {
+    "incrementSource__void": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "incrementSource",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "value",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "&source:value",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "value",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "&source:value",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "add",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-module-nth-reference",
+              "scope": "intermodule",
+              "targetMemoryIndex": 0,
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "&source:0",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "incrementSource",
+      "type": "function",
+    },
+    "inspectSource__void": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "inspectSource",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-element-count",
+              "scope": "intermodule",
+              "targetMemoryId": "buffer",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "count(source:buffer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-element-word-size",
+              "scope": "intermodule",
+              "targetMemoryId": "buffer",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "sizeof(source:buffer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-element-min",
+              "scope": "intermodule",
+              "targetMemoryId": "bytes",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "min(source:bytes)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-element-max",
+              "scope": "intermodule",
+              "targetMemoryId": "bytes",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "max(source:bytes)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "inspectSource",
+      "type": "function",
+    },
+    "readBuffer__int": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "readBuffer",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "index",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "buffer",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "&source:buffer",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "index",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-element-word-size",
+              "scope": "intermodule",
+              "targetMemoryId": "buffer",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "sizeof(source:buffer)",
+            },
+          ],
+          "instruction": "mul",
+        },
+        {
+          "arguments": [],
+          "instruction": "add",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "readBuffer",
+      "type": "function",
+    },
+    "readModuleEdges__void": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "readModuleEdges",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-module-reference",
+              "scope": "intermodule",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "&source:",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": true,
+              "referenceKind": "intermodular-module-reference",
+              "scope": "intermodule",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "source:&",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "readModuleEdges",
+      "type": "function",
+    },
+  },
+  "functionOverview": {
+    "incrementSource__void": {
+      "id": "incrementSource__void",
+      "signature": {
+        "parameters": [],
+        "returns": [
+          "int",
+        ],
+      },
+    },
+    "inspectSource__void": {
+      "id": "inspectSource__void",
+      "signature": {
+        "parameters": [],
+        "returns": [
+          "int",
+          "int",
+          "int",
+          "int",
+        ],
+      },
+    },
+    "readBuffer__int": {
+      "id": "readBuffer__int",
+      "signature": {
+        "parameters": [
+          {
+            "name": "index",
+            "type": "int",
+          },
+        ],
+        "returns": [
+          "int",
+        ],
+      },
+    },
+    "readModuleEdges__void": {
+      "id": "readModuleEdges__void",
+      "signature": {
+        "parameters": [],
+        "returns": [
+          "int",
+          "int",
+        ],
+      },
+    },
+  },
+  "moduleAst": {
+    "assertions": {
+      "id": "assertions",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "assertions",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "incrementSource",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 11,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "incrementSource",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 12,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "readBuffer",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 22,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "readModuleEdges",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 99,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 12,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "inspectSource",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 255,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "source": {
+      "id": "source",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "source",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 10,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "buffer",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 11,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 22,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 33,
+            },
+          ],
+          "instruction": "int[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "bytes",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 7,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 255,
+            },
+          ],
+          "instruction": "int8u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "tail",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 99,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+  },
+  "moduleMemory": {
+    "assertions": {
+      "memory": {},
+    },
+    "source": {
+      "memory": {
+        "buffer": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 3,
+          "byteAddress": 8,
+          "default": {
+            "0": 11,
+            "1": 22,
+            "2": 33,
+          },
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "buffer",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 3,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "bytes": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 1,
+          "byteAddress": 20,
+          "default": {
+            "0": 7,
+            "1": 255,
+          },
+          "elementWordSize": 1,
+          "hasExplicitDefault": true,
+          "id": "bytes",
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int8u",
+        },
+        "tail": {
+          "allocationUnitAddress": 6,
+          "allocationUnitCount": 1,
+          "byteAddress": 24,
+          "default": 99,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "tail",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "value": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
+          "byteAddress": 4,
+          "default": 10,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "value",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
+  },
+  "overview": {
+    "compiledFunctions": [
+      "incrementSource__void",
+      "inspectSource__void",
+      "readBuffer__int",
+      "readModuleEdges__void",
+    ],
+    "compiledModules": [
+      "assertions",
+      "source",
+    ],
+    "requiredMemoryBytes": 28,
+    "wasmExports": [
+      "initDefaults",
+      "main",
+      "test",
+    ],
+  },
+}

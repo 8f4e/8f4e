@@ -399,27 +399,23 @@ function sampleNumberToAddr
 ; @pos 459 -139
 ; @tab 8
 param int sampleNumber
-param int* addressTable
-param int addressCount
-local int tableIndex
 
-; Entry zero is the fallback for unmapped sample numbers.
 push sampleNumber
-add 1
-localSet tableIndex
-push tableIndex
-push addressCount
-greaterOrEqualUnsigned
-if
-push 0
-localSet tableIndex
-ifEnd
-
-push addressTable
-push tableIndex
-mul sizeof(*addressTable)
-add
-load
+mapBegin int
+map 0	&samplePack:sample0
+map 1	&samplePack:sample1
+map 2	&samplePack:sample2
+map 3	&samplePack:sample3
+map 4	&samplePack:sample4
+map 5	&samplePack:sample5
+map 6	&samplePack:sample6
+map 7	&samplePack:sample7
+map 8	&samplePack:sample8
+map 9	&samplePack:sample9
+map 10	&samplePack:sample10
+map 11	&samplePack:sample11
+map 12	&samplePack:sample12
+mapEnd int
 
 functionEnd int
 
@@ -544,25 +540,6 @@ mapEnd int
 functionEnd int
 
 entry main
-module sampleAddressTable
-; @pos 795 -163
-; Default first, then one address per sample number.
-int[] addresses 14
-- 0
-- &samplePack:sample0
-- &samplePack:sample1
-- &samplePack:sample2
-- &samplePack:sample3
-- &samplePack:sample4
-- &samplePack:sample5
-- &samplePack:sample6
-- &samplePack:sample7
-- &samplePack:sample8
-- &samplePack:sample9
-- &samplePack:sample10
-- &samplePack:sample11
-- &samplePack:sample12
-moduleEnd
 module amigaTick
 ; @pos -157 -28
 use mod
@@ -916,7 +893,6 @@ moduleEnd
 module modSamplePlayer1
 ; @pos 422 -7
 ; @tab 6 20
-int& sampleAddresses &sampleAddressTable:addresses
 use env
 
 int*	period	&period1:out
@@ -935,7 +911,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
+call sampleNumberToAddr
 store
 
 push &sampleSize
@@ -1017,7 +993,6 @@ moduleEnd
 module modSamplePlayer2
 ; @pos 422 13
 ; @tab 6 20
-int& sampleAddresses &sampleAddressTable:addresses
 use env
 int*	period	&period2:out
 int*	trigger	&trigger2:out
@@ -1035,7 +1010,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
+call sampleNumberToAddr
 store
 
 push &sampleSize
@@ -1117,7 +1092,6 @@ moduleEnd
 module modSamplePlayer3
 ; @pos 473 -7
 ; @tab 6 20
-int& sampleAddresses &sampleAddressTable:addresses
 use env
 
 int*	period	&period3:out
@@ -1136,7 +1110,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
+call sampleNumberToAddr
 store
 
 push &sampleSize
@@ -1218,7 +1192,6 @@ moduleEnd
 module modSamplePlayer4
 ; @pos 473 13
 ; @tab 6 20
-int& sampleAddresses &sampleAddressTable:addresses
 use env
 
 int*	period	&period4:out
@@ -1237,7 +1210,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
+call sampleNumberToAddr
 store
 
 push &sampleSize

@@ -370,27 +370,38 @@ function sampleNumberToAddr
 ; @pos 533 -181
 ; @tab 8
 param int sampleNumber
-param int* addressTable
-param int addressCount
-local int tableIndex
 
-; Entry zero is the fallback for unmapped sample numbers.
 push sampleNumber
-add 1
-localSet tableIndex
-push tableIndex
-push addressCount
-greaterOrEqualUnsigned
-if
-push 0
-localSet tableIndex
-ifEnd
-
-push addressTable
-push tableIndex
-mul sizeof(*addressTable)
-add
-load
+mapBegin int
+map 1	&samplePack1:sample1
+map 2	&samplePack1:sample2
+map 3	&samplePack1:sample3
+map 4	&samplePack1:sample4
+map 5	&samplePack1:sample5
+map 6	&samplePack1:sample6
+map 7	&samplePack1:sample7
+map 8	&samplePack1:sample8
+map 9	&samplePack1:sample9
+map 10	&samplePack1:sample10
+map 11	&samplePack1:sample11
+map 12	&samplePack1:sample12
+map 13	&samplePack1:sample13
+map 14	&samplePack1:sample14
+map 15	&samplePack1:sample15
+map 16	&samplePack2:sample16
+map 17	&samplePack2:sample17
+map 18	&samplePack2:sample18
+map 19	&samplePack2:sample19
+map 20	&samplePack2:sample20
+map 21	&samplePack2:sample21
+map 22	&samplePack2:sample22
+map 23	&samplePack2:sample23
+map 24	&samplePack2:sample24
+map 25	&samplePack2:sample25
+map 26	&samplePack2:sample26
+map 27	&samplePack2:sample27
+default &samplePack1:sample0
+mapEnd int
 
 functionEnd int
 
@@ -825,40 +836,6 @@ note
 noteEnd
 
 entry main
-module sampleAddressTable
-; @pos 904 -253
-; Default first, then one address per sample number.
-int[] addresses 29
-- &samplePack1:sample0
-- &samplePack1:sample0
-- &samplePack1:sample1
-- &samplePack1:sample2
-- &samplePack1:sample3
-- &samplePack1:sample4
-- &samplePack1:sample5
-- &samplePack1:sample6
-- &samplePack1:sample7
-- &samplePack1:sample8
-- &samplePack1:sample9
-- &samplePack1:sample10
-- &samplePack1:sample11
-- &samplePack1:sample12
-- &samplePack1:sample13
-- &samplePack1:sample14
-- &samplePack1:sample15
-- &samplePack2:sample16
-- &samplePack2:sample17
-- &samplePack2:sample18
-- &samplePack2:sample19
-- &samplePack2:sample20
-- &samplePack2:sample21
-- &samplePack2:sample22
-- &samplePack2:sample23
-- &samplePack2:sample24
-- &samplePack2:sample25
-- &samplePack2:sample26
-- &samplePack2:sample27
-moduleEnd
 module modTickClock
 ; @pos -175 -28
 use mod
@@ -2183,7 +2160,6 @@ moduleEnd
 module modSamplePlayer1
 ; @pos 545 -7
 ; @home
-int& sampleAddresses &sampleAddressTable:addresses
 use env
 ; @tab 6 20
 int*	period	&period1:out
@@ -2203,7 +2179,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
+call sampleNumberToAddr
 store
 
 push &sampleSize
@@ -2285,7 +2261,6 @@ ifEnd
 moduleEnd
 module modSamplePlayer2
 ; @pos 545 15
-int& sampleAddresses &sampleAddressTable:addresses
 use env
 ; @tab 6 20
 int*	period	&period2:out
@@ -2305,7 +2280,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
+call sampleNumberToAddr
 store
 
 push &sampleSize
@@ -2387,7 +2362,6 @@ ifEnd
 moduleEnd
 module modSamplePlayer3
 ; @pos 597 -6
-int& sampleAddresses &sampleAddressTable:addresses
 use env
 ; @tab 6 20
 int*	period	&period3:out
@@ -2407,7 +2381,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
+call sampleNumberToAddr
 store
 
 push &sampleSize
@@ -2489,7 +2463,6 @@ ifEnd
 moduleEnd
 module modSamplePlayer4
 ; @pos 597 15
-int& sampleAddresses &sampleAddressTable:addresses
 use env
 ; @tab 6 20
 int*	period	&period4:out
@@ -2509,7 +2482,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr sampleAddresses count(*sampleAddresses)
+call sampleNumberToAddr
 store
 
 push &sampleSize

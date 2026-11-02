@@ -18,8 +18,7 @@ int note
 int velocity
 moduleEnd
 entryEnd
-; Host callback signatures cannot receive an extra destination pointer yet.
-; See docs/intermodular-push-audit.md.
+; Impure callbacks may address their destination modules directly.
 function onMidi
 #export onMidi
 #impure

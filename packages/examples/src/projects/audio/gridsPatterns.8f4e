@@ -157,31 +157,43 @@ function patternRow
 param int cellX
 param int cellY
 param int step
-param int* addressTable
-param int addressCount
-local int tableIndex
 
 push cellX
-mul 5
-add cellY
-add 1
-localSet tableIndex
-push tableIndex
-push addressCount
-greaterOrEqualUnsigned
-if
-push 0
-localSet tableIndex
-ifEnd
-
-push addressTable
-push tableIndex
-mul sizeof(*addressTable)
+push 5
+mul
+push cellY
 add
-load
+mapBegin int
+map 0 &pattern10:0
+map 1 &pattern08:0
+map 2 &pattern00:0
+map 3 &pattern09:0
+map 4 &pattern11:0
+map 5 &pattern15:0
+map 6 &pattern07:0
+map 7 &pattern13:0
+map 8 &pattern12:0
+map 9 &pattern06:0
+map 10 &pattern18:0
+map 11 &pattern14:0
+map 12 &pattern04:0
+map 13 &pattern05:0
+map 14 &pattern03:0
+map 15 &pattern23:0
+map 16 &pattern16:0
+map 17 &pattern21:0
+map 18 &pattern01:0
+map 19 &pattern02:0
+map 20 &pattern24:0
+map 21 &pattern19:0
+map 22 &pattern17:0
+map 23 &pattern20:0
+map 24 &pattern22:0
+mapEnd int
 
 push step
-mul sizeof(*addressTable)
+push 4
+mul
 add
 functionEnd int
 function selectRows
@@ -196,8 +208,6 @@ param int** rowA
 param int** rowB
 param int** rowC
 param int** rowD
-param int* addressTable
-param int addressCount
 local int cellX
 local int cellY
 
@@ -214,7 +224,7 @@ push rowA
 push cellX
 push cellY
 push step
-call patternRow addressTable addressCount
+call patternRow
 store
 
 push rowB
@@ -223,7 +233,7 @@ push 1
 add
 push cellY
 push step
-call patternRow addressTable addressCount
+call patternRow
 store
 
 push rowC
@@ -232,7 +242,7 @@ push cellY
 push 1
 add
 push step
-call patternRow addressTable addressCount
+call patternRow
 store
 
 push rowD
@@ -243,7 +253,7 @@ push cellY
 push 1
 add
 push step
-call patternRow addressTable addressCount
+call patternRow
 store
 functionEnd
 function readPattern
@@ -386,37 +396,6 @@ hits with a level above 192.
 Step numbers run from 0 to 31.
 noteEnd
 entry main
-module patternAddressTable
-; @pos 383 -37
-; Default first, then one address per map cell.
-int[] addresses 26
-- 0
-- &pattern10:0
-- &pattern08:0
-- &pattern00:0
-- &pattern09:0
-- &pattern11:0
-- &pattern15:0
-- &pattern07:0
-- &pattern13:0
-- &pattern12:0
-- &pattern06:0
-- &pattern18:0
-- &pattern14:0
-- &pattern04:0
-- &pattern05:0
-- &pattern03:0
-- &pattern23:0
-- &pattern16:0
-- &pattern21:0
-- &pattern01:0
-- &pattern02:0
-- &pattern24:0
-- &pattern19:0
-- &pattern17:0
-- &pattern20:0
-- &pattern22:0
-moduleEnd
 module sequencer
 ; @pos -128 0
 
@@ -486,7 +465,6 @@ entry gate
 module mapReader
 ; @pos -68 0
 ; @home left
-int& patternAddresses &patternAddressTable:addresses
 int* step &sequencer:step
 int x 128
 int y 128
@@ -511,7 +489,6 @@ call selectRows
 - &rowB
 - &rowC
 - &rowD
-- patternAddresses count(*patternAddresses)
 
 push x
 call mapBalance
