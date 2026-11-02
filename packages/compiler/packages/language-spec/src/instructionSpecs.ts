@@ -3,6 +3,7 @@ import type { InstructionSpecLookup, InstructionSpecName } from './instructionSp
 import { blockClose, loadInstruction, stack, stackMutation, withDocsAndStack } from './instructionSpecUtils';
 import type { MemoryDeclarationInstruction } from './memory';
 import { memoryDeclarationInstructions } from './memory';
+import { isReferenceSlotInstruction } from './referenceSlots';
 import type { BlockTypeValue, CompilationContext } from './semantic';
 import { BlockType } from './semantic';
 
@@ -913,7 +914,7 @@ export const instructionSpecs = {
 		stack: stack({ inputs: [], outputs: [] }),
 	},
 	push: {
-		sourceArguments: { minArguments: 1, maxArguments: 1 },
+		sourceArguments: { minArguments: 1, maxArguments: 1, argumentTypes: 'pushValue' },
 		placement: moduleOrFunctionPlacement,
 		docs: { shortDescription: 'Pushes a literal, memory value, local value, address, or constant onto the stack.' },
 		stack: stack({ inputs: [], outputs: ['T'] }),
@@ -1038,6 +1039,14 @@ export const instructionSpecs = {
 		inputs: [],
 		outputs: [],
 	}),
+	referenceSlot: {
+		sourceInstruction: false,
+		codegen: false,
+		placement: modulePlacement,
+		sourceArguments: { minArguments: 2, maxArguments: 2, argumentTypes: ['identifier', 'identifier'] },
+		docs: { shortDescription: 'Binds a typed, fixed memory reference without allocating storage.' },
+		stack: { inputs: [], outputs: [] },
+	},
 } satisfies Record<string, InstructionSpec>;
 
 /**
@@ -1053,6 +1062,9 @@ export const instructionSpecs = {
 export function getInstructionSpec<TInstruction extends string>(
 	instruction: TInstruction
 ): InstructionSpecLookup<TInstruction> {
+	if (isReferenceSlotInstruction(instruction)) {
+		return instructionSpecs.referenceSlot as InstructionSpecLookup<TInstruction>;
+	}
 	if (memoryDeclarationInstructions.includes(instruction as MemoryDeclarationInstruction)) {
 		return instructionSpecs.memoryDeclaration as InstructionSpecLookup<TInstruction>;
 	}

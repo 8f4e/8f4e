@@ -1,25 +1,29 @@
-import type { MemoryPointerMetadata, MemoryValueKind, PlannedMemoryDeclaration } from './memory';
+import type { MemoryPointerMetadata, MemoryValueKind, PlannedMemoryDeclaration, PointeeBaseType } from './memory';
 import { BASE_TYPE_METADATA } from './memory';
 
 export type PointerMetadata = Pick<PlannedMemoryDeclaration, 'pointeeBaseType' | 'pointerDepth'> &
 	MemoryPointerMetadata;
 
+/** Returns the element base type from the allocation plan's authoritative storage flags. */
+export function getMemoryBaseType(
+	memoryItem: Pick<PlannedMemoryDeclaration, 'elementWordSize' | 'isInteger' | 'isUnsigned'>
+): PointeeBaseType {
+	if (memoryItem.isInteger) {
+		if (memoryItem.elementWordSize === BASE_TYPE_METADATA.int8.wordSize) {
+			return memoryItem.isUnsigned ? 'int8u' : 'int8';
+		}
+		if (memoryItem.elementWordSize === BASE_TYPE_METADATA.int16.wordSize) {
+			return memoryItem.isUnsigned ? 'int16u' : 'int16';
+		}
+		return 'int';
+	}
+	return memoryItem.elementWordSize === BASE_TYPE_METADATA.float64.wordSize ? 'float64' : 'float';
+}
+
 function getDeclaredBaseTypeMetadata(
 	memoryItem: Pick<PlannedMemoryDeclaration, 'elementWordSize' | 'isInteger' | 'isUnsigned'>
 ) {
-	if (memoryItem.isInteger) {
-		if (memoryItem.elementWordSize === BASE_TYPE_METADATA.int8.wordSize) {
-			return memoryItem.isUnsigned ? BASE_TYPE_METADATA.int8u : BASE_TYPE_METADATA.int8;
-		}
-		if (memoryItem.elementWordSize === BASE_TYPE_METADATA.int16.wordSize) {
-			return memoryItem.isUnsigned ? BASE_TYPE_METADATA.int16u : BASE_TYPE_METADATA.int16;
-		}
-		return BASE_TYPE_METADATA.int;
-	}
-
-	return memoryItem.elementWordSize === BASE_TYPE_METADATA.float64.wordSize
-		? BASE_TYPE_METADATA.float64
-		: BASE_TYPE_METADATA.float;
+	return BASE_TYPE_METADATA[getMemoryBaseType(memoryItem)];
 }
 
 function getPointeeBaseTypeMetadata(pointeeBaseType: NonNullable<PointerMetadata['pointeeBaseType']>) {

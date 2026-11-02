@@ -36,6 +36,7 @@ import type {
 	ResolvedMemoryDeclaration,
 } from './memory';
 import type { ProjectMemoryAliasLookup } from './project';
+import type { ReferenceSlotMap, ResolvedReferenceSlot } from './referenceSlots';
 
 /** Proven byte range associated with an address expression or memory boundary. */
 export interface MemoryAddressRange {
@@ -238,6 +239,7 @@ export interface MemoryReferenceResolutionLineFacts {
 
 export interface MemoryReferenceResolutionBlockFacts {
 	lineFacts: Array<MemoryReferenceResolutionLineFacts | undefined>;
+	referenceSlots?: ReferenceSlotMap;
 }
 
 export interface MemoryReferenceResolutionReport {
@@ -316,6 +318,11 @@ export type ResolvedLocalPushLine = Omit<PushLine, 'arguments'> & {
 	};
 };
 
+export type ResolvedReferencePushLine = Omit<PushLine, 'arguments'> & {
+	arguments: [MemoryPointerIdentifier];
+	resolvedTarget: { kind: 'reference'; slot: ResolvedReferenceSlot };
+};
+
 export type ResolvedLocalPointerPushLine = Omit<PushLine, 'arguments'> & {
 	arguments: [MemoryPointerIdentifier];
 	resolvedTarget: {
@@ -325,6 +332,7 @@ export type ResolvedLocalPointerPushLine = Omit<PushLine, 'arguments'> & {
 };
 
 export type ResolvedPushLine =
+	| ResolvedReferencePushLine
 	| ResolvedMemoryPushLine
 	| ResolvedMemoryPointerPushLine
 	| ResolvedLocalPushLine

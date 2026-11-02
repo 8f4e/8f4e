@@ -39,6 +39,7 @@ export const SyntaxErrorCode = {
 	IMPORTED_FUNCTION_BODY: 16,
 	PARAM_AFTER_FUNCTION_BODY: 17,
 	INVALID_PROJECT_MEMORY_INITIALIZER: 18,
+	INVALID_REFERENCE_SLOT: 19,
 } as const;
 
 export type SyntaxErrorCodeValue = (typeof SyntaxErrorCode)[keyof typeof SyntaxErrorCode];
@@ -49,6 +50,8 @@ export type SyntaxErrorCodeValue = (typeof SyntaxErrorCode)[keyof typeof SyntaxE
  * and this registry will supply the default.
  */
 const SyntaxErrorMessages: Record<SyntaxErrorCodeValue, string> = {
+	[SyntaxErrorCode.INVALID_REFERENCE_SLOT]:
+		'A fixed reference requires a non-constant name and a named memory start address: <type>& <name> &<memory> or &<module>:<memory>.',
 	[SyntaxErrorCode.INVALID_MEMORY_IDENTIFIER_PREFIX]: 'Invalid memory identifier prefix.',
 	[SyntaxErrorCode.INVALID_IDENTIFIER]: 'Invalid identifier.',
 	[SyntaxErrorCode.INVALID_ARGUMENT]: 'Invalid instruction argument.',

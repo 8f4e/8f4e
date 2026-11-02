@@ -49,6 +49,30 @@ function setMemories(state: State, memories: PlannedMemoryDeclaration[], inherit
 }
 
 describe('deriveConnectors', () => {
+	it('places fixed references on their source rows alongside runtime pointer inputs', () => {
+		const state = createMockState();
+		const block = createMockCodeBlock({ gaps: new Map([[1, { size: 2 }]]) });
+		setMemories(state, [createMemory({ id: 'dynamic', type: 'int*', pointerDepth: 1, lineNumber: 4 })]);
+		state.compiler.result.compiledModules['test-block'].referenceSlots = {
+			fixed: {
+				id: 'fixed',
+				type: 'int&',
+				lineNumber: 2,
+				targetModuleId: 'source',
+				targetMemoryId: 'value',
+				targetMemory: createMemory({ byteAddress: 80 }),
+				pointeeBaseType: 'int',
+				pointerDepth: 1,
+				pointeeElementCount: 1,
+			},
+		};
+		const widgets = deriveConnectors(block, state);
+		expect(widgets.inputs).toMatchObject([
+			{ y: 64, source: { kind: 'reference', byteAddress: 80 } },
+			{ y: 96, source: { kind: 'pointer', allocationUnitAddress: 5 } },
+		]);
+		expect(widgets.outputs).toHaveLength(0);
+	});
 	it('partitions scalar and array declarations into ordered inputs and outputs', () => {
 		const state = createMockState();
 		const block = createMockCodeBlock({ name: 'test-block', width: 100, gaps: new Map([[1, { size: 1 }]]) });
@@ -72,8 +96,8 @@ describe('deriveConnectors', () => {
 		const widgets = deriveConnectors(block, state);
 
 		expect(widgets.inputs).toEqual([
-			{ x: 0, y: 16, wireX: 12, wireY: 24, allocationUnitAddress: 1 },
-			{ x: 0, y: 80, wireX: 12, wireY: 88, allocationUnitAddress: 2 },
+			{ x: 0, y: 16, wireX: 12, wireY: 24, source: { kind: 'pointer', allocationUnitAddress: 1 } },
+			{ x: 0, y: 80, wireX: 12, wireY: 88, source: { kind: 'pointer', allocationUnitAddress: 2 } },
 		]);
 		expect(widgets.outputs).toMatchObject([
 			{ x: 76, y: 64, wireX: 88, wireY: 72, calibratedMin: 0, calibratedMax: 0 },
@@ -161,7 +185,9 @@ describe('deriveConnectors', () => {
 
 		const widgets = deriveConnectors(block, state);
 
-		expect(widgets.inputs).toEqual([{ x: 0, y: 16, wireX: 12, wireY: 24, allocationUnitAddress: 9 }]);
+		expect(widgets.inputs).toEqual([
+			{ x: 0, y: 16, wireX: 12, wireY: 24, source: { kind: 'pointer', allocationUnitAddress: 9 } },
+		]);
 		expect(widgets.outputs).toHaveLength(1);
 		expect(widgets.outputs[0]).toMatchObject({ x: 76, y: 32, wireX: 88, wireY: 40 });
 		expect(widgets.outputs[0].memory).toBe(output);

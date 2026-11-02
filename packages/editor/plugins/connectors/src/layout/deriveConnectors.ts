@@ -22,7 +22,7 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 				y,
 				wireX: Math.round(width / 2),
 				wireY,
-				allocationUnitAddress: memory.allocationUnitAddress,
+				source: { kind: 'pointer', allocationUnitAddress: memory.allocationUnitAddress },
 			});
 		} else if (isProjectGroup || isOutputMemoryDeclaration(memory)) {
 			const x = codeBlock.width - width;
@@ -52,6 +52,17 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 		)) {
 			addConnector(memory, gapCalculator(memory.lineNumber, codeBlock.gaps) + rowOffset);
 		}
+		for (const slot of Object.values(compilation.compiledModule.referenceSlots ?? {})) {
+			const y = gapCalculator(slot.lineNumber, codeBlock.gaps) * height;
+			widgets.inputs.push({
+				x: 0,
+				y,
+				wireX: Math.round(width / 2),
+				wireY: Math.round(y + height / 2),
+				source: { kind: 'reference', byteAddress: slot.targetMemory.byteAddress },
+			});
+		}
+		widgets.inputs.sort((left, right) => left.y - right.y);
 	}
 	return widgets;
 }

@@ -1,0 +1,8 @@
+8f4e/v1
+entry main
+module invalid
+float[] values 4
+float& slot &values
+int[] copy count(*slot)
+moduleEnd
+entryEnd

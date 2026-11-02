@@ -3,6 +3,8 @@
 ### push
 
 The push instruction pushes a literal, constant, local, memory value, or address onto the stack.
+For a [fixed reference slot](declarations-and-locals.md#fixed-reference-slots), `push slot` pushes its compile-time
+target address and `push *slot` reads the current target value with one typed load.
 For identifier prefixes and suffixes that expand memory identifiers, see [Identifier prefixes](../prefixes.md).
 
 Float64 literals use the `f64` suffix; unsuffixed float literals default to float32.

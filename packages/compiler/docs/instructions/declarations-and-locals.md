@@ -295,6 +295,43 @@ float64**[] pointerPointers 2 0 0
 `samples` has values at indexes 0 and 1, while indexes 2 and 3 remain `0`. `sizeof(samples)` is `8` (the element
 size), and `count(samples)` is `4`; the total data allocation is 32 bytes.
 
+### Fixed reference slots
+
+`int&`, `int8&`, `int8u&`, `int16&`, `int16u&`, `float&`, and `float64&` declare fixed, typed memory
+references inside a module. Each declaration requires a name and the start address of a named memory declaration:
+
+```8f4e
+float& signal &oscillator:output
+int8u& samples &sampleData:buffer
+int& localValue &value
+
+push signal          ; fixed target address
+push *signal         ; current target value
+push count(*samples) ; target element count
+push sizeof(*samples)
+push max(*samples)
+push min(*samples)
+```
+
+A fixed slot reserves no memory and needs no runtime initialization. It resolves after memory allocation, and reading
+through it emits the target address followed by one typed load. The target contents remain mutable: pushing `signal`
+and a float value followed by `store` updates `oscillator:output`.
+
+The declared type must match the target's element type, including integer signedness and floating-point width.
+Scalar and array targets are supported, including inherited memory and memory exposed by project groups. The slot
+keeps the target's element count and type for `count(*slot)`, `sizeof(*slot)`, `min(*slot)`, and `max(*slot)`.
+Fixed slots are module-scoped and available throughout their module; their names must be distinct from memory and
+local names and follow the same non-constant naming convention as memory declarations.
+
+Fixed slots have no addressable storage of their own. Use `push slot` for the target address; `&slot`, `slot&`, and
+assigning to the binding are invalid. Initializers must name an allocated, non-pointer memory item. Numeric addresses,
+address arithmetic, end addresses, module addresses, and references to other fixed slots are not initializers.
+Slots cannot determine allocation sizes or ordinary `const` values, which resolve before memory layout.
+
+The editor draws an input connector at each fixed declaration and resolves its wire from the compiled target.
+Use allocated pointers such as `float*` for connections that must change during execution. Direct intermodular
+operands, including `push &oscillator:output` and `push count(sampleData:buffer)`, remain supported.
+
 ### local
 
 The local instruction declares a local variable inside a module or function (`local int name`, `local float name`, or a pointer type such as `local int16u* cursor`).

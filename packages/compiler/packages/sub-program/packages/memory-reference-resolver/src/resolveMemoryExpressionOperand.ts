@@ -7,6 +7,7 @@ import type {
 	PlannedMemoryDeclaration,
 	PlannedMemoryModule,
 	ProjectMemoryAliasLookup,
+	ReferenceSlotMap,
 } from '@8f4e/language-spec';
 import {
 	ArgumentType,
@@ -29,6 +30,7 @@ export type MemoryReferenceModuleNamespace = PlannedMemoryModule;
 export type MemoryReferencePointerMetadataByModuleId = Record<string, MemoryPointerMetadataMap>;
 
 export interface MemoryReferenceResolutionContext {
+	referenceSlots?: ReferenceSlotMap;
 	memoryPlan: MemoryLayoutPlan;
 	memoryAliases: ProjectMemoryAliasLookup;
 	currentModule?: PlannedMemoryModule;
@@ -119,6 +121,10 @@ export function resolveMetadataTarget(
 	}
 
 	const memory = getMemoryDeclaration(context, request.targetMemoryId);
+	const referenceSlot = context.referenceSlots?.[request.targetMemoryId];
+	if (referenceSlot && request.dereferenceDepth > 0) {
+		return { kind: 'pointer', pointers: [referenceSlot] };
+	}
 	if (request.dereferenceDepth === 0) {
 		return memory ? { kind: 'memory', memory } : undefined;
 	}
@@ -149,6 +155,10 @@ export function resolveMemoryExpressionOperand(
 ): Const | undefined {
 	if (operand.type === ArgumentType.LITERAL) {
 		return undefined;
+	}
+	if (operand.referenceKind === 'plain') {
+		const slot = context.referenceSlots?.[operand.value];
+		return slot ? memoryStartAddressValue(slot.targetMemory, slot.targetModuleId) : undefined;
 	}
 
 	const metadataQuery = getMetadataQuery(operand);

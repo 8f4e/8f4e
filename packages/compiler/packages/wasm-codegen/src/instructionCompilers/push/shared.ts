@@ -21,7 +21,7 @@ import {
 import { type PushValueKind, valueKindToWasmType } from '../../pushValueKind';
 import { guardedAddressOperation } from '../utils/memoryAccessGuard';
 
-type PointerValueSource = 'pointer-slot' | 'pointer-value';
+type PointerValueSource = 'pointer-slot' | 'pointer-value' | 'fixed-reference';
 type PointerLoadStep = { accessByteWidth: number; loadByteCode: number[] };
 
 export { kindToStackItem, resolveArgumentValueKind, resolveMemoryValueKind } from '../../pushValueKind';
@@ -108,6 +108,9 @@ export function buildPointerDereferenceByteCode(
 	const kind = getDereferencedValueKindFromMetadata(pointerMetadata, dereferenceDepth);
 	const dereferencedValueWordSize = getDereferencedValueWordSizeFromMetadata(pointerMetadata, dereferenceDepth);
 	const finalLoad = getFinalDereferenceLoad(pointerMetadata, kind, dereferencedValueWordSize);
+	if (pointerValueSource === 'fixed-reference') {
+		return { kind, byteCode: [...baseAddressByteCode, ...finalLoad] };
+	}
 
 	if (pointerValueSource === 'pointer-slot') {
 		const pointerLoads = [

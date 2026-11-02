@@ -1,5 +1,6 @@
 import {
 	ArgumentType,
+	BASE_TYPE_METADATA,
 	type CodegenPushLine,
 	ErrorCode,
 	getError,
@@ -92,6 +93,14 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 		}
 		if (referenceKind === 'memory-pointer') {
 			const pointerArgument = argument as MemoryPointerIdentifier;
+			const slot = context.referenceSlots?.[pointerArgument.targetMemoryId];
+			if (slot) {
+				validateDereferenceDepth(pointerArgument, slot, line, context);
+				if (slot.targetMemory.allocatedByteLength < BASE_TYPE_METADATA[slot.pointeeBaseType].wordSize) {
+					throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, context);
+				}
+				return { ...line, arguments: [pointerArgument], resolvedTarget: { kind: 'reference', slot } };
+			}
 			const memoryItem = getResolvedMemoryDeclaration(context, pointerArgument.targetMemoryId);
 			if (memoryItem) {
 				validateDereferenceDepth(pointerArgument, memoryItem, line, context);

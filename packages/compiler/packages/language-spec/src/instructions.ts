@@ -15,6 +15,7 @@ import type { MemoryDeclarationInstruction } from './memory';
 import { memoryDeclarationInstructions } from './memory';
 import type { ProjectInstructionName } from './project';
 import { projectInstructionNames } from './project';
+import { type ReferenceSlotInstruction, referenceSlotInstructions } from './referenceSlots';
 
 type InstructionSpecEntry = readonly [InstructionSpecName, InstructionSpec];
 
@@ -68,10 +69,15 @@ function getBlockEndInstruction(block: InstructionBlockSpec): BlockEndInstructio
 	})?.[0] as BlockEndInstruction;
 }
 
-export type SemanticInstructionName = Extract<NonCodegenInstructionSpecName, SourceInstructionSpecName>;
-export const semanticInstructionNames = instructionSpecEntries
-	.filter(([, spec]) => spec.sourceInstruction !== false && spec.codegen === false)
-	.map(([instruction]) => instruction) as SemanticInstructionName[];
+export type SemanticInstructionName =
+	| Extract<NonCodegenInstructionSpecName, SourceInstructionSpecName>
+	| ReferenceSlotInstruction;
+export const semanticInstructionNames = [
+	...instructionSpecEntries
+		.filter(([, spec]) => spec.sourceInstruction !== false && spec.codegen === false)
+		.map(([instruction]) => instruction),
+	...referenceSlotInstructions,
+] as SemanticInstructionName[];
 
 export type BlockStartInstruction = InstructionsByBlockRole<'start'>;
 export type BlockEndInstruction = InstructionsByBlockRole<'end'>;

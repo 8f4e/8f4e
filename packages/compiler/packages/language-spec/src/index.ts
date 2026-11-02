@@ -21,5 +21,6 @@ export * from './moduleNames';
 export * from './options';
 export * from './paramShape';
 export * from './project';
+export * from './referenceSlots';
 export * from './runtime';
 export * from './semantic';
