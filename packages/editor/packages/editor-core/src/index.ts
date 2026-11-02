@@ -9,7 +9,6 @@ import type { EditorConfigSchemaContributionRegistry, InfoRecord, State } from '
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createEditorDrawerRegistry, type MemoryViews, type RenderStats } from '@8f4e/web-ui';
-import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 
 import { disposeAll } from './disposeAll';
 import initEvents from './events';
@@ -192,24 +191,13 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		state.viewport.hGrid = fontAtlas.grid.cellHeight;
 		state.viewport.vGrid = fontAtlas.grid.cellWidth;
 
-		const renderProjection = createWebUiRenderProjection(store, events);
-		cleanups.push(() => renderProjection.dispose());
-
-		view = await initView(
-			state,
-			renderProjection,
-			canvas,
-			memoryViews,
-			fontAtlas,
-			resolvePalette(state.editorConfig.color),
-			{
-				drawers,
-				renderStatsIntervalFrames: options.renderStatsIntervalFrames,
-				onRenderStats: stats => {
-					store.set('info.graphics', toGraphicsInfoRecord(stats));
-				},
-			}
-		);
+		view = await initView(state, canvas, memoryViews, fontAtlas, resolvePalette(state.editorConfig.color), {
+			drawers,
+			renderStatsIntervalFrames: options.renderStatsIntervalFrames,
+			onRenderStats: stats => {
+				store.set('info.graphics', toGraphicsInfoRecord(stats));
+			},
+		});
 		cleanups.push(() => view.destroy());
 
 		cleanups.push(createSpriteSheetManager(store, view, events));

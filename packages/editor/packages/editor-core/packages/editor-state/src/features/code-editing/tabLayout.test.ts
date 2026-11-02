@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-	expandLineColorsToCells,
-	expandLineToCells,
 	getRawIndexForVisualColumn,
 	getTabStopsByLine,
 	getVisualColumnForRawIndex,
@@ -59,19 +57,5 @@ describe('tab layout helpers', () => {
 		expect(getRawIndexForVisualColumn('a\tb', 3, [4, 8])).toBe(2);
 		expect(getRawIndexForVisualColumn('a\tb', 4, [4, 8])).toBe(2);
 		expect(getRawIndexForVisualColumn('a\tb', 5, [4, 8])).toBe(3);
-	});
-
-	it('expands tabs into space cells for rendering', () => {
-		expect(expandLineToCells('a\tb', [4, 8])).toEqual([97, '\t', 32, 32, 98]);
-	});
-
-	it('expands colors alongside cells', () => {
-		expect(expandLineColorsToCells('a\tb', ['A', 'TAB', 'B'], [4, 8])).toEqual(['A', 'TAB', undefined, undefined, 'B']);
-	});
-
-	it('preserves a color marker anchored on a raw tab in the first expanded tab cell', () => {
-		expect(
-			expandLineColorsToCells('push\t1', [undefined, undefined, undefined, undefined, 'code', 'number'], [8])
-		).toEqual([undefined, undefined, undefined, undefined, 'code', undefined, undefined, undefined, 'number']);
 	});
 });

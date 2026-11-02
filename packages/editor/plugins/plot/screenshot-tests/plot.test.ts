@@ -1,7 +1,6 @@
 import { resolvePalette } from '@8f4e/editor-palette';
 import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
-import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import { setup } from '../src/__tests__/setup';
 import { plotPlugin } from '../src/index';
@@ -33,10 +32,8 @@ test('plot plugin renders its directive', async () => {
 		test.memoryViews.float32[memory.allocationUnitAddress + index] = Math.sin((index * Math.PI) / 16);
 
 	const spriteData = await loadFontAtlas(test.state.editorConfig.font);
-	const projection = createWebUiRenderProjection(test.store, test.events);
 	const renderer = await initView(
 		test.state,
-		projection,
 		canvas,
 		test.memoryViews,
 		spriteData,
@@ -50,7 +47,6 @@ test('plot plugin renders its directive', async () => {
 		await expect(canvas).toMatchScreenshot();
 	} finally {
 		renderer.destroy();
-		projection.dispose();
 		canvas.remove();
 	}
 });

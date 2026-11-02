@@ -79,37 +79,38 @@ The chosen follow-up for these implementation dependencies is to isolate test ha
 | `@8f4e/editor-minimal` | `@8f4e/compiler` (src/stdlib-resolver.test.ts) |
 | `@8f4e/editor-plugin-assertion-markers` | `@8f4e/test-runner` (screenshot-tests/assertion-markers.test.ts); `@8f4e/compiler` (screenshot-tests/assertion-markers.test.ts); `@8f4e/editor-state-testing` (src/deriveAssertionMarkers.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
 | `@8f4e/editor-plugin-audio-runtime` | `@8f4e/editor-state` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts); `@8f4e/compiler` (src/index.test.ts) |
-| `@8f4e/editor-plugin-bars` | `@8f4e/web-ui-render-projection` (screenshot-tests/bars.test.ts); `@8f4e/sprite-generator` (screenshot-tests/bars.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
+| `@8f4e/editor-plugin-bars` | `@8f4e/sprite-generator` (screenshot-tests/bars.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
 | `@8f4e/editor-plugin-binary-assets` | `@8f4e/compiler` (screenshot-tests/binary-assets.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
-| `@8f4e/editor-plugin-button` | `@8f4e/web-ui-render-projection` (screenshot-tests/button.test.ts); `@8f4e/sprite-generator` (screenshot-tests/button.test.ts); `@8f4e/compiler` (screenshot-tests/button.test.ts); `@8f4e/editor-state-testing` (src/drawer/drawButton.test.ts) |
+| `@8f4e/editor-plugin-button` | `@8f4e/sprite-generator` (screenshot-tests/button.test.ts); `@8f4e/compiler` (screenshot-tests/button.test.ts); `@8f4e/editor-state-testing` (src/drawer/drawButton.test.ts) |
+| `@8f4e/editor-plugin-code-rendering` | `@8f4e/editor-state-testing` (src/deriveCodeBlockCodeCells.test.ts) |
 | `@8f4e/editor-plugin-compiler` | `@8f4e/editor-state-testing` (src/compilation.test.ts); `@8f4e/state-manager` (src/compilation.test.ts) |
 | `@8f4e/editor-plugin-connectors` | `@8f4e/sprite-generator` (screenshot-tests/connectors.test.ts); `glugglugglug` (screenshot-tests/connectors.test.ts); `@8f4e/editor-state-testing` (screenshot-tests/connectors.test.ts); `@8f4e/compiler` (screenshot-tests/editor.test.ts) |
-| `@8f4e/editor-plugin-crossfade` | `@8f4e/web-ui-render-projection` (screenshot-tests/crossfade.test.ts); `@8f4e/sprite-generator` (screenshot-tests/crossfade.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
+| `@8f4e/editor-plugin-crossfade` | `@8f4e/sprite-generator` (screenshot-tests/crossfade.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
 | `@8f4e/editor-plugin-example-modules` | `@8f4e/web-ui` (src/index.test.ts) |
 | `@8f4e/editor-plugin-favorites` | `@8f4e/compiler` (screenshot-tests/favorites.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
 | `@8f4e/editor-plugin-grouping` | `@8f4e/compiler` (screenshot-tests/grouping.test.ts); `@8f4e/web-ui` (src/__tests__/editor.ts) |
 | `@8f4e/editor-plugin-keyboard-memory` | `@8f4e/editor-state-testing` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts); `@8f4e/compiler` (src/index.test.ts) |
-| `@8f4e/editor-plugin-lazy-loader` | `@8f4e/editor-plugin-plot` (screenshot-tests/loading.test.ts); `@8f4e/compiler` (screenshot-tests/loading.test.ts); `@8f4e/editor-state-types` (src/__tests__/editor.ts); `@8f4e/web-ui` (src/__tests__/editor.ts) |
-| `@8f4e/editor-plugin-meter` | `@8f4e/web-ui-render-projection` (screenshot-tests/meter.test.ts); `@8f4e/sprite-generator` (screenshot-tests/meter.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
+| `@8f4e/editor-plugin-lazy-loader` | `@8f4e/compiler` (src/__tests__/editor.ts); `@8f4e/editor-state-types` (src/__tests__/editor.ts); `@8f4e/web-ui` (src/__tests__/editor.ts) |
+| `@8f4e/editor-plugin-meter` | `@8f4e/sprite-generator` (screenshot-tests/meter.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
 | `@8f4e/editor-plugin-midi-input` | `@8f4e/editor-state-testing` (src/config.test.ts); `@8f4e/state-manager` (src/devices.test.ts); `@8f4e/editor-state` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts); `@8f4e/compiler` (src/index.test.ts) |
-| `@8f4e/editor-plugin-piano` | `@8f4e/web-ui-render-projection` (screenshot-tests/piano.test.ts); `@8f4e/sprite-generator` (screenshot-tests/piano.test.ts); `@8f4e/compiler` (screenshot-tests/piano.test.ts); `@8f4e/editor-state-testing` (src/helpers/saveDefaults.test.ts) |
-| `@8f4e/editor-plugin-plot` | `@8f4e/web-ui-render-projection` (screenshot-tests/plot.test.ts); `@8f4e/sprite-generator` (screenshot-tests/plot.test.ts); `@8f4e/language-spec` (src/__tests__/memory.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
-| `@8f4e/editor-plugin-project-open` | `@8f4e/editor-plugin-project-save` (screenshot-tests/project-open.test.ts); `@8f4e/editor-state-testing` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
-| `@8f4e/editor-plugin-project-save` | `@8f4e/compiler` (src/serializeTo8f4e.test.ts) |
+| `@8f4e/editor-plugin-piano` | `@8f4e/sprite-generator` (screenshot-tests/piano.test.ts); `@8f4e/compiler` (screenshot-tests/piano.test.ts); `@8f4e/editor-state-testing` (src/helpers/saveDefaults.test.ts) |
+| `@8f4e/editor-plugin-plot` | `@8f4e/sprite-generator` (screenshot-tests/plot.test.ts); `@8f4e/language-spec` (src/__tests__/memory.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
+| `@8f4e/editor-plugin-project-open` | `@8f4e/web-ui` (src/index.test.ts) |
+| `@8f4e/editor-plugin-project-save` | `@8f4e/compiler` (src/serializeTo8f4e.test.ts); `@8f4e/editor-state-testing` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
 | `@8f4e/editor-plugin-project-url-loader` | `@8f4e/web-ui` (src/__tests__/setup.ts) |
 | `@8f4e/editor-plugin-remove-memory-connections` | `@8f4e/compiler` (screenshot-tests/remove-memory-connections.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
 | `@8f4e/editor-plugin-screenshot` | `@8f4e/compiler` (screenshot-tests/screenshot.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
 | `@8f4e/editor-plugin-session-persistence` | `@8f4e/compiler` (screenshot-tests/session-persistence.test.ts); `@8f4e/web-ui` (src/__tests__/setup.ts) |
-| `@8f4e/editor-plugin-slider` | `@8f4e/web-ui-render-projection` (screenshot-tests/slider.test.ts); `@8f4e/sprite-generator` (screenshot-tests/slider.test.ts); `@8f4e/compiler` (screenshot-tests/slider.test.ts); `@8f4e/editor-state-testing` (src/drawer/draw.test.ts) |
-| `@8f4e/editor-plugin-stack` | `@8f4e/web-ui-render-projection` (screenshot-tests/stack.test.ts); `@8f4e/sprite-generator` (screenshot-tests/stack.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
-| `@8f4e/editor-plugin-switch` | `@8f4e/web-ui-render-projection` (screenshot-tests/switch.test.ts); `@8f4e/sprite-generator` (screenshot-tests/switch.test.ts); `@8f4e/web-ui` (screenshot-tests/switch.test.ts); `@8f4e/compiler` (screenshot-tests/switch.test.ts) |
+| `@8f4e/editor-plugin-slider` | `@8f4e/sprite-generator` (screenshot-tests/slider.test.ts); `@8f4e/compiler` (screenshot-tests/slider.test.ts); `@8f4e/editor-state-testing` (src/drawer/draw.test.ts) |
+| `@8f4e/editor-plugin-stack` | `@8f4e/sprite-generator` (screenshot-tests/stack.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
+| `@8f4e/editor-plugin-switch` | `@8f4e/sprite-generator` (screenshot-tests/switch.test.ts); `@8f4e/web-ui` (screenshot-tests/switch.test.ts); `@8f4e/compiler` (screenshot-tests/switch.test.ts) |
 | `@8f4e/editor-plugin-test-runtime` | `@8f4e/editor-state-testing` (src/runtime.test.ts); `@8f4e/state-manager` (src/runtime.test.ts); `@8f4e/compiler` (src/runtime.test.ts) |
-| `@8f4e/editor-plugin-texture-runtime` | `@8f4e/editor-plugin-lazy-loader` (screenshot-tests/editor.test.ts); `@8f4e/editor-plugin-compiler` (screenshot-tests/editor.test.ts); `@8f4e/compiler` (screenshot-tests/editor.test.ts); `@8f4e/sprite-generator` (screenshot-tests/formats.test.ts); `glugglugglug` (screenshot-tests/formats.test.ts); `@8f4e/editor-palette` (src/index.test.ts) |
+| `@8f4e/editor-plugin-texture-runtime` | `@8f4e/compiler` (src/index.test.ts); `@8f4e/sprite-generator` (screenshot-tests/formats.test.ts); `glugglugglug` (screenshot-tests/formats.test.ts); `@8f4e/editor-palette` (src/index.test.ts) |
 | `@8f4e/editor-plugin-toggle-skip-execution` | `@8f4e/editor-state-testing` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
-| `@8f4e/editor-plugin-tooltips` | `@8f4e/web-ui-render-projection` (screenshot-tests/tooltips.test.ts); `@8f4e/sprite-generator` (screenshot-tests/tooltips.test.ts); `@8f4e/compiler` (screenshot-tests/tooltips.test.ts); `@8f4e/editor-state-testing` (src/drawer/draw.test.ts); `@8f4e/state-manager` (src/state/effect.test.ts) |
+| `@8f4e/editor-plugin-tooltips` | `@8f4e/sprite-generator` (screenshot-tests/tooltips.test.ts); `@8f4e/compiler` (screenshot-tests/tooltips.test.ts); `@8f4e/editor-state-testing` (src/drawer/draw.test.ts); `@8f4e/state-manager` (src/state/effect.test.ts) |
 | `@8f4e/editor-plugin-wasm-export` | `@8f4e/web-ui` (src/index.test.ts) |
-| `@8f4e/editor-plugin-watch` | `@8f4e/web-ui-render-projection` (screenshot-tests/watch.test.ts); `@8f4e/sprite-generator` (screenshot-tests/watch.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
-| `@8f4e/editor-plugin-wave` | `@8f4e/web-ui-render-projection` (screenshot-tests/wave.test.ts); `@8f4e/sprite-generator` (screenshot-tests/wave.test.ts); `@8f4e/compiler` (screenshot-tests/wave.test.ts); `@8f4e/editor-state-testing` (src/drawer/draw.test.ts) |
+| `@8f4e/editor-plugin-watch` | `@8f4e/sprite-generator` (screenshot-tests/watch.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
+| `@8f4e/editor-plugin-wave` | `@8f4e/sprite-generator` (screenshot-tests/wave.test.ts); `@8f4e/compiler` (screenshot-tests/wave.test.ts); `@8f4e/editor-state-testing` (src/drawer/draw.test.ts) |
 | `@8f4e/editor-plugin-worker-runtime` | `@8f4e/editor-state` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts); `@8f4e/compiler` (src/index.test.ts) |
 | `@8f4e/editor-state` | `@8f4e/compiler` (src/features/code-blocks/layout/layout.test.ts) |
 | `@8f4e/editor-webmcp` | `@8f4e/editor-state` (browser-tests/bridge.test.ts); `@8f4e/editor-default` (browser-tests/bridge.test.ts); `@8f4e/editor-state-testing` (src/index.test.ts) |
@@ -123,7 +124,6 @@ The chosen follow-up for these implementation dependencies is to isolate test ha
 | `@8f4e/test-runner` | `@8f4e/project-preparser` (src/index.test.ts) |
 | `@8f4e/wasm-codegen` | `@8f4e/tokenizer` (src/instructionCompilers/castToFloat64.test.ts) |
 | `@8f4e/web-ui` | `@8f4e/editor-state-testing` (screenshot-tests/dragged-modules.test.ts) |
-| `@8f4e/web-ui-render-projection` | `@8f4e/editor-state-testing` (src/projection.test.ts) |
 
 
 The other reviewed projects have no workspace-name references confined to tests in the inventory scan: `@8f4e/cli`, `@8f4e/compiler-wasm-utils`, `@8f4e/compiler-worker`, `@8f4e/config`, `@8f4e/constant-resolver`, `@8f4e/editor-file-session`, `@8f4e/editor-palette`, `@8f4e/editor-state-testing`, `@8f4e/editor-state-types`, `@8f4e/editor-website`, `@8f4e/examples`, `@8f4e/language-spec`, `@8f4e/memory-planner`, `@8f4e/metrics-dashboard`, `@8f4e/project-preparser`, `@8f4e/release`, `@8f4e/runtime-audio-worklet`, `@8f4e/runtime-web-worker`, `@8f4e/semantic-utils`, `@8f4e/state-manager`, `@8f4e/stdlib`, `@8f4e/sub-program`, `@8f4e/tokenizer`, `@8f4e/vite-plugin-sources`, `glugglugglug`. Relative filesystem references and manifest-only/tooling relationships were reviewed separately; the cases below cover them. This inventory does not prove every manifest or external dependency is required for production.

@@ -20,6 +20,6 @@ failed imports retain the current project and destination. A pending Open cannot
 Browsers without an Open picker use a file input; uploaded files have no writable association. Errors appear in
 the editor console. The Save plugin reuses an opened handle for subsequent saves and owns all serialization and writing.
 
-Validate with `npx nx run @8f4e/editor-plugin-project-open:build|test|typecheck` and
-`npx nx run @8f4e/editor-plugin-project-open:test:screenshot`. The composed tests exercise both plugins and the
-shared session, as well as independent installation of Open and Save.
+Validate with `npx nx run @8f4e/editor-plugin-project-open:build|test|typecheck`. Tests here cover Open without Save.
+The default editor owns composed Open/Save and shared-session tests, including browser coverage through
+`npx nx run @8f4e/editor-default:test:screenshot`.

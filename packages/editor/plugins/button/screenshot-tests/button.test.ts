@@ -3,7 +3,6 @@ import { resolvePalette } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
-import { createWebUiRenderProjection } from '@8f4e/web-ui-render-projection';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
 import { createButtonPlugin } from '../src/index';
@@ -70,16 +69,9 @@ entryEnd`);
 	};
 	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.on.allocationUnitAddress] = 1;
 	const spriteData = await loadFontAtlas(state.editorConfig.font);
-	const projection = createWebUiRenderProjection(store, events);
-	const renderer = await initView(
-		state,
-		projection,
-		canvas,
-		memoryViews,
-		spriteData,
-		resolvePalette(state.editorConfig.color),
-		{ drawers }
-	);
+	const renderer = await initView(state, canvas, memoryViews, spriteData, resolvePalette(state.editorConfig.color), {
+		drawers,
+	});
 	renderer.pauseRendering();
 	events.dispatch('spriteSheetRerendered');
 	try {
@@ -87,7 +79,6 @@ entryEnd`);
 		await expect(canvas).toMatchScreenshot();
 	} finally {
 		renderer.destroy();
-		projection.dispose();
 		disposePlugin();
 		store.dispose();
 		canvas.remove();

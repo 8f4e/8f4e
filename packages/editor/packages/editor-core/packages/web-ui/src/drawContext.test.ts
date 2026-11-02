@@ -1,7 +1,7 @@
-import { createSpriteCell } from '@8f4e/web-ui-render-projection';
 import type { SpriteId } from 'glugglugglug';
 import { describe, expect, it, vi } from 'vitest';
 import { DrawContext } from './drawContext';
+import { createSpriteCell } from './spriteCell';
 
 describe('DrawContext', () => {
 	it('forwards separate shared shape and color indices through nested offsets', () => {

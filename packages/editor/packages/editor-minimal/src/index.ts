@@ -1,6 +1,7 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
@@ -47,6 +48,7 @@ export async function mountMinimalEditor(
 		plugins: [
 			compiler.plugin,
 			fileSession.plugin,
+			codeRenderingPlugin,
 			connectorsPlugin,
 			createProjectUrlLoaderPlugin({
 				fetch: globalThis.fetch,

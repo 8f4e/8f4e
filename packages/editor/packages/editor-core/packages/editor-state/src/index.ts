@@ -160,7 +160,7 @@ export { parseBlockDirectives } from './features/code-blocks/utils/parseBlockDir
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
 export { default as gapCalculator } from './features/code-editing/gapCalculator';
-export { getTabStopsByLine, getVisualLineWidth } from './features/code-editing/tabLayout';
+export { getTabAdvance, getTabStopsByLine, getVisualLineWidth } from './features/code-editing/tabLayout';
 export { error as logError, log as logMessage } from './features/logger/logger';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
 export { publishProjectChange } from './features/project-changes';

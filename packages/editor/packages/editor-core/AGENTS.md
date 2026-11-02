@@ -55,7 +55,7 @@
   subscriptions. Changed requests automatically rederive affected visible blocks without source changes, project
   revisions, or compilation. Unchanged values are no-ops; callbacks can update requests and settle synchronously.
   Keep all layout requests/callbacks out of directive drafts, and layout refresh policy out of the lazy loader.
-  Web UI text projection refreshes only after `codeBlockLayoutsChanged`; keep input invalidation owned by editor-state.
+  The code-rendering plugin refreshes prepared text only after `codeBlockLayoutsChanged`; keep input invalidation owned by editor-state.
 - Use `applyCodeBlockSourceEdits(store, edits, { affectsCompilation })` for plugin source-edit batches and
   `deleteCodeBlocks(store, blocks)` for removing blocks from the current slice. These helpers own refreshes,
   deleted-block reference cleanup, and one completed project/compiler notification. Callers own edit-mode policy;

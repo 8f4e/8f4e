@@ -62,7 +62,8 @@
     "@8f4e/editor-plugin-connectors": "*",
     "@8f4e/editor-plugin-texture-runtime": "*",
     "@8f4e/editor-file-session": "*",
-    "@8f4e/editor-plugin-project-save": "*"
+    "@8f4e/editor-plugin-project-save": "*",
+    "@8f4e/editor-plugin-code-rendering": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",
@@ -72,6 +73,8 @@
     "vitest": "4.1.7",
     "@8f4e/editor-state": "*",
     "@8f4e/web-ui": "*",
-    "@8f4e/compiler": "*"
+    "@8f4e/compiler": "*",
+    "@vitest/browser": "4.1.7",
+    "@vitest/browser-playwright": "4.1.7"
   }
 }

@@ -6,6 +6,6 @@
   Cancellation and failed parsing retain the current project and association. Pending opens must not load after disposal.
 - Keep Save, Export, serialization, permissions, downloads, write ordering, and Cmd/Ctrl+S in project-save.
 - Install the session plugin before project loaders. It holds only the shared handle and its reset lifecycle.
-- Return cleanup for the action and menu. Keep composed Open/Save integration tests here, including independent
-  installation, shared destinations, replacement/disposal, fallbacks, and per-editor isolation. Keep local test helpers local.
-- Verify `build`, `test`, `typecheck`, and `test:screenshot` through this package's Nx targets.
+- Return cleanup for the action and menu. Keep Open tests independent of Save. Verify parsing, file association, cancellation, fallbacks, disposal,
+  and menus here; composed Open/Save and shared-session lifecycle tests belong to editor-default. Keep test helpers local.
+- Verify `build`, `test`, and `typecheck` through this package's Nx targets.

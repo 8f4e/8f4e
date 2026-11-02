@@ -28,6 +28,9 @@
 - Editor colors: `@8f4e/editor-palette` owns the pure base palette and predefined shades. Configure only shared base
   colors; core and plugin drawers select generic palette tokens. Shades are uploaded as premultiplied colors in a GPU
   uniform buffer (up to 256 entries); the sprite atlas contains color-independent R8 binary visibility masks.
+- `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, line-number drawing, and private
+  prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
+  `registerCodeBlockContentDrawer` before the cursor and diagnostics and owns generic sprite-cell drawing primitives.
 - Rendering plugins: web-ui owns the procedural background and its font-specific dot settings under `src/plugins/`.
   `editor-plugin-connectors` owns input/output widgets, wire lookup, and the complete line renderer. Web-ui provides
   generic render-layer registration, palette updates, memory release, and disposal.
@@ -61,6 +64,8 @@
 - `npx nx run @8f4e/editor-website:build`: Builds the default composition and website production bundle.
 - `npx nx run @8f4e/8f4e-website:dev`: Starts the example product website on `http://localhost:3001`.
 - `npx nx run @8f4e/8f4e-website:build`: Builds the example product website and its editor dependencies.
+- `npx nx run @8f4e/editor-default:test:screenshot`: Runs real-plugin browser composition tests for lazy loading,
+  project Open/Save, and compiler/texture rendering.
 - `npx nx run @8f4e/editor-minimal:build|test|typecheck`: Build or verify the embedded editor composition.
 - `npx nx run @8f4e/8f4e-website:test:browser`: Runs homepage and gallery lifecycle integration tests with the minimal editor.
 - `npx nx run @8f4e/editor-webmcp:test:browser`: Runs real-editor WebMCP source, editing, revision, persistence, and history integration tests.

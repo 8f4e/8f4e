@@ -11,5 +11,5 @@ and loading a file. Save reuses the handle and updates it after a successful Sav
 Open owns reading and parsing. Save owns serialization, filenames, browser writes, permissions, download fallbacks,
 pending destinations, write ordering, and stale-completion handling. Core retains generic project loading and history.
 
-Run Nx `build` and `typecheck` for this package. The project-open suite covers the composed session and both plugins,
+Run Nx `build` and `typecheck` for this package. The editor-default suite covers the composed session and both plugins,
 and the product website's browser suite covers Save and Export without Open.

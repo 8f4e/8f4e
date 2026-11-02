@@ -1,7 +1,6 @@
 import { type ResolvedPalette, toPaletteBytes } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sprite-generator';
-import type { WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
 import { Engine } from 'glugglugglug';
 import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
@@ -22,6 +21,7 @@ export type {
 	RenderLayerFactory,
 	RenderLayerFrameContext,
 } from './render-layers';
+export { createSpriteCell, type SpriteCell } from './spriteCell';
 // Re-export types
 export type { MemoryViews } from './types';
 
@@ -43,7 +43,6 @@ export interface WebUiOptions {
 
 export default async function init(
 	state: State,
-	renderData: WebUiRenderDataSource,
 	canvas: HTMLCanvasElement,
 	memoryViews: MemoryViews,
 	fontAtlas: FontAtlas,
@@ -134,7 +133,7 @@ export default async function init(
 	engine.hooks.postDraw.push(renderStatsHook);
 
 	const drawFrame = () => {
-		drawCodeBlocks(draw, state, memoryViews, renderData.getSnapshot(), options.drawers);
+		drawCodeBlocks(draw, state, memoryViews, options.drawers);
 		drawContextMenu(draw, state);
 		drawModeOverlay(draw, state);
 		drawDialog(draw, state);

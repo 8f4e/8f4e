@@ -73,7 +73,15 @@ describe('default editor plugins', () => {
 			.plugins!.map(plugin => plugin.id);
 		expect(pluginIds[0]).toBe('compiler');
 		expect(pluginIds).toEqual(
-			expect.arrayContaining(['connectors', 'watch', 'stack', 'tooltips', 'favorites', 'project-file-session'])
+			expect.arrayContaining([
+				'code-rendering',
+				'connectors',
+				'watch',
+				'stack',
+				'tooltips',
+				'favorites',
+				'project-file-session',
+			])
 		);
 		expect(pluginIds.indexOf('watch')).toBeLessThan(pluginIds.indexOf('tooltips'));
 		expect(pluginIds.indexOf('stack')).toBeLessThan(pluginIds.indexOf('tooltips'));

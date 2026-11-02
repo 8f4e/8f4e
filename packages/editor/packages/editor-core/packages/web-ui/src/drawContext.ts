@@ -1,8 +1,8 @@
 import type { PaletteIndex } from '@8f4e/editor-palette';
 import { FILL_SPRITE_ID, getGlyphSpriteId } from '@8f4e/sprite-generator';
-import type { SpriteCell } from '@8f4e/web-ui-render-projection';
 import type { SpriteId } from 'glugglugglug';
 import { DrawContext as SpriteDrawContext, type SpriteTarget } from 'glugglugglug/utils';
+import type { SpriteCell } from './spriteCell';
 
 /** Editor text/fill primitives bind shared shapes to explicit palette indices without per-frame allocations. */
 export class DrawContext {

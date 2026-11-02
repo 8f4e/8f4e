@@ -7,6 +7,9 @@
   its own package named `@8f4e/editor-plugin-<feature>`. Keep plugin directories short and package names explicit.
 - `@8f4e/editor-core` is the minimal reusable editor.
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
+- `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, line-number drawing, and private
+  prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
+  `registerCodeBlockContentDrawer` before the cursor and diagnostics and owns generic sprite-cell drawing primitives.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
 - Keep `@8f4e/editor-palette` external in bundled editor libraries so the final composition can share one palette module.
 - External lists match exact import paths; include used dependency subpaths such as `glugglugglug/utils` explicitly.
@@ -70,7 +73,7 @@
   `npx nx run @8f4e/editor-plugin-project-open:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-wasm-export:build|test|typecheck`.
   Build/typecheck `@8f4e/editor-file-session` and build/test/typecheck `@8f4e/editor-plugin-project-save` through Nx.
-  Composed file behavior is covered by project-open tests and the minimal-editor gallery browser tests.
+  Composed file behavior is covered by editor-default tests and the minimal-editor gallery browser tests.
 - Verify example module browsing with `npx nx run @8f4e/editor-plugin-example-modules:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-example-modules:test:screenshot`.
 - Verify startup plugins with
@@ -90,8 +93,7 @@
   `npx nx run @8f4e/editor-plugin-connectors:test:screenshot`.
 - Verify visual grouping with `npx nx run @8f4e/editor-plugin-grouping:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-grouping:test:screenshot`.
-- Verify lazy plugin loading with `npx nx run @8f4e/editor-plugin-lazy-loader:build|test|typecheck` and
-  `npx nx run @8f4e/editor-plugin-lazy-loader:test:screenshot`.
+- Verify lazy plugin loading with `npx nx run @8f4e/editor-plugin-lazy-loader:build|test|typecheck`. Browser composition coverage runs through `npx nx run @8f4e/editor-default:test:screenshot`.
 - Build or preview it with `npx nx run @8f4e/editor-website:build|serve`.
 - Ensure dependency packages are built before relying on workspace aliases in the website.
 
@@ -105,6 +107,8 @@
 
 - Vitest tests live under `src/__tests__` or alongside source as `*.test.ts`.
 - Test composition behavior in `@8f4e/editor-default` and `@8f4e/editor-minimal`; test reusable editor behavior in `@8f4e/editor-core`.
+- Feature-plugin tests cover their own behavior against core services. Do not install unrelated plugins to render
+  fixture content or preserve screenshots; combined plugin rendering belongs in composition tests.
 
 ## Pull Requests
 

@@ -18,3 +18,5 @@
   directive and raw runtime config with project scope.
 - Export `createTextureRuntimePlugin({ getCodeBuffer, getMemory })`. Preserve instance reuse and stale completion cleanup.
 - Verify build/test/typecheck and test:screenshot through Nx. Builds clean dist before compilation.
+- Keep GPU format/state tests local. Browser scenarios combining compiler, lazy-loader, and texture runtime belong
+  to editor-default's test:screenshot target; keep sibling-plugin dependencies out of this package.
