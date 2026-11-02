@@ -68,6 +68,9 @@
 - `npx nx run @8f4e/editor-webmcp:generate-content`: Rebuild its bundled help/docs/example catalog through Vite source collections; build/test/typecheck run this automatically.
 - `npm --prefix tools/project-preview run generate-gallery-previews`: Regenerates 64×64 GIF icons for the example
   and compiler test galleries with the standalone npm tool.
+- `node tools/dx7-to-8f4e/src/cli.ts <bank.syx> --algorithm 5`: Converts DX7 single-voice or bank dumps into
+  movable constants blocks. This standalone tool uses Node built-ins; validate it with
+  `npm --prefix tools/dx7-to-8f4e test` and `npm --prefix tools/dx7-to-8f4e run typecheck`.
 - `npx nx run @8f4e/release:check --parallel=2`: Runs release builds and metrics in parallel with
   tests and coverage on one runner.
 - `npx nx run @8f4e/vite-plugin-sources:build|test|typecheck`: Build or verify the reusable source collection plugin.
