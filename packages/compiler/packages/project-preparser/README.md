@@ -16,6 +16,12 @@ module/group declaration order and source block ids. The model is defined only b
 Note blocks (`note` through `noteEnd`) preserve their content as text until the closing `noteEnd`.
 Lines that look like other block markers remain note content at the project root and inside groups.
 
+`projectSource.ts` supplies the shared structural reader for ordinary parsing, source template transforms, and
+`validateProjectCodeBlock`, which validates model-owned blocks and flat group shells before serialization. The reader
+preserves original line numbers and treats document blocks as opaque; notes can contain examples of arbitrary markers.
+Preprocessors register their additional scope delimiters explicitly. Template transforms also share `mapSourceScope`,
+which follows entry wrappers within one owning scope and leaves child-group recursion to the caller.
+
 This package owns:
 
 - Inlining group-scoped source templates and extracting them from expanded serialized source.

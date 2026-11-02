@@ -1,17 +1,18 @@
-import { ErrorCode, getError, isValidModuleName } from '@8f4e/language-spec';
+import { ErrorCode, getError, isValidModuleName, projectInstructions } from '@8f4e/language-spec';
 import { SyntaxErrorCode } from '@8f4e/tokenizer';
+import { mapSourceScope } from './mapSourceScope';
 import { startsWithInstruction } from './projectKeywords';
 import { isProjectGapLine } from './projectLines';
 import {
 	instruction,
 	isBlock,
-	readTemplateSource,
+	readProjectSource,
 	type SourceBlock,
 	type SourceLine,
 	type SourceNode,
 	sourceLines,
 	syntaxError,
-} from './projectTemplateSource';
+} from './projectSource';
 
 function namedInstruction(line: SourceLine): string {
 	const [, name, ...extra] = instruction(line).split(/\s+/);
@@ -70,33 +71,28 @@ export function inlineProjectTemplates(source: string): string {
 			const shared = expandScope(template.children, [...active, name]).filter(isBlock);
 			return { ...group, children: [...group.children, ...shared] };
 		}
-		return nodes.flatMap<SourceNode>(node => {
+
+		return mapSourceScope(nodes, (node, context) => {
 			if (!isBlock(node)) {
 				if (startsWithInstruction(instruction(node), 'useTemplate'))
 					syntaxError(SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK, node);
 				return [node];
 			}
-			if (node.opener === 'template') return [];
+			if (node.opener === 'template') {
+				if (context === 'entry') syntaxError(SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK, node.start);
+				return [];
+			}
 			if (node.opener === 'group') return [expandGroup(node)];
-			if (node.opener === 'entry') {
-				return [
-					{
-						...node,
-						children: node.children.map(child => {
-							if (isBlock(child) && child.opener === 'group') return expandGroup(child);
-							if (isBlock(child) && child.opener === 'template')
-								syntaxError(SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK, child.start);
-							if (!isBlock(child) && startsWithInstruction(instruction(child), 'useTemplate'))
-								syntaxError(SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK, child);
-							return child;
-						}),
-					},
-				];
+			if (node.opener !== 'note') {
+				for (const line of node.children) {
+					if (!isBlock(line) && /^(?:template|templateEnd|useTemplate)(?:\s|$)/.test(instruction(line)))
+						syntaxError(SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK, line);
+				}
 			}
 			return [node];
 		});
 	}
-	return sourceLines(expandScope(readTemplateSource(source))).join('\n');
+	return sourceLines(expandScope(readProjectSource(source, [projectInstructions.template]))).join('\n');
 }
 
 /** Collapse expanded groups in serialization order. The last reference in each owning scope supplies its body. */
@@ -116,20 +112,10 @@ export function extractProjectTemplates(source: string): string {
 			});
 			return { ...group, children: group.children.filter(child => !isBlock(child)) };
 		}
-		const result = nodes.flatMap<SourceNode>(node => {
-			if (!isBlock(node)) return [node];
-			if (node.opener === 'template') return [];
-			if (node.opener === 'group') return [extractGroup(node)];
-			if (node.opener === 'entry')
-				return [
-					{
-						...node,
-						children: node.children.map(child =>
-							isBlock(child) && child.opener === 'group' ? extractGroup(child) : child
-						),
-					},
-				];
-			return [node];
+
+		const result = mapSourceScope(nodes, node => {
+			if (isBlock(node) && node.opener === 'template') return [];
+			return [isBlock(node) && node.opener === 'group' ? extractGroup(node) : node];
 		});
 		const definitions = [...templates.values()].map(template => ({
 			...template,
@@ -139,5 +125,5 @@ export function extractProjectTemplates(source: string): string {
 		result.splice(firstBlock < 0 ? result.length : firstBlock, 0, ...definitions);
 		return result;
 	}
-	return sourceLines(extractScope(readTemplateSource(source))).join('\n');
+	return sourceLines(extractScope(readProjectSource(source, [projectInstructions.template]))).join('\n');
 }
