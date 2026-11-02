@@ -6,7 +6,7 @@ export function expandLineToCells(line: string, tabStops: number[]): Array<numbe
 	for (let index = 0; index < line.length; index += 1) {
 		if (line[index] === '\t') {
 			const advance = getTabAdvance(visualColumn, tabStops);
-			cells.push(9, ...new Array(Math.max(advance - 1, 0)).fill(32));
+			cells.push(9, ...new Array(advance - 1).fill(32));
 			visualColumn += advance;
 		} else {
 			cells.push(line.charCodeAt(index));
@@ -26,7 +26,7 @@ export function expandLineColorsToCells<T>(
 	for (let index = 0; index < line.length; index += 1) {
 		if (line[index] === '\t') {
 			const advance = getTabAdvance(visualColumn, tabStops);
-			colors.push(rawColors[index], ...new Array(Math.max(advance - 1, 0)).fill(undefined));
+			colors.push(rawColors[index], ...new Array(advance - 1).fill(undefined));
 			visualColumn += advance;
 		} else {
 			colors.push(rawColors[index]);

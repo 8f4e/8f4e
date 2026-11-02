@@ -64,5 +64,7 @@ Verify from the workspace root:
 npx nx run @8f4e/editor-plugin-lazy-loader:build
 npx nx run @8f4e/editor-plugin-lazy-loader:test
 npx nx run @8f4e/editor-plugin-lazy-loader:typecheck
-npx nx run @8f4e/editor-plugin-lazy-loader:test:screenshot
 ```
+
+Browser composition tests combining the loader with plot live in editor-default. Run them with
+`npx nx run @8f4e/editor-default:test:screenshot`.

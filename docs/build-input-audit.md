@@ -90,13 +90,13 @@ The chosen follow-up for these implementation dependencies is to isolate test ha
 | `@8f4e/editor-plugin-favorites` | `@8f4e/compiler` (screenshot-tests/favorites.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
 | `@8f4e/editor-plugin-grouping` | `@8f4e/compiler` (screenshot-tests/grouping.test.ts); `@8f4e/web-ui` (src/__tests__/editor.ts) |
 | `@8f4e/editor-plugin-keyboard-memory` | `@8f4e/editor-state-testing` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts); `@8f4e/compiler` (src/index.test.ts) |
-| `@8f4e/editor-plugin-lazy-loader` | `@8f4e/editor-plugin-plot` (screenshot-tests/loading.test.ts); `@8f4e/compiler` (screenshot-tests/loading.test.ts); `@8f4e/editor-state-types` (src/__tests__/editor.ts); `@8f4e/web-ui` (src/__tests__/editor.ts) |
+| `@8f4e/editor-plugin-lazy-loader` | `@8f4e/compiler` (src/__tests__/editor.ts); `@8f4e/editor-state-types` (src/__tests__/editor.ts); `@8f4e/web-ui` (src/__tests__/editor.ts) |
 | `@8f4e/editor-plugin-meter` | `@8f4e/sprite-generator` (screenshot-tests/meter.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
 | `@8f4e/editor-plugin-midi-input` | `@8f4e/editor-state-testing` (src/config.test.ts); `@8f4e/state-manager` (src/devices.test.ts); `@8f4e/editor-state` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts); `@8f4e/compiler` (src/index.test.ts) |
 | `@8f4e/editor-plugin-piano` | `@8f4e/sprite-generator` (screenshot-tests/piano.test.ts); `@8f4e/compiler` (screenshot-tests/piano.test.ts); `@8f4e/editor-state-testing` (src/helpers/saveDefaults.test.ts) |
 | `@8f4e/editor-plugin-plot` | `@8f4e/sprite-generator` (screenshot-tests/plot.test.ts); `@8f4e/language-spec` (src/__tests__/memory.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
-| `@8f4e/editor-plugin-project-open` | `@8f4e/editor-plugin-project-save` (screenshot-tests/project-open.test.ts); `@8f4e/editor-state-testing` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
-| `@8f4e/editor-plugin-project-save` | `@8f4e/compiler` (src/serializeTo8f4e.test.ts) |
+| `@8f4e/editor-plugin-project-open` | `@8f4e/web-ui` (src/index.test.ts) |
+| `@8f4e/editor-plugin-project-save` | `@8f4e/compiler` (src/serializeTo8f4e.test.ts); `@8f4e/editor-state-testing` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
 | `@8f4e/editor-plugin-project-url-loader` | `@8f4e/web-ui` (src/__tests__/setup.ts) |
 | `@8f4e/editor-plugin-remove-memory-connections` | `@8f4e/compiler` (screenshot-tests/remove-memory-connections.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
 | `@8f4e/editor-plugin-screenshot` | `@8f4e/compiler` (screenshot-tests/screenshot.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
@@ -105,7 +105,7 @@ The chosen follow-up for these implementation dependencies is to isolate test ha
 | `@8f4e/editor-plugin-stack` | `@8f4e/sprite-generator` (screenshot-tests/stack.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
 | `@8f4e/editor-plugin-switch` | `@8f4e/sprite-generator` (screenshot-tests/switch.test.ts); `@8f4e/web-ui` (screenshot-tests/switch.test.ts); `@8f4e/compiler` (screenshot-tests/switch.test.ts) |
 | `@8f4e/editor-plugin-test-runtime` | `@8f4e/editor-state-testing` (src/runtime.test.ts); `@8f4e/state-manager` (src/runtime.test.ts); `@8f4e/compiler` (src/runtime.test.ts) |
-| `@8f4e/editor-plugin-texture-runtime` | `@8f4e/editor-plugin-lazy-loader` (screenshot-tests/editor.test.ts); `@8f4e/editor-plugin-compiler` (screenshot-tests/editor.test.ts); `@8f4e/compiler` (screenshot-tests/editor.test.ts); `@8f4e/sprite-generator` (screenshot-tests/formats.test.ts); `glugglugglug` (screenshot-tests/formats.test.ts); `@8f4e/editor-palette` (src/index.test.ts) |
+| `@8f4e/editor-plugin-texture-runtime` | `@8f4e/compiler` (src/index.test.ts); `@8f4e/sprite-generator` (screenshot-tests/formats.test.ts); `glugglugglug` (screenshot-tests/formats.test.ts); `@8f4e/editor-palette` (src/index.test.ts) |
 | `@8f4e/editor-plugin-toggle-skip-execution` | `@8f4e/editor-state-testing` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
 | `@8f4e/editor-plugin-tooltips` | `@8f4e/sprite-generator` (screenshot-tests/tooltips.test.ts); `@8f4e/compiler` (screenshot-tests/tooltips.test.ts); `@8f4e/editor-state-testing` (src/drawer/draw.test.ts); `@8f4e/state-manager` (src/state/effect.test.ts) |
 | `@8f4e/editor-plugin-wasm-export` | `@8f4e/web-ui` (src/index.test.ts) |

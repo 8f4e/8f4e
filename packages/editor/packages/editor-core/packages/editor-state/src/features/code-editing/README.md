@@ -34,7 +34,7 @@ Handles low-level text editing operations within code blocks: caret movement, ch
 
 - **Code Blocks**: Works on the currently selected code block
 - **Edit History**: Code changes trigger debounced history snapshots
-- **Syntax Highlighting**: The web UI render projection uses note highlighting for notes and 8f4e highlighting for other blocks
+- **Syntax Highlighting**: The code-rendering plugin owns note and 8f4e highlighting, refreshing prepared text after completed layouts
 
 ## Notes & Limitations
 

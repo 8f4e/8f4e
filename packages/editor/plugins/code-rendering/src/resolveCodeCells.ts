@@ -12,7 +12,7 @@ export default function resolveCodeCells(
 	return characters.map((line, row) => {
 		let color = disabledColor ?? defaultColor;
 		return line.map((character, column): SpriteCell | null => {
-			const nextColor = colorTransitions[row]?.[column];
+			const nextColor = colorTransitions[row][column];
 			if (disabledColor === undefined && nextColor !== undefined) color = nextColor;
 			if (character === 32) return null;
 			return createSpriteCell(getGlyphSpriteId(character), color);

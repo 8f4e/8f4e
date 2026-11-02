@@ -9,12 +9,9 @@ export default function highlightEditorDirective<T>(
 	comment: T
 ): void {
 	for (const directiveMatch of line.matchAll(/(?:;|\s)@(?=\w+)/g)) {
-		if (directiveMatch.index === undefined) continue;
-
-		const directiveStart = line.indexOf('@', directiveMatch.index);
-		if (directiveStart === -1) continue;
+		const directiveStart = directiveMatch.index + 1;
 
 		colors[directiveStart] = code;
-		if (directiveStart + 1 < colors.length) colors[directiveStart + 1] = comment;
+		colors[directiveStart + 1] = comment;
 	}
 }

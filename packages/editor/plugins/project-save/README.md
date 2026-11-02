@@ -24,5 +24,6 @@ or disposal, but cannot associate an old destination with a replacement project.
 Source formatting, browser save/download helpers, and write coordination are private to this plugin. The shared
 file session contains only the handle and reset lifecycle. Open handles file reading and parsing independently.
 
-Validate with `npx nx run @8f4e/editor-plugin-project-save:build|test|typecheck`. Source formatter tests live here;
-project-open's composed unit/browser tests and the minimal-editor gallery suite cover saving and export behavior.
+Validate with `npx nx run @8f4e/editor-plugin-project-save:build|test|typecheck`. Tests here cover source formatting,
+saving/export, permissions, queued writes, and shortcuts without Open. The default editor owns composed file tests;
+its `test:screenshot` target and the minimal-editor gallery suite cover the browser workflows.

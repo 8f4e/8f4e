@@ -10,8 +10,7 @@ const instructionRegExp = new RegExp(
 			.replaceAll(/\*/g, '\\*')
 			.replaceAll(/\]/g, '\\]')
 			.replaceAll(/\[/g, '\\[') +
-		')(?=\\s|$)',
-	'd'
+		')(?=\\s|$)'
 );
 
 export default function highlightSyntax8f4e<T>(code: string[], fonts: SyntaxFonts<T>): SyntaxHighlighting<T> {
@@ -28,15 +27,14 @@ export default function highlightSyntax8f4e<T>(code: string[], fonts: SyntaxFont
 					? semicolonIndex
 					: Math.min(semicolonIndex, hashCommentIndex);
 		const instructionMatch = instructionRegExp.exec(line);
-		const instructionIndices = (instructionMatch as unknown as { indices?: number[][] })?.indices?.[0];
 		const colors = new Array<T | undefined>(line.length).fill(undefined);
 		const isBeforeComment = (index: number) => commentIndex === undefined || index < commentIndex;
 		const defaultColorAt = (index: number) =>
 			line[index] === '\t' || commentIndex === index ? fonts.fontCodeComment : fonts.fontCode;
 
-		if (instructionMatch && instructionIndices?.length === 2 && isBeforeComment(instructionMatch.index)) {
-			colors[instructionIndices[0]] = fonts.fontInstruction;
-			colors[instructionIndices[1]] = fonts.fontCode;
+		if (instructionMatch && isBeforeComment(instructionMatch.index)) {
+			colors[instructionMatch.index] = fonts.fontInstruction;
+			colors[instructionMatch.index + instructionMatch[0].length] = fonts.fontCode;
 		}
 		if (commentIndex !== undefined) colors[commentIndex] = fonts.fontCodeComment;
 
@@ -48,7 +46,7 @@ export default function highlightSyntax8f4e<T>(code: string[], fonts: SyntaxFont
 		}
 
 		for (const match of line.matchAll(/(?<![#\w])-?(?:\d+|0b[01]+|0x[\da-f]+)\b/gi)) {
-			if (match.index !== undefined && isBeforeComment(match.index)) {
+			if (isBeforeComment(match.index)) {
 				colors[match.index] = fonts.fontNumbers;
 				const end = match.index + match[0].length;
 				if (end < line.length) colors[end] = defaultColorAt(end);
@@ -56,7 +54,7 @@ export default function highlightSyntax8f4e<T>(code: string[], fonts: SyntaxFont
 		}
 
 		for (const match of line.matchAll(/0b([01]+)/g)) {
-			if (match.index === undefined || !isBeforeComment(match.index)) continue;
+			if (!isBeforeComment(match.index)) continue;
 			colors[match.index] = fonts.fontBasePrefix;
 			for (let index = 0; index < match[1].length; index += 1) {
 				colors[match.index + index + 2] = match[1][index] === '0' ? fonts.fontBinaryZero : fonts.fontBinaryOne;
@@ -64,7 +62,7 @@ export default function highlightSyntax8f4e<T>(code: string[], fonts: SyntaxFont
 		}
 
 		for (const match of line.matchAll(/0x([\da-f]+)/gi)) {
-			if (match.index === undefined || !isBeforeComment(match.index)) continue;
+			if (!isBeforeComment(match.index)) continue;
 			colors[match.index] = fonts.fontBasePrefix;
 			colors[match.index + 2] = fonts.fontNumbers;
 		}

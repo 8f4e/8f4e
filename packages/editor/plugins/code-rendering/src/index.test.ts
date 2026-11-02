@@ -64,6 +64,19 @@ it('draws existing blocks when installed after loading and reuses prepared cells
 	expect(test.render()[0]).toBe(first[0]);
 });
 
+it('colors named note headers after loading a project', () => {
+	const test = setup();
+	test.events.dispatch('loadProject', {
+		project: { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code: ['note named', 'Plain text', 'noteEnd'] }] },
+	});
+	const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'note')!;
+	const rows = test.render(block);
+	const prefix = block.lineNumberColumnWidth + 1;
+	expect(rows[0][prefix]! >>> 16).toBe(PALETTE_INDICES.primaryBase);
+	expect(rows[0][prefix + 5]! >>> 16).toBe(PALETTE_INDICES.inkBase);
+	expect(rows[1][prefix]! >>> 16).toBe(PALETTE_INDICES.tertiaryBase);
+});
+
 it('refreshes text and reserved rows after source edits and late layout contributions', () => {
 	const test = setup();
 	const contribution = test.store.layout.createContribution();

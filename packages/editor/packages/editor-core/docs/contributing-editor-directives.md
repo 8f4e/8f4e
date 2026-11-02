@@ -87,7 +87,7 @@ Directive subscriptions are deferred; plugins can consume cached records from th
 3. Layout subscribers receive the calculated block and current state. A plugin can read directives or other inputs,
    update its requests, and derive private widget geometry.
 4. Changed requests trigger recalculation; unchanged requests do nothing. Core completes these calculations
-   synchronously before publishing the render projection.
+   synchronously before emitting `codeBlockLayoutsChanged`, which the code-rendering plugin uses to refresh prepared text.
 
 No directive definition owns layout callbacks or space requests. A plugin without any directive can use the same
 layout service, for example to reserve space after asynchronously loaded data arrives.

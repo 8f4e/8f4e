@@ -73,7 +73,7 @@
   `npx nx run @8f4e/editor-plugin-project-open:build|test|typecheck`, or
   `npx nx run @8f4e/editor-plugin-wasm-export:build|test|typecheck`.
   Build/typecheck `@8f4e/editor-file-session` and build/test/typecheck `@8f4e/editor-plugin-project-save` through Nx.
-  Composed file behavior is covered by project-open tests and the minimal-editor gallery browser tests.
+  Composed file behavior is covered by editor-default tests and the minimal-editor gallery browser tests.
 - Verify example module browsing with `npx nx run @8f4e/editor-plugin-example-modules:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-example-modules:test:screenshot`.
 - Verify startup plugins with
@@ -93,8 +93,7 @@
   `npx nx run @8f4e/editor-plugin-connectors:test:screenshot`.
 - Verify visual grouping with `npx nx run @8f4e/editor-plugin-grouping:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-grouping:test:screenshot`.
-- Verify lazy plugin loading with `npx nx run @8f4e/editor-plugin-lazy-loader:build|test|typecheck` and
-  `npx nx run @8f4e/editor-plugin-lazy-loader:test:screenshot`.
+- Verify lazy plugin loading with `npx nx run @8f4e/editor-plugin-lazy-loader:build|test|typecheck`. Browser composition coverage runs through `npx nx run @8f4e/editor-default:test:screenshot`.
 - Build or preview it with `npx nx run @8f4e/editor-website:build|serve`.
 - Ensure dependency packages are built before relying on workspace aliases in the website.
 

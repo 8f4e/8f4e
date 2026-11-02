@@ -44,7 +44,7 @@ export function getTabAdvance(currentVisualColumn: number, tabStops: number[]): 
 		return 1;
 	}
 
-	return Math.max(nextStop - currentVisualColumn, 1);
+	return nextStop - currentVisualColumn;
 }
 
 export function getVisualColumnForRawIndex(line: string, rawIndex: number, tabStops: number[]): number {

@@ -50,7 +50,9 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 	canvas.height = 480;
 	document.body.append(canvas);
 	const compiler = createCompilerPlugin();
-	const load = vi.fn(() => import('../src/index').then(module => module.createTextureRuntimePlugin(compiler)));
+	const load = vi.fn(() =>
+		import('@8f4e/editor-plugin-texture-runtime').then(module => module.createTextureRuntimePlugin(compiler))
+	);
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
@@ -160,7 +162,7 @@ test('shares one upload per frame across direct and cross-module pointer views',
 	canvas.height = 480;
 	document.body.append(canvas);
 	const compiler = createCompilerPlugin();
-	const { createTextureRuntimePlugin } = await import('../src/index');
+	const { createTextureRuntimePlugin } = await import('@8f4e/editor-plugin-texture-runtime');
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {

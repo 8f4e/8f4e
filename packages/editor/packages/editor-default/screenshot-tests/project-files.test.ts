@@ -1,9 +1,9 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
+import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
 import { expect, test, vi } from 'vitest';
-import { createProjectOpenPlugin } from '../src/index';
 
 test('opens a file, saves from the canvas shortcut, and exports from the contributed menu', async () => {
 	const canvas = document.createElement('canvas');

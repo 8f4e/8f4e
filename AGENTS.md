@@ -64,6 +64,8 @@
 - `npx nx run @8f4e/editor-website:build`: Builds the default composition and website production bundle.
 - `npx nx run @8f4e/8f4e-website:dev`: Starts the example product website on `http://localhost:3001`.
 - `npx nx run @8f4e/8f4e-website:build`: Builds the example product website and its editor dependencies.
+- `npx nx run @8f4e/editor-default:test:screenshot`: Runs real-plugin browser composition tests for lazy loading,
+  project Open/Save, and compiler/texture rendering.
 - `npx nx run @8f4e/editor-minimal:build|test|typecheck`: Build or verify the embedded editor composition.
 - `npx nx run @8f4e/8f4e-website:test:browser`: Runs homepage and gallery lifecycle integration tests with the minimal editor.
 - `npx nx run @8f4e/editor-webmcp:test:browser`: Runs real-editor WebMCP source, editing, revision, persistence, and history integration tests.

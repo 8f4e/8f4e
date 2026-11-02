@@ -1,8 +1,8 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
+import { createLazyPluginLoaderPlugin, hasDirective } from '@8f4e/editor-plugin-lazy-loader';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { expect, test, vi } from 'vitest';
-import { createLazyPluginLoaderPlugin, hasDirective } from '../src/index';
 
 const source = `8f4e/v1
 constants env

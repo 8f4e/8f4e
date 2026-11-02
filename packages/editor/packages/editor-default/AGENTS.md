@@ -85,3 +85,7 @@
   upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
   Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
+
+- Run `npx nx run @8f4e/editor-default:test:screenshot` for real-plugin browser composition coverage: lazy plot
+  activation/navigation, project Open/Save, and compiler/texture-runtime rendering. Keep individual feature behavior
+  in its owning plugin; this package owns combinations of real plugins.

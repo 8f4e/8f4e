@@ -160,3 +160,6 @@ packages and owns browser API use and resource cleanup. Their fixed info namespa
 Audio's buffer-size constant name is configured with `audioRuntime.bufferSizeConstantName` (default
 `AUDIO_BUFFER_SIZE`). The sample-rate default is `SAMPLE_RATE` for each runtime; use different names when enabling
 both. There is no runtime registry option or exclusive runtime selection in core.
+
+Run `npx nx run @8f4e/editor-default:test:screenshot` for browser composition coverage of lazy plot loading,
+project Open/Save, and compiler/texture-runtime rendering. Individual feature behavior stays in plugin tests.

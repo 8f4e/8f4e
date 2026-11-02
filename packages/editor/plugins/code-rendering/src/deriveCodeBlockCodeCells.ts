@@ -13,7 +13,7 @@ export default function deriveCodeBlockCodeCells(block: CodeBlockGraphicData): A
 		const prefix = getLineNumberPrefix(displayRow, block.lineNumberColumnWidth, text, isPlaceholder ?? false);
 		return [...prefix]
 			.map(character => character.charCodeAt(0))
-			.concat(expandLineToCells(text, tabStopsByLine[sourceLineIndex] ?? []));
+			.concat(expandLineToCells(text, tabStopsByLine[sourceLineIndex]));
 	});
 	const rawColors = highlightSyntax(block.code, block.blockType, {
 		fontInstruction: PALETTE_INDICES.primaryBase,
@@ -28,16 +28,16 @@ export default function deriveCodeBlockCodeCells(block: CodeBlockGraphicData): A
 	const colors: Array<Array<PaletteIndex | undefined>> = characters.map((line, displayRow) => {
 		const lineColors = new Array<PaletteIndex | undefined>(line.length).fill(undefined);
 		const displayLine = block.displayModel.lines[displayRow];
-		const sourceLineIndex = block.displayModel.displayRowToSourceLineIndex[displayRow] ?? 0;
+		const sourceLineIndex = displayLine.sourceLineIndex;
 		lineColors[0] = PALETTE_INDICES.mutedBase;
-		lineColors[block.lineNumberColumnWidth] = displayLine?.isPlaceholder
+		lineColors[block.lineNumberColumnWidth] = displayLine.isPlaceholder
 			? PALETTE_INDICES.mutedBase
 			: PALETTE_INDICES.inkBase;
-		if (!displayLine?.isPlaceholder) {
+		if (!displayLine.isPlaceholder) {
 			expandLineColorsToCells(
-				block.code[sourceLineIndex] ?? '',
-				rawColors[sourceLineIndex] ?? [],
-				tabStopsByLine[sourceLineIndex] ?? []
+				block.code[sourceLineIndex],
+				rawColors[sourceLineIndex],
+				tabStopsByLine[sourceLineIndex]
 			).forEach((color, index) => {
 				if (color !== undefined) lineColors[index + prefixLength] = color;
 			});

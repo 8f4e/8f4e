@@ -21,4 +21,11 @@ describe('highlightSyntaxNote', () => {
 		expect(result[1][0]).toBe('comment');
 		expect(result[2][2]).toBe('instruction');
 	});
+	it.each(['note named', '  note named', '\tnote named'])('colors the keyword and label separately in %s', opener => {
+		const start = opener.indexOf('note');
+		const result = highlightSyntaxNote([opener, 'note inside the body', 'noteEnd'], syntaxFonts);
+		expect(result[0][start]).toBe('instruction');
+		expect(result[0][start + 4]).toBe('code');
+		expect(result[1][0]).toBe('comment');
+	});
 });
