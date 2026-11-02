@@ -860,7 +860,7 @@ module noteEvents
 ; @pos 55 0
 ; Keyboard note-on and note-off pulses.
 int* gate
-int* note &janko:out
+int& note &janko:out
 ; Fixed keyboard velocity: MIDI 1..127.
 int velocity 98
 int previousGate
@@ -896,8 +896,8 @@ moduleEnd
 module midiNote2Freq
 ; @pos 105 0
 
-int* in &janko:out
-float* notes &midiLUT:
+int& in &janko:out
+float& notes &midiLUT:0
 float out
 
 ; @watch out
@@ -1471,7 +1471,7 @@ module dx7OutputLevel
 use dx7EnvelopeFields
 int** settings &dx7Settings:in
 int* velocityCurve
-int* keyScaling &dx7KeyboardLevelScaling:out
+int& keyScaling &dx7KeyboardLevelScaling:out
 float base
 float out
 local int level
@@ -1511,8 +1511,8 @@ module envelope4Stage
 ; Reach 0, 1, 2, then hold stage 2.
 int* trigger
 int* release
-float* value &envelopeRamp:out
-float* target &dx7Target:out
+float& value &envelopeRamp:out
+float& target &dx7Target:out
 int out 3
 
 push *trigger
@@ -1547,9 +1547,9 @@ module dx7Rate
 ; @pos 310 0
 ; Current raw rate to log step/sample.
 use env
-int* stage &envelope4Stage:out
+int& stage &envelope4Stage:out
 int** settings &dx7Settings:in
-int* scaling &dx7PitchRateScaling:out
+int& scaling &dx7PitchRateScaling:out
 float out
 local int qrate
 
@@ -1580,10 +1580,10 @@ moduleEnd
 module dx7Target
 ; @pos 370 0
 ; Current raw level to log target.
-int* stage &envelope4Stage:out
+int& stage &envelope4Stage:out
 use dx7EnvelopeFields
 int** settings &dx7Settings:in
-float* offset &dx7OutputLevel:out
+float& offset &dx7OutputLevel:out
 float out
 
 push &out
@@ -1603,9 +1603,9 @@ module dx7Curve
 ; @pos 430 0
 ; DX7 rising curve and attack jump.
 ; Falling segments use the base step.
-float* in &envelopeRamp:out
-float* target &dx7Target:out
-float* rate &dx7Rate:out
+float& in &envelopeRamp:out
+float& target &dx7Target:out
+float& rate &dx7Rate:out
 float current
 float step
 
@@ -1635,9 +1635,9 @@ moduleEnd
 module envelopeRamp
 ; @pos 490 0
 ; Generic ramp toward a target.
-float* in &dx7Curve:current
-float* target &dx7Target:out
-float* step &dx7Curve:step
+float& in &dx7Curve:current
+float& target &dx7Target:out
+float& step &dx7Curve:step
 float out
 
 push &out
@@ -1669,9 +1669,9 @@ moduleEnd
 module dx7Gain
 ; @pos 610 0
 ; Normalized log-to-linear amplitude.
-float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:base
-float* attenuation &dx7AmplitudeModulation:out
+float& in &envelopeRamp:out
+float& offset &dx7OutputLevel:base
+float& attenuation &dx7AmplitudeModulation:out
 float out
 
 push &out
@@ -1799,7 +1799,7 @@ moduleEnd
 module velocityCapture
 ; @pos 254 66
 int* velocity ; MIDI 0..127
-int* trigger &voiceInput:latchedTrigger
+int& trigger &voiceInput:latchedTrigger
 int latchedVelocity 98
 int velocityCurve -1
 
@@ -2124,8 +2124,8 @@ module keyboardKey
 ; Capture the unmodulated, transposed key.
 ; Vibrato does not move the level scaling.
 use preset
-float* frequency &inputs:frequencyHz
-int* trigger &inputs:noteOn
+float& frequency &inputs:frequencyHz
+int& trigger &inputs:noteOn
 int out
 int initialized
 ; @hide
@@ -2152,7 +2152,7 @@ module lfo
 ; Wave: triangle, saw down/up, square, sine, S&H.
 use env
 use preset
-int* trigger &inputs:noteOn
+int& trigger &inputs:noteOn
 int speed LFO_SPEED
 int delay LFO_DELAY
 int sync LFO_SYNC
@@ -2345,8 +2345,8 @@ module pitchEnvelope
 ; Retrigger starts R1 from the current pitch.
 use env
 use preset
-int* trigger &inputs:noteOn
-int* release &inputs:noteOff
+int& trigger &inputs:noteOn
+int& release &inputs:noteOff
 int[] rates 4
 - PITCH_RATE1 PITCH_RATE2 PITCH_RATE3 PITCH_RATE4
 int[] levels 4
@@ -2420,9 +2420,9 @@ module pitchModulation
 ; @pos 220 0
 ; Pitch EG + delayed, bipolar LFO in octaves.
 use preset
-float* envelope &pitchEnvelope:out
-float* lfo &lfo:out
-float* delay &lfo:delayGain
+float& envelope &pitchEnvelope:out
+float& lfo &lfo:out
+float& delay &lfo:delayGain
 int depth LFO_PITCH_DEPTH
 int sensitivity PITCH_MOD_SENSITIVITY
 float out 1.0
@@ -2461,8 +2461,8 @@ module amplitudeModulation
 ; Approximate measured AMD curve from Hexter:
 ; exp(AMD * .0428993 - .285189) / 8.
 use preset
-float* lfo &lfo:out
-float* delay &lfo:delayGain
+float& lfo &lfo:out
+float& delay &lfo:delayGain
 int depth LFO_AMPLITUDE_DEPTH
 float out
 ; @hide
@@ -2572,14 +2572,14 @@ module modulator2
 ; @group operator2
 use env
 use preset
-float* frequency &voiceInput:latchedFrequency
-float* pitchRatio &modulation:pitchRatio
-int* reset &voiceInput:reset
+float& frequency &voiceInput:latchedFrequency
+float& pitchRatio &modulation:pitchRatio
+int& reset &voiceInput:reset
 float phase 0.0
 float out
 float ratio OP2_RATIO
 float fixedHz OP2_FIXED_HZ
-float* amplitude &envelope2:out
+float& amplitude &envelope2:out
 float level OP2_GAIN
 
 ; @hide
@@ -2613,14 +2613,14 @@ module modulator4
 ; @group operator4
 use env
 use preset
-float* frequency &voiceInput:latchedFrequency
-float* pitchRatio &modulation:pitchRatio
-int* reset &voiceInput:reset
+float& frequency &voiceInput:latchedFrequency
+float& pitchRatio &modulation:pitchRatio
+int& reset &voiceInput:reset
 float phase 0.0
 float out
 float ratio OP4_RATIO
 float fixedHz OP4_FIXED_HZ
-float* amplitude &envelope4:out
+float& amplitude &envelope4:out
 float level OP4_GAIN
 
 ; @hide
@@ -2654,16 +2654,16 @@ module modulator6
 ; @group operator6
 use env
 use preset
-float* frequency &voiceInput:latchedFrequency
-float* pitchRatio &modulation:pitchRatio
-int* reset &voiceInput:reset
+float& frequency &voiceInput:latchedFrequency
+float& pitchRatio &modulation:pitchRatio
+int& reset &voiceInput:reset
 float phase 0.0
 float out
 float previousOut
 int feedback FEEDBACK ; 0..7
 float ratio OP6_RATIO
 float fixedHz OP6_FIXED_HZ
-float* amplitude &envelope6:out
+float& amplitude &envelope6:out
 float level OP6_GAIN
 local int amount
 local float angle
@@ -2827,16 +2827,16 @@ module carrier1
 ; @group operator1
 use env
 use preset
-float* frequency &voiceInput:latchedFrequency
-float* pitchRatio &modulation:pitchRatio
-int* reset &voiceInput:reset
-float* phaseMod &modulator2:out
+float& frequency &voiceInput:latchedFrequency
+float& pitchRatio &modulation:pitchRatio
+int& reset &voiceInput:reset
+float& phaseMod &modulator2:out
 float phase 0.0
 float ratio OP1_RATIO
 float fixedHz OP1_FIXED_HZ
 float level OP1_GAIN
 float out
-float* amplitudeMod &envelope1:out
+float& amplitudeMod &envelope1:out
 
 ; @hide
 ; Reset before advancing this sample.
@@ -2870,16 +2870,16 @@ module carrier3
 ; @group operator3
 use env
 use preset
-float* frequency &voiceInput:latchedFrequency
-float* pitchRatio &modulation:pitchRatio
-int* reset &voiceInput:reset
-float* phaseMod &modulator4:out
+float& frequency &voiceInput:latchedFrequency
+float& pitchRatio &modulation:pitchRatio
+int& reset &voiceInput:reset
+float& phaseMod &modulator4:out
 float phase 0.0
 float ratio OP3_RATIO
 float fixedHz OP3_FIXED_HZ
 float level OP3_GAIN
 float out
-float* amplitudeMod &envelope3:out
+float& amplitudeMod &envelope3:out
 
 ; @hide
 ; Reset before advancing this sample.
@@ -2913,15 +2913,15 @@ module carrier5
 ; @group operator5
 use env
 use preset
-float* frequency &voiceInput:latchedFrequency
-float* pitchRatio &modulation:pitchRatio
-int* reset &voiceInput:reset
-float* phaseMod &modulator6:out
+float& frequency &voiceInput:latchedFrequency
+float& pitchRatio &modulation:pitchRatio
+int& reset &voiceInput:reset
+float& phaseMod &modulator6:out
 float phase 0.0
 float ratio OP5_RATIO
 float fixedHz OP5_FIXED_HZ
 float out
-float* amplitude &envelope5:out
+float& amplitude &envelope5:out
 float level OP5_GAIN
 
 ; @hide
@@ -2956,9 +2956,9 @@ module mixer
 
 use preset
 
-float* in1 &carrier1:out
-float* in2 &carrier3:out
-float* in3 &carrier5:out
+float& in1 &carrier1:out
+float& in2 &carrier3:out
+float& in3 &carrier5:out
 float out
 
 push &out
@@ -2977,7 +2977,7 @@ store
 moduleEnd
 module limiter
 ; @pos 601 36
-float* in &mixer:out
+float& in &mixer:out
 float out
 
 push &out
@@ -2992,7 +2992,7 @@ module audioout
 ; @pos 292 22
 use env
 
-float* in &voice:out
+float& in &voice:out
 
 ; Audio buffer
 float[] buffer AUDIO_BUFFER_SIZE
