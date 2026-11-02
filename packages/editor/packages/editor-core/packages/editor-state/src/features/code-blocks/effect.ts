@@ -1,4 +1,10 @@
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	EditorDirectiveDefinition,
+	EventDispatcher,
+	ProjectLevel,
+	State,
+} from '@8f4e/editor-state-types';
 import {
 	createChildProjectGroupPath,
 	type ProjectBlock,
@@ -7,60 +13,64 @@ import {
 	ROOT_PROJECT_GROUP_PATH,
 } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
+import { findProjectLevel, walkProjectLevels } from '../../pureHelpers/projectTree';
 import gapCalculator from '../code-editing/gapCalculator';
 import { moveCaret } from '../code-editing/moveCaret';
 import reverseGapCalculator from '../code-editing/reverseGapCalculator';
 import { getRawIndexForVisualColumn, getTabStopsByLine, getVisualColumnForRawIndex } from '../code-editing/tabLayout';
+import resolveEditorConfig from '../global-editor-directives/resolve';
 import incrementCompilerInputRevision from '../program-compiler/incrementCompilerInputRevision';
-import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';
+import { isRestoringProjectEdit } from '../project-changes';
+import { stopViewportAnimation } from '../viewport/animateViewport';
+import getProjectViewportPosition from '../viewport/getProjectViewportPosition';
 import updateViewport from '../viewport/updateViewport';
 import deriveErrorMessages from './deriveErrorMessages';
-import deriveAssertionMarkers from './features/assertions/deriveAssertionMarkers';
 import blockHighlights from './features/blockHighlights/updateGraphicData';
-import type { CodeBlockClickEvent } from './features/codeBlockDragger/effect';
+import type { CodeBlockPointerDownEvent } from './features/codeBlockDragger/effect';
 import parsePos from './features/directives/pos/data';
-import {
-	deriveDirectiveState,
-	runAfterGraphicDataWidthCalculation,
-	runBeforeGraphicDataWidthCalculation,
-} from './features/directives/registry';
-import inputs from './features/inputs/updateGraphicData';
-import outputs from './features/outputs/updateGraphicData';
+import { deriveDirectiveState } from './features/directives/registry';
 import gaps from './gaps';
 import getCodeBlockGridWidth from './getCodeBlockGridWidth';
+import type { LayoutRegistry } from './layout/registry';
+import type { BlockLayoutDraft } from './layout/types';
 import paramShape, { updateParamShapeDeclarations } from './paramShape/updateGraphicData';
+import { partitionCodeBlocksByAlwaysOnTop } from './partitionCodeBlocksByAlwaysOnTop';
+import replaceCodeBlocksInPlace from './replaceCodeBlocksInPlace';
 import shape, { updateShapeDeclarations } from './shape/updateGraphicData';
+import { refreshBlockSources } from './sourceUpdates';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
 import { parseBlockDirectives } from './utils/parseBlockDirectives';
 
-export default function codeBlockRendering(store: StateManager<State>, events: EventDispatcher) {
+export default function codeBlockRendering(
+	store: StateManager<State>,
+	events: EventDispatcher,
+	directives: EditorDirectiveDefinition[],
+	layout: LayoutRegistry
+) {
 	const state = store.getState();
-	const updateProjectSliceIdentity = (codeBlocks: CodeBlockGraphicData[], projectPath: ProjectGroupPath): void => {
-		for (const codeBlock of codeBlocks) {
-			codeBlock.projectPath = projectPath;
-			if (codeBlock.nestedProjectCodeBlocks !== undefined) {
-				updateProjectSliceIdentity(
-					codeBlock.nestedProjectCodeBlocks,
-					createChildProjectGroupPath(projectPath, codeBlock.name)
-				);
-			}
-		}
-	};
 	const shouldExpandCodeBlockForEditing = (codeBlock: CodeBlockGraphicData): boolean =>
 		codeBlock === state.codeBlockRendering.selectedCodeBlock;
 
-	const onCodeBlockClick = ({ relativeX = 0, relativeY = 0, codeBlock }: CodeBlockClickEvent) => {
+	const onCodeBlockPointerDown = ({ relativeX = 0, relativeY = 0, codeBlock }: CodeBlockPointerDownEvent) => {
 		if (!state.featureFlags.codeLineSelection) {
 			return;
 		}
 
-		const directiveState = deriveDirectiveState(codeBlock.code, codeBlock.parsedDirectives, {
-			isExpandedForEditing: !codeBlock.isCollapsed,
-		});
+		const directiveState = deriveDirectiveState(
+			codeBlock.code,
+			codeBlock.parsedDirectives,
+			{
+				isExpandedForEditing: !codeBlock.isCollapsed,
+			},
+			directives
+		);
 		const displayModel = directiveState.displayModel;
 		const displayRow = reverseGapCalculator(Math.floor(relativeY / state.viewport.hGrid), codeBlock.gaps);
-		const row = displayModel.displayRowToRawRow[Math.min(displayRow, displayModel.displayRowToRawRow.length - 1)] ?? 0;
+		const row =
+			displayModel.displayRowToSourceLineIndex[
+				Math.min(displayRow, displayModel.displayRowToSourceLineIndex.length - 1)
+			] ?? 0;
 		const visualCol = Math.max(Math.floor(relativeX / state.viewport.vGrid) - (codeBlock.lineNumberColumnWidth + 2), 0);
 		const tabStopsByLine = getTabStopsByLine(codeBlock.code);
 		const col = getRawIndexForVisualColumn(
@@ -80,51 +90,47 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 		});
 	};
 
-	const updateBlockDerivedState = (graphicData: CodeBlockGraphicData) => {
-		const directiveState = deriveDirectiveState(graphicData.code, graphicData.parsedDirectives, {
-			isExpandedForEditing: shouldExpandCodeBlockForEditing(graphicData),
-			state,
-		});
+	const calculateBlockLayout = (graphicData: CodeBlockGraphicData) => {
+		const directiveState = deriveDirectiveState(
+			graphicData.code,
+			graphicData.parsedDirectives,
+			{
+				isExpandedForEditing: shouldExpandCodeBlockForEditing(graphicData),
+			},
+			directives
+		);
 		const displayModel = directiveState.displayModel;
 		graphicData.displayModel = displayModel;
 
 		graphicData.disabled = directiveState.blockState.disabled;
 		graphicData.isHome = directiveState.blockState.isHome;
 		graphicData.homeAlignment = directiveState.blockState.homeAlignment;
-		graphicData.isFavorite = directiveState.blockState.isFavorite;
 		const tabStopsByLine = getTabStopsByLine(graphicData.code);
 
 		graphicData.lineNumberColumnWidth = graphicData.code.length.toString().length;
 
-		const previousName = graphicData.name;
-		graphicData.name = getCodeBlockNameFromSource(graphicData.code);
-		if (graphicData.nestedProjectCodeBlocks !== undefined && graphicData.name !== previousName) {
-			updateProjectSliceIdentity(
-				graphicData.nestedProjectCodeBlocks,
-				createChildProjectGroupPath(graphicData.projectPath, graphicData.name)
-			);
-		}
 		graphicData.isCollapsed = displayModel.isCollapsed;
 
-		shape(graphicData, state, directiveState);
-		paramShape(graphicData, state, directiveState);
+		const contribution = layout.getContribution(graphicData);
+		const blockLayout: BlockLayoutDraft = {
+			displayModel,
+			verticalSpaceAfterSourceLine: [...contribution.verticalSpaceAfterSourceLine],
+		};
+		graphicData.minGridWidth = contribution.minGridWidth;
+		shape(graphicData, state, blockLayout);
+		paramShape(graphicData, state, blockLayout);
 		graphicData.widgets.errorMessages = deriveErrorMessages(graphicData, state);
-		gaps(graphicData, directiveState);
+		gaps(graphicData, blockLayout);
 		for (const error of graphicData.widgets.errorMessages) {
-			const displayRow = displayModel.rawRowToDisplayRow[error.lineNumber] ?? error.lineNumber;
+			const displayRow = displayModel.sourceLineIndexToDisplayRow[error.lineNumber] ?? error.lineNumber;
 			error.y = (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid;
 		}
-		updateShapeDeclarations(graphicData, state, directiveState);
-		updateParamShapeDeclarations(graphicData, state, directiveState);
-		runBeforeGraphicDataWidthCalculation(graphicData, state, directiveState);
+		updateShapeDeclarations(graphicData, state, blockLayout);
+		updateParamShapeDeclarations(graphicData, state, blockLayout);
 
 		graphicData.width = getCodeBlockGridWidth(graphicData.code, graphicData.minGridWidth) * state.viewport.vGrid;
 
-		runAfterGraphicDataWidthCalculation(graphicData, state, directiveState);
-		outputs(graphicData, state);
-		inputs(graphicData, state);
 		blockHighlights(graphicData, state);
-		graphicData.widgets.assertions = deriveAssertionMarkers(graphicData, state);
 
 		const gapRowCount = [...graphicData.gaps.values()].reduce((total, gap) => total + gap.size, 0);
 		graphicData.height = (displayModel.lines.length + gapRowCount) * state.viewport.hGrid;
@@ -136,91 +142,127 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			) +
 				(graphicData.lineNumberColumnWidth + 2)) *
 			state.viewport.vGrid;
-		const displayRow = displayModel.rawRowToDisplayRow[graphicData.cursor.row] ?? graphicData.cursor.row;
+		const displayRow = displayModel.sourceLineIndexToDisplayRow[graphicData.cursor.row] ?? graphicData.cursor.row;
 		graphicData.cursor.y = gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid;
-		graphicData.groupName = directiveState.blockState.groupName;
-		graphicData.groupNonstick = directiveState.blockState.groupNonstick;
+		const previousAlwaysOnTop = Boolean(graphicData.alwaysOnTop);
 		graphicData.viewportAnchor = directiveState.blockState.viewportAnchor;
 		graphicData.alwaysOnTop = directiveState.blockState.alwaysOnTop ?? false;
+		return graphicData.alwaysOnTop !== previousAlwaysOnTop;
+	};
+
+	const repartitionRenderedCodeBlocks = () => {
+		replaceCodeBlocksInPlace(
+			state.codeBlockRendering.currentProject.blocks,
+			partitionCodeBlocksByAlwaysOnTop(state.codeBlockRendering.currentProject.blocks)
+		);
+	};
+
+	const pendingLayouts = new Set<CodeBlockGraphicData>();
+	let calculatingLayouts = false;
+	const refreshBlockLayouts = (blocks: readonly CodeBlockGraphicData[]) => {
+		for (const block of blocks) pendingLayouts.add(block);
+		if (calculatingLayouts) return;
+		calculatingLayouts = true;
+		let alwaysOnTopChanged = false;
+		try {
+			while (pendingLayouts.size) {
+				const block = pendingLayouts.values().next().value!;
+				pendingLayouts.delete(block);
+				alwaysOnTopChanged = calculateBlockLayout(block) || alwaysOnTopChanged;
+				layout.publish({ codeBlock: block, state });
+			}
+		} finally {
+			calculatingLayouts = false;
+		}
+		if (alwaysOnTopChanged) repartitionRenderedCodeBlocks();
+		events.dispatch('codeBlockLayoutsChanged');
 	};
 
 	const updateAllBlockDerivedState = () => {
-		state.codeBlockRendering.outputsByWordAddress.clear();
-		for (const graphicData of state.codeBlockRendering.codeBlocks) {
-			updateBlockDerivedState(graphicData);
-		}
+		refreshBlockLayouts(state.codeBlockRendering.currentProject.blocks);
+	};
+
+	const updateAllBlockSources = () => {
+		refreshBlockSources(store, state.codeBlockRendering.currentProject.blocks, updateAllBlockDerivedState);
 	};
 
 	const recomputePixelCoordinatesAndBlockDerivedState = () => {
-		// When viewport grid dimensions change (e.g., font change), recompute pixel positions
-		// from the stable grid coordinates, then update graphics. Combined into single iteration.
-		for (const codeBlock of state.codeBlockRendering.codeBlocks) {
+		for (const codeBlock of state.codeBlockRendering.currentProject.blocks) {
 			if (!codeBlock.viewportAnchor) {
-				// World-space blocks: derive pixel position directly from grid coordinates.
 				codeBlock.x = codeBlock.gridX * state.viewport.vGrid;
 				codeBlock.y = codeBlock.gridY * state.viewport.hGrid;
 			}
-			// Viewport-anchored blocks: x/y depend on current block width/height (for right/bottom
-			// anchors). Block derivation computes width and height first, then applies the anchored
-			// position at the end of its execution. No pre-assignment needed here.
-			updateBlockDerivedState(codeBlock);
 		}
+		refreshBlockLayouts(state.codeBlockRendering.currentProject.blocks);
 	};
 
-	const centerViewportOnSelectedOrHomeCodeBlock = () => {
-		const targetCodeBlock =
-			state.codeBlockRendering.selectedCodeBlock ?? state.codeBlockRendering.codeBlocks.find(block => block.isHome);
-		if (!targetCodeBlock) {
-			return;
+	const updateEditedCodeBlock = (block: CodeBlockGraphicData | undefined) => {
+		if (!block) return;
+		refreshBlockLayouts([block]);
+		if (!block.viewportAnchor) {
+			block.x = block.gridX * state.viewport.vGrid;
+			block.y = block.gridY * state.viewport.hGrid;
 		}
-
-		const { x, y } = centerViewportOnCodeBlock(state.viewport, targetCodeBlock, {
-			alignment: targetCodeBlock.homeAlignment,
-		});
-		updateViewport(state, x, y, events);
 	};
 
 	const updateSelectedCodeBlock = () => {
-		if (!state.codeBlockRendering.selectedCodeBlock) {
-			return;
-		}
-		updateBlockDerivedState(state.codeBlockRendering.selectedCodeBlock);
+		updateEditedCodeBlock(state.codeBlockRendering.selectedCodeBlock);
+	};
+
+	const updateSelectedCodeBlockSource = () => {
+		const block = state.codeBlockRendering.selectedCodeBlock;
+		if (block) refreshBlockSources(store, [block], () => updateEditedCodeBlock(block));
 	};
 
 	const updateProgrammaticSelectedCodeBlock = () => {
 		const block = state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit;
-		if (!block) {
-			return;
-		}
-		updateBlockDerivedState(block);
+		if (block) refreshBlockSources(store, [block], () => updateEditedCodeBlock(block));
 	};
 
 	const updateHideSelectionTransition = (
 		previousBlock: CodeBlockGraphicData | undefined,
 		nextBlock: CodeBlockGraphicData | undefined
 	) => {
-		[previousBlock, nextBlock].forEach(codeBlock => {
-			if (!codeBlock) {
-				return;
-			}
-
-			updateBlockDerivedState(codeBlock);
-		});
+		refreshBlockLayouts(
+			[previousBlock, nextBlock].filter((block): block is CodeBlockGraphicData => block !== undefined)
+		);
 	};
 
 	let previousSelectedCodeBlock = state.codeBlockRendering.selectedCodeBlock;
 	const onSelectedCodeBlockChanged = () => {
+		if (previousSelectedCodeBlock === state.codeBlockRendering.selectedCodeBlock) return;
 		updateHideSelectionTransition(previousSelectedCodeBlock, state.codeBlockRendering.selectedCodeBlock);
 		previousSelectedCodeBlock = state.codeBlockRendering.selectedCodeBlock;
 	};
 
-	const populateCodeBlocks = async () => {
+	const populateCodeBlocks = () => {
 		if (!state.initialProjectState) {
 			return;
 		}
 
-		state.codeBlockRendering.outputsByWordAddress.clear();
 		state.codeBlockRendering.draggedCodeBlock = undefined;
+		const sameProject = isRestoringProjectEdit(state);
+		const previousCurrent = state.codeBlockRendering.currentProject;
+		const previousLevels = new Map<string, ProjectLevel>();
+		const previousBlocks = new Map<string, CodeBlockGraphicData>();
+		const previousGroups = new Map<string, CodeBlockGraphicData>();
+		const recreatedBlocks = new Map<CodeBlockGraphicData, CodeBlockGraphicData>();
+		if (sameProject) {
+			previousCurrent.viewport = { x: state.viewport.x, y: state.viewport.y };
+			previousCurrent.selectedBlock = state.codeBlockRendering.selectedCodeBlock;
+			for (const level of walkProjectLevels(state.codeBlockRendering.rootProject)) {
+				previousLevels.set(level.path, level);
+				for (const block of level.blocks) {
+					if (block.childProject) previousGroups.set(block.childProject.path, block);
+					else {
+						const key = block.isProjectScope
+							? 'project-scope'
+							: JSON.stringify([block.projectPath, block.creationIndex]);
+						previousBlocks.set(key, block);
+					}
+				}
+			}
+		}
 		const project = state.initialProjectState;
 		type ClassifiedProjectBlock = ProjectBlock & {
 			blockType: CodeBlockGraphicData['blockType'];
@@ -228,7 +270,6 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 		};
 		const collectProjectBlocks = (currentProject: ProjectObjectModel): ClassifiedProjectBlock[] => {
 			return [
-				...currentProject.modules.map(block => ({ ...block, blockType: 'module' as const })),
 				...currentProject.functions.map(block => ({ ...block, blockType: 'function' as const })),
 				...currentProject.constants.map(block => ({ ...block, blockType: 'constants' as const })),
 				...currentProject.prototypes.map(block => ({ ...block, blockType: 'prototype' as const })),
@@ -241,7 +282,9 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			Math.max(
 				-1,
 				...collectProjectBlocks(currentProject).map(block => block.id),
-				...currentProject.groups.map(getHighestProjectBlockId)
+				...currentProject.execution.map(block =>
+					block.type === 'group' ? Math.max(block.id, getHighestProjectBlockId(block)) : block.id
+				)
 			);
 		let nextCodeBlockCreationIndex = getHighestProjectBlockId(project) + 1;
 		store.set('codeBlockRendering.selectedCodeBlock', undefined);
@@ -251,12 +294,20 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			codeBlock: ClassifiedProjectBlock,
 			overrides: Partial<CodeBlockGraphicData> = {}
 		): CodeBlockGraphicData => {
-			// Parse @pos directive from code, default to (0,0) if missing or invalid
+			// Same-project edits retain an existing position while their source is incomplete.
+			const projectPath = overrides.projectPath ?? ROOT_PROJECT_GROUP_PATH;
+			const name = overrides.name ?? getCodeBlockNameFromSource(codeBlock.code);
+			const previousBlock =
+				overrides.childProject !== undefined
+					? previousGroups.get(createChildProjectGroupPath(projectPath, name))
+					: previousBlocks.get(
+							overrides.isProjectScope ? 'project-scope' : JSON.stringify([projectPath, codeBlock.id])
+						);
 			const blockParsedDirectives = parseBlockDirectives(codeBlock.code);
 			const posResult = parsePos(blockParsedDirectives);
-			const gridX = posResult?.x ?? 0;
-			const gridY = posResult?.y ?? 0;
-			const directiveState = deriveDirectiveState(codeBlock.code, blockParsedDirectives);
+			const gridX = posResult ? posResult.x : previousBlock ? previousBlock.gridX : 0;
+			const gridY = posResult ? posResult.y : previousBlock ? previousBlock.gridY : 0;
+			const directiveState = deriveDirectiveState(codeBlock.code, blockParsedDirectives, {}, directives);
 
 			// For viewport-anchored blocks, x/y will be resolved after block derivation sets
 			// width/height; initialize to 0 here as a safe placeholder.
@@ -264,12 +315,12 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			const pixelX = isAnchored ? 0 : gridX * state.viewport.vGrid;
 			const pixelY = isAnchored ? 0 : gridY * state.viewport.hGrid;
 
-			return createCodeBlockGraphicData({
+			const graphicData = createCodeBlockGraphicData({
 				width: 0,
 				height: 0,
 				code: codeBlock.code,
 				cursor: { col: 0, row: 0, x: 0, y: 0 },
-				name: getCodeBlockNameFromSource(codeBlock.code),
+				name,
 				gridX,
 				gridY,
 				x: pixelX,
@@ -281,17 +332,15 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 				disabled: codeBlock.disabled ?? directiveState.blockState.disabled,
 				isHome: directiveState.blockState.isHome,
 				homeAlignment: directiveState.blockState.homeAlignment,
-				isFavorite: directiveState.blockState.isFavorite,
 				alwaysOnTop: directiveState.blockState.alwaysOnTop ?? false,
 				viewportAnchor: directiveState.blockState.viewportAnchor,
 				parsedDirectives: blockParsedDirectives,
 				...overrides,
 			});
+			if (previousBlock) recreatedBlocks.set(previousBlock, graphicData);
+			return graphicData;
 		};
-		const createProjectCodeBlockSlice = (
-			currentProject: ProjectObjectModel,
-			projectPath: ProjectGroupPath
-		): CodeBlockGraphicData[] => {
+		const createProjectLevel = (currentProject: ProjectObjectModel, projectPath: ProjectGroupPath): ProjectLevel => {
 			const projectScopeBlocks =
 				projectPath === ROOT_PROJECT_GROUP_PATH && currentProject.code.length > 0
 					? [
@@ -308,102 +357,72 @@ export default function codeBlockRendering(store: StateManager<State>, events: E
 			const codeBlocks = collectProjectBlocks(currentProject).map(codeBlock =>
 				createGraphicCodeBlock(codeBlock, { projectPath })
 			);
-			const groupBlocks = currentProject.groups.map((group, groupIndex) => {
-				const groupName = group.name;
-				const gridX = groupIndex * 24;
-				const gridY = -6;
-				const groupCode = [...group.code];
-				if (!parsePos(parseBlockDirectives(groupCode))) {
-					let closerIndex = groupCode.length - 1;
-					while (closerIndex >= 0 && groupCode[closerIndex].trim() === '') closerIndex -= 1;
-					groupCode.splice(closerIndex, 0, `; @pos ${gridX} ${gridY}`);
+			const executionBlocks = currentProject.execution.map(block => {
+				if (block.type === 'module') {
+					return createGraphicCodeBlock({ ...block, blockType: 'module' }, { projectPath });
 				}
-				const creationIndex = nextCodeBlockCreationIndex;
-				nextCodeBlockCreationIndex += 1;
+				const group = block;
+				const groupName = group.name;
 				return createGraphicCodeBlock(
 					{
-						id: creationIndex,
-						code: groupCode,
+						id: group.id,
+						code: [...group.code],
 						blockType: 'unknown',
 						entry: group.entry,
 					},
 					{
 						name: groupName,
 						projectPath,
-						nestedProjectCodeBlocks: createProjectCodeBlockSlice(
-							group,
-							createChildProjectGroupPath(projectPath, groupName)
-						),
+						childProject: createProjectLevel(group, createChildProjectGroupPath(projectPath, groupName)),
 					}
 				);
 			});
-			const projectCodeBlocks = [...projectScopeBlocks, ...codeBlocks, ...groupBlocks];
+			const projectCodeBlocks = [...projectScopeBlocks, ...codeBlocks, ...executionBlocks];
+			const previousLevel = previousLevels.get(projectPath);
 
 			// Stable-sort to maintain the partition: normal blocks first, always-on-top last.
-			return [
-				...projectCodeBlocks.filter(block => !block.alwaysOnTop),
-				...projectCodeBlocks.filter(block => block.alwaysOnTop),
-			];
+			return {
+				path: projectPath,
+				entries: [...currentProject.entries],
+				blocks: partitionCodeBlocksByAlwaysOnTop(projectCodeBlocks),
+				viewport: previousLevel?.viewport,
+				selectedBlock: previousLevel?.selectedBlock ? recreatedBlocks.get(previousLevel.selectedBlock) : undefined,
+			};
 		};
-		const rootCodeBlocks = createProjectCodeBlockSlice(project, ROOT_PROJECT_GROUP_PATH);
+		const rootProject = createProjectLevel(project, ROOT_PROJECT_GROUP_PATH);
+		const currentProject = (sameProject && findProjectLevel(rootProject, previousCurrent.path)) || rootProject;
 		state.codeBlockRendering.nextCodeBlockCreationIndex = nextCodeBlockCreationIndex;
-
-		store.set('codeBlockRendering.rootCodeBlocks', rootCodeBlocks);
-		store.set('codeBlockRendering.codeBlocks', rootCodeBlocks);
-
-		// Center viewport on first @home block without selecting it, or default to (0,0).
-		const homeBlock = rootCodeBlocks.find(block => block.isHome);
-		if (homeBlock) {
-			const { x, y } = centerViewportOnCodeBlock(state.viewport, homeBlock, {
-				alignment: homeBlock.homeAlignment,
-			});
-			updateViewport(state, x, y, events);
-		} else {
-			updateViewport(state, 0, 0, events);
-		}
+		stopViewportAnimation(state);
+		store.set('codeBlockRendering.rootProject', rootProject);
+		store.set('codeBlockRendering.currentProject', currentProject);
+		store.set('codeBlockRendering.selectedCodeBlock', currentProject.selectedBlock);
+		const { x, y } = getProjectViewportPosition(currentProject, state.viewport);
+		updateViewport(state, x, y, events);
 		incrementCompilerInputRevision(store);
 	};
 
-	// When user edits code, parse @pos and update runtime position if valid
-	const applyPositionFromCodeEdit = () => {
-		if (!state.codeBlockRendering.selectedCodeBlock) {
-			return;
-		}
-		const codeBlock = state.codeBlockRendering.selectedCodeBlock;
-		const posResult = parsePos(codeBlock.parsedDirectives);
+	updateAllBlockSources();
 
-		// Only update position if @pos is valid
-		if (posResult !== undefined) {
-			codeBlock.gridX = posResult.x;
-			codeBlock.gridY = posResult.y;
-			if (!codeBlock.viewportAnchor) {
-				// World-space block: convert grid coordinates directly to pixels.
-				codeBlock.x = posResult.x * state.viewport.vGrid;
-				codeBlock.y = posResult.y * state.viewport.hGrid;
-			}
-			// Viewport-anchored block: x/y will be recomputed by block derivation
-			// once width/height are up to date.
-		}
-	};
-
-	updateAllBlockDerivedState();
-
-	events.on<CodeBlockClickEvent>('codeBlockClick', onCodeBlockClick);
-	events.on<CodeBlockClickEvent>('codeBlockClick', ({ codeBlock }) => updateBlockDerivedState(codeBlock));
-	events.on('runtimeInitialized', updateAllBlockDerivedState);
-	events.on('spriteSheetRerendered', () => {
-		recomputePixelCoordinatesAndBlockDerivedState();
-		centerViewportOnSelectedOrHomeCodeBlock();
+	events.on<CodeBlockPointerDownEvent>('codeBlockPointerDown', onCodeBlockPointerDown);
+	events.on<CodeBlockPointerDownEvent>('codeBlockPointerDown', ({ codeBlock }) => refreshBlockLayouts([codeBlock]));
+	events.on('memoryValuesChanged', updateAllBlockDerivedState);
+	events.on('codeBlockLayoutContributionsChanged', ({ codeBlock }: { codeBlock?: CodeBlockGraphicData }) => {
+		if (codeBlock) {
+			if (state.codeBlockRendering.currentProject.blocks.includes(codeBlock)) refreshBlockLayouts([codeBlock]);
+		} else updateAllBlockDerivedState();
 	});
+	events.on('spriteSheetRerendered', recomputePixelCoordinatesAndBlockDerivedState);
 	store.subscribe('codeErrors', updateAllBlockDerivedState);
 	store.subscribe('assertionResults', updateAllBlockDerivedState);
 	store.subscribe('compiler.isCompiling', updateAllBlockDerivedState);
 	store.subscribe('initialProjectState', populateCodeBlocks);
-	store.subscribe('codeBlockRendering.codeBlocks', updateAllBlockDerivedState);
-	store.subscribe('info', updateAllBlockDerivedState);
+	store.subscribe('codeBlockRendering.currentProject.blocks', updateAllBlockSources);
+	store.subscribe('editorConfigSchemaContributions', () => {
+		resolveEditorConfig(store);
+		updateAllBlockDerivedState();
+	});
 	store.subscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
-	store.subscribe('codeBlockRendering.selectedCodeBlock.code', updateSelectedCodeBlock);
-	store.subscribe('codeBlockRendering.selectedCodeBlock.code', applyPositionFromCodeEdit);
+	store.subscribe('codeBlockRendering.selectedCodeBlock.code', updateSelectedCodeBlockSource);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);
 	store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', updateProgrammaticSelectedCodeBlock);
 }

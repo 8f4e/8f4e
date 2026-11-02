@@ -1,0 +1,51 @@
+8f4e/v1
+
+entry main
+module resonantLowPassFilter
+; @public
+; Minimal state-variable filter.
+; out is the low-pass state; 
+; band is the band-pass state.
+; freq sets frequency
+; lower damping gives more resonance.
+
+float* in &phaseAccumulator:out
+float freq 0.1
+float damping 1.0
+float out
+float band
+
+; @slider &freq 0.005 0.65 0.001
+; @slider &damping 0.05 2 0.01
+
+; low = low + freq * band
+push &out
+push out
+push freq
+push band
+mul
+add
+store
+
+; Keep band's destination 
+; and old value below high.
+push &band
+push band
+
+; high = input - low - damping * band
+push *in
+push out
+sub
+push damping
+push band
+mul
+sub
+
+; band = band + freq*high
+push freq
+mul
+add
+store
+
+moduleEnd
+entryEnd

@@ -1,0 +1,18 @@
+8f4e/v1
+
+note porcelainColors
+; @public
+; @config color.canvas #c8d0d1
+; @config color.surface #f5f2e9
+; @config color.ink #35454a
+; @config color.primary #216f87
+; @config color.secondary #b54c3f
+; @config color.positive #6c9f79
+; @config color.warning #d7af4f
+; @config color.negative #c6504b
+; @config color.muted #7b8589
+; @config color.stroke rgba(39,62,72,0.58)
+; @config color.tertiary #7d8783
+; @config color.highlight #edc45b
+; @config color.detail #30778e
+noteEnd

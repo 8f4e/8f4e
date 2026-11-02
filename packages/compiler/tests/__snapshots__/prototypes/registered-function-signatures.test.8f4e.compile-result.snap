@@ -131,7 +131,10 @@
       ],
       "signature": {
         "parameters": [
-          "float*",
+          {
+            "name": "value",
+            "type": "float*",
+          },
         ],
         "returns": [
           "float",
@@ -153,7 +156,10 @@
       ],
       "signature": {
         "parameters": [
-          "int*",
+          {
+            "name": "value",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",

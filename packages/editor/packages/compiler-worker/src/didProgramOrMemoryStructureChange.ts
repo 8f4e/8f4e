@@ -52,13 +52,9 @@ export default function didProgramOrMemoryStructureChange(
 		return true;
 	}
 
-	for (const [id, compiledModule] of Object.entries(current.compiledModules)) {
+	for (const id of currentKeys) {
 		const previousModule = previous.compiledModules[id];
 		if (!previousModule) {
-			return true;
-		}
-
-		if (compiledModule.cycleFunction.length !== previousModule.cycleFunction.length) {
 			return true;
 		}
 

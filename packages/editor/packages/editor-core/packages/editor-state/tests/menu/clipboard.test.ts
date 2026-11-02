@@ -27,12 +27,12 @@ describe('menus - clipboard callback disabled state', () => {
 
 			const pasteCodeBlockItem = menu.find(item => item.title === 'Paste Code Block');
 			expect(pasteCodeBlockItem).toBeDefined();
-			expect(pasteCodeBlockItem?.disabled).toBe(false);
+			expect(pasteCodeBlockItem).toMatchObject({ action: 'pasteCodeBlocks', close: true, disabled: false });
 		});
 
 		it('should not show "Paste Code Block" when editing is disabled', () => {
 			const mockState = createMockState({
-				featureFlags: { editing: false },
+				editorMode: 'view',
 			});
 
 			const menu = mainMenu(mockState);
@@ -50,7 +50,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState);
+			const menu = moduleMenu(mockState, mockCodeBlock, []);
 
 			const copyItem = menu.find(item => item.title === 'Copy module');
 			expect(copyItem).toBeDefined();
@@ -64,7 +64,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState);
+			const menu = moduleMenu(mockState, mockCodeBlock, []);
 
 			const copyItem = menu.find(item => item.title === 'Copy module');
 			expect(copyItem).toBeDefined();
@@ -78,7 +78,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState);
+			const menu = moduleMenu(mockState, mockCodeBlock, []);
 
 			const copyItem = menu.find(item => item.title === 'Copy function');
 			expect(copyItem).toBeDefined();
@@ -92,7 +92,7 @@ describe('menus - clipboard callback disabled state', () => {
 				codeBlockRendering: { selectedCodeBlock: mockCodeBlock },
 			});
 
-			const menu = moduleMenu(mockState);
+			const menu = moduleMenu(mockState, mockCodeBlock, []);
 
 			const copyItem = menu.find(item => item.title === 'Copy note');
 			expect(copyItem).toBeDefined();

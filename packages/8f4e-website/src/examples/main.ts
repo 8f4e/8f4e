@@ -4,7 +4,6 @@ import { projectCategories } from './projects';
 
 const dispose = mountGallery({
 	title: 'Examples',
-	storageNamespace: 'gallery',
 	categories: projectCategories.map(category => ({
 		...category,
 		projects: category.projects.map(project => ({

@@ -1,0 +1,23 @@
+8f4e/v1
+
+note
+; @config runtime TestRuntime
+
+Narrow integer loads should
+extend their values according to
+their signedness.
+noteEnd
+
+entry test
+module narrowLoadAssertions
+int8[] signedByte 1 -1
+push &signedByte
+load8s
+assertEqual -1
+
+int16u[] unsignedShort 1 65535
+push &unsignedShort
+load16u
+assertEqual 65535
+moduleEnd
+entryEnd

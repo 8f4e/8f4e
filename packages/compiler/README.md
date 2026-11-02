@@ -82,7 +82,7 @@ editor state ---------------------/         |
                                       compileProject
                                              |
                                              v
-  program-composer (recursive traversal, parsing, symbol isolation, child-first module order)
+  program-composer (recursive traversal, parsing, symbol isolation, declaration-ordered module/group expansion)
                                              |
                                              v
   private global compiler stages
@@ -90,19 +90,34 @@ editor state ---------------------/         |
   -> CompileResult
 ```
 
-`parseProjectSource(source)` converts the textual `.8f4e` representation to the compiler-owned `ProjectObjectModel`.
+`parseProjectSource(source)` inlines scope-local group templates in source text, then converts the expanded `.8f4e` representation to the compiler-owned `ProjectObjectModel`. See [group templates](docs/source-syntax.md#group-templates).
 `compileProject(project, options)` compiles that object model directly. Editors that already hold typed blocks can skip
 the text representation without invoking a second block-classification or whole-project preparation step.
 
-`ProjectObjectModel` is defined by `@8f4e/language-spec`. Its separate `modules`, `functions`, `constants`, `prototypes`,
-`includes`, `notes`, and `unknown` collections define block type through membership. Only modules have semantic ordering;
-filtering `modules` by `entry` preserves the execution order for that entry. Hoisted declarations do not share a global
-order with modules or with each other.
+`ProjectObjectModel` is defined by `@8f4e/language-spec`. Each scope owns an `entries` name table (including empty entries)
+and one `execution` sequence containing
+`type: 'module'` and `type: 'group'` nodes, each with an id and entry membership. Modules and groups share declaration
+order. The separate `functions`, `constants`, `prototypes`, `includes`, `notes`, and `unknown` collections retain
+hoisted declarations and non-executable blocks. `getProjectModules(project)` and `getProjectGroups(project)` select
+only direct children of the corresponding type, retaining their relative order.
 
-Nested `groups` are composed before semantic allocation and code generation. The composer qualifies nested module,
-function, constant-namespace, and prototype names so sibling groups may reuse source-level names safely. It then hands
-one flattened validated-AST program to the compiler, allowing memory addresses, function indexes, type indexes, and
-entries to be planned once. Child modules execute before parent modules for the same entry.
+The composer walks `execution` in order and builds a dispatcher plan for every local entry. At a group node, the
+child's `main`, when present, is called from the node's parent entry; the child's `init`, when present, is called from
+the parent's `init`. Other child entries run only through explicit local calls. Missing `main` is valid and contributes
+no automatic work. Root entries are host exports; child entries have scoped identities. Empty entries remain valid.
+
+For example, with `voiceA` and `voiceB` in `synth`'s `main`, `rootA`, `synth`, `rootB` executes as
+`rootA -> synth/voiceA -> synth/voiceB -> rootB`. Functions, constants, and prototypes remain hoisted, and memory
+references do not reorder execution. The editor creates this ordered model from spatial position at each scope.
+
+Composition qualifies nested module, function, constant-namespace, and prototype names so sibling groups may reuse
+source-level names safely. It hands one flattened validated-AST program to the compiler, allowing memory addresses,
+function indexes and type indexes to be planned once. Resolved entry plans pass through semantic compilation to
+emission without reconstructing project scopes. Each composed module carries its canonical `executionEntryName`,
+which code generation forwards to the compiled module result. Project parsing establishes structure and parsed group
+metadata; composition consumes those typed nodes directly. Module/function syntax is parsed at its own tokenizer
+boundary. Later stages trust these outputs and consume the established order without reclassifying source blocks or
+reconstructing group structure.
 
 Groups can make a parent constants-block namespace available locally with `pass <namespace>`. The pass is explicit at
 every parent-to-child boundary and preserves the local namespace name; each consuming block still imports it with the

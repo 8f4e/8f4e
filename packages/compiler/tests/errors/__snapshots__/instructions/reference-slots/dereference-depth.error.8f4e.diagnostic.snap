@@ -1,0 +1,23 @@
+{
+  "code": 57,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 3,
+  },
+  "line": {
+    "arguments": [
+      {
+        "dereferenceDepth": 2,
+        "referenceKind": "memory-pointer",
+        "scope": "local",
+        "targetMemoryId": "slot",
+        "type": "identifier",
+        "value": "**slot",
+      },
+    ],
+    "instruction": "push",
+    "lineNumber": 3,
+  },
+  "message": "Pointer dereference depth exceeds the declared pointer depth: **slot. (57)",
+}

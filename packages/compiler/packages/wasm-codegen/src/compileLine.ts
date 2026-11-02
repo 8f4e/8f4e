@@ -11,7 +11,7 @@ import instructions from './instructionCompilers';
  * Emits bytecode for one instruction line using semantic-reference and stack-analysis facts.
  *
  * @param line - Resolved executable instruction.
- * @param stackFacts - Stack-analysis facts keyed to the same AST line.
+ * @param stackFacts - Stack-analysis facts for the same executable operation.
  * @param context - Compilation context used by the operation.
  * @returns The computed result.
  */

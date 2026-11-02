@@ -11,7 +11,7 @@ constantsEnd
 
 note
 ; @pos 4 4
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Intermodule address references
 should resolve to usable

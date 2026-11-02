@@ -1,0 +1,18 @@
+export const exposedSource = [
+	'8f4e/v1',
+	'entry main',
+	'group audio',
+	'expose gain &voice:level',
+	'expose wet &voice:wet',
+	'expose samples &voice:buffer',
+	'; @watch gain',
+	'entry main',
+	'module voice',
+	'float level 0.25',
+	'float wet 0.75',
+	'int8[] buffer 4 0 1 2 3',
+	'moduleEnd',
+	'entryEnd',
+	'groupEnd',
+	'entryEnd',
+];

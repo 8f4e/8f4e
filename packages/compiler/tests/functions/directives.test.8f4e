@@ -23,7 +23,7 @@ constantsEnd
 
 note
 ; @pos 3 2
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Directive prologues are
 accepted directly after block

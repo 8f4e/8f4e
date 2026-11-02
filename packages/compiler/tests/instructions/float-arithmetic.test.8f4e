@@ -11,7 +11,7 @@ constantsEnd
 
 note
 ; @pos 1 1
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Float instruction behavior is
 checked with native

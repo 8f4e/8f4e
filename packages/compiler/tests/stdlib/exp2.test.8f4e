@@ -1,0 +1,79 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/math/exp2
+includesEnd
+
+entry test
+module exp2Assertions
+push 0.0
+call exp2
+assertEqual 1.0
+
+push 1.0
+call exp2
+assertEqual 2.0
+
+push -1.0
+call exp2
+assertEqual 0.5
+
+push -24.0
+call exp2
+assertEqual 5.960464477539063e-8
+
+push 6.0
+call exp2
+assertEqual 64.0
+
+push -100.0
+call exp2
+assertEqual 5.960464477539063e-8
+
+push 100.0
+call exp2
+assertEqual 64.0
+
+push 0.5
+call exp2
+div 1.4142135623730951
+sub 1.0
+abs
+push 0.000001
+lessOrEqual
+assert
+
+push -0.5
+call exp2
+div 0.7071067811865476
+sub 1.0
+abs
+push 0.000001
+lessOrEqual
+assert
+
+push 1.25
+call exp2
+div 2.378414230005442
+sub 1.0
+abs
+push 0.000001
+lessOrEqual
+assert
+
+push -3.75
+call exp2
+div 0.07432544468767006
+sub 1.0
+abs
+push 0.000001
+lessOrEqual
+assert
+
+moduleEnd
+
+entryEnd

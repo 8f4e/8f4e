@@ -3,7 +3,7 @@
 entry main
 module projectConfig
 ; @pos -202 -14
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config export.fileName midiIn
 
@@ -82,7 +82,5 @@ note
 
 ; @config midi.inputs.0.port 0
 ; @config midi.inputs.0.callback onMidiEvent
-
-; @info midi
 
 noteEnd

@@ -1,0 +1,42 @@
+function exp2
+#export
+; Range reduction and Taylor
+; approximation of 2^x for finite
+; inputs, clamped to [-24, 6].
+param float x
+local int exponent
+local float fraction
+push x
+max -24.0
+min 6.0
+localSet x
+push x
+round
+castToInt
+localSet exponent
+push x
+push exponent
+castToFloat
+sub
+localSet fraction
+push 0.0001540353039
+mul fraction
+add 0.0013333558146
+mul fraction
+add 0.0096181291076
+mul fraction
+add 0.0555041086648
+mul fraction
+add 0.2402265069591
+mul fraction
+add 0.6931471805599
+mul fraction
+add 1.0
+push 1
+push exponent
+add 24
+shiftLeft
+castToFloat
+mul 0.000000059604644775390625
+mul
+functionEnd float

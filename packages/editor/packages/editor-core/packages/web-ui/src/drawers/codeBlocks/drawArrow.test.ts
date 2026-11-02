@@ -1,6 +1,7 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { describe, expect, it, type vi } from 'vitest';
-import { createDrawContextMock, createSpriteIdLookupMock } from '../../__tests__/rendering';
+import { describe, expect, it, vi } from 'vitest';
+import { createDrawContextMock } from '../../__tests__/rendering';
 import type { DrawContext as Engine } from '../../drawContext';
 import drawArrow from './drawArrow';
 
@@ -12,9 +13,6 @@ describe('drawArrow', () => {
 	it('renders ASCII characters for off-screen directions', () => {
 		const engine = createMockEngine();
 		const state = createMockState({
-			spriteLookups: {
-				fontArrow: createSpriteIdLookupMock(),
-			} as never,
 			viewport: {
 				width: 1024,
 				height: 768,
@@ -36,7 +34,7 @@ describe('drawArrow', () => {
 		drawArrow(engine, createMockCodeBlock({ x: -100, y: 384 }), state);
 		drawArrow(engine, createMockCodeBlock({ x: 1200, y: -100 }), state);
 
-		const font = state.spriteLookups?.fontArrow;
+		const font = PALETTE_INDICES.secondaryBase;
 		expect((engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText).toHaveBeenCalledWith(
 			512,
 			0,
@@ -67,6 +65,6 @@ describe('drawArrow', () => {
 			'>',
 			font
 		);
-		expect((engine as unknown as { drawSprite: ReturnType<typeof vi.fn> }).drawSprite).not.toHaveBeenCalled();
+		expect(vi.mocked(engine.drawFill)).not.toHaveBeenCalled();
 	});
 });

@@ -2,7 +2,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join, resolve } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -12,34 +12,25 @@ function usage() {
 	console.error(
 		[
 			'Usage:',
-			'  node tools/import-bdf.mjs <bdf-path> <font-name> [--glyphs-from <existing-font>]',
+			'  node tools/import-bdf.mjs <bdf-path> <font-name>',
 			'',
 			'Example:',
-			'  node tools/import-bdf.mjs path/to/font.bdf myfont12x16 --glyphs-from ibmvga8x16',
+			'  node tools/import-bdf.mjs path/to/font.bdf myfont12x16',
 		].join('\n')
 	);
 	process.exit(1);
 }
 
 function parseArgs(argv) {
-	if (argv.length < 2) {
+	if (argv.length !== 2) {
 		usage();
 	}
 
-	const [bdfPath, fontName, ...rest] = argv;
-	let glyphsFrom = 'ibmvga8x16';
-
-	for (let i = 0; i < rest.length; i++) {
-		if (rest[i] === '--glyphs-from') {
-			glyphsFrom = rest[i + 1];
-			i++;
-		}
-	}
+	const [bdfPath, fontName] = argv;
 
 	return {
 		bdfPath: resolve(process.cwd(), bdfPath),
 		fontName,
-		glyphsFrom,
 	};
 }
 
@@ -163,38 +154,8 @@ function formatGlyphArray(glyphs) {
 	return `const glyphs = ${JSON.stringify(glyphs, null, '\t')};\n\nexport default glyphs;\n`;
 }
 
-async function loadGlyphModule(modulePath) {
-	const moduleUrl = pathToFileURL(modulePath).href;
-	const imported = await import(moduleUrl);
-	if (!Array.isArray(imported.default)) {
-		throw new Error(`Glyph module does not export a default glyph array: ${modulePath}`);
-	}
-
-	return imported.default;
-}
-
-function centerPadGlyphs(glyphs, targetWidth, targetHeight) {
-	return glyphs.map(glyph => {
-		const sourceHeight = glyph.length;
-		const sourceWidth = glyph[0]?.length ?? 0;
-		const horizontalPadLeft = Math.floor((targetWidth - sourceWidth) / 2);
-		const horizontalPadRight = targetWidth - sourceWidth - horizontalPadLeft;
-		const verticalPadTop = Math.floor((targetHeight - sourceHeight) / 2);
-		const verticalPadBottom = targetHeight - sourceHeight - verticalPadTop;
-		const paddedRows = glyph.map(
-			row => ' '.repeat(Math.max(0, horizontalPadLeft)) + row + ' '.repeat(Math.max(0, horizontalPadRight))
-		);
-
-		return [
-			...Array.from({ length: Math.max(0, verticalPadTop) }, () => ' '.repeat(targetWidth)),
-			...paddedRows.map(row => row.slice(0, targetWidth).padEnd(targetWidth, ' ')),
-			...Array.from({ length: Math.max(0, verticalPadBottom) }, () => ' '.repeat(targetWidth)),
-		].slice(0, targetHeight);
-	});
-}
-
-async function main() {
-	const { bdfPath, fontName, glyphsFrom } = parseArgs(process.argv.slice(2));
+function main() {
+	const { bdfPath, fontName } = parseArgs(process.argv.slice(2));
 	const bdfSource = readFileSync(bdfPath, 'utf-8');
 	const { width, height, glyphs } = parseBdfGlyphs(bdfSource);
 	const asciiGlyphs = Array.from(
@@ -202,19 +163,13 @@ async function main() {
 		(_, code) => glyphs.get(code) || Array.from({ length: height }, () => ' '.repeat(width))
 	);
 
-	const glyphSourcePath = join(projectRoot, 'src', 'fonts', glyphsFrom, 'glyphs.ts');
-	const sourceGlyphs = await loadGlyphModule(glyphSourcePath);
-	const paddedGlyphs = centerPadGlyphs(sourceGlyphs, width, height);
-
 	const outputDir = join(projectRoot, 'src', 'fonts', fontName);
 	mkdirSync(outputDir, { recursive: true });
 	writeFileSync(join(outputDir, 'ascii.ts'), formatGlyphArray(asciiGlyphs), 'utf-8');
-	writeFileSync(join(outputDir, 'glyphs.ts'), formatGlyphArray(paddedGlyphs), 'utf-8');
 
 	console.log(`Created ${fontName} font sources in ${outputDir}`);
 	console.log(`ASCII glyphs: 128 from ${bdfPath}`);
-	console.log(`Custom glyphs: padded from ${glyphsFrom}`);
 	console.log(`Dimensions: ${width}x${height}`);
 }
 
-await main();
+main();

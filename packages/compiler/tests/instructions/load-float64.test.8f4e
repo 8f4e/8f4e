@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Typed float64 loads preserve precision.
 Guarded loads check all eight bytes.

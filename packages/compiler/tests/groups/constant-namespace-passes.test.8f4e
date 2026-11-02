@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Constant namespaces must be passed at each group boundary.
 Modules, functions, prototypes, and derived constants can use them.
@@ -39,6 +39,7 @@ use env
 int[] samples BLOCK_SIZE
 prototypeEnd
 
+entry main
 module voice
 use env
 use derived
@@ -63,6 +64,7 @@ group nested
 pass env
 pass derived
 
+entry main
 module nestedVoice
 use env
 int blockSize BLOCK_SIZE
@@ -74,6 +76,8 @@ assertEqual 48
 push doubleBlock
 assertEqual 96
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd

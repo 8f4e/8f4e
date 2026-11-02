@@ -116,8 +116,14 @@
       "id": "writeWithDirectivePrologue__int_p__int",
       "signature": {
         "parameters": [
-          "int*",
-          "int",
+          {
+            "name": "address",
+            "type": "int*",
+          },
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [],
       },

@@ -2,5 +2,39 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "timezone": "Europe/Amsterdam",
+  "schedule": ["* 6-9 * * 1"],
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "prConcurrentLimit": 3,
+  "automerge": false,
+  "major": {
+    "dependencyDashboardApproval": true
+  },
+  "vulnerabilityAlerts": {
+    "enabled": false
+  },
+  "packageRules": [
+    {
+      "description": "Batch routine minor and patch updates",
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "non-major dependencies"
+    },
+    {
+      "description": "Keep Vitest and its exact-version peers together across all workspaces",
+      "matchPackageNames": ["vitest", "@vitest/**"],
+      "groupName": "vitest monorepo"
+    },
+    {
+      "description": "Keep Nx and its plugins on the same version",
+      "matchPackageNames": ["nx", "@nx/**"],
+      "groupName": "nx monorepo"
+    },
+    {
+      "description": "Update the pinned Node.js and npm toolchain together",
+      "matchPackageNames": ["node", "npm", "@types/node"],
+      "groupName": "node toolchain"
+    }
   ]
 }

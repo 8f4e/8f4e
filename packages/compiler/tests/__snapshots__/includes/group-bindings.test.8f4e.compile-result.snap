@@ -1017,7 +1017,10 @@
       "id": "__8f4e_test_math__nonexported__helper__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -1028,7 +1031,10 @@
       "id": "__8f4e_test_math__nonexported__helper__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -1039,7 +1045,10 @@
       "id": "__8f4e_test_math__unselected__twice__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -1050,7 +1059,10 @@
       "id": "adjusted__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -1061,7 +1073,10 @@
       "id": "adjusted__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -1072,7 +1087,10 @@
       "id": "left/__8f4e_test_math__nonexported__helper__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -1083,7 +1101,10 @@
       "id": "left/__8f4e_test_math__nonexported__helper__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -1094,7 +1115,10 @@
       "id": "left/__8f4e_test_math__unselected__twice__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -1105,7 +1129,10 @@
       "id": "left/adjusted__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -1116,7 +1143,10 @@
       "id": "left/adjusted__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -1127,7 +1157,10 @@
       "id": "right/__8f4e_test_math__nonexported__helper__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -1138,7 +1171,10 @@
       "id": "right/__8f4e_test_math__nonexported__helper__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -1149,7 +1185,10 @@
       "id": "right/__8f4e_test_math__unselected__inc__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -1160,7 +1199,10 @@
       "id": "right/__8f4e_test_math__unselected__inc__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -1171,7 +1213,10 @@
       "id": "right/adjusted__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

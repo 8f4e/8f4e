@@ -1,16 +1,4 @@
-import {
-	f32const,
-	f32load,
-	f64const,
-	f64load,
-	i32const,
-	i32load,
-	i32load8s,
-	i32load8u,
-	i32load16s,
-	i32load16u,
-	localGet,
-} from '@8f4e/compiler-wasm-utils';
+import { f32const, f64const, i32const, i32load, localGet } from '@8f4e/compiler-wasm-utils';
 import type { CodegenContext, PointerMetadata } from '@8f4e/language-spec';
 import {
 	getDereferencedValueKindFromMetadata,
@@ -20,24 +8,19 @@ import {
 } from '@8f4e/language-spec';
 import { type PushValueKind, valueKindToWasmType } from '../../pushValueKind';
 import { guardedAddressOperation } from '../utils/memoryAccessGuard';
+import { typedLoad } from './typedLoad';
 
 type PointerValueSource = 'pointer-slot' | 'pointer-value';
 type PointerLoadStep = { accessByteWidth: number; loadByteCode: number[] };
 
 export { kindToStackItem, resolveArgumentValueKind, resolveMemoryValueKind } from '../../pushValueKind';
+export { loadOpcode } from './typedLoad';
 
 /** Numeric constant emitters keyed by resolved value kind. */
 export const constOpcode: Record<PushValueKind, (value: number) => number[]> = {
 	int32: i32const,
 	float32: f32const,
 	float64: f64const,
-};
-
-/** Memory load bytecode keyed by resolved value kind. */
-export const loadOpcode: Record<PushValueKind, number[]> = {
-	int32: i32load(2, 0),
-	float32: f32load(2, 0),
-	float64: f64load(3, 0),
 };
 
 function buildGuardedPointerLoadChain(
@@ -58,30 +41,6 @@ function buildGuardedPointerLoadChain(
 			}),
 		[]
 	);
-}
-
-function getFinalDereferenceLoad(
-	pointerMetadata: PointerMetadata,
-	kind: PushValueKind,
-	dereferencedValueWordSize: number
-): number[] {
-	if (pointerMetadata.pointeeBaseType === 'int8u') {
-		return i32load8u(0, 0);
-	}
-
-	if (pointerMetadata.pointeeBaseType === 'int16u') {
-		return i32load16u(1, 0);
-	}
-
-	if (dereferencedValueWordSize === 1) {
-		return i32load8s(0, 0);
-	}
-
-	if (dereferencedValueWordSize === 2) {
-		return i32load16s(1, 0);
-	}
-
-	return loadOpcode[kind];
 }
 
 /**
@@ -107,7 +66,7 @@ export function buildPointerDereferenceByteCode(
 	const isFinalDereference = dereferenceDepth === declaredPointerDepth;
 	const kind = getDereferencedValueKindFromMetadata(pointerMetadata, dereferenceDepth);
 	const dereferencedValueWordSize = getDereferencedValueWordSizeFromMetadata(pointerMetadata, dereferenceDepth);
-	const finalLoad = getFinalDereferenceLoad(pointerMetadata, kind, dereferencedValueWordSize);
+	const finalLoad = typedLoad(pointerMetadata.pointeeBaseType!);
 
 	if (pointerValueSource === 'pointer-slot') {
 		const pointerLoads = [

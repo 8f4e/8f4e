@@ -1,0 +1,27 @@
+{
+  "code": 69,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 3,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "constant",
+        "scope": "local",
+        "type": "identifier",
+        "value": "ADDRESS",
+      },
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "slot",
+      },
+    ],
+    "instruction": "const",
+    "lineNumber": 3,
+  },
+  "message": "Unable to resolve constant ADDRESS (UNRESOLVED_CONSTANT_VALUE). (69)",
+}

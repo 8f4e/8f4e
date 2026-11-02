@@ -1,4 +1,5 @@
-import { type DefaultEditorInstance, type DefaultEditorMountOptions, mountDefaultEditor } from '@8f4e/editor-default';
+import { type MinimalEditorInstance, type MinimalEditorMountOptions, mountMinimalEditor } from '@8f4e/editor-minimal';
+import type { EditorWebMcpBridge } from '@8f4e/editor-webmcp';
 import { getProjectId, withProjectId } from './gallery-url';
 import { sharedAudioContext } from './shared-audio-context';
 
@@ -20,16 +21,16 @@ export interface GalleryCategory {
 interface GalleryOptions {
 	title: string;
 	categories: GalleryCategory[];
-	storageNamespace: string;
-	featureFlags?: DefaultEditorMountOptions['featureFlags'];
+	featureFlags?: MinimalEditorMountOptions['featureFlags'];
 }
 
-export function mountGallery({ title, categories, storageNamespace, featureFlags }: GalleryOptions): () => void {
+export function mountGallery({ title, categories, featureFlags }: GalleryOptions): () => void {
 	const projects = categories.flatMap(category => category.projects);
 	const gallery = document.querySelector<HTMLDivElement>('#examples-gallery')!;
 	const mobileLayout = window.matchMedia('(max-width: 800px)');
 	let activeId: string | null = null;
-	let activeEditor: DefaultEditorInstance | undefined;
+	let activeEditor: MinimalEditorInstance | undefined;
+	let activeBridge: EditorWebMcpBridge | undefined;
 	let mountQueue = Promise.resolve();
 	let revision = 0;
 	let revealFrame = 0;
@@ -119,6 +120,8 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 	function releaseEditor(): void {
 		window.cancelAnimationFrame(revealFrame);
 		window.clearTimeout(loadTimeout);
+		activeBridge?.dispose();
+		activeBridge = undefined;
 		activeEditor?.dispose();
 		activeEditor = undefined;
 		for (const item of items) {
@@ -155,10 +158,32 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 			canvas.tabIndex = 0;
 			canvas.setAttribute('aria-label', `${item.project.title} editor`);
 			item.frame.prepend(canvas);
+			let failed = false;
+			let loaded = false;
+			let mountedEditor: MinimalEditorInstance | undefined;
+			let bridgeStarted = false;
+			const connectBridge = async () => {
+				if (!loaded || !mountedEditor || bridgeStarted || disposed || failed || currentRevision !== revision) return;
+				bridgeStarted = true;
+				const editor = mountedEditor;
+				try {
+					const { createEditorWebMcp } = await import('@8f4e/editor-webmcp');
+					if (disposed || failed || currentRevision !== revision) return;
+					activeBridge = createEditorWebMcp({
+						document,
+						editor,
+						getCompilerDiagnostics: editor.getCompilerDiagnostics,
+					});
+					await activeBridge.ready;
+				} catch (error) {
+					console.error('Failed to load gallery site tools:', error);
+				}
+			};
 			const showError = (error: unknown) => {
 				if (disposed || currentRevision !== revision) {
 					return;
 				}
+				failed = true;
 				releaseEditor();
 				item.status.hidden = false;
 				item.status.textContent = 'This project could not be loaded.';
@@ -169,47 +194,35 @@ export function mountGallery({ title, categories, storageNamespace, featureFlags
 				item.status.append(retryButton);
 				console.error('Failed to load gallery project:', error);
 			};
+			const reveal = () => {
+				if (disposed || failed || currentRevision !== revision) return;
+				loaded = true;
+				void connectBridge();
+				window.clearTimeout(loadTimeout);
+				revealFrame = window.requestAnimationFrame(() => {
+					if (disposed || failed || currentRevision !== revision) return;
+					canvas.classList.add('editor-ready');
+					item.status.hidden = true;
+				});
+			};
+			loadTimeout = window.setTimeout(() => showError(new Error('Project loading timed out')), 30_000);
 			try {
-				const editor = await mountDefaultEditor(canvas, {
+				const editor = await mountMinimalEditor(canvas, {
 					sharedAudioContext,
 					captureWheel: true,
-					featureFlags: {
-						projectCreation: false,
-						projectOpening: false,
-						...featureFlags,
-					},
-					initialEditorMode: 'edit',
+					featureFlags,
 					initialProjectUrl: item.projectUrl,
-					storage: window.sessionStorage,
-					storageNamespace: `8f4e-${storageNamespace}-${item.project.id}`,
+					onInitialProjectLoaded: reveal,
+					onInitialProjectLoadError: showError,
 				});
-				if (disposed || currentRevision !== revision) {
+				if (disposed || failed || currentRevision !== revision) {
 					editor.dispose();
 					canvas.remove();
 					return;
 				}
 				activeEditor = editor;
-				loadTimeout = window.setTimeout(() => showError(new Error('Project loading timed out')), 30_000);
-				const reveal = () => {
-					if (disposed || currentRevision !== revision) {
-						return;
-					}
-					const project = editor.state.initialProjectState;
-					if (!project) {
-						revealFrame = window.requestAnimationFrame(reveal);
-						return;
-					}
-					if (project.modules.length === 0 && project.functions.length === 0 && project.groups.length === 0) {
-						showError(new Error('Project is empty'));
-						return;
-					}
-					window.clearTimeout(loadTimeout);
-					revealFrame = window.requestAnimationFrame(() => {
-						canvas.classList.add('editor-ready');
-						item.status.hidden = true;
-					});
-				};
-				reveal();
+				mountedEditor = editor;
+				void connectBridge();
 			} catch (error) {
 				showError(error);
 			}

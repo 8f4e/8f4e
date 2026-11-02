@@ -10,7 +10,12 @@ This file extends the root and compiler package guidance for `packages/compiler/
   for the compiler facade.
 - Does not know about editor state, grid positioning, rendering, browser storage, or host webview state.
 - Does not load include files itself. Callers provide an async `resolveInclude` function so node, browser, editor, and test environments can load includes however they need.
+- Modules and groups share one typed `execution` sequence per scope. Preserve their relative declaration order and block ids.
 - Groups recursively own project blocks. Sibling group names are unique because names form canonical compiler paths.
+
+- Root and group scopes share an explicit local `entries` table, including empty entries. Group `main` joins the
+  enclosing entry at the group's position; group `init` joins parent `init`. Other entries require local calls.
+  Missing `main` is valid. Composition resolves dispatcher steps once; later stages consume those plans directly.
 
 ## Commands
 
@@ -22,7 +27,17 @@ This file extends the root and compiler package guidance for `packages/compiler/
 
 ## Architecture
 
-- Pipeline: raw project source -> classified `ProjectObjectModel` collections.
+- Pipeline: raw project source -> scope-local template source inlining -> classified `ProjectObjectModel` collections.
+- `projectSource.ts` owns structural block boundaries, matching closers, and opaque note contents. Ordinary parsing,
+  template transforms, and exported block validation share this reader. Preprocessors register additional scope
+  delimiters explicitly; ordinary project-model construction does not know about template definitions.
+- `mapSourceScope` visits immediate nodes through entry wrappers without entering child-group scopes. Template
+  transforms share this traversal while retaining their own validation, expansion, and precedence rules.
+- Own `template` / `useTemplate` validation and inlining here before ordinary project parsing. Lookup uses the group's
+  directly containing scope only. Retain `useTemplate` in group source, without template-specific model fields.
+- Own inverse source extraction here; the save plugin calls it after ordinary serialization. The last group in source
+  order wins silently per local template. Callers supply canonical order; this package never interprets editor positions.
+  Reconstruct definitions from marked groups and omit unused definitions.
 - `@8f4e/language-spec` is the sole owner of project object-model types; do not define parallel project contracts here.
 - Do not lower a project into a second whole-project compiler input. Private compiler stages consume the canonical
   collections directly.

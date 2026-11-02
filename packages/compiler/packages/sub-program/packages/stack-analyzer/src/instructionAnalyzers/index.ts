@@ -1,11 +1,11 @@
 import type {
+	CodegenPushLine,
 	CompilationContext,
 	CompilerASTLine,
 	MapEndLine,
 	ResolvedPushShapeLine,
 	SemanticAssertEqualLine,
 	SemanticCallLine,
-	SemanticPushLine,
 } from '@8f4e/language-spec';
 import { getInstructionSpec } from '@8f4e/language-spec';
 import { analyzeAssertEqual } from './assertEqual';
@@ -46,7 +46,7 @@ export function analyzeByInstruction(line: CompilerASTLine, context: Compilation
 		case 'push': {
 			return {
 				consumed: [],
-				produced: analyzePush(line as SemanticPushLine, context),
+				produced: analyzePush(line as CodegenPushLine, context),
 			};
 		}
 		case 'pushShape': {

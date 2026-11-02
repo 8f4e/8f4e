@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, EventDispatcher, State, Viewport } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EventDispatcher, ProjectLevel, State, Viewport } from '@8f4e/editor-state-types';
 import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
 
 type DeepPartial<T> = T extends (...args: never[]) => unknown
@@ -16,10 +16,6 @@ type StateOverrides = {
 
 function createMockFunction<T extends (...args: unknown[]) => unknown>(): T {
 	return (() => {}) as T;
-}
-
-function createMockAsyncFunction<T>(returnValue: T): () => Promise<T> {
-	return async () => returnValue;
 }
 
 export function createMockCodeBlock(
@@ -47,9 +43,9 @@ export function createMockCodeBlock(
 		y: cursorYValue,
 	};
 	const displayModel = {
-		lines: code.map((text, rawRow) => ({ text, rawRow })),
-		displayRowToRawRow: code.map((_, rawRow) => rawRow),
-		rawRowToDisplayRow: code.map((_, rawRow) => rawRow),
+		lines: code.map((text, sourceLineIndex) => ({ text, sourceLineIndex })),
+		displayRowToSourceLineIndex: code.map((_, sourceLineIndex) => sourceLineIndex),
+		sourceLineIndexToDisplayRow: code.map((_, sourceLineIndex) => sourceLineIndex),
 		isCollapsed: false,
 	};
 
@@ -73,25 +69,10 @@ export function createMockCodeBlock(
 		projectPath,
 		disabled: false,
 		isHome: false,
-		isFavorite: false,
 		alwaysOnTop: false,
 		parsedDirectives: [],
 		widgets: {
-			assertions: [],
 			blockHighlights: [],
-			inputs: [],
-			outputs: [],
-			debuggers: [],
-			switches: [],
-			buttons: [],
-			sliders: [],
-			crossfades: [],
-			pianoKeyboards: [],
-			arrayPlotters: [],
-			arrayBars: [],
-			arrayMeters: [],
-			arrayWaves: [],
-			infoPanels: [],
 			shapeDeclarations: [],
 			errorMessages: [],
 		},
@@ -129,43 +110,30 @@ export function createMockEventDispatcher(): EventDispatcher {
 }
 
 export function createMockState(overrides: StateOverrides = {}): State {
-	const mockRuntimeFactory = () => () => {};
-	const workerRuntimeDefaults = { sampleRate: 50 } as const;
-	const rootCodeBlocks: CodeBlockGraphicData[] = [];
+	const rootProject: ProjectLevel = { entries: [], path: '', blocks: [] };
 
 	const defaults: State = {
 		compilerInputRevision: 0,
+		projectChange: { revision: 0, kind: 'replace' },
 		compiler: {
 			isCompiling: false,
-			compiledModules: {},
-			memoryPlan: {
-				modules: {},
-				moduleList: [],
-			},
-			memoryDefaultsByModuleId: {},
-			projectMemoryExposuresByGroupPath: {},
-		},
-		callbacks: {
-			loadSession: createMockAsyncFunction(null),
-		},
-		runtimeRegistry: {
-			WebWorkerRuntime: {
-				id: 'WebWorkerRuntime',
-				editorConfigSchema: {
-					root: 'workerRuntime',
-					defaults: workerRuntimeDefaults,
-					schema: { type: 'object', properties: {} },
+			result: {
+				compiledModules: {},
+				memoryPlan: {
+					modules: {},
+					moduleList: [],
 				},
-				factory: mockRuntimeFactory,
+				memoryDefaultsByModuleId: {},
+				projectMemoryExposuresByGroupPath: {},
 			},
 		},
+		callbacks: {},
 		codeBlockRendering: {
-			rootCodeBlocks,
-			codeBlocks: rootCodeBlocks,
+			rootProject,
+			currentProject: rootProject,
 			entryOutlines: [],
 			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,
-			outputsByWordAddress: new Map(),
 		},
 		contextMenu: {
 			highlightedItem: 0,
@@ -190,37 +158,14 @@ export function createMockState(overrides: StateOverrides = {}): State {
 				memoryReinitialized: false,
 			},
 		},
-		tooltip: {
-			text: [],
-			characters: [],
-			colors: [],
-			lineCount: 0,
-			widthChars: 0,
-			layout: {
-				horizontalPadding: 0,
-				width: 0,
-				height: 0,
-				x: 0,
-				y: 0,
-				lineX: 0,
-			},
-			highlights: [],
-			liveValues: [],
-			target: undefined,
-			animation: {
-				startedAt: undefined,
-			},
-		},
 		featureFlags: {
 			contextMenu: true,
 			moduleDragging: true,
 			codeLineSelection: true,
 			viewportDragging: true,
-			editing: true,
 			modeToggling: true,
 			modeOverlay: true,
 			offscreenBlockArrows: true,
-			projectOpening: true,
 			projectCreation: true,
 		},
 		editorMode: 'edit',
@@ -229,8 +174,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		editorConfigSchemaContributions: {},
 		historyStack: [],
 		redoStack: [],
-		storageQuota: { usedBytes: 0, totalBytes: 0 },
-		binaryAssets: [],
+		envConstantContributions: {},
 		codeErrors: {
 			compilationErrors: [],
 			editorDirectiveErrors: [],
@@ -240,9 +184,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			maxLogs: 100,
 		},
 		assertionResults: [],
-		runtime: {
-			values: {},
-		},
 		globalEditorDirectives: {},
 		dialog: {
 			id: '',
@@ -285,11 +226,23 @@ export function createMockState(overrides: StateOverrides = {}): State {
 
 	const state = mergeDeep<State>(defaults, overrides);
 	const rendering = overrides.codeBlockRendering;
-	if (rendering?.rootCodeBlocks !== undefined && rendering.codeBlocks === undefined) {
-		state.codeBlockRendering.codeBlocks = state.codeBlockRendering.rootCodeBlocks;
-	} else if (rendering?.codeBlocks !== undefined && rendering.rootCodeBlocks === undefined) {
-		state.codeBlockRendering.rootCodeBlocks = state.codeBlockRendering.codeBlocks;
+	if (rendering?.currentProject && !rendering.rootProject) {
+		state.codeBlockRendering.rootProject = state.codeBlockRendering.currentProject;
 	}
+	const initialize = (level: ProjectLevel, path: string): ProjectLevel[] => {
+		level.path = path;
+		return [
+			level,
+			...level.blocks.flatMap(block =>
+				block.childProject ? initialize(block.childProject, path ? `${path}/${block.name}` : block.name) : []
+			),
+		];
+	};
+	const levels = initialize(state.codeBlockRendering.rootProject, '');
+	state.codeBlockRendering.currentProject = rendering?.currentProject
+		? (levels.find(level => level.blocks === state.codeBlockRendering.currentProject.blocks) ??
+			state.codeBlockRendering.currentProject)
+		: state.codeBlockRendering.rootProject;
 	return state;
 }
 

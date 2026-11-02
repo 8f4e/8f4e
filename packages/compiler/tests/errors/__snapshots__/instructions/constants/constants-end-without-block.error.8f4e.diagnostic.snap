@@ -1,8 +1,11 @@
 {
-  "code": -1,
-  "context": {},
+  "code": 9,
+  "context": {
+    "projectBlockId": 4,
+  },
   "line": {
-    "lineNumber": 0,
+    "instruction": "constantsEnd",
+    "lineNumber": 3,
   },
   "message": "Parse error at line 7: closer "constantsEnd" does not match opener "module"",
 }

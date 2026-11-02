@@ -460,7 +460,10 @@
       "id": "countdown__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "remaining",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -471,7 +474,10 @@
       "id": "delegated__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -482,7 +488,10 @@
       "id": "descend__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "remaining",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -493,7 +502,10 @@
       "id": "external__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -504,7 +516,10 @@
       "id": "sumDown__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "remaining",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -515,7 +530,10 @@
       "id": "viaAlias__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

@@ -1,0 +1,18 @@
+8f4e/v1
+
+note wisteriaColors
+; @public
+; @config color.canvas #d9dee9
+; @config color.surface #f6f5fa
+; @config color.ink #35405c
+; @config color.primary #4c60b4
+; @config color.secondary #bd5871
+; @config color.positive #78a68a
+; @config color.warning #d6a748
+; @config color.negative #cf5c68
+; @config color.muted #8b93a8
+; @config color.stroke rgba(69,89,160,0.38)
+; @config color.tertiary #7e8799
+; @config color.highlight #efb74d
+; @config color.detail #697ac6
+noteEnd

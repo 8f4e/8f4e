@@ -217,7 +217,10 @@
       "id": "sameName__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -228,7 +231,10 @@
       "id": "sameName__float64",
       "signature": {
         "parameters": [
-          "float64",
+          {
+            "name": "value",
+            "type": "float64",
+          },
         ],
         "returns": [
           "float64",
@@ -239,7 +245,10 @@
       "id": "sameName__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

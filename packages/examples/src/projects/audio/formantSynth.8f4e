@@ -1,0 +1,551 @@
+8f4e/v1
+
+includes
+; @pos -38 -9
+include std/events/risingEdge
+includesEnd
+
+function buffer
+; @pos -91 21
+#export buffer
+use env
+
+loop AUDIO_BUFFER_SIZE
+call main
+loopEnd
+functionEnd
+
+constants math
+; @pos -101 33
+
+const PI      3.141592653589793
+const NEG_PI -3.141592653589793
+const TAU     6.283185307179586
+const HALF_PI 1.570796326794896
+const INV_PI  0.318309886183790
+const INV_TAU 0.159154943091895
+const PHI     1.618033988749895
+const DEG2RAD 0.017453292519943
+const RAD2DEG 57.29577951308232
+const SQRT2   1.414213562373095
+const SQRT1_2 0.707106781186547
+const LN2     0.693147180559945
+const LN10    2.302585092994046
+const LOG2E   1.442695040888963
+const LOG10E  0.434294481903251
+const E       2.718281828459045
+
+constantsEnd
+
+constants env
+; @pos -47 -2
+; @favorite
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+
+constantsEnd
+
+constants vowels
+; @pos -39 11
+
+use env
+
+const TWO_PI 6.283185307179586
+const SCALE TWO_PI/SAMPLE_RATE
+
+const BEET_F1 270*SCALE
+const BEET_F2 2290*SCALE
+const BEET_F3 3010*SCALE
+
+const BIT_F1 390*SCALE
+const BIT_F2 1990*SCALE
+const BIT_F3 2550*SCALE
+
+const BET_F1 530*SCALE
+const BET_F2 1840*SCALE
+const BET_F3 2480*SCALE
+
+const BAT_F1 660*SCALE
+const BAT_F2 1720*SCALE
+const BAT_F3 2410*SCALE
+
+const FATHER_F1 730*SCALE
+const FATHER_F2 1090*SCALE
+const FATHER_F3 2440*SCALE
+
+const BOUGHT_F1 570*SCALE
+const BOUGHT_F2 840*SCALE
+const BOUGHT_F3 2410*SCALE
+
+const FOOT_F1 440*SCALE
+const FOOT_F2 1020*SCALE
+const FOOT_F3 2240*SCALE
+
+const BOOT_F1 300*SCALE
+const BOOT_F2 870*SCALE
+const BOOT_F3 2240*SCALE
+
+const BUT_F1 640*SCALE
+const BUT_F2 1190*SCALE
+const BUT_F3 2390*SCALE
+
+constantsEnd
+
+note
+; @pos -125 -7
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRate 48000
+; @config audioRuntime.audioOutBufferLAddress audioout:buffer
+; @config audioRuntime.audioOutBufferRAddress audioout:buffer
+; @config export.fileName formantSynth
+noteEnd
+
+note colors
+; @pos -125 4
+; @config color.canvas #ffe2cc
+; @config color.surface #fff7e6
+; @config color.ink #33324f
+; @config color.primary #ec6b91
+; @config color.secondary #3a93c9
+; @config color.positive #62a86c
+; @config color.warning #e5ac35
+; @config color.negative #dc4b5c
+; @config color.muted #9a7883
+; @config color.stroke rgba(74,79,125,0.65)
+; @config color.tertiary #a06a46
+; @config color.highlight #ffd05b
+; @config color.detail #81cbd5
+noteEnd
+
+entry main
+module clock
+; @pos 20 -20
+use env
+
+int counter
+int out
+
+; Count samples until one 
+; second has passed.
+push &counter
+push counter
+push 1
+add
+store
+
+; High for exactly one sample.
+push &out
+push counter
+push SAMPLE_RATE
+equal
+store
+
+push out
+if
+push &counter
+push 0
+store
+ifEnd
+
+moduleEnd
+module formantFreqs
+; @pos 20 18
+
+use vowels
+
+float BEET_F1
+float BIT_F1
+float BET_F1
+float BAT_F1
+float FATHER_F1
+float BOUGHT_F1
+float FOOT_F1
+float BOOT_F1
+float BUT_F1
+
+float BEET_F2
+float BIT_F2
+float BET_F2
+float BAT_F2
+float FATHER_F2
+float BOUGHT_F2
+float FOOT_F2
+float BOOT_F2
+float BUT_F2
+
+float BEET_F3
+float BIT_F3
+float BET_F3
+float BAT_F3
+float FATHER_F3
+float BOUGHT_F3
+float FOOT_F3
+float BOOT_F3
+float BUT_F3
+
+moduleEnd
+module sequencer1
+; @pos 65 17
+
+float* in &formantFreqs:0
+int* trigger &clock:out
+int prev
+float out ; @w
+
+push &out
+push *in
+store
+
+push *trigger
+push &prev
+call risingEdge
+if 
+push &in
+push in
+push 4
+add
+store
+ifEnd
+
+push in
+push &formantFreqs:8
+greaterThan
+if
+push &in
+push &formantFreqs:0
+store
+ifEnd
+
+moduleEnd
+module sequencer2
+; @pos 99 17
+
+float* in &formantFreqs:9
+int* trigger &clock:out
+int prev
+float out ; @w
+
+push &out
+push *in
+store
+
+push *trigger
+push &prev
+call risingEdge
+if 
+push &in
+push in
+push 4
+add
+store
+ifEnd
+
+push in
+push &formantFreqs:17
+greaterThan
+if
+push &in
+push &formantFreqs:9
+store
+ifEnd
+
+moduleEnd
+module phaseAccumulator
+; @pos 130 -31
+use env
+
+float defaultFreq 100
+float* frequency &defaultFreq
+float phase
+float out
+
+use math
+
+; Advance phase by
+; TAU * frequency / SAMPLE_RATE
+push &phase
+push phase
+push TAU
+push *frequency
+mul
+push SAMPLE_RATE
+castToFloat
+ensureNonZero
+div
+add
+store
+
+; Wrap phase when it exceeds PI
+push phase
+push PI
+greaterThan
+if
+push &phase
+push NEG_PI
+store
+ifEnd
+
+; Sawtooth wave: phase / PI
+push &out
+push phase
+push PI
+div
+store
+
+moduleEnd
+module sequencer3
+; @pos 133 17
+
+float* in &formantFreqs:18
+int* trigger &clock:out
+int prev
+float out ; @w
+
+push &out
+push *in
+store
+
+push *trigger
+push &prev
+call risingEdge
+if 
+push &in
+push in
+push 4
+add
+store
+ifEnd
+
+push in
+push &formantFreqs:26
+greaterThan
+if
+push &in
+push &formantFreqs:18
+store
+ifEnd
+
+moduleEnd
+module resonantLowPassFilter
+; @pos 180 9
+; Minimal state-variable filter.
+; out is the low-pass state; 
+; band is the band-pass state.
+; freq sets frequency
+; lower damping gives more resonance.
+
+float* in &phaseAccumulator:out
+float* freq &sequencer1:out
+float damping 0.15
+float low
+float band
+
+; @slider &damping 0.02 0.5 0.005
+
+; low = low + freq * band
+push &low
+push low
+push *freq
+push band
+mul
+add
+store
+
+; Keep band's destination 
+; and old value below high.
+push &band
+push band
+
+; high = input - low - damping * band
+push *in
+push low
+sub
+push damping
+push band
+mul
+sub
+
+; band = band + freq*high
+push *freq
+mul
+add
+store
+
+moduleEnd
+module resonantLowPassFilter2
+; @pos 226 9
+; Minimal state-variable filter.
+; out is the low-pass state; 
+; band is the band-pass state.
+; freq sets frequency
+; lower damping gives more resonance.
+
+float* in &phaseAccumulator:out
+float* freq &sequencer2:out
+float damping 0.05
+float low
+float band
+
+; @slider &damping 0.02 0.5 0.005
+
+; low = low + freq * band
+push &low
+push low
+push *freq
+push band
+mul
+add
+store
+
+; Keep band's destination 
+; and old value below high.
+push &band
+push band
+
+; high = input - low - damping * band
+push *in
+push low
+sub
+push damping
+push band
+mul
+sub
+
+; band = band + freq*high
+push *freq
+mul
+add
+store
+
+moduleEnd
+module resonantLowPassFilter3
+; @pos 272 9
+; Minimal state-variable filter.
+; out is the low-pass state; 
+; band is the band-pass state.
+; freq sets frequency
+; lower damping gives more resonance.
+
+float* in &phaseAccumulator:out
+float* freq &sequencer3:out
+float damping 0.05
+float low
+float band
+
+; @slider &damping 0.02 0.5 0.005
+
+; low = low + freq * band
+push &low
+push low
+push *freq
+push band
+mul
+add
+store
+
+; Keep band's destination 
+; and old value below high.
+push &band
+push band
+
+; high = input - low - damping * band
+push *in
+push low
+sub
+push damping
+push band
+mul
+sub
+
+; band = band + freq*high
+push *freq
+mul
+add
+store
+
+moduleEnd
+module mixer
+; @pos 321 9
+
+float* formant1
+- &resonantLowPassFilter:band
+float* formant2
+- &resonantLowPassFilter2:band
+float* formant3
+- &resonantLowPassFilter3:band
+
+float gain1 1.0
+float gain2 0.4
+float gain3 0.25
+
+; @slider &gain1 0 1 0.01
+; @slider &gain2 0 1 0.01
+; @slider &gain3 0 1 0.01
+
+float out
+
+push &out
+push *formant1
+push gain1
+mul
+push *formant2
+push gain2
+mul
+add
+push *formant3
+push gain3
+mul
+add
+push 2.0
+div
+
+store
+
+moduleEnd
+module audioout
+; @pos 365 9
+; @home right
+use env
+
+float* in &mixer:out
+
+; Audio buffer
+float[] buffer AUDIO_BUFFER_SIZE
+int pointer &buffer
+
+; @plot &buffer count(buffer)
+
+; Store the input value
+; in the buffer
+push pointer
+push *in
+push 0.5
+mul
+store
+
+; Increment the buffer
+; pointer by the
+; buffer word size
+push &pointer
+push pointer
+push sizeof(buffer)
+add
+store
+
+; Reset the buffer pointer
+; when it reaches the end
+; of the buffer
+push pointer
+push buffer&
+greaterThan
+if
+push &pointer
+push &buffer
+store
+ifEnd
+
+moduleEnd
+entryEnd

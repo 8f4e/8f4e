@@ -1,29 +1,27 @@
 import type { MemoryDefaults, PlannedMemoryDeclaration, ValidatedModuleAST } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { createMockState } from '../../../pureHelpers/testingUtils/testUtils';
-import type { DirectiveDerivedState } from '../features/directives/registry';
 import gaps from '../gaps';
+import type { BlockLayoutDraft } from '../layout/types';
 import { createCodeBlockGraphicData } from '../utils/createCodeBlockGraphicData';
 import shape, { updateShapeDeclarations } from './updateGraphicData';
 
-function createDirectiveState(): DirectiveDerivedState {
+function createLayoutDraft(): BlockLayoutDraft {
 	return {
-		blockState: { disabled: false, isHome: false, isFavorite: false },
-		displayState: {},
 		displayModel: {
 			lines: [],
-			displayRowToRawRow: [],
-			rawRowToDisplayRow: [],
+			displayRowToSourceLineIndex: [],
+			sourceLineIndexToDisplayRow: [],
 			isCollapsed: false,
 		},
-		layoutContributions: [],
-		widgets: [],
+		verticalSpaceAfterSourceLine: [],
 	};
 }
 
 function createModuleAst(): ValidatedModuleAST {
 	return {
 		type: 'module',
+		projectBlockId: 0,
 		id: 'filterA',
 		lines: [
 			{ lineNumber: 0, instruction: 'module', arguments: [{ value: 'filterA' }] },
@@ -111,21 +109,32 @@ function createInheritedMemory(count: number): Record<string, MemoryFixture> {
 }
 
 describe('shape', () => {
+	it('does not add inherited rows or labels to an overridden source block', () => {
+		const block = createCodeBlockGraphicData({
+			blockType: 'module',
+			creationIndex: 1,
+			code: ['module filterA', 'shape filterState', 'moduleEnd'],
+		});
+		const state = createMockState({ compiler: { result: createCompilerReports(createInheritedMemory(4)) } });
+		const blockLayout = createLayoutDraft();
+		shape(block, state, blockLayout);
+		updateShapeDeclarations(block, state, blockLayout);
+		expect(blockLayout.verticalSpaceAfterSourceLine).toEqual([]);
+		expect(block.widgets.shapeDeclarations).toEqual([]);
+	});
 	it('contributes one layout row per compiler-reported inherited declaration under shape lines', () => {
 		const module = createCodeBlockGraphicData({
 			blockType: 'module',
 			code: ['module filterA', 'shape filterState', 'float cutoff 1200', 'moduleEnd'],
 		});
 		const state = createMockState({
-			compiler: {
-				...createCompilerReports(createInheritedMemory(4)),
-			},
+			compiler: { result: createCompilerReports(createInheritedMemory(4)) },
 		});
-		const directiveState = createDirectiveState();
+		const blockLayout = createLayoutDraft();
 
-		shape(module, state, directiveState);
+		shape(module, state, blockLayout);
 
-		expect(directiveState.layoutContributions).toEqual([{ rawRow: 1, rows: 4 }]);
+		expect(blockLayout.verticalSpaceAfterSourceLine).toEqual([{ sourceLineIndex: 1, heightInRows: 4 }]);
 	});
 
 	it('skips modules without compiler-reported shape expansions', () => {
@@ -134,15 +143,13 @@ describe('shape', () => {
 			code: ['module filterA', 'shape filterState', 'shape missingState', 'moduleEnd'],
 		});
 		const state = createMockState({
-			compiler: {
-				...createCompilerReports(),
-			},
+			compiler: { result: createCompilerReports() },
 		});
-		const directiveState = createDirectiveState();
+		const blockLayout = createLayoutDraft();
 
-		shape(module, state, directiveState);
+		shape(module, state, blockLayout);
 
-		expect(directiveState.layoutContributions).toEqual([]);
+		expect(blockLayout.verticalSpaceAfterSourceLine).toEqual([]);
 	});
 
 	it('precomputes inherited declaration labels after gaps are applied', () => {
@@ -157,7 +164,7 @@ describe('shape', () => {
 				hGrid: 16,
 			},
 			compiler: {
-				...createCompilerReports(
+				result: createCompilerReports(
 					{
 						input: createMemory({
 							id: 'input',
@@ -180,25 +187,26 @@ describe('shape', () => {
 				),
 			},
 		});
-		const directiveState = {
-			...createDirectiveState(),
+		const blockLayout = {
+			...createLayoutDraft(),
 			displayModel: {
 				lines: [
-					{ rawRow: 0, text: 'module filterA' },
-					{ rawRow: 1, text: '; @plot other' },
-					{ rawRow: 2, text: 'shape filterState' },
-					{ rawRow: 3, text: 'moduleEnd' },
+					{ sourceLineIndex: 0, text: 'module filterA' },
+					{ sourceLineIndex: 1, text: '; @plot other' },
+					{ sourceLineIndex: 2, text: 'shape filterState' },
+					{ sourceLineIndex: 3, text: 'moduleEnd' },
 				],
-				displayRowToRawRow: [0, 1, 2, 3],
-				rawRowToDisplayRow: [0, 1, 2, 3],
+				displayRowToSourceLineIndex: [0, 1, 2, 3],
+				sourceLineIndexToDisplayRow: [0, 1, 2, 3],
 				isCollapsed: false,
 			},
-			layoutContributions: [{ rawRow: 1, rows: 2 }],
 		};
 
-		shape(module, state, directiveState);
-		gaps(module, directiveState);
-		updateShapeDeclarations(module, state, directiveState);
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 2 });
+
+		shape(module, state, blockLayout);
+		gaps(module, blockLayout);
+		updateShapeDeclarations(module, state, blockLayout);
 
 		expect(module.widgets.shapeDeclarations).toEqual([
 			{ x: 24, y: 80, text: 'float* input' },

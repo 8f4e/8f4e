@@ -16,5 +16,5 @@
     "instruction": "function",
     "lineNumber": 0,
   },
-  "message": "Duplicate identifier: main. Module and function names must be unique. (45)",
+  "message": "Duplicate identifier: main. (45)",
 }

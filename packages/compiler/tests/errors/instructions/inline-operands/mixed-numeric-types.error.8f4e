@@ -1,0 +1,8 @@
+8f4e/v1
+
+entry main
+module invalid
+push 1
+add 2.0
+moduleEnd
+entryEnd

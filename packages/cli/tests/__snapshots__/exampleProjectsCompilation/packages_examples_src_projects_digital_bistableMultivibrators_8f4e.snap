@@ -4,7 +4,9 @@
   },
   "compiledModules": {
     "resetButton": {
+      "referenceSlots": {},
       "id": "resetButton",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -56,17 +58,19 @@
             }
           ]
         },
-        "projectBlockId": 104,
+        "projectBlockId": 48,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "resetButton"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 0,
-      "executionEntryName": "main"
+      "index": 0
     },
     "setButton": {
+      "referenceSlots": {},
       "id": "setButton",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -118,17 +122,19 @@
             }
           ]
         },
-        "projectBlockId": 113,
+        "projectBlockId": 57,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "setButton"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 1,
-      "executionEntryName": "main"
+      "index": 1
     },
     "norGate2": {
+      "referenceSlots": {},
       "id": "norGate2",
+      "executionEntryName": "main",
       "cycleFunction": [
         35,
         0,
@@ -380,17 +386,19 @@
             }
           ]
         },
-        "projectBlockId": 123,
+        "projectBlockId": 67,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "norGate2"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 2,
-      "executionEntryName": "main"
+      "index": 2
     },
     "norGate": {
+      "referenceSlots": {},
       "id": "norGate",
+      "executionEntryName": "main",
       "cycleFunction": [
         35,
         0,
@@ -642,17 +650,19 @@
             }
           ]
         },
-        "projectBlockId": 147,
+        "projectBlockId": 91,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "norGate"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 3,
-      "executionEntryName": "main"
+      "index": 3
     },
     "scope": {
+      "referenceSlots": {},
       "id": "scope",
+      "executionEntryName": "main",
       "cycleFunction": [
         89,
         2,
@@ -1000,17 +1010,19 @@
             }
           ]
         },
-        "projectBlockId": 171,
+        "projectBlockId": 115,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "scope"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 4,
-      "executionEntryName": "main"
+      "index": 4
     },
     "buttons": {
+      "referenceSlots": {},
       "id": "buttons",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -1074,17 +1086,19 @@
             }
           ]
         },
-        "projectBlockId": 200,
+        "projectBlockId": 144,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "buttons"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 5,
-      "executionEntryName": "main"
+      "index": 5
     },
     "negate": {
+      "referenceSlots": {},
       "id": "negate",
+      "executionEntryName": "main",
       "cycleFunction": [
         26,
         0,
@@ -1287,17 +1301,19 @@
             }
           ]
         },
-        "projectBlockId": 215,
+        "projectBlockId": 159,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "negate"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 6,
-      "executionEntryName": "main"
+      "index": 6
     },
     "orGate": {
+      "referenceSlots": {},
       "id": "orGate",
+      "executionEntryName": "main",
       "cycleFunction": [
         35,
         0,
@@ -1549,17 +1565,19 @@
             }
           ]
         },
-        "projectBlockId": 233,
+        "projectBlockId": 177,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "orGate"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 7,
-      "executionEntryName": "main"
+      "index": 7
     },
     "andGate": {
+      "referenceSlots": {},
       "id": "andGate",
+      "executionEntryName": "main",
       "cycleFunction": [
         35,
         0,
@@ -1811,17 +1829,19 @@
             }
           ]
         },
-        "projectBlockId": 256,
+        "projectBlockId": 200,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "andGate"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 8,
-      "executionEntryName": "main"
+      "index": 8
     },
     "scope2": {
+      "referenceSlots": {},
       "id": "scope2",
+      "executionEntryName": "main",
       "cycleFunction": [
         89,
         2,
@@ -2169,14 +2189,14 @@
             }
           ]
         },
-        "projectBlockId": 279,
+        "projectBlockId": 223,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "scope2"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 9,
-      "executionEntryName": "main"
+      "index": 9
     }
   },
   "memoryPlan": {

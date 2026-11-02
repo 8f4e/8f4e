@@ -616,7 +616,10 @@
       "id": "normalize__int16_p",
       "signature": {
         "parameters": [
-          "int16*",
+          {
+            "name": "pointer",
+            "type": "int16*",
+          },
         ],
         "returns": [
           "float",
@@ -627,7 +630,10 @@
       "id": "normalize__int16u_p",
       "signature": {
         "parameters": [
-          "int16u*",
+          {
+            "name": "pointer",
+            "type": "int16u*",
+          },
         ],
         "returns": [
           "float",
@@ -638,7 +644,10 @@
       "id": "normalize__int8_p",
       "signature": {
         "parameters": [
-          "int8*",
+          {
+            "name": "pointer",
+            "type": "int8*",
+          },
         ],
         "returns": [
           "float",
@@ -649,7 +658,10 @@
       "id": "normalize__int8u_p",
       "signature": {
         "parameters": [
-          "int8u*",
+          {
+            "name": "pointer",
+            "type": "int8u*",
+          },
         ],
         "returns": [
           "float",
@@ -660,7 +672,10 @@
       "id": "normalize__int_p",
       "signature": {
         "parameters": [
-          "int*",
+          {
+            "name": "pointer",
+            "type": "int*",
+          },
         ],
         "returns": [
           "float",

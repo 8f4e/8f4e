@@ -15,5 +15,5 @@
     "instruction": "pass",
     "lineNumber": 1,
   },
-  "message": "Passed constant namespace env is undefined in the parent project scope (UNRESOLVED_PASSED_NAMESPACE). (69)",
+  "message": "Passed name env is undefined in the parent project scope (UNRESOLVED_PASSED_NAMESPACE). (69)",
 }

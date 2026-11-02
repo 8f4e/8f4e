@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Compile-time rounding is explicit and works
 for constants, pushes, and array sizes.

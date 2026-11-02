@@ -1,0 +1,43 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/bitwise/extractNibble
+includesEnd
+
+entry test
+module extractNibbleIntAssertions
+; Every position, including the sign
+; bit, is extracted without neighbors.
+call extractNibble 0x89ABCDEF 0
+assertEqual 0xF
+call extractNibble 0x89ABCDEF 1
+assertEqual 0xE
+call extractNibble 0x89ABCDEF 2
+assertEqual 0xD
+call extractNibble 0x89ABCDEF 3
+assertEqual 0xC
+call extractNibble 0x89ABCDEF 4
+assertEqual 0xB
+call extractNibble 0x89ABCDEF 5
+assertEqual 0xA
+call extractNibble 0x89ABCDEF 6
+assertEqual 0x9
+call extractNibble 0x89ABCDEF 7
+assertEqual 0x8
+
+call extractNibble 0 7
+assertEqual 0
+call extractNibble -1 0
+assertEqual 0xF
+call extractNibble -1 7
+assertEqual 0xF
+call extractNibble 0x80000000 7
+assertEqual 0x8
+call extractNibble 0xF0FFFFFF 6
+assertEqual 0
+moduleEnd
+entryEnd

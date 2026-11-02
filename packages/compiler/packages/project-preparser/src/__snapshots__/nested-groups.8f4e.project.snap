@@ -1,8 +1,20 @@
 {
   "code": [],
   "constants": [],
-  "functions": [],
-  "groups": [
+  "entries": [
+    "main",
+  ],
+  "execution": [
+    {
+      "code": [
+        "module root",
+        "int tick",
+        "moduleEnd",
+      ],
+      "entry": "main",
+      "id": 4,
+      "type": "module",
+    },
     {
       "code": [
         "group audio",
@@ -18,23 +30,24 @@
             "const SAMPLE_RATE 48000",
             "constantsEnd",
           ],
-          "id": 18,
+          "id": 20,
         },
+      ],
+      "entries": [
+        "main",
       ],
       "entry": "main",
-      "exposures": [],
-      "functions": [
+      "execution": [
         {
           "code": [
-            "function sineApprox",
-            "param float x",
-            "push x",
-            "functionEnd float",
+            "module voice",
+            "float phase",
+            "moduleEnd",
           ],
-          "id": 13,
+          "entry": "main",
+          "id": 10,
+          "type": "module",
         },
-      ],
-      "groups": [
         {
           "code": [
             "group oscillator",
@@ -42,12 +55,15 @@
             "groupEnd",
           ],
           "constants": [],
+          "entries": [
+            "main",
+          ],
           "entry": "main",
+          "execution": [],
           "exposures": [],
           "functions": [],
-          "groups": [],
+          "id": 25,
           "includes": [],
-          "modules": [],
           "name": "oscillator",
           "notes": [],
           "prototypes": [
@@ -58,42 +74,36 @@
                 "float frequency 440",
                 "prototypeEnd",
               ],
-              "id": 23,
+              "id": 26,
             },
           ],
+          "type": "group",
           "unknown": [],
         },
       ],
-      "includes": [],
-      "modules": [
+      "exposures": [],
+      "functions": [
         {
           "code": [
-            "module voice",
-            "float phase",
-            "moduleEnd",
+            "function sineApprox",
+            "param float x",
+            "push x",
+            "functionEnd float",
           ],
-          "entry": "main",
-          "id": 9,
+          "id": 15,
         },
       ],
+      "id": 8,
+      "includes": [],
       "name": "audio",
       "notes": [],
       "prototypes": [],
+      "type": "group",
       "unknown": [],
     },
   ],
+  "functions": [],
   "includes": [],
-  "modules": [
-    {
-      "code": [
-        "module root",
-        "int tick",
-        "moduleEnd",
-      ],
-      "entry": "main",
-      "id": 4,
-    },
-  ],
   "notes": [],
   "prototypes": [],
   "unknown": [],

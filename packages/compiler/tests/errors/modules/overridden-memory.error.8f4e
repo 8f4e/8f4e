@@ -1,0 +1,16 @@
+8f4e/v1
+
+entry main
+module source
+int obsolete 1
+moduleEnd
+
+module source
+int current 2
+moduleEnd
+
+module consumer
+push &source:obsolete
+drop
+moduleEnd
+entryEnd

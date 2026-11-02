@@ -1,4 +1,5 @@
 import type { CompileAndUpdateMemoryResult, ProjectObjectModel } from '@8f4e/language-spec';
+import { getProjectModules } from '@8f4e/language-spec';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type compileAndUpdateMemoryType from '../compileAndUpdateMemory';
 
@@ -6,15 +7,15 @@ const compilerOptions = { startingMemoryAllocationUnitAddress: 1 };
 let compileAndUpdateMemory: typeof compileAndUpdateMemoryType;
 
 const createInput = (modules: Array<{ code: string[] }>, entry = 'main'): ProjectObjectModel => ({
+	entries: [entry],
 	code: [],
-	modules: modules.map((module, id) => ({ ...module, id, entry })),
+	execution: [...modules.map((module, id) => ({ ...module, type: 'module' as const, id, entry }))],
 	constants: [],
 	functions: [],
 	prototypes: [],
 	includes: [],
 	notes: [],
 	unknown: [],
-	groups: [],
 });
 
 beforeEach(async () => {
@@ -62,7 +63,6 @@ moduleEnd
 
 		expect(exportKeys).toContain('init');
 		expect(firstResult.compiledModules.setup.executionEntryName).toBe('init');
-		expect(firstResult.initOnlyReran).toBe(false);
 		expect(firstResult.astCacheStats).toEqual({ hits: 0, misses: 1 });
 		expect(memoryView[addresses.base]).toBe(1);
 		expect(memoryView[addresses.derived]).toBe(0);
@@ -70,7 +70,6 @@ moduleEnd
 		const secondResult = await compileAndUpdateMemory(createInput(createModules(10), 'init'), compilerOptions);
 		const updatedMemory = new Int32Array(secondResult.memoryRef.buffer);
 
-		expect(secondResult.initOnlyReran).toBe(false);
 		expect(secondResult.astCacheStats).toEqual({ hits: 0, misses: 2 });
 		expect(updatedMemory[addresses.base]).toBe(10);
 		expect(updatedMemory[addresses.derived]).toBe(0);
@@ -95,7 +94,8 @@ store
 moduleEnd`.split('\n'),
 			},
 		]);
-		project.modules[0].entry = 'test';
+		getProjectModules(project)[0].entry = 'test';
+		project.entries = ['test'];
 		const result = await compileAndUpdateMemory(project, { ...compilerOptions, enableAssertions: true });
 		const imports = WebAssembly.Module.imports(new WebAssembly.Module(new Uint8Array(result.codeBuffer)));
 		expect(result.assertionSites).toMatchObject([
@@ -120,7 +120,6 @@ moduleEnd`.split('\n'),
 		const addresses = getAddresses(firstResult);
 		const memoryView = new Int32Array(firstResult.memoryRef.buffer);
 
-		expect(firstResult.initOnlyReran).toBe(false);
 		expect(memoryView[addresses.base]).toBe(3);
 		expect(memoryView[addresses.derived]).toBe(0);
 
@@ -129,10 +128,69 @@ moduleEnd`.split('\n'),
 		const secondResult = await compileAndUpdateMemory(createInput(createModules(3), 'init'), compilerOptions);
 		const secondMemory = new Int32Array(secondResult.memoryRef.buffer);
 
-		expect(secondResult.initOnlyReran).toBe(false);
 		expect(secondResult.astCacheStats).toEqual({ hits: 1, misses: 1 });
 		expect(secondMemory[addresses.base]).toBe(5);
 		expect(secondMemory[addresses.derived]).toBe(0);
+	});
+});
+
+describe('compileAndUpdateMemory live code updates', () => {
+	it('preserves live memory when reordering replacements with different code lengths', async () => {
+		const project = createInput([
+			{ code: 'module voice\nint out\npush &out\npush out\nadd 1\nstore\nmoduleEnd'.split('\n') },
+			{ code: 'module sentinel\nint value 7\nmoduleEnd'.split('\n') },
+			{ code: 'module voice\nint out\npush &out\npush out\nmul 2\nadd 1\nstore\nmoduleEnd'.split('\n') },
+		]);
+		const run = async (result: CompileAndUpdateMemoryResult) => {
+			const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), {
+				host: { memory: result.memoryRef },
+			});
+			(instance.exports.main as CallableFunction)();
+		};
+		const first = await compileAndUpdateMemory(project, compilerOptions);
+		const out = first.memoryPlan.modules.voice!.memory.out!.byteAddress / 4;
+		const sentinel = first.memoryPlan.modules.sentinel!.memory.value!.byteAddress / 4;
+		const memory = new Int32Array(first.memoryRef.buffer);
+		memory[out] = 123;
+		memory[sentinel] = 456;
+		await run(first);
+		expect(memory[out]).toBe(247);
+
+		project.execution.reverse();
+		const second = await compileAndUpdateMemory(project, compilerOptions);
+		expect(second.compiledModules.voice.cycleFunction.length).not.toBe(
+			first.compiledModules.voice.cycleFunction.length
+		);
+		expect(second.memoryAction).toEqual({ action: 'reused' });
+		expect(second.memoryRef).toBe(first.memoryRef);
+		expect(memory[out]).toBe(247);
+		expect(memory[sentinel]).toBe(456);
+		await run(second);
+		expect(memory[out]).toBe(248);
+
+		project.execution.reverse();
+		const restored = await compileAndUpdateMemory(project, compilerOptions);
+		expect(restored.memoryAction).toEqual({ action: 'reused' });
+		expect(restored.memoryRef).toBe(first.memoryRef);
+		await run(restored);
+		expect(memory[out]).toBe(497);
+		expect(memory[sentinel]).toBe(456);
+	});
+
+	it('still resets memory when a declaration changes size', async () => {
+		const project = createInput([{ code: 'module voice\nint state\nmoduleEnd'.split('\n') }]);
+		const first = await compileAndUpdateMemory(project, compilerOptions);
+		const address = first.memoryPlan.modules.voice!.memory.state!.byteAddress / 4;
+		new Int32Array(first.memoryRef.buffer)[address] = 123;
+
+		getProjectModules(project)[0].code = 'module voice\nint[] state 2\nmoduleEnd'.split('\n');
+		const second = await compileAndUpdateMemory(project, compilerOptions);
+		expect(second.memoryAction).toEqual({ action: 'recreated', reason: { kind: 'memory-structure-changed' } });
+		expect(second.memoryRef).not.toBe(first.memoryRef);
+		const state = second.memoryPlan.modules.voice!.memory.state!;
+		expect(Array.from(new Int32Array(second.memoryRef.buffer, state.byteAddress, state.numberOfElements))).toEqual([
+			0, 0,
+		]);
 	});
 });
 
@@ -202,7 +260,6 @@ describe('compileAndUpdateMemory narrow integer incremental patching', () => {
 		const values = second.memoryPlan.modules.mymod!.memory.values!;
 
 		expect(second.memoryAction).toEqual({ action: 'reused' });
-		expect(second.initOnlyReran).toBe(false);
 		expect(Array.from(new Uint8Array(second.memoryRef.buffer, values.byteAddress, values.elementByteLength))).toEqual([
 			0xf9, 0x80, 0x7f, 0x05,
 		]);

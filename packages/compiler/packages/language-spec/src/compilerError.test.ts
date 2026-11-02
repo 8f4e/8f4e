@@ -81,9 +81,7 @@ describe('getError', () => {
 
 		const error = getError(ErrorCode.DUPLICATE_IDENTIFIER, line, undefined, { identifier: 'same' });
 
-		expect(error.message).toBe(
-			`Duplicate identifier: same. Module and function names must be unique. (${ErrorCode.DUPLICATE_IDENTIFIER})`
-		);
+		expect(error.message).toBe(`Duplicate identifier: same. (${ErrorCode.DUPLICATE_IDENTIFIER})`);
 	});
 	it('explains that the pointee address prefix requires a pointer', () => {
 		const error = getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, undefined, { identifier: 'value' });

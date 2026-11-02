@@ -33,8 +33,18 @@ constantsEnd
 
 note
 ; @pos -438 18
-; @config color.fill.background #330011
 ; @config export.fileName digitClassifier
+noteEnd
+
+note colors
+; @pos -494 18
+; @config color.canvas #330011
+; @config color.primary #ff0
+; @config color.secondary #333
+; @config color.tertiary #666666
+; @config color.highlight rgba(255,255,255,0.45)
+; @config color.detail #ffffff
+; @config color.stroke rgba(255,255,255,0.3)
 noteEnd
 
 note
@@ -53,7 +63,7 @@ note
 ; sigmoid activations, and connections remain
 ; visible in the editor.
 
-; @config runtime WebWorkerRuntime
+; @config workerRuntime.enabled true
 noteEnd
 
 note
@@ -89,9 +99,6 @@ entry main
 module grid
 ; @pos -274 11
 ; @home
-; @config color.text.binaryOne #ff0
-; @config color.text.basePrefix #333
-; @config color.text.binaryZero #666
 
 int row0 0b111
 int row1 0b100

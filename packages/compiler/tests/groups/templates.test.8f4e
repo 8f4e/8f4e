@@ -1,0 +1,88 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+Two instances share source, helper functions, prototypes and scoped nested templates,
+while their exposed initializers and memory remain independent.
+noteEnd
+
+constants env
+const OFFSET 1
+constantsEnd
+
+template voice
+includes
+include std/math/trig/sine
+includesEnd
+function scale
+param int value
+use env
+push value
+mul 2
+add OFFSET
+functionEnd int
+prototype state
+int value
+prototypeEnd
+constants local
+const EXPECTED 2
+constantsEnd
+note
+useTemplate is ordinary note text here.
+noteEnd
+template inner
+entry main
+module counter
+use local
+int count 1
+push &count
+push count
+add 1
+store
+push count
+assertEqual EXPECTED
+moduleEnd
+entryEnd
+templateEnd
+entry empty
+entryEnd
+entry main
+module processor
+shape state
+push &value
+call scale value
+store
+moduleEnd
+group nested
+pass local
+useTemplate inner
+groupEnd
+entryEnd
+templateEnd
+
+entry test
+group left
+expose value &processor:value
+init &value 5
+pass env
+useTemplate voice
+groupEnd
+group right
+expose value &processor:value
+init &value 10
+pass env
+useTemplate voice
+groupEnd
+module verify
+push &left:value
+load
+assertEqual 11
+push &right:value
+load
+assertEqual 21
+push &left:value
+push &right:value
+notEqual
+assertEqual 1
+moduleEnd
+entryEnd

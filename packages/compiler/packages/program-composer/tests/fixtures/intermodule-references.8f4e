@@ -2,6 +2,7 @@
 
 entry main
 group audio
+entry main
 module source
 int value
 moduleEnd
@@ -10,5 +11,6 @@ module consumer
 push &source:value
 drop
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

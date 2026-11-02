@@ -13,12 +13,12 @@ import type {
 	CallLine,
 	CompilerASTLine,
 	DefaultLine,
+	InlineOperandLine,
 	LocalSetLine,
 	LoopLine,
 	MapLine,
 	MemoryCopyLine,
 	PrototypeAST,
-	PushArgument,
 	PushLine,
 	PushShapeLine,
 } from './ast';
@@ -36,6 +36,7 @@ import type {
 	ResolvedMemoryDeclaration,
 } from './memory';
 import type { ProjectMemoryAliasLookup } from './project';
+import type { ReferenceSlotMap, ResolvedReferenceSlot } from './referenceSlots';
 
 /** Proven byte range associated with an address expression or memory boundary. */
 export interface MemoryAddressRange {
@@ -240,9 +241,13 @@ export interface MemoryReferenceResolutionBlockFacts {
 	lineFacts: Array<MemoryReferenceResolutionLineFacts | undefined>;
 }
 
+export interface MemoryReferenceResolutionModuleFacts extends MemoryReferenceResolutionBlockFacts {
+	referenceSlots: ReferenceSlotMap;
+}
+
 export interface MemoryReferenceResolutionReport {
 	prototypes: readonly MemoryReferenceResolutionBlockFacts[];
-	modules: readonly MemoryReferenceResolutionBlockFacts[];
+	modules: readonly MemoryReferenceResolutionModuleFacts[];
 	constants: readonly MemoryReferenceResolutionBlockFacts[];
 	functions: readonly MemoryReferenceResolutionBlockFacts[];
 	declarationSourcesByModuleId: Record<string, MemoryReferenceResolutionBlockFacts>;
@@ -292,10 +297,6 @@ export type LiteralPushLine = Omit<PushLine, 'arguments'> & {
 	arguments: [ResolvedArgumentLiteral | ArgumentStringLiteral];
 };
 
-export type DeferredPushLine = Omit<PushLine, 'arguments'> & {
-	arguments: [ArgumentCompileTimeExpression | ArgumentIdentifier];
-};
-
 export type ResolvedMemoryPushLine = Omit<PushLine, 'arguments'> & {
 	arguments: [ArgumentIdentifier];
 	resolvedTarget: {
@@ -320,6 +321,11 @@ export type ResolvedLocalPushLine = Omit<PushLine, 'arguments'> & {
 	};
 };
 
+export type ResolvedReferencePushLine = Omit<PushLine, 'arguments'> & {
+	arguments: [MemoryPointerIdentifier];
+	resolvedTarget: { kind: 'reference'; slot: ResolvedReferenceSlot };
+};
+
 export type ResolvedLocalPointerPushLine = Omit<PushLine, 'arguments'> & {
 	arguments: [MemoryPointerIdentifier];
 	resolvedTarget: {
@@ -329,19 +335,22 @@ export type ResolvedLocalPointerPushLine = Omit<PushLine, 'arguments'> & {
 };
 
 export type ResolvedPushLine =
+	| ResolvedReferencePushLine
 	| ResolvedMemoryPushLine
 	| ResolvedMemoryPointerPushLine
 	| ResolvedLocalPushLine
 	| ResolvedLocalPointerPushLine;
 
 export type CodegenPushLine = LiteralPushLine | ResolvedPushLine;
-export type SemanticPushLine = CodegenPushLine | DeferredPushLine;
 
 export type ResolvedLocalSetLine = LocalSetLine & { binding: SourceLocalBinding };
 
 export type SemanticCallLine = Omit<CallLine, 'arguments'> & {
-	arguments: [ArgumentIdentifier, ...PushArgument[]];
-	inlineArgumentPushes?: CodegenPushLine[];
+	arguments: [ArgumentIdentifier];
+};
+
+export type ResolvedInlineOperandLine = Omit<InlineOperandLine, 'arguments'> & {
+	arguments: [];
 };
 
 export type SemanticAssertEqualLine = AssertEqualLine & {
@@ -358,27 +367,29 @@ export type ResolvedPushShapeLine = Omit<PushShapeLine, 'arguments'> & {
 	shapeExpansions: PushShapeExpansion[];
 };
 
-export type SemanticReferenceLine<TLine extends CompilerASTLine = CompilerASTLine> = TLine extends DefaultLine
-	? ResolvedDefaultLine | DefaultLine
-	: TLine extends AssertEqualLine
-		? SemanticAssertEqualLine
-		: TLine extends CallLine
-			? SemanticCallLine | CallLine
-			: TLine extends MapLine
-				? ResolvedMapLine
-				: TLine extends LocalSetLine
-					? ResolvedLocalSetLine
-					: TLine extends PushLine
-						? SemanticPushLine
-						: TLine extends PushShapeLine
-							? ResolvedPushShapeLine
-							: TLine extends LoopLine
-								? ResolvedLoopLine
-								: TLine extends MemoryCopyLine
-									? ResolvedMemoryCopyLine | MemoryCopyLine
-									: TLine extends ArrayDeclarationLine
-										? ArrayDeclarationLine
-										: TLine;
+export type SemanticReferenceLine<TLine extends CompilerASTLine = CompilerASTLine> = TLine extends InlineOperandLine
+	? ResolvedInlineOperandLine
+	: TLine extends DefaultLine
+		? ResolvedDefaultLine | DefaultLine
+		: TLine extends AssertEqualLine
+			? SemanticAssertEqualLine
+			: TLine extends CallLine
+				? SemanticCallLine
+				: TLine extends MapLine
+					? ResolvedMapLine
+					: TLine extends LocalSetLine
+						? ResolvedLocalSetLine
+						: TLine extends PushLine
+							? CodegenPushLine
+							: TLine extends PushShapeLine
+								? ResolvedPushShapeLine
+								: TLine extends LoopLine
+									? ResolvedLoopLine
+									: TLine extends MemoryCopyLine
+										? ResolvedMemoryCopyLine | MemoryCopyLine
+										: TLine extends ArrayDeclarationLine
+											? ArrayDeclarationLine
+											: TLine;
 
 /** Resolved instructions that remain after declaration processing. */
 export type ExecutableInstructionLine = Extract<SemanticReferenceLine, { instruction: CodegenInstructionName }>;

@@ -85,27 +85,41 @@ export const projects = [
 	},
 	{
 		id: 'fm-synth',
-		title: 'Six-operator FM synthesizer',
-		description: 'Play a keyboard-controlled FM synthesizer with six operators and individual envelopes.',
+		title: 'E-piano approximation',
+		description:
+			'Play the original six-operator electric piano with simple one-shot envelopes inspired by DX7 E.PIANO 1.',
 		path: 'audio/keyboardController6OperatorFMSynth.8f4e',
+	},
+	{
+		id: 'dx7-algorithm-5',
+		title: 'DX7 Algorithm 5',
+		description: 'Play a six-operator DX7-style voice with movable factory presets.',
+		path: 'audio/dx7Algorithm5.8f4e',
+	},
+	{
+		id: 'dx7-stg-crescendo',
+		title: 'DX7 STG CRSNDO',
+		description: 'Hold a keyboard note to swell a DX7-style string voice with delayed vibrato and stereo reverb.',
+		path: 'audio/dx7StgCrescendo.8f4e',
+	},
+	{
+		id: 'formant-synth',
+		title: 'Formant synthesizer',
+		description: 'Cycle through vowel sounds with a sawtooth oscillator and three formant filters.',
+		path: 'audio/formantSynth.8f4e',
+	},
+	{
+		id: 'grids-patterns',
+		title: 'Grids patterns',
+		description:
+			'Generate 808 drum patterns with X/Y interpolation and independent kick, snare and hi-hat density controls.',
+		path: 'audio/gridsPatterns.8f4e',
 	},
 	{
 		id: 'reverb',
 		title: 'Reverb',
 		description: 'Explore a stereo reverb built from modulated delays, diffusers and feedback paths.',
 		path: 'audio/reverb.8f4e',
-	},
-	{
-		id: 'reverb-grouped',
-		title: 'Reverb: grouped',
-		description: 'Follow a sample through a reverb whose processing modules are organized into a group.',
-		path: 'audio/reverbGrouped.8f4e',
-	},
-	{
-		id: 'reverb-tweakable',
-		title: 'Reverb: tweakable',
-		description: 'Shape the reverb with sliders for decay, diffusion, damping and delay modulation.',
-		path: 'audio/reverbTweakable.8f4e',
 	},
 	{
 		id: 'granular-sampler',

@@ -1,0 +1,24 @@
+{
+  "code": 5,
+  "context": {
+    "codeBlockId": "consumer",
+    "codeBlockType": "module",
+    "projectBlockId": 12,
+  },
+  "line": {
+    "arguments": [
+      {
+        "isEndAddress": false,
+        "referenceKind": "intermodular-reference",
+        "scope": "intermodule",
+        "targetMemoryId": "obsolete",
+        "targetModuleId": "source",
+        "type": "identifier",
+        "value": "&source:obsolete",
+      },
+    ],
+    "instruction": "push",
+    "lineNumber": 1,
+  },
+  "message": "Undeclared identifier: obsolete. (5)",
+}
