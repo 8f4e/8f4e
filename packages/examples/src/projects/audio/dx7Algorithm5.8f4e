@@ -177,13 +177,342 @@ const G9  127
 
 constantsEnd
 
+constants preset
+; @pos 348 14
+; TUB BELLS / ROM1A voice 26.
+; @hide
+
+const OSC_KEY_SYNC 0
+const FEEDBACK 7
+
+; Operator 1.
+const OP1_RATIO 1.001042171
+const OP1_FIXED_HZ 0.0
+const OP1_GAIN 0.95
+const OP1_RATE1 95
+const OP1_RATE2 33
+const OP1_RATE3 71
+const OP1_RATE4 25
+const OP1_LEVEL1 99
+const OP1_LEVEL2 0
+const OP1_LEVEL3 32
+const OP1_LEVEL4 0
+const OP1_RATE_SCALING 2
+const OP1_OUTPUT_LEVEL 95
+const OP1_VELOCITY_SENSITIVITY 0
+
+; Operator 2.
+const OP2_RATIO 3.505472824
+const OP2_FIXED_HZ 0.0
+const OP2_GAIN 0.78
+const OP2_RATE1 98
+const OP2_RATE2 12
+const OP2_RATE3 71
+const OP2_RATE4 28
+const OP2_LEVEL1 99
+const OP2_LEVEL2 0
+const OP2_LEVEL3 32
+const OP2_LEVEL4 0
+const OP2_RATE_SCALING 2
+const OP2_OUTPUT_LEVEL 78
+const OP2_VELOCITY_SENSITIVITY 0
+
+; Operator 3.
+const OP3_RATIO 0.997399316
+const OP3_FIXED_HZ 0.0
+const OP3_GAIN 0.99
+const OP3_RATE1 95
+const OP3_RATE2 33
+const OP3_RATE3 71
+const OP3_RATE4 25
+const OP3_LEVEL1 99
+const OP3_LEVEL2 0
+const OP3_LEVEL3 32
+const OP3_LEVEL4 0
+const OP3_RATE_SCALING 2
+const OP3_OUTPUT_LEVEL 99
+const OP3_VELOCITY_SENSITIVITY 0
+
+; Operator 4.
+const OP4_RATIO 3.496356198
+const OP4_FIXED_HZ 0.0
+const OP4_GAIN 0.75
+const OP4_RATE1 98
+const OP4_RATE2 12
+const OP4_RATE3 71
+const OP4_RATE4 28
+const OP4_LEVEL1 99
+const OP4_LEVEL2 0
+const OP4_LEVEL3 32
+const OP4_LEVEL4 0
+const OP4_RATE_SCALING 2
+const OP4_OUTPUT_LEVEL 75
+const OP4_VELOCITY_SENSITIVITY 0
+
+; Operator 5.
+const OP5_RATIO 0.0
+const OP5_FIXED_HZ 323.593656930
+const OP5_GAIN 0.99
+const OP5_RATE1 76
+const OP5_RATE2 78
+const OP5_RATE3 71
+const OP5_RATE4 70
+const OP5_LEVEL1 99
+const OP5_LEVEL2 0
+const OP5_LEVEL3 0
+const OP5_LEVEL4 0
+const OP5_RATE_SCALING 2
+const OP5_OUTPUT_LEVEL 99
+const OP5_VELOCITY_SENSITIVITY 5
+
+; Operator 6.
+const OP6_RATIO 1.992721875
+const OP6_FIXED_HZ 0.0
+const OP6_GAIN 0.85
+const OP6_RATE1 98
+const OP6_RATE2 91
+const OP6_RATE3 0
+const OP6_RATE4 28
+const OP6_LEVEL1 99
+const OP6_LEVEL2 0
+const OP6_LEVEL3 0
+const OP6_LEVEL4 0
+const OP6_RATE_SCALING 2
+const OP6_OUTPUT_LEVEL 85
+const OP6_VELOCITY_SENSITIVITY 0
+
+const MIX1_GAIN 0.5
+const MIX3_GAIN 0.5
+const MIX5_GAIN 0.5
+const OUTPUT_GAIN 0.65
+constantsEnd
+
+constants preset
+; @pos 359 21
+; E.ORGAN 4 / ROM1B voice 15.
+; @hide
+; Reset operator phases on note-on.
+const OSC_KEY_SYNC 1
+const FEEDBACK 7
+
+; Operator 1.
+const OP1_RATIO 0.499479457
+const OP1_FIXED_HZ 0.0
+const OP1_GAIN 0.95
+const OP1_RATE1 97
+const OP1_RATE2 97
+const OP1_RATE3 99
+const OP1_RATE4 82
+const OP1_LEVEL1 99
+const OP1_LEVEL2 99
+const OP1_LEVEL3 99
+const OP1_LEVEL4 0
+const OP1_RATE_SCALING 2
+const OP1_OUTPUT_LEVEL 95
+const OP1_VELOCITY_SENSITIVITY 0
+
+; Operator 2.
+const OP2_RATIO 0.500521086
+const OP2_FIXED_HZ 0.0
+const OP2_GAIN 0.82
+const OP2_RATE1 97
+const OP2_RATE2 97
+const OP2_RATE3 99
+const OP2_RATE4 82
+const OP2_LEVEL1 99
+const OP2_LEVEL2 99
+const OP2_LEVEL3 97
+const OP2_LEVEL4 0
+const OP2_RATE_SCALING 2
+const OP2_OUTPUT_LEVEL 82
+const OP2_VELOCITY_SENSITIVITY 7
+
+; Operator 3.
+const OP3_RATIO 1.003652353
+const OP3_FIXED_HZ 0.0
+const OP3_GAIN 0.99
+const OP3_RATE1 97
+const OP3_RATE2 97
+const OP3_RATE3 99
+const OP3_RATE4 82
+const OP3_LEVEL1 99
+const OP3_LEVEL2 99
+const OP3_LEVEL3 97
+const OP3_LEVEL4 0
+const OP3_RATE_SCALING 2
+const OP3_OUTPUT_LEVEL 99
+const OP3_VELOCITY_SENSITIVITY 0
+
+; Operator 4.
+const OP4_RATIO 0.499479457
+const OP4_FIXED_HZ 0.0
+const OP4_GAIN 0.99
+const OP4_RATE1 79
+const OP4_RATE2 98
+const OP4_RATE3 99
+const OP4_RATE4 82
+const OP4_LEVEL1 99
+const OP4_LEVEL2 89
+const OP4_LEVEL3 80
+const OP4_LEVEL4 0
+const OP4_RATE_SCALING 2
+const OP4_OUTPUT_LEVEL 99
+const OP4_VELOCITY_SENSITIVITY 7
+
+; Operator 5.
+const OP5_RATIO 5.000000000
+const OP5_FIXED_HZ 0.0
+const OP5_GAIN 0.99
+const OP5_RATE1 97
+const OP5_RATE2 99
+const OP5_RATE3 50
+const OP5_RATE4 82
+const OP5_LEVEL1 99
+const OP5_LEVEL2 90
+const OP5_LEVEL3 84
+const OP5_LEVEL4 0
+const OP5_RATE_SCALING 2
+const OP5_OUTPUT_LEVEL 99
+const OP5_VELOCITY_SENSITIVITY 7
+
+; Operator 6.
+const OP6_RATIO 4.014609414
+const OP6_FIXED_HZ 0.0
+const OP6_GAIN 0.99
+const OP6_RATE1 91
+const OP6_RATE2 79
+const OP6_RATE3 99
+const OP6_RATE4 82
+const OP6_LEVEL1 86
+const OP6_LEVEL2 50
+const OP6_LEVEL3 0
+const OP6_LEVEL4 0
+const OP6_RATE_SCALING 2
+const OP6_OUTPUT_LEVEL 99
+const OP6_VELOCITY_SENSITIVITY 0
+
+const MIX1_GAIN 0.5
+const MIX3_GAIN 0.5
+const MIX5_GAIN 0.5
+const OUTPUT_GAIN 0.65
+constantsEnd
+
+constants preset
+; @pos 377 28
+; E.PIANO 1.
+; @hide
+const OSC_KEY_SYNC 0
+const FEEDBACK 6
+
+; Operator 1.
+const OP1_RATIO 1.005
+const OP1_FIXED_HZ 0.0
+const OP1_GAIN 0.99
+const OP1_RATE1 96
+const OP1_RATE2 25
+const OP1_RATE3 25
+const OP1_RATE4 67
+const OP1_LEVEL1 99
+const OP1_LEVEL2 75
+const OP1_LEVEL3 0
+const OP1_LEVEL4 0
+const OP1_RATE_SCALING 3
+const OP1_OUTPUT_LEVEL 99
+const OP1_VELOCITY_SENSITIVITY 2
+
+; Operator 2.
+const OP2_RATIO 14.0
+const OP2_FIXED_HZ 0.0
+const OP2_GAIN 0.58
+const OP2_RATE1 95
+const OP2_RATE2 50
+const OP2_RATE3 35
+const OP2_RATE4 78
+const OP2_LEVEL1 99
+const OP2_LEVEL2 75
+const OP2_LEVEL3 0
+const OP2_LEVEL4 0
+const OP2_RATE_SCALING 3
+const OP2_OUTPUT_LEVEL 58
+const OP2_VELOCITY_SENSITIVITY 7
+
+; Operator 3.
+const OP3_RATIO 1.0
+const OP3_FIXED_HZ 0.0
+const OP3_GAIN 0.99
+const OP3_RATE1 95
+const OP3_RATE2 20
+const OP3_RATE3 20
+const OP3_RATE4 50
+const OP3_LEVEL1 99
+const OP3_LEVEL2 95
+const OP3_LEVEL3 0
+const OP3_LEVEL4 0
+const OP3_RATE_SCALING 3
+const OP3_OUTPUT_LEVEL 99
+const OP3_VELOCITY_SENSITIVITY 2
+
+; Operator 4.
+const OP4_RATIO 1.0
+const OP4_FIXED_HZ 0.0
+const OP4_GAIN 0.89
+const OP4_RATE1 95
+const OP4_RATE2 29
+const OP4_RATE3 20
+const OP4_RATE4 50
+const OP4_LEVEL1 99
+const OP4_LEVEL2 95
+const OP4_LEVEL3 0
+const OP4_LEVEL4 0
+const OP4_RATE_SCALING 3
+const OP4_OUTPUT_LEVEL 89
+const OP4_VELOCITY_SENSITIVITY 6
+
+; Operator 5.
+const OP5_RATIO 0.99
+const OP5_FIXED_HZ 0.0
+const OP5_GAIN 0.99
+const OP5_RATE1 95
+const OP5_RATE2 20
+const OP5_RATE3 20
+const OP5_RATE4 50
+const OP5_LEVEL1 99
+const OP5_LEVEL2 95
+const OP5_LEVEL3 0
+const OP5_LEVEL4 0
+const OP5_RATE_SCALING 3
+const OP5_OUTPUT_LEVEL 99
+const OP5_VELOCITY_SENSITIVITY 0
+
+; Operator 6.
+const OP6_RATIO 1.01
+const OP6_FIXED_HZ 0.0
+const OP6_GAIN 0.79
+const OP6_RATE1 95
+const OP6_RATE2 29
+const OP6_RATE3 20
+const OP6_RATE4 50
+const OP6_LEVEL1 99
+const OP6_LEVEL2 95
+const OP6_LEVEL3 0
+const OP6_LEVEL4 0
+const OP6_RATE_SCALING 3
+const OP6_OUTPUT_LEVEL 79
+const OP6_VELOCITY_SENSITIVITY 6
+
+const MIX1_GAIN 0.5
+const MIX3_GAIN 0.5
+const MIX5_GAIN 0.5
+const OUTPUT_GAIN 0.65
+constantsEnd
+
 note
 ; @pos 2 41
 ; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
 ; @config audioRuntime.audioOutBufferRAddress audioout:buffer
-; @config export.fileName dx7EPiano
+; @config export.fileName dx7Algorithm5
 
 noteEnd
 
@@ -237,6 +566,7 @@ expose keyCode &janko:in
 expose gate &noteEvents:gate
 expose note &janko:out
 expose frequency &midiNote2Freq:out
+expose velocity &noteEvents:velocity
 expose noteOn &noteEvents:noteOn
 expose noteOff &noteEvents:noteOff
 
@@ -294,6 +624,8 @@ module noteEvents
 ; Keyboard note-on and note-off pulses.
 int* gate
 int* note &janko:out
+; Fixed keyboard velocity: MIDI 1..127.
+int velocity 98
 int previousGate
 int previousNote -1
 int noteOn
@@ -478,17 +810,20 @@ moduleEnd
 entryEnd
 groupEnd
 group voice
-; @pos 240 22
+; @pos 237 22
 expose frequency &voiceInput:frequency
+expose velocity &velocityCapture:velocity
 expose trigger &voiceInput:trigger
 expose release &voiceInput:release
 expose out &limiter:out
 
 init &frequency &noteInput:frequency
+init &velocity &noteInput:velocity
 init &trigger &noteInput:noteOn
 init &release &noteInput:noteOff
 
 pass env
+pass preset
 
 includes
 ; @pos -25 -70
@@ -523,6 +858,86 @@ push level
 add 28
 min
 functionEnd int
+function dx7VelocityCurve
+; @pos 150 58
+; DX7 strike velocity lookup before sensitivity.
+; Paired MIDI velocities share a value.
+; Source: google/music-synthesizer-for-android
+; MIDI 98..99 gives neutral operator scaling.
+param int velocity
+
+push velocity
+max 0
+min 127
+shiftRight 1
+mapBegin int
+map 0 0
+map 1 70
+map 2 86
+map 3 97
+map 4 106
+map 5 114
+map 6 121
+map 7 126
+map 8 132
+map 9 138
+map 10 142
+map 11 148
+map 12 152
+map 13 156
+map 14 160
+map 15 163
+map 16 166
+map 17 170
+map 18 173
+map 19 174
+map 20 178
+map 21 181
+map 22 184
+map 23 186
+map 24 189
+map 25 190
+map 26 194
+map 27 196
+map 28 198
+map 29 200
+map 30 202
+map 31 205
+map 32 206
+map 33 209
+map 34 211
+map 35 214
+map 36 216
+map 37 218
+map 38 220
+map 39 222
+map 40 224
+map 41 225
+map 42 227
+map 43 229
+map 44 230
+map 45 232
+map 46 233
+map 47 235
+map 48 237
+map 49 238
+map 50 240
+map 51 241
+map 52 242
+map 53 243
+map 54 244
+map 55 246
+map 56 246
+map 57 248
+map 58 249
+map 59 250
+map 60 251
+map 61 252
+map 62 253
+map 63 254
+mapEnd int
+sub 239
+functionEnd int
 function frequencyToRateKey
 ; @pos 153 -10
 ; DX7 rate scaling uses 3-key bands.
@@ -556,30 +971,34 @@ functionEnd int
 note algorithm
 ; @pos 254 3
 ;
-; E.PIANO 1 / DX7 algorithm 5
+; DX7 algorithm 5
 ;
-; [2] --> [1] --+
-;               |
-; [4] --> [3] --+--> mixer
-;               |
-; [6] --> [5] --+
+;    [2] --> [1] --+
+;                  |
+;    [4] --> [3] --+--> mixer
+;                  |
+; +->[6] --> [5] --+
+; |   |
+; +---+
 ;
 noteEnd
 entry main
 module voiceInput
 ; @pos 254 19
 ; @home left
+use preset
 float* frequency ; Hz
 int* trigger
 int* release
+int keySync OSC_KEY_SYNC
 float latchedFrequency 8.1758
 int latchedTrigger
 int latchedRelease
+int reset
 int rateKey
 
-; Synthesis uses the previous pitch.
-; Latch current inputs before the
-; envelopes run for the next sample.
+; Latch inputs before the operators
+; and envelopes run.
 push *frequency
 push latchedFrequency
 notEqual
@@ -598,20 +1017,55 @@ push &latchedRelease
 push *release
 store
 
+; Send key sync through the oscillator wires.
+push &reset
+push latchedTrigger
+push 0
+notEqual
+push keySync
+push 0
+notEqual
+and
+store
+
+moduleEnd
+module velocityCapture
+; @pos 254 66
+int* velocity ; MIDI 0..127
+int* trigger &voiceInput:latchedTrigger
+int latchedVelocity 98
+int velocityCurve -1
+
+; Capture velocity only on note-on.
+push *trigger
+if
+push &latchedVelocity
+push *velocity
+max 0
+min 127
+store
+push &velocityCurve
+call dx7VelocityCurve latchedVelocity
+store
+ifEnd
+
 moduleEnd
 group envelope2
 ; @pos 320 0
 ; @group operator2
 expose key &dx7PitchRateScaling:key
+expose velocityCurve &dx7OutputLevel:velocityCurve
 expose trigger &envelope4Stage:trigger
 expose release &envelope4Stage:release
 expose out &dx7Gain:out
 
 init &key &voiceInput:rateKey
+init &velocityCurve &velocityCapture:velocityCurve
 init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
+pass preset
 pass dx7Level
 
 includes
@@ -624,11 +1078,15 @@ entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
-; Original E.PIANO 1 envelope data.
-int[] rates 4 95 50 35 78
-int[] levels 4 99 75 0 0
-int rateScaling 3
-int outputLevel 58
+use preset
+int[] rates 4
+- OP2_RATE1 OP2_RATE2 OP2_RATE3 OP2_RATE4
+int[] levels 4
+- OP2_LEVEL1 OP2_LEVEL2 OP2_LEVEL3 OP2_LEVEL4
+int rateScaling OP2_RATE_SCALING
+int outputLevel OP2_OUTPUT_LEVEL
+int velocitySensitivity
+- OP2_VELOCITY_SENSITIVITY
 moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
@@ -645,19 +1103,38 @@ store
 moduleEnd
 module dx7OutputLevel
 ; @pos 110 0
-; Output-level offset for log targets.
+; Keep the base offset for gain normalization.
+; Velocity shifts the target and audible gain.
 int* in &dx7Settings:outputLevel
+int* sensitivity &dx7Settings:velocitySensitivity
+int* velocityCurve
+float base
 float out
+local int level
 
-push &out
 call dx7Level *in
 shiftLeft 5
+localSet level
+push &base
+push level
+sub 4256
+castToFloat
+store
+
+push &out
+push *velocityCurve
+mul *sensitivity
+add 7
+shiftRight 3
+shiftLeft 4
+add level
+max 0
 sub 4256
 castToFloat
 store
 moduleEnd
 module envelope4Stage
-; @pos 165 0
+; @pos 180 0
 ; Generic four-stage EG selector.
 ; Note-on starts 0; note-off selects 3.
 ; Reach 0, 1, 2, then hold stage 2.
@@ -696,7 +1173,7 @@ ifEnd
 ifEnd
 moduleEnd
 module dx7Rate
-; @pos 225 0
+; @pos 240 0
 ; Current raw rate to log step/sample.
 use env
 int* stage &envelope4Stage:out
@@ -730,7 +1207,7 @@ div
 store
 moduleEnd
 module dx7Target
-; @pos 285 0
+; @pos 300 0
 ; Current raw level to log target.
 int* stage &envelope4Stage:out
 int* levels &dx7Settings:levels
@@ -748,7 +1225,7 @@ max 16.0
 store
 moduleEnd
 module dx7Curve
-; @pos 345 0
+; @pos 360 0
 ; DX7 rising curve and attack jump.
 ; Falling segments use the base step.
 float* in &envelopeRamp:out
@@ -781,7 +1258,7 @@ store
 ifEnd
 moduleEnd
 module envelopeRamp
-; @pos 405 0
+; @pos 420 0
 ; Generic ramp toward a target.
 float* in &dx7Curve:current
 float* target &dx7Target:out
@@ -793,10 +1270,10 @@ call moveTowards *in *target *step
 store
 moduleEnd
 module dx7Gain
-; @pos 465 0
+; @pos 480 0
 ; Normalized log-to-linear amplitude.
 float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:out
+float* offset &dx7OutputLevel:base
 float out
 
 push &out
@@ -818,18 +1295,21 @@ moduleEnd
 entryEnd
 groupEnd
 group envelope4
-; @pos 320 22
+; @pos 320 26
 ; @group operator4
 expose key &dx7PitchRateScaling:key
+expose velocityCurve &dx7OutputLevel:velocityCurve
 expose trigger &envelope4Stage:trigger
 expose release &envelope4Stage:release
 expose out &dx7Gain:out
 
 init &key &voiceInput:rateKey
+init &velocityCurve &velocityCapture:velocityCurve
 init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
+pass preset
 pass dx7Level
 
 includes
@@ -842,11 +1322,15 @@ entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
-; Original E.PIANO 1 envelope data.
-int[] rates 4 95 29 20 50
-int[] levels 4 99 95 0 0
-int rateScaling 3
-int outputLevel 89
+use preset
+int[] rates 4
+- OP4_RATE1 OP4_RATE2 OP4_RATE3 OP4_RATE4
+int[] levels 4
+- OP4_LEVEL1 OP4_LEVEL2 OP4_LEVEL3 OP4_LEVEL4
+int rateScaling OP4_RATE_SCALING
+int outputLevel OP4_OUTPUT_LEVEL
+int velocitySensitivity
+- OP4_VELOCITY_SENSITIVITY
 moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
@@ -863,19 +1347,38 @@ store
 moduleEnd
 module dx7OutputLevel
 ; @pos 110 0
-; Output-level offset for log targets.
+; Keep the base offset for gain normalization.
+; Velocity shifts the target and audible gain.
 int* in &dx7Settings:outputLevel
+int* sensitivity &dx7Settings:velocitySensitivity
+int* velocityCurve
+float base
 float out
+local int level
 
-push &out
 call dx7Level *in
 shiftLeft 5
+localSet level
+push &base
+push level
+sub 4256
+castToFloat
+store
+
+push &out
+push *velocityCurve
+mul *sensitivity
+add 7
+shiftRight 3
+shiftLeft 4
+add level
+max 0
 sub 4256
 castToFloat
 store
 moduleEnd
 module envelope4Stage
-; @pos 165 0
+; @pos 180 0
 ; Generic four-stage EG selector.
 ; Note-on starts 0; note-off selects 3.
 ; Reach 0, 1, 2, then hold stage 2.
@@ -914,7 +1417,7 @@ ifEnd
 ifEnd
 moduleEnd
 module dx7Rate
-; @pos 225 0
+; @pos 240 0
 ; Current raw rate to log step/sample.
 use env
 int* stage &envelope4Stage:out
@@ -948,7 +1451,7 @@ div
 store
 moduleEnd
 module dx7Target
-; @pos 285 0
+; @pos 300 0
 ; Current raw level to log target.
 int* stage &envelope4Stage:out
 int* levels &dx7Settings:levels
@@ -966,7 +1469,7 @@ max 16.0
 store
 moduleEnd
 module dx7Curve
-; @pos 345 0
+; @pos 360 0
 ; DX7 rising curve and attack jump.
 ; Falling segments use the base step.
 float* in &envelopeRamp:out
@@ -999,7 +1502,7 @@ store
 ifEnd
 moduleEnd
 module envelopeRamp
-; @pos 405 0
+; @pos 420 0
 ; Generic ramp toward a target.
 float* in &dx7Curve:current
 float* target &dx7Target:out
@@ -1011,10 +1514,10 @@ call moveTowards *in *target *step
 store
 moduleEnd
 module dx7Gain
-; @pos 465 0
+; @pos 480 0
 ; Normalized log-to-linear amplitude.
 float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:out
+float* offset &dx7OutputLevel:base
 float out
 
 push &out
@@ -1036,18 +1539,21 @@ moduleEnd
 entryEnd
 groupEnd
 group envelope6
-; @pos 320 44
+; @pos 320 52
 ; @group operator6
 expose key &dx7PitchRateScaling:key
+expose velocityCurve &dx7OutputLevel:velocityCurve
 expose trigger &envelope4Stage:trigger
 expose release &envelope4Stage:release
 expose out &dx7Gain:out
 
 init &key &voiceInput:rateKey
+init &velocityCurve &velocityCapture:velocityCurve
 init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
+pass preset
 pass dx7Level
 
 includes
@@ -1060,11 +1566,15 @@ entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
-; Original E.PIANO 1 envelope data.
-int[] rates 4 95 29 20 50
-int[] levels 4 99 95 0 0
-int rateScaling 3
-int outputLevel 79
+use preset
+int[] rates 4
+- OP6_RATE1 OP6_RATE2 OP6_RATE3 OP6_RATE4
+int[] levels 4
+- OP6_LEVEL1 OP6_LEVEL2 OP6_LEVEL3 OP6_LEVEL4
+int rateScaling OP6_RATE_SCALING
+int outputLevel OP6_OUTPUT_LEVEL
+int velocitySensitivity
+- OP6_VELOCITY_SENSITIVITY
 moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
@@ -1081,19 +1591,38 @@ store
 moduleEnd
 module dx7OutputLevel
 ; @pos 110 0
-; Output-level offset for log targets.
+; Keep the base offset for gain normalization.
+; Velocity shifts the target and audible gain.
 int* in &dx7Settings:outputLevel
+int* sensitivity &dx7Settings:velocitySensitivity
+int* velocityCurve
+float base
 float out
+local int level
 
-push &out
 call dx7Level *in
 shiftLeft 5
+localSet level
+push &base
+push level
+sub 4256
+castToFloat
+store
+
+push &out
+push *velocityCurve
+mul *sensitivity
+add 7
+shiftRight 3
+shiftLeft 4
+add level
+max 0
 sub 4256
 castToFloat
 store
 moduleEnd
 module envelope4Stage
-; @pos 165 0
+; @pos 180 0
 ; Generic four-stage EG selector.
 ; Note-on starts 0; note-off selects 3.
 ; Reach 0, 1, 2, then hold stage 2.
@@ -1132,7 +1661,7 @@ ifEnd
 ifEnd
 moduleEnd
 module dx7Rate
-; @pos 225 0
+; @pos 240 0
 ; Current raw rate to log step/sample.
 use env
 int* stage &envelope4Stage:out
@@ -1166,7 +1695,7 @@ div
 store
 moduleEnd
 module dx7Target
-; @pos 285 0
+; @pos 300 0
 ; Current raw level to log target.
 int* stage &envelope4Stage:out
 int* levels &dx7Settings:levels
@@ -1184,7 +1713,7 @@ max 16.0
 store
 moduleEnd
 module dx7Curve
-; @pos 345 0
+; @pos 360 0
 ; DX7 rising curve and attack jump.
 ; Falling segments use the base step.
 float* in &envelopeRamp:out
@@ -1217,7 +1746,7 @@ store
 ifEnd
 moduleEnd
 module envelopeRamp
-; @pos 405 0
+; @pos 420 0
 ; Generic ramp toward a target.
 float* in &dx7Curve:current
 float* target &dx7Target:out
@@ -1229,10 +1758,10 @@ call moveTowards *in *target *step
 store
 moduleEnd
 module dx7Gain
-; @pos 465 0
+; @pos 480 0
 ; Normalized log-to-linear amplitude.
 float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:out
+float* offset &dx7OutputLevel:base
 float out
 
 push &out
@@ -1254,22 +1783,34 @@ moduleEnd
 entryEnd
 groupEnd
 module modulator2
-; @pos 369 0
+; @pos 382 0
 ; @group operator2
 use env
+use preset
 float* frequency &voiceInput:latchedFrequency
+int* reset &voiceInput:reset
 float phase 0.0
 float out
-float ratio 14.0
+float ratio OP2_RATIO
+float fixedHz OP2_FIXED_HZ
 float* amplitude &envelope2:out
-float level 0.58
+float level OP2_GAIN
 
 ; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+ifEnd
+
 ; Advance and wrap without losing overshoot.
 push &out
 push &phase
 push *frequency
 mul ratio
+add fixedHz
 push SAMPLE_RATE
 call advancePhase
 ; You can swap this call
@@ -1281,22 +1822,34 @@ store
 
 moduleEnd
 module modulator4
-; @pos 369 22
+; @pos 382 26
 ; @group operator4
 use env
+use preset
 float* frequency &voiceInput:latchedFrequency
+int* reset &voiceInput:reset
 float phase 0.0
 float out
-float ratio 1.0
+float ratio OP4_RATIO
+float fixedHz OP4_FIXED_HZ
 float* amplitude &envelope4:out
-float level 0.89
+float level OP4_GAIN
 
 ; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+ifEnd
+
 ; Advance and wrap without losing overshoot.
 push &out
 push &phase
 push *frequency
 mul ratio
+add fixedHz
 push SAMPLE_RATE
 call advancePhase
 ; You can swap this call
@@ -1308,45 +1861,111 @@ store
 
 moduleEnd
 module modulator6
-; @pos 369 44
+; @pos 382 52
 ; @group operator6
 use env
+use preset
 float* frequency &voiceInput:latchedFrequency
+int* reset &voiceInput:reset
 float phase 0.0
 float out
-float ratio 1.01
+float previousOut
+int feedback FEEDBACK ; 0..7
+float ratio OP6_RATIO
+float fixedHz OP6_FIXED_HZ
 float* amplitude &envelope6:out
-float level 0.79
+float level OP6_GAIN
+local int amount
+local float angle
+
+const TAU 6.283185307179586
 
 ; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+push &out
+push 0.0
+store
+push &previousOut
+push 0.0
+store
+ifEnd
+
+push feedback
+max 0
+min 7
+localSet amount
+
 ; Advance and wrap without losing overshoot.
 push &out
 push &phase
 push *frequency
 mul ratio
+add fixedHz
 push SAMPLE_RATE
 call advancePhase
+localSet angle
+
+; Feedback uses the same radian units as
+; the forward phase-modulation wires.
+; Combine two outputs, doubling per level.
+push amount
+if
+push out
+add previousOut
+push 1
+push amount
+shiftLeft
+castToFloat
+mul
+div 512.0
+add angle
+localSet angle
+
+; Keep the modulated phase in [-PI, PI].
+push angle
+push angle
+div TAU
+round
+mul TAU
+sub
+localSet angle
+ifEnd
+
+push angle
 ; You can swap this call
 ; with any periodic function
 call sine
 mul *amplitude
 mul level
+
+; Save n-1 before publishing the new output.
+push &previousOut
+push out
+store
 store
 
 moduleEnd
 group envelope1
-; @pos 423 0
+; @pos 437 0
 ; @group operator1
 expose key &dx7PitchRateScaling:key
+expose velocityCurve &dx7OutputLevel:velocityCurve
 expose trigger &envelope4Stage:trigger
 expose release &envelope4Stage:release
 expose out &dx7Gain:out
 
 init &key &voiceInput:rateKey
+init &velocityCurve &velocityCapture:velocityCurve
 init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
+pass preset
 pass dx7Level
 
 includes
@@ -1359,11 +1978,15 @@ entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
-; Original E.PIANO 1 envelope data.
-int[] rates 4 96 25 25 67
-int[] levels 4 99 75 0 0
-int rateScaling 3
-int outputLevel 99
+use preset
+int[] rates 4
+- OP1_RATE1 OP1_RATE2 OP1_RATE3 OP1_RATE4
+int[] levels 4
+- OP1_LEVEL1 OP1_LEVEL2 OP1_LEVEL3 OP1_LEVEL4
+int rateScaling OP1_RATE_SCALING
+int outputLevel OP1_OUTPUT_LEVEL
+int velocitySensitivity
+- OP1_VELOCITY_SENSITIVITY
 moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
@@ -1380,19 +2003,38 @@ store
 moduleEnd
 module dx7OutputLevel
 ; @pos 110 0
-; Output-level offset for log targets.
+; Keep the base offset for gain normalization.
+; Velocity shifts the target and audible gain.
 int* in &dx7Settings:outputLevel
+int* sensitivity &dx7Settings:velocitySensitivity
+int* velocityCurve
+float base
 float out
+local int level
 
-push &out
 call dx7Level *in
 shiftLeft 5
+localSet level
+push &base
+push level
+sub 4256
+castToFloat
+store
+
+push &out
+push *velocityCurve
+mul *sensitivity
+add 7
+shiftRight 3
+shiftLeft 4
+add level
+max 0
 sub 4256
 castToFloat
 store
 moduleEnd
 module envelope4Stage
-; @pos 165 0
+; @pos 180 0
 ; Generic four-stage EG selector.
 ; Note-on starts 0; note-off selects 3.
 ; Reach 0, 1, 2, then hold stage 2.
@@ -1431,7 +2073,7 @@ ifEnd
 ifEnd
 moduleEnd
 module dx7Rate
-; @pos 225 0
+; @pos 240 0
 ; Current raw rate to log step/sample.
 use env
 int* stage &envelope4Stage:out
@@ -1465,7 +2107,7 @@ div
 store
 moduleEnd
 module dx7Target
-; @pos 285 0
+; @pos 300 0
 ; Current raw level to log target.
 int* stage &envelope4Stage:out
 int* levels &dx7Settings:levels
@@ -1483,7 +2125,7 @@ max 16.0
 store
 moduleEnd
 module dx7Curve
-; @pos 345 0
+; @pos 360 0
 ; DX7 rising curve and attack jump.
 ; Falling segments use the base step.
 float* in &envelopeRamp:out
@@ -1516,7 +2158,7 @@ store
 ifEnd
 moduleEnd
 module envelopeRamp
-; @pos 405 0
+; @pos 420 0
 ; Generic ramp toward a target.
 float* in &dx7Curve:current
 float* target &dx7Target:out
@@ -1528,10 +2170,10 @@ call moveTowards *in *target *step
 store
 moduleEnd
 module dx7Gain
-; @pos 465 0
+; @pos 480 0
 ; Normalized log-to-linear amplitude.
 float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:out
+float* offset &dx7OutputLevel:base
 float out
 
 push &out
@@ -1553,18 +2195,21 @@ moduleEnd
 entryEnd
 groupEnd
 group envelope3
-; @pos 423 22
+; @pos 437 26
 ; @group operator3
 expose key &dx7PitchRateScaling:key
+expose velocityCurve &dx7OutputLevel:velocityCurve
 expose trigger &envelope4Stage:trigger
 expose release &envelope4Stage:release
 expose out &dx7Gain:out
 
 init &key &voiceInput:rateKey
+init &velocityCurve &velocityCapture:velocityCurve
 init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
+pass preset
 pass dx7Level
 
 includes
@@ -1577,11 +2222,15 @@ entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
-; Original E.PIANO 1 envelope data.
-int[] rates 4 95 20 20 50
-int[] levels 4 99 95 0 0
-int rateScaling 3
-int outputLevel 99
+use preset
+int[] rates 4
+- OP3_RATE1 OP3_RATE2 OP3_RATE3 OP3_RATE4
+int[] levels 4
+- OP3_LEVEL1 OP3_LEVEL2 OP3_LEVEL3 OP3_LEVEL4
+int rateScaling OP3_RATE_SCALING
+int outputLevel OP3_OUTPUT_LEVEL
+int velocitySensitivity
+- OP3_VELOCITY_SENSITIVITY
 moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
@@ -1598,19 +2247,38 @@ store
 moduleEnd
 module dx7OutputLevel
 ; @pos 110 0
-; Output-level offset for log targets.
+; Keep the base offset for gain normalization.
+; Velocity shifts the target and audible gain.
 int* in &dx7Settings:outputLevel
+int* sensitivity &dx7Settings:velocitySensitivity
+int* velocityCurve
+float base
 float out
+local int level
 
-push &out
 call dx7Level *in
 shiftLeft 5
+localSet level
+push &base
+push level
+sub 4256
+castToFloat
+store
+
+push &out
+push *velocityCurve
+mul *sensitivity
+add 7
+shiftRight 3
+shiftLeft 4
+add level
+max 0
 sub 4256
 castToFloat
 store
 moduleEnd
 module envelope4Stage
-; @pos 165 0
+; @pos 180 0
 ; Generic four-stage EG selector.
 ; Note-on starts 0; note-off selects 3.
 ; Reach 0, 1, 2, then hold stage 2.
@@ -1649,7 +2317,7 @@ ifEnd
 ifEnd
 moduleEnd
 module dx7Rate
-; @pos 225 0
+; @pos 240 0
 ; Current raw rate to log step/sample.
 use env
 int* stage &envelope4Stage:out
@@ -1683,7 +2351,7 @@ div
 store
 moduleEnd
 module dx7Target
-; @pos 285 0
+; @pos 300 0
 ; Current raw level to log target.
 int* stage &envelope4Stage:out
 int* levels &dx7Settings:levels
@@ -1701,7 +2369,7 @@ max 16.0
 store
 moduleEnd
 module dx7Curve
-; @pos 345 0
+; @pos 360 0
 ; DX7 rising curve and attack jump.
 ; Falling segments use the base step.
 float* in &envelopeRamp:out
@@ -1734,7 +2402,7 @@ store
 ifEnd
 moduleEnd
 module envelopeRamp
-; @pos 405 0
+; @pos 420 0
 ; Generic ramp toward a target.
 float* in &dx7Curve:current
 float* target &dx7Target:out
@@ -1746,10 +2414,10 @@ call moveTowards *in *target *step
 store
 moduleEnd
 module dx7Gain
-; @pos 465 0
+; @pos 480 0
 ; Normalized log-to-linear amplitude.
 float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:out
+float* offset &dx7OutputLevel:base
 float out
 
 push &out
@@ -1771,18 +2439,21 @@ moduleEnd
 entryEnd
 groupEnd
 group envelope5
-; @pos 423 44
+; @pos 437 52
 ; @group operator5
 expose key &dx7PitchRateScaling:key
+expose velocityCurve &dx7OutputLevel:velocityCurve
 expose trigger &envelope4Stage:trigger
 expose release &envelope4Stage:release
 expose out &dx7Gain:out
 
 init &key &voiceInput:rateKey
+init &velocityCurve &velocityCapture:velocityCurve
 init &trigger &voiceInput:latchedTrigger
 init &release &voiceInput:latchedRelease
 
 pass env
+pass preset
 pass dx7Level
 
 includes
@@ -1795,11 +2466,15 @@ entry main
 module dx7Settings
 ; @home left
 ; @pos 0 0
-; Original E.PIANO 1 envelope data.
-int[] rates 4 95 20 20 50
-int[] levels 4 99 95 0 0
-int rateScaling 3
-int outputLevel 99
+use preset
+int[] rates 4
+- OP5_RATE1 OP5_RATE2 OP5_RATE3 OP5_RATE4
+int[] levels 4
+- OP5_LEVEL1 OP5_LEVEL2 OP5_LEVEL3 OP5_LEVEL4
+int rateScaling OP5_RATE_SCALING
+int outputLevel OP5_OUTPUT_LEVEL
+int velocitySensitivity
+- OP5_VELOCITY_SENSITIVITY
 moduleEnd
 module dx7PitchRateScaling
 ; @pos 55 0
@@ -1816,19 +2491,38 @@ store
 moduleEnd
 module dx7OutputLevel
 ; @pos 110 0
-; Output-level offset for log targets.
+; Keep the base offset for gain normalization.
+; Velocity shifts the target and audible gain.
 int* in &dx7Settings:outputLevel
+int* sensitivity &dx7Settings:velocitySensitivity
+int* velocityCurve
+float base
 float out
+local int level
 
-push &out
 call dx7Level *in
 shiftLeft 5
+localSet level
+push &base
+push level
+sub 4256
+castToFloat
+store
+
+push &out
+push *velocityCurve
+mul *sensitivity
+add 7
+shiftRight 3
+shiftLeft 4
+add level
+max 0
 sub 4256
 castToFloat
 store
 moduleEnd
 module envelope4Stage
-; @pos 165 0
+; @pos 180 0
 ; Generic four-stage EG selector.
 ; Note-on starts 0; note-off selects 3.
 ; Reach 0, 1, 2, then hold stage 2.
@@ -1867,7 +2561,7 @@ ifEnd
 ifEnd
 moduleEnd
 module dx7Rate
-; @pos 225 0
+; @pos 240 0
 ; Current raw rate to log step/sample.
 use env
 int* stage &envelope4Stage:out
@@ -1901,7 +2595,7 @@ div
 store
 moduleEnd
 module dx7Target
-; @pos 285 0
+; @pos 300 0
 ; Current raw level to log target.
 int* stage &envelope4Stage:out
 int* levels &dx7Settings:levels
@@ -1919,7 +2613,7 @@ max 16.0
 store
 moduleEnd
 module dx7Curve
-; @pos 345 0
+; @pos 360 0
 ; DX7 rising curve and attack jump.
 ; Falling segments use the base step.
 float* in &envelopeRamp:out
@@ -1952,7 +2646,7 @@ store
 ifEnd
 moduleEnd
 module envelopeRamp
-; @pos 405 0
+; @pos 420 0
 ; Generic ramp toward a target.
 float* in &dx7Curve:current
 float* target &dx7Target:out
@@ -1964,10 +2658,10 @@ call moveTowards *in *target *step
 store
 moduleEnd
 module dx7Gain
-; @pos 465 0
+; @pos 480 0
 ; Normalized log-to-linear amplitude.
 float* in &envelopeRamp:out
-float* offset &dx7OutputLevel:out
+float* offset &dx7OutputLevel:base
 float out
 
 push &out
@@ -1989,24 +2683,35 @@ moduleEnd
 entryEnd
 groupEnd
 module carrier1
-; @pos 472 0
+; @pos 499 0
 ; @group operator1
 use env
+use preset
 float* frequency &voiceInput:latchedFrequency
+int* reset &voiceInput:reset
 float* phaseMod &modulator2:out
 float phase 0.0
-float ratio 1.005
-float level 0.99
+float ratio OP1_RATIO
+float fixedHz OP1_FIXED_HZ
+float level OP1_GAIN
 float out
 float* amplitudeMod &envelope1:out
 
 ; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+ifEnd
 
 ; Advance and wrap without losing overshoot.
 push &out
 push &phase
 push *frequency
 mul ratio
+add fixedHz
 push SAMPLE_RATE
 call advancePhase
 add *phaseMod
@@ -2019,24 +2724,35 @@ store
 
 moduleEnd
 module carrier3
-; @pos 472 22
+; @pos 499 26
 ; @group operator3
 use env
+use preset
 float* frequency &voiceInput:latchedFrequency
+int* reset &voiceInput:reset
 float* phaseMod &modulator4:out
 float phase 0.0
-float ratio 1.0
-float level 0.99
+float ratio OP3_RATIO
+float fixedHz OP3_FIXED_HZ
+float level OP3_GAIN
 float out
 float* amplitudeMod &envelope3:out
 
 ; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+ifEnd
 
 ; Advance and wrap without losing overshoot.
 push &out
 push &phase
 push *frequency
 mul ratio
+add fixedHz
 push SAMPLE_RATE
 call advancePhase
 add *phaseMod
@@ -2049,24 +2765,35 @@ store
 
 moduleEnd
 module carrier5
-; @pos 472 44
+; @pos 499 52
 ; @group operator5
 use env
+use preset
 float* frequency &voiceInput:latchedFrequency
+int* reset &voiceInput:reset
 float* phaseMod &modulator6:out
 float phase 0.0
-float ratio 0.99
+float ratio OP5_RATIO
+float fixedHz OP5_FIXED_HZ
 float out
 float* amplitude &envelope5:out
-float level 0.99
+float level OP5_GAIN
 
 ; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+ifEnd
 
 ; Advance and wrap without losing overshoot.
 push &out
 push &phase
 push *frequency
 mul ratio
+add fixedHz
 push SAMPLE_RATE
 call advancePhase
 add *phaseMod
@@ -2079,7 +2806,9 @@ store
 
 moduleEnd
 module mixer
-; @pos 529 22
+; @pos 556 26
+
+use preset
 
 float* in1 &carrier1:out
 float* in2 &carrier3:out
@@ -2088,20 +2817,20 @@ float out
 
 push &out
 push *in1
-mul 0.5
+mul MIX1_GAIN
 push *in2
-mul 0.5
+mul MIX3_GAIN
 add
 push *in3
-mul 0.5
+mul MIX5_GAIN
 add
 ; Headroom for three attack peaks.
-mul 0.65
+mul OUTPUT_GAIN
 store
 
 moduleEnd
 module limiter
-; @pos 574 22
+; @pos 601 26
 float* in &mixer:out
 float out
 

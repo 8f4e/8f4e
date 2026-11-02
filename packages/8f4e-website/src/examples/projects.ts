@@ -91,10 +91,10 @@ export const projects = [
 		path: 'audio/keyboardController6OperatorFMSynth.8f4e',
 	},
 	{
-		id: 'dx7-e-piano',
-		title: 'DX7 E.PIANO 1',
-		description: 'Play a six-operator electric piano using the original DX7 E.PIANO 1 envelope settings.',
-		path: 'audio/dx7EPiano.8f4e',
+		id: 'dx7-algorithm-5',
+		title: 'DX7 Algorithm 5',
+		description: 'Play a six-operator DX7-style voice with movable E.PIANO 1, Tub Bells, and E.ORGAN 4 presets.',
+		path: 'audio/dx7Algorithm5.8f4e',
 	},
 	{
 		id: 'dx7-stg-crescendo',

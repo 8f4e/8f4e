@@ -400,7 +400,7 @@ note
 ; Original six-operator FM electric piano.
 ; Uses simple one-shot envelopes inspired by DX7 E.PIANO 1.
 ; Envelope timing and level response are approximate.
-; See dx7EPiano for DX7 envelope groups.
+; See dx7Algorithm5 for DX7 envelope groups.
 noteEnd
 
 entry main

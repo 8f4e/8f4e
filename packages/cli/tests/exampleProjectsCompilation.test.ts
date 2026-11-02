@@ -18,7 +18,7 @@ const exampleProjects = [
 
 const additionalProjects = [
 	'packages/examples/src/projects/audio/reverb.8f4e',
-	'packages/examples/src/projects/audio/dx7EPiano.8f4e',
+	'packages/examples/src/projects/audio/dx7Algorithm5.8f4e',
 	'packages/examples/src/projects/audio/dx7StgCrescendo.8f4e',
 	'packages/examples/src/projects/audio/gridsPatterns.8f4e',
 ] as const;
