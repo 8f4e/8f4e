@@ -11,6 +11,7 @@ import {
 	type ProjectGroupPath,
 	type ProjectMemoryExposure,
 	type ProjectMemoryInitializerLine,
+	type ProjectModuleBlock,
 	type ProjectObjectModel,
 	ROOT_PROJECT_GROUP_PATH,
 	type ValidatedAST,
@@ -207,6 +208,21 @@ function appendUnit(
 	);
 
 	const moduleIndexByEntry = new Map<string, number>();
+	const moduleAsts = new Map<ProjectModuleBlock, ValidatedModuleAST>();
+	const lastModuleByName = new Map<string, ProjectModuleBlock>();
+	// Select definitions before building entry steps so replacements run at their own positions.
+	for (const module of project.execution) {
+		if (module.type !== 'module' || module.disabled) continue;
+		const index = moduleIndexByEntry.get(module.entry) ?? 0;
+		moduleIndexByEntry.set(module.entry, index + 1);
+		const ast = compileSourceToAST<ValidatedModuleAST>(
+			createCompilerSource(module, projectPath, `entry:${module.entry}:module:${index}`),
+			program.cache
+		);
+		moduleAsts.set(module, ast);
+		lastModuleByName.set(ast.id, module);
+	}
+
 	for (const block of project.execution) {
 		if (block.type === 'group') {
 			const groupPath = createChildProjectGroupPath(projectPath, block.name);
@@ -219,17 +235,11 @@ function appendUnit(
 			continue;
 		}
 		const module = block;
-		if (module.disabled) continue;
-		const index = moduleIndexByEntry.get(module.entry) ?? 0;
-		moduleIndexByEntry.set(module.entry, index + 1);
+		const moduleAst = moduleAsts.get(module);
+		if (!moduleAst || lastModuleByName.get(moduleAst.id) !== module) continue;
 		const entry = entries.get(module.entry)!;
 		const ast = {
-			...qualify(
-				compileSourceToAST<ValidatedModuleAST>(
-					createCompilerSource(module, projectPath, `entry:${module.entry}:module:${index}`),
-					program.cache
-				)
-			),
+			...qualify(moduleAst),
 			executionEntryName: entry.id,
 		};
 		program.ast.modules.push(ast);

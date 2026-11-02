@@ -14,7 +14,8 @@ moduleEnd
 ### Usage
 
 Modules are the primary unit of code organization in 8f4e. Each module:
-- Must have a unique name
+
+- Has a name scoped to its project or group; the last enabled definition with that name wins
 - Can contain memory declarations, constants, and executable code
 - Has its own namespace that can be imported by other modules using `use`
 
@@ -44,6 +45,33 @@ add
 store
 moduleEnd
 ```
+
+## Module overrides
+
+When multiple modules have the same name in one project or group, the last enabled definition replaces the entire earlier module. Earlier definitions contribute no executable code, memory, or constants. The selected module executes once at its own position, in its own entry.
+
+```8f4e
+8f4e/v1
+entry main
+module oscillator
+float out 0.25
+moduleEnd
+
+module oscillator
+float out 0.5
+moduleEnd
+
+module output
+float* input &oscillator:out ; Points to the selected module's out (0.5).
+moduleEnd
+entryEnd
+```
+
+Selection follows declaration order across all entries in the same scope. The editor serializes blocks from left to right, then top to bottom, so moving a module to the right makes it take precedence. A disabled definition does not hide earlier enabled definitions.
+
+All memory references and `use` imports resolve against the selected module. Declarations from earlier versions are not merged; references to memory or constants absent from the selected version are errors. Modules in different groups remain independent even when they share a name.
+
+Every enabled definition is syntax-checked. Only selected definitions proceed to semantic resolution and compilation.
 
 ## moduleEnd
 
