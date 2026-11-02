@@ -16,6 +16,7 @@ import type {
 	ModuleAST,
 	ProjectMemoryAliasLookup,
 	PrototypeAST,
+	ReferenceSlotMap,
 	RegisteredFunction,
 	ResolvedMapLine,
 	SemanticReferenceLine,
@@ -29,6 +30,7 @@ import {
 	ArgumentType,
 	BlockType,
 	compilerSourceBlockInstructionByType,
+	EMPTY_REFERENCE_SLOTS,
 	ErrorCode,
 	functionValueTypeToLocalMetadata,
 	getError,
@@ -84,6 +86,7 @@ export interface ResolvedOperation {
 }
 
 export interface ModuleSemanticReferences<TModule extends ModuleAST = ModuleAST> {
+	referenceSlots: ReferenceSlotMap;
 	ast: TModule;
 	bindings: readonly SourceLocalBinding[];
 	body: readonly ResolvedOperation[];
@@ -322,10 +325,12 @@ function applyResolvedLineEffect(line: SemanticReferenceLine, context: Reference
 
 function createModuleContext(
 	input: ResolveSemanticReferencesInput<PrototypeAST, ModuleAST, ConstantsAST, FunctionAST>,
-	ast: ModuleAST
+	ast: ModuleAST,
+	astIndex: number
 ): ReferenceResolutionContext {
 	const plannedModule = input.memoryPlan.modules[ast.id];
 	return createCompilationContext<ReferenceResolutionContext>({
+		referenceSlots: input.memoryReferences.modules[astIndex]!.referenceSlots,
 		namespace: {
 			moduleName: undefined,
 			functions: input.functions,
@@ -355,6 +360,7 @@ function createFunctionContext(
 	functionMetadata: FunctionMetadata
 ): ReferenceResolutionContext {
 	return createCompilationContext<ReferenceResolutionContext>({
+		referenceSlots: EMPTY_REFERENCE_SLOTS,
 		namespace: {
 			moduleName: undefined,
 			functions: input.functions,
@@ -430,7 +436,7 @@ function resolveModuleReferences<TModule extends ModuleAST>(
 	ast: TModule,
 	astIndex: number
 ): [string, ModuleSemanticReferences<TModule>] {
-	const context = createModuleContext(input, ast);
+	const context = createModuleContext(input, ast, astIndex);
 	const body = resolveBody(
 		ast.lines,
 		context,
@@ -441,6 +447,7 @@ function resolveModuleReferences<TModule extends ModuleAST>(
 		ast.id,
 		{
 			ast,
+			referenceSlots: context.referenceSlots,
 			body,
 			bindings: context.bindings,
 			skipExecutionInCycle: ast.lines.some(line => line.instruction === '#skipExecution'),

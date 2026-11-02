@@ -4,14 +4,13 @@ import type {
 	CompilationContext,
 	LiteralPushLine,
 	LocalValueMetadata,
-	PointeeBaseType,
 	PointeeMetadata,
 	PointerLocalMetadata,
 	ResolvedMemoryDeclaration,
 	ResolvedPushLine,
 	Stack,
 } from '@8f4e/language-spec';
-import { ArgumentType, BASE_TYPE_METADATA, getPointerDepthFromMetadata } from '@8f4e/language-spec';
+import { ArgumentType, BASE_TYPE_METADATA, getMemoryBaseType, getPointerDepthFromMetadata } from '@8f4e/language-spec';
 import { getResolvedMemoryDeclaration } from '@8f4e/semantic-utils';
 import { kindToStackItem, resolveArgumentValueKind, resolveMemoryValueKind } from '../utils/pushValueKind';
 import { createStackValue, produce } from './stack';
@@ -37,7 +36,7 @@ function getAddressPointeeMetadata(context: CompilationContext, address: Address
 		return undefined;
 	}
 
-	const baseType = (memoryItem.pointeeBaseType ?? memoryItem.type) as PointeeBaseType;
+	const baseType = memoryItem.pointeeBaseType ?? getMemoryBaseType(memoryItem);
 
 	return {
 		baseType,
@@ -113,6 +112,8 @@ function pushDereferencedPointerStackItems(
 
 function pushResolvedTargetStackItems(line: ResolvedPushLine, context: CompilationContext): Stack {
 	switch (line.resolvedTarget.kind) {
+		case 'reference':
+			return [kindToStackItem(resolveMemoryValueKind(line.resolvedTarget.slot.targetMemory), { isNonZero: false })];
 		case 'memory': {
 			const { memoryItem } = line.resolvedTarget;
 			const kind = resolveMemoryValueKind(memoryItem);

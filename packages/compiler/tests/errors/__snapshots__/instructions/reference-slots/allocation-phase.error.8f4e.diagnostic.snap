@@ -1,0 +1,29 @@
+{
+  "code": 5,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 3,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "copy",
+      },
+      {
+        "isPointee": true,
+        "referenceKind": "pointee-element-count",
+        "scope": "local",
+        "targetMemoryId": "slot",
+        "type": "identifier",
+        "value": "count(*slot)",
+      },
+    ],
+    "instruction": "int[]",
+    "lineNumber": 3,
+  },
+  "message": "Undeclared identifier: count(*slot). (5)",
+}

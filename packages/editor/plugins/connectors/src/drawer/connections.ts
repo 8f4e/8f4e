@@ -25,7 +25,10 @@ export default function drawConnections(
 		}
 
 		for (const input of widgetsByBlock.get(codeBlock)?.inputs ?? []) {
-			const outputAddress = memoryViews.int32[input.allocationUnitAddress];
+			const outputAddress =
+				input.source.kind === 'reference'
+					? input.source.byteAddress
+					: memoryViews.int32[input.source.allocationUnitAddress];
 			const output = outputsByByteAddress.get(outputAddress);
 
 			if (!output) {

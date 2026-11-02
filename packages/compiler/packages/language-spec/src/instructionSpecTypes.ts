@@ -1,5 +1,6 @@
 import type { InstructionSpec, instructionSpecs, MemoryOperationEffectSpec } from './instructionSpecs';
 import type { MemoryDeclarationInstruction } from './memory';
+import type { ReferenceSlotInstruction } from './referenceSlots';
 
 /** Names of every instruction entry registered in the language spec table. */
 export type InstructionSpecName = keyof typeof instructionSpecs;
@@ -66,4 +67,6 @@ export type InstructionSpecLookup<TInstruction extends string> = TInstruction ex
 	? (typeof instructionSpecs)[TInstruction]
 	: TInstruction extends MemoryDeclarationInstruction
 		? (typeof instructionSpecs)['memoryDeclaration']
-		: InstructionSpec | undefined;
+		: TInstruction extends ReferenceSlotInstruction
+			? (typeof instructionSpecs)['referenceSlot']
+			: InstructionSpec | undefined;

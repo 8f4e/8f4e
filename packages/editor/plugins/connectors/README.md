@@ -11,6 +11,10 @@ not add duplicate endpoints and selecting a same-named block cannot redirect wir
 Layout subscriptions keep geometry private in a per-editor WeakMap. After each completed layout batch, the plugin
 rebuilds its byte-address index from the current
 project slice. Runtime pointer values are read on every frame, so wires follow live memory without recompilation.
+Fixed reference slots such as `float& input &source:output` also produce input connectors, positioned at their
+declaration rows. Their wires use the target byte address retained in `compiledModules[id].referenceSlots`, without
+reading a pointer slot from runtime memory. Every compiled module supplies a reference-slot map, empty when it has no
+fixed declarations. Target type and buffer metadata come from the backing declaration in the allocation plan.
 
 Connectors use the existing code-block drawer. Wires use `drawers.registerRenderLayer`: the renderer supplies its
 WebGL context and resolved palette after initialization, draws the pass above sprites and below configured RGBA

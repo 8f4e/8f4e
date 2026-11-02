@@ -232,6 +232,7 @@ describe('analyzeStack integration', () => {
 		const semanticReferences = {
 			modules: {
 				main: {
+					referenceSlots: {},
 					ast: ast.modules[0],
 					bindings: [],
 					skipExecutionInCycle: false,

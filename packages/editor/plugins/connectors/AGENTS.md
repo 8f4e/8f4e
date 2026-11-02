@@ -14,6 +14,8 @@
 - Draw wires independently of block culling. Read pointer values each frame, suppress wires during dialogs, and
   highlight connections belonging to the selected input block.
 - Install in the fixed default and minimal compositions; connectors are inferred from memory declarations.
+- Fixed reference inputs come from compiled reference-slot metadata and use the target address directly; dynamic
+  pointer inputs continue to read their allocated slots. Keep both address sources explicit in connector data.
 - Ignore Vitest attachments and screenshot comparison images; keep reference screenshots tracked.
 - Verify with `npx nx run @8f4e/editor-plugin-connectors:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-connectors:test:screenshot`.

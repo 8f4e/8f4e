@@ -2,21 +2,12 @@
 
 constants env
 ; @pos -84 14
-; @favorite
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
 const SAMPLE_RATE 1
 
 constantsEnd
-
-note
-; @pos -170 -11
-; @mode edit
-; @config workerRuntime.enabled true
-; @config workerRuntime.sampleRate 1
-; @config export.fileName landingPageDemo3
-noteEnd
 
 note colors
 ; @pos -211 -11
@@ -33,6 +24,14 @@ note colors
 ; @config color.tertiary #c4aecb
 ; @config color.highlight #e0b2ff
 ; @config color.detail #ca74e8
+noteEnd
+
+note
+; @pos -170 -11
+; @mode edit
+; @config workerRuntime.enabled true
+; @config workerRuntime.sampleRate 1
+; @config export.fileName landingPageDemo3
 noteEnd
 
 entry main
@@ -63,6 +62,8 @@ module pointer
 int* pointer &memories:0
 ; @watch pointer
 ; @watch *pointer
+int& start &memories:foo1
+int& end &memories:foo5
 
 ; Increment the pointer by 4:
 push &pointer
@@ -73,11 +74,11 @@ store
 
 ; Wrap the pointer:
 push pointer
-push &memories:4
+push end
 greaterThan
 if
 push &pointer
-push &memories:0
+push start
 store
 ifEnd
 

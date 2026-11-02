@@ -204,6 +204,7 @@ describe('resolveSemanticReferences integration', () => {
 			],
 			modules: [
 				{
+					referenceSlots: {},
 					lineFacts: [
 						undefined,
 						undefined,

@@ -25,7 +25,12 @@ function createMockLines(): LineDrawer {
 }
 
 describe('drawConnections', () => {
-	it.each([0, 80])('draws a wire to output address %i', outputAddress => {
+	it.each([
+		{ kind: 'pointer', address: 0 },
+		{ kind: 'pointer', address: 80 },
+		{ kind: 'reference', address: 0 },
+		{ kind: 'reference', address: 80 },
+	] as const)('draws a wire for $kind to address $address', ({ kind, address: outputAddress }) => {
 		const inputBlock = createMockCodeBlock({
 			name: 'inputModule',
 			x: 100,
@@ -41,7 +46,7 @@ describe('drawConnections', () => {
 			y: 36,
 			wireX: 15,
 			wireY: 45,
-			allocationUnitAddress: 2,
+			source: kind === 'reference' ? { kind, byteAddress: outputAddress } : { kind, allocationUnitAddress: 2 },
 		};
 		const output: Output = {
 			codeBlock: outputBlock,
@@ -82,7 +87,7 @@ describe('drawConnections', () => {
 			lines,
 			wireColors,
 			state,
-			createMemoryViews({ int32: [0, 0, outputAddress] }),
+			createMemoryViews({ int32: kind === 'reference' ? [] : [0, 0, outputAddress] }),
 			widgetsByBlock,
 			outputsByByteAddress
 		);

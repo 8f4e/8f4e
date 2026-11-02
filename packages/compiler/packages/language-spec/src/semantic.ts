@@ -36,6 +36,7 @@ import type {
 	ResolvedMemoryDeclaration,
 } from './memory';
 import type { ProjectMemoryAliasLookup } from './project';
+import type { ReferenceSlotMap, ResolvedReferenceSlot } from './referenceSlots';
 
 /** Proven byte range associated with an address expression or memory boundary. */
 export interface MemoryAddressRange {
@@ -240,9 +241,13 @@ export interface MemoryReferenceResolutionBlockFacts {
 	lineFacts: Array<MemoryReferenceResolutionLineFacts | undefined>;
 }
 
+export interface MemoryReferenceResolutionModuleFacts extends MemoryReferenceResolutionBlockFacts {
+	referenceSlots: ReferenceSlotMap;
+}
+
 export interface MemoryReferenceResolutionReport {
 	prototypes: readonly MemoryReferenceResolutionBlockFacts[];
-	modules: readonly MemoryReferenceResolutionBlockFacts[];
+	modules: readonly MemoryReferenceResolutionModuleFacts[];
 	constants: readonly MemoryReferenceResolutionBlockFacts[];
 	functions: readonly MemoryReferenceResolutionBlockFacts[];
 	declarationSourcesByModuleId: Record<string, MemoryReferenceResolutionBlockFacts>;
@@ -316,6 +321,11 @@ export type ResolvedLocalPushLine = Omit<PushLine, 'arguments'> & {
 	};
 };
 
+export type ResolvedReferencePushLine = Omit<PushLine, 'arguments'> & {
+	arguments: [MemoryPointerIdentifier];
+	resolvedTarget: { kind: 'reference'; slot: ResolvedReferenceSlot };
+};
+
 export type ResolvedLocalPointerPushLine = Omit<PushLine, 'arguments'> & {
 	arguments: [MemoryPointerIdentifier];
 	resolvedTarget: {
@@ -325,6 +335,7 @@ export type ResolvedLocalPointerPushLine = Omit<PushLine, 'arguments'> & {
 };
 
 export type ResolvedPushLine =
+	| ResolvedReferencePushLine
 	| ResolvedMemoryPushLine
 	| ResolvedMemoryPointerPushLine
 	| ResolvedLocalPushLine

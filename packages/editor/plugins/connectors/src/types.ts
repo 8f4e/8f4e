@@ -7,7 +7,7 @@ export interface Input {
 	y: number;
 	wireX: number;
 	wireY: number;
-	allocationUnitAddress: number;
+	source: { kind: 'pointer'; allocationUnitAddress: number } | { kind: 'reference'; byteAddress: number };
 }
 
 export interface Output {

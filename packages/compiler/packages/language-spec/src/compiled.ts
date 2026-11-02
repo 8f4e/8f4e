@@ -5,6 +5,7 @@ import type { ASTCache } from './cache';
 import type { FunctionImportMetadata, FunctionParameter, FunctionSignature } from './functionTypes';
 import type { MemoryDefaults, MemoryLayoutPlan, MemoryPointerMetadataMap } from './memory';
 import type { ProjectMemoryExposuresByGroupPath } from './project';
+import type { ReferenceSlotMap } from './referenceSlots';
 import type { StackAnalysisResult } from './semantic';
 
 /** The concrete overload selected for a call, also available for generated entry dispatchers. */
@@ -22,6 +23,7 @@ export type CompiledStackAnalysisLine = {
 
 /** Code generation output and metadata for a compiled executable module. */
 export interface CompiledModule {
+	referenceSlots: ReferenceSlotMap;
 	index: number;
 	cycleFunction: number[];
 	id: string;

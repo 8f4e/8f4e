@@ -1,4 +1,4 @@
-import { ArgumentType } from '@8f4e/language-spec';
+import { ArgumentType, referenceSlotInstructions } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
 import { classifyIdentifier } from './parseArgument';
@@ -8,6 +8,28 @@ import validateInstructionArguments from './validateInstructionArguments';
 const { parseCompileTimeOperand } = await import('./parseArgument');
 
 describe('validateInstructionArguments', () => {
+	it.each(referenceSlotInstructions)('accepts named and indexed memory targets for %s', instruction => {
+		for (const target of ['&value', '&source:value', '&source:0', '&source:12', '&this:0']) {
+			expect(() =>
+				validateInstructionArguments(instruction, [classifyIdentifier('slot'), classifyIdentifier(target)])
+			).not.toThrow();
+		}
+	});
+
+	it.each([
+		['SLOT', '&value'],
+		['&slot', '&value'],
+		['this', '&value'],
+		['slot', 'value'],
+		['slot', '*value'],
+		['slot', 'value&'],
+		['slot', '&source:'],
+		['slot', '&this'],
+	])('rejects invalid fixed reference %s %s', (name, target) => {
+		expect(() =>
+			validateInstructionArguments('float&', [classifyIdentifier(name), classifyIdentifier(target)])
+		).toThrow(expect.objectContaining({ code: SyntaxErrorCode.INVALID_REFERENCE_SLOT }));
+	});
 	it('enforces missing arguments for known instruction arity', () => {
 		expect(() => validateInstructionArguments('push', [])).toThrowError(SyntaxRulesError);
 		expect(() => validateInstructionArguments('map', [])).toThrowError(SyntaxRulesError);

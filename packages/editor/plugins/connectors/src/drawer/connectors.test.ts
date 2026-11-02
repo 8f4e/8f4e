@@ -66,7 +66,7 @@ describe('drawConnectors', () => {
 			y: 3,
 			wireX: 0,
 			wireY: 0,
-			allocationUnitAddress: 0,
+			source: { kind: 'pointer', allocationUnitAddress: 0 },
 		});
 
 		drawConnectors(engine, state, widgets, memory);

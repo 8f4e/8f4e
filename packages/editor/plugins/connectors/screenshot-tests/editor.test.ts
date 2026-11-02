@@ -93,6 +93,15 @@ test('renders a wire crossing the viewport when both connected blocks are offscr
 	await expect(canvas).toMatchScreenshot('offscreen-wires');
 });
 
+test('renders fixed reference wires without allocated pointer slots and restores them after GPU release', async () => {
+	const { editor, canvas, render } = await setup(source.replaceAll('float* input', 'float& input'));
+	await expect(canvas).toMatchScreenshot('fixed-reference-wires');
+	editor.releaseRenderingResources();
+	editor.resize(800, 400);
+	render();
+	await expect(canvas).toMatchScreenshot('fixed-reference-wires');
+});
+
 test('keeps wires on the active override after selecting same-named modules', async () => {
 	const { editor, canvas, render, events } = await setup(`8f4e/v1
 constants env

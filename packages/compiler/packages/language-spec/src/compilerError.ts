@@ -139,6 +139,20 @@ export function getError(
 				line,
 				context,
 			};
+		case ErrorCode.REFERENCE_SLOT_HAS_NO_STORAGE:
+			return {
+				code,
+				message: `Fixed reference slot${details?.identifier ? ` "${details.identifier}"` : ''} has no addressable storage. Push the slot name to use its target address. (${code})`,
+				line,
+				context,
+			};
+		case ErrorCode.REFERENCE_SLOT_CANNOT_BE_REBOUND:
+			return {
+				code,
+				message: `Fixed reference slot${details?.identifier ? ` "${details.identifier}"` : ''} cannot be rebound. (${code})`,
+				line,
+				context,
+			};
 		case ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET:
 			return {
 				code,

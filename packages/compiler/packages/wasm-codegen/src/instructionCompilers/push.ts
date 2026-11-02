@@ -6,6 +6,7 @@ import type {
 	ResolvedMemoryPointerPushLine,
 	ResolvedMemoryPushLine,
 	ResolvedPushLine,
+	ResolvedReferencePushLine,
 } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
 import pushLiteral from './push/handlers/pushLiteral';
@@ -13,6 +14,7 @@ import pushLocal from './push/handlers/pushLocal';
 import pushLocalPointer from './push/handlers/pushLocalPointer';
 import pushMemoryIdentifier from './push/handlers/pushMemoryIdentifier';
 import pushMemoryPointer from './push/handlers/pushMemoryPointer';
+import pushReference from './push/handlers/pushReference';
 import pushStringLiteral from './push/handlers/pushStringLiteral';
 
 function isResolvedMemoryPushLine(line: ResolvedPushLine): line is ResolvedMemoryPushLine {
@@ -31,6 +33,10 @@ function isResolvedLocalPushLine(line: ResolvedPushLine): line is ResolvedLocalP
 	return line.resolvedTarget.kind === 'local';
 }
 
+function isResolvedReferencePushLine(line: ResolvedPushLine): line is ResolvedReferencePushLine {
+	return line.resolvedTarget.kind === 'reference';
+}
+
 /**
  * Instruction compiler for `push`.
  * @see [Instruction docs](../../docs/instructions/stack.md)
@@ -45,6 +51,9 @@ const push: InstructionCompiler<CodegenPushLine> = (line: CodegenPushLine, conte
 
 	if (isResolvedMemoryPushLine(line)) {
 		return pushMemoryIdentifier(line, context);
+	}
+	if (isResolvedReferencePushLine(line)) {
+		return pushReference(line, context);
 	}
 	if (isResolvedMemoryPointerPushLine(line)) {
 		return pushMemoryPointer(line, context);

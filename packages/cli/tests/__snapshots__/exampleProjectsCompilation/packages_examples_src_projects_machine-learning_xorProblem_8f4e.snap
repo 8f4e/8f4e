@@ -4,6 +4,7 @@
   },
   "compiledModules": {
     "result": {
+      "referenceSlots": {},
       "id": "result",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -76,6 +77,7 @@
       "index": 0
     },
     "notes": {
+      "referenceSlots": {},
       "id": "notes",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -127,6 +129,7 @@
       "index": 1
     },
     "inputs": {
+      "referenceSlots": {},
       "id": "inputs",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -212,6 +215,7 @@
       "index": 2
     },
     "perceptron": {
+      "referenceSlots": {},
       "id": "perceptron",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -511,6 +515,7 @@
       "index": 3
     },
     "perceptron2": {
+      "referenceSlots": {},
       "id": "perceptron2",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -810,6 +815,7 @@
       "index": 4
     },
     "activationFn": {
+      "referenceSlots": {},
       "id": "activationFn",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -954,6 +960,7 @@
       "index": 5
     },
     "activationFn2": {
+      "referenceSlots": {},
       "id": "activationFn2",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -1098,6 +1105,7 @@
       "index": 6
     },
     "perceptron3": {
+      "referenceSlots": {},
       "id": "perceptron3",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -1398,6 +1406,7 @@
       "index": 7
     },
     "activationFn3": {
+      "referenceSlots": {},
       "id": "activationFn3",
       "executionEntryName": "main",
       "cycleFunction": [

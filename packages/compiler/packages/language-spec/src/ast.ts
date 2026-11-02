@@ -17,6 +17,7 @@ import {
 	type ScalarMemoryDeclarationInstruction,
 } from './memory';
 import type { ProjectBlockId, ProjectGroupPath } from './project';
+import { isReferenceSlotInstruction, type ReferenceSlotInstruction } from './referenceSlots';
 
 type ClampAddressInstructionName = 'clampAddress' | 'clampModuleAddress' | 'clampGlobalAddress';
 
@@ -29,6 +30,15 @@ export type ASTLineBase<Instruction extends string, Arguments extends Array<Argu
 export type CompileTimeValueArgument = ArgumentLiteral | ArgumentIdentifier | ArgumentCompileTimeExpression;
 export type PushArgument = ArgumentLiteral | ArgumentIdentifier | ArgumentCompileTimeExpression | ArgumentStringLiteral;
 export type PushLine = ASTLineBase<'push', [PushArgument]>;
+export type ReferenceSlotAddressArgument =
+	| (Extract<ArgumentIdentifier, { referenceKind: 'memory-reference' | 'intermodular-reference' }> & {
+			isEndAddress: false;
+	  })
+	| Extract<ArgumentIdentifier, { referenceKind: 'intermodular-module-nth-reference' }>;
+export type ReferenceSlotLine = ASTLineBase<
+	ReferenceSlotInstruction,
+	[Extract<ArgumentIdentifier, { referenceKind: 'plain' }>, ReferenceSlotAddressArgument]
+>;
 export type InlineOperandLine = ASTLineBase<InlineOperandInstructionName, [] | [PushArgument]>;
 export type AssertEqualLine = ASTLineBase<'assertEqual', [CompileTimeValueArgument]>;
 
@@ -216,7 +226,8 @@ type ExplicitCompilerASTLineWithoutGenericNoSource =
 	| ImportLine
 	| SkipExecutionLine
 	| ClampAddressLine
-	| MemoryDeclarationLine;
+	| MemoryDeclarationLine
+	| ReferenceSlotLine;
 
 type GenericNoSourceArgumentInstructionName = Exclude<
 	NoSourceArgumentInstructionName,
@@ -307,6 +318,10 @@ export type ComposedConstantsAST = ComposedAST<ValidatedConstantsAST>;
 export type ComposedPrototypeAST = ComposedAST<ValidatedPrototypeAST>;
 
 const semanticInstructionSet = new Set<string>(semanticInstructionNames);
+
+export function isReferenceSlotLine(line: CompilerASTLine): line is ReferenceSlotLine {
+	return isReferenceSlotInstruction(line.instruction);
+}
 
 /**
  * Checks whether a parsed line is a semantic instruction handled before code generation.
