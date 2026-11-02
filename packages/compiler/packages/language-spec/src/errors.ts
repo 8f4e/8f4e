@@ -59,6 +59,8 @@ export const ErrorCode = {
 	DUPLICATE_GROUP_MEMORY_INITIALIZER: 76,
 	INVALID_ARRAY_SIZE: 77,
 	INVALID_ADDRESS_ARITHMETIC: 78,
+	REFERENCE_SLOT_HAS_NO_STORAGE: 79,
+	REFERENCE_SLOT_CANNOT_BE_REBOUND: 80,
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];

@@ -1,4 +1,4 @@
-import type { PlannedMemoryDeclaration, PointeeBaseType } from './memory';
+import type { PlannedMemoryDeclaration } from './memory';
 
 /** Fixed, typed references resolved after allocation; these declarations reserve no storage. */
 export const referenceSlotInstructions = [
@@ -25,11 +25,10 @@ export interface ResolvedReferenceSlot {
 	type: ReferenceSlotInstruction;
 	lineNumber: number;
 	targetModuleId: string;
-	targetMemoryId: string;
 	targetMemory: PlannedMemoryDeclaration;
-	pointeeBaseType: PointeeBaseType;
-	pointerDepth: 1;
-	pointeeElementCount: number;
 }
 
 export type ReferenceSlotMap = Readonly<Record<string, ResolvedReferenceSlot>>;
+
+/** Shared immutable namespace for contexts without fixed reference declarations. */
+export const EMPTY_REFERENCE_SLOTS: ReferenceSlotMap = Object.freeze(Object.create(null));

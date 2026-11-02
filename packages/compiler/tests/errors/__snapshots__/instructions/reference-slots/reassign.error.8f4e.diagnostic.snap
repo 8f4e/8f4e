@@ -1,5 +1,5 @@
 {
-  "code": 5,
+  "code": 80,
   "context": {
     "codeBlockId": "invalid",
     "codeBlockType": "module",
@@ -17,5 +17,5 @@
     "instruction": "localSet",
     "lineNumber": 4,
   },
-  "message": "Undeclared identifier: slot. (5)",
+  "message": "Fixed reference slot "slot" cannot be rebound. (80)",
 }

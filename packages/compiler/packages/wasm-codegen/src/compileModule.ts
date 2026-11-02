@@ -60,7 +60,7 @@ export function compileModule(
 		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context);
 
 	return {
-		...(resolved.referenceSlots ? { referenceSlots: resolved.referenceSlots } : {}),
+		referenceSlots: resolved.referenceSlots,
 		id: ast.id,
 		executionEntryName: ast.executionEntryName,
 		cycleFunction: createFunction(

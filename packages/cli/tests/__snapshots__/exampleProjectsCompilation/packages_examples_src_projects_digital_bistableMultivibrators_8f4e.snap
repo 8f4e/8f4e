@@ -4,6 +4,7 @@
   },
   "compiledModules": {
     "resetButton": {
+      "referenceSlots": {},
       "id": "resetButton",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -67,6 +68,7 @@
       "index": 0
     },
     "setButton": {
+      "referenceSlots": {},
       "id": "setButton",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -130,6 +132,7 @@
       "index": 1
     },
     "norGate2": {
+      "referenceSlots": {},
       "id": "norGate2",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -393,6 +396,7 @@
       "index": 2
     },
     "norGate": {
+      "referenceSlots": {},
       "id": "norGate",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -656,6 +660,7 @@
       "index": 3
     },
     "scope": {
+      "referenceSlots": {},
       "id": "scope",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -1015,6 +1020,7 @@
       "index": 4
     },
     "buttons": {
+      "referenceSlots": {},
       "id": "buttons",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -1090,6 +1096,7 @@
       "index": 5
     },
     "negate": {
+      "referenceSlots": {},
       "id": "negate",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -1304,6 +1311,7 @@
       "index": 6
     },
     "orGate": {
+      "referenceSlots": {},
       "id": "orGate",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -1567,6 +1575,7 @@
       "index": 7
     },
     "andGate": {
+      "referenceSlots": {},
       "id": "andGate",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -1830,6 +1839,7 @@
       "index": 8
     },
     "scope2": {
+      "referenceSlots": {},
       "id": "scope2",
       "executionEntryName": "main",
       "cycleFunction": [

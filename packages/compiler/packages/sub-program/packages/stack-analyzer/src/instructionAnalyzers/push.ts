@@ -113,9 +113,7 @@ function pushDereferencedPointerStackItems(
 function pushResolvedTargetStackItems(line: ResolvedPushLine, context: CompilationContext): Stack {
 	switch (line.resolvedTarget.kind) {
 		case 'reference':
-			return [
-				kindToStackItem(BASE_TYPE_METADATA[line.resolvedTarget.slot.pointeeBaseType].valueKind, { isNonZero: false }),
-			];
+			return [kindToStackItem(resolveMemoryValueKind(line.resolvedTarget.slot.targetMemory), { isNonZero: false })];
 		case 'memory': {
 			const { memoryItem } = line.resolvedTarget;
 			const kind = resolveMemoryValueKind(memoryItem);

@@ -256,6 +256,7 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
           "sourceLineIndex": 5,
         },
       ],
+      "referenceSlots": {},
       "skipExecutionInCycle": false,
     },
   },

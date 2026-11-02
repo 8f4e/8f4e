@@ -52,7 +52,7 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 		)) {
 			addConnector(memory, gapCalculator(memory.lineNumber, codeBlock.gaps) + rowOffset);
 		}
-		for (const slot of Object.values(compilation.compiledModule.referenceSlots ?? {})) {
+		for (const slot of Object.values(compilation.compiledModule.referenceSlots)) {
 			const y = gapCalculator(slot.lineNumber, codeBlock.gaps) * height;
 			widgets.inputs.push({
 				x: 0,

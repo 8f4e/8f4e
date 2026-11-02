@@ -5,11 +5,7 @@ import {
 	type MemoryDeclarationLine,
 } from '@8f4e/language-spec';
 import type { ReferenceResolutionContext } from '../context';
-import {
-	validateIntermoduleAddressReference,
-	validateUnresolvedIdentifier,
-	validateUnresolvedValueExpression,
-} from './helpers';
+import { validateAddressReference, validateUnresolvedIdentifier, validateUnresolvedValueExpression } from './helpers';
 
 function requireResolvedArrayValue(
 	argument: CompilerASTLine['arguments'][number] | undefined,
@@ -49,7 +45,7 @@ export default function resolveMemoryDeclarationReferences(
 			validateUnresolvedValueExpression(argument, line, context);
 		}
 		if (index === 1 && argument?.type === ArgumentType.IDENTIFIER) {
-			validateIntermoduleAddressReference(argument, line, context);
+			validateAddressReference(argument, line, context);
 		}
 	}
 

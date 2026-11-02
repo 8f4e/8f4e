@@ -239,12 +239,15 @@ export interface MemoryReferenceResolutionLineFacts {
 
 export interface MemoryReferenceResolutionBlockFacts {
 	lineFacts: Array<MemoryReferenceResolutionLineFacts | undefined>;
-	referenceSlots?: ReferenceSlotMap;
+}
+
+export interface MemoryReferenceResolutionModuleFacts extends MemoryReferenceResolutionBlockFacts {
+	referenceSlots: ReferenceSlotMap;
 }
 
 export interface MemoryReferenceResolutionReport {
 	prototypes: readonly MemoryReferenceResolutionBlockFacts[];
-	modules: readonly MemoryReferenceResolutionBlockFacts[];
+	modules: readonly MemoryReferenceResolutionModuleFacts[];
 	constants: readonly MemoryReferenceResolutionBlockFacts[];
 	functions: readonly MemoryReferenceResolutionBlockFacts[];
 	declarationSourcesByModuleId: Record<string, MemoryReferenceResolutionBlockFacts>;

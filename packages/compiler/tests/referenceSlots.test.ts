@@ -22,13 +22,13 @@ entryEnd`),
 		expect(result.memoryPlan.modules.sink.memory).toEqual({});
 		expect(result.memoryPlan.modules.sink.allocatedByteLength).toBe(0);
 		expect(result.memoryDefaultsByModuleId.sink).toEqual({});
-		expect(result.compiledModules.sink.referenceSlots?.input).toMatchObject({
+		expect(result.compiledModules.sink.referenceSlots.input).toMatchObject({
 			type: 'float&',
 			targetModuleId: 'source',
-			targetMemoryId: 'output',
-			pointeeBaseType: 'float',
+			targetMemory: { id: 'output' },
 		});
-		expect(result.compiledModules.sink.referenceSlots?.input.targetMemory).toBe(target);
+		expect(result.compiledModules.sink.referenceSlots.input.targetMemory).toBe(target);
+		expect(result.compiledModules.source.referenceSlots).toEqual({});
 		expect(result.compiledModules.sink.cycleFunction).toEqual(
 			createFunction([], [...i32const(target.byteAddress), ...f32load(2, 0), 0x1a])
 		);
@@ -49,10 +49,10 @@ drop
 moduleEnd
 entryEnd`);
 		const first = await compileProject(source(''), { disableSharedMemory: true });
-		const firstSlot = first.compiledModules.sink.referenceSlots!.input;
+		const firstSlot = first.compiledModules.sink.referenceSlots.input;
 		const originalAddress = firstSlot.targetMemory.byteAddress;
 		const second = await compileProject(source('int padding'), { disableSharedMemory: true, cache: first.cache });
-		expect(second.compiledModules.sink.referenceSlots!.input.targetMemory.byteAddress).toBe(originalAddress + 4);
+		expect(second.compiledModules.sink.referenceSlots.input.targetMemory.byteAddress).toBe(originalAddress + 4);
 		expect(firstSlot.targetMemory.byteAddress).toBe(originalAddress);
 	});
 });

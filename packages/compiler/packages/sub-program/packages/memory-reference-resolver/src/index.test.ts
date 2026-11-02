@@ -89,6 +89,7 @@ function createTestContext(
 	return {
 		memoryPlan: createMemoryPlan([currentModule]),
 		memoryAliases: new Map(),
+		referenceSlots: Object.create(null),
 		currentModule,
 		pointerMetadata: {},
 		locals: {},

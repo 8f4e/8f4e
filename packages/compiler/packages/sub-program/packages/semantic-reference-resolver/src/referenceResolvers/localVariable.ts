@@ -14,6 +14,9 @@ export default function resolveLocalVariableAccess(
 	context: ReferenceResolutionContext
 ): ResolvedLocalSetLine {
 	const nameArg = line.arguments[0];
+	if (context.referenceSlots[nameArg.value]) {
+		throw getError(ErrorCode.REFERENCE_SLOT_CANNOT_BE_REBOUND, line, context, { identifier: nameArg.value });
+	}
 	if (!context.locals[nameArg.value]) {
 		throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: nameArg.value });
 	}

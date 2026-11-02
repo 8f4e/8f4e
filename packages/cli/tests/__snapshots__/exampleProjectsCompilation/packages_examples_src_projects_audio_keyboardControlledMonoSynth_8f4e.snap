@@ -4,6 +4,7 @@
   },
   "compiledModules": {
     "keyboard": {
+      "referenceSlots": {},
       "id": "keyboard",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -79,6 +80,7 @@
       "index": 0
     },
     "janko": {
+      "referenceSlots": {},
       "id": "janko",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -225,6 +227,7 @@
       "index": 1
     },
     "midiLUT": {
+      "referenceSlots": {},
       "id": "midiLUT",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -1684,6 +1687,7 @@
       "index": 2
     },
     "midiNote2Freq": {
+      "referenceSlots": {},
       "id": "midiNote2Freq",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -1918,6 +1922,7 @@
       "index": 3
     },
     "arEnv": {
+      "referenceSlots": {},
       "id": "arEnv",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -2611,6 +2616,7 @@
       "index": 4
     },
     "phaseAccumulator": {
+      "referenceSlots": {},
       "id": "phaseAccumulator",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -3062,6 +3068,7 @@
       "index": 5
     },
     "vca": {
+      "referenceSlots": {},
       "id": "vca",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -3244,6 +3251,7 @@
       "index": 6
     },
     "audioout": {
+      "referenceSlots": {},
       "id": "audioout",
       "executionEntryName": "main",
       "cycleFunction": [

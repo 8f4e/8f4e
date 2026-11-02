@@ -4,6 +4,7 @@
   },
   "compiledModules": {
     "phaseAccumulator": {
+      "referenceSlots": {},
       "id": "phaseAccumulator",
       "executionEntryName": "main",
       "cycleFunction": [
@@ -454,6 +455,7 @@
       "index": 0
     },
     "audioout": {
+      "referenceSlots": {},
       "id": "audioout",
       "executionEntryName": "main",
       "cycleFunction": [

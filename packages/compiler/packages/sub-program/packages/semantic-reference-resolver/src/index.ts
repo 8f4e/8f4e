@@ -30,6 +30,7 @@ import {
 	ArgumentType,
 	BlockType,
 	compilerSourceBlockInstructionByType,
+	EMPTY_REFERENCE_SLOTS,
 	ErrorCode,
 	functionValueTypeToLocalMetadata,
 	getError,
@@ -85,7 +86,7 @@ export interface ResolvedOperation {
 }
 
 export interface ModuleSemanticReferences<TModule extends ModuleAST = ModuleAST> {
-	referenceSlots?: ReferenceSlotMap;
+	referenceSlots: ReferenceSlotMap;
 	ast: TModule;
 	bindings: readonly SourceLocalBinding[];
 	body: readonly ResolvedOperation[];
@@ -329,7 +330,7 @@ function createModuleContext(
 ): ReferenceResolutionContext {
 	const plannedModule = input.memoryPlan.modules[ast.id];
 	return createCompilationContext<ReferenceResolutionContext>({
-		referenceSlots: input.memoryReferences.modules[astIndex]?.referenceSlots,
+		referenceSlots: input.memoryReferences.modules[astIndex]!.referenceSlots,
 		namespace: {
 			moduleName: undefined,
 			functions: input.functions,
@@ -359,6 +360,7 @@ function createFunctionContext(
 	functionMetadata: FunctionMetadata
 ): ReferenceResolutionContext {
 	return createCompilationContext<ReferenceResolutionContext>({
+		referenceSlots: EMPTY_REFERENCE_SLOTS,
 		namespace: {
 			moduleName: undefined,
 			functions: input.functions,
@@ -445,7 +447,7 @@ function resolveModuleReferences<TModule extends ModuleAST>(
 		ast.id,
 		{
 			ast,
-			...(context.referenceSlots ? { referenceSlots: context.referenceSlots } : {}),
+			referenceSlots: context.referenceSlots,
 			body,
 			bindings: context.bindings,
 			skipExecutionInCycle: ast.lines.some(line => line.instruction === '#skipExecution'),

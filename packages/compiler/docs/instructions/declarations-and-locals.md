@@ -323,8 +323,9 @@ keeps the target's element count and type for `count(*slot)`, `sizeof(*slot)`, `
 Fixed slots are module-scoped and available throughout their module; their names must be distinct from memory and
 local names and follow the same non-constant naming convention as memory declarations.
 
-Fixed slots have no addressable storage of their own. Use `push slot` for the target address; `&slot`, `slot&`, and
-assigning to the binding are invalid. Initializers must name an allocated, non-pointer memory item. Numeric addresses,
+Fixed slots have no addressable storage of their own: `&slot` and `slot&` report this explicitly. Use `push slot` for
+the target address. `localSet slot` reports that the binding cannot be rebound; the target contents remain mutable.
+Initializers must name an allocated, non-pointer memory item. Numeric addresses,
 address arithmetic, end addresses, module addresses, and references to other fixed slots are not initializers.
 Slots cannot determine allocation sizes or ordinary `const` values, which resolve before memory layout.
 

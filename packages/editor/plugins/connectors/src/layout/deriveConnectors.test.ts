@@ -27,6 +27,7 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 
 function setMemories(state: State, memories: PlannedMemoryDeclaration[], inheritedIds: string[] = []) {
 	state.compiler.result.compiledModules['test-block'] = {
+		referenceSlots: Object.create(null),
 		id: 'test-block',
 		ast: { projectBlockId: 0 },
 	} as CompiledModule;
@@ -59,11 +60,7 @@ describe('deriveConnectors', () => {
 				type: 'int&',
 				lineNumber: 2,
 				targetModuleId: 'source',
-				targetMemoryId: 'value',
 				targetMemory: createMemory({ byteAddress: 80 }),
-				pointeeBaseType: 'int',
-				pointerDepth: 1,
-				pointeeElementCount: 1,
 			},
 		};
 		const widgets = deriveConnectors(block, state);

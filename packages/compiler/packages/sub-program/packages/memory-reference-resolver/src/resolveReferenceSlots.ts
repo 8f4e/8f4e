@@ -45,11 +45,7 @@ export function resolveReferenceSlots(ast: ModuleAST, context: MemoryReferenceRe
 			type: line.instruction,
 			lineNumber: line.lineNumber,
 			targetModuleId: resolved.targetModule!.id,
-			targetMemoryId: resolved.targetMemoryId,
 			targetMemory: memory,
-			pointeeBaseType: baseType,
-			pointerDepth: 1,
-			pointeeElementCount: memory.numberOfElements,
 		};
 	}
 	return slots;

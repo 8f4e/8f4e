@@ -4,6 +4,8 @@ import {
 	type CodegenPushLine,
 	ErrorCode,
 	getError,
+	getMemoryBaseType,
+	getPointerDepthFromMetadata,
 	type LocalValueMetadata,
 	type MemoryPointerIdentifier,
 	type PushLine,
@@ -14,7 +16,7 @@ import {
 } from '@8f4e/language-spec';
 import { getResolvedMemoryDeclaration } from '@8f4e/semantic-utils';
 import type { ReferenceResolutionContext } from '../context';
-import { validateIntermoduleAddressReference, validateUnresolvedValueExpression } from './helpers';
+import { validateAddressReference, validateUnresolvedValueExpression } from './helpers';
 
 function isResolvedPointerLocal(
 	local: ReferenceResolutionContext['locals'][string] | undefined
@@ -22,17 +24,13 @@ function isResolvedPointerLocal(
 	return !!local?.pointeeBaseType;
 }
 
-function getDeclaredPointerDepth(pointerMetadata: { pointerDepth: number; pointeeBaseType?: unknown }): number {
-	return pointerMetadata.pointeeBaseType ? pointerMetadata.pointerDepth : 0;
-}
-
 function validateDereferenceDepth(
 	pointerArgument: MemoryPointerIdentifier,
-	pointerMetadata: { pointerDepth: number; pointeeBaseType?: unknown },
+	declaredPointerDepth: number,
 	line: PushLine,
 	context: ReferenceResolutionContext
 ): void {
-	if (pointerArgument.dereferenceDepth > getDeclaredPointerDepth(pointerMetadata)) {
+	if (pointerArgument.dereferenceDepth > declaredPointerDepth) {
 		throw getError(ErrorCode.POINTER_DEREFERENCE_DEPTH_EXCEEDED, line, context, {
 			identifier: pointerArgument.value,
 		});
@@ -71,7 +69,7 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 	}
 	if (argument?.type === ArgumentType.IDENTIFIER) {
 		const { value, referenceKind } = argument;
-		validateIntermoduleAddressReference(argument, line, context);
+		validateAddressReference(argument, line, context);
 		if (referenceKind === 'plain') {
 			const local = context.locals[value];
 			if (local) {
@@ -93,17 +91,17 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 		}
 		if (referenceKind === 'memory-pointer') {
 			const pointerArgument = argument as MemoryPointerIdentifier;
-			const slot = context.referenceSlots?.[pointerArgument.targetMemoryId];
+			const slot = context.referenceSlots[pointerArgument.targetMemoryId];
 			if (slot) {
-				validateDereferenceDepth(pointerArgument, slot, line, context);
-				if (slot.targetMemory.allocatedByteLength < BASE_TYPE_METADATA[slot.pointeeBaseType].wordSize) {
+				validateDereferenceDepth(pointerArgument, 1, line, context);
+				if (slot.targetMemory.allocatedByteLength < BASE_TYPE_METADATA[getMemoryBaseType(slot.targetMemory)].wordSize) {
 					throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, context);
 				}
 				return { ...line, arguments: [pointerArgument], resolvedTarget: { kind: 'reference', slot } };
 			}
 			const memoryItem = getResolvedMemoryDeclaration(context, pointerArgument.targetMemoryId);
 			if (memoryItem) {
-				validateDereferenceDepth(pointerArgument, memoryItem, line, context);
+				validateDereferenceDepth(pointerArgument, getPointerDepthFromMetadata(memoryItem), line, context);
 				const resolvedLine: Omit<ResolvedMemoryPointerPushLine, 'resolvedTarget'> = {
 					...line,
 					arguments: [pointerArgument],
@@ -113,7 +111,7 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 
 			const local = context.locals[pointerArgument.targetMemoryId];
 			if (isResolvedPointerLocal(local)) {
-				validateDereferenceDepth(pointerArgument, local, line, context);
+				validateDereferenceDepth(pointerArgument, getPointerDepthFromMetadata(local), line, context);
 				const resolvedLine: Omit<ResolvedLocalPointerPushLine, 'resolvedTarget'> = {
 					...line,
 					arguments: [pointerArgument],

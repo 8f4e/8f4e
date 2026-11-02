@@ -23,7 +23,7 @@ export type CompiledStackAnalysisLine = {
 
 /** Code generation output and metadata for a compiled executable module. */
 export interface CompiledModule {
-	referenceSlots?: ReferenceSlotMap;
+	referenceSlots: ReferenceSlotMap;
 	index: number;
 	cycleFunction: number[];
 	id: string;
