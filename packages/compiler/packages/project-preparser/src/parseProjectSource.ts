@@ -13,6 +13,7 @@ import {
 } from './projectKeywords';
 import { getProjectBlockName, isProjectGapLine } from './projectLines';
 import { parseProjectMemoryExposureLine } from './projectMemoryExposure';
+import { inlineProjectTemplates } from './projectTemplates';
 
 type ParsedProjectBlock = { block: ProjectBlock; type: DocumentBlockType; nextIndex: number };
 
@@ -22,7 +23,7 @@ function hasDisabledDirective(code: readonly string[]): boolean {
 
 /** Parses `.8f4e` text into the canonical compiler-owned project object model. */
 export function parseProjectSource(text: string): ProjectObjectModel {
-	const lines = text.split('\n');
+	const lines = inlineProjectTemplates(text).split('\n');
 	if (lines[0]?.trim() !== FORMAT_HEADER) {
 		throw new Error(`Invalid .8f4e file: expected header "${FORMAT_HEADER}", got "${lines[0]?.trim() ?? ''}"`);
 	}

@@ -1,3 +1,4 @@
+import { getEditorBlockId } from '@8f4e/editor-core';
 import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
 import type { WebMcpTool } from '@8f4e/editor-webmcp';
 import { afterEach, expect, test, vi } from 'vitest';
@@ -373,4 +374,105 @@ test('replaces site tools and requires a fresh source read for the replacement e
 		editor.state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'module')
 	).toHaveLength(0);
 	expect(tools.size).toBe(18);
+});
+
+test('creates group templates while editing and saves the rightmost copy for reopening', async () => {
+	let projectSource = `8f4e/v1
+note
+; @mode edit
+; @config recompileDebounceDelay 10
+noteEnd
+entry main
+group left
+; @pos 0 0
+expose value &counter:value
+entry main
+module counter
+int value 1
+moduleEnd
+entryEnd
+groupEnd
+group right
+; @pos 20 0
+expose value &counter:value
+entry main
+module counter
+int value 2
+moduleEnd
+entryEnd
+groupEnd
+entryEnd`;
+	const writable = {
+		write: vi.fn(async (blob: Blob) => {
+			projectSource = await blob.text();
+		}),
+		close: vi.fn(),
+		abort: vi.fn(),
+	};
+	vi.stubGlobal(
+		'showSaveFilePicker',
+		vi.fn().mockResolvedValue({ createWritable: async () => writable, requestPermission: async () => 'granted' })
+	);
+	const view = setup({ templates: async () => new Response(projectSource), other: async () => new Response(source) });
+	const editor = await view.mounted();
+	await vi.waitFor(() => expect(editor.state.compiler.result.memoryPlan.modules['right/counter']).toBeDefined(), {
+		timeout: 10000,
+	});
+	const [left, right] = ['left', 'right'].map(
+		name => editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === name)!
+	);
+	editor.editing.applyEdits({
+		expectedRevision: editor.editing.getRevision(),
+		edits: [left, right].map(block => ({
+			type: 'update' as const,
+			blockId: getEditorBlockId(block),
+			code: [...block.code.slice(0, -1), 'useTemplate counter', 'groupEnd'],
+		})),
+	});
+	editor.navigation.openGroup(getEditorBlockId(right));
+	const counter = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'counter')!;
+	editor.editing.applyEdits({
+		expectedRevision: editor.editing.getRevision(),
+		edits: [
+			{ type: 'update', blockId: getEditorBlockId(counter), code: ['module counter', 'int value 22', 'moduleEnd'] },
+		],
+	});
+	editor.navigation.goToRoot();
+	const save = async (count: number) => {
+		view
+			.panel('templates')
+			.querySelector('canvas')!
+			.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true }));
+		await vi.waitFor(() => expect(writable.close).toHaveBeenCalledTimes(count));
+	};
+	await save(1);
+	expect(projectSource.match(/^template counter$/gm)).toHaveLength(1);
+	expect(projectSource.match(/^useTemplate counter$/gm)).toHaveLength(2);
+	expect(projectSource).toContain('int value 22');
+	expect(projectSource).not.toContain('int value 1');
+	const moved = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'left')!;
+	editor.editing.applyEdits({
+		expectedRevision: editor.editing.getRevision(),
+		edits: [
+			{
+				type: 'update',
+				blockId: getEditorBlockId(moved),
+				code: moved.code.map(line => (line.startsWith('; @pos') ? '; @pos 40 0' : line)),
+			},
+		],
+	});
+	await save(2);
+	expect(projectSource).toContain('int value 1');
+	expect(projectSource).not.toContain('int value 22');
+	view.gallery.querySelector<HTMLButtonElement>('#example-other')!.click();
+	await view.mounted(1);
+	view.gallery.querySelector<HTMLButtonElement>('#example-templates')!.click();
+	const reopened = await view.mounted(2);
+	await vi.waitFor(
+		() => expect(reopened.state.compiler.result.memoryDefaultsByModuleId['left/counter']?.value.value).toBe(1),
+		{ timeout: 10000 }
+	);
+	expect(reopened.state.compiler.result.memoryDefaultsByModuleId['right/counter'].value.value).toBe(1);
+	expect(reopened.state.codeErrors.compilationErrors).toEqual([]);
+	expect(reopened.state.codeErrors.editorDirectiveErrors).toEqual([]);
 });

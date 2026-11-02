@@ -27,7 +27,12 @@ This file extends the root and compiler package guidance for `packages/compiler/
 
 ## Architecture
 
-- Pipeline: raw project source -> classified `ProjectObjectModel` collections.
+- Pipeline: raw project source -> scope-local template source inlining -> classified `ProjectObjectModel` collections.
+- Own `template` / `useTemplate` validation and inlining here before ordinary project parsing. Lookup uses the group's
+  directly containing scope only. Retain `useTemplate` in group source, without template-specific model fields.
+- Own inverse source extraction here; the save plugin calls it after ordinary serialization. The last group in source
+  order wins silently per local template. Callers supply canonical order; this package never interprets editor positions.
+  Reconstruct definitions from marked groups and omit unused definitions.
 - `@8f4e/language-spec` is the sole owner of project object-model types; do not define parallel project contracts here.
 - Do not lower a project into a second whole-project compiler input. Private compiler stages consume the canonical
   collections directly.

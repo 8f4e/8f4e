@@ -11,3 +11,7 @@
 - Return cleanup for actions, menu, and keyboard listener. Open/parsing belongs to project-open.
 - Use clean TypeScript output. Verify build/test/typecheck through Nx. Unit tests cover source formatting; composed
   file behavior is covered by project-open tests and the product website's minimal-editor browser suite.
+
+- After ordinary source serialization, call `extractProjectTemplates` from `@8f4e/project-preparser`. Keep template
+  expansion, validation, and source extraction in the compiler source front end; do not add editor template state.
+  Existing spatial serialization order makes the rightmost using group supply each local template silently.

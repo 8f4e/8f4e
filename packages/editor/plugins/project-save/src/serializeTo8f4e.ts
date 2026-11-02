@@ -1,5 +1,6 @@
 import type { ProjectGroupObjectModel, ProjectObjectModel } from '@8f4e/language-spec';
 import {
+	extractProjectTemplates,
 	FORMAT_HEADER,
 	getExpectedProjectCloserPrefix,
 	getProjectCloserKeyword,
@@ -43,14 +44,14 @@ function validateCodeBlock(code: string[], blockIndex: number): void {
 		if (lineTrimmed === '') continue;
 
 		const innerOpener = getProjectOpenerKeyword(lineTrimmed);
-		if (innerOpener) {
+		if (innerOpener && opener !== 'note') {
 			throw new Error(
 				`Block ${blockIndex}: mixed block type markers (found opener "${lineTrimmed}" inside "${opener}" block)`
 			);
 		}
 
 		const innerCloser = getProjectCloserKeyword(lineTrimmed);
-		if (innerCloser) {
+		if (innerCloser && (opener !== 'note' || innerCloser === 'noteEnd')) {
 			throw new Error(`Block ${blockIndex}: closer "${lineTrimmed}" is not at the end of the block`);
 		}
 	}
@@ -129,5 +130,5 @@ export function serializeProjectTo8f4e(project: ProjectObjectModel): string {
 	const execution = serializeExecution(project);
 	if (execution.length) blockStrings.push(execution.join('\n'));
 
-	return FORMAT_HEADER + '\n\n' + blockStrings.join('\n\n');
+	return extractProjectTemplates(FORMAT_HEADER + '\n\n' + blockStrings.join('\n\n'));
 }

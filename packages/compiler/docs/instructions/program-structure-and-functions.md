@@ -57,6 +57,14 @@ position (left to right, then top to bottom, with creation order breaking ties),
 Existing group bodies must wrap executable modules in explicit entries; bare group modules no longer inherit the
 parent's entry.
 
+## template, templateEnd, and useTemplate
+
+`template NAME` / `templateEnd` defines shared child blocks and entries in a project scope. A direct child group uses
+`useTemplate NAME` to receive an independent copy before ordinary parsing. Instance declaration lines remain local;
+lookup never searches ancestors. A raw using group accepts one reference and no inline child blocks or entries.
+See [group templates](../source-syntax.md#group-templates) for syntax, scope isolation, editor authoring, and silent
+rightmost-instance serialization.
+
 ## Other Instructions
 
 ### expose

@@ -297,3 +297,131 @@ entryEnd`;
 		).not.toThrow();
 	});
 });
+
+describe('group template serialization', () => {
+	const expanded = (name: string, value: number) =>
+		`group ${name}\n; @pos ${value} 0\nexpose value &processor:value\ninit &value ${value}\npass env\nentry empty\nentryEnd\nentry main\nmodule processor\n; @pos 10 20\nint value ${value}\nmoduleEnd\nentryEnd\ngroupEnd`;
+	function mark(project: ProjectObjectModel) {
+		for (const group of getProjectGroups(project)) group.code.splice(1, 0, 'useTemplate voice');
+		return project;
+	}
+
+	it('creates a template from existing marked groups, silently choosing the last serialized instance', () => {
+		const project = mark(
+			parseProjectSource(`8f4e/v1\nentry main\n${expanded('left', 1)}\n${expanded('right', 2)}\nentryEnd`)
+		);
+		const before = structuredClone(project);
+		const saved = serializeProjectTo8f4e(project);
+		expect(saved.match(/^template voice$/gm)).toHaveLength(1);
+		expect(saved.match(/^module processor$/gm)).toHaveLength(1);
+		expect(saved.match(/^useTemplate voice$/gm)).toHaveLength(2);
+		const [left, right] = getProjectGroups(parseProjectSource(saved));
+		for (const group of [left, right]) {
+			expect(group.entries).toEqual(['main', 'empty']);
+			expect(getProjectModules(group)[0].code).toContain('int value 2');
+			expect(getProjectModules(group)[0].code).toContain('; @pos 10 20');
+			expect(group.code).toContain('pass env');
+		}
+		expect(left.code).toContain('init &value 1');
+		expect(right.code).toContain('init &value 2');
+		expect(project).toEqual(before);
+		expect(serializeProjectTo8f4e(parseProjectSource(saved))).toBe(saved);
+		project.execution.reverse();
+		expect(
+			getProjectModules(getProjectGroups(parseProjectSource(serializeProjectTo8f4e(project)))[0])[0].code
+		).toContain('int value 1');
+	});
+
+	it('keeps nested definitions local when extracting a shared outer template', () => {
+		const source = `8f4e/v1\ntemplate outer\ntemplate inner\nentry main\nmodule x\nint value 7\nmoduleEnd\nentryEnd\ntemplateEnd\nentry main\ngroup nested\nuseTemplate inner\ngroupEnd\nentryEnd\ntemplateEnd\nentry main\ngroup a\nuseTemplate outer\ngroupEnd\ngroup b\nuseTemplate outer\ngroupEnd\nentryEnd`;
+		const saved = serializeProjectTo8f4e(parseProjectSource(source));
+		expect(saved.match(/^template inner$/gm)).toHaveLength(1);
+		expect(saved.indexOf('template inner')).toBeGreaterThan(saved.indexOf('template outer'));
+		expect(saved.indexOf('template inner')).toBeLessThan(saved.indexOf('useTemplate inner'));
+		for (const outer of getProjectGroups(parseProjectSource(saved)))
+			expect(getProjectModules(getProjectGroups(outer)[0])[0].code).toContain('int value 7');
+		expect(serializeProjectTo8f4e(parseProjectSource(saved))).toBe(saved);
+	});
+
+	it('retains document blocks and arbitrary note examples inside a shared template', () => {
+		const source = `8f4e/v1
+template voice
+function helper
+functionEnd
+includes
+includesEnd
+constants settings
+const GAIN 2
+constantsEnd
+prototype state
+int value
+prototypeEnd
+note
+useTemplate example
+template example
+entry main
+group example
+noteEnd
+entry empty
+entryEnd
+templateEnd
+entry main
+group instance
+useTemplate voice
+groupEnd
+entryEnd`;
+		const saved = serializeProjectTo8f4e(parseProjectSource(source));
+		const group = getProjectGroups(parseProjectSource(saved))[0];
+		expect(group.functions).toHaveLength(1);
+		expect(group.constants).toHaveLength(1);
+		expect(group.prototypes).toHaveLength(1);
+		expect(group.includes).toHaveLength(1);
+		expect(group.notes[0].code).toContain('template example');
+		expect(group.entries).toEqual(['empty']);
+		expect(serializeProjectTo8f4e(parseProjectSource(saved))).toBe(saved);
+	});
+
+	it('removes definitions that have no instances', () => {
+		expect(
+			serializeProjectTo8f4e(parseProjectSource('8f4e/v1\ntemplate unused\nentry main\nentryEnd\ntemplateEnd'))
+		).toBe('8f4e/v1\n\n');
+	});
+});
+
+it('serializes identically named local templates independently in sibling scopes', () => {
+	const scope = (name: string, value: number) => `group ${name}
+template local
+entry main
+module value
+int out ${value}
+moduleEnd
+entryEnd
+templateEnd
+entry main
+group child
+useTemplate local
+groupEnd
+entryEnd
+groupEnd`;
+	const saved = serializeProjectTo8f4e(
+		parseProjectSource(`8f4e/v1\nentry main\n${scope('a', 11)}\n${scope('b', 22)}\nentryEnd`)
+	);
+	expect(saved.match(/^template local$/gm)).toHaveLength(2);
+	const [a, b] = getProjectGroups(parseProjectSource(saved)).map(
+		group => getProjectModules(getProjectGroups(group)[0])[0]
+	);
+	expect(a.code).toContain('int out 11');
+	expect(b.code).toContain('int out 22');
+	expect(serializeProjectTo8f4e(parseProjectSource(saved))).toBe(saved);
+});
+
+it('rejects an early noteEnd while preserving other block examples in notes', () => {
+	expect(() =>
+		serializeProjectTo8f4e(
+			createProject({ notes: [{ id: 1, code: ['note', 'entry main', 'groupEnd', 'entryEnd', 'noteEnd'] }] })
+		)
+	).not.toThrow();
+	expect(() =>
+		serializeProjectTo8f4e(createProject({ notes: [{ id: 1, code: ['note', 'noteEnd', 'extra text', 'noteEnd'] }] }))
+	).toThrow('not at the end of the block');
+});

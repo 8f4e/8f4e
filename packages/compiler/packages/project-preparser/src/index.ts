@@ -15,3 +15,4 @@ export {
 	serializeProjectMemoryExposure,
 	tryParseProjectMemoryExposureLine,
 } from './projectMemoryExposure';
+export { extractProjectTemplates, inlineProjectTemplates } from './projectTemplates';
