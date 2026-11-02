@@ -9,7 +9,7 @@ module resonantLowPassFilter
 ; freq sets frequency
 ; lower damping gives more resonance.
 
-float* in &phaseAccumulator:out
+float& in &phaseAccumulator:out
 float freq 0.1
 float damping 1.0
 float out

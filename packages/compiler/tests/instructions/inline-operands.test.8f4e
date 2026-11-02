@@ -163,8 +163,10 @@ module source
 int value 7
 moduleEnd
 module reader
+int& sourceValue &source:value
+
 push 0
-add &source:value
+add sourceValue
 load
 assertEqual 7
 moduleEnd

@@ -200,6 +200,7 @@ push aligned&
 load
 assertEqual 1072955392
 moduleEnd
+; Legacy end-address coverage: fixed references do not support end initializers.
 module zzFloat64Third
 push zzFloat64First:padded&
 load

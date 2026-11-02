@@ -7,7 +7,7 @@ module change2Trig
 const HIGH 1
 const LOW 0
 
-int* in &sh:out
+int& in &sh:out
 int trigOut
 int prevValue
 

@@ -8,7 +8,7 @@ module bitcrusher
 
 float* in
 float defAmount 0.9
-float* amount &defAmount
+float& amount &defAmount
 float out
 
 ; @watch out

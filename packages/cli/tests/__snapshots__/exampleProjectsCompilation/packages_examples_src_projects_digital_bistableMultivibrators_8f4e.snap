@@ -132,27 +132,69 @@
       "index": 1
     },
     "norGate2": {
-      "referenceSlots": {},
+      "referenceSlots": {
+        "in1": {
+          "id": "in1",
+          "type": "int&",
+          "lineNumber": 4,
+          "targetModuleId": "norGate",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 16,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 5,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false
+          }
+        },
+        "in2": {
+          "id": "in2",
+          "type": "int&",
+          "lineNumber": 6,
+          "targetModuleId": "setButton",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 138,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 552,
+            "elementByteLength": 4,
+            "endByteAddress": 552,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 4,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "norGate2",
       "executionEntryName": "main",
       "cycleFunction": [
-        35,
+        30,
         0,
         65,
-        44,
+        20,
         65,
-        40,
-        40,
-        2,
-        0,
+        16,
         40,
         2,
         0,
         65,
-        48,
-        40,
-        2,
-        0,
+        168,
+        4,
         40,
         2,
         0,
@@ -191,7 +233,7 @@
           },
           {
             "lineNumber": 4,
-            "instruction": "int*",
+            "instruction": "int&",
             "arguments": [
               {
                 "type": "identifier",
@@ -224,7 +266,7 @@
           },
           {
             "lineNumber": 6,
-            "instruction": "int*",
+            "instruction": "int&",
             "arguments": [
               {
                 "type": "identifier",
@@ -396,27 +438,68 @@
       "index": 2
     },
     "norGate": {
-      "referenceSlots": {},
+      "referenceSlots": {
+        "in1": {
+          "id": "in1",
+          "type": "int&",
+          "lineNumber": 4,
+          "targetModuleId": "norGate2",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 5,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 20,
+            "elementByteLength": 4,
+            "endByteAddress": 20,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 5,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false
+          }
+        },
+        "in2": {
+          "id": "in2",
+          "type": "int&",
+          "lineNumber": 6,
+          "targetModuleId": "resetButton",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 7,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 28,
+            "elementByteLength": 4,
+            "endByteAddress": 28,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 3,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "norGate",
       "executionEntryName": "main",
       "cycleFunction": [
-        35,
+        29,
         0,
         65,
-        32,
+        16,
+        65,
+        20,
+        40,
+        2,
+        0,
         65,
         28,
-        40,
-        2,
-        0,
-        40,
-        2,
-        0,
-        65,
-        36,
-        40,
-        2,
-        0,
         40,
         2,
         0,
@@ -455,7 +538,7 @@
           },
           {
             "lineNumber": 4,
-            "instruction": "int*",
+            "instruction": "int&",
             "arguments": [
               {
                 "type": "identifier",
@@ -488,7 +571,7 @@
           },
           {
             "lineNumber": 6,
-            "instruction": "int*",
+            "instruction": "int&",
             "arguments": [
               {
                 "type": "identifier",
@@ -660,21 +743,45 @@
       "index": 3
     },
     "scope": {
-      "referenceSlots": {},
+      "referenceSlots": {
+        "in": {
+          "id": "in",
+          "type": "int&",
+          "lineNumber": 3,
+          "targetModuleId": "norGate",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 16,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 5,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "scope",
       "executionEntryName": "main",
       "cycleFunction": [
-        89,
+        84,
         2,
         1,
         127,
         1,
         127,
         65,
-        200,
+        160,
         2,
         65,
-        200,
+        160,
         2,
         40,
         2,
@@ -686,39 +793,34 @@
         2,
         0,
         65,
-        200,
+        160,
         2,
         40,
         2,
         0,
         65,
-        196,
+        156,
         2,
         74,
         4,
         64,
         65,
-        200,
+        160,
         2,
         65,
-        200,
-        0,
+        32,
         54,
         2,
         0,
         11,
         65,
-        200,
+        160,
         2,
         40,
         2,
         0,
         65,
-        196,
-        0,
-        40,
-        2,
-        0,
+        16,
         40,
         2,
         0,
@@ -773,7 +875,7 @@
           },
           {
             "lineNumber": 3,
-            "instruction": "int*",
+            "instruction": "int&",
             "arguments": [
               {
                 "type": "identifier",
@@ -1096,19 +1198,40 @@
       "index": 5
     },
     "negate": {
-      "referenceSlots": {},
+      "referenceSlots": {
+        "in": {
+          "id": "in",
+          "type": "int&",
+          "lineNumber": 3,
+          "targetModuleId": "buttons",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 2,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 8,
+            "elementByteLength": 4,
+            "endByteAddress": 8,
+            "endAddressSafeByteLength": 4,
+            "id": "reset",
+            "lineNumber": 6,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "negate",
       "executionEntryName": "main",
       "cycleFunction": [
-        26,
+        23,
         0,
         65,
-        24,
+        12,
         65,
-        20,
-        40,
-        2,
-        0,
+        8,
         40,
         2,
         0,
@@ -1146,7 +1269,7 @@
           },
           {
             "lineNumber": 3,
-            "instruction": "int*",
+            "instruction": "int&",
             "arguments": [
               {
                 "type": "identifier",
@@ -1311,27 +1434,68 @@
       "index": 6
     },
     "orGate": {
-      "referenceSlots": {},
+      "referenceSlots": {
+        "in1": {
+          "id": "in1",
+          "type": "int&",
+          "lineNumber": 4,
+          "targetModuleId": "andGate",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 0,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 0,
+            "elementByteLength": 4,
+            "endByteAddress": 0,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 5,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false
+          }
+        },
+        "in2": {
+          "id": "in2",
+          "type": "int&",
+          "lineNumber": 6,
+          "targetModuleId": "buttons",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 1,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 4,
+            "elementByteLength": 4,
+            "endByteAddress": 4,
+            "endAddressSafeByteLength": 4,
+            "id": "set",
+            "lineNumber": 5,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "orGate",
       "executionEntryName": "main",
       "cycleFunction": [
-        35,
+        29,
         0,
         65,
-        56,
+        24,
         65,
-        52,
-        40,
-        2,
         0,
         40,
         2,
         0,
         65,
-        60,
-        40,
-        2,
-        0,
+        4,
         40,
         2,
         0,
@@ -1370,7 +1534,7 @@
           },
           {
             "lineNumber": 4,
-            "instruction": "int*",
+            "instruction": "int&",
             "arguments": [
               {
                 "type": "identifier",
@@ -1403,7 +1567,7 @@
           },
           {
             "lineNumber": 6,
-            "instruction": "int*",
+            "instruction": "int&",
             "arguments": [
               {
                 "type": "identifier",
@@ -1575,27 +1739,68 @@
       "index": 7
     },
     "andGate": {
-      "referenceSlots": {},
+      "referenceSlots": {
+        "in1": {
+          "id": "in1",
+          "type": "int&",
+          "lineNumber": 4,
+          "targetModuleId": "orGate",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 6,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 24,
+            "elementByteLength": 4,
+            "endByteAddress": 24,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 5,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false
+          }
+        },
+        "in2": {
+          "id": "in2",
+          "type": "int&",
+          "lineNumber": 6,
+          "targetModuleId": "negate",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 3,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 12,
+            "elementByteLength": 4,
+            "endByteAddress": 12,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 4,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "andGate",
       "executionEntryName": "main",
       "cycleFunction": [
-        35,
+        29,
         0,
         65,
-        4,
+        0,
         65,
-        0,
-        40,
-        2,
-        0,
+        24,
         40,
         2,
         0,
         65,
-        8,
-        40,
-        2,
-        0,
+        12,
         40,
         2,
         0,
@@ -1634,7 +1839,7 @@
           },
           {
             "lineNumber": 4,
-            "instruction": "int*",
+            "instruction": "int&",
             "arguments": [
               {
                 "type": "identifier",
@@ -1667,7 +1872,7 @@
           },
           {
             "lineNumber": 6,
-            "instruction": "int*",
+            "instruction": "int&",
             "arguments": [
               {
                 "type": "identifier",
@@ -1839,21 +2044,45 @@
       "index": 8
     },
     "scope2": {
-      "referenceSlots": {},
+      "referenceSlots": {
+        "in": {
+          "id": "in",
+          "type": "int&",
+          "lineNumber": 3,
+          "targetModuleId": "andGate",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 0,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 0,
+            "elementByteLength": 4,
+            "endByteAddress": 0,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 5,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "scope2",
       "executionEntryName": "main",
       "cycleFunction": [
-        89,
+        85,
         2,
         1,
         127,
         1,
         127,
         65,
-        208,
+        164,
         4,
         65,
-        208,
+        164,
         4,
         40,
         2,
@@ -1865,38 +2094,34 @@
         2,
         0,
         65,
-        208,
+        164,
         4,
         40,
         2,
         0,
         65,
-        204,
+        160,
         4,
         74,
         4,
         64,
         65,
-        208,
+        164,
         4,
         65,
-        208,
+        164,
         2,
         54,
         2,
         0,
         11,
         65,
-        208,
+        164,
         4,
         40,
         2,
         0,
         65,
-        204,
-        2,
-        40,
-        2,
         0,
         40,
         2,
@@ -1952,7 +2177,7 @@
           },
           {
             "lineNumber": 3,
-            "instruction": "int*",
+            "instruction": "int&",
             "arguments": [
               {
                 "type": "identifier",
@@ -2205,12 +2430,12 @@
         "id": "andGate",
         "lineNumber": 0,
         "byteAddress": 0,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 8,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 0,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
+          "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
             "allocationUnitAddress": 0,
@@ -2220,47 +2445,11 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          "out": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 1,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 4,
-            "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 2,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 8,
-            "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
             "isUnsigned": false
           }
         },
@@ -2275,75 +2464,15 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 1,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 4,
-            "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 2,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 8,
-            "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&orGate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "orGate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 5,
@@ -2358,51 +2487,27 @@
               ]
             },
             "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 6,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&negate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "negate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
           }
         ]
       },
       "buttons": {
         "id": "buttons",
         "lineNumber": 0,
-        "byteAddress": 12,
+        "byteAddress": 4,
         "allocationUnitCount": 2,
         "allocatedByteLength": 8,
-        "endByteAddress": 16,
+        "endByteAddress": 8,
         "endAddressSafeByteLength": 4,
         "memory": {
           "set": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 3,
+            "allocationUnitAddress": 1,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 12,
+            "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 12,
+            "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
             "id": "set",
             "lineNumber": 5,
@@ -2414,12 +2519,12 @@
           "reset": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 4,
+            "allocationUnitAddress": 2,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 16,
+            "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 16,
+            "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
             "id": "reset",
             "lineNumber": 6,
@@ -2433,12 +2538,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 3,
+            "allocationUnitAddress": 1,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 12,
+            "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 12,
+            "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
             "id": "set",
             "lineNumber": 5,
@@ -2450,12 +2555,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 4,
+            "allocationUnitAddress": 2,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 16,
+            "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 16,
+            "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
             "id": "reset",
             "lineNumber": 6,
@@ -2501,39 +2606,21 @@
       "negate": {
         "id": "negate",
         "lineNumber": 0,
-        "byteAddress": 20,
-        "allocationUnitCount": 2,
-        "allocatedByteLength": 8,
-        "endByteAddress": 24,
+        "byteAddress": 12,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 12,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 5,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 20,
-            "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 6,
+            "allocationUnitAddress": 3,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 24,
+            "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 24,
+            "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -2547,30 +2634,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 5,
+            "allocationUnitAddress": 3,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 20,
+            "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 6,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 24,
-            "elementByteLength": 4,
-            "endByteAddress": 24,
+            "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -2581,30 +2650,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&buttons:reset",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "buttons",
-                  "targetMemoryId": "reset",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -2625,63 +2670,27 @@
       "norGate": {
         "id": "norGate",
         "lineNumber": 0,
-        "byteAddress": 28,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 36,
+        "byteAddress": 16,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 16,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 7,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 28,
-            "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 8,
+            "allocationUnitAddress": 4,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 32,
+            "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 32,
+            "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 9,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 36,
-            "elementByteLength": 4,
-            "endByteAddress": 36,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
             "isUnsigned": false
           }
         },
@@ -2689,30 +2698,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 7,
+            "allocationUnitAddress": 4,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 28,
+            "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 8,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 32,
-            "elementByteLength": 4,
-            "endByteAddress": 32,
+            "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
@@ -2720,51 +2711,9 @@
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 9,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 36,
-            "elementByteLength": 4,
-            "endByteAddress": 36,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&norGate2:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "norGate2",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 5,
@@ -2775,30 +2724,6 @@
                   "value": "out",
                   "referenceKind": "plain",
                   "scope": "local"
-                }
-              ]
-            },
-            "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 6,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&resetButton:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "resetButton",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
                 }
               ]
             },
@@ -2809,63 +2734,27 @@
       "norGate2": {
         "id": "norGate2",
         "lineNumber": 0,
-        "byteAddress": 40,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 48,
+        "byteAddress": 20,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 20,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 10,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 40,
-            "elementByteLength": 4,
-            "endByteAddress": 40,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 11,
+            "allocationUnitAddress": 5,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 44,
+            "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 44,
+            "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 12,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 48,
-            "elementByteLength": 4,
-            "endByteAddress": 48,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
             "isUnsigned": false
           }
         },
@@ -2873,30 +2762,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 10,
+            "allocationUnitAddress": 5,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 40,
+            "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 40,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 11,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 44,
-            "elementByteLength": 4,
-            "endByteAddress": 44,
+            "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
@@ -2904,51 +2775,9 @@
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 12,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 48,
-            "elementByteLength": 4,
-            "endByteAddress": 48,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&norGate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "norGate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 5,
@@ -2959,30 +2788,6 @@
                   "value": "out",
                   "referenceKind": "plain",
                   "scope": "local"
-                }
-              ]
-            },
-            "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 6,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&setButton:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "setButton",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
                 }
               ]
             },
@@ -2993,63 +2798,27 @@
       "orGate": {
         "id": "orGate",
         "lineNumber": 0,
-        "byteAddress": 52,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 60,
+        "byteAddress": 24,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 24,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 13,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 52,
-            "elementByteLength": 4,
-            "endByteAddress": 52,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 14,
+            "allocationUnitAddress": 6,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 56,
+            "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 56,
+            "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 15,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 60,
-            "elementByteLength": 4,
-            "endByteAddress": 60,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
             "isUnsigned": false
           }
         },
@@ -3057,30 +2826,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 13,
+            "allocationUnitAddress": 6,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 52,
+            "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 52,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 14,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 56,
-            "elementByteLength": 4,
-            "endByteAddress": 56,
+            "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
@@ -3088,51 +2839,9 @@
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 15,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 60,
-            "elementByteLength": 4,
-            "endByteAddress": 60,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&andGate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "andGate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 5,
@@ -3147,51 +2856,27 @@
               ]
             },
             "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 6,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&buttons:set",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "buttons",
-                  "targetMemoryId": "set",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
           }
         ]
       },
       "resetButton": {
         "id": "resetButton",
         "lineNumber": 0,
-        "byteAddress": 64,
+        "byteAddress": 28,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 64,
+        "endByteAddress": 28,
         "endAddressSafeByteLength": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 16,
+            "allocationUnitAddress": 7,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 64,
+            "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 64,
+            "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 3,
@@ -3205,12 +2890,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 16,
+            "allocationUnitAddress": 7,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 64,
+            "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 64,
+            "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 3,
@@ -3241,41 +2926,23 @@
       "scope": {
         "id": "scope",
         "lineNumber": 0,
-        "byteAddress": 68,
-        "allocationUnitCount": 66,
-        "allocatedByteLength": 264,
-        "endByteAddress": 328,
+        "byteAddress": 32,
+        "allocationUnitCount": 65,
+        "allocatedByteLength": 260,
+        "endByteAddress": 288,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 17,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 68,
-            "elementByteLength": 4,
-            "endByteAddress": 68,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "buffer": {
             "numberOfElements": 64,
             "elementWordSize": 4,
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
-            "allocationUnitAddress": 18,
+            "allocationUnitAddress": 8,
             "id": "buffer",
             "lineNumber": 4,
-            "byteAddress": 72,
+            "byteAddress": 32,
             "elementByteLength": 256,
-            "endByteAddress": 324,
+            "endByteAddress": 284,
             "endAddressSafeByteLength": 4,
             "isInteger": true,
             "pointerDepth": 0,
@@ -3285,12 +2952,12 @@
           "bufferPointer": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 82,
+            "allocationUnitAddress": 72,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 328,
+            "byteAddress": 288,
             "elementByteLength": 4,
-            "endByteAddress": 328,
+            "endByteAddress": 288,
             "endAddressSafeByteLength": 4,
             "id": "bufferPointer",
             "lineNumber": 5,
@@ -3302,34 +2969,16 @@
         },
         "declarations": [
           {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 17,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 68,
-            "elementByteLength": 4,
-            "endByteAddress": 68,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
             "numberOfElements": 64,
             "elementWordSize": 4,
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
-            "allocationUnitAddress": 18,
+            "allocationUnitAddress": 8,
             "id": "buffer",
             "lineNumber": 4,
-            "byteAddress": 72,
+            "byteAddress": 32,
             "elementByteLength": 256,
-            "endByteAddress": 324,
+            "endByteAddress": 284,
             "endAddressSafeByteLength": 4,
             "isInteger": true,
             "pointerDepth": 0,
@@ -3339,12 +2988,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 82,
+            "allocationUnitAddress": 72,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 328,
+            "byteAddress": 288,
             "elementByteLength": 4,
-            "endByteAddress": 328,
+            "endByteAddress": 288,
             "endAddressSafeByteLength": 4,
             "id": "bufferPointer",
             "lineNumber": 5,
@@ -3355,30 +3004,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&norGate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "norGate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -3427,41 +3052,23 @@
       "scope2": {
         "id": "scope2",
         "lineNumber": 0,
-        "byteAddress": 332,
-        "allocationUnitCount": 66,
-        "allocatedByteLength": 264,
-        "endByteAddress": 592,
+        "byteAddress": 292,
+        "allocationUnitCount": 65,
+        "allocatedByteLength": 260,
+        "endByteAddress": 548,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 83,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 332,
-            "elementByteLength": 4,
-            "endByteAddress": 332,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "buffer": {
             "numberOfElements": 64,
             "elementWordSize": 4,
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
-            "allocationUnitAddress": 84,
+            "allocationUnitAddress": 73,
             "id": "buffer",
             "lineNumber": 4,
-            "byteAddress": 336,
+            "byteAddress": 292,
             "elementByteLength": 256,
-            "endByteAddress": 588,
+            "endByteAddress": 544,
             "endAddressSafeByteLength": 4,
             "isInteger": true,
             "pointerDepth": 0,
@@ -3471,12 +3078,12 @@
           "bufferPointer": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 148,
+            "allocationUnitAddress": 137,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 592,
+            "byteAddress": 548,
             "elementByteLength": 4,
-            "endByteAddress": 592,
+            "endByteAddress": 548,
             "endAddressSafeByteLength": 4,
             "id": "bufferPointer",
             "lineNumber": 5,
@@ -3488,34 +3095,16 @@
         },
         "declarations": [
           {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 83,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 332,
-            "elementByteLength": 4,
-            "endByteAddress": 332,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
             "numberOfElements": 64,
             "elementWordSize": 4,
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
-            "allocationUnitAddress": 84,
+            "allocationUnitAddress": 73,
             "id": "buffer",
             "lineNumber": 4,
-            "byteAddress": 336,
+            "byteAddress": 292,
             "elementByteLength": 256,
-            "endByteAddress": 588,
+            "endByteAddress": 544,
             "endAddressSafeByteLength": 4,
             "isInteger": true,
             "pointerDepth": 0,
@@ -3525,12 +3114,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 148,
+            "allocationUnitAddress": 137,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 592,
+            "byteAddress": 548,
             "elementByteLength": 4,
-            "endByteAddress": 592,
+            "endByteAddress": 548,
             "endAddressSafeByteLength": 4,
             "id": "bufferPointer",
             "lineNumber": 5,
@@ -3541,30 +3130,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&andGate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "andGate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -3613,21 +3178,21 @@
       "setButton": {
         "id": "setButton",
         "lineNumber": 0,
-        "byteAddress": 596,
+        "byteAddress": 552,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 596,
+        "endByteAddress": 552,
         "endAddressSafeByteLength": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 149,
+            "allocationUnitAddress": 138,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 596,
+            "byteAddress": 552,
             "elementByteLength": 4,
-            "endByteAddress": 596,
+            "endByteAddress": 552,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -3641,12 +3206,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 149,
+            "allocationUnitAddress": 138,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 596,
+            "byteAddress": 552,
             "elementByteLength": 4,
-            "endByteAddress": 596,
+            "endByteAddress": 552,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -3680,12 +3245,12 @@
         "id": "andGate",
         "lineNumber": 0,
         "byteAddress": 0,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 8,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 0,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
+          "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
             "allocationUnitAddress": 0,
@@ -3695,47 +3260,11 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          "out": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 1,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 4,
-            "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 2,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 8,
-            "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
             "isUnsigned": false
           }
         },
@@ -3750,75 +3279,15 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 1,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 4,
-            "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 2,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 8,
-            "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&orGate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "orGate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 5,
@@ -3833,51 +3302,27 @@
               ]
             },
             "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 6,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&negate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "negate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
           }
         ]
       },
       {
         "id": "buttons",
         "lineNumber": 0,
-        "byteAddress": 12,
+        "byteAddress": 4,
         "allocationUnitCount": 2,
         "allocatedByteLength": 8,
-        "endByteAddress": 16,
+        "endByteAddress": 8,
         "endAddressSafeByteLength": 4,
         "memory": {
           "set": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 3,
+            "allocationUnitAddress": 1,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 12,
+            "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 12,
+            "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
             "id": "set",
             "lineNumber": 5,
@@ -3889,12 +3334,12 @@
           "reset": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 4,
+            "allocationUnitAddress": 2,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 16,
+            "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 16,
+            "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
             "id": "reset",
             "lineNumber": 6,
@@ -3908,12 +3353,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 3,
+            "allocationUnitAddress": 1,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 12,
+            "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 12,
+            "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
             "id": "set",
             "lineNumber": 5,
@@ -3925,12 +3370,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 4,
+            "allocationUnitAddress": 2,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 16,
+            "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 16,
+            "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
             "id": "reset",
             "lineNumber": 6,
@@ -3976,39 +3421,21 @@
       {
         "id": "negate",
         "lineNumber": 0,
-        "byteAddress": 20,
-        "allocationUnitCount": 2,
-        "allocatedByteLength": 8,
-        "endByteAddress": 24,
+        "byteAddress": 12,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 12,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 5,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 20,
-            "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 6,
+            "allocationUnitAddress": 3,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 24,
+            "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 24,
+            "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -4022,30 +3449,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 5,
+            "allocationUnitAddress": 3,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 20,
+            "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 6,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 24,
-            "elementByteLength": 4,
-            "endByteAddress": 24,
+            "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -4056,30 +3465,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&buttons:reset",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "buttons",
-                  "targetMemoryId": "reset",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -4100,63 +3485,27 @@
       {
         "id": "norGate",
         "lineNumber": 0,
-        "byteAddress": 28,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 36,
+        "byteAddress": 16,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 16,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 7,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 28,
-            "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 8,
+            "allocationUnitAddress": 4,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 32,
+            "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 32,
+            "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 9,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 36,
-            "elementByteLength": 4,
-            "endByteAddress": 36,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
             "isUnsigned": false
           }
         },
@@ -4164,30 +3513,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 7,
+            "allocationUnitAddress": 4,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 28,
+            "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 8,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 32,
-            "elementByteLength": 4,
-            "endByteAddress": 32,
+            "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
@@ -4195,51 +3526,9 @@
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 9,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 36,
-            "elementByteLength": 4,
-            "endByteAddress": 36,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&norGate2:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "norGate2",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 5,
@@ -4250,30 +3539,6 @@
                   "value": "out",
                   "referenceKind": "plain",
                   "scope": "local"
-                }
-              ]
-            },
-            "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 6,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&resetButton:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "resetButton",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
                 }
               ]
             },
@@ -4284,63 +3549,27 @@
       {
         "id": "norGate2",
         "lineNumber": 0,
-        "byteAddress": 40,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 48,
+        "byteAddress": 20,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 20,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 10,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 40,
-            "elementByteLength": 4,
-            "endByteAddress": 40,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 11,
+            "allocationUnitAddress": 5,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 44,
+            "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 44,
+            "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 12,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 48,
-            "elementByteLength": 4,
-            "endByteAddress": 48,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
             "isUnsigned": false
           }
         },
@@ -4348,30 +3577,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 10,
+            "allocationUnitAddress": 5,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 40,
+            "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 40,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 11,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 44,
-            "elementByteLength": 4,
-            "endByteAddress": 44,
+            "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
@@ -4379,51 +3590,9 @@
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 12,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 48,
-            "elementByteLength": 4,
-            "endByteAddress": 48,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&norGate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "norGate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 5,
@@ -4434,30 +3603,6 @@
                   "value": "out",
                   "referenceKind": "plain",
                   "scope": "local"
-                }
-              ]
-            },
-            "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 6,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&setButton:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "setButton",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
                 }
               ]
             },
@@ -4468,63 +3613,27 @@
       {
         "id": "orGate",
         "lineNumber": 0,
-        "byteAddress": 52,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 60,
+        "byteAddress": 24,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 24,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 13,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 52,
-            "elementByteLength": 4,
-            "endByteAddress": 52,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 14,
+            "allocationUnitAddress": 6,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 56,
+            "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 56,
+            "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 15,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 60,
-            "elementByteLength": 4,
-            "endByteAddress": 60,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
             "isUnsigned": false
           }
         },
@@ -4532,30 +3641,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 13,
+            "allocationUnitAddress": 6,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 52,
+            "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 52,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 14,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 56,
-            "elementByteLength": 4,
-            "endByteAddress": 56,
+            "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 5,
@@ -4563,51 +3654,9 @@
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 15,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 60,
-            "elementByteLength": 4,
-            "endByteAddress": 60,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 6,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&andGate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "andGate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 5,
@@ -4622,51 +3671,27 @@
               ]
             },
             "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 6,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&buttons:set",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "buttons",
-                  "targetMemoryId": "set",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
           }
         ]
       },
       {
         "id": "resetButton",
         "lineNumber": 0,
-        "byteAddress": 64,
+        "byteAddress": 28,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 64,
+        "endByteAddress": 28,
         "endAddressSafeByteLength": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 16,
+            "allocationUnitAddress": 7,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 64,
+            "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 64,
+            "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 3,
@@ -4680,12 +3705,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 16,
+            "allocationUnitAddress": 7,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 64,
+            "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 64,
+            "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 3,
@@ -4716,41 +3741,23 @@
       {
         "id": "scope",
         "lineNumber": 0,
-        "byteAddress": 68,
-        "allocationUnitCount": 66,
-        "allocatedByteLength": 264,
-        "endByteAddress": 328,
+        "byteAddress": 32,
+        "allocationUnitCount": 65,
+        "allocatedByteLength": 260,
+        "endByteAddress": 288,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 17,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 68,
-            "elementByteLength": 4,
-            "endByteAddress": 68,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "buffer": {
             "numberOfElements": 64,
             "elementWordSize": 4,
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
-            "allocationUnitAddress": 18,
+            "allocationUnitAddress": 8,
             "id": "buffer",
             "lineNumber": 4,
-            "byteAddress": 72,
+            "byteAddress": 32,
             "elementByteLength": 256,
-            "endByteAddress": 324,
+            "endByteAddress": 284,
             "endAddressSafeByteLength": 4,
             "isInteger": true,
             "pointerDepth": 0,
@@ -4760,12 +3767,12 @@
           "bufferPointer": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 82,
+            "allocationUnitAddress": 72,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 328,
+            "byteAddress": 288,
             "elementByteLength": 4,
-            "endByteAddress": 328,
+            "endByteAddress": 288,
             "endAddressSafeByteLength": 4,
             "id": "bufferPointer",
             "lineNumber": 5,
@@ -4777,34 +3784,16 @@
         },
         "declarations": [
           {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 17,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 68,
-            "elementByteLength": 4,
-            "endByteAddress": 68,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
             "numberOfElements": 64,
             "elementWordSize": 4,
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
-            "allocationUnitAddress": 18,
+            "allocationUnitAddress": 8,
             "id": "buffer",
             "lineNumber": 4,
-            "byteAddress": 72,
+            "byteAddress": 32,
             "elementByteLength": 256,
-            "endByteAddress": 324,
+            "endByteAddress": 284,
             "endAddressSafeByteLength": 4,
             "isInteger": true,
             "pointerDepth": 0,
@@ -4814,12 +3803,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 82,
+            "allocationUnitAddress": 72,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 328,
+            "byteAddress": 288,
             "elementByteLength": 4,
-            "endByteAddress": 328,
+            "endByteAddress": 288,
             "endAddressSafeByteLength": 4,
             "id": "bufferPointer",
             "lineNumber": 5,
@@ -4830,30 +3819,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&norGate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "norGate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -4902,41 +3867,23 @@
       {
         "id": "scope2",
         "lineNumber": 0,
-        "byteAddress": 332,
-        "allocationUnitCount": 66,
-        "allocatedByteLength": 264,
-        "endByteAddress": 592,
+        "byteAddress": 292,
+        "allocationUnitCount": 65,
+        "allocatedByteLength": 260,
+        "endByteAddress": 548,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 83,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 332,
-            "elementByteLength": 4,
-            "endByteAddress": 332,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
           "buffer": {
             "numberOfElements": 64,
             "elementWordSize": 4,
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
-            "allocationUnitAddress": 84,
+            "allocationUnitAddress": 73,
             "id": "buffer",
             "lineNumber": 4,
-            "byteAddress": 336,
+            "byteAddress": 292,
             "elementByteLength": 256,
-            "endByteAddress": 588,
+            "endByteAddress": 544,
             "endAddressSafeByteLength": 4,
             "isInteger": true,
             "pointerDepth": 0,
@@ -4946,12 +3893,12 @@
           "bufferPointer": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 148,
+            "allocationUnitAddress": 137,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 592,
+            "byteAddress": 548,
             "elementByteLength": 4,
-            "endByteAddress": 592,
+            "endByteAddress": 548,
             "endAddressSafeByteLength": 4,
             "id": "bufferPointer",
             "lineNumber": 5,
@@ -4963,34 +3910,16 @@
         },
         "declarations": [
           {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 83,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 332,
-            "elementByteLength": 4,
-            "endByteAddress": 332,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false
-          },
-          {
             "numberOfElements": 64,
             "elementWordSize": 4,
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
-            "allocationUnitAddress": 84,
+            "allocationUnitAddress": 73,
             "id": "buffer",
             "lineNumber": 4,
-            "byteAddress": 336,
+            "byteAddress": 292,
             "elementByteLength": 256,
-            "endByteAddress": 588,
+            "endByteAddress": 544,
             "endAddressSafeByteLength": 4,
             "isInteger": true,
             "pointerDepth": 0,
@@ -5000,12 +3929,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 148,
+            "allocationUnitAddress": 137,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 592,
+            "byteAddress": 548,
             "elementByteLength": 4,
-            "endByteAddress": 592,
+            "endByteAddress": 548,
             "endAddressSafeByteLength": 4,
             "id": "bufferPointer",
             "lineNumber": 5,
@@ -5016,30 +3945,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "int*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&andGate:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "andGate",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -5088,21 +3993,21 @@
       {
         "id": "setButton",
         "lineNumber": 0,
-        "byteAddress": 596,
+        "byteAddress": 552,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 596,
+        "endByteAddress": 552,
         "endAddressSafeByteLength": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 149,
+            "allocationUnitAddress": 138,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 596,
+            "byteAddress": 552,
             "elementByteLength": 4,
-            "endByteAddress": 596,
+            "endByteAddress": 552,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -5116,12 +4021,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 149,
+            "allocationUnitAddress": 138,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 596,
+            "byteAddress": 552,
             "elementByteLength": 4,
-            "endByteAddress": 596,
+            "endByteAddress": 552,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -5153,19 +4058,9 @@
   },
   "memoryDefaultsByModuleId": {
     "andGate": {
-      "in1": {
-        "value": 56,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "out": {
         "value": 0,
         "hasExplicitDefault": false,
-        "isInherited": false
-      },
-      "in2": {
-        "value": 24,
-        "hasExplicitDefault": true,
         "isInherited": false
       }
     },
@@ -5182,11 +4077,6 @@
       }
     },
     "negate": {
-      "in": {
-        "value": 16,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "out": {
         "value": 0,
         "hasExplicitDefault": false,
@@ -5194,53 +4084,23 @@
       }
     },
     "norGate": {
-      "in1": {
-        "value": 44,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "out": {
         "value": 0,
         "hasExplicitDefault": false,
-        "isInherited": false
-      },
-      "in2": {
-        "value": 64,
-        "hasExplicitDefault": true,
         "isInherited": false
       }
     },
     "norGate2": {
-      "in1": {
-        "value": 32,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "out": {
         "value": 0,
         "hasExplicitDefault": false,
-        "isInherited": false
-      },
-      "in2": {
-        "value": 596,
-        "hasExplicitDefault": true,
         "isInherited": false
       }
     },
     "orGate": {
-      "in1": {
-        "value": 4,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "out": {
         "value": 0,
         "hasExplicitDefault": false,
-        "isInherited": false
-      },
-      "in2": {
-        "value": 12,
-        "hasExplicitDefault": true,
         "isInherited": false
       }
     },
@@ -5252,35 +4112,25 @@
       }
     },
     "scope": {
-      "in": {
-        "value": 32,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "buffer": {
         "value": {},
         "hasExplicitDefault": false,
         "isInherited": false
       },
       "bufferPointer": {
-        "value": 72,
+        "value": 32,
         "hasExplicitDefault": true,
         "isInherited": false
       }
     },
     "scope2": {
-      "in": {
-        "value": 4,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "buffer": {
         "value": {},
         "hasExplicitDefault": false,
         "isInherited": false
       },
       "bufferPointer": {
-        "value": 336,
+        "value": 292,
         "hasExplicitDefault": true,
         "isInherited": false
       }
@@ -5294,57 +4144,17 @@
     }
   },
   "pointerMetadataByModuleId": {
-    "andGate": {
-      "in1": {
-        "pointeeElementCount": 1
-      },
-      "in2": {
-        "pointeeElementCount": 1
-      }
-    },
+    "andGate": {},
     "buttons": {},
-    "negate": {
-      "in": {
-        "pointeeElementCount": 1
-      }
-    },
-    "norGate": {
-      "in1": {
-        "pointeeElementCount": 1
-      },
-      "in2": {
-        "pointeeElementCount": 1
-      }
-    },
-    "norGate2": {
-      "in1": {
-        "pointeeElementCount": 1
-      },
-      "in2": {
-        "pointeeElementCount": 1
-      }
-    },
-    "orGate": {
-      "in1": {
-        "pointeeElementCount": 1
-      },
-      "in2": {
-        "pointeeElementCount": 1
-      }
-    },
+    "negate": {},
+    "norGate": {},
+    "norGate2": {},
+    "orGate": {},
     "resetButton": {},
-    "scope": {
-      "in": {
-        "pointeeElementCount": 1
-      }
-    },
-    "scope2": {
-      "in": {
-        "pointeeElementCount": 1
-      }
-    },
+    "scope": {},
+    "scope2": {},
     "setButton": {}
   },
-  "compiledWasm": "AGFzbQEAAAABDwNgAABgAX8Bf2ACf38BfwIRAQRob3N0Bm1lbW9yeQIDAQEDDQwAAAAAAAAAAAAAAAAHFwIMaW5pdERlZmF1bHRzAAAEbWFpbgABDAEDCq4DDC0AQQBBAEHYBPwLAEEAQQBByAD8CAAAQcgCQQBBCPwIAQBB0ARBAEEE/AgCAAsWABACEAMQBBAFEAYQBxAIEAkQChALCwIACwIACyMAQSxBKCgCACgCAEEwKAIAKAIAakEARgR/QQEFQQALNgIACyMAQSBBHCgCACgCAEEkKAIAKAIAakEARgR/QQEFQQALNgIAC1kCAX8Bf0HIAkHIAigCAEEEajYCAEHIAigCAEHEAkoEQEHIAkHIADYCAAtByAIoAgBBxAAoAgAoAgAhASEAIAA/AEEBa0EQdEH8/wNqTQRAIAAgATYCAAULCwIACxoAQRhBFCgCACgCAEEARgR/QQEFQQALNgIACyMAQThBNCgCACgCAEE8KAIAKAIAakEBTgR/QQEFQQALNgIACyMAQQRBACgCACgCAEEIKAIAKAIAbEEBTgR/QQEFQQALNgIAC1kCAX8Bf0HQBEHQBCgCAEEEajYCAEHQBCgCAEHMBEoEQEHQBEHQAjYCAAtB0AQoAgBBzAIoAgAoAgAhASEAIAA/AEEBa0EQdEH8/wNqTQRAIAAgATYCAAULCwtbAwFIOAAAAAAAAAAYAAAAAAAAAAAAAAAQAAAAAAAAACwAAAAAAAAAQAAAACAAAAAAAAAAVAIAAAQAAAAAAAAADAAAAAAAAAAgAAAAAQhIAAAABAAAAAEEUAEAAA==",
-  "requiredMemoryBytes": 600
+  "compiledWasm": "AGFzbQEAAAABDwNgAABgAX8Bf2ACf38BfwIRAQRob3N0Bm1lbW9yeQIDAQEDDQwAAAAAAAAAAAAAAAAHFwIMaW5pdERlZmF1bHRzAAAEbWFpbgABDAECCoADDCIAQQBBAEGsBPwLAEGgAkEAQQT8CAAAQaQEQQBBBPwIAQALFgAQAhADEAQQBRAGEAcQCBAJEAoQCwsCAAsCAAseAEEUQRAoAgBBqAQoAgBqQQBGBH9BAQVBAAs2AgALHQBBEEEUKAIAQRwoAgBqQQBGBH9BAQVBAAs2AgALVAIBfwF/QaACQaACKAIAQQRqNgIAQaACKAIAQZwCSgRAQaACQSA2AgALQaACKAIAQRAoAgAhASEAIAA/AEEBa0EQdEH8/wNqTQRAIAAgATYCAAULCwIACxcAQQxBCCgCAEEARgR/QQEFQQALNgIACx0AQRhBACgCAEEEKAIAakEBTgR/QQEFQQALNgIACx0AQQBBGCgCAEEMKAIAbEEBTgR/QQEFQQALNgIAC1UCAX8Bf0GkBEGkBCgCAEEEajYCAEGkBCgCAEGgBEoEQEGkBEGkAjYCAAtBpAQoAgBBACgCACEBIQAgAD8AQQFrQRB0Qfz/A2pNBEAgACABNgIABQsLCw0CAQQgAAAAAQQkAQAA",
+  "requiredMemoryBytes": 556
 }

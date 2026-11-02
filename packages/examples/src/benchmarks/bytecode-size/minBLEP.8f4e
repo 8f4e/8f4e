@@ -238,7 +238,7 @@ module audioout
 ; @pos 165 -100
 use env
 
-float* in &mixer:out
+float& in &mixer:out
 
 float[] buffer AUDIO_BUFFER_SIZE
 float* pointer &buffer
@@ -274,7 +274,7 @@ ifEnd
 moduleEnd
 module blepLowpass
 ; @pos 263 -73
-float* in &blepSmoother:out
+float& in &blepSmoother:out
 float state 0.0 ; @w
 float out ; @w
 
@@ -304,10 +304,12 @@ store
 moduleEnd
 module blepSmoother
 ; @pos 213 -73
-float* raw &pcmPlayer:out
-float* position &pcmPlayer:readPosition
-float* increment &params:increment
-float* delta &sampleDelta:out
+float& minBLEPLUTStart &minBLEPLUT:0
+
+float& raw &pcmPlayer:out
+float& position &pcmPlayer:readPosition
+float& increment &params:increment
+float& delta &sampleDelta:out
 int index 0 ; @w
 float correction ; @w
 float out ; @w
@@ -323,7 +325,7 @@ push &blepBuffer
 push index
 loopIndex
 call wrapAdd32
-push &minBLEPLUT:0
+push minBLEPLUTStart
 push *position
 push *increment
 call positionIncrementToBlepPhase
@@ -636,10 +638,10 @@ moduleEnd
 module mixer
 ; @pos 115 -103
 
-float* originalIn &pcmPlayer:out
-float* smoothedIn &blepLowpass:out
-float* volOriginal &params:volOriginal
-float* volSmoothed &params:volSmoothed
+float& originalIn &pcmPlayer:out
+float& smoothedIn &blepLowpass:out
+float& volOriginal &params:volOriginal
+float& volSmoothed &params:volSmoothed
 float out
 
 push &out
@@ -730,7 +732,7 @@ int8* sample &packedPulseSample:0
 int8* playhead &packedPulseSample:0
 float position 0.0 ; @w
 float readPosition 0.0 ; @w
-float* increment &params:increment
+float& increment &params:increment
 float out
 
 ; @wave &packedPulseSample:0 128 playhead
@@ -789,7 +791,7 @@ module projectConfig
 moduleEnd
 module sampleDelta
 ; @pos 177 -73
-float* in &pcmPlayer:out
+float& in &pcmPlayer:out
 float previous 0.0
 float out
 
@@ -807,7 +809,7 @@ moduleEnd
 module scopeOriginal
 ; @pos 44 -73
 
-float* in &pcmPlayer:out
+float& in &pcmPlayer:out
 float[] buffer 128
 float* pointer &buffer
 
@@ -842,7 +844,7 @@ moduleEnd
 module scopeSmooth
 ; @pos 82 -73
 
-float* in &blepSmoother:out
+float& in &blepSmoother:out
 float[] buffer 128
 float* pointer &buffer
 

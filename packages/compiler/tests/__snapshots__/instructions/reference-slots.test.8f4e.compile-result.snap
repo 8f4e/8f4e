@@ -425,13 +425,10 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "value",
-              "targetModuleId": "source",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&source:value",
+              "value": "dynamic",
             },
           ],
           "instruction": "assertEqual",
@@ -953,6 +950,111 @@
         {
           "arguments": [
             {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "integer",
+            },
+          ],
+          "instruction": "add",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 42,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "left": {
+                "isPointee": true,
+                "referenceKind": "pointee-element-count",
+                "scope": "local",
+                "targetMemoryId": "signedByte",
+                "type": "identifier",
+                "value": "count(*signedByte)",
+              },
+              "operator": "*",
+              "right": {
+                "isPointee": true,
+                "referenceKind": "pointee-element-word-size",
+                "scope": "local",
+                "targetMemoryId": "signedByte",
+                "type": "identifier",
+                "value": "sizeof(*signedByte)",
+              },
+              "type": "compile_time_expression",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "left": {
+                "isPointee": true,
+                "referenceKind": "pointee-element-max",
+                "scope": "local",
+                "targetMemoryId": "unsignedByte",
+                "type": "identifier",
+                "value": "max(*unsignedByte)",
+              },
+              "operator": "-",
+              "right": {
+                "isPointee": true,
+                "referenceKind": "pointee-element-min",
+                "scope": "local",
+                "targetMemoryId": "unsignedByte",
+                "type": "identifier",
+                "value": "min(*unsignedByte)",
+              },
+              "type": "compile_time_expression",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 255,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
@@ -994,54 +1096,6 @@
               "isInteger": false,
               "type": "literal",
               "value": 2.5,
-            },
-          ],
-          "instruction": "assertEqual",
-        },
-        {
-          "arguments": [
-            {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "signal",
-              "targetModuleId": "source",
-              "type": "identifier",
-              "value": "&source:signal",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "signal",
-            },
-          ],
-          "instruction": "assertEqual",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "intermodular-element-count",
-              "scope": "intermodule",
-              "targetMemoryId": "unsignedBytes",
-              "targetModuleId": "source",
-              "type": "identifier",
-              "value": "count(source:unsignedBytes)",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": true,
-              "type": "literal",
-              "value": 2,
             },
           ],
           "instruction": "assertEqual",

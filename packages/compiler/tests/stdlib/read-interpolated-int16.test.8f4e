@@ -14,7 +14,7 @@ module readInterpolatedInt16Assertions
 ; samples as float values in a
 ; circular buffer.
 int16[] buffer 3 10 20 40
-int16* pointer &buffer
+int16& pointer &buffer
 
 push pointer
 push &buffer

@@ -65,7 +65,7 @@ module screen2
 ; @home right
 use screen
 
-int* frame &frameCounter:frame
+int& frame &frameCounter:frame
 int8u* rgba &screen:rgba
 
 ; @texture rgba 8 32 32

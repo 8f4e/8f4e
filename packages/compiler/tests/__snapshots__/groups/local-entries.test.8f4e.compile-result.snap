@@ -254,6 +254,12 @@
         {
           "arguments": [
             {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "stateInitialized",
+            },
+            {
               "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
@@ -261,6 +267,17 @@
               "targetModuleId": "synth/nested/state",
               "type": "identifier",
               "value": "&state:initialized",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "stateInitialized",
             },
           ],
           "instruction": "push",
@@ -388,19 +405,11 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "mainCalls",
-              "targetModuleId": "synth/state",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&state:mainCalls",
+              "value": "stateMainCalls",
             },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
             {
               "isEndAddress": false,
               "referenceKind": "intermodular-reference",
@@ -411,11 +420,71 @@
               "value": "&state:mainCalls",
             },
           ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "nestedCount",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "count",
+              "targetModuleId": "synth/nested",
+              "type": "identifier",
+              "value": "&nested:count",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "dormantRan",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "ran",
+              "targetModuleId": "synth/dormant",
+              "type": "identifier",
+              "value": "&dormant:ran",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "stateMainCalls",
+            },
+          ],
           "instruction": "push",
         },
         {
-          "arguments": [],
-          "instruction": "load",
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "stateMainCalls",
+              "type": "identifier",
+              "value": "*stateMainCalls",
+            },
+          ],
+          "instruction": "push",
         },
         {
           "arguments": [
@@ -463,20 +532,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "count",
-              "targetModuleId": "synth/nested",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "nestedCount",
               "type": "identifier",
-              "value": "&nested:count",
+              "value": "*nestedCount",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -491,20 +555,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "ran",
-              "targetModuleId": "synth/dormant",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "dormantRan",
               "type": "identifier",
-              "value": "&dormant:ran",
+              "value": "*dormantRan",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -540,6 +599,12 @@
         {
           "arguments": [
             {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "stateInitialized",
+            },
+            {
               "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
@@ -547,6 +612,17 @@
               "targetModuleId": "synth/state",
               "type": "identifier",
               "value": "&state:initialized",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "stateInitialized",
             },
           ],
           "instruction": "push",
@@ -685,6 +761,12 @@
         {
           "arguments": [
             {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "nestedInitialized",
+            },
+            {
               "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
@@ -694,11 +776,20 @@
               "value": "&nested:initialized",
             },
           ],
-          "instruction": "push",
+          "instruction": "int&",
         },
         {
-          "arguments": [],
-          "instruction": "load",
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "nestedInitialized",
+              "type": "identifier",
+              "value": "*nestedInitialized",
+            },
+          ],
+          "instruction": "push",
         },
         {
           "arguments": [
@@ -749,7 +840,7 @@
               "value": "&synth:count",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -769,7 +860,7 @@
               "value": "&synth:mainCalls",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -789,7 +880,7 @@
               "value": "&synth:initialized",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -809,7 +900,7 @@
               "value": "&sibling:count",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -1075,72 +1166,7 @@
       "memory": {},
     },
     "verify": {
-      "memory": {
-        "count": {
-          "allocationUnitAddress": 8,
-          "allocationUnitCount": 1,
-          "byteAddress": 32,
-          "default": 20,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "count",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointeeElementCount": 1,
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-        "initialized": {
-          "allocationUnitAddress": 10,
-          "allocationUnitCount": 1,
-          "byteAddress": 40,
-          "default": 28,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "initialized",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointeeElementCount": 1,
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-        "mainCalls": {
-          "allocationUnitAddress": 9,
-          "allocationUnitCount": 1,
-          "byteAddress": 36,
-          "default": 24,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "mainCalls",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointeeElementCount": 1,
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-        "siblingCount": {
-          "allocationUnitAddress": 11,
-          "allocationUnitCount": 1,
-          "byteAddress": 44,
-          "default": 4,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "siblingCount",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointeeElementCount": 1,
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-      },
+      "memory": {},
     },
   },
   "overview": {
@@ -1159,7 +1185,7 @@
       "synth/verifyNestedInit",
       "verify",
     ],
-    "requiredMemoryBytes": 48,
+    "requiredMemoryBytes": 32,
     "wasmExports": [
       "init",
       "initDefaults",

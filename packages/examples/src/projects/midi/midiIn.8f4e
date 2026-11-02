@@ -49,6 +49,7 @@ and
 
 functionEnd int
 
+; Impure callbacks may address their destination modules directly.
 function onMidiEvent
 ; @pos -122 7
 #export onMidiEvent

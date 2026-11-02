@@ -2,7 +2,10 @@
 
 For identifier prefixes and suffixes that expand memory identifiers, see [Identifier prefixes](../prefixes.md).
 
-In functions, memory instructions require the `#impure` compiler directive. Even in impure functions, memory access must be address-driven: functions still cannot reference module memory identifiers by name or declare their own memory.
+In functions, memory instructions require the `#impure` compiler directive. Impure functions may use
+intermodular addresses such as `&source:value` and target metadata such as `sizeof(source:buffer)`. Memory
+access remains address-driven: functions cannot read unqualified module memory identifiers or declare
+their own memory.
 
 Memory access instructions are non-trapping for out-of-bounds addresses. When the compiler cannot prove that an address is within a safe memory range, it emits a runtime bounds guard. Guarded loads return `0` when the address is out of bounds, and guarded stores skip the write.
 

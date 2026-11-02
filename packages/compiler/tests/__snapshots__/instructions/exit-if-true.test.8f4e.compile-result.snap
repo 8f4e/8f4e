@@ -33,7 +33,7 @@
               "value": "&nonzeroConditionExits:0",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -235,30 +235,14 @@
   },
   "moduleMemory": {
     "laterModuleContinues": {
-      "memory": {
-        "skippedOutput": {
-          "allocationUnitAddress": 1,
-          "allocationUnitCount": 1,
-          "byteAddress": 4,
-          "default": 8,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "skippedOutput",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-      },
+      "memory": {},
     },
     "nonzeroConditionExits": {
       "memory": {
         "output": {
-          "allocationUnitAddress": 2,
+          "allocationUnitAddress": 1,
           "allocationUnitCount": 1,
-          "byteAddress": 8,
+          "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
           "id": "output",
@@ -273,9 +257,9 @@
     "zeroConditionContinues": {
       "memory": {
         "output": {
-          "allocationUnitAddress": 3,
+          "allocationUnitAddress": 2,
           "allocationUnitCount": 1,
-          "byteAddress": 12,
+          "byteAddress": 8,
           "default": 0,
           "elementWordSize": 4,
           "id": "output",
@@ -295,7 +279,7 @@
       "nonzeroConditionExits",
       "zeroConditionContinues",
     ],
-    "requiredMemoryBytes": 16,
+    "requiredMemoryBytes": 12,
     "wasmExports": [
       "initDefaults",
       "main",

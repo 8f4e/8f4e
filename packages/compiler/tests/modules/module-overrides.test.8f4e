@@ -23,20 +23,23 @@ int order
 moduleEnd
 
 module oscillator
+int& traceOrder &trace:order
+
 use missingNamespace
 const OLD_ONLY 99
 int obsolete 99
 call missingFunction
-push &trace:order
+push traceOrder
 push -1
 store
 moduleEnd
 
 module checkpoint
-push &trace:order
-load
+int& traceOrder &trace:order
+
+push *traceOrder
 assertEqual 0
-push &trace:order
+push traceOrder
 push 1
 store
 moduleEnd
@@ -57,13 +60,14 @@ entryEnd
 groupEnd
 
 module oscillator
+int& traceOrder &trace:order
+
 const STEP 2
 int out
 
-push &trace:order
-load
+push *traceOrder
 assertEqual 1
-push &trace:order
+push traceOrder
 push STEP
 store
 push &out
@@ -78,19 +82,23 @@ call missingDisabledFunction
 moduleEnd
 
 module moved
-push &trace:order
+int& traceOrder &trace:order
+
+push traceOrder
 push -1
 store
 moduleEnd
 
 module assertions
+int& traceOrder &trace:order
+int& movedCount &moved:count
+
 use oscillator
 use selected
-int* input &oscillator:out
-int* childInput &child:output
+int& input &oscillator:out
+int& childInput &child:output
 
-push &trace:order
-load
+push *traceOrder
 assertEqual 2
 push *input
 assertEqual 2
@@ -105,16 +113,13 @@ assertEqual 2
 
 ; The replacement belongs to
 ; alternate and has not run yet.
-push &moved:count
-load
+push *movedCount
 assertEqual 0
 call alternate
-push &moved:count
-load
+push *movedCount
 assertEqual 1
 call alternate
-push &moved:count
-load
+push *movedCount
 assertEqual 2
 moduleEnd
 entryEnd

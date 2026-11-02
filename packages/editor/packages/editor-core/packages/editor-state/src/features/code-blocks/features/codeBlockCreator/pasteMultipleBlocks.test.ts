@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { updateInterModuleReferences } from './pasteMultipleBlocks';
 
+// Legacy direct operands below intentionally cover renaming projects using the current language.
+// See docs/intermodular-push-audit.md for the language-removal follow-up.
 describe('updateInterModuleReferences', () => {
 	it('should update start address references (&module:memory)', () => {
 		const code = ['float* buffer &oscillator:wave'];

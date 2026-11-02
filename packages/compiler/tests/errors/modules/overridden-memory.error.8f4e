@@ -10,7 +10,9 @@ int current 2
 moduleEnd
 
 module consumer
-push &source:obsolete
+int& sourceObsolete &source:obsolete
+
+push sourceObsolete
 drop
 moduleEnd
 entryEnd

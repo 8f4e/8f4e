@@ -1,30 +1,28 @@
 8f4e/v1
 
-function test
+function verifyEntries
 ; @pos 62 22
-#export
 #impure
+param int* mainValue
+param int* auxValue
+param int* initValue
 ; initDefaults runs before this
 ; function, but it should not
 ; execute the user-authored init
 ; entry.
-push &userInitEntryCounter:value
-load
+push *initValue
 assertEqual 0
 
 call main
-push &mainEntryCounter:value
-load
+push *mainValue
 assertEqual 1
 
 call aux
-push &auxEntryCounter:value
-load
+push *auxValue
 assertEqual 2
 
 call init
-push &userInitEntryCounter:value
-load
+push *initValue
 assertEqual 7
 functionEnd
 
@@ -82,5 +80,14 @@ int value 0
 push &value
 push 7
 store
+moduleEnd
+entryEnd
+
+entry test
+module assertions
+int& mainValue &mainEntryCounter:value
+int& auxValue &auxEntryCounter:value
+int& initValue &userInitEntryCounter:value
+call verifyEntries mainValue auxValue initValue
 moduleEnd
 entryEnd

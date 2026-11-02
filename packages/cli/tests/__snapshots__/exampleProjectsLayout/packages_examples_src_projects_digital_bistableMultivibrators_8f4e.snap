@@ -16,65 +16,65 @@
     {
       "id": "resetButton",
       "index": 0,
-      "byteAddress": 64,
-      "allocationUnitAddress": 16,
+      "byteAddress": 28,
+      "allocationUnitAddress": 7,
       "allocationUnitCount": 1,
       "skipExecutionInCycle": false
     },
     {
       "id": "setButton",
       "index": 1,
-      "byteAddress": 596,
-      "allocationUnitAddress": 149,
+      "byteAddress": 552,
+      "allocationUnitAddress": 138,
       "allocationUnitCount": 1,
       "skipExecutionInCycle": false
     },
     {
       "id": "norGate2",
       "index": 2,
-      "byteAddress": 40,
-      "allocationUnitAddress": 10,
-      "allocationUnitCount": 3,
+      "byteAddress": 20,
+      "allocationUnitAddress": 5,
+      "allocationUnitCount": 1,
       "skipExecutionInCycle": false
     },
     {
       "id": "norGate",
       "index": 3,
-      "byteAddress": 28,
-      "allocationUnitAddress": 7,
-      "allocationUnitCount": 3,
+      "byteAddress": 16,
+      "allocationUnitAddress": 4,
+      "allocationUnitCount": 1,
       "skipExecutionInCycle": false
     },
     {
       "id": "scope",
       "index": 4,
-      "byteAddress": 68,
-      "allocationUnitAddress": 17,
-      "allocationUnitCount": 66,
+      "byteAddress": 32,
+      "allocationUnitAddress": 8,
+      "allocationUnitCount": 65,
       "skipExecutionInCycle": false
     },
     {
       "id": "buttons",
       "index": 5,
-      "byteAddress": 12,
-      "allocationUnitAddress": 3,
+      "byteAddress": 4,
+      "allocationUnitAddress": 1,
       "allocationUnitCount": 2,
       "skipExecutionInCycle": false
     },
     {
       "id": "negate",
       "index": 6,
-      "byteAddress": 20,
-      "allocationUnitAddress": 5,
-      "allocationUnitCount": 2,
+      "byteAddress": 12,
+      "allocationUnitAddress": 3,
+      "allocationUnitCount": 1,
       "skipExecutionInCycle": false
     },
     {
       "id": "orGate",
       "index": 7,
-      "byteAddress": 52,
-      "allocationUnitAddress": 13,
-      "allocationUnitCount": 3,
+      "byteAddress": 24,
+      "allocationUnitAddress": 6,
+      "allocationUnitCount": 1,
       "skipExecutionInCycle": false
     },
     {
@@ -82,15 +82,15 @@
       "index": 8,
       "byteAddress": 0,
       "allocationUnitAddress": 0,
-      "allocationUnitCount": 3,
+      "allocationUnitCount": 1,
       "skipExecutionInCycle": false
     },
     {
       "id": "scope2",
       "index": 9,
-      "byteAddress": 332,
-      "allocationUnitAddress": 83,
-      "allocationUnitCount": 66,
+      "byteAddress": 292,
+      "allocationUnitAddress": 73,
+      "allocationUnitCount": 65,
       "skipExecutionInCycle": false
     }
   ]

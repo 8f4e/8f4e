@@ -8,6 +8,12 @@
   "line": {
     "arguments": [
       {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "sourceObsolete",
+      },
+      {
         "isEndAddress": false,
         "referenceKind": "intermodular-reference",
         "scope": "intermodule",
@@ -17,8 +23,8 @@
         "value": "&source:obsolete",
       },
     ],
-    "instruction": "push",
+    "instruction": "int&",
     "lineNumber": 1,
   },
-  "message": "Undeclared identifier: obsolete. (5)",
+  "message": "Undeclared identifier: &source:obsolete. (5)",
 }

@@ -200,7 +200,9 @@ it('initializes fresh memory once per project run and executes only the test ent
 	const project = parseProjectSource(`8f4e/v1
 entry init
 module resetCounter
-push &counter:value
+int& counterValue &counter:value
+
+push counterValue
 push 99
 store
 moduleEnd

@@ -14,7 +14,9 @@ expose initialized &state:initialized
 
 entry init
 module setup
-push &state:initialized
+int& stateInitialized &state:initialized
+
+push stateInitialized
 push 7
 store
 moduleEnd
@@ -22,20 +24,21 @@ entryEnd
 
 entry main
 module scheduler
-push &state:mainCalls
-push &state:mainCalls
-load
+int& stateMainCalls &state:mainCalls
+int& nestedCount &nested:count
+int& dormantRan &dormant:ran
+
+push stateMainCalls
+push *stateMainCalls
 push 1
 add
 store
 loop 3
 call gate
 loopEnd
-push &nested:count
-load
+push *nestedCount
 assertEqual 15
-push &dormant:ran
-load
+push *dormantRan
 assertEqual 0
 moduleEnd
 entryEnd
@@ -68,7 +71,9 @@ moduleEnd
 entryEnd
 entry init
 module setup
-push &state:initialized
+int& stateInitialized &state:initialized
+
+push stateInitialized
 push 11
 store
 moduleEnd
@@ -98,8 +103,9 @@ entryEnd
 
 entry init
 module verifyNestedInit
-push &nested:initialized
-load
+int& nestedInitialized &nested:initialized
+
+push *nestedInitialized
 assertEqual 11
 moduleEnd
 entryEnd
@@ -132,10 +138,10 @@ entryEnd
 groupEnd
 
 module verify
-int* count &synth:count
-int* mainCalls &synth:mainCalls
-int* initialized &synth:initialized
-int* siblingCount &sibling:count
+int& count &synth:count
+int& mainCalls &synth:mainCalls
+int& initialized &synth:initialized
+int& siblingCount &sibling:count
 push *count
 assertEqual 3
 push *mainCalls

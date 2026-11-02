@@ -117,8 +117,8 @@ moduleEnd
 module mask00
 ; @pos -223 -1
 ; @group mask
-int* row &grid:row0
-float64* input &inputs:input0
+int& row &grid:row0
+float64& input &inputs:input0
 
 push input
 push *row
@@ -131,8 +131,8 @@ moduleEnd
 module mask10
 ; @pos -223 16
 ; @group mask
-int* row &grid:row1
-float64* input &inputs:input3
+int& row &grid:row1
+float64& input &inputs:input3
 
 push input
 push *row
@@ -145,8 +145,8 @@ moduleEnd
 module mask20
 ; @pos -223 33
 ; @group mask
-int* row &grid:row2
-float64* input &inputs:input6
+int& row &grid:row2
+float64& input &inputs:input6
 
 push input
 push *row
@@ -159,8 +159,8 @@ moduleEnd
 module mask30
 ; @pos -223 50
 ; @group mask
-int* row &grid:row3
-float64* input &inputs:input9
+int& row &grid:row3
+float64& input &inputs:input9
 
 push input
 push *row
@@ -173,8 +173,8 @@ moduleEnd
 module mask40
 ; @pos -223 67
 ; @group mask
-int* row &grid:row4
-float64* input &inputs:input12
+int& row &grid:row4
+float64& input &inputs:input12
 
 push input
 push *row
@@ -196,8 +196,8 @@ moduleEnd
 module mask01
 ; @pos -185 -1
 ; @group mask
-int* row &grid:row0
-float64* input &inputs:input1
+int& row &grid:row0
+float64& input &inputs:input1
 
 push input
 push *row
@@ -212,8 +212,8 @@ moduleEnd
 module mask11
 ; @pos -185 16
 ; @group mask
-int* row &grid:row1
-float64* input &inputs:input4
+int& row &grid:row1
+float64& input &inputs:input4
 
 push input
 push *row
@@ -228,8 +228,8 @@ moduleEnd
 module mask21
 ; @pos -185 33
 ; @group mask
-int* row &grid:row2
-float64* input &inputs:input7
+int& row &grid:row2
+float64& input &inputs:input7
 
 push input
 push *row
@@ -244,8 +244,8 @@ moduleEnd
 module mask31
 ; @pos -185 50
 ; @group mask
-int* row &grid:row3
-float64* input &inputs:input10
+int& row &grid:row3
+float64& input &inputs:input10
 
 push input
 push *row
@@ -260,8 +260,8 @@ moduleEnd
 module mask41
 ; @pos -185 67
 ; @group mask
-int* row &grid:row4
-float64* input &inputs:input13
+int& row &grid:row4
+float64& input &inputs:input13
 
 push input
 push *row
@@ -276,8 +276,8 @@ moduleEnd
 module mask02
 ; @pos -147 -1
 ; @group mask
-int* row &grid:row0
-float64* input &inputs:input2
+int& row &grid:row0
+float64& input &inputs:input2
 
 push input
 push *row
@@ -290,8 +290,8 @@ moduleEnd
 module mask12
 ; @pos -147 16
 ; @group mask
-int* row &grid:row1
-float64* input &inputs:input5
+int& row &grid:row1
+float64& input &inputs:input5
 
 push input
 push *row
@@ -304,8 +304,8 @@ moduleEnd
 module mask22
 ; @pos -147 33
 ; @group mask
-int* row &grid:row2
-float64* input &inputs:input8
+int& row &grid:row2
+float64& input &inputs:input8
 
 push input
 push *row
@@ -318,8 +318,8 @@ moduleEnd
 module mask32
 ; @pos -147 50
 ; @group mask
-int* row &grid:row3
-float64* input &inputs:input11
+int& row &grid:row3
+float64& input &inputs:input11
 
 push input
 push *row
@@ -332,8 +332,8 @@ moduleEnd
 module mask42
 ; @pos -147 67
 ; @group mask
-int* row &grid:row4
-float64* input &inputs:input14
+int& row &grid:row4
+float64& input &inputs:input14
 
 push input
 push *row
@@ -368,10 +368,10 @@ module neuron20
 ; @pos 0 -81
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input2
-float64*	in1 &inputs:input6
-float64*	in2 &inputs:input7
-float64*	in3 &inputs:input9
+float64&	in0 &inputs:input2
+float64&	in1 &inputs:input6
+float64&	in2 &inputs:input7
+float64&	in3 &inputs:input9
 float64	out ; @w
 ; Weights
 const W0	0.04485081549189279f64
@@ -406,10 +406,10 @@ module neuron19
 ; @pos 0 -41
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input0
-float64*	in1 &inputs:input3
-float64*	in2 &inputs:input7
-float64*	in3 &inputs:input12
+float64&	in0 &inputs:input0
+float64&	in1 &inputs:input3
+float64&	in2 &inputs:input7
+float64&	in3 &inputs:input12
 float64	out ; @w
 ; Weights
 const W0	4.259377714402604f64
@@ -444,10 +444,10 @@ module neuron18
 ; @pos 0 -1
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input2
-float64*	in1 &inputs:input6
-float64*	in2 &inputs:input13
-float64*	in3 &inputs:input14
+float64&	in0 &inputs:input2
+float64&	in1 &inputs:input6
+float64&	in2 &inputs:input13
+float64&	in3 &inputs:input14
 float64	out ; @w
 ; Weights
 const W0	-1.1104892732427174f64
@@ -482,10 +482,10 @@ module neuron17
 ; @pos 0 39
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input0
-float64*	in1 &inputs:input7
-float64*	in2 &inputs:input9
-float64*	in3 &inputs:input10
+float64&	in0 &inputs:input0
+float64&	in1 &inputs:input7
+float64&	in2 &inputs:input9
+float64&	in3 &inputs:input10
 float64	out ; @w
 ; Weights
 const W0	-2.1633151584131767f64
@@ -520,10 +520,10 @@ module neuron16
 ; @pos 0 79
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input3
-float64*	in1 &inputs:input5
-float64*	in2 &inputs:input6
-float64*	in3 &inputs:input9
+float64&	in0 &inputs:input3
+float64&	in1 &inputs:input5
+float64&	in2 &inputs:input6
+float64&	in3 &inputs:input9
 float64	out ; @w
 ; Weights
 const W0	-7.479177359069729f64
@@ -558,10 +558,10 @@ module neuron15
 ; @pos 0 119
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input0
-float64*	in1 &inputs:input4
-float64*	in2 &inputs:input10
-float64*	in3 &inputs:input13
+float64&	in0 &inputs:input0
+float64&	in1 &inputs:input4
+float64&	in2 &inputs:input10
+float64&	in3 &inputs:input13
 float64	out ; @w
 ; Weights
 const W0	-1.1383185028099765f64
@@ -596,10 +596,10 @@ module neuron26
 ; @pos 40 -81
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input0
-float64*	in1 &inputs:input1
-float64*	in2 &inputs:input3
-float64*	in3 &inputs:input7
+float64&	in0 &inputs:input0
+float64&	in1 &inputs:input1
+float64&	in2 &inputs:input3
+float64&	in3 &inputs:input7
 float64	out ; @w
 ; Weights
 const W0	-3.205275628385772f64
@@ -634,10 +634,10 @@ module neuron25
 ; @pos 40 -41
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input4
-float64*	in1 &inputs:input5
-float64*	in2 &inputs:input10
-float64*	in3 &inputs:input13
+float64&	in0 &inputs:input4
+float64&	in1 &inputs:input5
+float64&	in2 &inputs:input10
+float64&	in3 &inputs:input13
 float64	out ; @w
 ; Weights
 const W0	-5.180643074439107f64
@@ -672,10 +672,10 @@ module neuron24
 ; @pos 40 -1
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input4
-float64*	in1 &inputs:input6
-float64*	in2 &inputs:input10
-float64*	in3 &inputs:input12
+float64&	in0 &inputs:input4
+float64&	in1 &inputs:input6
+float64&	in2 &inputs:input10
+float64&	in3 &inputs:input12
 float64	out ; @w
 ; Weights
 const W0	-3.058638554485918f64
@@ -710,10 +710,10 @@ module neuron23
 ; @pos 40 39
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input3
-float64*	in1 &inputs:input6
-float64*	in2 &inputs:input11
-float64*	in3 &inputs:input13
+float64&	in0 &inputs:input3
+float64&	in1 &inputs:input6
+float64&	in2 &inputs:input11
+float64&	in3 &inputs:input13
 float64	out ; @w
 ; Weights
 const W0	-2.9225140682629873f64
@@ -748,10 +748,10 @@ module neuron22
 ; @pos 40 79
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input2
-float64*	in1 &inputs:input3
-float64*	in2 &inputs:input7
-float64*	in3 &inputs:input14
+float64&	in0 &inputs:input2
+float64&	in1 &inputs:input3
+float64&	in2 &inputs:input7
+float64&	in3 &inputs:input14
 float64	out ; @w
 ; Weights
 const W0	-6.107360024573014f64
@@ -786,10 +786,10 @@ module neuron21
 ; @pos 40 119
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input1
-float64*	in1 &inputs:input8
-float64*	in2 &inputs:input11
-float64*	in3 &inputs:input14
+float64&	in0 &inputs:input1
+float64&	in1 &inputs:input8
+float64&	in2 &inputs:input11
+float64&	in3 &inputs:input14
 float64	out ; @w
 ; Weights
 const W0	2.83921035736664f64
@@ -824,10 +824,10 @@ module neuron32
 ; @pos 82 -81
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input4
-float64*	in1 &inputs:input5
-float64*	in2 &inputs:input13
-float64*	in3 &inputs:input14
+float64&	in0 &inputs:input4
+float64&	in1 &inputs:input5
+float64&	in2 &inputs:input13
+float64&	in3 &inputs:input14
 float64	out ; @w
 ; Weights
 const W0	1.105427309057273f64
@@ -862,10 +862,10 @@ module neuron31
 ; @pos 82 -41
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input3
-float64*	in1 &inputs:input5
-float64*	in2 &inputs:input8
-float64*	in3 &inputs:input13
+float64&	in0 &inputs:input3
+float64&	in1 &inputs:input5
+float64&	in2 &inputs:input8
+float64&	in3 &inputs:input13
 float64	out ; @w
 ; Weights
 const W0	-4.176655185971842f64
@@ -900,10 +900,10 @@ module neuron30
 ; @pos 82 -1
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input5
-float64*	in1 &inputs:input8
-float64*	in2 &inputs:input9
-float64*	in3 &inputs:input11
+float64&	in0 &inputs:input5
+float64&	in1 &inputs:input8
+float64&	in2 &inputs:input9
+float64&	in3 &inputs:input11
 float64	out ; @w
 ; Weights
 const W0	3.9510117502834463f64
@@ -938,10 +938,10 @@ module neuron29
 ; @pos 82 39
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input0
-float64*	in1 &inputs:input5
-float64*	in2 &inputs:input9
-float64*	in3 &inputs:input10
+float64&	in0 &inputs:input0
+float64&	in1 &inputs:input5
+float64&	in2 &inputs:input9
+float64&	in3 &inputs:input10
 float64	out ; @w
 ; Weights
 const W0	3.3855708379924305f64
@@ -976,10 +976,10 @@ module neuron28
 ; @pos 82 79
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input4
-float64*	in1 &inputs:input10
-float64*	in2 &inputs:input13
-float64*	in3 &inputs:input14
+float64&	in0 &inputs:input4
+float64&	in1 &inputs:input10
+float64&	in2 &inputs:input13
+float64&	in3 &inputs:input14
 float64	out ; @w
 ; Weights
 const W0	1.8138722820817328f64
@@ -1014,10 +1014,10 @@ module neuron27
 ; @pos 82 119
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input3
-float64*	in1 &inputs:input6
-float64*	in2 &inputs:input7
-float64*	in3 &inputs:input14
+float64&	in0 &inputs:input3
+float64&	in1 &inputs:input6
+float64&	in2 &inputs:input7
+float64&	in3 &inputs:input14
 float64	out ; @w
 ; Weights
 const W0	-1.9663599176068152f64
@@ -1052,10 +1052,10 @@ module neuron38
 ; @pos 123 -81
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input1
-float64*	in1 &inputs:input9
-float64*	in2 &inputs:input10
-float64*	in3 &inputs:input13
+float64&	in0 &inputs:input1
+float64&	in1 &inputs:input9
+float64&	in2 &inputs:input10
+float64&	in3 &inputs:input13
 float64	out ; @w
 ; Weights
 const W0	0.1506687532134647f64
@@ -1090,10 +1090,10 @@ module neuron37
 ; @pos 123 -41
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input3
-float64*	in1 &inputs:input7
-float64*	in2 &inputs:input8
-float64*	in3 &inputs:input9
+float64&	in0 &inputs:input3
+float64&	in1 &inputs:input7
+float64&	in2 &inputs:input8
+float64&	in3 &inputs:input9
 float64	out ; @w
 ; Weights
 const W0	2.642379845702539f64
@@ -1128,10 +1128,10 @@ module neuron36
 ; @pos 123 -1
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input1
-float64*	in1 &inputs:input2
-float64*	in2 &inputs:input5
-float64*	in3 &inputs:input11
+float64&	in0 &inputs:input1
+float64&	in1 &inputs:input2
+float64&	in2 &inputs:input5
+float64&	in3 &inputs:input11
 float64	out ; @w
 ; Weights
 const W0	1.8883910013477094f64
@@ -1166,10 +1166,10 @@ module neuron35
 ; @pos 123 39
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input1
-float64*	in1 &inputs:input2
-float64*	in2 &inputs:input10
-float64*	in3 &inputs:input11
+float64&	in0 &inputs:input1
+float64&	in1 &inputs:input2
+float64&	in2 &inputs:input10
+float64&	in3 &inputs:input11
 float64	out ; @w
 ; Weights
 const W0	-0.12375689707670424f64
@@ -1204,10 +1204,10 @@ module neuron34
 ; @pos 123 79
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input1
-float64*	in1 &inputs:input5
-float64*	in2 &inputs:input7
-float64*	in3 &inputs:input14
+float64&	in0 &inputs:input1
+float64&	in1 &inputs:input5
+float64&	in2 &inputs:input7
+float64&	in3 &inputs:input14
 float64	out ; @w
 ; Weights
 const W0	2.812163703876991f64
@@ -1242,10 +1242,10 @@ module neuron33
 ; @pos 123 119
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input3
-float64*	in1 &inputs:input4
-float64*	in2 &inputs:input6
-float64*	in3 &inputs:input10
+float64&	in0 &inputs:input3
+float64&	in1 &inputs:input4
+float64&	in2 &inputs:input6
+float64&	in3 &inputs:input10
 float64	out ; @w
 ; Weights
 const W0	-2.6161226189734097f64
@@ -1280,10 +1280,10 @@ module neuron44
 ; @pos 165 -81
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input1
-float64*	in1 &inputs:input7
-float64*	in2 &inputs:input8
-float64*	in3 &inputs:input12
+float64&	in0 &inputs:input1
+float64&	in1 &inputs:input7
+float64&	in2 &inputs:input8
+float64&	in3 &inputs:input12
 float64	out ; @w
 ; Weights
 const W0	-3.4159824808602437f64
@@ -1318,10 +1318,10 @@ module neuron43
 ; @pos 165 -41
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input1
-float64*	in1 &inputs:input3
-float64*	in2 &inputs:input6
-float64*	in3 &inputs:input9
+float64&	in0 &inputs:input1
+float64&	in1 &inputs:input3
+float64&	in2 &inputs:input6
+float64&	in3 &inputs:input9
 float64	out ; @w
 ; Weights
 const W0	3.875836752913605f64
@@ -1356,10 +1356,10 @@ module neuron42
 ; @pos 165 -1
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input1
-float64*	in1 &inputs:input7
-float64*	in2 &inputs:input10
-float64*	in3 &inputs:input11
+float64&	in0 &inputs:input1
+float64&	in1 &inputs:input7
+float64&	in2 &inputs:input10
+float64&	in3 &inputs:input11
 float64	out ; @w
 ; Weights
 const W0	-0.471116840962701f64
@@ -1394,10 +1394,10 @@ module neuron41
 ; @pos 165 39
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input5
-float64*	in1 &inputs:input7
-float64*	in2 &inputs:input11
-float64*	in3 &inputs:input13
+float64&	in0 &inputs:input5
+float64&	in1 &inputs:input7
+float64&	in2 &inputs:input11
+float64&	in3 &inputs:input13
 float64	out ; @w
 ; Weights
 const W0	0.5292963827244619f64
@@ -1432,10 +1432,10 @@ module neuron40
 ; @pos 165 79
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input2
-float64*	in1 &inputs:input6
-float64*	in2 &inputs:input7
-float64*	in3 &inputs:input14
+float64&	in0 &inputs:input2
+float64&	in1 &inputs:input6
+float64&	in2 &inputs:input7
+float64&	in3 &inputs:input14
 float64	out ; @w
 ; Weights
 const W0	3.4618912465179243f64
@@ -1470,10 +1470,10 @@ module neuron39
 ; @pos 165 119
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input2
-float64*	in1 &inputs:input8
-float64*	in2 &inputs:input10
-float64*	in3 &inputs:input12
+float64&	in0 &inputs:input2
+float64&	in1 &inputs:input8
+float64&	in2 &inputs:input10
+float64&	in3 &inputs:input12
 float64	out ; @w
 ; Weights
 const W0	4.612821304168174f64
@@ -1508,10 +1508,10 @@ module neuron50
 ; @pos 208 -81
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input1
-float64*	in1 &inputs:input4
-float64*	in2 &inputs:input6
-float64*	in3 &inputs:input9
+float64&	in0 &inputs:input1
+float64&	in1 &inputs:input4
+float64&	in2 &inputs:input6
+float64&	in3 &inputs:input9
 float64	out ; @w
 ; Weights
 const W0	-6.177206397037313f64
@@ -1546,10 +1546,10 @@ module neuron49
 ; @pos 208 -41
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input1
-float64*	in1 &inputs:input2
-float64*	in2 &inputs:input7
-float64*	in3 &inputs:input13
+float64&	in0 &inputs:input1
+float64&	in1 &inputs:input2
+float64&	in2 &inputs:input7
+float64&	in3 &inputs:input13
 float64	out ; @w
 ; Weights
 const W0	2.806023897476518f64
@@ -1584,10 +1584,10 @@ module neuron48
 ; @pos 208 -1
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input3
-float64*	in1 &inputs:input5
-float64*	in2 &inputs:input11
-float64*	in3 &inputs:input12
+float64&	in0 &inputs:input3
+float64&	in1 &inputs:input5
+float64&	in2 &inputs:input11
+float64&	in3 &inputs:input12
 float64	out ; @w
 ; Weights
 const W0	0.4627904634817805f64
@@ -1622,10 +1622,10 @@ module neuron47
 ; @pos 208 39
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input0
-float64*	in1 &inputs:input4
-float64*	in2 &inputs:input8
-float64*	in3 &inputs:input13
+float64&	in0 &inputs:input0
+float64&	in1 &inputs:input4
+float64&	in2 &inputs:input8
+float64&	in3 &inputs:input13
 float64	out ; @w
 ; Weights
 const W0	2.175062803551527f64
@@ -1660,10 +1660,10 @@ module neuron46
 ; @pos 208 79
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input4
-float64*	in1 &inputs:input7
-float64*	in2 &inputs:input10
-float64*	in3 &inputs:input13
+float64&	in0 &inputs:input4
+float64&	in1 &inputs:input7
+float64&	in2 &inputs:input10
+float64&	in3 &inputs:input13
 float64	out ; @w
 ; Weights
 const W0	-1.1942224368529384f64
@@ -1698,10 +1698,10 @@ module neuron45
 ; @pos 208 119
 ; @group hiddenLayer1
 ; @tab 11
-float64*	in0 &inputs:input1
-float64*	in1 &inputs:input2
-float64*	in2 &inputs:input10
-float64*	in3 &inputs:input14
+float64&	in0 &inputs:input1
+float64&	in1 &inputs:input2
+float64&	in2 &inputs:input10
+float64&	in3 &inputs:input14
 float64	out ; @w
 ; Weights
 const W0	-1.020320184865573f64
@@ -1736,10 +1736,10 @@ module neuron56
 ; @pos 280 -81
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron34:out
-float64*	in1 &neuron46:out
-float64*	in2 &neuron48:out
-float64*	in3 &neuron49:out
+float64&	in0 &neuron34:out
+float64&	in1 &neuron46:out
+float64&	in2 &neuron48:out
+float64&	in3 &neuron49:out
 float64	out ; @w
 ; Weights
 const W0	1.2781846581725098f64
@@ -1774,10 +1774,10 @@ module neuron55
 ; @pos 280 -41
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron25:out
-float64*	in1 &neuron35:out
-float64*	in2 &neuron46:out
-float64*	in3 &neuron47:out
+float64&	in0 &neuron25:out
+float64&	in1 &neuron35:out
+float64&	in2 &neuron46:out
+float64&	in3 &neuron47:out
 float64	out ; @w
 ; Weights
 const W0	-2.299024388190367f64
@@ -1812,10 +1812,10 @@ module neuron54
 ; @pos 280 -1
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron15:out
-float64*	in1 &neuron17:out
-float64*	in2 &neuron25:out
-float64*	in3 &neuron38:out
+float64&	in0 &neuron15:out
+float64&	in1 &neuron17:out
+float64&	in2 &neuron25:out
+float64&	in3 &neuron38:out
 float64	out ; @w
 ; Weights
 const W0	-1.165097641317072f64
@@ -1850,10 +1850,10 @@ module neuron53
 ; @pos 280 39
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron31:out
-float64*	in1 &neuron37:out
-float64*	in2 &neuron47:out
-float64*	in3 &neuron48:out
+float64&	in0 &neuron31:out
+float64&	in1 &neuron37:out
+float64&	in2 &neuron47:out
+float64&	in3 &neuron48:out
 float64	out ; @w
 ; Weights
 const W0	-5.098591717699961f64
@@ -1888,10 +1888,10 @@ module neuron52
 ; @pos 280 79
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron32:out
-float64*	in1 &neuron33:out
-float64*	in2 &neuron40:out
-float64*	in3 &neuron46:out
+float64&	in0 &neuron32:out
+float64&	in1 &neuron33:out
+float64&	in2 &neuron40:out
+float64&	in3 &neuron46:out
 float64	out ; @w
 ; Weights
 const W0	2.5815131816476975f64
@@ -1926,10 +1926,10 @@ module neuron51
 ; @pos 280 119
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron21:out
-float64*	in1 &neuron22:out
-float64*	in2 &neuron29:out
-float64*	in3 &neuron43:out
+float64&	in0 &neuron21:out
+float64&	in1 &neuron22:out
+float64&	in2 &neuron29:out
+float64&	in3 &neuron43:out
 float64	out ; @w
 ; Weights
 const W0	7.508169577552545f64
@@ -1964,10 +1964,10 @@ module neuron62
 ; @pos 322 -81
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron17:out
-float64*	in1 &neuron18:out
-float64*	in2 &neuron31:out
-float64*	in3 &neuron42:out
+float64&	in0 &neuron17:out
+float64&	in1 &neuron18:out
+float64&	in2 &neuron31:out
+float64&	in3 &neuron42:out
 float64	out ; @w
 ; Weights
 const W0	-5.066599350868912f64
@@ -2002,10 +2002,10 @@ module neuron61
 ; @pos 322 -41
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron24:out
-float64*	in1 &neuron32:out
-float64*	in2 &neuron42:out
-float64*	in3 &neuron44:out
+float64&	in0 &neuron24:out
+float64&	in1 &neuron32:out
+float64&	in2 &neuron42:out
+float64&	in3 &neuron44:out
 float64	out ; @w
 ; Weights
 const W0	4.918723613778873f64
@@ -2040,10 +2040,10 @@ module neuron60
 ; @pos 322 -1
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron15:out
-float64*	in1 &neuron34:out
-float64*	in2 &neuron48:out
-float64*	in3 &neuron50:out
+float64&	in0 &neuron15:out
+float64&	in1 &neuron34:out
+float64&	in2 &neuron48:out
+float64&	in3 &neuron50:out
 float64	out ; @w
 ; Weights
 const W0	2.6391354309987487f64
@@ -2078,10 +2078,10 @@ module neuron59
 ; @pos 322 39
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron19:out
-float64*	in1 &neuron25:out
-float64*	in2 &neuron27:out
-float64*	in3 &neuron48:out
+float64&	in0 &neuron19:out
+float64&	in1 &neuron25:out
+float64&	in2 &neuron27:out
+float64&	in3 &neuron48:out
 float64	out ; @w
 ; Weights
 const W0	-8.34825811818246f64
@@ -2116,10 +2116,10 @@ module neuron58
 ; @pos 322 79
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron16:out
-float64*	in1 &neuron24:out
-float64*	in2 &neuron25:out
-float64*	in3 &neuron32:out
+float64&	in0 &neuron16:out
+float64&	in1 &neuron24:out
+float64&	in2 &neuron25:out
+float64&	in3 &neuron32:out
 float64	out ; @w
 ; Weights
 const W0	-4.615960376731606f64
@@ -2154,10 +2154,10 @@ module neuron57
 ; @pos 322 119
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron31:out
-float64*	in1 &neuron39:out
-float64*	in2 &neuron41:out
-float64*	in3 &neuron49:out
+float64&	in0 &neuron31:out
+float64&	in1 &neuron39:out
+float64&	in2 &neuron41:out
+float64&	in3 &neuron49:out
 float64	out ; @w
 ; Weights
 const W0	0.5359450330844205f64
@@ -2192,10 +2192,10 @@ module neuron68
 ; @pos 363 -81
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron25:out
-float64*	in1 &neuron30:out
-float64*	in2 &neuron48:out
-float64*	in3 &neuron50:out
+float64&	in0 &neuron25:out
+float64&	in1 &neuron30:out
+float64&	in2 &neuron48:out
+float64&	in3 &neuron50:out
 float64	out ; @w
 ; Weights
 const W0	-4.6472203203933145f64
@@ -2230,10 +2230,10 @@ module neuron67
 ; @pos 363 -41
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron18:out
-float64*	in1 &neuron19:out
-float64*	in2 &neuron38:out
-float64*	in3 &neuron40:out
+float64&	in0 &neuron18:out
+float64&	in1 &neuron19:out
+float64&	in2 &neuron38:out
+float64&	in3 &neuron40:out
 float64	out ; @w
 ; Weights
 const W0	-3.787036039740706f64
@@ -2268,10 +2268,10 @@ module neuron66
 ; @pos 363 -1
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron25:out
-float64*	in1 &neuron27:out
-float64*	in2 &neuron32:out
-float64*	in3 &neuron37:out
+float64&	in0 &neuron25:out
+float64&	in1 &neuron27:out
+float64&	in2 &neuron32:out
+float64&	in3 &neuron37:out
 float64	out ; @w
 ; Weights
 const W0	1.438693793546532f64
@@ -2306,10 +2306,10 @@ module neuron65
 ; @pos 363 39
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron18:out
-float64*	in1 &neuron24:out
-float64*	in2 &neuron36:out
-float64*	in3 &neuron50:out
+float64&	in0 &neuron18:out
+float64&	in1 &neuron24:out
+float64&	in2 &neuron36:out
+float64&	in3 &neuron50:out
 float64	out ; @w
 ; Weights
 const W0	0.6237603087048084f64
@@ -2344,10 +2344,10 @@ module neuron64
 ; @pos 363 79
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron16:out
-float64*	in1 &neuron19:out
-float64*	in2 &neuron27:out
-float64*	in3 &neuron39:out
+float64&	in0 &neuron16:out
+float64&	in1 &neuron19:out
+float64&	in2 &neuron27:out
+float64&	in3 &neuron39:out
 float64	out ; @w
 ; Weights
 const W0	-2.516618856376174f64
@@ -2382,10 +2382,10 @@ module neuron63
 ; @pos 363 119
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron27:out
-float64*	in1 &neuron44:out
-float64*	in2 &neuron47:out
-float64*	in3 &neuron50:out
+float64&	in0 &neuron27:out
+float64&	in1 &neuron44:out
+float64&	in2 &neuron47:out
+float64&	in3 &neuron50:out
 float64	out ; @w
 ; Weights
 const W0	-1.5147795011557459f64
@@ -2420,10 +2420,10 @@ module neuron74
 ; @pos 404 -81
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron22:out
-float64*	in1 &neuron28:out
-float64*	in2 &neuron29:out
-float64*	in3 &neuron38:out
+float64&	in0 &neuron22:out
+float64&	in1 &neuron28:out
+float64&	in2 &neuron29:out
+float64&	in3 &neuron38:out
 float64	out ; @w
 ; Weights
 const W0	-5.118169476161381f64
@@ -2458,10 +2458,10 @@ module neuron73
 ; @pos 404 -41
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron16:out
-float64*	in1 &neuron25:out
-float64*	in2 &neuron36:out
-float64*	in3 &neuron41:out
+float64&	in0 &neuron16:out
+float64&	in1 &neuron25:out
+float64&	in2 &neuron36:out
+float64&	in3 &neuron41:out
 float64	out ; @w
 ; Weights
 const W0	9.05085510174141f64
@@ -2496,10 +2496,10 @@ module neuron72
 ; @pos 404 -1
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron16:out
-float64*	in1 &neuron23:out
-float64*	in2 &neuron30:out
-float64*	in3 &neuron39:out
+float64&	in0 &neuron16:out
+float64&	in1 &neuron23:out
+float64&	in2 &neuron30:out
+float64&	in3 &neuron39:out
 float64	out ; @w
 ; Weights
 const W0	4.693200137465278f64
@@ -2534,10 +2534,10 @@ module neuron71
 ; @pos 404 39
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron22:out
-float64*	in1 &neuron24:out
-float64*	in2 &neuron31:out
-float64*	in3 &neuron47:out
+float64&	in0 &neuron22:out
+float64&	in1 &neuron24:out
+float64&	in2 &neuron31:out
+float64&	in3 &neuron47:out
 float64	out ; @w
 ; Weights
 const W0	3.7282730015713f64
@@ -2572,10 +2572,10 @@ module neuron70
 ; @pos 404 79
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron21:out
-float64*	in1 &neuron24:out
-float64*	in2 &neuron27:out
-float64*	in3 &neuron30:out
+float64&	in0 &neuron21:out
+float64&	in1 &neuron24:out
+float64&	in2 &neuron27:out
+float64&	in3 &neuron30:out
 float64	out ; @w
 ; Weights
 const W0	0.3774234378172061f64
@@ -2610,10 +2610,10 @@ module neuron69
 ; @pos 404 119
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron15:out
-float64*	in1 &neuron20:out
-float64*	in2 &neuron34:out
-float64*	in3 &neuron49:out
+float64&	in0 &neuron15:out
+float64&	in1 &neuron20:out
+float64&	in2 &neuron34:out
+float64&	in3 &neuron49:out
 float64	out ; @w
 ; Weights
 const W0	3.1953875853590956f64
@@ -2648,10 +2648,10 @@ module neuron80
 ; @pos 446 -81
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron22:out
-float64*	in1 &neuron29:out
-float64*	in2 &neuron30:out
-float64*	in3 &neuron41:out
+float64&	in0 &neuron22:out
+float64&	in1 &neuron29:out
+float64&	in2 &neuron30:out
+float64&	in3 &neuron41:out
 float64	out ; @w
 ; Weights
 const W0	2.4446329335126173f64
@@ -2686,10 +2686,10 @@ module neuron79
 ; @pos 446 -41
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron15:out
-float64*	in1 &neuron30:out
-float64*	in2 &neuron39:out
-float64*	in3 &neuron44:out
+float64&	in0 &neuron15:out
+float64&	in1 &neuron30:out
+float64&	in2 &neuron39:out
+float64&	in3 &neuron44:out
 float64	out ; @w
 ; Weights
 const W0	0.6132231393938841f64
@@ -2724,10 +2724,10 @@ module neuron78
 ; @pos 446 -1
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron29:out
-float64*	in1 &neuron36:out
-float64*	in2 &neuron44:out
-float64*	in3 &neuron46:out
+float64&	in0 &neuron29:out
+float64&	in1 &neuron36:out
+float64&	in2 &neuron44:out
+float64&	in3 &neuron46:out
 float64	out ; @w
 ; Weights
 const W0	-2.3245994633977975f64
@@ -2762,10 +2762,10 @@ module neuron77
 ; @pos 446 39
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron18:out
-float64*	in1 &neuron26:out
-float64*	in2 &neuron39:out
-float64*	in3 &neuron47:out
+float64&	in0 &neuron18:out
+float64&	in1 &neuron26:out
+float64&	in2 &neuron39:out
+float64&	in3 &neuron47:out
 float64	out ; @w
 ; Weights
 const W0	0.8990565833517322f64
@@ -2800,10 +2800,10 @@ module neuron76
 ; @pos 446 79
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron22:out
-float64*	in1 &neuron28:out
-float64*	in2 &neuron36:out
-float64*	in3 &neuron49:out
+float64&	in0 &neuron22:out
+float64&	in1 &neuron28:out
+float64&	in2 &neuron36:out
+float64&	in3 &neuron49:out
 float64	out ; @w
 ; Weights
 const W0	-1.8489232589720694f64
@@ -2838,10 +2838,10 @@ module neuron75
 ; @pos 446 119
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron19:out
-float64*	in1 &neuron33:out
-float64*	in2 &neuron42:out
-float64*	in3 &neuron49:out
+float64&	in0 &neuron19:out
+float64&	in1 &neuron33:out
+float64&	in2 &neuron42:out
+float64&	in3 &neuron49:out
 float64	out ; @w
 ; Weights
 const W0	-1.5340272072513466f64
@@ -2876,10 +2876,10 @@ module neuron81
 ; @pos 488 19
 ; @group hiddenLayer2
 ; @tab 11
-float64*	in0 &neuron26:out
-float64*	in1 &neuron31:out
-float64*	in2 &neuron37:out
-float64*	in3 &neuron45:out
+float64&	in0 &neuron26:out
+float64&	in1 &neuron31:out
+float64&	in2 &neuron37:out
+float64&	in3 &neuron45:out
 float64	out ; @w
 ; Weights
 const W0	-8.195448354064249f64
@@ -2914,10 +2914,10 @@ module neuron87
 ; @pos 560 -81
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron58:out
-float64*	in1 &neuron63:out
-float64*	in2 &neuron66:out
-float64*	in3 &neuron68:out
+float64&	in0 &neuron58:out
+float64&	in1 &neuron63:out
+float64&	in2 &neuron66:out
+float64&	in3 &neuron68:out
 float64	out ; @w
 ; Weights
 const W0	0.44315762439752215f64
@@ -2952,10 +2952,10 @@ module neuron86
 ; @pos 560 -41
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron59:out
-float64*	in1 &neuron61:out
-float64*	in2 &neuron65:out
-float64*	in3 &neuron75:out
+float64&	in0 &neuron59:out
+float64&	in1 &neuron61:out
+float64&	in2 &neuron65:out
+float64&	in3 &neuron75:out
 float64	out ; @w
 ; Weights
 const W0	-0.0670516208256435f64
@@ -2990,10 +2990,10 @@ module neuron85
 ; @pos 560 -1
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron53:out
-float64*	in1 &neuron57:out
-float64*	in2 &neuron60:out
-float64*	in3 &neuron79:out
+float64&	in0 &neuron53:out
+float64&	in1 &neuron57:out
+float64&	in2 &neuron60:out
+float64&	in3 &neuron79:out
 float64	out ; @w
 ; Weights
 const W0	0.5674249148966389f64
@@ -3028,10 +3028,10 @@ module neuron84
 ; @pos 560 39
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron52:out
-float64*	in1 &neuron60:out
-float64*	in2 &neuron62:out
-float64*	in3 &neuron81:out
+float64&	in0 &neuron52:out
+float64&	in1 &neuron60:out
+float64&	in2 &neuron62:out
+float64&	in3 &neuron81:out
 float64	out ; @w
 ; Weights
 const W0	1.1338694824152538f64
@@ -3066,10 +3066,10 @@ module neuron83
 ; @pos 560 79
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron61:out
-float64*	in1 &neuron66:out
-float64*	in2 &neuron78:out
-float64*	in3 &neuron80:out
+float64&	in0 &neuron61:out
+float64&	in1 &neuron66:out
+float64&	in2 &neuron78:out
+float64&	in3 &neuron80:out
 float64	out ; @w
 ; Weights
 const W0	5.01994345131093f64
@@ -3104,10 +3104,10 @@ module neuron82
 ; @pos 560 119
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron54:out
-float64*	in1 &neuron58:out
-float64*	in2 &neuron65:out
-float64*	in3 &neuron69:out
+float64&	in0 &neuron54:out
+float64&	in1 &neuron58:out
+float64&	in2 &neuron65:out
+float64&	in3 &neuron69:out
 float64	out ; @w
 ; Weights
 const W0	0.7334657222118448f64
@@ -3142,10 +3142,10 @@ module neuron93
 ; @pos 602 -81
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron54:out
-float64*	in1 &neuron62:out
-float64*	in2 &neuron65:out
-float64*	in3 &neuron78:out
+float64&	in0 &neuron54:out
+float64&	in1 &neuron62:out
+float64&	in2 &neuron65:out
+float64&	in3 &neuron78:out
 float64	out ; @w
 ; Weights
 const W0	-0.19650250573495961f64
@@ -3180,10 +3180,10 @@ module neuron92
 ; @pos 602 -41
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron51:out
-float64*	in1 &neuron53:out
-float64*	in2 &neuron79:out
-float64*	in3 &neuron81:out
+float64&	in0 &neuron51:out
+float64&	in1 &neuron53:out
+float64&	in2 &neuron79:out
+float64&	in3 &neuron81:out
 float64	out ; @w
 ; Weights
 const W0	-3.373420882262691f64
@@ -3218,10 +3218,10 @@ module neuron91
 ; @pos 602 -1
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron57:out
-float64*	in1 &neuron64:out
-float64*	in2 &neuron80:out
-float64*	in3 &neuron81:out
+float64&	in0 &neuron57:out
+float64&	in1 &neuron64:out
+float64&	in2 &neuron80:out
+float64&	in3 &neuron81:out
 float64	out ; @w
 ; Weights
 const W0	-0.5733612071082838f64
@@ -3256,10 +3256,10 @@ module neuron90
 ; @pos 602 39
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron51:out
-float64*	in1 &neuron67:out
-float64*	in2 &neuron69:out
-float64*	in3 &neuron74:out
+float64&	in0 &neuron51:out
+float64&	in1 &neuron67:out
+float64&	in2 &neuron69:out
+float64&	in3 &neuron74:out
 float64	out ; @w
 ; Weights
 const W0	-5.161071978828384f64
@@ -3294,10 +3294,10 @@ module neuron89
 ; @pos 602 79
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron65:out
-float64*	in1 &neuron70:out
-float64*	in2 &neuron74:out
-float64*	in3 &neuron81:out
+float64&	in0 &neuron65:out
+float64&	in1 &neuron70:out
+float64&	in2 &neuron74:out
+float64&	in3 &neuron81:out
 float64	out ; @w
 ; Weights
 const W0	2.7723537797651514f64
@@ -3332,10 +3332,10 @@ module neuron88
 ; @pos 602 119
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron64:out
-float64*	in1 &neuron67:out
-float64*	in2 &neuron71:out
-float64*	in3 &neuron73:out
+float64&	in0 &neuron64:out
+float64&	in1 &neuron67:out
+float64&	in2 &neuron71:out
+float64&	in3 &neuron73:out
 float64	out ; @w
 ; Weights
 const W0	-0.5379044806557166f64
@@ -3370,10 +3370,10 @@ module neuron99
 ; @pos 645 -81
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron53:out
-float64*	in1 &neuron56:out
-float64*	in2 &neuron69:out
-float64*	in3 &neuron74:out
+float64&	in0 &neuron53:out
+float64&	in1 &neuron56:out
+float64&	in2 &neuron69:out
+float64&	in3 &neuron74:out
 float64	out ; @w
 ; Weights
 const W0	-3.730862374274342f64
@@ -3408,10 +3408,10 @@ module neuron98
 ; @pos 645 -41
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron53:out
-float64*	in1 &neuron60:out
-float64*	in2 &neuron73:out
-float64*	in3 &neuron74:out
+float64&	in0 &neuron53:out
+float64&	in1 &neuron60:out
+float64&	in2 &neuron73:out
+float64&	in3 &neuron74:out
 float64	out ; @w
 ; Weights
 const W0	7.500210415879902f64
@@ -3446,10 +3446,10 @@ module neuron97
 ; @pos 645 -1
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron59:out
-float64*	in1 &neuron69:out
-float64*	in2 &neuron71:out
-float64*	in3 &neuron75:out
+float64&	in0 &neuron59:out
+float64&	in1 &neuron69:out
+float64&	in2 &neuron71:out
+float64&	in3 &neuron75:out
 float64	out ; @w
 ; Weights
 const W0	-1.7344940469038082f64
@@ -3484,10 +3484,10 @@ module neuron96
 ; @pos 645 39
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron52:out
-float64*	in1 &neuron63:out
-float64*	in2 &neuron72:out
-float64*	in3 &neuron76:out
+float64&	in0 &neuron52:out
+float64&	in1 &neuron63:out
+float64&	in2 &neuron72:out
+float64&	in3 &neuron76:out
 float64	out ; @w
 ; Weights
 const W0	3.48163185824482f64
@@ -3522,10 +3522,10 @@ module neuron95
 ; @pos 645 79
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron51:out
-float64*	in1 &neuron52:out
-float64*	in2 &neuron55:out
-float64*	in3 &neuron72:out
+float64&	in0 &neuron51:out
+float64&	in1 &neuron52:out
+float64&	in2 &neuron55:out
+float64&	in3 &neuron72:out
 float64	out ; @w
 ; Weights
 const W0	12.204018966809462f64
@@ -3560,10 +3560,10 @@ module neuron94
 ; @pos 645 119
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron52:out
-float64*	in1 &neuron62:out
-float64*	in2 &neuron67:out
-float64*	in3 &neuron77:out
+float64&	in0 &neuron52:out
+float64&	in1 &neuron62:out
+float64&	in2 &neuron67:out
+float64&	in3 &neuron77:out
 float64	out ; @w
 ; Weights
 const W0	3.1837669531235666f64
@@ -3598,10 +3598,10 @@ module neuron105
 ; @pos 687 -81
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron59:out
-float64*	in1 &neuron64:out
-float64*	in2 &neuron67:out
-float64*	in3 &neuron77:out
+float64&	in0 &neuron59:out
+float64&	in1 &neuron64:out
+float64&	in2 &neuron67:out
+float64&	in3 &neuron77:out
 float64	out ; @w
 ; Weights
 const W0	3.261125822235786f64
@@ -3636,10 +3636,10 @@ module neuron104
 ; @pos 687 -41
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron59:out
-float64*	in1 &neuron63:out
-float64*	in2 &neuron71:out
-float64*	in3 &neuron75:out
+float64&	in0 &neuron59:out
+float64&	in1 &neuron63:out
+float64&	in2 &neuron71:out
+float64&	in3 &neuron75:out
 float64	out ; @w
 ; Weights
 const W0	3.2264623726137605f64
@@ -3674,10 +3674,10 @@ module neuron103
 ; @pos 687 -1
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron53:out
-float64*	in1 &neuron58:out
-float64*	in2 &neuron71:out
-float64*	in3 &neuron77:out
+float64&	in0 &neuron53:out
+float64&	in1 &neuron58:out
+float64&	in2 &neuron71:out
+float64&	in3 &neuron77:out
 float64	out ; @w
 ; Weights
 const W0	-0.023039573171386496f64
@@ -3712,10 +3712,10 @@ module neuron102
 ; @pos 687 39
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron51:out
-float64*	in1 &neuron52:out
-float64*	in2 &neuron70:out
-float64*	in3 &neuron73:out
+float64&	in0 &neuron51:out
+float64&	in1 &neuron52:out
+float64&	in2 &neuron70:out
+float64&	in3 &neuron73:out
 float64	out ; @w
 ; Weights
 const W0	4.161569541968561f64
@@ -3750,10 +3750,10 @@ module neuron101
 ; @pos 687 79
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron56:out
-float64*	in1 &neuron59:out
-float64*	in2 &neuron71:out
-float64*	in3 &neuron81:out
+float64&	in0 &neuron56:out
+float64&	in1 &neuron59:out
+float64&	in2 &neuron71:out
+float64&	in3 &neuron81:out
 float64	out ; @w
 ; Weights
 const W0	1.586981124469845f64
@@ -3788,10 +3788,10 @@ module neuron100
 ; @pos 687 119
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron57:out
-float64*	in1 &neuron73:out
-float64*	in2 &neuron74:out
-float64*	in3 &neuron76:out
+float64&	in0 &neuron57:out
+float64&	in1 &neuron73:out
+float64&	in2 &neuron74:out
+float64&	in3 &neuron76:out
 float64	out ; @w
 ; Weights
 const W0	3.757478194135897f64
@@ -3826,10 +3826,10 @@ module neuron107
 ; @pos 729 -1
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron58:out
-float64*	in1 &neuron60:out
-float64*	in2 &neuron68:out
-float64*	in3 &neuron75:out
+float64&	in0 &neuron58:out
+float64&	in1 &neuron60:out
+float64&	in2 &neuron68:out
+float64&	in3 &neuron75:out
 float64	out ; @w
 ; Weights
 const W0	-4.033837279562088f64
@@ -3864,10 +3864,10 @@ module neuron106
 ; @pos 729 39
 ; @group hiddenLayer3
 ; @tab 11
-float64*	in0 &neuron53:out
-float64*	in1 &neuron59:out
-float64*	in2 &neuron68:out
-float64*	in3 &neuron72:out
+float64&	in0 &neuron53:out
+float64&	in1 &neuron59:out
+float64&	in2 &neuron68:out
+float64&	in3 &neuron72:out
 float64	out ; @w
 ; Weights
 const W0	-7.631298658396915f64
@@ -3902,10 +3902,10 @@ module neuron113
 ; @pos 800 -81
 ; @group outputLayer
 ; @tab 11
-float64*	in0 &neuron88:out
-float64*	in1 &neuron89:out
-float64*	in2 &neuron99:out
-float64*	in3 &neuron102:out
+float64&	in0 &neuron88:out
+float64&	in1 &neuron89:out
+float64&	in2 &neuron99:out
+float64&	in3 &neuron102:out
 float64	out ; @w
 ; Weights
 const W0	6.471207910839414f64
@@ -3940,10 +3940,10 @@ module neuron112
 ; @pos 800 -41
 ; @group outputLayer
 ; @tab 11
-float64*	in0 &neuron82:out
-float64*	in1 &neuron88:out
-float64*	in2 &neuron104:out
-float64*	in3 &neuron107:out
+float64&	in0 &neuron82:out
+float64&	in1 &neuron88:out
+float64&	in2 &neuron104:out
+float64&	in3 &neuron107:out
 float64	out ; @w
 ; Weights
 const W0	-4.782825470153802f64
@@ -3978,10 +3978,10 @@ module neuron111
 ; @pos 800 -1
 ; @group outputLayer
 ; @tab 11
-float64*	in0 &neuron91:out
-float64*	in1 &neuron100:out
-float64*	in2 &neuron101:out
-float64*	in3 &neuron105:out
+float64&	in0 &neuron91:out
+float64&	in1 &neuron100:out
+float64&	in2 &neuron101:out
+float64&	in3 &neuron105:out
 float64	out ; @w
 ; Weights
 const W0	0.8712288362699737f64
@@ -4016,10 +4016,10 @@ module neuron110
 ; @pos 800 39
 ; @group outputLayer
 ; @tab 11
-float64*	in0 &neuron86:out
-float64*	in1 &neuron90:out
-float64*	in2 &neuron99:out
-float64*	in3 &neuron103:out
+float64&	in0 &neuron86:out
+float64&	in1 &neuron90:out
+float64&	in2 &neuron99:out
+float64&	in3 &neuron103:out
 float64	out ; @w
 ; Weights
 const W0	0.6472555863898319f64
@@ -4054,10 +4054,10 @@ module neuron109
 ; @pos 800 79
 ; @group outputLayer
 ; @tab 11
-float64*	in0 &neuron93:out
-float64*	in1 &neuron98:out
-float64*	in2 &neuron105:out
-float64*	in3 &neuron106:out
+float64&	in0 &neuron93:out
+float64&	in1 &neuron98:out
+float64&	in2 &neuron105:out
+float64&	in3 &neuron106:out
 float64	out ; @w
 ; Weights
 const W0	1.2116952018518496f64
@@ -4092,10 +4092,10 @@ module neuron108
 ; @pos 800 119
 ; @group outputLayer
 ; @tab 11
-float64*	in0 &neuron91:out
-float64*	in1 &neuron94:out
-float64*	in2 &neuron96:out
-float64*	in3 &neuron97:out
+float64&	in0 &neuron91:out
+float64&	in1 &neuron94:out
+float64&	in2 &neuron96:out
+float64&	in3 &neuron97:out
 float64	out ; @w
 ; Weights
 const W0	-2.3673690733199244f64
@@ -4130,10 +4130,10 @@ module neuron117
 ; @pos 841 -41
 ; @group outputLayer
 ; @tab 11
-float64*	in0 &neuron89:out
-float64*	in1 &neuron95:out
-float64*	in2 &neuron102:out
-float64*	in3 &neuron104:out
+float64&	in0 &neuron89:out
+float64&	in1 &neuron95:out
+float64&	in2 &neuron102:out
+float64&	in3 &neuron104:out
 float64	out ; @w
 ; Weights
 const W0	7.837461185160993f64
@@ -4168,10 +4168,10 @@ module neuron116
 ; @pos 841 -1
 ; @group outputLayer
 ; @tab 11
-float64*	in0 &neuron83:out
-float64*	in1 &neuron91:out
-float64*	in2 &neuron92:out
-float64*	in3 &neuron107:out
+float64&	in0 &neuron83:out
+float64&	in1 &neuron91:out
+float64&	in2 &neuron92:out
+float64&	in3 &neuron107:out
 float64	out ; @w
 ; Weights
 const W0	-10.039030771099961f64
@@ -4206,10 +4206,10 @@ module neuron115
 ; @pos 841 39
 ; @group outputLayer
 ; @tab 11
-float64*	in0 &neuron84:out
-float64*	in1 &neuron85:out
-float64*	in2 &neuron87:out
-float64*	in3 &neuron106:out
+float64&	in0 &neuron84:out
+float64&	in1 &neuron85:out
+float64&	in2 &neuron87:out
+float64&	in3 &neuron106:out
 float64	out ; @w
 ; Weights
 const W0	6.664282273180268f64
@@ -4244,10 +4244,10 @@ module neuron114
 ; @pos 841 79
 ; @group outputLayer
 ; @tab 11
-float64*	in0 &neuron84:out
-float64*	in1 &neuron85:out
-float64*	in2 &neuron90:out
-float64*	in3 &neuron105:out
+float64&	in0 &neuron84:out
+float64&	in1 &neuron85:out
+float64&	in2 &neuron90:out
+float64&	in3 &neuron105:out
 float64	out ; @w
 ; Weights
 const W0	5.596474717551611f64

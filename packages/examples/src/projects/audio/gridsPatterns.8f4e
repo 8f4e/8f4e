@@ -150,6 +150,7 @@ greaterThan
 and
 functionEnd int
 function patternRow
+#impure
 ; @pos -204 29
 ; Finds the step address
 ; for a chosen map cell.
@@ -398,6 +399,13 @@ entry main
 module sequencer
 ; @pos -128 0
 
+int& outputsBd &outputs:bd
+int& outputsSd &outputs:sd
+int& outputsHh &outputs:hh
+int& outputsAccentBD &outputs:accentBD
+int& outputsAccentSD &outputs:accentSD
+int& outputsAccentHH &outputs:accentHH
+
 int* trigger
 int step
 int nextStep
@@ -405,27 +413,27 @@ int previousTrigger
 int tick
 
 ; Trigger outputs last one sample.
-push &outputs:bd
+push outputsBd
 push 0
 store
 
-push &outputs:sd
+push outputsSd
 push 0
 store
 
-push &outputs:hh
+push outputsHh
 push 0
 store
 
-push &outputs:accentBD
+push outputsAccentBD
 push 0
 store
 
-push &outputs:accentSD
+push outputsAccentSD
 push 0
 store
 
-push &outputs:accentHH
+push outputsAccentHH
 push 0
 store
 
@@ -457,7 +465,7 @@ entry gate
 module mapReader
 ; @pos -68 0
 ; @home left
-int* step &sequencer:step
+int& step &sequencer:step
 int x 128
 int y 128
 ; Corners: A B
@@ -525,11 +533,11 @@ moduleEnd
 module outputs
 ; @pos -34 0
 
-int* levelBD
+int& levelBD
 - &mapReader:levelBD
-int* levelSD
+int& levelSD
 - &mapReader:levelSD
-int* levelHH
+int& levelHH
 - &mapReader:levelHH
 int densityBD 128
 int densitySD 128
@@ -1510,7 +1518,7 @@ use env
 
 int16[] buffer
 - ASSET_KICK_SIZE/2
-int* trigger &grids:bd
+int& trigger &grids:bd
 int previous
 const BYTES ASSET_KICK_SIZE
 int16* playhead &buffer+BYTES
@@ -1548,8 +1556,8 @@ module kickGain
 ; Holds normal/accented
 ; gain for each hit.
 
-int* trigger &grids:bd
-int* accent
+int& trigger &grids:bd
+int& accent
 - &grids:accentBD
 int previous
 float normal 0.6
@@ -1575,7 +1583,7 @@ use env
 
 int16[] buffer
 - ASSET_SNARE_SIZE/2
-int* trigger &grids:sd
+int& trigger &grids:sd
 int previous
 const BYTES ASSET_SNARE_SIZE
 int16* playhead &buffer+BYTES
@@ -1613,8 +1621,8 @@ module snareGain
 ; Holds normal/accented
 ; gain for each hit.
 
-int* trigger &grids:sd
-int* accent
+int& trigger &grids:sd
+int& accent
 - &grids:accentSD
 int previous
 float normal 0.6
@@ -1640,7 +1648,7 @@ use env
 
 int16[] buffer
 - ASSET_HIHAT_SIZE/2
-int* trigger &grids:hh
+int& trigger &grids:hh
 int previous
 const BYTES ASSET_HIHAT_SIZE
 int16* playhead &buffer+BYTES
@@ -1678,8 +1686,8 @@ module hiHatGain
 ; Holds normal/accented
 ; gain for each hit.
 
-int* trigger &grids:hh
-int* accent
+int& trigger &grids:hh
+int& accent
 - &grids:accentHH
 int previous
 float normal 0.6
@@ -1702,12 +1710,12 @@ moduleEnd
 module mixer
 ; @pos 276 1
 
-float* bd &kick:out
-float* sd &snare:out
-float* hh &hiHat:out
-float* hitGainBD &kickGain:out
-float* hitGainSD &snareGain:out
-float* hitGainHH &hiHatGain:out
+float& bd &kick:out
+float& sd &snare:out
+float& hh &hiHat:out
+float& hitGainBD &kickGain:out
+float& hitGainSD &snareGain:out
+float& hitGainHH &hiHatGain:out
 
 float gainBD 0.6
 ; @slider &gainBD 0 1 0.01
@@ -1745,7 +1753,7 @@ module audioout
 ; @pos 318 9
 use env
 
-float* in &mixer:out
+float& in &mixer:out
 float[] buffer AUDIO_BUFFER_SIZE
 int position
 

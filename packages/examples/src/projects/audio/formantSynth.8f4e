@@ -190,8 +190,11 @@ moduleEnd
 module sequencer1
 ; @pos 65 17
 
+float& formantFreqsItem8 &formantFreqs:8
+float& formantFreqsItem0 &formantFreqs:0
+
 float* in &formantFreqs:0
-int* trigger &clock:out
+int& trigger &clock:out
 int prev
 float out ; @w
 
@@ -211,11 +214,11 @@ store
 ifEnd
 
 push in
-push &formantFreqs:8
+push formantFreqsItem8
 greaterThan
 if
 push &in
-push &formantFreqs:0
+push formantFreqsItem0
 store
 ifEnd
 
@@ -223,8 +226,11 @@ moduleEnd
 module sequencer2
 ; @pos 99 17
 
+float& formantFreqsItem17 &formantFreqs:17
+float& formantFreqsItem9 &formantFreqs:9
+
 float* in &formantFreqs:9
-int* trigger &clock:out
+int& trigger &clock:out
 int prev
 float out ; @w
 
@@ -244,11 +250,11 @@ store
 ifEnd
 
 push in
-push &formantFreqs:17
+push formantFreqsItem17
 greaterThan
 if
 push &in
-push &formantFreqs:9
+push formantFreqsItem9
 store
 ifEnd
 
@@ -258,7 +264,7 @@ module phaseAccumulator
 use env
 
 float defaultFreq 100
-float* frequency &defaultFreq
+float& frequency &defaultFreq
 float phase
 float out
 
@@ -299,8 +305,11 @@ moduleEnd
 module sequencer3
 ; @pos 133 17
 
+float& formantFreqsItem26 &formantFreqs:26
+float& formantFreqsItem18 &formantFreqs:18
+
 float* in &formantFreqs:18
-int* trigger &clock:out
+int& trigger &clock:out
 int prev
 float out ; @w
 
@@ -320,11 +329,11 @@ store
 ifEnd
 
 push in
-push &formantFreqs:26
+push formantFreqsItem26
 greaterThan
 if
 push &in
-push &formantFreqs:18
+push formantFreqsItem18
 store
 ifEnd
 
@@ -337,8 +346,8 @@ module resonantLowPassFilter
 ; freq sets frequency
 ; lower damping gives more resonance.
 
-float* in &phaseAccumulator:out
-float* freq &sequencer1:out
+float& in &phaseAccumulator:out
+float& freq &sequencer1:out
 float damping 0.15
 float low
 float band
@@ -383,8 +392,8 @@ module resonantLowPassFilter2
 ; freq sets frequency
 ; lower damping gives more resonance.
 
-float* in &phaseAccumulator:out
-float* freq &sequencer2:out
+float& in &phaseAccumulator:out
+float& freq &sequencer2:out
 float damping 0.05
 float low
 float band
@@ -429,8 +438,8 @@ module resonantLowPassFilter3
 ; freq sets frequency
 ; lower damping gives more resonance.
 
-float* in &phaseAccumulator:out
-float* freq &sequencer3:out
+float& in &phaseAccumulator:out
+float& freq &sequencer3:out
 float damping 0.05
 float low
 float band
@@ -470,11 +479,11 @@ moduleEnd
 module mixer
 ; @pos 321 9
 
-float* formant1
+float& formant1
 - &resonantLowPassFilter:band
-float* formant2
+float& formant2
 - &resonantLowPassFilter2:band
-float* formant3
+float& formant3
 - &resonantLowPassFilter3:band
 
 float gain1 1.0
@@ -510,7 +519,7 @@ module audioout
 ; @home right
 use env
 
-float* in &mixer:out
+float& in &mixer:out
 
 ; Audio buffer
 float[] buffer AUDIO_BUFFER_SIZE

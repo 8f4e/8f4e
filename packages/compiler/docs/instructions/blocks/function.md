@@ -27,7 +27,7 @@ Functions are reusable code blocks that:
 - Can opt into explicit address-driven memory IO with `#impure`
 - Can be exported to the host WebAssembly ABI with `#export` or `#export <exportedName>`
 - Can be declared as host-provided WebAssembly imports with `#import <fieldName>`
-- Do not have direct access to module memory identifiers by name
+- Cannot read unqualified module memory identifiers by name
 - Cannot declare their own memory
 
 ### Overloads
@@ -67,6 +67,10 @@ Overloaded functions cannot be exported directly. Use a uniquely named wrapper f
 ### `#impure`
 
 Use `#impure` inside a function to allow explicit memory reads and writes through addresses already on the stack or passed via params/locals.
+Impure functions may also use intermodular addresses such as `&source:buffer`, indexed or module-boundary
+addresses, and target metadata such as `count(source:buffer)`. These symbolic dependencies remain supported
+under the impure-function exception to the direct-push migration. Memory reads and writes still use
+address-driven instructions such as `load` and `store`.
 
 ```
 function fillBlepBuffer

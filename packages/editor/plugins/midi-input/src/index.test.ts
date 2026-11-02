@@ -18,6 +18,7 @@ int note
 int velocity
 moduleEnd
 entryEnd
+; Impure callbacks may address their destination modules directly.
 function onMidi
 #export onMidi
 #impure

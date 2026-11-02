@@ -69,7 +69,7 @@ moduleEnd
 module scope
 ; @pos 26 1
 
-float* in &lcg:out
+float& in &lcg:out
 float[] buffer 64
 int bufferPointer &buffer
 
@@ -142,7 +142,7 @@ moduleEnd
 module scope2
 ; @pos 142 1
 
-float* in &XORShift:out
+float& in &XORShift:out
 float[] buffer 64
 int bufferPointer &buffer
 

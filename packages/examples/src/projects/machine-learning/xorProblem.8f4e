@@ -86,8 +86,8 @@ module perceptron
 ; @pos 118 -82
 ; Pre-trained perceptron
 
-float* in1 &inputs:in1
-float* in2 &inputs:in2
+float& in1 &inputs:in1
+float& in2 &inputs:in2
 float out
 
 ; Weights
@@ -111,8 +111,8 @@ module perceptron2
 ; @pos 118 -55
 ; Pre-trained perceptron
 
-float* in1 &inputs:in1
-float* in2 &inputs:in2
+float& in1 &inputs:in1
+float& in2 &inputs:in2
 float out
 
 ; Weights
@@ -135,7 +135,7 @@ moduleEnd
 module activationFn
 ; @pos 152 -82
 
-float* in &perceptron:out
+float& in &perceptron:out
 float out
 
 push &out
@@ -147,7 +147,7 @@ moduleEnd
 module activationFn2
 ; @pos 152 -55
 
-float* in &perceptron2:out
+float& in &perceptron2:out
 float out
 
 push &out
@@ -160,8 +160,8 @@ module perceptron3
 ; @pos 193 -65
 ; Pre-trained perceptron
 
-float* in1 &activationFn:out
-float* in2 &activationFn2:out
+float& in1 &activationFn:out
+float& in2 &activationFn2:out
 float out
 
 ; Weights
@@ -184,7 +184,7 @@ moduleEnd
 module activationFn3
 ; @pos 231 -65
 
-float* in &perceptron3:out
+float& in &perceptron3:out
 int out
 
 push &out

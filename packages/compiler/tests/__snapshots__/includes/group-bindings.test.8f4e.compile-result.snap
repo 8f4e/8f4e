@@ -1242,6 +1242,12 @@
         {
           "arguments": [
             {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "leftResult",
+            },
+            {
               "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
@@ -1251,11 +1257,40 @@
               "value": "&left:result",
             },
           ],
-          "instruction": "push",
+          "instruction": "int&",
         },
         {
-          "arguments": [],
-          "instruction": "load",
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "rightResult",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "result",
+              "targetModuleId": "right",
+              "type": "identifier",
+              "value": "&right:result",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "leftResult",
+              "type": "identifier",
+              "value": "*leftResult",
+            },
+          ],
+          "instruction": "push",
         },
         {
           "arguments": [
@@ -1270,20 +1305,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "result",
-              "targetModuleId": "right",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "rightResult",
               "type": "identifier",
-              "value": "&right:result",
+              "value": "*rightResult",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [

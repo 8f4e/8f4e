@@ -549,6 +549,26 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
+              "value": "continuationPointerSourceSamples",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "samples",
+              "targetModuleId": "continuationPointerSource",
+              "type": "identifier",
+              "value": "&continuationPointerSource:samples",
+            },
+          ],
+          "instruction": "float&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
               "value": "readHead",
             },
             {
@@ -577,13 +597,10 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "samples",
-              "targetModuleId": "continuationPointerSource",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&continuationPointerSource:samples",
+              "value": "continuationPointerSourceSamples",
             },
           ],
           "instruction": "assertEqual",

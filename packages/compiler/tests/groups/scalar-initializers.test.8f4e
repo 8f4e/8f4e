@@ -9,9 +9,10 @@ noteEnd
 
 entry test
 module source
+int& valuesAddress &values:address
+
 int output 99
-push &values:address
-load
+push *valuesAddress
 push &output
 equal
 assertEqual 1

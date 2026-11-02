@@ -338,7 +338,7 @@ describe('codeBlockCreator - copy/paste', () => {
 			const clipboardData = JSON.stringify([
 				{ code: ['module foo', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } },
 				{
-					code: ['module consumer', 'int* source &foo:memoryItem', 'push count(foo:buffer)', 'moduleEnd'],
+					code: ['module consumer', 'int& source &foo:buffer', 'push count(*source)', 'moduleEnd'],
 					gridCoordinates: { x: 5, y: 0 },
 				},
 			]);
@@ -355,8 +355,8 @@ describe('codeBlockCreator - copy/paste', () => {
 			await pasteCodeBlocksCallback({ x: 100, y: 100 });
 
 			expect(mockState.codeBlockRendering.currentProject.blocks[1].code[0]).toBe('module foo2');
-			expect(mockState.codeBlockRendering.currentProject.blocks[2].code[2]).toBe('int* source &foo2:memoryItem');
-			expect(mockState.codeBlockRendering.currentProject.blocks[2].code[3]).toBe('push count(foo2:buffer)');
+			expect(mockState.codeBlockRendering.currentProject.blocks[2].code[2]).toBe('int& source &foo2:buffer');
+			expect(mockState.codeBlockRendering.currentProject.blocks[2].code[3]).toBe('push count(*source)');
 		});
 
 		it('preserves arbitrary directive source when pasting', async () => {

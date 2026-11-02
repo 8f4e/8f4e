@@ -75,6 +75,12 @@
           {
             "arguments": [
               {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "input",
+              },
+              {
                 "isEndAddress": false,
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
@@ -84,18 +90,30 @@
                 "value": "&source:value",
               },
             ],
-            "instruction": "push",
+            "instruction": "int&",
             "lineNumber": 1,
           },
           {
-            "arguments": [],
-            "instruction": "drop",
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "input",
+              },
+            ],
+            "instruction": "push",
             "lineNumber": 2,
           },
           {
             "arguments": [],
-            "instruction": "moduleEnd",
+            "instruction": "drop",
             "lineNumber": 3,
+          },
+          {
+            "arguments": [],
+            "instruction": "moduleEnd",
+            "lineNumber": 4,
           },
         ],
         "moduleLine": {

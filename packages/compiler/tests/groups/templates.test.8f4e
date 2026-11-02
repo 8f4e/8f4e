@@ -74,14 +74,15 @@ pass env
 useTemplate voice
 groupEnd
 module verify
-push &left:value
-load
+int& leftValue &left:value
+int& rightValue &right:value
+
+push *leftValue
 assertEqual 11
-push &right:value
-load
+push *rightValue
 assertEqual 21
-push &left:value
-push &right:value
+push leftValue
+push rightValue
 notEqual
 assertEqual 1
 moduleEnd

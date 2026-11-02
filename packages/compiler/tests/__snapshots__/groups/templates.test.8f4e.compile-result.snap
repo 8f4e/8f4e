@@ -1529,6 +1529,12 @@
         {
           "arguments": [
             {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "leftValue",
+            },
+            {
               "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
@@ -1538,11 +1544,40 @@
               "value": "&left:value",
             },
           ],
-          "instruction": "push",
+          "instruction": "int&",
         },
         {
-          "arguments": [],
-          "instruction": "load",
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "rightValue",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "value",
+              "targetModuleId": "right",
+              "type": "identifier",
+              "value": "&right:value",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "leftValue",
+              "type": "identifier",
+              "value": "*leftValue",
+            },
+          ],
+          "instruction": "push",
         },
         {
           "arguments": [
@@ -1557,20 +1592,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "value",
-              "targetModuleId": "right",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "rightValue",
               "type": "identifier",
-              "value": "&right:value",
+              "value": "*rightValue",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -1585,13 +1615,10 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "value",
-              "targetModuleId": "left",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&left:value",
+              "value": "leftValue",
             },
           ],
           "instruction": "push",
@@ -1599,13 +1626,10 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "value",
-              "targetModuleId": "right",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&right:value",
+              "value": "rightValue",
             },
           ],
           "instruction": "push",

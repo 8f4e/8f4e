@@ -14,7 +14,7 @@ float dAttack 0.001
 
 int* trigger
 int previousTrigger
-float* attackRate &dAttack
+float& attackRate &dAttack
 float out
 
 int attacking 0

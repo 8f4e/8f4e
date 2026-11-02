@@ -17,6 +17,9 @@ const exampleProjects = [
 ] as const;
 
 const additionalProjects = [
+	'packages/examples/src/projects/audio/formantSynth.8f4e',
+	'packages/examples/src/projects/audio/minBLEP.8f4e',
+	'packages/examples/src/benchmarks/bytecode-size/minBLEP.8f4e',
 	'packages/examples/src/projects/audio/reverb.8f4e',
 	'packages/examples/src/projects/audio/dx7Algorithm5.8f4e',
 	'packages/examples/src/projects/audio/dx7StgCrescendo.8f4e',

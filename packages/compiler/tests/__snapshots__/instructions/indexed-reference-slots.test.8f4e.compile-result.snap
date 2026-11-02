@@ -235,6 +235,26 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
+              "value": "namedStart",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "integers",
+              "targetModuleId": "memories",
+              "type": "identifier",
+              "value": "&memories:integers",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
               "value": "signal",
             },
             {
@@ -392,13 +412,10 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "integers",
-              "targetModuleId": "memories",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&memories:integers",
+              "value": "namedStart",
             },
           ],
           "instruction": "assertEqual",

@@ -1891,7 +1891,7 @@
               "value": "&buffer",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -2164,22 +2164,6 @@
           "pointerDepth": 0,
           "type": "int",
         },
-        "pointer": {
-          "allocationUnitAddress": 4,
-          "allocationUnitCount": 1,
-          "byteAddress": 16,
-          "default": 4,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "pointer",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointeeElementCount": 3,
-          "pointerDepth": 1,
-          "type": "int*",
-        },
       },
     },
   },
@@ -2195,7 +2179,7 @@
     "compiledModules": [
       "readInterpolatedIntAssertions",
     ],
-    "requiredMemoryBytes": 20,
+    "requiredMemoryBytes": 16,
     "wasmExports": [
       "initDefaults",
       "main",

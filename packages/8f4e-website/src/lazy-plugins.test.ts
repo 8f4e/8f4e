@@ -139,6 +139,7 @@ module received
 int status
 moduleEnd
 entryEnd
+; Impure callbacks may address their destination modules directly.
 function onMidi
 #export onMidi
 #impure
