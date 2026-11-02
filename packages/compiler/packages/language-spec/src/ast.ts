@@ -30,12 +30,11 @@ export type ASTLineBase<Instruction extends string, Arguments extends Array<Argu
 export type CompileTimeValueArgument = ArgumentLiteral | ArgumentIdentifier | ArgumentCompileTimeExpression;
 export type PushArgument = ArgumentLiteral | ArgumentIdentifier | ArgumentCompileTimeExpression | ArgumentStringLiteral;
 export type PushLine = ASTLineBase<'push', [PushArgument]>;
-export type ReferenceSlotAddressArgument = Extract<
-	ArgumentIdentifier,
-	{
-		referenceKind: 'memory-reference' | 'intermodular-reference';
-	}
-> & { isEndAddress: false };
+export type ReferenceSlotAddressArgument =
+	| (Extract<ArgumentIdentifier, { referenceKind: 'memory-reference' | 'intermodular-reference' }> & {
+			isEndAddress: false;
+	  })
+	| Extract<ArgumentIdentifier, { referenceKind: 'intermodular-module-nth-reference' }>;
 export type ReferenceSlotLine = ASTLineBase<
 	ReferenceSlotInstruction,
 	[Extract<ArgumentIdentifier, { referenceKind: 'plain' }>, ReferenceSlotAddressArgument]

@@ -8,8 +8,8 @@ import validateInstructionArguments from './validateInstructionArguments';
 const { parseCompileTimeOperand } = await import('./parseArgument');
 
 describe('validateInstructionArguments', () => {
-	it.each(referenceSlotInstructions)('accepts named local and intermodular targets for %s', instruction => {
-		for (const target of ['&value', '&source:value']) {
+	it.each(referenceSlotInstructions)('accepts named and indexed memory targets for %s', instruction => {
+		for (const target of ['&value', '&source:value', '&source:0', '&source:12', '&this:0']) {
 			expect(() =>
 				validateInstructionArguments(instruction, [classifyIdentifier('slot'), classifyIdentifier(target)])
 			).not.toThrow();

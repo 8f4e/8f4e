@@ -67,6 +67,16 @@ function getMemoryDeclaration(
 	return getModule(context, moduleId)?.memory[memoryId];
 }
 
+/** Resolves a parsed declaration index, including the current-module alias. */
+export function resolveIndexedMemoryTarget(
+	context: MemoryReferenceResolutionContext,
+	targetModuleId: string,
+	targetMemoryIndex: number
+) {
+	const targetModule = getModule(context, targetModuleId);
+	return { targetModule, targetMemory: targetModule?.declarations[targetMemoryIndex] };
+}
+
 /** Resolves one structured intermodule reference through project aliases and the completed memory plan. */
 export function resolveIntermoduleMemoryTarget(
 	context: MemoryReferenceResolutionContext,
@@ -182,8 +192,7 @@ export function resolveMemoryExpressionOperand(
 	// &this:N — start byte address of the Nth memory item (0-indexed) within the current module
 	if (operand.referenceKind === 'intermodular-module-nth-reference') {
 		const targetModuleId = operand.targetModuleId;
-		const targetModule = getModule(context, targetModuleId);
-		const item = targetModule?.declarations[operand.targetMemoryIndex];
+		const { targetMemory: item } = resolveIndexedMemoryTarget(context, targetModuleId, operand.targetMemoryIndex);
 		if (item) {
 			const resolvedModuleId = targetModuleId === 'this' ? getCurrentModuleId(context) : targetModuleId;
 			return {

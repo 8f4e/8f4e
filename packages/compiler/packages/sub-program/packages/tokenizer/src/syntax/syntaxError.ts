@@ -51,7 +51,7 @@ export type SyntaxErrorCodeValue = (typeof SyntaxErrorCode)[keyof typeof SyntaxE
  */
 const SyntaxErrorMessages: Record<SyntaxErrorCodeValue, string> = {
 	[SyntaxErrorCode.INVALID_REFERENCE_SLOT]:
-		'A fixed reference requires a non-constant name and a named memory start address: <type>& <name> &<memory> or &<module>:<memory>.',
+		'A fixed reference requires a non-constant name and a memory start address: <type>& <name> &<memory>, &<module>:<memory>, or &<module>:<index>.',
 	[SyntaxErrorCode.INVALID_MEMORY_IDENTIFIER_PREFIX]: 'Invalid memory identifier prefix.',
 	[SyntaxErrorCode.INVALID_IDENTIFIER]: 'Invalid identifier.',
 	[SyntaxErrorCode.INVALID_ARGUMENT]: 'Invalid instruction argument.',

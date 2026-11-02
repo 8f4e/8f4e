@@ -2,6 +2,69 @@
   "functionAst": {},
   "functionOverview": {},
   "moduleAst": {
+    "processing/audio/indexedConsumer": {
+      "id": "processing/audio/indexedConsumer",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "processing/audio/indexedConsumer",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+            {
+              "referenceKind": "intermodular-module-nth-reference",
+              "scope": "intermodule",
+              "targetMemoryIndex": 0,
+              "targetModuleId": "processing/audio/source",
+              "type": "identifier",
+              "value": "&source:0",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "*value",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 41,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
     "processing/audio/source": {
       "id": "processing/audio/source",
       "lines": [
@@ -49,12 +112,54 @@
         {
           "arguments": [
             {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "indexedValue",
+            },
+            {
+              "referenceKind": "intermodular-module-nth-reference",
+              "scope": "intermodule",
+              "targetMemoryIndex": 0,
+              "targetModuleId": "this",
+              "type": "identifier",
+              "value": "&this:0",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
               "dereferenceDepth": 1,
               "referenceKind": "memory-pointer",
               "scope": "local",
               "targetMemoryId": "localValue",
               "type": "identifier",
               "value": "*localValue",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 41,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "indexedValue",
+              "type": "identifier",
+              "value": "*indexedValue",
             },
           ],
           "instruction": "push",
@@ -165,6 +270,9 @@
     },
   },
   "moduleMemory": {
+    "processing/audio/indexedConsumer": {
+      "memory": {},
+    },
     "processing/audio/source": {
       "memory": {
         "value": {
@@ -191,6 +299,7 @@
   "overview": {
     "compiledFunctions": [],
     "compiledModules": [
+      "processing/audio/indexedConsumer",
       "processing/audio/source",
       "processing/consumer",
     ],

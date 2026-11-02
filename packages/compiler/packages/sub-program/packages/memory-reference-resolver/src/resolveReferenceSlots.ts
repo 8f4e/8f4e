@@ -9,6 +9,7 @@ import {
 } from '@8f4e/language-spec';
 import {
 	type MemoryReferenceResolutionContext,
+	resolveIndexedMemoryTarget,
 	resolveIntermoduleMemoryTarget,
 } from './resolveMemoryExpressionOperand';
 
@@ -31,7 +32,10 @@ export function resolveReferenceSlots(ast: ModuleAST, context: MemoryReferenceRe
 			throw getError(ErrorCode.DUPLICATE_IDENTIFIER, line, diagnosticContext, { identifier: name.value });
 		}
 		const requestedModuleId = target.scope === 'intermodule' ? target.targetModuleId : ast.id;
-		const resolved = resolveIntermoduleMemoryTarget(context, requestedModuleId, target.targetMemoryId);
+		const resolved =
+			target.referenceKind === 'intermodular-module-nth-reference'
+				? resolveIndexedMemoryTarget(context, requestedModuleId, target.targetMemoryIndex)
+				: resolveIntermoduleMemoryTarget(context, requestedModuleId, target.targetMemoryId);
 		const memory = resolved.targetMemory;
 		if (!memory) {
 			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, diagnosticContext, { identifier: target.value });

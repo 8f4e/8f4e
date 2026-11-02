@@ -25,7 +25,15 @@ entry main
 module source
 shape inheritedState
 int& localValue &value
+int& indexedValue &this:0
 push *localValue
+assertEqual 41
+push *indexedValue
+assertEqual 41
+moduleEnd
+module indexedConsumer
+int& value &source:0
+push *value
 assertEqual 41
 moduleEnd
 entryEnd

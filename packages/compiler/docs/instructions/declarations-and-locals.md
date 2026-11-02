@@ -298,12 +298,13 @@ size), and `count(samples)` is `4`; the total data allocation is 32 bytes.
 ### Fixed reference slots
 
 `int&`, `int8&`, `int8u&`, `int16&`, `int16u&`, `float&`, and `float64&` declare fixed, typed memory
-references inside a module. Each declaration requires a name and the start address of a named memory declaration:
+references inside a module. Each declaration requires a name and the start address of an allocated memory declaration:
 
 ```8f4e
 float& signal &oscillator:output
 int8u& samples &sampleData:buffer
 int& localValue &value
+int& start &memories:0
 
 push signal          ; fixed target address
 push *signal         ; current target value
@@ -317,6 +318,10 @@ A fixed slot reserves no memory and needs no runtime initialization. It resolves
 through it emits the target address followed by one typed load. The target contents remain mutable: pushing `signal`
 and a float value followed by `store` updates `oscillator:output`.
 
+Targets can be selected by name or by their zero-based declaration index: `&memories:0` selects the first memory
+declaration in `memories`, and `&this:0` selects the first in the current module. Indices count declarations, including
+inherited memory; they are not byte offsets or array element indices.
+
 The declared type must match the target's element type, including integer signedness and floating-point width.
 Scalar and array targets are supported, including inherited memory and memory exposed by project groups. The slot
 keeps the target's element count and type for `count(*slot)`, `sizeof(*slot)`, `min(*slot)`, and `max(*slot)`.
@@ -325,7 +330,7 @@ local names and follow the same non-constant naming convention as memory declara
 
 Fixed slots have no addressable storage of their own: `&slot` and `slot&` report this explicitly. Use `push slot` for
 the target address. `localSet slot` reports that the binding cannot be rebound; the target contents remain mutable.
-Initializers must name an allocated, non-pointer memory item. Numeric addresses,
+Initializers must select an allocated, non-pointer memory item by name or declaration index. Numeric addresses,
 address arithmetic, end addresses, module addresses, and references to other fixed slots are not initializers.
 Slots cannot determine allocation sizes or ordinary `const` values, which resolve before memory layout.
 
