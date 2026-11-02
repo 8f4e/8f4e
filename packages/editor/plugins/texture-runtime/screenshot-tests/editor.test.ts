@@ -1,6 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, getEditorBlockId } from '@8f4e/editor-core';
-import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createLazyPluginLoaderPlugin, hasConfig, hasDirective } from '@8f4e/editor-plugin-lazy-loader';
 import { gapCalculator } from '@8f4e/editor-state';
@@ -57,7 +56,6 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 		editor = await initEditor(canvas, {
 			initialProject: parseProjectSource(projectSource),
 			plugins: [
-				codeRenderingPlugin,
 				compiler.plugin,
 				createLazyPluginLoaderPlugin([
 					{
@@ -183,7 +181,7 @@ int8u* pixels &screen:rgba
 ; @texture pixels 16 2 2
 moduleEnd
 entryEnd`),
-			plugins: [codeRenderingPlugin, compiler.plugin, createTextureRuntimePlugin(compiler)],
+			plugins: [compiler.plugin, createTextureRuntimePlugin(compiler)],
 		});
 		editor.pauseRendering();
 		await vi.waitFor(() => expect(compiler.getDiagnostics().status).toBe('ready'), { timeout: 10000 });

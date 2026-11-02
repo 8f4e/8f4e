@@ -1,6 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
-import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import loadFontAtlas from '@8f4e/sprite-generator';
@@ -80,14 +79,6 @@ entryEnd`);
 	};
 	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.on.allocationUnitAddress] = 1;
 	const spriteData = await loadFontAtlas(state.editorConfig.font);
-	const disposeCodeRendering = codeRenderingPlugin.setup({
-		store: store,
-		events: events,
-		menus: store.menus,
-		directives: store.directives,
-		layout: store.layout,
-		drawers,
-	});
 	const renderer = await initView(state, canvas, memoryViews, spriteData, resolvePalette(state.editorConfig.color), {
 		drawers,
 	});
@@ -117,7 +108,6 @@ entryEnd`);
 		await expect(canvas).toMatchScreenshot('trailing-switches');
 	} finally {
 		renderer.destroy();
-		disposeCodeRendering();
 		disposePlugin();
 		store.dispose();
 	}

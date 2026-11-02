@@ -108,6 +108,8 @@
 
 - Vitest tests live under `src/__tests__` or alongside source as `*.test.ts`.
 - Test composition behavior in `@8f4e/editor-default` and `@8f4e/editor-minimal`; test reusable editor behavior in `@8f4e/editor-core`.
+- Feature-plugin tests cover their own behavior against core services. Do not install unrelated plugins to render
+  fixture content or preserve screenshots; combined plugin rendering belongs in composition tests.
 
 ## Pull Requests
 

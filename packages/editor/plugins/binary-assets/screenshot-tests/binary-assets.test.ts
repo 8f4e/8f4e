@@ -1,6 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
-import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { expect, test, vi } from 'vitest';
 import { createBinaryAssetsPlugin } from '../src/index';
 
@@ -46,7 +45,6 @@ entryEnd`);
 		editor = await initEditor(canvas, {
 			initialProject: project,
 			plugins: [
-				codeRenderingPlugin,
 				{
 					...plugin,
 					setup: context => {
