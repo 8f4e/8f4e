@@ -1,6 +1,6 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { State } from '@8f4e/editor-state-types';
-import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
+import type { CompiledModule, PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import deriveConnectors from './deriveConnectors';
 
@@ -26,6 +26,10 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 }
 
 function setMemories(state: State, memories: PlannedMemoryDeclaration[], inheritedIds: string[] = []) {
+	state.compiler.result.compiledModules['test-block'] = {
+		id: 'test-block',
+		ast: { projectBlockId: 0 },
+	} as CompiledModule;
 	const module = {
 		id: 'test-block',
 		lineNumber: 0,

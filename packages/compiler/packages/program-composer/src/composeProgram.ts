@@ -223,6 +223,7 @@ function appendUnit(
 		const entry = entries.get(block.entry)!;
 		const ast = {
 			...qualify(moduleAst),
+			projectBlockId: block.id,
 			executionEntryName: entry.id,
 		};
 		program.ast.modules.push(ast);

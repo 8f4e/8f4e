@@ -151,6 +151,11 @@ export { default as getBlockType } from './features/code-blocks/utils/codeParser
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';
 export { default as getCodeBlockNameFromSource } from './features/code-blocks/utils/getCodeBlockNameFromSource';
 export { getCompiledFunctionForCodeBlock } from './features/code-blocks/utils/getCompiledFunctionForCodeBlock';
+export {
+	type CodeBlockModuleCompilation,
+	getCompiledModuleForCodeBlock,
+	getModuleCompilationForCodeBlock,
+} from './features/code-blocks/utils/getCompiledModuleForCodeBlock';
 export { parseBlockDirectives } from './features/code-blocks/utils/parseBlockDirectives';
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
@@ -166,6 +171,7 @@ export { default as centerViewportOnCodeBlock } from './features/viewport/center
 export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';
 // Export project serialization helpers
 export { default as getExportBaseName } from './pureHelpers/getExportBaseName';
+export { getMemoryDeclarationRows, type MemoryDeclarationRow } from './pureHelpers/getMemoryDeclarationRows';
 export { getUniqueName } from './pureHelpers/getUniqueName';
 export { default as serializeProjectLevel } from './pureHelpers/projectSerialization/serializeProjectLevel';
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';

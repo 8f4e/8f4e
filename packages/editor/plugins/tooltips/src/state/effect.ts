@@ -1,6 +1,9 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { getCompiledFunctionForCodeBlock } from '@8f4e/editor-state';
-import { getCodeBlockMemoryScope, resolveMemoryTarget } from '@8f4e/editor-state/memory';
+import {
+	getCompiledFunctionForCodeBlock,
+	getCompiledModuleForCodeBlock,
+	getModuleCompilationForCodeBlock,
+} from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
 import { createProjectModuleId } from '@8f4e/language-spec';
@@ -24,9 +27,9 @@ function getSelectedCodeBlockStackAnalysisLine(
 		return compiledFunction?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row);
 	}
 
-	return state.compiler.result.compiledModules[
-		createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name)
-	]?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row);
+	return getCompiledModuleForCodeBlock(selectedCodeBlock, state)?.stackAnalysis?.find(
+		line => line.lineNumber === selectedCodeBlock.cursor.row
+	);
 }
 
 /**
@@ -37,7 +40,7 @@ function getSelectedMemoryDeclaration(state: State, codeBlock: CodeBlockGraphicD
 		return undefined;
 	}
 
-	return resolveMemoryTarget(state, getCodeBlockMemoryScope(codeBlock), memoryId)?.memory;
+	return getModuleCompilationForCodeBlock(codeBlock, state)?.plannedModule.memory[memoryId];
 }
 
 function getSelectedModuleExecutionOrder(
@@ -49,10 +52,8 @@ function getSelectedModuleExecutionOrder(
 		return undefined;
 	}
 
-	const moduleIndex = Object.keys(state.compiler.result.compiledModules).indexOf(
-		createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name)
-	);
-	return moduleIndex === -1 ? undefined : moduleIndex + 1;
+	const module = getCompiledModuleForCodeBlock(selectedCodeBlock, state);
+	return module ? module.index + 1 : undefined;
 }
 
 /**

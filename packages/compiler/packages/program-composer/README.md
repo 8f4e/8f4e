@@ -8,6 +8,7 @@ Within each project or group, the last enabled module with a given name replaces
 The composer syntax-checks enabled module blocks, then includes only the selected definitions in the AST and entry steps.
 Each selected module retains its own entry and declaration position; earlier definitions contribute no memory, constants,
 or executable code. Disabling a replacement restores the preceding enabled definition.
+Every composed module AST carries a required numeric `projectBlockId` identifying its original source block.
 
 Group names form canonical encoded paths. The root project keeps unqualified symbols, while nested symbols use readable
 identities such as `audio/counter` and `audio/voices/counter`; these identities flow unchanged into compiler result maps.

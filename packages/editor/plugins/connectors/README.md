@@ -6,6 +6,8 @@ connector widgets, wire drawing, or line GPU allocations; compilation and memory
 
 The plugin derives pointer inputs and public non-pointer outputs from the compiler memory plan, including inherited
 shape declarations and exposed memory on nested project groups. One derivation pass produces both connector lists.
+Module connectors belong only to the block selected by the compiler's `projectBlockId`, so overridden definitions do
+not add duplicate endpoints and selecting a same-named block cannot redirect wires.
 Layout subscriptions keep geometry private in a per-editor WeakMap. After each completed layout batch, the plugin
 rebuilds its byte-address index from the current
 project slice. Runtime pointer values are read on every frame, so wires follow live memory without recompilation.

@@ -1,13 +1,8 @@
-import { getCodeBlockModuleId } from '@8f4e/editor-state';
+import { gapCalculator, getMemoryDeclarationRows, getModuleCompilationForCodeBlock } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { ConnectorWidgets } from '../types';
-import {
-	getConnectorMemoryDeclarations,
-	getConnectorRow,
-	isInputMemoryDeclaration,
-	isOutputMemoryDeclaration,
-} from './connectors/memoryDeclarations';
+import { isInputMemoryDeclaration, isOutputMemoryDeclaration } from './connectors/memoryDeclarations';
 import { getProjectMemoryExposureConnectors } from './connectors/projectMemoryExposures';
 
 /** Derive both connector lists from one ordered traversal of the block's memory declarations. */
@@ -49,12 +44,13 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 			addConnector(exposure.targetMemory, row);
 		}
 	} else {
-		const moduleId = getCodeBlockModuleId(codeBlock);
-		for (const declaration of getConnectorMemoryDeclarations(
-			state.compiler.result.memoryPlan.modules[moduleId],
-			state.compiler.result.memoryDefaultsByModuleId[moduleId]
+		const compilation = getModuleCompilationForCodeBlock(codeBlock, state);
+		if (!compilation) return widgets;
+		for (const { memory, rowOffset } of getMemoryDeclarationRows(
+			compilation.plannedModule,
+			compilation.memoryDefaults
 		)) {
-			addConnector(declaration.memory, getConnectorRow(declaration, codeBlock.gaps));
+			addConnector(memory, gapCalculator(memory.lineNumber, codeBlock.gaps) + rowOffset);
 		}
 	}
 	return widgets;

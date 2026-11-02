@@ -73,6 +73,8 @@
 
 - Meter, plot, bars, crossfade, watch, and stack own their data and drawers in plugin packages. Keep memory scope,
   typed-value resolution, tab layout, and compiler lookups generic and available through public helper exports.
+  Source-specific module views use `getCompiledModuleForCodeBlock` or `getModuleCompilationForCodeBlock`; logical names
+  may identify multiple source blocks. Share inherited declaration positioning through `getMemoryDeclarationRows`.
 - Preserve root and group entry tables through loading, editing/history, clipboard, and serialization, including empty
   entries and groups without `main`. Keep module entry membership local to its owning project scope.
 - Keep canonical project-model serialization under editor-state's `pureHelpers/projectSerialization`, filename
