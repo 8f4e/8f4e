@@ -50,6 +50,7 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 		}
 	} else {
 		const moduleId = getCodeBlockModuleId(codeBlock);
+		if (state.compiler.result.compiledModules[moduleId]?.ast.projectBlockId !== codeBlock.creationIndex) return widgets;
 		for (const declaration of getConnectorMemoryDeclarations(
 			state.compiler.result.memoryPlan.modules[moduleId],
 			state.compiler.result.memoryDefaultsByModuleId[moduleId]

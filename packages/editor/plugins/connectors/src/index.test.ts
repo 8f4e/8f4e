@@ -116,6 +116,95 @@ describe('connectors plugin', () => {
 		expect(new DataView(bytes.buffer, bytes.byteOffset).getFloat32(16, true)).toBe(2);
 	});
 
+	it.each(['root', 'group'])(
+		'keeps wires on the active same-named output after selection changes in a %s',
+		async scope => {
+			const body = `module source
+; @pos 20 2
+float output 1
+moduleEnd
+module source
+; @pos 60 2
+float output 2
+moduleEnd
+module sink
+; @pos 2 20
+float* input &source:output
+moduleEnd`;
+			const text =
+				scope === 'group'
+					? `8f4e/v1\nentry main\ngroup voice\nentry main\n${body}\nentryEnd\ngroupEnd\nentryEnd`
+					: `8f4e/v1\nentry main\n${body}\nentryEnd`;
+			const drawLine = vi.spyOn(LineDrawer.prototype, 'drawLine');
+			const { state, events, memoryViews, render } = await setup(text);
+			if (scope === 'group') {
+				events.dispatch('openProjectGroup', {
+					codeBlock: state.codeBlockRendering.rootProject.blocks.find(block => block.childProject),
+				});
+			}
+			events.dispatch('enterEditMode');
+			const sources = state.codeBlockRendering.currentProject.blocks.filter(block => block.name === 'source');
+			const [inactive, active] = sources;
+			const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
+			const moduleId = scope === 'group' ? 'voice/source' : 'source';
+			expect(state.compiler.result.compiledModules[moduleId].ast.projectBlockId).toBe(active.creationIndex);
+			const onInputChanged = vi.fn();
+			events.on('compilationInputChanged', onInputChanged);
+			const expectActiveWire = () => {
+				drawLine.mockClear();
+				render();
+				expect(drawLine).toHaveBeenCalledOnce();
+				expect(drawLine.mock.calls[0][2]).toBe(
+					active.x + Math.round(active.width - state.viewport.vGrid * 1.5) - state.viewport.x
+				);
+			};
+			expectActiveWire();
+			for (const block of [inactive, active, sink, inactive, active]) {
+				events.dispatch('mousedown', {
+					x: block.x - state.viewport.x + 1,
+					y: block.y - state.viewport.y + 1,
+					movementX: 0,
+					movementY: 0,
+					buttons: 1,
+					stopPropagation: false,
+					canvasWidth: 800,
+					canvasHeight: 600,
+					altKey: false,
+				});
+				events.dispatch('mouseup');
+				expectActiveWire();
+			}
+			expect(onInputChanged).not.toHaveBeenCalled();
+			const output = state.compiler.result.memoryPlan.modules[moduleId].memory.output;
+			expect(memoryViews.float32[output.allocationUnitAddress]).toBe(2);
+		}
+	);
+
+	it('draws inputs only for the active same-named module', async () => {
+		const drawLine = vi.spyOn(LineDrawer.prototype, 'drawLine');
+		const { state, render } = await setup(`8f4e/v1
+entry main
+module source
+; @pos 60 2
+float output 2
+moduleEnd
+module sink
+; @pos 2 2
+float* input &source:output
+moduleEnd
+module sink
+; @pos 2 20
+float* input &source:output
+moduleEnd
+entryEnd`);
+		const active = state.codeBlockRendering.currentProject.blocks.find(
+			block => block.creationIndex === state.compiler.result.compiledModules.sink.ast.projectBlockId
+		)!;
+		render();
+		expect(drawLine).toHaveBeenCalledOnce();
+		expect(drawLine.mock.calls[0][0]).toBe(active.x + Math.round(state.viewport.vGrid * 1.5) - state.viewport.x);
+	});
+
 	it('removes obsolete outputs when blocks are deleted or the project is replaced', async () => {
 		const { state, store, events, gl, render } = await setup();
 		render();
