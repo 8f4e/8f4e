@@ -8,7 +8,8 @@ int value
 moduleEnd
 
 module consumer
-push &source:value
+int& input &source:value
+push input
 drop
 moduleEnd
 entryEnd

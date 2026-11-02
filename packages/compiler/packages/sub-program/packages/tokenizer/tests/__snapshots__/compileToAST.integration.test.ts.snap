@@ -399,16 +399,37 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
       {
         "arguments": [
           {
-            "referenceKind": "intermodular-element-word-size",
+            "referenceKind": "plain",
+            "scope": "local",
+            "type": "identifier",
+            "value": "samples",
+          },
+          {
+            "isEndAddress": false,
+            "referenceKind": "intermodular-reference",
             "scope": "intermodule",
             "targetMemoryId": "samples",
             "targetModuleId": "audio",
             "type": "identifier",
-            "value": "sizeof(audio:samples)",
+            "value": "&audio:samples",
+          },
+        ],
+        "instruction": "float&",
+        "lineNumber": 9,
+      },
+      {
+        "arguments": [
+          {
+            "isPointee": true,
+            "referenceKind": "pointee-element-word-size",
+            "scope": "local",
+            "targetMemoryId": "samples",
+            "type": "identifier",
+            "value": "sizeof(*samples)",
           },
         ],
         "instruction": "push",
-        "lineNumber": 9,
+        "lineNumber": 10,
       },
       {
         "arguments": [
@@ -422,7 +443,7 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           },
         ],
         "instruction": "push",
-        "lineNumber": 10,
+        "lineNumber": 11,
       },
       {
         "arguments": [
@@ -436,7 +457,7 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           },
         ],
         "instruction": "push",
-        "lineNumber": 11,
+        "lineNumber": 12,
       },
       {
         "arguments": [
@@ -450,19 +471,19 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           },
         ],
         "instruction": "push",
-        "lineNumber": 12,
+        "lineNumber": 13,
       },
       {
         "arguments": [],
         "ifBlock": {
           "hasElse": true,
-          "matchingIfEndIndex": 15,
+          "matchingIfEndIndex": 16,
           "resultTypes": [
             "int",
           ],
         },
         "instruction": "if",
-        "lineNumber": 13,
+        "lineNumber": 14,
       },
       {
         "arguments": [
@@ -473,12 +494,12 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           },
         ],
         "instruction": "push",
-        "lineNumber": 14,
+        "lineNumber": 15,
       },
       {
         "arguments": [],
         "instruction": "else",
-        "lineNumber": 15,
+        "lineNumber": 16,
       },
       {
         "arguments": [
@@ -489,7 +510,7 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           },
         ],
         "instruction": "push",
-        "lineNumber": 16,
+        "lineNumber": 17,
       },
       {
         "arguments": [
@@ -501,18 +522,18 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           },
         ],
         "ifEndBlock": {
-          "matchingIfIndex": 11,
+          "matchingIfIndex": 12,
           "resultTypes": [
             "int",
           ],
         },
         "instruction": "ifEnd",
-        "lineNumber": 17,
+        "lineNumber": 18,
       },
       {
         "arguments": [],
         "instruction": "moduleEnd",
-        "lineNumber": 18,
+        "lineNumber": 19,
       },
     ],
     "moduleLine": {

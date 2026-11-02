@@ -11,6 +11,8 @@ entry test
 group processing
 entry main
 module root
+int& audioExposedValue &audio:exposedValue
+
 int* groupedValue &audio:exposedValue
 int observed
 int metadata
@@ -19,7 +21,7 @@ push &observed
 push *groupedValue
 store
 push &metadata
-push count(audio:exposedValue)+sizeof(audio:exposedValue)
+push count(*audioExposedValue)+sizeof(*audioExposedValue)
 store
 
 push observed

@@ -83,6 +83,46 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
+              "value": "traceOrder",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "order",
+              "targetModuleId": "trace",
+              "type": "identifier",
+              "value": "&trace:order",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "movedCount",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "count",
+              "targetModuleId": "moved",
+              "type": "identifier",
+              "value": "&moved:count",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
               "value": "oscillator",
             },
           ],
@@ -142,20 +182,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "order",
-              "targetModuleId": "trace",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "traceOrder",
               "type": "identifier",
-              "value": "&trace:order",
+              "value": "*traceOrder",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -279,20 +314,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "count",
-              "targetModuleId": "moved",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "movedCount",
               "type": "identifier",
-              "value": "&moved:count",
+              "value": "*movedCount",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -318,20 +348,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "count",
-              "targetModuleId": "moved",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "movedCount",
               "type": "identifier",
-              "value": "&moved:count",
+              "value": "*movedCount",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -357,20 +382,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "count",
-              "targetModuleId": "moved",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "movedCount",
               "type": "identifier",
-              "value": "&moved:count",
+              "value": "*movedCount",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -406,6 +426,12 @@
         {
           "arguments": [
             {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "traceOrder",
+            },
+            {
               "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
@@ -415,11 +441,20 @@
               "value": "&trace:order",
             },
           ],
-          "instruction": "push",
+          "instruction": "int&",
         },
         {
-          "arguments": [],
-          "instruction": "load",
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "traceOrder",
+              "type": "identifier",
+              "value": "*traceOrder",
+            },
+          ],
+          "instruction": "push",
         },
         {
           "arguments": [
@@ -434,13 +469,10 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "order",
-              "targetModuleId": "trace",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&trace:order",
+              "value": "traceOrder",
             },
           ],
           "instruction": "push",
@@ -590,6 +622,26 @@
         {
           "arguments": [
             {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "traceOrder",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "order",
+              "targetModuleId": "trace",
+              "type": "identifier",
+              "value": "&trace:order",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
               "referenceKind": "constant",
               "scope": "local",
               "type": "identifier",
@@ -617,20 +669,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "order",
-              "targetModuleId": "trace",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "traceOrder",
               "type": "identifier",
-              "value": "&trace:order",
+              "value": "*traceOrder",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -645,13 +692,10 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "order",
-              "targetModuleId": "trace",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&trace:order",
+              "value": "traceOrder",
             },
           ],
           "instruction": "push",

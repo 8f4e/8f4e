@@ -59,6 +59,26 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
+              "value": "audioExposedValue",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "exposedValue",
+              "targetModuleId": "processing/audio",
+              "type": "identifier",
+              "value": "&audio:exposedValue",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
               "value": "groupedValue",
             },
             {
@@ -142,21 +162,21 @@
           "arguments": [
             {
               "left": {
-                "referenceKind": "intermodular-element-count",
-                "scope": "intermodule",
-                "targetMemoryId": "exposedValue",
-                "targetModuleId": "processing/audio",
+                "isPointee": true,
+                "referenceKind": "pointee-element-count",
+                "scope": "local",
+                "targetMemoryId": "audioExposedValue",
                 "type": "identifier",
-                "value": "count(audio:exposedValue)",
+                "value": "count(*audioExposedValue)",
               },
               "operator": "+",
               "right": {
-                "referenceKind": "intermodular-element-word-size",
-                "scope": "intermodule",
-                "targetMemoryId": "exposedValue",
-                "targetModuleId": "processing/audio",
+                "isPointee": true,
+                "referenceKind": "pointee-element-word-size",
+                "scope": "local",
+                "targetMemoryId": "audioExposedValue",
                 "type": "identifier",
-                "value": "sizeof(audio:exposedValue)",
+                "value": "sizeof(*audioExposedValue)",
               },
               "type": "compile_time_expression",
             },

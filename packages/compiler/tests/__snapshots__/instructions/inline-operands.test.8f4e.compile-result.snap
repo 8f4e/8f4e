@@ -1747,6 +1747,26 @@
         {
           "arguments": [
             {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "sourceValue",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "value",
+              "targetModuleId": "scoped/source",
+              "type": "identifier",
+              "value": "&source:value",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
               "isInteger": true,
               "type": "literal",
               "value": 0,
@@ -1757,13 +1777,10 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "value",
-              "targetModuleId": "scoped/source",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&source:value",
+              "value": "sourceValue",
             },
           ],
           "instruction": "add",

@@ -1,19 +1,18 @@
 8f4e/v1
 
-function test
+function verifySkippedEntry
 ; @pos 58 18
-#export
 #impure
+param int* active
+param int* skipped
 loop 3
 call main
 loopEnd
 
-push &activeEntryModule:counter
-load
+push *active
 assertEqual 3
 
-push &skippedEntryModule:counter
-load
+push *skipped
 assertEqual 3
 
 functionEnd
@@ -58,5 +57,13 @@ push counter
 push 1
 add
 store
+moduleEnd
+entryEnd
+
+entry test
+module assertions
+int& active &activeEntryModule:counter
+int& skipped &skippedEntryModule:counter
+call verifySkippedEntry active skipped
 moduleEnd
 entryEnd

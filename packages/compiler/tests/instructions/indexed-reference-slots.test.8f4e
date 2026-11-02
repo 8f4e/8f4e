@@ -18,6 +18,7 @@ moduleEnd
 
 module references
 int& start &memories:0
+int& namedStart &memories:integers
 float& signal &memories:1
 float64& precise &memories:2
 int8& signedByte &memories:3
@@ -28,7 +29,7 @@ int& localValue &this:0
 int value 17
 
 push start
-assertEqual &memories:integers
+assertEqual namedStart
 push *start
 assertEqual 42
 push *signal

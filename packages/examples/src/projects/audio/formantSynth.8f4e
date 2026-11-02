@@ -190,6 +190,9 @@ moduleEnd
 module sequencer1
 ; @pos 65 17
 
+float& formantFreqsItem8 &formantFreqs:8
+float& formantFreqsItem0 &formantFreqs:0
+
 float* in &formantFreqs:0
 int* trigger &clock:out
 int prev
@@ -211,17 +214,20 @@ store
 ifEnd
 
 push in
-push &formantFreqs:8
+push formantFreqsItem8
 greaterThan
 if
 push &in
-push &formantFreqs:0
+push formantFreqsItem0
 store
 ifEnd
 
 moduleEnd
 module sequencer2
 ; @pos 99 17
+
+float& formantFreqsItem17 &formantFreqs:17
+float& formantFreqsItem9 &formantFreqs:9
 
 float* in &formantFreqs:9
 int* trigger &clock:out
@@ -244,11 +250,11 @@ store
 ifEnd
 
 push in
-push &formantFreqs:17
+push formantFreqsItem17
 greaterThan
 if
 push &in
-push &formantFreqs:9
+push formantFreqsItem9
 store
 ifEnd
 
@@ -299,6 +305,9 @@ moduleEnd
 module sequencer3
 ; @pos 133 17
 
+float& formantFreqsItem26 &formantFreqs:26
+float& formantFreqsItem18 &formantFreqs:18
+
 float* in &formantFreqs:18
 int* trigger &clock:out
 int prev
@@ -320,11 +329,11 @@ store
 ifEnd
 
 push in
-push &formantFreqs:26
+push formantFreqsItem26
 greaterThan
 if
 push &in
-push &formantFreqs:18
+push formantFreqsItem18
 store
 ifEnd
 

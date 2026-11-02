@@ -42,12 +42,14 @@ module splitPointerDeclarationAssertions
 ; Declaration arguments can be
 ; continued one argument per
 ; line.
+float& continuationPointerSourceSamples &continuationPointerSource:samples
+
 float* ; continued pointer declaration
 - readHead ; pointer name
 - &continuationPointerSource:samples ; initial address
 
 push readHead
-assertEqual &continuationPointerSource:samples
+assertEqual continuationPointerSourceSamples
 moduleEnd
 module splitByteDefaultAssertions
 ; @pos 57 43

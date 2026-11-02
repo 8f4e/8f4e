@@ -45,12 +45,13 @@ groupEnd
 
 module groupBindingAssertions
 ; Each group has its own alias and private dependencies.
-push &left:result
-load
+int& leftResult &left:result
+int& rightResult &right:result
+
+push *leftResult
 assertEqual 11
 
-push &right:result
-load
+push *rightResult
 assertEqual 12
 
 ; The root binding remains independent of both groups.

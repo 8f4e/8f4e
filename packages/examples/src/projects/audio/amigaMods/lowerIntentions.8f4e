@@ -395,30 +395,35 @@ sub
 functionEnd int
 
 function sampleNumberToAddr
+#impure
 ; @pos 623 -209
 ; @tab 8
 param int sampleNumber
+param int* addressTable
 
+push addressTable
 push sampleNumber
 mapBegin int
-map 1	&samplePack1:sample1
-map 2	&samplePack1:sample2
-map 3	&samplePack1:sample3
-map 4	&samplePack1:sample4
-map 5	&samplePack1:sample5
-map 6	&samplePack1:sample6
-map 7	&samplePack1:sample7
-map 9	&samplePack1:sample9
-map 10	&samplePack2:sample10
-map 11	&samplePack2:sample11
-map 12	&samplePack2:sample12
-map 13	&samplePack2:sample13
-map 14	&samplePack2:sample14
-map 15	&samplePack2:sample15
-map 16	&samplePack2:sample16
-map 17	&samplePack2:sample17
-default &samplePack1:
+map 1 4
+map 2 8
+map 3 12
+map 4 16
+map 5 20
+map 6 24
+map 7 28
+map 9 32
+map 10 36
+map 11 40
+map 12 44
+map 13 48
+map 14 52
+map 15 56
+map 16 60
+map 17 64
+default 0
 mapEnd int
+add
+load
 
 functionEnd int
 
@@ -764,6 +769,28 @@ note colors
 noteEnd
 
 entry main
+module sampleAddressTable
+; @pos 900 -209
+; Address table passed explicitly to sampleNumberToAddr.
+int[] addresses 17
+- &samplePack1:
+- &samplePack1:sample1
+- &samplePack1:sample2
+- &samplePack1:sample3
+- &samplePack1:sample4
+- &samplePack1:sample5
+- &samplePack1:sample6
+- &samplePack1:sample7
+- &samplePack1:sample9
+- &samplePack2:sample10
+- &samplePack2:sample11
+- &samplePack2:sample12
+- &samplePack2:sample13
+- &samplePack2:sample14
+- &samplePack2:sample15
+- &samplePack2:sample16
+- &samplePack2:sample17
+moduleEnd
 module tickClock
 ; @pos -175 -28
 use mod
@@ -2056,6 +2083,7 @@ int8[] sample17 ASSET_SAMPLE17_SIZE
 moduleEnd
 module samplePlayer1
 ; @pos 545 -4
+int& sampleAddresses &sampleAddressTable:addresses
 use env
 ; @tab 6 20
 int*	period	&period1:out
@@ -2075,7 +2103,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr
+call sampleNumberToAddr sampleAddresses
 store
 
 push &sampleSize
@@ -2157,6 +2185,7 @@ ifEnd
 moduleEnd
 module samplePlayer2
 ; @pos 545 17
+int& sampleAddresses &sampleAddressTable:addresses
 use env
 ; @tab 6 20
 int*	period	&period2:out
@@ -2176,7 +2205,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr
+call sampleNumberToAddr sampleAddresses
 store
 
 push &sampleSize
@@ -2258,6 +2287,7 @@ ifEnd
 moduleEnd
 module samplePlayer3
 ; @pos 597 -4
+int& sampleAddresses &sampleAddressTable:addresses
 use env
 ; @tab 6 20
 int*	period	&period3:out
@@ -2277,7 +2307,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr
+call sampleNumberToAddr sampleAddresses
 store
 
 push &sampleSize
@@ -2359,6 +2389,7 @@ ifEnd
 moduleEnd
 module samplePlayer4
 ; @pos 597 17
+int& sampleAddresses &sampleAddressTable:addresses
 use env
 ; @tab 6 20
 int*	period	&period4:out
@@ -2378,7 +2409,7 @@ int _playing
 
 push &sampleAddress
 push *sampleNumber
-call sampleNumberToAddr
+call sampleNumberToAddr sampleAddresses
 store
 
 push &sampleSize

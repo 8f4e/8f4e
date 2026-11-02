@@ -49,6 +49,8 @@ and
 
 functionEnd int
 
+; Host callback signatures cannot receive an extra destination pointer yet.
+; See docs/intermodular-push-audit.md.
 function onMidiEvent
 ; @pos -122 7
 #export onMidiEvent

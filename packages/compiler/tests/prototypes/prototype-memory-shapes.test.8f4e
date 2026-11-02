@@ -50,6 +50,8 @@ assertEqual 1
 moduleEnd
 
 module oscB
+float& oscAPhase &oscA:phase
+
 int localB 22
 shape oscillatorState
 
@@ -81,7 +83,7 @@ assertEqual 1
 ; for each module that uses the
 ; shape
 push &phase
-push &oscA:phase
+push oscAPhase
 notEqual
 assertEqual 1
 moduleEnd
