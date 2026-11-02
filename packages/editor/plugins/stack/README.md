@@ -18,6 +18,7 @@ and drawing hooks. Feature data lives in a WeakMap created by each installation 
 ```
 
 Stack also accepts `@s` and uses compiler stack analysis for module and function blocks.
+Only the active source definition of a module receives stack labels; overridden blocks do not share its analysis.
 
 The browser host supplies `prefersReducedMotion: () => boolean` to the factory. The plugin reads it when drawing; it does not access browser globals.
 

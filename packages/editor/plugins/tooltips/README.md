@@ -16,6 +16,9 @@ Each installation keeps its tooltip state private and registers a code-block ove
 source, compiler, grid, and sprite changes. Live values are read from the current runtime memory during drawing.
 Disposal removes its subscriptions, sprite-reload listener, and overlay contribution.
 
+Module-specific stack analysis, execution order, and live-memory details belong only to the active source definition.
+Overridden blocks retain instruction documentation without displaying another definition's compiler metadata.
+
 For `call` instructions, successful compilation supplies the selected overload's parameter names, types, and return
 types. The tooltip uses the callable name from the selected source line and wraps long signatures between parameters,
 keeping each name/type pair together. A pair wider than the normal wrap width expands the tooltip to fit. Parameters

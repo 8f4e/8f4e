@@ -1,7 +1,7 @@
 import {
 	gapCalculator,
-	getCodeBlockModuleId,
 	getCompiledFunctionForCodeBlock,
+	getCompiledModuleForCodeBlock,
 	getTabStopsByLine,
 	getVisualLineWidth,
 	matchEditorDirectives,
@@ -19,7 +19,7 @@ function getStackAnalysisLines(
 		return getCompiledFunctionForCodeBlock(graphicData, state)?.stackAnalysis;
 	}
 
-	return state.compiler.result.compiledModules[getCodeBlockModuleId(graphicData)]?.stackAnalysis;
+	return getCompiledModuleForCodeBlock(graphicData, state)?.stackAnalysis;
 }
 
 function findStackAnalysisLine(

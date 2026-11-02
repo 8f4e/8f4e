@@ -21,6 +21,7 @@ function createLayoutDraft(): BlockLayoutDraft {
 function createModuleAst(): ValidatedModuleAST {
 	return {
 		type: 'module',
+		projectBlockId: 0,
 		id: 'filterA',
 		lines: [
 			{ lineNumber: 0, instruction: 'module', arguments: [{ value: 'filterA' }] },
@@ -108,6 +109,19 @@ function createInheritedMemory(count: number): Record<string, MemoryFixture> {
 }
 
 describe('shape', () => {
+	it('does not add inherited rows or labels to an overridden source block', () => {
+		const block = createCodeBlockGraphicData({
+			blockType: 'module',
+			creationIndex: 1,
+			code: ['module filterA', 'shape filterState', 'moduleEnd'],
+		});
+		const state = createMockState({ compiler: { result: createCompilerReports(createInheritedMemory(4)) } });
+		const blockLayout = createLayoutDraft();
+		shape(block, state, blockLayout);
+		updateShapeDeclarations(block, state, blockLayout);
+		expect(blockLayout.verticalSpaceAfterSourceLine).toEqual([]);
+		expect(block.widgets.shapeDeclarations).toEqual([]);
+	});
 	it('contributes one layout row per compiler-reported inherited declaration under shape lines', () => {
 		const module = createCodeBlockGraphicData({
 			blockType: 'module',

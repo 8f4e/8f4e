@@ -6,6 +6,20 @@ import { createStackPlugin } from './index';
 const plugin = createStackPlugin({ prefersReducedMotion: () => true });
 const source = ['module audio', 'push 2', 'push 3', '; @stack', 'drop', 'drop', 'moduleEnd'];
 describe('stack plugin', () => {
+	it("does not show the active definition's stack on an overridden source block", async () => {
+		const test = await setup(plugin, [
+			'module audio',
+			'push 1 ; @stack',
+			'drop',
+			'moduleEnd',
+			'module audio',
+			'push 9 ; @stack',
+			'drop',
+			'moduleEnd',
+		]);
+		test.render();
+		expect(test.draw.drawText).not.toHaveBeenCalled();
+	});
 	it('shows the stack after the preceding instruction for standalone directives', async () => {
 		const test = await setup(plugin, source);
 		test.render();

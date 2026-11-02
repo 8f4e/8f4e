@@ -34,6 +34,7 @@ describe('tooltip effect', () => {
 				result: {
 					compiledModules: {
 						test: {
+							ast: { projectBlockId: 0 },
 							stackAnalysis: [
 								{
 									lineNumber: 2,
@@ -218,6 +219,8 @@ describe('tooltip effect', () => {
 		const state = createMockState({
 			compiler: {
 				result: {
+					compiledModules: { [moduleId]: { id: moduleId, ast: { projectBlockId: 0 } } },
+					memoryDefaultsByModuleId: { [moduleId]: { value: { value: 0 } } },
 					memoryPlan: {
 						modules: {
 							[moduleId]: {
@@ -334,8 +337,8 @@ describe('tooltip effect', () => {
 			compiler: {
 				result: {
 					compiledModules: {
-						'module-a': {} as never,
-						'module-b': {} as never,
+						'module-a': { id: 'module-a', index: 0, ast: { projectBlockId: 1 } },
+						'module-b': { id: 'module-b', index: 1, ast: { projectBlockId: 0 } },
 					},
 				},
 			},
@@ -444,7 +447,19 @@ describe('tooltip lifecycle', () => {
 			store.dispose();
 		});
 		expect(tooltip.getState().text).not.toContain('execution order: 2');
-		store.set('compiler.result.compiledModules', { first: {} as never, test: {} as never });
+		store.set(
+			'compiler.result.compiledModules',
+			createMockState({
+				compiler: {
+					result: {
+						compiledModules: {
+							first: { id: 'first', index: 0, ast: { projectBlockId: 1 } },
+							test: { id: 'test', index: 1, ast: { projectBlockId: 0 } },
+						},
+					},
+				},
+			}).compiler.result.compiledModules
+		);
 		expect(tooltip.getState().text).toContain('execution order: 2');
 	});
 });
@@ -467,6 +482,7 @@ functionEnd int`;
 		const first = await compile(source);
 		const block = createMockCodeBlock({
 			name: 'caller',
+			creationIndex: first.compiledModules.caller.ast.projectBlockId,
 			code: ['module caller', 'call identity 1', 'drop', 'moduleEnd'],
 			cursor: { row: 1, col: 0, x: 0, y: 0 },
 		});
@@ -485,5 +501,68 @@ functionEnd int`;
 		store.set('compiler.result', { ...state.compiler.result, compiledModules: {}, compiledFunctions: {} });
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
 		expect(tooltip.getState().text[0]).toBe('call (args... -- returns...)');
+	});
+});
+
+describe('module overrides', () => {
+	it('shows source-specific metadata only on the active definition and follows recompilation', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+module voice
+int value 5
+push 1
+drop
+moduleEnd
+module voice
+int value 9
+push 2
+drop
+moduleEnd
+entryEnd`);
+		const compile = () => compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+		const compiled = await compile();
+		const [first, second] = project.execution;
+		const inactive = createMockCodeBlock({
+			name: 'voice',
+			creationIndex: first.id,
+			code: first.code,
+			blockType: 'module',
+			cursor: { row: 2, col: 0, x: 0, y: 0 },
+		});
+		const active = createMockCodeBlock({
+			name: 'voice',
+			creationIndex: second.id,
+			code: second.code,
+			blockType: 'module',
+			cursor: { row: 2, col: 0, x: 0, y: 0 },
+		});
+		const state = createMockState({
+			compiler: { result: compiled },
+			codeBlockRendering: { selectedCodeBlock: inactive },
+		});
+		const store = createStateManager(state);
+		const tooltip = createTooltip(store, createEvents());
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
+		expect(tooltip.getState().text.some(line => line.startsWith('after:'))).toBe(false);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		expect(tooltip.getState().liveValues).toEqual([]);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 0);
+		expect(tooltip.getState().text).not.toContain('execution order: 1');
+
+		store.set('codeBlockRendering.selectedCodeBlock', active);
+		expect(tooltip.getState().text).toContain('after: [+int=2]');
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		expect(tooltip.getState().liveValues).toHaveLength(2);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 0);
+		expect(tooltip.getState().text).toContain('execution order: 1');
+
+		store.set('codeBlockRendering.selectedCodeBlock', inactive);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		project.execution.reverse();
+		store.set('compiler.result', await compile());
+		expect(tooltip.getState().text).toContain('after: [+int=1]');
 	});
 });

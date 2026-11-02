@@ -26,7 +26,10 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 }
 
 function setMemories(state: State, memories: PlannedMemoryDeclaration[], inheritedIds: string[] = []) {
-	state.compiler.result.compiledModules['test-block'] = { ast: { projectBlockId: 0 } } as CompiledModule;
+	state.compiler.result.compiledModules['test-block'] = {
+		id: 'test-block',
+		ast: { projectBlockId: 0 },
+	} as CompiledModule;
 	const module = {
 		id: 'test-block',
 		lineNumber: 0,

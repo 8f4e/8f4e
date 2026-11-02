@@ -31,6 +31,11 @@ plugin is installed.
 - `state.info.compiler` contains compilation duration, bytecode size, memory usage, and cache statistics.
 - `state.codeErrors.compilationErrors` contains diagnostics mapped to project blocks and source lines.
 
+Source-specific views use `getCompiledModuleForCodeBlock` to match the selected definition's `projectBlockId` to the
+editor block's `creationIndex`. `getModuleCompilationForCodeBlock` resolves that module, its memory plan, and its defaults
+together, returning no result until all reports are available. Overridden source blocks receive no module artifacts.
+`getMemoryDeclarationRows` provides the shared declaration ordering and inherited-row offsets for shape labels and connectors.
+
 The plugin updates its live artifact handles and emits `compilationSucceeded` with `ProgramArtifacts` (`memoryRef`)
 before publishing metadata and runtime readiness. Core consumes that event to refresh memory views; bytecode stays
 on the compiler getter. All compiler metadata is published atomically in one `state.compiler.result` replacement while

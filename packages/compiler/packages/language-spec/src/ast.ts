@@ -16,7 +16,7 @@ import {
 	isScalarMemoryDeclarationInstructionName,
 	type ScalarMemoryDeclarationInstruction,
 } from './memory';
-import type { ProjectGroupPath } from './project';
+import type { ProjectBlockId, ProjectGroupPath } from './project';
 
 type ClampAddressInstructionName = 'clampAddress' | 'clampModuleAddress' | 'clampGlobalAddress';
 
@@ -297,6 +297,8 @@ export type ComposedAST<TAST extends ValidatedAST = ValidatedAST> = TAST & {
 	sourceIdentity: SourceBlockIdentity;
 };
 export type ComposedModuleAST = ComposedAST<ValidatedModuleAST> & {
+	/** Stable source-block identity supplied by project composition. */
+	projectBlockId: ProjectBlockId;
 	/** Canonical identity of the owning entry, established by composition. */
 	executionEntryName: string;
 };
