@@ -3,12 +3,9 @@ import type { SelectedLineTooltipContent } from '../types';
 import { getSelectedLineTooltipColors } from './colors';
 import { TOOLTIP_WRAP_WIDTH } from './constants';
 import { getLiveTooltipContent } from './liveValues';
-import {
-	getInstructionSpecFromSourceLine,
-	getMemoryDeclarationIdFromSourceLine,
-	getStackSignatureTooltipLines,
-} from './sourceLine';
+import { getMemoryDeclarationIdFromSourceLine, getSourceInstruction } from './sourceLine';
 import { getStackAnalysisTooltipContent } from './stackAnalysisTooltip';
+import { formatStackSignature, formatStackSignatureLines, resolveStackSignature } from './stackSignature';
 import { getMaxLineLength, getTooltipTextCharacters, wrapTooltipText } from './text';
 
 interface SelectedLineTooltipTextContent {
@@ -44,9 +41,14 @@ export function getSelectedLineTooltipTextContent({
 		return { text: [], signatureLineCount: 0, highlightTargets: [] };
 	}
 
-	const spec = getInstructionSpecFromSourceLine(line);
-	const signatureLines = getStackSignatureTooltipLines(line, maxLength, stackAnalysisLine, parsedLine);
-	const shortDescription = spec?.docs?.shortDescription;
+	const sourceInstruction = getSourceInstruction(line);
+	const signature = resolveStackSignature({ sourceInstruction, stackAnalysisLine, parsedLine });
+	const signatureLines = signature
+		? signature.kind === 'call'
+			? formatStackSignatureLines({ signature, maxLength })
+			: [formatStackSignature(signature)]
+		: [];
+	const shortDescription = sourceInstruction?.spec.docs?.shortDescription;
 	const tooltipText: string[] = [];
 	const highlightTargets: SelectedLineTooltipContent['highlightTargets'] = [];
 

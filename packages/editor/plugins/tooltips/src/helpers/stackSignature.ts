@@ -1,8 +1,71 @@
-import { getInstructionSpec, resolveInstructionStackEffect } from '@8f4e/language-spec';
+import {
+	ArgumentType,
+	type CompiledStackAnalysisLine,
+	type CompilerASTLine,
+	resolveInstructionStackEffect,
+} from '@8f4e/language-spec';
+import type { SourceInstruction } from './sourceLine';
 
 interface StackSignatureLabels {
 	inputs: readonly string[];
 	outputs: readonly string[];
+}
+
+interface StackSignature {
+	instruction: string;
+	stackEffect: StackSignatureLabels;
+}
+
+interface ResolvedStackSignature extends StackSignature {
+	kind: 'instruction' | 'call';
+}
+
+interface StackSignatureOptions {
+	sourceInstruction: SourceInstruction | undefined;
+	parsedLine?: CompilerASTLine;
+	stackAnalysisLine?: CompiledStackAnalysisLine;
+}
+
+/** Resolves compiler metadata or source arguments before any signature formatting. */
+export function resolveStackSignature({
+	sourceInstruction,
+	parsedLine,
+	stackAnalysisLine,
+}: StackSignatureOptions): ResolvedStackSignature | undefined {
+	if (!sourceInstruction?.spec.stack) return undefined;
+	const { instruction, arguments: args, spec } = sourceInstruction;
+
+	if (
+		instruction === 'call' &&
+		args[0] &&
+		stackAnalysisLine?.instruction === 'call' &&
+		stackAnalysisLine.resolvedCall
+	) {
+		const { parameters, returns } = stackAnalysisLine.resolvedCall.signature;
+		return {
+			kind: 'call',
+			instruction: `call ${args[0]}`,
+			stackEffect: {
+				inputs: parameters.map(parameter => `${parameter.name}: ${parameter.type}`),
+				outputs: returns,
+			},
+		};
+	}
+
+	const signatureLine =
+		parsedLine?.instruction === instruction
+			? parsedLine
+			: {
+					arguments:
+						instruction === 'storeBytes'
+							? [{ type: ArgumentType.LITERAL, value: Number.parseInt(args[0] ?? '', 10), isInteger: true }]
+							: args,
+				};
+	return {
+		kind: 'instruction',
+		instruction,
+		stackEffect: resolveInstructionStackEffect(spec, signatureLine) ?? sourceInstruction.spec.stack,
+	};
 }
 
 /**
@@ -10,16 +73,18 @@ interface StackSignatureLabels {
  * The tooltip uses the Forth-style `( inputs -- outputs )` convention from the
  * instruction documentation.
  */
-export function formatStackSignature(instruction: string, stackEffect: StackSignatureLabels): string {
+export function formatStackSignature({ instruction, stackEffect }: StackSignature): string {
 	return `${instruction} (${stackEffect.inputs.join(' ')} -- ${stackEffect.outputs.join(' ')})`;
 }
 
 /** Wraps between complete stack labels, keeping named parameter/type pairs together. */
-export function formatStackSignatureLines(
-	instruction: string,
-	stackEffect: StackSignatureLabels,
-	maxLength: number
-): string[] {
+export function formatStackSignatureLines({
+	signature: { instruction, stackEffect },
+	maxLength,
+}: {
+	signature: StackSignature;
+	maxLength: number;
+}): string[] {
 	const inputs = stackEffect.inputs.length
 		? stackEffect.inputs.map((input, index) => (index === 0 ? `(${input}` : input))
 		: ['('];
@@ -39,22 +104,4 @@ export function formatStackSignatureLines(
 	}
 	lines.push(line);
 	return lines;
-}
-
-/**
- * Returns the formatted stack signature for an instruction when stack metadata exists.
- * If a source line is supplied, dynamic stack effects are resolved against that
- * line; otherwise the static signature from the instruction spec is used.
- */
-export function getInstructionStackSignature(instruction: string, line?: unknown): string | undefined {
-	const spec = getInstructionSpec(instruction);
-
-	if (!spec?.stack) {
-		return undefined;
-	}
-
-	return formatStackSignature(
-		instruction,
-		line ? (resolveInstructionStackEffect(spec, line) ?? spec.stack) : spec.stack
-	);
 }
