@@ -910,5 +910,11 @@
 		"version": "8.3.1",
 		"benchmark": "digitClassifier.8f4e",
 		"emittedBytes": 9938
+	},
+	{
+		"commit": "ff984cbfe6e105420dd394a6221dbfdd71b273ff",
+		"version": "8.3.2",
+		"benchmark": "digitClassifier.8f4e",
+		"emittedBytes": 9938
 	}
 ]
