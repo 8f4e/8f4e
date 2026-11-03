@@ -60,17 +60,15 @@ describe('lazy plugin loader', () => {
 		expect((await editor.openMenu()).some(candidate => candidate.action === 'loadPluginsUsedByProject')).toBe(false);
 	});
 
-	it('loads after typing and pasting blocks', async () => {
+	it('loads after source changes and pasting blocks', async () => {
 		const typed = entry('view', 'typed');
 		const pasted = entry('view', 'pasted');
 		const editor = setup([typed.registration, pasted.registration], emptySource);
 		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
 		editor.events.dispatch('enterEditMode');
-		editor.store.set('codeBlockRendering.selectedCodeBlock', block);
-		editor.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
-		editor.events.dispatch('insertNewLine');
-		editor.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
-		editor.events.dispatch('insertText', { text: '; @typed' });
+		applyCodeBlockSourceEdits(editor.store, [{ codeBlock: block, code: ['module audio', '; @typed', 'moduleEnd'] }], {
+			affectsCompilation: true,
+		});
 		await vi.waitFor(() => expect(typed.plugin.setup).toHaveBeenCalledOnce());
 		editor.state.callbacks.readClipboardText = async () =>
 			JSON.stringify([

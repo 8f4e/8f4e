@@ -95,8 +95,8 @@ The editor applies the mode once when loading or replacing a project, before ann
 ready. Later source edits, configuration changes, navigation, and undo/redo do not change the active mode. Loading
 another project resolves its own declaration independently. Mode changes do not create edits or history entries.
 
-The host's `modeToggling` feature flag controls user mode-switching controls. Disabling it still allows the directive
-to choose the initial mode. `state.editorMode` alone determines whether source editing is allowed. Mode changes and
+The directive chooses initial mode independently of installed input plugins. Omitting the keyboard mode-switching
+plugin does not prevent the directive from selecting edit mode. `state.editorMode` alone determines whether source editing is allowed. Mode changes and
 project replacement preserve `codeLineSelection` and all other host feature flags. There is no host initial-mode
 option or editing feature flag.
 

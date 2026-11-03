@@ -77,7 +77,7 @@ describe('screenshot plugin', () => {
 		const test = setup(true, mode);
 		test.renderFrame.mockImplementation(() => {
 			expect(test.state.contextMenu.open).toBe(false);
-			expect(test.state.featureFlags.modeOverlay).toBe(false);
+			expect(test.state.featureFlags.canvasOverlays).toBe(false);
 			expect(test.state.featureFlags.offscreenBlockArrows).toBe(false);
 		});
 		await test.openMainMenu();
@@ -89,7 +89,7 @@ describe('screenshot plugin', () => {
 		expect(test.renderFrame).toHaveBeenCalledOnce();
 		expect(test.toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/png');
 		expect(test.renderFrame.mock.invocationCallOrder[0]).toBeLessThan(test.toBlob.mock.invocationCallOrder[0]);
-		await vi.waitFor(() => expect(test.state.featureFlags.modeOverlay).toBe(true));
+		await vi.waitFor(() => expect(test.state.featureFlags.canvasOverlays).toBe(true));
 		expect(test.writable.write).toHaveBeenCalledWith(test.blob);
 		expect(test.writable.close).toHaveBeenCalledOnce();
 		expect(test.state.featureFlags.offscreenBlockArrows).toBe(true);
@@ -129,7 +129,7 @@ describe('screenshot plugin', () => {
 		const test = setup();
 		Reflect.deleteProperty(test.document.defaultView, 'showSaveFilePicker');
 		test.takeScreenshot();
-		await vi.waitFor(() => expect(test.state.featureFlags.modeOverlay).toBe(true));
+		await vi.waitFor(() => expect(test.state.featureFlags.canvasOverlays).toBe(true));
 		expect(test.createObjectURL).toHaveBeenCalledWith(test.blob);
 		expect(test.document.createElement).toHaveBeenCalledWith('a');
 		expect(test.link.href).toBe('blob:screenshot');
@@ -154,7 +154,7 @@ describe('screenshot plugin', () => {
 		await vi.waitFor(() =>
 			expect(report).toHaveBeenCalledWith('Failed to export canvas screenshot:', expect.any(Error))
 		);
-		expect(test.state.featureFlags.modeOverlay).toBe(true);
+		expect(test.state.featureFlags.canvasOverlays).toBe(true);
 		expect(test.state.featureFlags.offscreenBlockArrows).toBe(false);
 	});
 
@@ -177,7 +177,7 @@ describe('screenshot plugin', () => {
 		first.takeScreenshot();
 		expect(second.renderFrame).not.toHaveBeenCalled();
 		expect(second.toBlob).not.toHaveBeenCalled();
-		expect(second.state.featureFlags.modeOverlay).toBe(true);
+		expect(second.state.featureFlags.canvasOverlays).toBe(true);
 		await vi.waitFor(() => expect(first.writable.close).toHaveBeenCalledOnce());
 		first.disposePlugin();
 		second.takeScreenshot();

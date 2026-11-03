@@ -50,7 +50,6 @@ const mocks = vi.hoisted(() => {
 		drawCodeBlocks: vi.fn(),
 		drawContextMenu: vi.fn(),
 		drawDialog: vi.fn(),
-		drawModeOverlay: vi.fn(),
 	};
 });
 
@@ -74,10 +73,6 @@ vi.mock('./drawers/dialog', () => ({
 	default: mocks.drawDialog,
 }));
 
-vi.mock('./drawers/modeOverlay', () => ({
-	default: mocks.drawModeOverlay,
-}));
-
 function createFontAtlas(characterWidth = 8, characterHeight = 16) {
 	return {
 		image: {
@@ -97,7 +92,7 @@ describe('web-ui init', () => {
 	});
 	afterEach(() => vi.unstubAllGlobals());
 
-	it('renders one frame with the current state on demand', async () => {
+	it('renders viewport overlays after menus and before dialogs with the current frame state', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = {
@@ -110,20 +105,37 @@ describe('web-ui init', () => {
 			float64: new Float64Array(0),
 		};
 
+		const drawers = createEditorDrawerRegistry();
+		const overlay = vi.fn();
+		const removeOverlay = drawers.registerCanvasOverlay(overlay);
 		const view = await init(
 			state,
 			{} as HTMLCanvasElement,
 			memoryViews,
 			createFontAtlas(),
-			resolvePalette(state.editorConfig.color)
+			resolvePalette(state.editorConfig.color),
+			{ drawers }
 		);
 
+		overlay.mockClear();
+		mocks.drawContextMenu.mockClear();
+		mocks.drawDialog.mockClear();
 		view.renderFrame();
 
 		const frameState = mocks.drawCodeBlocks.mock.calls.at(-1)?.[1];
 
 		expect(frameState).toBe(state);
-		expect(mocks.drawModeOverlay).toHaveBeenCalledWith(expect.anything(), frameState);
+		expect(overlay).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
+		expect(mocks.drawContextMenu.mock.invocationCallOrder[0]).toBeLessThan(overlay.mock.invocationCallOrder[0]);
+		expect(overlay.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawDialog.mock.invocationCallOrder[0]);
+		state.featureFlags.canvasOverlays = false;
+		view.renderFrame();
+		expect(overlay).toHaveBeenCalledOnce();
+		state.featureFlags.canvasOverlays = true;
+		removeOverlay();
+		view.renderFrame();
+		expect(overlay).toHaveBeenCalledOnce();
+		view.destroy();
 	});
 
 	it('draws registered render layers above sprites in registration order', async () => {

@@ -19,7 +19,6 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 	canvas.height = Math.ceil(tokens.length / 4) * 192;
 	const state = createMockStateWithColors();
 	state.editorConfig.font = 'ibmvga8x16';
-	state.featureFlags.modeOverlay = false;
 	state.editorConfig.color = {
 		canvas: '#0b1020',
 		surface: '#111b2e',

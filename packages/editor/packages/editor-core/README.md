@@ -2,7 +2,7 @@
 
 This package is the glue that connects the platform-agnostic editor state machine from
 `@8f4e/editor-state` with browser APIs and the `@8f4e/web-ui` renderer. It wires browser events
-(keyboard, mouse, and wheel) into the state machine, then hands the resulting state object
+(mouse and wheel) into the state machine, then hands the resulting state object
 that describes the full application to a UI renderer that treats state as immutable input and
 derives the UI purely from it. The renderer is intended to be pluggable so other platform
 renderers can replace it.
@@ -10,7 +10,7 @@ renderers can replace it.
 ## Responsibilities
 
 - Initialize the editor-state store and event dispatcher for the web runtime.
-- Make the canvas focusable and wire its keyboard, mouse, and wheel input into internal events, so each editor only
+- Make the canvas focusable and wire its mouse and wheel input into internal events, so each editor only
   handles input directed at its own canvas.
 - Translate DOM input data into internal event payloads (coordinates, movement deltas, button state, canvas size).
 - Initialize the UI renderer with state and memory views, and forward resize events.
@@ -27,8 +27,9 @@ resources and applies any canvas resize that happened while they were released.
 `renderFrame()` immediately renders the current state, including while the animation loop is paused.
 
 The editor supports view and edit modes. Selected code blocks have a continuously animated outline in both modes.
-Command+Arrow (or Control+Arrow) navigates between blocks with smooth viewport movement. Use `e` to enter edit mode
-and Escape to return to view mode when `modeToggling` is enabled.
+Keyboard navigation, text editing, and mode switching are supplied by independent plugins composed by the host.
+Core retains project editing APIs, history, generic mode actions, and shared text/pointer geometry. The editing plugin
+owns edit-mode caret movement and drawing. Core installs no keyboard listeners.
 
 ## Plugins
 
@@ -125,14 +126,23 @@ Subscribe and dispose explicitly. Unsubscribe before disposing a contribution so
 Contribution changes preserve source, selection, project revision, and compiler input revision. Hidden project slices
 use their requests when opened. The lazy loader only imports and installs plugins; it has no layout refresh policy.
 
+Register foreground drawings with `drawers.registerCodeBlockForegroundDrawer(drawer)`. They run above content and
+shapes, before the selection outline and diagnostics, in block coordinates. The editing plugin uses this stage for
+its caret; core owns no caret glyph or keyboard direction policy.
+
 Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
 `{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
-the host applies viewport translation and visibility checks. Drawers run in registration order after error messages
-and before built-in controls. Register overlays with `drawers.registerCodeBlockOverlay(drawer)` to draw after all
-built-in block widgets, using the same context and coordinates. Each slot preserves registration order. Use the
-drawing surface's text/fill primitives and shared numeric palette indices.
+the host applies viewport translation and visibility checks. Drawers run in registration order after foreground
+drawings, the selected-block outline, and diagnostics. Register overlays with
+`drawers.registerCodeBlockOverlay(drawer)` to draw after ordinary block drawers, using the same context and coordinates.
+Each slot preserves registration order. Use the drawing surface's text/fill primitives and shared numeric palette indices.
 `@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
 disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
+
+Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The drawer receives
+`{ draw, state, memoryViews }` after menus and before dialogs, with coordinates relative to the viewport's top-left.
+The renderer checks `featureFlags.canvasOverlays` before invoking this stage. Keyboard hints live in their
+mode-switching plugin; screenshot capture hides canvas overlays through this generic flag.
 
 Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`
 once the renderer is ready and returns `{ draw, destroy, loadPalette?, releaseMemory? }`. `draw` receives

@@ -13,7 +13,7 @@ import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/eff
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from '../code-blocks/layout/registry';
-import codeEditing from '../code-editing/effect';
+import { applyCodeBlockSourceEdits } from '../code-blocks/sourceEdits';
 import projectImport from '../project-loading/effect';
 import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
 
@@ -66,23 +66,12 @@ describe('project revision', () => {
 		expect(state.projectChange.revision).toBe(0);
 	});
 
-	it('advances for typing, newline insertion, and deletion', () => {
-		codeEditing(store, events);
-		dispatch('insertText', { text: '2' });
+	it('announces changed source batches and ignores identical source', () => {
+		const code = ['module main', 'push 12', 'drop', 'moduleEnd'];
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }], { affectsCompilation: true });
 		expect(state.projectChange.revision).toBe(1);
-		dispatch('deleteBackward');
-		expect(state.projectChange.revision).toBe(2);
-		dispatch('insertNewLine');
-		expect(state.projectChange.revision).toBe(3);
-	});
-
-	it('ignores empty insertion and backspace at the start of the block', () => {
-		codeEditing(store, events);
-		block.cursor.row = 0;
-		block.cursor.col = 0;
-		dispatch('deleteBackward');
-		dispatch('insertText', { text: '' });
-		expect(state.projectChange.revision).toBe(0);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
+		expect(state.projectChange.revision).toBe(1);
 	});
 
 	it('ignores mouse selection, line selection, caret movement, and block navigation', () => {
@@ -94,14 +83,13 @@ describe('project revision', () => {
 		);
 		codeBlockDragger(store, events);
 		codeBlockNavigation(store, events);
-		codeEditing(store, events);
 		const target = createMockCodeBlock({ code: ['module target', 'moduleEnd'], x: 400, blockType: 'module' });
 		state.codeBlockRendering.currentProject.blocks.push(target);
 		dispatch('mousedown', { x: 32, y: 8 });
 		dispatch('mouseup');
 		dispatch('mousedown', { x: 32, y: 24 });
 		dispatch('mouseup');
-		dispatch('moveCaret', { direction: 'down' });
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		dispatch('navigateCodeBlock', { direction: 'right' });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(target);
 		expect(state.projectChange.revision).toBe(0);
@@ -165,11 +153,12 @@ describe('project revision', () => {
 		const child = createMockCodeBlock({ code: ['module child', 'moduleEnd'] });
 		block.childProject = { entries: [], path: 'Audio', blocks: [child] };
 		projectGroupNavigation(store, events);
-		codeEditing(store, events);
 		dispatch('openProjectGroup', { codeBlock: block });
 		store.set('codeBlockRendering.selectedCodeBlock', child);
 		expect(state.projectChange.revision).toBe(0);
-		dispatch('insertText', { text: ';' });
+		applyCodeBlockSourceEdits(store, [{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }], {
+			affectsCompilation: true,
+		});
 		expect(state.projectChange.revision).toBe(1);
 		dispatch('goToParentProjectGroup');
 		expect(state.projectChange.revision).toBe(1);

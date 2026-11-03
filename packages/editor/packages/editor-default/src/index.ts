@@ -28,7 +28,7 @@ const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
 export type DefaultEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
 
-export function createDefaultEditorPlugins(options: {
+export async function createDefaultEditorPlugins(options: {
 	canvas: HTMLCanvasElement;
 	storage: Storage;
 	storageKey: string;
@@ -37,14 +37,17 @@ export function createDefaultEditorPlugins(options: {
 	onInitialProjectLoadError?: (error: unknown) => void;
 	renderFrame: () => void;
 	showOpenMenuItem: boolean;
+	includeKeyboardModeSwitching?: boolean;
 	getMemory: () => WebAssembly.Memory | null;
 	writeMemory: (address: number, value: number, isInteger: boolean) => void;
 	getCodeBuffer: () => Uint8Array;
 	getAssertionSites: ReturnType<typeof createCompilerPlugin>['getAssertionSites'];
 	sharedAudioContext?: AudioContext;
-}): NonNullable<EditorOptions['plugins']> {
+}): Promise<NonNullable<EditorOptions['plugins']>> {
 	const fileSession = createProjectFileSession();
-	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+	const browserWindow = options.canvas.ownerDocument.defaultView!;
+	const keyboardPlugins = await createKeyboardPlugins(options.canvas, options.includeKeyboardModeSwitching);
+	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
 		fileSession.plugin,
@@ -60,6 +63,7 @@ export function createDefaultEditorPlugins(options: {
 			restoreOnStartup: !options.initialProjectUrl,
 		}),
 		createExampleModulesPlugin({ sources: exampleModuleSources }),
+		...keyboardPlugins,
 		codeRenderingPlugin,
 		connectorsPlugin,
 		assertionMarkersPlugin,
@@ -107,6 +111,8 @@ export interface DefaultEditorMountOptions {
 	onInitialProjectLoadError?: (error: unknown) => void;
 	/** Show Open From Disk in the project-open plugin menu. */
 	showOpenMenuItem?: boolean;
+	/** Include the keyboard mode-switching plugin and its hint. Defaults to true. */
+	includeKeyboardModeSwitching?: boolean;
 	storage?: Storage;
 	storageNamespace?: string;
 }
@@ -122,6 +128,7 @@ export async function mountDefaultEditor(
 		onInitialProjectLoaded,
 		onInitialProjectLoadError,
 		showOpenMenuItem = true,
+		includeKeyboardModeSwitching,
 		storage = localStorage,
 		storageNamespace = DEFAULT_STORAGE_NAMESPACE,
 	}: DefaultEditorMountOptions = {}
@@ -132,7 +139,7 @@ export async function mountDefaultEditor(
 		plugins: [
 			compiler.plugin,
 			...(plugins ??
-				createDefaultEditorPlugins({
+				(await createDefaultEditorPlugins({
 					canvas,
 					storage,
 					storageKey: `project_${storageNamespace}`,
@@ -141,12 +148,13 @@ export async function mountDefaultEditor(
 					onInitialProjectLoadError,
 					renderFrame: () => editor.renderFrame(),
 					showOpenMenuItem,
+					includeKeyboardModeSwitching,
 					getMemory: compiler.getMemory,
 					writeMemory: compiler.writeMemory,
 					getCodeBuffer: compiler.getCodeBuffer,
 					getAssertionSites: compiler.getAssertionSites,
 					sharedAudioContext,
-				})),
+				}))),
 		],
 		captureWheel,
 		featureFlags,
@@ -154,4 +162,26 @@ export async function mountDefaultEditor(
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
+}
+
+async function createKeyboardPlugins(
+	canvas: HTMLCanvasElement,
+	includeKeyboardModeSwitching = true
+): Promise<NonNullable<EditorOptions['plugins']>> {
+	if (canvas.ownerDocument.defaultView!.matchMedia('(pointer: coarse)').matches) return [];
+	return Promise.all([
+		...(includeKeyboardModeSwitching
+			? [
+					import('@8f4e/editor-plugin-keyboard-mode-switching').then(({ createKeyboardModeSwitchingPlugin }) =>
+						createKeyboardModeSwitchingPlugin({ inputTarget: canvas })
+					),
+				]
+			: []),
+		import('@8f4e/editor-plugin-keyboard-navigation').then(({ createKeyboardNavigationPlugin }) =>
+			createKeyboardNavigationPlugin({ inputTarget: canvas })
+		),
+		import('@8f4e/editor-plugin-keyboard-editing').then(({ createKeyboardEditingPlugin }) =>
+			createKeyboardEditingPlugin({ inputTarget: canvas })
+		),
+	]);
 }

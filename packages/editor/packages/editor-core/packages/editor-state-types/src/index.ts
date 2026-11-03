@@ -5,6 +5,7 @@
 
 import type { MemoryAction as CompilerMemoryAction, ProjectObjectModel } from '@8f4e/language-spec';
 import type { AssertionResult } from './features/assertions/types';
+import type { NavigateCodeBlockEvent } from './features/code-blocks/navigation';
 import type {
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
@@ -15,7 +16,6 @@ import type {
 	ProjectLevel,
 	TypedValueKind,
 } from './features/code-blocks/types';
-import type { InsertTextEvent, MoveCaretEvent, NavigateCodeBlockEvent } from './features/code-editing/types';
 import type { DialogButton, DialogButtonState, DialogContent, DialogState } from './features/dialog/types';
 import type {
 	EditorConfig,
@@ -33,7 +33,6 @@ import type {
 	EventDispatcher,
 	EventSubscriptionOptions,
 	GridCoordinates,
-	InternalKeyboardEvent,
 	InternalMouseEvent,
 	Position,
 	Size,
@@ -48,7 +47,7 @@ import type {
 // Re-export dialog types
 // Re-export global-editor-directives types
 // Re-export logger types
-// Re-export code-editing types
+// Re-export navigation types
 // Re-export project types
 export type {
 	AssertionResult,
@@ -69,15 +68,12 @@ export type {
 	EventDispatcher,
 	EventSubscriptionOptions,
 	GridCoordinates,
-	InsertTextEvent,
-	InternalKeyboardEvent,
 	InternalMouseEvent,
 	JSONSchemaLike,
 	LogMessage,
 	MemoryIdentifier,
 	MenuGenerator,
 	MenuStackEntry,
-	MoveCaretEvent,
 	NavigateCodeBlockEvent,
 	ParsedDirectiveRecord,
 	Position,
@@ -106,11 +102,8 @@ export interface FeatureFlags {
 	/** Enable/disable panning/scrolling of the editor viewport */
 	viewportDragging: boolean;
 
-	/** Enable/disable keyboard switching into and out of edit mode. */
-	modeToggling: boolean;
-
-	/** Enable/disable the mode hint overlay at the top of the viewport */
-	modeOverlay: boolean;
+	/** Enable/disable plugin canvas overlays */
+	canvasOverlays: boolean;
 
 	/** Enable/disable history tracking for undo/redo functionality */
 	historyTracking?: boolean;
@@ -229,9 +222,9 @@ export interface State {
 export type * from './features/code-blocks/buildDisplayModel';
 export type * from './features/code-blocks/features/directives/types';
 export type * from './features/code-blocks/layout';
+export type * from './features/code-blocks/navigation';
 export type * from './features/code-blocks/types';
 export type * from './features/code-blocks/utils/types';
-export type * from './features/code-editing/types';
 export type * from './features/editor-config/types';
 export type {
 	EditorConfig,

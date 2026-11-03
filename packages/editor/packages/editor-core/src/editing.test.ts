@@ -1,4 +1,5 @@
 import initState, {
+	applyCodeBlockSourceEdits,
 	createEditorEditingHandle,
 	EMPTY_DEFAULT_PROJECT,
 	getEditorBlockId,
@@ -316,7 +317,11 @@ describe('public editor editing handle', () => {
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 1;
 		block.cursor.col = block.code[1].length;
-		events.dispatch('insertText', { text: '9' });
+		applyCodeBlockSourceEdits(
+			store,
+			[{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line}9` : line)) }],
+			{ affectsCompilation: true }
+		);
 		expect(() =>
 			editing.applyEdits({
 				expectedRevision: revision,
@@ -468,15 +473,19 @@ describe('public editor editing handle', () => {
 		expect(() => ordinary.navigation.openGroup(getEditorBlockId(module))).toThrow('not a project group');
 	});
 
-	it('keeps pending typing and an API batch as separate undo steps without delayed duplicates', async () => {
+	it('keeps pending source edits and an API batch as separate undo steps without delayed duplicates', async () => {
 		vi.useFakeTimers();
 		try {
-			const { editing, state, store, events } = setup();
+			const { editing, state, store } = setup();
 			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'original')!;
 			store.set('codeBlockRendering.selectedCodeBlock', block);
 			block.cursor.row = 1;
 			block.cursor.col = block.code[1].length;
-			events.dispatch('insertText', { text: '2' });
+			applyCodeBlockSourceEdits(
+				store,
+				[{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line}2` : line)) }],
+				{ affectsCompilation: true }
+			);
 			editing.applyEdits({
 				expectedRevision: editing.getRevision(),
 				edits: [{ type: 'update', blockId: getEditorBlockId(block), code: [...block.code] }],

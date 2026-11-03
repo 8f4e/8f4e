@@ -15,8 +15,7 @@ a key is held and `0` after the last key is released. Releasing the latest key r
 key that remains held. Unmapped keys use usage `0`. Blur and disposal clear the pressed state.
 
 Targets are resolved through the public memory resolver on each write, including exposed project-memory aliases.
-Held-key tracking is private to each installation. The plugin owns its configuration schema and listeners; the core
-still handles keyboard input for normal editing and navigation.
+Held-key tracking is private to each installation. The plugin owns its configuration schema and listeners; the separate keyboard-editing, keyboard-navigation, and keyboard-mode-switching plugins handle ordinary editor keys.
 
 Verify with `npx nx run @8f4e/editor-plugin-keyboard-memory:build|test|typecheck`.
 

@@ -46,6 +46,10 @@ describe('drawModules', () => {
 			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
 			calls.push('content');
 		});
+		const unregisterForeground = drawers.registerCodeBlockForegroundDrawer(context => {
+			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
+			calls.push('foreground');
+		});
 		const first = vi.fn(context => {
 			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
 			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
@@ -59,12 +63,13 @@ describe('drawModules', () => {
 			calls.push('overlay');
 		});
 		drawModules(engine, state, memoryViews, drawers);
-		expect(calls).toEqual(['content', 'first', 'second', 'overlay']);
+		expect(calls).toEqual(['content', 'foreground', 'first', 'second', 'overlay']);
 		unregisterContent();
+		unregisterForeground();
 		unregister();
 		unregisterOverlay();
 		drawModules(engine, state, memoryViews, drawers);
-		expect(calls).toEqual(['content', 'first', 'second', 'overlay', 'second']);
+		expect(calls).toEqual(['content', 'foreground', 'first', 'second', 'overlay', 'second']);
 		expect(first).toHaveBeenCalledOnce();
 	});
 
@@ -84,7 +89,7 @@ describe('drawModules', () => {
 		});
 		const engine = createMockEngine();
 		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
-		const outlineCalls = () => vi.mocked(engine.drawText).mock.calls.filter(call => call[2] !== '+' && call[2] !== '_');
+		const outlineCalls = () => vi.mocked(engine.drawText).mock.calls.filter(call => call[2] !== '+');
 
 		drawModules(engine, state, createMemoryViews());
 		const initialOutline = outlineCalls();
@@ -107,7 +112,7 @@ describe('drawModules', () => {
 		expect(outlineCalls()).toHaveLength(0);
 	});
 
-	it('draws content above highlights and below the cursor and diagnostics', () => {
+	it('draws content above highlights and below foreground drawings and diagnostics', () => {
 		const block = createMockCodeBlock({
 			width: 96,
 			height: 64,
@@ -125,10 +130,11 @@ describe('drawModules', () => {
 		const drawers = createEditorDrawerRegistry();
 		const content = vi.fn(() => engine.drawText(8, 0, 'Content', PALETTE_INDICES.inkBase));
 		drawers.registerCodeBlockContentDrawer(content);
+		drawers.registerCodeBlockForegroundDrawer(() => engine.drawText(8, 0, 'Foreground', PALETTE_INDICES.inkBase));
 		drawModules(engine, state, createMemoryViews(), drawers);
 		const text = vi.mocked(engine.drawText).mock.calls.map(([, , text]) => text);
-		expect(text.indexOf('Content')).toBeLessThan(text.indexOf('_'));
-		expect(text.indexOf('_')).toBeLessThan(text.findIndex(text => text.includes('Diagnostic')));
+		expect(text.indexOf('Content')).toBeLessThan(text.indexOf('Foreground'));
+		expect(text.indexOf('Foreground')).toBeLessThan(text.findIndex(text => text.includes('Diagnostic')));
 		expect(vi.mocked(engine.drawFill).mock.invocationCallOrder[1]).toBeLessThan(content.mock.invocationCallOrder[0]);
 	});
 

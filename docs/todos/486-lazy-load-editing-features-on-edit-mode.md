@@ -12,11 +12,12 @@ completed: null
 
 ## Problem Description
 
-Editor-state initialization eagerly imports code editing, edit history, and block-manipulation effects. Runtime feature
-flags can disable their behavior, but do not remove their download cost for editors initialized in view mode.
+Editor-state initialization still eagerly imports edit history and block-manipulation effects. Runtime feature flags
+can disable their behavior, but do not remove their download cost for editors initialized in view mode. Keyboard editing
+now lives in a plugin and loads its text-editing implementation on first entry into edit mode.
 
-This is a larger structural opportunity for viewer use cases. The current product homepage and gallery initialize their
-editors in edit mode, so they would still need these features immediately under their existing behavior.
+This is a larger structural opportunity for viewer use cases. Projects can select edit mode at startup through
+`; @mode edit`; those projects need authoring behavior immediately.
 
 ## Proposed Solution
 
@@ -48,10 +49,13 @@ that already work in view mode, such as project controls, available according to
 
 - `packages/editor/packages/editor-core/packages/editor-state/src/index.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/editor-mode/`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-editing/`
+- `packages/editor/plugins/keyboard-editing/`
+- `packages/editor/packages/editor-core/packages/editor-state/src/features/text-geometry/`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/edit-history/`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/`
-- `packages/editor/packages/editor-core/src/events/keyboardEvents.ts` and editor initialization
+- `packages/editor/plugins/keyboard-navigation/`
+- `packages/editor/plugins/keyboard-mode-switching/`
+- Default/minimal browser composition
 
 ## Risks & Considerations
 
@@ -77,6 +81,10 @@ testing helpers. Changing the product website's initial mode is a separate produ
 - [Editor-state initialization](../../packages/editor/packages/editor-core/packages/editor-state/src/index.ts)
 
 ## Notes
+
+Keyboard input is now split into independent navigation, editing, and mode-switching plugins. The editing bridge
+buffers early keys while its implementation loads. Hosts omit all three on coarse-pointer browsers. This TODO remains
+open for the other authoring-only dependencies and production measurements.
 
 Identified through source inspection on 2026-09-06. Prioritize only after measuring the authoring-only dependency set;
 runtime-disabled code and code that is actually excluded from the initial bundle are different outcomes.

@@ -15,8 +15,7 @@ All flags default to `true` in the core and default editor:
 - `moduleDragging` — Allow repositioning blocks while in edit mode.
 - `codeLineSelection` — Allow selecting source lines and moving the caret, independently of editor mode.
 - `viewportDragging` — Allow panning the viewport.
-- `modeToggling` — Enable user controls for switching between edit and view modes.
-- `modeOverlay` — Show the mode hint at the top of the viewport.
+- `canvasOverlays` — Show plugin canvas overlays, such as the keyboard mode hint.
 - `historyTracking` — Track source changes for undo and redo.
 - `offscreenBlockArrows` — Show arrows pointing toward blocks outside the viewport.
 - `projectCreation` — Show the New Project action while in edit mode.
@@ -41,7 +40,7 @@ The project can still declare `; @mode edit` in one of its blocks. That enables 
 reenabling dragging or line selection. The editor applies the declaration only when loading the project; later
 source edits and undo/redo preserve the active mode.
 
-## Disable User Mode Switching
+## Omit Keyboard Mode Switching
 
 Declare the desired starting mode in the project:
 
@@ -51,13 +50,13 @@ note editor
 noteEnd
 ```
 
-Then disable the host's mode-switching controls:
+Then omit the keyboard mode-switching plugin from the browser composition:
 
 ```typescript
 const editor = await mountDefaultEditor(canvas, {
   initialProjectUrl: '/projects/presentation.8f4e',
+  includeKeyboardModeSwitching: false,
   featureFlags: {
-    modeToggling: false,
     contextMenu: false,
     moduleDragging: false,
     codeLineSelection: false,
@@ -65,13 +64,14 @@ const editor = await mountDefaultEditor(canvas, {
 });
 ```
 
-`modeToggling` controls user switching controls; it does not override the project's declared mode or prevent trusted
-plugins from changing the mode programmatically. Leave `viewportDragging` enabled when readers should be able to pan.
+`includeKeyboardModeSwitching` controls whether default/minimal import and install that plugin and its hint. It is
+a mounting option, with no state flag or runtime guard in the plugin. The source declaration still chooses initial
+mode, and trusted plugins can change the mode programmatically. Leave `viewportDragging` enabled when readers should be able to pan.
 
 ## Runtime State and Types
 
 Feature flags remain available in `state.featureFlags`. Trusted plugins can update them through their state manager.
-For example, the screenshot plugin temporarily disables `modeOverlay` and `offscreenBlockArrows` while capturing a
+For example, the screenshot plugin temporarily disables `canvasOverlays` and `offscreenBlockArrows` while capturing a
 frame, then restores their previous values. Mode changes do not overwrite those preferences.
 
 Use `FeatureFlagsConfig` for a typed partial configuration:

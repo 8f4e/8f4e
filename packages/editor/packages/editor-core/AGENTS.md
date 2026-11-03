@@ -63,7 +63,7 @@
 - Editor `@group` behavior belongs to `editor-plugin-grouping`, including membership, dragging policy, clipboard
   collision handling, and all group actions/menus. Keep only generic drag-target and paste-source events in core;
   nested language-level project groups, navigation, and memory scopes remain core-owned.
-- Create drawer registrations with `createEditorDrawerRegistry`; it covers both code-block drawing and canvas-wide
+- Create drawer registrations with `createEditorDrawerRegistry`; it covers code-block drawing, viewport overlays, and canvas-wide
   GPU layers. Keep renderer invocation on the internal `EditorDrawerHost` interface.
 - Input/output connectors and the complete GPU line renderer belong to `editor-plugin-connectors`. Keep connector
   fields and address indexes out of core. Expose GPU passes through `drawers.registerRenderLayer`; the renderer owns
@@ -125,3 +125,14 @@
   upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
   Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
+
+- Ordinary keyboard input belongs to keyboard-navigation, keyboard-editing, and keyboard-mode-switching plugins.
+  Keep generic history, project editing, mode actions, and text/pointer geometry in core. Text geometry lives under
+  `features/text-geometry`; no core text-insertion actions or compatibility event aliases remain.
+
+- Keyboard hints belong to keyboard-mode-switching. Expose only generic canvas overlay drawing and the
+  `canvasOverlays` visibility flag in core; screenshots suppress this layer without knowing its contributors.
+
+- Keyboard-editing owns edit-mode caret movement, mutation caret adjustments, and its foreground drawer. Core keeps
+  source-position state and bounds/tab geometry; do not restore direction-based caret movement or a built-in glyph.
+- `registerCodeBlockForegroundDrawer` runs above content/shapes and below outlines/diagnostics. Keep this stage generic.

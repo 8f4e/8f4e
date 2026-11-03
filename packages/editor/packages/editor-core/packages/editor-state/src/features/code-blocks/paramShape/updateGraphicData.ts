@@ -1,5 +1,5 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import gapCalculator from '../../code-editing/gapCalculator';
+import gapCalculator from '../../text-geometry/gapCalculator';
 import type { BlockLayoutDraft } from '../layout/types';
 import { type CompiledFunction, getCompiledFunctionForCodeBlock } from '../utils/getCompiledFunctionForCodeBlock';
 

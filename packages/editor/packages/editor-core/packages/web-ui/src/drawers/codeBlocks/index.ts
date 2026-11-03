@@ -67,14 +67,7 @@ export default function drawModules(
 
 			drawShapeDeclarations(engine, codeBlock);
 
-			if (state.editorMode === 'edit' && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
-				engine.drawText(
-					codeBlock.cursor.x,
-					codeBlock.cursor.y,
-					'_',
-					codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase
-				);
-			}
+			drawers?.drawCodeBlockForeground({ draw: engine, state, codeBlock, memoryViews });
 
 			if (state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				drawSelectedOutline(engine, state, codeBlock.width, codeBlock.height);

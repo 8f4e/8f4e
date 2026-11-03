@@ -9,7 +9,7 @@
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, line-number drawing, and private
   prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
-  `registerCodeBlockContentDrawer` before the cursor and diagnostics and owns generic sprite-cell drawing primitives.
+  `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
 - Keep `@8f4e/editor-palette` external in bundled editor libraries so the final composition can share one palette module.
 - External lists match exact import paths; include used dependency subpaths such as `glugglugglug/utils` explicitly.
@@ -131,3 +131,7 @@
   upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
   Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
+
+- Keyboard navigation, text editing/history shortcuts, and mode switching are independent input plugins. Both hosts
+  import their factories only for non-coarse primary pointers. Editing loads its implementation on edit mode and
+  owns pending input replay; test real plugin combinations in editor-default, never in sibling-plugin tests.

@@ -30,7 +30,14 @@
   uniform buffer (up to 256 entries); the sprite atlas contains color-independent R8 binary visibility masks.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, line-number drawing, and private
   prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
-  `registerCodeBlockContentDrawer` before the cursor and diagnostics and owns generic sprite-cell drawing primitives.
+  `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
+- Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.
+  Default/minimal import their factories only when `(pointer: coarse)` does not match at mount time. Editing keeps
+  a small input bridge and loads text editing on first edit mode, buffering input during the import. Core retains
+  history, project editing APIs, generic mode/navigation actions, and shared text/pointer geometry. The mode-switching
+  plugin owns its hint through the generic canvas-overlay hook; `canvasOverlays` controls that drawing stage. The editing plugin owns caret movement and foreground drawing;
+  navigation handles view-mode line selection and block navigation. `includeKeyboardModeSwitching: false` omits
+  mode switching from default/minimal; its presence controls availability without a core feature flag.
 - Rendering plugins: web-ui owns the procedural background and its font-specific dot settings under `src/plugins/`.
   `editor-plugin-connectors` owns input/output widgets, wire lookup, and the complete line renderer. Web-ui provides
   generic render-layer registration, palette updates, memory release, and disposal.

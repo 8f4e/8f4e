@@ -1,7 +1,7 @@
 import type { Direction, EventDispatcher, NavigateCodeBlockEvent, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import gapCalculator from '../../../code-editing/gapCalculator';
-import reverseGapCalculator from '../../../code-editing/reverseGapCalculator';
+import gapCalculator from '../../../text-geometry/gapCalculator';
+import reverseGapCalculator from '../../../text-geometry/reverseGapCalculator';
 import animateViewport from '../../../viewport/animateViewport';
 import centerViewportOnCodeBlock from '../../../viewport/centerViewportOnCodeBlock';
 import centerViewportOnCodeBlockCursor from '../../../viewport/centerViewportOnCodeBlockCursor';

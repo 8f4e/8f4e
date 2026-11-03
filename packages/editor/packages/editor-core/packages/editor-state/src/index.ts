@@ -17,7 +17,6 @@ import viewportDirectiveEffect from './features/code-blocks/features/directives/
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './features/code-blocks/layout/registry';
-import codeEditing from './features/code-editing/effect';
 import color from './features/color/effect';
 import dialog from './features/dialog/effect';
 import historyTracking from './features/edit-history/effect';
@@ -105,7 +104,6 @@ export default function init(
 	registerEffect(codeBlockRendering(store, events, directives.definitions, layout));
 	registerEffect(viewportDirectiveEffect(store, events));
 	registerEffect(entryOutlines(store));
-	registerEffect(codeEditing(store, events));
 	registerEffect(projectOperations(store, events));
 	registerEffect(historyTracking(store, events));
 
@@ -159,13 +157,20 @@ export {
 export { parseBlockDirectives } from './features/code-blocks/utils/parseBlockDirectives';
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
-export { default as gapCalculator } from './features/code-editing/gapCalculator';
-export { getTabAdvance, getTabStopsByLine, getVisualLineWidth } from './features/code-editing/tabLayout';
 export { error as logError, log as logMessage } from './features/logger/logger';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
 export { publishProjectChange } from './features/project-changes';
 // Export EMPTY_DEFAULT_PROJECT as a value
 export { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
+export { clampSourcePosition } from './features/text-geometry/clampSourcePosition';
+export { default as gapCalculator } from './features/text-geometry/gapCalculator';
+export {
+	getRawIndexForVisualColumn,
+	getTabAdvance,
+	getTabStopsByLine,
+	getVisualColumnForRawIndex,
+	getVisualLineWidth,
+} from './features/text-geometry/tabLayout';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
 export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';

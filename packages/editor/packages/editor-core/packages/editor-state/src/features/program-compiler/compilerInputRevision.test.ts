@@ -13,7 +13,7 @@ import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/eff
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from '../code-blocks/layout/registry';
-import codeEditing from '../code-editing/effect';
+import { applyCodeBlockSourceEdits } from '../code-blocks/sourceEdits';
 import historyTracking from '../edit-history/effect';
 import { createSchemaEditorConfigValidator } from '../editor-config/schemaValidator';
 import projectLoading from '../project-loading/effect';
@@ -72,38 +72,15 @@ describe('compiler input revision', () => {
 		expect(state.compilerInputRevision).toBe(0);
 	});
 
-	it('advances for typing, newline insertion, and deletion, after the source update', () => {
-		codeEditing(store, events);
+	it('announces changed source batches and ignores identical source', () => {
 		const sources: string[][] = [];
 		store.subscribe('compilerInputRevision', () => sources.push([...block.code]));
-
-		dispatch('insertText', { text: '2' });
+		const code = ['module main', 'push 12', 'drop', 'moduleEnd'];
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }], { affectsCompilation: true });
 		expect(state.compilerInputRevision).toBe(1);
-		expect(sources[0][1]).toBe('push 12');
-		dispatch('deleteBackward');
-		expect(state.compilerInputRevision).toBe(2);
-		expect(sources[1][1]).toBe('push 1');
-		dispatch('insertNewLine');
-		expect(state.compilerInputRevision).toBe(3);
-		expect(sources[2]).toHaveLength(5);
-	});
-
-	it('ignores empty insertion and backspace at the start of the block', () => {
-		codeEditing(store, events);
-		block.cursor.row = 0;
-		block.cursor.col = 0;
-		dispatch('deleteBackward');
-		dispatch('insertText', { text: '' });
-		expect(state.compilerInputRevision).toBe(0);
-	});
-
-	it('ignores editing actions while editing is disabled', () => {
-		codeEditing(store, events);
-		state.editorMode = 'view';
-		dispatch('insertText', { text: '2' });
-		dispatch('insertNewLine');
-		dispatch('deleteBackward');
-		expect(state.compilerInputRevision).toBe(0);
+		expect(sources).toEqual([code]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
+		expect(state.compilerInputRevision).toBe(1);
 	});
 
 	it('ignores mouse selection, line selection, caret movement, and block navigation', () => {
@@ -115,7 +92,6 @@ describe('compiler input revision', () => {
 		);
 		codeBlockDragger(store, events);
 		codeBlockNavigation(store, events);
-		codeEditing(store, events);
 		const target = createMockCodeBlock({ code: ['module target', 'moduleEnd'], x: 400, blockType: 'module' });
 		state.codeBlockRendering.currentProject.blocks.push(target);
 		dispatch('mousedown', { x: 32, y: 8 });
@@ -123,13 +99,15 @@ describe('compiler input revision', () => {
 		dispatch('mousedown', { x: 32, y: 24 });
 		dispatch('mouseup');
 		expect(block.cursor.row).toBe(1);
-		dispatch('moveCaret', { direction: 'down' });
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		dispatch('navigateCodeBlock', { direction: 'right' });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(target);
 		expect(state.compilerInputRevision).toBe(0);
 		expect(onInputChanged).not.toHaveBeenCalled();
 
-		dispatch('insertText', { text: ';' });
+		applyCodeBlockSourceEdits(store, [{ codeBlock: target, code: ['module target', '; edited', 'moduleEnd'] }], {
+			affectsCompilation: true,
+		});
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 	});
 
@@ -208,11 +186,12 @@ describe('compiler input revision', () => {
 		const child = createMockCodeBlock({ code: ['module child', 'moduleEnd'] });
 		block.childProject = { entries: [], path: 'Audio', blocks: [child] };
 		projectGroupNavigation(store, events);
-		codeEditing(store, events);
 		dispatch('openProjectGroup', { codeBlock: block });
 		store.set('codeBlockRendering.selectedCodeBlock', child);
 		expect(state.compilerInputRevision).toBe(0);
-		dispatch('insertText', { text: ';' });
+		applyCodeBlockSourceEdits(store, [{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }], {
+			affectsCompilation: true,
+		});
 		expect(state.compilerInputRevision).toBe(1);
 		dispatch('goToParentProjectGroup');
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(state.codeBlockRendering.rootProject.blocks);

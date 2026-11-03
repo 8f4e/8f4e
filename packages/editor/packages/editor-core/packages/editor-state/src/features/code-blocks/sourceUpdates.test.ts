@@ -91,7 +91,7 @@ describe('cached directive records', () => {
 		expect(received.at(-1)).toEqual(['first']);
 	});
 
-	it('refreshes records before layout consumers run after typing, undo, redo, and replacement', () => {
+	it('refreshes records before layout consumers run after source edits, undo, redo, and replacement', () => {
 		const { store, events, audio, load } = setup();
 		const seen: string[][] = [];
 		cleanups.push(
@@ -102,7 +102,11 @@ describe('cached directive records', () => {
 		const block = audio();
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor = { row: 1, col: block.code[1].length, x: 0, y: 0 };
-		events.dispatch('insertText', { text: ' changed' });
+		applyCodeBlockSourceEdits(
+			store,
+			[{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line} changed` : line)) }],
+			{ affectsCompilation: true }
+		);
 		expect(seen.at(-1)).toEqual(['first', 'changed']);
 		events.dispatch('undo');
 		expect(matched(audio())[0].args).toEqual(['first']);

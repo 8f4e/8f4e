@@ -25,7 +25,7 @@ test('loads an initial project URL after generic editor startup', async () => {
 			).toBe(true)
 		);
 		expect(fetch).toHaveBeenCalledWith('https://example.com/project.8f4e', { cache: 'no-store' });
-		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
+		editor.state.editorMode = 'edit';
 		editor.pauseRendering();
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loaded-project-url');

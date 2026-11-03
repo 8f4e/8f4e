@@ -31,7 +31,7 @@ int value 2
 moduleEnd
 entryEnd`),
 		});
-		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
+		editor.state.editorMode = 'edit';
 		editor.pauseRendering();
 		const state = editor.state;
 		const first = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;

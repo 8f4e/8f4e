@@ -14,13 +14,13 @@ import {
 } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import { findProjectLevel, walkProjectLevels } from '../../pureHelpers/projectTree';
-import gapCalculator from '../code-editing/gapCalculator';
-import { moveCaret } from '../code-editing/moveCaret';
-import reverseGapCalculator from '../code-editing/reverseGapCalculator';
-import { getRawIndexForVisualColumn, getTabStopsByLine, getVisualColumnForRawIndex } from '../code-editing/tabLayout';
 import resolveEditorConfig from '../global-editor-directives/resolve';
 import incrementCompilerInputRevision from '../program-compiler/incrementCompilerInputRevision';
 import { isRestoringProjectEdit } from '../project-changes';
+import { clampSourcePosition } from '../text-geometry/clampSourcePosition';
+import gapCalculator from '../text-geometry/gapCalculator';
+import reverseGapCalculator from '../text-geometry/reverseGapCalculator';
+import { getRawIndexForVisualColumn, getTabStopsByLine, getVisualColumnForRawIndex } from '../text-geometry/tabLayout';
 import { stopViewportAnimation } from '../viewport/animateViewport';
 import getProjectViewportPosition from '../viewport/getProjectViewportPosition';
 import updateViewport from '../viewport/updateViewport';
@@ -78,7 +78,7 @@ export default function codeBlockRendering(
 			visualCol,
 			tabStopsByLine[Math.min(row, codeBlock.code.length - 1)] || []
 		);
-		const [boundedRow, boundedCol] = moveCaret(codeBlock.code, row, col, 'jump');
+		const [boundedRow, boundedCol] = clampSourcePosition(codeBlock.code, row, col);
 		if (codeBlock !== state.codeBlockRendering.selectedCodeBlock) {
 			return;
 		}

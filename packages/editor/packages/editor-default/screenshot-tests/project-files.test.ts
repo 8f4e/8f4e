@@ -44,7 +44,7 @@ noteEnd`;
 				createProjectSavePlugin({ inputTarget: canvas, fileSession }),
 			],
 		});
-		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
+		editor.state.editorMode = 'edit';
 		const state = editor.state;
 		await vi.waitFor(() =>
 			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.code.includes('note patch'))).toBe(true)
@@ -60,7 +60,7 @@ noteEnd`;
 		canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: openX, clientY: openY, bubbles: true }));
 		await vi.waitFor(() => expect(state.initialProjectState).not.toBe(original));
 		expect(state.editorMode).toBe('view');
-		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
+		editor.state.editorMode = 'edit';
 		canvas.focus();
 		const saveKey = new KeyboardEvent('keydown', { key: 's', metaKey: true, bubbles: true, cancelable: true });
 		canvas.dispatchEvent(saveKey);

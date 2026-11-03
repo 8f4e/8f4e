@@ -62,14 +62,6 @@ export interface InternalMouseEvent {
 }
 
 /**
- * Internal keyboard event payload for editor keyboard interactions.
- */
-export interface InternalKeyboardEvent {
-	key: string;
-	metaKey: boolean;
-}
-
-/**
  * Shared code error shape used across compiler, directive, and config validation flows.
  */
 export interface CodeError {

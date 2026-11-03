@@ -14,26 +14,31 @@ if (initialProjectUrl) {
 	window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
 }
 
-canvas.focus({ preventScroll: true });
-const editor = await mountDefaultEditor(canvas, {
-	initialProjectUrl,
-	storage: window.localStorage,
-	storageNamespace: 'editor',
-});
-Object.assign(window, { state: editor.state });
-let bridge: EditorWebMcpBridge | undefined;
-let disposed = false;
+async function startEditor(canvas: HTMLCanvasElement) {
+	canvas.focus({ preventScroll: true });
+	const editor = await mountDefaultEditor(canvas, {
+		initialProjectUrl,
+		storage: window.localStorage,
+		storageNamespace: 'editor',
+	});
+	Object.assign(window, { state: editor.state });
+	let bridge: EditorWebMcpBridge | undefined;
+	let disposed = false;
 
-import.meta.hot?.dispose(() => {
-	disposed = true;
-	bridge?.dispose();
-	editor.dispose();
-});
+	import.meta.hot?.dispose(() => {
+		disposed = true;
+		bridge?.dispose();
+		editor.dispose();
+	});
 
-void import('@8f4e/editor-webmcp')
-	.then(({ createEditorWebMcp }) => {
-		if (disposed) return;
-		bridge = createEditorWebMcp({ document, editor, getCompilerDiagnostics: editor.getCompilerDiagnostics });
-		return bridge.ready;
-	})
-	.catch(error => console.error('Failed to load editor site tools:', error));
+	void import('@8f4e/editor-webmcp')
+		.then(({ createEditorWebMcp }) => {
+			if (disposed) return;
+			bridge = createEditorWebMcp({ document, editor, getCompilerDiagnostics: editor.getCompilerDiagnostics });
+			return bridge.ready;
+		})
+		.catch(error => console.error('Failed to load editor site tools:', error));
+}
+
+// Let the entry module finish evaluating before lazy plugin chunks import its shared exports.
+void startEditor(canvas);

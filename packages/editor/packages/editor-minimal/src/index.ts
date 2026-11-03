@@ -22,6 +22,8 @@ export interface MinimalEditorMountOptions {
 	/** Capture wheel gestures for viewport panning. Disable this in scrolling pages. */
 	captureWheel?: boolean;
 	featureFlags?: EditorOptions['featureFlags'];
+	/** Include the keyboard mode-switching plugin and its hint. Defaults to true. */
+	includeKeyboardModeSwitching?: boolean;
 	initialProjectUrl?: string;
 	/** Initial source is installed; compilation and plugin loading continue independently. */
 	onInitialProjectLoaded?: () => void;
@@ -34,6 +36,7 @@ export async function mountMinimalEditor(
 		sharedAudioContext,
 		captureWheel,
 		featureFlags,
+		includeKeyboardModeSwitching,
 		initialProjectUrl,
 		onInitialProjectLoaded,
 		onInitialProjectLoadError,
@@ -44,10 +47,12 @@ export async function mountMinimalEditor(
 	const browserWindow = canvas.ownerDocument.defaultView!;
 	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
+	const keyboardPlugins = await createKeyboardPlugins(canvas, includeKeyboardModeSwitching);
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
 			fileSession.plugin,
+			...keyboardPlugins,
 			codeRenderingPlugin,
 			connectorsPlugin,
 			createProjectUrlLoaderPlugin({
@@ -78,4 +83,26 @@ export async function mountMinimalEditor(
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
+}
+
+async function createKeyboardPlugins(
+	canvas: HTMLCanvasElement,
+	includeKeyboardModeSwitching = true
+): Promise<NonNullable<EditorOptions['plugins']>> {
+	if (canvas.ownerDocument.defaultView!.matchMedia('(pointer: coarse)').matches) return [];
+	return Promise.all([
+		...(includeKeyboardModeSwitching
+			? [
+					import('@8f4e/editor-plugin-keyboard-mode-switching').then(({ createKeyboardModeSwitchingPlugin }) =>
+						createKeyboardModeSwitchingPlugin({ inputTarget: canvas })
+					),
+				]
+			: []),
+		import('@8f4e/editor-plugin-keyboard-navigation').then(({ createKeyboardNavigationPlugin }) =>
+			createKeyboardNavigationPlugin({ inputTarget: canvas })
+		),
+		import('@8f4e/editor-plugin-keyboard-editing').then(({ createKeyboardEditingPlugin }) =>
+			createKeyboardEditingPlugin({ inputTarget: canvas })
+		),
+	]);
 }

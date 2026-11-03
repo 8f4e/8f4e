@@ -25,13 +25,13 @@ test('restores a retained project in a new editor instance', async () => {
 			),
 			plugins: [createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true })],
 		});
-		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
+		editor.state.editorMode = 'edit';
 		expect(values.has('session')).toBe(true);
 		editor.dispose();
 		editor = await initEditor(canvas, {
 			plugins: [createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true })],
 		});
-		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
+		editor.state.editorMode = 'edit';
 		await vi.waitFor(() =>
 			expect(
 				editor!.state.codeBlockRendering.currentProject.blocks.some(block =>

@@ -19,15 +19,24 @@ it('starts without storage and reports empty-project readiness after initializat
 	const onInitialProjectLoaded = vi.fn();
 	const mounting = mountMinimalEditor(canvas, {
 		captureWheel: false,
-		featureFlags: { modeToggling: false },
+		featureFlags: { moduleDragging: false },
 		onInitialProjectLoaded,
 	});
+	await vi.waitFor(() => expect(initEditor).toHaveBeenCalledOnce());
 	const compiler = vi.mocked(createCompilerPlugin).mock.results[0].value;
 	const options = vi.mocked(initEditor).mock.calls[0][1];
 	expect(options.captureWheel).toBe(false);
-	expect(options.featureFlags).toEqual({ projectCreation: false, modeToggling: false });
+	expect(options.featureFlags).toEqual({ projectCreation: false, moduleDragging: false });
 	expect(options.plugins![0]).toBe(compiler.plugin);
-	expect(options.plugins!.map(plugin => plugin.id)).toEqual(expect.arrayContaining(['code-rendering', 'connectors']));
+	expect(options.plugins!.map(plugin => plugin.id)).toEqual(
+		expect.arrayContaining([
+			'code-rendering',
+			'connectors',
+			'keyboard-navigation',
+			'keyboard-mode-switching',
+			'keyboard-editing',
+		])
+	);
 	expect(onInitialProjectLoaded).not.toHaveBeenCalled();
 	const coreEditor = { dispose: vi.fn() } as unknown as Editor;
 	finish(coreEditor);
@@ -36,4 +45,27 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(editor.getCompilerDiagnostics).toBe(compiler.getDiagnostics);
 	expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
 	editor.dispose();
+});
+
+it('omits all keyboard plugins on coarse-pointer browsers', async () => {
+	const browserWindow = { navigator: {}, matchMedia: (query: string) => ({ matches: query === '(pointer: coarse)' }) };
+	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
+	await mountMinimalEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
+	const options = vi.mocked(initEditor).mock.calls.at(-1)![1];
+	for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing'])
+		expect(options.plugins!.some(plugin => plugin.id === id)).toBe(false);
+});
+
+it('omits mode switching while retaining navigation and editing', async () => {
+	const browserWindow = { navigator: {}, matchMedia: () => ({ matches: false }) };
+	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
+	await mountMinimalEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement, {
+		includeKeyboardModeSwitching: false,
+	});
+	const ids = vi
+		.mocked(initEditor)
+		.mock.calls.at(-1)![1]
+		.plugins!.map(plugin => plugin.id);
+	expect(ids).not.toContain('keyboard-mode-switching');
+	expect(ids).toEqual(expect.arrayContaining(['keyboard-navigation', 'keyboard-editing']));
 });

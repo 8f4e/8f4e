@@ -6,13 +6,18 @@ import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
 import drawContextMenu from './drawers/contextMenu';
 import drawDialog from './drawers/dialog';
-import drawModeOverlay from './drawers/modeOverlay';
 import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/registry';
 import BackgroundRenderer from './plugins/background';
 import type { MemoryViews } from './types';
 
 export { DrawContext } from './drawContext';
-export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from './drawers/registry';
+export type {
+	CanvasOverlayDrawer,
+	CanvasOverlayDrawerContext,
+	CodeBlockDrawer,
+	CodeBlockDrawerContext,
+	EditorDrawerRegistry,
+} from './drawers/registry';
 export { createEditorDrawerRegistry } from './drawers/registry';
 export { createProgram, prepareRenderPass, requireResource, requireUniform } from './plugins/webgl';
 export type {
@@ -82,9 +87,10 @@ export default async function init(
 	}
 
 	installFontAtlas(fontAtlas, state.editorConfig.font ?? DEFAULT_FONT);
+	const drawers = options.drawers ?? createEditorDrawerRegistry();
 	let renderLayers: ReturnType<EditorDrawerHost['attachRenderLayers']>;
 	try {
-		renderLayers = (options.drawers ?? createEditorDrawerRegistry()).attachRenderLayers({ gl: engine.gl, palette });
+		renderLayers = drawers.attachRenderLayers({ gl: engine.gl, palette });
 	} catch (error) {
 		background.destroy();
 		engine.destroy();
@@ -133,9 +139,9 @@ export default async function init(
 	engine.hooks.postDraw.push(renderStatsHook);
 
 	const drawFrame = () => {
-		drawCodeBlocks(draw, state, memoryViews, options.drawers);
+		drawCodeBlocks(draw, state, memoryViews, drawers);
 		drawContextMenu(draw, state);
-		drawModeOverlay(draw, state);
+		if (state.featureFlags.canvasOverlays) drawers.drawCanvasOverlays({ draw, state, memoryViews });
 		drawDialog(draw, state);
 	};
 

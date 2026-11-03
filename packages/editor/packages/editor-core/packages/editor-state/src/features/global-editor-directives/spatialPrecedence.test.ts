@@ -94,48 +94,33 @@ noteEnd`);
 		]);
 	});
 
-	it.each(['typing', 'programmatic edit'] as const)('refreshes precedence after a position-only %s', editKind => {
+	it('refreshes precedence after a position-only source edit', () => {
 		const { state, store, events } = setup(twoNotes);
 		const left = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'left')!;
 		expect(state.editorConfig.export?.fileName).toBe('right');
-		if (editKind === 'typing') {
-			store.set('codeBlockRendering.selectedCodeBlock', left);
-			left.cursor = { row: 1, col: '; @pos '.length, x: 0, y: 0 };
-			events.dispatch('insertText', { text: '10' });
-		} else {
-			applyCodeBlockSourceEdits(
-				store,
-				[{ codeBlock: left, code: left.code.map(line => line.replace('@pos 0 0', '@pos 100 0')) }],
-				{
-					affectsCompilation: false,
-				}
-			);
-		}
+		applyCodeBlockSourceEdits(
+			store,
+			[{ codeBlock: left, code: left.code.map(line => line.replace('@pos 0 0', '@pos 100 0')) }],
+			{
+				affectsCompilation: false,
+			}
+		);
 		expect({ x: left.gridX, y: left.gridY }).toEqual({ x: 100, y: 0 });
 		expect({ x: left.x, y: left.y }).toEqual({ x: 100 * state.viewport.vGrid, y: 0 });
 		expect(state.editorConfig.export?.fileName).toBe('left');
-		if (editKind === 'typing') {
-			left.cursor = { row: 1, col: left.code[1].length, x: 0, y: 0 };
-			events.dispatch('deleteBackward');
-		} else {
-			applyCodeBlockSourceEdits(
-				store,
-				[{ codeBlock: left, code: left.code.map(line => line.replace('@pos 100 0', '@pos 100 -')) }],
-				{ affectsCompilation: false }
-			);
-		}
+		applyCodeBlockSourceEdits(
+			store,
+			[{ codeBlock: left, code: left.code.map(line => line.replace('@pos 100 0', '@pos 100 -')) }],
+			{ affectsCompilation: false }
+		);
 		expect({ x: left.gridX, y: left.gridY }).toEqual({ x: 100, y: 0 });
 		expect({ x: left.x, y: left.y }).toEqual({ x: 100 * state.viewport.vGrid, y: 0 });
 		expect(state.editorConfig.export?.fileName).toBe('left');
-		if (editKind === 'typing') {
-			events.dispatch('insertText', { text: '0' });
-		} else {
-			applyCodeBlockSourceEdits(
-				store,
-				[{ codeBlock: left, code: left.code.map(line => line.replace('@pos 100 -', '@pos 100 0')) }],
-				{ affectsCompilation: false }
-			);
-		}
+		applyCodeBlockSourceEdits(
+			store,
+			[{ codeBlock: left, code: left.code.map(line => line.replace('@pos 100 -', '@pos 100 0')) }],
+			{ affectsCompilation: false }
+		);
 		events.dispatch('undo');
 		expect(state.editorConfig.export?.fileName).toBe('right');
 		events.dispatch('redo');
