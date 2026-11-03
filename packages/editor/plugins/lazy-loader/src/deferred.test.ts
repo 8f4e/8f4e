@@ -18,7 +18,7 @@ function install(load: () => Promise<readonly EditorPlugin[]>) {
 }
 
 describe('deferred plugin loader', () => {
-	it('starts imports once on renderer-ready initialization and uses current state', async () => {
+	it('starts imports once on renderer readiness and uses current state', async () => {
 		const setupPlugin = vi.fn<EditorPlugin['setup']>(() => () => {});
 		const load = vi.fn(async () => [{ id: 'optional', setup: setupPlugin }]);
 		const editor = install(load);
@@ -26,9 +26,11 @@ describe('deferred plugin loader', () => {
 			expect(load).not.toHaveBeenCalled();
 			await Promise.resolve();
 			expect(load).not.toHaveBeenCalled();
+			editor.events.dispatch('init');
+			expect(load).not.toHaveBeenCalled();
 			editor.state.viewport.x = 123;
-			editor.events.dispatch('init');
-			editor.events.dispatch('init');
+			editor.events.dispatch('ready');
+			editor.events.dispatch('ready');
 			expect(load).toHaveBeenCalledOnce();
 			await vi.waitFor(() => expect(setupPlugin).toHaveBeenCalledOnce());
 			expect(setupPlugin.mock.calls[0][0].store.getState().viewport.x).toBe(123);
@@ -36,14 +38,14 @@ describe('deferred plugin loader', () => {
 			editor.dispose();
 		}
 	});
-	it.each(['before initialization', 'during import'])('ignores late work when disposed %s', async when => {
+	it.each(['before readiness', 'during import'])('ignores late work when disposed %s', async when => {
 		const pending = deferred<readonly EditorPlugin[]>();
 		const setupPlugin = vi.fn<EditorPlugin['setup']>(() => () => {});
 		const load = vi.fn(() => pending.promise);
 		const editor = install(load);
-		if (when === 'during import') editor.events.dispatch('init');
+		if (when === 'during import') editor.events.dispatch('ready');
 		editor.dispose();
-		if (when === 'before initialization') editor.events.dispatch('init');
+		if (when === 'before readiness') editor.events.dispatch('ready');
 		pending.resolve([{ id: 'optional', setup: setupPlugin }]);
 		await Promise.resolve();
 		expect(setupPlugin).not.toHaveBeenCalled();
@@ -61,7 +63,7 @@ describe('deferred plugin loader', () => {
 				},
 			},
 		]);
-		editor.events.dispatch('init');
+		editor.events.dispatch('ready');
 		await vi.waitFor(() => expect(released).toEqual(['second', 'first']));
 		expect(editor.state.console.logs.at(-1)?.message).toContain('setup failed');
 		editor.dispose();

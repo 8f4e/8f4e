@@ -3,8 +3,9 @@
 - Own the embedded composition for the product homepage and example/test galleries. Build directly on editor-core;
   do not import editor-default or its built-in module catalog.
 - Keep file-session, project URL loading, compiler coordination, and code rendering eager. Import
-  `src/deferred-plugins.ts` on core's `init` event, after renderer and initial sprite-atlas preparation. This is the
-  single gate for input, connectors, assertions, saving, tooltips, and directive-based lazy imports. Do not add frame
+  `src/deferred-plugins.ts` on core's `ready` event, after initial project loading/parsing, font-atlas loading, and
+  rendering. This is the single gate for input, connectors, assertions, saving, tooltips, and directive-based lazy
+  imports. Do not add frame
   callbacks, visibility checks, or timing delays. Keep font payloads lazy.
 - Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
   Load entries independently through the same loader; apply pointer capability and mode-switching availability as
@@ -24,7 +25,8 @@
 - Supply the canvas and browser navigator to input plugins, memory getters to binary assets, and the compiler memory
   writer to interactive controls. Pass a live reduced-motion preference to lazy watch/stack factories. Their block
   drawers run before tooltip overlays, independently of installation order.
-- The project URL plugin owns fetching. Forward initial-project callbacks; mounting does not wait for the fetch.
+- The project URL plugin owns fetching. Forward initial-project callbacks; mounting waits for fetching/parsing and the
+  first render.
   Without a URL, start empty and announce readiness after initialization.
 - Construct one `createProjectFileSession()` and install its plugin before the
   project URL loader. Pass it to `createProjectSavePlugin({ inputTarget: canvas, fileSession })` for Save, Export Project, and Cmd/Ctrl+S.

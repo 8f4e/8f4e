@@ -7,9 +7,9 @@
   plugin package and generic plugin installation in editor-core.
 - Call `createDefaultEditorPlugins` to construct the startup set synchronously per mounted editor, supplying the canvas, render
   callback, storage settings, Open menu visibility, and compiler getters. Keep file-session, URL/session loading, and
-  code rendering eager. The deferred loader imports `src/deferred-plugins.ts` on core's `init` event, after renderer
-  and initial sprite-atlas preparation. This is the single gate for every optional and directive-based lazy import;
-  do not add frame callbacks, visibility checks, or timing delays. Keep font payloads lazy.
+  code rendering eager. The deferred loader imports `src/deferred-plugins.ts` on core's `ready` event, after initial
+  project loading/parsing, font-atlas loading, and rendering. This is the single gate for every optional and
+  directive-based lazy import; do not add frame callbacks, visibility checks, or timing delays. Keep font payloads lazy.
 - Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
   Load entries independently through the same loader; apply pointer capability and mode-switching availability as
   entry predicates. Keep project signals in `src/lazy-plugins.ts`. Do not create a separate keyboard loading group.
@@ -58,7 +58,8 @@
   restoration when an explicit initial URL exists. Keep autosaving active while that URL is pending.
 - The plugins own URL fetching and storage serialization. Do not restore session/URL callbacks in core or host wrappers.
 - Forward onInitialProjectLoaded/onInitialProjectLoadError to the URL plugin's factory callbacks. Without a URL,
-  notify success after editor initialization. Mounting must not wait for fetching; callbacks may precede mount resolution.
+  notify success after editor initialization. Mounting waits for fetching/parsing and the first render; callbacks may
+  precede mount resolution.
 - Test URL/session startup coordination in `src/startup.integration.test.ts` using the real default plugin composition.
   Keep each startup plugin's own tests independent of the other plugin.
 

@@ -15,8 +15,9 @@
   subscriptions. Editor-core calls it before plugins/project loading; renderer initialization receives the store and
   event dispatcher. Editor-state uses only grid dimensions and the generic `gridSizeChanged` event.
 - Keep `@8f4e/editor-palette` external in bundled editor libraries so the final composition can share one palette module.
-- Both compositions start every optional import, including directive-based plugins, on core's `init` event after
-  renderer and sprite-atlas initialization. Keep font payloads lazy; add no frame callbacks or timing gates.
+- Both compositions start every optional import, including directive-based plugins, on core's `ready` event after
+  initial project loading/parsing, font-atlas loading, and rendering. Keep font payloads lazy; add no frame callbacks or
+  timing gates.
 - External lists match exact import paths; include used dependency subpaths such as `glugglugglug/utils` explicitly.
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, example source discovery,
   and startup policy.

@@ -31,7 +31,6 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 	let activeId: string | null = null;
 	let activeEditor: MinimalEditorInstance | undefined;
 	let activeBridge: EditorWebMcpBridge | undefined;
-	let mountQueue = Promise.resolve();
 	let revision = 0;
 	let revealFrame = 0;
 	let loadTimeout = 0;
@@ -149,8 +148,8 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 		item.status.hidden = false;
 		item.status.textContent = 'Loading project…';
 
-		// Serialize mounts so a rapid selection change cannot leave multiple runtimes alive.
-		mountQueue = mountQueue.then(async () => {
+		// A pending project fetch must not block mounting a newer selection.
+		void (async () => {
 			if (disposed || currentRevision !== revision) {
 				return;
 			}
@@ -226,7 +225,7 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 			} catch (error) {
 				showError(error);
 			}
-		});
+		})();
 	}
 
 	function onUrlChange(): void {

@@ -49,8 +49,11 @@ const editor = await initEditor(canvas, {
 
 A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, drawers })` function.
 Editor-core installs plugins in array order after core state effects, before rendering and initial project loading.
-Core first resizes and loads `options.initialProject` (or an empty project), then emits
-`init`. Setup runs separately for each editor instance; allocate instance data inside setup.
+Core first sizes the viewport and loads `options.initialProject` (or an empty project), then dispatches `init` and
+passes the returned promises to the renderer. Startup plugins fetch, parse, or restore their project while web-ui
+loads the default ibmvga font atlas in parallel. The renderer waits for both and loads any different font selected by
+the project before drawing. Core then emits `ready`, which starts optional plugin imports. The mount promise resolves
+after this sequence. Setup runs separately for each editor instance; allocate instance data inside setup.
 Plugins receive the existing state manager and event dispatcher directly. Store disposal belongs to the editor and
 is excluded from the plugin context type. This is a trusted extension interface.
 
@@ -251,7 +254,8 @@ for compilation inputs.
 ## Project loading
 
 Hosts can provide a compiler-owned `ProjectObjectModel` through `initialProject`, or dispatch `loadProject` with
-`{ project }` later. Core loads initial content after the first resize and emits `init` once that content is installed.
+`{ project }` later. Core loads initial content after sizing the viewport. Project preparation through `init` runs
+alongside the default font download; both complete before rendering and the `ready` event.
 Open From Disk belongs to the project-open plugin. Core has no file callbacks or file-association flags; undo/redo
 restore snapshots directly within the current project.
 

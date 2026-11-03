@@ -15,7 +15,7 @@ Storage needs only `getItem` and `setItem`. The stored value is the compiler-own
 with JSON. The plugin uses the public `serializeToProject` helper to save the entire root project, including nested
 groups, even when the editor is displaying a child slice.
 
-On the generic `init` event, the plugin reads and restores the saved project through `loadProject`, then installs
+On the pre-render `init` event, the plugin reads and restores the saved project through `loadProject`, then installs
 its autosave subscriptions and saves the resulting project once. Setup performs no storage I/O. Missing or unreadable
 storage leaves core's initial project in place; read/write failures are reported in the editor console. Stored object
 shapes are not validated or migrated. The host disables restoration when another source has initial-project priority.

@@ -55,13 +55,18 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 			);
 		}
 		events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
-		events.dispatch('init');
+		const initializing = Promise.all(emitter.listeners('init').map(listener => listener()));
 		expect(fetch).toHaveBeenCalledWith('https://example.com/project.8f4e', { cache: 'no-store' });
 		expect(storage.getItem).not.toHaveBeenCalled();
 		expect(getProjectModules(JSON.parse(saved))).toEqual([]);
 		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
 		finish(new Response(source));
+		await initializing;
 		await vi.waitFor(() => expect(getProjectModules(JSON.parse(saved))[0]?.code).toContain('module remote'));
+		expect(
+			store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'remote')?.gaps.size
+		).toBe(0);
+		events.dispatch('ready');
 		await vi.waitFor(() =>
 			expect(
 				store

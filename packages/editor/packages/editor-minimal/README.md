@@ -19,11 +19,11 @@ editor.dispose();
 
 The composition installs the compiler first, with lazy standard-library include resolution. It includes project URL
 loading, project source saving/export, keyboard input, assertion markers, watch and stack annotations, and tooltips.
-Compiler coordination, file-session tracking, URL loading, and code rendering are eager. On core's `init` event,
+Compiler coordination, file-session tracking, URL loading, and code rendering are eager. On core's `ready` event,
 a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, saving, tooltips, and
-the directive-based loader. Core emits this event after the renderer has loaded its initial sprite atlas and
-rendered. This is the single loading gate, with no extra frame callback or timer. Optional features initialize from the current project and do not
-block the first render, mounting, or initial-project callbacks. Every optional feature is an individual entry in the
+the directive-based loader. Core emits this event after initial project loading/parsing, font-atlas loading, and
+rendering. This is the single loading gate, with no extra frame callback or timer. Optional features initialize from the
+current project and do not block the first render, mounting, or initial-project callbacks. Every optional feature is an individual entry in the
 same deferred list, including input plugins; their implementations load independently. This boundary also gates all
 directive-based lazy imports. The renderer loads its initial font before drawing, and font payloads remain separate
 lazy chunks.
@@ -43,7 +43,8 @@ use `view` scope: signals in unopened groups wait until that level is visited. T
 Runtime, MIDI, and asset plugins use
 `project` scope and match signals across the complete project tree. Loaded plugins stay installed until disposal.
 Imports and compilation finish independently of mounting and the initial-project callback. A callback may run before
-the mount promise resolves.
+the mount promise resolves. Mounting waits for URL fetching/parsing, font-atlas loading, and the first render. Project
+fetching/parsing and the default ibmvga font download run in parallel.
 
 Without `initialProjectUrl`, the editor starts with an empty project and calls `onInitialProjectLoaded` after core
 initialization. A URL failure calls `onInitialProjectLoadError`. The host owns page URLs, loading/error UI, canvas

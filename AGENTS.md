@@ -17,8 +17,9 @@
   audio/worker/test/texture runtimes. MIDI, assets, and texture execution match raw `midi`,
   `bin`, and `textureRuntime` config roots before their schemas load. Texture uploads and views also match `@textureUpload` and `@texture`. Both compositions defer optional UI, input, and authoring plugins until after the first render.
   Compiler coordination, project loading/restoration, and code rendering remain eager.
-  All optional imports, including directive-based lazy plugins, start on core's `init` event, after renderer and
-  sprite-atlas initialization. Font payloads remain separate lazy chunks; do not add frame callbacks or timing gates.
+  All optional imports, including directive-based lazy plugins, start on core's `ready` event, after initial project
+  loading/parsing, font-atlas loading, and rendering. Font payloads remain separate lazy chunks; do not add frame
+  callbacks or timing gates.
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
   selection, and paste collision renaming. Nested language-level project groups remain core project structure.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`

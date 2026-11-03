@@ -1,9 +1,9 @@
 # Lazy Plugin Loader
 
 - Own automatic signal matching, per-editor imports/installation, and loaded-plugin disposal.
-- `createDeferredPluginLoaderPlugin({ load })` starts on core's `init` event, after renderer and initial sprite-atlas
-  preparation. This is the only readiness gate; add no frame callbacks or timing delays. Both compositions defer the
-  directive-based loader through this same boundary.
+- `createDeferredPluginLoaderPlugin({ load })` starts on core's `ready` event, after initial project loading/parsing,
+  font-atlas loading, and rendering. This is the only readiness gate; add no frame callbacks or timing delays. Both
+  compositions defer the directive-based loader through this same boundary.
   Ordinary optional features use individual entries with unconditional or capability predicates; input plugins have
   no separate loading group. Initialize loaded plugins from current state, ignore completion after disposal, and
   release installations in reverse order.

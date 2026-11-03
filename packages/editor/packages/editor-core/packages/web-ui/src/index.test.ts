@@ -121,11 +121,12 @@ describe('web-ui init', () => {
 			return { draw: vi.fn(), destroy: vi.fn() };
 		});
 		drawers.registerRenderLayer(factory);
-		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas(6, 10));
+		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas()).mockResolvedValueOnce(createFontAtlas(6, 10));
 		const view = await init(createStateManager(state), events, {} as HTMLCanvasElement, createMemoryViews(), {
 			drawers,
 		});
-		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('6x10');
+		expect(loadFontAtlas).toHaveBeenNthCalledWith(1, 'ibmvga8x16');
+		expect(loadFontAtlas).toHaveBeenNthCalledWith(2, '6x10');
 		expect(factory).toHaveBeenCalledOnce();
 		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('gridSizeChanged');
 		view.destroy();
@@ -145,6 +146,75 @@ describe('web-ui init', () => {
 			)
 		).rejects.toBe(error);
 		expect(mocks.Engine).not.toHaveBeenCalled();
+	});
+
+	it.each(['project', 'font'])('loads project and font in parallel and waits for both (%s first)', async first => {
+		const { default: init } = await import('./index');
+		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
+		let finishProject!: () => void;
+		const initialProjectReady = new Promise<void>(resolve => {
+			finishProject = resolve;
+		});
+		const atlas = createFontAtlas();
+		let finishFont!: (value: typeof atlas) => void;
+		vi.mocked(loadFontAtlas).mockImplementationOnce(
+			() =>
+				new Promise(resolve => {
+					finishFont = resolve;
+				})
+		);
+		const mounting = init(
+			createStateManager(createMockState()),
+			createMockEventDispatcher(),
+			{} as HTMLCanvasElement,
+			createMemoryViews(),
+			{ initialProjectReady }
+		);
+		expect(loadFontAtlas).toHaveBeenCalledOnce();
+		expect(mocks.Engine).not.toHaveBeenCalled();
+		if (first === 'project') finishProject();
+		else finishFont(atlas);
+		await Promise.resolve();
+		expect(mocks.Engine).not.toHaveBeenCalled();
+		if (first === 'project') finishFont(atlas);
+		else finishProject();
+		const view = await mounting;
+		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
+		view.destroy();
+	});
+
+	it('waits for a different font selected by the loaded project before rendering', async () => {
+		const { default: init } = await import('./index');
+		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
+		const state = createMockState();
+		const store = createStateManager(state);
+		let finishProject!: () => void;
+		const initialProjectReady = new Promise<void>(resolve => {
+			finishProject = resolve;
+		});
+		const atlas = createFontAtlas(5, 8);
+		let finishFont!: (value: typeof atlas) => void;
+		vi.mocked(loadFontAtlas)
+			.mockResolvedValueOnce(createFontAtlas())
+			.mockImplementationOnce(
+				() =>
+					new Promise(resolve => {
+						finishFont = resolve;
+					})
+			);
+		const mounting = init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, createMemoryViews(), {
+			initialProjectReady,
+		});
+		store.set('editorConfig.font', 'spleen5x8');
+		finishProject();
+		await vi.waitFor(() => expect(loadFontAtlas).toHaveBeenLastCalledWith('spleen5x8'));
+		expect(mocks.Engine).not.toHaveBeenCalled();
+		finishFont(atlas);
+		const view = await mounting;
+		expect(state.viewport).toMatchObject({ vGrid: 5, hGrid: 8 });
+		expect(mocks.background.setFont).toHaveBeenCalledExactlyOnceWith('spleen5x8', atlas.grid);
+		view.destroy();
+		store.dispose();
 	});
 
 	it('renders viewport overlays after menus and before dialogs with the current frame state', async () => {

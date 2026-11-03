@@ -60,8 +60,8 @@ failures are reported in the editor log; the next matching automatic scan can re
 asynchronous activation, following the trusted-plugin error contract.
 
 The same package exports `createDeferredPluginLoaderPlugin({ load })` for optional features that should load
-regardless of project directives. It starts on core's `init` event, after the renderer has loaded its initial sprite
-atlas and rendered. This single readiness gate needs no frame callback or timer. Font payloads remain separate lazy
+regardless of project directives. It starts on core's `ready` event, after initial project loading/parsing, font-atlas
+loading, and rendering. This single readiness gate needs no frame callback or timer. Font payloads remain separate lazy
 chunks. Their directive-based loader is part of that deferred set, so its imports cannot start
 earlier. Ordinary optional features use individual entries with unconditional or capability predicates, including
 input plugins. Entries load independently and have no keyboard-specific loading stage.

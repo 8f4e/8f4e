@@ -193,7 +193,16 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		const state = store.getState();
 		cleanups.push(pointerEvents(canvas, events, state, options.captureWheel));
 
+		const initialCanvasSize = getCanvasDisplaySize(canvas) ?? {
+			width: canvas.width,
+			height: canvas.height,
+		};
+		events.dispatch('resize', { canvasWidth: initialCanvasSize.width, canvasHeight: initialCanvasSize.height });
+		events.dispatch('loadProject', { project: options.initialProject ?? EMPTY_DEFAULT_PROJECT });
+		const initialProjectReady = events.dispatchAsync('init');
+
 		view = await initView(store, events, canvas, memoryViews, {
+			initialProjectReady,
 			drawers,
 			renderStatsIntervalFrames: options.renderStatsIntervalFrames,
 			onRenderStats: stats => {
@@ -202,7 +211,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		});
 		cleanups.push(() => view.destroy());
 
-		let currentCanvasSize: CanvasSize | null = null;
+		let currentCanvasSize: CanvasSize = initialCanvasSize;
 		const resize = (width: number, height: number) => {
 			events.dispatch('resize', { canvasWidth: width, canvasHeight: height });
 			const resized = view.resize(width, height);
@@ -211,15 +220,11 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				view.renderFrame();
 			}
 		};
-		const initialCanvasSize = getCanvasDisplaySize(canvas) ?? {
-			width: canvas.width,
-			height: canvas.height,
-		};
 		const browserWindow = canvas.ownerDocument?.defaultView ?? globalThis.window;
 		const resizeObserver = browserWindow?.ResizeObserver
 			? new browserWindow.ResizeObserver(() => {
 					const size = getCanvasDisplaySize(canvas);
-					if (!size || (size.width === currentCanvasSize?.width && size.height === currentCanvasSize.height)) {
+					if (!size || (size.width === currentCanvasSize.width && size.height === currentCanvasSize.height)) {
 						return;
 					}
 
@@ -228,11 +233,11 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			: null;
 		if (resizeObserver) cleanups.push(() => resizeObserver.disconnect());
 
-		resize(initialCanvasSize.width, initialCanvasSize.height);
+		view.resize(initialCanvasSize.width, initialCanvasSize.height);
+		view.renderFrame();
 		resizeObserver?.observe(canvas);
-		events.dispatch('loadProject', { project: options.initialProject ?? EMPTY_DEFAULT_PROJECT });
-		// The sprite atlas is ready and the renderer has drawn; optional plugin imports can start now.
-		events.dispatch('init');
+		// The project is installed, its font atlas is ready, and the renderer has drawn.
+		events.dispatch('ready');
 
 		return {
 			editing: editing.handle,

@@ -63,9 +63,9 @@ a failed initial URL request or parse. With no URL, the success callback runs af
 session restoration. With a URL, the standard URL-loader plugin supplies the notification. A valid empty project counts
 as success; compilation and asset loading continue independently.
 
-Callbacks can run before the mount promise resolves. Mounting itself finishes after editor initialization while a URL
-request may still be pending, so hosts can dispose that editor when navigating elsewhere. Custom plugin compositions
-provide their own asynchronous loading notifications.
+Callbacks can run before the mount promise resolves. Mounting waits for URL fetching/parsing, font-atlas loading, and
+the first render. Project fetching/parsing and the default ibmvga font download run in parallel. Custom plugin
+compositions provide their own asynchronous loading notifications.
 
 The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
 `@8f4e/editor-plugin-favorites` for favorite directives, editing, and navigation,
@@ -83,9 +83,9 @@ plugin before project loaders, and supplies it to Open and Save. The session sha
 on project replacement. Open receives the canvas's document. Save receives the canvas and owns serialization, writing,
 and Cmd/Ctrl+S. WebAssembly export receives a document and a live compiler-byte getter. File handling stays outside core.
 Compiler coordination, source loading/session restoration, file-session tracking, and code rendering are eager.
-On core's `init` event, a deferred loader imports `src/deferred-plugins.ts` for connectors, assertion markers,
+On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for connectors, assertion markers,
 keyboard input, tooltips, built-in module browsing, file actions, and the other authoring features. Core emits this
-event after the renderer has loaded its initial sprite atlas and rendered. This is the single loading gate for
+event after initial project loading/parsing, font-atlas loading, and rendering. This is the single loading gate for
 optional modules, including directive-based lazy plugins, with no extra frame callback or timer. Font payloads
 remain separate lazy chunks. Every optional feature is an individual entry in the same deferred list, including input
 plugins; their implementations load independently. Deferred features initialize from the current

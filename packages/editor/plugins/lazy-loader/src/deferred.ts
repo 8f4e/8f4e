@@ -1,7 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { logError } from '@8f4e/editor-state';
 
-/** Core emits init after the renderer and its initial sprite atlas are ready. */
+/** Core emits ready after project preparation, font-atlas loading, and rendering. */
 export function createDeferredPluginLoaderPlugin({
 	load,
 }: {
@@ -41,14 +41,14 @@ export function createDeferredPluginLoaderPlugin({
 				}
 			};
 			const initialize = () => {
-				context.events.off('init', initialize);
+				context.events.off('ready', initialize);
 				void activate();
 			};
-			context.events.on('init', initialize);
+			context.events.on('ready', initialize);
 			return () => {
 				if (disposed) return;
 				disposed = true;
-				context.events.off('init', initialize);
+				context.events.off('ready', initialize);
 				release();
 			};
 		},
