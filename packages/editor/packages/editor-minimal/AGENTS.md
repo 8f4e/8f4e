@@ -40,6 +40,8 @@
 
 - Install `codeRenderingPlugin` eagerly for code/notes text and syntax highlighting. Keep text preparation and caching
   in the plugin and editing/layout geometry in core.
+- Load `dialogsPlugin` as an unconditional deferred entry. It owns private dialog layout, hit testing, and drawing;
+  editor-state retains dialog content, lifecycle, button actions, and modal input blocking.
 - Install `connectorsPlugin` in the deferred plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
 - Keep the `selectionAnimationPlugin` entry commented out. The standalone plugin owns the circling selected-block

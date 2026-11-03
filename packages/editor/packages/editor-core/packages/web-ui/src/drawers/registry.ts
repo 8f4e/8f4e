@@ -36,6 +36,8 @@ export interface EditorDrawerRegistry {
 	registerCodeBlockOverlay: (drawer: CodeBlockDrawer) => () => void;
 	/** Draw over editor content and menus, before dialogs, using viewport coordinates. */
 	registerCanvasOverlay: (drawer: CanvasOverlayDrawer) => () => void;
+	/** Draw above ordinary canvas overlays, independently of the canvasOverlays flag. */
+	registerModalOverlay: (drawer: CanvasOverlayDrawer) => () => void;
 }
 
 /** Renderer-owned invocation and lifecycle of registered drawers and layers. */
@@ -46,6 +48,7 @@ export interface EditorDrawerHost extends EditorDrawerRegistry {
 	drawCodeBlock: CodeBlockDrawer;
 	drawCodeBlockOverlay: CodeBlockDrawer;
 	drawCanvasOverlays: CanvasOverlayDrawer;
+	drawModalOverlays: CanvasOverlayDrawer;
 }
 
 function createDrawerSlot<Context>() {
@@ -70,6 +73,7 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 	const widgets = createDrawerSlot<CodeBlockDrawerContext>();
 	const overlays = createDrawerSlot<CodeBlockDrawerContext>();
 	const canvasOverlays = createDrawerSlot<CanvasOverlayDrawerContext>();
+	const modalOverlays = createDrawerSlot<CanvasOverlayDrawerContext>();
 	return {
 		...createRenderLayerRegistry(),
 		registerCodeBlockContentDrawer: content.register,
@@ -77,10 +81,12 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 		registerCodeBlockDrawer: widgets.register,
 		registerCodeBlockOverlay: overlays.register,
 		registerCanvasOverlay: canvasOverlays.register,
+		registerModalOverlay: modalOverlays.register,
 		drawCodeBlockContent: content.draw,
 		drawCodeBlockForeground: foreground.draw,
 		drawCodeBlock: widgets.draw,
 		drawCodeBlockOverlay: overlays.draw,
 		drawCanvasOverlays: canvasOverlays.draw,
+		drawModalOverlays: modalOverlays.draw,
 	};
 }

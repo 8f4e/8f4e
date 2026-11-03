@@ -38,6 +38,10 @@
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, line-number drawing, and private
   prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
   `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
+- `@8f4e/editor-plugin-dialogs` owns dialog dimensions, wrapping/clipping, private button geometry/hit testing,
+  and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
+  Both compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
+  `registerModalOverlay` after ordinary overlays, independently of `canvasOverlays`.
 - `@8f4e/editor-plugin-selection-animation` owns the circling segment around the selected block, using the generic
   foreground drawer hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.
 - Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.

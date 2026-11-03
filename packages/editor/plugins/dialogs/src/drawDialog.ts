@@ -1,12 +1,13 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import type { DrawContext } from '../drawContext';
+import type { DrawContext } from '@8f4e/web-ui';
+import type { DialogLayout } from './types';
 
 const DIALOG_CORNER = '+';
 const BUTTON_HORIZONTAL_PADDING_GRID_CELLS = 4;
 const BUTTON_VERTICAL_PADDING_GRID_CELLS = 1;
 
-export default function drawDialog(engine: DrawContext, state: State): void {
+export default function drawDialog(engine: DrawContext, state: State, dialog: DialogLayout): void {
 	if (state.dialogStack.length === 0) {
 		return;
 	}
@@ -15,29 +16,29 @@ export default function drawDialog(engine: DrawContext, state: State): void {
 	engine.drawFill(0, 0, PALETTE_INDICES.scrim, state.viewport.width, state.viewport.height);
 	engine.endGroup();
 
-	engine.startGroup(state.dialog.x, state.dialog.y);
+	engine.startGroup(dialog.x, dialog.y);
 
-	engine.drawFill(0, 0, PALETTE_INDICES.floatingSurface, state.dialog.width, state.dialog.height);
+	engine.drawFill(0, 0, PALETTE_INDICES.floatingSurface, dialog.width, dialog.height);
 
 	engine.drawText(0, 0, DIALOG_CORNER, PALETTE_INDICES.floatingInk);
-	engine.drawText(state.dialog.width - state.viewport.vGrid, 0, DIALOG_CORNER, PALETTE_INDICES.floatingInk);
-	engine.drawText(0, state.dialog.height - state.viewport.hGrid, DIALOG_CORNER, PALETTE_INDICES.floatingInk);
+	engine.drawText(dialog.width - state.viewport.vGrid, 0, DIALOG_CORNER, PALETTE_INDICES.floatingInk);
+	engine.drawText(0, dialog.height - state.viewport.hGrid, DIALOG_CORNER, PALETTE_INDICES.floatingInk);
 	engine.drawText(
-		state.dialog.width - state.viewport.vGrid,
-		state.dialog.height - state.viewport.hGrid,
+		dialog.width - state.viewport.vGrid,
+		dialog.height - state.viewport.hGrid,
 		DIALOG_CORNER,
 		PALETTE_INDICES.floatingInk
 	);
 
-	engine.drawText(state.viewport.vGrid, state.viewport.hGrid, state.dialog.title, PALETTE_INDICES.floatingAccent);
+	engine.drawText(state.viewport.vGrid, state.viewport.hGrid, dialog.title, PALETTE_INDICES.floatingAccent);
 
-	for (let i = 0; i < state.dialog.wrappedText.length; i++) {
+	for (let i = 0; i < dialog.wrappedText.length; i++) {
 		const textY = state.viewport.hGrid * (3 + i);
-		engine.drawText(state.viewport.vGrid, textY, state.dialog.wrappedText[i], PALETTE_INDICES.floatingInk);
+		engine.drawText(state.viewport.vGrid, textY, dialog.wrappedText[i], PALETTE_INDICES.floatingInk);
 	}
 
-	for (let i = 0; i < state.dialog.buttons.length; i++) {
-		const button = state.dialog.buttons[i];
+	for (let i = 0; i < dialog.buttons.length; i++) {
+		const button = dialog.buttons[i];
 		engine.drawFill(button.x, button.y, PALETTE_INDICES.selectionSurface, button.width, button.height);
 		engine.drawText(
 			button.x + BUTTON_HORIZONTAL_PADDING_GRID_CELLS * state.viewport.vGrid,

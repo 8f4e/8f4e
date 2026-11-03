@@ -95,14 +95,12 @@ it('leaves dialog activation to the completed press after a capture-only probe',
 		text: 'Continue?',
 		buttons: [{ title: 'Allow', action: 'activateDialog' }],
 	});
-	const button = test.state.dialog.buttons[0];
-	const pointer = {
-		...test.pointer,
-		x: test.state.dialog.x + button.x + button.width / 2,
-		y: test.state.dialog.y + button.y + button.height / 2,
-	};
+	const request = vi.fn(() => test.events.dispatch('activateDialogButton', { id: 'modal', buttonIndex: 0 }));
+	test.events.on('dialogPointerDown', request);
+	const pointer = { ...test.pointer };
 	test.events.dispatch('pointerdown', pointer, { phase: 'capture' });
 	expect(activate).not.toHaveBeenCalled();
+	expect(request).not.toHaveBeenCalled();
 	expect(test.state.dialogStack).toHaveLength(1);
 	test.events.dispatch('pointerdown', { ...pointer, stopPropagation: false });
 	expect(activate).toHaveBeenCalledOnce();

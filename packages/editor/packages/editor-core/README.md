@@ -151,6 +151,22 @@ Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The dra
 The renderer checks `featureFlags.canvasOverlays` before invoking this stage. Keyboard hints live in their
 mode-switching plugin; screenshot capture hides canvas overlays through this generic flag.
 
+Register modal sprite overlays with `drawers.registerModalOverlay(drawer)`. This uses the same viewport context
+as canvas overlays and runs after them, independently of `featureFlags.canvasOverlays`.
+`@8f4e/editor-plugin-dialogs` uses it for dialog drawing and keeps calculated geometry private.
+
+The editor owns dialog content and lifecycle. Plugins dispatch `addDialog` with `DialogContent`
+(`{ id, title, text, buttons }`), `removeDialog` with an ID or `{ id }`, and `clearDialogs` to empty the stack.
+Adding an existing ID replaces it at the top. `state.dialogStack` keeps original content and `state.dialog` exposes
+the visible dialog's content. Buttons specify `title`, optional `action`/`payload`, and optional `close: false`.
+The editor closes a dialog before dispatching its button action by default.
+
+Modal input is blocked by the editor even without a drawing plugin. The editor forwards completed presses through
+`dialogPointerDown` and pointer moves through `dialogPointerMove`. The dialogs plugin resolves its private button
+geometry and requests `activateDialogButton` with `{ id, buttonIndex }`; the editor validates the top dialog and
+runs the button action. Capture-only input probes do not activate dialogs. Default and minimal compositions
+install the presentation plugin through their deferred registries. Custom compositions must install it to show dialogs.
+
 Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`
 once the renderer is ready and returns `{ draw, destroy, loadPalette?, releaseMemory? }`. `draw` receives
 `{ state, memoryViews }` every frame after sprites in registration order, independently of block culling.

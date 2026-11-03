@@ -1,11 +1,12 @@
-import type { DialogButton, DialogButtonState } from '@8f4e/editor-state-types';
+import type { DialogButton } from '@8f4e/editor-state-types';
+import type { DialogButtonLayout } from './types';
 
 const BUTTON_HORIZONTAL_PADDING_GRID_CELLS = 4;
 const BUTTON_HEIGHT_GRID_CELLS = 3;
 const BUTTON_GAP_GRID_CELLS = 1;
 
 interface ButtonLayout {
-	buttons: DialogButtonState[];
+	buttons: DialogButtonLayout[];
 	heightInGridRows: number;
 }
 
@@ -56,7 +57,7 @@ export default function layoutButtons(
 		const y = (textLineCount + 4 + rowIndex * BUTTON_HEIGHT_GRID_CELLS) * hGrid;
 
 		return row.map(button => {
-			const layout: DialogButtonState = {
+			const layout: DialogButtonLayout = {
 				...button,
 				x,
 				y,

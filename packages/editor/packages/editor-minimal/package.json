@@ -25,6 +25,7 @@
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
     "@8f4e/editor-core": "*",
+    "@8f4e/editor-plugin-dialogs": "*",
     "@8f4e/stdlib": "*",
     "@8f4e/editor-plugin-switch": "*",
     "@8f4e/editor-plugin-tooltips": "*",
