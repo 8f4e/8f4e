@@ -85,7 +85,7 @@ describe('screenshot plugin', () => {
 		expect(index).toBeGreaterThanOrEqual(0);
 		expect(test.state.contextMenu.items[index].disabled).toBeUndefined();
 		test.state.contextMenu.highlightedItem = index;
-		test.events.dispatch('mousedown', { x: 80, y: 80, stopPropagation: false });
+		test.events.dispatch('pointerdown', { x: 80, y: 80, stopPropagation: false });
 		expect(test.renderFrame).toHaveBeenCalledOnce();
 		expect(test.toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/png');
 		expect(test.renderFrame.mock.invocationCallOrder[0]).toBeLessThan(test.toBlob.mock.invocationCallOrder[0]);

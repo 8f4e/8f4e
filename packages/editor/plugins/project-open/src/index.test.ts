@@ -60,7 +60,7 @@ it.each(['edit', 'view'] as const)('opens from the contributed menu in %s mode',
 	expect(index).toBeGreaterThanOrEqual(0);
 	test.state.contextMenu.highlightedItem = index;
 	const original = test.state.initialProjectState;
-	await test.events.dispatchAsync('mousedown', { x: 800, y: 400, stopPropagation: false });
+	await test.events.dispatchAsync('pointerdown', { x: 800, y: 400, stopPropagation: false });
 	await vi.waitFor(() => expect(test.fileSession.handle).toBe(test.handle));
 	expect(test.state.initialProjectState).not.toBe(original);
 	expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!.code).toContain(

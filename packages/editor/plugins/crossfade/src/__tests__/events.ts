@@ -13,8 +13,9 @@ export function createEvents(): EventDispatcher {
 				(listeners.get(name) ?? []).filter(item => item.callback !== callback)
 			);
 		},
-		dispatch: (name, event) => {
+		dispatch: (name, event, options = {}) => {
 			for (const capture of [true, false]) {
+				if (options.phase && capture !== (options.phase === 'capture')) continue;
 				for (const item of listeners.get(name) ?? []) {
 					if (item.capture !== capture) continue;
 					if ((event as { stopPropagation?: boolean } | undefined)?.stopPropagation) return;

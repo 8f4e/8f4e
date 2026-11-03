@@ -174,7 +174,7 @@ describe('toggle skip execution plugin', () => {
 			expect(index).toBeGreaterThanOrEqual(0);
 			expect(state.contextMenu.items[index].payload?.codeBlock).toBe(block);
 			state.contextMenu.highlightedItem = index;
-			events.dispatch('mousedown', { x: 16, y: 16 });
+			events.dispatch('pointerdown', { x: 16, y: 16 });
 			expect(state.contextMenu.open).toBe(false);
 			expect(block.code).toContain('#skipExecution');
 			expect(selected.code).not.toContain('#skipExecution');

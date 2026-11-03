@@ -98,7 +98,7 @@ describe('piano interaction', () => {
 	it('registers event listeners on initialization', () => {
 		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock, writeMemory);
 
-		expect(mockEvents.on).toHaveBeenCalledWith('codeBlockPointerDown', expect.any(Function));
+		expect(mockEvents.on).toHaveBeenCalledWith('codeBlockPointerDown', expect.any(Function), { capture: true });
 
 		cleanup();
 	});

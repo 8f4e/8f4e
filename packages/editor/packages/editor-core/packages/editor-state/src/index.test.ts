@@ -136,7 +136,7 @@ describe('editor state lifecycle', () => {
 				stopPropagation: false,
 			};
 
-			events.dispatch('mousedown', click);
+			events.dispatch('pointerdown', click);
 
 			expect(state.contextMenu.open).toBe(false);
 			expect(click.stopPropagation).toBe(true);

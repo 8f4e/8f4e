@@ -1,16 +1,10 @@
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { stopViewportAnimation } from './animateViewport';
 import resize from './resize';
 import snapToGrid from './snapToGrid';
 import snapToGridConsideringDirection from './snapToGridConsideringDirection';
 import updateViewport from './updateViewport';
-
-interface MouseMoveEvent {
-	buttons: number;
-	movementX: number;
-	movementY: number;
-}
 
 interface ResizeEvent {
 	canvasWidth: number;
@@ -25,7 +19,7 @@ interface ViewportScrollEndEvent {
 export default function viewport(store: StateManager<State>, events: EventDispatcher): () => void {
 	const state = store.getState();
 
-	function onMouseMove(event: MouseMoveEvent) {
+	function onPointerMove(event: InternalPointerEvent) {
 		if (event.buttons === 1 && state.featureFlags.viewportDragging) {
 			updateViewport(state, state.viewport.x - event.movementX, state.viewport.y - event.movementY, events);
 		}
@@ -36,7 +30,7 @@ export default function viewport(store: StateManager<State>, events: EventDispat
 		events.dispatch('viewportResized');
 	}
 
-	function onMouseUp() {
+	function onPointerUp() {
 		const { x, y } = snapToGrid(state);
 		updateViewport(state, x, y, events);
 	}
@@ -46,16 +40,16 @@ export default function viewport(store: StateManager<State>, events: EventDispat
 		updateViewport(state, x, y, events);
 	}
 
-	events.on('mousemove', onMouseMove);
+	events.on('pointermove', onPointerMove);
 	events.on('resize', onResize);
-	events.on('mouseup', onMouseUp);
+	events.on('pointerup', onPointerUp);
 	events.on('viewportscrollend', onViewportScrollEnd);
 
 	return () => {
 		stopViewportAnimation(state);
-		events.off('mousemove', onMouseMove);
+		events.off('pointermove', onPointerMove);
 		events.off('resize', onResize);
-		events.off('mouseup', onMouseUp);
+		events.off('pointerup', onPointerUp);
 		events.off('viewportscrollend', onViewportScrollEnd);
 	};
 }

@@ -66,9 +66,9 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 			movementX: 0,
 			movementY: 0,
 		};
-		events.dispatch('mousedown', pointer);
-		events.dispatch('mousemove', { ...pointer, movementX: dx, movementY: dy });
-		events.dispatch('mouseup');
+		events.dispatch('pointerdown', pointer);
+		events.dispatch('pointermove', { ...pointer, movementX: dx, movementY: dy });
+		events.dispatch('pointerup');
 	};
 	return {
 		store,

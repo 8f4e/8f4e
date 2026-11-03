@@ -31,6 +31,10 @@ a {
 	color: #fff;
 }
 
+canvas {
+	-webkit-tap-highlight-color: transparent;
+}
+
 ::selection {
 	background: #333;
 }

@@ -69,7 +69,7 @@ describe('WebAssembly export plugin', () => {
 		test.state.contextMenu.highlightedItem = test.state.contextMenu.items.findIndex(
 			item => item.action === 'exportWasm'
 		);
-		test.events.dispatch('mousedown', { x: 80, y: 80, stopPropagation: false });
+		test.events.dispatch('pointerdown', { x: 80, y: 80, stopPropagation: false });
 		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledWith({
 			suggestedName: 'project.wasm',
 			types: [{ description: 'WebAssembly Binary', accept: { 'application/wasm': ['.wasm'] } }],

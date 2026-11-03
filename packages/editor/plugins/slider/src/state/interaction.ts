@@ -1,4 +1,10 @@
-import type { CodeBlockGraphicData, EventDispatcher, InternalMouseEvent, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockPointerDownEvent,
+	EventDispatcher,
+	InternalPointerEvent,
+	State,
+} from '@8f4e/editor-state-types';
 import type { Slider } from '../types';
 
 interface ActiveSlider {
@@ -37,7 +43,8 @@ export function registerSliderInteraction(
 		writeMemory(slider.allocationUnitAddress, value, shouldWriteInteger);
 	};
 
-	const onCodeBlockPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+	const onCodeBlockPointerDown = (event: CodeBlockPointerDownEvent) => {
+		const { x, y, codeBlock } = event;
 		const slider = slidersByBlock
 			.get(codeBlock)
 			?.find(
@@ -52,13 +59,13 @@ export function registerSliderInteraction(
 			return;
 		}
 
+		event.stopPropagation = true;
 		activeSlider = { slider, codeBlock };
-		state.codeBlockRendering.draggedCodeBlock = undefined;
 
 		updateSliderValue(activeSlider, x);
 	};
 
-	const onMouseMove = (event: InternalMouseEvent) => {
+	const onPointerMove = (event: InternalPointerEvent) => {
 		if (!activeSlider) {
 			return;
 		}
@@ -67,17 +74,17 @@ export function registerSliderInteraction(
 		event.stopPropagation = true;
 	};
 
-	const onMouseUp = () => {
+	const onPointerUp = () => {
 		activeSlider = null;
 	};
 
-	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
-	events.on('mousemove', onMouseMove, { capture: true });
-	events.on('mouseup', onMouseUp);
+	events.on('codeBlockPointerDown', onCodeBlockPointerDown, { capture: true });
+	events.on('codeBlockPointerMove', onPointerMove, { capture: true });
+	events.on('codeBlockPointerUp', onPointerUp);
 
 	return () => {
 		events.off('codeBlockPointerDown', onCodeBlockPointerDown);
-		events.off('mousemove', onMouseMove);
-		events.off('mouseup', onMouseUp);
+		events.off('codeBlockPointerMove', onPointerMove);
+		events.off('codeBlockPointerUp', onPointerUp);
 	};
 }

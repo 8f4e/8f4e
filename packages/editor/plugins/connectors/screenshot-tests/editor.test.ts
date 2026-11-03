@@ -125,7 +125,7 @@ entryEnd`);
 	const oscillators = blocks.filter(block => block.name === 'oscillator');
 	const speaker = blocks.find(block => block.name === 'speaker')!;
 	for (const block of [...oscillators, speaker]) {
-		events.dispatch('mousedown', {
+		events.dispatch('pointerdown', {
 			x: block.x - editor.state.viewport.x + 1,
 			y: block.y - editor.state.viewport.y + 1,
 			movementX: 0,
@@ -136,7 +136,7 @@ entryEnd`);
 			canvasHeight: 400,
 			altKey: false,
 		});
-		events.dispatch('mouseup');
+		events.dispatch('pointerup');
 	}
 	// Keep the reference independent of the animated selection border.
 	editor.state.codeBlockRendering.selectedCodeBlock = undefined;

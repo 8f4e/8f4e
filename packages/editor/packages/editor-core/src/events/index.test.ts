@@ -2,6 +2,17 @@ import { describe, expect, it, vi } from 'vitest';
 import createEventDispatcher from './index';
 
 describe('event dispatcher', () => {
+	it.each(['capture', 'normal'] as const)('can deliver only the %s phase', phase => {
+		const events = createEventDispatcher();
+		const capture = vi.fn();
+		const normal = vi.fn();
+		events.on('pointerdown', capture, { capture: true });
+		events.on('pointerdown', normal);
+		events.dispatch('pointerdown', { stopPropagation: false }, { phase });
+		expect(capture).toHaveBeenCalledTimes(phase === 'capture' ? 1 : 0);
+		expect(normal).toHaveBeenCalledTimes(phase === 'normal' ? 1 : 0);
+	});
+
 	it('waits for asynchronous startup work while starting every listener immediately', async () => {
 		const events = createEventDispatcher();
 		let finish!: () => void;
@@ -33,11 +44,11 @@ describe('event dispatcher', () => {
 	it('runs capture listeners before ordinary listeners while preserving registration order in each phase', () => {
 		const events = createEventDispatcher();
 		const calls: string[] = [];
-		events.on('mousemove', () => calls.push('normal first'));
-		events.on('mousemove', () => calls.push('capture first'), { capture: true });
-		events.on('mousemove', () => calls.push('normal second'));
-		events.on('mousemove', () => calls.push('capture second'), { capture: true });
-		events.dispatch('mousemove');
+		events.on('pointermove', () => calls.push('normal first'));
+		events.on('pointermove', () => calls.push('capture first'), { capture: true });
+		events.on('pointermove', () => calls.push('normal second'));
+		events.on('pointermove', () => calls.push('capture second'), { capture: true });
+		events.dispatch('pointermove');
 		expect(calls).toEqual(['capture first', 'capture second', 'normal first', 'normal second']);
 	});
 	it('lets a capture listener consume an event and unregister normally', () => {
@@ -46,12 +57,12 @@ describe('event dispatcher', () => {
 		const capture = (event: { stopPropagation: boolean }) => {
 			event.stopPropagation = true;
 		};
-		events.on('mousemove', normal);
-		events.on('mousemove', capture, { capture: true });
-		events.dispatch('mousemove', { stopPropagation: false });
+		events.on('pointermove', normal);
+		events.on('pointermove', capture, { capture: true });
+		events.dispatch('pointermove', { stopPropagation: false });
 		expect(normal).not.toHaveBeenCalled();
-		events.off('mousemove', capture);
-		events.dispatch('mousemove', { stopPropagation: false });
+		events.off('pointermove', capture);
+		events.dispatch('pointermove', { stopPropagation: false });
 		expect(normal).toHaveBeenCalledOnce();
 	});
 	it('removes every subscription when disposed', () => {

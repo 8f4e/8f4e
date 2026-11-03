@@ -14,7 +14,7 @@
   Load entries independently through the same loader; apply pointer capability and mode-switching availability as
   entry predicates. Keep project signals in `src/lazy-plugins.ts`. Do not create a separate keyboard loading group.
 - Load `mouse-input` on every device, forwarding the host's `captureWheel` to its factory. Load
-  `touch-viewport-navigation` only for `(pointer: coarse)`; keyboard navigation/editing/mode switching remain for fine pointers.
+  `touch-input` only for `(pointer: coarse)`; keyboard navigation/editing/mode switching remain for fine pointers.
   Mouse forwarding stays active on coarse devices so touch taps reach existing controls. Core owns no DOM input adapter.
 - Construct one `createProjectFileSession()` per default feature set and install its `plugin` before project loaders.
   Compose `createProjectOpenPlugin({ document: canvas.ownerDocument, fileSession, showOpenMenuItem })` for Open and
@@ -110,5 +110,8 @@
 
 - `includeKeyboardModeSwitching: false` omits the mode-switching factory import and plugin. This is composition
   policy; core has no mode-switching feature flag and the plugin has no runtime enable guard.
+
+- Forward `touchNavigation` (`fingerCount` and `axis`) to the touch input plugin without implementing gestures in
+  the composition. The default is two fingers on both axes; the product landing page selects one-finger horizontal panning.
 
 - Load `code-block-copy-paste` as an unconditional deferred entry. Inject browser clipboard read/write functions into its factory and a writer into grouping independently. Text paste belongs to keyboard-editing; keep clipboard routing out of the host and shared context.

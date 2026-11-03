@@ -1,4 +1,4 @@
-import type { InternalMouseEvent, State } from '@8f4e/editor-state-types';
+import type { InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type MockInstance } from 'vitest';
 import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
@@ -78,6 +78,42 @@ describe('dialog effect', () => {
 		expect(state.dialog.height).toBe(96);
 		expect(state.dialog.x).toBe(320);
 		expect(state.dialog.y).toBe(336);
+	});
+
+	it.each([320, 375, 390])('keeps dialog content and working buttons inside a %ipx portrait viewport', width => {
+		const state = createMockState({
+			dialogStack: [
+				{
+					id: 'audio',
+					title: 'Audio playback permission and device settings',
+					text: 'Audio playback requires permission. Tap Allow to start sound on this device.',
+					buttons: [{ title: 'Cancel' }, { title: 'More information' }, { title: 'Allow audio', action: 'allowAudio' }],
+				},
+			],
+			viewport: { width: 1280, height: 768, vGrid: 8, hGrid: 16 },
+		});
+		const { onResize, emit, events } = setup(state);
+		state.viewport.width = width;
+		onResize();
+		expect(state.dialog.x).toBeGreaterThanOrEqual(8);
+		expect(state.dialog.x + state.dialog.width).toBeLessThanOrEqual(width - 8);
+		const textWidth = state.dialog.width / state.viewport.vGrid - 2;
+		expect(state.dialog.title.length).toBeLessThanOrEqual(textWidth);
+		for (const line of state.dialog.wrappedText) expect(line.length).toBeLessThanOrEqual(textWidth);
+		expect(new Set(state.dialog.buttons.map(button => button.y)).size).toBeGreaterThan(1);
+		for (const button of state.dialog.buttons) {
+			expect(button.x).toBeGreaterThanOrEqual(8);
+			expect(button.x + button.width).toBeLessThanOrEqual(state.dialog.width - 8);
+			expect(button.y + button.height).toBeLessThanOrEqual(state.dialog.height - 16);
+		}
+		const button = state.dialog.buttons[2];
+		emit('pointerdown', {
+			x: state.dialog.x + button.x + button.width / 2,
+			y: state.dialog.y + button.y + button.height / 2,
+			stopPropagation: false,
+		});
+		expect(events.dispatch).toHaveBeenCalledWith('allowAudio', undefined);
+		expect(state.dialogStack).toEqual([]);
 	});
 
 	it('caps the dialog width at 96 grid cells', () => {
@@ -175,7 +211,7 @@ describe('dialog effect', () => {
 			{ title: 'Allow', action: 'confirmAction', payload: { id: 42 }, x: 528, y: 80, width: 104, height: 48 },
 		]);
 
-		const pointerEvent: InternalMouseEvent = {
+		const pointerEvent: InternalPointerEvent = {
 			x: state.dialog.x + state.dialog.buttons[1].x + 1,
 			y: state.dialog.y + state.dialog.buttons[1].y + 1,
 			movementX: 0,
@@ -187,12 +223,12 @@ describe('dialog effect', () => {
 			altKey: false,
 		};
 
-		emit('mousemove', pointerEvent);
+		emit('pointermove', pointerEvent);
 		expect(state.dialog.highlightedButton).toBe(1);
 		expect(pointerEvent.stopPropagation).toBe(true);
 
 		pointerEvent.stopPropagation = false;
-		emit('mousedown', pointerEvent);
+		emit('pointerdown', pointerEvent);
 
 		expect(pointerEvent.stopPropagation).toBe(true);
 		expect(state.dialogStack).toEqual([]);
@@ -215,9 +251,9 @@ describe('dialog effect', () => {
 			x: 0,
 			y: 0,
 			stopPropagation: false,
-		} as InternalMouseEvent;
+		} as InternalPointerEvent;
 
-		emit('mousedown', pointerEvent);
+		emit('pointerdown', pointerEvent);
 
 		expect(pointerEvent.stopPropagation).toBe(true);
 		expect(state.dialogStack).toHaveLength(1);
@@ -241,9 +277,9 @@ describe('dialog effect', () => {
 			x: state.dialog.x + button.x + 1,
 			y: state.dialog.y + button.y + 1,
 			stopPropagation: false,
-		} as InternalMouseEvent;
+		} as InternalPointerEvent;
 
-		emit('mousedown', pointerEvent);
+		emit('pointerdown', pointerEvent);
 
 		expect(state.dialogStack).toHaveLength(1);
 		expect(events.dispatch).toHaveBeenCalledWith('retryAction', undefined);

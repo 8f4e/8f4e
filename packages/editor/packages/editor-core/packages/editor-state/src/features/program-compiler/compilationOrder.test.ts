@@ -42,7 +42,7 @@ function setup(source: string) {
 	const onInputChanged = vi.fn();
 	events.on('compilationInputChanged', onInputChanged);
 	const beginDrag = (block: CodeBlockGraphicData) => {
-		events.dispatch('mousedown', {
+		events.dispatch('pointerdown', {
 			x: block.x - state.viewport.x + 1,
 			y: block.y - state.viewport.y + 1,
 			movementX: 0,
@@ -55,8 +55,8 @@ function setup(source: string) {
 		});
 	};
 	const move = (x: number, y = 0) =>
-		events.dispatch('mousemove', { movementX: x * state.viewport.vGrid, movementY: y * state.viewport.hGrid });
-	const drop = () => events.dispatch('mouseup');
+		events.dispatch('pointermove', { movementX: x * state.viewport.vGrid, movementY: y * state.viewport.hGrid });
+	const drop = () => events.dispatch('pointerup');
 	const values = () =>
 		serializeProjectLevel(state.codeBlockRendering.currentProject)
 			.constants.filter(block => block.code[0] === 'constants preset')

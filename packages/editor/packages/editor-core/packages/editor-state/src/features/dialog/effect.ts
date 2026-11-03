@@ -1,4 +1,4 @@
-import type { DialogContent, EventDispatcher, InternalMouseEvent, State } from '@8f4e/editor-state-types';
+import type { DialogContent, EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import roundToGrid from '~/features/viewport/roundToGrid';
 import wrapText from '../code-blocks/utils/wrapText';
@@ -34,8 +34,13 @@ export default function dialog(store: StateManager<State>, events: EventDispatch
 			Math.max(state.viewport.width * 0.5, DIALOG_MIN_WIDTH_GRID_CELLS * state.viewport.vGrid),
 			DIALOG_MAX_WIDTH_GRID_CELLS * state.viewport.vGrid
 		);
-		const [roundedDialogWidth] = roundToGrid(dialogWidth, 0, state.viewport);
-		const wrappedText = wrapText(visibleDialog.text, Math.floor(roundedDialogWidth / state.viewport.vGrid) - 2);
+		const availableWidth = state.viewport.width - 2 * state.viewport.vGrid;
+		const roundedDialogWidth = Math.max(
+			state.viewport.vGrid,
+			Math.floor(Math.min(dialogWidth, availableWidth) / state.viewport.vGrid) * state.viewport.vGrid
+		);
+		const textWidth = Math.max(1, Math.floor(roundedDialogWidth / state.viewport.vGrid) - 2);
+		const wrappedText = wrapText(visibleDialog.text, textWidth);
 		const buttonLayout = layoutButtons(
 			visibleDialog.buttons,
 			roundedDialogWidth,
@@ -49,7 +54,7 @@ export default function dialog(store: StateManager<State>, events: EventDispatch
 
 		state.dialog.id = visibleDialog.id;
 		state.dialog.text = visibleDialog.text;
-		state.dialog.title = visibleDialog.title;
+		state.dialog.title = visibleDialog.title.slice(0, textWidth);
 		state.dialog.buttons = buttonLayout.buttons;
 		state.dialog.highlightedButton = Infinity;
 		state.dialog.width = roundedDialogWidth;
@@ -92,7 +97,7 @@ export default function dialog(store: StateManager<State>, events: EventDispatch
 		);
 	}
 
-	function onMouseMove(event: InternalMouseEvent): void {
+	function onPointerMove(event: InternalPointerEvent): void {
 		if (state.dialogStack.length === 0) {
 			return;
 		}
@@ -102,7 +107,7 @@ export default function dialog(store: StateManager<State>, events: EventDispatch
 		event.stopPropagation = true;
 	}
 
-	function onMouseDown(event: InternalMouseEvent): void {
+	function onPointerDown(event: InternalPointerEvent): void {
 		if (state.dialogStack.length === 0) {
 			return;
 		}
@@ -125,7 +130,7 @@ export default function dialog(store: StateManager<State>, events: EventDispatch
 		}
 	}
 
-	function blockPointerEvent(event: InternalMouseEvent): void {
+	function blockPointerEvent(event: InternalPointerEvent): void {
 		if (state.dialogStack.length > 0) {
 			event.stopPropagation = true;
 		}
@@ -140,9 +145,9 @@ export default function dialog(store: StateManager<State>, events: EventDispatch
 	events.on('addDialog', addDialog);
 	events.on('removeDialog', removeDialog);
 	events.on('clearDialogs', clearDialogs);
-	events.on('mousemove', onMouseMove);
-	events.on('mousedown', onMouseDown);
-	events.on('mouseup', blockPointerEvent);
+	events.on('pointermove', onPointerMove, { capture: true });
+	events.on('pointerdown', onPointerDown);
+	events.on('pointerup', blockPointerEvent);
 	events.on('contextmenu', blockPointerEvent);
 
 	syncVisibleDialog();
@@ -153,9 +158,9 @@ export default function dialog(store: StateManager<State>, events: EventDispatch
 		events.off('addDialog', addDialog);
 		events.off('removeDialog', removeDialog);
 		events.off('clearDialogs', clearDialogs);
-		events.off('mousemove', onMouseMove);
-		events.off('mousedown', onMouseDown);
-		events.off('mouseup', blockPointerEvent);
+		events.off('pointermove', onPointerMove);
+		events.off('pointerdown', onPointerDown);
+		events.off('pointerup', blockPointerEvent);
 		events.off('contextmenu', blockPointerEvent);
 	};
 }

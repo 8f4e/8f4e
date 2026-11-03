@@ -4,6 +4,7 @@
  */
 
 import type { CompilerSourceBlockType, ProjectGroupPath } from '@8f4e/language-spec';
+import type { CodeBlockGraphicData } from '../features/code-blocks/types';
 
 /**
  * Generic size dimensions used across features.
@@ -42,13 +43,18 @@ export interface EventSubscriptionOptions {
 export interface EventDispatcher {
 	on: <T>(eventName: string, callback: (event: T) => void, options?: EventSubscriptionOptions) => void;
 	off: <T>(eventName: string, callback: (event: T) => void) => void;
-	dispatch: <T>(eventName: string, eventObject?: T) => void;
+	dispatch: <T>(eventName: string, eventObject?: T, options?: EventDispatchOptions) => void;
+}
+
+export interface EventDispatchOptions {
+	/** Deliver one phase only; omitted means capture followed by ordinary listeners. */
+	phase?: 'capture' | 'normal';
 }
 
 /**
- * Internal mouse event payload for editor mouse interactions.
+ * Device-independent pointer input translated by browser input adapters.
  */
-export interface InternalMouseEvent {
+export interface InternalPointerEvent {
 	x: number;
 	y: number;
 	movementX: number;
@@ -59,6 +65,16 @@ export interface InternalMouseEvent {
 	canvasHeight: number;
 	/** Alt/Option key modifier state */
 	altKey: boolean;
+}
+
+export interface CodeBlockPointerDownEvent {
+	x: number;
+	y: number;
+	relativeX: number;
+	relativeY: number;
+	codeBlock: CodeBlockGraphicData;
+	/** A control sets this when it takes ownership of the pointer. */
+	stopPropagation: boolean;
 }
 
 /**

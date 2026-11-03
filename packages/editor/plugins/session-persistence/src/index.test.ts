@@ -255,12 +255,12 @@ describe('session persistence plugin', () => {
 		const compilerRevision = test.state.compilerInputRevision;
 		const projectRevision = test.state.projectChange.revision;
 		test.storage.setItem.mockClear();
-		test.events.dispatch('mousedown', { x: block.x + 8, y: block.y + 8 });
-		test.events.dispatch('mousemove', {
+		test.events.dispatch('pointerdown', { x: block.x + 8, y: block.y + 8 });
+		test.events.dispatch('pointermove', {
 			movementX: test.state.viewport.vGrid * 2,
 			movementY: test.state.viewport.hGrid * 2,
 		});
-		test.events.dispatch('mouseup');
+		test.events.dispatch('pointerup');
 		expect(test.state.projectChange).toEqual({ revision: projectRevision + 1, kind: 'edit' });
 		expect(editing.handle.getRevision()).not.toBe(token);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision);

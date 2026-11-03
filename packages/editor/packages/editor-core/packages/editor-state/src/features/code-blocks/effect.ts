@@ -1,5 +1,6 @@
 import type {
 	CodeBlockGraphicData,
+	CodeBlockPointerDownEvent,
 	EditorDirectiveDefinition,
 	EventDispatcher,
 	ProjectLevel,
@@ -26,7 +27,6 @@ import getProjectViewportPosition from '../viewport/getProjectViewportPosition';
 import updateViewport from '../viewport/updateViewport';
 import deriveErrorMessages from './deriveErrorMessages';
 import blockHighlights from './features/blockHighlights/updateGraphicData';
-import type { CodeBlockPointerDownEvent } from './features/codeBlockDragger/effect';
 import parsePos from './features/directives/pos/data';
 import { deriveDirectiveState } from './features/directives/registry';
 import gaps from './gaps';

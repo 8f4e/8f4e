@@ -74,7 +74,7 @@ describe('example modules plugin', () => {
 			test.state.contextMenu.highlightedItem = test.state.contextMenu.items.findIndex(item =>
 				item.title?.includes(title)
 			);
-			test.events.dispatch('mousedown', { x: 100, y: 112 });
+			test.events.dispatch('pointerdown', { x: 100, y: 112 });
 		};
 		click('Add Built-in Block');
 		await vi.waitFor(() => expect(test.state.contextMenu.items.some(item => item.title?.includes('Audio'))).toBe(true));
