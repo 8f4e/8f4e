@@ -2,7 +2,7 @@ import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
 import { serializeToProject } from '@8f4e/editor-state';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 test('previews fonts through the default composition without changing saved source', async () => {
 	const canvas = document.createElement('canvas');
@@ -15,7 +15,7 @@ test('previews fonts through the default composition without changing saved sour
 	let editor: Editor | undefined;
 	let context!: EditorPluginContext;
 	try {
-		const plugins = await createDefaultEditorPlugins({
+		const plugins = createDefaultEditorPlugins({
 			canvas,
 			storage: { getItem: () => null, setItem: () => {} } as Storage,
 			storageKey: 'font-preview-test',
@@ -39,6 +39,8 @@ test('previews fonts through the default composition without changing saved sour
 				},
 			],
 		});
+		await expect.poll(() => editor!.state.editorConfigSchemaContributions.keyboard).toBeDefined();
+		await vi.dynamicImportSettled();
 		editor.pauseRendering();
 		const source = serializeToProject(editor.state);
 		const revision = editor.editing.getRevision();

@@ -13,7 +13,7 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 	const values = new Map<string, string>();
 	const pressed = new Set<string>();
 	try {
-		const plugins = await createDefaultEditorPlugins({
+		const plugins = createDefaultEditorPlugins({
 			canvas,
 			storage: {
 				getItem: (key: string) => values.get(key) ?? null,
@@ -59,6 +59,8 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 				},
 			],
 		});
+		await expect.poll(() => editor!.state.editorConfigSchemaContributions.keyboard).toBeDefined();
+		await vi.dynamicImportSettled();
 		editor.pauseRendering();
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('view-mode-hint');

@@ -2,6 +2,14 @@
 
 - Own the embedded composition for the product homepage and example/test galleries. Build directly on editor-core;
   do not import editor-default or its built-in module catalog.
+- Keep file-session, project URL loading, compiler coordination, and code rendering eager. Import
+  `src/deferred-plugins.ts` on core's `ready` event, after initial project loading/parsing, font-atlas loading, and
+  rendering. This is the single gate for input, connectors, assertions, saving, tooltips, and directive-based lazy
+  imports. Do not add frame
+  callbacks, visibility checks, or timing delays. Keep font payloads lazy.
+- Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
+  Load entries independently through the same loader; apply pointer capability and mode-switching availability as
+  entry predicates. Keep project signals in `src/lazy-plugins.ts`. Do not create a separate keyboard loading group.
 - Keep live editing and runtime controls available. Let the project's `@mode` directive select its initial mode
   (view by default), and disable project creation by default.
   Hosts own wheel capture, mode-toggle preferences, page URLs, loading UI, visibility, and WebMCP registration.
@@ -10,13 +18,15 @@
 - Keep standard-library discovery in this package's Vite configuration and lazy include resolver. There is no
   example-module source collection here.
 - Keep project signals and dynamic imports in `src/lazy-plugins.ts`. Plugins own feature logic; the existing loader
-  owns activation and disposal. Match all wave variants and raw `midi`, `bin`, `textureRuntime`, and runtime config roots before their
+  owns activation and disposal. Match `@watch`/`@w`, `@stack`/`@s`, all wave variants, and raw `midi`, `bin`, `textureRuntime`, and runtime config roots before their
   schemas load. Declare `scope: 'view'` for visual/control plugins and `scope: 'project'` for runtime, MIDI, and
   asset plugins. Match cached directives; completed project changes and group navigation trigger automatic scans.
   Supply the browser navigator and live compiler getters to the registry for MIDI and binary assets.
 - Supply the canvas and browser navigator to input plugins, memory getters to binary assets, and the compiler memory
-  writer to interactive controls. Install watch/stack overlays before tooltips.
-- The project URL plugin owns fetching. Forward initial-project callbacks; mounting does not wait for the fetch.
+  writer to interactive controls. Pass a live reduced-motion preference to lazy watch/stack factories. Their block
+  drawers run before tooltip overlays, independently of installation order.
+- The project URL plugin owns fetching. Forward initial-project callbacks; mounting waits for fetching/parsing and the
+  first render.
   Without a URL, start empty and announce readiness after initialization.
 - Construct one `createProjectFileSession()` and install its plugin before the
   project URL loader. Pass it to `createProjectSavePlugin({ inputTarget: canvas, fileSession })` for Save, Export Project, and Cmd/Ctrl+S.
@@ -28,7 +38,7 @@
 
 - Install `codeRenderingPlugin` eagerly for code/notes text and syntax highlighting. Keep text preparation and caching
   in the plugin and editing/layout geometry in core.
-- Install `connectorsPlugin` in the fixed plugin set. It owns all input/output widgets and GPU wire rendering;
+- Install `connectorsPlugin` in the deferred plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
 
 - Per-frame WASM execution and texture upload/view directives belong entirely to `editor-plugin-texture-runtime`.
@@ -39,8 +49,8 @@
   Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
 
-- Keep keyboard navigation, editing, and mode switching independent. Dynamically import their factories only when
-  `(pointer: coarse)` does not match at mount time. The mode-switching plugin owns keyboard hints, so omitting it
+- Keep keyboard navigation, editing, and mode switching independent. Dynamically import their factories after the first render, only when
+  `(pointer: coarse)` does not match. The mode-switching plugin owns keyboard hints, so omitting it
   also removes those overlays.
   The keyboard-editing plugin owns its mode-triggered implementation import and input buffering; keep feature
   behavior and pending-input lifecycle out of the host and generic directive lazy loader.

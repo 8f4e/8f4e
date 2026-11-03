@@ -5,8 +5,14 @@
 - Export composition APIs without mounting as an import side effect.
 - Compose the standard plugin set here and expose host overrides through `plugins`; keep feature logic in its
   plugin package and generic plugin installation in editor-core.
-- Await `createDefaultEditorPlugins` to construct the standard set per mounted editor, supplying the canvas, render
-  callback, storage settings, Open menu visibility, and compiler getters. Render callbacks run after initialization.
+- Call `createDefaultEditorPlugins` to construct the startup set synchronously per mounted editor, supplying the canvas, render
+  callback, storage settings, Open menu visibility, and compiler getters. Keep file-session, URL/session loading, and
+  code rendering eager. The deferred loader imports `src/deferred-plugins.ts` on core's `ready` event, after initial
+  project loading/parsing, font-atlas loading, and rendering. This is the single gate for every optional and
+  directive-based lazy import; do not add frame callbacks, visibility checks, or timing delays. Keep font payloads lazy.
+- Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
+  Load entries independently through the same loader; apply pointer capability and mode-switching availability as
+  entry predicates. Keep project signals in `src/lazy-plugins.ts`. Do not create a separate keyboard loading group.
 - Construct one `createProjectFileSession()` per default feature set and install its `plugin` before project loaders.
   Compose `createProjectOpenPlugin({ document: canvas.ownerDocument, fileSession, showOpenMenuItem })` for Open and
   `createProjectSavePlugin({ inputTarget: canvas, fileSession })` for Save/Export and Cmd/Ctrl+S. The session holds only
@@ -24,10 +30,11 @@
   that plugin; keep the default editor responsible only for discovery and composition.
 - Keep `@8f4e/examples` as a dependency so its generators run before discovery and its sources affect build caching.
 
-- Compose watch and stack with the fixed default plugin set. Supply their factories
-  with a live reduced-motion preference from the browser; install their overlays before tooltips.
+- Load watch and stack from the lazy registry for `@watch`/`@w` and `@stack`/`@s`. Supply their factories
+  with a live reduced-motion preference from the browser. Their block drawers run before tooltip overlays,
+  independently of installation order.
 - Compose `createLazyPluginLoaderPlugin` with the per-editor `createLazyPluginRegistry` for optional signal-driven plugins.
-  Keep its per-editor registry in `src/lazy-plugins.ts` for plot, wave, meter, bars, switch, button, piano, slider,
+  Keep its per-editor registry in `src/lazy-plugins.ts` for plot, wave, meter, bars, watch, stack, switch, button, piano, slider,
   crossfade, MIDI input, binary assets, and runtime plugins. Match all three wave directives: `wave`, `wave2`, and `wave4`, and raw
   `midi`/`bin`/`textureRuntime` config roots before their schemas load. Also match `@textureUpload` and `@texture`. Import implementations and construct
   their factories only inside `load()`, using the supplied live memory writer. Supply runtime plugins with compiler artifact getters and the optional shared AudioContext. Each runtime plugin imports its own worker/worklet assets and owns browser API use.
@@ -36,13 +43,13 @@
   Mounting and initial project notifications do not wait for lazy plugin imports. The loader owns late installation
   and disposal; core keeps the ordinary plugin contract.
 - Include `favoritesPlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Favorites stays
-  fixed so its editing action is available before the first directive. The plugin owns favorite detection, both menus,
+  unconditional in the deferred set so its editing action is available without a directive. The plugin owns favorite detection, both menus,
   navigation actions, and its env-source marker; core does not install favorite behavior.
 - Include `groupingPlugin` after the execution-toggle plugin. It owns editor `@group` behavior, including drag and
   paste policies and group menus; it has no browser factory dependencies.
 - Load `createBinaryAssetsPlugin({ getMemoryBytes })` from the lazy registry with a getter for current compiler memory.
   Fetching, caching, binary metadata, loading UI, and generated asset constants remain inside the plugin.
-- Include `assertionMarkersPlugin` and `createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory })` in the fixed
+- Include `assertionMarkersPlugin` and `createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory })` in the deferred
   standard set. Load `createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })` from the lazy registry. Supply
   the canvas's browser navigator and live compiler getters to that registry. MIDI owns WASM instantiation and caching;
   core has no separate environment-plugin system.
@@ -51,7 +58,8 @@
   restoration when an explicit initial URL exists. Keep autosaving active while that URL is pending.
 - The plugins own URL fetching and storage serialization. Do not restore session/URL callbacks in core or host wrappers.
 - Forward onInitialProjectLoaded/onInitialProjectLoadError to the URL plugin's factory callbacks. Without a URL,
-  notify success after editor initialization. Mounting must not wait for fetching; callbacks may precede mount resolution.
+  notify success after editor initialization. Mounting waits for fetching/parsing and the first render; callbacks may
+  precede mount resolution.
 - Test URL/session startup coordination in `src/startup.integration.test.ts` using the real default plugin composition.
   Keep each startup plugin's own tests independent of the other plugin.
 
@@ -75,7 +83,7 @@
 
 - Install `codeRenderingPlugin` eagerly for code/notes text and syntax highlighting. Keep text preparation and caching
   in the plugin and editing/layout geometry in core.
-- Install `connectorsPlugin` in the fixed plugin set. It owns all input/output widgets and GPU wire rendering;
+- Install `connectorsPlugin` in the deferred plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
 
 - Per-frame WASM execution and texture upload/view directives belong entirely to `editor-plugin-texture-runtime`.
@@ -91,7 +99,7 @@
   in its owning plugin; this package owns combinations of real plugins.
 
 - Keep keyboard navigation, editing, and mode switching independent. Dynamically import their factories only when
-  `(pointer: coarse)` does not match at mount time. The mode-switching plugin owns keyboard hints, so omitting it
+  `(pointer: coarse)` does not match after the first render. The mode-switching plugin owns keyboard hints, so omitting it
   also removes those overlays.
   The keyboard-editing plugin owns its mode-triggered implementation import and input buffering; keep feature
   behavior and pending-input lifecycle out of the host and generic directive lazy loader.

@@ -7,7 +7,9 @@ core's generic `loadProject` action. The host supplies `fetch` and optionally an
 createProjectUrlLoaderPlugin({ fetch, initialProjectUrl, onLoaded, onError })
 ```
 
-The initial URL is fetched on the generic `init` event. Without one, initialization performs no request.
+The initial URL is fetched on the generic `init` event. Fetching, parsing, and project installation run alongside the
+default font download. Rendering waits for both.
+Without an initial URL, initialization performs no request.
 Fetching uses `cache: 'no-store'` and preserves the supplied URL. HTTP, network, and parser errors are logged in the
 editor console and load an empty project.
 

@@ -1,10 +1,19 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
+import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { afterEach, expect, it, vi } from 'vitest';
 import { mountMinimalEditor } from './index';
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
 vi.mock('@8f4e/editor-plugin-compiler', { spy: true });
+vi.mock('@8f4e/editor-plugin-lazy-loader', { spy: true });
+
+async function loadDeferredPlugins() {
+	const loader = await vi.mocked(createDeferredPluginLoaderPlugin).mock.calls.at(-1)![0].load();
+	const entries = vi.mocked(createLazyPluginLoaderPlugin).mock.calls.at(-1)![0];
+	const plugins = await Promise.all(entries.filter(entry => entry.matches([])).map(entry => entry.load()));
+	return [loader, ...plugins];
+}
 afterEach(() => vi.clearAllMocks());
 
 it('starts without storage and reports empty-project readiness after initialization', async () => {
@@ -28,7 +37,18 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(options.captureWheel).toBe(false);
 	expect(options.featureFlags).toEqual({ projectCreation: false, moduleDragging: false });
 	expect(options.plugins![0]).toBe(compiler.plugin);
-	expect(options.plugins!.map(plugin => plugin.id)).toEqual(
+	expect(options.plugins!.map(plugin => plugin.id)).not.toContain('watch');
+	expect(options.plugins!.map(plugin => plugin.id)).not.toContain('stack');
+	expect(options.plugins!.map(plugin => plugin.id)).toEqual([
+		'compiler',
+		'project-file-session',
+		'code-rendering',
+		'project-url-loader',
+		'deferred-loader',
+	]);
+	expect(createLazyPluginLoaderPlugin).not.toHaveBeenCalled();
+	const deferredPlugins = await loadDeferredPlugins();
+	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).toEqual(
 		expect.arrayContaining([
 			'code-rendering',
 			'connectors',
@@ -51,9 +71,9 @@ it('omits all keyboard plugins on coarse-pointer browsers', async () => {
 	const browserWindow = { navigator: {}, matchMedia: (query: string) => ({ matches: query === '(pointer: coarse)' }) };
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 	await mountMinimalEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
-	const options = vi.mocked(initEditor).mock.calls.at(-1)![1];
+	const plugins = await loadDeferredPlugins();
 	for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing'])
-		expect(options.plugins!.some(plugin => plugin.id === id)).toBe(false);
+		expect(plugins.some(plugin => plugin.id === id)).toBe(false);
 });
 
 it('omits mode switching while retaining navigation and editing', async () => {
@@ -62,10 +82,7 @@ it('omits mode switching while retaining navigation and editing', async () => {
 	await mountMinimalEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement, {
 		includeKeyboardModeSwitching: false,
 	});
-	const ids = vi
-		.mocked(initEditor)
-		.mock.calls.at(-1)![1]
-		.plugins!.map(plugin => plugin.id);
+	const ids = (await loadDeferredPlugins()).map(plugin => plugin.id);
 	expect(ids).not.toContain('keyboard-mode-switching');
 	expect(ids).toEqual(expect.arrayContaining(['keyboard-navigation', 'keyboard-editing']));
 });

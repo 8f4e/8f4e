@@ -39,7 +39,7 @@ The independent `font-preview` plugin uses F18 for the previous font and F19 for
 available catalog. It previews without changing source, history, or saved files. Previewing persists across source
 edits; loading a project or disposing the plugin restores source configuration.
 
-The browser host imports and installs these four plugins only when `(pointer: coarse)` does not match. Phones and tablets
+After the first render, the browser host imports and installs these four plugins only when `(pointer: coarse)` does not match. Phones and tablets
 with a coarse primary pointer receive none of them, and their mode overlay is hidden by default. This
 is a capability check at mounting time; it does not identify devices by user agent. Touch navigation can be composed
 separately later. Keyboard-to-memory and Save shortcuts remain independent plugins.
@@ -63,9 +63,9 @@ a failed initial URL request or parse. With no URL, the success callback runs af
 session restoration. With a URL, the standard URL-loader plugin supplies the notification. A valid empty project counts
 as success; compilation and asset loading continue independently.
 
-Callbacks can run before the mount promise resolves. Mounting itself finishes after editor initialization while a URL
-request may still be pending, so hosts can dispose that editor when navigating elsewhere. Custom plugin compositions
-provide their own asynchronous loading notifications.
+Callbacks can run before the mount promise resolves. Mounting waits for URL fetching/parsing, font-atlas loading, and
+the first render. Project fetching/parsing and the default ibmvga font download run in parallel. Custom plugin
+compositions provide their own asynchronous loading notifications.
 
 The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
 `@8f4e/editor-plugin-favorites` for favorite directives, editing, and navigation,
@@ -78,19 +78,29 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
 `@8f4e/editor-plugin-project-open` for opening projects, `@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
 `createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
-asynchronously constructs this plugin set with resources for one editor; await its result. It creates one `@8f4e/editor-file-session`, installs its
+synchronously constructs the startup plugin set with resources for one editor. It creates one `@8f4e/editor-file-session`, installs its
 plugin before project loaders, and supplies it to Open and Save. The session shares the current handle and clears it
 on project replacement. Open receives the canvas's document. Save receives the canvas and owns serialization, writing,
 and Cmd/Ctrl+S. WebAssembly export receives a document and a live compiler-byte getter. File handling stays outside core.
+Compiler coordination, source loading/session restoration, file-session tracking, and code rendering are eager.
+On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for connectors, assertion markers,
+keyboard input, tooltips, built-in module browsing, file actions, and the other authoring features. Core emits this
+event after initial project loading/parsing, font-atlas loading, and rendering. This is the single loading gate for
+optional modules, including directive-based lazy plugins, with no extra frame callback or timer. Font payloads
+remain separate lazy chunks. Every optional feature is an individual entry in the same deferred list, including input
+plugins; their implementations load independently. Deferred features initialize from the current
+project, including edits or compilation results received while loading. Mounting and initial-project callbacks do
+not wait for these features.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
 browser resources. This composition supplies resources tied to the host, while browser plugins can own their
 browser API use.
-Meter, bars, crossfade, watch, and stack are also optional plugins in this standard set. Watch and stack remain fixed
-and register their overlays before tooltips. They receive a live reduced-motion preference from the browser host
-and keep their animation and data inside their installations.
-Plot, wave, meter, bars, switch, button, piano, slider, and crossfade load on demand through
+Meter, bars, crossfade, watch, and stack are also optional plugins in this standard set. Watch and stack receive a
+live reduced-motion preference from the browser host and keep their animation and data inside their installations.
+Their block drawers run before tooltip overlays, independently of when their imports finish.
+Plot, wave, meter, bars, watch, stack, switch, button, piano, slider, and crossfade load on demand through
 `@8f4e/editor-plugin-lazy-loader`. The per-editor registry in `src/lazy-plugins.ts` matches cached parsed directives
-and dynamically imports their implementations. Wave matches `@wave`, `@wave2`, and `@wave4`.
+and dynamically imports their implementations. Wave matches `@wave`, `@wave2`, and `@wave4`;
+watch matches `@watch` and `@w`, and stack matches `@stack` and `@s`.
 MIDI input and binary assets load when raw `@config midi.*` or `@config bin.*` directives appear, before their
 schemas are registered. The registry supplies the canvas's navigator and live compiler getters to those factories,
 and the compiler's live memory writer to control factories after importing them.
@@ -106,7 +116,7 @@ Each editor installs and disposes its own plugin effects. See the [plugin contra
 copies, loading UI, and generated size constants. The default editor supplies a getter for current compiler memory
 bytes, so memory replacement and growth are visible to the plugin without sharing browser-specific context fields.
 
-The fixed set includes `@8f4e/editor-plugin-assertion-markers` for executed assertion indicators and
+The deferred set includes `@8f4e/editor-plugin-assertion-markers` for executed assertion indicators and
 `@8f4e/editor-plugin-keyboard-memory` for keyboard-to-memory input. The lazy `@8f4e/editor-plugin-midi-input` owns MIDI
 discovery and callbacks. Keyboard input receives the mounted canvas and a live memory writer. MIDI receives that canvas's navigator and
 live compiler memory/bytecode getters, and owns its WASM instance and export cache. MIDI access is requested only

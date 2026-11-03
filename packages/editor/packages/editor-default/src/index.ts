@@ -1,34 +1,17 @@
-import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
-import { assertionMarkersPlugin } from '@8f4e/editor-plugin-assertion-markers';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
-import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
-import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
-import { favoritesPlugin } from '@8f4e/editor-plugin-favorites';
-import { groupingPlugin } from '@8f4e/editor-plugin-grouping';
-import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
-import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
-import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
+import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
-import { removeMemoryConnectionsPlugin } from '@8f4e/editor-plugin-remove-memory-connections';
-import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
-import { createStackPlugin } from '@8f4e/editor-plugin-stack';
-import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
-import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
-import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
-import { createWatchPlugin } from '@8f4e/editor-plugin-watch';
-import { createLazyPluginRegistry } from './lazy-plugins';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
 export type DefaultEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
 
-export async function createDefaultEditorPlugins(options: {
+export function createDefaultEditorPlugins(options: {
 	canvas: HTMLCanvasElement;
 	storage: Storage;
 	storageKey: string;
@@ -43,12 +26,8 @@ export async function createDefaultEditorPlugins(options: {
 	getCodeBuffer: () => Uint8Array;
 	getAssertionSites: ReturnType<typeof createCompilerPlugin>['getAssertionSites'];
 	sharedAudioContext?: AudioContext;
-}): Promise<NonNullable<EditorOptions['plugins']>> {
+}): NonNullable<EditorOptions['plugins']> {
 	const fileSession = createProjectFileSession();
-	const browserWindow = options.canvas.ownerDocument.defaultView!;
-	const keyboardPlugins = await createKeyboardPlugins(options.canvas, options.includeKeyboardModeSwitching);
-	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
-	const prefersReducedMotion = () => motionPreference.matches;
 	return [
 		fileSession.plugin,
 		createProjectUrlLoaderPlugin({
@@ -62,37 +41,11 @@ export async function createDefaultEditorPlugins(options: {
 			storageKey: options.storageKey,
 			restoreOnStartup: !options.initialProjectUrl,
 		}),
-		createExampleModulesPlugin({ sources: exampleModuleSources }),
-		...keyboardPlugins,
 		codeRenderingPlugin,
-		connectorsPlugin,
-		assertionMarkersPlugin,
-		createKeyboardMemoryPlugin({ inputTarget: options.canvas, writeMemory: options.writeMemory }),
-		toggleSkipExecutionPlugin,
-		groupingPlugin,
-		favoritesPlugin,
-		removeMemoryConnectionsPlugin,
-		createLazyPluginLoaderPlugin(
-			createLazyPluginRegistry({
-				navigator: options.canvas.ownerDocument.defaultView!.navigator,
-				writeMemory: options.writeMemory,
-				getMemory: options.getMemory,
-				getCodeBuffer: options.getCodeBuffer,
-				getAssertionSites: options.getAssertionSites,
-				sharedAudioContext: options.sharedAudioContext,
-			})
-		),
-		createWatchPlugin({ prefersReducedMotion }),
-		createStackPlugin({ prefersReducedMotion }),
-		tooltipsPlugin,
-		createProjectOpenPlugin({
-			document: options.canvas.ownerDocument,
-			fileSession,
-			showOpenMenuItem: options.showOpenMenuItem,
+		createDeferredPluginLoaderPlugin({
+			load: () =>
+				import('./deferred-plugins').then(module => module.createDeferredEditorPlugin({ ...options, fileSession })),
 		}),
-		createProjectSavePlugin({ inputTarget: options.canvas, fileSession }),
-		createWasmExportPlugin({ document: options.canvas.ownerDocument, getCodeBuffer: options.getCodeBuffer }),
-		createScreenshotPlugin({ canvas: options.canvas, renderFrame: options.renderFrame }),
 	];
 }
 
@@ -139,7 +92,7 @@ export async function mountDefaultEditor(
 		plugins: [
 			compiler.plugin,
 			...(plugins ??
-				(await createDefaultEditorPlugins({
+				createDefaultEditorPlugins({
 					canvas,
 					storage,
 					storageKey: `project_${storageNamespace}`,
@@ -154,7 +107,7 @@ export async function mountDefaultEditor(
 					getCodeBuffer: compiler.getCodeBuffer,
 					getAssertionSites: compiler.getAssertionSites,
 					sharedAudioContext,
-				}))),
+				})),
 		],
 		captureWheel,
 		featureFlags,
@@ -162,29 +115,4 @@ export async function mountDefaultEditor(
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
-}
-
-async function createKeyboardPlugins(
-	canvas: HTMLCanvasElement,
-	includeKeyboardModeSwitching = true
-): Promise<NonNullable<EditorOptions['plugins']>> {
-	if (canvas.ownerDocument.defaultView!.matchMedia('(pointer: coarse)').matches) return [];
-	return Promise.all([
-		...(includeKeyboardModeSwitching
-			? [
-					import('@8f4e/editor-plugin-keyboard-mode-switching').then(({ createKeyboardModeSwitchingPlugin }) =>
-						createKeyboardModeSwitchingPlugin({ inputTarget: canvas })
-					),
-				]
-			: []),
-		import('@8f4e/editor-plugin-keyboard-navigation').then(({ createKeyboardNavigationPlugin }) =>
-			createKeyboardNavigationPlugin({ inputTarget: canvas })
-		),
-		import('@8f4e/editor-plugin-keyboard-editing').then(({ createKeyboardEditingPlugin }) =>
-			createKeyboardEditingPlugin({ inputTarget: canvas })
-		),
-		import('@8f4e/editor-plugin-font-preview').then(({ createFontPreviewPlugin }) =>
-			createFontPreviewPlugin({ inputTarget: canvas })
-		),
-	]);
 }

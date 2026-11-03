@@ -9,6 +9,7 @@ export interface EventObject {
 export type { EventDispatcher } from '@8f4e/editor-state-types';
 
 interface DisposableEventDispatcher extends EventDispatcher {
+	dispatchAsync: <T>(type: string, eventObject?: T) => Promise<void>;
 	dispose: () => void;
 }
 
@@ -34,16 +35,23 @@ export default function events(): DisposableEventDispatcher {
 		}
 	}
 
-	function dispatch<T>(type: string, eventObject?: T): void {
+	function dispatch<T>(type: string, eventObject?: T, pending?: Array<void | Promise<void>>): void {
 		if (!subscriptions[type]) {
 			return console.warn('No subscription to event type:', type);
 		}
 		for (const handlers of [subscriptions[type].capture, subscriptions[type].normal]) {
 			for (const handler of [...handlers]) {
 				if (eventObject && (eventObject as EventObject).stopPropagation) return;
-				handler(eventObject);
+				const result = handler(eventObject);
+				pending?.push(result);
 			}
 		}
+	}
+
+	async function dispatchAsync<T>(type: string, eventObject?: T): Promise<void> {
+		const pending: Array<void | Promise<void>> = [];
+		dispatch(type, eventObject, pending);
+		await Promise.all(pending);
 	}
 
 	function dispose(): void {
@@ -53,5 +61,5 @@ export default function events(): DisposableEventDispatcher {
 		}
 	}
 
-	return { on, off, dispatch, dispose };
+	return { on, off, dispatch, dispatchAsync, dispose };
 }

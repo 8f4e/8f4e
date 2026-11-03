@@ -2,6 +2,25 @@ import { describe, expect, it, vi } from 'vitest';
 import createEventDispatcher from './index';
 
 describe('event dispatcher', () => {
+	it('waits for asynchronous startup work while starting every listener immediately', async () => {
+		const events = createEventDispatcher();
+		let finish!: () => void;
+		const pending = new Promise<void>(resolve => {
+			finish = resolve;
+		});
+		const restore = vi.fn();
+		const completed = vi.fn();
+		events.on('init', async () => await pending);
+		events.on('init', restore);
+		const initializing = events.dispatchAsync('init').then(completed);
+		expect(restore).toHaveBeenCalledOnce();
+		await Promise.resolve();
+		expect(completed).not.toHaveBeenCalled();
+		finish();
+		await initializing;
+		expect(completed).toHaveBeenCalledOnce();
+	});
+
 	it('delivers disposal to every listener when a listener unregisters itself', () => {
 		const events = createEventDispatcher();
 		const first = () => events.off('dispose', first);

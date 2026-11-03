@@ -30,6 +30,18 @@ function entry(scope: LazyEditorPlugin['scope'] = 'view', id = 'custom') {
 }
 
 describe('lazy plugin loader', () => {
+	it('installs ready plugins while another import is still pending', async () => {
+		const slow = entry('view', 'slow');
+		const fast = entry('view', 'fast');
+		const pending = deferred<EditorPlugin>();
+		slow.registration.load = vi.fn(() => pending.promise);
+		setup([slow.registration, fast.registration], emptySource.replace('moduleEnd', '; @slow\n; @fast\nmoduleEnd'));
+		await vi.waitFor(() => expect(fast.plugin.setup).toHaveBeenCalledOnce());
+		expect(slow.plugin.setup).not.toHaveBeenCalled();
+		pending.resolve(slow.plugin);
+		await vi.waitFor(() => expect(slow.plugin.setup).toHaveBeenCalledOnce());
+	});
+
 	it('loads on project replacement only when a signal matches and keeps the plugin installed', async () => {
 		const { registration, plugin, cleanup } = entry();
 		const editor = setup([registration]);

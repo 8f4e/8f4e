@@ -50,26 +50,30 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 		window.history.replaceState(null, '', originalUrl);
 	});
 	const panel = (id = ids[0]) => gallery.querySelector<HTMLElement>(`#panel-${id}`)!;
-	const mounted = async (index = 0): Promise<MinimalEditorInstance> => {
+	const started = async (index = 0) => {
 		await vi.waitFor(() => expect(mountMinimalEditor).toHaveBeenCalledTimes(index + 1));
+	};
+	const mounted = async (index = 0): Promise<MinimalEditorInstance> => {
+		await started(index);
 		return await vi.mocked(mountMinimalEditor).mock.results[index].value;
 	};
-	return { gallery, panel, mounted };
+	return { gallery, panel, started, mounted };
 }
 
-test('keeps the editor mounted while a project fetch is pending and reveals it on completion', async () => {
+test('keeps the loading canvas while mounting waits for the project and reveals it on completion', async () => {
 	let finish!: (response: Response) => void;
 	const pending = new Promise<Response>(resolve => {
 		finish = resolve;
 	});
 	const view = setup({ delayed: () => pending });
-	const editor = await view.mounted();
+	await view.started();
 	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
 	const canvas = view.panel().querySelector('canvas')!;
 	expect(status.textContent).toBe('Loading project…');
 	expect(canvas.isConnected).toBe(true);
 	expect(canvas.classList.contains('editor-ready')).toBe(false);
 	finish(new Response(source));
+	const editor = await view.mounted();
 	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
 	expect(status.hidden).toBe(true);
 	expect(editor.state.initialProjectState?.execution[0].code).toContain('module galleryExample ; @mode edit');
@@ -297,7 +301,7 @@ test('switches examples without waiting for the previous fetch and ignores its l
 		finish = resolve;
 	});
 	const view = setup({ first: () => pending, second: async () => new Response(source) });
-	await view.mounted();
+	await view.started();
 	const firstCanvas = view.panel('first').querySelector('canvas')!;
 	view.gallery.querySelector<HTMLButtonElement>('#example-second')!.click();
 	await view.mounted(1);
@@ -306,7 +310,7 @@ test('switches examples without waiting for the previous fetch and ignores its l
 	);
 	expect(firstCanvas.isConnected).toBe(false);
 	finish(new Response(source));
-	await new Promise<void>(resolve => window.requestAnimationFrame(() => resolve()));
+	await vi.mocked(mountMinimalEditor).mock.results[0].value;
 	expect(view.panel('second').querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 	expect(view.panel('second').querySelector('canvas')?.classList.contains('editor-ready')).toBe(true);
 	expect(view.panel('first').querySelector('canvas')).toBeNull();
@@ -340,9 +344,10 @@ test('registers site tools only after the selected project has loaded', async ()
 		finish = resolve;
 	});
 	const view = setup({ bridged: () => pending });
-	await view.mounted();
+	await view.started();
 	expect(tools.size).toBe(0);
 	finish(new Response(source));
+	await view.mounted();
 	await vi.waitFor(() => expect(tools.has('get_compiler_diagnostics')).toBe(true));
 	expect(await tools.get('get_project')!.execute({})).toContain('module galleryExample');
 });

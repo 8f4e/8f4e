@@ -39,11 +39,14 @@ function setup(response?: () => Promise<Response>) {
 		dispose();
 		row.remove();
 	});
-	const mounted = async () => {
+	const started = async () => {
 		await vi.waitFor(() => expect(mountMinimalEditor).toHaveBeenCalledOnce());
+	};
+	const mounted = async () => {
+		await started();
 		return await vi.mocked(mountMinimalEditor).mock.results[0].value;
 	};
-	return { canvas, frame, mounted };
+	return { canvas, frame, started, mounted };
 }
 
 test('reveals the homepage editor after its initial project load completes', async () => {
@@ -52,9 +55,10 @@ test('reveals the homepage editor after its initial project load completes', asy
 		finish = resolve;
 	});
 	const view = setup(() => pending);
-	await view.mounted();
+	await view.started();
 	expect(view.canvas.classList.contains('editor-ready')).toBe(false);
 	finish(new Response('8f4e/v1'));
+	await view.mounted();
 	await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
 });
 

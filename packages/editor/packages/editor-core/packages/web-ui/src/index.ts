@@ -1,6 +1,6 @@
 import { toPaletteBytes } from '@8f4e/editor-palette';
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import loadFontAtlas, { type Font, type FontAtlas } from '@8f4e/sprite-generator';
+import loadFontAtlas, { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
 import { Engine } from 'glugglugglug';
 import { subscribeToAppearance, updateGridSize } from './appearance';
@@ -45,6 +45,8 @@ export interface RenderStats {
 }
 
 export interface WebUiOptions {
+	/** Startup project preparation may run alongside the initial font download. */
+	initialProjectReady?: Promise<void>;
 	drawers?: EditorDrawerHost;
 	onRenderStats?: (stats: RenderStats) => void;
 	renderStatsIntervalFrames?: number;
@@ -65,8 +67,9 @@ export default async function init(
 	destroy: () => void;
 }> {
 	const state = store.getState();
+	const [initialFontAtlas] = await Promise.all([loadFontAtlas(DEFAULT_FONT), options.initialProjectReady]);
 	const font = getConfiguredFont(state.editorConfig);
-	const fontAtlas = await loadFontAtlas(font);
+	const fontAtlas = font === DEFAULT_FONT ? initialFontAtlas : await loadFontAtlas(font);
 	const palette = getConfiguredPalette(state.editorConfig);
 	updateGridSize(state, events, fontAtlas);
 	const engine = new Engine(canvas);

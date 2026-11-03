@@ -15,6 +15,9 @@
   subscriptions. Editor-core calls it before plugins/project loading; renderer initialization receives the store and
   event dispatcher. Editor-state uses only grid dimensions and the generic `gridSizeChanged` event.
 - Keep `@8f4e/editor-palette` external in bundled editor libraries so the final composition can share one palette module.
+- Both compositions start every optional import, including directive-based plugins, on core's `ready` event after
+  initial project loading/parsing, font-atlas loading, and rendering. Keep font payloads lazy; add no frame callbacks or
+  timing gates.
 - External lists match exact import paths; include used dependency subpaths such as `glugglugglug/utils` explicitly.
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, example source discovery,
   and startup policy.
@@ -47,10 +50,10 @@
   `editor-plugin-lazy-loader` scans cached directives automatically after project changes and group navigation.
   Explicit registry scopes match visual/control plugins in the current project level and runtime/MIDI/asset plugins
   across the project tree. Matching plugins stay installed until editor disposal. Both editor compositions' lightweight registries dynamically import plot, wave,
-  meter, bars, switch, button, piano, slider, and crossfade for their directives, plus MIDI, binary assets, and runtime
+  meter, bars, watch, stack, switch, button, piano, slider, and crossfade for their directives, plus MIDI, binary assets, and runtime
   plugins for their raw config roots.
   `editor-plugin-connectors` owns input/output geometry, private connector state, wire lookup, and all line GPU
-  resources. Both compositions install it in their fixed plugin set. Web-ui provides generic render-layer lifecycle.
+  resources. Both compositions install it in their deferred plugin set after the first render. Web-ui provides generic render-layer lifecycle.
   Core provides independent layout contributions and subscriptions; directive parsing and layout remain separate.
   Session restoration/autosaving and project URL loading live in `editor-plugin-session-persistence` and
   `editor-plugin-project-url-loader`. The default host supplies storage/fetch and chooses initial URL priority.
@@ -136,7 +139,7 @@
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
 
 - Keyboard navigation, text editing/history shortcuts, and mode switching are independent input plugins. Both hosts
-  import their factories only for non-coarse primary pointers. Editing loads its implementation on edit mode and
+  import their factories after the first render, only for non-coarse primary pointers. Editing loads its implementation on edit mode and
   owns pending input replay; test real plugin combinations in editor-default, never in sibling-plugin tests.
 - The default editor additionally imports `font-preview` with the desktop keyboard set. F18/F19 cycle temporary fonts;
   source, history, and exports stay unchanged. Minimal omits it.

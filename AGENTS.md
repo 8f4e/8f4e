@@ -13,9 +13,13 @@
 - `editor-plugin-lazy-loader` automatically matches cached editor directives after project changes and group navigation.
   Visual/control plugins use the current project level; runtime, MIDI, and asset plugins use the entire project tree.
   Both editor compositions keep explicit loading scopes, lazy signals, and dynamic imports in `src/lazy-plugins.ts`
-  for plot, wave, meter, bars, switch, button, piano, slider, crossfade, MIDI input, binary assets, and the
+  for plot, wave, meter, bars, watch, stack, switch, button, piano, slider, crossfade, MIDI input, binary assets, and the
   audio/worker/test/texture runtimes. MIDI, assets, and texture execution match raw `midi`,
-  `bin`, and `textureRuntime` config roots before their schemas load. Texture uploads and views also match `@textureUpload` and `@texture`. Other plugins remain fixed.
+  `bin`, and `textureRuntime` config roots before their schemas load. Texture uploads and views also match `@textureUpload` and `@texture`. Both compositions defer optional UI, input, and authoring plugins until after the first render.
+  Compiler coordination, project loading/restoration, and code rendering remain eager.
+  All optional imports, including directive-based lazy plugins, start on core's `ready` event, after initial project
+  loading/parsing, font-atlas loading, and rendering. Font payloads remain separate lazy chunks; do not add frame
+  callbacks or timing gates.
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
   selection, and paste collision renaming. Nested language-level project groups remain core project structure.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`
@@ -35,7 +39,7 @@
   prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
   `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
 - Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.
-  Default/minimal import their factories only when `(pointer: coarse)` does not match at mount time. Editing keeps
+  Default/minimal import their factories after the first render only when `(pointer: coarse)` does not match. Editing keeps
   a small input bridge and loads text editing on first edit mode, buffering input during the import. Core retains
   history, project editing APIs, generic mode/navigation actions, and shared text/pointer geometry. The mode-switching
   plugin owns its hint through the generic canvas-overlay hook; `canvasOverlays` controls that drawing stage. The editing plugin owns caret movement and foreground drawing;

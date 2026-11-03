@@ -5,6 +5,7 @@ import type { EditorPluginContext } from './plugins';
 
 const events = {
 	dispatch: vi.fn(),
+	dispatchAsync: vi.fn(async () => {}),
 	on: vi.fn(),
 	off: vi.fn(),
 	dispose: vi.fn(),
@@ -155,6 +156,10 @@ describe('editor init', () => {
 			plugins[0].setup.mock.invocationCallOrder[0]
 		);
 		expect(plugins[0].setup.mock.invocationCallOrder[0]).toBeLessThan(events.dispatch.mock.invocationCallOrder[0]);
+		const initialized = events.dispatch.mock.calls.findIndex(([name]) => name === 'ready');
+		expect(view.renderFrame.mock.invocationCallOrder[0]).toBeLessThan(
+			events.dispatch.mock.invocationCallOrder[initialized]
+		);
 		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![4]!.drawers!;
 		expect(rendererDrawers).toBe(plugins[0].setup.mock.calls[0][0].drawers);
 		const drawContext = {} as Parameters<typeof rendererDrawers.drawCodeBlock>[0];
@@ -167,6 +172,7 @@ describe('editor init', () => {
 
 	beforeEach(() => {
 		events.dispatch.mockClear();
+		events.dispatchAsync.mockClear();
 		events.on.mockClear();
 		events.off.mockClear();
 		events.dispose.mockClear();
@@ -195,8 +201,9 @@ describe('editor init', () => {
 		expect(events.dispatch.mock.calls.slice(0, 3)).toEqual([
 			['resize', { canvasWidth: 640, canvasHeight: 480 }],
 			['loadProject', { project: EMPTY_DEFAULT_PROJECT }],
-			['init'],
+			['ready'],
 		]);
+		expect(events.dispatchAsync).toHaveBeenCalledExactlyOnceWith('init');
 		expect(view.resize).toHaveBeenCalledWith(640, 480);
 		expect(view.renderFrame).toHaveBeenCalledOnce();
 		expect(view.resize.mock.invocationCallOrder[0]).toBeLessThan(view.renderFrame.mock.invocationCallOrder[0]);
@@ -209,9 +216,73 @@ describe('editor init', () => {
 			initialProject: project,
 		});
 		const load = events.dispatch.mock.calls.findIndex(([name]) => name === 'loadProject');
-		const ready = events.dispatch.mock.calls.findIndex(([name]) => name === 'init');
+		const ready = events.dispatch.mock.calls.findIndex(([name]) => name === 'ready');
 		expect(events.dispatch.mock.calls[load][1]).toEqual({ project });
 		expect(load).toBeLessThan(ready);
+	});
+
+	it('waits for project preparation and font initialization before announcing readiness', async () => {
+		const { default: init } = await import('./index');
+		const { default: initState } = await import('@8f4e/editor-state');
+		const { default: initView, registerWebUiConfig } = await import('@8f4e/web-ui');
+		const { default: initEvents } = await import('./events');
+		const actualState = await vi.importActual<typeof import('@8f4e/editor-state')>('@8f4e/editor-state');
+		const actualEvents = await vi.importActual<typeof import('./events')>('./events');
+		const actualWebUi = await vi.importActual<typeof import('@8f4e/web-ui')>('@8f4e/web-ui');
+		vi.mocked(initView).mockClear();
+		vi.mocked(initState).mockImplementationOnce(actualState.default);
+		vi.mocked(initEvents).mockReturnValueOnce(actualEvents.default());
+		vi.mocked(registerWebUiConfig).mockImplementationOnce(actualWebUi.registerWebUiConfig);
+		let finishProject!: () => void;
+		const projectPending = new Promise<void>(resolve => {
+			finishProject = resolve;
+		});
+		let finishFont!: () => void;
+		const fontPending = new Promise<void>(resolve => {
+			finishFont = resolve;
+		});
+		const project = {
+			...EMPTY_DEFAULT_PROJECT,
+			notes: [{ id: 0, code: ['note loaded', '; @config font spleen5x8', 'noteEnd'] }],
+		};
+		const ready = vi.fn();
+		const projectInstalled = vi.fn();
+		vi.mocked(initView).mockImplementationOnce(async (_store, _events, _canvas, _memory, options) => {
+			await options?.initialProjectReady;
+			await fontPending;
+			return view;
+		});
+		const mounting = init({ width: 640, height: 480 } as HTMLCanvasElement, {
+			plugins: [
+				{
+					id: 'project-preparation',
+					setup: ({ events }) => {
+						events.on('init', async () => {
+							await projectPending;
+							events.dispatch('loadProject', { project });
+							projectInstalled();
+						});
+						events.on('ready', ready);
+						return () => {};
+					},
+				},
+			],
+		});
+		await Promise.resolve();
+		expect(initView).toHaveBeenCalledOnce();
+		expect(ready).not.toHaveBeenCalled();
+		finishProject();
+		await vi.waitFor(() => expect(projectInstalled).toHaveBeenCalledOnce());
+		const loadedState = vi.mocked(initView).mock.calls[0][0].getState();
+		expect(loadedState.initialProjectState.notes).toEqual(project.notes);
+		expect(loadedState.editorConfig.font).toBe('spleen5x8');
+		expect(view.renderFrame).not.toHaveBeenCalled();
+		expect(ready).not.toHaveBeenCalled();
+		finishFont();
+		const editor = await mounting;
+		expect(ready).toHaveBeenCalledOnce();
+		expect(view.renderFrame.mock.invocationCallOrder[0]).toBeLessThan(ready.mock.invocationCallOrder[0]);
+		editor.dispose();
 	});
 
 	it('exposes rendering lifecycle controls for this editor instance', async () => {

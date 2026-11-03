@@ -101,8 +101,10 @@
   catalogs, public-block selection, and dependency insertion out of core; plugins dispatch `insertCodeBlock`.
 - Session persistence and project URL loading belong to `editor-plugin-session-persistence` and
   `editor-plugin-project-url-loader`. Core owns no storage, quota, session callbacks, or URL fetch callbacks.
-- `EditorOptions.initialProject` provides generic initial content. Load it (or an empty project) after the first
-  resize, then dispatch `init` so installed plugins can perform their own startup work.
+- `EditorOptions.initialProject` provides generic initial content. Load it (or an empty project) after sizing the
+  viewport, then pass the `init` handlers' completion promise to web-ui for project fetching, parsing, and session
+  restoration alongside the default ibmvga font download. Render only after both are ready, using the project's
+  configured font. Emit `ready` after drawing; optional imports start there.
 
 - Memory writes belong to injected plugin factory dependencies. Keep `getWordFromMemory` for core pointer dereferencing; do not restore a state-level write callback.
 
