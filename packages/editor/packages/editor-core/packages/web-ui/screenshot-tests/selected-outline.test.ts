@@ -4,14 +4,14 @@ import init, { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { expect, test, vi } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
-import createMockStateWithColors from './utils/createMockStateWithColors';
+import createScreenshotState from './utils/createScreenshotState';
 import resolveFixtureCodeCells from './utils/resolveFixtureCodeCells';
 
 test.each(['view', 'edit'] as const)('selected outline in %s mode', async editorMode => {
 	const canvas = createCanvas();
 	canvas.width = 400;
 	canvas.height = 240;
-	const state = createMockStateWithColors({ editorMode });
+	const state = createScreenshotState({ editorMode });
 	state.editorConfig.font = 'ibmvga8x16';
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;

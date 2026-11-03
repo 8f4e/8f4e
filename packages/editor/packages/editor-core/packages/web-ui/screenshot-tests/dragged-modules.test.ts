@@ -4,12 +4,12 @@ import init, { createEditorDrawerRegistry, type SpriteCell } from '@8f4e/web-ui'
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
-import createMockStateWithColors from './utils/createMockStateWithColors';
+import createScreenshotState from './utils/createScreenshotState';
 import resolveFixtureCodeCells from './utils/resolveFixtureCodeCells';
 
 test('dragged module', async () => {
 	const canvas = createCanvas();
-	const mockState = await createMockStateWithColors();
+	const mockState = createScreenshotState();
 	const memoryViews = createMockMemoryViews();
 
 	const codeBlocks = new Map<number, Array<Array<SpriteCell | null>>>();

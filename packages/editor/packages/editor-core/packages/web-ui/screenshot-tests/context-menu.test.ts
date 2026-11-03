@@ -4,12 +4,12 @@ import init from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
-import createMockStateWithColors from './utils/createMockStateWithColors';
+import createScreenshotState from './utils/createScreenshotState';
 import generateContextMenuMock from './utils/generateContextMenuMock';
 
 test('context menu', async () => {
 	const canvas = createCanvas();
-	const mockState = await createMockStateWithColors();
+	const mockState = createScreenshotState();
 	const memoryViews = createMockMemoryViews();
 
 	const renderer = await init(createStateManager(mockState), createMockEventDispatcher(), canvas, memoryViews);

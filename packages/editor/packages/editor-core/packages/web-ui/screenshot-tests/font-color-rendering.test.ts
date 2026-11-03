@@ -5,7 +5,7 @@ import init, { createEditorDrawerRegistry, type SpriteCell } from '@8f4e/web-ui'
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
-import createMockStateWithColors from './utils/createMockStateWithColors';
+import createScreenshotState from './utils/createScreenshotState';
 import resolveFixtureCodeCells from './utils/resolveFixtureCodeCells';
 
 const FONTS_PER_PAGE = 12;
@@ -17,7 +17,7 @@ const pages = Array.from({ length: Math.ceil(PALETTE_TOKENS.length / FONTS_PER_P
 test.each(pages)('font color rendering page $page', async ({ page, tokens }) => {
 	const canvas = createCanvas();
 	canvas.height = Math.ceil(tokens.length / 4) * 192;
-	const state = createMockStateWithColors();
+	const state = createScreenshotState();
 	state.editorConfig.font = 'ibmvga8x16';
 	const colors = {
 		canvas: '#0b1020',

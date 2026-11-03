@@ -266,8 +266,9 @@ describe('web-ui init', () => {
 		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews, { drawers });
 		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
 		const backgroundPaletteUploads = mocks.background.setPalette.mock.calls.length;
+		const atlasUploads = mocks.engine.setSpriteAtlas.mock.calls.length;
 		store.set('editorConfig.font', 'ibmvga8x16');
-		await vi.dynamicImportSettled();
+		await vi.waitFor(() => expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(atlasUploads + 1));
 		expect(mocks.engine.setPalette).toHaveBeenCalledTimes(paletteUploads);
 		expect(mocks.background.setPalette).toHaveBeenCalledTimes(backgroundPaletteUploads);
 
@@ -293,12 +294,13 @@ describe('web-ui init', () => {
 
 		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas(10, 18));
 		store.set('editorConfig.font', 'terminus10x18');
-		await vi.dynamicImportSettled();
-		expect(mocks.background.setFont).toHaveBeenLastCalledWith('terminus10x18', createFontAtlas(10, 18).grid);
-		expect(mocks.engine.setSpriteAtlas).toHaveBeenLastCalledWith(
-			createFontAtlas(10, 18).image,
-			createFontAtlas(10, 18).grid
+		await vi.waitFor(() =>
+			expect(mocks.engine.setSpriteAtlas).toHaveBeenLastCalledWith(
+				createFontAtlas(10, 18).image,
+				createFontAtlas(10, 18).grid
+			)
 		);
+		expect(mocks.background.setFont).toHaveBeenLastCalledWith('terminus10x18', createFontAtlas(10, 18).grid);
 		expect(state.viewport).toMatchObject({ vGrid: 10, hGrid: 18 });
 		view.destroy();
 		store.dispose();

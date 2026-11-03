@@ -1,5 +1,6 @@
 import type { EditorConfigEntry, EditorConfigValidatorRegistry } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
+import { createSchemaEditorConfigValidator } from './schemaValidator';
 import { getEditorConfigKnownPaths, resolveEditorConfigEntries, validateEditorConfigEntries } from './validators';
 
 function entry(path: string, value: string): EditorConfigEntry {
@@ -98,5 +99,34 @@ describe('editor config validators', () => {
 		expect(resolveEditorConfigEntries([entry('exampleCount', '120')], typedRegistry)).toEqual({
 			exampleCount: 120,
 		});
+	});
+});
+
+describe('schema validator diagnostics', () => {
+	const validator = createSchemaEditorConfigValidator({
+		root: 'settings',
+		schema: {
+			type: 'object',
+			properties: {
+				mode: { type: 'string', enum: ['enabled', 'disabled'] },
+				count: { type: 'integer', enum: [1, 2] },
+			},
+		},
+	});
+
+	it('suggests a declared enum value for misspelled string values', () => {
+		expect(validator.validate(entry('settings.mode', 'enabld'))).toBe(
+			"@config settings.mode: invalid value 'enabld' Did you mean 'enabled'?"
+		);
+	});
+
+	it('suggests a declared schema path for unknown paths', () => {
+		expect(validator.validate(entry('settings.moe', 'enabled'))).toBe(
+			"@config: unknown config path 'settings.moe' Did you mean 'settings.mode'?"
+		);
+	});
+
+	it('reports invalid numeric enum values without string suggestions', () => {
+		expect(validator.validate(entry('settings.count', '3'))).toBe("@config settings.count: invalid value '3'");
 	});
 });
