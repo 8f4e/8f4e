@@ -21,3 +21,26 @@ canvas {
 	outline: none;
 	-webkit-tap-highlight-color: transparent;
 }
+
+#pwa-notice {
+	position: fixed;
+	bottom: max(12px, env(safe-area-inset-bottom));
+	left: 12px;
+	right: 12px;
+	width: fit-content;
+	max-width: calc(100% - 48px);
+	padding: 12px;
+	border: 1px solid #ffffff;
+	color: #ffffff;
+	font: 14px / 1.5 monospace;
+}
+
+#pwa-notice button {
+	margin-top: 8px;
+	margin-right: 8px;
+	padding: 8px 12px;
+	border: 1px solid #ffffff;
+	color: #ffffff;
+	font: inherit;
+	cursor: pointer;
+}

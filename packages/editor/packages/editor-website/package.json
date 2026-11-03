@@ -21,6 +21,7 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "vite": "7.3.7",
+    "vite-plugin-pwa": "1.2.0",
     "vite-plugin-static-copy": "4.1.1"
   }
 }

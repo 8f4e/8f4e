@@ -3,6 +3,7 @@
 
 <head>
 	<meta name="viewport" content="width=device-width, user-scalable=no">
+	<meta name="theme-color" content="#000000">
 	<link rel="icon" href="/favicon.ico">
 	<link rel="stylesheet" href="./styles.css">
 	<title>8f4e</title>
@@ -10,6 +11,11 @@
 
 <body>
 	<canvas id="glcanvas" tabindex="0"></canvas>
+	<aside id="pwa-notice" aria-label="Offline support" hidden>
+		<p id="pwa-message" role="status"></p>
+		<button id="pwa-reload" type="button" hidden>Reload</button>
+		<button id="pwa-dismiss" type="button">Dismiss</button>
+	</aside>
 	<script src="./main.ts" type="module"></script>
 </body>
 
