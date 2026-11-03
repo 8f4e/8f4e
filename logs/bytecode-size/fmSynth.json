@@ -940,5 +940,11 @@
 		"version": "8.3.6",
 		"benchmark": "fmSynth.8f4e",
 		"emittedBytes": 5072
+	},
+	{
+		"commit": "be8e647bd219d1b896748dd73e4adac10902454e",
+		"version": "8.3.7",
+		"benchmark": "fmSynth.8f4e",
+		"emittedBytes": 5072
 	}
 ]
