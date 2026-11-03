@@ -12,6 +12,12 @@ export function createDeferredEditorPlugin(
 	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
 	return createLazyPluginLoaderPlugin([
+		{
+			id: 'dialogs',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-dialogs').then(module => module.dialogsPlugin),
+		},
 		// {
 		// 	id: 'selection-animation',
 		// 	scope: 'view',

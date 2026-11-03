@@ -46,7 +46,6 @@ const mocks = vi.hoisted(() => {
 		}),
 		drawCodeBlocks: vi.fn(),
 		drawContextMenu: vi.fn(),
-		drawDialog: vi.fn(),
 	};
 });
 
@@ -64,10 +63,6 @@ vi.mock('./drawers/codeBlocks', () => ({
 
 vi.mock('./drawers/contextMenu', () => ({
 	default: mocks.drawContextMenu,
-}));
-
-vi.mock('./drawers/dialog', () => ({
-	default: mocks.drawDialog,
 }));
 
 vi.mock('@8f4e/sprite-generator', async original => ({
@@ -220,6 +215,8 @@ describe('web-ui init', () => {
 		const drawers = createEditorDrawerRegistry();
 		const overlay = vi.fn();
 		const removeOverlay = drawers.registerCanvasOverlay(overlay);
+		const modal = vi.fn();
+		const removeModal = drawers.registerModalOverlay(modal);
 		const view = await init(
 			createStateManager(state),
 			createMockEventDispatcher(),
@@ -230,7 +227,7 @@ describe('web-ui init', () => {
 
 		overlay.mockClear();
 		mocks.drawContextMenu.mockClear();
-		mocks.drawDialog.mockClear();
+		modal.mockClear();
 		view.renderFrame();
 
 		const frameState = mocks.drawCodeBlocks.mock.calls.at(-1)?.[1];
@@ -238,14 +235,17 @@ describe('web-ui init', () => {
 		expect(frameState).toBe(state);
 		expect(overlay).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
 		expect(mocks.drawContextMenu.mock.invocationCallOrder[0]).toBeLessThan(overlay.mock.invocationCallOrder[0]);
-		expect(overlay.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawDialog.mock.invocationCallOrder[0]);
+		expect(overlay.mock.invocationCallOrder[0]).toBeLessThan(modal.mock.invocationCallOrder[0]);
 		state.featureFlags.canvasOverlays = false;
 		view.renderFrame();
 		expect(overlay).toHaveBeenCalledOnce();
+		expect(modal).toHaveBeenCalledTimes(2);
 		state.featureFlags.canvasOverlays = true;
 		removeOverlay();
+		removeModal();
 		view.renderFrame();
 		expect(overlay).toHaveBeenCalledOnce();
+		expect(modal).toHaveBeenCalledTimes(2);
 		view.destroy();
 	});
 

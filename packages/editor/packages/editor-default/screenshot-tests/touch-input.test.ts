@@ -211,16 +211,12 @@ entryEnd`);
 				text: 'This project plays audio. Tap Allow to enable sound on your device.',
 				buttons: [{ title: 'Allow', action: 'testAllowAudio' }],
 			});
-			expect(state.dialog.x).toBeGreaterThanOrEqual(0);
-			expect(state.dialog.x + state.dialog.width).toBeLessThanOrEqual(canvas.width);
 			editor.renderFrame();
 			await expect(canvas).toMatchScreenshot('portrait-audio-dialog');
-			const button = state.dialog.buttons[0];
+			// Tap the Allow button shown in the fixed portrait screenshot fixture.
 			await input.send('Input.dispatchTouchEvent', {
 				type: 'touchStart',
-				touchPoints: [
-					point(state.dialog.x + button.x + button.width / 2, state.dialog.y + button.y + button.height / 2),
-				],
+				touchPoints: [point(316, 408)],
 			});
 			await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 			await expect.poll(() => allowAudio.mock.calls.length).toBe(1);

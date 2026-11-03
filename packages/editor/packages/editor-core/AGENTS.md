@@ -27,6 +27,11 @@
 - PRs: add screenshots/gifs for UI changes, include test notes, link issues.
 
 ## Plugins
+- Keep dialog content, the stack, opening/closing, button actions, and modal input blocking in editor-state.
+  Forward completed modal presses through `dialogPointerDown`; check
+  `activateDialogButton { id, buttonIndex }` against the visible dialog. `editor-plugin-dialogs` owns private
+  presentation geometry, hit testing, and drawing. Web-ui provides `registerModalOverlay` after ordinary overlays,
+  independently of `canvasOverlays`.
 - DOM mouse/wheel adaptation belongs to `editor-plugin-mouse-input`; touch adaptation and panning belong to
   `editor-plugin-touch-input`. Core keeps the event dispatcher and state effects, with no DOM input
   listeners or `captureWheel` option. Export existing generic viewport update, animation-stop, and grid-snap helpers.

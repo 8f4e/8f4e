@@ -10,4 +10,5 @@
 - Ignore stale fetch results after configuration changes or disposal. Unsubscribe and remove owned contributions
   and dialogs on disposal.
 - Verify with `npx nx run @8f4e/editor-plugin-binary-assets:build|test|typecheck` and
-  `npx nx run @8f4e/editor-plugin-binary-assets:test:screenshot` for the loading dialog and real editor integration.
+  `npx nx run @8f4e/editor-plugin-binary-assets:test:screenshot` for loading-dialog requests and real editor integration.
+  Dialog appearance belongs to `editor-plugin-dialogs`; do not install its drawer in binary asset tests.

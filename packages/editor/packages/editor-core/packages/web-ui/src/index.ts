@@ -8,7 +8,6 @@ import { getConfiguredFont, getConfiguredPalette } from './config';
 import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
 import drawContextMenu from './drawers/contextMenu';
-import drawDialog from './drawers/dialog';
 import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/registry';
 import BackgroundRenderer from './plugins/background';
 import type { MemoryViews } from './types';
@@ -156,7 +155,7 @@ export default async function init(
 		drawCodeBlocks(draw, state, memoryViews, drawers);
 		drawContextMenu(draw, state);
 		if (state.featureFlags.canvasOverlays) drawers.drawCanvasOverlays({ draw, state, memoryViews });
-		drawDialog(draw, state);
+		drawers.drawModalOverlays({ draw, state, memoryViews });
 	};
 
 	let renderingResourcesReleased = false;

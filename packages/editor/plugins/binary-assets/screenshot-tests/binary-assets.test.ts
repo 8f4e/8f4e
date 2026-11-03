@@ -3,7 +3,7 @@ import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-
 import { expect, test, vi } from 'vitest';
 import { createBinaryAssetsPlugin } from '../src/index';
 
-test('shows the loading dialog, loads bytes, and publishes size constants', async () => {
+test('requests a loading dialog, loads bytes, and publishes size constants', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
 	canvas.height = 384;
@@ -58,7 +58,6 @@ entryEnd`);
 		await vi.waitFor(() => expect(editor!.state.dialog.id).toBe('binary-assets-loading'));
 		editor.pauseRendering();
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('binary-assets-loading');
 		memory = new Uint8Array(65536);
 		store.set('compiler.result.compiledModules', compiled.compiledModules);
 		store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);

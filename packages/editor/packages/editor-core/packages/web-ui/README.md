@@ -24,6 +24,13 @@ owns wires; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer v
 `createEditorDrawerRegistry()` creates the per-editor registry for code-block content drawers, drawers, overlays, and canvas-wide
 render layers. Pass that registry through `options.drawers` when initializing the renderer.
 
+### `registerModalOverlay(drawer)`
+
+Registers a viewport-coordinate sprite drawer after menus and ordinary canvas overlays. This stage runs even
+when `featureFlags.canvasOverlays` is false. The callback receives `{ draw, state, memoryViews }` and registration
+returns an unregister function. `@8f4e/editor-plugin-dialogs` owns dialog layout and drawing through this hook;
+web-ui contains no dialog-specific rendering.
+
 ### `registerWebUiConfig(store)`
 
 Registers schema-backed validators for `; @config font <name>` and `; @config color.<base> <value>` in the shared

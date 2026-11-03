@@ -14,6 +14,10 @@
   Core retains editing/layout geometry; web-ui exposes `registerCodeBlockBackgroundDrawer` below line selection and
   `registerCodeBlockContentDrawer` before foreground drawings and diagnostics, and owns generic sprite-cell drawing primitives.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
+- `@8f4e/editor-plugin-dialogs` owns dialog dimensions, wrapping/clipping, private button geometry/hit testing,
+  and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
+  Both compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
+  `registerModalOverlay` after ordinary overlays, independently of `canvasOverlays`.
 - `@8f4e/editor-plugin-selection-animation` owns the selected block's circling segment and uses the generic foreground
   drawing hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.
 - Web-ui contributes font/color configuration through `registerWebUiConfig(store)` and owns defaults, loading, and
