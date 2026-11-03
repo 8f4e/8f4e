@@ -162,8 +162,8 @@ export { default as incrementCompilerInputRevision } from './features/program-co
 export { publishProjectChange } from './features/project-changes';
 // Export EMPTY_DEFAULT_PROJECT as a value
 export { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
+export { clampSourcePosition } from './features/text-geometry/clampSourcePosition';
 export { default as gapCalculator } from './features/text-geometry/gapCalculator';
-export { moveCaret } from './features/text-geometry/moveCaret';
 export {
 	getRawIndexForVisualColumn,
 	getTabAdvance,

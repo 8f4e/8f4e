@@ -1,3 +1,4 @@
+import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { describe, expect, it, vi } from 'vitest';
 import { setup } from './__tests__/setup';
 import { handleKeydown } from './editing';
@@ -26,6 +27,52 @@ describe('keyboard editing', () => {
 		expect(test.block.cursor).toMatchObject({ row: 2, col: 0 });
 		expect(test.state.projectChange.revision).toBe(before + 5);
 		expect(test.state.compilerInputRevision).toBe(compilerBefore + 5);
+	});
+	it('moves the caret using visual tab columns without publishing a source change', () => {
+		const test = setup(plugin);
+		applyCodeBlockSourceEdits(
+			test.store,
+			[{ codeBlock: test.block, code: ['module main', '; @tab 8', '\tx', '123456789', 'moduleEnd'] }],
+			{ affectsCompilation: true }
+		);
+		test.block.cursor.row = 2;
+		test.block.cursor.col = 1;
+		const revision = test.state.projectChange.revision;
+		const compilerRevision = test.state.compilerInputRevision;
+		test.key('ArrowDown');
+		expect(test.block.cursor).toMatchObject({ row: 3, col: 8 });
+		test.key('ArrowLeft');
+		expect(test.block.cursor.col).toBe(7);
+		test.key('ArrowUp');
+		expect(test.block.cursor).toMatchObject({ row: 2, col: 1 });
+		expect(test.state.projectChange.revision).toBe(revision);
+		expect(test.state.compilerInputRevision).toBe(compilerRevision);
+	});
+	it('keeps horizontal movement within the line bounds', () => {
+		const test = setup(plugin);
+		test.key('ArrowRight');
+		expect(test.block.cursor.col).toBe(6);
+		test.key('ArrowLeft');
+		expect(test.block.cursor.col).toBe(5);
+		test.block.cursor.col = 0;
+		test.key('ArrowLeft');
+		expect(test.block.cursor.col).toBe(0);
+	});
+	it('keeps vertical movement within the block bounds', () => {
+		const test = setup(plugin);
+		test.block.cursor.row = 0;
+		test.block.cursor.col = 0;
+		test.key('ArrowUp');
+		expect(test.block.cursor).toMatchObject({ row: 0, col: 0 });
+		test.block.cursor.row = test.block.code.length - 1;
+		test.key('ArrowDown');
+		expect(test.block.cursor.row).toBe(test.block.code.length - 1);
+	});
+	it('honors codeLineSelection for caret movement', () => {
+		const test = setup(plugin);
+		test.state.featureFlags.codeLineSelection = false;
+		expect(test.key('ArrowDown').defaultPrevented).toBe(false);
+		expect(test.block.cursor.row).toBe(1);
 	});
 	it('ignores backspace at the start of a block', () => {
 		const test = setup(plugin);
@@ -56,14 +103,16 @@ describe('keyboard editing', () => {
 		const test = setup(plugin, 'view');
 		const undo = vi.fn();
 		test.events.on('undo', undo);
-		for (const key of ['2', 'Backspace', 'Enter', 'Tab']) expect(test.key(key).defaultPrevented).toBe(false);
+		for (const key of ['2', 'Backspace', 'Enter', 'Tab', 'ArrowUp', 'ArrowRight'])
+			expect(test.key(key).defaultPrevented).toBe(false);
 		expect(test.key('z', { ctrlKey: true }).defaultPrevented).toBe(false);
 		expect(test.key('y', { metaKey: true }).defaultPrevented).toBe(false);
 		expect(undo).not.toHaveBeenCalled();
 	});
-	it('leaves navigation, mode switching, and other shortcuts to their owners', () => {
+	it('leaves block navigation, mode switching, and other shortcuts to their owners', () => {
 		const test = setup(plugin);
-		for (const key of ['ArrowDown', 'Escape', 'Dead']) expect(test.key(key).defaultPrevented).toBe(false);
+		for (const key of ['Escape', 'Dead']) expect(test.key(key).defaultPrevented).toBe(false);
+		expect(test.key('ArrowRight', { ctrlKey: true }).defaultPrevented).toBe(false);
 		expect(test.key('s', { ctrlKey: true }).defaultPrevented).toBe(false);
 		expect(test.key('a', { altKey: true }).defaultPrevented).toBe(false);
 	});

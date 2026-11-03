@@ -1,23 +1,26 @@
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createDrawingContext } from './__tests__/drawing';
 import { setup } from './__tests__/setup';
 
 let createKeyboardEditingPlugin: typeof import('./index')['createKeyboardEditingPlugin'];
 
 let finish: () => void;
 let importEditing: ReturnType<typeof vi.fn<() => void>>;
+let drawCaret: ReturnType<typeof vi.fn<typeof import('./editing')['drawCaret']>>;
 let handleKeydown: ReturnType<typeof vi.fn<typeof import('./editing')['handleKeydown']>>;
 beforeEach(async () => {
 	vi.resetModules();
 	importEditing = vi.fn();
 	handleKeydown = vi.fn();
+	drawCaret = vi.fn();
 	const pending = new Promise<void>(resolve => {
 		finish = resolve;
 	});
 	vi.doMock('./editing', async () => {
 		importEditing();
 		await pending;
-		return { handleKeydown };
+		return { handleKeydown, drawCaret };
 	});
 	({ createKeyboardEditingPlugin } = await import('./index'));
 });
@@ -110,6 +113,18 @@ describe('lazy keyboard editing input bridge', () => {
 		first.disposePlugin();
 		await finishLoading();
 		expect(handleKeydown.mock.calls.map(([event]) => event.key)).toEqual(['b']);
+	});
+	it('draws through its foreground registration only after loading and unregisters on disposal', async () => {
+		const test = setup(createKeyboardEditingPlugin);
+		const { context } = createDrawingContext(test.state, test.block);
+		test.drawForeground(context);
+		expect(drawCaret).not.toHaveBeenCalled();
+		await finishLoading();
+		test.drawForeground(context);
+		expect(drawCaret).toHaveBeenCalledWith(context);
+		test.disposePlugin();
+		test.drawForeground(context);
+		expect(drawCaret).toHaveBeenCalledOnce();
 	});
 	it('removes its input listener after the implementation has loaded', async () => {
 		const test = setup(createKeyboardEditingPlugin);

@@ -1,5 +1,3 @@
-import { moveCaret } from '@8f4e/editor-state';
-
 /**
  * Splits the current line at the caret and moves the caret to the start of the next line.
  * @param code Document contents split by line.
@@ -17,11 +15,6 @@ export default function insertNewLine(
 	col: number;
 } {
 	const newCode = [...code];
-	const save = newCode[row].substring(col);
-	newCode[row] = newCode[row].substring(0, col);
-	newCode.splice(row + 1, 0, '');
-	newCode[row + 1] = save;
-
-	const [newRow] = moveCaret(newCode, row, col, 'down');
-	return { code: newCode, row: newRow, col: 0 };
+	newCode.splice(row, 1, code[row].slice(0, col), code[row].slice(col));
+	return { code: newCode, row: row + 1, col: 0 };
 }

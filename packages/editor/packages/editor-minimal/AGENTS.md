@@ -44,3 +44,6 @@
   also removes those overlays.
   The keyboard-editing plugin owns its mode-triggered implementation import and input buffering; keep feature
   behavior and pending-input lifecycle out of the host and generic directive lazy loader.
+
+- `includeKeyboardModeSwitching: false` omits the mode-switching factory import and plugin. This is composition
+  policy; core has no mode-switching feature flag and the plugin has no runtime enable guard.

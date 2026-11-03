@@ -102,9 +102,6 @@ export interface FeatureFlags {
 	/** Enable/disable panning/scrolling of the editor viewport */
 	viewportDragging: boolean;
 
-	/** Enable/disable keyboard switching into and out of edit mode. */
-	modeToggling: boolean;
-
 	/** Enable/disable plugin canvas overlays */
 	canvasOverlays: boolean;
 

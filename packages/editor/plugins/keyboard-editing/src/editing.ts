@@ -1,8 +1,19 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import type { Direction } from '@8f4e/editor-state-types';
 import deleteBackward from './deleteBackward';
 import insertCharacter from './insertCharacter';
 import insertNewLine from './insertNewLine';
+import { moveCaret } from './moveCaret';
+
+export { default as drawCaret } from './drawCaret';
+
+const directions: Record<string, Direction> = {
+	ArrowLeft: 'left',
+	ArrowRight: 'right',
+	ArrowUp: 'up',
+	ArrowDown: 'down',
+};
 
 export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPluginContext): void {
 	const state = store.getState();
@@ -18,6 +29,15 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 	}
 	const block = state.codeBlockRendering.selectedCodeBlock;
 	if (!block) return;
+	const direction = directions[key];
+	if (direction) {
+		if (!state.featureFlags.codeLineSelection) return;
+		event.preventDefault();
+		const [row, col] = moveCaret(block.code, block.cursor.row, block.cursor.col, direction);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', row);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.col', col);
+		return;
+	}
 	let edit: ReturnType<typeof insertCharacter>;
 	if (key === 'Backspace') edit = deleteBackward(block.code, block.cursor.row, block.cursor.col);
 	else if (key === 'Enter') edit = insertNewLine(block.code, block.cursor.row, block.cursor.col);

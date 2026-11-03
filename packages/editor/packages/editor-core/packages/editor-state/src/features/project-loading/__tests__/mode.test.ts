@@ -9,10 +9,10 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup(modeToggling = true, codeLineSelection = false) {
+function setup(codeLineSelection = false) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, featureFlags: { modeToggling, codeLineSelection } });
+	const store = initState(events, { callbacks: {}, featureFlags: { codeLineSelection } });
 	cleanups.push(store.dispose);
 	const load = (source: string) => events.dispatch('loadProject', { project: parseProjectSource(source) });
 	return { store, state: store.getState(), events, load };
@@ -47,17 +47,16 @@ describe('project initial mode', () => {
 		}
 	);
 
-	it('finds a directive in a nested project group even when mode toggling is disabled', () => {
-		const { state, load } = setup(false);
+	it('finds a mode directive in a nested project group', () => {
+		const { state, load } = setup();
 		load(
 			'8f4e/v1\nentry main\ngroup child\nnote mode\n; @mode edit\nnoteEnd\nentry main\nentryEnd\ngroupEnd\nentryEnd'
 		);
 		expect(state.editorMode).toBe('edit');
-		expect(state.featureFlags.modeToggling).toBe(false);
 	});
 
 	it.each([true, false])('preserves line selection (%s) across project replacements', codeLineSelection => {
-		const { state, events, load } = setup(true, codeLineSelection);
+		const { state, events, load } = setup(codeLineSelection);
 		for (const mode of ['edit', 'view']) {
 			load(`8f4e/v1\nnote mode\n; @mode ${mode}\nnoteEnd`);
 			expect(state.editorMode).toBe(mode);

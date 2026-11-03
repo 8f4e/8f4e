@@ -40,9 +40,10 @@ initialization. A URL failure calls `onInitialProjectLoadError`. The host owns p
 layout, visibility management, and any WebMCP bridge.
 
 `MinimalEditorMountOptions` supports `initialProjectUrl`, the initial-project callbacks, `sharedAudioContext`,
-`captureWheel`, and `featureFlags`. Project creation is disabled by default. A project selects its initial mode with
+`captureWheel`, `includeKeyboardModeSwitching`, and `featureFlags`. Project creation is disabled by default. A project selects its initial mode with
 `; @mode edit` or `; @mode view` in a project block; without a valid, unique declaration it starts in view mode.
-Hosts can override feature flags. Core retains project editing APIs, shared navigation operations, clipboard operations, and history. Keyboard bindings belong to plugins.
+Set `includeKeyboardModeSwitching: false` to omit the mode-switching plugin and its hint; project mode still comes
+from the source declaration. Hosts can override generic feature flags. Core retains project editing APIs, shared navigation operations, clipboard operations, and history. Keyboard bindings belong to plugins.
 
 Keyboard behavior comes from three independent plugins: `keyboard-mode-switching` for `e`/Escape,
 `keyboard-navigation` for line/block navigation and editing caret movement, and `keyboard-editing` for text changes

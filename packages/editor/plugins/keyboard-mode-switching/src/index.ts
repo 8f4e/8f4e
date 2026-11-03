@@ -8,7 +8,7 @@ export function createKeyboardModeSwitchingPlugin({ inputTarget }: { inputTarget
 			const removeHint = drawers.registerCanvasOverlay(drawModeHint);
 			const onKeydown = (event: KeyboardEvent) => {
 				const state = store.getState();
-				if (event.defaultPrevented || !state.featureFlags.modeToggling) return;
+				if (event.defaultPrevented) return;
 				if (event.key === 'Escape' && state.editorMode === 'edit') {
 					event.preventDefault();
 					events.dispatch('exitToViewMode');

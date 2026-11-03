@@ -177,6 +177,20 @@ describe('default editor plugins', () => {
 		editor.dispose();
 	});
 
+	it('omits mode switching from the standard set while retaining navigation and editing', async () => {
+		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
+		await mountDefaultEditor({ ownerDocument: { defaultView: window } } as HTMLCanvasElement, {
+			storage: {} as Storage,
+			includeKeyboardModeSwitching: false,
+		});
+		const ids = vi
+			.mocked(initEditor)
+			.mock.calls.at(-1)![1]
+			.plugins!.map(plugin => plugin.id);
+		expect(ids).not.toContain('keyboard-mode-switching');
+		expect(ids).toEqual(expect.arrayContaining(['keyboard-navigation', 'keyboard-editing']));
+	});
+
 	it('keeps the compiler first when hosts replace or omit feature plugins', async () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
 		const plugins = [{ id: 'custom', setup: vi.fn(() => () => {}) }];

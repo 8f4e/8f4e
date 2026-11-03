@@ -1,10 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import {
-	getRawIndexForVisualColumn,
-	getTabStopsByLine,
-	getVisualColumnForRawIndex,
-	moveCaret,
-} from '@8f4e/editor-state';
+import { clampSourcePosition } from '@8f4e/editor-state';
 import type { Direction, NavigateCodeBlockEvent } from '@8f4e/editor-state-types';
 
 const directions: Record<string, Direction> = {
@@ -28,20 +23,14 @@ export function createKeyboardNavigationPlugin({ inputTarget }: { inputTarget: H
 				}
 				const state = store.getState();
 				const block = state.codeBlockRendering.selectedCodeBlock;
-				if (!state.featureFlags.codeLineSelection || !block) return;
-				// View mode selects lines; horizontal caret movement is editing behavior.
-				if (state.editorMode === 'view' && (direction === 'left' || direction === 'right')) return;
+				if (state.editorMode !== 'view' || !state.featureFlags.codeLineSelection || !block) return;
+				if (direction === 'left' || direction === 'right') return;
 				event.preventDefault();
-				let row = block.cursor.row;
-				let col = block.cursor.col;
-				if (direction === 'up' || direction === 'down') {
-					const tabStops = getTabStopsByLine(block.code);
-					const visualCol = getVisualColumnForRawIndex(block.code[row], col, tabStops[row]);
-					row = Math.max(0, Math.min(row + (direction === 'up' ? -1 : 1), block.code.length - 1));
-					col = getRawIndexForVisualColumn(block.code[row], visualCol, tabStops[row]);
-				} else {
-					[row, col] = moveCaret(block.code, row, col, direction);
-				}
+				const [row, col] = clampSourcePosition(
+					block.code,
+					block.cursor.row + (direction === 'up' ? -1 : 1),
+					block.cursor.col
+				);
 				store.set('codeBlockRendering.selectedCodeBlock.cursor.row', row);
 				store.set('codeBlockRendering.selectedCodeBlock.cursor.col', col);
 			};

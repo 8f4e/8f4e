@@ -45,13 +45,14 @@ export function setup(
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'main')!;
 	store.set('codeBlockRendering.selectedCodeBlock', block);
 	block.cursor = { row: 1, col: 6, x: 0, y: 0 };
+	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = createPlugin({ inputTarget }).setup({
 		store,
 		events,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
-		drawers: createEditorDrawerRegistry(),
+		drawers,
 	});
 	cleanups.push(store.dispose, disposePlugin);
 	const key = (key: string, options: KeyboardEventInit = {}) => {
@@ -61,5 +62,16 @@ export function setup(
 	};
 	const keyUp = (key: string) => inputTarget.dispatchEvent(new TestKeyboardEvent('keyup', { key }));
 	const blur = () => inputTarget.dispatchEvent(new Event('blur'));
-	return { inputTarget, state, store, events, block, key, keyUp, blur, disposePlugin };
+	return {
+		inputTarget,
+		state,
+		store,
+		events,
+		block,
+		key,
+		keyUp,
+		blur,
+		disposePlugin,
+		drawForeground: drawers.drawCodeBlockForeground,
+	};
 }

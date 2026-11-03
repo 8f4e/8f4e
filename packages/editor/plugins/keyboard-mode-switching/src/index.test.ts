@@ -14,11 +14,8 @@ describe('keyboard mode switching', () => {
 		expect(test.key('e', { [modifier]: true }).defaultPrevented).toBe(false);
 		expect(test.state.editorMode).toBe('view');
 	});
-	it('honors modeToggling and removes its listener', () => {
+	it('removes its listener on disposal', () => {
 		const test = setup();
-		test.state.featureFlags.modeToggling = false;
-		expect(test.key('e').defaultPrevented).toBe(false);
-		test.state.featureFlags.modeToggling = true;
 		test.disposePlugin();
 		expect(test.key('e').defaultPrevented).toBe(false);
 		expect(test.state.editorMode).toBe('view');

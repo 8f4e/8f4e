@@ -9,7 +9,6 @@ export const defaultFeatureFlags: FeatureFlags = {
 	moduleDragging: true,
 	codeLineSelection: true,
 	viewportDragging: true,
-	modeToggling: true,
 	canvasOverlays: true,
 	historyTracking: true,
 	offscreenBlockArrows: true,

@@ -1,4 +1,4 @@
-import { type MinimalEditorInstance, type MinimalEditorMountOptions, mountMinimalEditor } from '@8f4e/editor-minimal';
+import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
 import type { EditorWebMcpBridge } from '@8f4e/editor-webmcp';
 import { getProjectId, withProjectId } from './gallery-url';
 import { sharedAudioContext } from './shared-audio-context';
@@ -21,10 +21,10 @@ export interface GalleryCategory {
 interface GalleryOptions {
 	title: string;
 	categories: GalleryCategory[];
-	featureFlags?: MinimalEditorMountOptions['featureFlags'];
+	includeKeyboardModeSwitching?: boolean;
 }
 
-export function mountGallery({ title, categories, featureFlags }: GalleryOptions): () => void {
+export function mountGallery({ title, categories, includeKeyboardModeSwitching }: GalleryOptions): () => void {
 	const projects = categories.flatMap(category => category.projects);
 	const gallery = document.querySelector<HTMLDivElement>('#examples-gallery')!;
 	const mobileLayout = window.matchMedia('(max-width: 800px)');
@@ -210,7 +210,7 @@ export function mountGallery({ title, categories, featureFlags }: GalleryOptions
 				const editor = await mountMinimalEditor(canvas, {
 					sharedAudioContext,
 					captureWheel: true,
-					featureFlags,
+					includeKeyboardModeSwitching,
 					initialProjectUrl: item.projectUrl,
 					onInitialProjectLoaded: reveal,
 					onInitialProjectLoadError: showError,

@@ -30,7 +30,9 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 			getAssertionSites: () => undefined,
 		});
 		editor = await initEditor(canvas, {
-			initialProject: parseProjectSource('8f4e/v1\nnote test\n; @pos 3 3\nhello\nworld\nnoteEnd'),
+			initialProject: parseProjectSource(
+				'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote test\n; @pos 3 3\nhello\nworld\nnoteEnd'
+			),
 			featureFlags: { historyTracking: true },
 			plugins: [
 				...plugins,
@@ -94,6 +96,18 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		expect(editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!.code).toContain(
 			'hello21world'
 		);
+		const selected = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
+		context.store.set('codeBlockRendering.selectedCodeBlock', selected);
+		context.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		context.store.set('codeBlockRendering.selectedCodeBlock.cursor.col', 5);
+		expect(editor.state.editorMode).toBe('edit');
+		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
+		try {
+			editor.renderFrame();
+			await expect(canvas).toMatchScreenshot('edit-mode-caret');
+		} finally {
+			now.mockRestore();
+		}
 		editor.dispose();
 		editor = undefined;
 		expect(key('e').defaultPrevented).toBe(false);

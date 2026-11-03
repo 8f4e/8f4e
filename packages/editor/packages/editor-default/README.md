@@ -25,8 +25,9 @@ editor.dispose();
 ```
 
 Declare `; @mode edit` or `; @mode view` in a project block to select its mode when loaded. Projects without a valid,
-unique declaration start in view mode. Set the `modeToggling` feature flag to `false` to hide the user controls for
-changing modes. The directive still selects the initial mode when these controls are disabled.
+unique declaration start in view mode. Set `includeKeyboardModeSwitching: false` to omit the keyboard mode-switching
+plugin and its hint. This controls imports and installation, with no corresponding core feature flag. The directive
+still selects the initial mode when the plugin is omitted.
 
 Keyboard behavior comes from three independent plugins: `keyboard-mode-switching` for `e`/Escape,
 `keyboard-navigation` for line/block navigation and editing caret movement, and `keyboard-editing` for text changes

@@ -34,13 +34,6 @@ describe('keyboard mode hints', () => {
 			test.state.viewport.hGrid
 		);
 	});
-	it('hides its hint when keyboard mode switching is disabled', () => {
-		const test = setup();
-		test.state.featureFlags.modeToggling = false;
-		const { draw, memoryViews } = drawing();
-		test.drawCanvasOverlays({ draw: draw as unknown as DrawContext, state: test.state, memoryViews });
-		expect(draw.drawText).not.toHaveBeenCalled();
-	});
 	it('unregisters its overlay on disposal', () => {
 		const test = setup();
 		test.disposePlugin();

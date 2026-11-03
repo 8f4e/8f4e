@@ -163,7 +163,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			moduleDragging: true,
 			codeLineSelection: true,
 			viewportDragging: true,
-			modeToggling: true,
 			canvasOverlays: true,
 			offscreenBlockArrows: true,
 			projectCreation: true,

@@ -132,3 +132,7 @@
 
 - Keyboard hints belong to keyboard-mode-switching. Expose only generic canvas overlay drawing and the
   `canvasOverlays` visibility flag in core; screenshots suppress this layer without knowing its contributors.
+
+- Keyboard-editing owns edit-mode caret movement, mutation caret adjustments, and its foreground drawer. Core keeps
+  source-position state and bounds/tab geometry; do not restore direction-based caret movement or a built-in glyph.
+- `registerCodeBlockForegroundDrawer` runs above content/shapes and below outlines/diagnostics. Keep this stage generic.

@@ -4,7 +4,7 @@ import { projectCategories } from './projects';
 const dispose = mountGallery({
 	title: 'Compiler tests',
 	categories: projectCategories,
-	featureFlags: { modeToggling: false },
+	includeKeyboardModeSwitching: false,
 });
 
 import.meta.hot?.dispose(dispose);

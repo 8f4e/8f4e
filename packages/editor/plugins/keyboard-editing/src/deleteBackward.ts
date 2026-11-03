@@ -1,5 +1,3 @@
-import { moveCaret } from '@8f4e/editor-state';
-
 /**
  * Deletes the character before the caret or merges lines when positioned at column zero.
  * @param code Current document represented as an array of lines.
@@ -15,14 +13,14 @@ export default function deleteBackward(
 	const newCode = [...code];
 
 	if (col > 0) {
-		const [newRow, newCol] = moveCaret(code, row, col, 'left');
+		const newCol = col - 1;
 		newCode[row] = newCode[row].slice(0, newCol) + newCode[row].slice(newCol + 1);
-		return { code: newCode, row: newRow, col: newCol };
+		return { code: newCode, row, col: newCol };
 	}
 
 	if (row > 0) {
 		const save = newCode[row];
-		const [newRow] = moveCaret(newCode, row, col, 'up');
+		const newRow = row - 1;
 		newCode.splice(row, 1);
 		const joinColumn = newCode[newRow].length;
 		newCode[newRow] = newCode[newRow] + save;

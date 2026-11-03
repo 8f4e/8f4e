@@ -5,10 +5,6 @@ const EDIT_MODE_HINT = "You're in edit mode, press ESC to enter view mode";
 const VIEW_MODE_HINT = "You're in view mode, press e to edit";
 
 const drawModeHint: CanvasOverlayDrawer = ({ draw, state }) => {
-	if (!state.featureFlags.modeToggling) {
-		return;
-	}
-
 	const modeHint = state.editorMode === 'edit' ? EDIT_MODE_HINT : VIEW_MODE_HINT;
 
 	draw.startGroup(0, 0);

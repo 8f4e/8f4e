@@ -8,6 +8,9 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 		setup: context => {
 			const { store } = context;
 			let editing: typeof import('./editing') | undefined;
+			const removeCaret = context.drawers.registerCodeBlockForegroundDrawer(drawContext =>
+				editing?.drawCaret(drawContext)
+			);
 			let loading = false;
 			let disposed = false;
 			let replaying = false;
@@ -76,6 +79,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			return () => {
 				disposed = true;
 				discardInput();
+				removeCaret();
 				inputTarget.removeEventListener('keydown', onKeydown, { capture: true });
 				inputTarget.removeEventListener('keyup', onPendingRelease, { capture: true });
 				inputTarget.removeEventListener('blur', onPendingRelease, { capture: true });

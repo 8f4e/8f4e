@@ -22,7 +22,6 @@ export default function createMockStateWithColors(overrides: Partial<State> = {}
 			moduleDragging: false,
 			codeLineSelection: true,
 			viewportDragging: false,
-			modeToggling: true,
 			canvasOverlays: true,
 			offscreenBlockArrows: true,
 		},

@@ -17,8 +17,8 @@ import { findProjectLevel, walkProjectLevels } from '../../pureHelpers/projectTr
 import resolveEditorConfig from '../global-editor-directives/resolve';
 import incrementCompilerInputRevision from '../program-compiler/incrementCompilerInputRevision';
 import { isRestoringProjectEdit } from '../project-changes';
+import { clampSourcePosition } from '../text-geometry/clampSourcePosition';
 import gapCalculator from '../text-geometry/gapCalculator';
-import { moveCaret } from '../text-geometry/moveCaret';
 import reverseGapCalculator from '../text-geometry/reverseGapCalculator';
 import { getRawIndexForVisualColumn, getTabStopsByLine, getVisualColumnForRawIndex } from '../text-geometry/tabLayout';
 import { stopViewportAnimation } from '../viewport/animateViewport';
@@ -78,7 +78,7 @@ export default function codeBlockRendering(
 			visualCol,
 			tabStopsByLine[Math.min(row, codeBlock.code.length - 1)] || []
 		);
-		const [boundedRow, boundedCol] = moveCaret(codeBlock.code, row, col, 'jump');
+		const [boundedRow, boundedCol] = clampSourcePosition(codeBlock.code, row, col);
 		if (codeBlock !== state.codeBlockRendering.selectedCodeBlock) {
 			return;
 		}

@@ -1,7 +1,11 @@
 # Keyboard editing
 
-- Own typing, Tab, newline, backspace, and edit-only undo/redo shortcuts. The entry point buffers keyboard input while its mode-triggered implementation import is pending.
+- Own edit-mode caret movement and drawing, typing, Tab, newline, backspace, and edit-only undo/redo shortcuts. The entry point buffers keyboard input while its mode-triggered implementation import is pending.
 - Browser dependencies enter through the factory. Own listeners and disposal explicitly.
 - Keep this plugin independent of other keyboard plugins; use core services and local fixtures in tests.
 - Both hosts omit this plugin on coarse-pointer browsers. Keep device policy in compositions.
 - Run the build, test, and typecheck Nx targets for this package.
+
+- Keep caret direction policy and mutation caret adjustments private to this plugin. Use core tab/source geometry.
+- Register its caret with `registerCodeBlockForegroundDrawer`; the lazy bridge forwards drawing only after the
+  implementation loads. Remove the registration explicitly on disposal. Keep generic source positions in core.
