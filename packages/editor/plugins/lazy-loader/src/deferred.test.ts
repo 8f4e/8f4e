@@ -11,7 +11,7 @@ function deferred<T>() {
 	return { promise, resolve };
 }
 
-function install(load: () => Promise<readonly EditorPlugin[]>) {
+function install(load: () => Promise<EditorPlugin>) {
 	const editor = setup([]);
 	const dispose = createDeferredPluginLoaderPlugin({ load }).setup(editor);
 	return { ...editor, dispose };
@@ -19,8 +19,9 @@ function install(load: () => Promise<readonly EditorPlugin[]>) {
 
 describe('deferred plugin loader', () => {
 	it('starts imports once on renderer readiness and uses current state', async () => {
-		const setupPlugin = vi.fn<EditorPlugin['setup']>(() => () => {});
-		const load = vi.fn(async () => [{ id: 'optional', setup: setupPlugin }]);
+		const cleanup = vi.fn();
+		const setupPlugin = vi.fn<EditorPlugin['setup']>(() => cleanup);
+		const load = vi.fn(async () => ({ id: 'optional', setup: setupPlugin }));
 		const editor = install(load);
 		try {
 			expect(load).not.toHaveBeenCalled();
@@ -37,36 +38,35 @@ describe('deferred plugin loader', () => {
 		} finally {
 			editor.dispose();
 		}
+		editor.dispose();
+		expect(cleanup).toHaveBeenCalledOnce();
 	});
 	it.each(['before readiness', 'during import'])('ignores late work when disposed %s', async when => {
-		const pending = deferred<readonly EditorPlugin[]>();
+		const pending = deferred<EditorPlugin>();
 		const setupPlugin = vi.fn<EditorPlugin['setup']>(() => () => {});
 		const load = vi.fn(() => pending.promise);
 		const editor = install(load);
 		if (when === 'during import') editor.events.dispatch('ready');
 		editor.dispose();
 		if (when === 'before readiness') editor.events.dispatch('ready');
-		pending.resolve([{ id: 'optional', setup: setupPlugin }]);
+		pending.resolve({ id: 'optional', setup: setupPlugin });
 		await Promise.resolve();
 		expect(setupPlugin).not.toHaveBeenCalled();
 		expect(load).toHaveBeenCalledTimes(when === 'during import' ? 1 : 0);
 	});
-	it('cleans up in reverse order and releases earlier installations if a later setup fails', async () => {
-		const released: string[] = [];
-		const editor = install(async () => [
-			{ id: 'first', setup: () => () => released.push('first') },
-			{ id: 'second', setup: () => () => released.push('second') },
-			{
+	it.each(['load', 'setup'])('logs a %s failure', async phase => {
+		const error = new Error(`${phase} failed`);
+		const editor = install(async () => {
+			if (phase === 'load') throw error;
+			return {
 				id: 'broken',
 				setup: () => {
-					throw new Error('setup failed');
+					throw error;
 				},
-			},
-		]);
+			};
+		});
 		editor.events.dispatch('ready');
-		await vi.waitFor(() => expect(released).toEqual(['second', 'first']));
-		expect(editor.state.console.logs.at(-1)?.message).toContain('setup failed');
+		await vi.waitFor(() => expect(editor.state.console.logs.at(-1)?.message).toContain(error.message));
 		editor.dispose();
-		expect(released).toEqual(['second', 'first']);
 	});
 });

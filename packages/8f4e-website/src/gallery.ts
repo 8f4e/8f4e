@@ -150,9 +150,6 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 
 		// A pending project fetch must not block mounting a newer selection.
 		void (async () => {
-			if (disposed || currentRevision !== revision) {
-				return;
-			}
 			const canvas = document.createElement('canvas');
 			canvas.tabIndex = 0;
 			canvas.setAttribute('aria-label', `${item.project.title} editor`);

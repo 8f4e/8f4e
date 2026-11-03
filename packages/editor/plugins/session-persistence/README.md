@@ -20,9 +20,9 @@ its autosave subscriptions and saves the resulting project once. Setup performs 
 storage leaves core's initial project in place; read/write failures are reported in the editor console. Stored object
 shapes are not validated or migrated. The host disables restoration when another source has initial-project priority.
 
-Autosaving starts after initialization regardless of `restoreOnStartup`. It subscribes to block-list changes, selected
-source edits, and programmatic source edits. Selection can therefore cause extra saves; project-change signaling remains
-a separate task in TODO 492.
+Autosaving starts during `init` regardless of `restoreOnStartup`. It subscribes to completed `projectChange`
+notifications and saves once after each edit, API batch, undo/redo, or project replacement, with derived state ready.
+Selection, caret movement, and navigation do not trigger saves.
 
 A pending project URL may leave an empty project saved until fetching succeeds. A failed fetch or closed editor can
 leave that empty session persisted. The default composition deliberately accepts this behavior without startup save

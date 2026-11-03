@@ -66,11 +66,10 @@ chunks. Their directive-based loader is part of that deferred set, so its import
 earlier. Ordinary optional features use individual entries with unconditional or capability predicates, including
 input plugins. Entries load independently and have no keyboard-specific loading stage.
 
-`load()` resolves to an array of ordinary
-editor plugins. The deferred loader installs that array in order against current state and disposes it in reverse
-order. Disposal removes the initialization listener and ignores pending imports. Load or setup failures are logged, with earlier
-installations released if setup fails. Optional features must initialize from current state without relying on
-startup events being replayed.
+`load()` resolves to one ordinary editor plugin. Both compositions return their lazy-loader plugin, which owns the
+individual optional feature imports. The deferred loader installs it against current state and calls its disposer
+when the editor closes. Disposal removes the readiness listener and ignores pending imports. Load or setup failures
+are logged. Optional features must initialize from current state without relying on startup events being replayed.
 
 Verify from the workspace root:
 

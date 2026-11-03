@@ -9,10 +9,10 @@ vi.mock('@8f4e/editor-plugin-compiler', { spy: true });
 vi.mock('@8f4e/editor-plugin-lazy-loader', { spy: true });
 
 async function loadDeferredPlugins() {
-	const loaders = await vi.mocked(createDeferredPluginLoaderPlugin).mock.calls.at(-1)![0].load();
+	const loader = await vi.mocked(createDeferredPluginLoaderPlugin).mock.calls.at(-1)![0].load();
 	const entries = vi.mocked(createLazyPluginLoaderPlugin).mock.calls.at(-1)![0];
 	const plugins = await Promise.all(entries.filter(entry => entry.matches([])).map(entry => entry.load()));
-	return [...loaders, ...plugins];
+	return [loader, ...plugins];
 }
 afterEach(() => vi.clearAllMocks());
 

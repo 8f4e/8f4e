@@ -50,7 +50,7 @@ export async function mountMinimalEditor(
 			createDeferredPluginLoaderPlugin({
 				load: () =>
 					import('./deferred-plugins').then(module =>
-						module.createDeferredEditorPlugins({
+						module.createDeferredEditorPlugin({
 							canvas,
 							compiler,
 							fileSession,

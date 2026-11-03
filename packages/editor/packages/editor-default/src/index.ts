@@ -44,7 +44,7 @@ export function createDefaultEditorPlugins(options: {
 		codeRenderingPlugin,
 		createDeferredPluginLoaderPlugin({
 			load: () =>
-				import('./deferred-plugins').then(module => module.createDeferredEditorPlugins({ ...options, fileSession })),
+				import('./deferred-plugins').then(module => module.createDeferredEditorPlugin({ ...options, fileSession })),
 		}),
 	];
 }
