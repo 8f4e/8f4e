@@ -12,7 +12,6 @@ import initView, { createEditorDrawerRegistry, type MemoryViews, type RenderStat
 
 import { disposeAll } from './disposeAll';
 import initEvents from './events';
-import keyboardEvents from './events/keyboardEvents';
 import pointerEvents from './events/pointerEvents';
 import { createMemoryViewManager } from './memoryViewManager';
 import { type EditorPlugin, installEditorPlugins } from './plugins';
@@ -184,7 +183,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		);
 		const state = store.getState();
 		cleanups.push(pointerEvents(canvas, events, state, options.captureWheel));
-		cleanups.push(keyboardEvents(canvas, events, store));
 
 		// Load the selected font before initializing the view.
 		const fontAtlas = await loadFontAtlas(state.editorConfig.font);

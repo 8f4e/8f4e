@@ -1,4 +1,4 @@
-import { moveCaret } from './moveCaret';
+import { moveCaret } from '@8f4e/editor-state';
 
 /**
  * Inserts a character at the caret position and advances the caret by one column.

@@ -1,4 +1,4 @@
-import { moveCaret } from './moveCaret';
+import { moveCaret } from '@8f4e/editor-state';
 
 /**
  * Deletes the character before the caret or merges lines when positioned at column zero.

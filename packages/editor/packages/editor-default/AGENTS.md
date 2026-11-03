@@ -5,7 +5,7 @@
 - Export composition APIs without mounting as an import side effect.
 - Compose the standard plugin set here and expose host overrides through `plugins`; keep feature logic in its
   plugin package and generic plugin installation in editor-core.
-- Construct the standard set with `createDefaultEditorPlugins` per mounted editor, supplying the canvas, render
+- Await `createDefaultEditorPlugins` to construct the standard set per mounted editor, supplying the canvas, render
   callback, storage settings, Open menu visibility, and compiler getters. Render callbacks run after initialization.
 - Construct one `createProjectFileSession()` per default feature set and install its `plugin` before project loaders.
   Compose `createProjectOpenPlugin({ document: canvas.ownerDocument, fileSession, showOpenMenuItem })` for Open and
@@ -89,3 +89,8 @@
 - Run `npx nx run @8f4e/editor-default:test:screenshot` for real-plugin browser composition coverage: lazy plot
   activation/navigation, project Open/Save, and compiler/texture-runtime rendering. Keep individual feature behavior
   in its owning plugin; this package owns combinations of real plugins.
+
+- Keep keyboard navigation, editing, and mode switching independent. Dynamically import their factories only when
+  `(pointer: coarse)` does not match at mount time. Hide modeOverlay by default on coarse-pointer browsers.
+  The keyboard-editing plugin owns its mode-triggered implementation import and input buffering; keep feature
+  behavior and pending-input lifecycle out of the host and generic directive lazy loader.

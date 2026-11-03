@@ -38,7 +38,7 @@ noteEnd`);
 			initialProject: project,
 			plugins: [createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })],
 		});
-		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
+		editor.state.editorMode = 'edit';
 		await vi.waitFor(() =>
 			expect(
 				editor.state.codeBlockRendering.currentProject.blocks.some(block => block.code.includes('note screenshot'))

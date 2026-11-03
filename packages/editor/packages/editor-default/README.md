@@ -28,6 +28,17 @@ Declare `; @mode edit` or `; @mode view` in a project block to select its mode w
 unique declaration start in view mode. Set the `modeToggling` feature flag to `false` to hide the user controls for
 changing modes. The directive still selects the initial mode when these controls are disabled.
 
+Keyboard behavior comes from three independent plugins: `keyboard-mode-switching` for `e`/Escape,
+`keyboard-navigation` for line/block navigation and editing caret movement, and `keyboard-editing` for text changes
+and undo/redo shortcuts. View mode supports line selection and block navigation, with history shortcuts left unhandled.
+The editing plugin keeps a small input bridge and imports its text-editing implementation on first entry into edit
+mode, including projects that start in edit mode. It buffers keys during that import and replays them in order.
+
+The browser host imports and installs these plugins only when `(pointer: coarse)` does not match. Phones and tablets
+with a coarse primary pointer receive none of the three plugins, and their mode overlay is hidden by default. This
+is a capability check at mounting time; it does not identify devices by user agent. Touch navigation can be composed
+separately later. Keyboard-to-memory and Save shortcuts remain independent plugins.
+
 `releaseRenderingResources()` pauses rendering and releases reloadable GPU textures, dynamic buffer storage, and the
 canvas drawing buffer. `resumeRendering()` restores the resources, applies the latest canvas size, and renders
 immediately.
@@ -62,7 +73,7 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
 `@8f4e/editor-plugin-project-open` for opening projects, `@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
 `createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
-constructs this plugin set with resources for one editor. It creates one `@8f4e/editor-file-session`, installs its
+asynchronously constructs this plugin set with resources for one editor; await its result. It creates one `@8f4e/editor-file-session`, installs its
 plugin before project loaders, and supplies it to Open and Save. The session shares the current handle and clears it
 on project replacement. Open receives the canvas's document. Save receives the canvas and owns serialization, writing,
 and Cmd/Ctrl+S. WebAssembly export receives a document and a live compiler-byte getter. File handling stays outside core.

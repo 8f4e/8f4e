@@ -74,6 +74,9 @@ describe('default editor plugins', () => {
 		expect(pluginIds[0]).toBe('compiler');
 		expect(pluginIds).toEqual(
 			expect.arrayContaining([
+				'keyboard-mode-switching',
+				'keyboard-navigation',
+				'keyboard-editing',
 				'code-rendering',
 				'connectors',
 				'watch',
@@ -177,13 +180,19 @@ describe('default editor plugins', () => {
 	it('keeps the compiler first when hosts replace or omit feature plugins', async () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
 		const plugins = [{ id: 'custom', setup: vi.fn(() => () => {}) }];
-		const editor = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage, plugins });
+		const editor = await mountDefaultEditor({ ownerDocument: { defaultView: window } } as HTMLCanvasElement, {
+			storage: {} as Storage,
+			plugins,
+		});
 		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toEqual([
 			expect.objectContaining({ id: 'compiler' }),
 			...plugins,
 		]);
 		editor.dispose();
-		const withoutPlugins = await mountDefaultEditor({} as HTMLCanvasElement, { storage: {} as Storage, plugins: [] });
+		const withoutPlugins = await mountDefaultEditor({ ownerDocument: { defaultView: window } } as HTMLCanvasElement, {
+			storage: {} as Storage,
+			plugins: [],
+		});
 		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toEqual([expect.objectContaining({ id: 'compiler' })]);
 		expect(createSessionPersistencePlugin).not.toHaveBeenCalled();
 		expect(createProjectUrlLoaderPlugin).not.toHaveBeenCalled();
@@ -195,4 +204,23 @@ describe('default editor plugins', () => {
 		expect(createWasmExportPlugin).not.toHaveBeenCalled();
 		withoutPlugins.dispose();
 	});
+});
+
+it('omits all keyboard plugins and keyboard guidance on coarse-pointer browsers', async () => {
+	vi.stubGlobal('window', {
+		navigator: {},
+		matchMedia: (query: string) => ({ matches: query === '(pointer: coarse)' }),
+	});
+	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
+	try {
+		await mountDefaultEditor({ ownerDocument: { defaultView: window } } as HTMLCanvasElement, {
+			storage: {} as Storage,
+		});
+		const options = vi.mocked(initEditor).mock.calls.at(-1)![1];
+		for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing'])
+			expect(options.plugins!.some(plugin => plugin.id === id)).toBe(false);
+		expect(options.featureFlags!.modeOverlay).toBe(false);
+	} finally {
+		vi.unstubAllGlobals();
+	}
 });

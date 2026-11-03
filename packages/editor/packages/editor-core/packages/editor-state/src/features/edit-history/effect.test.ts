@@ -10,7 +10,7 @@ import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pa
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
 import { createLayoutRegistry } from '../code-blocks/layout/registry';
-import codeEditing from '../code-editing/effect';
+import { applyCodeBlockSourceEdits } from '../code-blocks/sourceEdits';
 import projectImport from '../project-loading/effect';
 import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
 import historyTracking from './effect';
@@ -68,6 +68,15 @@ describe('history tracking with real project mutations', () => {
 		}
 	}
 
+	function replaceLine(row: number, line: string) {
+		const codeBlock = state.codeBlockRendering.selectedCodeBlock!;
+		applyCodeBlockSourceEdits(
+			store,
+			[{ codeBlock, code: codeBlock.code.map((text, index) => (index === row ? line : text)) }],
+			{ affectsCompilation: true }
+		);
+	}
+
 	function selectedBlockCode(): string[] {
 		return state.codeBlockRendering.currentProject.blocks[0].code;
 	}
@@ -105,8 +114,7 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('restores an edit undone before the debounce fires, via redo (case a)', async () => {
-		codeEditing(store, events);
-		dispatch('insertText', { text: '2' });
+		replaceLine(1, 'push 12');
 		expect(block.code[1]).toBe('push 12');
 
 		dispatch('undo');
@@ -121,8 +129,7 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('keeps redo alive across selection and navigation after undo (case b)', async () => {
-		codeEditing(store, events);
-		dispatch('insertText', { text: '2' });
+		replaceLine(1, 'push 12');
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
 
@@ -133,7 +140,7 @@ describe('history tracking with real project mutations', () => {
 		// schedule a history snapshot that wiped the redo stack after 1s.
 		store.set('codeBlockRendering.selectedCodeBlock', state.codeBlockRendering.currentProject.blocks[0]);
 		store.set('codeBlockRendering.selectedCodeBlock.code', state.codeBlockRendering.currentProject.blocks[0].code);
-		dispatch('moveCaret', { direction: 'down' });
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		await vi.advanceTimersByTimeAsync(2000);
 
 		expect(state.historyStack).toHaveLength(0);
@@ -144,8 +151,7 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('invalidates redo immediately when a new edit follows an undo (case c)', async () => {
-		codeEditing(store, events);
-		dispatch('insertText', { text: '2' });
+		replaceLine(1, 'push 12');
 		await vi.advanceTimersByTimeAsync(1000);
 		dispatch('undo');
 		expect(state.redoStack).toHaveLength(1);
@@ -153,7 +159,7 @@ describe('history tracking with real project mutations', () => {
 		const restored = state.codeBlockRendering.currentProject.blocks[0];
 		state.codeBlockRendering.selectedCodeBlock = restored;
 		restored.cursor = { row: 1, col: 6, x: 0, y: 16 };
-		dispatch('insertText', { text: '3' });
+		replaceLine(1, 'push 13');
 
 		// The redo stack is gone before the debounce timer fires.
 		expect(state.redoStack).toEqual([]);
@@ -162,11 +168,10 @@ describe('history tracking with real project mutations', () => {
 		expect(selectedBlockCode()[1]).toBe('push 13');
 	});
 
-	it('creates exactly one undo step for a typing burst (case d)', async () => {
-		codeEditing(store, events);
-		dispatch('insertText', { text: '2' });
-		dispatch('insertText', { text: '3' });
-		dispatch('deleteBackward');
+	it('creates exactly one undo step for a burst of source edits (case d)', async () => {
+		replaceLine(1, 'push 12');
+		replaceLine(1, 'push 123');
+		replaceLine(1, 'push 12');
 		await vi.advanceTimersByTimeAsync(1000);
 
 		expect(block.code[1]).toBe('push 12');
@@ -175,9 +180,8 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('creates no history entry when an edit returns to the committed content (case e)', async () => {
-		codeEditing(store, events);
-		dispatch('insertText', { text: '2' });
-		dispatch('deleteBackward');
+		replaceLine(1, 'push 12');
+		replaceLine(1, 'push 1');
 		await vi.advanceTimersByTimeAsync(2000);
 
 		expect(block.code[1]).toBe('push 1');
@@ -185,8 +189,7 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('cancels pending work and resets the baseline when another project loads (case f)', async () => {
-		codeEditing(store, events);
-		dispatch('insertText', { text: '2' });
+		replaceLine(1, 'push 12');
 		expect(state.projectChange.revision).toBe(1);
 
 		const otherProject = {
@@ -205,7 +208,7 @@ describe('history tracking with real project mutations', () => {
 		const loaded = state.codeBlockRendering.currentProject.blocks[0];
 		state.codeBlockRendering.selectedCodeBlock = loaded;
 		loaded.cursor = { row: 0, col: 11, x: 0, y: 0 };
-		dispatch('insertText', { text: ';' });
+		replaceLine(0, 'module other;');
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
 		expect(getProjectModules(state.historyStack[0])[0].code).toEqual(['module other', 'moduleEnd']);
@@ -257,11 +260,10 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('records nothing for selection, caret movement, or repeated selection alone', async () => {
-		codeEditing(store, events);
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		store.set('codeBlockRendering.selectedCodeBlock', block);
-		dispatch('moveCaret', { direction: 'down' });
-		dispatch('moveCaret', { direction: 'up' });
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
 		await vi.advanceTimersByTimeAsync(3000);
 
 		expect(state.projectChange.revision).toBe(0);

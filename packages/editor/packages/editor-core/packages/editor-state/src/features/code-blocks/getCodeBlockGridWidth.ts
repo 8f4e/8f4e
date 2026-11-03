@@ -1,4 +1,4 @@
-import { getTabStopsByLine, getVisualLineWidth } from '../code-editing/tabLayout';
+import { getTabStopsByLine, getVisualLineWidth } from '../text-geometry/tabLayout';
 import { CODE_BLOCK_MIN_GRID_WIDTH } from './utils/constants';
 
 /**

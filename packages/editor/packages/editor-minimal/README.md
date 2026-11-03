@@ -42,7 +42,18 @@ layout, visibility management, and any WebMCP bridge.
 `MinimalEditorMountOptions` supports `initialProjectUrl`, the initial-project callbacks, `sharedAudioContext`,
 `captureWheel`, and `featureFlags`. Project creation is disabled by default. A project selects its initial mode with
 `; @mode edit` or `; @mode view` in a project block; without a valid, unique declaration it starts in view mode.
-Hosts can override feature flags. Core still owns ordinary editing, navigation, clipboard operations, and history.
+Hosts can override feature flags. Core retains project editing APIs, shared navigation operations, clipboard operations, and history. Keyboard bindings belong to plugins.
+
+Keyboard behavior comes from three independent plugins: `keyboard-mode-switching` for `e`/Escape,
+`keyboard-navigation` for line/block navigation and editing caret movement, and `keyboard-editing` for text changes
+and undo/redo shortcuts. View mode supports line selection and block navigation, with history shortcuts left unhandled.
+The editing plugin keeps a small input bridge and imports its text-editing implementation on first entry into edit
+mode, including projects that start in edit mode. It buffers keys during that import and replays them in order.
+
+The browser host imports and installs these plugins only when `(pointer: coarse)` does not match. Phones and tablets
+with a coarse primary pointer receive none of the three plugins, and their mode overlay is hidden by default. This
+is a capability check at mounting time; it does not identify devices by user agent. Touch navigation can be composed
+separately later. Keyboard-to-memory and Save shortcuts remain independent plugins.
 
 This package has its own composition and dependencies. The full `@8f4e/editor-default` composition provides session
 persistence, Open From Disk, WASM exports, screenshots, built-in module browsing, and additional editing actions such as

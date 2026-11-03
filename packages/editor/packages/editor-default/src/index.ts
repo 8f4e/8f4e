@@ -28,7 +28,7 @@ const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
 export type DefaultEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
 
-export function createDefaultEditorPlugins(options: {
+export async function createDefaultEditorPlugins(options: {
 	canvas: HTMLCanvasElement;
 	storage: Storage;
 	storageKey: string;
@@ -42,9 +42,11 @@ export function createDefaultEditorPlugins(options: {
 	getCodeBuffer: () => Uint8Array;
 	getAssertionSites: ReturnType<typeof createCompilerPlugin>['getAssertionSites'];
 	sharedAudioContext?: AudioContext;
-}): NonNullable<EditorOptions['plugins']> {
+}): Promise<NonNullable<EditorOptions['plugins']>> {
 	const fileSession = createProjectFileSession();
-	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+	const browserWindow = options.canvas.ownerDocument.defaultView!;
+	const keyboardPlugins = await createKeyboardPlugins(options.canvas);
+	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
 		fileSession.plugin,
@@ -60,6 +62,7 @@ export function createDefaultEditorPlugins(options: {
 			restoreOnStartup: !options.initialProjectUrl,
 		}),
 		createExampleModulesPlugin({ sources: exampleModuleSources }),
+		...keyboardPlugins,
 		codeRenderingPlugin,
 		connectorsPlugin,
 		assertionMarkersPlugin,
@@ -132,7 +135,7 @@ export async function mountDefaultEditor(
 		plugins: [
 			compiler.plugin,
 			...(plugins ??
-				createDefaultEditorPlugins({
+				(await createDefaultEditorPlugins({
 					canvas,
 					storage,
 					storageKey: `project_${storageNamespace}`,
@@ -146,12 +149,30 @@ export async function mountDefaultEditor(
 					getCodeBuffer: compiler.getCodeBuffer,
 					getAssertionSites: compiler.getAssertionSites,
 					sharedAudioContext,
-				})),
+				}))),
 		],
 		captureWheel,
-		featureFlags,
+		featureFlags: {
+			modeOverlay: !canvas.ownerDocument.defaultView!.matchMedia('(pointer: coarse)').matches,
+			...featureFlags,
+		},
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
+}
+
+async function createKeyboardPlugins(canvas: HTMLCanvasElement): Promise<NonNullable<EditorOptions['plugins']>> {
+	if (canvas.ownerDocument.defaultView!.matchMedia('(pointer: coarse)').matches) return [];
+	const [{ createKeyboardModeSwitchingPlugin }, { createKeyboardNavigationPlugin }, { createKeyboardEditingPlugin }] =
+		await Promise.all([
+			import('@8f4e/editor-plugin-keyboard-mode-switching'),
+			import('@8f4e/editor-plugin-keyboard-navigation'),
+			import('@8f4e/editor-plugin-keyboard-editing'),
+		]);
+	return [
+		createKeyboardModeSwitchingPlugin({ inputTarget: canvas }),
+		createKeyboardNavigationPlugin({ inputTarget: canvas }),
+		createKeyboardEditingPlugin({ inputTarget: canvas }),
+	];
 }

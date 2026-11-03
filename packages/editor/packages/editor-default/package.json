@@ -63,7 +63,10 @@
     "@8f4e/editor-plugin-texture-runtime": "*",
     "@8f4e/editor-file-session": "*",
     "@8f4e/editor-plugin-project-save": "*",
-    "@8f4e/editor-plugin-code-rendering": "*"
+    "@8f4e/editor-plugin-code-rendering": "*",
+    "@8f4e/editor-plugin-keyboard-editing": "*",
+    "@8f4e/editor-plugin-keyboard-navigation": "*",
+    "@8f4e/editor-plugin-keyboard-mode-switching": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

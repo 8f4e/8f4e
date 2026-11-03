@@ -2,7 +2,7 @@
 
 This package is the glue that connects the platform-agnostic editor state machine from
 `@8f4e/editor-state` with browser APIs and the `@8f4e/web-ui` renderer. It wires browser events
-(keyboard, mouse, and wheel) into the state machine, then hands the resulting state object
+(mouse and wheel) into the state machine, then hands the resulting state object
 that describes the full application to a UI renderer that treats state as immutable input and
 derives the UI purely from it. The renderer is intended to be pluggable so other platform
 renderers can replace it.
@@ -10,7 +10,7 @@ renderers can replace it.
 ## Responsibilities
 
 - Initialize the editor-state store and event dispatcher for the web runtime.
-- Make the canvas focusable and wire its keyboard, mouse, and wheel input into internal events, so each editor only
+- Make the canvas focusable and wire its mouse and wheel input into internal events, so each editor only
   handles input directed at its own canvas.
 - Translate DOM input data into internal event payloads (coordinates, movement deltas, button state, canvas size).
 - Initialize the UI renderer with state and memory views, and forward resize events.
@@ -27,8 +27,9 @@ resources and applies any canvas resize that happened while they were released.
 `renderFrame()` immediately renders the current state, including while the animation loop is paused.
 
 The editor supports view and edit modes. Selected code blocks have a continuously animated outline in both modes.
-Command+Arrow (or Control+Arrow) navigates between blocks with smooth viewport movement. Use `e` to enter edit mode
-and Escape to return to view mode when `modeToggling` is enabled.
+Keyboard navigation, text editing, and mode switching are supplied by independent plugins composed by the host.
+Core retains project editing APIs, history, generic mode actions, and shared text/pointer geometry. It installs no
+keyboard listeners.
 
 ## Plugins
 

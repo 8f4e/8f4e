@@ -54,7 +54,7 @@ entryEnd`);
 				},
 			],
 		});
-		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
+		editor.state.editorMode = 'edit';
 		await vi.waitFor(() => expect(editor!.state.dialog.id).toBe('binary-assets-loading'));
 		editor.pauseRendering();
 		editor.renderFrame();

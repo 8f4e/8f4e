@@ -1,6 +1,6 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import { getMemoryDeclarationRows } from '../../../pureHelpers/getMemoryDeclarationRows';
-import gapCalculator from '../../code-editing/gapCalculator';
+import gapCalculator from '../../text-geometry/gapCalculator';
 import type { BlockLayoutDraft } from '../layout/types';
 import { getModuleCompilationForCodeBlock } from '../utils/getCompiledModuleForCodeBlock';
 

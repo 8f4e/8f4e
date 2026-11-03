@@ -1,5 +1,10 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import { createEditorEditingHandle, EMPTY_DEFAULT_PROJECT, getEditorBlockId } from '@8f4e/editor-state';
+import {
+	applyCodeBlockSourceEdits,
+	createEditorEditingHandle,
+	EMPTY_DEFAULT_PROJECT,
+	getEditorBlockId,
+} from '@8f4e/editor-state';
 import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { setupPlugin } from './__tests__/setup';
@@ -73,7 +78,7 @@ describe('session persistence plugin', () => {
 		expect(getProjectModules(JSON.parse(storage.getItem('session')!))[0].code).toContain('module retained');
 	});
 
-	it('autosaves typing, API edits, undo/redo, and deletion', () => {
+	it('autosaves source changes, API edits, undo/redo, and deletion', () => {
 		const test = setup();
 		test.boot();
 		test.events.dispatch('loadProject', { project });
@@ -82,7 +87,11 @@ describe('session persistence plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
-		test.events.dispatch('insertText', { text: '2' });
+		applyCodeBlockSourceEdits(
+			test.store,
+			[{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) }],
+			{ affectsCompilation: true }
+		);
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 12');
 		const editing = createEditorEditingHandle(test.store, test.events);
 		cleanups.push(editing.dispose);
@@ -132,14 +141,20 @@ describe('session persistence plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
-		test.events.dispatch('insertText', { text: '2' });
+		applyCodeBlockSourceEdits(
+			test.store,
+			[{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) }],
+			{ affectsCompilation: true }
+		);
 		test.events.dispatch('undo');
 		const restored = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!;
 		test.storage.setItem.mockClear();
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
-		test.events.dispatch('moveCaret', { direction: 'down' });
-		test.events.dispatch('insertText', { text: '' });
+		test.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		applyCodeBlockSourceEdits(test.store, [{ codeBlock: restored, code: [...restored.code] }], {
+			affectsCompilation: true,
+		});
 		await vi.advanceTimersByTimeAsync(2000);
 		expect(test.storage.setItem).not.toHaveBeenCalled();
 		expect(test.state.redoStack).toHaveLength(1);

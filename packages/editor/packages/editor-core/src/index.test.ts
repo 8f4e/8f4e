@@ -52,7 +52,6 @@ const view = {
 
 const cleanupSpriteSheet = vi.fn();
 const cleanupPointer = vi.fn();
-const cleanupKeyboard = vi.fn();
 
 vi.mock('@8f4e/editor-state', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/editor-state')>()),
@@ -79,10 +78,6 @@ vi.mock('./events', () => ({
 
 vi.mock('./events/pointerEvents', () => ({
 	default: vi.fn(() => cleanupPointer),
-}));
-
-vi.mock('./events/keyboardEvents', () => ({
-	default: vi.fn(() => cleanupKeyboard),
 }));
 
 vi.mock('./spriteSheetManager', () => ({
@@ -145,7 +140,6 @@ describe('editor init', () => {
 			expect(setup).toHaveBeenCalledOnce();
 			expect(cleanup).toHaveBeenCalledOnce();
 			expect(cleanupPointer).toHaveBeenCalledOnce();
-			expect(cleanupKeyboard).toHaveBeenCalledOnce();
 			expect(events.dispose).toHaveBeenCalledOnce();
 			expect(view.destroy).not.toHaveBeenCalled();
 			expect(canvas.removeAttribute).toHaveBeenCalledWith('tabindex');
@@ -203,7 +197,6 @@ describe('editor init', () => {
 		view.destroy.mockClear();
 		cleanupSpriteSheet.mockClear();
 		cleanupPointer.mockClear();
-		cleanupKeyboard.mockClear();
 		storeState.editorConfig = {};
 		storeState.info = {};
 	});
@@ -315,7 +308,6 @@ describe('editor init', () => {
 
 	it('makes its canvas focusable and restores its previous tab index when disposed', async () => {
 		const { default: init } = await import('./index');
-		const { default: keyboardEvents } = await import('./events/keyboardEvents');
 		const canvas = {
 			width: 640,
 			height: 480,
@@ -331,7 +323,6 @@ describe('editor init', () => {
 		const editor = await init(canvas, {});
 
 		expect(canvas.tabIndex).toBe(0);
-		expect(keyboardEvents).toHaveBeenLastCalledWith(canvas, events, store);
 
 		editor.dispose();
 		expect(canvas.tabIndex).toBe(-1);

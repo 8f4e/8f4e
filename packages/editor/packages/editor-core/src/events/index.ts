@@ -13,7 +13,7 @@ interface DisposableEventDispatcher extends EventDispatcher {
 }
 
 // Re-export event types from shared package
-export type { InternalKeyboardEvent, InternalMouseEvent } from '@8f4e/editor-state-types';
+export type { InternalMouseEvent } from '@8f4e/editor-state-types';
 
 export default function events(): DisposableEventDispatcher {
 	const subscriptions: Record<string, { capture: EventHandler<unknown>[]; normal: EventHandler<unknown>[] }> = {};

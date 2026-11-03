@@ -125,3 +125,7 @@
   upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
   Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
+
+- Ordinary keyboard input belongs to keyboard-navigation, keyboard-editing, and keyboard-mode-switching plugins.
+  Keep generic history, project editing, mode actions, and text/pointer geometry in core. Text geometry lives under
+  `features/text-geometry`; no core text-insertion actions or compatibility event aliases remain.

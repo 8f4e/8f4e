@@ -48,7 +48,7 @@ functionEnd float`,
 			initialProject: parseProjectSource(source),
 			plugins: [createExampleModulesPlugin({ sources })],
 		});
-		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
+		editor.state.editorMode = 'edit';
 		const state = editor.state;
 		await vi.waitFor(() =>
 			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'env')).toBe(true)

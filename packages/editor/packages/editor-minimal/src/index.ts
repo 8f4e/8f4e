@@ -44,10 +44,12 @@ export async function mountMinimalEditor(
 	const browserWindow = canvas.ownerDocument.defaultView!;
 	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
+	const keyboardPlugins = await createKeyboardPlugins(canvas);
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
 			fileSession.plugin,
+			...keyboardPlugins,
 			codeRenderingPlugin,
 			connectorsPlugin,
 			createProjectUrlLoaderPlugin({
@@ -74,8 +76,27 @@ export async function mountMinimalEditor(
 			tooltipsPlugin,
 		],
 		captureWheel,
-		featureFlags: { projectCreation: false, ...featureFlags },
+		featureFlags: {
+			projectCreation: false,
+			modeOverlay: !browserWindow.matchMedia('(pointer: coarse)').matches,
+			...featureFlags,
+		},
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
+}
+
+async function createKeyboardPlugins(canvas: HTMLCanvasElement): Promise<NonNullable<EditorOptions['plugins']>> {
+	if (canvas.ownerDocument.defaultView!.matchMedia('(pointer: coarse)').matches) return [];
+	const [{ createKeyboardModeSwitchingPlugin }, { createKeyboardNavigationPlugin }, { createKeyboardEditingPlugin }] =
+		await Promise.all([
+			import('@8f4e/editor-plugin-keyboard-mode-switching'),
+			import('@8f4e/editor-plugin-keyboard-navigation'),
+			import('@8f4e/editor-plugin-keyboard-editing'),
+		]);
+	return [
+		createKeyboardModeSwitchingPlugin({ inputTarget: canvas }),
+		createKeyboardNavigationPlugin({ inputTarget: canvas }),
+		createKeyboardEditingPlugin({ inputTarget: canvas }),
+	];
 }

@@ -1,5 +1,5 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import gapCalculator from '~/features/code-editing/gapCalculator';
+import gapCalculator from '~/features/text-geometry/gapCalculator';
 import parseCodeBlocks from './codeParser';
 
 const HIGHLIGHT_COLORS = ['surfaceRaised1', 'surfaceRaised2', 'surfaceRaised3'] as const;

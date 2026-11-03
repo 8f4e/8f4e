@@ -72,7 +72,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 					]),
 				],
 			});
-			canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' }));
+			editor.state.editorMode = 'edit';
 			editor.pauseRendering();
 			if (trigger === 'group navigation') {
 				const now = vi.spyOn(performance, 'now').mockReturnValue(0);

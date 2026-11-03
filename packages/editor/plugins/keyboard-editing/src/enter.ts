@@ -1,4 +1,4 @@
-import { moveCaret } from './moveCaret';
+import { moveCaret } from '@8f4e/editor-state';
 
 /**
  * Splits the current line at the caret and moves the caret to the start of the next line.
