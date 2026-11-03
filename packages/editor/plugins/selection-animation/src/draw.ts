@@ -19,7 +19,7 @@ export default function drawSelectionAnimation({ draw, state, codeBlock }: CodeB
 	const bottomSteps = Math.floor((innerRightX - leftX) / (vGrid * 2)) + 2;
 	const leftSteps = Math.floor(codeBlockHeight / hGrid) + 1;
 	const perimeterLength = topSteps + rightSteps + bottomSteps + leftSteps;
-	const startOffset = Math.max(0, perimeterLength - segmentLength);
+	const startOffset = perimeterLength - segmentLength;
 	const animationOffset = (Math.floor(now / OUTLINE_STEP_DURATION_MS) + startOffset) % perimeterLength;
 
 	const color = PALETTE_INDICES.secondaryBase;
@@ -49,18 +49,14 @@ export default function drawSelectionAnimation({ draw, state, codeBlock }: CodeB
 			y = codeBlockHeight - (step - topSteps - rightSteps - bottomSteps) * hGrid;
 		}
 
-		const character =
-			y === topY
-				? x === leftX || x === rightX
-					? '.'
-					: '-'
-				: y === bottomY
-					? x === leftX
-						? '`'
-						: x === rightX
-							? "'"
-							: '-'
-					: '|';
+		let character = '|';
+		if (y === topY) {
+			character = x === leftX || x === rightX ? '.' : '-';
+		} else if (y === bottomY) {
+			character = '-';
+			if (x === leftX) character = '`';
+			else if (x === rightX) character = "'";
+		}
 
 		draw.drawText(x, y, character, color);
 	}

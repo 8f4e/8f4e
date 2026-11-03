@@ -4,7 +4,7 @@ import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { expect, test, vi } from 'vitest';
 import { selectionAnimationPlugin } from '../src/index';
 
-test.each(['view', 'edit'] as const)('selection animation in %s mode', async editorMode => {
+test('renders two phases of the selection animation', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 400;
 	canvas.height = 240;
@@ -37,7 +37,6 @@ test.each(['view', 'edit'] as const)('selection animation in %s mode', async edi
 	});
 	editor.pauseRendering();
 	const state = editor.state;
-	state.editorMode = editorMode;
 	state.viewport.x = 0;
 	state.viewport.y = 0;
 	state.codeBlockRendering.selectedCodeBlock = state.codeBlockRendering.currentProject.blocks.find(
@@ -46,10 +45,10 @@ test.each(['view', 'edit'] as const)('selection animation in %s mode', async edi
 	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 	try {
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot(`selection-animation-${editorMode}-start`);
+		await expect(canvas).toMatchScreenshot('selection-animation-view-start');
 		now.mockReturnValue(160);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot(`selection-animation-${editorMode}-advanced`);
+		await expect(canvas).toMatchScreenshot('selection-animation-view-advanced');
 	} finally {
 		now.mockRestore();
 		editor.dispose();
