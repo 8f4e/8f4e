@@ -103,7 +103,7 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			if (memoryItem) {
 				if (pointerArgument.dereferenceDepth === 0 && !memoryItem.pointeeBaseType) {
 					throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, context, {
-						identifier: pointerArgument.value,
+						identifier: pointerArgument.targetMemoryId,
 					});
 				}
 				validateDereferenceDepth(pointerArgument, getPointerDepthFromMetadata(memoryItem), line, context);
@@ -117,7 +117,7 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			const local = context.locals[pointerArgument.targetMemoryId];
 			if (pointerArgument.dereferenceDepth === 0 && local && !isResolvedPointerLocal(local)) {
 				throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, context, {
-					identifier: pointerArgument.value,
+					identifier: pointerArgument.targetMemoryId,
 				});
 			}
 			if (isResolvedPointerLocal(local)) {
