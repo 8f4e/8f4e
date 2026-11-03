@@ -152,7 +152,7 @@ entryEnd`);
 			const state = editor.state;
 			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 			await expect.poll(() => block.gaps.get(3)?.size).toBe(2);
-			await expect.poll(() => canvas.style.touchAction).toBe('none');
+			await expect.poll(() => canvas.style.touchAction).toBe(fingerCount === 1 ? 'none' : 'auto');
 			const rect = canvas.getBoundingClientRect();
 			const frame = window.frameElement!.getBoundingClientRect();
 			const point = (x: number, y: number, id = 1) => ({

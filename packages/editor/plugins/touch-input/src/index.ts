@@ -17,7 +17,7 @@ export interface TouchInputOptions {
 	inputTarget: HTMLElement;
 	/** Number of fingers needed to pan. Defaults to two. */
 	fingerCount?: 1 | 2;
-	/** Disabled directions remain available to native page scrolling. Defaults to both. */
+	/** Axes available for viewport panning. Defaults to both. */
 	axis?: 'both' | 'horizontal' | 'vertical';
 }
 
@@ -38,6 +38,7 @@ export function createTouchInputPlugin({
 }: TouchInputOptions): EditorPlugin {
 	const horizontal = axis !== 'vertical';
 	const vertical = axis !== 'horizontal';
+	const touchAction = fingerCount === 2 ? 'auto' : TOUCH_ACTION[axis];
 	return {
 		id: 'touch-input',
 		setup: ({ store, events }) => {
@@ -87,7 +88,7 @@ export function createTouchInputPlugin({
 				resetGesture();
 			};
 			const syncTouchAction = () => {
-				inputTarget.style.touchAction = state.featureFlags.viewportDragging ? TOUCH_ACTION[axis] : originalTouchAction;
+				inputTarget.style.touchAction = state.featureFlags.viewportDragging ? touchAction : originalTouchAction;
 				if (!state.featureFlags.viewportDragging) resetGesture();
 			};
 			const onTouchStart = (event: TouchEvent) => {
@@ -107,6 +108,9 @@ export function createTouchInputPlugin({
 					}
 				}
 				if (!state.featureFlags.viewportDragging || event.touches.length !== fingerCount) return;
+				// Reserve two-finger gestures before the browser starts scrolling or zooming.
+				// A single unclaimed finger keeps native page scrolling in this mode.
+				if (fingerCount === 2) event.preventDefault();
 				const { x: startX, y: startY } = getTouchPosition(event.touches);
 				stopViewportAnimation(state);
 				gesture = {
@@ -141,8 +145,8 @@ export function createTouchInputPlugin({
 				if (!gesture.dragging) {
 					if (Math.hypot(deltaX, deltaY) < DRAG_THRESHOLD) return;
 					if (
-						(!vertical && Math.abs(deltaY) > Math.abs(deltaX)) ||
-						(!horizontal && Math.abs(deltaX) > Math.abs(deltaY))
+						fingerCount === 1 &&
+						((!vertical && Math.abs(deltaY) > Math.abs(deltaX)) || (!horizontal && Math.abs(deltaX) > Math.abs(deltaY)))
 					) {
 						resetGesture();
 						return;

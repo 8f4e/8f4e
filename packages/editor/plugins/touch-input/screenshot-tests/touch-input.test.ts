@@ -37,7 +37,10 @@ test.each([1, 2] as const)(
 			const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
 			const { x: blockX, y: blockY } = block;
 			const { x, y } = editor.state.viewport;
-			await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(100, 130) });
+			await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(100, 130).slice(0, 1) });
+			if (fingerCount === 2) {
+				await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(100, 130) });
+			}
 			await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points(120, 146) });
 			await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points(140, 162) });
 			await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
@@ -57,42 +60,72 @@ test.each([1, 2] as const)(
 	}
 );
 
-test('one-finger horizontal panning leaves vertical swipes to page scrolling', async () => {
-	const canvas = document.createElement('canvas');
-	canvas.width = 640;
-	canvas.height = 384;
-	const originalMinHeight = document.body.style.minHeight;
-	document.body.style.minHeight = '2000px';
-	document.body.append(canvas);
-	window.scrollTo(0, 0);
-	const editor = await initEditor(canvas, {
-		plugins: [createTouchInputPlugin({ inputTarget: canvas, fingerCount: 1, axis: 'horizontal' })],
-	});
-	editor.pauseRendering();
-	const input = cdp();
-	const rect = canvas.getBoundingClientRect();
-	const frame = window.frameElement!.getBoundingClientRect();
-	const point = (x: number, y: number) => ({ x: frame.left + rect.left + x, y: frame.top + rect.top + y, id: 1 });
-	try {
-		expect(canvas.style.touchAction).toBe('pan-y');
-		const { x, y } = editor.state.viewport;
-		await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point(100, 130)] });
-		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(120, 132)] });
-		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(140, 134)] });
-		await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-		expect(editor.state.viewport).toMatchObject({ x: x - 40, y });
-		expect(window.scrollY).toBe(0);
-		await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point(300, 250)] });
-		for (const y of [230, 200, 160, 120]) {
-			await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(300, y)] });
-		}
-		await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-		await expect.poll(() => window.scrollY).toBeGreaterThan(0);
-		expect(editor.state.viewport).toMatchObject({ x: x - 40, y });
-	} finally {
-		editor.dispose();
-		canvas.remove();
-		document.body.style.minHeight = originalMinHeight;
+test.each([
+	{ fingerCount: 1, axis: 'horizontal' },
+	{ fingerCount: 2, axis: 'both' },
+	{ fingerCount: 2, axis: 'horizontal' },
+	{ fingerCount: 2, axis: 'vertical' },
+] as const)(
+	'$fingerCount-finger $axis panning leaves one-finger swipes to page scrolling',
+	async ({ fingerCount, axis }) => {
+		const canvas = document.createElement('canvas');
+		canvas.width = 640;
+		canvas.height = 384;
+		const originalMinHeight = document.body.style.minHeight;
+		document.body.style.minHeight = '2000px';
+		document.body.append(canvas);
 		window.scrollTo(0, 0);
+		const editor = await initEditor(canvas, {
+			plugins: [createTouchInputPlugin({ inputTarget: canvas, fingerCount, axis })],
+		});
+		editor.pauseRendering();
+		const input = cdp();
+		const rect = canvas.getBoundingClientRect();
+		const frame = window.frameElement!.getBoundingClientRect();
+		const point = (x: number, y: number, id = 1) => ({
+			x: frame.left + rect.left + x,
+			y: frame.top + rect.top + y,
+			id,
+		});
+		const points = (x: number, y: number) => [point(x, y), point(x + 40, y + 40, 2)].slice(0, fingerCount);
+		try {
+			const { x, y } = editor.state.viewport;
+			await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(100, 130).slice(0, 1) });
+			if (fingerCount === 2) {
+				await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(100, 130) });
+			}
+			await input.send('Input.dispatchTouchEvent', {
+				type: 'touchMove',
+				touchPoints: points(axis === 'vertical' ? 102 : 120, axis === 'horizontal' ? 132 : 146),
+			});
+			await input.send('Input.dispatchTouchEvent', {
+				type: 'touchMove',
+				touchPoints: points(axis === 'vertical' ? 104 : 140, axis === 'horizontal' ? 134 : 162),
+			});
+			await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+			expect(editor.state.viewport).toMatchObject({
+				x: axis === 'vertical' ? x : x - 40,
+				y: axis === 'horizontal' ? y : y - 32,
+			});
+			expect(window.scrollY).toBe(0);
+			const scrollStart = point(300, 250);
+			await input.send('Input.synthesizeScrollGesture', {
+				x: scrollStart.x,
+				y: scrollStart.y,
+				yDistance: -130,
+				gestureSourceType: 'touch',
+				preventFling: true,
+			});
+			await expect.poll(() => window.scrollY).toBeGreaterThan(0);
+			expect(editor.state.viewport).toMatchObject({
+				x: axis === 'vertical' ? x : x - 40,
+				y: axis === 'horizontal' ? y : y - 32,
+			});
+		} finally {
+			editor.dispose();
+			canvas.remove();
+			document.body.style.minHeight = originalMinHeight;
+			window.scrollTo(0, 0);
+		}
 	}
-});
+);

@@ -23,8 +23,11 @@ horizontal panning, leaving vertical swipes available for native page scrolling.
 
 A 6-pixel threshold distinguishes panning from a tap. Panning follows the finger position, or the midpoint of two
 fingers, and snaps only the enabled axes to the editor grid when finished. Changing the finger count ends the gesture.
-Axis-restricted gestures yield to page scrolling when the initial movement is primarily in the disabled direction;
-`touch-action: pan-y` or `pan-x` permits that native scrolling. Unrestricted panning uses `touch-action: none`.
+In two-finger mode, `touch-action: auto` leaves unclaimed one-finger swipes available for native page scrolling.
+The adapter cancels the second finger's `touchstart` to reserve two-finger gestures for the enabled viewport axes.
+In one-finger mode, axis-restricted gestures yield to page scrolling when the initial movement is primarily in the
+disabled direction; `touch-action: pan-y` or `pan-x` permits that native scrolling. One-finger panning on both axes
+uses `touch-action: none`.
 Disabling viewport dragging or disposing the plugin restores the original inline touch action. Controls remain usable
 when viewport dragging is disabled.
 
