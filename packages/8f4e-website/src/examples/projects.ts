@@ -188,6 +188,12 @@ export const projects = [
 		path: 'midi/midiIn.8f4e',
 	},
 	{
+		id: 'dx7-algorithm-5-eight-voices',
+		title: 'DX7 Algorithm 5 (8 voices)',
+		description: 'Play eight round-robin DX7-style voices from MIDI, with velocity and sustain pedal support.',
+		path: 'midi/dx7Algorithm5EightVoices.8f4e',
+	},
+	{
 		id: 'xor-network',
 		title: 'XOR neural network',
 		description: 'Toggle two inputs and see a small pre-trained neural network solve the XOR problem.',

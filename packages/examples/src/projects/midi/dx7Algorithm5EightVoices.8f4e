@@ -1,0 +1,3143 @@
+8f4e/v1
+
+template dx7Voice
+template dx7Envelope
+includes
+; @pos 0 -16
+include std/memory/loadAt
+include std/math/exp2
+include std/math/moveTowards
+includesEnd
+constants dx7EnvelopeFields
+; @pos 0 -38
+; Integer record: 4 rates, 4 levels, then scaling.
+const LEVELS 4
+const RATE_SCALING 8
+const OUTPUT_LEVEL 9
+const VELOCITY_SENSITIVITY 10
+const BREAKPOINT 11
+const LEFT_DEPTH 12
+const RIGHT_DEPTH 13
+const LEFT_CURVE 14
+const RIGHT_CURVE 15
+const AMPLITUDE_SENSITIVITY 16
+constantsEnd
+entry main
+module dx7Settings
+; @home left
+; @pos 0 0
+; Wired preset record from the voice.
+int* in
+moduleEnd
+module dx7PitchRateScaling
+; @pos 55 0
+; Pitch-dependent DX7 speed offset.
+int* key
+use dx7EnvelopeFields
+int** settings &dx7Settings:in
+int out
+
+push &out
+push *key
+call loadAt *settings RATE_SCALING
+mul
+shiftRight 3
+store
+moduleEnd
+module dx7KeyboardLevelScaling
+; @pos 110 0
+; Three-key scaling changes level, not pitch.
+int* key
+use dx7EnvelopeFields
+int** settings &dx7Settings:in
+int out
+; @hide
+push &out
+push *key
+call loadAt *settings BREAKPOINT
+call loadAt *settings LEFT_DEPTH
+call loadAt *settings RIGHT_DEPTH
+call loadAt *settings LEFT_CURVE
+call loadAt *settings RIGHT_CURVE
+call dx7LevelScale
+store
+moduleEnd
+module dx7OutputLevel
+; @pos 175 0
+; Keep the base offset for gain normalization.
+; Velocity and key scaling remain audible.
+use dx7EnvelopeFields
+int** settings &dx7Settings:in
+int* velocityCurve
+int* keyScaling &dx7KeyboardLevelScaling:out
+float base
+float out
+local int level
+
+call loadAt *settings OUTPUT_LEVEL
+call dx7Level
+localSet level
+push &base
+push level
+shiftLeft 5
+sub 4256
+castToFloat
+store
+
+push &out
+push *velocityCurve
+call loadAt *settings VELOCITY_SENSITIVITY
+mul
+add 7
+shiftRight 3
+shiftLeft 4
+push level
+add *keyScaling
+max 0
+min 127
+shiftLeft 5
+add
+max 0
+sub 4256
+castToFloat
+store
+moduleEnd
+module envelope4Stage
+; @pos 250 0
+; Generic four-stage EG selector.
+; Note-on starts 0; note-off selects 3.
+; Reach 0, 1, 2, then hold stage 2.
+int* trigger
+int* release
+float* value &envelopeRamp:out
+float* target &dx7Target:out
+int out 3
+
+push *trigger
+if
+push &out
+push 0
+store
+else
+push *release
+if
+push &out
+push 3
+store
+else
+push *value
+push *target
+equal
+push out
+push 2
+lessThan
+and
+if
+push &out
+push out
+add 1
+store
+ifEnd
+ifEnd
+ifEnd
+moduleEnd
+module dx7Rate
+; @pos 310 0
+; Current raw rate to log step/sample.
+use env
+int* stage &envelope4Stage:out
+int** settings &dx7Settings:in
+int* scaling &dx7PitchRateScaling:out
+float out
+local int qrate
+
+call loadAt *settings *stage
+mul 41
+shiftRight 6
+add *scaling
+min 63
+localSet qrate
+push &out
+push qrate
+and 3
+add 4
+castToFloat
+push 1
+push qrate
+shiftRight 2
+shiftLeft
+castToFloat
+mul
+div 16384.0
+mul 44100.0
+push SAMPLE_RATE
+castToFloat
+div
+store
+moduleEnd
+module dx7Target
+; @pos 370 0
+; Current raw level to log target.
+int* stage &envelope4Stage:out
+use dx7EnvelopeFields
+int** settings &dx7Settings:in
+float* offset &dx7OutputLevel:out
+float out
+
+push &out
+push *settings
+push *stage
+add LEVELS
+call loadAt
+call dx7Level
+shiftRight 1
+shiftLeft 6
+castToFloat
+add *offset
+max 16.0
+store
+moduleEnd
+module dx7Curve
+; @pos 430 0
+; DX7 rising curve and attack jump.
+; Falling segments use the base step.
+float* in &envelopeRamp:out
+float* target &dx7Target:out
+float* rate &dx7Rate:out
+float current
+float step
+
+push &current
+push *in
+store
+push &step
+push *rate
+store
+push *target
+push *in
+greaterThan
+if
+push &current
+push *in
+max 1716.0
+min *target
+store
+push &step
+push 4256.0
+sub current
+div 256.0
+mul *rate
+store
+ifEnd
+moduleEnd
+module envelopeRamp
+; @pos 490 0
+; Generic ramp toward a target.
+float* in &dx7Curve:current
+float* target &dx7Target:out
+float* step &dx7Curve:step
+float out
+
+push &out
+call moveTowards *in *target *step
+store
+moduleEnd
+module dx7AmplitudeModulation
+; @pos 550 0
+; Per-operator sensitivity to the shared LFO.
+; Sensitivities measured in Hexter.
+float* in
+use dx7EnvelopeFields
+int** settings &dx7Settings:in
+float out
+; @hide
+push &out
+call loadAt *settings AMPLITUDE_SENSITIVITY
+max 0
+min 3
+mapBegin int
+map 0 0.0
+map 1 0.238058
+map 2 0.460510
+map 3 1.0
+mapEnd float
+mul *in
+store
+moduleEnd
+module dx7Gain
+; @pos 610 0
+; Normalized log-to-linear amplitude.
+float* in &envelopeRamp:out
+float* offset &dx7OutputLevel:base
+float* attenuation &dx7AmplitudeModulation:out
+float out
+
+push &out
+push *in
+push 16.0
+greaterThan
+if
+push *in
+push *offset
+add 4032.0
+sub
+div 256.0
+sub *attenuation
+call exp2
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+entryEnd
+templateEnd
+includes
+; @pos -25 -70
+include std/math/trig/sine
+include std/math/trig/advancePhase
+includesEnd
+function wrapDx7Phase
+; @pos 80 -80
+; Wrap any radian angle to [-PI, PI].
+param float angle
+; @hide
+push angle
+push angle
+div 6.283185307179586
+round
+mul 6.283185307179586
+sub
+functionEnd float
+function dx7Sine
+; @pos 80 -50
+; Keep large phase-modulation offsets periodic.
+param float angle
+; @hide
+push angle
+abs
+push 3.141592653589793
+greaterThan
+if
+call wrapDx7Phase angle
+localSet angle
+ifEnd
+call sine angle
+functionEnd float
+function advanceDx7Phase
+; @pos 80 -20
+#impure
+; Pitch sweeps may advance several cycles/sample.
+param float* phase
+param float frequency
+param int sampleRate
+local float angle
+; @hide
+call advancePhase phase frequency sampleRate
+localSet angle
+push angle
+abs
+push 3.141592653589793
+greaterThan
+if
+call wrapDx7Phase angle
+localSet angle
+push phase
+push angle
+store
+ifEnd
+push angle
+functionEnd float
+function dx7LevelScale
+; @pos 150 -80
+; Signed log-level offset in three-key bands.
+; Curves: -linear, -exponential, +exponential,
+; +linear. Breakpoint 0 is MIDI key 17 (F0).
+; Mapping: Google music-synthesizer-for-android.
+param int key
+param int breakpoint
+param int leftDepth
+param int rightDepth
+param int leftCurve
+param int rightCurve
+local int offset
+local int depth
+local int curve
+local int scale
+; @hide
+push key
+sub breakpoint
+sub 17
+localSet offset
+push offset
+push 0
+lessThan
+if
+push leftDepth
+localSet depth
+push leftCurve
+localSet curve
+else
+push rightDepth
+localSet depth
+push rightCurve
+localSet curve
+ifEnd
+push offset
+abs
+add 1
+div 3
+localSet offset
+push curve
+push 0
+equal
+push curve
+push 3
+equal
+or
+if
+push offset
+mul depth
+mul 329
+shiftRight 12
+localSet scale
+else
+push offset
+min 32
+mapBegin int
+map 0 0
+map 1 1
+map 2 2
+map 3 3
+map 4 4
+map 5 5
+map 6 6
+map 7 7
+map 8 8
+map 9 9
+map 10 11
+map 11 14
+map 12 16
+map 13 19
+map 14 23
+map 15 27
+map 16 33
+map 17 39
+map 18 47
+map 19 56
+map 20 66
+map 21 80
+map 22 94
+map 23 110
+map 24 126
+map 25 142
+map 26 158
+map 27 174
+map 28 190
+map 29 206
+map 30 222
+map 31 238
+map 32 250
+mapEnd int
+mul depth
+mul 329
+shiftRight 15
+localSet scale
+ifEnd
+push curve
+push 2
+lessThan
+if
+push 0
+sub scale
+return
+ifEnd
+push scale
+functionEnd int
+function frequencyToKey
+; @pos 150 -50
+; Nearest MIDI key for keyboard scaling only.
+; The oscillator frequency remains continuous.
+param float frequency
+local float boundary
+local int key
+; @hide
+push 8.4153681102195
+localSet boundary
+loop 127
+push frequency
+push boundary
+lessThan
+if
+push key
+return
+ifEnd
+push boundary
+mul 1.0594630943592953
+localSet boundary
+push key
+add 1
+localSet key
+loopEnd
+push key
+functionEnd int
+function dx7Level
+; @pos 150 22
+; Exact raw DX7 level mapping for 0..99.
+param int level
+
+push level
+mul 5
+push level
+mul 4
+add 1
+min
+push level
+mul 3
+add 5
+min
+push level
+mul 2
+add 11
+min
+push level
+mul 7
+div 5
+add 20
+min
+push level
+add 28
+min
+functionEnd int
+function dx7VelocityCurve
+; @pos 150 58
+; DX7 strike velocity lookup before sensitivity.
+; Paired MIDI velocities share a value.
+; Source: google/music-synthesizer-for-android
+; MIDI 98..99 gives neutral operator scaling.
+param int velocity
+
+push velocity
+max 0
+min 127
+shiftRight 1
+mapBegin int
+map 0 0
+map 1 70
+map 2 86
+map 3 97
+map 4 106
+map 5 114
+map 6 121
+map 7 126
+map 8 132
+map 9 138
+map 10 142
+map 11 148
+map 12 152
+map 13 156
+map 14 160
+map 15 163
+map 16 166
+map 17 170
+map 18 173
+map 19 174
+map 20 178
+map 21 181
+map 22 184
+map 23 186
+map 24 189
+map 25 190
+map 26 194
+map 27 196
+map 28 198
+map 29 200
+map 30 202
+map 31 205
+map 32 206
+map 33 209
+map 34 211
+map 35 214
+map 36 216
+map 37 218
+map 38 220
+map 39 222
+map 40 224
+map 41 225
+map 42 227
+map 43 229
+map 44 230
+map 45 232
+map 46 233
+map 47 235
+map 48 237
+map 49 238
+map 50 240
+map 51 241
+map 52 242
+map 53 243
+map 54 244
+map 55 246
+map 56 246
+map 57 248
+map 58 249
+map 59 250
+map 60 251
+map 61 252
+map 62 253
+map 63 254
+mapEnd int
+sub 239
+functionEnd int
+function frequencyToRateKey
+; @pos 153 -10
+; DX7 rate scaling uses 3-key bands.
+; Oscillator pitch stays unquantized.
+param float frequency
+local float boundary
+local int key
+
+; The first band starts halfway
+; between MIDI notes 23 and 24.
+push 31.7721991639875
+localSet boundary
+loop 31
+push frequency
+push boundary
+lessThan
+if
+push key
+return
+ifEnd
+push boundary
+; Quarter-octave steps: 2^(3/12).
+mul 1.189207115002721
+localSet boundary
+push key
+add 1
+localSet key
+loopEnd
+push key
+functionEnd int
+note algorithm
+; @pos 254 3
+;
+; DX7 algorithm 5
+;
+;    [2] --> [1] --+
+;                  |
+;    [4] --> [3] --+--> mixer
+;                  |
+; +->[6] --> [5] --+
+; |   |
+; +---+
+;
+noteEnd
+entry main
+module noteEvents
+; @pos 200 19
+; Counter, gate, MIDI velocity.
+int in
+int trigger
+int release
+int velocity
+; @hide
+int previous
+local int current
+local int changed
+
+; Decode one event snapshot.
+push in
+localSet current
+push current
+push previous
+notEqual
+localSet changed
+push &trigger
+push current
+and 128
+push 0
+notEqual
+and changed
+store
+push &release
+push current
+and 128
+equalToZero
+and changed
+store
+push &velocity
+push current
+and 127
+store
+push &previous
+push current
+store
+moduleEnd
+module voiceInput
+; @pos 254 19
+; @home left
+use preset
+float frequency ; Hz
+int* trigger &noteEvents:trigger
+int* release &noteEvents:release
+int keySync OSC_KEY_SYNC
+float latchedFrequency 8.1758
+int latchedTrigger
+int latchedRelease
+int reset
+int rateKey
+
+; Latch inputs before the operators
+; and envelopes run.
+push frequency
+push latchedFrequency
+notEqual
+if
+push &rateKey
+call frequencyToRateKey frequency
+store
+ifEnd
+push &latchedFrequency
+push frequency
+store
+push &latchedTrigger
+push *trigger
+store
+push &latchedRelease
+push *release
+store
+
+; Send key sync through the oscillator wires.
+push &reset
+push latchedTrigger
+push 0
+notEqual
+push keySync
+push 0
+notEqual
+and
+store
+
+moduleEnd
+module velocityCapture
+; @pos 254 66
+int* velocity &noteEvents:velocity
+int* trigger &voiceInput:latchedTrigger
+int latchedVelocity 98
+int velocityCurve -1
+
+; Capture velocity only on note-on.
+push *trigger
+if
+push &latchedVelocity
+push *velocity
+max 0
+min 127
+store
+push &velocityCurve
+call dx7VelocityCurve latchedVelocity
+store
+ifEnd
+
+moduleEnd
+group modulation
+; @pos 254 90
+expose frequency &inputs:frequency
+expose trigger &inputs:trigger
+expose release &inputs:release
+expose key &keyboardKey:out
+expose lfo &lfo:out
+expose lfoDelay &lfo:delayGain
+expose pitchRatio &pitchModulation:out
+expose amplitude &amplitudeModulation:out
+
+; LFO, delay fade-in, pitch ratio, attenuation.
+; @meter lfo 0 1
+; @meter lfoDelay 0 1
+; @meter pitchRatio 0 2
+; @meter amplitude 0 7
+
+init &frequency &voiceInput:latchedFrequency
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
+
+pass env
+pass preset
+pass frequencyToKey
+
+includes
+; @pos 0 -20
+include std/math/trig/sine
+include std/math/exp2
+include std/math/moveTowards
+include std/memory/loadAt
+includesEnd
+function lfoRate
+; @pos 100 -40
+; DX7 speed law, cycles per second.
+; Google music-synthesizer-for-android, lfo.cc.
+param int speed
+local int rate
+; @hide
+push speed
+max 0
+min 99
+mul 165
+shiftRight 6
+max 1
+localSet rate
+push rate
+push rate
+sub 160
+max 0
+shiftRight 4
+add 11
+mul
+castToFloat
+const DX7_LFO_UNIT 0.00586417131125927
+mul DX7_LFO_UNIT
+functionEnd float
+function pitchRate
+; @pos 160 -70
+; DX7 pitch EG rate lookup.
+; Google pitchenv.cc (Apache-2.0), 2012.
+param int value
+; @hide
+push value
+max 0
+min 99
+mapBegin int
+map 0 1
+map 1 2
+map 2 3
+map 3 3
+map 4 4
+map 5 4
+map 6 5
+map 7 5
+map 8 6
+map 9 6
+map 10 7
+map 11 7
+map 12 8
+map 13 8
+map 14 9
+map 15 9
+map 16 10
+map 17 10
+map 18 11
+map 19 11
+map 20 12
+map 21 12
+map 22 13
+map 23 13
+map 24 14
+map 25 14
+map 26 15
+map 27 16
+map 28 16
+map 29 17
+map 30 18
+map 31 18
+map 32 19
+map 33 20
+map 34 21
+map 35 22
+map 36 23
+map 37 24
+map 38 25
+map 39 26
+map 40 27
+map 41 28
+map 42 30
+map 43 31
+map 44 33
+map 45 34
+map 46 36
+map 47 37
+map 48 38
+map 49 39
+map 50 41
+map 51 42
+map 52 44
+map 53 46
+map 54 47
+map 55 49
+map 56 51
+map 57 53
+map 58 54
+map 59 56
+map 60 58
+map 61 60
+map 62 62
+map 63 64
+map 64 66
+map 65 68
+map 66 70
+map 67 72
+map 68 74
+map 69 76
+map 70 79
+map 71 82
+map 72 85
+map 73 88
+map 74 91
+map 75 94
+map 76 98
+map 77 102
+map 78 106
+map 79 110
+map 80 115
+map 81 120
+map 82 125
+map 83 130
+map 84 135
+map 85 141
+map 86 147
+map 87 153
+map 88 159
+map 89 165
+map 90 171
+map 91 178
+map 92 185
+map 93 193
+map 94 202
+map 95 211
+map 96 232
+map 97 243
+map 98 254
+map 99 255
+mapEnd int
+functionEnd int
+function pitchLevel
+; @pos 220 -40
+; DX7 pitch EG level lookup: 32 units/octave.
+; Google pitchenv.cc (Apache-2.0), 2012.
+param int value
+; @hide
+push value
+max 0
+min 99
+mapBegin int
+map 0 -128
+map 1 -116
+map 2 -104
+map 3 -95
+map 4 -85
+map 5 -76
+map 6 -68
+map 7 -61
+map 8 -56
+map 9 -52
+map 10 -49
+map 11 -46
+map 12 -43
+map 13 -41
+map 14 -39
+map 15 -37
+map 16 -35
+map 17 -33
+map 18 -32
+map 19 -31
+map 20 -30
+map 21 -29
+map 22 -28
+map 23 -27
+map 24 -26
+map 25 -25
+map 26 -24
+map 27 -23
+map 28 -22
+map 29 -21
+map 30 -20
+map 31 -19
+map 32 -18
+map 33 -17
+map 34 -16
+map 35 -15
+map 36 -14
+map 37 -13
+map 38 -12
+map 39 -11
+map 40 -10
+map 41 -9
+map 42 -8
+map 43 -7
+map 44 -6
+map 45 -5
+map 46 -4
+map 47 -3
+map 48 -2
+map 49 -1
+map 50 0
+map 51 1
+map 52 2
+map 53 3
+map 54 4
+map 55 5
+map 56 6
+map 57 7
+map 58 8
+map 59 9
+map 60 10
+map 61 11
+map 62 12
+map 63 13
+map 64 14
+map 65 15
+map 66 16
+map 67 17
+map 68 18
+map 69 19
+map 70 20
+map 71 21
+map 72 22
+map 73 23
+map 74 24
+map 75 25
+map 76 26
+map 77 27
+map 78 28
+map 79 29
+map 80 30
+map 81 31
+map 82 32
+map 83 33
+map 84 34
+map 85 35
+map 86 38
+map 87 40
+map 88 43
+map 89 46
+map 90 49
+map 91 53
+map 92 58
+map 93 65
+map 94 73
+map 95 82
+map 96 92
+map 97 103
+map 98 115
+map 99 127
+mapEnd int
+functionEnd int
+entry main
+module inputs
+; @pos 0 0
+; @home left
+float* frequency
+int* trigger
+int* release
+float frequencyHz
+int noteOn
+int noteOff
+; @hide
+push &frequencyHz
+push *frequency
+store
+push &noteOn
+push *trigger
+store
+push &noteOff
+push *release
+store
+moduleEnd
+module keyboardKey
+; @pos 50 0
+; Capture the unmodulated, transposed key.
+; Vibrato does not move the level scaling.
+use preset
+float* frequency &inputs:frequencyHz
+int* trigger &inputs:noteOn
+int out
+int initialized
+; @hide
+push *trigger
+push initialized
+push 0
+equal
+or
+if
+push &out
+call frequencyToKey *frequency
+add TRANSPOSE_SEMITONES
+max 0
+min 127
+store
+push &initialized
+push 1
+store
+ifEnd
+moduleEnd
+module lfo
+; @pos 100 0
+; One shared LFO, independent of OSC key sync.
+; Wave: triangle, saw down/up, square, sine, S&H.
+use env
+use preset
+int* trigger &inputs:noteOn
+int speed LFO_SPEED
+int delay LFO_DELAY
+int sync LFO_SYNC
+int wave LFO_WAVE
+float out 0.5
+float delayGain 1.0
+; Phase and delay use 30 fractional bits.
+int phase
+int delayPhase
+int randomState
+float held 0.50390625
+local int increment
+local int delayRate
+local float saw
+; @hide
+push *trigger
+if
+push &delayPhase
+push 0
+store
+push sync
+if
+push &phase
+push 536870912
+store
+ifEnd
+ifEnd
+
+call lfoRate speed
+mul 1073741824.0
+push SAMPLE_RATE
+castToFloat
+div
+round
+castToInt
+localSet increment
+push &phase
+push phase
+add increment
+and 1073741823
+store
+push phase
+push increment
+lessThan
+if
+push &randomState
+push randomState
+mul 179
+add 17
+and 255
+store
+push &held
+push randomState
+xor 128
+add 1
+castToFloat
+div 256.0
+store
+ifEnd
+
+push &out
+push wave
+push 0
+equal
+if
+push 1.0
+push phase
+castToFloat
+div 1073741824.0
+mul 2.0
+sub 1.0
+abs
+sub
+else
+push wave
+push 1
+equal
+push wave
+push 2
+equal
+or
+if
+push phase
+castToFloat
+div 1073741824.0
+add 0.5
+localSet saw
+push saw
+push saw
+castToInt
+castToFloat
+sub
+localSet saw
+push wave
+push 1
+equal
+if
+push 1.0
+sub saw
+else
+push saw
+ifEnd float
+else
+push wave
+push 3
+equal
+if
+push phase
+push 536870912
+lessThan
+castToFloat
+else
+push wave
+push 4
+equal
+if
+push phase
+castToFloat
+div 1073741824.0
+push phase
+castToFloat
+div 1073741824.0
+round
+sub
+mul 6.283185307179586
+call sine
+mul 0.5
+add 0.5
+else
+push held
+ifEnd float
+ifEnd float
+ifEnd float
+ifEnd float
+
+store
+
+; The DX7 delay has a hold followed by a fade-in.
+push &delayGain
+push delay
+if
+push 99
+sub delay
+max 0
+min 98
+localSet delayRate
+push delayRate
+and 15
+add 16
+push delayRate
+shiftRight 4
+add 1
+shiftLeft
+localSet delayRate
+push delayPhase
+push 536870912
+greaterOrEqual
+if
+push delayRate
+and 65408
+max 128
+localSet delayRate
+ifEnd
+push &delayPhase
+push delayRate
+castToFloat
+mul 6297606.0
+push SAMPLE_RATE
+castToFloat
+div
+round
+castToInt
+add delayPhase
+min 1073741824
+store
+push delayPhase
+castToFloat
+div 1073741824.0
+mul 2.0
+sub 1.0
+max 0.0
+else
+push 1.0
+ifEnd float
+store
+moduleEnd
+module pitchEnvelope
+; @pos 160 0
+; Four stages in octaves; hold L3 until release.
+; Retrigger starts R1 from the current pitch.
+use env
+use preset
+int* trigger &inputs:noteOn
+int* release &inputs:noteOff
+int[] rates 4
+- PITCH_RATE1 PITCH_RATE2 PITCH_RATE3 PITCH_RATE4
+int[] levels 4
+- PITCH_LEVEL1 PITCH_LEVEL2 PITCH_LEVEL3 PITCH_LEVEL4
+int stage 3
+int initialized
+float out
+float target
+float step
+; @hide
+push initialized
+push 0
+equal
+if
+push &out
+call loadAt &levels 3
+call pitchLevel
+castToFloat
+div 32.0
+store
+push &initialized
+push 1
+store
+ifEnd
+push *trigger
+if
+push &stage
+push 0
+store
+else
+push *release
+if
+push &stage
+push 3
+store
+ifEnd
+ifEnd
+push &target
+call loadAt &levels stage
+call pitchLevel
+castToFloat
+div 32.0
+store
+push &step
+call loadAt &rates stage
+call pitchRate
+castToFloat
+div 21.3
+push SAMPLE_RATE
+castToFloat
+div
+store
+push &out
+call moveTowards out target step
+store
+push out
+push target
+equal
+push stage
+push 2
+lessThan
+and
+if
+push &stage
+push stage
+add 1
+store
+ifEnd
+moduleEnd
+module pitchModulation
+; @pos 220 0
+; Pitch EG + delayed, bipolar LFO in octaves.
+use preset
+float* envelope &pitchEnvelope:out
+float* lfo &lfo:out
+float* delay &lfo:delayGain
+int depth LFO_PITCH_DEPTH
+int sensitivity PITCH_MOD_SENSITIVITY
+float out 1.0
+; @hide
+push &out
+push sensitivity
+max 0
+min 7
+mapBegin int
+map 0 0
+map 1 10
+map 2 20
+map 3 33
+map 4 55
+map 5 92
+map 6 153
+map 7 255
+mapEnd int
+push depth
+mul 165
+shiftRight 6
+mul
+castToFloat
+div 32768.0
+push *lfo
+sub 0.5
+mul
+mul *delay
+add *envelope
+call exp2
+store
+moduleEnd
+module amplitudeModulation
+; @pos 275 0
+; Delayed LFO attenuation in octaves.
+; Approximate measured AMD curve from Hexter:
+; exp(AMD * .0428993 - .285189) / 8.
+use preset
+float* lfo &lfo:out
+float* delay &lfo:delayGain
+int depth LFO_AMPLITUDE_DEPTH
+float out
+; @hide
+push &out
+push depth
+if
+push depth
+castToFloat
+mul 0.061890610762
+sub 0.411440761959
+call exp2
+div 8.0
+push 1.0
+sub *lfo
+mul
+mul *delay
+else
+push 0.0
+ifEnd float
+store
+moduleEnd
+entryEnd
+groupEnd
+module envelopeSettings
+; @pos 254 130
+; One record per operator, wired to its envelope.
+; Fields: rates 1-4; levels 1-4; rate scaling;
+; output level; velocity; breakpoint; left/right
+; depths; left/right curves; AM sensitivity.
+use preset
+int[] operator1 17
+- OP1_RATE1 OP1_RATE2 OP1_RATE3 OP1_RATE4
+- OP1_LEVEL1 OP1_LEVEL2 OP1_LEVEL3 OP1_LEVEL4
+- OP1_RATE_SCALING OP1_OUTPUT_LEVEL
+- OP1_VELOCITY_SENSITIVITY OP1_BREAKPOINT
+- OP1_LEFT_DEPTH OP1_RIGHT_DEPTH
+- OP1_LEFT_CURVE OP1_RIGHT_CURVE
+- OP1_AMP_MOD_SENSITIVITY
+int[] operator2 17
+- OP2_RATE1 OP2_RATE2 OP2_RATE3 OP2_RATE4
+- OP2_LEVEL1 OP2_LEVEL2 OP2_LEVEL3 OP2_LEVEL4
+- OP2_RATE_SCALING OP2_OUTPUT_LEVEL
+- OP2_VELOCITY_SENSITIVITY OP2_BREAKPOINT
+- OP2_LEFT_DEPTH OP2_RIGHT_DEPTH
+- OP2_LEFT_CURVE OP2_RIGHT_CURVE
+- OP2_AMP_MOD_SENSITIVITY
+int[] operator3 17
+- OP3_RATE1 OP3_RATE2 OP3_RATE3 OP3_RATE4
+- OP3_LEVEL1 OP3_LEVEL2 OP3_LEVEL3 OP3_LEVEL4
+- OP3_RATE_SCALING OP3_OUTPUT_LEVEL
+- OP3_VELOCITY_SENSITIVITY OP3_BREAKPOINT
+- OP3_LEFT_DEPTH OP3_RIGHT_DEPTH
+- OP3_LEFT_CURVE OP3_RIGHT_CURVE
+- OP3_AMP_MOD_SENSITIVITY
+int[] operator4 17
+- OP4_RATE1 OP4_RATE2 OP4_RATE3 OP4_RATE4
+- OP4_LEVEL1 OP4_LEVEL2 OP4_LEVEL3 OP4_LEVEL4
+- OP4_RATE_SCALING OP4_OUTPUT_LEVEL
+- OP4_VELOCITY_SENSITIVITY OP4_BREAKPOINT
+- OP4_LEFT_DEPTH OP4_RIGHT_DEPTH
+- OP4_LEFT_CURVE OP4_RIGHT_CURVE
+- OP4_AMP_MOD_SENSITIVITY
+int[] operator5 17
+- OP5_RATE1 OP5_RATE2 OP5_RATE3 OP5_RATE4
+- OP5_LEVEL1 OP5_LEVEL2 OP5_LEVEL3 OP5_LEVEL4
+- OP5_RATE_SCALING OP5_OUTPUT_LEVEL
+- OP5_VELOCITY_SENSITIVITY OP5_BREAKPOINT
+- OP5_LEFT_DEPTH OP5_RIGHT_DEPTH
+- OP5_LEFT_CURVE OP5_RIGHT_CURVE
+- OP5_AMP_MOD_SENSITIVITY
+int[] operator6 17
+- OP6_RATE1 OP6_RATE2 OP6_RATE3 OP6_RATE4
+- OP6_LEVEL1 OP6_LEVEL2 OP6_LEVEL3 OP6_LEVEL4
+- OP6_RATE_SCALING OP6_OUTPUT_LEVEL
+- OP6_VELOCITY_SENSITIVITY OP6_BREAKPOINT
+- OP6_LEFT_DEPTH OP6_RIGHT_DEPTH
+- OP6_LEFT_CURVE OP6_RIGHT_CURVE
+- OP6_AMP_MOD_SENSITIVITY
+moduleEnd
+group envelope2
+; @pos 320 0
+; @group operator2
+expose settings &dx7Settings:in
+expose key &dx7PitchRateScaling:key
+expose levelKey &dx7KeyboardLevelScaling:key
+expose amplitudeLfo &dx7AmplitudeModulation:in
+expose velocityCurve &dx7OutputLevel:velocityCurve
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+; @meter out 0 1
+
+init &settings &envelopeSettings:operator2
+init &key &voiceInput:rateKey
+init &levelKey &modulation:key
+init &amplitudeLfo &modulation:amplitude
+init &velocityCurve &velocityCapture:velocityCurve
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
+
+pass env
+pass dx7Level
+pass dx7LevelScale
+
+useTemplate dx7Envelope
+groupEnd
+group envelope4
+; @pos 320 36
+; @group operator4
+expose settings &dx7Settings:in
+expose key &dx7PitchRateScaling:key
+expose levelKey &dx7KeyboardLevelScaling:key
+expose amplitudeLfo &dx7AmplitudeModulation:in
+expose velocityCurve &dx7OutputLevel:velocityCurve
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+; @meter out 0 1
+
+init &settings &envelopeSettings:operator4
+init &key &voiceInput:rateKey
+init &levelKey &modulation:key
+init &amplitudeLfo &modulation:amplitude
+init &velocityCurve &velocityCapture:velocityCurve
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
+
+pass env
+pass dx7Level
+pass dx7LevelScale
+
+useTemplate dx7Envelope
+groupEnd
+group envelope6
+; @pos 320 72
+; @group operator6
+expose settings &dx7Settings:in
+expose key &dx7PitchRateScaling:key
+expose levelKey &dx7KeyboardLevelScaling:key
+expose amplitudeLfo &dx7AmplitudeModulation:in
+expose velocityCurve &dx7OutputLevel:velocityCurve
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+; @meter out 0 1
+
+init &settings &envelopeSettings:operator6
+init &key &voiceInput:rateKey
+init &levelKey &modulation:key
+init &amplitudeLfo &modulation:amplitude
+init &velocityCurve &velocityCapture:velocityCurve
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
+
+pass env
+pass dx7Level
+pass dx7LevelScale
+
+useTemplate dx7Envelope
+groupEnd
+module modulator2
+; @pos 382 0
+; @group operator2
+use env
+use preset
+float* frequency &voiceInput:latchedFrequency
+float* pitchRatio &modulation:pitchRatio
+int* reset &voiceInput:reset
+float phase 0.0
+float out
+float ratio OP2_RATIO
+float fixedHz OP2_FIXED_HZ
+float* amplitude &envelope2:out
+float level OP2_GAIN
+
+; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+ifEnd
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+mul *pitchRatio
+add fixedHz
+push SAMPLE_RATE
+call advanceDx7Phase
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitude
+mul level
+store
+
+moduleEnd
+module modulator4
+; @pos 382 36
+; @group operator4
+use env
+use preset
+float* frequency &voiceInput:latchedFrequency
+float* pitchRatio &modulation:pitchRatio
+int* reset &voiceInput:reset
+float phase 0.0
+float out
+float ratio OP4_RATIO
+float fixedHz OP4_FIXED_HZ
+float* amplitude &envelope4:out
+float level OP4_GAIN
+
+; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+ifEnd
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+mul *pitchRatio
+add fixedHz
+push SAMPLE_RATE
+call advanceDx7Phase
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitude
+mul level
+store
+
+moduleEnd
+module modulator6
+; @pos 382 72
+; @group operator6
+use env
+use preset
+float* frequency &voiceInput:latchedFrequency
+float* pitchRatio &modulation:pitchRatio
+int* reset &voiceInput:reset
+float phase 0.0
+float out
+float previousOut
+int feedback FEEDBACK ; 0..7
+float ratio OP6_RATIO
+float fixedHz OP6_FIXED_HZ
+float* amplitude &envelope6:out
+float level OP6_GAIN
+local int amount
+local float angle
+
+const TAU 6.283185307179586
+
+; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+push &out
+push 0.0
+store
+push &previousOut
+push 0.0
+store
+ifEnd
+
+push feedback
+max 0
+min 7
+localSet amount
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+mul *pitchRatio
+add fixedHz
+push SAMPLE_RATE
+call advanceDx7Phase
+localSet angle
+
+; Feedback uses the same radian units as
+; the forward phase-modulation wires.
+; Combine two outputs, doubling per level.
+push amount
+if
+push out
+add previousOut
+push 1
+push amount
+shiftLeft
+castToFloat
+mul
+div 512.0
+add angle
+localSet angle
+
+; Keep the modulated phase in [-PI, PI].
+push angle
+push angle
+div TAU
+round
+mul TAU
+sub
+localSet angle
+ifEnd
+
+push angle
+; You can swap this call
+; with any periodic function
+call sine
+mul *amplitude
+mul level
+
+; Save n-1 before publishing the new output.
+push &previousOut
+push out
+store
+store
+
+moduleEnd
+group envelope1
+; @pos 437 0
+; @group operator1
+expose settings &dx7Settings:in
+expose key &dx7PitchRateScaling:key
+expose levelKey &dx7KeyboardLevelScaling:key
+expose amplitudeLfo &dx7AmplitudeModulation:in
+expose velocityCurve &dx7OutputLevel:velocityCurve
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+; @meter out 0 1
+
+init &settings &envelopeSettings:operator1
+init &key &voiceInput:rateKey
+init &levelKey &modulation:key
+init &amplitudeLfo &modulation:amplitude
+init &velocityCurve &velocityCapture:velocityCurve
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
+
+pass env
+pass dx7Level
+pass dx7LevelScale
+
+useTemplate dx7Envelope
+groupEnd
+group envelope3
+; @pos 437 36
+; @group operator3
+expose settings &dx7Settings:in
+expose key &dx7PitchRateScaling:key
+expose levelKey &dx7KeyboardLevelScaling:key
+expose amplitudeLfo &dx7AmplitudeModulation:in
+expose velocityCurve &dx7OutputLevel:velocityCurve
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+; @meter out 0 1
+
+init &settings &envelopeSettings:operator3
+init &key &voiceInput:rateKey
+init &levelKey &modulation:key
+init &amplitudeLfo &modulation:amplitude
+init &velocityCurve &velocityCapture:velocityCurve
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
+
+pass env
+pass dx7Level
+pass dx7LevelScale
+
+useTemplate dx7Envelope
+groupEnd
+group envelope5
+; @pos 437 72
+; @group operator5
+expose settings &dx7Settings:in
+expose key &dx7PitchRateScaling:key
+expose levelKey &dx7KeyboardLevelScaling:key
+expose amplitudeLfo &dx7AmplitudeModulation:in
+expose velocityCurve &dx7OutputLevel:velocityCurve
+expose trigger &envelope4Stage:trigger
+expose release &envelope4Stage:release
+expose out &dx7Gain:out
+; @meter out 0 1
+
+init &settings &envelopeSettings:operator5
+init &key &voiceInput:rateKey
+init &levelKey &modulation:key
+init &amplitudeLfo &modulation:amplitude
+init &velocityCurve &velocityCapture:velocityCurve
+init &trigger &voiceInput:latchedTrigger
+init &release &voiceInput:latchedRelease
+
+pass env
+pass dx7Level
+pass dx7LevelScale
+
+useTemplate dx7Envelope
+groupEnd
+module carrier1
+; @pos 499 0
+; @group operator1
+use env
+use preset
+float* frequency &voiceInput:latchedFrequency
+float* pitchRatio &modulation:pitchRatio
+int* reset &voiceInput:reset
+float* phaseMod &modulator2:out
+float phase 0.0
+float ratio OP1_RATIO
+float fixedHz OP1_FIXED_HZ
+float level OP1_GAIN
+float out
+float* amplitudeMod &envelope1:out
+
+; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+ifEnd
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+mul *pitchRatio
+add fixedHz
+push SAMPLE_RATE
+call advanceDx7Phase
+add *phaseMod
+; You can swap this call
+; with any periodic function
+call dx7Sine
+mul *amplitudeMod
+mul level
+store
+
+moduleEnd
+module carrier3
+; @pos 499 36
+; @group operator3
+use env
+use preset
+float* frequency &voiceInput:latchedFrequency
+float* pitchRatio &modulation:pitchRatio
+int* reset &voiceInput:reset
+float* phaseMod &modulator4:out
+float phase 0.0
+float ratio OP3_RATIO
+float fixedHz OP3_FIXED_HZ
+float level OP3_GAIN
+float out
+float* amplitudeMod &envelope3:out
+
+; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+ifEnd
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+mul *pitchRatio
+add fixedHz
+push SAMPLE_RATE
+call advanceDx7Phase
+add *phaseMod
+; You can swap this call
+; with any periodic function
+call dx7Sine
+mul *amplitudeMod
+mul level
+store
+
+moduleEnd
+module carrier5
+; @pos 499 72
+; @group operator5
+use env
+use preset
+float* frequency &voiceInput:latchedFrequency
+float* pitchRatio &modulation:pitchRatio
+int* reset &voiceInput:reset
+float* phaseMod &modulator6:out
+float phase 0.0
+float ratio OP5_RATIO
+float fixedHz OP5_FIXED_HZ
+float out
+float* amplitude &envelope5:out
+float level OP5_GAIN
+
+; @hide
+; Reset before advancing this sample.
+push *reset
+if
+push &phase
+push 0.0
+store
+ifEnd
+
+; Advance and wrap without losing overshoot.
+push &out
+push &phase
+push *frequency
+mul ratio
+mul *pitchRatio
+add fixedHz
+push SAMPLE_RATE
+call advanceDx7Phase
+add *phaseMod
+; You can swap this call
+; with any periodic function
+call dx7Sine
+mul *amplitude
+mul level
+store
+
+moduleEnd
+module mixer
+; @pos 556 36
+
+use preset
+
+float* in1 &carrier1:out
+float* in2 &carrier3:out
+float* in3 &carrier5:out
+float out
+
+push &out
+push *in1
+mul MIX1_GAIN
+push *in2
+mul MIX3_GAIN
+add
+push *in3
+mul MIX5_GAIN
+add
+; Headroom for three attack peaks.
+mul OUTPUT_GAIN
+store
+
+moduleEnd
+module limiter
+; @pos 601 36
+float* in &mixer:out
+float out
+
+push &out
+push *in
+max -1.0
+min 1.0
+store
+moduleEnd
+entryEnd
+templateEnd
+includes
+; @pos 113 46
+include std/math/exp2
+includesEnd
+
+function buffer
+; @pos 2 72
+#export buffer
+use env
+
+loop AUDIO_BUFFER_SIZE
+call main
+loopEnd
+functionEnd
+
+function isNoteOn
+; @pos 113 71
+use midiCodes
+param int status
+param int velocity
+
+push status
+and STATUS_MASK
+push NOTE_ON
+equal
+push velocity
+push 0
+greaterThan
+and
+functionEnd int
+
+function onMidiEvent
+; @pos 139 -16
+#export onMidiEvent
+#impure
+use midiCodes
+param int status
+param int data1
+param int data2
+
+push &midiInput:status
+push status
+store
+push &midiInput:note
+push data1
+and DATA_MASK
+store
+push &midiInput:velocity
+push data2
+and DATA_MASK
+store
+call midi
+functionEnd
+
+function voiceDestination
+; @pos 349 50
+#impure
+; The public voice inputs 
+; are mapped here.
+param int voice
+
+push voice
+mapBegin int
+map 0 &voice1:frequency
+map 1 &voice2:frequency
+map 2 &voice3:frequency
+map 3 &voice4:frequency
+map 4 &voice5:frequency
+map 5 &voice6:frequency
+map 6 &voice7:frequency
+map 7 &voice8:frequency
+mapEnd int
+push voice
+mapBegin int
+map 0 &voice1:event
+map 1 &voice2:event
+map 2 &voice3:event
+map 3 &voice4:event
+map 4 &voice5:event
+map 5 &voice6:event
+map 6 &voice7:event
+map 7 &voice8:event
+mapEnd int
+functionEnd int int
+
+constants env
+; @pos 64 56
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+
+constantsEnd
+
+constants midiCodes
+; @pos 113 51
+const STATUS_MASK 0xf0
+const CHANNEL_MASK 0x0f
+const DATA_MASK 0x7f
+const NOTE_OFF 0x80
+const NOTE_ON 0x90
+const CONTROL_CHANGE 0xb0
+const SUSTAIN_PEDAL 64
+const ALL_NOTES_OFF 123
+const PEDAL_DOWN 64
+const NOTE_BITS 7
+const CHANNEL_COUNT 16
+constantsEnd
+
+constants polyphony
+; @pos 113 66
+const VOICES 8
+constantsEnd
+
+constants preset
+; @pos 600 14
+; TUB BELLS / ROM1A voice 26.
+; @hide
+
+const OSC_KEY_SYNC 0
+const FEEDBACK 7
+
+; Operator 1.
+const OP1_RATIO 1.001042171
+const OP1_FIXED_HZ 0.0
+const OP1_GAIN 0.95
+const OP1_RATE1 95
+const OP1_RATE2 33
+const OP1_RATE3 71
+const OP1_RATE4 25
+const OP1_LEVEL1 99
+const OP1_LEVEL2 0
+const OP1_LEVEL3 32
+const OP1_LEVEL4 0
+const OP1_RATE_SCALING 2
+const OP1_OUTPUT_LEVEL 95
+const OP1_VELOCITY_SENSITIVITY 0
+
+; Operator 2.
+const OP2_RATIO 3.505472824
+const OP2_FIXED_HZ 0.0
+const OP2_GAIN 0.78
+const OP2_RATE1 98
+const OP2_RATE2 12
+const OP2_RATE3 71
+const OP2_RATE4 28
+const OP2_LEVEL1 99
+const OP2_LEVEL2 0
+const OP2_LEVEL3 32
+const OP2_LEVEL4 0
+const OP2_RATE_SCALING 2
+const OP2_OUTPUT_LEVEL 78
+const OP2_VELOCITY_SENSITIVITY 0
+
+; Operator 3.
+const OP3_RATIO 0.997399316
+const OP3_FIXED_HZ 0.0
+const OP3_GAIN 0.99
+const OP3_RATE1 95
+const OP3_RATE2 33
+const OP3_RATE3 71
+const OP3_RATE4 25
+const OP3_LEVEL1 99
+const OP3_LEVEL2 0
+const OP3_LEVEL3 32
+const OP3_LEVEL4 0
+const OP3_RATE_SCALING 2
+const OP3_OUTPUT_LEVEL 99
+const OP3_VELOCITY_SENSITIVITY 0
+
+; Operator 4.
+const OP4_RATIO 3.496356198
+const OP4_FIXED_HZ 0.0
+const OP4_GAIN 0.75
+const OP4_RATE1 98
+const OP4_RATE2 12
+const OP4_RATE3 71
+const OP4_RATE4 28
+const OP4_LEVEL1 99
+const OP4_LEVEL2 0
+const OP4_LEVEL3 32
+const OP4_LEVEL4 0
+const OP4_RATE_SCALING 2
+const OP4_OUTPUT_LEVEL 75
+const OP4_VELOCITY_SENSITIVITY 0
+
+; Operator 5.
+const OP5_RATIO 0.0
+const OP5_FIXED_HZ 323.593656930
+const OP5_GAIN 0.99
+const OP5_RATE1 76
+const OP5_RATE2 78
+const OP5_RATE3 71
+const OP5_RATE4 70
+const OP5_LEVEL1 99
+const OP5_LEVEL2 0
+const OP5_LEVEL3 0
+const OP5_LEVEL4 0
+const OP5_RATE_SCALING 2
+const OP5_OUTPUT_LEVEL 99
+const OP5_VELOCITY_SENSITIVITY 5
+
+; Operator 6.
+const OP6_RATIO 1.992721875
+const OP6_FIXED_HZ 0.0
+const OP6_GAIN 0.85
+const OP6_RATE1 98
+const OP6_RATE2 91
+const OP6_RATE3 0
+const OP6_RATE4 28
+const OP6_LEVEL1 99
+const OP6_LEVEL2 0
+const OP6_LEVEL3 0
+const OP6_LEVEL4 0
+const OP6_RATE_SCALING 2
+const OP6_OUTPUT_LEVEL 85
+const OP6_VELOCITY_SENSITIVITY 0
+
+const MIX1_GAIN 0.5
+const MIX3_GAIN 0.5
+const MIX5_GAIN 0.5
+const OUTPUT_GAIN 0.65
+
+; Additional DX7 modulation and keyboard settings.
+const ALGORITHM 5
+const TRANSPOSE_SEMITONES 0
+const PITCH_RATE1 67
+const PITCH_RATE2 95
+const PITCH_RATE3 95
+const PITCH_RATE4 60
+const PITCH_LEVEL1 50
+const PITCH_LEVEL2 50
+const PITCH_LEVEL3 50
+const PITCH_LEVEL4 50
+const LFO_SPEED 35
+const LFO_DELAY 0
+const LFO_PITCH_DEPTH 0
+const LFO_AMPLITUDE_DEPTH 0
+const LFO_SYNC 0
+const LFO_WAVE 1
+const PITCH_MOD_SENSITIVITY 1
+const OP1_BREAKPOINT 0
+const OP1_LEFT_DEPTH 0
+const OP1_RIGHT_DEPTH 0
+const OP1_LEFT_CURVE 0
+const OP1_RIGHT_CURVE 0
+const OP1_AMP_MOD_SENSITIVITY 0
+const OP1_MODE 0
+const OP1_COARSE 1
+const OP1_FINE 0
+const OP1_DETUNE 9
+const OP2_BREAKPOINT 0
+const OP2_LEFT_DEPTH 0
+const OP2_RIGHT_DEPTH 0
+const OP2_LEFT_CURVE 0
+const OP2_RIGHT_CURVE 0
+const OP2_AMP_MOD_SENSITIVITY 0
+const OP2_MODE 0
+const OP2_COARSE 2
+const OP2_FINE 75
+const OP2_DETUNE 10
+const OP3_BREAKPOINT 0
+const OP3_LEFT_DEPTH 0
+const OP3_RIGHT_DEPTH 0
+const OP3_LEFT_CURVE 0
+const OP3_RIGHT_CURVE 0
+const OP3_AMP_MOD_SENSITIVITY 0
+const OP3_MODE 0
+const OP3_COARSE 1
+const OP3_FINE 0
+const OP3_DETUNE 2
+const OP4_BREAKPOINT 0
+const OP4_LEFT_DEPTH 0
+const OP4_RIGHT_DEPTH 0
+const OP4_LEFT_CURVE 0
+const OP4_RIGHT_CURVE 0
+const OP4_AMP_MOD_SENSITIVITY 0
+const OP4_MODE 0
+const OP4_COARSE 2
+const OP4_FINE 75
+const OP4_DETUNE 5
+const OP5_BREAKPOINT 0
+const OP5_LEFT_DEPTH 0
+const OP5_RIGHT_DEPTH 0
+const OP5_LEFT_CURVE 0
+const OP5_RIGHT_CURVE 0
+const OP5_AMP_MOD_SENSITIVITY 0
+const OP5_MODE 1
+const OP5_COARSE 2
+const OP5_FINE 51
+const OP5_DETUNE 7
+const OP6_BREAKPOINT 0
+const OP6_LEFT_DEPTH 0
+const OP6_RIGHT_DEPTH 0
+const OP6_LEFT_CURVE 0
+const OP6_RIGHT_CURVE 0
+const OP6_AMP_MOD_SENSITIVITY 0
+const OP6_MODE 0
+const OP6_COARSE 2
+const OP6_FINE 0
+const OP6_DETUNE 0
+constantsEnd
+
+constants preset
+; @pos 612 21
+; E.ORGAN 4 / ROM1B voice 15.
+; @hide
+; Reset operator phases on note-on.
+const OSC_KEY_SYNC 1
+const FEEDBACK 7
+
+; Operator 1.
+const OP1_RATIO 0.499479457
+const OP1_FIXED_HZ 0.0
+const OP1_GAIN 0.95
+const OP1_RATE1 97
+const OP1_RATE2 97
+const OP1_RATE3 99
+const OP1_RATE4 82
+const OP1_LEVEL1 99
+const OP1_LEVEL2 99
+const OP1_LEVEL3 99
+const OP1_LEVEL4 0
+const OP1_RATE_SCALING 2
+const OP1_OUTPUT_LEVEL 95
+const OP1_VELOCITY_SENSITIVITY 0
+
+; Operator 2.
+const OP2_RATIO 0.500521086
+const OP2_FIXED_HZ 0.0
+const OP2_GAIN 0.82
+const OP2_RATE1 97
+const OP2_RATE2 97
+const OP2_RATE3 99
+const OP2_RATE4 82
+const OP2_LEVEL1 99
+const OP2_LEVEL2 99
+const OP2_LEVEL3 97
+const OP2_LEVEL4 0
+const OP2_RATE_SCALING 2
+const OP2_OUTPUT_LEVEL 82
+const OP2_VELOCITY_SENSITIVITY 7
+
+; Operator 3.
+const OP3_RATIO 1.003652353
+const OP3_FIXED_HZ 0.0
+const OP3_GAIN 0.99
+const OP3_RATE1 97
+const OP3_RATE2 97
+const OP3_RATE3 99
+const OP3_RATE4 82
+const OP3_LEVEL1 99
+const OP3_LEVEL2 99
+const OP3_LEVEL3 97
+const OP3_LEVEL4 0
+const OP3_RATE_SCALING 2
+const OP3_OUTPUT_LEVEL 99
+const OP3_VELOCITY_SENSITIVITY 0
+
+; Operator 4.
+const OP4_RATIO 0.499479457
+const OP4_FIXED_HZ 0.0
+const OP4_GAIN 0.99
+const OP4_RATE1 79
+const OP4_RATE2 98
+const OP4_RATE3 99
+const OP4_RATE4 82
+const OP4_LEVEL1 99
+const OP4_LEVEL2 89
+const OP4_LEVEL3 80
+const OP4_LEVEL4 0
+const OP4_RATE_SCALING 2
+const OP4_OUTPUT_LEVEL 99
+const OP4_VELOCITY_SENSITIVITY 7
+
+; Operator 5.
+const OP5_RATIO 5.000000000
+const OP5_FIXED_HZ 0.0
+const OP5_GAIN 0.99
+const OP5_RATE1 97
+const OP5_RATE2 99
+const OP5_RATE3 50
+const OP5_RATE4 82
+const OP5_LEVEL1 99
+const OP5_LEVEL2 90
+const OP5_LEVEL3 84
+const OP5_LEVEL4 0
+const OP5_RATE_SCALING 2
+const OP5_OUTPUT_LEVEL 99
+const OP5_VELOCITY_SENSITIVITY 7
+
+; Operator 6.
+const OP6_RATIO 4.014609414
+const OP6_FIXED_HZ 0.0
+const OP6_GAIN 0.99
+const OP6_RATE1 91
+const OP6_RATE2 79
+const OP6_RATE3 99
+const OP6_RATE4 82
+const OP6_LEVEL1 86
+const OP6_LEVEL2 50
+const OP6_LEVEL3 0
+const OP6_LEVEL4 0
+const OP6_RATE_SCALING 2
+const OP6_OUTPUT_LEVEL 99
+const OP6_VELOCITY_SENSITIVITY 0
+
+const MIX1_GAIN 0.5
+const MIX3_GAIN 0.5
+const MIX5_GAIN 0.5
+const OUTPUT_GAIN 0.65
+
+; Additional DX7 modulation and keyboard settings.
+const ALGORITHM 5
+const TRANSPOSE_SEMITONES 0
+const PITCH_RATE1 4
+const PITCH_RATE2 67
+const PITCH_RATE3 95
+const PITCH_RATE4 60
+const PITCH_LEVEL1 50
+const PITCH_LEVEL2 50
+const PITCH_LEVEL3 50
+const PITCH_LEVEL4 50
+const LFO_SPEED 34
+const LFO_DELAY 33
+const LFO_PITCH_DEPTH 0
+const LFO_AMPLITUDE_DEPTH 0
+const LFO_SYNC 0
+const LFO_WAVE 0
+const PITCH_MOD_SENSITIVITY 2
+const OP1_BREAKPOINT 0
+const OP1_LEFT_DEPTH 0
+const OP1_RIGHT_DEPTH 0
+const OP1_LEFT_CURVE 0
+const OP1_RIGHT_CURVE 0
+const OP1_AMP_MOD_SENSITIVITY 0
+const OP1_MODE 0
+const OP1_COARSE 0
+const OP1_FINE 0
+const OP1_DETUNE 5
+const OP2_BREAKPOINT 0
+const OP2_LEFT_DEPTH 0
+const OP2_RIGHT_DEPTH 0
+const OP2_LEFT_CURVE 0
+const OP2_RIGHT_CURVE 0
+const OP2_AMP_MOD_SENSITIVITY 0
+const OP2_MODE 0
+const OP2_COARSE 0
+const OP2_FINE 0
+const OP2_DETUNE 9
+const OP3_BREAKPOINT 0
+const OP3_LEFT_DEPTH 0
+const OP3_RIGHT_DEPTH 0
+const OP3_LEFT_CURVE 0
+const OP3_RIGHT_CURVE 0
+const OP3_AMP_MOD_SENSITIVITY 0
+const OP3_MODE 0
+const OP3_COARSE 1
+const OP3_FINE 0
+const OP3_DETUNE 14
+const OP4_BREAKPOINT 0
+const OP4_LEFT_DEPTH 0
+const OP4_RIGHT_DEPTH 0
+const OP4_LEFT_CURVE 0
+const OP4_RIGHT_CURVE 0
+const OP4_AMP_MOD_SENSITIVITY 0
+const OP4_MODE 0
+const OP4_COARSE 0
+const OP4_FINE 0
+const OP4_DETUNE 5
+const OP5_BREAKPOINT 0
+const OP5_LEFT_DEPTH 0
+const OP5_RIGHT_DEPTH 0
+const OP5_LEFT_CURVE 0
+const OP5_RIGHT_CURVE 0
+const OP5_AMP_MOD_SENSITIVITY 0
+const OP5_MODE 0
+const OP5_COARSE 5
+const OP5_FINE 0
+const OP5_DETUNE 7
+const OP6_BREAKPOINT 0
+const OP6_LEFT_DEPTH 0
+const OP6_RIGHT_DEPTH 0
+const OP6_LEFT_CURVE 0
+const OP6_RIGHT_CURVE 0
+const OP6_AMP_MOD_SENSITIVITY 0
+const OP6_MODE 0
+const OP6_COARSE 4
+const OP6_FINE 0
+const OP6_DETUNE 14
+constantsEnd
+
+constants preset
+; @pos 624 28
+; E.PIANO 1.
+; @hide
+const OSC_KEY_SYNC 0
+const FEEDBACK 6
+
+; Operator 1.
+const OP1_RATIO 1.005
+const OP1_FIXED_HZ 0.0
+const OP1_GAIN 0.99
+const OP1_RATE1 96
+const OP1_RATE2 25
+const OP1_RATE3 25
+const OP1_RATE4 67
+const OP1_LEVEL1 99
+const OP1_LEVEL2 75
+const OP1_LEVEL3 0
+const OP1_LEVEL4 0
+const OP1_RATE_SCALING 3
+const OP1_OUTPUT_LEVEL 99
+const OP1_VELOCITY_SENSITIVITY 2
+
+; Operator 2.
+const OP2_RATIO 14.0
+const OP2_FIXED_HZ 0.0
+const OP2_GAIN 0.58
+const OP2_RATE1 95
+const OP2_RATE2 50
+const OP2_RATE3 35
+const OP2_RATE4 78
+const OP2_LEVEL1 99
+const OP2_LEVEL2 75
+const OP2_LEVEL3 0
+const OP2_LEVEL4 0
+const OP2_RATE_SCALING 3
+const OP2_OUTPUT_LEVEL 58
+const OP2_VELOCITY_SENSITIVITY 7
+
+; Operator 3.
+const OP3_RATIO 1.0
+const OP3_FIXED_HZ 0.0
+const OP3_GAIN 0.99
+const OP3_RATE1 95
+const OP3_RATE2 20
+const OP3_RATE3 20
+const OP3_RATE4 50
+const OP3_LEVEL1 99
+const OP3_LEVEL2 95
+const OP3_LEVEL3 0
+const OP3_LEVEL4 0
+const OP3_RATE_SCALING 3
+const OP3_OUTPUT_LEVEL 99
+const OP3_VELOCITY_SENSITIVITY 2
+
+; Operator 4.
+const OP4_RATIO 1.0
+const OP4_FIXED_HZ 0.0
+const OP4_GAIN 0.89
+const OP4_RATE1 95
+const OP4_RATE2 29
+const OP4_RATE3 20
+const OP4_RATE4 50
+const OP4_LEVEL1 99
+const OP4_LEVEL2 95
+const OP4_LEVEL3 0
+const OP4_LEVEL4 0
+const OP4_RATE_SCALING 3
+const OP4_OUTPUT_LEVEL 89
+const OP4_VELOCITY_SENSITIVITY 6
+
+; Operator 5.
+const OP5_RATIO 0.99
+const OP5_FIXED_HZ 0.0
+const OP5_GAIN 0.99
+const OP5_RATE1 95
+const OP5_RATE2 20
+const OP5_RATE3 20
+const OP5_RATE4 50
+const OP5_LEVEL1 99
+const OP5_LEVEL2 95
+const OP5_LEVEL3 0
+const OP5_LEVEL4 0
+const OP5_RATE_SCALING 3
+const OP5_OUTPUT_LEVEL 99
+const OP5_VELOCITY_SENSITIVITY 0
+
+; Operator 6.
+const OP6_RATIO 1.01
+const OP6_FIXED_HZ 0.0
+const OP6_GAIN 0.79
+const OP6_RATE1 95
+const OP6_RATE2 29
+const OP6_RATE3 20
+const OP6_RATE4 50
+const OP6_LEVEL1 99
+const OP6_LEVEL2 95
+const OP6_LEVEL3 0
+const OP6_LEVEL4 0
+const OP6_RATE_SCALING 3
+const OP6_OUTPUT_LEVEL 79
+const OP6_VELOCITY_SENSITIVITY 6
+
+const MIX1_GAIN 0.5
+const MIX3_GAIN 0.5
+const MIX5_GAIN 0.5
+const OUTPUT_GAIN 0.65
+
+; Additional DX7 modulation and keyboard settings.
+const ALGORITHM 5
+const TRANSPOSE_SEMITONES 0
+const PITCH_RATE1 94
+const PITCH_RATE2 67
+const PITCH_RATE3 95
+const PITCH_RATE4 60
+const PITCH_LEVEL1 50
+const PITCH_LEVEL2 50
+const PITCH_LEVEL3 50
+const PITCH_LEVEL4 50
+const LFO_SPEED 34
+const LFO_DELAY 33
+const LFO_PITCH_DEPTH 0
+const LFO_AMPLITUDE_DEPTH 0
+const LFO_SYNC 0
+const LFO_WAVE 4
+const PITCH_MOD_SENSITIVITY 3
+const OP1_BREAKPOINT 0
+const OP1_LEFT_DEPTH 0
+const OP1_RIGHT_DEPTH 0
+const OP1_LEFT_CURVE 0
+const OP1_RIGHT_CURVE 0
+const OP1_AMP_MOD_SENSITIVITY 0
+const OP1_MODE 0
+const OP1_COARSE 1
+const OP1_FINE 0
+const OP1_DETUNE 10
+const OP2_BREAKPOINT 0
+const OP2_LEFT_DEPTH 0
+const OP2_RIGHT_DEPTH 0
+const OP2_LEFT_CURVE 0
+const OP2_RIGHT_CURVE 0
+const OP2_AMP_MOD_SENSITIVITY 0
+const OP2_MODE 0
+const OP2_COARSE 14
+const OP2_FINE 0
+const OP2_DETUNE 7
+const OP3_BREAKPOINT 0
+const OP3_LEFT_DEPTH 0
+const OP3_RIGHT_DEPTH 0
+const OP3_LEFT_CURVE 0
+const OP3_RIGHT_CURVE 0
+const OP3_AMP_MOD_SENSITIVITY 0
+const OP3_MODE 0
+const OP3_COARSE 1
+const OP3_FINE 0
+const OP3_DETUNE 7
+const OP4_BREAKPOINT 0
+const OP4_LEFT_DEPTH 0
+const OP4_RIGHT_DEPTH 0
+const OP4_LEFT_CURVE 0
+const OP4_RIGHT_CURVE 0
+const OP4_AMP_MOD_SENSITIVITY 0
+const OP4_MODE 0
+const OP4_COARSE 1
+const OP4_FINE 0
+const OP4_DETUNE 7
+const OP5_BREAKPOINT 0
+const OP5_LEFT_DEPTH 0
+const OP5_RIGHT_DEPTH 0
+const OP5_LEFT_CURVE 0
+const OP5_RIGHT_CURVE 0
+const OP5_AMP_MOD_SENSITIVITY 0
+const OP5_MODE 0
+const OP5_COARSE 1
+const OP5_FINE 0
+const OP5_DETUNE 0
+const OP6_BREAKPOINT 41
+const OP6_LEFT_DEPTH 0
+const OP6_RIGHT_DEPTH 19
+const OP6_LEFT_CURVE 0
+const OP6_RIGHT_CURVE 0
+const OP6_AMP_MOD_SENSITIVITY 0
+const OP6_MODE 0
+const OP6_COARSE 1
+const OP6_FINE 0
+const OP6_DETUNE 14
+constantsEnd
+
+note
+; @pos 2 41
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRate 48000
+; @config audioRuntime.audioOutBufferLAddress audioout:buffer
+; @config audioRuntime.audioOutBufferRAddress audioout:buffer
+; @config export.fileName dx7Algorithm5EightVoices
+
+noteEnd
+
+note colors
+; @pos 2 51
+; @config color.canvas #151210
+; @config color.surface #25211e
+; @config color.ink #e5e1d8
+; @config color.primary #64d1ad
+; @config color.secondary #c7df8a
+; @config color.positive #64d1ad
+; @config color.warning #d9c66f
+; @config color.negative #d66b5f
+; @config color.muted #898178
+; @config color.stroke rgba(100,209,173,0.24)
+; @config color.tertiary #aaa195
+; @config color.highlight #c7df8a
+; @config color.detail #64d1ad
+noteEnd
+
+note eightVoices
+; @pos 188 30
+; Play chords from MIDI input port 0 (all channels).
+; Note-ons cycle through voices 1 to 8.
+; The ninth note steals voice 1; note-offs release
+; only matching pitches on the same MIDI channel.
+; Velocity and CC64 sustain pedal are supported.
+; Move a preset furthest right to update all voices.
+noteEnd
+
+entry midi
+module midiInput
+; @pos 130 9
+; @home left
+; MIDI input port 0, all channels.
+; @config midi.inputs.keys.port 0
+; @config midi.inputs.keys.callback onMidiEvent
+int status ; @watch
+int note ; @watch
+int velocity ; @watch
+moduleEnd
+module midiToFrequency
+; @pos 191 3
+int* status &midiInput:status
+int* note &midiInput:note
+int* velocity &midiInput:velocity
+float out
+
+call isNoteOn *status *velocity
+if
+push &out
+push *note
+sub 69
+castToFloat
+div 12.0
+call exp2
+mul 440.0
+store
+ifEnd
+moduleEnd
+group roundRobin
+; @pos 260 10
+; Allocate through the supplied voice mapper.
+expose status &midiMessage:status
+expose note &midiMessage:note
+expose velocity &midiMessage:velocity
+expose frequency &noteOn:frequency
+; Live destination wires.
+expose frequencyTarget &noteOn:frequencyTarget
+expose noteOnTarget &noteOn:eventTarget
+expose noteOffTarget &noteOff:eventTarget
+
+init &status &midiInput:status
+init &note &midiInput:note
+init &velocity &midiInput:velocity
+init &frequency &midiToFrequency:out
+
+pass midiCodes
+pass polyphony
+pass isNoteOn
+pass voiceDestination
+includes
+; @pos 0 -12
+include std/memory/loadAt
+include std/memory/storeAt
+includesEnd
+function isNoteOff
+; @pos 0 -40
+use midiCodes
+param int status
+param int velocity
+local int kind
+
+push status
+and STATUS_MASK
+localSet kind
+push kind
+push NOTE_OFF
+equal
+push kind
+push NOTE_ON
+equal
+push velocity
+equalToZero
+and
+or
+functionEnd int
+function isController
+; @pos 65 -40
+use midiCodes
+param int status
+param int note
+param int controller
+
+push status
+and STATUS_MASK
+push CONTROL_CHANGE
+equal
+push note
+push controller
+equal
+and
+functionEnd int
+function matchesChannel
+; @pos 130 -40
+use midiCodes
+param int key
+param int channel
+
+push key
+push 0
+greaterThan
+push key
+sub 1
+shiftRight NOTE_BITS
+push channel
+equal
+and
+functionEnd int
+function encodeNoteEvent
+; @pos 195 -40
+; Low byte: gate and velocity; upper bits: counter.
+param int previous
+param int velocity
+
+push previous
+add 256
+and 0x7fffff00
+push velocity
+push 0
+greaterThan
+mul 128
+or velocity
+or
+functionEnd int
+entry main
+module midiMessage
+; @pos 0 0
+; Decode the current MIDI message.
+; @home left
+use midiCodes
+int* status
+int* note
+int* velocity
+int channel
+int key
+int value
+int noteOn
+int noteOff
+int sustain
+int allNotesOff
+
+push &channel
+push *status
+and CHANNEL_MASK
+store
+; Zero means an unassigned voice; MIDI keys start at 1.
+push &key
+push channel
+shiftLeft NOTE_BITS
+or *note
+add 1
+store
+push &value
+push *velocity
+store
+push &noteOn
+call isNoteOn *status value
+store
+push &noteOff
+call isNoteOff *status value
+store
+push &sustain
+call isController *status *note SUSTAIN_PEDAL
+store
+push &allNotesOff
+call isController *status *note ALL_NOTES_OFF
+store
+moduleEnd
+module voiceState
+; @pos 65 0
+; Note ownership scales with the configured voice count.
+use polyphony
+int[] keys VOICES
+int[] held VOICES
+moduleEnd
+module noteOn
+; @pos 130 0
+; Select and instruct the next voice.
+use polyphony
+int* trigger &midiMessage:noteOn
+int* key &midiMessage:key
+int* velocity &midiMessage:value
+float* frequency
+int* keys &voiceState:keys
+int* held &voiceState:held
+int nextVoice
+float* frequencyTarget
+int* eventTarget
+local int frequencyAddress
+local int eventAddress
+; @watch nextVoice
+
+push *trigger
+if
+call voiceDestination nextVoice
+localSet eventAddress
+localSet frequencyAddress
+push &frequencyTarget
+push frequencyAddress
+store
+push &eventTarget
+push eventAddress
+store
+call storeAt keys nextVoice *key
+call storeAt held nextVoice 1
+push frequencyTarget
+push *frequency
+store
+; Publish after the destination frequency is stored.
+push eventTarget
+call encodeNoteEvent *eventTarget *velocity
+store
+push &nextVoice
+push nextVoice
+add 1
+remainder VOICES
+store
+ifEnd
+moduleEnd
+module sustain
+; @pos 195 0
+; Track CC64 separately for each channel.
+use midiCodes
+int* update &midiMessage:sustain
+int* channel &midiMessage:channel
+int* value &midiMessage:value
+int[] pedals CHANNEL_COUNT
+
+push *update
+if
+push &pedals
+push *channel
+mul sizeof(pedals)
+add
+push *value
+push PEDAL_DOWN
+greaterOrEqual
+store
+ifEnd
+moduleEnd
+module noteOff
+; @pos 260 0
+; Release matching notes once their pedal is up.
+use polyphony
+int* noteOn &midiMessage:noteOn
+int* noteOff &midiMessage:noteOff
+int* allNotesOff &midiMessage:allNotesOff
+int* channel &midiMessage:channel
+int* key &midiMessage:key
+int* keys &voiceState:keys
+int* held &voiceState:held
+int* pedals &sustain:pedals
+int* eventTarget
+local int index
+local int voiceKey
+local int eventAddress
+
+push *noteOn
+equalToZero
+if
+loop VOICES
+loopIndex
+localSet index
+call loadAt keys index
+localSet voiceKey
+call matchesChannel voiceKey *channel
+if
+push voiceKey
+push *key
+equal
+and *noteOff
+or *allNotesOff
+if
+call storeAt held index 0
+ifEnd
+call loadAt held index
+equalToZero
+call loadAt pedals *channel
+equalToZero
+and
+if
+call voiceDestination index
+localSet eventAddress
+drop
+push &eventTarget
+push eventAddress
+store
+push eventTarget
+call encodeNoteEvent *eventTarget 0
+store
+call storeAt keys index 0
+ifEnd
+ifEnd
+loopEnd
+ifEnd
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+entry main
+group voice1
+; @pos 330 0
+expose frequency &voiceInput:frequency
+expose event &noteEvents:in
+expose out &limiter:out
+
+pass env
+pass preset
+
+useTemplate dx7Voice
+groupEnd
+group voice2
+; @pos 330 12
+expose frequency &voiceInput:frequency
+expose event &noteEvents:in
+expose out &limiter:out
+
+pass env
+pass preset
+
+useTemplate dx7Voice
+groupEnd
+group voice3
+; @pos 330 24
+expose frequency &voiceInput:frequency
+expose event &noteEvents:in
+expose out &limiter:out
+
+pass env
+pass preset
+
+useTemplate dx7Voice
+groupEnd
+group voice4
+; @pos 330 36
+expose frequency &voiceInput:frequency
+expose event &noteEvents:in
+expose out &limiter:out
+
+pass env
+pass preset
+
+useTemplate dx7Voice
+groupEnd
+group voice5
+; @pos 377 0
+expose frequency &voiceInput:frequency
+expose event &noteEvents:in
+expose out &limiter:out
+
+pass env
+pass preset
+
+useTemplate dx7Voice
+groupEnd
+group voice6
+; @pos 377 12
+expose frequency &voiceInput:frequency
+expose event &noteEvents:in
+expose out &limiter:out
+
+pass env
+pass preset
+
+useTemplate dx7Voice
+groupEnd
+group voice7
+; @pos 377 24
+expose frequency &voiceInput:frequency
+expose event &noteEvents:in
+expose out &limiter:out
+
+pass env
+pass preset
+
+useTemplate dx7Voice
+groupEnd
+group voice8
+; @pos 377 36
+expose frequency &voiceInput:frequency
+expose event &noteEvents:in
+expose out &limiter:out
+
+pass env
+pass preset
+
+useTemplate dx7Voice
+groupEnd
+module voiceMixer
+; @pos 437 11
+; Eight voices, with headroom
+; for overlapping tails.
+use polyphony
+float* in1 &voice1:out
+float* in2 &voice2:out
+float* in3 &voice3:out
+float* in4 &voice4:out
+float* in5 &voice5:out
+float* in6 &voice6:out
+float* in7 &voice7:out
+float* in8 &voice8:out
+float out
+
+push &out
+push *in1
+add *in2
+add *in3
+add *in4
+add *in5
+add *in6
+add *in7
+add *in8
+mul 3.0/VOICES
+store
+moduleEnd
+module audioout
+; @pos 477 11
+use env
+
+float* in &voiceMixer:out
+
+; Audio buffer
+float[] buffer AUDIO_BUFFER_SIZE
+int pointer &buffer
+
+; @plot &buffer count(buffer)
+
+; Store the input value
+; in the buffer
+push pointer
+push *in
+store
+
+; Increment the buffer
+; pointer by the
+; buffer word size
+push &pointer
+push pointer
+add sizeof(buffer)
+store
+
+; Reset the buffer pointer
+; when it reaches the end
+; of the buffer
+push pointer
+push buffer&
+greaterThan
+if
+push &pointer
+push &buffer
+store
+ifEnd
+
+moduleEnd
+entryEnd

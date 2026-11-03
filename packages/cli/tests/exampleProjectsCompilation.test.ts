@@ -22,6 +22,7 @@ const additionalProjects = [
 	'packages/examples/src/benchmarks/bytecode-size/minBLEP.8f4e',
 	'packages/examples/src/projects/audio/reverb.8f4e',
 	'packages/examples/src/projects/audio/dx7Algorithm5.8f4e',
+	'packages/examples/src/projects/midi/dx7Algorithm5EightVoices.8f4e',
 	'packages/examples/src/projects/audio/dx7StgCrescendo.8f4e',
 	'packages/examples/src/projects/audio/gridsPatterns.8f4e',
 ] as const;
