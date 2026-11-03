@@ -88,6 +88,9 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
 `@8f4e/editor-plugin-project-open` for opening projects, `@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
+
+`@8f4e/editor-plugin-selection-animation` is available separately. Its entry is commented out in both editor compositions.
+
 `createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
 synchronously constructs the startup plugin set with resources for one editor. It creates one `@8f4e/editor-file-session`, installs its
 plugin before project loaders, and supplies it to Open and Save. The session shares the current handle and clears it

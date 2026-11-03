@@ -1,16 +1,12 @@
+import type { CodeBlockDrawerContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { State } from '@8f4e/editor-state-types';
-import type { DrawContext } from '../../drawContext';
 
 const OUTLINE_STEP_DURATION_MS = 80;
 
-export default function drawSelectedOutline(
-	engine: DrawContext,
-	state: State,
-	codeBlockWidth: number,
-	codeBlockHeight: number,
-	now = performance.now()
-): void {
+export default function drawSelectionAnimation({ draw, state, codeBlock }: CodeBlockDrawerContext): void {
+	if (state.codeBlockRendering.selectedCodeBlock !== codeBlock) return;
+	const { width: codeBlockWidth, height: codeBlockHeight } = codeBlock;
+	const now = performance.now();
 	const { vGrid, hGrid } = state.viewport;
 	const leftX = -vGrid * 2;
 	const rightX = codeBlockWidth + vGrid;
@@ -23,7 +19,7 @@ export default function drawSelectedOutline(
 	const bottomSteps = Math.floor((innerRightX - leftX) / (vGrid * 2)) + 2;
 	const leftSteps = Math.floor(codeBlockHeight / hGrid) + 1;
 	const perimeterLength = topSteps + rightSteps + bottomSteps + leftSteps;
-	const startOffset = Math.max(0, perimeterLength - segmentLength);
+	const startOffset = perimeterLength - segmentLength;
 	const animationOffset = (Math.floor(now / OUTLINE_STEP_DURATION_MS) + startOffset) % perimeterLength;
 
 	const color = PALETTE_INDICES.secondaryBase;
@@ -53,19 +49,15 @@ export default function drawSelectedOutline(
 			y = codeBlockHeight - (step - topSteps - rightSteps - bottomSteps) * hGrid;
 		}
 
-		const character =
-			y === topY
-				? x === leftX || x === rightX
-					? '.'
-					: '-'
-				: y === bottomY
-					? x === leftX
-						? '`'
-						: x === rightX
-							? "'"
-							: '-'
-					: '|';
+		let character = '|';
+		if (y === topY) {
+			character = x === leftX || x === rightX ? '.' : '-';
+		} else if (y === bottomY) {
+			character = '-';
+			if (x === leftX) character = '`';
+			else if (x === rightX) character = "'";
+		}
 
-		engine.drawText(x, y, character, color);
+		draw.drawText(x, y, character, color);
 	}
 }

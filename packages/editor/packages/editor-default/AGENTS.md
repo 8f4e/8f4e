@@ -87,6 +87,8 @@
   in the plugin and editing/layout geometry in core.
 - Install `connectorsPlugin` in the deferred plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
+- Keep the `selectionAnimationPlugin` entry commented out. The standalone plugin owns the circling selected-block
+  segment through the foreground drawer hook; core retains selection state and geometry.
 
 - Per-frame WASM execution and texture upload/view directives belong entirely to `editor-plugin-texture-runtime`.
   `textureRuntime` config owns `enabled` and `entry`. `@textureUpload <address> <format> <width> <height>` defines a source;

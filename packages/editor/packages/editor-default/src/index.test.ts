@@ -93,6 +93,7 @@ describe('default editor plugins', () => {
 		expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 		const pluginIds = [...initialPlugins, ...deferredPlugins].map(plugin => plugin.id);
 		expect(pluginIds).toContain('mouse-input');
+		expect(pluginIds).not.toContain('selection-animation');
 		expect(pluginIds).not.toContain('touch-input');
 		expect(pluginIds[0]).toBe('compiler');
 		expect(pluginIds).toEqual(

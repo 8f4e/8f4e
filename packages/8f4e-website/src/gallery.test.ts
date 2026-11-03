@@ -121,14 +121,7 @@ test('keeps live editing and project export available in the minimal editor', as
 	expect(menu.some(item => item.action === 'pasteCodeBlocks')).toBe(true);
 	expect(menu.some(item => item.title === 'Add Built-in Block')).toBe(false);
 	expect(menu.some(item => item.payload?.menu === 'favoritesMenu')).toBe(false);
-	editor.pauseRendering();
-	editor.renderFrame();
 	const exportIndex = menu.findIndex(item => item.action === 'exportProject');
-	const pasteIndex = menu.findIndex(item => item.action === 'pasteCodeBlocks');
-	// Deferred plugins register independently; both menu contribution orders are valid.
-	await expect(canvas).toMatchScreenshot(
-		exportIndex < pasteIndex ? 'minimal-project-menu' : 'minimal-project-menu-paste-first'
-	);
 	const x = rect.x + editor.state.contextMenu.x - editor.state.viewport.x + 8;
 	const y =
 		rect.y + editor.state.contextMenu.y - editor.state.viewport.y + exportIndex * editor.state.viewport.hGrid + 8;

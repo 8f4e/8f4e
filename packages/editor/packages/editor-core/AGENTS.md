@@ -143,7 +143,9 @@
 
 - Keyboard-editing owns edit-mode caret movement, mutation caret adjustments, and its foreground drawer. Core keeps
   source-position state and bounds/tab geometry; do not restore direction-based caret movement or a built-in glyph.
-- `registerCodeBlockForegroundDrawer` runs above content/shapes and below outlines/diagnostics. Keep this stage generic.
+- `registerCodeBlockForegroundDrawer` runs above content/shapes and below diagnostics. Keep this stage generic.
+- The circling selected-block animation belongs to `editor-plugin-selection-animation`. Keep its timing, glyphs,
+  and drawing out of core; retain selection state, corner colors, and line highlighting.
 
 - Export generic `insertCodeBlocks` and pure `serializeCodeBlocks`/`SerializedCodeBlock` helpers. Source batches retain their names, references, grouping directives and entries; insertion updates only placement directives and fresh editor identities. Do not restore name uniquifying, clipboard callbacks, clipboard format parsing, copy/paste menus, or paste-transform events in core.
 

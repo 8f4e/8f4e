@@ -103,13 +103,8 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		context.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		context.store.set('codeBlockRendering.selectedCodeBlock.cursor.col', 5);
 		expect(editor.state.editorMode).toBe('edit');
-		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
-		try {
-			editor.renderFrame();
-			await expect(canvas).toMatchScreenshot('edit-mode-caret');
-		} finally {
-			now.mockRestore();
-		}
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('edit-mode-caret');
 		editor.dispose();
 		editor = undefined;
 		expect(key('e').defaultPrevented).toBe(false);

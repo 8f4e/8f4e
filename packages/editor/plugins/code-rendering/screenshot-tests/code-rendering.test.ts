@@ -1,10 +1,9 @@
 import initEditor from '@8f4e/editor-core';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import { expect, test, vi } from 'vitest';
+import { expect, test } from 'vitest';
 import { codeRenderingPlugin } from '../src/index';
 
 test('renders code, notes, tabs, disabled blocks, folds, and diagnostic gaps', async () => {
-	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 960;
 	canvas.height = 480;
@@ -77,6 +76,5 @@ test('renders code, notes, tabs, disabled blocks, folds, and diagnostic gaps', a
 	} finally {
 		editor.dispose();
 		canvas.remove();
-		now.mockRestore();
 	}
 });
