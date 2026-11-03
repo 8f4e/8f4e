@@ -59,6 +59,7 @@
 
 - [Stack instructions](instructions/stack.md)
   - [push](instructions/stack.md#push)
+  - [pushShape](instructions/stack.md#pushshape)
   - [drop](instructions/stack.md#drop)
   - [clearStack](instructions/stack.md#clearstack)
 
@@ -81,8 +82,10 @@
   - [const](instructions/declarations-and-locals.md#const)
   - [int](instructions/declarations-and-locals.md#int)
   - [float](instructions/declarations-and-locals.md#float)
+  - [float64](instructions/declarations-and-locals.md#float64)
   - [int[]](instructions/declarations-and-locals.md#int-1)
   - [float[]](instructions/declarations-and-locals.md#float-1)
+  - [float64[]](instructions/declarations-and-locals.md#float64-1)
   - [local](instructions/declarations-and-locals.md#local)
   - [localSet](instructions/declarations-and-locals.md#localset)
 
@@ -91,8 +94,12 @@
   - [init](instructions/program-structure-and-functions.md#init)
   - [module](instructions/program-structure-and-functions.md#module)
   - [moduleEnd](instructions/program-structure-and-functions.md#moduleend)
+  - [prototype](instructions/blocks/prototype.md#prototype)
+  - [prototypeEnd](instructions/blocks/prototype.md#prototypeend)
+  - [shape](instructions/blocks/prototype.md#shape)
   - [function](instructions/program-structure-and-functions.md#function)
   - [param](instructions/program-structure-and-functions.md#param)
+  - [paramShape](instructions/blocks/function.md#paramshape)
   - [functionEnd](instructions/program-structure-and-functions.md#functionend)
   - [call](instructions/program-structure-and-functions.md#call)
   - [Imported functions](instructions/program-structure-and-functions.md#imported-functions)

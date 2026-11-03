@@ -825,7 +825,10 @@
       "id": "double__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -872,7 +875,10 @@
       "id": "identityFloat64__float64",
       "signature": {
         "parameters": [
-          "float64",
+          {
+            "name": "x",
+            "type": "float64",
+          },
         ],
         "returns": [
           "float64",
@@ -883,7 +889,10 @@
       "id": "increment__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -894,8 +903,14 @@
       "id": "mix__int__float",
       "signature": {
         "parameters": [
-          "int",
-          "float",
+          {
+            "name": "left",
+            "type": "int",
+          },
+          {
+            "name": "right",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -906,9 +921,18 @@
       "id": "readScaledBlep__float_p__int__float",
       "signature": {
         "parameters": [
-          "float*",
-          "int",
-          "float",
+          {
+            "name": "lut",
+            "type": "float*",
+          },
+          {
+            "name": "phaseIndex",
+            "type": "int",
+          },
+          {
+            "name": "delta",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -919,9 +943,18 @@
       "id": "scaleInto__float_p__float_p__float",
       "signature": {
         "parameters": [
-          "float*",
-          "float*",
-          "float",
+          {
+            "name": "dst",
+            "type": "float*",
+          },
+          {
+            "name": "src",
+            "type": "float*",
+          },
+          {
+            "name": "gain",
+            "type": "float",
+          },
         ],
         "returns": [],
       },

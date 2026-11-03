@@ -3,10 +3,12 @@
 entry main
 module bitcrusher
 ; @public
+; Bit-depth reduction distortion: quantize sample amplitudes for crunchy, lo-fi audio.
+; Higher amount values produce fewer quantization levels.
 
 float* in
 float defAmount 0.9
-float* amount &defAmount
+float& amount &defAmount
 float out
 
 ; @watch out

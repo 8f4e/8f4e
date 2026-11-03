@@ -155,9 +155,18 @@
       "id": "lerp__float__float__float",
       "signature": {
         "parameters": [
-          "float",
-          "float",
-          "float",
+          {
+            "name": "start",
+            "type": "float",
+          },
+          {
+            "name": "end",
+            "type": "float",
+          },
+          {
+            "name": "amount",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",

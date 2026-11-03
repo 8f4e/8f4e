@@ -26,17 +26,19 @@ function compile(fixture: ProjectFixture, options: CompileOptions) {
 		code: source.code,
 	});
 	const project: ProjectObjectModel = {
+		entries: Object.keys(fixture.entries),
 		code: [],
-		modules: Object.entries(fixture.entries).flatMap(([entry, modules]) =>
-			modules.map(module => ({ ...toBlock(module), entry }))
-		),
+		execution: [
+			...Object.entries(fixture.entries).flatMap(([entry, modules]) =>
+				modules.map(module => ({ ...toBlock(module), type: 'module' as const, entry }))
+			),
+		],
 		functions: fixture.functions.map(toBlock),
 		constants: fixture.constants.map(toBlock),
 		prototypes: fixture.prototypes.map(toBlock),
 		includes: [],
 		notes: [],
 		unknown: [],
-		groups: [],
 	};
 	return compileProjectObjectModel(project, options);
 }
@@ -244,7 +246,7 @@ describe('compile prototype validation', () => {
 
 		const functionId = createFunctionId('addOffset', ['int']);
 		expect(result.compiledFunctions![functionId]).toMatchObject({
-			signature: { parameters: ['int'], returns: ['int'] },
+			signature: { parameters: [{ name: 'value', type: 'int' }], returns: ['int'] },
 		});
 	});
 
@@ -266,13 +268,13 @@ describe('compile prototype validation', () => {
 		expect(result.compiledFunctions![intOverloadId]).toMatchObject({
 			id: intOverloadId,
 			name: 'convert',
-			signature: { parameters: ['int'], returns: ['int'] },
+			signature: { parameters: [{ name: 'value', type: 'int' }], returns: ['int'] },
 			ast: { name: 'convert' },
 		});
 		expect(result.compiledFunctions![floatOverloadId]).toMatchObject({
 			id: floatOverloadId,
 			name: 'convert',
-			signature: { parameters: ['float'], returns: ['float'] },
+			signature: { parameters: [{ name: 'value', type: 'float' }], returns: ['float'] },
 			ast: { name: 'convert' },
 		});
 	});

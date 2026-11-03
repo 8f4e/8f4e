@@ -13,6 +13,7 @@ export default defineConfig({
 				'@8f4e/program-composer/internal',
 				'@8f4e/project-preparser',
 				'@8f4e/sub-program/internal',
+				'@8f4e/tokenizer',
 				'@8f4e/wasm-codegen',
 			],
 		},

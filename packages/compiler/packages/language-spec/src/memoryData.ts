@@ -1,25 +1,29 @@
-import type { MemoryPointerMetadata, MemoryValueKind, PlannedMemoryDeclaration } from './memory';
+import type { MemoryPointerMetadata, MemoryValueKind, PlannedMemoryDeclaration, PointeeBaseType } from './memory';
 import { BASE_TYPE_METADATA } from './memory';
 
 export type PointerMetadata = Pick<PlannedMemoryDeclaration, 'pointeeBaseType' | 'pointerDepth'> &
 	MemoryPointerMetadata;
 
+/** Returns the element base type from the allocation plan's authoritative storage flags. */
+export function getMemoryBaseType(
+	memoryItem: Pick<PlannedMemoryDeclaration, 'elementWordSize' | 'isInteger' | 'isUnsigned'>
+): PointeeBaseType {
+	if (memoryItem.isInteger) {
+		if (memoryItem.elementWordSize === BASE_TYPE_METADATA.int8.wordSize) {
+			return memoryItem.isUnsigned ? 'int8u' : 'int8';
+		}
+		if (memoryItem.elementWordSize === BASE_TYPE_METADATA.int16.wordSize) {
+			return memoryItem.isUnsigned ? 'int16u' : 'int16';
+		}
+		return 'int';
+	}
+	return memoryItem.elementWordSize === BASE_TYPE_METADATA.float64.wordSize ? 'float64' : 'float';
+}
+
 function getDeclaredBaseTypeMetadata(
 	memoryItem: Pick<PlannedMemoryDeclaration, 'elementWordSize' | 'isInteger' | 'isUnsigned'>
 ) {
-	if (memoryItem.isInteger) {
-		if (memoryItem.elementWordSize === BASE_TYPE_METADATA.int8.wordSize) {
-			return memoryItem.isUnsigned ? BASE_TYPE_METADATA.int8u : BASE_TYPE_METADATA.int8;
-		}
-		if (memoryItem.elementWordSize === BASE_TYPE_METADATA.int16.wordSize) {
-			return memoryItem.isUnsigned ? BASE_TYPE_METADATA.int16u : BASE_TYPE_METADATA.int16;
-		}
-		return BASE_TYPE_METADATA.int;
-	}
-
-	return memoryItem.elementWordSize === BASE_TYPE_METADATA.float64.wordSize
-		? BASE_TYPE_METADATA.float64
-		: BASE_TYPE_METADATA.float;
+	return BASE_TYPE_METADATA[getMemoryBaseType(memoryItem)];
 }
 
 function getPointeeBaseTypeMetadata(pointeeBaseType: NonNullable<PointerMetadata['pointeeBaseType']>) {
@@ -29,14 +33,6 @@ function getPointeeBaseTypeMetadata(pointeeBaseType: NonNullable<PointerMetadata
 export function getPointerDepthFromMetadata(pointerMetadata: PointerMetadata | undefined): number {
 	if (!pointerMetadata?.pointeeBaseType) return 0;
 	return pointerMetadata.pointerDepth;
-}
-
-export function getMemoryByteAddress(memoryItem: PlannedMemoryDeclaration): number {
-	return memoryItem.byteAddress;
-}
-
-export function getMemoryStringLastByteAddress(memoryItem: PlannedMemoryDeclaration): number {
-	return memoryItem.endByteAddress;
 }
 
 export function getElementCount(memoryItem: PlannedMemoryDeclaration): number {
@@ -61,12 +57,6 @@ export function getPointeeElementIsIntegerFromMetadata(pointerMetadata: PointerM
 	if (!pointerMetadata?.pointeeBaseType) return false;
 	if (getPointerDepthFromMetadata(pointerMetadata) > 1) return BASE_TYPE_METADATA.pointer.isInteger;
 	return getPointeeBaseTypeMetadata(pointerMetadata.pointeeBaseType).isInteger;
-}
-
-export function getPointeeValueKindFromMetadata(pointerMetadata: PointerMetadata | undefined): MemoryValueKind {
-	if (!pointerMetadata?.pointeeBaseType) return 'float32';
-	if (getPointeeElementIsIntegerFromMetadata(pointerMetadata)) return 'int32';
-	return getPointeeBaseTypeMetadata(pointerMetadata.pointeeBaseType).valueKind;
 }
 
 export function getDereferencedValueWordSizeFromMetadata(

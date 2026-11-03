@@ -5,8 +5,8 @@ module ringModulator
 ; @public
 
 float defaultFreq 10
-float* in &osc:out
-float* freq &defaultFreq
+float& in &osc:out
+float& freq &defaultFreq
 float out
 float phase
 

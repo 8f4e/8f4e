@@ -1,8 +1,8 @@
 import type { CompilerASTLine, MemoryAddressRange, PlannedMemoryModule } from '@8f4e/language-spec';
 import { ALLOCATION_UNIT_BYTE_SIZE, ArgumentType, ErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
+import createStackAnalyzerTestContext from '../../tests/testUtils';
 import { analyzeInstruction } from '../analyzeInstruction';
-import createStackAnalyzerTestContext from '../testUtils';
 
 const range: MemoryAddressRange = {
 	source: 'memory-start',

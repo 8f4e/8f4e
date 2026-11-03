@@ -20,7 +20,7 @@ float* in7
 int _length 8 ; default
 int* trigger
 int previousTrigger
-int* length &_length
+int& length &_length
 
 float out
 

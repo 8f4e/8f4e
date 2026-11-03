@@ -34,7 +34,7 @@
               "value": "&tau:foo",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -54,7 +54,7 @@
               "value": "&tau:bar",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -74,7 +74,7 @@
               "value": "&tau:he",
             },
           ],
-          "instruction": "int*",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -314,60 +314,14 @@
   },
   "moduleMemory": {
     "boson": {
-      "memory": {
-        "test1": {
-          "allocationUnitAddress": 2,
-          "allocationUnitCount": 1,
-          "byteAddress": 8,
-          "default": 40,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "test1",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-        "test2": {
-          "allocationUnitAddress": 1,
-          "allocationUnitCount": 1,
-          "byteAddress": 4,
-          "default": 16,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "test2",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-        "test3": {
-          "allocationUnitAddress": 3,
-          "allocationUnitCount": 1,
-          "byteAddress": 12,
-          "default": 28,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": "test3",
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointeeBaseType": "int",
-          "pointerDepth": 1,
-          "type": "int*",
-        },
-      },
+      "memory": {},
     },
     "tau": {
       "memory": {
         "bar": {
-          "allocationUnitAddress": 10,
+          "allocationUnitAddress": 7,
           "allocationUnitCount": 1,
-          "byteAddress": 40,
+          "byteAddress": 28,
           "default": 16,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
@@ -379,9 +333,9 @@
           "type": "int",
         },
         "foo": {
-          "allocationUnitAddress": 4,
+          "allocationUnitAddress": 1,
           "allocationUnitCount": 1,
-          "byteAddress": 16,
+          "byteAddress": 4,
           "default": 1,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
@@ -394,9 +348,9 @@
           "type": "int",
         },
         "he": {
-          "allocationUnitAddress": 7,
+          "allocationUnitAddress": 4,
           "allocationUnitCount": 1,
-          "byteAddress": 28,
+          "byteAddress": 16,
           "default": 10,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
@@ -416,7 +370,7 @@
       "boson",
       "tau",
     ],
-    "requiredMemoryBytes": 44,
+    "requiredMemoryBytes": 32,
     "wasmExports": [
       "initDefaults",
       "main",

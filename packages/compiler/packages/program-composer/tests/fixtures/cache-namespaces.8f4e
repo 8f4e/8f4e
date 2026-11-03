@@ -5,7 +5,9 @@ module same
 moduleEnd
 
 group child
+entry main
 module same
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

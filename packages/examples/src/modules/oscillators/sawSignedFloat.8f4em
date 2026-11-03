@@ -7,7 +7,7 @@ module saw
 use env
 
 float default 0.5 ;Hz
-float* frequency &default
+float& frequency &default
 float out
 
 push &out

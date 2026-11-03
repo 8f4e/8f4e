@@ -62,146 +62,7 @@
     "functions": [],
     "modules": [
       {
-        "id": "child/nested/nestedVoice",
-        "lines": [
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "child/nested/nestedVoice",
-              },
-            ],
-            "instruction": "module",
-            "lineNumber": 0,
-          },
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "child/nested/env",
-              },
-            ],
-            "instruction": "use",
-            "lineNumber": 1,
-          },
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "rate",
-              },
-              {
-                "referenceKind": "constant",
-                "scope": "local",
-                "type": "identifier",
-                "value": "SAMPLE_RATE",
-              },
-            ],
-            "instruction": "int",
-            "lineNumber": 2,
-          },
-          {
-            "arguments": [],
-            "instruction": "moduleEnd",
-            "lineNumber": 3,
-          },
-        ],
-        "moduleLine": {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "child/nested/nestedVoice",
-            },
-          ],
-          "instruction": "module",
-          "lineNumber": 0,
-        },
-        "projectBlockId": 24,
-        "sourceIdentity": {
-          "codeBlockId": "nestedVoice",
-          "projectGroupPath": "child/nested",
-        },
-        "type": "module",
-      },
-      {
-        "id": "child/voice",
-        "lines": [
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "child/voice",
-              },
-            ],
-            "instruction": "module",
-            "lineNumber": 0,
-          },
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "child/env",
-              },
-            ],
-            "instruction": "use",
-            "lineNumber": 1,
-          },
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "rate",
-              },
-              {
-                "referenceKind": "constant",
-                "scope": "local",
-                "type": "identifier",
-                "value": "SAMPLE_RATE",
-              },
-            ],
-            "instruction": "int",
-            "lineNumber": 2,
-          },
-          {
-            "arguments": [],
-            "instruction": "moduleEnd",
-            "lineNumber": 3,
-          },
-        ],
-        "moduleLine": {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "child/voice",
-            },
-          ],
-          "instruction": "module",
-          "lineNumber": 0,
-        },
-        "projectBlockId": 16,
-        "sourceIdentity": {
-          "codeBlockId": "voice",
-          "projectGroupPath": "child",
-        },
-        "type": "module",
-      },
-      {
+        "executionEntryName": "main",
         "id": "root",
         "lines": [
           {
@@ -271,6 +132,148 @@
         },
         "type": "module",
       },
+      {
+        "executionEntryName": "child/main",
+        "id": "child/voice",
+        "lines": [
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "child/voice",
+              },
+            ],
+            "instruction": "module",
+            "lineNumber": 0,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "child/env",
+              },
+            ],
+            "instruction": "use",
+            "lineNumber": 1,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "rate",
+              },
+              {
+                "referenceKind": "constant",
+                "scope": "local",
+                "type": "identifier",
+                "value": "SAMPLE_RATE",
+              },
+            ],
+            "instruction": "int",
+            "lineNumber": 2,
+          },
+          {
+            "arguments": [],
+            "instruction": "moduleEnd",
+            "lineNumber": 3,
+          },
+        ],
+        "moduleLine": {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "child/voice",
+            },
+          ],
+          "instruction": "module",
+          "lineNumber": 0,
+        },
+        "projectBlockId": 17,
+        "sourceIdentity": {
+          "codeBlockId": "voice",
+          "projectGroupPath": "child",
+        },
+        "type": "module",
+      },
+      {
+        "executionEntryName": "child/nested/main",
+        "id": "child/nested/nestedVoice",
+        "lines": [
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "child/nested/nestedVoice",
+              },
+            ],
+            "instruction": "module",
+            "lineNumber": 0,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "child/nested/env",
+              },
+            ],
+            "instruction": "use",
+            "lineNumber": 1,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "rate",
+              },
+              {
+                "referenceKind": "constant",
+                "scope": "local",
+                "type": "identifier",
+                "value": "SAMPLE_RATE",
+              },
+            ],
+            "instruction": "int",
+            "lineNumber": 2,
+          },
+          {
+            "arguments": [],
+            "instruction": "moduleEnd",
+            "lineNumber": 3,
+          },
+        ],
+        "moduleLine": {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "child/nested/nestedVoice",
+            },
+          ],
+          "instruction": "module",
+          "lineNumber": 0,
+        },
+        "projectBlockId": 26,
+        "sourceIdentity": {
+          "codeBlockId": "nestedVoice",
+          "projectGroupPath": "child/nested",
+        },
+        "type": "module",
+      },
     ],
     "prototypes": [],
   },
@@ -286,15 +289,45 @@
       "misses": 4,
     },
   },
-  "entryNames": [
-    "main",
+  "entries": [
+    {
+      "exportName": "main",
+      "id": "main",
+      "steps": [
+        {
+          "id": "root",
+          "type": "module",
+        },
+        {
+          "id": "child/main",
+          "type": "entry",
+        },
+      ],
+    },
+    {
+      "id": "child/main",
+      "steps": [
+        {
+          "id": "child/voice",
+          "type": "module",
+        },
+        {
+          "id": "child/nested/main",
+          "type": "entry",
+        },
+      ],
+    },
+    {
+      "id": "child/nested/main",
+      "steps": [
+        {
+          "id": "child/nested/nestedVoice",
+          "type": "module",
+        },
+      ],
+    },
   ],
   "memoryExposures": [],
-  "moduleEntryNames": [
-    "main",
-    "main",
-    "main",
-  ],
   "projectConstantNamespaceScopes": [
     {
       "groupPath": "child",

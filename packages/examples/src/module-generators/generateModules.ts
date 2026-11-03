@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 import amigaPeriodIncrement from './amigaPeriodIncrement.ts';
 import expLookupTable from './expLookupTable.ts';
 import midiFrequenciesLookupTable from './midiFreqLUT_12TET.ts';
-import minBLEPLUT from './minBLEPLUT.ts';
 import sineLookupTable from './sineLookupTable.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -26,14 +25,13 @@ const generatedModules = [
 		code: midiFrequenciesLookupTable,
 	},
 	{
-		fileName: 'lookup-tables/minBLEPLUT.8f4em',
-		code: minBLEPLUT,
-	},
-	{
 		fileName: 'constants/amigaPeriodIncrement.8f4em',
 		code: amigaPeriodIncrement,
 	},
 ] as const;
+
+// minBLEPLUT is intentionally excluded because its floating-point pipeline is
+// platform-sensitive. Regenerate it explicitly with the generate-minblep-lut target.
 
 await Promise.all(
 	generatedModules.map(async ({ fileName, code }) => {

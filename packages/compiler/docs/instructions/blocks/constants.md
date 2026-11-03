@@ -2,7 +2,7 @@
 
 ## constants
 
-The constants instruction begins a constants block with the provided name. Constants blocks can only contain `const` declarations and must be defined at the top level (outside of modules and functions).
+The constants instruction begins a constants block with the provided namespace name. Constants blocks contain `const` declarations and `use` imports and must be defined at project or group scope (outside of modules and functions).
 
 ### Examples
 
@@ -18,9 +18,9 @@ constantsEnd
 ### Usage
 
 Constants blocks provide a way to organize related constants into named namespaces:
-- Must be defined at the top level (not inside modules or functions)
-- Can only contain `const` declarations
-- Must have a unique name
+- Must be defined at project or group scope (not inside modules or functions)
+- Can contain `const` declarations and `use` imports
+- Blocks with the same name in one scope merge in declaration order
 - Can be imported into modules using `use`
 
 Constant values support the same literal forms as other numeric arguments, including:
@@ -82,7 +82,32 @@ moduleEnd
 
 ## Last-Wins Semantics
 
-When multiple namespaces are used, constants with the same name are resolved using last-applied wins semantics:
+Repeated constants blocks in the same project or group scope contribute to one namespace. Later declarations override matching names; constants they do not redefine remain available:
+
+```8f4e
+constants preset
+const RATIO 1.0
+const LEVEL 0.5
+constantsEnd
+
+constants preset
+const RATIO 2.0
+constantsEnd
+
+module oscillator
+use preset
+float ratio RATIO ; 2.0
+float level LEVEL ; 0.5
+moduleEnd
+```
+
+The last block in source order takes precedence. The editor serializes blocks from left to right, then top to bottom, so moving a preset block to the right makes its matching values win. Disabled blocks do not contribute.
+
+Imports receive the fully merged namespace regardless of where the importing block is declared. A later block can reference constants from earlier blocks of the same namespace without `use`. Expressions are evaluated at their declaration: redefining a constant does not change values previously derived from it.
+
+Repeated `const` declarations within a block also use the latest value from that point onward. A constants block cannot share its namespace name with a module, an external namespace, or a name passed from its parent.
+
+When multiple namespaces are used, constants with the same name also use last-applied wins semantics:
 
 ```
 constants first
@@ -102,7 +127,7 @@ moduleEnd
 
 ## Notes
 
-- Constants blocks cannot be nested inside other blocks
+- Constants blocks can be declared in projects and groups, but not inside modules, functions, or other constants blocks
 - Constants blocks provide namespace isolation for constants
 - Multiple constants blocks can be defined in a project
 - Constants defined in modules can also be imported using `use`

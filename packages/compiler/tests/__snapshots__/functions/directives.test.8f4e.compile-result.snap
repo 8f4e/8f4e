@@ -116,8 +116,14 @@
       "id": "writeWithDirectivePrologue__int_p__int",
       "signature": {
         "parameters": [
-          "int*",
-          "int",
+          {
+            "name": "address",
+            "type": "int*",
+          },
+          {
+            "name": "value",
+            "type": "int",
+          },
         ],
         "returns": [],
       },
@@ -144,6 +150,26 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
+              "value": "skippedDirectiveModuleValue",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "value",
+              "targetModuleId": "skippedDirectiveModule",
+              "type": "identifier",
+              "value": "&skippedDirectiveModule:value",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
               "value": "output",
             },
             {
@@ -157,20 +183,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "value",
-              "targetModuleId": "skippedDirectiveModule",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "skippedDirectiveModuleValue",
               "type": "identifier",
-              "value": "&skippedDirectiveModule:value",
+              "value": "*skippedDirectiveModuleValue",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [

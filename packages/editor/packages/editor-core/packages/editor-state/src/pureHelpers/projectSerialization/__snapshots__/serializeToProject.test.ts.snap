@@ -1,0 +1,22 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`serializeToProject > serializes basic project state without compiled data 1`] = `
+{
+  "code": [],
+  "constants": [],
+  "entries": [],
+  "execution": [],
+  "functions": [],
+  "includes": [],
+  "notes": [],
+  "prototypes": [],
+  "unknown": [
+    {
+      "code": [
+        "10 example",
+      ],
+      "id": 0,
+    },
+  ],
+}
+`;

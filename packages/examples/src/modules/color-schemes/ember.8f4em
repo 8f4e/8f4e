@@ -1,0 +1,18 @@
+8f4e/v1
+
+note emberColors
+; @public
+; @config color.canvas #160f11
+; @config color.surface #2d1d21
+; @config color.ink #ddcfca
+; @config color.primary #ed7067
+; @config color.secondary #efaa68
+; @config color.positive #5d9874
+; @config color.warning #dba653
+; @config color.negative #dc4d48
+; @config color.muted #80666a
+; @config color.stroke rgba(238,87,80,0.6)
+; @config color.tertiary #947b7a
+; @config color.highlight #ff6d5f
+; @config color.detail #c44845
+noteEnd

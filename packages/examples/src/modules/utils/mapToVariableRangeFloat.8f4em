@@ -10,8 +10,8 @@ float min 0.0
 float max 127.0
 
 float* in
-float* outRangeMin &min
-float* outRangeMax &max
+float& outRangeMin &min
+float& outRangeMax &max
 float out
 
 push &out

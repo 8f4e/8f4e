@@ -154,9 +154,18 @@
       "id": "packTriple__int__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
-          "int",
+          {
+            "name": "left",
+            "type": "int",
+          },
+          {
+            "name": "right",
+            "type": "int",
+          },
+          {
+            "name": "last",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

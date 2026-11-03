@@ -29,6 +29,5 @@ describe('isIntermodularReferencePattern', () => {
 		expect(isIntermodularReferencePattern('&module:id&&')).toBe(false); // double ampersand
 		expect(isIntermodularReferencePattern('&module id')).toBe(false); // space
 		expect(isIntermodularReferencePattern('&module:memory&')).toBe(false); // old syntax (both & prefix and & suffix)
-		expect(isIntermodularReferencePattern('&module.memory')).toBe(false); // old dot syntax
 	});
 });

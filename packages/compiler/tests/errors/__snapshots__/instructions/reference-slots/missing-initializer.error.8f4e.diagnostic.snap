@@ -1,0 +1,11 @@
+{
+  "code": 5,
+  "context": {
+    "projectBlockId": 3,
+  },
+  "line": {
+    "instruction": "float&",
+    "lineNumber": 1,
+  },
+  "message": "Missing required argument for float&.",
+}

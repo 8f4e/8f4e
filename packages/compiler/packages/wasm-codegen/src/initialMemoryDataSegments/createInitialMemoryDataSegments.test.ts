@@ -1,13 +1,12 @@
 import { describe, expect, test } from 'vitest';
-
-import createInitialMemoryDataSegments from './createInitialMemoryDataSegments';
 import {
 	createMemory,
 	createMemoryDefault,
 	createMemoryDefaults,
 	createMemoryPlan,
 	serializeSegments,
-} from './testUtils';
+} from '../../tests/initialMemoryDataSegments/testUtils';
+import createInitialMemoryDataSegments from './createInitialMemoryDataSegments';
 
 describe('createInitialMemoryDataSegments', () => {
 	test('skips implicit zero defaults while retaining non-zero and explicit defaults', () => {

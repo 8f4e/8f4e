@@ -7,10 +7,8 @@ import {
 	isScalarMemoryDeclarationLine,
 	type ProjectMemoryInitializerScope,
 } from '@8f4e/language-spec';
-import {
-	type MemoryReferenceResolutionContext,
-	resolveIntermoduleMemoryTarget,
-} from './resolveMemoryExpressionOperand';
+import type { MemoryReferenceResolutionContext } from './context';
+import { resolveMemoryTarget } from './resolveMemoryTarget';
 import { tryResolveValueArgument } from './tryResolveValueArgument';
 
 /** Resolves group initializers to default values keyed by canonical backing declarations. */
@@ -27,22 +25,24 @@ export function resolveProjectMemoryInitializers(
 			}
 			const [destination, source] = line.arguments;
 			const name = destination.targetMemoryId;
-			const { targetModuleId, targetMemory, targetModule } = resolveIntermoduleMemoryTarget(
-				context,
-				scope.groupPath,
-				name
+			const resolved = resolveMemoryTarget(
+				{ scope: 'intermodule', targetModuleId: scope.groupPath, targetMemoryId: name },
+				context
 			);
 			const declaration =
-				targetMemory && targetModule!.declarationSources[targetModule!.declarations.indexOf(targetMemory)]!;
+				resolved &&
+				resolved.targetModule.declarationSources[resolved.targetModule.declarations.indexOf(resolved.targetMemory)];
 			if (
 				!context.memoryAliases.get(scope.groupPath)?.has(name) ||
-				!targetMemory ||
+				!resolved ||
 				!isScalarMemoryDeclarationLine(declaration!.line)
 			) {
 				throw getError(ErrorCode.INVALID_GROUP_MEMORY_INITIALIZER_TARGET, line, diagnosticContext, {
 					identifier: name,
 				});
 			}
+			const { targetMemory, targetModule } = resolved;
+			const targetModuleId = targetModule.id;
 			const moduleDefaults = defaults.get(targetModuleId) ?? new Map<string, Const>();
 			if (moduleDefaults.has(targetMemory.id)) {
 				throw getError(ErrorCode.DUPLICATE_GROUP_MEMORY_INITIALIZER, line, diagnosticContext, { identifier: name });

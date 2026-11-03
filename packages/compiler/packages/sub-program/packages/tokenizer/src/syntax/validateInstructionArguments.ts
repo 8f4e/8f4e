@@ -6,6 +6,7 @@ import {
 	isArrayMemoryDeclarationInstructionName,
 	isBlockResultTypeIdentifier,
 	isMemoryDeclarationInstructionName,
+	isReferenceSlotInstruction,
 	isSubProgramInstructionName,
 	isValidModuleName,
 	MODULE_NAME_PATTERN,
@@ -160,6 +161,23 @@ export default function validateInstructionArguments(instruction: string, args: 
 
 	if (!spec.argumentTypes) {
 		return;
+	}
+	if (isReferenceSlotInstruction(instruction)) {
+		const [name, target] = args;
+		const isMemoryStartAddress =
+			target?.type === ArgumentType.IDENTIFIER &&
+			(target.referenceKind === 'intermodular-module-nth-reference' ||
+				((target.referenceKind === 'memory-reference' || target.referenceKind === 'intermodular-reference') &&
+					!target.isEndAddress &&
+					!(target.referenceKind === 'memory-reference' && target.targetMemoryId === 'this')));
+		if (
+			name?.type !== ArgumentType.IDENTIFIER ||
+			name.referenceKind !== 'plain' ||
+			name.value === 'this' ||
+			!isMemoryStartAddress
+		) {
+			throw new SyntaxRulesError(SyntaxErrorCode.INVALID_REFERENCE_SLOT);
+		}
 	}
 
 	if (Array.isArray(spec.argumentTypes)) {

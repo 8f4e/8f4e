@@ -5,6 +5,7 @@ import type {
 	CompiledModule,
 	CompileOptions,
 	CompilerCache,
+	ComposedEntry,
 	ComposedPrototypeAST,
 	FunctionMetadata,
 	FunctionMetadataLookup,
@@ -32,12 +33,12 @@ import { resolveSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import { analyzeStack } from '@8f4e/stack-analyzer';
 import { compileFunction, compileModules, planFunctionLayout } from '@8f4e/wasm-codegen';
 import { planAssertions } from './assertions';
-import { assertUniqueModuleIds, registerFunctions } from './semantic/buildNamespace';
+import { registerFunctions } from './semantic/buildNamespace';
 
 interface CompiledSubProgram {
 	functionLayout: WasmFunctionLayout;
 	assertionSites?: AssertionSite[];
-	entryNames: string[];
+	entries: ComposedEntry[];
 	compiledModules: CompiledModule[];
 	compiledFunctions: CompiledFunction[];
 	functionTypeRegistry: FunctionTypeRegistry;
@@ -84,7 +85,7 @@ function createEntryFunctionMetadata(entryNames: readonly string[]): FunctionReg
 	entryNames.forEach(entryName => {
 		const parameters: FunctionMetadata['signature']['parameters'] = [];
 		const metadata: FunctionMetadata = {
-			id: createFunctionId(entryName, parameters),
+			id: createFunctionId(entryName, []),
 			name: entryName,
 			signature: { parameters, returns: [] },
 		};
@@ -198,8 +199,8 @@ function wrapMemoryPlannerError(error: unknown, subProgramAst: ResolveConstantsS
  * @returns The compiled sub-program artifacts.
  */
 export function compileSubProgram(program: ComposedProgram, options: CompileOptions): CompiledSubProgram {
-	const { ast: subProgramAst, entryNames, moduleEntryNames, cache } = program;
-	assertUniqueModuleIds(subProgramAst.modules);
+	const { ast: subProgramAst, entries, cache } = program;
+	const entryNames = entries.map(entry => entry.id);
 	let constantResolution: ReturnType<typeof resolveConstants>;
 	try {
 		constantResolution = resolveConstants({
@@ -246,7 +247,10 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	const entryFunctionMetadata = createEntryFunctionMetadata(entryNames);
 	const registration = registerFunctions(subProgramAst.functions, {
 		reservedFunctionIds: entryNames,
-		reservedExportNames: [...RESERVED_EXPORT_NAMES, ...entryNames],
+		reservedExportNames: [
+			...RESERVED_EXPORT_NAMES,
+			...entries.flatMap(entry => (entry.exportName === undefined ? [] : [entry.exportName])),
+		],
 		prototypeShapes: prototypeShapesById,
 	});
 	const functionRegistry = mergeFunctionRegistries(entryFunctionMetadata, registration.registry);
@@ -301,15 +305,12 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		functionLayout,
 		functionTypeRegistry,
 		assertionPlan?.calls
-	).map((module, index) => ({
-		...module,
-		executionEntryName: moduleEntryNames[index],
-	}));
+	);
 
 	return {
 		functionLayout,
 		...(assertionPlan ? { assertionSites: assertionPlan.sites } : {}),
-		entryNames,
+		entries,
 		compiledModules,
 		compiledFunctions,
 		functionTypeRegistry,

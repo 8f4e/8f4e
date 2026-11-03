@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ALLOCATION_UNIT_BYTE_SIZE } from './constants';
-import { MemoryTypes, type PlannedMemoryDeclaration, type PointeeBaseType } from './memory';
+import type { PlannedMemoryDeclaration, PointeeBaseType } from './memory';
 import {
 	getDereferencedValueKindFromMetadata,
 	getDereferencedValueWordSizeFromMetadata,
@@ -8,13 +8,10 @@ import {
 	getElementMaxValue,
 	getElementMinValue,
 	getElementWordSize,
-	getMemoryByteAddress,
-	getMemoryStringLastByteAddress,
 	getPointeeElementIsIntegerFromMetadata,
 	getPointeeElementMaxValue,
 	getPointeeElementMinValue,
 	getPointeeElementWordSize,
-	getPointeeValueKindFromMetadata,
 	type PointerMetadata,
 } from './memoryData';
 
@@ -22,7 +19,7 @@ function memory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemor
 	const byteAddress = overrides.byteAddress ?? 100;
 	const declaration = {
 		id: 'memory',
-		type: MemoryTypes.int,
+		type: 'int' as const,
 		numberOfElements: 10,
 		elementWordSize: 4,
 		byteAddress,
@@ -57,17 +54,6 @@ function pointer(pointeeBaseType: PointeeBaseType, overrides: Partial<PointerMet
 
 describe('memoryData utilities', () => {
 	describe('planned declaration helpers', () => {
-		it('returns byte address directly from a planned declaration', () => {
-			expect(getMemoryByteAddress(memory({ byteAddress: 100 }))).toBe(100);
-			expect(getMemoryByteAddress(memory({ byteAddress: 0 }))).toBe(0);
-		});
-
-		it('calculates the last byte address from aligned storage', () => {
-			expect(getMemoryStringLastByteAddress(memory({ byteAddress: 100, allocationUnitCount: 5 }))).toBe(
-				100 + (5 - 1) * ALLOCATION_UNIT_BYTE_SIZE
-			);
-		});
-
 		it('returns declared element count and word size', () => {
 			const declaration = memory({ numberOfElements: 16, elementWordSize: 2 });
 			expect(getElementCount(declaration)).toBe(16);
@@ -104,15 +90,15 @@ describe('memoryData utilities', () => {
 			const int8uPointer = pointer('int8u');
 
 			expect(getPointeeElementIsIntegerFromMetadata(float64DoublePointer)).toBe(true);
-			expect(getPointeeValueKindFromMetadata(float64DoublePointer)).toBe('int32');
+			expect(getDereferencedValueKindFromMetadata(float64DoublePointer, 1)).toBe('int32');
 			expect(getDereferencedValueKindFromMetadata(float64DoublePointer)).toBe('float64');
 			expect(getDereferencedValueWordSizeFromMetadata(float64DoublePointer)).toBe(8);
 
 			expect(getPointeeElementIsIntegerFromMetadata(float64Pointer)).toBe(false);
-			expect(getPointeeValueKindFromMetadata(float64Pointer)).toBe('float64');
+			expect(getDereferencedValueKindFromMetadata(float64Pointer, 1)).toBe('float64');
 
 			expect(getPointeeElementIsIntegerFromMetadata(int16Pointer)).toBe(true);
-			expect(getPointeeValueKindFromMetadata(int16Pointer)).toBe('int32');
+			expect(getDereferencedValueKindFromMetadata(int16Pointer, 1)).toBe('int32');
 			expect(getDereferencedValueWordSizeFromMetadata(int16Pointer)).toBe(2);
 
 			expect(getPointeeElementIsIntegerFromMetadata(int8uPointer)).toBe(true);

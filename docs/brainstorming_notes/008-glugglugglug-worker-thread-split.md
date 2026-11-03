@@ -4,6 +4,9 @@
 **Status:** Brainstorming  
 **Context:** Exploring architecture to split glugglugglug package into WebGL-free buffer preparation (worker-capable) and WebGL rendering (main thread)
 
+This is a proposal for a future worker split. The current renderer runs on the main thread, and font loading expands
+packed glyph rows into binary R8 mask bytes for direct texture upload. Font generation uses no offscreen canvas.
+
 ## Idea Summary
 
 Split the glugglugglug package into two parts:
@@ -12,7 +15,8 @@ Split the glugglugglug package into two parts:
 
 **Key architectural insight:** The entire application logic (user's game code) runs in the worker alongside the Engine. The worker produces vertex buffers via `SharedArrayBuffer`, and the main thread is just a thin rendering backend that uploads to GPU and executes draw calls.
 
-This is enabled by `OffscreenCanvas` which allows WebGL contexts to be created in workers, but in this architecture we keep WebGL on the main thread and only move the buffer preparation + application logic to the worker.
+This split would use a worker for application logic and shared buffers for prepared instances while keeping the
+WebGL context on the main thread. It would not require transferring the canvas to the worker.
 
 ## Benefits
 
@@ -38,13 +42,16 @@ This is enabled by `OffscreenCanvas` which allows WebGL contexts to be created i
 ## Current Architecture Analysis
 
 ### Already Well-Separated
-The codebase has good separation:
-- **Buffer utilities** (`utils/buffer.ts`) - Pure math functions filling `Float32Array`s
-  - `fillBufferWithRectangleVertices` - Quad geometry
-  - `fillBufferWithSpriteCoordinates` - UV mapping
-  - `fillBufferWithLineVertices` - Line geometry with trigonometry
-- **Renderer** - WebGL context, shaders, textures, GPU uploads
-- **Engine** - High-level API with sprite lookup and transforms
+The current codebase separates these responsibilities:
+
+- **Instance buffer** (`src/instanceBuffer.ts`) - Reusable 20-byte sprite records containing pixel rectangles, cell IDs, and palette indices
+- **Renderer** - WebGL context, shaders, textures, and GPU uploads; the vertex shader derives glyph UVs from the atlas grid
+- **Engine** - Frame submission, sprite batching, and generic render hooks
+- **Font loader** (`@8f4e/sprite-generator`) - Lazy binary glyph/fill masks and grid dimensions, generated without canvas APIs
+- **Web-ui** - Transform groups, fixed ASCII glyph/fill IDs, and background, line, and RGBA overlay passes
+
+The design sketches below would need adapting to this instance format. Their proposed worker builder and backend
+interfaces are not existing engine APIs.
 
 ### Natural Split Points
 
@@ -53,14 +60,14 @@ The codebase has good separation:
 - **Complete drawing API** - `Engine` class with `drawSprite()`, `drawLine()`, `drawText()`, etc.
 - **Transform management** - `startGroup()`/`endGroup()` and offset stack
 - **Buffer construction** - All `fillBuffer*` functions (already pure!)
-- **Sprite lookup resolution** - `SpriteLookup` → UV coordinates
+- **Instance preparation** - Pixel rectangles and stable glyph/fill and palette IDs; source UVs remain a shader concern
 - **Scene graph management** - Batching, draw order, visibility culling
 - **Cache invalidation logic** - Decide what needs re-caching
 - **Application state** - Game objects, physics, AI, etc.
 
 **Main Thread Package (WebGL-specific):**
 - **WebGL context & shader management** - Initialization, compilation
-- **Texture loading** - Create `WebGLTexture`, assign IDs, send metadata to worker
+- **Font and palette uploads** - Install the R8 atlas and palette colors; send grid metadata to the worker
 - **Buffer uploads** - `bufferData()` to GPU from shared buffers
 - **Rendering** - `drawArrays()` calls
 - **Post-processing pipeline** - Framebuffer switching, effects
@@ -272,31 +279,19 @@ engine.endGroup();
 - Worker produces final buffers, main thread just uploads and renders
 - Natural separation: worker = application + engine logic, main thread = GPU backend
 
-**Example:**
+**Initialization sketch for the proposed split:**
 ```typescript
-// Main thread - just creates engine and hands off canvas
-const offscreenCanvas = canvas.transferControlToOffscreen();
-const worker = new Worker('game-worker.js');
-worker.postMessage({ canvas: offscreenCanvas, spriteSheet }, [offscreenCanvas]);
-
-// Worker - runs all application logic
+// Main thread retains the canvas, WebGL context, and font texture.
+const { image, grid } = await loadFontAtlas('ibmvga8x16');
 const engine = new Engine(canvas);
-engine.loadSpriteSheet(spriteSheet);
-
-engine.render((time, fps, triangles, maxTriangles) => {
-  // All user code runs here in the worker!
-  engine.startGroup(player.x, player.y);
-    engine.drawSprite(0, 0, 'player');
-    drawHealthBar(engine, player.health);
-  engine.endGroup();
-  
-  enemies.forEach(enemy => {
-    engine.drawSprite(enemy.x, enemy.y, 'enemy');
-  });
-});
+engine.setSpriteAtlas(image, grid);
+const worker = new Worker('game-worker.js');
+worker.postMessage({ type: 'init', grid });
 ```
 
-This is cleaner than trying to serialize commands or resolve transforms upfront. The worker becomes a complete game runtime, and the main thread is just a thin rendering layer.
+The proposed worker would own application state and transform groups, then publish completed instance buffers to
+the main-thread rendering backend. This still requires a worker-safe buffer builder and a backend upload interface;
+the existing `Engine` creates a WebGL renderer and would remain on the main thread.
 
 ### 3. Dynamic Buffer Growth
 `growBuffer()` reallocates `Float32Array`. With `SharedArrayBuffer`:
@@ -460,8 +455,11 @@ void main() {
 }
 ```
 
-### 4. Simpler Parallelism
-Use `OffscreenCanvas` for layer rendering:
+### 4. Alternative: Worker-Owned WebGL
+
+A future backend could move WebGL rendering itself into a worker using `OffscreenCanvas`. That changes canvas and
+context ownership and is independent of font-mask generation. It is an alternative proposal, not the current pipeline:
+
 ```typescript
 const layerWorker = new Worker('layer-renderer.js');
 const offscreen = canvas.transferControlToOffscreen();

@@ -5,8 +5,10 @@ expose value &processor:value
 expose alias &processor:value
 init &value 11
 init &alias 12
+entry main
 module processor
 int value
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

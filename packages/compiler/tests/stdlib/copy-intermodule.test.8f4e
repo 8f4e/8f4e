@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 noteEnd
 
 includes
@@ -17,9 +17,11 @@ module copyIntermoduleAssertions
 ; it copies a value from an
 ; intermodule source pointer
 ; using inline call arguments.
+float& copySourceSource &copySource:source
+
 float dest 0.0
 
-call copy &copySource:source &dest
+call copy copySourceSource &dest
 
 push dest
 push 10.0

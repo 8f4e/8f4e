@@ -7,8 +7,10 @@ moduleEnd
 group audio
 expose publicValue &source:missing
 
+entry main
 module source
 int value
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

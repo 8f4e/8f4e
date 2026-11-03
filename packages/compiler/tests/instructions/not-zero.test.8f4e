@@ -1,16 +1,14 @@
 8f4e/v1
 
 note
-; @pos 2 2
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
-notZero returns integer
-booleans for integer, float,
-and float64 values.
+notZero returns an integer
+boolean for every numeric type.
 noteEnd
 
 entry test
-module intAssertions
+module notZeroIntAssertions
 push 0
 notZero
 assertEqual 0
@@ -18,9 +16,17 @@ assertEqual 0
 push 1
 notZero
 assertEqual 1
+
+push 7
+notZero
+assertEqual 1
+
+push -7
+notZero
+assertEqual 1
 moduleEnd
 
-module floatAssertions
+module notZeroFloatAssertions
 push 0.0
 notZero
 assertEqual 0
@@ -28,14 +34,45 @@ assertEqual 0
 push 1.0
 notZero
 assertEqual 1
+
+push -0.0
+notZero
+assertEqual 0
+
+push 1.5
+notZero
+assertEqual 1
+
+push -1.5
+notZero
+assertEqual 1
 moduleEnd
 
-module float64Assertions
+module notZeroFloat64Assertions
 push 0.0f64
 notZero
 assertEqual 0
 
 push 1.0f64
+notZero
+assertEqual 1
+
+push -0.0f64
+notZero
+assertEqual 0
+
+push 1.5f64
+notZero
+assertEqual 1
+
+push -1.5f64
+notZero
+assertEqual 1
+
+; This remains nonzero in
+; float64 but rounds to zero
+; in float32.
+push 1e-300f64
 notZero
 assertEqual 1
 moduleEnd

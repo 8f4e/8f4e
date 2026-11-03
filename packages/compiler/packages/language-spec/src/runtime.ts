@@ -16,11 +16,6 @@ export type GetOrCreateMemoryResult = {
 	memoryAction: MemoryAction;
 };
 
-export type GetOrCreateWasmInstanceResult = {
-	wasmInstanceRef: WebAssembly.Instance;
-	hasWasmInstanceBeenReset: boolean;
-};
-
 export type CompileAndUpdateMemoryResult = {
 	assertionSites?: AssertionSite[];
 	codeBuffer: Uint8Array;
@@ -33,7 +28,5 @@ export type CompileAndUpdateMemoryResult = {
 	allocatedMemoryBytes: number;
 	astCacheStats: ASTCacheStats;
 	memoryRef: WebAssembly.Memory;
-	hasWasmInstanceBeenReset: boolean;
 	memoryAction: MemoryAction;
-	initOnlyReran: boolean;
 };

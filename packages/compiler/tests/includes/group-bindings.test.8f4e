@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 noteEnd
 
 includes
@@ -16,12 +16,14 @@ includes
 include test/math inc adjusted
 includesEnd
 
+entry main
 module calculation
 int result
 push &result
 call adjusted 10
 store
 moduleEnd
+entryEnd
 groupEnd
 
 group right
@@ -31,22 +33,25 @@ includes
 include test/math twice adjusted
 includesEnd
 
+entry main
 module calculation
 int result
 push &result
 call adjusted 10
 store
 moduleEnd
+entryEnd
 groupEnd
 
 module groupBindingAssertions
 ; Each group has its own alias and private dependencies.
-push &left:result
-load
+int& leftResult &left:result
+int& rightResult &right:result
+
+push *leftResult
 assertEqual 11
 
-push &right:result
-load
+push *rightResult
 assertEqual 12
 
 ; The root binding remains independent of both groups.

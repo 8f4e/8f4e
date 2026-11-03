@@ -1,0 +1,10 @@
+{
+	"name": "@8f4e/dx7-to-8f4e",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"lint": "biome check src tests"
+	}
+}

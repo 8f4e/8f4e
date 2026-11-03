@@ -1,6 +1,7 @@
 import type {
 	CompilerCache,
 	ComposedConstantsAST,
+	ComposedEntry,
 	ComposedFunctionAST,
 	ComposedModuleAST,
 	ComposedPrototypeAST,
@@ -35,8 +36,7 @@ export interface ComposedProjectMemoryExposure extends ProjectMemoryExposure {
 
 /** One globally planned AST assembled from a recursive project tree. */
 export interface ComposedProgram {
-	entryNames: string[];
-	moduleEntryNames: string[];
+	entries: ComposedEntry[];
 	ast: {
 		prototypes: ComposedPrototypeAST[];
 		modules: ComposedModuleAST[];

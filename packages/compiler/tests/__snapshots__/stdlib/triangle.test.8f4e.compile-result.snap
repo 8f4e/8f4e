@@ -125,7 +125,10 @@
       "id": "triangle__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "x",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",

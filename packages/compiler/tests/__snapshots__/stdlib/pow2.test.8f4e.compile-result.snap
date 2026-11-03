@@ -76,7 +76,10 @@
       "id": "pow2__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "exponent",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

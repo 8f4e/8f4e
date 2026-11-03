@@ -1,0 +1,140 @@
+import type { PaletteIndex } from '@8f4e/editor-palette';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import type { Plot } from '../types';
+
+function clamp(value: number, min: number, max: number): number {
+	return Math.max(min, Math.min(value, max));
+}
+
+function valueToY(
+	value: number,
+	minValue: number,
+	valueRange: number,
+	plotHeight: number,
+	pointHeight: number
+): number {
+	const normalizedValue = valueRange === 0 ? 0.5 : (value - minValue) / valueRange;
+	return clamp(
+		plotHeight - pointHeight - Math.round(normalizedValue * (plotHeight - pointHeight)),
+		0,
+		plotHeight - pointHeight
+	);
+}
+
+function drawSparsePlot(
+	engine: DrawContext,
+	values: ArrayLike<number>,
+	baseValueIndex: number,
+	width: number,
+	columnWidth: number,
+	plotHeight: number,
+	pointHeight: number,
+	minValue: number,
+	valueRange: number,
+	color: PaletteIndex
+): void {
+	for (let i = 0; i < width; i++) {
+		const value = values[baseValueIndex + i];
+		const pointY = valueToY(value, minValue, valueRange, plotHeight, pointHeight);
+		engine.drawFill(i * columnWidth, pointY, color, columnWidth, pointHeight);
+	}
+}
+
+function drawDensePlot(
+	engine: DrawContext,
+	values: ArrayLike<number>,
+	baseValueIndex: number,
+	arrayLength: number,
+	columnCount: number,
+	plotHeight: number,
+	pointHeight: number,
+	minValue: number,
+	maxValue: number,
+	valueRange: number,
+	color: PaletteIndex
+): void {
+	for (let column = 0; column < columnCount; column++) {
+		const sliceStart = Math.floor((column / columnCount) * arrayLength);
+		const sliceEnd = Math.max(sliceStart + 1, Math.floor(((column + 1) / columnCount) * arrayLength));
+		let sliceMin = Number.POSITIVE_INFINITY;
+		let sliceMax = Number.NEGATIVE_INFINITY;
+
+		for (let index = sliceStart; index < sliceEnd; index++) {
+			const sampleValue = values[baseValueIndex + index];
+			sliceMin = Math.min(sliceMin, sampleValue);
+			sliceMax = Math.max(sliceMax, sampleValue);
+		}
+
+		const clampedMin = clamp(sliceMin, minValue, maxValue);
+		const clampedMax = clamp(sliceMax, minValue, maxValue);
+		const minY = valueToY(clampedMin, minValue, valueRange, plotHeight, pointHeight);
+		const maxY = valueToY(clampedMax, minValue, valueRange, plotHeight, pointHeight);
+		const rectY = Math.min(minY, maxY);
+		const rectHeight = Math.max(pointHeight, Math.abs(maxY - minY) + pointHeight);
+
+		engine.drawFill(column, rectY, color, 1, rectHeight);
+	}
+}
+
+export default function drawPlot(engine: DrawContext, plots: Plot[], memoryViews: MemoryViews): void {
+	const colors = PALETTE_INDICES;
+
+	const pointHeight = 1;
+
+	for (const { x, y, width, height, startAddress, baseSampleShift, length, valueType, maxValue, minValue } of plots) {
+		engine.startGroup(x, y);
+
+		const baseValueIndex =
+			(startAddress.showAddress
+				? startAddress.memory.byteAddress
+				: memoryViews.int32[startAddress.memory.allocationUnitAddress + startAddress.bufferPointer]) >> baseSampleShift;
+		const values = memoryViews[valueType];
+		const arrayLength =
+			typeof length === 'number'
+				? length
+				: memoryViews.int32[length.memory.allocationUnitAddress + length.bufferPointer];
+		if (arrayLength <= 0) {
+			engine.endGroup();
+			continue;
+		}
+		const sampleCount = Math.min(arrayLength, width);
+		const valueRange = maxValue - minValue;
+		const columnWidth = Math.max(1, Math.floor(width / Math.max(sampleCount, 1)));
+		const isDense = arrayLength > width;
+		const plotWidth = isDense ? width : sampleCount * columnWidth;
+
+		engine.drawFill(0, 0, colors.darkSurface, plotWidth, height);
+
+		if (isDense) {
+			drawDensePlot(
+				engine,
+				values,
+				baseValueIndex,
+				arrayLength,
+				width,
+				height,
+				pointHeight,
+				minValue,
+				maxValue,
+				valueRange,
+				colors.onDarkAccent
+			);
+		} else {
+			drawSparsePlot(
+				engine,
+				values,
+				baseValueIndex,
+				sampleCount,
+				columnWidth,
+				height,
+				pointHeight,
+				minValue,
+				valueRange,
+				colors.onDarkAccent
+			);
+		}
+
+		engine.endGroup();
+	}
+}

@@ -213,6 +213,26 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
+              "value": "oscAPhase",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "phase",
+              "targetModuleId": "oscA",
+              "type": "identifier",
+              "value": "&oscA:phase",
+            },
+          ],
+          "instruction": "float&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
               "value": "localB",
             },
             {
@@ -353,13 +373,10 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "phase",
-              "targetModuleId": "oscA",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&oscA:phase",
+              "value": "oscAPhase",
             },
           ],
           "instruction": "push",

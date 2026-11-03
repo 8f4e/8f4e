@@ -2,7 +2,10 @@
 
 For identifier prefixes and suffixes that expand memory identifiers, see [Identifier prefixes](../prefixes.md).
 
-In functions, memory instructions require the `#impure` compiler directive. Even in impure functions, memory access must be address-driven: functions still cannot reference module memory identifiers by name or declare their own memory.
+In functions, memory instructions require the `#impure` compiler directive. Impure functions may use
+intermodular addresses such as `&source:value` and target metadata such as `sizeof(source:buffer)`. Memory
+access remains address-driven: functions cannot read unqualified module memory identifiers or declare
+their own memory.
 
 Memory access instructions are non-trapping for out-of-bounds addresses. When the compiler cannot prove that an address is within a safe memory range, it emits a runtime bounds guard. Guarded loads return `0` when the address is out of bounds, and guarded stores skip the write.
 
@@ -73,14 +76,21 @@ load16u
 
 ### loadFloat
 
-The loadFloat instruction consumes an address from the stack and pushes the 32-bit floating-point value stored at that address.
-If the address is out of bounds, it pushes `0.0` instead of trapping.
+The loadFloat instruction consumes an address from the stack and pushes the floating-point value stored there.
+A typed `float64*` address loads an eight-byte `float64` value. Other addresses, including untyped integers, retain the existing four-byte `float` behavior.
+If the complete value is out of bounds, it pushes zero of the matching floating-point type instead of trapping.
 
 #### Examples
 
 ```
 float input 1.25
 push &input
+loadFloat
+```
+
+```
+float64 precise 1.0000000000000002f64
+push &precise
 loadFloat
 ```
 

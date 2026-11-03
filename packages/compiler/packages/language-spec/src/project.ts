@@ -8,6 +8,8 @@ export const projectInstructions = {
 	expose: 'expose',
 	init: 'init',
 	pass: 'pass',
+	template: { opener: 'template', closer: 'templateEnd' },
+	useTemplate: 'useTemplate',
 } as const;
 
 export const projectInstructionNames = [
@@ -18,6 +20,9 @@ export const projectInstructionNames = [
 	projectInstructions.expose,
 	projectInstructions.init,
 	projectInstructions.pass,
+	projectInstructions.template.opener,
+	projectInstructions.template.closer,
+	projectInstructions.useTemplate,
 ] as const;
 
 export type ProjectInstructionName = (typeof projectInstructionNames)[number];
@@ -25,8 +30,15 @@ export type ProjectInstructionName = (typeof projectInstructionNames)[number];
 /** Stable identity shared by project actors and compiler diagnostics. */
 export type ProjectBlockId = number;
 
-/** Host-callable entry that owns an ordered module block. */
+/** Name of an entry local to one project scope. */
 export type ProjectEntryName = string;
+
+/** Resolved dispatcher input. Code generation consumes these identities and steps without resolving scope again. */
+export interface ComposedEntry {
+	id: string;
+	exportName?: string;
+	steps: Array<{ type: 'module' | 'entry'; id: string }>;
+}
 
 /** Human-readable name of one project group within its parent project. */
 export type ProjectGroupName = string;
@@ -104,15 +116,21 @@ export interface ProjectBlock {
 
 /** Ordered executable block with required entry membership. */
 export interface ProjectModuleBlock extends ProjectBlock {
+	type: 'module';
 	entry: ProjectEntryName;
 }
 
+/** Executable declarations in their shared order within one project scope. */
+export type ProjectExecutableBlock = ProjectModuleBlock | ProjectGroupObjectModel;
+
 /** Canonical in-memory representation shared by all 8f4e project actors. */
 export interface ProjectObjectModel {
+	/** Entry definitions local to this scope, including empty entries. */
+	entries: ProjectEntryName[];
 	/** Source lines owned directly by this project scope, excluding recursively owned document and group blocks. */
 	code: string[];
-	/** Ordered executable modules; filtering by entry preserves execution order within that entry. */
-	modules: ProjectModuleBlock[];
+	/** Ordered modules and groups. A group expands recursively at its position in this sequence. */
+	execution: ProjectExecutableBlock[];
 	/** Hoisted function blocks. */
 	functions: ProjectBlock[];
 	/** Hoisted constants blocks. */
@@ -125,8 +143,6 @@ export interface ProjectObjectModel {
 	notes: ProjectBlock[];
 	/** Incomplete or unclassified blocks retained by live editors. */
 	unknown: ProjectBlock[];
-	/** Recursively owned named project groups. */
-	groups: ProjectGroupObjectModel[];
 }
 
 /** A group-owned public memory name backed by a memory item in one of the group's direct modules. */
@@ -162,10 +178,38 @@ export function resolveProjectMemoryAlias(
 
 /** Named child project owned by another project object model. */
 export interface ProjectGroupObjectModel extends ProjectObjectModel {
+	type: 'group';
+	id: ProjectBlockId;
 	name: ProjectGroupName;
+	/** Entry in the parent scope that invokes this project's main entry. */
 	entry: ProjectEntryName;
 	/** Ordered public memory aliases exposed to the enclosing project. */
 	exposures: ProjectMemoryExposure[];
+}
+
+/** Creates an empty root or child project scope without introducing editor or compiler-stage policy. */
+export function createProjectObjectModel(): ProjectObjectModel {
+	return {
+		entries: [],
+		code: [],
+		execution: [],
+		functions: [],
+		constants: [],
+		prototypes: [],
+		includes: [],
+		notes: [],
+		unknown: [],
+	};
+}
+
+/** Selects direct modules without changing their execution order. */
+export function getProjectModules(project: ProjectObjectModel): ProjectModuleBlock[] {
+	return project.execution.filter(block => block.type === 'module');
+}
+
+/** Selects direct child groups without changing their execution order. */
+export function getProjectGroups(project: ProjectObjectModel): ProjectGroupObjectModel[] {
+	return project.execution.filter(block => block.type === 'group');
 }
 
 /** Compiler-resolved group exposure backed directly by the target's planned memory declaration. */

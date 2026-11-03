@@ -2,7 +2,7 @@ import type { CodegenContext, MapBlockState } from '@8f4e/language-spec';
 import { ArgumentType, BlockType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../testUtils';
+import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
 import map from './map';
 
 function getActiveMapState(context: CodegenContext): MapBlockState {

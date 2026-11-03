@@ -9,9 +9,9 @@
     {
       "id": "phaseAccumulator",
       "index": 0,
-      "byteAddress": 520,
-      "allocationUnitAddress": 130,
-      "allocationUnitCount": 4,
+      "byteAddress": 516,
+      "allocationUnitAddress": 129,
+      "allocationUnitCount": 3,
       "skipExecutionInCycle": false
     },
     {
@@ -19,7 +19,7 @@
       "index": 1,
       "byteAddress": 0,
       "allocationUnitAddress": 0,
-      "allocationUnitCount": 130,
+      "allocationUnitCount": 129,
       "skipExecutionInCycle": false
     }
   ]

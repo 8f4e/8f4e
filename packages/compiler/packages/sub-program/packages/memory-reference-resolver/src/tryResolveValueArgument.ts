@@ -1,7 +1,7 @@
 import type { Argument, CompileTimeOperand, Const } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
 import { resolveCompileTimeExpression } from '@8f4e/semantic-utils';
-import type { MemoryReferenceResolutionContext } from './resolveMemoryExpressionOperand';
+import type { MemoryReferenceResolutionContext } from './context';
 import { resolveMemoryExpressionOperand } from './resolveMemoryExpressionOperand';
 
 function resolveValueOperand(

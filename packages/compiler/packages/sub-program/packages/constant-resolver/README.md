@@ -26,6 +26,7 @@ Downstream passes consume the original AST plus these facts. A line fact may pro
 This package owns:
 
 - Building constant namespaces from `constants` blocks and module ASTs.
+- Merging same-named constants blocks in declaration order, with later values overriding earlier ones.
 - Resolving explicit parent-to-child constants-namespace aliases declared with project-level `pass` instructions.
 - Resolving `use` dependencies between constant namespaces.
 - Resolving constant declarations in source order.
@@ -40,3 +41,5 @@ This package does not own:
 - Semantic validation beyond constant namespace resolution.
 
 External constants can be supplied through `ResolveConstantsOptions.namespaces` when a caller already has trusted namespace data.
+
+All blocks in a constant namespace are resolved together before publishing it to consumers. Later blocks inherit earlier declarations; expressions retain the values visible when declared. Module namespaces, external namespaces, and passed names remain unique.

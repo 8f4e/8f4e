@@ -5,12 +5,16 @@ module root
 moduleEnd
 
 group child
+entry main
 module child
 moduleEnd
 
 group descendant
+entry main
 module descendant
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd

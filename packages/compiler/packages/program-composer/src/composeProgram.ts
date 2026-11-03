@@ -2,19 +2,20 @@ import {
 	type CallLine,
 	type CompilerCache,
 	type ComposedAST,
+	type ComposedEntry,
 	createChildProjectGroupPath,
 	createProjectModuleId,
 	type FunctionLine,
 	type IncludedFunctionBindings,
 	type ProjectConstantNamespacePassLine,
 	type ProjectGroupPath,
+	type ProjectMemoryExposure,
 	type ProjectMemoryInitializerLine,
 	type ProjectObjectModel,
 	ROOT_PROJECT_GROUP_PATH,
 	type ValidatedAST,
 	type ValidatedConstantsAST,
 	type ValidatedFunctionAST,
-	type ValidatedModuleAST,
 	type ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import {
@@ -25,9 +26,11 @@ import {
 import { compileSourceToAST, createCompilerSource } from './compilerSource';
 import { createCompilerCache } from './createCompilerCache';
 import { qualifyAst } from './qualifyAst';
+import { resolveFunctionPasses } from './resolveFunctionPasses';
+import { selectModuleDefinitions } from './selectModuleDefinitions';
 import type { ComposedProgram, IncludedFunctionsByProjectGroupPath } from './types';
 
-function collectProjectConstantNamespacePasses(
+function collectProjectScopePasses(
 	code: readonly string[],
 	projectPath: ProjectGroupPath
 ): ProjectConstantNamespacePassLine[] {
@@ -52,7 +55,7 @@ function collectProjectConstantNamespacePasses(
 function appendMemoryExposureAliases(
 	program: ComposedProgram,
 	groupPath: ProjectGroupPath,
-	exposures: ProjectObjectModel['groups'][number]['exposures']
+	exposures: ProjectMemoryExposure[]
 ): void {
 	if (exposures.length === 0) {
 		return;
@@ -116,7 +119,23 @@ function appendUnit(
 	parentProjectPath: ProjectGroupPath | undefined,
 	program: ComposedProgram,
 	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath
-): void {
+): Map<string, ComposedEntry> {
+	const entries = new Map<string, ComposedEntry>();
+	const ensureEntry = (name: string): ComposedEntry => {
+		let entry = entries.get(name);
+		if (!entry) {
+			entry = {
+				id: projectPath ? `${projectPath}/${name}` : name,
+				steps: [],
+				...(projectPath === ROOT_PROJECT_GROUP_PATH ? { exportName: name } : {}),
+			};
+			entries.set(name, entry);
+			program.entries.push(entry);
+		}
+		return entry;
+	};
+	for (const name of project.entries) ensureEntry(name);
+	if (projectPath === ROOT_PROJECT_GROUP_PATH) ensureEntry('main');
 	const memoryInitializers = collectProjectMemoryInitializers(project.code, projectPath);
 	if (memoryInitializers.length > 0) {
 		program.projectMemoryInitializerScopes.push({
@@ -125,7 +144,7 @@ function appendUnit(
 			initializers: memoryInitializers,
 		});
 	}
-	const constantNamespacePasses = collectProjectConstantNamespacePasses(project.code, projectPath);
+	const constantNamespacePasses = collectProjectScopePasses(project.code, projectPath);
 	if (constantNamespacePasses.length > 0) {
 		program.projectConstantNamespaceScopes.push({
 			groupPath: projectPath,
@@ -133,12 +152,6 @@ function appendUnit(
 			passes: constantNamespacePasses,
 		});
 	}
-
-	project.groups.forEach(group => {
-		const groupPath = createChildProjectGroupPath(projectPath, group.name);
-		appendMemoryExposureAliases(program, groupPath, group.exposures);
-		appendUnit(group, groupPath, projectPath, program, includedFunctionsByProjectPath);
-	});
 
 	const prefix = projectPath === ROOT_PROJECT_GROUP_PATH ? undefined : `${projectPath}/`;
 	const qualify = <TAst extends ValidatedAST>(
@@ -151,7 +164,6 @@ function appendUnit(
 		};
 	};
 	const prototypes = project.prototypes.filter(block => !block.disabled);
-	const modules = project.modules.filter(block => !block.disabled);
 	const constants = project.constants.filter(block => !block.disabled);
 	const functions = project.functions.filter(block => !block.disabled);
 	const includedFunctions = includedFunctionsByProjectPath.get(projectPath) ?? [];
@@ -194,28 +206,35 @@ function appendUnit(
 		})
 	);
 
-	const moduleIndexByEntry = new Map<string, number>();
-	for (const module of modules) {
-		const index = moduleIndexByEntry.get(module.entry) ?? 0;
-		moduleIndexByEntry.set(module.entry, index + 1);
-		program.ast.modules.push(
-			qualify(
-				compileSourceToAST<ValidatedModuleAST>(
-					createCompilerSource(module, projectPath, `entry:${module.entry}:module:${index}`),
-					program.cache
-				)
-			)
-		);
-		program.moduleEntryNames.push(module.entry);
-		if (!program.entryNames.includes(module.entry)) {
-			program.entryNames.push(module.entry);
+	const selectedModules = selectModuleDefinitions(project.execution, projectPath, program.cache);
+	for (const block of project.execution) {
+		if (block.type === 'group') {
+			const groupPath = createChildProjectGroupPath(projectPath, block.name);
+			appendMemoryExposureAliases(program, groupPath, block.exposures);
+			const childEntries = appendUnit(block, groupPath, projectPath, program, includedFunctionsByProjectPath);
+			const childMain = childEntries.get('main');
+			if (childMain) ensureEntry(block.entry).steps.push({ type: 'entry', id: childMain.id });
+			const childInit = childEntries.get('init');
+			if (childInit) ensureEntry('init').steps.push({ type: 'entry', id: childInit.id });
+			continue;
 		}
+		const moduleAst = selectedModules.get(block);
+		if (!moduleAst) continue;
+		const entry = entries.get(block.entry)!;
+		const ast = {
+			...qualify(moduleAst),
+			projectBlockId: block.id,
+			executionEntryName: entry.id,
+		};
+		program.ast.modules.push(ast);
+		entry.steps.push({ type: 'module', id: ast.id });
 	}
+	return entries;
 }
 
 /**
  * Parses and composes a recursive project tree into one globally planned compiler program.
- * Child modules are appended before parent modules, while functions, constants, and prototypes remain hoisted.
+ * Groups expand at their declaration positions; functions, constants, and prototypes remain hoisted.
  */
 export function composeProgram(
 	project: ProjectObjectModel,
@@ -223,8 +242,7 @@ export function composeProgram(
 	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath = new Map()
 ): ComposedProgram {
 	const program: ComposedProgram = {
-		entryNames: ['main'],
-		moduleEntryNames: [],
+		entries: [],
 		ast: {
 			prototypes: [],
 			modules: [],
@@ -239,5 +257,6 @@ export function composeProgram(
 	};
 
 	appendUnit(project, ROOT_PROJECT_GROUP_PATH, undefined, program, includedFunctionsByProjectPath);
+	resolveFunctionPasses(program);
 	return program;
 }

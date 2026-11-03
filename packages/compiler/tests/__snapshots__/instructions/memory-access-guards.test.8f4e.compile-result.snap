@@ -69,7 +69,10 @@
       "id": "readGuardedPointer__int_p",
       "signature": {
         "parameters": [
-          "int*",
+          {
+            "name": "ptr",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",

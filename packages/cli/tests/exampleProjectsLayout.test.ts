@@ -1,4 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
+import { getProjectModules } from '@8f4e/language-spec';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -27,7 +28,7 @@ async function loadExampleProject(relativePath: string) {
 }
 
 function getProjectModuleBlocks(project: Awaited<ReturnType<typeof loadExampleProject>>) {
-	return [...project.modules, ...project.constants];
+	return [...getProjectModules(project), ...project.constants];
 }
 
 function getBlockId(block: { code: string[] }): string {

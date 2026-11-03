@@ -4,7 +4,9 @@
   },
   "compiledModules": {
     "result": {
+      "referenceSlots": {},
       "id": "result",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -65,17 +67,19 @@
             }
           ]
         },
-        "projectBlockId": 109,
+        "projectBlockId": 54,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "result"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 0,
-      "executionEntryName": "main"
+      "index": 0
     },
     "notes": {
+      "referenceSlots": {},
       "id": "notes",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -115,17 +119,19 @@
             }
           ]
         },
-        "projectBlockId": 120,
+        "projectBlockId": 65,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "notes"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 1,
-      "executionEntryName": "main"
+      "index": 1
     },
     "inputs": {
+      "referenceSlots": {},
       "id": "inputs",
+      "executionEntryName": "main",
       "cycleFunction": [
         2,
         0,
@@ -199,27 +205,73 @@
             }
           ]
         },
-        "projectBlockId": 130,
+        "projectBlockId": 75,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "inputs"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 2,
-      "executionEntryName": "main"
+      "index": 2
     },
     "perceptron": {
+      "referenceSlots": {
+        "in1": {
+          "id": "in1",
+          "type": "float&",
+          "lineNumber": 4,
+          "targetModuleId": "inputs",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 3,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 12,
+            "elementByteLength": 4,
+            "endByteAddress": 12,
+            "endAddressSafeByteLength": 4,
+            "id": "in1",
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false
+          }
+        },
+        "in2": {
+          "id": "in2",
+          "type": "float&",
+          "lineNumber": 5,
+          "targetModuleId": "inputs",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 16,
+            "endAddressSafeByteLength": 4,
+            "id": "in2",
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "perceptron",
+      "executionEntryName": "main",
       "cycleFunction": [
-        42,
+        36,
         0,
         65,
-        40,
+        20,
         65,
-        32,
-        40,
-        2,
-        0,
+        12,
         42,
         2,
         0,
@@ -230,10 +282,7 @@
         65,
         148,
         65,
-        36,
-        40,
-        2,
-        0,
+        16,
         42,
         2,
         0,
@@ -273,7 +322,7 @@
           },
           {
             "lineNumber": 4,
-            "instruction": "float*",
+            "instruction": "float&",
             "arguments": [
               {
                 "type": "identifier",
@@ -294,7 +343,7 @@
           },
           {
             "lineNumber": 5,
-            "instruction": "float*",
+            "instruction": "float&",
             "arguments": [
               {
                 "type": "identifier",
@@ -497,27 +546,73 @@
             }
           ]
         },
-        "projectBlockId": 140,
+        "projectBlockId": 85,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 3,
-      "executionEntryName": "main"
+      "index": 3
     },
     "perceptron2": {
+      "referenceSlots": {
+        "in1": {
+          "id": "in1",
+          "type": "float&",
+          "lineNumber": 4,
+          "targetModuleId": "inputs",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 3,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 12,
+            "elementByteLength": 4,
+            "endByteAddress": 12,
+            "endAddressSafeByteLength": 4,
+            "id": "in1",
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false
+          }
+        },
+        "in2": {
+          "id": "in2",
+          "type": "float&",
+          "lineNumber": 5,
+          "targetModuleId": "inputs",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 16,
+            "endAddressSafeByteLength": 4,
+            "id": "in2",
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "perceptron2",
+      "executionEntryName": "main",
       "cycleFunction": [
-        42,
+        36,
         0,
         65,
-        52,
+        24,
         65,
-        44,
-        40,
-        2,
-        0,
+        12,
         42,
         2,
         0,
@@ -528,10 +623,7 @@
         194,
         148,
         65,
-        48,
-        40,
-        2,
-        0,
+        16,
         42,
         2,
         0,
@@ -571,7 +663,7 @@
           },
           {
             "lineNumber": 4,
-            "instruction": "float*",
+            "instruction": "float&",
             "arguments": [
               {
                 "type": "identifier",
@@ -592,7 +684,7 @@
           },
           {
             "lineNumber": 5,
-            "instruction": "float*",
+            "instruction": "float&",
             "arguments": [
               {
                 "type": "identifier",
@@ -795,27 +887,50 @@
             }
           ]
         },
-        "projectBlockId": 165,
+        "projectBlockId": 110,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron2"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 4,
-      "executionEntryName": "main"
+      "index": 4
     },
     "activationFn": {
+      "referenceSlots": {
+        "in": {
+          "id": "in",
+          "type": "float&",
+          "lineNumber": 3,
+          "targetModuleId": "perceptron",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 5,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 20,
+            "elementByteLength": 4,
+            "endByteAddress": 20,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "activationFn",
+      "executionEntryName": "main",
       "cycleFunction": [
-        17,
+        14,
         0,
         65,
-        4,
+        0,
         65,
-        0,
-        40,
-        2,
-        0,
+        20,
         42,
         2,
         0,
@@ -844,7 +959,7 @@
           },
           {
             "lineNumber": 3,
-            "instruction": "float*",
+            "instruction": "float&",
             "arguments": [
               {
                 "type": "identifier",
@@ -938,27 +1053,50 @@
             }
           ]
         },
-        "projectBlockId": 190,
+        "projectBlockId": 135,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 5,
-      "executionEntryName": "main"
+      "index": 5
     },
     "activationFn2": {
+      "referenceSlots": {
+        "in": {
+          "id": "in",
+          "type": "float&",
+          "lineNumber": 3,
+          "targetModuleId": "perceptron2",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 6,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 24,
+            "elementByteLength": 4,
+            "endByteAddress": 24,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "activationFn2",
+      "executionEntryName": "main",
       "cycleFunction": [
-        17,
+        14,
         0,
         65,
-        12,
+        4,
         65,
-        8,
-        40,
-        2,
-        0,
+        24,
         42,
         2,
         0,
@@ -987,7 +1125,7 @@
           },
           {
             "lineNumber": 3,
-            "instruction": "float*",
+            "instruction": "float&",
             "arguments": [
               {
                 "type": "identifier",
@@ -1081,27 +1219,72 @@
             }
           ]
         },
-        "projectBlockId": 202,
+        "projectBlockId": 147,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn2"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 6,
-      "executionEntryName": "main"
+      "index": 6
     },
     "perceptron3": {
+      "referenceSlots": {
+        "in1": {
+          "id": "in1",
+          "type": "float&",
+          "lineNumber": 4,
+          "targetModuleId": "activationFn",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 0,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 0,
+            "elementByteLength": 4,
+            "endByteAddress": 0,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 4,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false
+          }
+        },
+        "in2": {
+          "id": "in2",
+          "type": "float&",
+          "lineNumber": 5,
+          "targetModuleId": "activationFn2",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 1,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 4,
+            "elementByteLength": 4,
+            "endByteAddress": 4,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 4,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "perceptron3",
+      "executionEntryName": "main",
       "cycleFunction": [
-        43,
+        36,
         0,
         65,
-        192,
-        0,
+        28,
         65,
-        56,
-        40,
-        2,
         0,
         42,
         2,
@@ -1113,10 +1296,7 @@
         64,
         148,
         65,
-        60,
-        40,
-        2,
-        0,
+        4,
         42,
         2,
         0,
@@ -1156,7 +1336,7 @@
           },
           {
             "lineNumber": 4,
-            "instruction": "float*",
+            "instruction": "float&",
             "arguments": [
               {
                 "type": "identifier",
@@ -1177,7 +1357,7 @@
           },
           {
             "lineNumber": 5,
-            "instruction": "float*",
+            "instruction": "float&",
             "arguments": [
               {
                 "type": "identifier",
@@ -1380,27 +1560,50 @@
             }
           ]
         },
-        "projectBlockId": 214,
+        "projectBlockId": 159,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron3"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 7,
-      "executionEntryName": "main"
+      "index": 7
     },
     "activationFn3": {
+      "referenceSlots": {
+        "in": {
+          "id": "in",
+          "type": "float&",
+          "lineNumber": 3,
+          "targetModuleId": "perceptron3",
+          "targetMemory": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 7,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 28,
+            "elementByteLength": 4,
+            "endByteAddress": 28,
+            "endAddressSafeByteLength": 4,
+            "id": "out",
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false
+          }
+        }
+      },
       "id": "activationFn3",
+      "executionEntryName": "main",
       "cycleFunction": [
-        31,
+        28,
         0,
         65,
-        20,
+        8,
         65,
-        16,
-        40,
-        2,
-        0,
+        28,
         42,
         2,
         0,
@@ -1443,7 +1646,7 @@
           },
           {
             "lineNumber": 3,
-            "instruction": "float*",
+            "instruction": "float&",
             "arguments": [
               {
                 "type": "identifier",
@@ -1610,14 +1813,14 @@
             }
           ]
         },
-        "projectBlockId": 239,
+        "projectBlockId": 184,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn3"
-        }
+        },
+        "executionEntryName": "main"
       },
-      "index": 8,
-      "executionEntryName": "main"
+      "index": 8
     }
   },
   "memoryPlan": {
@@ -1626,12 +1829,12 @@
         "id": "activationFn",
         "lineNumber": 0,
         "byteAddress": 0,
-        "allocationUnitCount": 2,
-        "allocatedByteLength": 8,
-        "endByteAddress": 4,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 0,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
+          "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
             "allocationUnitAddress": 0,
@@ -1640,24 +1843,6 @@
             "byteAddress": 0,
             "elementByteLength": 4,
             "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          "out": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 1,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 4,
-            "elementByteLength": 4,
-            "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -1678,24 +1863,6 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 1,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 4,
-            "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
             "type": "float",
@@ -1705,30 +1872,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&perceptron:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "perceptron",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -1749,39 +1892,21 @@
       "activationFn2": {
         "id": "activationFn2",
         "lineNumber": 0,
-        "byteAddress": 8,
-        "allocationUnitCount": 2,
-        "allocatedByteLength": 8,
-        "endByteAddress": 12,
+        "byteAddress": 4,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 4,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 2,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 8,
-            "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 3,
+            "allocationUnitAddress": 1,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 12,
+            "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 12,
+            "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -1795,30 +1920,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 2,
+            "allocationUnitAddress": 1,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 8,
+            "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 3,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 12,
-            "elementByteLength": 4,
-            "endByteAddress": 12,
+            "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -1829,30 +1936,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&perceptron2:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "perceptron2",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -1873,39 +1956,21 @@
       "activationFn3": {
         "id": "activationFn3",
         "lineNumber": 0,
-        "byteAddress": 16,
-        "allocationUnitCount": 2,
-        "allocatedByteLength": 8,
-        "endByteAddress": 20,
+        "byteAddress": 8,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 8,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 4,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 16,
-            "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 5,
+            "allocationUnitAddress": 2,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 20,
+            "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 20,
+            "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -1919,30 +1984,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 4,
+            "allocationUnitAddress": 2,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 16,
+            "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 5,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 20,
-            "elementByteLength": 4,
-            "endByteAddress": 20,
+            "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -1953,30 +2000,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&perceptron3:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "perceptron3",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -1997,21 +2020,21 @@
       "inputs": {
         "id": "inputs",
         "lineNumber": 0,
-        "byteAddress": 24,
+        "byteAddress": 12,
         "allocationUnitCount": 2,
         "allocatedByteLength": 8,
-        "endByteAddress": 28,
+        "endByteAddress": 16,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in1": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 6,
+            "allocationUnitAddress": 3,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 24,
+            "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 24,
+            "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
             "id": "in1",
             "lineNumber": 6,
@@ -2023,12 +2046,12 @@
           "in2": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 7,
+            "allocationUnitAddress": 4,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 28,
+            "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 28,
+            "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
             "id": "in2",
             "lineNumber": 7,
@@ -2042,12 +2065,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 6,
+            "allocationUnitAddress": 3,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 24,
+            "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 24,
+            "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
             "id": "in1",
             "lineNumber": 6,
@@ -2059,12 +2082,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 7,
+            "allocationUnitAddress": 4,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 28,
+            "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 28,
+            "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
             "id": "in2",
             "lineNumber": 7,
@@ -2120,10 +2143,10 @@
       "notes": {
         "id": "notes",
         "lineNumber": 0,
-        "byteAddress": 32,
+        "byteAddress": 20,
         "allocationUnitCount": 0,
         "allocatedByteLength": 0,
-        "endByteAddress": 32,
+        "endByteAddress": 20,
         "endAddressSafeByteLength": 0,
         "memory": {},
         "declarations": [],
@@ -2132,57 +2155,21 @@
       "perceptron": {
         "id": "perceptron",
         "lineNumber": 0,
-        "byteAddress": 32,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 40,
+        "byteAddress": 20,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 20,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 8,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 32,
-            "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 9,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 36,
-            "elementByteLength": 4,
-            "endByteAddress": 36,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 10,
+            "allocationUnitAddress": 5,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 40,
+            "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 40,
+            "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -2196,48 +2183,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 8,
+            "allocationUnitAddress": 5,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 32,
+            "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 9,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 36,
-            "elementByteLength": 4,
-            "endByteAddress": 36,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 10,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 40,
-            "elementByteLength": 4,
-            "endByteAddress": 40,
+            "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -2248,54 +2199,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&inputs:in1",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "inputs",
-                  "targetMemoryId": "in1",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 5,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&inputs:in2",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "inputs",
-                  "targetMemoryId": "in2",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 6,
@@ -2316,57 +2219,21 @@
       "perceptron2": {
         "id": "perceptron2",
         "lineNumber": 0,
-        "byteAddress": 44,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 52,
+        "byteAddress": 24,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 24,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 11,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 44,
-            "elementByteLength": 4,
-            "endByteAddress": 44,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 12,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 48,
-            "elementByteLength": 4,
-            "endByteAddress": 48,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 13,
+            "allocationUnitAddress": 6,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 52,
+            "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 52,
+            "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -2380,48 +2247,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 11,
+            "allocationUnitAddress": 6,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 44,
+            "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 44,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 12,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 48,
-            "elementByteLength": 4,
-            "endByteAddress": 48,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 13,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 52,
-            "elementByteLength": 4,
-            "endByteAddress": 52,
+            "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -2432,54 +2263,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&inputs:in1",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "inputs",
-                  "targetMemoryId": "in1",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 5,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&inputs:in2",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "inputs",
-                  "targetMemoryId": "in2",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 6,
@@ -2500,57 +2283,21 @@
       "perceptron3": {
         "id": "perceptron3",
         "lineNumber": 0,
-        "byteAddress": 56,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 64,
+        "byteAddress": 28,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 28,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 14,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 56,
-            "elementByteLength": 4,
-            "endByteAddress": 56,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 15,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 60,
-            "elementByteLength": 4,
-            "endByteAddress": 60,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 16,
+            "allocationUnitAddress": 7,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 64,
+            "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 64,
+            "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -2564,48 +2311,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 14,
+            "allocationUnitAddress": 7,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 56,
+            "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 56,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 15,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 60,
-            "elementByteLength": 4,
-            "endByteAddress": 60,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 16,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 64,
-            "elementByteLength": 4,
-            "endByteAddress": 64,
+            "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -2616,54 +2327,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&activationFn:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "activationFn",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 5,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&activationFn2:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "activationFn2",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 6,
@@ -2684,21 +2347,21 @@
       "result": {
         "id": "result",
         "lineNumber": 0,
-        "byteAddress": 68,
+        "byteAddress": 32,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 68,
+        "endByteAddress": 32,
         "endAddressSafeByteLength": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 17,
+            "allocationUnitAddress": 8,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 68,
+            "byteAddress": 32,
             "elementByteLength": 4,
-            "endByteAddress": 68,
+            "endByteAddress": 32,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 8,
@@ -2713,12 +2376,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 17,
+            "allocationUnitAddress": 8,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 68,
+            "byteAddress": 32,
             "elementByteLength": 4,
-            "endByteAddress": 68,
+            "endByteAddress": 32,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 8,
@@ -2762,12 +2425,12 @@
         "id": "activationFn",
         "lineNumber": 0,
         "byteAddress": 0,
-        "allocationUnitCount": 2,
-        "allocatedByteLength": 8,
-        "endByteAddress": 4,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 0,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
+          "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
             "allocationUnitAddress": 0,
@@ -2776,24 +2439,6 @@
             "byteAddress": 0,
             "elementByteLength": 4,
             "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          "out": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 1,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 4,
-            "elementByteLength": 4,
-            "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -2814,24 +2459,6 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 1,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 4,
-            "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
             "type": "float",
@@ -2841,30 +2468,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&perceptron:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "perceptron",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -2885,39 +2488,21 @@
       {
         "id": "activationFn2",
         "lineNumber": 0,
-        "byteAddress": 8,
-        "allocationUnitCount": 2,
-        "allocatedByteLength": 8,
-        "endByteAddress": 12,
+        "byteAddress": 4,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 4,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 2,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 8,
-            "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 3,
+            "allocationUnitAddress": 1,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 12,
+            "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 12,
+            "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -2931,30 +2516,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 2,
+            "allocationUnitAddress": 1,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 8,
+            "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 3,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 12,
-            "elementByteLength": 4,
-            "endByteAddress": 12,
+            "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -2965,30 +2532,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&perceptron2:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "perceptron2",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -3009,39 +2552,21 @@
       {
         "id": "activationFn3",
         "lineNumber": 0,
-        "byteAddress": 16,
-        "allocationUnitCount": 2,
-        "allocatedByteLength": 8,
-        "endByteAddress": 20,
+        "byteAddress": 8,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 8,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 4,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 16,
-            "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 5,
+            "allocationUnitAddress": 2,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 20,
+            "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 20,
+            "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -3055,30 +2580,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 4,
+            "allocationUnitAddress": 2,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 16,
+            "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
-            "id": "in",
-            "lineNumber": 3,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 5,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 20,
-            "elementByteLength": 4,
-            "endByteAddress": 20,
+            "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 4,
@@ -3089,30 +2596,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 3,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&perceptron3:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "perceptron3",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 4,
@@ -3133,21 +2616,21 @@
       {
         "id": "inputs",
         "lineNumber": 0,
-        "byteAddress": 24,
+        "byteAddress": 12,
         "allocationUnitCount": 2,
         "allocatedByteLength": 8,
-        "endByteAddress": 28,
+        "endByteAddress": 16,
         "endAddressSafeByteLength": 4,
         "memory": {
           "in1": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 6,
+            "allocationUnitAddress": 3,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 24,
+            "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 24,
+            "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
             "id": "in1",
             "lineNumber": 6,
@@ -3159,12 +2642,12 @@
           "in2": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 7,
+            "allocationUnitAddress": 4,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 28,
+            "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 28,
+            "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
             "id": "in2",
             "lineNumber": 7,
@@ -3178,12 +2661,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 6,
+            "allocationUnitAddress": 3,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 24,
+            "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 24,
+            "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
             "id": "in1",
             "lineNumber": 6,
@@ -3195,12 +2678,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 7,
+            "allocationUnitAddress": 4,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 28,
+            "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 28,
+            "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
             "id": "in2",
             "lineNumber": 7,
@@ -3256,10 +2739,10 @@
       {
         "id": "notes",
         "lineNumber": 0,
-        "byteAddress": 32,
+        "byteAddress": 20,
         "allocationUnitCount": 0,
         "allocatedByteLength": 0,
-        "endByteAddress": 32,
+        "endByteAddress": 20,
         "endAddressSafeByteLength": 0,
         "memory": {},
         "declarations": [],
@@ -3268,57 +2751,21 @@
       {
         "id": "perceptron",
         "lineNumber": 0,
-        "byteAddress": 32,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 40,
+        "byteAddress": 20,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 20,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 8,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 32,
-            "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 9,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 36,
-            "elementByteLength": 4,
-            "endByteAddress": 36,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 10,
+            "allocationUnitAddress": 5,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 40,
+            "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 40,
+            "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -3332,48 +2779,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 8,
+            "allocationUnitAddress": 5,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 32,
+            "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 9,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 36,
-            "elementByteLength": 4,
-            "endByteAddress": 36,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 10,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 40,
-            "elementByteLength": 4,
-            "endByteAddress": 40,
+            "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -3384,54 +2795,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&inputs:in1",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "inputs",
-                  "targetMemoryId": "in1",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 5,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&inputs:in2",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "inputs",
-                  "targetMemoryId": "in2",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 6,
@@ -3452,57 +2815,21 @@
       {
         "id": "perceptron2",
         "lineNumber": 0,
-        "byteAddress": 44,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 52,
+        "byteAddress": 24,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 24,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 11,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 44,
-            "elementByteLength": 4,
-            "endByteAddress": 44,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 12,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 48,
-            "elementByteLength": 4,
-            "endByteAddress": 48,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 13,
+            "allocationUnitAddress": 6,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 52,
+            "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 52,
+            "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -3516,48 +2843,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 11,
+            "allocationUnitAddress": 6,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 44,
+            "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 44,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 12,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 48,
-            "elementByteLength": 4,
-            "endByteAddress": 48,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 13,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 52,
-            "elementByteLength": 4,
-            "endByteAddress": 52,
+            "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -3568,54 +2859,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&inputs:in1",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "inputs",
-                  "targetMemoryId": "in1",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 5,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&inputs:in2",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "inputs",
-                  "targetMemoryId": "in2",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 6,
@@ -3636,57 +2879,21 @@
       {
         "id": "perceptron3",
         "lineNumber": 0,
-        "byteAddress": 56,
-        "allocationUnitCount": 3,
-        "allocatedByteLength": 12,
-        "endByteAddress": 64,
+        "byteAddress": 28,
+        "allocationUnitCount": 1,
+        "allocatedByteLength": 4,
+        "endByteAddress": 28,
         "endAddressSafeByteLength": 4,
         "memory": {
-          "in1": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 14,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 56,
-            "elementByteLength": 4,
-            "endByteAddress": 56,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 15,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 60,
-            "elementByteLength": 4,
-            "endByteAddress": 60,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 16,
+            "allocationUnitAddress": 7,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 64,
+            "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 64,
+            "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -3700,48 +2907,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 14,
+            "allocationUnitAddress": 7,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 56,
+            "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 56,
-            "endAddressSafeByteLength": 4,
-            "id": "in1",
-            "lineNumber": 4,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 15,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 60,
-            "elementByteLength": 4,
-            "endByteAddress": 60,
-            "endAddressSafeByteLength": 4,
-            "id": "in2",
-            "lineNumber": 5,
-            "type": "float*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "float",
-            "isUnsigned": false
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 16,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 64,
-            "elementByteLength": 4,
-            "endByteAddress": 64,
+            "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 6,
@@ -3752,54 +2923,6 @@
           }
         ],
         "declarationSources": [
-          {
-            "line": {
-              "lineNumber": 4,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in1",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&activationFn:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "activationFn",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
-          {
-            "line": {
-              "lineNumber": 5,
-              "instruction": "float*",
-              "arguments": [
-                {
-                  "type": "identifier",
-                  "value": "in2",
-                  "referenceKind": "plain",
-                  "scope": "local"
-                },
-                {
-                  "type": "identifier",
-                  "value": "&activationFn2:out",
-                  "referenceKind": "intermodular-reference",
-                  "scope": "intermodule",
-                  "targetModuleId": "activationFn2",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
-                }
-              ]
-            },
-            "isInherited": false
-          },
           {
             "line": {
               "lineNumber": 6,
@@ -3820,21 +2943,21 @@
       {
         "id": "result",
         "lineNumber": 0,
-        "byteAddress": 68,
+        "byteAddress": 32,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 68,
+        "endByteAddress": 32,
         "endAddressSafeByteLength": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 17,
+            "allocationUnitAddress": 8,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 68,
+            "byteAddress": 32,
             "elementByteLength": 4,
-            "endByteAddress": 68,
+            "endByteAddress": 32,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 8,
@@ -3849,12 +2972,12 @@
           {
             "numberOfElements": 1,
             "elementWordSize": 4,
-            "allocationUnitAddress": 17,
+            "allocationUnitAddress": 8,
             "allocationUnitCount": 1,
             "allocatedByteLength": 4,
-            "byteAddress": 68,
+            "byteAddress": 32,
             "elementByteLength": 4,
-            "endByteAddress": 68,
+            "endByteAddress": 32,
             "endAddressSafeByteLength": 4,
             "id": "out",
             "lineNumber": 8,
@@ -3896,11 +3019,6 @@
   },
   "memoryDefaultsByModuleId": {
     "activationFn": {
-      "in": {
-        "value": 40,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "out": {
         "value": 0,
         "hasExplicitDefault": false,
@@ -3908,11 +3026,6 @@
       }
     },
     "activationFn2": {
-      "in": {
-        "value": 52,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "out": {
         "value": 0,
         "hasExplicitDefault": false,
@@ -3920,11 +3033,6 @@
       }
     },
     "activationFn3": {
-      "in": {
-        "value": 64,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "out": {
         "value": 0,
         "hasExplicitDefault": false,
@@ -3945,16 +3053,6 @@
     },
     "notes": {},
     "perceptron": {
-      "in1": {
-        "value": 24,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
-      "in2": {
-        "value": 28,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "out": {
         "value": 0,
         "hasExplicitDefault": false,
@@ -3962,16 +3060,6 @@
       }
     },
     "perceptron2": {
-      "in1": {
-        "value": 24,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
-      "in2": {
-        "value": 28,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "out": {
         "value": 0,
         "hasExplicitDefault": false,
@@ -3979,16 +3067,6 @@
       }
     },
     "perceptron3": {
-      "in1": {
-        "value": 4,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
-      "in2": {
-        "value": 12,
-        "hasExplicitDefault": true,
-        "isInherited": false
-      },
       "out": {
         "value": 0,
         "hasExplicitDefault": false,
@@ -3997,7 +3075,7 @@
     },
     "result": {
       "out": {
-        "value": 20,
+        "value": 8,
         "hasExplicitDefault": true,
         "isInherited": false
       }
@@ -4012,8 +3090,12 @@
     "perceptron": {},
     "perceptron2": {},
     "perceptron3": {},
-    "result": {}
+    "result": {
+      "out": {
+        "pointeeElementCount": 1
+      }
+    }
   },
-  "compiledWasm": "AGFzbQEAAAABFARgAABgAX8Bf2ACf38Bf2ABfQF9AhEBBGhvc3QGbWVtb3J5AgMBAQMNDAAAAwAAAAAAAAAAAAcXAgxpbml0RGVmYXVsdHMAAARtYWluAAEMAQEKpAIMFwBBAEEAQcgA/AsAQQBBAEHIAPwIAAALFAAQAxAEEAUQBhAHEAgQCRAKEAsLJgEBfSAAIACLQwAAgD+SIQEgAUMAAAAAWwRAQwAAgD8hAQsgAZULAgALAgALAgALKgBBKEEgKAIAKgIAQ1bmIEGUQSQoAgAqAgBDxiUqwpSSQ4Are8CSOAIACyoAQTRBLCgCACoCAEOqoIzClEEwKAIAKgIAQ2gcxkGUkkPbPQzBkjgCAAsRAEEEQQAoAgAqAgAQAjgCAAsRAEEMQQgoAgAqAgAQAjgCAAsrAEHAAEE4KAIAKgIAQ65H3kCUQTwoAgAqAgBDsKzUQJSSQ6nZwUCSOAIACx8AQRRBECgCACoCABACQwAAAD9eBH9BAQVBAAs2AgALC0sBAUgoAAAAAAAAADQAAAAAAAAAQAAAAAAAAAAAAIA/AAAAABgAAAAcAAAAAAAAABgAAAAcAAAAAAAAAAQAAAAMAAAAAAAAABQAAAA=",
-  "requiredMemoryBytes": 72
+  "compiledWasm": "AGFzbQEAAAABFARgAABgAX8Bf2ACf38Bf2ABfQF9AhEBBGhvc3QGbWVtb3J5AgMBAQMNDAAAAwAAAAAAAAAAAAcXAgxpbml0RGVmYXVsdHMAAARtYWluAAEMAQEKhgIMFQBBAEEAQST8CwBBDEEAQRj8CAAACxQAEAMQBBAFEAYQBxAIEAkQChALCyYBAX0gACAAi0MAAIA/kiEBIAFDAAAAAFsEQEMAAIA/IQELIAGVCwIACwIACwIACyQAQRRBDCoCAENW5iBBlEEQKgIAQ8YlKsKUkkOAK3vAkjgCAAskAEEYQQwqAgBDqqCMwpRBECoCAENoHMZBlJJD2z0MwZI4AgALDgBBAEEUKgIAEAI4AgALDgBBBEEYKgIAEAI4AgALJABBHEEAKgIAQ65H3kCUQQQqAgBDsKzUQJSSQ6nZwUCSOAIACxwAQQhBHCoCABACQwAAAD9eBH9BAQVBAAs2AgALCxsBARgAAIA/AAAAAAAAAAAAAAAAAAAAAAgAAAA=",
+  "requiredMemoryBytes": 36
 }

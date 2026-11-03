@@ -16,6 +16,7 @@ import type {
 	ModuleAST,
 	ProjectMemoryAliasLookup,
 	PrototypeAST,
+	ReferenceSlotMap,
 	RegisteredFunction,
 	ResolvedMapLine,
 	SemanticReferenceLine,
@@ -29,6 +30,7 @@ import {
 	ArgumentType,
 	BlockType,
 	compilerSourceBlockInstructionByType,
+	EMPTY_REFERENCE_SLOTS,
 	ErrorCode,
 	functionValueTypeToLocalMetadata,
 	getError,
@@ -37,8 +39,9 @@ import {
 	isCodegenInstructionName,
 	isSemanticInstructionLine,
 } from '@8f4e/language-spec';
-import { createCompilationContext, popBlock, pushBlock } from '@8f4e/semantic-utils';
+import { createCompilationContext, popBlock, pushBlock, withSourceDiagnostic } from '@8f4e/semantic-utils';
 import type { ReferenceResolutionContext } from './context';
+import { normalizeOperands } from './normalizeOperands';
 import resolveLineReferences from './resolveLineReferences';
 
 const moduleBlockType = compilerSourceBlockInstructionByType.module.type;
@@ -76,15 +79,17 @@ export interface ResolveSemanticReferencesInput<
 	prototypeShapes: Readonly<Record<string, TPrototype>>;
 }
 
-export interface ResolvedBodyLine {
+export interface ResolvedOperation {
+	/** Provenance only: several executable operations may share one source line. */
 	sourceLineIndex: number;
 	line: ExecutableInstructionLine;
 }
 
 export interface ModuleSemanticReferences<TModule extends ModuleAST = ModuleAST> {
+	referenceSlots: ReferenceSlotMap;
 	ast: TModule;
 	bindings: readonly SourceLocalBinding[];
-	body: readonly ResolvedBodyLine[];
+	body: readonly ResolvedOperation[];
 	skipExecutionInCycle: boolean;
 }
 
@@ -92,7 +97,7 @@ export interface FunctionSemanticReferences<TFunction extends FunctionAST = Func
 	ast: TFunction;
 	metadata: FunctionMetadata;
 	bindings: readonly SourceLocalBinding[];
-	body: readonly ResolvedBodyLine[];
+	body: readonly ResolvedOperation[];
 }
 
 export interface SemanticReferenceReport<
@@ -320,10 +325,12 @@ function applyResolvedLineEffect(line: SemanticReferenceLine, context: Reference
 
 function createModuleContext(
 	input: ResolveSemanticReferencesInput<PrototypeAST, ModuleAST, ConstantsAST, FunctionAST>,
-	ast: ModuleAST
+	ast: ModuleAST,
+	astIndex: number
 ): ReferenceResolutionContext {
 	const plannedModule = input.memoryPlan.modules[ast.id];
 	return createCompilationContext<ReferenceResolutionContext>({
+		referenceSlots: input.memoryReferences.modules[astIndex]!.referenceSlots,
 		namespace: {
 			moduleName: undefined,
 			functions: input.functions,
@@ -353,6 +360,7 @@ function createFunctionContext(
 	functionMetadata: FunctionMetadata
 ): ReferenceResolutionContext {
 	return createCompilationContext<ReferenceResolutionContext>({
+		referenceSlots: EMPTY_REFERENCE_SLOTS,
 		namespace: {
 			moduleName: undefined,
 			functions: input.functions,
@@ -386,12 +394,7 @@ function assertFunctionMemoryIoAllowed(line: SemanticReferenceLine, context: Ref
 	const pointerPush =
 		'resolvedTarget' in line &&
 		(line.resolvedTarget.kind === 'local-pointer' || line.resolvedTarget.kind === 'memory-pointer');
-	const inlinePushes =
-		'expectedPush' in line
-			? [line.expectedPush]
-			: 'inlineArgumentPushes' in line
-				? (line.inlineArgumentPushes ?? [])
-				: [];
+	const inlinePushes = 'expectedPush' in line ? [line.expectedPush] : [];
 	const inlinePointerPush = inlinePushes.some(
 		push =>
 			'resolvedTarget' in push &&
@@ -407,19 +410,23 @@ function resolveBody(
 	context: ReferenceResolutionContext,
 	constantReferences: ConstantResolutionBlockFacts | undefined,
 	memoryReferences: MemoryReferenceResolutionBlockFacts | undefined
-): ResolvedBodyLine[] {
-	const body: ResolvedBodyLine[] = [];
+): ResolvedOperation[] {
+	const body: ResolvedOperation[] = [];
 	for (const [sourceLineIndex, originalLine] of lines.entries()) {
 		const sourceLine = applyResolvedArgumentFacts(
 			originalLine,
 			constantReferences?.lineFacts[sourceLineIndex],
 			memoryReferences?.lineFacts[sourceLineIndex]
 		);
-		const line = resolveLineReferences(sourceLine, context);
-		applyResolvedLineEffect(line, context);
-		if (!isCodegenInstructionName(line.instruction)) continue;
-		assertFunctionMemoryIoAllowed(line, context);
-		body.push({ sourceLineIndex, line: line as ExecutableInstructionLine });
+		withSourceDiagnostic(originalLine, () => {
+			for (const operation of normalizeOperands(sourceLine)) {
+				const line = resolveLineReferences(operation, context);
+				applyResolvedLineEffect(line, context);
+				if (!isCodegenInstructionName(line.instruction)) continue;
+				assertFunctionMemoryIoAllowed(line, context);
+				body.push({ sourceLineIndex, line: line as ExecutableInstructionLine });
+			}
+		});
 	}
 	return body;
 }
@@ -429,7 +436,7 @@ function resolveModuleReferences<TModule extends ModuleAST>(
 	ast: TModule,
 	astIndex: number
 ): [string, ModuleSemanticReferences<TModule>] {
-	const context = createModuleContext(input, ast);
+	const context = createModuleContext(input, ast, astIndex);
 	const body = resolveBody(
 		ast.lines,
 		context,
@@ -440,6 +447,7 @@ function resolveModuleReferences<TModule extends ModuleAST>(
 		ast.id,
 		{
 			ast,
+			referenceSlots: context.referenceSlots,
 			body,
 			bindings: context.bindings,
 			skipExecutionInCycle: ast.lines.some(line => line.instruction === '#skipExecution'),

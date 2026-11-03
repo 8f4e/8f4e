@@ -27,7 +27,7 @@ constantsEnd
 
 note
 ; @pos 5 2
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Earlier references keep their
 bindings when a later local

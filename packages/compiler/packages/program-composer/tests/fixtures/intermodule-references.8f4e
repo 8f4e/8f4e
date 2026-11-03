@@ -2,13 +2,16 @@
 
 entry main
 group audio
+entry main
 module source
 int value
 moduleEnd
 
 module consumer
-push &source:value
+int& input &source:value
+push input
 drop
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

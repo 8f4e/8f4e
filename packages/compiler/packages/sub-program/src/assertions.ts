@@ -30,12 +30,12 @@ export function planAssertions(
 		const { ast, body } = block;
 		const report = 'metadata' in block ? stackReport.functions[block.metadata.id] : stackReport.modules[block.ast.id];
 		const calls = new Map<number, { siteId: number; fieldName: AssertionImportName }>();
-		for (const { sourceLineIndex, line } of body) {
+		for (const [operationIndex, { line }] of body.entries()) {
 			if (line.instruction !== 'assert' && line.instruction !== 'assertEqual') continue;
 			const valueType =
 				line.instruction === 'assert'
 					? 'int'
-					: report.lineFacts[sourceLineIndex]!.stackAnalysis.consumedOperands[0].valueType;
+					: report.operationFacts[operationIndex].stackAnalysis.consumedOperands[0].valueType;
 			const fieldName =
 				line.instruction === 'assert' ? ASSERTION_IMPORT_NAMES.assert : ASSERTION_IMPORT_NAMES.assertEqual[valueType];
 			let imported = importsByName.get(fieldName);
