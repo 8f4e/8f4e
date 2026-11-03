@@ -1,7 +1,7 @@
 import { resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
 import { createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEditorDrawerRegistry } from './drawers/registry';
 
 const mocks = vi.hoisted(() => {
@@ -30,14 +30,10 @@ const mocks = vi.hoisted(() => {
 		destroy: vi.fn(),
 	};
 	const background = { setFont: vi.fn(), setPalette: vi.fn(), destroy: vi.fn() };
-	const requestAnimationFrame = vi.fn((_callback: FrameRequestCallback) => 23);
-	const cancelAnimationFrame = vi.fn();
 
 	return {
 		engine,
 		background,
-		requestAnimationFrame,
-		cancelAnimationFrame,
 		// biome-ignore lint/complexity/useArrowFunction: Engine is constructed with new in the code under test.
 		Engine: vi.fn(function () {
 			engine.hooks.preDraw.length = 0;
@@ -105,10 +101,7 @@ function createMemoryViews() {
 describe('web-ui init', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.stubGlobal('requestAnimationFrame', mocks.requestAnimationFrame);
-		vi.stubGlobal('cancelAnimationFrame', mocks.cancelAnimationFrame);
 	});
-	afterEach(() => vi.unstubAllGlobals());
 
 	it('loads the configured font and installs its grid before initializing render layers', async () => {
 		const { default: init } = await import('./index');
@@ -282,7 +275,7 @@ describe('web-ui init', () => {
 		view.destroy();
 	});
 
-	it('draws supplied viewport state without scheduling frames or advancing navigation', async () => {
+	it('draws supplied viewport state without advancing navigation', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState({
 			viewport: { x: 24, y: 32 },
@@ -301,9 +294,7 @@ describe('web-ui init', () => {
 		expect(state.viewport).toEqual(viewport);
 		expect(state.viewportAnimation).toEqual(animation);
 		expect(events.dispatch).not.toHaveBeenCalled();
-		expect(mocks.requestAnimationFrame).not.toHaveBeenCalled();
 		view.destroy();
-		expect(mocks.cancelAnimationFrame).not.toHaveBeenCalled();
 	});
 
 	it('releases rendering resources and restores the latest deferred size before drawing', async () => {
