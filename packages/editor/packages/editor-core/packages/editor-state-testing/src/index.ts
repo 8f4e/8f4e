@@ -72,7 +72,6 @@ export function createMockCodeBlock(
 		alwaysOnTop: false,
 		parsedDirectives: [],
 		widgets: {
-			blockHighlights: [],
 			shapeDeclarations: [],
 			errorMessages: [],
 		},

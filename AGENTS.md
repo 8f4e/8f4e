@@ -35,9 +35,10 @@
 - Web-ui owns font/color schemas, validators, defaults, atlas loading, and palette subscriptions. Core registers
   `registerWebUiConfig(store)` before plugin setup and initializes the renderer with the store and event dispatcher.
   State keeps config values generic and responds to `gridSizeChanged` for shared geometry, without font/atlas knowledge.
-- `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, line-number drawing, and private
-  prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
-  `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
+- `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, nested block backgrounds,
+  line-number drawing, and private prepared sprite cells and highlight rectangles. Both compositions install it eagerly.
+  Core retains editing/layout geometry; web-ui exposes `registerCodeBlockBackgroundDrawer` below line selection and
+  `registerCodeBlockContentDrawer` before foreground drawings and diagnostics, and owns generic sprite-cell drawing primitives.
 - `@8f4e/editor-plugin-dialogs` owns dialog dimensions, wrapping/clipping, private button geometry/hit testing,
   and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
   Both compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies

@@ -68,7 +68,7 @@
   subscriptions. Changed requests automatically rederive affected visible blocks without source changes, project
   revisions, or compilation. Unchanged values are no-ops; callbacks can update requests and settle synchronously.
   Keep all layout requests/callbacks out of directive drafts, and layout refresh policy out of the lazy loader.
-  The code-rendering plugin refreshes prepared text only after `codeBlockLayoutsChanged`; keep input invalidation owned by editor-state.
+  The code-rendering plugin refreshes prepared text and nested block backgrounds only after `codeBlockLayoutsChanged`; keep input invalidation owned by editor-state.
 - Use `applyCodeBlockSourceEdits(store, edits, { affectsCompilation })` for plugin source-edit batches and
   `deleteCodeBlocks(store, blocks)` for removing blocks from the current slice. These helpers own refreshes,
   deleted-block reference cleanup, and one completed project/compiler notification. Callers own edit-mode policy;
@@ -154,7 +154,9 @@
 
 - Keyboard-editing owns edit-mode caret movement, mutation caret adjustments, and its foreground drawer. Core keeps
   source-position state and bounds/tab geometry; do not restore direction-based caret movement or a built-in glyph.
-- `registerCodeBlockForegroundDrawer` runs above content/shapes and below diagnostics. Keep this stage generic.
+- `registerCodeBlockBackgroundDrawer` runs above the block surface and below line selection, corners, and content.
+  Code-rendering owns nested block parsing, highlight geometry, colors, and its private cache. Keep highlight fields out of core state.
+- `registerCodeBlockForegroundDrawer` runs above content/shapes and below diagnostics. Keep these stages generic.
 - The circling selected-block animation belongs to `editor-plugin-selection-animation`. Keep its timing, glyphs,
   and drawing out of core; retain selection state, corner colors, and line highlighting.
 

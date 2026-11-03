@@ -26,7 +26,9 @@ export type CanvasOverlayDrawer = (context: CanvasOverlayDrawerContext) => void;
 export interface EditorDrawerRegistry {
 	/** Register a GPU layer whose resources are bound to the renderer lifecycle. */
 	registerRenderLayer: (factory: RenderLayerFactory) => () => void;
-	/** Draw inside the block after its background/highlights and before foreground drawings and diagnostics. */
+	/** Draw above the block surface, below line selection, corners, and content. */
+	registerCodeBlockBackgroundDrawer: (drawer: CodeBlockDrawer) => () => void;
+	/** Draw inside the block after backgrounds and selection, before foreground drawings and diagnostics. */
 	registerCodeBlockContentDrawer: (drawer: CodeBlockDrawer) => () => void;
 	/** Draw above content and shapes, before diagnostics. */
 	registerCodeBlockForegroundDrawer: (drawer: CodeBlockDrawer) => () => void;
@@ -43,6 +45,7 @@ export interface EditorDrawerRegistry {
 /** Renderer-owned invocation and lifecycle of registered drawers and layers. */
 export interface EditorDrawerHost extends EditorDrawerRegistry {
 	attachRenderLayers: ReturnType<typeof createRenderLayerRegistry>['attachRenderLayers'];
+	drawCodeBlockBackground: CodeBlockDrawer;
 	drawCodeBlockContent: CodeBlockDrawer;
 	drawCodeBlockForeground: CodeBlockDrawer;
 	drawCodeBlock: CodeBlockDrawer;
@@ -68,6 +71,7 @@ function createDrawerSlot<Context>() {
 }
 
 export function createEditorDrawerRegistry(): EditorDrawerHost {
+	const background = createDrawerSlot<CodeBlockDrawerContext>();
 	const content = createDrawerSlot<CodeBlockDrawerContext>();
 	const foreground = createDrawerSlot<CodeBlockDrawerContext>();
 	const widgets = createDrawerSlot<CodeBlockDrawerContext>();
@@ -76,12 +80,14 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 	const modalOverlays = createDrawerSlot<CanvasOverlayDrawerContext>();
 	return {
 		...createRenderLayerRegistry(),
+		registerCodeBlockBackgroundDrawer: background.register,
 		registerCodeBlockContentDrawer: content.register,
 		registerCodeBlockForegroundDrawer: foreground.register,
 		registerCodeBlockDrawer: widgets.register,
 		registerCodeBlockOverlay: overlays.register,
 		registerCanvasOverlay: canvasOverlays.register,
 		registerModalOverlay: modalOverlays.register,
+		drawCodeBlockBackground: background.draw,
 		drawCodeBlockContent: content.draw,
 		drawCodeBlockForeground: foreground.draw,
 		drawCodeBlock: widgets.draw,

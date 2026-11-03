@@ -38,8 +38,8 @@
 - Verify with `npx nx run @8f4e/editor-minimal:build|test|typecheck`. The product website's `test:browser` target covers
   real compiler execution, URL loading, lazy controls/runtimes, editing, bridge lifecycle, and disposal.
 
-- Install `codeRenderingPlugin` eagerly for code/notes text and syntax highlighting. Keep text preparation and caching
-  in the plugin and editing/layout geometry in core.
+- Install `codeRenderingPlugin` eagerly for code/notes text, syntax highlighting, and nested block backgrounds. Keep
+  text/highlight preparation and caching in the plugin and editing/layout geometry in core.
 - Load `dialogsPlugin` as an unconditional deferred entry. It owns private dialog layout, hit testing, and drawing;
   editor-state retains dialog content, lifecycle, button actions, and modal input blocking.
 - Install `connectorsPlugin` in the deferred plugin set. It owns all input/output widgets and GPU wire rendering;
