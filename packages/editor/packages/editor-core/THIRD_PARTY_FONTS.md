@@ -15,7 +15,6 @@ This file documents the upstream projects, the local derived font names, and the
   - `terminus8x16`
   - `terminus8x16bold`
   - `terminus10x18`
-  - `terminus10x18bold`
   - `terminus12x24`
   - `terminus12x24bold`
 - License: SIL Open Font License 1.1
@@ -34,7 +33,6 @@ Notes:
   - `spleen5x8`
   - `spleen6x12`
   - `spleen8x16`
-  - `spleen12x24`
   - `spleen16x32`
 - License: BSD 2-Clause
 - Local license text: `packages/editor/licenses/spleen-BSD-2-Clause.txt`

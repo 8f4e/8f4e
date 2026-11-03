@@ -10,7 +10,7 @@ test('previews fonts through the default composition without changing saved sour
 	canvas.height = 256;
 	document.body.append(canvas);
 	const project = parseProjectSource(
-		'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote settings\n; @mode edit\n; @pos 3 3\n; @config font attpc63008x16\nSample text\nnoteEnd'
+		'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote settings\n; @mode edit\n; @pos 3 3\n; @config font spleen16x32\nSample text\nnoteEnd'
 	);
 	let editor: Editor | undefined;
 	let context!: EditorPluginContext;
@@ -47,7 +47,7 @@ test('previews fonts through the default composition without changing saved sour
 			canvas.dispatchEvent(event);
 			return event;
 		};
-		await expect.poll(() => editor!.state.viewport.vGrid).toBe(8);
+		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
 		expect(key('F19').defaultPrevented).toBe(true);
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(6);
 		expect(editor.state.viewport.hGrid).toBe(10);
@@ -62,14 +62,14 @@ test('previews fonts through the default composition without changing saved sour
 				{
 					type: 'update',
 					blockId: getEditorBlockId(block),
-					code: block.code.map(line => line.replace('attpc63008x16', 'terminus10x18')),
+					code: block.code.map(line => line.replace('spleen16x32', 'terminus10x18')),
 				},
 			],
 		});
 		expect(editor.state.editorConfig.font).toBe('6x10');
 		context.events.dispatch('loadProject', { project });
-		await expect.poll(() => editor!.state.viewport.vGrid).toBe(8);
-		expect(editor.state.editorConfig.font).toBe('attpc63008x16');
+		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
+		expect(editor.state.editorConfig.font).toBe('spleen16x32');
 	} finally {
 		editor?.dispose();
 		canvas.remove();
