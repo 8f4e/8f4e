@@ -118,6 +118,7 @@ test('keeps live editing and project export available in the minimal editor', as
 		expect(menu.some(item => item.action === action)).toBe(false);
 	}
 	expect(menu.some(item => item.action === 'exportProject')).toBe(true);
+	expect(menu.some(item => item.action === 'pasteCodeBlocks')).toBe(true);
 	expect(menu.some(item => item.title === 'Add Built-in Block')).toBe(false);
 	expect(menu.some(item => item.payload?.menu === 'favoritesMenu')).toBe(false);
 	const exportIndex = menu.findIndex(item => item.action === 'exportProject');

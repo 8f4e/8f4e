@@ -72,7 +72,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	};
 	const press = (key = 0, line = 3) => events.dispatch('codeBlockPointerDown', { codeBlock, ...point(key, line) });
 	const click = (key = 0, line = 3) => {
-		events.dispatch('mousedown', {
+		events.dispatch('pointerdown', {
 			...point(key, line),
 			movementX: 0,
 			movementY: 0,
@@ -82,7 +82,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 			canvasHeight: 600,
 			stopPropagation: false,
 		});
-		events.dispatch('mouseup');
+		events.dispatch('pointerup');
 	};
 	const initialRevision = state.compilerInputRevision;
 	const menuItems = async () => {
@@ -279,7 +279,7 @@ describe('piano plugin', () => {
 		test.state.contextMenu.highlightedItem = 0;
 		test.state.contextMenu.open = true;
 		const click = { ...test.point(), buttons: 1, altKey: false, stopPropagation: false };
-		test.events.dispatch('mousedown', click);
+		test.events.dispatch('pointerdown', click);
 		expect(click.stopPropagation).toBe(true);
 		expect(test.state.contextMenu.open).toBe(false);
 		expect(test.codeBlock.code).toContain('int[] notes 4 50');

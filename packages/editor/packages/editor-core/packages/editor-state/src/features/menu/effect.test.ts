@@ -149,7 +149,7 @@ describe('contextMenu effect', () => {
 		state.viewport.x = 32;
 		state.viewport.y = 64;
 
-		const onMouseMove = (events.on as unknown as MockInstance).mock.calls.find(call => call[0] === 'mousemove')![1];
+		const onMouseMove = (events.on as unknown as MockInstance).mock.calls.find(call => call[0] === 'pointermove')![1];
 		onMouseMove({ x: 96, y: 112 });
 
 		expect(state.contextMenu.highlightedItem).toBe(1);
@@ -178,7 +178,7 @@ describe('contextMenu effect', () => {
 
 		state.contextMenu.highlightedItem = state.contextMenu.items.findIndex(item => item.action === 'contributedAction');
 
-		const onMouseDown = (events.on as unknown as MockInstance).mock.calls.find(call => call[0] === 'mousedown')![1];
+		const onMouseDown = (events.on as unknown as MockInstance).mock.calls.find(call => call[0] === 'pointerdown')![1];
 		onMouseDown({ x: 100, y: 112 });
 
 		expect(menuWasOpenWhenActionDispatched).toBe(false);

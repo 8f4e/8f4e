@@ -2,6 +2,7 @@ import type {
 	CodeBlockGraphicData,
 	ContextMenuItem,
 	EventDispatcher,
+	InternalPointerEvent,
 	MenuStackEntry,
 	State,
 } from '@8f4e/editor-state-types';
@@ -10,13 +11,6 @@ import roundToGrid from '~/features/viewport/roundToGrid';
 import findCodeBlockAtViewportCoordinates from '../code-blocks/utils/finders/findCodeBlockAtViewportCoordinates';
 import * as menus from './menus';
 import type { MenuRegistry } from './registry';
-
-interface MouseEvent {
-	x: number;
-	y: number;
-	buttons?: number;
-	stopPropagation?: boolean;
-}
 
 function getHighlightedMenuItem(x: number, y: number, width: number, height: number) {
 	if (x < 0 || x > width || y < 0) {
@@ -94,7 +88,7 @@ export default function contextMenu(
 		state.contextMenu.itemWidth = getLongestMenuItem(state.contextMenu.items) * state.viewport.vGrid;
 		keepMenuWithinViewport(state);
 	};
-	const onMouseMove = (event: MouseEvent) => {
+	const onPointerMove = (event: InternalPointerEvent) => {
 		if (!state.contextMenu.open) {
 			return;
 		}
@@ -113,7 +107,7 @@ export default function contextMenu(
 		state.contextMenu.open = false;
 	};
 
-	const onMouseDown = (event: MouseEvent) => {
+	const onPointerDown = (event: InternalPointerEvent) => {
 		if (!state.contextMenu.open) {
 			return;
 		}
@@ -140,7 +134,7 @@ export default function contextMenu(
 		}
 	};
 
-	const onContextMenu = async (event: MouseEvent) => {
+	const onContextMenu = async (event: InternalPointerEvent) => {
 		if (!state.featureFlags.contextMenu) {
 			return;
 		}
@@ -174,15 +168,15 @@ export default function contextMenu(
 	events.on('openSubMenu', onOpenSubMenu);
 	events.on('contextmenu', onContextMenu);
 	events.on('menuBack', onMenuBack);
-	events.on('mousedown', onMouseDown);
-	events.on('mousemove', onMouseMove, { capture: true });
+	events.on('pointerdown', onPointerDown);
+	events.on('pointermove', onPointerMove, { capture: true });
 
 	return () => {
 		for (const unregister of unregisterMenus) unregister();
 		events.off('contextmenu', onContextMenu);
 		events.off('openSubMenu', onOpenSubMenu);
 		events.off('menuBack', onMenuBack);
-		events.off('mousedown', onMouseDown);
-		events.off('mousemove', onMouseMove);
+		events.off('pointerdown', onPointerDown);
+		events.off('pointermove', onPointerMove);
 	};
 }

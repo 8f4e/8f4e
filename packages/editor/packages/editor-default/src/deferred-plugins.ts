@@ -67,12 +67,12 @@ export function createDeferredEditorPlugin(
 				),
 		},
 		{
-			id: 'touch-viewport-navigation',
+			id: 'touch-input',
 			scope: 'view',
 			matches: () => hasCoarsePointer,
 			load: () =>
-				import('@8f4e/editor-plugin-touch-viewport-navigation').then(module =>
-					module.createTouchViewportNavigationPlugin({ inputTarget: canvas })
+				import('@8f4e/editor-plugin-touch-input').then(module =>
+					module.createTouchInputPlugin({ ...options.touchNavigation, inputTarget: canvas })
 				),
 		},
 		{

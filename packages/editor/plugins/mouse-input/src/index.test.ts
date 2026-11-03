@@ -45,10 +45,15 @@ function setup(captureWheel = true, viewportDragging = true) {
 }
 
 describe('mouse input', () => {
-	it.each(['mousedown', 'mousemove', 'mouseup', 'contextmenu'])('forwards %s as a core input event', type => {
+	it.each([
+		['mousedown', 'pointerdown'],
+		['mousemove', 'pointermove'],
+		['mouseup', 'pointerup'],
+		['contextmenu', 'contextmenu'],
+	])('translates %s into %s', (type, translatedType) => {
 		const test = setup();
 		expect(test.mouse(type).defaultPrevented).toBe(true);
-		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith(type, {
+		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith(translatedType, {
 			x: 20,
 			y: 40,
 			movementX: 20,
@@ -67,7 +72,7 @@ describe('mouse input', () => {
 		test.mouse('mousedown', { offsetX: 28, offsetY: 56, altKey: true });
 		expect(test.inputTarget.focus).toHaveBeenCalledExactlyOnceWith({ preventScroll: true });
 		expect(test.events.dispatch).toHaveBeenLastCalledWith(
-			'mousedown',
+			'pointerdown',
 			expect.objectContaining({ x: 28, y: 56, movementX: 8, movementY: 16, altKey: true })
 		);
 	});
@@ -76,7 +81,7 @@ describe('mouse input', () => {
 		const test = setup();
 		expect(test.wheel().defaultPrevented).toBe(true);
 		expect(test.events.dispatch).toHaveBeenCalledWith(
-			'mousemove',
+			'pointermove',
 			expect.objectContaining({ movementX: -3, movementY: -5, buttons: 1 })
 		);
 		vi.advanceTimersByTime(119);
@@ -130,7 +135,7 @@ describe('mouse input', () => {
 		first.mouse('mousemove', { offsetX: 100, offsetY: 100 });
 		second.mouse('mousemove');
 		expect(second.events.dispatch).toHaveBeenLastCalledWith(
-			'mousemove',
+			'pointermove',
 			expect.objectContaining({ movementX: 20, movementY: 40 })
 		);
 	});

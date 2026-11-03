@@ -75,7 +75,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			editor.pauseRendering();
 			if (trigger === 'group navigation') {
 				expect(load).not.toHaveBeenCalled();
-				context.events.dispatch('mousemove', { buttons: 1, movementX: 64, movementY: 96 });
+				context.events.dispatch('pointermove', { buttons: 1, movementX: 64, movementY: 96 });
 				editor.renderFrame();
 				await expect(canvas).toMatchScreenshot('parent-viewport-before-group');
 				const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audioGroup')!;
@@ -96,7 +96,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			editor.renderFrame();
 			await expect(canvas).toMatchScreenshot(`plot-after-${trigger.replace(' ', '-')}`);
 			if (trigger === 'group navigation') {
-				context.events.dispatch('mousemove', { buttons: 1, movementX: 128, movementY: 160 });
+				context.events.dispatch('pointermove', { buttons: 1, movementX: 128, movementY: 160 });
 				editor.navigation.goToRoot();
 				expect(editor.state.viewport).toMatchObject({ x: -64, y: -96 });
 				editor.renderFrame();

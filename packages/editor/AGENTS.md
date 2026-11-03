@@ -144,11 +144,15 @@
   import their factories after the first render, only for non-coarse primary pointers. Editing loads its implementation on edit mode and
   owns pending input replay; test real plugin combinations in editor-default, never in sibling-plugin tests.
 - Mouse/wheel DOM adaptation belongs to `mouse-input`, loaded on every device. Both hosts match
-  `touch-viewport-navigation` only for `(pointer: coarse)` in their deferred registries. Touch owns one-finger
-  viewport gestures and restores canvas touch behavior on disposal. Core keeps event dispatch and input state effects.
+  `touch-input` only for `(pointer: coarse)` in their deferred registries. Touch owns configurable one- or two-finger
+  viewport gestures (two by default) and restores canvas touch behavior on disposal. Core keeps event dispatch and input state effects.
   Feature-plugin tests dispatch core input events directly; native browser input belongs to input-plugin and composition tests.
 - The default editor additionally imports `font-preview` with the desktop keyboard set. F18/F19 cycle temporary fonts;
   source, history, and exports stay unchanged. Minimal omits it.
+
+- Browser touch and mouse adaptation belongs to the input plugins. Core routes normalized pointer events before default selection and dragging. Controls consume device-independent
+  `codeBlockPointerDown`/`codeBlockPointerMove`/`codeBlockPointerUp` events and claim pointer downs with
+  `stopPropagation`. Keep DOM listeners and platform checks out of control plugins.
 
 - Block copy/paste belongs to `editor-plugin-code-block-copy-paste`, composed by default and minimal with injected clipboard read/write functions. Grouping receives its own writer. Core has no clipboard callbacks or copy/paste actions; it exports pure `serializeCodeBlocks` and generic `insertCodeBlocks`. Pasting changes only `@pos` for placement: preserve declaration names, group names, references, and entry metadata without numbering or transform hooks.
 - Keyboard-editing handles native plain-text paste at the caret through its loaded implementation. Do not buffer paste events or add loading-race handling.

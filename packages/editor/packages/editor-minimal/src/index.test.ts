@@ -52,7 +52,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 	expect(deferredPlugins.map(plugin => plugin.id)).toContain('mouse-input');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('selection-animation');
-	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-viewport-navigation');
+	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-input');
 	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).toEqual(
 		expect.arrayContaining([
 			'code-rendering',
@@ -77,9 +77,7 @@ it('omits all keyboard plugins on coarse-pointer browsers', async () => {
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 	await mountMinimalEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
 	const plugins = await loadDeferredPlugins();
-	expect(plugins.map(plugin => plugin.id)).toEqual(
-		expect.arrayContaining(['mouse-input', 'touch-viewport-navigation'])
-	);
+	expect(plugins.map(plugin => plugin.id)).toEqual(expect.arrayContaining(['mouse-input', 'touch-input']));
 	for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing'])
 		expect(plugins.some(plugin => plugin.id === id)).toBe(false);
 });

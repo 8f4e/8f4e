@@ -64,14 +64,14 @@ functionEnd float`,
 			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'env')).toBe(true)
 		);
 		editor.pauseRendering();
-		const mouse = (type: string, x: number, y: number) => {
+		const pointer = (type: string, x: number, y: number) => {
 			events.dispatch(type, {
 				x,
 				y,
 				movementX: 0,
 				movementY: 0,
 				altKey: false,
-				buttons: type === 'mouseup' ? 0 : 1,
+				buttons: type === 'pointerup' ? 0 : 1,
 				stopPropagation: false,
 				canvasWidth: canvas.width,
 				canvasHeight: canvas.height,
@@ -83,10 +83,10 @@ functionEnd float`,
 			const index = menu.items.findIndex(item => item.title?.includes(title));
 			const x = menu.x - state.viewport.x + 8;
 			const y = menu.y - state.viewport.y + index * state.viewport.hGrid + 8;
-			mouse('mousemove', x, y);
-			mouse('mousedown', x, y);
+			pointer('pointermove', x, y);
+			pointer('pointerdown', x, y);
 		};
-		mouse('contextmenu', 80, 32);
+		pointer('contextmenu', 80, 32);
 		await click('Add Built-in Block');
 		await click('Audio');
 		await click('Effects');

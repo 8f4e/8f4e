@@ -66,7 +66,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		y: codeBlock.y + row * state.viewport.hGrid - state.viewport.y + 1,
 	});
 	const press = (row = 2) => events.dispatch('codeBlockPointerDown', { codeBlock, ...point(row) });
-	const release = () => events.dispatch('mouseup');
+	const release = () => events.dispatch('codeBlockPointerUp');
 	return { store, state, codeBlock, events, memoryViews, draw, write, render, point, press, release, dispose };
 }
 
@@ -95,7 +95,7 @@ describe('button plugin', () => {
 	it.each([true, false])('presses and releases through pointer events with editing=%s', async editing => {
 		const test = await setup(['module controls', 'int gate 0', '; @button &gate', '; @pos 40 20', 'moduleEnd']);
 		test.store.set('editorMode', editing ? 'edit' : 'view');
-		test.events.dispatch('mousedown', { ...test.point(), buttons: 1, altKey: false });
+		test.events.dispatch('pointerdown', { ...test.point(), buttons: 1, altKey: false });
 		const address = test.state.compiler.result.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);
 		test.release();

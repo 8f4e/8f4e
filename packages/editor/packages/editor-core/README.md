@@ -17,7 +17,8 @@ that consume their events. Other platform renderers can replace web-ui.
 `@8f4e/editor-plugin-mouse-input` forwards DOM mouse and wheel input to core events. Pass `captureWheel: false`
 to its factory to leave wheel scrolling to the page. The default and minimal compositions expose that option
 and install the mouse plugin on both fine- and coarse-pointer devices.
-`@8f4e/editor-plugin-touch-viewport-navigation` adds one-finger viewport dragging on coarse-pointer devices.
+`@8f4e/editor-plugin-touch-input` translates touches and adds configurable viewport gestures on coarse-pointer devices.
+Panning defaults to two fingers on both axes; hosts can select one finger or restrict the movement axis.
 Core installs no DOM mouse, wheel, touch, or keyboard listeners.
 
 Hosts can pause rendering without releasing memory through `pauseRendering()`. `releaseRenderingResources()` also
@@ -159,11 +160,16 @@ Types and generic WebGL resource helpers are exported by `@8f4e/web-ui`.
 Core keeps memory semantics independent of connector data and has no connector-specific fields or GPU resources.
 `@8f4e/editor-plugin-texture-runtime` owns editor-frame WASM execution and block-bound `@texture` framebuffer views through the same overlay hook.
 
-Interaction handlers can subscribe to `codeBlockPointerDown` for the start of a block press and `mouseup` for release.
-Use `events.on('mousemove', handler, { capture: true })` when a plugin must consume a drag before ordinary listeners,
-such as viewport panning. Capture listeners run first in registration order. Setting `event.stopPropagation = true`
-stops the remaining capture and ordinary listeners. Unregister with the same `events.off` call as other listeners.
-Core registers menu movement in capture before plugins, so an open menu retains priority over plugin drags.
+Both input adapters emit normalized `pointerdown`, `pointermove`, `pointerup`, and `pointercancel` events.
+`InternalPointerEvent` and `CodeBlockPointerDownEvent` are shared contracts in `@8f4e/editor-state-types`.
+Core routes both adapters through the same block lookup and interaction phases, independently of module dragging.
+
+Controls subscribe to `codeBlockPointerDown` in capture, set `stopPropagation` when claiming the press, handle
+`codeBlockPointerMove` for drags, and release on `codeBlockPointerUp`. Ordinary block press listeners run after
+default selection. Dialogs and menus retain priority over controls. Capture listeners run first in registration order;
+setting `stopPropagation` stops the remaining listeners. Event dispatch can select only the capture or normal phase
+with `{ phase: 'capture' | 'normal' }`, which lets touch input probe interactions before starting a viewport gesture.
+Unregister with the same `events.off` call as other listeners.
 
 Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets: [codeBlock] }` before a drag.
 Plugins may synchronously replace `targets`; core then moves and snaps those blocks and publishes one position edit.

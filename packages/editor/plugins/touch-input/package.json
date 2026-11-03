@@ -1,8 +1,8 @@
 {
-  "name": "@8f4e/editor-plugin-touch-viewport-navigation",
+  "name": "@8f4e/editor-plugin-touch-input",
   "version": "0.0.2",
   "private": true,
-  "description": "Touch viewport navigation for the 8f4e editor",
+  "description": "Browser touch input for the 8f4e editor",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
