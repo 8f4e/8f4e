@@ -10,6 +10,7 @@ that consume their events. Other platform renderers can replace web-ui.
 - Initialize the editor-state store and event dispatcher for the web runtime.
 - Make the canvas focusable for installed input plugins.
 - Initialize the UI renderer with state and memory views, and forward resize events.
+- Own the single animation-frame loop, advancing viewport animation before asking web-ui to draw each frame.
 - Observe the canvas's CSS dimensions and adapt the drawing buffer and editor viewport when its host resizes it.
 - Expose state access, memory view updates, rendering lifecycle controls, and state machine callbacks as extension
   points.
@@ -24,7 +25,8 @@ Core installs no DOM mouse, wheel, touch, or keyboard listeners.
 Hosts can pause rendering without releasing memory through `pauseRendering()`. `releaseRenderingResources()` also
 releases reloadable GPU textures, dynamic buffers, and the canvas drawing buffer. `resumeRendering()` restores the
 resources and applies any canvas resize that happened while they were released.
-`renderFrame()` immediately renders the current state, including while the animation loop is paused.
+`renderFrame()` immediately advances viewport animation and renders the current state, including while the loop is
+paused. Core coordinates these steps; web-ui draws the supplied viewport without advancing navigation state.
 
 The editor supports view and edit modes. `@8f4e/editor-plugin-selection-animation` supplies the continuously circling
 segment around selected code blocks in both modes.

@@ -1,4 +1,5 @@
 import initState, {
+	advanceViewportAnimation,
 	createEditorEditingHandle,
 	type EditorEditingHandle,
 	type EditorNavigationHandle,
@@ -162,8 +163,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				getWordFromMemory: (allocationUnitAddress: number) => {
 					return memoryViews.int32[allocationUnitAddress] || 0;
 				},
-				requestAnimationFrame: callback => window.requestAnimationFrame(callback),
-				cancelAnimationFrame: id => window.cancelAnimationFrame(id),
 			},
 		});
 		cleanups.push(() => store.dispose());
@@ -201,13 +200,47 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		});
 		cleanups.push(() => view.destroy());
 
+		let rendering = false;
+		let animationFrameRequest: number | null = null;
+		const renderFrame = (frameTime = performance.now()) => {
+			advanceViewportAnimation(state, frameTime, events);
+			view.renderFrame();
+		};
+		const pauseRendering = () => {
+			rendering = false;
+			if (animationFrameRequest !== null) {
+				cancelAnimationFrame(animationFrameRequest);
+				animationFrameRequest = null;
+			}
+		};
+		cleanups.push(pauseRendering);
+		const renderNextFrame = (frameTime: number) => {
+			animationFrameRequest = null;
+			if (!rendering) return;
+
+			try {
+				renderFrame(frameTime);
+			} catch (error) {
+				rendering = false;
+				throw error;
+			}
+
+			if (rendering) animationFrameRequest = requestAnimationFrame(renderNextFrame);
+		};
+		const resumeRendering = () => {
+			if (rendering) return;
+			view.resetRenderStats();
+			rendering = true;
+			renderNextFrame(performance.now());
+		};
+
 		let currentCanvasSize: CanvasSize = initialCanvasSize;
 		const resize = (width: number, height: number) => {
 			events.dispatch('resize', { canvasWidth: width, canvasHeight: height });
 			const resized = view.resize(width, height);
 			currentCanvasSize = { width, height };
 			if (resized) {
-				view.renderFrame();
+				renderFrame();
 			}
 		};
 		const browserWindow = canvas.ownerDocument?.defaultView ?? globalThis.window;
@@ -224,7 +257,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		if (resizeObserver) cleanups.push(() => resizeObserver.disconnect());
 
 		view.resize(initialCanvasSize.width, initialCanvasSize.height);
-		view.renderFrame();
+		resumeRendering();
 		resizeObserver?.observe(canvas);
 		// The project is installed, its font atlas is ready, and the renderer has drawn.
 		events.dispatch('ready');
@@ -233,10 +266,13 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			editing: editing.handle,
 			navigation: editing.navigation,
 			resize,
-			renderFrame: () => view.renderFrame(),
-			pauseRendering: () => view.pauseRendering(),
-			releaseRenderingResources: () => view.releaseRenderingResources(),
-			resumeRendering: () => view.resumeRendering(),
+			renderFrame: () => renderFrame(),
+			pauseRendering,
+			releaseRenderingResources: () => {
+				pauseRendering();
+				view.releaseRenderingResources();
+			},
+			resumeRendering,
 			getMemoryViews: () => memoryViews,
 			dispose,
 			state,

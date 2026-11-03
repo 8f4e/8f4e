@@ -30,7 +30,6 @@ test('plot plugin renders its directive', async () => {
 		test.memoryViews.float32[memory.allocationUnitAddress + index] = Math.sin((index * Math.PI) / 16);
 
 	const renderer = await initView(test.store, test.events, canvas, test.memoryViews, { drawers });
-	renderer.pauseRendering();
 
 	try {
 		renderer.renderFrame();

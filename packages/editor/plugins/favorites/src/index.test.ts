@@ -207,7 +207,6 @@ describe('favorites plugin', () => {
 		);
 		test.events.dispatch('pointerdown', { x: 8, y: 8, stopPropagation: false });
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block);
-		expect(test.state.viewport.y).toBe(test.block.y + test.block.cursor.y - test.state.viewport.height / 2);
 		expect(test.state.projectChange.revision).toBe(revision);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision);
 	});

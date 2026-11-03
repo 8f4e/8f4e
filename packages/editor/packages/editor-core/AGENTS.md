@@ -6,6 +6,8 @@
 
 ## Build, Bundle, Dev
 - From root: `npx nx run @8f4e/editor-core:build|test|typecheck`.
+- Run `npx nx run @8f4e/editor-core:test:screenshot` for the real-editor viewport animation/culling regression;
+  use `test:screenshot:update` to update its baseline.
 - From package directory: use `npx nx run @8f4e/editor-core:<target>` (e.g., `npx nx run @8f4e/editor-core:dev`).
 - Ensure `dist/` exists before building the default editor composition after API changes.
 - The nested editor-state build clears `dist/` once before emitting declarations and then bundling with Vite.
@@ -113,7 +115,11 @@
 
 - Keep accepted metadata in `state.compiler.result`, separate from `compiler.isCompiling` progress.
 - Core emits `compilationInputChanged` after its compiler input revision advances. Compilation scheduling and worker ownership belong to `editor-plugin-compiler`; do not restore a compile callback or built-in compiler effect.
-- `EditorOptions` has no public callbacks bag. Construct internal memory and animation callbacks in core. Clipboard access belongs to feature factories.
+- `EditorOptions` has no public callbacks bag. Construct the internal memory callback in core. Clipboard access belongs to feature factories.
+- Editor-core owns the single frame loop and pause/resume coordination. Advance viewport animations through
+  `advanceViewportAnimation` before calling web-ui's `renderFrame`, including on-demand and resize frames. Keep
+  animation data and synchronous coordinate updates in editor-state; it owns no frame scheduler. Web-ui initializes
+  without drawing or scheduling frames and owns only drawing, rendering statistics, and GPU resource lifecycle.
 - Consume accepted `compilationSucceeded` program artifacts (`memoryRef`) to update generic memory views before metadata consumers react. Dispose plugins in reverse installation order so execution plugins stop before compiler resources are released. Drain cleanup stacks even when a disposer throws.
 - Render environment-constant contributions uniformly; each plugin owns its contribution key.
 

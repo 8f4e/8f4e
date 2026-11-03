@@ -6,6 +6,8 @@
 - Editor libraries and hosts live in `packages/`. Optional feature plugins live in `plugins/<feature>/`, each with
   its own package named `@8f4e/editor-plugin-<feature>`. Keep plugin directories short and package names explicit.
 - `@8f4e/editor-core` is the minimal reusable editor.
+- Editor-core owns the single frame loop and advances viewport state before web-ui draws. Web-ui has no frame
+  scheduler or navigation-state updates; it owns drawing and GPU resources.
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, line-number drawing, and private
   prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
@@ -115,6 +117,7 @@
 
 - Vitest tests live under `src/__tests__` or alongside source as `*.test.ts`.
 - Test composition behavior in `@8f4e/editor-default` and `@8f4e/editor-minimal`; test reusable editor behavior in `@8f4e/editor-core`.
+- `npx nx run @8f4e/editor-core:test:screenshot` covers viewport animation and culling through the real core/renderer.
 - Feature-plugin tests cover their own behavior against core services. Do not install unrelated plugins to render
   fixture content or preserve screenshots; combined plugin rendering belongs in composition tests.
 

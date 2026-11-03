@@ -41,6 +41,22 @@
         "cwd": "{projectRoot}"
       },
       "dependsOn": ["^build"]
+    },
+    "test:screenshot": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "vitest --config=vitest.browser.config.ts --run",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "test:screenshot:update": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "vitest --config=vitest.browser.config.ts --run --update",
+        "cwd": "{projectRoot}"
+      }
     }
   },
   "tags": ["type:library", "scope:ui"]

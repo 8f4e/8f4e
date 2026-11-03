@@ -17,6 +17,18 @@ cancels native defaults only for claimed interactions or completed
 pans. Extra fingers, cancellation, project replacement, and disposal release a held touch. Unclaimed taps retain
 native tap handling.
 
+## Viewport navigation
+
+Directional block navigation, jumping to a block, and going home request a 500 ms viewport animation. Editor-state
+stores the start and target positions and exposes `advanceViewportAnimation(state, frameTime, events)` for each
+rendered frame. Editor-core advances the animation before asking web-ui to draw, updating the shared
+viewport coordinates, border geometry, and `viewportChanged` listeners throughout the pan.
+
+Editor-core owns frame scheduling and pause/resume coordination. State has no animation-frame callbacks, and
+web-ui draws the supplied viewport without advancing navigation state. Other hosts and headless consumers advance
+animations explicitly. The editor's `renderFrame()` also advances an animation while automatic rendering is
+paused. The next frame uses elapsed time, including any time spent paused.
+
 ## Touch panning
 
 `createTouchInputPlugin` accepts `fingerCount: 1 | 2` (default `2`) and

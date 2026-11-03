@@ -87,7 +87,6 @@ entryEnd`
 	const renderer = await initView(store, events, canvas, memoryViews, {
 		drawers,
 	});
-	renderer.pauseRendering();
 
 	now.mockReturnValue(1000);
 	try {

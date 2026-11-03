@@ -19,7 +19,6 @@ test('stack plugin renders its directive', async () => {
 	test.state.viewport.height = canvas.height;
 
 	const renderer = await initView(test.store, test.events, canvas, test.memoryViews, { drawers });
-	renderer.pauseRendering();
 
 	try {
 		renderer.renderFrame();

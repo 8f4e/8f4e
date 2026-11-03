@@ -60,9 +60,8 @@ export default async function init(
 	options: WebUiOptions = {}
 ): Promise<{
 	resize: (width: number, height: number) => boolean;
-	pauseRendering: () => void;
 	releaseRenderingResources: () => void;
-	resumeRendering: () => void;
+	resetRenderStats: () => void;
 	renderFrame: () => void;
 	destroy: () => void;
 }> {
@@ -160,39 +159,8 @@ export default async function init(
 		drawDialog(draw, state);
 	};
 
-	let rendering = false;
 	let renderingResourcesReleased = false;
-	let animationFrameRequest: number | null = null;
-	const renderNextFrame = () => {
-		animationFrameRequest = null;
-		if (!rendering) {
-			return;
-		}
-
-		try {
-			engine.renderFrame(drawFrame);
-		} catch (error) {
-			rendering = false;
-			throw error;
-		}
-
-		if (rendering) {
-			animationFrameRequest = requestAnimationFrame(renderNextFrame);
-		}
-	};
-	const pauseRendering = () => {
-		if (!rendering) {
-			return;
-		}
-
-		rendering = false;
-		if (animationFrameRequest !== null) {
-			cancelAnimationFrame(animationFrameRequest);
-			animationFrameRequest = null;
-		}
-	};
 	const releaseRenderingResources = () => {
-		pauseRendering();
 		if (renderingResourcesReleased) {
 			return;
 		}
@@ -212,19 +180,10 @@ export default async function init(
 		engine.resize(viewportWidth, viewportHeight);
 		renderingResourcesReleased = false;
 	};
-	const resumeRendering = () => {
-		if (rendering) {
-			return;
-		}
-
-		restoreRenderingResources();
-		rendering = true;
+	const resetRenderStats = () => {
 		statsSampleStartTime = performance.now();
 		statsSampleStartFrameCount = renderedFrameCount;
-		renderNextFrame();
 	};
-
-	resumeRendering();
 
 	return {
 		resize: (width, height) => {
@@ -236,15 +195,13 @@ export default async function init(
 			engine.resize(width, height);
 			return true;
 		},
-		pauseRendering,
 		releaseRenderingResources,
-		resumeRendering,
+		resetRenderStats,
 		renderFrame: () => {
 			restoreRenderingResources();
 			engine.renderFrame(drawFrame);
 		},
 		destroy: () => {
-			pauseRendering();
 			unsubscribeAppearance();
 			try {
 				renderLayers.destroy();
