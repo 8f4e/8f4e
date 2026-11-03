@@ -38,6 +38,8 @@
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, line-number drawing, and private
   prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
   `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
+- `@8f4e/editor-plugin-selection-animation` owns the circling segment around the selected block, using the generic
+  foreground drawer hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.
 - Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.
   Default/minimal import their factories after the first render only when `(pointer: coarse)` does not match. Editing keeps
   a small input bridge and loads text editing on first edit mode, buffering keystrokes during the import. Core retains
@@ -46,8 +48,8 @@
   navigation handles view-mode line selection and block navigation. `includeKeyboardModeSwitching: false` omits
   mode switching from default/minimal; its presence controls availability without a core feature flag.
 - DOM mouse/wheel forwarding belongs to `editor-plugin-mouse-input`, loaded on all devices. Coarse-pointer devices
-  additionally load `editor-plugin-touch-viewport-navigation` for one-finger viewport dragging with tap preservation.
-  Both are independent entries in each composition's deferred registry. Core retains event dispatch, mouse-input
+  additionally load `editor-plugin-touch-input` for two-finger viewport dragging with tap preservation.
+  Both are independent entries in each composition's deferred registry. Core retains event dispatch, pointer-input
   state effects, viewport updates, and snapping; `captureWheel` is a mouse-plugin factory/host option.
 - The default editor also imports `editor-plugin-font-preview` for non-coarse pointers. F18/F19 cycle a temporary font
   override without modifying source; project loading or plugin disposal restores source configuration. Minimal omits it.

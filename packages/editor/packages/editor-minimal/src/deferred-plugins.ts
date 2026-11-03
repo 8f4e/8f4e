@@ -2,6 +2,7 @@ import type { EditorPlugin } from '@8f4e/editor-core';
 import type { ProjectFileSession } from '@8f4e/editor-file-session';
 import type { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import type { MinimalEditorMountOptions } from './index';
 import { createLazyPluginRegistry } from './lazy-plugins';
 
 export function createDeferredEditorPlugin({
@@ -11,6 +12,7 @@ export function createDeferredEditorPlugin({
 	sharedAudioContext,
 	includeKeyboardModeSwitching = true,
 	captureWheel,
+	touchNavigation,
 }: {
 	canvas: HTMLCanvasElement;
 	compiler: ReturnType<typeof createCompilerPlugin>;
@@ -18,11 +20,18 @@ export function createDeferredEditorPlugin({
 	sharedAudioContext?: AudioContext;
 	includeKeyboardModeSwitching?: boolean;
 	captureWheel?: boolean;
+	touchNavigation?: MinimalEditorMountOptions['touchNavigation'];
 }): EditorPlugin {
 	const browserWindow = canvas.ownerDocument.defaultView!;
 	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
 	return createLazyPluginLoaderPlugin([
+		// {
+		// 	id: 'selection-animation',
+		// 	scope: 'view',
+		// 	matches: () => true,
+		// 	load: () => import('@8f4e/editor-plugin-selection-animation').then(module => module.selectionAnimationPlugin),
+		// },
 		{
 			id: 'connectors',
 			scope: 'view',
@@ -72,12 +81,12 @@ export function createDeferredEditorPlugin({
 				),
 		},
 		{
-			id: 'touch-viewport-navigation',
+			id: 'touch-input',
 			scope: 'view',
 			matches: () => hasCoarsePointer,
 			load: () =>
-				import('@8f4e/editor-plugin-touch-viewport-navigation').then(module =>
-					module.createTouchViewportNavigationPlugin({ inputTarget: canvas })
+				import('@8f4e/editor-plugin-touch-input').then(module =>
+					module.createTouchInputPlugin({ ...touchNavigation, inputTarget: canvas })
 				),
 		},
 		{

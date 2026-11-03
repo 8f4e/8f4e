@@ -42,21 +42,21 @@ entryEnd`;
 		);
 		editor.pauseRendering();
 		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
-		const mouse = (type: string, x: number, y: number) => {
+		const pointer = (type: string, x: number, y: number) => {
 			events.dispatch(type, {
 				x,
 				y,
 				movementX: 0,
 				movementY: 0,
 				altKey: false,
-				buttons: type === 'mouseup' ? 0 : 1,
+				buttons: type === 'pointerup' ? 0 : 1,
 				stopPropagation: false,
 				canvasWidth: canvas.width,
 				canvasHeight: canvas.height,
 			});
 		};
 		const openMenu = async () => {
-			mouse('contextmenu', block.x - state.viewport.x + 8, block.y - state.viewport.y + 8);
+			pointer('contextmenu', block.x - state.viewport.x + 8, block.y - state.viewport.y + 8);
 			await vi.waitFor(() =>
 				expect(state.contextMenu.items.some(item => item.action === 'removeConnections')).toBe(true)
 			);
@@ -69,8 +69,8 @@ entryEnd`;
 		await expect(canvas).toMatchScreenshot('remove-memory-connections-menu');
 		const x = state.contextMenu.x - state.viewport.x + 8;
 		const y = state.contextMenu.y - state.viewport.y + index * state.viewport.hGrid + 8;
-		mouse('mousemove', x, y);
-		mouse('mousedown', x, y);
+		pointer('pointermove', x, y);
+		pointer('pointerdown', x, y);
 		expect(state.contextMenu.open).toBe(false);
 		expect(block.code).toContain('float value');
 		await openMenu();

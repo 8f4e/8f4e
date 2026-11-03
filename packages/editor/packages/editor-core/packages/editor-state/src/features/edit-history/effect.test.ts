@@ -246,9 +246,9 @@ describe('history tracking with real project mutations', () => {
 		store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);
 		const compilerRevisionAfterLoad = state.compilerInputRevision;
 
-		dispatch('mousedown', { x: 32, y: 8 });
-		dispatch('mousemove', { movementX: 16, movementY: 32 });
-		dispatch('mouseup');
+		dispatch('pointerdown', { x: 32, y: 8 });
+		dispatch('pointermove', { movementX: 16, movementY: 32 });
+		dispatch('pointerup');
 		await vi.advanceTimersByTimeAsync(1000);
 
 		expect(loaded.code).toContain('; @pos 2 2');

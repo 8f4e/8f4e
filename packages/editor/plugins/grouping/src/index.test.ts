@@ -59,9 +59,9 @@ describe('grouping plugin', () => {
 			x: test.state.contextMenu.x - test.state.viewport.x + 8,
 			y: test.state.contextMenu.y - test.state.viewport.y + index * test.state.viewport.hGrid + 8,
 		};
-		test.events.dispatch('mousemove', { ...pointer });
-		test.events.dispatch('mousedown', { ...pointer });
-		test.events.dispatch('mouseup', { ...pointer });
+		test.events.dispatch('pointermove', { ...pointer });
+		test.events.dispatch('pointerdown', { ...pointer });
+		test.events.dispatch('pointerup', { ...pointer });
 		expect(test.state.contextMenu.open).toBe(false);
 		const copied = JSON.parse(test.writeClipboardText.mock.calls[0][0]);
 		expect(copied.map((block: { code: string[] }) => block.code[0])).toEqual(['module first', 'module second']);
@@ -142,8 +142,8 @@ describe('grouping plugin', () => {
 		const test = setup({ installed });
 		if (installed) test.disposePlugin();
 		expect((await test.openMenu()).some(item => item.action === 'copyGroupBlocks')).toBe(false);
-		test.events.dispatch('mousemove', { x: -1, y: -1 });
-		test.events.dispatch('mousedown', { x: -1, y: -1 });
+		test.events.dispatch('pointermove', { x: -1, y: -1 });
+		test.events.dispatch('pointerdown', { x: -1, y: -1 });
 		const first = test.block('first');
 		const secondX = test.block('second').x;
 		test.drag(first);

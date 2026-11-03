@@ -1,0 +1,41 @@
+# Editor input
+
+Mouse and touch plugins translate browser input into `pointerdown`, `pointermove`, `pointerup`, and
+`pointercancel` editor events with the shared `InternalPointerEvent` payload. Pointer contracts live in
+`@8f4e/editor-state-types`. Feature plugins have no browser listeners or knowledge of the input device.
+
+Core's pointer-input feature handles block lookup and routes both adapters through the same control interactions.
+Dialogs and menus get priority, then controls can claim `codeBlockPointerDown` in capture order by setting
+`stopPropagation`. Unclaimed presses continue to default selection and dragging; ordinary block listeners run after
+selection. Control routing is independent of the block-dragging feature flag. Sliders and crossfaders consume
+`codeBlockPointerMove`, and held controls release on `codeBlockPointerUp`.
+
+Event dispatch can select the capture or normal phase with `{ phase: 'capture' | 'normal' }`; omitting the option
+runs both phases. Touch input probes the capture phase before committing a viewport gesture. Core decides whether
+an interaction claims the pointer; probes leave dialog and menu activation to the completed press. The adapter
+cancels native defaults only for claimed interactions or completed
+pans. Extra fingers, cancellation, project replacement, and disposal release a held touch. Unclaimed taps retain
+native tap handling.
+
+## Touch panning
+
+`createTouchInputPlugin` accepts `fingerCount: 1 | 2` (default `2`) and
+`axis: 'both' | 'horizontal' | 'vertical'` (default `'both'`). Only gestures with the configured finger count pan
+the viewport; control gestures take priority. Two-finger panning follows the midpoint between the fingers.
+
+Both editor compositions expose the settings through their mount options:
+
+```ts
+await mountMinimalEditor(canvas, {
+	touchNavigation: { fingerCount: 1, axis: 'horizontal' },
+});
+```
+
+The product landing page uses these settings. Horizontal drags pan the editor and vertical swipes scroll the page.
+The adapter allows the disabled direction through `touch-action` and rejects gestures starting primarily in that
+direction. Only enabled axes move or snap to the grid. Full-screen editors default to two fingers on both axes.
+
+The website stylesheets disable native tap highlighting on editor canvases with
+`-webkit-tap-highlight-color: transparent`. Embedding hosts can apply the same CSS rule. Dialogs fit within the
+viewport with a grid-cell margin, wrap body text and buttons, and constrain titles to the available text width on
+portrait screens.

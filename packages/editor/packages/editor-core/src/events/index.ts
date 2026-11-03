@@ -1,4 +1,4 @@
-import type { EventDispatcher, EventSubscriptionOptions } from '@8f4e/editor-state-types';
+import type { EventDispatcher, EventDispatchOptions, EventSubscriptionOptions } from '@8f4e/editor-state-types';
 
 export type EventHandler<T> = (event: T) => void;
 
@@ -12,9 +12,6 @@ interface DisposableEventDispatcher extends EventDispatcher {
 	dispatchAsync: <T>(type: string, eventObject?: T) => Promise<void>;
 	dispose: () => void;
 }
-
-// Re-export event types from shared package
-export type { InternalMouseEvent } from '@8f4e/editor-state-types';
 
 export default function events(): DisposableEventDispatcher {
 	const subscriptions: Record<string, { capture: EventHandler<unknown>[]; normal: EventHandler<unknown>[] }> = {};
@@ -35,11 +32,19 @@ export default function events(): DisposableEventDispatcher {
 		}
 	}
 
-	function dispatch<T>(type: string, eventObject?: T, pending?: Array<void | Promise<void>>): void {
+	function dispatch<T>(
+		type: string,
+		eventObject?: T,
+		options: EventDispatchOptions = {},
+		pending?: Array<void | Promise<void>>
+	): void {
 		if (!subscriptions[type]) {
-			return console.warn('No subscription to event type:', type);
+			return;
 		}
-		for (const handlers of [subscriptions[type].capture, subscriptions[type].normal]) {
+		const phases = options.phase
+			? [subscriptions[type][options.phase]]
+			: [subscriptions[type].capture, subscriptions[type].normal];
+		for (const handlers of phases) {
 			for (const handler of [...handlers]) {
 				if (eventObject && (eventObject as EventObject).stopPropagation) return;
 				const result = handler(eventObject);
@@ -50,7 +55,7 @@ export default function events(): DisposableEventDispatcher {
 
 	async function dispatchAsync<T>(type: string, eventObject?: T): Promise<void> {
 		const pending: Array<void | Promise<void>> = [];
-		dispatch(type, eventObject, pending);
+		dispatch(type, eventObject, {}, pending);
 		await Promise.all(pending);
 	}
 

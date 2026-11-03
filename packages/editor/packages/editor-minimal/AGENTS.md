@@ -10,7 +10,7 @@
 - Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
   Load entries independently through the same loader; apply pointer capability and mode-switching availability as
   entry predicates. Keep project signals in `src/lazy-plugins.ts`. Do not create a separate keyboard loading group.
-- Load `mouse-input` on every device and forward `captureWheel` to its factory. Match `touch-viewport-navigation`
+- Load `mouse-input` on every device and forward `captureWheel` to its factory. Match `touch-input`
   only for `(pointer: coarse)`. Mouse forwarding handles touch taps while the touch plugin owns viewport dragging.
 - Keep live editing and runtime controls available. Let the project's `@mode` directive select its initial mode
   (view by default), and disable project creation by default.
@@ -42,6 +42,8 @@
   in the plugin and editing/layout geometry in core.
 - Install `connectorsPlugin` in the deferred plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
+- Keep the `selectionAnimationPlugin` entry commented out. The standalone plugin owns the circling selected-block
+  segment through the foreground drawer hook; core retains selection state and geometry.
 
 - Per-frame WASM execution and texture upload/view directives belong entirely to `editor-plugin-texture-runtime`.
   `textureRuntime` config owns `enabled` and `entry`. `@textureUpload <address> <format> <width> <height>` defines a source;
@@ -59,5 +61,8 @@
 
 - `includeKeyboardModeSwitching: false` omits the mode-switching factory import and plugin. This is composition
   policy; core has no mode-switching feature flag and the plugin has no runtime enable guard.
+
+- Forward `touchNavigation` (`fingerCount` and `axis`) to the touch input plugin without implementing gestures in
+  the composition. The default is two fingers on both axes; the product landing page selects one-finger horizontal panning.
 
 - Load `code-block-copy-paste` as an unconditional deferred entry with injected browser clipboard read/write functions. Text paste is owned separately by keyboard-editing. Keep clipboard browser access out of core and the shared plugin context.

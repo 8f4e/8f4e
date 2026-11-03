@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-default",
-  "version": "6.2.10",
+  "version": "6.2.11",
   "private": true,
   "description": "8f4e default editor composition",
   "type": "module",
@@ -48,6 +48,7 @@
     "@8f4e/editor-plugin-remove-memory-connections": "*",
     "@8f4e/editor-plugin-binary-assets": "*",
     "@8f4e/editor-plugin-assertion-markers": "*",
+    "@8f4e/editor-plugin-selection-animation": "*",
     "@8f4e/editor-plugin-midi-input": "*",
     "@8f4e/editor-plugin-keyboard-memory": "*",
     "@8f4e/editor-plugin-example-modules": "*",
@@ -69,7 +70,7 @@
     "@8f4e/editor-plugin-keyboard-navigation": "*",
     "@8f4e/editor-plugin-keyboard-mode-switching": "*",
     "@8f4e/editor-plugin-font-preview": "*",
-    "@8f4e/editor-plugin-touch-viewport-navigation": "*",
+    "@8f4e/editor-plugin-touch-input": "*",
     "@8f4e/editor-plugin-mouse-input": "*"
   },
   "devDependencies": {

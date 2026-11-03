@@ -4,6 +4,7 @@ import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
+import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
 export type MinimalEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
@@ -13,6 +14,8 @@ export interface MinimalEditorMountOptions {
 	sharedAudioContext?: AudioContext;
 	/** Capture wheel gestures for viewport panning. Disable this in scrolling pages. */
 	captureWheel?: boolean;
+	/** Configure touch panning; defaults to two fingers in both directions. */
+	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
 	featureFlags?: EditorOptions['featureFlags'];
 	/** Include the keyboard mode-switching plugin and its hint. Defaults to true. */
 	includeKeyboardModeSwitching?: boolean;
@@ -27,6 +30,7 @@ export async function mountMinimalEditor(
 	{
 		sharedAudioContext,
 		captureWheel,
+		touchNavigation,
 		featureFlags,
 		includeKeyboardModeSwitching,
 		initialProjectUrl,
@@ -57,6 +61,7 @@ export async function mountMinimalEditor(
 							sharedAudioContext,
 							includeKeyboardModeSwitching,
 							captureWheel,
+							touchNavigation,
 						})
 					),
 			}),

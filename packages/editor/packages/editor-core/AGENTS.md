@@ -25,8 +25,8 @@
 - PRs: add screenshots/gifs for UI changes, include test notes, link issues.
 
 ## Plugins
-- DOM mouse/wheel adaptation belongs to `editor-plugin-mouse-input`; touch panning belongs to
-  `editor-plugin-touch-viewport-navigation`. Core keeps the event dispatcher and state effects, with no DOM input
+- DOM mouse/wheel adaptation belongs to `editor-plugin-mouse-input`; touch adaptation and panning belong to
+  `editor-plugin-touch-input`. Core keeps the event dispatcher and state effects, with no DOM input
   listeners or `captureWheel` option. Export existing generic viewport update, animation-stop, and grid-snap helpers.
 - Font/color schemas, validators, defaults, and subscriptions belong to web-ui. Register them through
   `registerWebUiConfig(store)` before plugins/project loading. Initialize the view with the store and events; do not
@@ -143,6 +143,12 @@
 
 - Keyboard-editing owns edit-mode caret movement, mutation caret adjustments, and its foreground drawer. Core keeps
   source-position state and bounds/tab geometry; do not restore direction-based caret movement or a built-in glyph.
-- `registerCodeBlockForegroundDrawer` runs above content/shapes and below outlines/diagnostics. Keep this stage generic.
+- `registerCodeBlockForegroundDrawer` runs above content/shapes and below diagnostics. Keep this stage generic.
+- The circling selected-block animation belongs to `editor-plugin-selection-animation`. Keep its timing, glyphs,
+  and drawing out of core; retain selection state, corner colors, and line highlighting.
 
 - Export generic `insertCodeBlocks` and pure `serializeCodeBlocks`/`SerializedCodeBlock` helpers. Source batches retain their names, references, grouping directives and entries; insertion updates only placement directives and fresh editor identities. Do not restore name uniquifying, clipboard callbacks, clipboard format parsing, copy/paste menus, or paste-transform events in core.
+
+- Shared pointer routing belongs to editor-state's `features/pointer-input`. Input adapters emit normalized pointer
+  events; core owns block targeting and control dispatch before default block selection/dragging. Keep pointer event
+  contracts in editor-state-types. Controls use shared types and remain independent of platform and moduleDragging.

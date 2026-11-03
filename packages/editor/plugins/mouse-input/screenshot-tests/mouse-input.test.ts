@@ -21,8 +21,8 @@ test.each([true, false])('native mouse input with wheel capture %s', async captu
 				id: 'test-context',
 				setup: services => {
 					context = services;
-					context.events.on('mousedown', pressed);
-					return () => context.events.off('mousedown', pressed);
+					context.events.on('pointerdown', pressed);
+					return () => context.events.off('pointerdown', pressed);
 				},
 			},
 		],

@@ -120,7 +120,7 @@ describe('favorites plugin', () => {
 			payload: { codeBlock: test.block },
 		});
 		test.state.contextMenu.highlightedItem = index;
-		test.events.dispatch('mousedown', { x: test.block.x + 8, y: test.block.y + 8, stopPropagation: false });
+		test.events.dispatch('pointerdown', { x: test.block.x + 8, y: test.block.y + 8, stopPropagation: false });
 		expect(test.state.contextMenu.open).toBe(false);
 		expect(test.block.code).toContain('; @favorite');
 		expect(other.code).toEqual(originalOtherCode);
@@ -205,7 +205,7 @@ describe('favorites plugin', () => {
 		test.state.contextMenu.highlightedItem = test.state.contextMenu.items.findIndex(
 			item => item.payload?.creationIndex === test.block.creationIndex
 		);
-		test.events.dispatch('mousedown', { x: 8, y: 8, stopPropagation: false });
+		test.events.dispatch('pointerdown', { x: 8, y: 8, stopPropagation: false });
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block);
 		expect(test.state.viewport.y).toBe(test.block.y + test.block.cursor.y - test.state.viewport.height / 2);
 		expect(test.state.projectChange.revision).toBe(revision);

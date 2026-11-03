@@ -91,7 +91,7 @@ describe('project Open/Save composition', () => {
 		const openIndex = test.state.contextMenu.items.findIndex(item => item.action === 'importProject');
 		expect(openIndex).toBeGreaterThanOrEqual(0);
 		test.state.contextMenu.highlightedItem = openIndex;
-		await test.events.dispatchAsync('mousedown', { x: 800, y: 400, stopPropagation: false });
+		await test.events.dispatchAsync('pointerdown', { x: 800, y: 400, stopPropagation: false });
 		await vi.waitFor(() => expect(test.handle.getFile).toHaveBeenCalledOnce());
 		await test.events.dispatchAsync('exportProject');
 		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledOnce();

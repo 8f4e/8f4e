@@ -61,7 +61,7 @@ test('installs a complete offline cache and cold-starts with lazy plugins and a 
 		);
 	}, manifest.icons);
 	expect(iconSizes).toEqual(['192x192', '512x512', '512x512']);
-	const assets = (await readdir('dist/assets', { recursive: true })).filter(path => /\.(js|ico)$/.test(path));
+	const assets = (await readdir('dist/assets', { recursive: true })).filter(path => /\.(js|css|ico)$/.test(path));
 	const cached = await page.evaluate(async () => {
 		const names = await caches.keys();
 		const entries = await Promise.all(names.map(async name => (await caches.open(name)).keys()));
