@@ -88,12 +88,12 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 		'viewport.hGrid',
 	] as const;
 	for (const selector of selectors) store.subscribe(selector, syncSelectedLineTooltip);
-	events.on('spriteSheetRerendered', syncSelectedLineTooltip);
+	events.on('gridSizeChanged', syncSelectedLineTooltip);
 	syncSelectedLineTooltip();
 	return {
 		getState: () => tooltip,
 		dispose: () => {
-			events.off('spriteSheetRerendered', syncSelectedLineTooltip);
+			events.off('gridSizeChanged', syncSelectedLineTooltip);
 			for (const selector of selectors) store.unsubscribe(selector, syncSelectedLineTooltip);
 		},
 	};

@@ -411,7 +411,7 @@ export default function codeBlockRendering(
 			if (state.codeBlockRendering.currentProject.blocks.includes(codeBlock)) refreshBlockLayouts([codeBlock]);
 		} else updateAllBlockDerivedState();
 	});
-	events.on('spriteSheetRerendered', recomputePixelCoordinatesAndBlockDerivedState);
+	events.on('gridSizeChanged', recomputePixelCoordinatesAndBlockDerivedState);
 	store.subscribe('codeErrors', updateAllBlockDerivedState);
 	store.subscribe('assertionResults', updateAllBlockDerivedState);
 	store.subscribe('compiler.isCompiling', updateAllBlockDerivedState);

@@ -143,24 +143,24 @@ describe('example modules plugin', () => {
 		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'simple']);
 	});
 
-	it('inserts a palette note and applies its colors without creating executable modules', async () => {
+	it('inserts a public configuration note without creating executable modules', async () => {
 		const test = setup({
 			sources: new Map([
 				[
-					'color-schemes/copper',
-					async () => '8f4e/v1\nnote copperColors\n; @public\n; @config color.primary #e1843d\nnoteEnd',
+					'settings/sample',
+					async () => '8f4e/v1\nnote sampleSettings\n; @public\n; @config testSetting sample\nnoteEnd',
 				],
 			]),
 		});
-		await test.addModule('copper');
+		await test.addModule('sample');
 
 		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.blockType)).toEqual([
 			'constants',
 			'note',
 		]);
-		expect(test.state.codeBlockRendering.currentProject.blocks[1].name).toBe('copperColors');
+		expect(test.state.codeBlockRendering.currentProject.blocks[1].name).toBe('sampleSettings');
 		expect(test.state.codeBlockRendering.currentProject.blocks[1].code).not.toContain('; @public');
-		expect(test.state.editorConfig.color).toMatchObject({ primary: '#e1843d' });
+		expect(test.state.codeBlockRendering.currentProject.blocks[1].code).toContain('; @config testSetting sample');
 	});
 
 	it('continues inserting available dependencies when one chunk fails', async () => {

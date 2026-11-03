@@ -108,7 +108,7 @@ it('draws the completed diagnostic layout before notifying other layout listener
 	expect(test.render()[0]).toBe(completed[0][0]);
 });
 
-it.each(['memoryValuesChanged', 'spriteSheetRerendered'])('uses completed layouts after %s', event => {
+it.each(['memoryValuesChanged', 'gridSizeChanged'])('uses completed layouts after %s', event => {
 	const test = setup();
 	const completed: ReturnType<typeof test.render>[] = [];
 	test.events.on('codeBlockLayoutsChanged', () => completed.push(test.render()));

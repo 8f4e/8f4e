@@ -183,5 +183,8 @@ async function createKeyboardPlugins(
 		import('@8f4e/editor-plugin-keyboard-editing').then(({ createKeyboardEditingPlugin }) =>
 			createKeyboardEditingPlugin({ inputTarget: canvas })
 		),
+		import('@8f4e/editor-plugin-font-preview').then(({ createFontPreviewPlugin }) =>
+			createFontPreviewPlugin({ inputTarget: canvas })
+		),
 	]);
 }

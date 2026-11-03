@@ -1,6 +1,6 @@
 import { PALETTE_INDICES, PALETTE_TOKENS, resolvePalette } from '@8f4e/editor-palette';
-import { createMockCodeBlock } from '@8f4e/editor-state-testing';
-import loadFontAtlas from '@8f4e/sprite-generator';
+import { createMockCodeBlock, createMockEventDispatcher } from '@8f4e/editor-state-testing';
+import createStateManager from '@8f4e/state-manager';
 import init, { createEditorDrawerRegistry, type SpriteCell } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
@@ -19,7 +19,7 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 	canvas.height = Math.ceil(tokens.length / 4) * 192;
 	const state = createMockStateWithColors();
 	state.editorConfig.font = 'ibmvga8x16';
-	state.editorConfig.color = {
+	const colors = {
 		canvas: '#0b1020',
 		surface: '#111b2e',
 		ink: '#eff4ff',
@@ -34,6 +34,7 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 		warning: '#efc660',
 		negative: '#ef718a',
 	};
+	state.editorConfig.color = colors;
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
 	const codeBlocks = new Map<number, Array<Array<SpriteCell | null>>>();
@@ -43,9 +44,11 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 			.get(codeBlock.creationIndex)!
 			.forEach((cells, row) => draw.drawResolvedText(state.viewport.vGrid, row * state.viewport.hGrid, cells));
 	});
-	const spriteData = await loadFontAtlas(state.editorConfig.font);
-	const palette = resolvePalette(state.editorConfig.color);
-	const renderer = await init(state, canvas, createMockMemoryViews(), spriteData, palette, { drawers });
+
+	const palette = resolvePalette(colors);
+	const renderer = await init(createStateManager(state), createMockEventDispatcher(), canvas, createMockMemoryViews(), {
+		drawers,
+	});
 	try {
 		renderer.pauseRendering();
 

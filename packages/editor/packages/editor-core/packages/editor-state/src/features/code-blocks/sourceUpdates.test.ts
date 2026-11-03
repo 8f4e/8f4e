@@ -86,7 +86,7 @@ describe('cached directive records', () => {
 		const contribution = store.layout.createContribution();
 		cleanups.push(contribution.dispose);
 		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
-		events.dispatch('spriteSheetRerendered');
+		events.dispatch('gridSizeChanged');
 		expect(block.parsedDirectives).toBe(records);
 		expect(received.at(-1)).toEqual(['first']);
 	});

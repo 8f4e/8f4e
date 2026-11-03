@@ -462,7 +462,7 @@ describe('tooltip effect', () => {
 });
 
 describe('tooltip lifecycle', () => {
-	it('refreshes after atlas reloads and stops responding after disposal', () => {
+	it('refreshes after grid size changes and stops responding after disposal', () => {
 		const block = createMockCodeBlock({ code: ['add'] });
 		const state = createMockState({ codeBlockRendering: { selectedCodeBlock: block } });
 		const store = createStateManager(state);
@@ -474,14 +474,14 @@ describe('tooltip lifecycle', () => {
 		});
 		const initial = tooltip.getState();
 		state.viewport.vGrid = 10;
-		events.dispatch('spriteSheetRerendered');
+		events.dispatch('gridSizeChanged');
 		expect(tooltip.getState().layout.width).toBe((tooltip.getState().widthChars + 2) * 10);
 		expect(tooltip.getState().layout.width).not.toBe(initial.layout.width);
 		expect(tooltip.getState().animation.startedAt).toBe(initial.animation.startedAt);
 		tooltip.dispose();
 		const disposed = tooltip.getState();
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
-		events.dispatch('spriteSheetRerendered');
+		events.dispatch('gridSizeChanged');
 		expect(tooltip.getState()).toBe(disposed);
 	});
 

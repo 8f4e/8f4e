@@ -188,7 +188,7 @@ describe('wave plugin', () => {
 		const test = await setup();
 		test.state.viewport.vGrid = 10;
 		test.state.viewport.hGrid = 20;
-		test.events.dispatch('spriteSheetRerendered');
+		test.events.dispatch('gridSizeChanged');
 		test.render();
 		const x = (test.codeBlock.lineNumberColumnWidth + 2) * 10;
 		expect(test.draw.startGroup).toHaveBeenCalledWith(x, 60);

@@ -1,8 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import { resolvePalette } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import { createSwitchPlugin } from '../src/index';
@@ -61,12 +59,13 @@ entryEnd`);
 	store.set('initialProjectState', project);
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.currentProject.blocks', [codeBlock]);
-	state.editorConfig.color = {
+	const colors = {
 		canvas: '#000',
 		surface: '#111',
 		primary: '#336699',
 		ink: '#ffcc00',
 	};
+	store.set('editorConfig.color', colors);
 	const buffer = new ArrayBuffer(65536);
 	const memoryViews: MemoryViews = {
 		int8: new Int8Array(buffer),
@@ -78,8 +77,8 @@ entryEnd`);
 		float64: new Float64Array(buffer),
 	};
 	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.on.allocationUnitAddress] = 1;
-	const spriteData = await loadFontAtlas(state.editorConfig.font);
-	const renderer = await initView(state, canvas, memoryViews, spriteData, resolvePalette(state.editorConfig.color), {
+
+	const renderer = await initView(store, events, canvas, memoryViews, {
 		drawers,
 	});
 	renderer.pauseRendering();
@@ -104,6 +103,8 @@ entryEnd`);
 			],
 			{ affectsCompilation: false }
 		);
+		// Source edits resolve project config again; reapply this drawing fixture's explicit palette.
+		store.set('editorConfig.color', colors);
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot('trailing-switches');
 	} finally {

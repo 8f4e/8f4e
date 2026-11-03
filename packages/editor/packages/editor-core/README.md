@@ -117,7 +117,7 @@ display rows and skips hidden lines. Each update replaces this contribution's co
 `contribution.remove(codeBlock)` clears one block, and `contribution.dispose()` removes the owner's requests.
 
 `layout.subscribe(listener)` immediately reports the visible blocks and reports them again when core calculates their
-layout, including source, compiler metadata, font, and contribution changes. It returns an unsubscribe function.
+layout, including source, compiler metadata, grid size, and contribution changes. It returns an unsubscribe function.
 Subscribers may update their requests; core finishes pending recalculations synchronously before notifying the render
 projection. An unchanged submission is a no-op, allowing requests derived in subscriptions to settle without recursive
 refresh loops. Keep widget data private and use the final geometry for both drawing and hit testing.
@@ -269,7 +269,10 @@ whose factory receives lazy source loaders. Core retains generic menus and block
 
 Configure editor settings with `; @config <path> <value>`.
 
-- Global editor directives control editor presentation settings like `font` and color overrides.
+- Web-ui contributes the schemas and validation for `font` and color overrides. Editor-state handles their
+  `@config` directives through the same generic configuration registry used by plugins.
+- `resolveEditorConfig(store)` re-resolves source configuration without changing source or project revisions.
+  Plugins can use it to restore source settings after removing a temporary override and its subscriptions.
 - Runtime plugins own their independent `audioRuntime.enabled`, `workerRuntime.enabled`, `testRuntime.enabled`, and `textureRuntime.enabled` settings.
 - Extensions can contribute schema-backed config roots; runtime packages use this for paths like `; @config audioRuntime.sampleRate 48000` and `; @config audioRuntime.audioOutBufferLAddress audioout:buffer`.
 - `; @config export.fileName <value>` controls the base file name used by editor export actions.
@@ -278,7 +281,7 @@ Configure editor settings with `; @config <path> <value>`.
 - Base colors accept hex with optional alpha, `rgb()` / `rgba()`, and `transparent`. The palette contains `canvas`,
   `surface`, `ink`, `muted`, `primary`, `secondary`, `tertiary`, `highlight`, `detail`, `stroke`, `positive`, `warning`,
   and `negative`. Optional accents preserve independently authored hues and opacity.
-  All shades and fixed opacity variants are generated before atlas creation.
+  Web-ui resolves shades and fixed opacity variants independently of the font atlas.
 
 Example color overrides:
 
@@ -293,13 +296,16 @@ Example color overrides:
 
 ## Font
 
-Select the editor font with a global editor directive:
+Select the editor font with a global editor directive. Web-ui owns supported fonts, defaults, atlas loading, and
+configuration subscriptions. State uses the resulting grid dimensions for layout and hit testing:
 
 ```txt
 ; @config font ibmvga8x16
 ```
 
-Supported fonts: `6x10`, `ibmvga8x16`, `terminus8x16`, `terminus8x16bold`, `terminus10x18`, `terminus10x18bold`, `kana12x13`, `terminus12x24`, `terminus12x24bold`, `spleen5x8`, `spleen6x12`, `spleen8x16`, `templeos8x8`, `spleen12x24`, `spleen16x32`.
+The supported catalog is `FONT_NAMES` from `@8f4e/sprite-generator`. In the default desktop editor, the independent
+font-preview plugin uses F18/F19 to cycle through that catalog temporarily. Previewing does not change source or saved
+files; loading a project restores its configured font. The minimal editor omits this plugin.
 
 Runtime execution belongs to ordinary browser plugins. Each receives compiler getters through its factory, imports its own worker/worklet assets, contributes schemas and constants, and publishes its own info namespace. The audio plugin can borrow a host-supplied AudioContext. Runtimes can run concurrently; core owns no execution registry or selector. Shared `state.info` records remain available as data; updates do not invalidate code-block layout or text render data. Memory-writing plugins receive a `writeMemory(address, value, isInteger)` function directly from their host.
 

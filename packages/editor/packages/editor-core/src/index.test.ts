@@ -42,7 +42,6 @@ const store = {
 
 const view = {
 	resize: vi.fn(() => true),
-	loadFontAtlas: vi.fn(),
 	pauseRendering: vi.fn(),
 	releaseRenderingResources: vi.fn(),
 	resumeRendering: vi.fn(),
@@ -50,7 +49,6 @@ const view = {
 	destroy: vi.fn(),
 };
 
-const cleanupSpriteSheet = vi.fn();
 const cleanupPointer = vi.fn();
 
 vi.mock('@8f4e/editor-state', async importOriginal => ({
@@ -62,14 +60,7 @@ vi.mock('@8f4e/editor-state', async importOriginal => ({
 vi.mock('@8f4e/web-ui', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/web-ui')>()),
 	default: vi.fn(async () => view),
-}));
-
-vi.mock('@8f4e/sprite-generator', async importOriginal => ({
-	...(await importOriginal<typeof import('@8f4e/sprite-generator')>()),
-	default: vi.fn(async () => ({
-		image: { width: 128, height: 144, data: new Uint8Array(128 * 144) },
-		grid: { cellWidth: 8, cellHeight: 16, columns: 16, cellCount: 129 },
-	})),
+	registerWebUiConfig: vi.fn(),
 }));
 
 vi.mock('./events', () => ({
@@ -78,10 +69,6 @@ vi.mock('./events', () => ({
 
 vi.mock('./events/pointerEvents', () => ({
 	default: vi.fn(() => cleanupPointer),
-}));
-
-vi.mock('./spriteSheetManager', () => ({
-	createSpriteSheetManager: vi.fn(() => cleanupSpriteSheet),
 }));
 
 describe('editor init', () => {
@@ -111,45 +98,40 @@ describe('editor init', () => {
 		expect(events.off).toHaveBeenCalledWith('compilationSucceeded', accept);
 	});
 
-	it.each(['sprites', 'renderer'] as const)(
-		'disposes acquired resources when %s initialization rejects',
-		async stage => {
-			const { default: init } = await import('./index');
-			const { default: initState } = await import('@8f4e/editor-state');
-			const { default: initView } = await import('@8f4e/web-ui');
-			const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
-			const actualState = await vi.importActual<typeof import('@8f4e/editor-state')>('@8f4e/editor-state');
-			vi.mocked(initState).mockImplementationOnce(actualState.default);
-			const error = new Error(`${stage} unavailable`);
-			if (stage === 'sprites') vi.mocked(loadFontAtlas).mockRejectedValueOnce(error);
-			else vi.mocked(initView).mockRejectedValueOnce(error);
-			const cleanup = vi.fn();
-			const setup = vi.fn(() => cleanup);
-			const canvas = {
-				width: 640,
-				height: 480,
-				tabIndex: -1,
-				hasAttribute: () => false,
-				removeAttribute: vi.fn(),
-			} as unknown as HTMLCanvasElement;
-			await expect(
-				init(canvas, {
-					plugins: [{ id: 'startup-cleanup', setup }],
-				})
-			).rejects.toBe(error);
-			expect(setup).toHaveBeenCalledOnce();
-			expect(cleanup).toHaveBeenCalledOnce();
-			expect(cleanupPointer).toHaveBeenCalledOnce();
-			expect(events.dispose).toHaveBeenCalledOnce();
-			expect(view.destroy).not.toHaveBeenCalled();
-			expect(canvas.removeAttribute).toHaveBeenCalledWith('tabindex');
-		}
-	);
+	it('disposes acquired resources when renderer initialization rejects', async () => {
+		const { default: init } = await import('./index');
+		const { default: initState } = await import('@8f4e/editor-state');
+		const { default: initView } = await import('@8f4e/web-ui');
+		const actualState = await vi.importActual<typeof import('@8f4e/editor-state')>('@8f4e/editor-state');
+		vi.mocked(initState).mockImplementationOnce(actualState.default);
+		const error = new Error('renderer unavailable');
+		vi.mocked(initView).mockRejectedValueOnce(error);
+		const cleanup = vi.fn();
+		const setup = vi.fn(() => cleanup);
+		const canvas = {
+			width: 640,
+			height: 480,
+			tabIndex: -1,
+			hasAttribute: () => false,
+			removeAttribute: vi.fn(),
+		} as unknown as HTMLCanvasElement;
+		await expect(
+			init(canvas, {
+				plugins: [{ id: 'startup-cleanup', setup }],
+			})
+		).rejects.toBe(error);
+		expect(setup).toHaveBeenCalledOnce();
+		expect(cleanup).toHaveBeenCalledOnce();
+		expect(cleanupPointer).toHaveBeenCalledOnce();
+		expect(events.dispose).toHaveBeenCalledOnce();
+		expect(view.destroy).not.toHaveBeenCalled();
+		expect(canvas.removeAttribute).toHaveBeenCalledWith('tabindex');
+	});
 
 	it('sets up plugins with state and drawing services before dispatching lifecycle events', async () => {
 		const { default: init } = await import('./index');
 		const { default: initState } = await import('@8f4e/editor-state');
-		const { default: initView } = await import('@8f4e/web-ui');
+		const { default: initView, registerWebUiConfig } = await import('@8f4e/web-ui');
 		const drawer = vi.fn();
 		const plugins = [
 			{ id: 'test', setup: vi.fn(({ drawers }: EditorPluginContext) => drawers.registerCodeBlockDrawer(drawer)) },
@@ -168,8 +150,12 @@ describe('editor init', () => {
 		expect(vi.mocked(initState).mock.invocationCallOrder.at(-1)).toBeLessThan(
 			plugins[0].setup.mock.invocationCallOrder[0]
 		);
+		expect(registerWebUiConfig).toHaveBeenLastCalledWith(store);
+		expect(vi.mocked(registerWebUiConfig).mock.invocationCallOrder.at(-1)).toBeLessThan(
+			plugins[0].setup.mock.invocationCallOrder[0]
+		);
 		expect(plugins[0].setup.mock.invocationCallOrder[0]).toBeLessThan(events.dispatch.mock.invocationCallOrder[0]);
-		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![5]!.drawers!;
+		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![4]!.drawers!;
 		expect(rendererDrawers).toBe(plugins[0].setup.mock.calls[0][0].drawers);
 		const drawContext = {} as Parameters<typeof rendererDrawers.drawCodeBlock>[0];
 		rendererDrawers.drawCodeBlock(drawContext);
@@ -195,7 +181,6 @@ describe('editor init', () => {
 		view.resumeRendering.mockClear();
 		view.renderFrame.mockClear();
 		view.destroy.mockClear();
-		cleanupSpriteSheet.mockClear();
 		cleanupPointer.mockClear();
 		storeState.editorConfig = {};
 		storeState.info = {};
@@ -328,7 +313,7 @@ describe('editor init', () => {
 		expect(canvas.tabIndex).toBe(-1);
 	});
 
-	it('disposes state, events, sprite subscriptions, and view exactly once', async () => {
+	it('disposes state, events, and view exactly once', async () => {
 		const { default: init } = await import('./index');
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {});
@@ -336,7 +321,6 @@ describe('editor init', () => {
 		editor.dispose();
 		editor.dispose();
 
-		expect(cleanupSpriteSheet).toHaveBeenCalledOnce();
 		expect(store.dispose).toHaveBeenCalledOnce();
 		expect(events.dispose).toHaveBeenCalledOnce();
 		expect(view.destroy).toHaveBeenCalledOnce();
@@ -363,7 +347,7 @@ describe('editor init', () => {
 		});
 
 		const viewCall = vi.mocked(initView).mock.calls.at(-1)!;
-		const viewOptions = viewCall[5]!;
+		const viewOptions = viewCall[4]!;
 		viewOptions.onRenderStats?.({
 			timeToRenderMs: 10,
 			fps: 50,

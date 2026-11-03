@@ -95,6 +95,8 @@
   also removes those overlays.
   The keyboard-editing plugin owns its mode-triggered implementation import and input buffering; keep feature
   behavior and pending-input lifecycle out of the host and generic directive lazy loader.
+- Include `font-preview` in that desktop-only import set. F18/F19 preview fonts without editing source; keep its
+  keyboard handling and preview lifecycle inside the plugin. Minimal does not include this authoring utility.
 
 - `includeKeyboardModeSwitching: false` omits the mode-switching factory import and plugin. This is composition
   policy; core has no mode-switching feature flag and the plugin has no runtime enable guard.

@@ -1,7 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import { resolvePalette } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
@@ -64,12 +62,12 @@ entryEnd`);
 	memoryViews.float32[memory.minimum.allocationUnitAddress] = 0;
 	memoryViews.float32[memory.middle.allocationUnitAddress] = 0.5;
 	memoryViews.float32[memory.maximum.allocationUnitAddress] = 1;
-	const spriteData = await loadFontAtlas(state.editorConfig.font);
-	const renderer = await initView(state, canvas, memoryViews, spriteData, resolvePalette(state.editorConfig.color), {
+
+	const renderer = await initView(store, events, canvas, memoryViews, {
 		drawers,
 	});
 	renderer.pauseRendering();
-	events.dispatch('spriteSheetRerendered');
+
 	try {
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();

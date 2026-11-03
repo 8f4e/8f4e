@@ -29,7 +29,7 @@ function collectProjectCodeBlocks(codeBlocks: CodeBlockGraphicData[]): CodeBlock
  *
  * Conflicting directive values are written to `state.codeErrors.editorDirectiveErrors`.
  */
-export default function resolveEditorConfig(store: StateManager<State>): void {
+export default function resolveEditorConfig(store: Pick<StateManager<State>, 'getState' | 'set'>): void {
 	const state = store.getState();
 	const projectCodeBlocks = collectProjectCodeBlocks(state.codeBlockRendering.rootProject.blocks);
 	const { resolved, errors } = resolveGlobalEditorDirectives(projectCodeBlocks);

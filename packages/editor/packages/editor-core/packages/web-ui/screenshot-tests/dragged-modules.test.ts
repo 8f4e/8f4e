@@ -1,6 +1,5 @@
-import { resolvePalette } from '@8f4e/editor-palette';
-import { createMockCodeBlock } from '@8f4e/editor-state-testing';
-import loadFontAtlas from '@8f4e/sprite-generator';
+import { createMockCodeBlock, createMockEventDispatcher } from '@8f4e/editor-state-testing';
+import createStateManager from '@8f4e/state-manager';
 import init, { createEditorDrawerRegistry, type SpriteCell } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
@@ -12,7 +11,7 @@ test('dragged module', async () => {
 	const canvas = createCanvas();
 	const mockState = await createMockStateWithColors();
 	const memoryViews = createMockMemoryViews();
-	const spriteData = await loadFontAtlas(mockState.editorConfig.font);
+
 	const codeBlocks = new Map<number, Array<Array<SpriteCell | null>>>();
 	const drawers = createEditorDrawerRegistry();
 	drawers.registerCodeBlockContentDrawer(({ draw, state, codeBlock }) => {
@@ -21,14 +20,9 @@ test('dragged module', async () => {
 			.forEach((cells, row) => draw.drawResolvedText(state.viewport.vGrid, row * state.viewport.hGrid, cells));
 	});
 
-	const renderer = await init(
-		mockState,
-		canvas,
-		memoryViews,
-		spriteData,
-		resolvePalette(mockState.editorConfig.color),
-		{ drawers }
-	);
+	const renderer = await init(createStateManager(mockState), createMockEventDispatcher(), canvas, memoryViews, {
+		drawers,
+	});
 
 	try {
 		renderer.pauseRendering();

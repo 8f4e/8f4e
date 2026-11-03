@@ -13,63 +13,74 @@ function entry(path: string, value: string): EditorConfigEntry {
 
 describe('editor config validators', () => {
 	const registry: EditorConfigValidatorRegistry = {
-		font: {
-			knownPaths: ['font'],
-			matches: path => path === 'font',
-			validate: configEntry => (configEntry.value === '6x10' ? undefined : `unsupported font '${configEntry.value}'`),
-		},
-		color: {
-			knownPaths: ['color.ink'],
-			matches: path => path.startsWith('color.'),
+		language: {
+			knownPaths: ['language'],
+			matches: path => path === 'language',
 			validate: configEntry =>
-				configEntry.value.startsWith('#') ? undefined : `invalid color value '${configEntry.value}'`,
+				configEntry.value === 'sample' ? undefined : `unsupported language '${configEntry.value}'`,
+		},
+		settings: {
+			knownPaths: ['settings.label'],
+			matches: path => path.startsWith('settings.'),
+			validate: configEntry =>
+				configEntry.value !== 'invalid' ? undefined : `invalid settings value '${configEntry.value}'`,
 		},
 	};
 
 	it('collects known paths from the supplied validator registry', () => {
-		expect(getEditorConfigKnownPaths(registry)).toEqual(['font', 'color.ink']);
+		expect(getEditorConfigKnownPaths(registry)).toEqual(['language', 'settings.label']);
 	});
 
 	it('validates known config paths', () => {
-		expect(validateEditorConfigEntries([entry('font', '6x10'), entry('color.ink', '#112233')], registry)).toEqual([]);
+		expect(
+			validateEditorConfigEntries([entry('language', 'sample'), entry('settings.label', 'example')], registry)
+		).toEqual([]);
 	});
 
 	it('returns errors from supplied validators', () => {
-		const errors = validateEditorConfigEntries([entry('font', 'tiny'), entry('color.ink', '???')], registry);
+		const errors = validateEditorConfigEntries(
+			[entry('language', 'invalid'), entry('settings.label', 'invalid')],
+			registry
+		);
 
 		expect(errors).toHaveLength(2);
-		expect(errors[0].message).toBe("unsupported font 'tiny'");
-		expect(errors[1].message).toBe("invalid color value '???'");
+		expect(errors[0].message).toBe("unsupported language 'invalid'");
+		expect(errors[1].message).toBe("invalid settings value 'invalid'");
 	});
 
 	it('reports unknown config paths with suggestions across registered features', () => {
-		const errors = validateEditorConfigEntries([entry('fon', '6x10')], registry);
+		const errors = validateEditorConfigEntries([entry('languag', 'sample')], registry);
 
 		expect(errors).toHaveLength(1);
-		expect(errors[0].message).toContain("unknown config path 'fon'");
-		expect(errors[0].message).toContain("Did you mean 'font'?");
+		expect(errors[0].message).toContain("unknown config path 'languag'");
+		expect(errors[0].message).toContain("Did you mean 'language'?");
 	});
 
 	it('resolves valid entries into a path-shaped config object', () => {
 		expect(
 			resolveEditorConfigEntries(
-				[entry('font', '6x10'), entry('color.ink', '#112233'), entry('font', 'tiny'), entry('unknown.path', 'value')],
+				[
+					entry('language', 'sample'),
+					entry('settings.label', 'example'),
+					entry('language', 'invalid'),
+					entry('unknown.path', 'value'),
+				],
 				registry
 			)
 		).toEqual({
-			font: '6x10',
-			color: {
-				ink: '#112233',
+			language: 'sample',
+			settings: {
+				label: 'example',
 			},
 		});
 	});
 
 	it('uses last-write-wins for duplicate valid paths', () => {
 		expect(
-			resolveEditorConfigEntries([entry('color.ink', '#111111'), entry('color.ink', '#222222')], registry)
+			resolveEditorConfigEntries([entry('settings.label', 'first'), entry('settings.label', 'second')], registry)
 		).toEqual({
-			color: {
-				ink: '#222222',
+			settings: {
+				label: 'second',
 			},
 		});
 	});

@@ -179,7 +179,7 @@ describe('binary assets plugin', () => {
 				})
 		);
 		const test = await setup();
-		test.store.set('editorConfig.font', 'ibmvga8x16');
+		test.store.set('editorConfig.testSetting', 'sample');
 		finish(new Response(new Uint8Array([9])));
 		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 1'));
 		expect(fetchMock).toHaveBeenCalledOnce();

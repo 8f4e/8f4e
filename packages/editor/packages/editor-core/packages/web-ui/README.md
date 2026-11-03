@@ -1,7 +1,8 @@
 # Web UI Package
 
-This package provides a web-based UI renderer for the editor. It renders from the editor state and memory views, treating them as immutable inputs. It is designed to be
-replaceable by renderers for other platforms.
+This package provides the browser renderer for the editor. It owns font and color configuration, font atlas loading,
+and palette updates. Drawing reads editor state and memory views; font changes update the shared layout grid.
+It is designed to be replaceable by renderers for other platforms.
 
 Rendering is backed by `glugglugglug`. Glyph IDs are ASCII character codes 0–127 and fill is 128, so
 per-frame drawers submit positions, sizes, shared shape IDs, and numeric palette indices. Plugins can register canvas-wide GPU passes above the sprites. A procedural dotted background runs before the sprite pass.
@@ -23,27 +24,30 @@ owns wires; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer v
 `createEditorDrawerRegistry()` creates the per-editor registry for code-block content drawers, drawers, overlays, and canvas-wide
 render layers. Pass that registry through `options.drawers` when initializing the renderer.
 
-### `init(state, canvas, memoryViews, fontAtlas, palette, options?)`
+### `registerWebUiConfig(store)`
+
+Registers schema-backed validators for `; @config font <name>` and `; @config color.<base> <value>` in the shared
+configuration registry. Editor-core calls this before installing plugins and loading the initial project.
+Editor-state parses and resolves configuration generically; web-ui owns supported fonts, color validation, and defaults.
+
+### `init(store, events, canvas, memoryViews, options?)`
 
 Initializes the web UI renderer.
 
 **Parameters:**
 
-- `state: State` - The editor state (read-only)
+- `store: StateManager<State>` - Editor state and configuration subscriptions
+- `events: EventDispatcher` - Announces layout grid size changes
 - `canvas: HTMLCanvasElement` - The canvas element to render to
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
-- `fontAtlas: FontAtlas` - Cached font masks and grid dimensions from `@8f4e/sprite-generator`
-- `palette: ResolvedPalette` - Initial theme resolved separately by `@8f4e/editor-palette`
 - `options.onRenderStats` - Optional callback for sampled render statistics
 - `options.renderStatsIntervalFrames` - Optional frame interval for `onRenderStats` (defaults to 60)
 
 **Returns:** An object with methods to control the renderer:
 
 - `resize(width, height)` - Resize the canvas
-- `loadFontAtlas(fontAtlas, font)` - Replace font masks and derived drawing data
-- `loadPalette(palette)` - Update GPU colors and notify render layers without rebuilding masks
 - `renderFrame()` - Draw one frame on demand
-- `destroy()` - Release renderer and plugin resources
+- `destroy()` - Unsubscribe from configuration and release renderer and plugin resources
 
 ### `RenderStats`
 
@@ -72,16 +76,20 @@ interface FontAtlas {
 
 ## State Usage
 
-The web-ui package reads editor state without mutating it. `@8f4e/editor-plugin-code-rendering` owns code text,
+The web-ui package reads editor state for drawing and writes only font-derived grid dimensions. `@8f4e/editor-plugin-code-rendering` owns code text,
 syntax highlighting, and its private cache of prepared sprite cells. It registers a content drawer through
 `registerCodeBlockContentDrawer()`, which runs after block backgrounds and highlights, before the cursor,
 shape declarations, diagnostics, ordinary block drawers, and overlays. Without a content plugin, blocks retain
 their backgrounds and editing affordances while no source text is drawn.
 
-Atlas and font changes are explicit and are applied through `loadFontAtlas()`. Theme-only changes use `loadPalette()` and retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette. `DrawContext.drawFill()` uses the shared fill mask, `drawText()` uses fixed ASCII glyph IDs,
+The renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to font and color changes.
+Theme-only changes retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette.
+`DrawContext.drawFill()` uses the shared fill mask, `drawText()` uses fixed ASCII glyph IDs,
 and both accept an explicit palette index. The renderer prepares up to 256 palette colors as premultiplied float32
-values in a 4 KiB uniform buffer, while `loadPalette()` continues accepting the resolved editor palette.
-The editor installs font grid dimensions into state before initializing or updating the view.
+values in a 4 KiB uniform buffer.
+Web-ui installs font grid dimensions into `state.viewport.hGrid` and `state.viewport.vGrid` and dispatches
+`gridSizeChanged` when those dimensions change. Editor-state refreshes block geometry and viewport anchors without
+knowing about fonts or atlases. Pending font loads cannot replace a newer selection or update a destroyed renderer.
 Font changes replace the masks and update drawing metrics. Dot positions and sizes live beside the background plugin
 in `src/plugins/background/dot-settings.ts`; no background settings come from the font atlas.
 

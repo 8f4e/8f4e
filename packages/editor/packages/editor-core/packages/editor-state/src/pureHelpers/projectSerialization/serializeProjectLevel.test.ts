@@ -119,7 +119,7 @@ describe('serializeProjectLevel', () => {
 				name: 'local',
 				creationIndex: 0,
 				blockType: 'note',
-				code: ['note local.editorConfig', '; @config font ibmvga8x16', 'noteEnd'],
+				code: ['note local.editorConfig', '; @config testSetting sample', 'noteEnd'],
 			}),
 			createMockCodeBlock({
 				name: 'project-note',

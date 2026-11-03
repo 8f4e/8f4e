@@ -1,9 +1,6 @@
-import { createMockState } from '@8f4e/editor-state-testing';
-import type { EditorConfigEntry, State } from '@8f4e/editor-state-types';
-import type { StateManager } from '@8f4e/state-manager';
+import type { EditorConfigEntry } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
-import { colorEditorConfigValidator } from './editorConfig';
-import color from './effect';
+import { colorEditorConfigValidator } from './config';
 
 function entry(path: string, value: string): EditorConfigEntry {
 	return {
@@ -48,20 +45,5 @@ describe('color editor config', () => {
 		expect(colorEditorConfigValidator.validate(entry('color.ink', value))).toBe(
 			`@config color.ink: invalid color value '${value}'`
 		);
-	});
-
-	it('registers its validator in the shared editor-config validator slot', () => {
-		const state = createMockState({ editorConfigValidators: {} });
-		const store = {
-			set: (path: string, value: unknown) => {
-				if (path === 'editorConfigValidators.color') {
-					state.editorConfigValidators.color = value as typeof colorEditorConfigValidator;
-				}
-			},
-		} as StateManager<State>;
-
-		color(store);
-
-		expect(state.editorConfigValidators.color).toBe(colorEditorConfigValidator);
 	});
 });

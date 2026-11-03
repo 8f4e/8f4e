@@ -28,6 +28,9 @@
 - Editor colors: `@8f4e/editor-palette` owns the pure base palette and predefined shades. Configure only shared base
   colors; core and plugin drawers select generic palette tokens. Shades are uploaded as premultiplied colors in a GPU
   uniform buffer (up to 256 entries); the sprite atlas contains color-independent R8 binary visibility masks.
+- Web-ui owns font/color schemas, validators, defaults, atlas loading, and palette subscriptions. Core registers
+  `registerWebUiConfig(store)` before plugin setup and initializes the renderer with the store and event dispatcher.
+  State keeps config values generic and responds to `gridSizeChanged` for shared geometry, without font/atlas knowledge.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, line-number drawing, and private
   prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
   `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
@@ -38,6 +41,8 @@
   plugin owns its hint through the generic canvas-overlay hook; `canvasOverlays` controls that drawing stage. The editing plugin owns caret movement and foreground drawing;
   navigation handles view-mode line selection and block navigation. `includeKeyboardModeSwitching: false` omits
   mode switching from default/minimal; its presence controls availability without a core feature flag.
+- The default editor also imports `editor-plugin-font-preview` for non-coarse pointers. F18/F19 cycle a temporary font
+  override without modifying source; project loading or plugin disposal restores source configuration. Minimal omits it.
 - Rendering plugins: web-ui owns the procedural background and its font-specific dot settings under `src/plugins/`.
   `editor-plugin-connectors` owns input/output widgets, wire lookup, and the complete line renderer. Web-ui provides
   generic render-layer registration, palette updates, memory release, and disposal.

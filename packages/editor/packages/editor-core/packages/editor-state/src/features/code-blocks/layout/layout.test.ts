@@ -110,7 +110,7 @@ describe('independent layout contributions', () => {
 		const onLayout = vi.fn();
 		const unsubscribe = first.layout.subscribe(onLayout);
 		first.state.viewport.hGrid = 24;
-		first.events.dispatch('spriteSheetRerendered');
+		first.events.dispatch('gridSizeChanged');
 		expect(first.block.height).toBe(5 * 24);
 		expect(onLayout).toHaveBeenCalledWith({ codeBlock: first.block, state: first.state });
 		unsubscribe();

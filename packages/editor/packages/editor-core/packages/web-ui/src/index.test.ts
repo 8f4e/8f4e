@@ -1,5 +1,6 @@
-import { resolvePalette } from '@8f4e/editor-palette';
-import { createMockState } from '@8f4e/editor-state-testing';
+import { resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
+import { createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
+import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEditorDrawerRegistry } from './drawers/registry';
 
@@ -73,6 +74,11 @@ vi.mock('./drawers/dialog', () => ({
 	default: mocks.drawDialog,
 }));
 
+vi.mock('@8f4e/sprite-generator', async original => ({
+	...(await original<typeof import('@8f4e/sprite-generator')>()),
+	default: vi.fn(async () => createFontAtlas()),
+}));
+
 function createFontAtlas(characterWidth = 8, characterHeight = 16) {
 	return {
 		image: {
@@ -84,6 +90,18 @@ function createFontAtlas(characterWidth = 8, characterHeight = 16) {
 	};
 }
 
+function createMemoryViews() {
+	return {
+		int8: new Int8Array(0),
+		int16: new Int16Array(0),
+		int32: new Int32Array(0),
+		uint8: new Uint8Array(0),
+		uint16: new Uint16Array(0),
+		float32: new Float32Array(0),
+		float64: new Float64Array(0),
+	};
+}
+
 describe('web-ui init', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -92,28 +110,56 @@ describe('web-ui init', () => {
 	});
 	afterEach(() => vi.unstubAllGlobals());
 
+	it('loads the configured font and installs its grid before initializing render layers', async () => {
+		const { default: init } = await import('./index');
+		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
+		const state = createMockState({ editorConfig: { font: '6x10' } });
+		const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
+		const drawers = createEditorDrawerRegistry();
+		const factory = vi.fn(() => {
+			expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 10 });
+			return { draw: vi.fn(), destroy: vi.fn() };
+		});
+		drawers.registerRenderLayer(factory);
+		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas(6, 10));
+		const view = await init(createStateManager(state), events, {} as HTMLCanvasElement, createMemoryViews(), {
+			drawers,
+		});
+		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('6x10');
+		expect(factory).toHaveBeenCalledOnce();
+		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('gridSizeChanged');
+		view.destroy();
+	});
+
+	it('does not acquire GPU resources when the initial font fails to load', async () => {
+		const { default: init } = await import('./index');
+		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
+		const error = new Error('Font unavailable');
+		vi.mocked(loadFontAtlas).mockRejectedValueOnce(error);
+		await expect(
+			init(
+				createStateManager(createMockState()),
+				createMockEventDispatcher(),
+				{} as HTMLCanvasElement,
+				createMemoryViews()
+			)
+		).rejects.toBe(error);
+		expect(mocks.Engine).not.toHaveBeenCalled();
+	});
+
 	it('renders viewport overlays after menus and before dialogs with the current frame state', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
-		const memoryViews = {
-			int8: new Int8Array(0),
-			int16: new Int16Array(0),
-			int32: new Int32Array(0),
-			uint8: new Uint8Array(0),
-			uint16: new Uint16Array(0),
-			float32: new Float32Array(0),
-			float64: new Float64Array(0),
-		};
+		const memoryViews = createMemoryViews();
 
 		const drawers = createEditorDrawerRegistry();
 		const overlay = vi.fn();
 		const removeOverlay = drawers.registerCanvasOverlay(overlay);
 		const view = await init(
-			state,
+			createStateManager(state),
+			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
 			memoryViews,
-			createFontAtlas(),
-			resolvePalette(state.editorConfig.color),
 			{ drawers }
 		);
 
@@ -141,30 +187,15 @@ describe('web-ui init', () => {
 	it('draws registered render layers above sprites in registration order', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
-		const memoryViews = {
-			int8: new Int8Array(0),
-			int16: new Int16Array(0),
-			int32: new Int32Array(0),
-			uint8: new Uint8Array(0),
-			uint16: new Uint16Array(0),
-			float32: new Float32Array(0),
-			float64: new Float64Array(0),
-		};
+		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
 		const drawLayer = vi.fn();
 		drawers.registerRenderLayer(() => ({ draw: drawLayer, destroy: vi.fn() }));
 		const drawTopLayer = vi.fn();
 		drawers.registerRenderLayer(() => ({ draw: drawTopLayer, destroy: vi.fn() }));
-		await init(
-			state,
-			{} as HTMLCanvasElement,
-			memoryViews,
-			createFontAtlas(),
-			resolvePalette(state.editorConfig.color),
-			{
-				drawers,
-			}
-		);
+		await init(createStateManager(state), createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews, {
+			drawers,
+		});
 
 		expect(drawLayer).toHaveBeenCalledOnce();
 		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawLayer.mock.invocationCallOrder[0]);
@@ -174,21 +205,12 @@ describe('web-ui init', () => {
 	it('pauses and resumes its animation frame loop idempotently', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
-		const memoryViews = {
-			int8: new Int8Array(0),
-			int16: new Int16Array(0),
-			int32: new Int32Array(0),
-			uint8: new Uint8Array(0),
-			uint16: new Uint16Array(0),
-			float32: new Float32Array(0),
-			float64: new Float64Array(0),
-		};
+		const memoryViews = createMemoryViews();
 		const view = await init(
-			state,
+			createStateManager(state),
+			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
-			memoryViews,
-			createFontAtlas(),
-			resolvePalette(state.editorConfig.color)
+			memoryViews
 		);
 		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
 		expect(mocks.requestAnimationFrame).toHaveBeenCalledOnce();
@@ -212,17 +234,9 @@ describe('web-ui init', () => {
 	it('releases rendering resources and applies the latest deferred size when resumed', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
-		const memoryViews = {
-			int8: new Int8Array(0),
-			int16: new Int16Array(0),
-			int32: new Int32Array(0),
-			uint8: new Uint8Array(0),
-			uint16: new Uint16Array(0),
-			float32: new Float32Array(0),
-			float64: new Float64Array(0),
-		};
+		const memoryViews = createMemoryViews();
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
-		const view = await init(state, canvas, memoryViews, createFontAtlas(), resolvePalette(state.editorConfig.color));
+		const view = await init(createStateManager(state), createMockEventDispatcher(), canvas, memoryViews);
 
 		view.releaseRenderingResources();
 		view.releaseRenderingResources();
@@ -244,62 +258,50 @@ describe('web-ui init', () => {
 	it('updates palette independently of font atlas replacement', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
-		const memoryViews = {
-			int8: new Int8Array(0),
-			int16: new Int16Array(0),
-			int32: new Int32Array(0),
-			uint8: new Uint8Array(0),
-			uint16: new Uint16Array(0),
-			float32: new Float32Array(0),
-			float64: new Float64Array(0),
-		};
-		const view = await init(
-			state,
-			{} as HTMLCanvasElement,
-			memoryViews,
-			createFontAtlas(),
-			resolvePalette(state.editorConfig.color)
-		);
+		const store = createStateManager(state);
+		const memoryViews = createMemoryViews();
+		const drawers = createEditorDrawerRegistry();
+		const loadPalette = vi.fn();
+		drawers.registerRenderLayer(() => ({ draw: vi.fn(), destroy: vi.fn(), loadPalette }));
+		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews, { drawers });
 		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
 		const backgroundPaletteUploads = mocks.background.setPalette.mock.calls.length;
-		view.loadFontAtlas(createFontAtlas(), 'ibmvga8x16');
+		store.set('editorConfig.font', 'ibmvga8x16');
+		await vi.dynamicImportSettled();
 		expect(mocks.engine.setPalette).toHaveBeenCalledTimes(paletteUploads);
 		expect(mocks.background.setPalette).toHaveBeenCalledTimes(backgroundPaletteUploads);
 
 		const installCount = mocks.engine.setSpriteAtlas.mock.calls.length;
 		const palette = resolvePalette({ primary: '#00ff00' });
-		view.loadPalette(palette);
+		store.set('editorConfig.color', { primary: '#00ff00' });
+		expect(mocks.engine.setPalette).toHaveBeenLastCalledWith(toPaletteBytes(palette));
+		expect(loadPalette).toHaveBeenCalledExactlyOnceWith(palette);
 		expect(mocks.background.setPalette).toHaveBeenCalledWith(mocks.engine.setPalette.mock.calls.at(-1)?.[0]);
 		expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(installCount);
+		view.destroy();
+		store.dispose();
 	});
 
 	it('updates font dimensions and background settings when the atlas is replaced', async () => {
 		const { default: init } = await import('./index');
+		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
 		const state = createMockState();
-		const memoryViews = {
-			int8: new Int8Array(0),
-			int16: new Int16Array(0),
-			int32: new Int32Array(0),
-			uint8: new Uint8Array(0),
-			uint16: new Uint16Array(0),
-			float32: new Float32Array(0),
-			float64: new Float64Array(0),
-		};
+		const store = createStateManager(state);
+		const memoryViews = createMemoryViews();
 
-		const view = await init(
-			state,
-			{} as HTMLCanvasElement,
-			memoryViews,
-			createFontAtlas(8, 16),
-			resolvePalette(state.editorConfig.color)
-		);
+		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews);
 
-		view.loadFontAtlas(createFontAtlas(10, 18), 'terminus10x18');
+		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas(10, 18));
+		store.set('editorConfig.font', 'terminus10x18');
+		await vi.dynamicImportSettled();
 		expect(mocks.background.setFont).toHaveBeenLastCalledWith('terminus10x18', createFontAtlas(10, 18).grid);
 		expect(mocks.engine.setSpriteAtlas).toHaveBeenLastCalledWith(
 			createFontAtlas(10, 18).image,
 			createFontAtlas(10, 18).grid
 		);
+		expect(state.viewport).toMatchObject({ vGrid: 10, hGrid: 18 });
+		view.destroy();
+		store.dispose();
 	});
 
 	it('emits render stats at the configured frame interval', async () => {
@@ -310,23 +312,14 @@ describe('web-ui init', () => {
 		});
 		const { default: init } = await import('./index');
 		const state = createMockState();
-		const memoryViews = {
-			int8: new Int8Array(0),
-			int16: new Int16Array(0),
-			int32: new Int32Array(0),
-			uint8: new Uint8Array(0),
-			uint16: new Uint16Array(0),
-			float32: new Float32Array(0),
-			float64: new Float64Array(0),
-		};
+		const memoryViews = createMemoryViews();
 		const onRenderStats = vi.fn();
 
 		const view = await init(
-			state,
+			createStateManager(state),
+			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
 			memoryViews,
-			createFontAtlas(),
-			resolvePalette(state.editorConfig.color),
 			{
 				onRenderStats,
 				renderStatsIntervalFrames: 2,

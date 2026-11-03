@@ -25,6 +25,9 @@
 - PRs: add screenshots/gifs for UI changes, include test notes, link issues.
 
 ## Plugins
+- Font/color schemas, validators, defaults, and subscriptions belong to web-ui. Register them through
+  `registerWebUiConfig(store)` before plugins/project loading. Initialize the view with the store and events; do not
+  restore core font-atlas or palette management. State reacts only to `gridSizeChanged` and shared grid dimensions.
 - Install plugins in editor-core so one setup receives state, event, menu, directive, layout, and drawer services.
 - Keep generic directive parsing and layout in editor-state, and generic drawing hooks in web-ui.
 - Source updates use `features/code-blocks/sourceUpdates.ts`: refresh source metadata, regenerate environment source,

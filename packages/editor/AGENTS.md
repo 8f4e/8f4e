@@ -11,6 +11,9 @@
   prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
   `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
+- Web-ui contributes font/color configuration through `registerWebUiConfig(store)` and owns defaults, loading, and
+  subscriptions. Editor-core calls it before plugins/project loading; renderer initialization receives the store and
+  event dispatcher. Editor-state uses only grid dimensions and the generic `gridSizeChanged` event.
 - Keep `@8f4e/editor-palette` external in bundled editor libraries so the final composition can share one palette module.
 - External lists match exact import paths; include used dependency subpaths such as `glugglugglug/utils` explicitly.
 - `@8f4e/editor-default` composes the core with compiler, worker, runtimes, standard library, example source discovery,
@@ -135,3 +138,5 @@
 - Keyboard navigation, text editing/history shortcuts, and mode switching are independent input plugins. Both hosts
   import their factories only for non-coarse primary pointers. Editing loads its implementation on edit mode and
   owns pending input replay; test real plugin combinations in editor-default, never in sibling-plugin tests.
+- The default editor additionally imports `font-preview` with the desktop keyboard set. F18/F19 cycle temporary fonts;
+  source, history, and exports stay unchanged. Minimal omits it.

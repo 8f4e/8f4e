@@ -50,7 +50,8 @@ describe('editor state lifecycle', () => {
 		const store = initState(events, {
 			callbacks: {},
 		});
-		const code = ['note local.editorConfig', '; @config font terminus8x16', 'noteEnd'];
+		store.set('editorConfigSchemaContributions.test', { root: 'testSetting', schema: { type: 'string' } });
+		const code = ['note local.editorConfig', '; @config testSetting sample', 'noteEnd'];
 
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code }] });
 
@@ -60,14 +61,14 @@ describe('editor state lifecycle', () => {
 				.codeBlockRendering.rootProject.blocks.filter(block => block.blockType === 'note')
 				.map(block => block.code)
 		).toEqual([code]);
-		expect(store.getState().editorConfig.font).toBe('terminus8x16');
+		expect(store.getState().editorConfig.testSetting).toBe('sample');
 
 		store.set('initialProjectState', EMPTY_DEFAULT_PROJECT);
 
 		expect(store.getState().codeBlockRendering.rootProject.blocks.filter(block => block.blockType === 'note')).toEqual(
 			[]
 		);
-		expect(store.getState().editorConfig.font).toBeUndefined();
+		expect(store.getState().editorConfig.testSetting).toBeUndefined();
 		store.dispose();
 	});
 
