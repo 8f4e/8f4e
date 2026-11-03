@@ -168,7 +168,7 @@ export default function contextMenu(
 	events.on('openSubMenu', onOpenSubMenu);
 	events.on('contextmenu', onContextMenu);
 	events.on('menuBack', onMenuBack);
-	events.on('pointerdown', onPointerDown, { capture: true });
+	events.on('pointerdown', onPointerDown);
 	events.on('pointermove', onPointerMove, { capture: true });
 
 	return () => {

@@ -17,6 +17,8 @@ export default function pointerInput(store: StateManager<State>, events: EventDi
 		};
 	};
 	const capturePointerDown = (event: InternalPointerEvent) => {
+		// Probes must not activate overlays or reach controls beneath them.
+		if (state.dialogStack.length > 0 || state.contextMenu.open) return;
 		const pointer = getBlockPointer(event);
 		if (!pointer) return;
 		events.dispatch('codeBlockPointerDown', pointer, { phase: 'capture' });

@@ -12,7 +12,8 @@ selection. Control routing is independent of the block-dragging feature flag. Sl
 
 Event dispatch can select the capture or normal phase with `{ phase: 'capture' | 'normal' }`; omitting the option
 runs both phases. Touch input probes the capture phase before committing a viewport gesture. Core decides whether
-an interaction claims the pointer; the adapter cancels native defaults only for claimed interactions or completed
+an interaction claims the pointer; probes leave dialog and menu activation to the completed press. The adapter
+cancels native defaults only for claimed interactions or completed
 pans. Extra fingers, cancellation, project replacement, and disposal release a held touch. Unclaimed taps retain
 native tap handling.
 

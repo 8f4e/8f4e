@@ -80,9 +80,33 @@ it('gives modal dialogs priority over controls', () => {
 	const pressed = vi.fn();
 	test.events.on('codeBlockPointerDown', pressed, { capture: true });
 	test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Please wait', buttons: [] });
-	test.events.dispatch('pointerdown', test.pointer, { phase: 'capture' });
+	test.events.dispatch('pointerdown', test.pointer);
 	expect(pressed).not.toHaveBeenCalled();
 	expect(test.pointer.stopPropagation).toBe(true);
+});
+
+it('leaves dialog activation to the completed press after a capture-only probe', () => {
+	const test = setup();
+	const activate = vi.fn();
+	test.events.on('activateDialog', activate);
+	test.events.dispatch('addDialog', {
+		id: 'modal',
+		title: 'Modal',
+		text: 'Continue?',
+		buttons: [{ title: 'Allow', action: 'activateDialog' }],
+	});
+	const button = test.state.dialog.buttons[0];
+	const pointer = {
+		...test.pointer,
+		x: test.state.dialog.x + button.x + button.width / 2,
+		y: test.state.dialog.y + button.y + button.height / 2,
+	};
+	test.events.dispatch('pointerdown', pointer, { phase: 'capture' });
+	expect(activate).not.toHaveBeenCalled();
+	expect(test.state.dialogStack).toHaveLength(1);
+	test.events.dispatch('pointerdown', { ...pointer, stopPropagation: false });
+	expect(activate).toHaveBeenCalledOnce();
+	expect(test.state.dialogStack).toHaveLength(0);
 });
 
 it.each(['pointerup', 'pointercancel'])('releases a claimed control on %s', type => {

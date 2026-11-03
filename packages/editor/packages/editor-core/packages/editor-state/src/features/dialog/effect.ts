@@ -146,7 +146,7 @@ export default function dialog(store: StateManager<State>, events: EventDispatch
 	events.on('removeDialog', removeDialog);
 	events.on('clearDialogs', clearDialogs);
 	events.on('pointermove', onPointerMove, { capture: true });
-	events.on('pointerdown', onPointerDown, { capture: true });
+	events.on('pointerdown', onPointerDown);
 	events.on('pointerup', blockPointerEvent);
 	events.on('contextmenu', blockPointerEvent);
 
