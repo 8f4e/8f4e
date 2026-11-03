@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-mouse-input",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": true,
   "description": "Browser mouse and wheel input for the 8f4e editor",
   "type": "module",
