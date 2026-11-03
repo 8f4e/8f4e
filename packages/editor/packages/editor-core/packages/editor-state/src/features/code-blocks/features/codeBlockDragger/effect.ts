@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, EventDispatcher, InternalMouseEvent, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import compareCodeBlocksByPosition from '../../../../pureHelpers/compareCodeBlocksByPosition';
 import { bringCodeBlockToFrontWithinPartition } from '../../partitionCodeBlocksByAlwaysOnTop';
@@ -11,30 +11,14 @@ import { worldPositionToAnchoredPos } from '../directives/viewport/resolve';
 /** Plugins may replace targets synchronously before core starts moving and snapping them. */
 export interface ResolveCodeBlockDragTargetsEvent {
 	codeBlock: CodeBlockGraphicData;
-	altKey: InternalMouseEvent['altKey'];
+	altKey: InternalPointerEvent['altKey'];
 	targets: CodeBlockGraphicData[];
-}
-
-export interface CodeBlockPointerDownEvent {
-	/** A control sets this when it takes ownership of the pointer. */
-	stopPropagation?: boolean;
-	x: number;
-	y: number;
-	relativeX: number;
-	relativeY: number;
-	codeBlock: CodeBlockGraphicData;
-}
-
-export interface CodeBlockPointerMoveEvent {
-	x: number;
-	y: number;
-	stopPropagation: boolean;
 }
 
 export default function codeBlockDragger(store: StateManager<State>, events: EventDispatcher): () => void {
 	const state = store.getState();
-	// dragSet holds the blocks being dragged together. It's computed fresh on each mousedown
-	// and cleared on mouseup, so concurrent drags are not a concern (only one drag at a time).
+	// dragSet holds the blocks being dragged together. It's computed fresh on each pointerdown
+	// and cleared on pointerup, so concurrent drags are not a concern (only one drag at a time).
 	let dragSet: CodeBlockGraphicData[] = [];
 	let didDrag = false;
 	let orderBeforeDrag: CodeBlockGraphicData[] = [];
@@ -45,7 +29,7 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 			.toSorted(compareCodeBlocksByPosition);
 	}
 
-	function onMouseDown(event: InternalMouseEvent) {
+	function onPointerDown(event: InternalPointerEvent) {
 		const { x, y, altKey } = event;
 		if (!state.featureFlags.moduleDragging) {
 			return;
@@ -73,24 +57,6 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		dragSet = dragTargets.targets;
 		orderBeforeDrag = getCompilationOrder();
 
-		const relativeX = Math.abs(x - (draggedCodeBlock.x - state.viewport.x));
-		const relativeY = Math.abs(y - (draggedCodeBlock.y - state.viewport.y));
-
-		const pointerEvent: CodeBlockPointerDownEvent = {
-			x,
-			y,
-			relativeX,
-			relativeY,
-			codeBlock: draggedCodeBlock,
-		};
-		events.dispatch('codeBlockPointerDown', pointerEvent);
-		if (pointerEvent.stopPropagation) {
-			event.stopPropagation = true;
-			state.codeBlockRendering.draggedCodeBlock = undefined;
-			dragSet = [];
-			return;
-		}
-
 		// Bring dragged module forward within its z-order partition.
 		// Normal blocks move to the end of the normal segment (before always-on-top blocks).
 		// Always-on-top blocks move to the end of the always-on-top segment (end of array).
@@ -107,9 +73,7 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		}
 	}
 
-	function onMouseMove(event: InternalMouseEvent) {
-		events.dispatch('codeBlockPointerMove', event);
-		if (event.stopPropagation) return;
+	function onPointerMove(event: InternalPointerEvent) {
 		const { movementX, movementY } = event;
 		if (state.codeBlockRendering.draggedCodeBlock && dragSet.length > 0) {
 			if (movementX !== 0 || movementY !== 0) {
@@ -125,7 +89,7 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		}
 	}
 
-	function onMouseUp() {
+	function onPointerUp() {
 		if (!state.codeBlockRendering.draggedCodeBlock || dragSet.length === 0) {
 			return;
 		}
@@ -203,16 +167,13 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		orderBeforeDrag = [];
 	}
 
-	const releaseControlPointer = () => events.dispatch('codeBlockPointerUp');
-	events.on('mousedown', onMouseDown);
-	events.on('mousemove', onMouseMove);
-	events.on('mouseup', onMouseUp);
-	events.on('mouseup', releaseControlPointer, { capture: true });
+	events.on('pointerdown', onPointerDown);
+	events.on('pointermove', onPointerMove);
+	events.on('pointerup', onPointerUp);
 
 	return () => {
-		events.off('mousedown', onMouseDown);
-		events.off('mousemove', onMouseMove);
-		events.off('mouseup', onMouseUp);
-		events.off('mouseup', releaseControlPointer);
+		events.off('pointerdown', onPointerDown);
+		events.off('pointermove', onPointerMove);
+		events.off('pointerup', onPointerUp);
 	};
 }

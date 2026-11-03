@@ -24,6 +24,7 @@ import { registerEditorConfigSchemaContributionsValidator } from './features/edi
 import editorMode from './features/editor-mode/effect';
 import contextMenu from './features/menu/effect';
 import createMenuRegistry from './features/menu/registry';
+import pointerInput from './features/pointer-input/effect';
 import publishCompilationInputChanges from './features/program-compiler/inputChanges';
 import projectLoading from './features/project-loading/effect';
 import projectOperations from './features/project-operations/effect';
@@ -39,11 +40,6 @@ export type {
 } from './editing';
 
 export { createEditorEditingHandle, EditorEditingError, getEditorBlockId } from './editing';
-export type {
-	CodeBlockPointerDownEvent,
-	CodeBlockPointerMoveEvent,
-} from './features/code-blocks/features/codeBlockDragger/effect';
-export { default as findCodeBlockAtViewportCoordinates } from './features/code-blocks/utils/finders/findCodeBlockAtViewportCoordinates';
 export {
 	collectSchemaConfigPaths,
 	createSchemaEditorConfigValidator,
@@ -96,6 +92,7 @@ export default function init(
 	registerEffect(editorMode(store, events));
 	registerEffect(projectLoading(store, events));
 	registerEffect(codeBlockDragger(store, events));
+	registerEffect(pointerInput(store, events));
 	registerEffect(codeBlockNavigation(store, events));
 	registerEffect(viewport(store, events));
 	registerEffect(codeBlockCreator(store, events));

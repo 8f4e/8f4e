@@ -65,7 +65,7 @@ mode, including projects that start in edit mode. It buffers keys during that im
 After the first render, the browser host imports and installs these plugins only when `(pointer: coarse)` does not match. Phones and tablets
 with a coarse primary pointer receive none of the three plugins, and their mode overlay is hidden by default. This
 is a capability check when the deferred registry is created; it does not identify devices by user agent.
-Coarse-pointer devices load `touch-viewport-navigation` for configurable viewport dragging and grid snapping. Taps
+Coarse-pointer devices load `touch-input` for configurable viewport dragging and grid snapping. Taps
 remain available to controls, and dragging does not edit block positions.
 
 Touch panning defaults to two fingers in both directions. Set `touchNavigation: { fingerCount: 1, axis: 'horizontal' }`

@@ -13,7 +13,7 @@ describe('crossfade plugin', () => {
 		const { x: beforeX, y: beforeY } = test.block;
 		const x = test.block.x + localX - test.state.viewport.x;
 		const y = test.block.y + localY + 1 - test.state.viewport.y;
-		test.events.dispatch('mousedown', { x: x + test.state.viewport.vGrid / 2, y, stopPropagation: false });
+		test.events.dispatch('pointerdown', { x: x + test.state.viewport.vGrid / 2, y, stopPropagation: false });
 		const memory = test.compiled.memoryPlan.modules.audio.memory;
 		expect(test.memoryViews.float32[memory.dry.allocationUnitAddress]).toBe(1);
 		expect(test.memoryViews.float32[memory.wet.allocationUnitAddress]).toBe(0);
@@ -46,7 +46,7 @@ describe('crossfade plugin', () => {
 		const [localX, localY] = vi.mocked(test.draw.startGroup).mock.calls[0];
 		const x = test.block.x + localX - test.state.viewport.x;
 		const y = test.block.y + localY + 1 - test.state.viewport.y;
-		test.events.dispatch('mousedown', { x, y, stopPropagation: false });
+		test.events.dispatch('pointerdown', { x, y, stopPropagation: false });
 		test.events.dispatch('codeBlockPointerMove', { x: x + 20, y, movementX: 20, movementY: 0, stopPropagation: false });
 		expect(onMove).not.toHaveBeenCalled();
 		test.events.dispatch('codeBlockPointerUp');

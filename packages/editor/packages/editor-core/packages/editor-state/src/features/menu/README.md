@@ -20,7 +20,7 @@ Manages context menu interactions in the editor: opening menus, highlighting opt
 - `contextmenu`: open the main or clicked-block menu
 - `openSubMenu`: push a menu ID and payload onto the navigation stack
 - `menuBack`: return to the previous request
-- `mousemove` and `mousedown`: highlight and activate menu items
+- `pointermove` and `pointerdown`: highlight and activate menu items
 
 ### State Touched
 

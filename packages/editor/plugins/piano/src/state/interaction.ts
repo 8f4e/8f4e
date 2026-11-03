@@ -1,4 +1,10 @@
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockPointerDownEvent,
+	EventDispatcher,
+	InternalPointerEvent,
+	State,
+} from '@8f4e/editor-state-types';
 import type { PianoKeyboard } from '../types';
 
 // Runtime memory is the source of truth for both clicks and pressed-note highlights.
@@ -32,12 +38,7 @@ export function registerPianoInteraction(
 	keyboardsByBlock: WeakMap<CodeBlockGraphicData, PianoKeyboard[]>,
 	writeMemory: (address: number, value: number, isInteger: boolean) => void
 ): () => void {
-	const onCodeBlockPointerDown = (event: {
-		x: number;
-		y: number;
-		codeBlock: CodeBlockGraphicData;
-		stopPropagation?: boolean;
-	}) => {
+	const onCodeBlockPointerDown = (event: CodeBlockPointerDownEvent) => {
 		const { x, y, codeBlock } = event;
 		const keyboard = keyboardsByBlock
 			.get(codeBlock)

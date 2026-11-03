@@ -160,7 +160,7 @@ moduleEnd`;
 			};
 			expectActiveWire();
 			for (const block of [inactive, active, sink, inactive, active]) {
-				events.dispatch('mousedown', {
+				events.dispatch('pointerdown', {
 					x: block.x - state.viewport.x + 1,
 					y: block.y - state.viewport.y + 1,
 					movementX: 0,
@@ -171,7 +171,7 @@ moduleEnd`;
 					canvasHeight: 600,
 					altKey: false,
 				});
-				events.dispatch('mouseup');
+				events.dispatch('pointerup');
 				expectActiveWire();
 			}
 			expect(onInputChanged).not.toHaveBeenCalled();

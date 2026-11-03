@@ -1,16 +1,24 @@
 # Editor input
 
-Mouse and touch plugins translate browser input into editor interactions. Feature plugins handle shared pointer
-events, without browser listeners or knowledge of the input device.
+Mouse and touch plugins translate browser input into `pointerdown`, `pointermove`, `pointerup`, and
+`pointercancel` editor events with the shared `InternalPointerEvent` payload. Pointer contracts live in
+`@8f4e/editor-state-types`. Feature plugins have no browser listeners or knowledge of the input device.
 
-Controls listen for `codeBlockPointerDown` in capture order, hit-test their own geometry, and set `stopPropagation`
-when they claim the pointer. Slider and crossfade drags consume `codeBlockPointerMove`; held controls release on
-`codeBlockPointerUp`. Mouse input reaches these events through core's ordinary input effects. The touch adapter
-dispatches the same events and prevents native defaults only after a control claims the touch. Extra fingers,+cancellation, project replacement, and disposal release a held touch control.
+Core's pointer-input feature handles block lookup and routes both adapters through the same control interactions.
+Dialogs and menus get priority, then controls can claim `codeBlockPointerDown` in capture order by setting
+`stopPropagation`. Unclaimed presses continue to default selection and dragging; ordinary block listeners run after
+selection. Control routing is independent of the block-dragging feature flag. Sliders and crossfaders consume
+`codeBlockPointerMove`, and held controls release on `codeBlockPointerUp`.
+
+Event dispatch can select the capture or normal phase with `{ phase: 'capture' | 'normal' }`; omitting the option
+runs both phases. Touch input probes the capture phase before committing a viewport gesture. Core decides whether
+an interaction claims the pointer; the adapter cancels native defaults only for claimed interactions or completed
+pans. Extra fingers, cancellation, project replacement, and disposal release a held touch. Unclaimed taps retain
+native tap handling.
 
 ## Touch panning
 
-`createTouchViewportNavigationPlugin` accepts `fingerCount: 1 | 2` (default `2`) and
+`createTouchInputPlugin` accepts `fingerCount: 1 | 2` (default `2`) and
 `axis: 'both' | 'horizontal' | 'vertical'` (default `'both'`). Only gestures with the configured finger count pan
 the viewport; control gestures take priority. Two-finger panning follows the midpoint between the fingers.
 

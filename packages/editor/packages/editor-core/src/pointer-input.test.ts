@@ -1,0 +1,94 @@
+import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import type { CodeBlockPointerDownEvent, InternalPointerEvent } from '@8f4e/editor-state-types';
+import { afterEach, expect, it, vi } from 'vitest';
+import createEvents from './events';
+
+const cleanups: Array<() => void> = [];
+afterEach(() => {
+	while (cleanups.length) cleanups.pop()!();
+});
+
+function setup(moduleDragging = true) {
+	const events = createEvents();
+	const store = initState(events, { callbacks: {}, featureFlags: { moduleDragging } });
+	events.dispatch('loadProject', {
+		project: {
+			...EMPTY_DEFAULT_PROJECT,
+			notes: [{ id: 0, code: ['note target', '; @pos 10 10', 'Pointer target', 'noteEnd'] }],
+		},
+	});
+	const state = store.getState();
+	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+	const pointer: InternalPointerEvent = {
+		x: block.x - state.viewport.x + 8,
+		y: block.y - state.viewport.y + 8,
+		movementX: 0,
+		movementY: 0,
+		buttons: 1,
+		altKey: false,
+		stopPropagation: false,
+		canvasWidth: 800,
+		canvasHeight: 600,
+	};
+	cleanups.push(() => {
+		store.dispose();
+		events.dispose();
+	});
+	return { events, store, state, block, pointer };
+}
+
+it.each([true, false])('routes controls before block selection with moduleDragging=%s', moduleDragging => {
+	const test = setup(moduleDragging);
+	const pressed = vi.fn((event: CodeBlockPointerDownEvent) => {
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		event.stopPropagation = true;
+	});
+	test.events.on('codeBlockPointerDown', pressed, { capture: true });
+	test.events.dispatch('pointerdown', test.pointer);
+	expect(pressed).toHaveBeenCalledOnce();
+	expect(pressed.mock.calls[0][0].codeBlock).toBe(test.block);
+	expect(test.pointer.stopPropagation).toBe(true);
+	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+});
+
+it('delivers ordinary block presses after default selection', () => {
+	const test = setup();
+	const pressed = vi.fn((event: CodeBlockPointerDownEvent) => {
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(event.codeBlock);
+	});
+	test.events.on('codeBlockPointerDown', pressed);
+	test.events.dispatch('pointerdown', test.pointer);
+	expect(pressed).toHaveBeenCalledOnce();
+});
+
+it('probes interactions without committing default selection, dragging, or viewport movement', () => {
+	const test = setup();
+	const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
+	const revision = test.state.projectChange.revision;
+	test.events.dispatch('pointerdown', test.pointer, { phase: 'capture' });
+	test.events.dispatch('pointermove', { ...test.pointer, movementX: 40, movementY: 30 }, { phase: 'capture' });
+	test.events.dispatch('pointerup', { ...test.pointer, buttons: 0 }, { phase: 'capture' });
+	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+	expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+	expect(test.state.viewport).toMatchObject(viewport);
+	expect(test.state.projectChange.revision).toBe(revision);
+});
+
+it('gives modal dialogs priority over controls', () => {
+	const test = setup();
+	const pressed = vi.fn();
+	test.events.on('codeBlockPointerDown', pressed, { capture: true });
+	test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Please wait', buttons: [] });
+	test.events.dispatch('pointerdown', test.pointer, { phase: 'capture' });
+	expect(pressed).not.toHaveBeenCalled();
+	expect(test.pointer.stopPropagation).toBe(true);
+});
+
+it.each(['pointerup', 'pointercancel'])('releases a claimed control on %s', type => {
+	const test = setup();
+	const released = vi.fn();
+	test.events.on('codeBlockPointerUp', released);
+	test.events.dispatch(type, test.pointer, { phase: 'capture' });
+	expect(released).toHaveBeenCalledOnce();
+});

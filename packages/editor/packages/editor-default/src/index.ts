@@ -5,7 +5,7 @@ import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plu
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
-import type { TouchViewportNavigationOptions } from '@8f4e/editor-plugin-touch-viewport-navigation';
+import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
@@ -22,7 +22,7 @@ export function createDefaultEditorPlugins(options: {
 	renderFrame: () => void;
 	showOpenMenuItem: boolean;
 	captureWheel?: boolean;
-	touchNavigation?: Omit<TouchViewportNavigationOptions, 'inputTarget'>;
+	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
 	includeKeyboardModeSwitching?: boolean;
 	getMemory: () => WebAssembly.Memory | null;
 	writeMemory: (address: number, value: number, isInteger: boolean) => void;
@@ -60,7 +60,7 @@ export interface DefaultEditorMountOptions {
 	/** Capture wheel gestures for viewport panning. Disable this for editors embedded in scrolling pages. */
 	captureWheel?: boolean;
 	/** Configure touch panning; defaults to two fingers in both directions. */
-	touchNavigation?: Omit<TouchViewportNavigationOptions, 'inputTarget'>;
+	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
 	/** Initial source is installed; compilation and asset loading continue independently. */

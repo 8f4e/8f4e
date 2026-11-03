@@ -46,14 +46,14 @@ entryEnd`),
 		const state = editor.state;
 		const first = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
 		const second = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'destination')!;
-		const mouse = (type: string, x: number, y: number, movementX = 0) => {
+		const pointer = (type: string, x: number, y: number, movementX = 0) => {
 			events.dispatch(type, {
 				x,
 				y,
 				movementX,
 				movementY: 0,
 				altKey: false,
-				buttons: type === 'mouseup' ? 0 : 1,
+				buttons: type === 'pointerup' ? 0 : 1,
 				stopPropagation: false,
 				canvasWidth: canvas.width,
 				canvasHeight: canvas.height,
@@ -62,11 +62,11 @@ entryEnd`),
 		const x = first.x - state.viewport.x + 8;
 		const y = first.y - state.viewport.y + 8;
 		const secondX = second.x;
-		mouse('mousedown', x, y);
-		mouse('mousemove', x + state.viewport.vGrid, y, state.viewport.vGrid);
-		mouse('mouseup', x + state.viewport.vGrid, y);
+		pointer('pointerdown', x, y);
+		pointer('pointermove', x + state.viewport.vGrid, y, state.viewport.vGrid);
+		pointer('pointerup', x + state.viewport.vGrid, y);
 		expect(second.x).toBe(secondX + state.viewport.vGrid);
-		mouse('contextmenu', first.x - state.viewport.x + 8, first.y - state.viewport.y + 8);
+		pointer('contextmenu', first.x - state.viewport.x + 8, first.y - state.viewport.y + 8);
 		await expect.poll(() => state.contextMenu.items.some(item => item.action === 'setGroupNonstick')).toBe(true);
 		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 		editor.renderFrame();
@@ -75,17 +75,17 @@ entryEnd`),
 		const index = state.contextMenu.items.findIndex(item => item.action === 'setGroupNonstick');
 		const menuX = state.contextMenu.x - state.viewport.x + 8;
 		const menuY = state.contextMenu.y - state.viewport.y + index * state.viewport.hGrid + 8;
-		mouse('mousemove', menuX, menuY);
-		mouse('mousedown', menuX, menuY);
-		mouse('mouseup', menuX, menuY);
+		pointer('pointermove', menuX, menuY);
+		pointer('pointerdown', menuX, menuY);
+		pointer('pointerup', menuX, menuY);
 		expect(first.code).toContain('; @group audio nonstick');
 		expect(second.code).toContain('; @group audio nonstick');
 		const before = second.x;
 		const nextX = first.x - state.viewport.x + 8;
 		const nextY = first.y - state.viewport.y + 8;
-		mouse('mousedown', nextX, nextY);
-		mouse('mousemove', nextX + state.viewport.vGrid, nextY, state.viewport.vGrid);
-		mouse('mouseup', nextX + state.viewport.vGrid, nextY);
+		pointer('pointerdown', nextX, nextY);
+		pointer('pointermove', nextX + state.viewport.vGrid, nextY, state.viewport.vGrid);
+		pointer('pointerup', nextX + state.viewport.vGrid, nextY);
 		expect(second.x).toBe(before);
 	} finally {
 		vi.restoreAllMocks();

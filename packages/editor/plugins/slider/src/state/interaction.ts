@@ -1,5 +1,10 @@
-import type { CodeBlockPointerMoveEvent } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockPointerDownEvent,
+	EventDispatcher,
+	InternalPointerEvent,
+	State,
+} from '@8f4e/editor-state-types';
 import type { Slider } from '../types';
 
 interface ActiveSlider {
@@ -38,12 +43,7 @@ export function registerSliderInteraction(
 		writeMemory(slider.allocationUnitAddress, value, shouldWriteInteger);
 	};
 
-	const onCodeBlockPointerDown = (event: {
-		x: number;
-		y: number;
-		codeBlock: CodeBlockGraphicData;
-		stopPropagation?: boolean;
-	}) => {
+	const onCodeBlockPointerDown = (event: CodeBlockPointerDownEvent) => {
 		const { x, y, codeBlock } = event;
 		const slider = slidersByBlock
 			.get(codeBlock)
@@ -65,7 +65,7 @@ export function registerSliderInteraction(
 		updateSliderValue(activeSlider, x);
 	};
 
-	const onPointerMove = (event: CodeBlockPointerMoveEvent) => {
+	const onPointerMove = (event: InternalPointerEvent) => {
 		if (!activeSlider) {
 			return;
 		}

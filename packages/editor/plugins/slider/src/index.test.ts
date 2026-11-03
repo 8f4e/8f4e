@@ -140,7 +140,7 @@ describe('slider plugin', () => {
 			const original = [...test.block.code];
 			const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
 			const blockPosition = { x: test.block.x, y: test.block.y };
-			test.events.dispatch('mousedown', { ...test.point(0.25), buttons: 1, altKey: false, stopPropagation: false });
+			test.events.dispatch('pointerdown', { ...test.point(0.25), buttons: 1, altKey: false, stopPropagation: false });
 			expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 			expect(test.move(0.75).stopPropagation).toBe(true);
 			expect(test.write).toHaveBeenLastCalledWith(
@@ -200,7 +200,7 @@ describe('slider plugin', () => {
 	});
 	it('gives an open context menu pointer movement before an active slider drag', async () => {
 		const test = await setup();
-		test.events.dispatch('mousedown', { ...test.point(0.25), buttons: 1, altKey: false, stopPropagation: false });
+		test.events.dispatch('pointerdown', { ...test.point(0.25), buttons: 1, altKey: false, stopPropagation: false });
 		test.events.dispatch('contextmenu', { ...test.point(0.25), buttons: 3, stopPropagation: false });
 		await Promise.resolve();
 		await Promise.resolve();
@@ -215,7 +215,7 @@ describe('slider plugin', () => {
 			altKey: false,
 			stopPropagation: false,
 		};
-		test.events.dispatch('mousemove', move);
+		test.events.dispatch('pointermove', move);
 		expect(test.state.contextMenu.highlightedItem).toBe(1);
 		expect(move.stopPropagation).toBe(true);
 		expect(test.write).not.toHaveBeenCalled();

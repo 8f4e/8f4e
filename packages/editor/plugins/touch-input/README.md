@@ -1,15 +1,16 @@
-# Touch viewport navigation
+# Touch input
 
-`@8f4e/editor-plugin-touch-viewport-navigation` translates native touches into editor control interactions and viewport
-panning. Controls receive the same `codeBlockPointerDown`, `codeBlockPointerMove`, and `codeBlockPointerUp` events as
-mouse input, with no browser listeners or device checks in feature plugins. A control claims a pointer down by setting
-`stopPropagation`; the adapter then owns that touch until release, cancellation, an extra finger, or project replacement.
-Unclaimed taps remain available to the browser and the mouse-input adapter.
+`@8f4e/editor-plugin-touch-input` translates native touches into shared `pointerdown`, `pointermove`,
+`pointerup`, and `pointercancel` editor events and owns touch viewport gestures. Core handles block targeting, modal
+priority, and control routing for both input adapters. Feature plugins receive device-independent block pointer
+events, with no browser listeners or device checks. A consumer claims a press by setting `stopPropagation`; the adapter
+then owns that touch until release, cancellation, an extra finger, or project replacement. Unclaimed taps retain native
+tap handling.
 
 ```ts
-import { createTouchViewportNavigationPlugin } from '@8f4e/editor-plugin-touch-viewport-navigation';
+import { createTouchInputPlugin } from '@8f4e/editor-plugin-touch-input';
 
-const plugin = createTouchViewportNavigationPlugin({
+const plugin = createTouchInputPlugin({
 	inputTarget: canvas,
 	fingerCount: 1,
 	axis: 'horizontal',

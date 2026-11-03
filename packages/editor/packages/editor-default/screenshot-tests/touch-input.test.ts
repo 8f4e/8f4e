@@ -112,12 +112,14 @@ entryEnd`);
 		const canvas = document.createElement('canvas');
 		canvas.width = 390;
 		canvas.height = 720;
+		canvas.style.outline = 'none';
 		document.body.append(canvas);
 		let editor: Editor | undefined;
 		let context!: EditorPluginContext;
 		try {
 			editor = await initEditor(canvas, {
 				initialProject: project,
+				featureFlags: { moduleDragging: false },
 				plugins: [
 					{
 						id: 'test-artifacts',
@@ -170,6 +172,24 @@ entryEnd`);
 			await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 			expect(writeMemory).toHaveBeenLastCalledWith(expect.any(Number), 0.75, false);
 			expect(state.viewport).toMatchObject(viewport);
+			const mousePoint = point(left + width * 0.5, y);
+			await input.send('Input.dispatchMouseEvent', {
+				type: 'mousePressed',
+				x: mousePoint.x,
+				y: mousePoint.y,
+				button: 'left',
+				buttons: 1,
+				clickCount: 1,
+			});
+			await input.send('Input.dispatchMouseEvent', {
+				type: 'mouseReleased',
+				x: mousePoint.x,
+				y: mousePoint.y,
+				button: 'left',
+				buttons: 0,
+				clickCount: 1,
+			});
+			expect(writeMemory).toHaveBeenLastCalledWith(expect.any(Number), 0.5, false);
 			const writes = writeMemory.mock.calls.length;
 			const points = (x: number, y: number) => [point(x, y), point(x + 40, y + 40, 2)].slice(0, fingerCount);
 			await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(200, 400) });

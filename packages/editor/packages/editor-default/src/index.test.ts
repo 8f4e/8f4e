@@ -93,7 +93,7 @@ describe('default editor plugins', () => {
 		expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 		const pluginIds = [...initialPlugins, ...deferredPlugins].map(plugin => plugin.id);
 		expect(pluginIds).toContain('mouse-input');
-		expect(pluginIds).not.toContain('touch-viewport-navigation');
+		expect(pluginIds).not.toContain('touch-input');
 		expect(pluginIds[0]).toBe('compiler');
 		expect(pluginIds).toEqual(
 			expect.arrayContaining([
@@ -251,9 +251,7 @@ it('omits all keyboard plugins and keyboard guidance on coarse-pointer browsers'
 			storage: {} as Storage,
 		});
 		const plugins = await loadDeferredPlugins();
-		expect(plugins.map(plugin => plugin.id)).toEqual(
-			expect.arrayContaining(['mouse-input', 'touch-viewport-navigation'])
-		);
+		expect(plugins.map(plugin => plugin.id)).toEqual(expect.arrayContaining(['mouse-input', 'touch-input']));
 		for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing', 'font-preview'])
 			expect(plugins.some(plugin => plugin.id === id)).toBe(false);
 	} finally {

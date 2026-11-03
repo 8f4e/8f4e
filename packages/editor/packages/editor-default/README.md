@@ -42,7 +42,7 @@ edits; loading a project or disposing the plugin restores source configuration.
 After the first render, the browser host imports and installs these four plugins only when `(pointer: coarse)` does not match. Phones and tablets
 with a coarse primary pointer receive none of them, and their mode overlay is hidden by default. This
 is a capability check when the deferred registry is created; it does not identify devices by user agent.
-Coarse-pointer devices load `touch-viewport-navigation` instead, supporting configurable touch panning and grid snapping
+Coarse-pointer devices load `touch-input` instead, supporting configurable touch panning and grid snapping
 without editing block positions. Taps remain available to controls.
 
 Touch panning defaults to two fingers in both directions. Set `touchNavigation: { fingerCount: 1, axis: 'horizontal' }`

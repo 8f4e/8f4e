@@ -1,5 +1,10 @@
-import type { CodeBlockPointerMoveEvent } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockPointerDownEvent,
+	EventDispatcher,
+	InternalPointerEvent,
+	State,
+} from '@8f4e/editor-state-types';
 import type { Crossfade } from '../types';
 
 interface ActiveCrossfade {
@@ -30,12 +35,7 @@ export function registerCrossfadeInteraction(
 		writeMemory(crossfade.rightWordAddress, rightValue, false);
 	};
 
-	const onCodeBlockPointerDown = (event: {
-		x: number;
-		y: number;
-		codeBlock: CodeBlockGraphicData;
-		stopPropagation?: boolean;
-	}) => {
+	const onCodeBlockPointerDown = (event: CodeBlockPointerDownEvent) => {
 		const { x, y, codeBlock } = event;
 		const crossfade = crossfadesByBlock
 			.get(codeBlock)
@@ -56,7 +56,7 @@ export function registerCrossfadeInteraction(
 		updateCrossfadeValue(activeCrossfade, x);
 	};
 
-	const onPointerMove = (event: CodeBlockPointerMoveEvent) => {
+	const onPointerMove = (event: InternalPointerEvent) => {
 		if (!activeCrossfade) {
 			return;
 		}

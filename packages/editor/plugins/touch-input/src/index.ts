@@ -1,14 +1,9 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import {
-	type CodeBlockPointerDownEvent,
-	type CodeBlockPointerMoveEvent,
-	findCodeBlockAtViewportCoordinates,
-	snapToGrid,
-	stopViewportAnimation,
-	updateViewport,
-} from '@8f4e/editor-state';
+import { snapToGrid, stopViewportAnimation, updateViewport } from '@8f4e/editor-state';
+import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 
 const DRAG_THRESHOLD = 6;
+const TOUCH_ACTION = { both: 'none', horizontal: 'pan-y', vertical: 'pan-x' } as const;
 
 interface Gesture {
 	startX: number;
@@ -18,7 +13,7 @@ interface Gesture {
 	dragging: boolean;
 }
 
-export interface TouchViewportNavigationOptions {
+export interface TouchInputOptions {
 	inputTarget: HTMLElement;
 	/** Number of fingers needed to pan. Defaults to two. */
 	fingerCount?: 1 | 2;
@@ -36,24 +31,50 @@ function getTouchPosition(touches: TouchList): { x: number; y: number } {
 	return { x: x / touches.length, y: y / touches.length };
 }
 
-export function createTouchViewportNavigationPlugin({
+export function createTouchInputPlugin({
 	inputTarget,
 	fingerCount = 2,
 	axis = 'both',
-}: TouchViewportNavigationOptions): EditorPlugin {
+}: TouchInputOptions): EditorPlugin {
 	const horizontal = axis !== 'vertical';
 	const vertical = axis !== 'horizontal';
 	return {
-		id: 'touch-viewport-navigation',
+		id: 'touch-input',
 		setup: ({ store, events }) => {
 			const state = store.getState();
 			const originalTouchAction = inputTarget.style.touchAction;
 			let gesture: Gesture | undefined;
-			let controlPointer: { identifier: number } | undefined;
-			const releaseControlPointer = () => {
-				if (!controlPointer) return;
-				controlPointer = undefined;
-				events.dispatch('codeBlockPointerUp');
+			let claimedPointer: { identifier: number; event: InternalPointerEvent } | undefined;
+
+			const toPointerEvent = (
+				touch: Touch,
+				event: TouchEvent,
+				previous?: InternalPointerEvent
+			): InternalPointerEvent => {
+				const rect = inputTarget.getBoundingClientRect();
+				const x = touch.clientX - rect.left;
+				const y = touch.clientY - rect.top;
+				return {
+					x,
+					y,
+					movementX: previous ? x - previous.x : 0,
+					movementY: previous ? y - previous.y : 0,
+					buttons: 1,
+					altKey: Boolean(event.altKey),
+					stopPropagation: false,
+					canvasWidth: inputTarget.clientWidth,
+					canvasHeight: inputTarget.clientHeight,
+				};
+			};
+			const releasePointer = (type: 'pointerup' | 'pointercancel' = 'pointerup') => {
+				if (!claimedPointer) return;
+				const { event } = claimedPointer;
+				claimedPointer = undefined;
+				events.dispatch(
+					type,
+					{ ...event, buttons: 0, movementX: 0, movementY: 0, stopPropagation: false },
+					{ phase: 'capture' }
+				);
 			};
 			const resetGesture = () => {
 				gesture = undefined;
@@ -66,45 +87,26 @@ export function createTouchViewportNavigationPlugin({
 				resetGesture();
 			};
 			const syncTouchAction = () => {
-				inputTarget.style.touchAction = state.featureFlags.viewportDragging
-					? axis === 'horizontal'
-						? 'pan-y'
-						: axis === 'vertical'
-							? 'pan-x'
-							: 'none'
-					: originalTouchAction;
+				inputTarget.style.touchAction = state.featureFlags.viewportDragging ? TOUCH_ACTION[axis] : originalTouchAction;
 				if (!state.featureFlags.viewportDragging) resetGesture();
 			};
 			const onTouchStart = (event: TouchEvent) => {
 				if (event.defaultPrevented) return;
-				releaseControlPointer();
+				releasePointer('pointercancel');
 				finishGesture();
-				if (event.touches.length === 1 && !state.contextMenu.open && state.dialogStack.length === 0) {
+				if (event.touches.length === 1) {
 					const touch = event.touches[0];
-					const rect = inputTarget.getBoundingClientRect();
-					const x = touch.clientX - rect.left;
-					const y = touch.clientY - rect.top;
-					const codeBlock = findCodeBlockAtViewportCoordinates(state, x, y);
-					if (codeBlock) {
-						const pointerEvent: CodeBlockPointerDownEvent = {
-							x,
-							y,
-							codeBlock,
-							relativeX: x - (codeBlock.x - state.viewport.x),
-							relativeY: y - (codeBlock.y - state.viewport.y),
-							stopPropagation: false,
-						};
-						events.dispatch('codeBlockPointerDown', pointerEvent);
-						if (pointerEvent.stopPropagation) {
-							controlPointer = { identifier: touch.identifier };
-							stopViewportAnimation(state);
-							event.preventDefault();
-							return;
-						}
+					const pointer = toPointerEvent(touch, event);
+					// Probe shared interactions before committing this touch to a viewport gesture.
+					events.dispatch('pointerdown', pointer, { phase: 'capture' });
+					if (pointer.stopPropagation) {
+						claimedPointer = { identifier: touch.identifier, event: pointer };
+						stopViewportAnimation(state);
+						event.preventDefault();
+						return;
 					}
 				}
-				if (!state.featureFlags.viewportDragging) return;
-				if (event.touches.length !== fingerCount) return;
+				if (!state.featureFlags.viewportDragging || event.touches.length !== fingerCount) return;
 				const { x: startX, y: startY } = getTouchPosition(event.touches);
 				stopViewportAnimation(state);
 				gesture = {
@@ -116,26 +118,16 @@ export function createTouchViewportNavigationPlugin({
 				};
 			};
 			const onTouchMove = (event: TouchEvent) => {
-				if (controlPointer) {
-					if (event.defaultPrevented || state.contextMenu.open || state.dialogStack.length > 0) {
-						releaseControlPointer();
+				if (claimedPointer) {
+					const pointer = claimedPointer;
+					const touch = Array.from(event.touches).find(touch => touch.identifier === pointer.identifier);
+					if (event.defaultPrevented || event.touches.length !== 1 || !touch) {
+						releasePointer('pointercancel');
 						return;
 					}
-					const { identifier } = controlPointer;
-					const touch = Array.from(event.touches).find(touch => touch.identifier === identifier);
-					if (event.touches.length !== 1 || !touch) {
-						releaseControlPointer();
-						return;
-					}
-					const rect = inputTarget.getBoundingClientRect();
-					const x = touch.clientX - rect.left;
-					const y = touch.clientY - rect.top;
 					event.preventDefault();
-					events.dispatch<CodeBlockPointerMoveEvent>('codeBlockPointerMove', {
-						x,
-						y,
-						stopPropagation: false,
-					});
+					pointer.event = toPointerEvent(touch, event, pointer.event);
+					events.dispatch('pointermove', pointer.event, { phase: 'capture' });
 					return;
 				}
 				if (!gesture) return;
@@ -166,17 +158,17 @@ export function createTouchViewportNavigationPlugin({
 				);
 			};
 			const onTouchEnd = (event: TouchEvent) => {
-				// Leave taps to the existing mouse-input bridge; a completed pan must not click a control.
-				if (gesture?.dragging || controlPointer) event.preventDefault();
-				releaseControlPointer();
+				// Unclaimed taps retain native tap handling; completed gestures must not click twice.
+				if (gesture?.dragging || claimedPointer) event.preventDefault();
+				releasePointer();
 				finishGesture();
 			};
 			const onTouchCancel = () => {
-				releaseControlPointer();
+				releasePointer('pointercancel');
 				finishGesture();
 			};
 			const onLoadProject = () => {
-				releaseControlPointer();
+				releasePointer('pointercancel');
 				resetGesture();
 			};
 			syncTouchAction();
@@ -193,7 +185,7 @@ export function createTouchViewportNavigationPlugin({
 				inputTarget.removeEventListener('touchcancel', onTouchCancel);
 				store.unsubscribe('featureFlags.viewportDragging', syncTouchAction);
 				events.off('loadProject', onLoadProject);
-				releaseControlPointer();
+				releasePointer('pointercancel');
 				resetGesture();
 				inputTarget.style.touchAction = originalTouchAction;
 			};

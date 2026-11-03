@@ -69,7 +69,7 @@
     "@8f4e/editor-plugin-keyboard-navigation": "*",
     "@8f4e/editor-plugin-keyboard-mode-switching": "*",
     "@8f4e/editor-plugin-font-preview": "*",
-    "@8f4e/editor-plugin-touch-viewport-navigation": "*",
+    "@8f4e/editor-plugin-touch-input": "*",
     "@8f4e/editor-plugin-mouse-input": "*"
   },
   "devDependencies": {

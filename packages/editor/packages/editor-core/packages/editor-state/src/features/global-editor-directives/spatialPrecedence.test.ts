@@ -144,14 +144,14 @@ noteEnd`);
 			canvasHeight: 600,
 			altKey: false,
 		};
-		events.dispatch('mousedown', pointer);
+		events.dispatch('pointerdown', pointer);
 		expect(state.codeBlockRendering.rootProject.blocks.at(-1)).toBe(left);
 		expect(state.editorConfig.export?.fileName).toBe('right');
-		events.dispatch('mouseup');
-		events.dispatch('mousedown', pointer);
-		events.dispatch('mousemove', { ...pointer, movementX: 100 * state.viewport.vGrid });
+		events.dispatch('pointerup');
+		events.dispatch('pointerdown', pointer);
+		events.dispatch('pointermove', { ...pointer, movementX: 100 * state.viewport.vGrid });
 		expect(state.editorConfig.export?.fileName).toBe('right');
-		events.dispatch('mouseup');
+		events.dispatch('pointerup');
 		expect(left.gridX).toBe(100);
 		expect(state.editorConfig.export?.fileName).toBe('left');
 		load(serializeToProject(state));

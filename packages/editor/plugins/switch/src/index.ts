@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, CodeBlockPointerDownEvent } from '@8f4e/editor-state-types';
 import { registerSwitchLayout, type SwitchWidget } from './layout';
 
 export function createSwitchPlugin({
@@ -28,12 +28,7 @@ export function createSwitchPlugin({
 					}
 				}
 			});
-			const onPointerDown = (event: {
-				x: number;
-				y: number;
-				codeBlock: CodeBlockGraphicData;
-				stopPropagation?: boolean;
-			}) => {
+			const onPointerDown = (event: CodeBlockPointerDownEvent) => {
 				const { x, y, codeBlock } = event;
 				const control = widgets
 					.get(codeBlock)

@@ -3,7 +3,7 @@ import { EMPTY_DEFAULT_PROJECT, serializeToProject } from '@8f4e/editor-state';
 import type {} from '@vitest/browser-playwright';
 import { expect, test, vi } from 'vitest';
 import { cdp } from 'vitest/browser';
-import { createTouchViewportNavigationPlugin } from '../src/index';
+import { createTouchInputPlugin } from '../src/index';
 
 test.each([1, 2] as const)(
 	'native %i-finger dragging pans without clicking or moving blocks, while taps remain available',
@@ -19,7 +19,7 @@ test.each([1, 2] as const)(
 				...EMPTY_DEFAULT_PROJECT,
 				notes: [{ id: 0, code: ['note target', '; @pos 10 7', 'Touch navigation', 'noteEnd'] }],
 			},
-			plugins: [createTouchViewportNavigationPlugin({ inputTarget: canvas, fingerCount })],
+			plugins: [createTouchInputPlugin({ inputTarget: canvas, fingerCount })],
 		});
 		editor.pauseRendering();
 		const rect = canvas.getBoundingClientRect();
@@ -66,7 +66,7 @@ test('one-finger horizontal panning leaves vertical swipes to page scrolling', a
 	document.body.append(canvas);
 	window.scrollTo(0, 0);
 	const editor = await initEditor(canvas, {
-		plugins: [createTouchViewportNavigationPlugin({ inputTarget: canvas, fingerCount: 1, axis: 'horizontal' })],
+		plugins: [createTouchInputPlugin({ inputTarget: canvas, fingerCount: 1, axis: 'horizontal' })],
 	});
 	editor.pauseRendering();
 	const input = cdp();

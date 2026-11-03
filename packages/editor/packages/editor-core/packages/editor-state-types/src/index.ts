@@ -29,11 +29,13 @@ import type { ContextMenu, ContextMenuItem, MenuGenerator, MenuStackEntry } from
 import type { Compiler } from './features/program-compiler/types';
 import type { ProjectViewport, Viewport, ViewportAnimation } from './features/viewport/types';
 import type {
+	CodeBlockPointerDownEvent,
 	CodeError,
 	EventDispatcher,
+	EventDispatchOptions,
 	EventSubscriptionOptions,
 	GridCoordinates,
-	InternalMouseEvent,
+	InternalPointerEvent,
 	Position,
 	Size,
 } from './shared/types';
@@ -53,6 +55,7 @@ export type {
 	AssertionResult,
 	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
+	CodeBlockPointerDownEvent,
 	CodeBlockRendering,
 	CodeBlockType,
 	CodeError,
@@ -66,9 +69,10 @@ export type {
 	DialogContent,
 	DialogState,
 	EventDispatcher,
+	EventDispatchOptions,
 	EventSubscriptionOptions,
 	GridCoordinates,
-	InternalMouseEvent,
+	InternalPointerEvent,
 	JSONSchemaLike,
 	LogMessage,
 	MemoryIdentifier,

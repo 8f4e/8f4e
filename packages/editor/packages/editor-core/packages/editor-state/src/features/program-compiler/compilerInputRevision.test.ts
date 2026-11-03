@@ -94,10 +94,10 @@ describe('compiler input revision', () => {
 		codeBlockNavigation(store, events);
 		const target = createMockCodeBlock({ code: ['module target', 'moduleEnd'], x: 400, blockType: 'module' });
 		state.codeBlockRendering.currentProject.blocks.push(target);
-		dispatch('mousedown', { x: 32, y: 8 });
-		dispatch('mouseup');
-		dispatch('mousedown', { x: 32, y: 24 });
-		dispatch('mouseup');
+		dispatch('pointerdown', { x: 32, y: 8 });
+		dispatch('pointerup');
+		dispatch('pointerdown', { x: 32, y: 24 });
+		dispatch('pointerup');
 		expect(block.cursor.row).toBe(1);
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		dispatch('navigateCodeBlock', { direction: 'right' });
@@ -125,9 +125,9 @@ describe('compiler input revision', () => {
 		);
 		codeBlockDragger(store, events);
 		store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);
-		dispatch('mousedown', { x: 32, y: 8 });
-		dispatch('mousemove', { movementX: 16, movementY: 32 });
-		dispatch('mouseup');
+		dispatch('pointerdown', { x: 32, y: 8 });
+		dispatch('pointermove', { movementX: 16, movementY: 32 });
+		dispatch('pointerup');
 		expect(block.code).toContain('; @pos 2 2');
 		expect(state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(block);
 		expect(block.parsedDirectives).toContainEqual(expect.objectContaining({ name: 'pos', args: ['2', '2'] }));

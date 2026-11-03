@@ -1,7 +1,7 @@
 # Mouse input
 
 `@8f4e/editor-plugin-mouse-input` translates DOM `mousedown`, `mousemove`, `mouseup`, `contextmenu`, and wheel input
-into the editor's core input events. Core owns selection, dragging, menus, and viewport effects; this plugin owns
+into normalized `pointerdown`, `pointermove`, `pointerup`, and context-menu/scroll events. Core owns selection, dragging, menus, and viewport effects; this plugin owns
 browser coordinates, canvas focus, default-action cancellation, the wheel-end timer, and listener disposal.
 
 ```ts

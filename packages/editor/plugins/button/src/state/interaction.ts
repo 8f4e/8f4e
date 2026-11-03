@@ -1,4 +1,10 @@
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockPointerDownEvent,
+	EventDispatcher,
+	InternalPointerEvent,
+	State,
+} from '@8f4e/editor-state-types';
 import type { ButtonWidget } from '../types';
 
 export function registerButtonInteraction(
@@ -14,12 +20,7 @@ export function registerButtonInteraction(
 		pressedButton = undefined;
 		writeMemory(button.allocationUnitAddress, button.offValue, button.isInteger);
 	};
-	const onPointerDown = (event: {
-		x: number;
-		y: number;
-		codeBlock: CodeBlockGraphicData;
-		stopPropagation?: boolean;
-	}) => {
+	const onPointerDown = (event: CodeBlockPointerDownEvent) => {
 		const { x, y, codeBlock } = event;
 		pressedButton = buttonsByBlock
 			.get(codeBlock)

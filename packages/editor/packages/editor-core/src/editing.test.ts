@@ -329,9 +329,9 @@ describe('public editor editing handle', () => {
 			})
 		).toThrow('getRevision again');
 		const sourceRevision = editing.getRevision();
-		events.dispatch('mousedown', { x: block.x + 8, y: block.y + 8 });
-		events.dispatch('mousemove', { movementX: 16, movementY: 32 });
-		events.dispatch('mouseup');
+		events.dispatch('pointerdown', { x: block.x + 8, y: block.y + 8 });
+		events.dispatch('pointermove', { movementX: 16, movementY: 32 });
+		events.dispatch('pointerup');
 		expect(editing.getRevision()).not.toBe(sourceRevision);
 		const currentRevision = editing.getRevision();
 		events.dispatch('loadProject', { project: serializeToProject(state) });
