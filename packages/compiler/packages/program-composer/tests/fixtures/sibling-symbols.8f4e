@@ -6,10 +6,12 @@ function helper
 push 1
 functionEnd int
 
+entry main
 module shared
 call helper
 drop
 moduleEnd
+entryEnd
 groupEnd
 
 group right
@@ -17,9 +19,11 @@ function helper
 push 2
 functionEnd int
 
+entry main
 module shared
 call helper
 drop
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

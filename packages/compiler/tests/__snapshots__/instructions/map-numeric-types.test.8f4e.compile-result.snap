@@ -1224,7 +1224,10 @@
       "id": "mapFloat64ToFloat64__float64",
       "signature": {
         "parameters": [
-          "float64",
+          {
+            "name": "input",
+            "type": "float64",
+          },
         ],
         "returns": [
           "float64",
@@ -1235,7 +1238,10 @@
       "id": "mapFloat64ToFloat__float64",
       "signature": {
         "parameters": [
-          "float64",
+          {
+            "name": "input",
+            "type": "float64",
+          },
         ],
         "returns": [
           "float",
@@ -1246,7 +1252,10 @@
       "id": "mapFloat64ToInt__float64",
       "signature": {
         "parameters": [
-          "float64",
+          {
+            "name": "input",
+            "type": "float64",
+          },
         ],
         "returns": [
           "int",
@@ -1257,7 +1266,10 @@
       "id": "mapFloatToFloat64__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "input",
+            "type": "float",
+          },
         ],
         "returns": [
           "float64",
@@ -1268,7 +1280,10 @@
       "id": "mapFloatToFloat__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "input",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -1279,7 +1294,10 @@
       "id": "mapFloatToInt__float",
       "signature": {
         "parameters": [
-          "float",
+          {
+            "name": "input",
+            "type": "float",
+          },
         ],
         "returns": [
           "int",
@@ -1290,7 +1308,10 @@
       "id": "mapIntToFloat64__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "input",
+            "type": "int",
+          },
         ],
         "returns": [
           "float64",
@@ -1301,7 +1322,10 @@
       "id": "mapIntToFloat__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "input",
+            "type": "int",
+          },
         ],
         "returns": [
           "float",
@@ -1312,7 +1336,10 @@
       "id": "mapIntToInt__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "input",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

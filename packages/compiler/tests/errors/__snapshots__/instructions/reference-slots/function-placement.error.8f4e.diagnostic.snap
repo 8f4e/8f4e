@@ -1,0 +1,11 @@
+{
+  "code": 12,
+  "context": {
+    "projectBlockId": 2,
+  },
+  "line": {
+    "instruction": "float&",
+    "lineNumber": 1,
+  },
+  "message": "Instruction is not allowed in this block.",
+}

@@ -1,0 +1,11 @@
+8f4e/v1
+
+entry main
+module addTwoAddresses
+int first
+int second
+push &first
+push &second
+add
+moduleEnd
+entryEnd

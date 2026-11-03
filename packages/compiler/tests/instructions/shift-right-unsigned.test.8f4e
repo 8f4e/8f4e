@@ -1,11 +1,10 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
-Unsigned right shift behavior is
-checked with native
-assertions.
+Unsigned right shifts fill the
+high bits with zero.
 noteEnd
 
 entry test
@@ -19,5 +18,23 @@ push -1
 push 1
 shiftRightUnsigned
 assertEqual 2147483647
+
+push 0
+push 7
+shiftRightUnsigned
+assertEqual 0
+
+push -2147483648
+push 31
+shiftRightUnsigned
+assertEqual 1
+
+; Shift counts use the low five
+; bits, so 32 leaves the value
+; unchanged.
+push -1
+push 32
+shiftRightUnsigned
+assertEqual -1
 moduleEnd
 entryEnd

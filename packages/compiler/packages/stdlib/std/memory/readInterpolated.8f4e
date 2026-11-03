@@ -4,7 +4,7 @@ function readInterpolated
 ; Reads an interpolated float
 ; value from a circular int
 ; buffer.
-param int pointer
+param int* pointer
 param int* buffer
 param int itemCount
 param float fraction
@@ -52,7 +52,7 @@ function readInterpolated
 ; Reads an interpolated float
 ; value from a circular int16
 ; buffer.
-param int pointer
+param int16* pointer
 param int16* buffer
 param int itemCount
 param float fraction
@@ -100,7 +100,7 @@ function readInterpolated
 ; Reads an interpolated float
 ; value from a circular float
 ; buffer.
-param int pointer
+param float* pointer
 param float* buffer
 param int itemCount
 param float fraction
@@ -145,7 +145,7 @@ function wrapReadAddress
 ; address into the circular
 ; buffer range used by
 ; readInterpolated.
-param int pointer
+param int* pointer
 param int* buffer
 param int byteLength
 
@@ -170,7 +170,7 @@ function wrapReadAddress
 ; address into the circular
 ; buffer range used by
 ; readInterpolated.
-param int pointer
+param int16* pointer
 param int16* buffer
 param int byteLength
 
@@ -195,7 +195,7 @@ function wrapReadAddress
 ; address into the circular
 ; buffer range used by
 ; readInterpolated.
-param int pointer
+param float* pointer
 param float* buffer
 param int byteLength
 

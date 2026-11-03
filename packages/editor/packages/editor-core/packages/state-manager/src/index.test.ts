@@ -294,6 +294,7 @@ describe('StateManager', () => {
 			expect(subscription.selector).toBe('name');
 			expect(subscription.tokens).toEqual(['name']);
 			expect(subscription.callback).toBe(callback);
+			expect(subscription).not.toHaveProperty('matcher');
 		});
 	});
 
@@ -734,7 +735,8 @@ describe('StateManager', () => {
 
 		it('should handle undefined values', () => {
 			const callback = vi.fn();
-			stateManager.subscribeToValue('optionalValue', undefined, callback);
+			const subscription = stateManager.subscribeToValue('optionalValue', undefined, callback);
+			expect(subscription).toHaveProperty('matcher', undefined);
 
 			stateManager.set('optionalValue', undefined);
 
@@ -744,6 +746,103 @@ describe('StateManager', () => {
 			stateManager.set('optionalValue', 'Not undefined');
 
 			expect(callback).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe('subscription path compatibility', () => {
+		it('matches each subscribed target after leaf updates and parent replacements', () => {
+			const parentCallback = vi.fn();
+			const childCallback = vi.fn();
+			const parentMatcher = vi.fn(
+				(display: TestState['settings']['preferences']['display']) => display.fontSize === 20
+			);
+			stateManager.subscribeToValue('settings.preferences.display', parentMatcher, parentCallback);
+			stateManager.subscribeToValue('settings.preferences.display.fontSize', 20, childCallback);
+
+			stateManager.set('settings.preferences.display.fontSize', 18);
+			expect(parentMatcher).toHaveBeenLastCalledWith(initialState.settings.preferences.display);
+			expect(parentCallback).not.toHaveBeenCalled();
+			expect(childCallback).not.toHaveBeenCalled();
+
+			const replacement = { ...initialState.settings.preferences.display, fontSize: 20 };
+			stateManager.set('settings.preferences.display', replacement);
+			// Reassigning an unchanged parent still notifies matching subscribers.
+			stateManager.set('settings.preferences.display', replacement);
+			expect(parentMatcher).toHaveBeenCalledTimes(3);
+			expect(parentCallback.mock.calls).toEqual([[replacement], [replacement]]);
+			expect(childCallback.mock.calls).toEqual([[20], [20]]);
+		});
+
+		it.each([null, undefined, {}, 'text', 42, false])(
+			'notifies children with undefined when their parent becomes %s',
+			branch => {
+				const manager = createStateManager<{ branch: unknown }>({ branch: { child: { value: 1 } } });
+				const regularCallback = vi.fn();
+				const valueCallback = vi.fn();
+				manager.subscribe('branch.child.value', regularCallback);
+				manager.subscribeToValue('branch.child.value', undefined, valueCallback);
+
+				manager.set('branch', branch);
+				expect(regularCallback.mock.calls).toEqual([[undefined]]);
+				expect(valueCallback.mock.calls).toEqual([[undefined]]);
+			}
+		);
+
+		it('does not read boxed properties from primitive targets', () => {
+			const manager = createStateManager<{ branch: unknown }>({ branch: { length: 4 } });
+			const callback = vi.fn();
+			manager.subscribe('branch.length', callback);
+			manager.set('branch', 'text');
+			expect(callback.mock.calls).toEqual([[undefined]]);
+		});
+
+		it('reads properties on functions when a parent is replaced', () => {
+			const manager = createStateManager<{ branch: unknown }>({ branch: null });
+			const callback = vi.fn();
+			manager.subscribe('branch.child.value', callback);
+			manager.set(
+				'branch',
+				Object.assign(() => false, { child: { value: 42 } })
+			);
+			expect(callback.mock.calls).toEqual([[42]]);
+		});
+
+		it('preserves array indices and empty path segments', () => {
+			const manager = createStateManager({ items: [{ value: 1 }], branch: { '': { value: 2 } }, '': 3 });
+			const arrayCallback = vi.fn();
+			const emptySegmentCallback = vi.fn();
+			const emptySelectorCallback = vi.fn();
+			manager.subscribe('items.0.value', arrayCallback);
+			manager.subscribe('branch..value', emptySegmentCallback);
+			manager.subscribe('', emptySelectorCallback);
+
+			manager.set('items', [{ value: 4 }]);
+			manager.set('branch..value', 5);
+			manager.set('', 6);
+			expect(arrayCallback.mock.calls).toEqual([[4]]);
+			expect(emptySegmentCallback.mock.calls).toEqual([[5]]);
+			expect(emptySelectorCallback.mock.calls).toEqual([[6]]);
+		});
+
+		it('treats an identical function matcher as a value and other functions as predicate inputs', () => {
+			const matcher = vi.fn(() => false);
+			const other = () => true;
+			const manager = createStateManager({ nested: { handler: other } });
+			const callback = vi.fn();
+			manager.subscribeToValue('nested.handler', matcher, callback);
+
+			manager.set('nested.handler', matcher);
+			expect(callback.mock.calls).toEqual([[matcher]]);
+			expect(matcher).not.toHaveBeenCalled();
+
+			manager.set('nested', { handler: other });
+			expect(matcher).toHaveBeenLastCalledWith(other);
+			expect(callback).toHaveBeenCalledTimes(1);
+
+			matcher.mockReturnValue(true);
+			manager.set('nested.handler', other);
+			expect(matcher).toHaveBeenCalledTimes(2);
+			expect(callback.mock.calls).toEqual([[matcher], [other]]);
 		});
 	});
 });

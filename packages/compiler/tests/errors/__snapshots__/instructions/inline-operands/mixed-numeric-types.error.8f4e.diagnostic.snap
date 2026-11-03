@@ -1,0 +1,20 @@
+{
+  "code": 1,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "isInteger": false,
+        "type": "literal",
+        "value": 2,
+      },
+    ],
+    "instruction": "add",
+    "lineNumber": 2,
+  },
+  "message": "This instruction can only operate on operands of the same type. (1)",
+}

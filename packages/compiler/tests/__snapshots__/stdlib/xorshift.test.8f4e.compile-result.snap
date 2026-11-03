@@ -246,7 +246,10 @@
       "id": "xorshift__int_p",
       "signature": {
         "parameters": [
-          "int*",
+          {
+            "name": "seed",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",

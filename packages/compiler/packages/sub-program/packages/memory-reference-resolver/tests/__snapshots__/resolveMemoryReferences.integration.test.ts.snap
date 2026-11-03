@@ -162,6 +162,7 @@ exports[`resolveMemoryReferences integration > resolves sub-program-level memory
           },
           undefined,
         ],
+        "referenceSlots": {},
       },
       {
         "lineFacts": [
@@ -169,6 +170,7 @@ exports[`resolveMemoryReferences integration > resolves sub-program-level memory
           undefined,
           undefined,
         ],
+        "referenceSlots": {},
       },
     ],
     "pointerMetadataByModuleId": {

@@ -1,0 +1,7 @@
+8f4e/v1
+entry main
+module invalid
+float slot
+float& slot &slot
+moduleEnd
+entryEnd

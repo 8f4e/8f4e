@@ -38,7 +38,7 @@ constantsEnd
 
 note
 ; @pos 4 4
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 The functionEnd return
 declarations define the value

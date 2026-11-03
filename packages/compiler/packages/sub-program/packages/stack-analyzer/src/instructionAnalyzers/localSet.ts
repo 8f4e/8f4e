@@ -1,5 +1,5 @@
 import type { CompilationContext, CompilerASTLine, ResolvedLocalSetLine, Stack } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode, getError, stackItemMatchesFunctionValueType } from '@8f4e/language-spec';
 import { consume } from './stack';
 
 /**
@@ -28,6 +28,10 @@ export function analyzeLocalSet(
 
 	if (!local.isInteger && (operand.valueType === 'float64') !== !!local.isFloat64) {
 		throw getError(ErrorCode.MIXED_FLOAT_WIDTH, line, context);
+	}
+
+	if (!stackItemMatchesFunctionValueType(operand, (line as ResolvedLocalSetLine).binding.type)) {
+		throw getError(ErrorCode.TYPE_MISMATCH, line, context);
 	}
 
 	return { consumed, produced: [] };

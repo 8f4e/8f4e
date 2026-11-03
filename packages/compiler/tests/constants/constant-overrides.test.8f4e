@@ -1,0 +1,131 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+Repeated constants blocks merge in declaration order.
+Imports see the final namespace, even through dependencies and passes.
+noteEnd
+
+constants preset
+const VALUE 10
+const KEPT 7
+const SNAPSHOT VALUE
+const STEP 2
+const LEVEL 1
+constantsEnd
+
+constants derived
+use preset
+const DOUBLE VALUE*2
+constantsEnd
+
+constants preset
+const VALUE 20
+const STEP STEP+1
+const LEVEL 1.5
+constantsEnd
+
+constants preset
+use overrides
+const ADDED 9
+constantsEnd
+
+constants overrides
+const VALUE 30
+const VALUE 40
+constantsEnd
+
+function getValue
+use preset
+push VALUE
+functionEnd int
+
+prototype values
+use preset
+int value VALUE
+float level LEVEL
+prototypeEnd
+
+entry test
+module finalValues
+use preset
+use derived
+shape values
+
+push value
+assertEqual 40
+push level
+assertEqual 1.5
+push KEPT
+assertEqual 7
+push SNAPSHOT
+assertEqual 10
+push STEP
+assertEqual 3
+push ADDED
+assertEqual 9
+push DOUBLE
+assertEqual 80
+call getValue
+assertEqual 40
+moduleEnd
+
+module localOverrides
+const VALUE 1
+int before VALUE
+const VALUE 2
+int after VALUE
+
+push before
+assertEqual 1
+push after
+assertEqual 2
+
+use preset
+push VALUE
+assertEqual 40
+const VALUE 3
+push VALUE
+assertEqual 3
+moduleEnd
+
+group child
+pass preset
+pass derived
+
+constants tuning
+const VALUE 12
+const KEPT 5
+constantsEnd
+
+constants tuning
+const VALUE 24
+constantsEnd
+
+entry main
+module inheritedValues
+use preset
+use derived
+push VALUE
+assertEqual 40
+push DOUBLE
+assertEqual 80
+moduleEnd
+
+group nested
+pass tuning
+
+entry main
+module localValues
+use tuning
+push VALUE
+assertEqual 24
+push KEPT
+assertEqual 5
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+groupEnd
+entryEnd

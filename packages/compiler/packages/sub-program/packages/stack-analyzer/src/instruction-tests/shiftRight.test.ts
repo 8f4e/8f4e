@@ -1,7 +1,7 @@
 import type { CompilerASTLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
+import createStackAnalyzerTestContext from '../../tests/testUtils';
 import { analyzeInstruction } from '../analyzeInstruction';
-import createStackAnalyzerTestContext from '../testUtils';
 
 describe('shiftRight stack analysis', () => {
 	it('keeps known integer metadata when shifting known integer operands right', () => {

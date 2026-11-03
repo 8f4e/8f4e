@@ -19,9 +19,9 @@ int defLength count(buffer)
 int defStartPos 0
 int* reset
 int previousReset
-int* length &defLength
-float* speed &defSpeed
-int* startPos &defStartPos
+int& length &defLength
+float& speed &defSpeed
+int& startPos &defStartPos
 
 ; Reset playhead
 push *reset

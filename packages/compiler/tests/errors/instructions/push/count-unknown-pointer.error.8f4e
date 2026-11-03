@@ -1,0 +1,8 @@
+8f4e/v1
+
+entry main
+module unknownCount
+int* pointer
+push count(*pointer)
+moduleEnd
+entryEnd

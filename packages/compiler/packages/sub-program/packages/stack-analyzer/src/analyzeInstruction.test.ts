@@ -1,10 +1,8 @@
 import type { CompilerASTLine, MapBlockStackFrame, MemoryAddressRange } from '@8f4e/language-spec';
 import { ALLOCATION_UNIT_BYTE_SIZE, ArgumentType, BlockType, ErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-
+import createStackAnalyzerTestContext from '../tests/testUtils';
 import { analyzeInstruction } from './analyzeInstruction';
-
-import createStackAnalyzerTestContext from './testUtils';
 
 describe('analyzeInstruction', () => {
 	it('records stack before, consumed operands, produced items, and stack after', () => {

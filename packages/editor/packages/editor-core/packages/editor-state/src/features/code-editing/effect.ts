@@ -1,6 +1,7 @@
 import type { EventDispatcher, InsertTextEvent, MoveCaretEvent, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import incrementCompilerInputRevision from '../program-compiler/incrementCompilerInputRevision';
+import { publishProjectChange } from '../project-changes';
 import backSpace from './backSpace';
 import enter from './enter';
 import { moveCaret } from './moveCaret';
@@ -47,7 +48,7 @@ export default function codeEditing(store: StateManager<State>, events: EventDis
 	};
 
 	const onDeleteBackward = () => {
-		if (!state.featureFlags.editing) {
+		if (state.editorMode !== 'edit') {
 			return;
 		}
 
@@ -64,11 +65,12 @@ export default function codeEditing(store: StateManager<State>, events: EventDis
 		store.set('codeBlockRendering.selectedCodeBlock.lastUpdated', Date.now());
 		if (codeChanged) {
 			incrementCompilerInputRevision(store);
+			publishProjectChange(store);
 		}
 	};
 
 	const onInsertNewLine = () => {
-		if (!state.featureFlags.editing) {
+		if (state.editorMode !== 'edit') {
 			return;
 		}
 
@@ -83,10 +85,11 @@ export default function codeEditing(store: StateManager<State>, events: EventDis
 		store.set('codeBlockRendering.selectedCodeBlock.code', ent.code);
 		store.set('codeBlockRendering.selectedCodeBlock.lastUpdated', Date.now());
 		incrementCompilerInputRevision(store);
+		publishProjectChange(store);
 	};
 
 	const onInsertText = (event: InsertTextEvent) => {
-		if (!state.featureFlags.editing) {
+		if (state.editorMode !== 'edit') {
 			return;
 		}
 
@@ -102,6 +105,7 @@ export default function codeEditing(store: StateManager<State>, events: EventDis
 		store.set('codeBlockRendering.selectedCodeBlock.lastUpdated', Date.now());
 		if (event.text.length > 0) {
 			incrementCompilerInputRevision(store);
+			publishProjectChange(store);
 		}
 	};
 

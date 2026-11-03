@@ -93,7 +93,8 @@ functionEnd
 **Behavior:**
 - Enables `load`, `load8s`, `load8u`, `load16s`, `load16u`, `loadFloat`, `store`, `storeBytes`, and pointer dereference forms such as `push *ptr` and `push **ptr` inside the current function
 - Only permits address-driven memory access
-- Does not allow direct module memory identifiers inside functions
+- Allows explicit intermodular addresses such as `&source:value` and target metadata such as `count(source:buffer)`
+- Does not allow unqualified module memory identifiers inside functions
 - Does not allow memory declarations inside functions
 
 **Errors:**

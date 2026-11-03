@@ -1,7 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
-
+import { createMemory, createMemoryDefault, serializeSegments } from '../../tests/initialMemoryDataSegments/testUtils';
 import createMemoryDataSegmentCandidate from './createMemoryDataSegmentCandidate';
-import { createMemory, createMemoryDefault, serializeSegments } from './testUtils';
 
 function trackDataViewAllocations() {
 	const NativeDataView = globalThis.DataView;

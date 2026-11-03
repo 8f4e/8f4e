@@ -1,0 +1,198 @@
+8f4e/v1
+
+includes
+; @pos -36 -8
+include std/events/risingEdge
+includesEnd
+
+constants env
+; @pos 0 -8
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+constantsEnd
+
+prototype adrEnvState
+; @pos 0 4
+int* trigger
+int previousTrigger
+int attackTime
+int decayTime
+float decayLevel
+int releaseTime
+float out
+int _state 4
+int _counter
+prototypeEnd
+
+function adrEnv
+; @public
+; @pos 0 24
+; Attack-decay-release (ADR) envelope function
+; from the six-operator FM piano.
+; Uses an independent adrEnvState
+; prototype instance for each envelope.
+; Requires std/events/risingEdge.
+; Release follows decay automatically;
+; this preserves the original behavior.
+
+; @tab 8
+#impure
+paramShape adrEnvState
+
+const	ATTACK 1
+const	DECAY 2
+const	RELEASE 4
+
+; Start ATTACK
+push	**trigger
+call	risingEdge previousTrigger
+if
+push	_state
+push	ATTACK
+store
+push	_counter
+push	*attackTime
+store
+ifEnd
+
+; ATTACK math
+push	*_state
+push	ATTACK
+equal
+push	*_counter
+push	0
+greaterThan
+and
+if
+push	out
+push	1.0
+push	*_counter
+castToFloat
+push	*attackTime
+castToFloat
+ensureNonZero
+div
+sub
+store
+ifEnd
+
+; Transition from ATTACK to
+; DECAY
+push	*_counter
+equalToZero
+push	*_state
+push	ATTACK
+equal
+and
+if ; End of attack
+push	_state
+push	DECAY
+store
+push	_counter
+push	*decayTime
+store
+ifEnd
+
+; DECAY math
+push	*_state
+push	DECAY
+equal
+push	*_counter
+push 0
+greaterThan
+and
+if
+push	out
+push	*decayLevel
+push	*_counter
+castToFloat
+push   *decayTime
+castToFloat
+ensureNonZero
+div
+push	1.0
+push	*decayLevel
+sub
+mul
+add
+store
+ifEnd
+
+; Transition from DECAY
+; to RELEASE
+push	*_state
+push	DECAY
+equal
+push	*_counter
+equalToZero
+and
+if
+push	_state
+push	RELEASE
+store
+push	_counter
+push	*releaseTime
+store
+ifEnd
+
+; RELEASE math
+push	*_state
+push	RELEASE
+equal
+push	*_counter
+push	0
+greaterThan
+and
+if
+push	out
+push	*_counter
+castToFloat
+push	*releaseTime
+castToFloat
+ensureNonZero
+div
+push	*decayLevel
+mul
+store
+ifEnd
+
+; Decrement and wrap counter
+push	*_counter
+push	0
+greaterThan
+if
+push	_counter
+push	*_counter
+push	1
+sub
+store
+ifEnd
+
+functionEnd
+
+entry main
+module trigger
+; @pos 54 4
+; Set gate to 1 to trigger a cycle.
+int gate
+moduleEnd
+
+module envelope
+; @pos 54 16
+; Example state and function call.
+use env
+shape adrEnvState
+int* trigger &trigger:gate
+int attackTime SAMPLE_RATE/100
+int decayTime SAMPLE_RATE/10
+float decayLevel 0.5
+int releaseTime SAMPLE_RATE/10
+
+; @watch out
+; @watch _state
+; @watch _counter
+
+pushShape adrEnvState
+call adrEnv
+moduleEnd
+entryEnd

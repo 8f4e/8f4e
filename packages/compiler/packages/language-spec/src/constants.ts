@@ -1,7 +1,5 @@
 import { BASE_TYPE_METADATA } from './memory';
 
-export const LOGIC_HIGH = BASE_TYPE_METADATA.int16.max;
-export const LOGIC_LOW = 0;
 // Global allocation grid is 4 bytes so memory maps cleanly to Int32Array/Float32Array views.
 // float64 declarations require an even allocation-unit offset (8-byte boundary) so their byteAddress is
 // divisible by 8, enabling safe Float64Array / DataView access. Any required alignment gap

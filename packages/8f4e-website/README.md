@@ -1,14 +1,22 @@
 # 8f4e Website
 
-`@8f4e/8f4e-website` contains a product homepage, an examples gallery, and a compiler test gallery with embedded default editors. The website
+`@8f4e/8f4e-website` contains a product homepage, an examples gallery, and a compiler test gallery using
+[`@8f4e/editor-minimal`](../editor/packages/editor-minimal/README.md). The embedded composition keeps live editing,
+controls, visualizations, runtimes, and URL loading. Each mount starts fresh, with no browser session persistence,
+file/export/screenshot menus, built-in module browser, or optional authoring-action plugins. The website
 controls the canvas size. Homepage editors leave wheel scrolling to the surrounding document and start in edit mode
 with mode switching disabled.
+
+`src/homepage.ts` exports `mountHomepageEditors`, which owns the homepage editors, visibility observers, and disposal;
+`src/main.ts` mounts it. The homepage reveals canvases through the minimal editor's initial-project completion callback
+and displays a reload message when URL loading fails.
 
 From the workspace root:
 
 ```bash
 npx nx run @8f4e/8f4e-website:dev
 npx nx run @8f4e/8f4e-website:build
+npx nx run @8f4e/8f4e-website:test:browser
 npm --prefix tools/project-preview run generate-gallery-previews
 npx nx run @8f4e/8f4e-website:serve
 ```
@@ -44,9 +52,22 @@ accordion and scroll it into view. Collapsing a mobile example removes the selec
 to the default desktop selection or the collapsed mobile list.
 
 Selecting a different example creates a fresh editor and disposes the previous instance. Mounts are serialized to
-handle rapid selections, and each example uses its own session storage namespace. The gallery editor captures wheel
-gestures for panning; scrolling over the example list scrolls the document. A link opens the example in the full editor.
-Loading failures offer a retry.
+handle rapid selections. Returning to an example reloads its source; edits remain only for that editor's lifetime.
+The gallery editor captures wheel gestures for panning; scrolling over the example list scrolls the document.
+A link opens the example in the full editor.
+The loading indicator stays visible until the initial-project completion callback arrives. Successful empty projects
+are revealed too. A load-error callback offers a retry immediately; a 30-second timeout handles stalled initialization
+or fetching. Switching examples disposes the previous editor without waiting for its fetch. The gallery does not inspect
+project contents or poll editor state to infer completion.
+
+Browser integration tests cover both website views with delayed responses, empty projects, failure/retry, early
+callbacks, and switching examples while a fetch is pending. The minimal project-menu canvas baseline lives under
+`src/__screenshots__/gallery.test.ts/` and is shared across platforms because editor glyphs use bitmap masks.
+
+The galleries dynamically import their WebMCP bridge after the selected editor has mounted and its project source
+has loaded. The bridge and its search catalog stay outside the initial script graph. Editors can be revealed and
+replaced while that import is pending; a late import connects only to the current editor. Bridge loading or
+registration failures are logged independently of project loading.
 
 ## Compiler test gallery
 
@@ -60,7 +81,7 @@ Each project has a GitHub source link and an Open in editor link. Hash URLs use 
 
 Both galleries use `src/gallery.ts` for selection, editor lifecycle, and the responsive layout. The test gallery uses
 the editor's default block positioning and keeps editors in edit mode with mode toggling disabled.
-Fixtures select `TestRuntime` through their editor directives and execute tests after successful compilation.
+Fixtures enable the test-runtime plugin with `; @config testRuntime.enabled true` and execute tests after successful compilation.
 The gallery does not supply the test harness's custom include resolver. Fixtures that need unavailable includes
 can display compiler diagnostics while their source remains browsable.
 

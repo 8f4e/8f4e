@@ -4,115 +4,7 @@
     "functions": [],
     "modules": [
       {
-        "id": "audio/source",
-        "lines": [
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "audio/source",
-              },
-            ],
-            "instruction": "module",
-            "lineNumber": 0,
-          },
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "value",
-              },
-              {
-                "isInteger": true,
-                "type": "literal",
-                "value": 42,
-              },
-            ],
-            "instruction": "int",
-            "lineNumber": 1,
-          },
-          {
-            "arguments": [],
-            "instruction": "moduleEnd",
-            "lineNumber": 2,
-          },
-        ],
-        "moduleLine": {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "audio/source",
-            },
-          ],
-          "instruction": "module",
-          "lineNumber": 0,
-        },
-        "projectBlockId": 12,
-        "sourceIdentity": {
-          "codeBlockId": "source",
-          "projectGroupPath": "audio",
-        },
-        "type": "module",
-      },
-      {
-        "id": "audio/consumer",
-        "lines": [
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "audio/consumer",
-              },
-            ],
-            "instruction": "module",
-            "lineNumber": 0,
-          },
-          {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "input",
-              },
-            ],
-            "instruction": "int*",
-            "lineNumber": 1,
-          },
-          {
-            "arguments": [],
-            "instruction": "moduleEnd",
-            "lineNumber": 2,
-          },
-        ],
-        "moduleLine": {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "audio/consumer",
-            },
-          ],
-          "instruction": "module",
-          "lineNumber": 0,
-        },
-        "projectBlockId": 16,
-        "sourceIdentity": {
-          "codeBlockId": "consumer",
-          "projectGroupPath": "audio",
-        },
-        "type": "module",
-      },
-      {
+        "executionEntryName": "main",
         "id": "outer",
         "lines": [
           {
@@ -173,6 +65,117 @@
         },
         "type": "module",
       },
+      {
+        "executionEntryName": "audio/main",
+        "id": "audio/source",
+        "lines": [
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "audio/source",
+              },
+            ],
+            "instruction": "module",
+            "lineNumber": 0,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "value",
+              },
+              {
+                "isInteger": true,
+                "type": "literal",
+                "value": 42,
+              },
+            ],
+            "instruction": "int",
+            "lineNumber": 1,
+          },
+          {
+            "arguments": [],
+            "instruction": "moduleEnd",
+            "lineNumber": 2,
+          },
+        ],
+        "moduleLine": {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "audio/source",
+            },
+          ],
+          "instruction": "module",
+          "lineNumber": 0,
+        },
+        "projectBlockId": 13,
+        "sourceIdentity": {
+          "codeBlockId": "source",
+          "projectGroupPath": "audio",
+        },
+        "type": "module",
+      },
+      {
+        "executionEntryName": "audio/main",
+        "id": "audio/consumer",
+        "lines": [
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "audio/consumer",
+              },
+            ],
+            "instruction": "module",
+            "lineNumber": 0,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "input",
+              },
+            ],
+            "instruction": "int*",
+            "lineNumber": 1,
+          },
+          {
+            "arguments": [],
+            "instruction": "moduleEnd",
+            "lineNumber": 2,
+          },
+        ],
+        "moduleLine": {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "audio/consumer",
+            },
+          ],
+          "instruction": "module",
+          "lineNumber": 0,
+        },
+        "projectBlockId": 17,
+        "sourceIdentity": {
+          "codeBlockId": "consumer",
+          "projectGroupPath": "audio",
+        },
+        "type": "module",
+      },
     ],
     "prototypes": [],
   },
@@ -187,8 +190,34 @@
       "misses": 3,
     },
   },
-  "entryNames": [
-    "main",
+  "entries": [
+    {
+      "exportName": "main",
+      "id": "main",
+      "steps": [
+        {
+          "id": "outer",
+          "type": "module",
+        },
+        {
+          "id": "audio/main",
+          "type": "entry",
+        },
+      ],
+    },
+    {
+      "id": "audio/main",
+      "steps": [
+        {
+          "id": "audio/source",
+          "type": "module",
+        },
+        {
+          "id": "audio/consumer",
+          "type": "module",
+        },
+      ],
+    },
   ],
   "memoryAliases": {
     "audio": {
@@ -217,10 +246,5 @@
       "targetModuleId": "audio/consumer",
       "targetModuleName": "consumer",
     },
-  ],
-  "moduleEntryNames": [
-    "main",
-    "main",
-    "main",
   ],
 }

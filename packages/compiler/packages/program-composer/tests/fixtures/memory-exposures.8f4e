@@ -9,6 +9,7 @@ group audio
 expose exposedValue &source:value
 expose exposedInput &consumer:input
 
+entry main
 module source
 int value 42
 moduleEnd
@@ -16,5 +17,6 @@ moduleEnd
 module consumer
 int* input
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

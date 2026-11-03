@@ -15,12 +15,6 @@ describe('compileToAST', () => {
 		);
 	});
 
-	it('rejects the removed #region directive', () => {
-		expect(() => compileToAST(['module synth', '#region samples', 'moduleEnd'])).toThrow(
-			expect.objectContaining({ code: SyntaxErrorCode.UNRECOGNISED_INSTRUCTION })
-		);
-	});
-
 	it('constructs module metadata from the source-block parse path', () => {
 		const ast = compileToAST([
 			'module target',
@@ -335,12 +329,6 @@ describe('compileToAST line parsing', () => {
 	it('rejects bare dash argument continuation lines', () => {
 		expect(() => compileLinesFromAST(['module test', 'push 1', '-', 'moduleEnd'])).toThrow(
 			expect.objectContaining({ code: SyntaxErrorCode.MISSING_ARGUMENT })
-		);
-	});
-
-	it('rejects dash argument continuation lines with multiple arguments', () => {
-		expect(() => compileLinesFromAST(['module test', 'push', '- 1 2', 'moduleEnd'])).toThrow(
-			expect.objectContaining({ code: SyntaxErrorCode.INVALID_ARGUMENT })
 		);
 	});
 

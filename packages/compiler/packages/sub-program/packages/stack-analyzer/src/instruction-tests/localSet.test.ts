@@ -1,8 +1,8 @@
 import type { FunctionValueType, ResolvedLocalSetLine } from '@8f4e/language-spec';
-import { ArgumentType, ErrorCode } from '@8f4e/language-spec';
+import { ArgumentType, ErrorCode, functionValueTypeToStackItem } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
+import createStackAnalyzerTestContext from '../../tests/testUtils';
 import { analyzeInstruction } from '../analyzeInstruction';
-import createStackAnalyzerTestContext from '../testUtils';
 
 function localSetLine(type: FunctionValueType): ResolvedLocalSetLine {
 	return {
@@ -15,19 +15,26 @@ function localSetLine(type: FunctionValueType): ResolvedLocalSetLine {
 
 describe('localSet stack analysis', () => {
 	it.each([
-		{ type: 'int', local: { isInteger: true }, valueType: 'int' },
-		{ type: 'float', local: { isInteger: false }, valueType: 'float' },
-		{ type: 'float', local: { isInteger: false, isFloat64: false }, valueType: 'float' },
-		{ type: 'float64', local: { isInteger: false, isFloat64: true }, valueType: 'float64' },
+		{ type: 'int', local: { isInteger: true }, operand: functionValueTypeToStackItem('int') },
+		{ type: 'float', local: { isInteger: false }, operand: functionValueTypeToStackItem('float') },
+		{
+			type: 'float',
+			local: { isInteger: false, isFloat64: false },
+			operand: functionValueTypeToStackItem('float'),
+		},
+		{
+			type: 'float64',
+			local: { isInteger: false, isFloat64: true },
+			operand: functionValueTypeToStackItem('float64'),
+		},
 		{
 			type: 'float64*',
 			local: { isInteger: true, isFloat64: false, pointeeBaseType: 'float64', pointerDepth: 1 },
-			valueType: 'int',
+			operand: functionValueTypeToStackItem('float64*'),
 		},
-	] as const)('consumes only the assigned $valueType value for a $type local', ({ type, local, valueType }) => {
+	] as const)('consumes only the assigned value for a $type local', ({ type, local, operand }) => {
 		const context = createStackAnalyzerTestContext({ locals: { 0: local } });
 		const previous = { kind: 'value', valueType: 'int', isNonZero: false } as const;
-		const operand = { kind: 'value', valueType, isNonZero: false } as const;
 		context.stack.push(previous, operand);
 
 		const facts = analyzeInstruction(localSetLine(type), context);
@@ -66,4 +73,34 @@ describe('localSet stack analysis', () => {
 			);
 		}
 	);
+
+	it.each([
+		{
+			type: 'float64*',
+			local: { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 1 },
+			operand: functionValueTypeToStackItem('int'),
+		},
+		{
+			type: 'float64*',
+			local: { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 1 },
+			operand: functionValueTypeToStackItem('float*'),
+		},
+		{
+			type: 'int',
+			local: { isInteger: true },
+			operand: functionValueTypeToStackItem('float64*'),
+		},
+	] as const)('rejects an inexact value assigned to a $type local', ({ type, local, operand }) => {
+		const context = createStackAnalyzerTestContext({ locals: { 0: local } });
+		context.stack.push(operand);
+		const line = localSetLine(type);
+
+		expect(() => analyzeInstruction(line, context)).toThrow(
+			expect.objectContaining({
+				code: ErrorCode.TYPE_MISMATCH,
+				line,
+				context: expect.objectContaining({ codeBlockId: 'test' }),
+			})
+		);
+	});
 });

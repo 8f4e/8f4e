@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../drawContext';
 
@@ -25,7 +26,7 @@ export default function drawSelectedOutline(
 	const startOffset = Math.max(0, perimeterLength - segmentLength);
 	const animationOffset = (Math.floor(now / OUTLINE_STEP_DURATION_MS) + startOffset) % perimeterLength;
 
-	const font = state.spriteLookups!.fontNumbers;
+	const color = PALETTE_INDICES.secondaryBase;
 
 	for (let i = 0; i < segmentLength; i++) {
 		const step = (animationOffset + i) % perimeterLength;
@@ -65,6 +66,6 @@ export default function drawSelectedOutline(
 							: '-'
 					: '|';
 
-		engine.drawText(x, y, character, font);
+		engine.drawText(x, y, character, color);
 	}
 }

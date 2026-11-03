@@ -1,23 +1,20 @@
 import { type CompiledFunction, createFunctionId, type ValidatedFunctionAST } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { createMockState } from '../../../pureHelpers/testingUtils/testUtils';
-import type { DirectiveDerivedState } from '../features/directives/registry';
 import gaps from '../gaps';
+import type { BlockLayoutDraft } from '../layout/types';
 import { createCodeBlockGraphicData } from '../utils/createCodeBlockGraphicData';
 import paramShape, { updateParamShapeDeclarations } from './updateGraphicData';
 
-function createDirectiveState(): DirectiveDerivedState {
+function createLayoutDraft(): BlockLayoutDraft {
 	return {
-		blockState: { disabled: false, isHome: false, isFavorite: false },
-		displayState: {},
 		displayModel: {
 			lines: [],
-			displayRowToRawRow: [],
-			rawRowToDisplayRow: [],
+			displayRowToSourceLineIndex: [],
+			sourceLineIndexToDisplayRow: [],
 			isCollapsed: false,
 		},
-		layoutContributions: [],
-		widgets: [],
+		verticalSpaceAfterSourceLine: [],
 	};
 }
 
@@ -26,7 +23,13 @@ function createCompiledFunction(projectBlockId: number): CompiledFunction {
 	return {
 		id: functionId,
 		name: 'foo',
-		signature: { parameters: ['int*', 'float*'], returns: [] },
+		signature: {
+			parameters: [
+				{ name: 'arg1', type: 'int*' },
+				{ name: 'arg2', type: 'float*' },
+			],
+			returns: [],
+		},
 		wasmIndex: 0,
 		typeIndex: 0,
 		body: [],
@@ -46,7 +49,13 @@ function createCompiledFunction(projectBlockId: number): CompiledFunction {
 			projectBlockId,
 			functionLine: { lineNumber: 0, instruction: 'function', arguments: [{ value: 'foo' }] },
 			functionEndLine: { lineNumber: 4, instruction: 'functionEnd', arguments: [] },
-			signature: { parameters: ['int*', 'float*'], returns: [] },
+			signature: {
+				parameters: [
+					{ name: 'arg1', type: 'int*' },
+					{ name: 'arg2', type: 'float*' },
+				],
+				returns: [],
+			},
 			lines: [
 				{ lineNumber: 0, instruction: 'function', arguments: [{ value: 'foo' }] },
 				{ lineNumber: 1, instruction: '#impure', arguments: [] },
@@ -72,46 +81,49 @@ describe('paramShape', () => {
 				hGrid: 16,
 			},
 			compiler: {
-				compiledFunctions: {
-					[createFunctionId('foo', ['float*'])]: {
-						id: createFunctionId('foo', ['float*']),
-						name: 'foo',
-						ast: { projectBlockId: 99 },
-						paramShapeExpansions: [
-							{
-								lineNumber: 2,
-								parameters: [{ type: 'float*', name: 'wrong' }],
-							},
-						],
-					} as CompiledFunction,
-					[createFunctionId('foo', ['int*', 'float*'])]: createCompiledFunction(42),
+				result: {
+					compiledFunctions: {
+						[createFunctionId('foo', ['float*'])]: {
+							id: createFunctionId('foo', ['float*']),
+							name: 'foo',
+							ast: { projectBlockId: 99 },
+							paramShapeExpansions: [
+								{
+									lineNumber: 2,
+									parameters: [{ type: 'float*', name: 'wrong' }],
+								},
+							],
+						} as CompiledFunction,
+						[createFunctionId('foo', ['int*', 'float*'])]: createCompiledFunction(42),
+					},
 				},
 			},
 		});
-		const directiveState = {
-			...createDirectiveState(),
+		const blockLayout = {
+			...createLayoutDraft(),
 			displayModel: {
 				lines: [
-					{ rawRow: 0, text: 'function foo' },
-					{ rawRow: 1, text: '#impure' },
-					{ rawRow: 2, text: 'paramShape bar' },
-					{ rawRow: 3, text: 'push *a' },
-					{ rawRow: 4, text: 'functionEnd' },
+					{ sourceLineIndex: 0, text: 'function foo' },
+					{ sourceLineIndex: 1, text: '#impure' },
+					{ sourceLineIndex: 2, text: 'paramShape bar' },
+					{ sourceLineIndex: 3, text: 'push *a' },
+					{ sourceLineIndex: 4, text: 'functionEnd' },
 				],
-				displayRowToRawRow: [0, 1, 2, 3, 4],
-				rawRowToDisplayRow: [0, 1, 2, 3, 4],
+				displayRowToSourceLineIndex: [0, 1, 2, 3, 4],
+				sourceLineIndexToDisplayRow: [0, 1, 2, 3, 4],
 				isCollapsed: false,
 			},
-			layoutContributions: [{ rawRow: 1, rows: 1 }],
 		};
 
-		paramShape(func, state, directiveState);
-		gaps(func, directiveState);
-		updateParamShapeDeclarations(func, state, directiveState);
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 1 });
 
-		expect(directiveState.layoutContributions).toEqual([
-			{ rawRow: 1, rows: 1 },
-			{ rawRow: 2, rows: 2 },
+		paramShape(func, state, blockLayout);
+		gaps(func, blockLayout);
+		updateParamShapeDeclarations(func, state, blockLayout);
+
+		expect(blockLayout.verticalSpaceAfterSourceLine).toEqual([
+			{ sourceLineIndex: 1, heightInRows: 1 },
+			{ sourceLineIndex: 2, heightInRows: 2 },
 		]);
 		expect(func.widgets.shapeDeclarations).toEqual([
 			{ x: 24, y: 64, text: 'int* a' },

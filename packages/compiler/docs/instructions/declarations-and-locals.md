@@ -194,6 +194,53 @@ float* ptr &samples
 float* endPtr samples&
 ```
 
+### float64
+
+The float64 instruction declares a 64-bit floating-point value in module memory. A scalar `float64` occupies 8 bytes
+and defaults to `0`. Use `float64*` or `float64**` to declare pointer types; each pointer slot occupies 4 bytes.
+
+Use the [`f64` suffix](stack.md#push) for float64 literals. Unsuffixed floating-point literals are float32. To convert
+an existing integer or float32 value, use [`castToFloat64`](conversion.md#casttofloat64).
+
+Pointer metadata distinguishes the pointer slot from its pointee: `sizeof(pointer)` is `4`, while
+`sizeof(*pointer)` is `8` for a `float64*`. See [pointee element word size](../prefixes.md#pointee-element-word-size)
+for metadata query details.
+
+#### Examples
+
+```
+float64
+float64 precise 1.2345678901234567f64
+float64* ptr &precise
+float64** pptr &ptr
+
+push sizeof(precise) ; 8 — the scalar's storage size
+push sizeof(ptr)    ; 4 — the pointer slot's storage size
+push sizeof(*ptr)   ; 8 — the float64 pointee's element size
+```
+
+This complete example can be compiled and run by the test runner without reading through a float64 pointer:
+
+```text
+8f4e/v1
+; @config testRuntime.enabled true
+
+entry test
+module values
+float64 precise 1.2345678901234567f64
+float64* precisePtr &precise
+push precise
+assertEqual 1.2345678901234567f64
+push sizeof(precise)
+assertEqual 8
+push sizeof(precisePtr)
+assertEqual 4
+push sizeof(*precisePtr)
+assertEqual 8
+moduleEnd
+entryEnd
+```
+
 ### int[]
 
 The int[] instruction declares a buffer of integers in module memory. Variants include `int8[]`, `int8u[]`, `int16[]`, `int16u[]`, `int32[]`, `int*[]`, and `int**[]`.
@@ -225,6 +272,72 @@ Trailing values initialize array elements from index 0 onward, matching `int[]`.
 float[] samples 4 0.0 0.25 0.5 0.75
 ```
 
+### float64[]
+
+The float64[] instruction declares an array of 64-bit floating-point values. Each element occupies 8 bytes, so an
+array with `N` elements reserves `N * 8` bytes. Arrays default every element to zero; trailing initializer values
+start at index zero, and omitted elements retain their zero defaults. The initializer list must not exceed the declared
+count.
+
+Use the [`f64` suffix](stack.md#push) for float64 initializer values. Pointer arrays can also be declared as
+`float64*[]` or `float64**[]`; their elements are 4-byte pointer slots, not 8-byte float64 values. For pointer
+metadata such as `sizeof(*ptr)` and `count(*ptr)`, see [identifier prefixes](../prefixes.md#element-count).
+
+#### Examples
+
+```
+float64[] samples 4 1.5f64 2.5f64
+float64[] zeroFilled 3
+float64*[] pointers 2 0 0
+float64**[] pointerPointers 2 0 0
+```
+
+`samples` has values at indexes 0 and 1, while indexes 2 and 3 remain `0`. `sizeof(samples)` is `8` (the element
+size), and `count(samples)` is `4`; the total data allocation is 32 bytes.
+
+### Fixed reference slots
+
+`int&`, `int8&`, `int8u&`, `int16&`, `int16u&`, `float&`, and `float64&` declare fixed, typed memory
+references inside a module. Each declaration requires a name and the start address of an allocated memory declaration:
+
+```8f4e
+float& signal &oscillator:output
+int8u& samples &sampleData:buffer
+int& localValue &value
+int& start &memories:0
+
+push signal          ; fixed target address
+push *signal         ; current target value
+push count(*samples) ; target element count
+push sizeof(*samples)
+push max(*samples)
+push min(*samples)
+```
+
+A fixed slot reserves no memory and needs no runtime initialization. It resolves after memory allocation, and reading
+through it emits the target address followed by one typed load. The target contents remain mutable: pushing `signal`
+and a float value followed by `store` updates `oscillator:output`.
+
+Targets can be selected by name or by their zero-based declaration index: `&memories:0` selects the first memory
+declaration in `memories`, and `&this:0` selects the first in the current module. Indices count declarations, including
+inherited memory; they are not byte offsets or array element indices.
+
+The declared type must match the target's element type, including integer signedness and floating-point width.
+Scalar and array targets are supported, including inherited memory and memory exposed by project groups. The slot
+keeps the target's element count and type for `count(*slot)`, `sizeof(*slot)`, `min(*slot)`, and `max(*slot)`.
+Fixed slots are module-scoped and available throughout their module; their names must be distinct from memory and
+local names and follow the same non-constant naming convention as memory declarations.
+
+Fixed slots have no addressable storage of their own: `&slot` and `slot&` report this explicitly. Use `push slot` for
+the target address. `localSet slot` reports that the binding cannot be rebound; the target contents remain mutable.
+Initializers must select an allocated, non-pointer memory item by name or declaration index. Numeric addresses,
+address arithmetic, end addresses, module addresses, and references to other fixed slots are not initializers.
+Slots cannot determine allocation sizes or ordinary `const` values, which resolve before memory layout.
+
+The editor draws an input connector at each fixed declaration and resolves its wire from the compiled target.
+Use allocated pointers such as `float*` for connections that must change during execution. Direct intermodular
+operands, including `push &oscillator:output` and `push count(sampleData:buffer)`, remain supported.
+
 ### local
 
 The local instruction declares a local variable inside a module or function (`local int name`, `local float name`, or a pointer type such as `local int16u* cursor`).
@@ -243,6 +356,9 @@ local int16u* cursor
 The localSet instruction consumes a value from the stack and stores it in a local variable.
 
 Floating-point assignments must match the destination local or parameter's declared width: `float` accepts float32 values and `float64` accepts float64 values. Mixed-width assignments are compiler errors; no implicit widening or narrowing is performed. Use `castToFloat64` to explicitly promote a float32 value before assigning it to a float64 local.
+
+Pointer assignments must exactly match the destination's pointee base type and pointer depth. A raw `int`, a different
+pointer type, or a pointer assigned to an `int` local is a compiler error.
 
 #### Examples
 

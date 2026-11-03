@@ -13,7 +13,7 @@ int _length 8
 float* in
 int* trigger
 int previousTrigger
-int* length &_length
+int& length &_length
 
 int counter
 

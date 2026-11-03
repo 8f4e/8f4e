@@ -1,141 +1,105 @@
 import { describe, expect, it } from 'vitest';
-import type { DirectiveDerivedState } from './features/directives/registry';
 import gaps from './gaps';
+import type { BlockLayoutDraft } from './layout/types';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 
 describe('gaps', () => {
-	it('inserts directive gaps using display rows', async () => {
-		const directiveState: DirectiveDerivedState = {
-			blockState: { disabled: false, isHome: false, isFavorite: false },
-			displayState: {},
+	it('inserts contributed gaps using display rows', async () => {
+		const blockLayout: BlockLayoutDraft = {
 			displayModel: {
 				lines: [
-					{ rawRow: 0, text: 'module foo' },
-					{ rawRow: 1, text: '; @plot buffer' },
-					{ rawRow: 3, text: 'moduleEnd' },
+					{ sourceLineIndex: 0, text: 'module foo' },
+					{ sourceLineIndex: 1, text: '; layout space' },
+					{ sourceLineIndex: 3, text: 'moduleEnd' },
 				],
-				displayRowToRawRow: [0, 1, 3],
-				rawRowToDisplayRow: [0, 1, undefined, 2],
+				displayRowToSourceLineIndex: [0, 1, 3],
+				sourceLineIndexToDisplayRow: [0, 1, undefined, 2],
 				isCollapsed: false,
 			},
-			layoutContributions: [{ rawRow: 1, rows: 8 }],
-			widgets: [],
+			verticalSpaceAfterSourceLine: [],
 		};
-		const graphicData = createCodeBlockGraphicData({ code: ['module foo', '; @plot buffer', 'push 1', 'moduleEnd'] });
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 8 });
+		const graphicData = createCodeBlockGraphicData({ code: ['module foo', '; layout space', 'push 1', 'moduleEnd'] });
 
-		gaps(graphicData, directiveState);
+		gaps(graphicData, blockLayout);
 
 		expect(graphicData.gaps.get(1)).toEqual({ size: 8 });
 	});
 
-	it('adds multiple layout contributions on the same display row', async () => {
-		const directiveState: DirectiveDerivedState = {
-			blockState: { disabled: false, isHome: false, isFavorite: false },
-			displayState: {},
+	it('adds multiple vertical-space requests on the same display row', async () => {
+		const blockLayout: BlockLayoutDraft = {
 			displayModel: {
 				lines: [
-					{ rawRow: 0, text: 'module foo' },
-					{ rawRow: 1, text: 'shape sharedState' },
-					{ rawRow: 2, text: 'moduleEnd' },
+					{ sourceLineIndex: 0, text: 'module foo' },
+					{ sourceLineIndex: 1, text: 'shape sharedState' },
+					{ sourceLineIndex: 2, text: 'moduleEnd' },
 				],
-				displayRowToRawRow: [0, 1, 2],
-				rawRowToDisplayRow: [0, 1, 2],
+				displayRowToSourceLineIndex: [0, 1, 2],
+				sourceLineIndexToDisplayRow: [0, 1, 2],
 				isCollapsed: false,
 			},
-			layoutContributions: [
-				{ rawRow: 1, rows: 2 },
-				{ rawRow: 1, rows: 3 },
-			],
-			widgets: [],
+			verticalSpaceAfterSourceLine: [],
 		};
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 2 });
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 3 });
 		const graphicData = createCodeBlockGraphicData({ code: ['module foo', 'shape sharedState', 'moduleEnd'] });
 
-		gaps(graphicData, directiveState);
+		gaps(graphicData, blockLayout);
 
 		expect(graphicData.gaps.get(1)).toEqual({ size: 5 });
 	});
 
-	it('adds error gaps to layout contributions on the same display row', async () => {
-		const directiveState: DirectiveDerivedState = {
-			blockState: { disabled: false, isHome: false, isFavorite: false },
-			displayState: {},
+	it('adds error gaps to requested vertical space on the same display row', async () => {
+		const blockLayout: BlockLayoutDraft = {
 			displayModel: {
 				lines: [
-					{ rawRow: 0, text: 'module foo' },
-					{ rawRow: 1, text: 'shape sharedState' },
-					{ rawRow: 2, text: 'moduleEnd' },
+					{ sourceLineIndex: 0, text: 'module foo' },
+					{ sourceLineIndex: 1, text: 'shape sharedState' },
+					{ sourceLineIndex: 2, text: 'moduleEnd' },
 				],
-				displayRowToRawRow: [0, 1, 2],
-				rawRowToDisplayRow: [0, 1, 2],
+				displayRowToSourceLineIndex: [0, 1, 2],
+				sourceLineIndexToDisplayRow: [0, 1, 2],
 				isCollapsed: false,
 			},
-			layoutContributions: [{ rawRow: 1, rows: 2 }],
-			widgets: [],
+			verticalSpaceAfterSourceLine: [],
 		};
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 2 });
 		const graphicData = createCodeBlockGraphicData({
 			code: ['module foo', 'shape sharedState', 'moduleEnd'],
 			widgets: {
 				blockHighlights: [],
-				inputs: [],
-				outputs: [],
-				debuggers: [],
-				switches: [],
-				buttons: [],
-				sliders: [],
-				crossfades: [],
-				pianoKeyboards: [],
-				arrayPlotters: [],
-				arrayBars: [],
-				arrayMeters: [],
-				arrayWaves: [],
-				infoPanels: [],
 				errorMessages: [{ message: ['Error', 'detail', 'more'], x: 0, y: 0, lineNumber: 1 }],
 			},
 		});
 
-		gaps(graphicData, directiveState);
+		gaps(graphicData, blockLayout);
 
 		expect(graphicData.gaps.get(1)).toEqual({ size: 5 });
 	});
 
-	it('skips gaps for raw rows hidden from the display model', async () => {
-		const directiveState: DirectiveDerivedState = {
-			blockState: { disabled: false, isHome: false, isFavorite: false },
-			displayState: {},
+	it('skips gaps for source lines hidden from the display model', async () => {
+		const blockLayout: BlockLayoutDraft = {
 			displayModel: {
 				lines: [
-					{ rawRow: 0, text: 'module foo' },
-					{ rawRow: 3, text: 'moduleEnd' },
+					{ sourceLineIndex: 0, text: 'module foo' },
+					{ sourceLineIndex: 3, text: 'moduleEnd' },
 				],
-				displayRowToRawRow: [0, 3],
-				rawRowToDisplayRow: [0, undefined, undefined, 1],
+				displayRowToSourceLineIndex: [0, 3],
+				sourceLineIndexToDisplayRow: [0, undefined, undefined, 1],
 				isCollapsed: true,
 			},
-			layoutContributions: [{ rawRow: 1, rows: 8 }],
-			widgets: [],
+			verticalSpaceAfterSourceLine: [],
 		};
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 8 });
 		const graphicData = createCodeBlockGraphicData({
-			code: ['module foo', '; @plot buffer', 'push 1', 'moduleEnd'],
+			code: ['module foo', '; layout space', 'push 1', 'moduleEnd'],
 			widgets: {
 				blockHighlights: [],
-				inputs: [],
-				outputs: [],
-				debuggers: [],
-				switches: [],
-				buttons: [],
-				sliders: [],
-				crossfades: [],
-				pianoKeyboards: [],
-				arrayPlotters: [],
-				arrayBars: [],
-				arrayMeters: [],
-				arrayWaves: [],
-				infoPanels: [],
 				errorMessages: [{ message: ['Error'], x: 0, y: 0, lineNumber: 2 }],
 			},
 		});
 
-		gaps(graphicData, directiveState);
+		gaps(graphicData, blockLayout);
 
 		expect(graphicData.gaps.size).toBe(0);
 	});

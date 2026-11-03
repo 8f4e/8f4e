@@ -1,7 +1,10 @@
 import { WASM_DROP, WASM_END, WASM_IF, WASM_RETURN, WASM_TYPE_VOID } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest, createStackFacts } from '../testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	createStackFacts,
+} from '../../tests/testUtils';
 import exitIfTrue from './exitIfTrue';
 
 describe('exitIfTrue instruction compiler', () => {

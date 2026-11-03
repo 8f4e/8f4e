@@ -71,8 +71,8 @@ interface PreviewDialogButton {
 
 interface PreviewState {
 	codeBlockRendering: {
-		codeBlocks: PreviewCodeBlock[];
-		rootCodeBlocks: PreviewCodeBlock[];
+		currentProject: { blocks: PreviewCodeBlock[] };
+		rootProject: { blocks: PreviewCodeBlock[] };
 		selectedCodeBlock?: PreviewCodeBlock;
 	};
 	dialog: {
@@ -87,7 +87,6 @@ interface PreviewState {
 		offscreenBlockArrows: boolean;
 	};
 	initialProjectState?: unknown;
-	spriteLookups?: unknown;
 	viewport: {
 		height: number;
 		width: number;
@@ -258,9 +257,7 @@ export async function generateProjectPreview({
 			await page.waitForFunction(
 				() => {
 					const state = (globalThis as unknown as PreviewWindow).state;
-					return Boolean(
-						state?.spriteLookups && state.initialProjectState && state.codeBlockRendering.rootCodeBlocks.length > 0
-					);
+					return Boolean(state?.initialProjectState && state.codeBlockRendering.rootProject.blocks.length > 0);
 				},
 				undefined,
 				{ timeout: timeoutMs }
@@ -330,8 +327,8 @@ export async function generateProjectPreview({
 			const previewWindow = globalThis as unknown as PreviewWindow;
 			const state = previewWindow.state;
 			const targetBlock =
-				state?.codeBlockRendering.rootCodeBlocks.find(block => block.isHome) ??
-				state?.codeBlockRendering.rootCodeBlocks[0];
+				state?.codeBlockRendering.rootProject.blocks.find(block => block.isHome) ??
+				state?.codeBlockRendering.rootProject.blocks[0];
 			if (!state || !targetBlock) {
 				throw new Error('Preview code block disappeared before capture');
 			}

@@ -15,19 +15,21 @@ function getTargetPlannedModule(context: ReferenceResolutionContext, targetModul
 }
 
 /**
- * Validates that intermodule address references, including metadata-query forms,
- * target existing modules and memory.
+ * Validates address references, including fixed-slot storage errors and intermodule targets.
  *
  * @param identifier - identifier value to use.
  * @param line - AST line being processed.
  * @param context - Compilation context used by the operation.
  * @returns Nothing.
  */
-export function validateIntermoduleAddressReference(
+export function validateAddressReference(
 	identifier: ArgumentIdentifier,
 	line: CompilerASTLine,
 	context: ReferenceResolutionContext
 ): void {
+	if (identifier.referenceKind === 'memory-reference' && context.referenceSlots[identifier.targetMemoryId]) {
+		throw getError(ErrorCode.REFERENCE_SLOT_HAS_NO_STORAGE, line, context, { identifier: identifier.targetMemoryId });
+	}
 	if (identifier.referenceKind === 'intermodular-module-reference') {
 		const targetModuleId = identifier.targetModuleId;
 		if (!getTargetPlannedModule(context, targetModuleId)) {
@@ -89,12 +91,12 @@ export function validateUnresolvedValueExpression(
 	argument: Extract<Argument, { type: typeof ArgumentType.COMPILE_TIME_EXPRESSION }>,
 	line: CompilerASTLine,
 	context: ReferenceResolutionContext
-): void {
+): never {
 	if (argument.left.type === ArgumentType.IDENTIFIER) {
-		validateIntermoduleAddressReference(argument.left, line, context);
+		validateAddressReference(argument.left, line, context);
 	}
 	if (isBinaryCompileTimeExpression(argument) && argument.right.type === ArgumentType.IDENTIFIER) {
-		validateIntermoduleAddressReference(argument.right, line, context);
+		validateAddressReference(argument.right, line, context);
 	}
 	const expression = isBinaryCompileTimeExpression(argument)
 		? `${argument.left.value}${argument.operator}${argument.right.value}`
@@ -117,8 +119,8 @@ export function validateUnresolvedIdentifier(
 	argument: Extract<Argument, { type: typeof ArgumentType.IDENTIFIER }>,
 	line: CompilerASTLine,
 	context: ReferenceResolutionContext
-): void {
-	validateIntermoduleAddressReference(argument, line, context);
+): never {
+	validateAddressReference(argument, line, context);
 	throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: argument.value });
 }
 

@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Named array reads use the stored element type.
 Pointer arrays hold four-byte integer addresses.

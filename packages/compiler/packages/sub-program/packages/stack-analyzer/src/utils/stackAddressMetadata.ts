@@ -14,7 +14,7 @@ function shiftSafeRange(safeRange: MemoryAddressRange, byteOffset: number): Memo
 }
 
 /**
- * Derives known-value and address-range metadata for stack addition.
+ * Derives known-value, pointee-type, and independently proven range metadata for stack addition.
  *
  * @param operand1 - First stack operand.
  * @param operand2 - Second stack operand.
@@ -25,25 +25,18 @@ export function deriveAddStackMetadata(operand1: StackItem, operand2: StackItem)
 		operand1.knownValue !== undefined && operand2.knownValue !== undefined
 			? operand1.knownValue + operand2.knownValue
 			: undefined;
+	const addressOperand = operand1.kind === 'address' ? operand1 : operand2.kind === 'address' ? operand2 : undefined;
+	const offsetOperand = addressOperand === operand1 ? operand2 : operand1;
 	const safeRange =
-		operand1.kind === 'address' && operand1.address.safeRange && operand2.knownValue !== undefined
-			? shiftSafeRange(operand1.address.safeRange, operand2.knownValue)
-			: operand2.kind === 'address' && operand2.address.safeRange && operand1.knownValue !== undefined
-				? shiftSafeRange(operand2.address.safeRange, operand1.knownValue)
-				: undefined;
-	const clampRange =
-		(operand1.kind === 'address' ? (operand1.address.clampRange ?? operand1.address.safeRange) : undefined) ??
-		(operand2.kind === 'address' ? (operand2.address.clampRange ?? operand2.address.safeRange) : undefined);
-	const pointsTo =
-		operand1.kind === 'address' && operand1.pointsTo
-			? operand1.pointsTo
-			: operand2.kind === 'address'
-				? operand2.pointsTo
-				: undefined;
+		addressOperand?.address.safeRange && offsetOperand.knownValue !== undefined
+			? shiftSafeRange(addressOperand.address.safeRange, offsetOperand.knownValue)
+			: undefined;
+	const clampRange = addressOperand?.address.clampRange ?? addressOperand?.address.safeRange;
+	const pointsTo = addressOperand?.pointsTo;
 
 	return {
 		...(knownValue !== undefined ? { knownValue } : {}),
-		...(safeRange || clampRange
+		...(addressOperand
 			? {
 					kind: 'address',
 					valueType: 'int',
@@ -58,7 +51,7 @@ export function deriveAddStackMetadata(operand1: StackItem, operand2: StackItem)
 }
 
 /**
- * Derives known-value and address-range metadata for stack subtraction.
+ * Derives address metadata for address-minus-offset and a plain integer value for address differences.
  *
  * @param operand1 - First stack operand.
  * @param operand2 - Second stack operand.
@@ -69,17 +62,17 @@ export function deriveSubStackMetadata(operand1: StackItem, operand2: StackItem)
 		operand1.knownValue !== undefined && operand2.knownValue !== undefined
 			? operand1.knownValue - operand2.knownValue
 			: undefined;
+	const addressOperand = operand1.kind === 'address' && operand2.kind !== 'address' ? operand1 : undefined;
 	const safeRange =
-		operand1.kind === 'address' && operand1.address.safeRange && operand2.knownValue !== undefined
-			? shiftSafeRange(operand1.address.safeRange, -operand2.knownValue)
+		addressOperand?.address.safeRange && operand2.knownValue !== undefined
+			? shiftSafeRange(addressOperand.address.safeRange, -operand2.knownValue)
 			: undefined;
-	const clampRange =
-		operand1.kind === 'address' ? (operand1.address.clampRange ?? operand1.address.safeRange) : undefined;
-	const pointsTo = operand1.kind === 'address' ? operand1.pointsTo : undefined;
+	const clampRange = addressOperand?.address.clampRange ?? addressOperand?.address.safeRange;
+	const pointsTo = addressOperand?.pointsTo;
 
 	return {
 		...(knownValue !== undefined ? { knownValue } : {}),
-		...(safeRange || clampRange
+		...(addressOperand
 			? {
 					kind: 'address',
 					valueType: 'int',

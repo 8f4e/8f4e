@@ -1,24 +1,30 @@
 import createModule from './createModule';
+import type {
+	AudioInputBufferRoute,
+	AudioOutputBufferRoute,
+	AudioWorkletHostMessage,
+	AudioWorkletRuntimeMessage,
+} from './messages';
 
 class Main extends AudioWorkletProcessor {
 	constructor(...args: ConstructorParameters<typeof AudioWorkletProcessor>) {
 		super(...args);
 
-		this.port.onmessage = async event => {
-			if (event.data.type === 'dispose') {
+		this.port.onmessage = async ({ data }: MessageEvent<AudioWorkletHostMessage>) => {
+			if (data.type === 'dispose') {
 				this.disposed = true;
 				this.buffer = () => {};
 				this.memoryBuffer = new Float32Array(0);
 				this.port.close();
 				return;
 			}
-			if (event.data.type === 'init') {
+			if (data.type === 'init') {
 				this.init(
-					event.data.memoryRef,
-					event.data.codeBuffer,
-					event.data.bufferExportName,
-					event.data.audioOutputBuffers,
-					event.data.audioInputBuffers
+					data.memoryRef,
+					data.codeBuffer,
+					data.bufferExportName,
+					data.audioOutputBuffers,
+					data.audioInputBuffers
 				);
 			}
 		};
@@ -28,8 +34,8 @@ class Main extends AudioWorkletProcessor {
 		memoryRef: WebAssembly.Memory,
 		codeBuffer: Uint8Array,
 		bufferExportName: string,
-		audioOutputBuffers: { channel: number; output: number; audioBufferWordAddress: number }[],
-		audioInputBuffers: { channel: number; input: number; audioBufferWordAddress: number }[]
+		audioOutputBuffers: AudioOutputBufferRoute[],
+		audioInputBuffers: AudioInputBufferRoute[]
 	) {
 		const { memoryBuffer, buffer } = await createModule(memoryRef, codeBuffer, bufferExportName);
 		if (this.disposed) {
@@ -42,7 +48,7 @@ class Main extends AudioWorkletProcessor {
 		this.buffer = buffer;
 		this.memoryBuffer = memoryBuffer;
 
-		this.port.postMessage({
+		this.postToHost({
 			type: 'initialized',
 			payload: {
 				sampleRate,
@@ -56,12 +62,16 @@ class Main extends AudioWorkletProcessor {
 	private disposed = false;
 
 	memoryBuffer: Float32Array = new Float32Array(128).fill(0);
-	audioOutputBuffers = [] as { channel: number; output: number; audioBufferWordAddress: number }[];
-	audioInputBuffers = [] as { channel: number; input: number; audioBufferWordAddress: number }[];
+	audioOutputBuffers: AudioOutputBufferRoute[] = [];
+	audioInputBuffers: AudioInputBufferRoute[] = [];
 	audioBufferSize: number | undefined;
 
 	static get parameterDescriptors() {
 		return [{ name: 'amplitude', defaultValue: 0.25, minValue: 0, maxValue: 1 }];
+	}
+
+	private postToHost(message: AudioWorkletRuntimeMessage) {
+		this.port.postMessage(message);
 	}
 
 	private reportAudioBufferSize(inputs: Float32Array[][], outputs: Float32Array[][]) {
@@ -72,7 +82,7 @@ class Main extends AudioWorkletProcessor {
 		}
 
 		this.audioBufferSize = audioBufferSize;
-		this.port.postMessage({
+		this.postToHost({
 			type: 'runtimeValues',
 			payload: {
 				audioBufferSize,

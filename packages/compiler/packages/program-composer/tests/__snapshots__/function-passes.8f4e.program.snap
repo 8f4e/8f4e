@@ -1,0 +1,205 @@
+{
+  "ast": {
+    "constants": [],
+    "functions": [
+      {
+        "functionEndLine": {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+          "lineNumber": 4,
+        },
+        "functionLine": {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "double",
+            },
+          ],
+          "instruction": "function",
+          "lineNumber": 0,
+        },
+        "lines": [
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "double",
+              },
+            ],
+            "instruction": "function",
+            "lineNumber": 0,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "int",
+              },
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "value",
+              },
+            ],
+            "instruction": "param",
+            "lineNumber": 1,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "value",
+              },
+            ],
+            "instruction": "push",
+            "lineNumber": 2,
+          },
+          {
+            "arguments": [
+              {
+                "isInteger": true,
+                "type": "literal",
+                "value": 2,
+              },
+            ],
+            "instruction": "mul",
+            "lineNumber": 3,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "int",
+              },
+            ],
+            "instruction": "functionEnd",
+            "lineNumber": 4,
+          },
+        ],
+        "name": "double",
+        "projectBlockId": 2,
+        "sourceIdentity": {
+          "codeBlockId": "double",
+          "projectGroupPath": "",
+        },
+        "type": "function",
+      },
+    ],
+    "modules": [
+      {
+        "executionEntryName": "voice/main",
+        "id": "voice/output",
+        "lines": [
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "voice/output",
+              },
+            ],
+            "instruction": "module",
+            "lineNumber": 0,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "double",
+              },
+              {
+                "isInteger": true,
+                "type": "literal",
+                "value": 3,
+              },
+            ],
+            "instruction": "call",
+            "lineNumber": 1,
+          },
+          {
+            "arguments": [],
+            "instruction": "drop",
+            "lineNumber": 2,
+          },
+          {
+            "arguments": [],
+            "instruction": "moduleEnd",
+            "lineNumber": 3,
+          },
+        ],
+        "moduleLine": {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "voice/output",
+            },
+          ],
+          "instruction": "module",
+          "lineNumber": 0,
+        },
+        "projectBlockId": 11,
+        "sourceIdentity": {
+          "codeBlockId": "output",
+          "projectGroupPath": "voice",
+        },
+        "type": "module",
+      },
+    ],
+    "prototypes": [],
+  },
+  "cache": {
+    "keys": [
+      "root:function:0",
+      "voice:entry:main:module:0",
+    ],
+    "stats": {
+      "hits": 2,
+      "misses": 2,
+    },
+  },
+  "entries": [
+    {
+      "exportName": "main",
+      "id": "main",
+      "steps": [
+        {
+          "id": "voice/main",
+          "type": "entry",
+        },
+      ],
+    },
+    {
+      "id": "voice/main",
+      "steps": [
+        {
+          "id": "voice/output",
+          "type": "module",
+        },
+      ],
+    },
+  ],
+  "memoryExposures": [],
+}

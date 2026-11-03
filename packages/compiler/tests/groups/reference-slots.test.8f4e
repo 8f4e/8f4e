@@ -1,0 +1,43 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+Fixed references resolve nested group exposures and local module namespaces.
+noteEnd
+
+entry test
+group processing
+entry main
+module consumer
+int& signal &audio:exposed
+push *signal
+assertEqual 41
+push count(*signal)
+assertEqual 1
+moduleEnd
+
+group audio
+expose exposed &source:value
+prototype inheritedState
+int value 41
+prototypeEnd
+entry main
+module source
+shape inheritedState
+int& localValue &value
+int& indexedValue &this:0
+push *localValue
+assertEqual 41
+push *indexedValue
+assertEqual 41
+moduleEnd
+module indexedConsumer
+int& value &source:0
+push *value
+assertEqual 41
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+groupEnd
+entryEnd

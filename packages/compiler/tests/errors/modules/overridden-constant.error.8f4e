@@ -1,0 +1,16 @@
+8f4e/v1
+
+entry main
+module source
+const OBSOLETE 1
+moduleEnd
+
+module source
+const CURRENT 2
+moduleEnd
+
+module consumer
+use source
+int value OBSOLETE
+moduleEnd
+entryEnd

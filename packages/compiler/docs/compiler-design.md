@@ -36,7 +36,9 @@ reference resolution then assigns source binding identities and produces executa
 parameter/local declarations, source block markers, memory declarations, and compiler directives. Loop defaults are
 already explicit, and module execution directives are recorded as metadata.
 
-Stack analysis consumes executable bodies and returns execution facts. Local pointer facts are keyed by binding
+Source operand shorthand is normalized while producing executable bodies: arithmetic operands and inline call arguments become ordinary resolved pushes followed by stack-only instructions. Operations are identified by body position, separately from the source-line provenance they retain. This permits several executable operations for one source instruction without overwriting execution facts. Push operations contain only literals or resolved targets; deferred identifiers do not enter executable bodies.
+
+Stack analysis consumes executable bodies and returns operation-indexed execution facts. Its public source stack view groups those operations by source line, preserving the original instruction and reporting only the source stack values consumed and produced by that instruction. Local pointer facts are keyed by binding
 identity, without WebAssembly indexes. It validates returns against registered signatures and never reconstructs
 imports, exports, parameters, or module execution metadata.
 

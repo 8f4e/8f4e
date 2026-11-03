@@ -7,7 +7,7 @@ module triangle
 use env
 
 float default 1 ;Hz
-float* frequency &default
+float& frequency &default
 float out
 float direction 1
 

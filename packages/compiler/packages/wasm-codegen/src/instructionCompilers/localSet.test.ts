@@ -1,7 +1,7 @@
 import type { ResolvedLocalSetLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../testUtils';
+import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
 import _localSet from './localSet';
 
 const { classifyIdentifier } = await import('@8f4e/tokenizer');

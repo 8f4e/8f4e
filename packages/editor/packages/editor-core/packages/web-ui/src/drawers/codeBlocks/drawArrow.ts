@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../drawContext';
 import { calculateArrowPlacement } from './arrowPlacement';
@@ -19,13 +20,10 @@ const ARROW_CHARACTERS = {
  */
 export default function drawArrow(engine: DrawContext, codeBlock: CodeBlockGraphicData, state: State): void {
 	const arrowPlacement = calculateArrowPlacement(codeBlock, state);
-	const font = state.spriteLookups?.fontArrow;
-	if (!font) {
-		return;
-	}
+	const color = PALETTE_INDICES.secondaryBase;
 
 	if (arrowPlacement.top) {
-		engine.drawText(arrowPlacement.top.x, arrowPlacement.top.y, ARROW_CHARACTERS.top, font);
+		engine.drawText(arrowPlacement.top.x, arrowPlacement.top.y, ARROW_CHARACTERS.top, color);
 	}
 
 	if (arrowPlacement.right) {
@@ -33,7 +31,7 @@ export default function drawArrow(engine: DrawContext, codeBlock: CodeBlockGraph
 			arrowPlacement.right.x - state.viewport.vGrid,
 			arrowPlacement.right.y,
 			ARROW_CHARACTERS.right,
-			font
+			color
 		);
 	}
 
@@ -42,11 +40,11 @@ export default function drawArrow(engine: DrawContext, codeBlock: CodeBlockGraph
 			arrowPlacement.bottom.x,
 			arrowPlacement.bottom.y - state.viewport.hGrid,
 			ARROW_CHARACTERS.bottom,
-			font
+			color
 		);
 	}
 
 	if (arrowPlacement.left) {
-		engine.drawText(arrowPlacement.left.x, arrowPlacement.left.y, ARROW_CHARACTERS.left, font);
+		engine.drawText(arrowPlacement.left.x, arrowPlacement.left.y, ARROW_CHARACTERS.left, color);
 	}
 }

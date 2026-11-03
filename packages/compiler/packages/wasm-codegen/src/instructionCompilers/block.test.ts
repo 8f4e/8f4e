@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../testUtils';
+import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
 import block from './block';
 
 describe('block instruction compiler', () => {

@@ -7,7 +7,7 @@ module square
 use env
 
 float default 1 ;Hz
-float* frequency &default
+float& frequency &default
 float out
 float counter
 float direction 1

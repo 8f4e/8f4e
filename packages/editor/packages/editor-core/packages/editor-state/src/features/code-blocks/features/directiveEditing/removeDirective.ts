@@ -1,7 +1,7 @@
-import { parseDirectiveComments, serializeDirectiveComments } from '../directives/utils';
+import { parseDirectiveLineRecords, serializeDirectiveComments } from '../directives/utils';
 
 /**
- * Removes all lines containing a specific directive from code.
+ * Removes every matching directive, preserving source and other directives on the same line.
  *
  * @param code - Array of code lines
  * @param name - Name of the directive to remove (e.g., 'group', 'watch')
@@ -9,14 +9,14 @@ import { parseDirectiveComments, serializeDirectiveComments } from '../directive
  *
  * @example
  * ```typescript
- * const code = ['module test', '; @group myGroup', '; @favorite', 'moduleEnd'];
+ * const code = ['module test', '; @group myGroup', '; @testDirective', 'moduleEnd'];
  * const filtered = removeDirective(code, 'group');
- * // Returns: ['module test', '; @favorite', 'moduleEnd']
+ * // Returns: ['module test', '; @testDirective', 'moduleEnd']
  * ```
  */
 export function removeDirective(code: string[], name: string): string[] {
 	return code.flatMap(line => {
-		const directives = parseDirectiveComments(line);
+		const directives = parseDirectiveLineRecords(line);
 		if (directives.length === 0) {
 			return [line];
 		}
@@ -27,6 +27,10 @@ export function removeDirective(code: string[], name: string): string[] {
 		}
 
 		const serialized = serializeDirectiveComments(remaining);
+		if (directives[0].isTrailing) {
+			const source = line.slice(0, line.indexOf(';'));
+			return [serialized ? source + serialized : source.trimEnd()];
+		}
 		return serialized ? [serialized] : [];
 	});
 }

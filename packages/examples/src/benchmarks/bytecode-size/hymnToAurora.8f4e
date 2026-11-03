@@ -395,6 +395,7 @@ greaterThan
 functionEnd int
 
 function sampleNumberToAddr
+#impure
 ; @pos 459 -139
 ; @tab 8
 param int sampleNumber
@@ -577,8 +578,8 @@ store
 moduleEnd
 module amp1
 ; @pos 542 -21
-float* in &modSamplePlayer1:out
-int* volume &volume1:out
+float& in &modSamplePlayer1:out
+int& volume &volume1:out
 float out ; @meter
 
 push &out
@@ -593,8 +594,8 @@ store
 moduleEnd
 module amp2
 ; @pos 542 -3
-float* in &modSamplePlayer2:out
-int* volume &volume2:out
+float& in &modSamplePlayer2:out
+int& volume &volume2:out
 float out; @meter
 
 push &out
@@ -609,8 +610,8 @@ store
 moduleEnd
 module amp3
 ; @pos 542 15
-float* in &modSamplePlayer3:out
-int* volume &volume3:out
+float& in &modSamplePlayer3:out
+int& volume &volume3:out
 float out; @meter
 
 push &out
@@ -625,8 +626,8 @@ store
 moduleEnd
 module amp4
 ; @pos 542 33
-float* in &modSamplePlayer4:out
-int* volume &volume4:out
+float& in &modSamplePlayer4:out
+int& volume &volume4:out
 float out; @meter
 
 push &out
@@ -664,7 +665,7 @@ module audiooutL
 ; @pos 689 -10
 use env
 
-float* in &lowpassL:out
+float& in &lowpassL:out
 float[] buffer AUDIO_BUFFER_SIZE
 int pointer &buffer
 
@@ -700,7 +701,7 @@ module audiooutR
 ; @pos 730 -10
 use env
 
-float* in &lowpassR:out
+float& in &lowpassR:out
 float[] buffer AUDIO_BUFFER_SIZE
 int pointer &buffer
 
@@ -734,7 +735,7 @@ ifEnd
 moduleEnd
 module lowpassL
 ; @pos 638 -12
-float* in &mixer:outL
+float& in &mixer:outL
 float state 0.0 ; @w
 float out ; @w
 
@@ -764,7 +765,7 @@ store
 moduleEnd
 module lowpassR
 ; @pos 638 19
-float* in &mixer:outR
+float& in &mixer:outR
 float state 0.0 ; @w
 float out ; @w
 
@@ -794,10 +795,10 @@ store
 moduleEnd
 module mixer
 ; @pos 594 3
-float* in1 &amp1:out
-float* in2 &amp2:out
-float* in3 &amp3:out
-float* in4 &amp4:out
+float& in1 &amp1:out
+float& in2 &amp2:out
+float& in3 &amp3:out
+float& in4 &amp4:out
 
 float outL ; @meter
 float outR; @meter
@@ -835,7 +836,7 @@ moduleEnd
 module modRowCounter
 ; @pos -84 -28
 use env
-int* trigger &amigaTick:out
+int& trigger &amigaTick:out
 int previousTrigger
 int rowCounter -1
 int* patternPointer &patternOrder:
@@ -894,10 +895,10 @@ module modSamplePlayer1
 ; @tab 6 20
 use env
 
-int*	period	&period1:out
-int*	trigger	&trigger1:out
+int&	period	&period1:out
+int&	trigger	&trigger1:out
 int	previousTrigger
-int*	sampleNumber	&sampleNumber1:out
+int&	sampleNumber	&sampleNumber1:out
 int8*	sampleAddress	; @w
 int8*	playhead	; @w
 int	sampleSize	; @w
@@ -993,10 +994,10 @@ module modSamplePlayer2
 ; @pos 422 13
 ; @tab 6 20
 use env
-int*	period	&period2:out
-int*	trigger	&trigger2:out
+int&	period	&period2:out
+int&	trigger	&trigger2:out
 int	previousTrigger
-int*	sampleNumber	&sampleNumber2:out
+int&	sampleNumber	&sampleNumber2:out
 int8*	sampleAddress	; @w
 int	sampleSize	; @w
 int8*	playhead	; @w
@@ -1093,10 +1094,10 @@ module modSamplePlayer3
 ; @tab 6 20
 use env
 
-int*	period	&period3:out
-int*	trigger	&trigger3:out
+int&	period	&period3:out
+int&	trigger	&trigger3:out
 int	previousTrigger
-int*	sampleNumber	&sampleNumber3:out
+int&	sampleNumber	&sampleNumber3:out
 int8*	sampleAddress	; @w
 int	sampleSize	; @w
 int8*	playhead	; @w
@@ -1193,10 +1194,10 @@ module modSamplePlayer4
 ; @tab 6 20
 use env
 
-int*	period	&period4:out
-int*	trigger	&trigger4:out
+int&	period	&period4:out
+int&	trigger	&trigger4:out
 int	previousTrigger
-int*	sampleNumber	&sampleNumber4:out
+int&	sampleNumber	&sampleNumber4:out
 int8*	sampleAddress	; @w
 int	sampleSize	; @w
 int8*	playhead	; @w
@@ -1408,7 +1409,7 @@ ifEnd
 moduleEnd
 module projectConfig
 ; @pos 51 -124
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audiooutL:buffer
 ; @config audioRuntime.audioOutBufferRAddress audiooutR:buffer
@@ -1588,7 +1589,7 @@ loopEnd
 moduleEnd
 module rowCount1
 ; @pos 2 20
-int* in &modRowCounter:out
+int& in &modRowCounter:out
 int out
 ; We can afford some reading
 ; and writing to memory
@@ -1599,7 +1600,7 @@ store
 moduleEnd
 module rowCount2
 ; @pos 169 -34
-int* in &modRowCounter:out
+int& in &modRowCounter:out
 int out
 
 push &out
@@ -1734,7 +1735,7 @@ int8[] sample12 ASSET_SAMPLE12_SIZE
 moduleEnd
 module scope1
 ; @pos 28 -17
-float* in &amp1:out
+float& in &amp1:out
 float[] buffer 64
 ; @plot &buffer 64
 ; @hide
@@ -1762,7 +1763,7 @@ store
 moduleEnd
 module scope2
 ; @pos 64 -17
-float* in &amp2:out
+float& in &amp2:out
 float[] buffer 64
 ; @plot &buffer 64 @home
 ; @hide
@@ -1790,7 +1791,7 @@ store
 moduleEnd
 module scope3
 ; @pos 100 -17
-float* in &amp3:out
+float& in &amp3:out
 float[] buffer 64
 ; @plot &buffer 64
 ; @hide
@@ -1818,7 +1819,7 @@ store
 moduleEnd
 module scope4
 ; @pos 136 -17
-float* in &amp4:out
+float& in &amp4:out
 float[] buffer 64
 ; @plot &buffer 64
 ; @hide
@@ -1848,8 +1849,8 @@ module trigger1
 ; @pos 281 -64
 ; @group ch0
 int* row &rowBuffer1:
-int* rowCounter &rowCount2:out
-int* period &period1:out
+int& rowCounter &rowCount2:out
+int& period &period1:out
 int out
 
 ; @watch out
@@ -1874,8 +1875,8 @@ module trigger2
 ; @pos 280 -26
 ; @group ch1
 int* row &rowBuffer2:
-int* rowCounter &rowCount2:out
-int* period &period2:out
+int& rowCounter &rowCount2:out
+int& period &period2:out
 int out
 
 ; @watch out
@@ -1900,8 +1901,8 @@ module trigger3
 ; @pos 280 11
 ; @group ch2
 int* row &rowBuffer3:
-int* rowCounter &rowCount2:out
-int* period &period3:out
+int& rowCounter &rowCount2:out
+int& period &period3:out
 int out
 
 ; @watch out
@@ -1926,8 +1927,8 @@ module trigger4
 ; @pos 280 49
 ; @group ch3
 int* row &rowBuffer4:
-int* rowCounter &rowCount2:out
-int* period &period4:out
+int& rowCounter &rowCount2:out
+int& period &period4:out
 int out
 
 int prevRowCounter
@@ -1949,44 +1950,25 @@ moduleEnd
 module ultimateSoundtrackerColors
 ; @pos 555 -151
 ; @tab 46
-; @config color.fill.moduleBackground	#000
-; @config color.fill.background	rgba(0,0,0,0)
-; @config color.fill.backgroundDots	#03f
-; @config color.fill.backgroundDots2	#000
-; @config color.fill.highlightedCodeLine	#006
-; @config color.fill.moduleBackgroundDragged	#000
-; @config color.text.instruction	#03f
-; @config color.text.code	#c96
-; @config color.text.lineNumber	#630
-; @config color.text.codeComment	#963
-; @config color.text.numbers	#fc9
-; @config color.text.debugInfo	#03f
-; @config color.fill.debugInfoBackground	#000
-; @config color.fill.wire	rgba(255,255,255,0.3)
-; @config color.fill.wireHighlighted	#fff
-; @config color.fill.menuItemBackground	#00c
-; @config color.fill.menuItemBackgroundHighlighted	#fff
-; @config color.fill.errorMessageBackground	#900
-; @config color.fill.dialogBackground	#00c
-; @config color.fill.dialogDimmer	#000
-; @config color.fill.codeBlockHighlightLevel1	#000a14
-; @config color.fill.codeBlockHighlightLevel2	#001429
-; @config color.fill.codeBlockHighlightLevel3	#001f3d
-; @config color.fill.trace	#0f0
-; @config color.fill.scanLine	#fc9
-; @config color.fill.waveform	#03f
-; @config color.icons.outputConnectorBackground	#03f
-; @config color.icons.outputConnector	#000
-; @config color.icons.inputConnectorBackground	#03f
-; @config color.icons.inputConnector	#000
-; @config color.text.arrow	#fff
+; @config color.surface #000
+; @config color.ink #c96
+; @config color.primary #03f
+; @config color.secondary #fc9
+; @config color.positive #0f0
+; @config color.negative #900
+; @config color.muted #630
+; @config color.stroke rgba(255,255,255,0.3)
+; @config color.canvas rgba(0,0,0,0)
+; @config color.tertiary #963
+; @config color.highlight #03f
+; @config color.detail #ffffff
 moduleEnd
 module volume1
 ; @pos 320 -64
 ; @group ch0
 use mod
 int* row &rowBuffer1:
-int* sampleNumber &sampleNumber1:out
+int& sampleNumber &sampleNumber1:out
 int out
 
 ; @watch out
@@ -2020,7 +2002,7 @@ module volume2
 ; @group ch1
 use mod
 int* row &rowBuffer2:
-int* sampleNumber &sampleNumber2:out
+int& sampleNumber &sampleNumber2:out
 int out
 
 ; @watch out
@@ -2054,7 +2036,7 @@ module volume3
 ; @group ch2
 use mod
 int* row &rowBuffer3:
-int* sampleNumber &sampleNumber3:out
+int& sampleNumber &sampleNumber3:out
 int out
 
 ; @watch out
@@ -2088,7 +2070,7 @@ module volume4
 ; @group ch3
 use mod
 int* row &rowBuffer4:
-int* sampleNumber &sampleNumber4:out
+int& sampleNumber &sampleNumber4:out
 int out
 
 ; @watch out

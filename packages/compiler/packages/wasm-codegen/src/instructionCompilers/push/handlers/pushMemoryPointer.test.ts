@@ -2,7 +2,7 @@ import { f64load, i32const, i32load, i32load8s, i32load8u, i32load16s, i32load16
 import type { ResolvedMemoryDeclaration, ResolvedMemoryPointerPushLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext from '../../../testUtils';
+import createInstructionCompilerTestContext from '../../../../tests/testUtils';
 import pushMemoryPointer from './pushMemoryPointer';
 
 const { classifyIdentifier } = await import('@8f4e/tokenizer');

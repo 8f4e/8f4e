@@ -1,19 +1,19 @@
-import type { ProjectObjectModel } from '@8f4e/language-spec';
+import type { ProjectModuleBlock, ProjectObjectModel } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
 import compileProjectModules from '../src/compile/compileProjectModules';
 
-function projectWithModules(modules: ProjectObjectModel['modules']): ProjectObjectModel {
+function projectWithModules(modules: Array<Omit<ProjectModuleBlock, 'type'>>): ProjectObjectModel {
 	return {
+		entries: [...new Set(modules.map(module => module.entry))],
 		code: [],
-		modules,
+		execution: modules.map(module => ({ ...module, type: 'module' })),
 		functions: [],
 		constants: [],
 		prototypes: [],
 		includes: [],
 		notes: [],
 		unknown: [],
-		groups: [],
 	};
 }
 
@@ -114,8 +114,11 @@ describe('compileProjectModules', () => {
 		const result = await compileProjectModules(
 			{
 				...projectWithModules([]),
-				groups: [
+				execution: [
 					{
+						entry: 'main',
+
+						type: 'group',
 						...projectWithModules([
 							{
 								id: 2,
@@ -125,10 +128,15 @@ describe('compileProjectModules', () => {
 						]),
 						id: 1,
 						name: 'nested',
+
 						code: ['group nested', 'groupEnd'],
 						exposures: [],
+
+						entries: ['main'],
 					},
 				],
+
+				entries: [],
 			},
 			{
 				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },

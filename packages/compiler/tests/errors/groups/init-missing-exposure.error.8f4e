@@ -5,8 +5,10 @@ int output
 moduleEnd
 group synth
 init &input &source:output
+entry main
 module processor
 int* input
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 noteEnd
 
 includes
@@ -14,7 +14,7 @@ module wrapPointerIntAssertions
 ; addresses before and after a
 ; circular buffer.
 int[] buffer 4 7
-int pointer &buffer
+int* pointer &buffer
 
 push pointer
 push sizeof(buffer)*2

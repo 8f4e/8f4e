@@ -1,4 +1,5 @@
 import createModule from './createModule';
+import type { WebWorkerHostMessage, WebWorkerRuntimeMessage } from './messages';
 
 let interval: ReturnType<typeof setInterval>;
 let statsInterval: ReturnType<typeof setInterval>;
@@ -28,7 +29,7 @@ async function init(memoryRef: WebAssembly.Memory, sampleRate: number, codeBuffe
 		clearInterval(statsInterval);
 
 		statsInterval = setInterval(() => {
-			self.postMessage({
+			postToHost({
 				type: 'stats',
 				payload: {
 					timerPrecisionPercentage: 100 - Math.abs(timerDriftMs / intervalTime) * 100,
@@ -39,28 +40,27 @@ async function init(memoryRef: WebAssembly.Memory, sampleRate: number, codeBuffe
 			});
 		}, 10000);
 
-		self.postMessage({
+		postToHost({
 			type: 'initialized',
 			payload: {},
 		});
 	} catch (error) {
 		console.log('compilationError', error);
-		self.postMessage({
+		postToHost({
 			type: 'compilationError',
 			payload: error,
 		});
 	}
 }
 
-self.onmessage = event => {
-	switch (event.data.type) {
+function postToHost(message: WebWorkerRuntimeMessage) {
+	self.postMessage(message);
+}
+
+self.onmessage = ({ data }: MessageEvent<WebWorkerHostMessage>) => {
+	switch (data.type) {
 		case 'init':
-			init(
-				event.data.payload.memoryRef,
-				event.data.payload.sampleRate,
-				event.data.payload.codeBuffer,
-				event.data.payload.entry
-			);
+			init(data.payload.memoryRef, data.payload.sampleRate, data.payload.codeBuffer, data.payload.entry);
 			break;
 	}
 };
