@@ -4,7 +4,6 @@ import { snapToGrid, stopViewportAnimation, updateViewport } from '@8f4e/editor-
 const DRAG_THRESHOLD = 6;
 
 interface Gesture {
-	identifier: number;
 	startX: number;
 	startY: number;
 	startViewportX: number;
@@ -40,7 +39,6 @@ export function createTouchViewportNavigationPlugin({ inputTarget }: { inputTarg
 				const touch = event.touches[0];
 				stopViewportAnimation(state);
 				gesture = {
-					identifier: touch.identifier,
 					startX: touch.clientX,
 					startY: touch.clientY,
 					startViewportX: state.viewport.x,
@@ -55,7 +53,6 @@ export function createTouchViewportNavigationPlugin({ inputTarget }: { inputTarg
 					return;
 				}
 				const touch = event.touches[0];
-				if (touch.identifier !== gesture.identifier) return;
 				const deltaX = touch.clientX - gesture.startX;
 				const deltaY = touch.clientY - gesture.startY;
 				if (!gesture.dragging && Math.hypot(deltaX, deltaY) < DRAG_THRESHOLD) return;

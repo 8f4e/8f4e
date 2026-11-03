@@ -54,7 +54,7 @@ describe('touch viewport navigation', () => {
 		const test = setup();
 		test.touch('touchstart', [finger(100, 100)]);
 		test.touch('touchmove', [finger(130, 118)]);
-		test.touch('touchstart', [finger(130, 118), finger(150, 150, 2)]);
+		test.touch('touchstart', [finger(130, 118), finger(150, 150)]);
 		const { x, y } = test.state.viewport;
 		test.touch('touchend', [finger(130, 118)]);
 		test.touch('touchmove', [finger(180, 180)]);

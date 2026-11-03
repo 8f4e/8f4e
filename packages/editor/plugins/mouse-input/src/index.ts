@@ -17,10 +17,6 @@ export function createMouseInputPlugin({
 			let previousX = 0;
 			let previousY = 0;
 			let wheelScrollEndTimeout: ReturnType<typeof setTimeout> | undefined;
-			let lastWheelMovement = {
-				movementX: 0,
-				movementY: 0,
-			};
 
 			function onMouseEvent(event: MouseEvent) {
 				if (event.type === 'mousedown') {
@@ -56,7 +52,6 @@ export function createMouseInputPlugin({
 				event.preventDefault();
 				const movementX = event.deltaX * -1;
 				const movementY = event.deltaY * -1;
-				lastWheelMovement = { movementX, movementY };
 
 				events.dispatch<InternalMouseEvent>('mousemove', {
 					x: event.offsetX,
@@ -76,7 +71,7 @@ export function createMouseInputPlugin({
 
 				wheelScrollEndTimeout = setTimeout(() => {
 					wheelScrollEndTimeout = undefined;
-					events.dispatch('viewportscrollend', lastWheelMovement);
+					events.dispatch('viewportscrollend', { movementX, movementY });
 				}, WHEEL_SCROLL_END_DELAY_MS);
 			}
 

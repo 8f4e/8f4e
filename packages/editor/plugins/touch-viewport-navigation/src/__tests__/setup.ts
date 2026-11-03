@@ -34,7 +34,7 @@ export function setup(viewportDragging = true) {
 		drawers: createEditorDrawerRegistry(),
 	});
 	cleanups.push(store.dispose, dispose);
-	const touch = (type: string, points: Array<{ identifier: number; clientX: number; clientY: number }> = []) => {
+	const touch = (type: string, points: Array<{ clientX: number; clientY: number }> = []) => {
 		const event = Object.assign(new Event(type, { cancelable: type !== 'touchcancel' }), { touches: points });
 		inputTarget.dispatchEvent(event);
 		return event;
@@ -42,4 +42,4 @@ export function setup(viewportDragging = true) {
 	return { state: store.getState(), store, events, inputTarget, touch, changed, dispose };
 }
 
-export const finger = (clientX: number, clientY: number, identifier = 1) => ({ identifier, clientX, clientY });
+export const finger = (clientX: number, clientY: number) => ({ clientX, clientY });
