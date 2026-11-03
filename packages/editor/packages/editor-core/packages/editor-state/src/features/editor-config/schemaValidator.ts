@@ -10,11 +10,11 @@ import type {
 } from '@8f4e/editor-state-types';
 import resolveMemoryIdentifier from '../../pureHelpers/resolveMemoryIdentifier';
 import { isMemoryId } from '../../shared/editorDirectiveArgumentTypes';
+import { formatDidYouMeanSuffix } from '../global-editor-directives/suggestions';
 
 export interface SchemaEditorConfigValidatorOptions {
 	root: string;
 	schema: JSONSchemaLike;
-	formatPathError?: (path: string, knownPaths: string[]) => string;
 	validateValue?: (entry: EditorConfigEntry, schema: JSONSchemaLike) => string | undefined;
 }
 
@@ -283,7 +283,14 @@ export function validateSchemaConfigValue(entry: EditorConfigEntry, schema: JSON
 	const parsedValue = parseSchemaConfigValue(entry.value, schema);
 
 	if (schema.enum && !schema.enum.includes(parsedValue)) {
-		return `@config ${entry.path}: invalid value '${entry.value}'`;
+		const suggestion =
+			typeof parsedValue === 'string'
+				? formatDidYouMeanSuffix(
+						entry.value,
+						schema.enum.filter((value): value is string => typeof value === 'string')
+					)
+				: '';
+		return `@config ${entry.path}: invalid value '${entry.value}'${suggestion}`;
 	}
 
 	if (schema.type === 'integer') {
@@ -328,7 +335,6 @@ export function validateSchemaConfigValue(entry: EditorConfigEntry, schema: JSON
 export function createSchemaEditorConfigValidator({
 	root,
 	schema,
-	formatPathError,
 	validateValue,
 }: SchemaEditorConfigValidatorOptions): EditorConfigValidator {
 	return {
@@ -337,11 +343,10 @@ export function createSchemaEditorConfigValidator({
 		},
 		matches: path => path === root || path.startsWith(`${root}.`),
 		validate: entry => {
-			const knownPaths = collectSchemaConfigPaths(root, schema);
 			const entrySchema = getSchemaForConfigPath(root, schema, entry.path);
 
 			if (!entrySchema) {
-				return formatPathError?.(entry.path, knownPaths) ?? `@config: unknown config path '${entry.path}'`;
+				return `@config: unknown config path '${entry.path}'${formatDidYouMeanSuffix(entry.path, collectSchemaConfigPaths(root, schema))}`;
 			}
 
 			const customError = validateValue?.(entry, entrySchema);

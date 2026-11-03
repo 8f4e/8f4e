@@ -1,5 +1,3 @@
-import { resolvePalette } from '@8f4e/editor-palette';
-import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import { setup } from '../src/__tests__/setup';
@@ -31,17 +29,9 @@ test('bars plugin renders its directive', async () => {
 	for (let index = 0; index < 64; index++)
 		test.memoryViews.float32[memory.allocationUnitAddress + index] = (Math.sin((index * Math.PI) / 16) + 1) / 2;
 
-	const spriteData = await loadFontAtlas(test.state.editorConfig.font);
-	const renderer = await initView(
-		test.state,
-		canvas,
-		test.memoryViews,
-		spriteData,
-		resolvePalette(test.state.editorConfig.color),
-		{ drawers }
-	);
+	const renderer = await initView(test.store, test.events, canvas, test.memoryViews, { drawers });
 	renderer.pauseRendering();
-	test.events.dispatch('spriteSheetRerendered');
+
 	try {
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();

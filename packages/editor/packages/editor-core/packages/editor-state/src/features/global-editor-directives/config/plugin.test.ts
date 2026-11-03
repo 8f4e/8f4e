@@ -19,17 +19,17 @@ describe('@config directive', () => {
 		const result = resolveGlobalEditorDirectives([
 			createParsedBlock([
 				'module a',
-				'; @config font 6x10',
-				'; @config color.ink #112233',
-				'; @config color.primary #010203',
+				'; @config testSetting sample',
+				'; @config settings.first #112233',
+				'; @config settings.second #010203',
 				'moduleEnd',
 			]),
 		]);
 
 		expect(result.resolved.configEntries).toEqual([
-			{ path: 'font', value: '6x10', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
-			{ path: 'color.ink', value: '#112233', sourceLineIndex: 2, codeBlockId: 0, moduleId: 'a' },
-			{ path: 'color.primary', value: '#010203', sourceLineIndex: 3, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'testSetting', value: 'sample', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'settings.first', value: '#112233', sourceLineIndex: 2, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'settings.second', value: '#010203', sourceLineIndex: 3, codeBlockId: 0, moduleId: 'a' },
 		]);
 		expect(result.errors).toEqual([]);
 	});
@@ -66,24 +66,30 @@ describe('@config directive', () => {
 		const result = resolveGlobalEditorDirectives([
 			createParsedBlock([
 				'module a',
-				'; @config font tiny',
+				'; @config testSetting tiny',
 				'; @config blockScale 4',
-				'; @config color.ink ???',
+				'; @config settings.first ???',
 				'moduleEnd',
 			]),
 		]);
 
 		expect(result.resolved.configEntries).toEqual([
-			{ path: 'font', value: 'tiny', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'testSetting', value: 'tiny', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
 			{ path: 'blockScale', value: '4', sourceLineIndex: 2, codeBlockId: 0, moduleId: 'a' },
-			{ path: 'color.ink', value: '???', sourceLineIndex: 3, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'settings.first', value: '???', sourceLineIndex: 3, codeBlockId: 0, moduleId: 'a' },
 		]);
 		expect(result.errors).toEqual([]);
 	});
 
 	it('requires exactly a path and value', () => {
 		const result = resolveGlobalEditorDirectives([
-			createParsedBlock(['module a', '; @config', '; @config font', '; @config font ibmvga8x16 extra', 'moduleEnd']),
+			createParsedBlock([
+				'module a',
+				'; @config',
+				'; @config testSetting',
+				'; @config testSetting sample extra',
+				'moduleEnd',
+			]),
 		]);
 
 		expect(result.resolved).toEqual({});

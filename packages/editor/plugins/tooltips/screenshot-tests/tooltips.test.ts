@@ -1,7 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import { resolvePalette } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import loadFontAtlas from '@8f4e/sprite-generator';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { expect, test, vi } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
@@ -85,12 +83,12 @@ entryEnd`
 		float64: new Float64Array(buffer),
 	};
 	if (!call) memoryViews.int32[compiled.memoryPlan.modules.controls.memory.value.allocationUnitAddress] = 42;
-	const spriteData = await loadFontAtlas(state.editorConfig.font);
-	const renderer = await initView(state, canvas, memoryViews, spriteData, resolvePalette(state.editorConfig.color), {
+
+	const renderer = await initView(store, events, canvas, memoryViews, {
 		drawers,
 	});
 	renderer.pauseRendering();
-	events.dispatch('spriteSheetRerendered');
+
 	now.mockReturnValue(1000);
 	try {
 		renderer.renderFrame();

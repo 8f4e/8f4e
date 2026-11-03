@@ -177,7 +177,6 @@ Supported `font` values:
 - `terminus8x16bold`
 - `6x10`
 - `terminus10x18`
-- `terminus10x18bold`
 - `kana12x13`
 - `terminus12x24`
 - `terminus12x24bold`
@@ -185,7 +184,6 @@ Supported `font` values:
 - `spleen6x12`
 - `spleen8x16`
 - `templeos8x8`
-- `spleen12x24`
 - `spleen16x32`
 
 ### `@watch`

@@ -1,4 +1,3 @@
-import { resolvePalette } from '@8f4e/editor-palette';
 import initState, {
 	createEditorEditingHandle,
 	type EditorEditingHandle,
@@ -7,15 +6,18 @@ import initState, {
 } from '@8f4e/editor-state';
 import type { EditorConfigSchemaContributionRegistry, InfoRecord, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
-import loadFontAtlas from '@8f4e/sprite-generator';
-import initView, { createEditorDrawerRegistry, type MemoryViews, type RenderStats } from '@8f4e/web-ui';
+import initView, {
+	createEditorDrawerRegistry,
+	type MemoryViews,
+	type RenderStats,
+	registerWebUiConfig,
+} from '@8f4e/web-ui';
 
 import { disposeAll } from './disposeAll';
 import initEvents from './events';
 import pointerEvents from './events/pointerEvents';
 import { createMemoryViewManager } from './memoryViewManager';
 import { type EditorPlugin, installEditorPlugins } from './plugins';
-import { createSpriteSheetManager } from './spriteSheetManager';
 
 export type {
 	EditorEdit,
@@ -174,6 +176,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			},
 		});
 		cleanups.push(() => store.dispose());
+		registerWebUiConfig(store);
 		const editing = createEditorEditingHandle(store, events);
 		cleanups.push(editing.dispose);
 		const drawers = createEditorDrawerRegistry();
@@ -190,12 +193,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		const state = store.getState();
 		cleanups.push(pointerEvents(canvas, events, state, options.captureWheel));
 
-		// Load the selected font before initializing the view.
-		const fontAtlas = await loadFontAtlas(state.editorConfig.font);
-		state.viewport.hGrid = fontAtlas.grid.cellHeight;
-		state.viewport.vGrid = fontAtlas.grid.cellWidth;
-
-		view = await initView(state, canvas, memoryViews, fontAtlas, resolvePalette(state.editorConfig.color), {
+		view = await initView(store, events, canvas, memoryViews, {
 			drawers,
 			renderStatsIntervalFrames: options.renderStatsIntervalFrames,
 			onRenderStats: stats => {
@@ -203,8 +201,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			},
 		});
 		cleanups.push(() => view.destroy());
-
-		cleanups.push(createSpriteSheetManager(store, view, events));
 
 		let currentCanvasSize: CanvasSize | null = null;
 		const resize = (width: number, height: number) => {

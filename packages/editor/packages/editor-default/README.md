@@ -30,13 +30,17 @@ plugin and its hint. This controls imports and installation, with no correspondi
 still selects the initial mode when the plugin is omitted.
 
 Keyboard behavior comes from three independent plugins: `keyboard-mode-switching` for `e`/Escape,
-`keyboard-navigation` for line/block navigation and editing caret movement, and `keyboard-editing` for text changes
-and undo/redo shortcuts. View mode supports line selection and block navigation, with history shortcuts left unhandled.
+`keyboard-navigation` for view-mode line selection and block navigation, and `keyboard-editing` for caret movement,
+text changes, and undo/redo shortcuts. View mode supports line selection and block navigation, with history shortcuts left unhandled.
 The editing plugin keeps a small input bridge and imports its text-editing implementation on first entry into edit
 mode, including projects that start in edit mode. It buffers keys during that import and replays them in order.
 
-The browser host imports and installs these plugins only when `(pointer: coarse)` does not match. Phones and tablets
-with a coarse primary pointer receive none of the three plugins, and their mode overlay is hidden by default. This
+The independent `font-preview` plugin uses F18 for the previous font and F19 for the next, wrapping through the
+available catalog. It previews without changing source, history, or saved files. Previewing persists across source
+edits; loading a project or disposing the plugin restores source configuration.
+
+The browser host imports and installs these four plugins only when `(pointer: coarse)` does not match. Phones and tablets
+with a coarse primary pointer receive none of them, and their mode overlay is hidden by default. This
 is a capability check at mounting time; it does not identify devices by user agent. Touch navigation can be composed
 separately later. Keyboard-to-memory and Save shortcuts remain independent plugins.
 

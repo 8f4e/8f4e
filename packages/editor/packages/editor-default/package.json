@@ -66,7 +66,8 @@
     "@8f4e/editor-plugin-code-rendering": "*",
     "@8f4e/editor-plugin-keyboard-editing": "*",
     "@8f4e/editor-plugin-keyboard-navigation": "*",
-    "@8f4e/editor-plugin-keyboard-mode-switching": "*"
+    "@8f4e/editor-plugin-keyboard-mode-switching": "*",
+    "@8f4e/editor-plugin-font-preview": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

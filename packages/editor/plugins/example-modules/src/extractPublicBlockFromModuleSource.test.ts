@@ -4,7 +4,7 @@ import extractPublicBlockFromModuleSource from './extractPublicBlockFromModuleSo
 describe('extractPublicBlockFromModuleSource', () => {
 	it.each([
 		['an empty project', '8f4e/v1'],
-		['a private note', '8f4e/v1\nnote settings\n; @config color.primary #e1843d\nnoteEnd'],
+		['a private note', '8f4e/v1\nnote settings\n; @config testSetting sample\nnoteEnd'],
 		['a public test module', '8f4e/v1\nentry test\nmodule testOnly\n; @public\nmoduleEnd\nentryEnd'],
 	])('explains the missing public block for %s', (_description, source) => {
 		expect(() => extractPublicBlockFromModuleSource(source)).toThrow(
@@ -47,13 +47,13 @@ describe('extractPublicBlockFromModuleSource', () => {
 			'noteEnd',
 			'note copperColors',
 			'; @public',
-			'; @config color.primary #e1843d',
+			'; @config testSetting sample',
 			'noteEnd',
 		].join('\n');
 
 		expect(extractPublicBlockFromModuleSource(source)).toEqual([
 			'note copperColors',
-			'; @config color.primary #e1843d',
+			'; @config testSetting sample',
 			'noteEnd',
 		]);
 	});

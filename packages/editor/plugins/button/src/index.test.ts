@@ -152,7 +152,7 @@ describe('button plugin', () => {
 		const test = await setup();
 		test.state.viewport.vGrid = 10;
 		test.state.viewport.hGrid = 20;
-		test.events.dispatch('spriteSheetRerendered');
+		test.events.dispatch('gridSizeChanged');
 		test.render();
 		expect(test.draw.drawFill).toHaveBeenNthCalledWith(
 			1,

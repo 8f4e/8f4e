@@ -1,5 +1,3 @@
-import type { Font } from '@8f4e/sprite-generator';
-
 export interface JSONSchemaLike {
 	type?: 'object' | 'array' | 'string' | 'number' | 'integer' | 'boolean' | 'null';
 	format?: string;
@@ -22,8 +20,6 @@ export interface EditorConfigObject {
 }
 
 export interface EditorConfig extends EditorConfigObject {
-	font?: Font;
-	color?: EditorConfigObject;
 	export?: EditorConfigObject & {
 		fileName?: string;
 	};

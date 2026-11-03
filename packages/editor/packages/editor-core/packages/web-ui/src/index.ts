@@ -1,7 +1,10 @@
-import { type ResolvedPalette, toPaletteBytes } from '@8f4e/editor-palette';
-import type { State } from '@8f4e/editor-state-types';
-import { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sprite-generator';
+import { toPaletteBytes } from '@8f4e/editor-palette';
+import type { EventDispatcher, State } from '@8f4e/editor-state-types';
+import loadFontAtlas, { type Font, type FontAtlas } from '@8f4e/sprite-generator';
+import type { StateManager } from '@8f4e/state-manager';
 import { Engine } from 'glugglugglug';
+import { subscribeToAppearance, updateGridSize } from './appearance';
+import { getConfiguredFont, getConfiguredPalette } from './config';
 import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
 import drawContextMenu from './drawers/contextMenu';
@@ -10,6 +13,7 @@ import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/reg
 import BackgroundRenderer from './plugins/background';
 import type { MemoryViews } from './types';
 
+export { registerWebUiConfig } from './config';
 export { DrawContext } from './drawContext';
 export type {
 	CanvasOverlayDrawer,
@@ -47,22 +51,24 @@ export interface WebUiOptions {
 }
 
 export default async function init(
-	state: State,
+	store: StateManager<State>,
+	events: EventDispatcher,
 	canvas: HTMLCanvasElement,
 	memoryViews: MemoryViews,
-	fontAtlas: FontAtlas,
-	palette: ResolvedPalette,
 	options: WebUiOptions = {}
 ): Promise<{
 	resize: (width: number, height: number) => boolean;
-	loadFontAtlas: (fontAtlas: FontAtlas, font: Font) => void;
-	loadPalette: (palette: ResolvedPalette) => void;
 	pauseRendering: () => void;
 	releaseRenderingResources: () => void;
 	resumeRendering: () => void;
 	renderFrame: () => void;
 	destroy: () => void;
 }> {
+	const state = store.getState();
+	const font = getConfiguredFont(state.editorConfig);
+	const fontAtlas = await loadFontAtlas(font);
+	const palette = getConfiguredPalette(state.editorConfig);
+	updateGridSize(state, events, fontAtlas);
 	const engine = new Engine(canvas);
 	let frameStartedAt = performance.now();
 	engine.hooks.preDraw.push(() => {
@@ -86,7 +92,7 @@ export default async function init(
 		draw.setCharacterWidth(atlas.grid.cellWidth);
 	}
 
-	installFontAtlas(fontAtlas, state.editorConfig.font ?? DEFAULT_FONT);
+	installFontAtlas(fontAtlas, font);
 	const drawers = options.drawers ?? createEditorDrawerRegistry();
 	let renderLayers: ReturnType<EditorDrawerHost['attachRenderLayers']>;
 	try {
@@ -96,6 +102,12 @@ export default async function init(
 		engine.destroy();
 		throw error;
 	}
+	const unsubscribeAppearance = subscribeToAppearance(store, events, installFontAtlas, palette => {
+		const bytes = toPaletteBytes(palette);
+		engine.setPalette(bytes);
+		background.setPalette(bytes);
+		renderLayers.loadPalette(palette);
+	});
 	const layerFrame = { state, memoryViews };
 	engine.hooks.postDraw.push(() => renderLayers.draw(layerFrame));
 
@@ -221,13 +233,6 @@ export default async function init(
 			engine.resize(width, height);
 			return true;
 		},
-		loadFontAtlas: installFontAtlas,
-		loadPalette: palette => {
-			const bytes = toPaletteBytes(palette);
-			engine.setPalette(bytes);
-			background.setPalette(bytes);
-			renderLayers.loadPalette(palette);
-		},
 		pauseRendering,
 		releaseRenderingResources,
 		resumeRendering,
@@ -237,6 +242,7 @@ export default async function init(
 		},
 		destroy: () => {
 			pauseRendering();
+			unsubscribeAppearance();
 			try {
 				renderLayers.destroy();
 			} finally {

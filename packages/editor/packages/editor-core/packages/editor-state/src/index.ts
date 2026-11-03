@@ -17,13 +17,11 @@ import viewportDirectiveEffect from './features/code-blocks/features/directives/
 import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './features/code-blocks/layout/registry';
-import color from './features/color/effect';
 import dialog from './features/dialog/effect';
 import historyTracking from './features/edit-history/effect';
 import { registerExportFileNameEditorConfigValidator } from './features/editor-config/exportFileName';
 import { registerEditorConfigSchemaContributionsValidator } from './features/editor-config/schemaContributions';
 import editorMode from './features/editor-mode/effect';
-import font from './features/font/effect';
 import contextMenu from './features/menu/effect';
 import createMenuRegistry from './features/menu/registry';
 import publishCompilationInputChanges from './features/program-compiler/inputChanges';
@@ -84,8 +82,6 @@ export default function init(
 	const store = createStateManager<State>(baseState);
 	effectCleanups.push(store.dispose);
 
-	registerEffect(font(store));
-	registerEffect(color(store));
 	registerEffect(registerEditorConfigSchemaContributionsValidator(store));
 	registerExportFileNameEditorConfigValidator(store);
 	registerEffect(dialog(store, events));
@@ -157,6 +153,7 @@ export {
 export { parseBlockDirectives } from './features/code-blocks/utils/parseBlockDirectives';
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
+export { default as resolveEditorConfig } from './features/global-editor-directives/resolve';
 export { error as logError, log as logMessage } from './features/logger/logger';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
 export { publishProjectChange } from './features/project-changes';

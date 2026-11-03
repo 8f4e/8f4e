@@ -10,4 +10,4 @@
 - Keep generic parsing, memory resolution, and compiler metadata in core.
 - Run `npx nx run @8f4e/editor-plugin-tooltips:build|test|typecheck` after changes.
 - Run `npx nx run @8f4e/editor-plugin-tooltips:test:screenshot` for browser rendering tests.
-- Cover content, compiler updates, selection changes, atlas reloads, drawing, cleanup, and instance isolation.
+- Cover content, compiler updates, selection changes, grid size changes, drawing, cleanup, and instance isolation.

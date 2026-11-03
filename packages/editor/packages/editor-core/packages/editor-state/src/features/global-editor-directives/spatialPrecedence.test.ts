@@ -12,7 +12,10 @@ afterEach(() => {
 function setup(source: string) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, {
+		callbacks: {},
+		editorConfigSchemaContributions: { test: { root: 'testSetting', schema: { type: 'string', enum: ['sample'] } } },
+	});
 	cleanups.push(store.dispose);
 	const load = (project: string | ProjectObjectModel) =>
 		events.dispatch('loadProject', { project: typeof project === 'string' ? parseProjectSource(project) : project });
@@ -80,17 +83,17 @@ note right
 ; @pos 20 0
 ; @config export.fileName first
 ; @config export.fileName second @config export.fileName last
-; @config color.ink invalid
+; @config testSetting invalid
 noteEnd
 note left
 ; @pos 0 0
 ; @config export.fileName left
-; @config color.ink #112233
+; @config testSetting sample
 noteEnd`);
 		expect(state.editorConfig.export?.fileName).toBe('last');
-		expect(state.editorConfig.color?.ink).toBe('#112233');
+		expect(state.editorConfig.testSetting).toBe('sample');
 		expect(state.codeErrors.editorDirectiveErrors).toEqual([
-			expect.objectContaining({ lineNumber: 4, message: expect.stringContaining("invalid color value 'invalid'") }),
+			expect.objectContaining({ lineNumber: 4, message: expect.stringContaining("invalid value 'invalid'") }),
 		]);
 	});
 
