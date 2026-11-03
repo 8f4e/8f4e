@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-core",
-  "version": "13.1.9",
+  "version": "13.1.10",
   "private": true,
   "description": "8f4e minimal editor package",
   "type": "module",
