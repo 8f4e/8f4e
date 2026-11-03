@@ -26,6 +26,7 @@ The product landing page uses these settings. Horizontal drags pan the editor an
 The adapter allows the disabled direction through `touch-action` and rejects gestures starting primarily in that
 direction. Only enabled axes move or snap to the grid. Full-screen editors default to two fingers on both axes.
 
-The mouse input plugin disables native tap highlighting on its target, restoring the previous inline style on
-disposal. Dialogs fit within the viewport with a grid-cell margin, wrap body text and buttons, and constrain titles
-to the available text width on portrait screens.
+The website stylesheets disable native tap highlighting on editor canvases with
+`-webkit-tap-highlight-color: transparent`. Embedding hosts can apply the same CSS rule. Dialogs fit within the
+viewport with a grid-cell margin, wrap body text and buttons, and constrain titles to the available text width on
+portrait screens.

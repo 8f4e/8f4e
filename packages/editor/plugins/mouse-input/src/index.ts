@@ -2,7 +2,6 @@ import type { EditorPlugin } from '@8f4e/editor-core';
 import type { InternalMouseEvent } from '@8f4e/editor-state-types';
 
 const WHEEL_SCROLL_END_DELAY_MS = 120;
-const TAP_HIGHLIGHT_COLOR = '-webkit-tap-highlight-color';
 
 export function createMouseInputPlugin({
 	inputTarget,
@@ -15,10 +14,6 @@ export function createMouseInputPlugin({
 		id: 'mouse-input',
 		setup: ({ store, events }) => {
 			const state = store.getState();
-			const originalTapHighlight = inputTarget.style.getPropertyValue(TAP_HIGHLIGHT_COLOR);
-			const originalTapHighlightPriority = inputTarget.style.getPropertyPriority(TAP_HIGHLIGHT_COLOR);
-			// Native touch feedback otherwise covers the entire canvas when opening a context menu.
-			inputTarget.style.setProperty(TAP_HIGHLIGHT_COLOR, 'transparent');
 			let previousX = 0;
 			let previousY = 0;
 			let wheelScrollEndTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -98,7 +93,6 @@ export function createMouseInputPlugin({
 				inputTarget.removeEventListener('mousedown', onMouseEvent);
 				inputTarget.removeEventListener('mousemove', onMouseEvent);
 				inputTarget.removeEventListener('contextmenu', onMouseEvent);
-				inputTarget.style.setProperty(TAP_HIGHLIGHT_COLOR, originalTapHighlight, originalTapHighlightPriority);
 			};
 		},
 	};

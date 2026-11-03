@@ -16,7 +16,6 @@ function setup(captureWheel = true, viewportDragging = true) {
 		clientWidth: 640,
 		clientHeight: 480,
 		focus: vi.fn(),
-		style: { getPropertyValue: () => '', getPropertyPriority: () => '', setProperty: vi.fn() },
 	}) as unknown as HTMLElement;
 	const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
 	const store = initState(events, { callbacks: {}, featureFlags: { viewportDragging } });

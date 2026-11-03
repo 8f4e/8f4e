@@ -151,7 +151,6 @@ entryEnd`);
 			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 			await expect.poll(() => block.gaps.get(3)?.size).toBe(2);
 			await expect.poll(() => canvas.style.touchAction).toBe('none');
-			expect(getComputedStyle(canvas).getPropertyValue('-webkit-tap-highlight-color')).toBe('rgba(0, 0, 0, 0)');
 			const rect = canvas.getBoundingClientRect();
 			const frame = window.frameElement!.getBoundingClientRect();
 			const point = (x: number, y: number, id = 1) => ({
