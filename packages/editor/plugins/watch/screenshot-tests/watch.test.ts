@@ -40,3 +40,41 @@ test('watch plugin renders its directive', async () => {
 		canvas.remove();
 	}
 });
+
+test('dereferenced watch follows runtime pointer changes without selection', async () => {
+	const canvas = document.createElement('canvas');
+	canvas.width = 512;
+	canvas.height = 256;
+	document.body.append(canvas);
+	const drawers = createEditorDrawerRegistry();
+	const test = await setup(
+		createWatchPlugin({ prefersReducedMotion: () => true }),
+		[
+			'module audio',
+			'; @pos 4 3',
+			'int first 7',
+			'int second 12',
+			'int* pointer &first',
+			'; @watch *pointer',
+			'push &pointer',
+			'push &second',
+			'store',
+			'moduleEnd',
+		],
+		{ drawers, mode: 'view' }
+	);
+	test.state.viewport.width = canvas.width;
+	test.state.viewport.height = canvas.height;
+	const renderer = await initView(test.store, test.events, canvas, test.memoryViews, { drawers });
+	renderer.pauseRendering();
+	try {
+		renderer.renderFrame();
+		await expect(canvas).toMatchScreenshot('dereferenced-watch-before-execution');
+		test.run();
+		renderer.renderFrame();
+		await expect(canvas).toMatchScreenshot('dereferenced-watch-after-execution');
+	} finally {
+		renderer.destroy();
+		canvas.remove();
+	}
+});

@@ -91,6 +91,7 @@ export async function setup(
 		update,
 		memoryViews,
 		compiled,
+		run: () => (instance.exports.main as CallableFunction)(),
 		dispose,
 	};
 }

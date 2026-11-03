@@ -50,6 +50,78 @@ describe('watch plugin', () => {
 			expect.any(Number)
 		);
 	});
+	it.each(['edit', 'view'] as const)(
+		'follows runtime pointer and pointee changes without selection in %s mode',
+		async mode => {
+			const test = await setup(
+				plugin,
+				[
+					'module audio',
+					'int first 7',
+					'int second 11',
+					'int* pointer &first',
+					'; @watch *pointer',
+					'push &pointer',
+					'push &second',
+					'store',
+					'push &second',
+					'push second',
+					'push 1',
+					'add',
+					'store',
+					'moduleEnd',
+				],
+				{ mode }
+			);
+			const selected = test.state.codeBlockRendering.selectedCodeBlock;
+			const revision = test.state.projectChange.revision;
+			const layoutChanged = vi.fn();
+			test.events.on('codeBlockLayoutsChanged', layoutChanged);
+			const expectValue = (value: string) => {
+				test.render();
+				expect(test.draw.drawText).toHaveBeenCalledExactlyOnceWith(
+					expect.any(Number),
+					expect.any(Number),
+					value,
+					expect.any(Number)
+				);
+			};
+			expectValue('7');
+			test.run();
+			expectValue('12');
+			test.run();
+			expectValue('13');
+			expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(selected);
+			expect(test.state.projectChange.revision).toBe(revision);
+			expect(layoutChanged).not.toHaveBeenCalled();
+		}
+	);
+	it.each([
+		['int8u', '*pointer[1]', '4'],
+		['int16u', '0x*pointer[1]', '00 04'],
+		['int', '0b*pointer[1]', '100'],
+		['float64', '*pointer[1]', '4.0000'],
+	])('preserves %s indexed watch formatting after runtime retargeting', async (type, expression, expected) => {
+		const test = await setup(plugin, [
+			'module audio',
+			`${type}[] first 2 1 2`,
+			`${type}[] second 2 3 4`,
+			`${type}* pointer &first`,
+			`; @watch ${expression}`,
+			'push &pointer',
+			'push &second',
+			'store',
+			'moduleEnd',
+		]);
+		test.run();
+		test.render();
+		expect(test.draw.drawText).toHaveBeenCalledExactlyOnceWith(
+			expect.any(Number),
+			expect.any(Number),
+			expected,
+			expect.any(Number)
+		);
+	});
 	it('places the value after the visual width of a tabbed source line', async () => {
 		const code = ['module audio', '; @tab 8 16', 'int\tvalue\t7 ; @watch', 'moduleEnd'];
 		const test = await setup(plugin, code);
