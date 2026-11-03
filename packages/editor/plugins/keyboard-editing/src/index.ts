@@ -10,7 +10,25 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			let editing: typeof import('./editing') | undefined;
 			let loading = false;
 			let disposed = false;
-			const queued: KeyboardEvent[] = [];
+			let replaying = false;
+			const queued: Array<KeyboardEvent | FocusEvent> = [];
+			const replay = (event: KeyboardEvent | FocusEvent) => {
+				const browser = inputTarget.ownerDocument.defaultView!;
+				replaying = true;
+				try {
+					inputTarget.dispatchEvent(
+						event.type === 'blur'
+							? new browser.FocusEvent('blur', event as FocusEvent)
+							: new browser.KeyboardEvent(event.type, event as KeyboardEvent)
+					);
+				} finally {
+					replaying = false;
+				}
+			};
+			const discardInput = () => {
+				// Releases may belong to keys pressed before editing started. Deliver them even when typing is discarded.
+				for (const event of queued.splice(0)) if (event.type !== 'keydown') replay(event);
+			};
 			const load = async () => {
 				if (loading || editing) return;
 				loading = true;
@@ -19,11 +37,9 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 					if (disposed) return;
 					editing = module;
 					// Replay through the input target so independent navigation and mode bindings retain their order.
-					for (const event of queued.splice(0)) {
-						inputTarget.dispatchEvent(new inputTarget.ownerDocument.defaultView!.KeyboardEvent('keydown', event));
-					}
+					for (const event of queued.splice(0)) replay(event);
 				} catch (error) {
-					queued.length = 0;
+					discardInput();
 					if (!disposed) logError(store.getState(), `Failed to load keyboard editing: ${String(error)}`);
 				} finally {
 					loading = false;
@@ -31,10 +47,10 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			};
 			const onModeChanged = () => {
 				if (store.getState().editorMode === 'edit') void load();
-				else queued.length = 0;
+				else discardInput();
 			};
 			const onProjectChange = () => {
-				if (store.getState().projectChange.kind === 'replace') queued.length = 0;
+				if (store.getState().projectChange.kind === 'replace') discardInput();
 			};
 			const onKeydown = (event: KeyboardEvent) => {
 				if (store.getState().editorMode !== 'edit' || event.defaultPrevented) return;
@@ -46,14 +62,23 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 					void load();
 				}
 			};
+			const onPendingRelease = (event: KeyboardEvent | FocusEvent) => {
+				if (replaying || !loading || editing || store.getState().editorMode !== 'edit') return;
+				queued.push(event);
+				event.stopImmediatePropagation();
+			};
 			inputTarget.addEventListener('keydown', onKeydown, { capture: true });
+			inputTarget.addEventListener('keyup', onPendingRelease, { capture: true });
+			inputTarget.addEventListener('blur', onPendingRelease, { capture: true });
 			store.subscribe('editorMode', onModeChanged);
 			store.subscribe('projectChange', onProjectChange);
 			onModeChanged();
 			return () => {
 				disposed = true;
-				queued.length = 0;
+				discardInput();
 				inputTarget.removeEventListener('keydown', onKeydown, { capture: true });
+				inputTarget.removeEventListener('keyup', onPendingRelease, { capture: true });
+				inputTarget.removeEventListener('blur', onPendingRelease, { capture: true });
 				store.unsubscribe('editorMode', onModeChanged);
 				store.unsubscribe('projectChange', onProjectChange);
 			};

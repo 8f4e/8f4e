@@ -10,8 +10,8 @@ Default and minimal import its factory only for browsers whose primary pointer i
 
 Verify with `npx nx run @8f4e/editor-plugin-keyboard-editing:build|test|typecheck`.
 
-The input bridge listens during capture. While the editing module loads, it queues keydown events and stops their
+The input bridge listens during capture. While the editing module loads, it queues keydown, keyup, and blur events and stops their
 propagation. It replays fresh events through the input target after loading, so navigation and mode switching keep
 working in the original order without dependencies on their implementations. External mode exit, project replacement,
-and disposal discard pending inputs. Once loaded, the implementation stays available until disposal and checks edit
+and disposal discard pending presses while still delivering queued releases and blur events. Once loaded, the implementation stays available until disposal and checks edit
 mode before processing keys. Core history remains available to programmatic editing independently of keyboard input.

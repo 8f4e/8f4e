@@ -29,7 +29,7 @@ export function setup(
 	mode: 'view' | 'edit' = 'edit'
 ) {
 	const inputTarget = Object.assign(new EventTarget(), {
-		ownerDocument: { defaultView: { KeyboardEvent: TestKeyboardEvent } },
+		ownerDocument: { defaultView: { KeyboardEvent: TestKeyboardEvent, FocusEvent: Event } },
 	}) as unknown as HTMLElement;
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
@@ -59,5 +59,7 @@ export function setup(
 		inputTarget.dispatchEvent(event);
 		return event;
 	};
-	return { inputTarget, state, store, events, block, key, disposePlugin };
+	const keyUp = (key: string) => inputTarget.dispatchEvent(new TestKeyboardEvent('keyup', { key }));
+	const blur = () => inputTarget.dispatchEvent(new Event('blur'));
+	return { inputTarget, state, store, events, block, key, keyUp, blur, disposePlugin };
 }

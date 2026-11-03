@@ -11,6 +11,7 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 	let editor: Editor | undefined;
 	let context!: EditorPluginContext;
 	const values = new Map<string, string>();
+	const pressed = new Set<string>();
 	try {
 		const plugins = await createDefaultEditorPlugins({
 			canvas,
@@ -37,7 +38,21 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 					id: 'test-context',
 					setup: services => {
 						context = services;
-						return () => {};
+						const onDown = (event: KeyboardEvent) => {
+							pressed.add(event.key);
+						};
+						const onUp = (event: KeyboardEvent) => {
+							pressed.delete(event.key);
+						};
+						const onBlur = () => pressed.clear();
+						canvas.addEventListener('keydown', onDown);
+						canvas.addEventListener('keyup', onUp);
+						canvas.addEventListener('blur', onBlur);
+						return () => {
+							canvas.removeEventListener('keydown', onDown);
+							canvas.removeEventListener('keyup', onUp);
+							canvas.removeEventListener('blur', onBlur);
+						};
 					},
 				},
 			],
@@ -54,12 +69,15 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		expect(key('z', { ctrlKey: true }).defaultPrevented).toBe(false);
 		expect(key('e').defaultPrevented).toBe(true);
 		// These inputs arrive before the first editing import can finish.
-		key('1');
-		key('ArrowLeft');
-		key('2');
-		key('Escape');
+		canvas.dispatchEvent(new KeyboardEvent('keyup', { key: 'e' }));
+		for (const value of ['1', 'ArrowLeft', '2', 'Escape']) {
+			key(value);
+			canvas.dispatchEvent(new KeyboardEvent('keyup', { key: value }));
+		}
+		canvas.dispatchEvent(new FocusEvent('blur'));
 		await vi.waitFor(() => expect(editor!.state.editorMode).toBe('view'));
 		expect(block.code[2]).toBe('hello21');
+		expect(pressed.size).toBe(0);
 		expect(key('z', { ctrlKey: true }).defaultPrevented).toBe(false);
 		expect(key('ArrowLeft').defaultPrevented).toBe(false);
 		expect(key('ArrowUp').defaultPrevented).toBe(true);
