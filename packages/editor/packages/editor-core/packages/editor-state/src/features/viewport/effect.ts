@@ -17,6 +17,11 @@ interface ResizeEvent {
 	canvasHeight: number;
 }
 
+interface ViewportScrollEvent {
+	movementX: number;
+	movementY: number;
+}
+
 interface ViewportScrollEndEvent {
 	movementX: number;
 	movementY: number;
@@ -41,6 +46,11 @@ export default function viewport(store: StateManager<State>, events: EventDispat
 		updateViewport(state, x, y, events);
 	}
 
+	function onViewportScroll(event: ViewportScrollEvent) {
+		if (!state.featureFlags.viewportDragging) return;
+		updateViewport(state, state.viewport.x - event.movementX, state.viewport.y - event.movementY, events);
+	}
+
 	function onViewportScrollEnd(event: ViewportScrollEndEvent) {
 		const { x, y } = snapToGridConsideringDirection(state, event);
 		updateViewport(state, x, y, events);
@@ -49,6 +59,7 @@ export default function viewport(store: StateManager<State>, events: EventDispat
 	events.on('mousemove', onMouseMove);
 	events.on('resize', onResize);
 	events.on('mouseup', onMouseUp);
+	events.on('viewportscroll', onViewportScroll);
 	events.on('viewportscrollend', onViewportScrollEnd);
 
 	return () => {
@@ -56,6 +67,7 @@ export default function viewport(store: StateManager<State>, events: EventDispat
 		events.off('mousemove', onMouseMove);
 		events.off('resize', onResize);
 		events.off('mouseup', onMouseUp);
+		events.off('viewportscroll', onViewportScroll);
 		events.off('viewportscrollend', onViewportScrollEnd);
 	};
 }
