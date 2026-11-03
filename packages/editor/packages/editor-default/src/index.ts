@@ -59,7 +59,7 @@ export interface DefaultEditorMountOptions {
 	sharedAudioContext?: AudioContext;
 	/** Capture wheel gestures for viewport panning. Disable this for editors embedded in scrolling pages. */
 	captureWheel?: boolean;
-	/** Configure touch panning; defaults to two fingers in both directions. */
+	/** Configure one-finger touch panning; defaults to both directions. */
 	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;

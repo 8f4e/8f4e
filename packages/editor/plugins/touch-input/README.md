@@ -12,22 +12,18 @@ import { createTouchInputPlugin } from '@8f4e/editor-plugin-touch-input';
 
 const plugin = createTouchInputPlugin({
 	inputTarget: canvas,
-	fingerCount: 1,
 	axis: 'horizontal',
 });
 ```
 
-`fingerCount` accepts `1` or `2` and defaults to `2`. `axis` accepts `'both'`, `'horizontal'`, or `'vertical'` and defaults
-to `'both'`. Both editor compositions expose these settings through `touchNavigation`. The landing page uses one-finger
+Panning uses one finger. `axis` accepts `'both'`, `'horizontal'`, or `'vertical'` and defaults to `'both'`.
+Both editor compositions expose the setting through `touchNavigation`. The product landing page and galleries use
 horizontal panning, leaving vertical swipes available for native page scrolling.
 
-A 6-pixel threshold distinguishes panning from a tap. Panning follows the finger position, or the midpoint of two
-fingers, and snaps only the enabled axes to the editor grid when finished. Changing the finger count ends the gesture.
-In two-finger mode, `touch-action: auto` leaves unclaimed one-finger swipes available for native page scrolling.
-The adapter cancels the second finger's `touchstart` to reserve two-finger gestures for the enabled viewport axes.
-In one-finger mode, axis-restricted gestures yield to page scrolling when the initial movement is primarily in the
-disabled direction; `touch-action: pan-y` or `pan-x` permits that native scrolling. One-finger panning on both axes
-uses `touch-action: none`.
+A 6-pixel threshold distinguishes panning from a tap. Panning follows the finger position and snaps only the enabled
+axes to the editor grid when finished. Adding another finger ends the gesture; removing it does not resume panning.
+Axis-restricted gestures yield to page scrolling when the initial movement is primarily in the disabled direction;
+`touch-action: pan-y` or `pan-x` permits that native scrolling. Panning on both axes uses `touch-action: none`.
 Disabling viewport dragging or disposing the plugin restores the original inline touch action. Controls remain usable
 when viewport dragging is disabled.
 

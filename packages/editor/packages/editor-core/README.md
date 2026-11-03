@@ -19,7 +19,7 @@ that consume their events. Other platform renderers can replace web-ui.
 to its factory to leave wheel scrolling to the page. The default and minimal compositions expose that option
 and install the mouse plugin on both fine- and coarse-pointer devices.
 `@8f4e/editor-plugin-touch-input` translates touches and adds configurable viewport gestures on coarse-pointer devices.
-Panning defaults to two fingers on both axes; hosts can select one finger or restrict the movement axis.
+Panning uses one finger on both axes by default; hosts can restrict the movement axis to preserve native page scrolling.
 Core installs no DOM mouse, wheel, touch, or keyboard listeners.
 
 Hosts can pause rendering without releasing memory through `pauseRendering()`. `releaseRenderingResources()` also

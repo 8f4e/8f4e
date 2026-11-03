@@ -31,23 +31,22 @@ paused. The next frame uses elapsed time, including any time spent paused.
 
 ## Touch panning
 
-`createTouchInputPlugin` accepts `fingerCount: 1 | 2` (default `2`) and
-`axis: 'both' | 'horizontal' | 'vertical'` (default `'both'`). Only gestures with the configured finger count pan
-the viewport; control gestures take priority. Two-finger panning follows the midpoint between the fingers.
+`createTouchInputPlugin` pans with one finger and accepts
+`axis: 'both' | 'horizontal' | 'vertical'` (default `'both'`). Control gestures take priority over viewport panning.
+Adding another finger ends the gesture; removing it does not resume panning.
 
-Both editor compositions expose the settings through their mount options:
+Both editor compositions expose the axis through their mount options:
 
 ```ts
 await mountMinimalEditor(canvas, {
-	touchNavigation: { fingerCount: 1, axis: 'horizontal' },
+	touchNavigation: { axis: 'horizontal' },
 });
 ```
 
-The product landing page uses these settings. Horizontal drags pan the editor and vertical swipes scroll the page.
-In one-finger mode, the adapter allows the disabled direction through `touch-action` and rejects gestures starting
-primarily in that direction. In two-finger mode, unclaimed one-finger swipes scroll the surrounding page; adding the
-second finger reserves the gesture for viewport panning. Only enabled axes move or snap to the grid. Editors default
-to two fingers on both axes, including the product galleries.
+The product landing page and both galleries use horizontal panning. Horizontal drags pan the editor and vertical
+swipes scroll the page. The adapter allows the disabled direction through `touch-action` and rejects gestures starting
+primarily in that direction. Only enabled axes move or snap to the grid. The full-screen editor defaults to panning
+on both axes.
 
 The website stylesheets disable native tap highlighting on editor canvases with
 `-webkit-tap-highlight-color: transparent`. Embedding hosts can apply the same CSS rule. Dialogs fit within the

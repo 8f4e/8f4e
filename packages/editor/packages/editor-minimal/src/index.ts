@@ -14,7 +14,7 @@ export interface MinimalEditorMountOptions {
 	sharedAudioContext?: AudioContext;
 	/** Capture wheel gestures for viewport panning. Disable this in scrolling pages. */
 	captureWheel?: boolean;
-	/** Configure touch panning; defaults to two fingers in both directions. */
+	/** Configure one-finger touch panning; defaults to both directions. */
 	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
 	featureFlags?: EditorOptions['featureFlags'];
 	/** Include the keyboard mode-switching plugin and its hint. Defaults to true. */

@@ -15,30 +15,13 @@ interface Gesture {
 
 export interface TouchInputOptions {
 	inputTarget: HTMLElement;
-	/** Number of fingers needed to pan. Defaults to two. */
-	fingerCount?: 1 | 2;
 	/** Axes available for viewport panning. Defaults to both. */
 	axis?: 'both' | 'horizontal' | 'vertical';
 }
 
-function getTouchPosition(touches: TouchList): { x: number; y: number } {
-	let x = 0;
-	let y = 0;
-	for (let i = 0; i < touches.length; i++) {
-		x += touches[i].clientX;
-		y += touches[i].clientY;
-	}
-	return { x: x / touches.length, y: y / touches.length };
-}
-
-export function createTouchInputPlugin({
-	inputTarget,
-	fingerCount = 2,
-	axis = 'both',
-}: TouchInputOptions): EditorPlugin {
+export function createTouchInputPlugin({ inputTarget, axis = 'both' }: TouchInputOptions): EditorPlugin {
 	const horizontal = axis !== 'vertical';
 	const vertical = axis !== 'horizontal';
-	const touchAction = fingerCount === 2 ? 'auto' : TOUCH_ACTION[axis];
 	return {
 		id: 'touch-input',
 		setup: ({ store, events }) => {
@@ -88,34 +71,29 @@ export function createTouchInputPlugin({
 				resetGesture();
 			};
 			const syncTouchAction = () => {
-				inputTarget.style.touchAction = state.featureFlags.viewportDragging ? touchAction : originalTouchAction;
+				inputTarget.style.touchAction = state.featureFlags.viewportDragging ? TOUCH_ACTION[axis] : originalTouchAction;
 				if (!state.featureFlags.viewportDragging) resetGesture();
 			};
 			const onTouchStart = (event: TouchEvent) => {
 				if (event.defaultPrevented) return;
 				releasePointer('pointercancel');
 				finishGesture();
-				if (event.touches.length === 1) {
-					const touch = event.touches[0];
-					const pointer = toPointerEvent(touch, event);
-					// Probe shared interactions before committing this touch to a viewport gesture.
-					events.dispatch('pointerdown', pointer, { phase: 'capture' });
-					if (pointer.stopPropagation) {
-						claimedPointer = { identifier: touch.identifier, event: pointer };
-						stopViewportAnimation(state);
-						event.preventDefault();
-						return;
-					}
+				if (event.touches.length !== 1) return;
+				const touch = event.touches[0];
+				const pointer = toPointerEvent(touch, event);
+				// Probe shared interactions before committing this touch to a viewport gesture.
+				events.dispatch('pointerdown', pointer, { phase: 'capture' });
+				if (pointer.stopPropagation) {
+					claimedPointer = { identifier: touch.identifier, event: pointer };
+					stopViewportAnimation(state);
+					event.preventDefault();
+					return;
 				}
-				if (!state.featureFlags.viewportDragging || event.touches.length !== fingerCount) return;
-				// Reserve two-finger gestures before the browser starts scrolling or zooming.
-				// A single unclaimed finger keeps native page scrolling in this mode.
-				if (fingerCount === 2) event.preventDefault();
-				const { x: startX, y: startY } = getTouchPosition(event.touches);
+				if (!state.featureFlags.viewportDragging) return;
 				stopViewportAnimation(state);
 				gesture = {
-					startX,
-					startY,
+					startX: touch.clientX,
+					startY: touch.clientY,
 					startViewportX: state.viewport.x,
 					startViewportY: state.viewport.y,
 					dragging: false,
@@ -135,18 +113,18 @@ export function createTouchInputPlugin({
 					return;
 				}
 				if (!gesture) return;
-				if (event.touches.length !== fingerCount || event.defaultPrevented || !state.featureFlags.viewportDragging) {
+				if (event.touches.length !== 1 || event.defaultPrevented || !state.featureFlags.viewportDragging) {
 					finishGesture();
 					return;
 				}
-				const { x, y } = getTouchPosition(event.touches);
-				const deltaX = x - gesture.startX;
-				const deltaY = y - gesture.startY;
+				const touch = event.touches[0];
+				const deltaX = touch.clientX - gesture.startX;
+				const deltaY = touch.clientY - gesture.startY;
 				if (!gesture.dragging) {
 					if (Math.hypot(deltaX, deltaY) < DRAG_THRESHOLD) return;
 					if (
-						fingerCount === 1 &&
-						((!vertical && Math.abs(deltaY) > Math.abs(deltaX)) || (!horizontal && Math.abs(deltaX) > Math.abs(deltaY)))
+						(!vertical && Math.abs(deltaY) > Math.abs(deltaX)) ||
+						(!horizontal && Math.abs(deltaX) > Math.abs(deltaY))
 					) {
 						resetGesture();
 						return;
