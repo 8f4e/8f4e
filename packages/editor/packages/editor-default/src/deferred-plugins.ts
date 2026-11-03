@@ -10,7 +10,7 @@ export function createDeferredEditorPlugin(
 	const { canvas, fileSession, includeKeyboardModeSwitching = true } = options;
 	const browserWindow = canvas.ownerDocument.defaultView!;
 	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
-	const supportsKeyboard = !browserWindow.matchMedia('(pointer: coarse)').matches;
+	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
 	return createLazyPluginLoaderPlugin([
 		{
 			id: 'connectors',
@@ -40,9 +40,27 @@ export function createDeferredEditorPlugin(
 				),
 		},
 		{
+			id: 'mouse-input',
+			scope: 'view',
+			matches: () => true,
+			load: () =>
+				import('@8f4e/editor-plugin-mouse-input').then(module =>
+					module.createMouseInputPlugin({ inputTarget: canvas, captureWheel: options.captureWheel })
+				),
+		},
+		{
+			id: 'touch-viewport-navigation',
+			scope: 'view',
+			matches: () => hasCoarsePointer,
+			load: () =>
+				import('@8f4e/editor-plugin-touch-viewport-navigation').then(module =>
+					module.createTouchViewportNavigationPlugin({ inputTarget: canvas })
+				),
+		},
+		{
 			id: 'keyboard-navigation',
 			scope: 'view',
-			matches: () => supportsKeyboard,
+			matches: () => !hasCoarsePointer,
 			load: () =>
 				import('@8f4e/editor-plugin-keyboard-navigation').then(module =>
 					module.createKeyboardNavigationPlugin({ inputTarget: canvas })
@@ -51,7 +69,7 @@ export function createDeferredEditorPlugin(
 		{
 			id: 'keyboard-editing',
 			scope: 'view',
-			matches: () => supportsKeyboard,
+			matches: () => !hasCoarsePointer,
 			load: () =>
 				import('@8f4e/editor-plugin-keyboard-editing').then(module =>
 					module.createKeyboardEditingPlugin({ inputTarget: canvas })
@@ -60,7 +78,7 @@ export function createDeferredEditorPlugin(
 		{
 			id: 'keyboard-mode-switching',
 			scope: 'view',
-			matches: () => supportsKeyboard && includeKeyboardModeSwitching,
+			matches: () => !hasCoarsePointer && includeKeyboardModeSwitching,
 			load: () =>
 				import('@8f4e/editor-plugin-keyboard-mode-switching').then(module =>
 					module.createKeyboardModeSwitchingPlugin({ inputTarget: canvas })
@@ -78,7 +96,7 @@ export function createDeferredEditorPlugin(
 		{
 			id: 'font-preview',
 			scope: 'view',
-			matches: () => supportsKeyboard,
+			matches: () => !hasCoarsePointer,
 			load: () =>
 				import('@8f4e/editor-plugin-font-preview').then(module =>
 					module.createFontPreviewPlugin({ inputTarget: canvas })

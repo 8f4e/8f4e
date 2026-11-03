@@ -7,6 +7,7 @@
 - Reusable editor behavior belongs in `@8f4e/editor-core`.
 - Keep the `dev` workflow scoped to the website dependency graph; use the `build-deps` and `watch-deps` targets rather
   than building or watching every workspace project.
+- Bind the dev server to `0.0.0.0` so phones on the same network can access port 3000.
 - Run `npx nx run @8f4e/editor-website:build` after changing this package.
 
 - Start mounting from an async function without top-level await. Production lazy chunks may import shared exports

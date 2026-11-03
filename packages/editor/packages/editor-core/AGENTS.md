@@ -25,6 +25,9 @@
 - PRs: add screenshots/gifs for UI changes, include test notes, link issues.
 
 ## Plugins
+- DOM mouse/wheel adaptation belongs to `editor-plugin-mouse-input`; touch panning belongs to
+  `editor-plugin-touch-viewport-navigation`. Core keeps the event dispatcher and state effects, with no DOM input
+  listeners or `captureWheel` option. Export existing generic viewport update, animation-stop, and grid-snap helpers.
 - Font/color schemas, validators, defaults, and subscriptions belong to web-ui. Register them through
   `registerWebUiConfig(store)` before plugins/project loading. Initialize the view with the store and events; do not
   restore core font-atlas or palette management. State reacts only to `gridSizeChanged` and shared grid dimensions.

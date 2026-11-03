@@ -1,5 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initEditor, { type Editor } from '@8f4e/editor-core';
+import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
 import { expect, test, vi } from 'vitest';
 import { favoritesPlugin } from '../src/index';
 
@@ -21,10 +21,19 @@ int value 1
 moduleEnd
 entryEnd`;
 	let editor: Editor | undefined;
+	let events!: EventDispatcher;
 	try {
 		editor = await initEditor(canvas, {
 			initialProject: parseProjectSource(source),
-			plugins: [favoritesPlugin],
+			plugins: [
+				{
+					...favoritesPlugin,
+					setup: context => {
+						events = context.events;
+						return favoritesPlugin.setup(context);
+					},
+				},
+			],
 		});
 		editor.state.editorMode = 'edit';
 		const state = editor.state;
@@ -34,8 +43,17 @@ entryEnd`;
 		editor.pauseRendering();
 		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
 		const mouse = (type: string, x: number, y: number) => {
-			const rect = canvas.getBoundingClientRect();
-			canvas.dispatchEvent(new MouseEvent(type, { clientX: rect.x + x, clientY: rect.y + y, bubbles: true }));
+			events.dispatch(type, {
+				x,
+				y,
+				movementX: 0,
+				movementY: 0,
+				altKey: false,
+				buttons: type === 'mouseup' ? 0 : 1,
+				stopPropagation: false,
+				canvasWidth: canvas.width,
+				canvasHeight: canvas.height,
+			});
 		};
 		const openMenu = async () => {
 			mouse('contextmenu', block.x - state.viewport.x + 8, block.y - state.viewport.y + 8);

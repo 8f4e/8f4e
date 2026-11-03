@@ -45,6 +45,10 @@
   plugin owns its hint through the generic canvas-overlay hook; `canvasOverlays` controls that drawing stage. The editing plugin owns caret movement and foreground drawing;
   navigation handles view-mode line selection and block navigation. `includeKeyboardModeSwitching: false` omits
   mode switching from default/minimal; its presence controls availability without a core feature flag.
+- DOM mouse/wheel forwarding belongs to `editor-plugin-mouse-input`, loaded on all devices. Coarse-pointer devices
+  additionally load `editor-plugin-touch-viewport-navigation` for one-finger viewport dragging with tap preservation.
+  Both are independent entries in each composition's deferred registry. Core retains event dispatch, mouse-input
+  state effects, viewport updates, and snapping; `captureWheel` is a mouse-plugin factory/host option.
 - The default editor also imports `editor-plugin-font-preview` for non-coarse pointers. F18/F19 cycle a temporary font
   override without modifying source; project loading or plugin disposal restores source configuration. Minimal omits it.
 - Rendering plugins: web-ui owns the procedural background and its font-specific dot settings under `src/plugins/`.

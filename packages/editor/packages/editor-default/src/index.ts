@@ -20,6 +20,7 @@ export function createDefaultEditorPlugins(options: {
 	onInitialProjectLoadError?: (error: unknown) => void;
 	renderFrame: () => void;
 	showOpenMenuItem: boolean;
+	captureWheel?: boolean;
 	includeKeyboardModeSwitching?: boolean;
 	getMemory: () => WebAssembly.Memory | null;
 	writeMemory: (address: number, value: number, isInteger: boolean) => void;
@@ -101,6 +102,7 @@ export async function mountDefaultEditor(
 					onInitialProjectLoadError,
 					renderFrame: () => editor.renderFrame(),
 					showOpenMenuItem,
+					captureWheel,
 					includeKeyboardModeSwitching,
 					getMemory: compiler.getMemory,
 					writeMemory: compiler.writeMemory,
@@ -109,7 +111,6 @@ export async function mountDefaultEditor(
 					sharedAudioContext,
 				})),
 		],
-		captureWheel,
 		featureFlags,
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();

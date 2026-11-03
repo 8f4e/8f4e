@@ -50,8 +50,6 @@ const view = {
 	destroy: vi.fn(),
 };
 
-const cleanupPointer = vi.fn();
-
 vi.mock('@8f4e/editor-state', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/editor-state')>()),
 	default: vi.fn(() => store),
@@ -66,10 +64,6 @@ vi.mock('@8f4e/web-ui', async importOriginal => ({
 
 vi.mock('./events', () => ({
 	default: vi.fn(() => events),
-}));
-
-vi.mock('./events/pointerEvents', () => ({
-	default: vi.fn(() => cleanupPointer),
 }));
 
 describe('editor init', () => {
@@ -123,7 +117,6 @@ describe('editor init', () => {
 		).rejects.toBe(error);
 		expect(setup).toHaveBeenCalledOnce();
 		expect(cleanup).toHaveBeenCalledOnce();
-		expect(cleanupPointer).toHaveBeenCalledOnce();
 		expect(events.dispose).toHaveBeenCalledOnce();
 		expect(view.destroy).not.toHaveBeenCalled();
 		expect(canvas.removeAttribute).toHaveBeenCalledWith('tabindex');
@@ -187,7 +180,6 @@ describe('editor init', () => {
 		view.resumeRendering.mockClear();
 		view.renderFrame.mockClear();
 		view.destroy.mockClear();
-		cleanupPointer.mockClear();
 		storeState.editorConfig = {};
 		storeState.info = {};
 	});

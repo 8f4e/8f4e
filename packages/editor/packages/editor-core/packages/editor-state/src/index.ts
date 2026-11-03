@@ -168,8 +168,11 @@ export {
 	getVisualColumnForRawIndex,
 	getVisualLineWidth,
 } from './features/text-geometry/tabLayout';
+export { stopViewportAnimation } from './features/viewport/animateViewport';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
+export { default as snapToGrid } from './features/viewport/snapToGrid';
+export { default as updateViewport } from './features/viewport/updateViewport';
 export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';
 // Export project serialization helpers
 export { default as getExportBaseName } from './pureHelpers/getExportBaseName';

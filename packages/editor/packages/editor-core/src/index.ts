@@ -15,7 +15,6 @@ import initView, {
 
 import { disposeAll } from './disposeAll';
 import initEvents from './events';
-import pointerEvents from './events/pointerEvents';
 import { createMemoryViewManager } from './memoryViewManager';
 import { type EditorPlugin, installEditorPlugins } from './plugins';
 
@@ -92,8 +91,6 @@ export interface EditorOptions {
 	initialProject?: ProjectObjectModel;
 	/** Trusted plugins, installed before rendering, initialization, and initial project loading. */
 	plugins?: readonly EditorPlugin[];
-	/** Capture wheel gestures for viewport panning. Disable this for editors embedded in scrolling pages. */
-	captureWheel?: boolean;
 	featureFlags?: Partial<State['featureFlags']>;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 	renderStatsIntervalFrames?: number;
@@ -191,7 +188,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			})
 		);
 		const state = store.getState();
-		cleanups.push(pointerEvents(canvas, events, state, options.captureWheel));
 
 		const initialCanvasSize = getCanvasDisplaySize(canvas) ?? {
 			width: canvas.width,

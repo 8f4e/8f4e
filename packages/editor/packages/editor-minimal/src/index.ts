@@ -56,11 +56,11 @@ export async function mountMinimalEditor(
 							fileSession,
 							sharedAudioContext,
 							includeKeyboardModeSwitching,
+							captureWheel,
 						})
 					),
 			}),
 		],
-		captureWheel,
 		featureFlags: { projectCreation: false, ...featureFlags },
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
