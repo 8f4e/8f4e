@@ -1,4 +1,3 @@
-import type { PaletteToken } from '@8f4e/editor-palette';
 /**
  * Types for code-blocks feature - manages code block entities, rendering, and interactions.
  */
@@ -96,13 +95,6 @@ export interface CodeBlockGraphicData {
 	/** Pixel-space Y coordinate, computed from gridY * hGrid (where hGrid = characterHeight) */
 	y: number;
 	widgets: {
-		blockHighlights: Array<{
-			x: number;
-			y: number;
-			height: number;
-			width: number;
-			color: PaletteToken;
-		}>;
 		shapeDeclarations: ShapeDeclaration[];
 		errorMessages: Array<{
 			message: string[];

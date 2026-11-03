@@ -9,9 +9,10 @@
 - Editor-core owns the single frame loop and advances viewport state before web-ui draws. Web-ui has no frame
   scheduler or navigation-state updates; it owns drawing and GPU resources.
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
-- `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, line-number drawing, and private
-  prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
-  `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
+- `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, nested block backgrounds,
+  line-number drawing, and private prepared sprite cells and highlight rectangles. Both compositions install it eagerly.
+  Core retains editing/layout geometry; web-ui exposes `registerCodeBlockBackgroundDrawer` below line selection and
+  `registerCodeBlockContentDrawer` before foreground drawings and diagnostics, and owns generic sprite-cell drawing primitives.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
 - `@8f4e/editor-plugin-selection-animation` owns the selected block's circling segment and uses the generic foreground
   drawing hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.

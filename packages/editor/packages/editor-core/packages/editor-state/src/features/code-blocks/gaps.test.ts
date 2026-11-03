@@ -67,7 +67,6 @@ describe('gaps', () => {
 		const graphicData = createCodeBlockGraphicData({
 			code: ['module foo', 'shape sharedState', 'moduleEnd'],
 			widgets: {
-				blockHighlights: [],
 				errorMessages: [{ message: ['Error', 'detail', 'more'], x: 0, y: 0, lineNumber: 1 }],
 			},
 		});
@@ -94,7 +93,6 @@ describe('gaps', () => {
 		const graphicData = createCodeBlockGraphicData({
 			code: ['module foo', '; layout space', 'push 1', 'moduleEnd'],
 			widgets: {
-				blockHighlights: [],
 				errorMessages: [{ message: ['Error'], x: 0, y: 0, lineNumber: 2 }],
 			},
 		});

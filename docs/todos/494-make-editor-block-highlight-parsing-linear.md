@@ -16,7 +16,7 @@ The editor's block-highlight parser counts open blocks by reducing over all prev
 source line. Closing instructions and `else` also copy, reverse, and search that array to find an open block.
 
 This can produce quadratic work and repeated temporary allocations in large code blocks. Highlight parsing runs
-as part of block derived-state updates. The actual latency impact has not yet been benchmarked.
+when the code-rendering plugin prepares its private cache after layout changes. The actual latency impact has not yet been benchmarked.
 
 ## Proposed Solution
 
@@ -44,8 +44,8 @@ depths, and current matching behavior, including malformed input; a strict nesti
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/blockHighlights/codeParser.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/blockHighlights/updateGraphicData.ts`
+- `packages/editor/plugins/code-rendering/src/block-highlights/codeParser.ts`
+- `packages/editor/plugins/code-rendering/src/block-highlights/deriveBlockHighlights.ts`
 - Block-highlight parser and graphic-data tests.
 
 ## Risks & Considerations
@@ -57,7 +57,7 @@ depths, and current matching behavior, including malformed input; a strict nesti
 
 ## Validation Checkpoints
 
-- Run `npx nx run @8f4e/editor-state:test` and its typecheck.
+- Run `npx nx run @8f4e/editor-plugin-code-rendering:test` and its typecheck.
 - Manually edit nested control-flow constructs and check highlight placement before their closing lines are complete.
 
 ## Related Items

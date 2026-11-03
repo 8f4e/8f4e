@@ -12,6 +12,9 @@ Manages the lifecycle of code blocks in the editor: creation, selection, drag op
 - **Graphics Derivation**: Computes visual properties (position, size, color) from block data
 - **Block Widgets**: Derives inline error messages and shape declarations
 
+Nested language-block highlighting belongs to `@8f4e/editor-plugin-code-rendering`, including its tolerant parser,
+background colors, rectangle geometry, and private cache. Core supplies block/display bounds, grid dimensions, and gaps.
+
 Input/output connector geometry, private widget data, wire lookup, and the complete GPU line renderer belong to
 `@8f4e/editor-plugin-connectors`. Both editor compositions install it through the generic layout and drawing hooks.
 
@@ -46,7 +49,6 @@ Block types are automatically detected and updated based on code content.
 
 This feature contains several subfeatures under `features/` that handle specific aspects:
 
-- `blockHighlights` - Visual highlighting for selected/hovered blocks
 - `codeBlockCreator` - Block creation logic
 - `codeBlockDragger` - Drag and drop operations
 - `codeBlockNavigation` - Keyboard navigation between blocks

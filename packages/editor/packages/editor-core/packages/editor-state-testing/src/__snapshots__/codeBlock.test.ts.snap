@@ -31,7 +31,6 @@ exports[`createMockCodeBlock > cursor calculation > should calculate cursor posi
   "parsedDirectives": [],
   "projectPath": "",
   "widgets": {
-    "blockHighlights": [],
     "errorMessages": [],
     "shapeDeclarations": [],
   },
@@ -72,7 +71,6 @@ exports[`createMockCodeBlock > cursor calculation > should prefer explicit curso
   "parsedDirectives": [],
   "projectPath": "",
   "widgets": {
-    "blockHighlights": [],
     "errorMessages": [],
     "shapeDeclarations": [],
   },
@@ -113,7 +111,6 @@ exports[`createMockCodeBlock > cursor calculation > should use cursorY convenien
   "parsedDirectives": [],
   "projectPath": "",
   "widgets": {
-    "blockHighlights": [],
     "errorMessages": [],
     "shapeDeclarations": [],
   },
@@ -154,7 +151,6 @@ exports[`createMockCodeBlock > default values > should create a block with defau
   "parsedDirectives": [],
   "projectPath": "",
   "widgets": {
-    "blockHighlights": [],
     "errorMessages": [],
     "shapeDeclarations": [],
   },
@@ -195,7 +191,6 @@ exports[`createMockCodeBlock > edge cases > should handle negative coordinates 1
   "parsedDirectives": [],
   "projectPath": "",
   "widgets": {
-    "blockHighlights": [],
     "errorMessages": [],
     "shapeDeclarations": [],
   },
@@ -236,7 +231,6 @@ exports[`createMockCodeBlock > edge cases > should handle zero dimensions 1`] = 
   "parsedDirectives": [],
   "projectPath": "",
   "widgets": {
-    "blockHighlights": [],
     "errorMessages": [],
     "shapeDeclarations": [],
   },
@@ -278,7 +272,6 @@ exports[`createMockCodeBlock > override behavior > should allow independent over
   "parsedDirectives": [],
   "projectPath": "",
   "widgets": {
-    "blockHighlights": [],
     "errorMessages": [],
     "shapeDeclarations": [],
   },
@@ -337,7 +330,6 @@ exports[`createMockCodeBlock > override behavior > should allow override of code
   "parsedDirectives": [],
   "projectPath": "",
   "widgets": {
-    "blockHighlights": [],
     "errorMessages": [],
     "shapeDeclarations": [],
   },
@@ -378,7 +370,6 @@ exports[`createMockCodeBlock > override behavior > should override position and 
   "parsedDirectives": [],
   "projectPath": "",
   "widgets": {
-    "blockHighlights": [],
     "errorMessages": [],
     "shapeDeclarations": [],
   },
@@ -419,7 +410,6 @@ exports[`createMockCodeBlock > override behavior > should override the block nam
   "parsedDirectives": [],
   "projectPath": "",
   "widgets": {
-    "blockHighlights": [],
     "errorMessages": [],
     "shapeDeclarations": [],
   },
