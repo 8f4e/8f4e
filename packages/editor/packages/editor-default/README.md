@@ -75,7 +75,7 @@ compositions provide their own asynchronous loading notifications.
 
 The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
 `@8f4e/editor-plugin-favorites` for favorite directives, editing, and navigation,
-`@8f4e/editor-plugin-grouping` for visual `@group` membership, dragging, paste renaming, and group menus,
+`@8f4e/editor-plugin-grouping` for visual `@group` membership, dragging, copying, and group menus,
 `@8f4e/editor-plugin-remove-memory-connections` for disconnecting intermodular memory defaults,
 `@8f4e/editor-plugin-switch` for the switch widget, `@8f4e/editor-plugin-button` for momentary buttons,
 `@8f4e/editor-plugin-wave` for waveform displays, `@8f4e/editor-plugin-piano` for piano keyboards,
@@ -195,3 +195,5 @@ both. There is no runtime registry option or exclusive runtime selection in core
 
 Run `npx nx run @8f4e/editor-default:test:screenshot` for browser composition coverage of lazy plot loading,
 project Open/Save, and compiler/texture-runtime rendering. Individual feature behavior stays in plugin tests.
+
+Block copy/paste is provided by `@8f4e/editor-plugin-code-block-copy-paste`, loaded independently in the deferred set. The host injects its browser clipboard reader/writer; grouping receives its own writer. Paste Code Block places sources at the menu location, changing only `@pos`. Declaration names, group names, and references stay intact. Ctrl/Cmd+V in keyboard editing inserts plain text at the caret, including multiple lines; paste is not buffered during loading.

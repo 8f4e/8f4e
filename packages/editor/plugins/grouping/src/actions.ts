@@ -4,7 +4,7 @@ import {
 	deleteCodeBlocks,
 	getCodeBlockGridWidth,
 	removeDirective,
-	serializeCodeBlocksToClipboard,
+	serializeCodeBlocks,
 	setSkipExecution,
 	updateDirectiveArgs,
 	upsertDirective,
@@ -15,15 +15,18 @@ import { getGroup, getGroupBlocks } from './groups';
 
 type BlockAction = { codeBlock: CodeBlockGraphicData };
 
-export function registerGroupActions({ store, events }: EditorPluginContext): () => void {
+export function registerGroupActions(
+	{ store, events }: EditorPluginContext,
+	writeClipboardText: (text: string) => Promise<void>
+): () => void {
 	const state = store.getState();
 	const members = (block: CodeBlockGraphicData) => getGroupBlocks(state, block);
 
-	const onCopy = ({ codeBlock }: BlockAction) => {
+	const onCopy = async ({ codeBlock }: BlockAction) => {
 		const blocks = members(codeBlock).sort((a, b) => a.creationIndex - b.creationIndex);
-		if (blocks.length === 0 || !state.callbacks.writeClipboardText) return;
-		const text = serializeCodeBlocksToClipboard(blocks, codeBlock);
-		state.callbacks.writeClipboardText(text).catch(() => {});
+		if (blocks.length === 0) return;
+		const text = JSON.stringify(serializeCodeBlocks(blocks, codeBlock));
+		await writeClipboardText(text);
 	};
 	const onDelete = ({ codeBlock }: BlockAction) => {
 		if (state.editorMode !== 'edit') return;

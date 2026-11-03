@@ -2,8 +2,8 @@ import type { EditorPluginContext } from '@8f4e/editor-core';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import type { Direction } from '@8f4e/editor-state-types';
 import deleteBackward from './deleteBackward';
-import insertCharacter from './insertCharacter';
 import insertNewLine from './insertNewLine';
+import insertText from './insertText';
 import { moveCaret } from './moveCaret';
 
 export { default as drawCaret } from './drawCaret';
@@ -38,13 +38,27 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.col', col);
 		return;
 	}
-	let edit: ReturnType<typeof insertCharacter>;
+	let edit: ReturnType<typeof insertText>;
 	if (key === 'Backspace') edit = deleteBackward(block.code, block.cursor.row, block.cursor.col);
 	else if (key === 'Enter') edit = insertNewLine(block.code, block.cursor.row, block.cursor.col);
 	else if (key === 'Tab' || (key.length === 1 && !event.altKey)) {
-		edit = insertCharacter(block.code, block.cursor.row, block.cursor.col, key === 'Tab' ? '\t' : key);
+		edit = insertText(block.code, block.cursor.row, block.cursor.col, key === 'Tab' ? '\t' : key);
 	} else return;
 	event.preventDefault();
+	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', edit.row);
+	store.set('codeBlockRendering.selectedCodeBlock.cursor.col', edit.col);
+	applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: edit.code }], { affectsCompilation: true });
+}
+
+export function handlePaste(event: ClipboardEvent, { store }: EditorPluginContext): void {
+	const state = store.getState();
+	if (event.defaultPrevented || state.editorMode !== 'edit') return;
+	const block = state.codeBlockRendering.selectedCodeBlock;
+	if (!block) return;
+	const text = event.clipboardData!.getData('text/plain');
+	if (text.length === 0) return;
+	event.preventDefault();
+	const edit = insertText(block.code, block.cursor.row, block.cursor.col, text);
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', edit.row);
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.col', edit.col);
 	applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: edit.code }], { affectsCompilation: true });

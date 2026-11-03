@@ -1,15 +1,20 @@
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { describe, expect, it, vi } from 'vitest';
 import { setup } from './__tests__/setup';
-import { handleKeydown } from './editing';
+import { handleKeydown, handlePaste } from './editing';
 
 // Test the editing implementation without its asynchronous input bridge.
 const plugin = ({ inputTarget }: { inputTarget: HTMLElement }) => ({
 	id: 'editing-test',
 	setup: (context: Parameters<typeof handleKeydown>[1]) => {
 		const onKey = (event: KeyboardEvent) => handleKeydown(event, context);
+		const onPaste = (event: ClipboardEvent) => handlePaste(event, context);
 		inputTarget.addEventListener('keydown', onKey);
-		return () => inputTarget.removeEventListener('keydown', onKey);
+		inputTarget.addEventListener('paste', onPaste);
+		return () => {
+			inputTarget.removeEventListener('keydown', onKey);
+			inputTarget.removeEventListener('paste', onPaste);
+		};
 	},
 });
 
@@ -115,5 +120,45 @@ describe('keyboard editing', () => {
 		expect(test.key('ArrowRight', { ctrlKey: true }).defaultPrevented).toBe(false);
 		expect(test.key('s', { ctrlKey: true }).defaultPrevented).toBe(false);
 		expect(test.key('a', { altKey: true }).defaultPrevented).toBe(false);
+	});
+});
+
+describe('text pasting', () => {
+	it('inserts multiline plain text once and leaves the caret at the end of the insertion', () => {
+		const test = setup(plugin);
+		const revision = test.state.projectChange.revision;
+		const compiler = test.state.compilerInputRevision;
+		test.block.cursor = { row: 1, col: 5, x: 0, y: 0 };
+		expect(test.paste('2\r\n\tpush 3').defaultPrevented).toBe(true);
+		expect(test.block.code).toEqual(['module main', 'push 2', '\tpush 31', 'drop', 'moduleEnd']);
+		expect(test.block.cursor).toMatchObject({ row: 2, col: 7 });
+		expect(test.state.projectChange.revision).toBe(revision + 1);
+		expect(test.state.compilerInputRevision).toBe(compiler + 1);
+	});
+	it('keeps block-looking text inside the edited block and supports undo/redo', () => {
+		const test = setup(plugin);
+		const original = [...test.block.code];
+		test.paste('module pasted\nmoduleEnd');
+		expect(
+			test.state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'module')
+		).toHaveLength(1);
+		const updated = [...test.block.code];
+		test.events.dispatch('undo');
+		expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'main')!.code).toEqual(
+			original
+		);
+		test.events.dispatch('redo');
+		expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'main')!.code).toEqual(
+			updated
+		);
+	});
+	it.each(['view mode', 'no selected block', 'empty text'])('leaves paste unhandled with %s', reason => {
+		const test = setup(plugin);
+		const original = [...test.block.code];
+		if (reason === 'view mode') test.store.set('editorMode', 'view');
+		if (reason === 'no selected block') test.store.set('codeBlockRendering.selectedCodeBlock', undefined);
+		const event = test.paste(reason === 'empty text' ? '' : 'text');
+		expect(event.defaultPrevented).toBe(false);
+		expect(test.block.code).toEqual(original);
 	});
 });

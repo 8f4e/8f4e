@@ -21,7 +21,7 @@
   loading/parsing, font-atlas loading, and rendering. Font payloads remain separate lazy chunks; do not add frame
   callbacks or timing gates.
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
-  selection, and paste collision renaming. Nested language-level project groups remain core project structure.
+  selection, and group copying. Nested language-level project groups remain core project structure.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`
   compiler fixture gallery, all embedding the minimal editor. Its build includes `src/index.html`,
   `src/examples/index.html`, and `src/tests/index.html`. The test gallery bundles the compiler's `.test.8f4e`
@@ -40,7 +40,7 @@
   `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
 - Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.
   Default/minimal import their factories after the first render only when `(pointer: coarse)` does not match. Editing keeps
-  a small input bridge and loads text editing on first edit mode, buffering input during the import. Core retains
+  a small input bridge and loads text editing on first edit mode, buffering keystrokes during the import. Core retains
   history, project editing APIs, generic mode/navigation actions, and shared text/pointer geometry. The mode-switching
   plugin owns its hint through the generic canvas-overlay hook; `canvasOverlays` controls that drawing stage. The editing plugin owns caret movement and foreground drawing;
   navigation handles view-mode line selection and block navigation. `includeKeyboardModeSwitching: false` omits
@@ -196,3 +196,6 @@ Choose errors by detection phase:
   upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
   Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
+
+- Block copy/paste belongs to `editor-plugin-code-block-copy-paste`, composed by default and minimal with injected clipboard read/write functions. Grouping receives its own writer. Core has no clipboard callbacks or copy/paste actions; it exports pure `serializeCodeBlocks` and generic `insertCodeBlocks`. Pasting changes only `@pos` for placement: preserve declaration names, group names, references, and entry metadata without numbering or transform hooks.
+- Keyboard-editing handles native plain-text paste at the caret through its loaded implementation. Do not buffer paste events or add loading-race handling.

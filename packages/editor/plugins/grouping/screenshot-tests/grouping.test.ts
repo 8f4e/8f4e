@@ -1,7 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
 import { expect, test, vi } from 'vitest';
-import { groupingPlugin } from '../src/index';
+import { createGroupingPlugin } from '../src/index';
 
 test('contributes group menus and drag behavior through the real editor', async () => {
 	const canvas = document.createElement('canvas');
@@ -12,14 +12,15 @@ test('contributes group menus and drag behavior through the real editor', async 
 	document.body.appendChild(canvas);
 	let editor: Editor | undefined;
 	let events!: EventDispatcher;
+	const plugin = createGroupingPlugin({ writeClipboardText: async () => {} });
 	try {
 		editor = await initEditor(canvas, {
 			plugins: [
 				{
-					...groupingPlugin,
+					...plugin,
 					setup: context => {
 						events = context.events;
-						return groupingPlugin.setup(context);
+						return plugin.setup(context);
 					},
 				},
 			],

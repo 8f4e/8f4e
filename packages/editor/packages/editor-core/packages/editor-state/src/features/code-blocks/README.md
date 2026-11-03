@@ -27,8 +27,8 @@ The favorites plugin reads cached directives and owns its navigation submenu. Co
 and directive editing through public helpers.
 
 Visual grouping through `; @group <name> [nonstick]` belongs to `@8f4e/editor-plugin-grouping`, including group menus,
-actions, drag-target selection, and paste collision renaming. Membership stays private to that plugin. Core dispatches
-the generic `resolveCodeBlockDragTargets` and `transformPastedCodeBlocks` events before moving or inserting blocks.
+actions, drag-target selection, and copying. Membership stays private to that plugin. Core dispatches
+the generic `resolveCodeBlockDragTargets` event before moving blocks.
 
 ## Block Types
 
@@ -64,10 +64,8 @@ path; ordinary layout invalidations do not reparse source.
 ### Key Events
 
 - `createCodeBlock({ x, y, blockType })`: create a template of the requested type
-- `pasteCodeBlocks({ x, y })`: read and insert clipboard content, including multiple blocks
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
-- `transformPastedCodeBlocks({ blocks })`: synchronously replace an incoming clipboard batch before insertion
 - `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal contribution invalidation; rederives affected visible blocks
 - `codeBlockLayoutsChanged()`: announces completed layout calculations to rendering and viewport anchoring
 - Block deletion and selection events
@@ -141,3 +139,5 @@ semantics. Match live blocks with `matchEditorDirectives(codeBlock.parsedDirecti
 records on source changes and retains unknown directives for late plugins. Raw-source parsing remains available
 through `parseBlockDirectives` for incoming source and whole-project scans. Standalone and trailing directives share
 the same syntax; matching preserves source context and normalizes aliases.
+
+Block copy/paste menus and browser clipboard access are owned by `editor-plugin-code-block-copy-paste`. Core exports `insertCodeBlocks` for positioned source batches and pure `serializeCodeBlocks` for portable source data. Insertion preserves names and references and rewrites only `@pos`.

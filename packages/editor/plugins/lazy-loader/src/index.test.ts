@@ -3,6 +3,7 @@ import {
 	applyCodeBlockSourceEdits,
 	createEditorEditingHandle,
 	getEditorBlockId,
+	insertCodeBlocks,
 	matchEditorDirectives,
 } from '@8f4e/editor-state';
 import { describe, expect, it, vi } from 'vitest';
@@ -72,7 +73,7 @@ describe('lazy plugin loader', () => {
 		expect((await editor.openMenu()).some(candidate => candidate.action === 'loadPluginsUsedByProject')).toBe(false);
 	});
 
-	it('loads after source changes and pasting blocks', async () => {
+	it('loads after source changes and batch insertion', async () => {
 		const typed = entry('view', 'typed');
 		const pasted = entry('view', 'pasted');
 		const editor = setup([typed.registration, pasted.registration], emptySource);
@@ -82,12 +83,14 @@ describe('lazy plugin loader', () => {
 			affectsCompilation: true,
 		});
 		await vi.waitFor(() => expect(typed.plugin.setup).toHaveBeenCalledOnce());
-		editor.state.callbacks.readClipboardText = async () =>
-			JSON.stringify([
+		insertCodeBlocks(editor.store, {
+			x: 100,
+			y: 100,
+			blocks: [
 				{ code: ['module pasted', '; @pasted', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 }, entry: 'main' },
 				{ code: ['module second', 'moduleEnd'], gridCoordinates: { x: 5, y: 0 }, entry: 'main' },
-			]);
-		editor.events.dispatch('pasteCodeBlocks', { x: 100, y: 100 });
+			],
+		});
 		await vi.waitFor(() => expect(pasted.plugin.setup).toHaveBeenCalledOnce());
 	});
 

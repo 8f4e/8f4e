@@ -21,7 +21,7 @@ with `; @public`. Test-entry modules are excluded from selection, and the public
 Sources without an eligible public block fail with an error explaining the required `; @public` marker.
 The plugin reads `use` dependencies that match catalog slugs and inserts missing blocks to the right, skipping
 blocks of the same name and type already in the current project slice. Dependency discovery covers the requested
-file's direct dependencies. Core owns ordinary block creation, unique naming, entry assignment, and persistence.
+file's direct dependencies. Core owns ordinary block creation, entry assignment, and persistence.
 Color scheme presets use named public notes so palette configuration adds no executable modules.
 
 The plugin registers its complete submenu through `menus.registerMenu` and contributes its opening item through

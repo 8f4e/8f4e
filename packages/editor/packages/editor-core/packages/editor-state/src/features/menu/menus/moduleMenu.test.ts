@@ -9,7 +9,7 @@ describe('module menu', () => {
 		const item = { title: 'Custom block action', action: 'customAction' };
 		const items = moduleMenu(state, codeBlock, [item]);
 		expect(items.indexOf(item)).toBe(items.findIndex(item => item.action === 'toggleCodeBlockDisabled') + 1);
-		expect(items.indexOf(item)).toBeLessThan(items.findIndex(item => item.action === 'copyCodeBlock'));
+		expect(items.indexOf(item)).toBeLessThan(items.findIndex(item => item.action === 'consoleLog'));
 	});
 
 	it('allows contributed actions in view mode', () => {
