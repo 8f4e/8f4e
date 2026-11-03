@@ -132,6 +132,10 @@ Subscribe and dispose explicitly. Unsubscribe before disposing a contribution so
 Contribution changes preserve source, selection, project revision, and compiler input revision. Hidden project slices
 use their requests when opened. The lazy loader only imports and installs plugins; it has no layout refresh policy.
 
+Register block backgrounds with `drawers.registerCodeBlockBackgroundDrawer(drawer)`. They run above the block
+surface and below line selection, corners, and content. `@8f4e/editor-plugin-code-rendering` uses this stage for
+nested block highlights, keeping its parser and cached rectangles private. Core retains shared layout geometry.
+
 Register foreground drawings with `drawers.registerCodeBlockForegroundDrawer(drawer)`. They run above content and
 shapes, before diagnostics, in block coordinates. The editing plugin uses this stage for its caret, and
 `@8f4e/editor-plugin-selection-animation` draws the circling segment around the selected block. Core owns neither

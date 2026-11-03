@@ -6,7 +6,6 @@ import type { EditorDrawerHost } from '../registry';
 import drawArrow from './drawArrow';
 import drawEntryOutlines from './drawEntryOutlines';
 import drawShapeDeclarations from './drawShapeDeclarations';
-import drawBlockHighlights from './widgets/blockHighlights';
 import drawErrorMessages from './widgets/errorMessages';
 
 const corner = '+';
@@ -41,7 +40,7 @@ export default function drawModules(
 				engine.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
 			}
 
-			drawBlockHighlights(engine, codeBlock);
+			drawers?.drawCodeBlockBackground({ draw: engine, state, codeBlock, memoryViews });
 
 			if (state.featureFlags.codeLineSelection && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				engine.drawFill(0, codeBlock.cursor.y, PALETTE_INDICES.primarySoft, codeBlock.width, state.viewport.hGrid);

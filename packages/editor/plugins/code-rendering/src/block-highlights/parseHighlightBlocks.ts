@@ -6,7 +6,7 @@ const endInstructionByStartInstruction = new Map<string, string>(
 );
 const endInstructions = new Set<string>(stackBlockInstructionPairs.map(({ end }) => end));
 
-interface CodeBlock {
+interface HighlightBlock {
 	startInstruction: string;
 	endInstruction: string;
 	startLineNumber: number;
@@ -14,7 +14,7 @@ interface CodeBlock {
 	depth: number;
 }
 
-function popLastOpenBlock(stack: CodeBlock[] | undefined): CodeBlock | undefined {
+function popLastOpenBlock(stack: HighlightBlock[] | undefined): HighlightBlock | undefined {
 	if (!stack) {
 		return undefined;
 	}
@@ -29,13 +29,13 @@ function popLastOpenBlock(stack: CodeBlock[] | undefined): CodeBlock | undefined
 	return undefined;
 }
 
-export default function parseCodeBlocks(code: string[]) {
-	const blocks: CodeBlock[] = [];
-	const openBlocksByEndInstruction = new Map<string, CodeBlock[]>();
-	const openIfBlocks: CodeBlock[] = [];
+export default function parseHighlightBlocks(code: string[]) {
+	const blocks: HighlightBlock[] = [];
+	const openBlocksByEndInstruction = new Map<string, HighlightBlock[]>();
+	const openIfBlocks: HighlightBlock[] = [];
 	let openBlockCount = 0;
 
-	const pushOpenBlock = (block: CodeBlock) => {
+	const pushOpenBlock = (block: HighlightBlock) => {
 		const stack = openBlocksByEndInstruction.get(block.endInstruction);
 		if (stack) {
 			stack.push(block);
@@ -49,7 +49,7 @@ export default function parseCodeBlocks(code: string[]) {
 
 		const endInstruction = endInstructionByStartInstruction.get(instruction);
 		if (endInstruction) {
-			const block: CodeBlock = {
+			const block: HighlightBlock = {
 				startInstruction: instruction,
 				endInstruction,
 				startLineNumber: lineIndex,
@@ -69,7 +69,7 @@ export default function parseCodeBlocks(code: string[]) {
 
 			if (lastOpenIfBlock) {
 				lastOpenIfBlock.endLineNumber = lineIndex;
-				const elseBlock: CodeBlock = {
+				const elseBlock: HighlightBlock = {
 					startInstruction: 'else',
 					endInstruction: 'ifEnd',
 					startLineNumber: lineIndex,

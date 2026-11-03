@@ -57,7 +57,7 @@ Active todo files are listed below.
 | 486 | Lazy-load editing features on entering edit mode | 🟡 | 2-4d | 2026-09-06 | Keep authoring-only effects out of view-mode startup and load them before editing becomes available. |
 | 491 | Migrate project testing to native assertions | 🟡 | 2-4d | 2026-10-09 | Use TODO 490 in the shared runner, migrate fixtures and CLI, remove the precompiler, and add an editor test runtime. |
 | 493 | Index compiled functions by project block ID | 🟡 | 2-4h | 2026-10-14 | Reuse a compilation-derived Map for function-block layout, stack-widget, and tooltip lookups instead of repeatedly scanning all compiled functions. |
-| 494 | Make editor block-highlight parsing linear | 🟡 | 3-6h | 2026-10-14 | Track open-block counts and matching stacks incrementally to avoid repeated history scans and array copies during highlight parsing. |
+| 494 | Measure editor block-highlight parser scaling | 🟡 | 3-6h | 2026-10-14 | Benchmark the existing stack-based parser across increasing source sizes and report runtime, allocations, and complete highlight-preparation costs. |
 | 498 | Consolidate shared editor test-state builders | 🟡 | 4-8h | 2026-10-14 | Share complete typed state defaults and migrate cast-based editor/runtime fixtures so missing required fields are caught earlier. |
 | 499 | Unify project instruction syntax parsing | 🟡 | 4-8h | 2026-10-14 | Move exposure syntax into the tokenizer alongside pass and init, with shared comment handling, validation, and source diagnostics. |
 | 500 | Keep planned memory and its source together | 🟡 | 4-8h | 2026-10-14 | Attach effective source information to each planned declaration, removing parallel arrays and positional source lookups. |

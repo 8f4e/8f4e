@@ -39,13 +39,18 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 	state.viewport.height = canvas.height;
 	const codeBlocks = new Map<number, Array<Array<SpriteCell | null>>>();
 	const drawers = createEditorDrawerRegistry();
+	const palette = resolvePalette(colors);
+	drawers.registerCodeBlockBackgroundDrawer(({ draw, codeBlock }) => {
+		// Keep each sample visible, including surface colors and dark foreground materials.
+		const [r, g, b] = palette.rgba[tokens[codeBlock.creationIndex]];
+		draw.drawFill(0, 0, PALETTE_INDICES[r + g + b > 1.5 ? 'black' : 'white'], codeBlock.width, codeBlock.height);
+	});
 	drawers.registerCodeBlockContentDrawer(({ draw, state, codeBlock }) => {
 		codeBlocks
 			.get(codeBlock.creationIndex)!
 			.forEach((cells, row) => draw.drawResolvedText(state.viewport.vGrid, row * state.viewport.hGrid, cells));
 	});
 
-	const palette = resolvePalette(colors);
 	const renderer = await init(createStateManager(state), createMockEventDispatcher(), canvas, createMockMemoryViews(), {
 		drawers,
 	});
@@ -62,15 +67,6 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 				y: Math.floor(index / 4) * 192,
 				width: 256,
 				height: codeLines.length * 16,
-			});
-			// Keep each sample visible, including surface colors and dark foreground materials.
-			const [r, g, b] = palette.rgba[token];
-			block.widgets.blockHighlights.push({
-				x: 0,
-				y: 0,
-				width: block.width,
-				height: block.height,
-				color: r + g + b > 1.5 ? 'black' : 'white',
 			});
 			state.codeBlockRendering.currentProject.blocks.push(block);
 			codeBlocks.set(index, resolveFixtureCodeCells(codeLines, PALETTE_INDICES[token]));

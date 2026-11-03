@@ -41,6 +41,12 @@ describe('drawModules', () => {
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
 		const calls: string[] = [];
+		const unregisterBackground = drawers.registerCodeBlockBackgroundDrawer(context => {
+			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
+			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
+			calls.push('background');
+		});
+		drawers.registerCodeBlockBackgroundDrawer(() => calls.push('second background'));
 		const unregisterContent = drawers.registerCodeBlockContentDrawer(context => {
 			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
 			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
@@ -63,22 +69,32 @@ describe('drawModules', () => {
 			calls.push('overlay');
 		});
 		drawModules(engine, state, memoryViews, drawers);
-		expect(calls).toEqual(['content', 'foreground', 'first', 'second', 'overlay']);
+		expect(calls).toEqual(['background', 'second background', 'content', 'foreground', 'first', 'second', 'overlay']);
+		unregisterBackground();
 		unregisterContent();
 		unregisterForeground();
 		unregister();
 		unregisterOverlay();
 		drawModules(engine, state, memoryViews, drawers);
-		expect(calls).toEqual(['content', 'foreground', 'first', 'second', 'overlay', 'second']);
+		expect(calls).toEqual([
+			'background',
+			'second background',
+			'content',
+			'foreground',
+			'first',
+			'second',
+			'overlay',
+			'second background',
+			'second',
+		]);
 		expect(first).toHaveBeenCalledOnce();
 	});
 
-	it('draws content above highlights and below foreground drawings and diagnostics', () => {
+	it('draws plugin backgrounds below selection and content, and foreground drawings below diagnostics', () => {
 		const block = createMockCodeBlock({
 			width: 96,
 			height: 64,
 			widgets: {
-				blockHighlights: [],
 				shapeDeclarations: [],
 				errorMessages: [{ x: 8, y: 32, message: ['Diagnostic'] }],
 			},
@@ -89,6 +105,8 @@ describe('drawModules', () => {
 		});
 		const engine = createMockEngine();
 		const drawers = createEditorDrawerRegistry();
+		const background = vi.fn(() => engine.drawFill(24, 16, PALETTE_INDICES.surfaceRaised1, 72, 16));
+		drawers.registerCodeBlockBackgroundDrawer(background);
 		const content = vi.fn(() => engine.drawText(8, 0, 'Content', PALETTE_INDICES.inkBase));
 		drawers.registerCodeBlockContentDrawer(content);
 		drawers.registerCodeBlockForegroundDrawer(() => engine.drawText(8, 0, 'Foreground', PALETTE_INDICES.inkBase));
@@ -96,7 +114,10 @@ describe('drawModules', () => {
 		const text = vi.mocked(engine.drawText).mock.calls.map(([, , text]) => text);
 		expect(text.indexOf('Content')).toBeLessThan(text.indexOf('Foreground'));
 		expect(text.indexOf('Foreground')).toBeLessThan(text.findIndex(text => text.includes('Diagnostic')));
-		expect(vi.mocked(engine.drawFill).mock.invocationCallOrder[1]).toBeLessThan(content.mock.invocationCallOrder[0]);
+		const fills = vi.mocked(engine.drawFill).mock.invocationCallOrder;
+		expect(fills[0]).toBeLessThan(background.mock.invocationCallOrder[0]);
+		expect(fills[1]).toBeLessThan(fills[2]);
+		expect(fills[2]).toBeLessThan(content.mock.invocationCallOrder[0]);
 	});
 
 	it('draws precomputed entry outlines before rendering code blocks', () => {

@@ -26,7 +26,6 @@ import { stopViewportAnimation } from '../viewport/animateViewport';
 import getProjectViewportPosition from '../viewport/getProjectViewportPosition';
 import updateViewport from '../viewport/updateViewport';
 import deriveErrorMessages from './deriveErrorMessages';
-import blockHighlights from './features/blockHighlights/updateGraphicData';
 import parsePos from './features/directives/pos/data';
 import { deriveDirectiveState } from './features/directives/registry';
 import gaps from './gaps';
@@ -129,8 +128,6 @@ export default function codeBlockRendering(
 		updateParamShapeDeclarations(graphicData, state, blockLayout);
 
 		graphicData.width = getCodeBlockGridWidth(graphicData.code, graphicData.minGridWidth) * state.viewport.vGrid;
-
-		blockHighlights(graphicData, state);
 
 		const gapRowCount = [...graphicData.gaps.values()].reduce((total, gap) => total + gap.size, 0);
 		graphicData.height = (displayModel.lines.length + gapRowCount) * state.viewport.hGrid;
