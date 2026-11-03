@@ -18,9 +18,10 @@ const loader = createLazyPluginLoaderPlugin([
 ```
 
 Pass the loader alongside fixed plugins when constructing the editor. Both default and minimal editors use `view`
-scope for plot, wave, meter, bars, switch, button, piano, slider, and crossfade. Their registries supply the editor's
+scope for plot, wave, meter, bars, watch, stack, switch, button, piano, slider, and crossfade. Their registries supply the editor's
 live memory writer to control factories after their implementations load. MIDI input, binary assets, and
-audio/worker/test/texture runtime plugins use `project` scope. The texture runtime matches both `@texture` and its config root. Other plugins remain fixed.
+audio/worker/test/texture runtime plugins use `project` scope. The texture runtime matches both `@texture` and its config root.
+Watch matches `@watch`/`@w`; stack matches `@stack`/`@s`.
 
 Each `LazyEditorPlugin` entry contains `id`, required `scope: 'view' | 'project'`, `matches(directives)`, and
 `load(): Promise<EditorPlugin>`. Keep IDs unique and implementation imports inside `load`. The loader reads core's
@@ -57,6 +58,19 @@ calls each plugin's ordinary `setup(context)` and owns its returned disposer. Ed
 and pending imports from installing plugins and releases installed plugins in reverse installation order. Import
 failures are reported in the editor log; the next matching automatic scan can retry. Setup errors propagate through
 asynchronous activation, following the trusted-plugin error contract.
+
+The same package exports `createDeferredPluginLoaderPlugin({ load })` for optional features that should load
+regardless of project directives. It starts on core's `init` event, after the renderer has loaded its initial sprite
+atlas and rendered. This single readiness gate needs no frame callback or timer. Font payloads remain separate lazy
+chunks. Their directive-based loader is part of that deferred set, so its imports cannot start
+earlier. Ordinary optional features use individual entries with unconditional or capability predicates, including
+input plugins. Entries load independently and have no keyboard-specific loading stage.
+
+`load()` resolves to an array of ordinary
+editor plugins. The deferred loader installs that array in order against current state and disposes it in reverse
+order. Disposal removes the initialization listener and ignores pending imports. Load or setup failures are logged, with earlier
+installations released if setup fails. Optional features must initialize from current state without relying on
+startup events being replayed.
 
 Verify from the workspace root:
 

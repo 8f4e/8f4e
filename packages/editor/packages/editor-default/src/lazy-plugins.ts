@@ -1,6 +1,7 @@
 import { hasConfig, hasDirective, type LazyEditorPlugin } from '@8f4e/editor-plugin-lazy-loader';
 
 export function createLazyPluginRegistry({
+	prefersReducedMotion,
 	navigator,
 	writeMemory,
 	getMemory,
@@ -8,6 +9,7 @@ export function createLazyPluginRegistry({
 	getAssertionSites,
 	sharedAudioContext,
 }: {
+	prefersReducedMotion: () => boolean;
 	navigator: Navigator;
 	writeMemory: (address: number, value: number, isInteger: boolean) => void;
 	getMemory: () => WebAssembly.Memory | null;
@@ -16,6 +18,20 @@ export function createLazyPluginRegistry({
 	sharedAudioContext?: AudioContext;
 }): readonly LazyEditorPlugin[] {
 	return [
+		{
+			id: 'watch',
+			scope: 'view',
+			matches: directives => ['watch', 'w'].some(name => hasDirective(directives, name)),
+			load: () =>
+				import('@8f4e/editor-plugin-watch').then(module => module.createWatchPlugin({ prefersReducedMotion })),
+		},
+		{
+			id: 'stack',
+			scope: 'view',
+			matches: directives => ['stack', 's'].some(name => hasDirective(directives, name)),
+			load: () =>
+				import('@8f4e/editor-plugin-stack').then(module => module.createStackPlugin({ prefersReducedMotion })),
+		},
 		{
 			id: 'plot',
 			scope: 'view',

@@ -2,6 +2,7 @@ import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
+import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
@@ -18,6 +19,7 @@ const { getCodeBuffer, getMemory, writeMemory } = vi.hoisted(() => ({
 }));
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('@8f4e/editor-plugin-lazy-loader', { spy: true });
 vi.mock('@8f4e/editor-plugin-session-persistence', () => ({
 	createSessionPersistencePlugin: vi.fn(() => ({ id: 'session-persistence', setup: () => () => {} })),
 }));
@@ -53,6 +55,13 @@ vi.mock('@8f4e/editor-plugin-compiler', () => ({
 	})),
 }));
 
+async function loadDeferredPlugins() {
+	const loaders = await vi.mocked(createDeferredPluginLoaderPlugin).mock.calls.at(-1)![0].load();
+	const entries = vi.mocked(createLazyPluginLoaderPlugin).mock.calls.at(-1)![0];
+	const plugins = await Promise.all(entries.filter(entry => entry.matches([])).map(entry => entry.load()));
+	return [...loaders, ...plugins];
+}
+
 describe('default editor plugins', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -67,10 +76,19 @@ describe('default editor plugins', () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn(), renderFrame } as Editor);
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const editor = await mountDefaultEditor(canvas, { storage: {} as Storage });
-		const pluginIds = vi
-			.mocked(initEditor)
-			.mock.calls.at(-1)![1]
-			.plugins!.map(plugin => plugin.id);
+		const initialPlugins = vi.mocked(initEditor).mock.calls.at(-1)![1].plugins!;
+		expect(initialPlugins.map(plugin => plugin.id)).toEqual([
+			'compiler',
+			'project-file-session',
+			'project-url-loader',
+			'session-persistence',
+			'code-rendering',
+			'deferred-loader',
+		]);
+		expect(createScreenshotPlugin).not.toHaveBeenCalled();
+		expect(createLazyPluginLoaderPlugin).not.toHaveBeenCalled();
+		const deferredPlugins = await loadDeferredPlugins();
+		const pluginIds = [...initialPlugins, ...deferredPlugins].map(plugin => plugin.id);
 		expect(pluginIds[0]).toBe('compiler');
 		expect(pluginIds).toEqual(
 			expect.arrayContaining([
@@ -80,15 +98,13 @@ describe('default editor plugins', () => {
 				'font-preview',
 				'code-rendering',
 				'connectors',
-				'watch',
-				'stack',
 				'tooltips',
 				'favorites',
 				'project-file-session',
 			])
 		);
-		expect(pluginIds.indexOf('watch')).toBeLessThan(pluginIds.indexOf('tooltips'));
-		expect(pluginIds.indexOf('stack')).toBeLessThan(pluginIds.indexOf('tooltips'));
+		expect(pluginIds).not.toContain('watch');
+		expect(pluginIds).not.toContain('stack');
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl: undefined,
@@ -142,6 +158,7 @@ describe('default editor plugins', () => {
 		});
 		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
 		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
+		await loadDeferredPlugins();
 		expect(createProjectOpenPlugin).toHaveBeenCalledWith({
 			document: canvas.ownerDocument,
 			fileSession: expect.anything(),
@@ -184,10 +201,7 @@ describe('default editor plugins', () => {
 			storage: {} as Storage,
 			includeKeyboardModeSwitching: false,
 		});
-		const ids = vi
-			.mocked(initEditor)
-			.mock.calls.at(-1)![1]
-			.plugins!.map(plugin => plugin.id);
+		const ids = (await loadDeferredPlugins()).map(plugin => plugin.id);
 		expect(ids).not.toContain('keyboard-mode-switching');
 		expect(ids).toEqual(expect.arrayContaining(['keyboard-navigation', 'keyboard-editing']));
 	});
@@ -231,9 +245,9 @@ it('omits all keyboard plugins and keyboard guidance on coarse-pointer browsers'
 		await mountDefaultEditor({ ownerDocument: { defaultView: window } } as HTMLCanvasElement, {
 			storage: {} as Storage,
 		});
-		const options = vi.mocked(initEditor).mock.calls.at(-1)![1];
+		const plugins = await loadDeferredPlugins();
 		for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing', 'font-preview'])
-			expect(options.plugins!.some(plugin => plugin.id === id)).toBe(false);
+			expect(plugins.some(plugin => plugin.id === id)).toBe(false);
 	} finally {
 		vi.unstubAllGlobals();
 	}

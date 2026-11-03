@@ -1,7 +1,8 @@
 # Watch Plugin
 
 `@8f4e/editor-plugin-watch` owns the `watch` directive's arguments, layout, derived data, and rendering.
-The default editor installs it; editor-core installs no plugins automatically.
+The default and minimal editors load it lazily for `@watch` or `@w` in the current project level;
+editor-core installs no plugins automatically.
 
 ```ts
 import { createWatchPlugin } from '@8f4e/editor-plugin-watch';
@@ -24,6 +25,7 @@ the memory reference. Formatting choices remain private to watch.
 The browser host supplies `prefersReducedMotion: () => boolean` to the factory. The plugin reads it when drawing; it does not access browser globals.
 
 Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.
+The block drawer runs before tooltip overlays, including when the plugin loads after tooltips.
 
 ```sh
 npx nx run @8f4e/editor-plugin-watch:build

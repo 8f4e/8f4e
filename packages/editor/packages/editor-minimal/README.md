@@ -19,11 +19,21 @@ editor.dispose();
 
 The composition installs the compiler first, with lazy standard-library include resolution. It includes project URL
 loading, project source saving/export, keyboard input, assertion markers, watch and stack annotations, and tooltips.
+Compiler coordination, file-session tracking, URL loading, and code rendering are eager. On core's `init` event,
+a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, saving, tooltips, and
+the directive-based loader. Core emits this event after the renderer has loaded its initial sprite atlas and
+rendered. This is the single loading gate, with no extra frame callback or timer. Optional features initialize from the current project and do not
+block the first render, mounting, or initial-project callbacks. Every optional feature is an individual entry in the
+same deferred list, including input plugins; their implementations load independently. This boundary also gates all
+directive-based lazy imports. The renderer loads its initial font before drawing, and font payloads remain separate
+lazy chunks.
 The `@8f4e/editor-plugin-project-save` plugin saves the entire current project as `.8f4e` source. Export Project
 chooses a destination; Cmd/Ctrl+S reuses it. The composition supplies the canvas and a per-editor
 `@8f4e/editor-file-session`. Open From Disk belongs to the default composition.
-Plot, wave, meter, bars, switch, button, piano, slider, crossfade, and audio/worker/test/texture runtimes load through the
-project-signal registry in `src/lazy-plugins.ts`. MIDI input and binary assets also load through that registry when
+Plot, wave, meter, bars, watch, stack, switch, button, piano, slider, crossfade, and audio/worker/test/texture runtimes load through the
+project-signal registry in `src/lazy-plugins.ts`. Watch matches `@watch`/`@w`, and stack matches `@stack`/`@s`.
+Both receive a live reduced-motion preference and draw before tooltip overlays, independently of import order.
+MIDI input and binary assets also load through that registry when
 raw `@config midi.*` or `@config bin.*` directives appear. Control factories receive the current editor's live memory
 writer; MIDI receives its browser navigator and live compiler getters, binary assets receive a current-memory getter,
 and runtime factories receive compiler artifacts and an optional shared `AudioContext`.
@@ -51,7 +61,7 @@ and undo/redo shortcuts. View mode supports line selection and block navigation,
 The editing plugin keeps a small input bridge and imports its text-editing implementation on first entry into edit
 mode, including projects that start in edit mode. It buffers keys during that import and replays them in order.
 
-The browser host imports and installs these plugins only when `(pointer: coarse)` does not match. Phones and tablets
+After the first render, the browser host imports and installs these plugins only when `(pointer: coarse)` does not match. Phones and tablets
 with a coarse primary pointer receive none of the three plugins, and their mode overlay is hidden by default. This
 is a capability check at mounting time; it does not identify devices by user agent. Touch navigation can be composed
 separately later. Keyboard-to-memory and Save shortcuts remain independent plugins.

@@ -26,8 +26,42 @@ async function setup(source: string, assets: Record<string, () => Promise<Respon
 	const editor = await mountMinimalEditor(canvas, { initialProjectUrl: projectUrl });
 	cleanups.push(() => editor.dispose());
 	await vi.waitFor(() => expect(editor.state.viewport.width).toBe(768));
+	await vi.waitFor(() => expect(editor.state.editorConfigSchemaContributions.keyboard).toBeDefined());
+	await vi.dynamicImportSettled();
 	return { canvas, editor };
 }
+
+test('loads watch and stack with their aliases after entering a group', async () => {
+	const { canvas, editor } = await setup(`8f4e/v1
+note settings
+; @config recompileDebounceDelay 10
+noteEnd
+entry main
+group nested
+entry main
+module values
+; @pos 4 3
+int first 7 ; @watch
+int second 9 ; @w
+push 3 ; @stack
+push 4 ; @s
+add
+drop
+moduleEnd
+entryEnd
+groupEnd
+entryEnd`);
+	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'), { timeout: 10000 });
+	vi.spyOn(performance, 'now').mockReturnValue(0);
+	const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nested')!;
+	editor.navigation.openGroup(getEditorBlockId(group));
+	await vi.dynamicImportSettled();
+	editor.pauseRendering();
+	editor.renderFrame();
+	await expect(canvas).toMatchScreenshot('lazy-watch-stack-after-group-navigation');
+	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
+	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+});
 
 test('recompiles with asset size constants after a lazy asset fetch completes', async () => {
 	const assetUrl = 'https://example.com/lazy-sized.pcm';

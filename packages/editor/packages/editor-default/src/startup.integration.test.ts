@@ -35,7 +35,7 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 	const onInitialProjectLoaded = vi.fn();
 	const onInitialProjectLoadError = vi.fn();
 	try {
-		const plugins = await createDefaultEditorPlugins({
+		const plugins = createDefaultEditorPlugins({
 			canvas,
 			storage: storage as Storage,
 			storageKey: 'session',

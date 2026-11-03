@@ -1,6 +1,7 @@
 import type { CodeBlockGraphicData, EditorPlugin, ParsedDirectiveRecord } from '@8f4e/editor-core';
 import { logError } from '@8f4e/editor-state';
 
+export { createDeferredPluginLoaderPlugin } from './deferred';
 export { hasConfig, hasDirective } from './hasDirective';
 
 export interface LazyEditorPlugin {

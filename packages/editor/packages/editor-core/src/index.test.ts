@@ -155,6 +155,10 @@ describe('editor init', () => {
 			plugins[0].setup.mock.invocationCallOrder[0]
 		);
 		expect(plugins[0].setup.mock.invocationCallOrder[0]).toBeLessThan(events.dispatch.mock.invocationCallOrder[0]);
+		const initialized = events.dispatch.mock.calls.findIndex(([name]) => name === 'init');
+		expect(view.renderFrame.mock.invocationCallOrder[0]).toBeLessThan(
+			events.dispatch.mock.invocationCallOrder[initialized]
+		);
 		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![4]!.drawers!;
 		expect(rendererDrawers).toBe(plugins[0].setup.mock.calls[0][0].drawers);
 		const drawContext = {} as Parameters<typeof rendererDrawers.drawCodeBlock>[0];

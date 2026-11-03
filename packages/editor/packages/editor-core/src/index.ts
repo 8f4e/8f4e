@@ -231,6 +231,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		resize(initialCanvasSize.width, initialCanvasSize.height);
 		resizeObserver?.observe(canvas);
 		events.dispatch('loadProject', { project: options.initialProject ?? EMPTY_DEFAULT_PROJECT });
+		// The sprite atlas is ready and the renderer has drawn; optional plugin imports can start now.
 		events.dispatch('init');
 
 		return {

@@ -10,7 +10,7 @@ export function createWatchPlugin({ prefersReducedMotion }: { prefersReducedMoti
 		setup: ({ layout, drawers }) => {
 			const watchesByBlock = new WeakMap<CodeBlockGraphicData, WatchValue[]>();
 			const unregisterLayout = registerWatchLayout(layout, watchesByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockOverlay(({ draw, state, codeBlock, memoryViews }) => {
+			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
 				drawWatch(
 					draw,
 					state.viewport.vGrid,

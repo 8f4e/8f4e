@@ -1,6 +1,12 @@
 # Lazy Plugin Loader
 
 - Own automatic signal matching, per-editor imports/installation, and loaded-plugin disposal.
+- `createDeferredPluginLoaderPlugin({ load })` starts on core's `init` event, after renderer and initial sprite-atlas
+  preparation. This is the only readiness gate; add no frame callbacks or timing delays. Both compositions defer the
+  directive-based loader through this same boundary.
+  Ordinary optional features use individual entries with unconditional or capability predicates; input plugins have
+  no separate loading group. Initialize loaded plugins from current state, ignore completion after disposal, and
+  release installations in reverse order.
 - Accept `LazyEditorPlugin` entries with `id`, required `scope: 'view' | 'project'`, `matches(directives)`, and
   `load()`. Keep feature signals and browser dependencies in the host registry; imports belong inside loader callbacks.
 - Scan at setup and schedule scans on completed `projectChange` notifications and `codeBlockRendering.currentProject.blocks`

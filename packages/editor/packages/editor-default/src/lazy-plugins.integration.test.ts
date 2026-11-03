@@ -50,6 +50,7 @@ function restoreSession(directive: string, nested = false) {
 		restoreOnStartup: true,
 	}).setup(context);
 	const entries = createLazyPluginRegistry({
+		prefersReducedMotion: () => true,
 		navigator: {} as Navigator,
 		writeMemory: () => {},
 		getMemory: () => null,

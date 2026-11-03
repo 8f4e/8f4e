@@ -10,7 +10,7 @@ export function createStackPlugin({ prefersReducedMotion }: { prefersReducedMoti
 		setup: ({ layout, drawers }) => {
 			const labelsByBlock = new WeakMap<CodeBlockGraphicData, StackLabel[]>();
 			const unregisterLayout = registerStackLayout(layout, labelsByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockOverlay(({ draw, state, codeBlock }) => {
+			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 				drawStack(
 					draw,
 					state.viewport.vGrid,
