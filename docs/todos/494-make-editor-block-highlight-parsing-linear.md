@@ -1,5 +1,5 @@
 ---
-title: 'TODO: Make editor block-highlight parsing linear'
+title: 'TODO: Measure editor block-highlight parser scaling'
 priority: Medium
 effort: 3-6h
 created: 2026-10-14
@@ -8,45 +8,48 @@ status: Open
 completed: null
 ---
 
-# TODO: Make editor block-highlight parsing linear
+# TODO: Measure editor block-highlight parser scaling
 
 ## Problem Description
 
-The editor's block-highlight parser counts open blocks by reducing over all previously discovered blocks on every
-source line. Closing instructions and `else` also copy, reverse, and search that array to find an open block.
+The editor's block-highlight parser already tracks the open-block count incrementally, uses a `Map` of stacks keyed
+by closing instruction, and keeps a separate stack of open `if` branches. It avoids full-history scans and temporary
+array copies when matching closing instructions and `else`.
 
-This can produce quadratic work and repeated temporary allocations in large code blocks. Highlight parsing runs
-when the code-rendering plugin prepares its private cache after layout changes. The actual latency impact has not yet been benchmarked.
+Highlight parsing runs when the code-rendering plugin prepares its private cache after layout changes. What remains
+unverified is the measured latency and allocation growth for large blocks. Existing correctness tests cover tolerant
+matching, but no benchmark yet demonstrates the expected approximately linear block-tracking cost.
 
 ## Proposed Solution
 
-Keep the ordered result array, but track the open-block count separately and use a `Map` of open-block stacks keyed
-by closing instruction to locate matching blocks directly. Track open `if` branches separately if needed to preserve
-the current `else` matching behavior.
+Benchmark the current parser on increasing source sizes with many short sibling constructs, deep nesting, and
+incomplete or mismatched blocks. Record runtime and allocations with a reproducible procedure. Measure parser work
+separately from complete highlight preparation so the results distinguish block tracking from layout calculations.
 
-The parser must continue to tolerate incomplete source while the user types. Preserve highlight order, line numbers,
-depths, and current matching behavior, including malformed input; a strict nesting stack alone may change it.
+Use the existing tolerant-matching tests as a correctness guard. Preserve highlight order, line numbers, depths,
+and malformed-input behavior in any optimization justified by the measurements.
 
 ## Implementation Plan
 
-1. Capture current output for nested and sibling blocks, `if`/`else`, unfinished blocks, and unmatched or mismatched
-   closing instructions. Measure parsing on large blocks with many short sibling constructs as well as deep nesting.
-2. Replace repeated open-count scans and reverse searches with incrementally maintained per-parse lookup state.
-3. Verify equivalent highlight output and compare scaling and allocations against the baseline.
+1. Reuse the existing correctness cases for nested and sibling blocks, `if`/`else`, unfinished blocks, and unmatched
+   or mismatched closing instructions.
+2. Benchmark increasing source sizes with a documented warm-up and repeated samples, recording runtime and allocations.
+3. Report parser scaling and complete highlight-preparation costs. Investigate further only where measurements reveal
+   a remaining bottleneck.
 
 ## Success Criteria
 
-- [ ] Each source line requires bounded block-tracking work, independent of previously closed blocks.
-- [ ] The implementation avoids per-closing-instruction array copies and full-history searches.
-- [ ] Result ordering, depths, and start/end line numbers remain correct for complete and incomplete source.
-- [ ] `else`, stray closers, mismatched nesting, and supported instruction pairs retain current editor behavior.
-- [ ] Measurements demonstrate approximately linear block-tracking growth and report end-to-end parsing costs.
+- [x] The implementation tracks open-block counts and matching stacks incrementally without full-history searches or array copies.
+- [x] Tests cover result ordering, depths, and start/end line numbers for complete and incomplete source.
+- [x] Tests cover `else`, stray closers, and mismatched nesting.
+- [ ] Reproducible measurements document runtime and allocation growth across increasing source sizes.
+- [ ] Results assess approximately linear block-tracking growth and report complete highlight-preparation costs.
 
 ## Affected Components
 
-- `packages/editor/plugins/code-rendering/src/block-highlights/codeParser.ts`
+- `packages/editor/plugins/code-rendering/src/block-highlights/parseHighlightBlocks.ts`
 - `packages/editor/plugins/code-rendering/src/block-highlights/deriveBlockHighlights.ts`
-- Block-highlight parser and graphic-data tests.
+- Block-highlight parser and geometry tests, plus benchmark results.
 
 ## Risks & Considerations
 
@@ -58,7 +61,7 @@ depths, and current matching behavior, including malformed input; a strict nesti
 ## Validation Checkpoints
 
 - Run `npx nx run @8f4e/editor-plugin-code-rendering:test` and its typecheck.
-- Manually edit nested control-flow constructs and check highlight placement before their closing lines are complete.
+- Run the documented benchmark procedure and retain results for sibling, nested, and incomplete source.
 
 ## Related Items
 

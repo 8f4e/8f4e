@@ -1,5 +1,4 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import deriveBlockHighlights from './block-highlights/deriveBlockHighlights';
 import deriveCodeBlockCodeCells from './deriveCodeBlockCodeCells';
@@ -26,7 +25,7 @@ export const codeRenderingPlugin: EditorPlugin = {
 		const unregisterBackground = drawers.registerCodeBlockBackgroundDrawer(({ draw, codeBlock }) => {
 			if (codeBlock.disabled) return;
 			for (const { x, y, width, height, color } of renderingByBlock.get(codeBlock)!.highlights) {
-				draw.drawFill(x, y, PALETTE_INDICES[color], width, height);
+				draw.drawFill(x, y, color, width, height);
 			}
 		});
 		const unregisterDrawer = drawers.registerCodeBlockContentDrawer(({ draw, state, codeBlock }) => {

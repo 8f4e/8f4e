@@ -1,15 +1,20 @@
+import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import { gapCalculator } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, Viewport } from '@8f4e/editor-state-types';
-import parseCodeBlocks from './codeParser';
+import parseHighlightBlocks from './parseHighlightBlocks';
 
-const HIGHLIGHT_COLORS = ['surfaceRaised1', 'surfaceRaised2', 'surfaceRaised3'] as const;
+const HIGHLIGHT_COLORS = [
+	PALETTE_INDICES.surfaceRaised1,
+	PALETTE_INDICES.surfaceRaised2,
+	PALETTE_INDICES.surfaceRaised3,
+] as const;
 
 interface BlockHighlight {
 	x: number;
 	y: number;
 	width: number;
 	height: number;
-	color: (typeof HIGHLIGHT_COLORS)[number];
+	color: PaletteIndex;
 }
 
 export default function deriveBlockHighlights(
@@ -18,7 +23,7 @@ export default function deriveBlockHighlights(
 ): BlockHighlight[] {
 	const highlights: BlockHighlight[] = [];
 	const visibleLineCount = graphicData.displayModel.lines.filter(line => !line.isPlaceholder).length;
-	parseCodeBlocks(graphicData.code).forEach(block => {
+	parseHighlightBlocks(graphicData.code).forEach(block => {
 		if (block.endLineNumber === undefined) {
 			return;
 		}

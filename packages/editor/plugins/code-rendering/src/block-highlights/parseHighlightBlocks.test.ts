@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
-import parseCodeBlock from './codeParser';
+import parseHighlightBlocks from './parseHighlightBlocks';
 
-describe('parseCodeBlock', () => {
+describe('parseHighlightBlocks', () => {
 	it('returns empty array when no block instructions exist', () => {
 		const code = ['push 1', 'add', 'store'];
 
-		expect(parseCodeBlock(code)).toEqual([]);
+		expect(parseHighlightBlocks(code)).toEqual([]);
 	});
 
 	it('parses simple blocks and records start/end positions', () => {
 		const code = ['if condition', 'add', 'ifEnd'];
 
-		expect(parseCodeBlock(code)).toEqual([
+		expect(parseHighlightBlocks(code)).toEqual([
 			{
 				startInstruction: 'if',
 				endInstruction: 'ifEnd',
@@ -26,7 +26,7 @@ describe('parseCodeBlock', () => {
 	it('calculates depth for nested structures', () => {
 		const code = ['if condition', 'loop counter 0 10', 'loopEnd', 'ifEnd'];
 
-		expect(parseCodeBlock(code)).toEqual([
+		expect(parseHighlightBlocks(code)).toEqual([
 			{
 				startInstruction: 'if',
 				endInstruction: 'ifEnd',
@@ -44,10 +44,10 @@ describe('parseCodeBlock', () => {
 		]);
 	});
 
-	it('leaves endLineNumber null when the block is never closed', () => {
+	it('leaves endLineNumber undefined when the block is never closed', () => {
 		const code = ['loop counter 0 10', 'add'];
 
-		expect(parseCodeBlock(code)).toEqual([
+		expect(parseHighlightBlocks(code)).toEqual([
 			{
 				startInstruction: 'loop',
 				endInstruction: 'loopEnd',
@@ -61,13 +61,13 @@ describe('parseCodeBlock', () => {
 	it('ignores unmatched end instructions', () => {
 		const code = ['ifEnd', 'loopEnd'];
 
-		expect(parseCodeBlock(code)).toEqual([]);
+		expect(parseHighlightBlocks(code)).toEqual([]);
 	});
 
 	it('treats else as end of if branch and start of else branch', () => {
 		const code = ['if condition', 'push 1', 'else', 'push 2', 'ifEnd'];
 
-		expect(parseCodeBlock(code)).toEqual([
+		expect(parseHighlightBlocks(code)).toEqual([
 			{
 				startInstruction: 'if',
 				endInstruction: 'ifEnd',
@@ -88,13 +88,13 @@ describe('parseCodeBlock', () => {
 	it('ignores else when there is no open if block', () => {
 		const code = ['else', 'push 1', 'ifEnd'];
 
-		expect(parseCodeBlock(code)).toEqual([]);
+		expect(parseHighlightBlocks(code)).toEqual([]);
 	});
 
 	it('matches else to the nearest open if in nested blocks', () => {
 		const code = ['if outer', 'if inner', 'push 1', 'else', 'push 2', 'ifEnd', 'ifEnd'];
 
-		expect(parseCodeBlock(code)).toEqual([
+		expect(parseHighlightBlocks(code)).toEqual([
 			{
 				startInstruction: 'if',
 				endInstruction: 'ifEnd',
@@ -122,7 +122,7 @@ describe('parseCodeBlock', () => {
 	it('skips inner if blocks already closed by ifEnd when matching an outer else', () => {
 		const code = ['if outer', 'if inner', 'push 1', 'ifEnd', 'else', 'push 2', 'ifEnd'];
 
-		expect(parseCodeBlock(code)).toEqual([
+		expect(parseHighlightBlocks(code)).toEqual([
 			{
 				startInstruction: 'if',
 				endInstruction: 'ifEnd',
@@ -150,7 +150,7 @@ describe('parseCodeBlock', () => {
 	it('handles repeated else instructions by matching the next open if block', () => {
 		const code = ['if outer', 'if inner', 'else', 'else', 'ifEnd', 'ifEnd'];
 
-		expect(parseCodeBlock(code)).toEqual([
+		expect(parseHighlightBlocks(code)).toEqual([
 			{
 				startInstruction: 'if',
 				endInstruction: 'ifEnd',
@@ -185,7 +185,7 @@ describe('parseCodeBlock', () => {
 	it('matches closing instructions behind differently typed open blocks and tracks open depth', () => {
 		const code = ['if cond', 'loop i 0 5', 'ifEnd', 'block', 'blockEnd', 'loopEnd', 'if after', 'ifEnd'];
 
-		expect(parseCodeBlock(code)).toEqual([
+		expect(parseHighlightBlocks(code)).toEqual([
 			{
 				startInstruction: 'if',
 				endInstruction: 'ifEnd',

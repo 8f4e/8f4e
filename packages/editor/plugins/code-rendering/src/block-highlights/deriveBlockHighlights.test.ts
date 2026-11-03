@@ -1,3 +1,4 @@
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
 import deriveBlockHighlights from './deriveBlockHighlights';
@@ -12,7 +13,7 @@ describe('deriveBlockHighlights', () => {
 			lineNumberColumnWidth: 1,
 		});
 		expect(deriveBlockHighlights(block, viewport)).toEqual([
-			{ x: 30, y: 20, width: 170, height: 40, color: 'surfaceRaised1' },
+			{ x: 30, y: 20, width: 170, height: 40, color: PALETTE_INDICES.surfaceRaised1 },
 		]);
 	});
 
@@ -28,11 +29,11 @@ describe('deriveBlockHighlights', () => {
 		const code = ['if', 'loop', 'block', 'if', 'push 1', 'ifEnd', 'blockEnd', 'loopEnd', 'else', 'push 2', 'ifEnd'];
 		const highlights = deriveBlockHighlights(createMockCodeBlock({ code }), viewport);
 		expect(highlights.map(({ color }) => color)).toEqual([
-			'surfaceRaised1',
-			'surfaceRaised2',
-			'surfaceRaised3',
-			'surfaceRaised1',
-			'surfaceRaised1',
+			PALETTE_INDICES.surfaceRaised1,
+			PALETTE_INDICES.surfaceRaised2,
+			PALETTE_INDICES.surfaceRaised3,
+			PALETTE_INDICES.surfaceRaised1,
+			PALETTE_INDICES.surfaceRaised1,
 		]);
 		expect(highlights.at(-1)).toMatchObject({ y: 180, height: 20 });
 	});
@@ -46,7 +47,7 @@ describe('deriveBlockHighlights', () => {
 		});
 		const before = structuredClone(block);
 		expect(deriveBlockHighlights(block, viewport)).toEqual([
-			{ x: 40, y: 80, width: 160, height: 20, color: 'surfaceRaised1' },
+			{ x: 40, y: 80, width: 160, height: 20, color: PALETTE_INDICES.surfaceRaised1 },
 		]);
 		expect(block).toEqual(before);
 	});

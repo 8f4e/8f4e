@@ -14,7 +14,7 @@ const editor = await initEditor(canvas, { plugins: [codeRenderingPlugin] });
 
 Each installation prepares its own sprite cells and nested block highlight rectangles after `codeBlockLayoutsChanged`.
 It draws backgrounds through `drawers.registerCodeBlockBackgroundDrawer`, below line selection and text, and cached
-text rows through `drawers.registerCodeBlockContentDrawer`. Block parsing, highlighting, and glyph resolution happen
+text rows through `drawers.registerCodeBlockContentDrawer`. Block parsing, highlighting, palette-index resolution, and glyph resolution happen
 outside the frame loop. Highlights cycle through three surface shades by nesting depth, clip at folded content, and
 are suppressed for disabled blocks. The plugin removes its listener, both drawers, and cached data when disposed.
 It needs no browser resources.
