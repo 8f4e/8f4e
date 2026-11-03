@@ -24,7 +24,9 @@ export function registerSliderInteraction(
 			value = slider.min + Math.round((value - slider.min) / slider.step) * slider.step;
 		}
 
-		value = Math.max(slider.min, Math.min(slider.max, value));
+		const lowerBound = Math.min(slider.min, slider.max);
+		const upperBound = Math.max(slider.min, slider.max);
+		value = Math.max(lowerBound, Math.min(upperBound, value));
 
 		const hasFloatRange =
 			!Number.isInteger(slider.min) ||

@@ -10,6 +10,8 @@ The default range is `0..127` for integer memory and `0..1` for floating-point m
 values within the range. Each slider adds two rows below its directive and fills the block's available content width.
 Clicks and drags update runtime memory; the handle reads live memory on each frame.
 
+Ranges may descend: `; @slider &gain 100 0` puts `100` on the left and `0` on the right.
+
 ```ts
 import { createSliderPlugin } from '@8f4e/editor-plugin-slider';
 

@@ -158,6 +158,35 @@ describe('slider plugin', () => {
 			expect(test.write).not.toHaveBeenCalled();
 		}
 	);
+	it.each([
+		{ type: 'int', range: '100 0', left: 100, middle: 50, right: 0, integer: true },
+		{ type: 'float', range: '1 -1 0.25', left: 1, middle: 0, right: -1, integer: false },
+	])(
+		'preserves descending $type ranges while clicking and dragging',
+		async ({ type, range, left, middle, right, integer }) => {
+			const test = await setup([
+				'module controls',
+				`${type} gain 0`,
+				`; @slider &gain ${range}`,
+				'; @pos 40 20',
+				'moduleEnd',
+			]);
+			const address = test.compiled.memoryPlan.modules.controls.memory.gain.allocationUnitAddress;
+			const values = integer ? test.memoryViews.int32 : test.memoryViews.float32;
+
+			test.press(0);
+			expect(values[address]).toBe(left);
+			expect(test.move(0.5).stopPropagation).toBe(true);
+			expect(values[address]).toBe(middle);
+			test.press(1);
+			expect(values[address]).toBe(right);
+			test.move(-1);
+			expect(values[address]).toBe(left);
+			test.move(2);
+			expect(values[address]).toBe(right);
+			expect(test.write).toHaveBeenLastCalledWith(address, right, integer);
+		}
+	);
 	it('clamps dragging outside the control and snaps to the declared step', async () => {
 		const test = await setup(
 			source.map(line => line.replace('float gain 0.25', 'int gain 0').replace('0 1 0.01', '-100 100 5'))
