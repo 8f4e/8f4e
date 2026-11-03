@@ -8,4 +8,4 @@
 - Test native touch and tap behavior here without installing sibling plugins; combined behavior belongs to editor-default.
 - Run `npx nx run @8f4e/editor-plugin-touch-input:build|test|typecheck|test:screenshot`.
 
-- Expose `axis` (`both` by default), yielding disabled directions to native page scrolling through touch-action and gesture direction checks. Snap only enabled axes.
+- Expose `axis` (`both` by default). In one-finger mode, yield disabled directions through touch-action and gesture direction checks. In two-finger mode, allow unclaimed one-finger page scrolling and cancel native gestures when the second finger arrives. Snap only enabled axes.

@@ -48,6 +48,24 @@ describe('touch viewport navigation', () => {
 		expect(test.state.viewport).toEqual(viewport);
 	});
 
+	it('allows native scrolling until the second finger claims the gesture', () => {
+		const test = setup();
+		expect(test.inputTarget.style.touchAction).toBe('auto');
+		expect(test.touch('touchstart', [finger(100, 100)]).defaultPrevented).toBe(false);
+		expect(test.touch('touchstart', fingers(100, 100)).defaultPrevented).toBe(true);
+		expect(test.changed).not.toHaveBeenCalled();
+	});
+
+	it('keeps a two-finger gesture on its enabled axis even after perpendicular movement', () => {
+		const test = setup(true, 2, 'horizontal');
+		test.state.viewport.y = 3;
+		test.touch('touchstart', fingers(100, 100));
+		test.touch('touchmove', fingers(102, 130));
+		test.touch('touchmove', fingers(140, 130));
+		test.touch('touchend');
+		expect(test.state.viewport).toMatchObject({ x: -40, y: 3 });
+	});
+
 	it.each(['view', 'edit'] as const)('pans without editing source or project history in %s mode', mode => {
 		const test = setup();
 		test.store.set('editorMode', mode);
@@ -109,11 +127,11 @@ describe('touch viewport navigation', () => {
 	it('respects viewport dragging changes and restores browser touch behavior', () => {
 		const test = setup(false);
 		expect(test.inputTarget.style.touchAction).toBe('pan-y');
-		test.touch('touchstart', fingers(100, 100));
+		expect(test.touch('touchstart', fingers(100, 100)).defaultPrevented).toBe(false);
 		expect(test.touch('touchmove', fingers(140, 140)).defaultPrevented).toBe(false);
 		expect(test.changed).not.toHaveBeenCalled();
 		test.store.set('featureFlags.viewportDragging', true);
-		expect(test.inputTarget.style.touchAction).toBe('none');
+		expect(test.inputTarget.style.touchAction).toBe('auto');
 		test.touch('touchstart', fingers(100, 100));
 		test.store.set('featureFlags.viewportDragging', false);
 		expect(test.inputTarget.style.touchAction).toBe('pan-y');
