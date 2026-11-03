@@ -1,0 +1,9 @@
+8f4e/v1
+entry main
+module source
+int value
+moduleEnd
+module invalid
+int& slot &source:1
+moduleEnd
+entryEnd

@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Float64 min/max queries retain finite bounds and their value type.
 Pointer-to-pointer bounds describe an integer address slot.

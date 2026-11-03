@@ -3,7 +3,7 @@ title: 'TODO: Guard i32.div_s signed overflow'
 priority: Medium
 effort: 2-4h
 created: 2026-04-30
-issue: https://github.com/andorthehood/8f4e/issues/648
+issue: https://github.com/8f4e/8f4e/issues/648
 status: Open
 completed: null
 ---

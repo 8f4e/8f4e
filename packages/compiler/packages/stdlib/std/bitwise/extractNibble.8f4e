@@ -1,0 +1,14 @@
+function extractNibble
+#export
+; Index 0 is the least-significant
+; nibble of the 32-bit word.
+param int word
+param int nibbleIndex
+
+push word
+push nibbleIndex
+shiftLeft 2
+shiftRightUnsigned
+and 0xF
+
+functionEnd int

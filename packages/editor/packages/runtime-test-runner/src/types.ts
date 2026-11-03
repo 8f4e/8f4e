@@ -9,8 +9,3 @@ export interface TestRuntimeProgram extends TestProgram {
 export type TestRunResult =
 	| { status: 'passed' | 'failed'; assertions: TestAssertionResult[]; failures: TestAssertionResult[] }
 	| { status: 'error'; error: string };
-
-export type TestRuntimeState =
-	| { status: 'idle' }
-	| { status: 'running'; assertionSites: AssertionSite[] }
-	| (TestRunResult & { assertionSites: AssertionSite[] });

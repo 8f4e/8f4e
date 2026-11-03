@@ -10,7 +10,7 @@ export async function compileProject(
 	const includeWasm = options.includeWasm ?? true;
 
 	const compilerOptions: CompileOptions = {
-		startingMemoryWordAddress: options.compilerOptions?.startingMemoryWordAddress ?? 0,
+		startingMemoryAllocationUnitAddress: options.compilerOptions?.startingMemoryAllocationUnitAddress ?? 0,
 		disableSharedMemory: options.compilerOptions?.disableSharedMemory,
 	};
 

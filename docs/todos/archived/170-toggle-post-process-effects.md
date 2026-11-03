@@ -3,7 +3,7 @@ title: 'TODO: Toggle post-process effects via function key'
 priority: Medium
 effort: 1-2h
 created: 2026-01-13
-issue: https://github.com/andorthehood/8f4e/issues/402
+issue: https://github.com/8f4e/8f4e/issues/402
 status: Cancelled
 completed: 2026-09-07
 ---

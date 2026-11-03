@@ -3,7 +3,7 @@ title: 'TODO: Unify code render rows and width derivation'
 priority: Low
 effort: 2-4h
 created: 2026-03-09
-issue: https://github.com/andorthehood/8f4e/issues/554
+issue: https://github.com/8f4e/8f4e/issues/554
 status: Cancelled
 completed: 2026-09-07
 ---

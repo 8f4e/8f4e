@@ -11,7 +11,7 @@ constantsEnd
 
 note
 ; @pos -3 -6
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Bitwise instruction behavior
 is checked with native

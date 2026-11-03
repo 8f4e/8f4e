@@ -1,6 +1,6 @@
 import type {
 	CompilationContext,
-	CompilerASTLine,
+	SemanticReferenceLine,
 	StackAnalysisLineFacts,
 	StackAnalysisResult,
 } from '@8f4e/language-spec';
@@ -17,10 +17,9 @@ import { validateInstruction } from './validateInstruction';
  * @param context - Compilation context used by the operation.
  * @returns The computed result.
  */
-export function analyzeInstruction(line: CompilerASTLine, context: CompilationContext): StackAnalysisLineFacts {
-	validateInstruction(line, context);
-
+export function analyzeInstruction(line: SemanticReferenceLine, context: CompilationContext): StackAnalysisLineFacts {
 	const stackBefore = cloneStack(context.stack);
+	validateInstruction(line, context);
 	const { consumed, produced, dropped, targetFunctionId, numericOperandKind, map, clamp } = analyzeByInstruction(
 		line,
 		context

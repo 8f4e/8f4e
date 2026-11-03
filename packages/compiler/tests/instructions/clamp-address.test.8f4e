@@ -1,0 +1,95 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+clampAddress should keep
+addresses inside the tracked
+memory range.
+noteEnd
+
+entry test
+module clampAddressAssertions
+; Four ints, so the first int is at
+; offset 0 and the last is at offset 12.
+int[] buffer 4
+
+push &buffer
+push 111
+store
+
+push &buffer
+push 12
+add
+push 222
+store
+
+; An address below the range start is
+; clamped to the first int.
+push &buffer
+push 1024
+sub
+clampAddress
+load
+assertEqual 111
+
+; An address beyond the range end is
+; clamped to the last int that fits a
+; 4 byte access.
+push &buffer
+push 1024
+add
+clampAddress
+load
+assertEqual 222
+moduleEnd
+
+module clampAddressAccessWidthAssertions
+; 16 bytes: the last 4 byte access starts
+; at offset 12, the last 1 byte access
+; starts at offset 15.
+int8[] bytes 16
+
+push 77
+push &bytes
+storeBytes 1
+
+push 99
+push &bytes
+push 12
+add
+storeBytes 1
+
+push 55
+push &bytes
+push 15
+add
+storeBytes 1
+
+; Below the range start with a 1 byte access.
+push &bytes
+push 1024
+sub
+clampAddress 1
+load8u
+assertEqual 77
+
+; Beyond the range end with the default
+; 4 byte width: last safe start is offset 12.
+push &bytes
+push 1024
+add
+clampAddress
+load8u
+assertEqual 99
+
+; Beyond the range end with a 1 byte width:
+; last safe start is offset 15.
+push &bytes
+push 1024
+add
+clampAddress 1
+load8u
+assertEqual 55
+moduleEnd
+entryEnd

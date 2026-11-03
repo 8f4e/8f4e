@@ -5,6 +5,8 @@ module main
 int counter
 float gain 0.5
 int8[] buffer 4
+int8u[] unsignedBytes 2 0 255
+int16u[] unsignedShorts 2 0 65535
 
 push &counter
 push counter

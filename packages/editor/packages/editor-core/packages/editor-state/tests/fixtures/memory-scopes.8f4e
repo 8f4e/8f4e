@@ -10,6 +10,7 @@ group audio
 expose gain &voice:level
 expose aliasOnly &voice:level
 
+entry main
 module voice
 float level 0.25
 moduleEnd
@@ -17,9 +18,12 @@ moduleEnd
 group nested
 expose gain &voice:level
 
+entry main
 module voice
 int level 7
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd

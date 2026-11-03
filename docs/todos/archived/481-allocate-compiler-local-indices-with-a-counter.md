@@ -3,7 +3,7 @@ title: 'TODO: Centralize compiler local allocation'
 priority: Medium
 effort: 2-4h
 created: 2026-09-06
-issue: https://github.com/andorthehood/8f4e/issues/956
+issue: https://github.com/8f4e/8f4e/issues/956
 status: Completed
 completed: 2026-10-01
 ---

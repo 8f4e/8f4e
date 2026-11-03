@@ -3,7 +3,7 @@ title: 'TODO: Extend CLI run with tracing and derived debug signals'
 priority: Medium
 effort: 1-2d
 created: 2026-04-23
-issue: https://github.com/andorthehood/8f4e/issues/564
+issue: https://github.com/8f4e/8f4e/issues/564
 status: Open
 completed: null
 ---

@@ -5,8 +5,8 @@ import type { ProjectIncludeResolver } from './project';
 export interface CompileOptions {
 	/** Emit native assertion callbacks and source sites. Default is false; disabled assertions consume operands only. */
 	enableAssertions?: boolean;
-	/** Word address where the first module memory allocation begins. Defaults to 1. */
-	startingMemoryWordAddress?: number;
+	/** Address in 4-byte allocation units where the first module allocation begins. Defaults to 1 (byte address 4). */
+	startingMemoryAllocationUnitAddress?: number;
 	/** Whether to include per-instruction stack analysis in compiled modules and functions. Default is false. */
 	includeStackAnalysis?: boolean;
 	/** Disable shared memory for tests (wabt doesn't support shared memory). Default is false (shared enabled). */

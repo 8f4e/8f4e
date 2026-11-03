@@ -3,6 +3,45 @@ import { describe, expect, it } from 'vitest';
 import parseConstantMulDivExpression from './parseConstantMulDivExpression';
 
 describe('parseConstantMulDivExpression', () => {
+	it.each([
+		['SCALE*1e-3', 'SCALE', '*', '1e-3'],
+		['1e-3*SCALE', '1e-3', '*', 'SCALE'],
+		['SCALE/1E+3', 'SCALE', '/', '1E+3'],
+		['1E+3/SCALE', '1E+3', '/', 'SCALE'],
+		['SCALE+1e+3', 'SCALE', '+', '1e+3'],
+		['1e+3+SCALE', '1e+3', '+', 'SCALE'],
+		['SCALE-1E-3', 'SCALE', '-', '1E-3'],
+		['1E-3-SCALE', '1E-3', '-', 'SCALE'],
+		['SCALE^1e-3f64', 'SCALE', '^', '1e-3f64'],
+		['1e-3f64^SCALE', '1e-3f64', '^', 'SCALE'],
+		['-2.5e-2*1E+3f64', '-2.5e-2', '*', '1E+3f64'],
+		['SCALE*-1e-3', 'SCALE', '*', '-1e-3'],
+		['-.5E-3f64/SCALE', '-.5E-3f64', '/', 'SCALE'],
+		['SCALE*.5E+3f64', 'SCALE', '*', '.5E+3f64'],
+		['SCALE*1.E-3', 'SCALE', '*', '1.E-3'],
+		['sizeof(*ptr)*1e-3', 'sizeof(*ptr)', '*', '1e-3'],
+	])('parses exponent signs in %s', (source, lhs, operator, rhs) => {
+		expect(parseConstantMulDivExpression(source)).toEqual({ lhs, operator, rhs });
+	});
+
+	it.each(['1e-3', '1E+3', '-.5e-3f64', '-1.E+3'])(
+		'does not treat the exponent sign in %s as an expression operator',
+		source => {
+			expect(parseConstantMulDivExpression(source)).toBeNull();
+		}
+	);
+
+	it.each(['VALUE', 'VALUE1E', 'value', '0x1E'])('preserves subtraction after %s', lhs => {
+		expect(parseConstantMulDivExpression(`${lhs}-1`)).toEqual({ lhs, operator: '-', rhs: '1' });
+	});
+
+	it.each(['SCALE*1e-3/2', '1e-3*SCALE+1', '1e+3^2+1', 'SCALE*1e-3+1e-4'])(
+		'rejects actual chained operators in %s',
+		source => {
+			expect(parseConstantMulDivExpression(source)).toBeNull();
+		}
+	);
+
 	it('parses constant * literal', () => {
 		expect(parseConstantMulDivExpression('SIZE*2')).toEqual({
 			lhs: 'SIZE',

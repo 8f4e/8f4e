@@ -413,6 +413,98 @@
       "name": "increment",
       "type": "function",
     },
+    "mix__int__float": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "mix",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "left",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "right",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "left",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "castToFloat",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "right",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "add",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "mix",
+      "type": "function",
+    },
     "readScaledBlep__float_p__int__float": {
       "lines": [
         {
@@ -733,7 +825,10 @@
       "id": "double__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -780,7 +875,10 @@
       "id": "identityFloat64__float64",
       "signature": {
         "parameters": [
-          "float64",
+          {
+            "name": "x",
+            "type": "float64",
+          },
         ],
         "returns": [
           "float64",
@@ -791,10 +889,31 @@
       "id": "increment__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
+        ],
+      },
+    },
+    "mix__int__float": {
+      "id": "mix__int__float",
+      "signature": {
+        "parameters": [
+          {
+            "name": "left",
+            "type": "int",
+          },
+          {
+            "name": "right",
+            "type": "float",
+          },
+        ],
+        "returns": [
+          "float",
         ],
       },
     },
@@ -802,9 +921,18 @@
       "id": "readScaledBlep__float_p__int__float",
       "signature": {
         "parameters": [
-          "float*",
-          "int",
-          "float",
+          {
+            "name": "lut",
+            "type": "float*",
+          },
+          {
+            "name": "phaseIndex",
+            "type": "int",
+          },
+          {
+            "name": "delta",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -815,9 +943,18 @@
       "id": "scaleInto__float_p__float_p__float",
       "signature": {
         "parameters": [
-          "float*",
-          "float*",
-          "float",
+          {
+            "name": "dst",
+            "type": "float*",
+          },
+          {
+            "name": "src",
+            "type": "float*",
+          },
+          {
+            "name": "gain",
+            "type": "float",
+          },
         ],
         "returns": [],
       },
@@ -1413,6 +1550,58 @@
       ],
       "type": "module",
     },
+    "inlineCallArguments": {
+      "id": "inlineCallArguments",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "inlineCallArguments",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "mix",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.5,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 3.5,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
   },
   "moduleMemory": {
     "callConstantFunction": {
@@ -1430,6 +1619,8 @@
     "callImpureFunctionWithExplicitLoadAndStore": {
       "memory": {
         "gain": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
           "byteAddress": 12,
           "default": 0.5,
           "elementWordSize": 4,
@@ -1440,10 +1631,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 1,
         },
         "input": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 3.5,
           "elementWordSize": 4,
@@ -1454,10 +1645,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
         "output": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 0,
           "elementWordSize": 4,
@@ -1467,8 +1658,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
       },
     },
@@ -1481,6 +1670,8 @@
     "callPointerParamsWithLocalDereference": {
       "memory": {
         "delta": {
+          "allocationUnitAddress": 36,
+          "allocationUnitCount": 1,
           "byteAddress": 144,
           "default": 0.5,
           "elementWordSize": 4,
@@ -1491,10 +1682,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 36,
-          "wordAlignedSize": 1,
         },
         "lut": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 32,
           "byteAddress": 16,
           "default": {},
           "elementWordSize": 4,
@@ -1504,10 +1695,11 @@
           "numberOfElements": 32,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 32,
         },
       },
+    },
+    "inlineCallArguments": {
+      "memory": {},
     },
   },
   "overview": {
@@ -1520,6 +1712,7 @@
       "getTwo__void",
       "identityFloat64__float64",
       "increment__int",
+      "mix__int__float",
       "readScaledBlep__float_p__int__float",
       "scaleInto__float_p__float_p__float",
     ],
@@ -1532,6 +1725,7 @@
       "callMultipleFunctions",
       "callNestedFunction",
       "callPointerParamsWithLocalDereference",
+      "inlineCallArguments",
     ],
     "requiredMemoryBytes": 148,
     "wasmExports": [

@@ -1,0 +1,45 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+Named array reads use the stored element type.
+Pointer arrays hold four-byte integer addresses.
+noteEnd
+
+entry test
+module arrayValueTypeAssertions
+float64[] doubles 2 1.25f64
+float64[] precise 2 1.0000000000000002f64
+float[] floats 2 1.25
+int[] integers 2 7
+float64*[] pointers 2 12345678
+float64**[] pointerPointers 2 87654321
+float64* expectedPointer 12345678
+float64** expectedPointerPointer 87654321
+
+push doubles
+assertEqual 1.25f64
+
+push precise
+assertEqual 1.0000000000000002f64
+
+push floats
+assertEqual 1.25
+
+push integers
+assertEqual 7
+
+push pointers
+assertEqual expectedPointer
+
+push pointerPointers
+assertEqual expectedPointerPointer
+
+push sizeof(pointers)
+assertEqual 4
+
+push sizeof(pointerPointers)
+assertEqual 4
+moduleEnd
+entryEnd

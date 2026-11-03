@@ -3,7 +3,7 @@ title: 'TODO: Unify project instruction syntax parsing'
 priority: Medium
 effort: 4-8h
 created: 2026-10-14
-issue: https://github.com/andorthehood/8f4e/issues/1026
+issue: https://github.com/8f4e/8f4e/issues/1026
 status: Open
 completed: null
 ---
@@ -20,9 +20,14 @@ The separate exposure parser duplicates token-level rules and reports plain erro
 similar collection loops for `pass` and `init`, including repeated source-context handling. These differences reflect
 how the features were introduced rather than different language requirements.
 
+Named project instructions add more variants: `entry` and `group` names use whitespace splitting in
+`getProjectBlockName`, while `template` and `useTemplate` names have a separate semicolon-comment and name parser.
+Consolidate these lexical rules too, without moving template expansion or scope resolution out of preprocessing.
+
 ## Proposed Solution
 
-Make the tokenizer own syntax parsing and validation for all three instructions. Move exposure parsing onto the
+Make the tokenizer own syntax parsing and validation for `expose`, `pass`, and `init`, and provide shared lexical
+helpers for named project instructions (`entry`, `group`, `template`, and `useTemplate`). Move exposure parsing onto the
 existing instruction-token and argument-classification path. Keep project block structure and exposure collection
 in the preparser, and keep scoped composition and semantic resolution in their existing stages.
 
@@ -39,13 +44,20 @@ and diagnostic-context code where useful without introducing another project obj
    live-editor lines through the same strict parser; remove obsolete parser exports and implementations.
 4. Consolidate repeated `pass`/`init` source-line collection and group diagnostic-context attachment in composition.
    Keep symbol lookup, scope checks, and backing-memory validation in semantic phases.
-5. Add focused tokenizer coverage and project fixtures for comments, whitespace, malformed operands, extra arguments,
-   nested groups, and group-relative diagnostics. Update affected documentation and snapshots.
+5. Replace the independent project-name parsers with shared lexical helpers. Keep each instruction's existing naming
+   and argument rules explicit, handle inline comments consistently, and attach structured syntax diagnostics.
+   Template definition/reference validation, expansion, and isolated scope lookup stay in the template-inlining stage;
+   later compiler stages and the project model do not acquire template semantics.
+6. Add focused tokenizer coverage and project fixtures for comments, whitespace, malformed operands, extra arguments,
+   nested groups, and group-relative diagnostics, including named project instructions. Update affected documentation
+   and snapshots.
 
 ## Success Criteria
 
 - [ ] `expose`, `pass`, and `init` syntax is owned by the tokenizer and reuses existing token/argument parsing.
-- [ ] Inline comments and whitespace are handled consistently across all three instructions.
+- [ ] `entry`, `group`, `template`, and `useTemplate` names share lexical helpers instead of independent whitespace/comment splitting.
+- [ ] Inline comments and whitespace are handled consistently across project instructions while their own naming rules remain explicit.
+- [ ] Template semantics stay in preprocessing; only token/argument parsing is shared with other instructions.
 - [ ] Malformed exposure syntax produces structured syntax diagnostics with the correct group and source line.
 - [ ] Incomplete editor lines remain tolerable without a second syntax implementation.
 - [ ] Project structure, source preservation, exposure resolution, namespace passes, and initializer semantics remain intact.
@@ -55,9 +67,9 @@ and diagnostic-context code where useful without introducing another project obj
 ## Affected Components
 
 - `packages/compiler/packages/sub-program/packages/tokenizer/src/` and its project-instruction parsers/tests.
-- `packages/compiler/packages/project-preparser/src/projectMemoryExposure.ts`, its exports, and project-source parsing.
+- `packages/compiler/packages/project-preparser/src/projectMemoryExposure.ts`, its exports, project-source parsing, `projectLines.ts`, and template instruction parsing.
 - `packages/compiler/packages/program-composer/src/composeProgram.ts` and composition fixtures.
-- Editor exposure consumers in `features/code-blocks/features/connectors/` and `features/project-export/`.
+- Editor exposure consumers in `features/code-blocks/features/connectors/` and `pureHelpers/projectSerialization/`.
 - `@8f4e/language-spec` project contracts only where shared syntax types are needed.
 
 ## Risks & Considerations
@@ -65,7 +77,10 @@ and diagnostic-context code where useful without introducing another project obj
 - Preserve group-relative diagnostic identity; do not substitute whole-file line numbers for block-relative locations.
 - Keep syntax failures separate from semantic failures such as missing backing memory or invalid initializer scope.
 - The project is unreleased: update consumers directly without compatibility wrappers, aliases, or fallback parsers.
-- This task does not change instruction syntax, scope rules, initializer precedence, or supported initializer values.
+- This task does not change instruction meanings, scope rules, initializer precedence, or supported initializer values.
+  Comment and whitespace handling should become consistent rather than retaining accidental parser differences.
+- This remains planning work. The shared structural reader and template scope traversal cleanup do not implement
+  this instruction/name parsing migration.
 
 ## Validation Checkpoints
 
@@ -75,7 +90,7 @@ and diagnostic-context code where useful without introducing another project obj
 
 ## Related Items
 
-- [PR #1019](https://github.com/andorthehood/8f4e/pull/1019) introduced `init` and simplified `expose`, revealing the
+- [PR #1019](https://github.com/8f4e/8f4e/pull/1019) introduced `init` and simplified `expose`, revealing the
   inconsistent parsing paths.
 - [TODO 378](378-make-parser-stateful-for-block-pairing-and-owning-block-context.md) covers broader parser context and
   diagnostic ownership.

@@ -52,13 +52,3 @@ export const libs = {
 	/** ES2023 with WebWorker - for web worker packages */
 	webworker: ['es2023', 'webworker'],
 } as const;
-
-/**
- * Standard exclude patterns for source builds
- */
-export const standardExclude = ['node_modules', 'src/**/*.test.ts'] as const;
-
-/**
- * Standard include patterns for source builds
- */
-export const standardInclude = ['src/**/*.ts'] as const;

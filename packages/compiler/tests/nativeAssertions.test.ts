@@ -1,4 +1,4 @@
-import { type CompileResult, ErrorCode } from '@8f4e/language-spec';
+import { type CompileResult, ErrorCode, getProjectModules } from '@8f4e/language-spec';
 import { describe, expect, it, vi } from 'vitest';
 import { compileProject, parseProjectSource } from '../src';
 
@@ -174,12 +174,12 @@ entryEnd`);
 		expect(events[3].expected).toBe(Math.fround(1.2501));
 		for (const site of result.assertionSites!) {
 			expect(site).toMatchObject({
-				projectBlockId: project.modules[0].id,
+				projectBlockId: getProjectModules(project)[0].id,
 				projectGroupPath: '',
 				codeBlockType: 'module',
 				codeBlockId: 'checks',
 			});
-			expect(project.modules[0].code[site.lineNumber].split(' ')[0]).toBe(site.instruction);
+			expect(getProjectModules(project)[0].code[site.lineNumber].split(' ')[0]).toBe(site.instruction);
 		}
 	});
 
@@ -196,7 +196,7 @@ entryEnd`,
 		);
 		const equal = vi.fn();
 		const runtime = await instantiate(result, { assertEqualI32: equal });
-		const index = result.memoryPlan.modules.state.memory.value.wordAlignedAddress;
+		const index = result.memoryPlan.modules.state.memory.value.allocationUnitAddress;
 		new Int32Array(runtime.memory.buffer)[index] = 9;
 		runtime.exports.main();
 		expect(equal).toHaveBeenCalledWith(9, 9, 0);
@@ -235,7 +235,7 @@ entryEnd`,
 		runtime.exports.initDefaults();
 		expect(equal).not.toHaveBeenCalled();
 		const view = new Int32Array(runtime.memory.buffer);
-		const index = result.memoryPlan.modules.checks.memory.output.wordAlignedAddress;
+		const index = result.memoryPlan.modules.checks.memory.output.allocationUnitAddress;
 		expect(view[index]).toBe(17);
 		runtime.exports.main();
 		expect(twice).not.toHaveBeenCalled();
@@ -304,7 +304,9 @@ entryEnd`,
 		const project = parseProjectSource(`8f4e/v1
 entry main
 group parent
+entry main
 group child
+entry main
 module repeated
 ; A physical comment line.
 push
@@ -317,6 +319,7 @@ loop 2
 call helper
 loopEnd
 moduleEnd
+entryEnd
 function helper
 #export
 ; Export removal must not shift the source line.
@@ -328,6 +331,7 @@ module repeated
 push 2
 assert
 moduleEnd
+entryEnd
 groupEnd
 entryEnd`);
 		const options = { enableAssertions: true, disableSharedMemory: true };
@@ -357,9 +361,11 @@ group included
 includes
 include checking-helper
 includesEnd
+entry main
 module caller
 call includedCheck
 moduleEnd
+entryEnd
 groupEnd
 entryEnd`);
 		const result = await compileProject(project, {

@@ -1,7 +1,10 @@
 import { WASM_F32_NEAREST, WASM_F64_NEAREST } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest, createStackFacts } from '../testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	createStackFacts,
+} from '../../tests/testUtils';
 import round from './round';
 
 describe('round instruction compiler', () => {

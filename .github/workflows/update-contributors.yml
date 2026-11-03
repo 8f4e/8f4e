@@ -1,0 +1,50 @@
+---
+name: Update contributors
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: update-contributors
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Refresh contributor recognition
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Generate contributor grid
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/update-contributors.mjs
+
+      - name: Commit contributor update
+        run: |
+          if git diff --quiet -- README.md; then
+            echo "The contributor grid is already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs: update contributor recognition"
+          git push origin HEAD:main

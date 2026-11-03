@@ -3,7 +3,7 @@ title: 'TODO: Add compiler algorithmic regression metrics'
 priority: Medium
 effort: 1-2 days
 created: 2026-04-28
-issue: https://github.com/andorthehood/8f4e/issues/647
+issue: https://github.com/8f4e/8f4e/issues/647
 status: Completed
 completed: 2026-06-14
 ---
@@ -155,6 +155,6 @@ Suggested record shape:
 
 - Completion was recorded in the 2026-06-14 archiving commit `e2c2a674c` and reaffirmed by the maintainer on
   2026-10-14. The brief reopening during the issue audit was reversed following that clarification.
-- Compiler coverage logging was introduced in [commit f79b6392a](https://github.com/andorthehood/8f4e/commit/f79b6392ae005a4a4a438bcb442f490e3126be49).
-- Pipeline-component tracking and dashboard support were extended in [commit a6bb1484f](https://github.com/andorthehood/8f4e/commit/a6bb1484f4a972575e85094071c35bd593b88215).
+- Compiler coverage logging was introduced in [commit f79b6392a](https://github.com/8f4e/8f4e/commit/f79b6392ae005a4a4a438bcb442f490e3126be49).
+- Pipeline-component tracking and dashboard support were extended in [commit a6bb1484f](https://github.com/8f4e/8f4e/commit/a6bb1484f4a972575e85094071c35bd593b88215).
 - No associated PR was returned for either implementation commit.

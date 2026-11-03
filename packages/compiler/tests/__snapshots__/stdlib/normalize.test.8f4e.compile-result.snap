@@ -616,7 +616,10 @@
       "id": "normalize__int16_p",
       "signature": {
         "parameters": [
-          "int16*",
+          {
+            "name": "pointer",
+            "type": "int16*",
+          },
         ],
         "returns": [
           "float",
@@ -627,7 +630,10 @@
       "id": "normalize__int16u_p",
       "signature": {
         "parameters": [
-          "int16u*",
+          {
+            "name": "pointer",
+            "type": "int16u*",
+          },
         ],
         "returns": [
           "float",
@@ -638,7 +644,10 @@
       "id": "normalize__int8_p",
       "signature": {
         "parameters": [
-          "int8*",
+          {
+            "name": "pointer",
+            "type": "int8*",
+          },
         ],
         "returns": [
           "float",
@@ -649,7 +658,10 @@
       "id": "normalize__int8u_p",
       "signature": {
         "parameters": [
-          "int8u*",
+          {
+            "name": "pointer",
+            "type": "int8u*",
+          },
         ],
         "returns": [
           "float",
@@ -660,7 +672,10 @@
       "id": "normalize__int_p",
       "signature": {
         "parameters": [
-          "int*",
+          {
+            "name": "pointer",
+            "type": "int*",
+          },
         ],
         "returns": [
           "float",
@@ -1443,6 +1458,8 @@
     "normalizeAssertions": {
       "memory": {
         "signed16": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
           "byteAddress": 12,
           "default": {
             "0": -32768,
@@ -1456,10 +1473,10 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int16",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 1,
         },
         "signed8": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": {
             "0": -128,
@@ -1474,10 +1491,10 @@
           "numberOfElements": 3,
           "pointerDepth": 0,
           "type": "int8",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
         "unsigned16": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": {
             "0": 0,
@@ -1491,10 +1508,10 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int16u",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
         },
         "unsigned8": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": {
             "0": 0,
@@ -1509,8 +1526,6 @@
           "numberOfElements": 3,
           "pointerDepth": 0,
           "type": "int8u",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
       },
     },

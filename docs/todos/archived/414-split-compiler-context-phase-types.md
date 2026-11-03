@@ -3,7 +3,7 @@ title: 'TODO: Split compiler context phase types'
 priority: Medium
 effort: 1-2d
 created: 2026-05-25
-issue: https://github.com/andorthehood/8f4e/issues/683
+issue: https://github.com/8f4e/8f4e/issues/683
 status: Done
 completed: 2026-05-25
 ---

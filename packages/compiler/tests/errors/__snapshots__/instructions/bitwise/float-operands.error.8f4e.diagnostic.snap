@@ -1,0 +1,14 @@
+{
+  "code": 2,
+  "context": {
+    "codeBlockId": "floatBitwiseOperands",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [],
+    "instruction": "and",
+    "lineNumber": 3,
+  },
+  "message": "The operation only accepts integer values as operands. (2)",
+}

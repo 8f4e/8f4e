@@ -1,4 +1,4 @@
-import type { EditorDirectivePlugin, ParsedDirectiveRecord, ParsedEditorDirective } from '@8f4e/editor-state-types';
+import type { EditorDirectiveDefinition, ParsedDirectiveRecord } from '@8f4e/editor-state-types';
 
 export interface PosParseResult {
 	x: number;
@@ -14,11 +14,11 @@ function parseStrictInteger(value: string): number | undefined {
 	return parsed;
 }
 
-const posDirectivePlugin: EditorDirectivePlugin = {
+const posDirectivePlugin: EditorDirectiveDefinition = {
 	name: 'pos',
 };
 
-export function createPosDirectiveData(directive: ParsedEditorDirective): PosParseResult | undefined {
+export function createPosDirectiveData(directive: ParsedDirectiveRecord): PosParseResult | undefined {
 	if (directive.args.length !== 2) {
 		return undefined;
 	}

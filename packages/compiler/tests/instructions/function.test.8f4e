@@ -33,7 +33,7 @@ constantsEnd
 
 note
 ; @pos 2 2
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 User-defined functions can
 return values and consume

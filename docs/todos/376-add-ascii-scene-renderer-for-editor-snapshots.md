@@ -3,7 +3,7 @@ title: 'TODO: Add ASCII scene renderer for editor snapshot tests'
 priority: Medium
 effort: 1-2d
 created: 2026-04-08
-issue: https://github.com/andorthehood/8f4e/issues/558
+issue: https://github.com/8f4e/8f4e/issues/558
 status: Open
 completed: null
 ---

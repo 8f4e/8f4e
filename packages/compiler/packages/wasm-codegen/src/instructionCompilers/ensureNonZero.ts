@@ -28,14 +28,9 @@ const ensureNonZero: InstructionCompiler = (line, context, facts) => {
 
 	const isInteger = operand.valueType === 'int';
 	const isFloat64 = operand.valueType === 'float64';
-	let defaultNonZeroValue = isInteger ? 1 : 1.0;
+	let defaultNonZeroValue = 1;
 
-	// Preserve the previous synthetic-source lowering, which rounded float defaults to one decimal place.
-	if (line.arguments[0] && line.arguments[0].type === ArgumentType.LITERAL && !isInteger) {
-		defaultNonZeroValue = Number(line.arguments[0].value.toFixed(1));
-	}
-
-	if (line.arguments[0] && line.arguments[0].type === ArgumentType.LITERAL && isInteger) {
+	if (line.arguments[0] && line.arguments[0].type === ArgumentType.LITERAL) {
 		defaultNonZeroValue = line.arguments[0].value;
 	}
 

@@ -1,0 +1,67 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+notZero returns an integer
+boolean for every numeric type.
+noteEnd
+
+entry test
+module notZeroIntAssertions
+push 0
+notZero
+assertEqual 0
+
+push 7
+notZero
+assertEqual 1
+
+push -7
+notZero
+assertEqual 1
+moduleEnd
+
+module notZeroFloatAssertions
+push 0.0
+notZero
+assertEqual 0
+
+push -0.0
+notZero
+assertEqual 0
+
+push 1.5
+notZero
+assertEqual 1
+
+push -1.5
+notZero
+assertEqual 1
+moduleEnd
+
+module notZeroFloat64Assertions
+push 0.0f64
+notZero
+assertEqual 0
+
+push -0.0f64
+notZero
+assertEqual 0
+
+push 1.5f64
+notZero
+assertEqual 1
+
+push -1.5f64
+notZero
+assertEqual 1
+
+; This remains nonzero in
+; float64 but rounds to zero
+; in float32.
+push 1e-300f64
+notZero
+assertEqual 1
+moduleEnd
+entryEnd

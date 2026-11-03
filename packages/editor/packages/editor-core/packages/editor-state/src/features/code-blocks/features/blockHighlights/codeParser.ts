@@ -14,62 +14,79 @@ interface CodeBlock {
 	depth: number;
 }
 
-function countOpenBlocks(blocks: CodeBlock[]) {
-	return blocks.reduce((count, block) => (block.endLineNumber === undefined ? count + 1 : count), 0);
-}
+function popLastOpenBlock(stack: CodeBlock[] | undefined): CodeBlock | undefined {
+	if (!stack) {
+		return undefined;
+	}
 
-function getLastOpenBlockByEndInstruction(blocks: CodeBlock[], instruction: string) {
-	return blocks
-		.slice()
-		.reverse()
-		.find(block => block.endInstruction === instruction && block.endLineNumber === undefined);
+	while (stack.length > 0) {
+		const candidate = stack.pop();
+		if (candidate && candidate.endLineNumber === undefined) {
+			return candidate;
+		}
+	}
+
+	return undefined;
 }
 
 export default function parseCodeBlocks(code: string[]) {
 	const blocks: CodeBlock[] = [];
+	const openBlocksByEndInstruction = new Map<string, CodeBlock[]>();
+	const openIfBlocks: CodeBlock[] = [];
+	let openBlockCount = 0;
+
+	const pushOpenBlock = (block: CodeBlock) => {
+		const stack = openBlocksByEndInstruction.get(block.endInstruction);
+		if (stack) {
+			stack.push(block);
+		} else {
+			openBlocksByEndInstruction.set(block.endInstruction, [block]);
+		}
+	};
 
 	code.forEach((line, lineIndex) => {
 		const [, instruction] = (line.match(instructionParser) || []) as [never, string];
 
-		const openBlockCount = countOpenBlocks(blocks);
-
 		const endInstruction = endInstructionByStartInstruction.get(instruction);
 		if (endInstruction) {
-			blocks.push({
+			const block: CodeBlock = {
 				startInstruction: instruction,
 				endInstruction,
 				startLineNumber: lineIndex,
 				endLineNumber: undefined,
 				depth: openBlockCount,
-			});
+			};
+			blocks.push(block);
+			pushOpenBlock(block);
+			if (instruction === 'if' && endInstruction === 'ifEnd') {
+				openIfBlocks.push(block);
+			}
+			openBlockCount += 1;
 		}
 
 		if (instruction === 'else') {
-			const lastOpenIfBlock = blocks
-				.slice()
-				.reverse()
-				.find(
-					block =>
-						block.startInstruction === 'if' && block.endInstruction === 'ifEnd' && block.endLineNumber === undefined
-				);
+			const lastOpenIfBlock = popLastOpenBlock(openIfBlocks);
 
 			if (lastOpenIfBlock) {
 				lastOpenIfBlock.endLineNumber = lineIndex;
-				blocks.push({
+				const elseBlock: CodeBlock = {
 					startInstruction: 'else',
 					endInstruction: 'ifEnd',
 					startLineNumber: lineIndex,
 					endLineNumber: undefined,
 					depth: lastOpenIfBlock.depth,
-				});
+				};
+				blocks.push(elseBlock);
+				pushOpenBlock(elseBlock);
 			}
 		}
 
 		if (endInstructions.has(instruction)) {
-			const lastOpenBlock = getLastOpenBlockByEndInstruction(blocks, instruction);
+			const lastOpenBlock = popLastOpenBlock(openBlocksByEndInstruction.get(instruction));
 
 			if (lastOpenBlock) {
 				lastOpenBlock.endLineNumber = lineIndex;
+				openBlockCount -= 1;
 			}
 		}
 	});

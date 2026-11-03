@@ -83,6 +83,27 @@ export function getError(
 	details?: ErrorDetails
 ): CompilerStageError {
 	switch (code) {
+		case ErrorCode.UNDEFINED_TEMPLATE:
+			return {
+				code,
+				message: `Template "${details?.identifier}" is not defined in the directly containing scope. (${code})`,
+				line,
+				context,
+			};
+		case ErrorCode.DUPLICATE_TEMPLATE:
+			return {
+				code,
+				message: `Template "${details?.identifier}" is already defined in this scope. (${code})`,
+				line,
+				context,
+			};
+		case ErrorCode.RECURSIVE_TEMPLATE:
+			return {
+				code,
+				message: `Template "${details?.identifier}" cannot recursively reference itself across an isolated group scope. (${code})`,
+				line,
+				context,
+			};
 		case ErrorCode.INSTRUCTION_INVALID_OUTSIDE_BLOCK:
 			return {
 				code,
@@ -136,6 +157,20 @@ export function getError(
 			return {
 				code,
 				message: 'Undeclared identifier' + (details?.identifier ? `: ${details.identifier}` : '') + '. (' + code + ')',
+				line,
+				context,
+			};
+		case ErrorCode.REFERENCE_SLOT_HAS_NO_STORAGE:
+			return {
+				code,
+				message: `Fixed reference slot${details?.identifier ? ` "${details.identifier}"` : ''} has no addressable storage. Push the slot name to use its target address. (${code})`,
+				line,
+				context,
+			};
+		case ErrorCode.REFERENCE_SLOT_CANNOT_BE_REBOUND:
+			return {
+				code,
+				message: `Fixed reference slot${details?.identifier ? ` "${details.identifier}"` : ''} cannot be rebound. (${code})`,
 				line,
 				context,
 			};
@@ -420,9 +455,7 @@ export function getError(
 			return {
 				code,
 				message:
-					'Mixed float widths: arithmetic operations require all float operands to have the same width (float32 or float64). (' +
-					code +
-					')',
+					'Mixed float widths: floating-point values must have the same width (float32 or float64). (' + code + ')',
 				line,
 				context,
 			};
@@ -525,12 +558,7 @@ export function getError(
 		case ErrorCode.DUPLICATE_IDENTIFIER:
 			return {
 				code,
-				message:
-					'Duplicate identifier' +
-					(details?.identifier ? `: ${details.identifier}` : '') +
-					'. Module and function names must be unique. (' +
-					code +
-					')',
+				message: 'Duplicate identifier' + (details?.identifier ? `: ${details.identifier}` : '') + '. (' + code + ')',
 				line,
 				context,
 			};
@@ -574,6 +602,16 @@ export function getError(
 			return {
 				code,
 				message: 'Array size must be a finite nonnegative integer. (' + code + ')',
+				line,
+				context,
+			};
+		case ErrorCode.INVALID_ADDRESS_ARITHMETIC:
+			return {
+				code,
+				message:
+					'Invalid address arithmetic. Add accepts one address and one integer offset; subtraction accepts an address minus an integer offset or two addresses. (' +
+					code +
+					')',
 				line,
 				context,
 			};

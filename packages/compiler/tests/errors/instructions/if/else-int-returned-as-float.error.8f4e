@@ -1,0 +1,15 @@
+8f4e/v1
+
+entry main
+module ifElseIntReturnedAsFloat
+; ifEnd float should reject an
+; integer else-branch result.
+push 1
+if
+push 2.0
+else
+push 3
+ifEnd float
+drop
+moduleEnd
+entryEnd

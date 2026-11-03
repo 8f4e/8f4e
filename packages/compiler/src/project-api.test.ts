@@ -22,9 +22,11 @@ const source = [
 ].join('\n');
 
 const directProject: ProjectObjectModel = {
+	entries: ['main'],
 	code: [],
-	modules: [
+	execution: [
 		{
+			type: 'module',
 			id: 8,
 			entry: 'main',
 			code: ['module counter', 'int value 2', 'push value', 'call one', 'add', 'drop', 'moduleEnd'],
@@ -36,19 +38,21 @@ const directProject: ProjectObjectModel = {
 	includes: [],
 	notes: [],
 	unknown: [],
-	groups: [],
 };
 
 const relocatedProject: ProjectObjectModel = {
 	...directProject,
 	functions: [],
-	modules: [
+	execution: [
 		{
+			type: 'module',
 			id: 1,
 			entry: 'main',
 			code: ['module relocated', 'int input 7', 'int output', 'push &output', 'push input', 'store', 'moduleEnd'],
 		},
 	],
+
+	entries: ['main'],
 };
 
 describe('project compiler API', () => {
@@ -71,11 +75,28 @@ describe('project compiler API', () => {
 		expect(parsedResult.memoryPlan).toEqual(directResult.memoryPlan);
 	});
 
+	it('exports root entries while keeping group entries in their own scope', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry foo
+entryEnd
+entry main
+group child
+entry foo
+entryEnd
+entry bar
+entryEnd
+groupEnd
+entryEnd`);
+		const result = await compileProject(project, { disableSharedMemory: true });
+		const exports = WebAssembly.Module.exports(new WebAssembly.Module(new Uint8Array(result.codeBuffer)));
+		expect(exports.map(item => item.name).sort()).toEqual(['foo', 'initDefaults', 'main']);
+	});
+
 	it('applies the configured starting memory word address to planned and emitted module memory', async () => {
 		const [defaultResult, zeroResult, relocatedResult] = await Promise.all([
 			compileProject(relocatedProject, { disableSharedMemory: true }),
-			compileProject(relocatedProject, { disableSharedMemory: true, startingMemoryWordAddress: 0 }),
-			compileProject(relocatedProject, { disableSharedMemory: true, startingMemoryWordAddress: 8 }),
+			compileProject(relocatedProject, { disableSharedMemory: true, startingMemoryAllocationUnitAddress: 0 }),
+			compileProject(relocatedProject, { disableSharedMemory: true, startingMemoryAllocationUnitAddress: 8 }),
 		]);
 
 		expect(defaultResult.memoryPlan.modules.relocated.byteAddress).toBe(4);
@@ -100,11 +121,13 @@ describe('project compiler API', () => {
 		const project: ProjectObjectModel = {
 			...directProject,
 			functions: [],
-			modules: [
-				{ id: 1, entry: 'alternate', code: ['module firstAlternate', 'moduleEnd'] },
-				{ id: 2, entry: 'main', code: ['module mainModule', 'moduleEnd'] },
-				{ id: 3, entry: 'alternate', code: ['module secondAlternate', 'moduleEnd'] },
+			execution: [
+				{ type: 'module', id: 1, entry: 'alternate', code: ['module firstAlternate', 'moduleEnd'] },
+				{ type: 'module', id: 2, entry: 'main', code: ['module mainModule', 'moduleEnd'] },
+				{ type: 'module', id: 3, entry: 'alternate', code: ['module secondAlternate', 'moduleEnd'] },
 			],
+
+			entries: ['alternate', 'main'],
 		};
 
 		const result = await compileProject(project, { disableSharedMemory: true });

@@ -1,0 +1,27 @@
+function moveTowards
+#export
+; Moves current toward target by
+; at most maxStep, without overshoot.
+; Nonpositive steps leave it unchanged.
+param float current
+param float target
+param float maxStep
+
+push maxStep
+max 0.0
+localSet maxStep
+
+push target
+push current
+greaterThan
+if
+push current
+add maxStep
+min target
+else
+push current
+sub maxStep
+max target
+ifEnd float
+
+functionEnd float

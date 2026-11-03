@@ -1,5 +1,4 @@
 import { createNodePreset } from '@8f4e/config/vitest';
-import { resolve } from 'path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -15,10 +14,4 @@ export default defineConfig({
 		],
 		typecheckEnabled: true,
 	}),
-	resolve: {
-		alias: {
-			'@8f4e/editor-state/memory': resolve(__dirname, 'packages/editor-state/src/memory.ts'),
-			'@8f4e/editor-state': resolve(__dirname, 'packages/editor-state/src/index.ts'),
-		},
-	},
 });

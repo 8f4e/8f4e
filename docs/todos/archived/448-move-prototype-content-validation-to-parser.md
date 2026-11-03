@@ -3,7 +3,7 @@ title: 'TODO: Move prototype content validation to parser'
 priority: Medium
 effort: 4-8h
 created: 2026-06-01
-issue: https://github.com/andorthehood/8f4e/issues/944
+issue: https://github.com/8f4e/8f4e/issues/944
 status: Cancelled
 completed: 2026-09-07
 ---

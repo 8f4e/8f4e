@@ -15,7 +15,7 @@ export default function createMemoryDataSegmentCandidate(
 	memory: PlannedMemoryDeclaration,
 	memoryDefault: MemoryDefault
 ): InitialMemoryDataSegmentCandidate[] {
-	const isArray = memory.numberOfElements > 1;
+	const isArray = typeof memoryDefault.value === 'object';
 	if (isArray && memoryDefault.hasExplicitDefault !== true) {
 		return [];
 	}
@@ -68,6 +68,12 @@ function createArrayDataSegmentCandidates(
 			value,
 		}))
 		.sort((left, right) => left.elementIndex - right.elementIndex)) {
+		// Skip encoding positive zero while preserving floating-point negative zero's sign bit.
+		if (Object.is(value, 0)) {
+			flushRun();
+			continue;
+		}
+
 		const bytes = createDefaultValueBytes(memory, value);
 		if (bytes.every(byte => byte === 0)) {
 			flushRun();

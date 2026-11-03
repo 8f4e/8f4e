@@ -103,31 +103,6 @@ export function createEsLibConfig(entry: string, outDir = 'dist'): UserConfig {
 }
 
 /**
- * Creates a Vite configuration for a UMD bundle.
- * Used for standalone browser bundles.
- */
-export function createUmdBundleConfig(options: {
-	entry: string;
-	name: string;
-	outDir?: string;
-	fileName?: string;
-}): UserConfig {
-	const { entry, name, outDir = 'bundle', fileName = 'bundle.js' } = options;
-
-	return createLibConfig({
-		entry,
-		name,
-		outDir,
-		formats: ['umd'],
-		fileName: () => fileName,
-		external: [],
-		rollupOutput: {
-			globals: {},
-		},
-	});
-}
-
-/**
  * Creates a Vite configuration for a web worker library.
  * Ensures proper bundling for worker context.
  */

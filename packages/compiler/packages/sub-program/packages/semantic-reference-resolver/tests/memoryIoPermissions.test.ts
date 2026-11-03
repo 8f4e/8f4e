@@ -15,13 +15,13 @@ function resolveFunction(body: string[], isImpure = false) {
 	const metadata: FunctionMetadata = {
 		id: 'caller__int_p',
 		name: 'caller',
-		signature: { parameters: ['int*'], returns: [] },
+		signature: { parameters: [{ name: 'value', type: 'int*' }], returns: [] },
 		...(isImpure ? { isImpure: true } : {}),
 	};
 	const consumer: FunctionMetadata = {
 		id: 'consume__int',
 		name: 'consume',
-		signature: { parameters: ['int'], returns: [] },
+		signature: { parameters: [{ name: 'value', type: 'int' }], returns: [] },
 	};
 
 	return resolveSemanticReferences({
@@ -66,7 +66,7 @@ describe('semantic memory IO permissions', () => {
 	});
 
 	it.each(memoryIoBodies)('accepts $name in an impure function', ({ body }) => {
-		expect(resolveFunction(body, true).body).toHaveLength(body.length);
+		expect(() => resolveFunction(body, true)).not.toThrow();
 	});
 
 	it('allows pure functions to pass pointer values without dereferencing them', () => {

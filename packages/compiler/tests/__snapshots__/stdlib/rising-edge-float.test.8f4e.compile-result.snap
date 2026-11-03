@@ -250,8 +250,14 @@
       "id": "risingEdge__float__float_p",
       "signature": {
         "parameters": [
-          "float",
-          "float*",
+          {
+            "name": "currentValue",
+            "type": "float",
+          },
+          {
+            "name": "previousValue",
+            "type": "float*",
+          },
         ],
         "returns": [
           "int",
@@ -262,8 +268,14 @@
       "id": "risingEdge__int__int_p",
       "signature": {
         "parameters": [
-          "int",
-          "int*",
+          {
+            "name": "currentValue",
+            "type": "int",
+          },
+          {
+            "name": "previousValue",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",
@@ -546,6 +558,8 @@
     "risingEdgeFloatAssertions": {
       "memory": {
         "previousFloat": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
@@ -555,8 +569,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },

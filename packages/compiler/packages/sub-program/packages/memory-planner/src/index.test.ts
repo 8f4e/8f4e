@@ -127,7 +127,7 @@ describe('planSubProgramMemoryLayout', () => {
 		});
 
 		expect(plan.modules.first.byteAddress).toBe(4);
-		expect(plan.modules.first.wordAlignedSize).toBe(3);
+		expect(plan.modules.first.allocationUnitCount).toBe(3);
 		expect(plan.modules.first.memory.counter.byteAddress).toBe(4);
 		expect(plan.modules.first.memory.bytes.byteAddress).toBe(8);
 		expect(plan.modules.second.byteAddress).toBe(16);
@@ -180,7 +180,7 @@ describe('planSubProgramMemoryLayout', () => {
 		});
 
 		expect(plan.modules.main.memory.values.numberOfElements).toBe(4);
-		expect(plan.modules.main.wordAlignedSize).toBe(4);
+		expect(plan.modules.main.allocationUnitCount).toBe(4);
 	});
 
 	it('plans anonymous scalar declarations with generated ids', () => {
@@ -404,5 +404,62 @@ describe('planner input building', () => {
 
 		expect(line.arguments[1]).toBe(sizeIdentifier);
 		expect(plan.modules.main.memory.values.numberOfElements).toBe(7);
+	});
+
+	it('preserves declaration and shape order across non-declaration lines without mutating the input AST', () => {
+		const inherited = {
+			lineNumber: 2,
+			instruction: 'int',
+			arguments: [identifier('inherited')],
+		} satisfies MemoryDeclarationLine;
+		const firstDeclaration = {
+			lineNumber: 11,
+			instruction: 'int',
+			arguments: [identifier('first')],
+		} satisfies MemoryDeclarationLine;
+		const ignoredInstruction = {
+			lineNumber: 12,
+			instruction: 'push',
+			arguments: [literal(1)],
+		} as unknown as CompilerASTLine;
+		const shape = shapeLine('state', 13);
+		const sizeIdentifier = identifier('COUNT');
+		const arrayDeclaration = {
+			lineNumber: 14,
+			instruction: 'int[]',
+			arguments: [identifier('items'), sizeIdentifier],
+		} satisfies MemoryDeclarationLine;
+		const moduleAst = validatedModuleAst('main', 10, [firstDeclaration, ignoredInstruction, shape, arrayDeclaration]);
+		const originalLinesSnapshot = [...moduleAst.lines];
+		const originalArrayArgumentsSnapshot = [...arrayDeclaration.arguments];
+
+		const plan = planSubProgramMemoryLayout({
+			prototypes: [prototypeAst('state', 1, [inherited])],
+			modules: [moduleAst],
+			constantReferences: {
+				prototypes: [{ lineFacts: [] }],
+				modules: [
+					{
+						lineFacts: [undefined, undefined, undefined, undefined, { arguments: [identifier('items'), literal(3)] }],
+					},
+				],
+			},
+			startingByteAddress: 4,
+		});
+
+		expect(plan.modules.main.declarations.map(declaration => declaration.id)).toEqual(['first', 'inherited', 'items']);
+		expect(plan.modules.main.declarationSources).toEqual([
+			{ line: firstDeclaration, isInherited: false },
+			{ line: { ...inherited, lineNumber: 13 }, isInherited: true },
+			{
+				line: {
+					...arrayDeclaration,
+					arguments: [identifier('items'), literal(3)],
+				},
+				isInherited: false,
+			},
+		]);
+		expect(moduleAst.lines).toEqual(originalLinesSnapshot);
+		expect(arrayDeclaration.arguments).toEqual(originalArrayArgumentsSnapshot);
 	});
 });

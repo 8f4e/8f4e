@@ -246,9 +246,18 @@
       "id": "clamp__float__float__float",
       "signature": {
         "parameters": [
-          "float",
-          "float",
-          "float",
+          {
+            "name": "value",
+            "type": "float",
+          },
+          {
+            "name": "minValue",
+            "type": "float",
+          },
+          {
+            "name": "maxValue",
+            "type": "float",
+          },
         ],
         "returns": [
           "float",
@@ -259,9 +268,18 @@
       "id": "clamp__int__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
-          "int",
+          {
+            "name": "value",
+            "type": "int",
+          },
+          {
+            "name": "minValue",
+            "type": "int",
+          },
+          {
+            "name": "maxValue",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

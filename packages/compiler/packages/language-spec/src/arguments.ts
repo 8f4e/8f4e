@@ -5,8 +5,6 @@ export const ArgumentType = {
 	COMPILE_TIME_EXPRESSION: 'compile_time_expression',
 } as const;
 
-export type ArgumentTypeValue = (typeof ArgumentType)[keyof typeof ArgumentType];
-
 /**
  * The syntactic class of an identifier-shaped argument.
  * Computed from token shape alone by the tokenizer; no semantic resolution is needed.

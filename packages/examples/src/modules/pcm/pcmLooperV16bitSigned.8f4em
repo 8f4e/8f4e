@@ -10,8 +10,8 @@ float playhead 0
 float out 1.0
 float defSpeed 1
 int defLength count(buffer)
-int* length &defLength
-float* speed &defSpeed
+int& length &defLength
+float& speed &defSpeed
 
 ; Playhead increments
 push &playhead

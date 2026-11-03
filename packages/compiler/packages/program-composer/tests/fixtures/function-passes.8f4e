@@ -1,0 +1,17 @@
+8f4e/v1
+function double
+param int value
+push value
+mul 2
+functionEnd int
+entry main
+group voice
+pass double
+entry main
+module output
+call double 3
+drop
+moduleEnd
+entryEnd
+groupEnd
+entryEnd

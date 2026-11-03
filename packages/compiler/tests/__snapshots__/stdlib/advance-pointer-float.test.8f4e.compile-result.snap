@@ -528,9 +528,18 @@
       "id": "advancePointer__float_p_p__float_p__int",
       "signature": {
         "parameters": [
-          "float**",
-          "float*",
-          "int",
+          {
+            "name": "pointer",
+            "type": "float**",
+          },
+          {
+            "name": "buffer",
+            "type": "float*",
+          },
+          {
+            "name": "itemCount",
+            "type": "int",
+          },
         ],
         "returns": [],
       },
@@ -539,9 +548,18 @@
       "id": "advancePointer__int_p_p__int_p__int",
       "signature": {
         "parameters": [
-          "int**",
-          "int*",
-          "int",
+          {
+            "name": "pointer",
+            "type": "int**",
+          },
+          {
+            "name": "buffer",
+            "type": "int*",
+          },
+          {
+            "name": "itemCount",
+            "type": "int",
+          },
         ],
         "returns": [],
       },
@@ -844,6 +862,8 @@
     "advancePointerFloatAssertions": {
       "memory": {
         "buffer": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 3,
           "byteAddress": 4,
           "default": {
             "0": 1,
@@ -856,10 +876,10 @@
           "numberOfElements": 3,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 3,
         },
         "pointer": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": 4,
           "elementWordSize": 4,
@@ -872,8 +892,6 @@
           "pointeeElementCount": 3,
           "pointerDepth": 1,
           "type": "float*",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
         },
       },
     },

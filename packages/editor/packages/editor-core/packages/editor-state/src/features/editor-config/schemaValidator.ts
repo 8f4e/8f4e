@@ -82,7 +82,7 @@ function resolveMemoryAddressConfigValue(state: State, value: unknown): number |
 		return numericAddress;
 	}
 
-	return resolveMemoryIdentifier(state, { kind: 'project', groupPath: '' }, trimmedValue)?.memory.wordAlignedAddress;
+	return resolveMemoryIdentifier(state, { kind: 'project', groupPath: '' }, trimmedValue)?.memory.allocationUnitAddress;
 }
 
 function resolveFormattedConfigValues(value: unknown, schema: JSONSchemaLike, state: State | undefined): unknown {
@@ -231,7 +231,7 @@ export function parseSchemaConfigValue(
 		const matchingOption = options.find(
 			option =>
 				validateSchemaConfigValue(
-					{ path: '', value, rawRow: 0, codeBlockId: -1, moduleId: entry?.moduleId },
+					{ path: '', value, sourceLineIndex: 0, codeBlockId: -1, moduleId: entry?.moduleId },
 					{ ...option, format: option.format ?? schema.format }
 				) === undefined
 		);

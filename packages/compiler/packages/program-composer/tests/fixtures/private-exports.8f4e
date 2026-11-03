@@ -9,5 +9,7 @@ if
 push 2
 ifEnd
 functionEnd
+entry main
+entryEnd
 groupEnd
 entryEnd

@@ -3,7 +3,7 @@ title: 'TODO: Consolidate shared editor test-state builders'
 priority: Medium
 effort: 4-8h
 created: 2026-10-14
-issue: https://github.com/andorthehood/8f4e/issues/1025
+issue: https://github.com/8f4e/8f4e/issues/1025
 status: Open
 completed: null
 ---
@@ -70,5 +70,5 @@ test setup rather than adding production fallbacks for fields guaranteed by the 
 
 ## Related Items
 
-- [PR #1018](https://github.com/andorthehood/8f4e/pull/1018) revealed the incomplete AudioWorklet state fixture.
+- [PR #1018](https://github.com/8f4e/8f4e/pull/1018) revealed the incomplete AudioWorklet state fixture.
 - [TODO 497](archived/497-unify-editor-memory-resolution-for-exposed-aliases.md) introduced shared memory resolution.

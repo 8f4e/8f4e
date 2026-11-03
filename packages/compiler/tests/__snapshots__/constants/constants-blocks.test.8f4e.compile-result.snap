@@ -745,6 +745,8 @@
     "constantLastWinsAssertions": {
       "memory": {
         "result": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 20,
           "elementWordSize": 4,
@@ -755,14 +757,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },
     "constantsBlockAssertions": {
       "memory": {
         "gravity": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": 9.81,
           "elementWordSize": 4,
@@ -773,10 +775,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
         },
         "pi": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 3.14159,
           "elementWordSize": 4,
@@ -787,10 +789,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
         "tau": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
           "byteAddress": 12,
           "default": 6.28318,
           "elementWordSize": 4,
@@ -801,14 +803,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 1,
         },
       },
     },
     "constantsCanUseConstantsAssertions": {
       "memory": {
         "half": {
+          "allocationUnitAddress": 6,
+          "allocationUnitCount": 1,
           "byteAddress": 24,
           "default": 4,
           "elementWordSize": 4,
@@ -819,10 +821,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 6,
-          "wordAlignedSize": 1,
         },
         "size": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 1,
           "byteAddress": 20,
           "default": 48,
           "elementWordSize": 4,
@@ -833,14 +835,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 5,
-          "wordAlignedSize": 1,
         },
       },
     },
     "importedConstDerivedConstAssertions": {
       "memory": {
         "result": {
+          "allocationUnitAddress": 7,
+          "allocationUnitCount": 1,
           "byteAddress": 28,
           "default": 99,
           "elementWordSize": 4,
@@ -851,14 +853,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 7,
-          "wordAlignedSize": 1,
         },
       },
     },
     "moduleConstConsumerAssertions": {
       "memory": {
         "result": {
+          "allocationUnitAddress": 8,
+          "allocationUnitCount": 1,
           "byteAddress": 32,
           "default": 99,
           "elementWordSize": 4,
@@ -869,8 +871,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 8,
-          "wordAlignedSize": 1,
         },
       },
     },
@@ -880,6 +880,8 @@
     "sameModuleDerivedConstAssertions": {
       "memory": {
         "result": {
+          "allocationUnitAddress": 9,
+          "allocationUnitCount": 1,
           "byteAddress": 36,
           "default": 10,
           "elementWordSize": 4,
@@ -890,8 +892,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 9,
-          "wordAlignedSize": 1,
         },
       },
     },

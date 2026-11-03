@@ -573,6 +573,8 @@
     "guardedMemoryCopyAssertions": {
       "memory": {
         "source": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 2,
           "byteAddress": 4,
           "default": {},
           "elementWordSize": 4,
@@ -582,10 +584,10 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 2,
         },
         "target": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 2,
           "byteAddress": 12,
           "default": {
             "0": 1,
@@ -599,14 +601,14 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 2,
         },
       },
     },
     "memoryCopyAssertions": {
       "memory": {
         "source": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 5,
           "byteAddress": 20,
           "default": {
             "0": 10,
@@ -623,10 +625,10 @@
           "numberOfElements": 5,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 5,
-          "wordAlignedSize": 5,
         },
         "target": {
+          "allocationUnitAddress": 10,
+          "allocationUnitCount": 5,
           "byteAddress": 40,
           "default": {},
           "elementWordSize": 4,
@@ -636,8 +638,6 @@
           "numberOfElements": 5,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 10,
-          "wordAlignedSize": 5,
         },
       },
     },

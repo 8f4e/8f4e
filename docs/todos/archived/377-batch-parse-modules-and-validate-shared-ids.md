@@ -3,7 +3,7 @@ title: 'TODO: Batch-parse modules and validate shared ids'
 priority: Medium
 effort: 4-8h
 created: 2026-04-08
-issue: https://github.com/andorthehood/8f4e/issues/559
+issue: https://github.com/8f4e/8f4e/issues/559
 status: Cancelled
 completed: 2026-09-07
 ---

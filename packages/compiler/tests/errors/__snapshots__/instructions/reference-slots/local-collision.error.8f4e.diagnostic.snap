@@ -1,0 +1,29 @@
+{
+  "code": 45,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 3,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "slot",
+      },
+      {
+        "isEndAddress": false,
+        "referenceKind": "memory-reference",
+        "scope": "local",
+        "targetMemoryId": "value",
+        "type": "identifier",
+        "value": "&value",
+      },
+    ],
+    "instruction": "float&",
+    "lineNumber": 2,
+  },
+  "message": "Duplicate identifier: slot. (45)",
+}

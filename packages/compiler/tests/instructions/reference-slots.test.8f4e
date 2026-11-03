@@ -1,0 +1,113 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+Fixed references preserve typed addresses and target metadata without allocating pointer storage.
+noteEnd
+
+entry test
+module source
+int value 42
+float signal 1.5
+float64 precise 16777217.0f64
+int8[] signedBytes 3 -128 1 2
+int8u[] unsignedBytes 2 255 7
+int16[] signedWords 2 -32768 3
+int16u[] unsignedWords 2 65535 4
+int32[] words 2 29 31
+moduleEnd
+
+module references
+int& integer &source:value
+float& signal &source:signal
+float64& precise &source:precise
+int8& signedByte &source:signedBytes
+int8u& unsignedByte &source:unsignedBytes
+int16& signedWord &source:signedWords
+int16u& unsignedWord &source:unsignedWords
+int& word &source:words
+int[] localBuffer 2 17 23
+int& localReference &localBuffer
+int* dynamic integer
+local float* saved
+
+push integer
+assertEqual dynamic
+push *integer
+assertEqual 42
+push *signal
+assertEqual 1.5
+push *precise
+assertEqual 16777217.0f64
+push *signedByte
+assertEqual -128
+push *unsignedByte
+assertEqual 255
+push *signedWord
+assertEqual -32768
+push *unsignedWord
+assertEqual 65535
+push *word
+assertEqual 29
+call readInt word
+assertEqual 29
+push *localReference
+assertEqual 17
+push *dynamic
+assertEqual 42
+
+push count(*signedByte)
+assertEqual 3
+push sizeof(*precise)
+assertEqual 8
+push max(*unsignedByte)
+assertEqual 255
+push min(*signedWord)
+assertEqual -32768
+push count(*localReference)*sizeof(*localReference)
+assertEqual 8
+push localReference+4
+load
+assertEqual 23
+
+push signal
+localSet saved
+push *saved
+assertEqual 1.5
+call readFloat signal
+assertEqual 1.5
+push 42
+assertEqual *integer
+
+; Explicit dependencies also work in inline and continued pushed expressions.
+push 0
+add integer
+load
+assertEqual 42
+push
+- count(*signedByte)*sizeof(*signedByte)
+assertEqual 3
+push max(*unsignedByte)-min(*unsignedByte)
+assertEqual 255
+
+; Target contents remain mutable.
+push signal
+push 2.5
+store
+push *signal
+assertEqual 2.5
+
+moduleEnd
+entryEnd
+
+function readFloat
+#impure
+param float* input
+push *input
+functionEnd float
+
+function readInt
+#impure
+param int* input
+push *input
+functionEnd int

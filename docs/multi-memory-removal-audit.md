@@ -32,7 +32,7 @@ the cleanup; the outcome and validation are recorded here.
   forwarding or compatibility wrapper. Compiler orchestration reads counts from the memory-reference report.
 - The pre-existing count-one bug is documented separately in
   [TODO 501](todos/501-preserve-known-pointee-counts-of-one.md) and
-  [issue #1042](https://github.com/andorthehood/8f4e/issues/1042). Its behavior is deliberately unchanged in this cleanup.
+  [issue #1042](https://github.com/8f4e/8f4e/issues/1042). Its behavior is deliberately unchanged in this cleanup.
 
 ## Implementation validation
 
@@ -114,9 +114,9 @@ confirms the current removal inventory without identifying an additional live su
 
 | Change | Original PR and status | Commit in GitHub metadata | Equivalent commit in current main history |
 | --- | --- | --- | --- |
-| Logical memory regions in the compiler | [PR 641](https://github.com/andorthehood/8f4e/pull/641), merged 2026-05-20 | `263f78e1e3f6324401d17d76a21331b5ac50d20f` | `1d72e79aa8c72b7c2e480430cf06de53b24a6f8e` |
-| Multiple-memory load and store encoding | [PR 669](https://github.com/andorthehood/8f4e/pull/669), merged 2026-05-20 | `b87bef5fb5aff86a5d31de2236708d69063deef1` | `e87942426ea6ffd4cb4a8559f7ad0a4501d3eace` |
-| Runtime region wiring | [PR 670](https://github.com/andorthehood/8f4e/pull/670), closed without merging | No merge commit | No merged counterpart |
+| Logical memory regions in the compiler | [PR 641](https://github.com/8f4e/8f4e/pull/641), merged 2026-05-20 | `263f78e1e3f6324401d17d76a21331b5ac50d20f` | `1d72e79aa8c72b7c2e480430cf06de53b24a6f8e` |
+| Multiple-memory load and store encoding | [PR 669](https://github.com/8f4e/8f4e/pull/669), merged 2026-05-20 | `b87bef5fb5aff86a5d31de2236708d69063deef1` | `e87942426ea6ffd4cb4a8559f7ad0a4501d3eace` |
+| Runtime region wiring | [PR 670](https://github.com/8f4e/8f4e/pull/670), closed without merging | No merge commit | No merged counterpart |
 
 For both merged changes, the GitHub commit and the corresponding current-history commit have identical tree contents.
 The different object ids should not be mistaken for missing merges. The current-history commits are ancestors of the
@@ -142,14 +142,14 @@ Historical areas and their current disposition:
 | Literal and local push handlers | Memory provenance moved into reference resolution and stack analysis. Current codegen `pushLiteral` and `pushLocal` do not carry region handling, so remove the facts from the analyzer rather than deleting these emitters. |
 | Original `tests/memoryRegions.test.ts` and its custom instantiation helper | Replaced by the fixture-program harness and region fixtures. The current fixture comment parsers, helper imports, and snapshots are the relevant cleanup targets. |
 
-[PR 991](https://github.com/andorthehood/8f4e/pull/991), merged as
+[PR 991](https://github.com/8f4e/8f4e/pull/991), merged as
 `485f2e8141fb188a2fbac1dc2a2f2e16c33a9757` on 2026-10-08, later moved region resolution and validation into the memory
 planner and removed repeated handlers from semantic resolution, stack analysis, and codegen. It also added the repeated
 selection/invalid-earlier-directive fixtures and documented `; @memoryRegions`. These current planner and fixture
 changes are already included in the removal scope.
 
 Address safety metadata was introduced separately by
-[PR 640](https://github.com/andorthehood/8f4e/pull/640) before the region feature. The original feature extended that
+[PR 640](https://github.com/8f4e/8f4e/pull/640) before the region feature. The original feature extended that
 metadata with memory identity. Preserve the address/safety model and its later pointer typing improvements while
 removing those extensions. A direct revert of the original feature commits would also undo shared infrastructure and
 would not account for the subsequent package and pass reorganizations.

@@ -3,7 +3,7 @@ title: 'TODO: Reduce tokenizer identifier classification work'
 priority: Medium
 effort: 1-2d
 created: 2026-05-19
-issue: https://github.com/andorthehood/8f4e/issues/661
+issue: https://github.com/8f4e/8f4e/issues/661
 status: Cancelled
 completed: 2026-09-07
 ---

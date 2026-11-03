@@ -1,0 +1,268 @@
+8f4e/v1
+
+note
+; @pos 2 2
+; @config testRuntime.enabled true
+
+ensureNonZero preserves fallback
+precision for both float widths.
+Both signs of zero use the
+fallback; nonzero inputs stay
+unchanged.
+noteEnd
+
+entry test
+module float32SmallPositiveFallback
+; @pos 2 13
+push 0.0
+ensureNonZero 0.01
+assertEqual 0.01
+
+push -0.0
+ensureNonZero 0.01
+assertEqual 0.01
+
+push 0.01
+ensureNonZero 0.01
+assertEqual 0.01
+
+push 1.234
+ensureNonZero 0.01
+assertEqual 1.234
+
+push -0.01
+ensureNonZero 0.01
+assertEqual -0.01
+
+push -1.234
+ensureNonZero 0.01
+assertEqual -1.234
+moduleEnd
+
+module float32PrecisePositiveFallback
+; @pos 2 45
+push 0.0
+ensureNonZero 1.234
+assertEqual 1.234
+
+push -0.0
+ensureNonZero 1.234
+assertEqual 1.234
+
+push 0.01
+ensureNonZero 1.234
+assertEqual 0.01
+
+push 1.234
+ensureNonZero 1.234
+assertEqual 1.234
+
+push -0.01
+ensureNonZero 1.234
+assertEqual -0.01
+
+push -1.234
+ensureNonZero 1.234
+assertEqual -1.234
+moduleEnd
+
+module float32SmallNegativeFallback
+; @pos 2 77
+push 0.0
+ensureNonZero -0.01
+assertEqual -0.01
+
+push -0.0
+ensureNonZero -0.01
+assertEqual -0.01
+
+push 0.01
+ensureNonZero -0.01
+assertEqual 0.01
+
+push 1.234
+ensureNonZero -0.01
+assertEqual 1.234
+
+push -0.01
+ensureNonZero -0.01
+assertEqual -0.01
+
+push -1.234
+ensureNonZero -0.01
+assertEqual -1.234
+moduleEnd
+
+module float32PreciseNegativeFallback
+; @pos 2 109
+push 0.0
+ensureNonZero -1.234
+assertEqual -1.234
+
+push -0.0
+ensureNonZero -1.234
+assertEqual -1.234
+
+push 0.01
+ensureNonZero -1.234
+assertEqual 0.01
+
+push 1.234
+ensureNonZero -1.234
+assertEqual 1.234
+
+push -0.01
+ensureNonZero -1.234
+assertEqual -0.01
+
+push -1.234
+ensureNonZero -1.234
+assertEqual -1.234
+moduleEnd
+
+module float32DefaultFallback
+; @pos 2 141
+push 0.0
+ensureNonZero
+assertEqual 1.0
+
+push -0.0
+ensureNonZero
+assertEqual 1.0
+
+push 1.234
+ensureNonZero
+assertEqual 1.234
+
+push -1.234
+ensureNonZero
+assertEqual -1.234
+moduleEnd
+
+module float64SmallPositiveFallback
+; @pos 47 13
+push 0.0f64
+ensureNonZero 0.01f64
+assertEqual 0.01f64
+
+push -0.0f64
+ensureNonZero 0.01f64
+assertEqual 0.01f64
+
+push 0.01f64
+ensureNonZero 0.01f64
+assertEqual 0.01f64
+
+push 1.234f64
+ensureNonZero 0.01f64
+assertEqual 1.234f64
+
+push -0.01f64
+ensureNonZero 0.01f64
+assertEqual -0.01f64
+
+push -1.234f64
+ensureNonZero 0.01f64
+assertEqual -1.234f64
+moduleEnd
+
+module float64PrecisePositiveFallback
+; @pos 47 45
+push 0.0f64
+ensureNonZero 1.234f64
+assertEqual 1.234f64
+
+push -0.0f64
+ensureNonZero 1.234f64
+assertEqual 1.234f64
+
+push 0.01f64
+ensureNonZero 1.234f64
+assertEqual 0.01f64
+
+push 1.234f64
+ensureNonZero 1.234f64
+assertEqual 1.234f64
+
+push -0.01f64
+ensureNonZero 1.234f64
+assertEqual -0.01f64
+
+push -1.234f64
+ensureNonZero 1.234f64
+assertEqual -1.234f64
+moduleEnd
+
+module float64SmallNegativeFallback
+; @pos 47 77
+push 0.0f64
+ensureNonZero -0.01f64
+assertEqual -0.01f64
+
+push -0.0f64
+ensureNonZero -0.01f64
+assertEqual -0.01f64
+
+push 0.01f64
+ensureNonZero -0.01f64
+assertEqual 0.01f64
+
+push 1.234f64
+ensureNonZero -0.01f64
+assertEqual 1.234f64
+
+push -0.01f64
+ensureNonZero -0.01f64
+assertEqual -0.01f64
+
+push -1.234f64
+ensureNonZero -0.01f64
+assertEqual -1.234f64
+moduleEnd
+
+module float64PreciseNegativeFallback
+; @pos 47 109
+push 0.0f64
+ensureNonZero -1.234f64
+assertEqual -1.234f64
+
+push -0.0f64
+ensureNonZero -1.234f64
+assertEqual -1.234f64
+
+push 0.01f64
+ensureNonZero -1.234f64
+assertEqual 0.01f64
+
+push 1.234f64
+ensureNonZero -1.234f64
+assertEqual 1.234f64
+
+push -0.01f64
+ensureNonZero -1.234f64
+assertEqual -0.01f64
+
+push -1.234f64
+ensureNonZero -1.234f64
+assertEqual -1.234f64
+moduleEnd
+
+module float64DefaultFallback
+; @pos 47 141
+push 0.0f64
+ensureNonZero
+assertEqual 1.0f64
+
+push -0.0f64
+ensureNonZero
+assertEqual 1.0f64
+
+push 1.234f64
+ensureNonZero
+assertEqual 1.234f64
+
+push -1.234f64
+ensureNonZero
+assertEqual -1.234f64
+moduleEnd
+entryEnd

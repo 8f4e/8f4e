@@ -2,7 +2,7 @@ import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 
 /**
  * Converts a physical row index (which includes gap rows inserted for decorations) back into a logical row.
- * The `gaps` map stores how many extra rows were spliced after each logical line so plots, pianos, and error
+ * The `gaps` map stores how many extra rows were spliced after each logical line so visualizers and error
  * callouts have dedicated vertical space; when translating from screen coordinates we need to subtract those
  * offsets to recover the original code line.
  * @param physicalRow Row index taken from rendered grid coordinates.

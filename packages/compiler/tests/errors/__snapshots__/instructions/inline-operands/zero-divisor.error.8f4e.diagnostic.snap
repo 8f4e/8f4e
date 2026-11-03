@@ -1,0 +1,20 @@
+{
+  "code": 14,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 0,
+      },
+    ],
+    "instruction": "div",
+    "lineNumber": 2,
+  },
+  "message": "Possible division by zero. (14)",
+}

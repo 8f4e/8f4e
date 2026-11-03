@@ -1,18 +1,6 @@
-import type { CodeBlockGraphicData, State } from '../../../../index';
 import type { ViewportBlockAlignment } from '../../../viewport/blockAlignment';
 import type { CodeBlockDisplayModel } from '../../buildDisplayModel';
-
-export interface ParsedEditorDirective {
-	name: string;
-	rawRow: number;
-	args: string[];
-	sourceLine?: string;
-}
-
-export interface DirectiveLayoutContribution {
-	rawRow: number;
-	rows: number;
-}
+import type { ParsedDirectiveRecord } from '../../types';
 
 export type ViewportAnchor = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
@@ -21,11 +9,6 @@ export interface DirectiveBlockState {
 	isHome: boolean;
 	/** Effective viewport alignment for `; @home [alignment]`. Present only when the block is a valid home block. */
 	homeAlignment?: ViewportBlockAlignment;
-	isFavorite: boolean;
-	/** Group identifier set by `; @group <name> [nonstick]`. Undefined when no valid @group directive is present. */
-	groupName?: string;
-	/** When true the block may be dragged independently within its group (nonstick mode). */
-	groupNonstick?: boolean;
 	/** Viewport anchor set by `; @viewport <corner>`. When present, @pos is interpreted as inward offset from this corner. */
 	viewportAnchor?: ViewportAnchor;
 	/** When true the block is always rendered above normal blocks. Set by `; @alwaysOnTop`. */
@@ -33,44 +16,29 @@ export interface DirectiveBlockState {
 }
 
 export interface DirectiveDisplayState {
-	hideAfterRawRow?: number;
-}
-
-export interface DirectiveWidgetContribution {
-	beforeGraphicDataWidthCalculation?: (
-		graphicData: CodeBlockGraphicData,
-		state: State,
-		directiveState: DirectiveDerivedState
-	) => void;
-	afterGraphicDataWidthCalculation?: (
-		graphicData: CodeBlockGraphicData,
-		state: State,
-		directiveState: DirectiveDerivedState
-	) => void;
+	hideAfterSourceLineIndex?: number;
 }
 
 export interface DirectiveDerivedState {
 	blockState: DirectiveBlockState;
 	displayState: DirectiveDisplayState;
 	displayModel: CodeBlockDisplayModel;
-	layoutContributions: DirectiveLayoutContribution[];
-	widgets: DirectiveWidgetContribution[];
 }
 
 export interface DirectiveDerivedStateDraft extends DirectiveDerivedState {
 	sourceCode: string[];
-	state?: State;
 }
 
 export interface DirectiveDeriveOptions {
 	isExpandedForEditing?: boolean;
-	state?: State;
 }
 
-export interface EditorDirectivePlugin {
+export interface EditorDirectiveDefinition {
 	name: string;
 	aliases?: string[];
-	allowTrailingComment?: boolean;
-	clearGraphicData?: (graphicData: CodeBlockGraphicData) => void;
-	apply?: (directive: ParsedEditorDirective, draft: DirectiveDerivedStateDraft) => void;
+	apply?: (directive: ParsedDirectiveRecord, draft: DirectiveDerivedStateDraft) => void;
+}
+
+export interface EditorDirectiveRegistry {
+	register: (directive: EditorDirectiveDefinition) => () => void;
 }

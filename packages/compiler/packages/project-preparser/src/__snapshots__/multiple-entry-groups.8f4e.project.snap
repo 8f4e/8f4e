@@ -1,20 +1,22 @@
 {
   "code": [],
   "constants": [],
-  "functions": [],
-  "groups": [
+  "entries": [
+    "main",
+    "test",
+  ],
+  "execution": [
     {
       "code": [
         "group audio",
         "groupEnd",
       ],
       "constants": [],
+      "entries": [
+        "main",
+      ],
       "entry": "main",
-      "exposures": [],
-      "functions": [],
-      "groups": [],
-      "includes": [],
-      "modules": [
+      "execution": [
         {
           "code": [
             "module kick",
@@ -22,32 +24,52 @@
             "moduleEnd",
           ],
           "entry": "main",
-          "id": 5,
+          "id": 6,
+          "type": "module",
         },
       ],
+      "exposures": [],
+      "functions": [],
+      "id": 4,
+      "includes": [],
       "name": "audio",
       "notes": [],
       "prototypes": [],
+      "type": "group",
       "unknown": [],
     },
     {
       "code": [
         "group visuals",
-        "",
         "groupEnd",
       ],
       "constants": [],
+      "entries": [
+        "main",
+      ],
       "entry": "main",
-      "exposures": [],
-      "functions": [],
-      "groups": [
+      "execution": [
+        {
+          "code": [
+            "module scope",
+            "int brightness",
+            "moduleEnd",
+          ],
+          "entry": "main",
+          "id": 14,
+          "type": "module",
+        },
         {
           "code": [
             "group shaderHelpers",
             "groupEnd",
           ],
           "constants": [],
+          "entries": [
+            "main",
+          ],
           "entry": "main",
+          "execution": [],
           "exposures": [],
           "functions": [
             {
@@ -57,34 +79,37 @@
                 "push value",
                 "functionEnd float",
               ],
-              "id": 16,
+              "id": 19,
             },
           ],
-          "groups": [],
+          "id": 18,
           "includes": [],
-          "modules": [],
           "name": "shaderHelpers",
           "notes": [],
           "prototypes": [],
+          "type": "group",
           "unknown": [],
         },
       ],
+      "exposures": [],
+      "functions": [],
+      "id": 12,
       "includes": [],
-      "modules": [
-        {
-          "code": [
-            "module scope",
-            "int brightness",
-            "moduleEnd",
-          ],
-          "entry": "main",
-          "id": 11,
-        },
-      ],
       "name": "visuals",
       "notes": [],
       "prototypes": [],
+      "type": "group",
       "unknown": [],
+    },
+    {
+      "code": [
+        "module harness",
+        "int failures",
+        "moduleEnd",
+      ],
+      "entry": "test",
+      "id": 31,
+      "type": "module",
     },
     {
       "code": [
@@ -92,7 +117,11 @@
         "groupEnd",
       ],
       "constants": [],
+      "entries": [
+        "main",
+      ],
       "entry": "test",
+      "execution": [],
       "exposures": [],
       "functions": [
         {
@@ -105,30 +134,20 @@
             "equal",
             "functionEnd int",
           ],
-          "id": 30,
+          "id": 36,
         },
       ],
-      "groups": [],
+      "id": 35,
       "includes": [],
-      "modules": [],
       "name": "assertions",
       "notes": [],
       "prototypes": [],
+      "type": "group",
       "unknown": [],
     },
   ],
+  "functions": [],
   "includes": [],
-  "modules": [
-    {
-      "code": [
-        "module harness",
-        "int failures",
-        "moduleEnd",
-      ],
-      "entry": "test",
-      "id": 25,
-    },
-  ],
   "notes": [],
   "prototypes": [],
   "unknown": [],

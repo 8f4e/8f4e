@@ -30,9 +30,8 @@ interface CompileProjectModulesResult {
 
 function hasCompilableProgramBlocks(project: ProjectObjectModel): boolean {
 	return (
-		project.modules.some(block => !block.disabled) ||
-		project.constants.some(block => !block.disabled) ||
-		project.groups.some(hasCompilableProgramBlocks)
+		project.execution.some(block => (block.type === 'group' ? hasCompilableProgramBlocks(block) : !block.disabled)) ||
+		project.constants.some(block => !block.disabled)
 	);
 }
 

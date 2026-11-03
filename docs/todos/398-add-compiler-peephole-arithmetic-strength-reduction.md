@@ -3,7 +3,7 @@ title: 'TODO: Add compiler peephole arithmetic strength reduction'
 priority: Medium
 effort: 1-2 days
 created: 2026-05-12
-issue: https://github.com/andorthehood/8f4e/issues/654
+issue: https://github.com/8f4e/8f4e/issues/654
 status: Open
 completed: null
 ---

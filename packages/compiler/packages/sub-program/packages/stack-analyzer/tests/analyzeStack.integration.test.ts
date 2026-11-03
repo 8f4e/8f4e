@@ -45,9 +45,9 @@ describe('analyzeStack integration', () => {
 			elementWordSize: 4,
 			byteAddress: 4,
 			elementByteLength: 16,
-			wordAlignedSize: 4,
-			wordAlignedByteLength: 16,
-			wordAlignedAddress: 1,
+			allocationUnitCount: 4,
+			allocatedByteLength: 16,
+			allocationUnitAddress: 1,
 			endByteAddress: 16,
 			endAddressSafeByteLength: 4,
 			lineNumber: 2,
@@ -166,8 +166,8 @@ describe('analyzeStack integration', () => {
 					id: 'main',
 					lineNumber: 1,
 					byteAddress: 4,
-					wordAlignedSize: 4,
-					wordAlignedByteLength: 16,
+					allocationUnitCount: 4,
+					allocatedByteLength: 16,
 					endByteAddress: 16,
 					endAddressSafeByteLength: 4,
 					memory: {
@@ -187,8 +187,8 @@ describe('analyzeStack integration', () => {
 					id: 'main',
 					lineNumber: 1,
 					byteAddress: 4,
-					wordAlignedSize: 4,
-					wordAlignedByteLength: 16,
+					allocationUnitCount: 4,
+					allocatedByteLength: 16,
 					endByteAddress: 16,
 					endAddressSafeByteLength: 4,
 					memory: {
@@ -213,7 +213,7 @@ describe('analyzeStack integration', () => {
 					id: 'increment__int',
 					name: 'increment',
 					signature: {
-						parameters: ['int'],
+						parameters: [{ name: 'value', type: 'int' }],
 						returns: ['int'],
 					},
 				},
@@ -232,6 +232,7 @@ describe('analyzeStack integration', () => {
 		const semanticReferences = {
 			modules: {
 				main: {
+					referenceSlots: {},
 					ast: ast.modules[0],
 					bindings: [],
 					skipExecutionInCycle: false,

@@ -231,7 +231,7 @@ module minBLEPLUT
 ; @tab 7
 ; PT2-style minBLEP correction table
 ; generated from the approximate JS minBLEP pipeline
-${minBLEPData.map(value => `float\t${value.toFixed(18)}`).join('\n')}
+${minBLEPData.map(value => `float\t${value}`).join('\n')}
 
 moduleEnd
 entryEnd`;

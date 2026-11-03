@@ -5,6 +5,7 @@ import type {
 	CompiledModule,
 	CompileOptions,
 	CompilerCache,
+	ComposedEntry,
 	ComposedPrototypeAST,
 	FunctionMetadata,
 	FunctionMetadataLookup,
@@ -18,9 +19,9 @@ import type {
 	WasmFunctionLayout,
 } from '@8f4e/language-spec';
 import {
+	ALLOCATION_UNIT_BYTE_SIZE,
 	createFunctionId,
 	ErrorCode,
-	GLOBAL_ALIGNMENT_BOUNDARY,
 	getError,
 	getProjectMemoryExposureTargetError,
 } from '@8f4e/language-spec';
@@ -32,12 +33,12 @@ import { resolveSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import { analyzeStack } from '@8f4e/stack-analyzer';
 import { compileFunction, compileModules, planFunctionLayout } from '@8f4e/wasm-codegen';
 import { planAssertions } from './assertions';
-import { assertUniqueModuleIds, registerFunctions } from './semantic/buildNamespace';
+import { registerFunctions } from './semantic/buildNamespace';
 
 interface CompiledSubProgram {
 	functionLayout: WasmFunctionLayout;
 	assertionSites?: AssertionSite[];
-	entryNames: string[];
+	entries: ComposedEntry[];
 	compiledModules: CompiledModule[];
 	compiledFunctions: CompiledFunction[];
 	functionTypeRegistry: FunctionTypeRegistry;
@@ -48,7 +49,7 @@ interface CompiledSubProgram {
 	cache: CompilerCache;
 }
 
-const DEFAULT_STARTING_MEMORY_WORD_ADDRESS = 1;
+const DEFAULT_STARTING_MEMORY_ALLOCATION_UNIT_ADDRESS = 1;
 
 /** Built-in WebAssembly export names that user functions are not allowed to reuse. */
 const RESERVED_EXPORT_NAMES = ['initDefaults'];
@@ -79,12 +80,12 @@ function resolveProjectMemoryExposures(
 /** Creates synthetic metadata for generated entry dispatcher functions. */
 function createEntryFunctionMetadata(entryNames: readonly string[]): FunctionRegistry {
 	const byId: FunctionMetadataLookup = {};
-	const arityByName: FunctionRegistry['arityByName'] = {};
+	const arityByName: FunctionRegistry['arityByName'] = Object.create(null);
 
 	entryNames.forEach(entryName => {
 		const parameters: FunctionMetadata['signature']['parameters'] = [];
 		const metadata: FunctionMetadata = {
-			id: createFunctionId(entryName, parameters),
+			id: createFunctionId(entryName, []),
 			name: entryName,
 			signature: { parameters, returns: [] },
 		};
@@ -98,7 +99,7 @@ function createEntryFunctionMetadata(entryNames: readonly string[]): FunctionReg
 /** Merges function registries while preserving source-name arity metadata. */
 function mergeFunctionRegistries(...registries: FunctionRegistry[]): FunctionRegistry {
 	const byId: FunctionMetadataLookup = {};
-	const arityByName: FunctionRegistry['arityByName'] = {};
+	const arityByName: FunctionRegistry['arityByName'] = Object.create(null);
 
 	for (const registry of registries) {
 		Object.assign(byId, registry.byId);
@@ -198,8 +199,8 @@ function wrapMemoryPlannerError(error: unknown, subProgramAst: ResolveConstantsS
  * @returns The compiled sub-program artifacts.
  */
 export function compileSubProgram(program: ComposedProgram, options: CompileOptions): CompiledSubProgram {
-	const { ast: subProgramAst, entryNames, moduleEntryNames, cache } = program;
-	assertUniqueModuleIds(subProgramAst.modules);
+	const { ast: subProgramAst, entries, cache } = program;
+	const entryNames = entries.map(entry => entry.id);
 	let constantResolution: ReturnType<typeof resolveConstants>;
 	try {
 		constantResolution = resolveConstants({
@@ -217,7 +218,8 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 			modules: subProgramAst.modules,
 			constantReferences: constantResolution.references,
 			startingByteAddress:
-				(options.startingMemoryWordAddress ?? DEFAULT_STARTING_MEMORY_WORD_ADDRESS) * GLOBAL_ALIGNMENT_BOUNDARY,
+				(options.startingMemoryAllocationUnitAddress ?? DEFAULT_STARTING_MEMORY_ALLOCATION_UNIT_ADDRESS) *
+				ALLOCATION_UNIT_BYTE_SIZE,
 		});
 	} catch (error) {
 		throw wrapMemoryPlannerError(error, subProgramAst);
@@ -245,7 +247,10 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	const entryFunctionMetadata = createEntryFunctionMetadata(entryNames);
 	const registration = registerFunctions(subProgramAst.functions, {
 		reservedFunctionIds: entryNames,
-		reservedExportNames: [...RESERVED_EXPORT_NAMES, ...entryNames],
+		reservedExportNames: [
+			...RESERVED_EXPORT_NAMES,
+			...entries.flatMap(entry => (entry.exportName === undefined ? [] : [entry.exportName])),
+		],
 		prototypeShapes: prototypeShapesById,
 	});
 	const functionRegistry = mergeFunctionRegistries(entryFunctionMetadata, registration.registry);
@@ -300,15 +305,12 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		functionLayout,
 		functionTypeRegistry,
 		assertionPlan?.calls
-	).map((module, index) => ({
-		...module,
-		executionEntryName: moduleEntryNames[index],
-	}));
+	);
 
 	return {
 		functionLayout,
 		...(assertionPlan ? { assertionSites: assertionPlan.sites } : {}),
-		entryNames,
+		entries,
 		compiledModules,
 		compiledFunctions,
 		functionTypeRegistry,

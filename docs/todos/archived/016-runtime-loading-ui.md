@@ -3,7 +3,7 @@ title: 'TODO: Runtime Loading UI Improvements'
 priority: Low
 effort: 2-3 days
 created: 2025-08-26
-issue: https://github.com/andorthehood/8f4e/issues/538
+issue: https://github.com/8f4e/8f4e/issues/538
 status: Cancelled
 completed: 2026-09-07
 ---

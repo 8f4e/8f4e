@@ -10,43 +10,13 @@ const includeSourceRequestBroker = createIncludeSourceRequestBroker(message => s
 
 async function compile(project: ProjectObjectModel, compilerOptions: CompileOptions, compilationId: number) {
 	try {
-		const {
-			assertionSites,
-			codeBuffer,
-			compiledModules,
-			compiledFunctions,
-			memoryPlan,
-			memoryDefaultsByModuleId,
-			projectMemoryExposuresByGroupPath,
-			requiredMemoryBytes,
-			allocatedMemoryBytes,
-			astCacheStats,
-			memoryRef,
-			hasWasmInstanceBeenReset,
-			memoryAction,
-			initOnlyReran,
-		} = await compileAndUpdateMemory(project, compilerOptions, includeId =>
+		const result = await compileAndUpdateMemory(project, compilerOptions, includeId =>
 			includeSourceCache.resolve(includeId, () => includeSourceRequestBroker.request(includeId))
 		);
 		self.postMessage({
 			type: 'success',
 			compilationId,
-			payload: {
-				assertionSites,
-				codeBuffer,
-				compiledModules,
-				memoryPlan,
-				memoryDefaultsByModuleId,
-				projectMemoryExposuresByGroupPath,
-				requiredMemoryBytes,
-				allocatedMemoryBytes,
-				astCacheStats,
-				wasmMemory: memoryRef,
-				hasWasmInstanceBeenReset,
-				compiledFunctions,
-				memoryAction,
-				initOnlyReran,
-			},
+			payload: result,
 		});
 	} catch (error) {
 		self.postMessage({

@@ -27,20 +27,19 @@ Handles low-level text editing operations within code blocks: caret movement, ch
 - `state.codeBlockRendering.selectedCodeBlock.cursor.row` - Current cursor row (line number)
 - `state.codeBlockRendering.selectedCodeBlock.cursor.col` - Current cursor column position
 - `state.codeBlockRendering.selectedCodeBlock.lastUpdated` - Timestamp of last edit
-- `state.editorMode` - Global editor mode (`view` or `edit`)
-- `state.featureFlags.editing` - Enables text-editing operations
+- `state.editorMode` - Global editor mode (`view` or `edit`); source editing is allowed only in `edit` mode
 - `state.featureFlags.codeLineSelection` - Enables caret movement within selected code blocks
 
 ## Integration Points
 
 - **Code Blocks**: Works on the currently selected code block
 - **Edit History**: Code changes trigger debounced history snapshots
-- **Syntax Highlighting**: The web UI render projection uses note highlighting for notes and 8f4e highlighting for other blocks
+- **Syntax Highlighting**: The code-rendering plugin owns note and 8f4e highlighting, refreshing prepared text after completed layouts
 
 ## Notes & Limitations
 
-- Text insertion, deletion, and newline operations check `state.featureFlags.editing` before executing
-- Caret movement checks `state.featureFlags.codeLineSelection` before executing
+- Text insertion, deletion, and newline operations require `state.editorMode === 'edit'`
+- Caret movement checks `state.featureFlags.codeLineSelection` before executing; switching modes and loading projects preserve this flag
 - `editor-mode` transitions currently toggle both flags when entering or leaving edit mode
 - Editing requires a selected code block
 - Gap calculations handle edge cases like line wrapping and cursor bounds

@@ -1,0 +1,5 @@
+{
+  "extends": "@8f4e/config/tsconfig.base.json",
+  "compilerOptions": { "noEmit": true, "types": ["node", "@8f4e/vite-plugin-sources/client"] },
+  "include": ["scripts/**/*.ts", "vite.content.config.ts"]
+}

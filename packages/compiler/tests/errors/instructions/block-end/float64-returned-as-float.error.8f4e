@@ -1,0 +1,12 @@
+8f4e/v1
+
+entry main
+module blockFloat64ReturnedAsFloat
+; blockEnd float should reject
+; a float64 stack value.
+block
+push 2.0f64
+blockEnd float
+drop
+moduleEnd
+entryEnd

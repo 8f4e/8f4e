@@ -1,0 +1,14 @@
+{
+  "code": 3,
+  "context": {
+    "codeBlockId": "ifThenFloat64ReturnedAsFloat",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [],
+    "instruction": "else",
+    "lineNumber": 7,
+  },
+  "message": "The operation only accepts float values as operands. (3)",
+}

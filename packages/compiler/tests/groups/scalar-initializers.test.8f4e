@@ -1,7 +1,7 @@
 8f4e/v1
 
 note
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Group initializers override scalar defaults using the backing declaration's storage type.
 Numbers share ordinary declaration conversion, inherited defaults, and initialization timing.
@@ -9,9 +9,10 @@ noteEnd
 
 entry test
 module source
+int& valuesAddress &values:address
+
 int output 99
-push &values:address
-load
+push *valuesAddress
 push &output
 equal
 assertEqual 1
@@ -43,6 +44,7 @@ prototype state
 int inherited 7
 prototypeEnd
 
+entry main
 module processor
 shape state
 int foo 3
@@ -83,11 +85,14 @@ moduleEnd
 group nested
 expose foo &processor:foo
 init &foo 22
+entry main
 module processor
 int foo 1
 push foo
 assertEqual 22
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd

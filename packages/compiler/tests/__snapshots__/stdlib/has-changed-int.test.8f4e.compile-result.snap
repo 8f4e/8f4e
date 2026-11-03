@@ -250,8 +250,14 @@
       "id": "hasChanged__float__float_p",
       "signature": {
         "parameters": [
-          "float",
-          "float*",
+          {
+            "name": "currentValue",
+            "type": "float",
+          },
+          {
+            "name": "previousValue",
+            "type": "float*",
+          },
         ],
         "returns": [
           "int",
@@ -262,8 +268,14 @@
       "id": "hasChanged__int__int_p",
       "signature": {
         "parameters": [
-          "int",
-          "int*",
+          {
+            "name": "currentValue",
+            "type": "int",
+          },
+          {
+            "name": "previousValue",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",
@@ -528,6 +540,8 @@
     "hasChangedIntAssertions": {
       "memory": {
         "previousInt": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
@@ -537,8 +551,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },

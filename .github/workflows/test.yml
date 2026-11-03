@@ -38,7 +38,6 @@ jobs:
         run: npx nx run @8f4e/config:build
 
       - name: Set Nx affected SHAs
-        shell: bash
         run: |
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
             echo "NX_BASE=origin/${GITHUB_BASE_REF}" >> "$GITHUB_ENV"

@@ -1,0 +1,21 @@
+{
+  "code": 3,
+  "context": {
+    "codeBlockId": "blockFloat64ReturnedAsFloat",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "float",
+      },
+    ],
+    "instruction": "blockEnd",
+    "lineNumber": 5,
+  },
+  "message": "The operation only accepts float values as operands. (3)",
+}

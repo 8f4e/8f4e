@@ -3,7 +3,7 @@ title: 'TODO: Add Free-Space Finder for Editor Config Block Placement'
 priority: Medium
 effort: 4-8h
 created: 2026-02-16
-issue: https://github.com/andorthehood/8f4e/issues/409
+issue: https://github.com/8f4e/8f4e/issues/409
 status: Completed
 completed: 2026-03-18
 ---

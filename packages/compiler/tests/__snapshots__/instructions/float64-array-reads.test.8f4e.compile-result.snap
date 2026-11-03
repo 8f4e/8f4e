@@ -1,0 +1,509 @@
+{
+  "functionAst": {},
+  "functionOverview": {},
+  "moduleAst": {
+    "arrayValueTypeAssertions": {
+      "id": "arrayValueTypeAssertions",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "arrayValueTypeAssertions",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "doubles",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+          ],
+          "instruction": "float64[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "precise",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.0000000000000002,
+            },
+          ],
+          "instruction": "float64[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "floats",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+          ],
+          "instruction": "float[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "integers",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 7,
+            },
+          ],
+          "instruction": "int[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "pointers",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 12345678,
+            },
+          ],
+          "instruction": "float64*[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "pointerPointers",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 87654321,
+            },
+          ],
+          "instruction": "float64**[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "expectedPointer",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 12345678,
+            },
+          ],
+          "instruction": "float64*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "expectedPointerPointer",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 87654321,
+            },
+          ],
+          "instruction": "float64**",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "doubles",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "precise",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.0000000000000002,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "floats",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "integers",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 7,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "pointers",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "expectedPointer",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "pointerPointers",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "expectedPointerPointer",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-word-size",
+              "scope": "local",
+              "targetMemoryId": "pointers",
+              "type": "identifier",
+              "value": "sizeof(pointers)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-word-size",
+              "scope": "local",
+              "targetMemoryId": "pointerPointers",
+              "type": "identifier",
+              "value": "sizeof(pointerPointers)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+  },
+  "moduleMemory": {
+    "arrayValueTypeAssertions": {
+      "memory": {
+        "doubles": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 5,
+          "byteAddress": 8,
+          "default": {
+            "0": 1.25,
+          },
+          "elementWordSize": 8,
+          "hasExplicitDefault": true,
+          "id": "doubles",
+          "isFloat64": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "float64",
+        },
+        "expectedPointer": {
+          "allocationUnitAddress": 18,
+          "allocationUnitCount": 1,
+          "byteAddress": 72,
+          "default": 12345678,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "expectedPointer",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float64",
+          "pointerDepth": 1,
+          "type": "float64*",
+        },
+        "expectedPointerPointer": {
+          "allocationUnitAddress": 19,
+          "allocationUnitCount": 1,
+          "byteAddress": 76,
+          "default": 87654321,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "expectedPointerPointer",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float64",
+          "pointerDepth": 2,
+          "type": "float64**",
+        },
+        "floats": {
+          "allocationUnitAddress": 10,
+          "allocationUnitCount": 2,
+          "byteAddress": 40,
+          "default": {
+            "0": 1.25,
+          },
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "floats",
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "float",
+        },
+        "integers": {
+          "allocationUnitAddress": 12,
+          "allocationUnitCount": 2,
+          "byteAddress": 48,
+          "default": {
+            "0": 7,
+          },
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "integers",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "pointerPointers": {
+          "allocationUnitAddress": 16,
+          "allocationUnitCount": 2,
+          "byteAddress": 64,
+          "default": {
+            "0": 87654321,
+          },
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "pointerPointers",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointeeBaseType": "float64",
+          "pointerDepth": 2,
+          "type": "float64**",
+        },
+        "pointers": {
+          "allocationUnitAddress": 14,
+          "allocationUnitCount": 2,
+          "byteAddress": 56,
+          "default": {
+            "0": 12345678,
+          },
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "pointers",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointeeBaseType": "float64",
+          "pointerDepth": 1,
+          "type": "float64*",
+        },
+        "precise": {
+          "allocationUnitAddress": 6,
+          "allocationUnitCount": 4,
+          "byteAddress": 24,
+          "default": {
+            "0": 1.0000000000000002,
+          },
+          "elementWordSize": 8,
+          "hasExplicitDefault": true,
+          "id": "precise",
+          "isFloat64": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "float64",
+        },
+      },
+    },
+  },
+  "overview": {
+    "compiledFunctions": [],
+    "compiledModules": [
+      "arrayValueTypeAssertions",
+    ],
+    "requiredMemoryBytes": 80,
+    "wasmExports": [
+      "initDefaults",
+      "main",
+      "test",
+    ],
+  },
+}

@@ -1,0 +1,12 @@
+8f4e/v1
+
+entry main
+module main
+; @pos 40 20
+; @home
+int output
+push &output
+push 1
+store
+moduleEnd
+entryEnd

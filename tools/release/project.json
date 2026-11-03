@@ -1,0 +1,71 @@
+{
+	"name": "@8f4e/release",
+	"targets": {
+		"check": {
+			"executor": "nx:noop",
+			"cache": false,
+			"dependsOn": ["build-and-metrics", "test-and-coverage"]
+		},
+		"build-and-metrics": {
+			"executor": "nx:noop",
+			"cache": false,
+			"dependsOn": [
+				{
+					"projects": ["@8f4e/examples"],
+					"target": "log-bytecode-size"
+				},
+				{
+					"projects": ["@8f4e/examples"],
+					"target": "log-compiler-coverage-counts"
+				},
+				{
+					"projects": ["@8f4e/compiler"],
+					"target": "docs-coverage"
+				},
+				{
+					"projects": ["@8f4e/8f4e-website"],
+					"target": "build"
+				},
+				"bundle-sizes"
+			]
+		},
+		"bundle-sizes": {
+			"executor": "nx:run-commands",
+			"cache": false,
+			"dependsOn": [
+				{
+					"projects": ["@8f4e/editor-website"],
+					"target": "build"
+				}
+			],
+			"options": {
+				"command": "node scripts/log-bundle-sizes.mjs",
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"test-and-coverage": {
+			"executor": "nx:run-commands",
+			"cache": false,
+			"dependsOn": ["tests"],
+			"options": {
+				"command": "node scripts/log-test-coverage.mjs",
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"tests": {
+			"executor": "nx:noop",
+			"cache": false,
+			"dependsOn": [
+				{
+					"projects": ["@8f4e/cli", "*", "!@8f4e/editor-website", "!glugglugglug"],
+					"target": "test",
+					"options": "forward"
+				}
+			],
+			"options": {
+				"coverage": true
+			}
+		}
+	},
+	"tags": ["type:tooling", "scope:release"]
+}

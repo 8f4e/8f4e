@@ -3,7 +3,7 @@ title: 'TODO: Add Plus/Minus Support to Constant Expressions'
 priority: Medium
 effort: 4-8h
 created: 2026-02-23
-issue: https://github.com/andorthehood/8f4e/issues/416
+issue: https://github.com/8f4e/8f4e/issues/416
 status: Completed
 completed: 2026-04-25
 ---

@@ -59,42 +59,15 @@ describe('blockStack utilities', () => {
 			['condition', mockConditionBlock],
 			['constants', mockConstantsBlock],
 			['map', mockMapBlock],
-		] as const)('tracks %s block depth', (_name, block) => {
+		] as const)('pushes and pops %s blocks', (_name, block) => {
 			const context = createBlockStackTestContext({ blockStack: [] });
 
 			pushBlock(context, block);
 
 			expect(context.blockStack).toEqual([block]);
-			expect(context.activeBlockDepths[block.blockType]).toBe(1);
 
 			expect(popBlock(context)).toEqual(block);
 			expect(context.blockStack).toEqual([]);
-			expect(context.activeBlockDepths[block.blockType]).toBe(0);
-		});
-
-		it('tracks nested loop depths until the last loop is popped', () => {
-			const context = createBlockStackTestContext({ blockStack: [] });
-			const outerLoopBlock: typeof mockLoopBlock = {
-				...mockLoopBlock,
-			};
-			const innerLoopBlock: typeof mockLoopBlock = {
-				...mockLoopBlock,
-			};
-
-			pushBlock(context, outerLoopBlock);
-			pushBlock(context, mockGenericBlock);
-			pushBlock(context, innerLoopBlock);
-
-			expect(context.activeBlockDepths[BlockType.LOOP]).toBe(2);
-
-			expect(popBlock(context)).toEqual(innerLoopBlock);
-			expect(context.activeBlockDepths[BlockType.LOOP]).toBe(1);
-
-			expect(popBlock(context)).toEqual(mockGenericBlock);
-			expect(context.activeBlockDepths[BlockType.LOOP]).toBe(1);
-
-			expect(popBlock(context)).toEqual(outerLoopBlock);
-			expect(context.activeBlockDepths[BlockType.LOOP]).toBe(0);
 		});
 
 		it('tracks active loop blocks without scanning the block stack', () => {
@@ -132,5 +105,24 @@ describe('blockStack utilities', () => {
 			expect(popBlock(context)).toBe(mockMapBlock);
 			expect(context.activeMapBlock).toBeUndefined();
 		});
+	});
+
+	it('derives active loop and map blocks from a seeded stack', () => {
+		const outerLoopBlock = { ...mockLoopBlock };
+		const innerLoopBlock = { ...mockLoopBlock };
+		const blockStack = [mockModuleBlock, outerLoopBlock, mockGenericBlock, innerLoopBlock, mockMapBlock];
+		const context = createBlockStackTestContext({ blockStack });
+
+		expect(context.blockStack).toEqual(blockStack);
+		expect(context.activeLoopBlocks).toEqual([outerLoopBlock, innerLoopBlock]);
+		expect(context.activeMapBlock).toBe(mockMapBlock);
+
+		expect(popBlock(context)).toBe(mockMapBlock);
+		expect(context.activeMapBlock).toBeUndefined();
+		expect(context.activeLoopBlocks).toEqual([outerLoopBlock, innerLoopBlock]);
+
+		expect(popBlock(context)).toBe(innerLoopBlock);
+		expect(context.activeLoopBlocks).toEqual([outerLoopBlock]);
+		expect(context.blockStack).toEqual([mockModuleBlock, outerLoopBlock, mockGenericBlock]);
 	});
 });

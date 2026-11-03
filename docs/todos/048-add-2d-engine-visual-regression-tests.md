@@ -3,7 +3,7 @@ title: 'TODO: Add 2D Engine Visual Regression Tests'
 priority: Medium
 effort: 6-8 hours
 created: 2025-08-28
-issue: https://github.com/andorthehood/8f4e/issues/539
+issue: https://github.com/8f4e/8f4e/issues/539
 status: Open
 completed: null
 ---

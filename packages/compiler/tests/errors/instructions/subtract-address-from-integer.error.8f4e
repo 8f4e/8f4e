@@ -1,0 +1,10 @@
+8f4e/v1
+
+entry main
+module subtractAddressFromInteger
+int value
+push 8
+push &value
+sub
+moduleEnd
+entryEnd

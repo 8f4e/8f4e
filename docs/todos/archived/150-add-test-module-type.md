@@ -3,7 +3,7 @@ title: 'TODO: Add #test directive and assert runner'
 priority: Medium
 effort: 2-4d
 created: 2025-12-28
-issue: https://github.com/andorthehood/8f4e/issues/547
+issue: https://github.com/8f4e/8f4e/issues/547
 status: Completed
 completed: 2026-05-29
 ---

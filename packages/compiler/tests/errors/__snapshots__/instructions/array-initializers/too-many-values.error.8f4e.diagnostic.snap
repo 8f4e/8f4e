@@ -1,0 +1,41 @@
+{
+  "code": 47,
+  "context": {
+    "codeBlockId": "tooManyArrayInitializerValues",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "values",
+      },
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 2,
+      },
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 1,
+      },
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 2,
+      },
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 3,
+      },
+    ],
+    "instruction": "int[]",
+    "lineNumber": 1,
+  },
+  "message": "Array initializer contains more values than the declared element count. (47)",
+}

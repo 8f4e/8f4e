@@ -19,8 +19,8 @@ function createSourceMemoryPlan(): MemoryLayoutPlan {
 		lineNumber: 1,
 		numberOfElements: 4,
 		elementWordSize: 4,
-		wordAlignedAddress: 0,
-		wordAlignedSize: 4,
+		allocationUnitAddress: 0,
+		allocationUnitCount: 4,
 		byteAddress: 0,
 		type: 'int',
 		isInteger: true,
@@ -31,7 +31,7 @@ function createSourceMemoryPlan(): MemoryLayoutPlan {
 		id: 'source',
 		lineNumber: 1,
 		byteAddress: 0,
-		wordAlignedSize: 4,
+		allocationUnitCount: 4,
 		memory: { buffer },
 		declarations: [buffer],
 		declarationSources: [],
@@ -69,6 +69,7 @@ describe('resolveLineReferences', () => {
 			arguments: [{ type: ArgumentType.LITERAL, value: 8, isInteger: true }],
 		};
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -85,6 +86,7 @@ describe('resolveLineReferences', () => {
 			arguments: [classifyIdentifier('output')],
 		};
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -104,6 +106,7 @@ describe('resolveLineReferences', () => {
 			],
 		};
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -120,6 +123,7 @@ describe('resolveLineReferences', () => {
 			arguments: [parseArgument('2*MISSING')],
 		};
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -136,6 +140,7 @@ describe('resolveLineReferences', () => {
 			arguments: [classifyIdentifier('MISSING_CONST'), { type: ArgumentType.LITERAL, value: 100, isInteger: true }],
 		};
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -152,6 +157,7 @@ describe('resolveLineReferences', () => {
 			arguments: [{ type: ArgumentType.LITERAL, value: 1, isInteger: true }, classifyIdentifier('UNRESOLVED')],
 		};
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -168,6 +174,7 @@ describe('resolveLineReferences', () => {
 			arguments: [classifyIdentifier('MISSING_CONST')],
 		};
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -184,6 +191,7 @@ describe('resolveLineReferences', () => {
 			arguments: [classifyIdentifier('localVar')],
 		};
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -199,6 +207,7 @@ describe('resolveLineReferences', () => {
 
 	it('throws UNDECLARED_IDENTIFIER for push with an identifier not in memory or locals', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: { moduleName: 'test' },
 			memoryPlan: createEmptyMemoryPlan(),
 			memoryAliases: new Map(),
@@ -215,6 +224,7 @@ describe('resolveLineReferences', () => {
 
 	it('throws UNDECLARED_IDENTIFIER for localSet with an undeclared local', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: { moduleName: 'test' },
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
@@ -229,6 +239,7 @@ describe('resolveLineReferences', () => {
 
 	it('throws UNDECLARED_IDENTIFIER for push with undeclared intermodule reference', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -247,6 +258,7 @@ describe('resolveLineReferences', () => {
 
 	it('throws UNDECLARED_IDENTIFIER for memory declaration with undeclared intermodule memory reference', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -265,6 +277,7 @@ describe('resolveLineReferences', () => {
 
 	it('does not strip unresolved intermodule address defaults from memory declarations', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -286,6 +299,7 @@ describe('resolveLineReferences', () => {
 
 	it('validates unresolved intermodule references through group aliases', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: { moduleName: 'test' },
 			memoryPlan: createSourceMemoryPlan(),
 			memoryAliases: new Map([['audio', new Map([['level', { targetModuleId: 'source', targetMemoryId: 'buffer' }]])]]),
@@ -304,6 +318,7 @@ describe('resolveLineReferences', () => {
 
 	it('does not strip array declaration element count arguments', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -322,6 +337,7 @@ describe('resolveLineReferences', () => {
 
 	it('throws UNDECLARED_IDENTIFIER for memory declaration with unresolved value-expression default', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: { moduleName: 'test' },
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
@@ -336,6 +352,7 @@ describe('resolveLineReferences', () => {
 
 	it('throws when an intermodule address push reaches semantic reference resolution', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 			},
@@ -354,6 +371,7 @@ describe('resolveLineReferences', () => {
 
 	it('throws UNDECLARED_IDENTIFIER for push with &name when memory does not exist', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: { moduleName: 'test' },
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
@@ -368,6 +386,7 @@ describe('resolveLineReferences', () => {
 
 	it('throws for count(*localPointer) when the pointer has no element count metadata', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: { moduleName: 'test' },
 			memoryPlan: createEmptyMemoryPlan(),
 			memoryAliases: new Map(),
@@ -386,6 +405,7 @@ describe('resolveLineReferences', () => {
 
 	it('throws UNDEFINED_FUNCTION for call with an undeclared function target', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 				functions: { byId: {}, arityByName: {} },
@@ -404,6 +424,7 @@ describe('resolveLineReferences', () => {
 	it('does not throw for call when the target function name is registered', () => {
 		const targetFunction = { id: 'knownFn', name: 'knownFn', signature: { parameters: [], returns: [] } };
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 				functions: {
@@ -426,9 +447,10 @@ describe('resolveLineReferences', () => {
 		const targetFunction = {
 			id: 'knownFn__int',
 			name: 'knownFn',
-			signature: { parameters: ['int'], returns: [] },
+			signature: { parameters: [{ name: 'value', type: 'int' }], returns: [] },
 		};
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: {
 				moduleName: 'test',
 				functions: {
@@ -447,43 +469,9 @@ describe('resolveLineReferences', () => {
 		expect(resolveLineReferences(line, context)).toEqual(line);
 	});
 
-	it('resolves inline call arguments as push lines', () => {
-		const targetFunction = {
-			id: 'knownFn',
-			name: 'knownFn',
-			signature: { parameters: ['int'], returns: [] },
-		};
-		const context = {
-			namespace: {
-				moduleName: 'test',
-				functions: {
-					byId: { knownFn: targetFunction },
-					arityByName: { knownFn: 1 },
-				},
-			},
-			locals: {},
-		} as unknown as ReferenceResolutionContext;
-		const line: CompilerASTLine = {
-			lineNumber: 1,
-			instruction: 'call',
-			arguments: [classifyIdentifier('knownFn'), { type: ArgumentType.LITERAL, value: 8, isInteger: true }],
-		};
-
-		expect(resolveLineReferences(line, context)).toEqual({
-			...line,
-			arguments: [classifyIdentifier('knownFn'), { type: ArgumentType.LITERAL, value: 8, isInteger: true }],
-			inlineArgumentPushes: [
-				{
-					lineNumber: 1,
-					instruction: 'push',
-					arguments: [{ type: ArgumentType.LITERAL, value: 8, isInteger: true }],
-				},
-			],
-		});
-	});
-
 	it('rejects zero clamp-address access width', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: { moduleName: 'test' },
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
@@ -495,6 +483,7 @@ describe('resolveLineReferences', () => {
 
 	it('rejects unsupported clamp-address access widths', () => {
 		const context = {
+			referenceSlots: Object.create(null),
 			namespace: { moduleName: 'test' },
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
@@ -538,7 +527,7 @@ describe('resolveSemanticReferences', () => {
 		const metadata = {
 			id: functionId,
 			name: 'echo',
-			signature: { parameters: ['int'], returns: ['int'] },
+			signature: { parameters: [{ name: 'value', type: 'int' }], returns: ['int'] },
 		} satisfies FunctionMetadata;
 
 		const result = resolveSemanticReferences({

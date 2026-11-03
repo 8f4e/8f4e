@@ -118,9 +118,9 @@ describe('resolveSemanticReferences integration', () => {
 			elementWordSize: 4,
 			byteAddress: 4,
 			elementByteLength: 4,
-			wordAlignedSize: 1,
-			wordAlignedByteLength: 4,
-			wordAlignedAddress: 1,
+			allocationUnitCount: 1,
+			allocatedByteLength: 4,
+			allocationUnitAddress: 1,
 			endByteAddress: 4,
 			endAddressSafeByteLength: 4,
 			lineNumber: 2,
@@ -164,8 +164,8 @@ describe('resolveSemanticReferences integration', () => {
 					id: 'main',
 					lineNumber: 1,
 					byteAddress: 4,
-					wordAlignedSize: 1,
-					wordAlignedByteLength: 4,
+					allocationUnitCount: 1,
+					allocatedByteLength: 4,
 					endByteAddress: 4,
 					endAddressSafeByteLength: 4,
 					memory: {
@@ -182,8 +182,8 @@ describe('resolveSemanticReferences integration', () => {
 					id: 'main',
 					lineNumber: 1,
 					byteAddress: 4,
-					wordAlignedSize: 1,
-					wordAlignedByteLength: 4,
+					allocationUnitCount: 1,
+					allocatedByteLength: 4,
 					endByteAddress: 4,
 					endAddressSafeByteLength: 4,
 					memory: {
@@ -204,6 +204,7 @@ describe('resolveSemanticReferences integration', () => {
 			],
 			modules: [
 				{
+					referenceSlots: {},
 					lineFacts: [
 						undefined,
 						undefined,
@@ -271,7 +272,7 @@ describe('resolveSemanticReferences integration', () => {
 					id: 'increment__int',
 					name: 'increment',
 					signature: {
-						parameters: ['int'],
+						parameters: [{ name: 'value', type: 'int' }],
 						returns: ['int'],
 					},
 				},

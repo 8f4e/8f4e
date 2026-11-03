@@ -1,0 +1,18 @@
+8f4e/v1
+
+note mintCircuitColors
+; @public
+; @config color.canvas #151210
+; @config color.surface #25211e
+; @config color.ink #e5e1d8
+; @config color.primary #64d1ad
+; @config color.secondary #c7df8a
+; @config color.positive #64d1ad
+; @config color.warning #d9c66f
+; @config color.negative #d66b5f
+; @config color.muted #898178
+; @config color.stroke rgba(100,209,173,0.24)
+; @config color.tertiary #aaa195
+; @config color.highlight #c7df8a
+; @config color.detail #64d1ad
+noteEnd

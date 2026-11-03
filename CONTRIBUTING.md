@@ -4,7 +4,7 @@ Thanks for helping improve 8f4e. This repository contains the 8f4e language comp
 
 ## Looking for a Place to Start?
 
-Welcome! Start with the [open good first issues](https://github.com/andorthehood/8f4e/labels/good%20first%20issue), which are selected as entry points for new contributors.
+Welcome! Start with the [open good first issues](https://github.com/8f4e/8f4e/labels/good%20first%20issue), which are selected as entry points for new contributors.
 
 Before starting, check the issue's assignees, recent comments, and linked pull requests to avoid duplicating work. If the scope or setup is unclear, ask in the issue; we're happy to help.
 

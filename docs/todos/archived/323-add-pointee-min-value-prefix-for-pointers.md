@@ -3,7 +3,7 @@ title: 'TODO: Add `min(*name)` pointee min value prefix for pointers'
 priority: Medium
 effort: 2-4h
 created: 2026-03-26
-issue: https://github.com/andorthehood/8f4e/issues/449
+issue: https://github.com/8f4e/8f4e/issues/449
 status: Completed
 completed: 2026-05-27
 ---

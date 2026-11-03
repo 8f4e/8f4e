@@ -3,7 +3,7 @@ title: 'TODO: Guard i32.rem_s divisor zero'
 priority: Medium
 effort: 2-4h
 created: 2026-04-30
-issue: https://github.com/andorthehood/8f4e/issues/649
+issue: https://github.com/8f4e/8f4e/issues/649
 status: Open
 completed: null
 ---

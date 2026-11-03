@@ -3,7 +3,7 @@ title: 'TODO: Add serial input editor environment plugin'
 priority: Medium
 effort: 1-2d
 created: 2026-05-13
-issue: https://github.com/andorthehood/8f4e/issues/655
+issue: https://github.com/8f4e/8f4e/issues/655
 status: Open
 completed: null
 ---
@@ -12,7 +12,7 @@ completed: null
 
 ## Problem Description
 
-The editor now has a MIDI environment plugin that can bind browser MIDI input events to exported 8f4e functions, but there is no equivalent path for browser serial input.
+The editor has a MIDI input plugin that can bind browser MIDI input events to exported 8f4e functions, but there is no equivalent path for browser serial input.
 
 Browser serial input arrives through the Web Serial API as arbitrary `Uint8Array` chunks from a `ReadableStream`. Those chunks are not deterministic protocol frames: a JavaScript read can contain a partial message, one full message, multiple messages, or a split through any logical boundary. Calling into Wasm once per byte would be too frequent for many serial streams, while trusting browser chunk boundaries would make behavior device- and timing-dependent.
 
@@ -20,10 +20,9 @@ The serial plugin needs to define deterministic framing itself, copy completed f
 
 ## Proposed Solution
 
-Add a `serial` editor environment plugin with two directives:
+Add a serial input editor plugin with two directives:
 
 ```8f4e
-; @info serial
 ; @serialIn <port> <baudRate> <bufferMemoryId> <frameBytes>
 ; @serialInCallback <port> <callbackExportName>
 ```
@@ -33,7 +32,6 @@ Add a `serial` editor environment plugin with two directives:
 Example:
 
 ```8f4e
-; @info serial
 ; @serialIn 0 115200 serialBuffer 32
 ; @serialInCallback 0 onSerialFrame
 ; @serialInCallback 0 onSerialDebug
@@ -60,8 +58,8 @@ Incomplete trailing bytes remain buffered until more serial data arrives. Queues
 
 ## Initial Decisions
 
-- Use a dedicated `serial` editor environment plugin, similar in shape to the existing `midi` plugin.
-- Use `@info serial` as the discovery surface for serial ports.
+- Use a dedicated editor plugin, following the regular plugin contract used by `editor-plugin-midi-input`.
+- Publish discovered serial ports in `state.info.serial`; presentation belongs to future info overlays.
 - Use `@serialIn <port> <baudRate> <bufferMemoryId> <frameBytes>` to define one input pipeline per port.
 - Use `@serialInCallback <port> <callbackExportName>` to fan out completed frames to one or more callbacks.
 - Include `baudRate` in the directive because Web Serial requires it when opening a port.
@@ -82,13 +80,13 @@ Incomplete trailing bytes remain buffered until more serial data arrives. Queues
 ## Proposed File Organization
 
 ```text
-packages/editor/packages/editor-core/src/editorEnvironmentPlugins/serial/
-  plugin.ts
+packages/editor/plugins/serial-input/src/
+  index.ts
   devices.ts
   directives.ts
   serialIn.ts
   types.ts
-  plugin.test.ts
+  index.test.ts
   devices.test.ts
   directives.test.ts
   serialIn.test.ts
@@ -96,7 +94,7 @@ packages/editor/packages/editor-core/src/editorEnvironmentPlugins/serial/
 
 Responsibilities:
 
-- `plugin.ts` composes plugin lifecycle, starts device discovery, starts serial input pipelines, and owns cleanup.
+- `index.ts` exports a plugin factory, starts device discovery and serial input pipelines, and owns cleanup.
 - `devices.ts` owns `navigator.serial.getPorts()`, builds `state.info.serial`, tracks connect/disconnect events if available, and exposes current ports.
 - `directives.ts` parses active `@serialIn` and `@serialInCallback` directives, returning pipeline configs, callback bindings, and directive errors.
 - `serialIn.ts` opens configured serial ports, reads arbitrary `Uint8Array` chunks, performs fixed-size framing, copies frames into Wasm memory, resolves callback exports, and invokes callbacks.
@@ -106,9 +104,9 @@ Responsibilities:
 
 ### Step 1: Register the serial plugin
 
-- Add a lazy editor environment plugin registry entry with id `serial`.
-- Trigger the plugin from `serialIn` and `serialInCallback` directives.
-- Keep `@info serial` as an info display directive rather than a plugin trigger if the existing manager expects trigger directives only.
+- Compose a serial plugin factory in the default editor, passing browser and compiler dependencies through its factory.
+- Activate pipelines from `serialIn` and `serialInCallback` directives.
+- Use the regular plugin installer; lazy implementation loading remains a separate design task (TODO 508).
 
 ### Step 2: Add serial device discovery
 
@@ -131,8 +129,8 @@ Responsibilities:
 
 ### Step 4: Resolve buffer memory and Wasm callbacks
 
-- Resolve `bufferMemoryId` against the active compiled module memory map using the same memory-id conventions used by other editor environment plugins.
-- Instantiate or reuse the current editor environment Wasm exports service, following the MIDI plugin pattern.
+- Resolve `bufferMemoryId` through the public memory-resolution helpers used by other editor plugins.
+- Own Wasm instantiation and export caching inside the plugin, following the MIDI input plugin pattern.
 - Resolve each callback export by name.
 - Report plugin-owned directive errors for missing ports, missing memory ids, missing exports, or non-callable exports.
 
@@ -159,17 +157,17 @@ Responsibilities:
 - Unit test fixed-size framing across arbitrary chunk boundaries.
 - Unit test callback fanout for one configured port.
 - Unit test lifecycle cleanup, queue clearing on resync, and disconnect/read failure behavior.
-- Update editor directive docs with `@serialIn`, `@serialInCallback`, and `@info serial`.
+- Update editor directive docs with `@serialIn` and `@serialInCallback`, and document `state.info.serial`.
 
 ## Validation Checkpoints
 
-- `npx nx run @8f4e/editor-core:test -- --run src/editorEnvironmentPlugins/serial`
-- `npx nx run @8f4e/editor-core:typecheck`
+- `npx nx run @8f4e/editor-plugin-serial-input:test`
+- `npx nx run @8f4e/editor-plugin-serial-input:typecheck`
 - `npx nx run @8f4e/editor-website:build`
 
 ## Success Criteria
 
-- [ ] `@info serial` lists already-granted serial ports while the plugin is active.
+- [ ] `state.info.serial` lists already-granted serial ports while the plugin is active.
 - [ ] `@serialIn <port> <baudRate> <bufferMemoryId> <frameBytes>` configures one fixed-frame serial input pipeline.
 - [ ] `@serialInCallback <port> <callbackExportName>` binds one or more exported callbacks to completed frames.
 - [ ] Serial `ReadableStream` chunks are buffered and reframed deterministically by `frameBytes`.
@@ -182,11 +180,9 @@ Responsibilities:
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/src/editorEnvironmentPlugins/registry.ts` - add the `serial` plugin registry entry.
-- `packages/editor/packages/editor-core/src/editorEnvironmentPlugins/serial` - new serial plugin implementation and tests.
-- `packages/editor/packages/editor-core/src/editorEnvironmentPlugins/services.ts` - reuse current Wasm export access.
-- `packages/editor/packages/editor-core/src/index.ts` - ensure serial plugin receives navigator and current Wasm services through the existing context.
-- `packages/editor/docs/editor-directives.md` - document `@serialIn`, `@serialInCallback`, and `@info serial`.
+- `packages/editor/plugins/serial-input` - new serial plugin implementation, WASM access, and tests.
+- `packages/editor/packages/editor-default/src/index.ts` - compose the factory with navigator and current compiler-resource getters.
+- `packages/editor/packages/editor-core/docs/editor-directives.md` - document `@serialIn`, `@serialInCallback`, and `state.info.serial`.
 
 ## Risks & Considerations
 
@@ -201,4 +197,4 @@ Responsibilities:
 
 - **Related**: `docs/todos/archived/396-add-midi-input-editor-environment-plugin.md`
 - **Related**: `docs/todos/archived/395-add-exported-8f4e-functions.md`
-- **Related**: `docs/todos/387-add-lazy-editor-environment-plugins.md`
+- **Related**: `docs/todos/archived/508-design-editor-plugin-lazy-loading.md`

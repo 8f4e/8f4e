@@ -1,12 +1,21 @@
 import type { CodeBlockGraphicData, EventDispatcher, InternalMouseEvent, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
+import compareCodeBlocksByPosition from '../../../../pureHelpers/compareCodeBlocksByPosition';
+import { bringCodeBlockToFrontWithinPartition } from '../../partitionCodeBlocksByAlwaysOnTop';
 import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
+import { applyCodeBlockSourceEdits } from '../../sourceEdits';
 import findCodeBlockAtViewportCoordinates from '../../utils/finders/findCodeBlockAtViewportCoordinates';
 import upsertPos from '../directives/pos/upsert';
 import { worldPositionToAnchoredPos } from '../directives/viewport/resolve';
-import { getGroupBlocks } from '../group/getGroupBlocks';
 
-export interface CodeBlockClickEvent {
+/** Plugins may replace targets synchronously before core starts moving and snapping them. */
+export interface ResolveCodeBlockDragTargetsEvent {
+	codeBlock: CodeBlockGraphicData;
+	altKey: InternalMouseEvent['altKey'];
+	targets: CodeBlockGraphicData[];
+}
+
+export interface CodeBlockPointerDownEvent {
 	x: number;
 	y: number;
 	relativeX: number;
@@ -20,6 +29,13 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 	// and cleared on mouseup, so concurrent drags are not a concern (only one drag at a time).
 	let dragSet: CodeBlockGraphicData[] = [];
 	let didDrag = false;
+	let orderBeforeDrag: CodeBlockGraphicData[] = [];
+
+	function getCompilationOrder() {
+		return state.codeBlockRendering.currentProject.blocks
+			.filter(block => block.blockType !== 'note')
+			.toSorted(compareCodeBlocksByPosition);
+	}
 
 	function onMouseDown(event: InternalMouseEvent) {
 		const { x, y, altKey } = event;
@@ -34,42 +50,25 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 			store.set('codeBlockRendering.selectedCodeBlock', undefined);
 			dragSet = [];
 			didDrag = false;
+			orderBeforeDrag = [];
 			return;
 		}
 		store.set('codeBlockRendering.selectedCodeBlock', state.codeBlockRendering.draggedCodeBlock);
 		didDrag = false;
 
-		// Compute drag set based on nonstick flag and modifier
-		// 1. If block is in a nonstick group and modifier is NOT held: single-block drag
-		// 2. Else if block is in a nonstick group and modifier IS held: group-drag override
-		// 3. Else if block is in a regular group (default) and modifier is NOT held: group drag
-		// 4. Else if block is in a regular group and modifier IS held: single-block override
-		// 5. Else: normal single-block drag
-		if (draggedCodeBlock.groupName) {
-			if (draggedCodeBlock.groupNonstick) {
-				// Nonstick group: single-block by default, Alt for group drag
-				if (altKey) {
-					dragSet = getGroupBlocks(state.codeBlockRendering.codeBlocks, draggedCodeBlock.groupName);
-				} else {
-					dragSet = [draggedCodeBlock];
-				}
-			} else {
-				// Regular group: group drag by default, Alt for single-block
-				if (altKey) {
-					dragSet = [draggedCodeBlock];
-				} else {
-					dragSet = getGroupBlocks(state.codeBlockRendering.codeBlocks, draggedCodeBlock.groupName);
-				}
-			}
-		} else {
-			// Single block drag (no group)
-			dragSet = [draggedCodeBlock];
-		}
+		const dragTargets: ResolveCodeBlockDragTargetsEvent = {
+			codeBlock: draggedCodeBlock,
+			altKey,
+			targets: [draggedCodeBlock],
+		};
+		events.dispatch('resolveCodeBlockDragTargets', dragTargets);
+		dragSet = dragTargets.targets;
+		orderBeforeDrag = getCompilationOrder();
 
 		const relativeX = Math.abs(x - (draggedCodeBlock.x - state.viewport.x));
 		const relativeY = Math.abs(y - (draggedCodeBlock.y - state.viewport.y));
 
-		events.dispatch<CodeBlockClickEvent>('codeBlockClick', {
+		events.dispatch<CodeBlockPointerDownEvent>('codeBlockPointerDown', {
 			x,
 			y,
 			relativeX,
@@ -80,19 +79,16 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		// Bring dragged module forward within its z-order partition.
 		// Normal blocks move to the end of the normal segment (before always-on-top blocks).
 		// Always-on-top blocks move to the end of the always-on-top segment (end of array).
-		const allOthers = state.codeBlockRendering.codeBlocks.filter(block => block !== draggedCodeBlock);
-		if (draggedCodeBlock.alwaysOnTop) {
-			replaceCodeBlocksInPlace(state.codeBlockRendering.codeBlocks, [...allOthers, draggedCodeBlock]);
-		} else {
-			const normalOthers = allOthers.filter(block => !block.alwaysOnTop);
-			const topBlocks = allOthers.filter(block => block.alwaysOnTop);
-			replaceCodeBlocksInPlace(state.codeBlockRendering.codeBlocks, [...normalOthers, draggedCodeBlock, ...topBlocks]);
-		}
+		replaceCodeBlocksInPlace(
+			state.codeBlockRendering.currentProject.blocks,
+			bringCodeBlockToFrontWithinPartition(state.codeBlockRendering.currentProject.blocks, draggedCodeBlock)
+		);
 
-		if (!state.featureFlags.editing) {
+		if (state.editorMode !== 'edit') {
 			state.codeBlockRendering.draggedCodeBlock = undefined;
 			dragSet = [];
 			didDrag = false;
+			orderBeforeDrag = [];
 		}
 	}
 
@@ -120,6 +116,7 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		if (!didDrag) {
 			state.codeBlockRendering.draggedCodeBlock = undefined;
 			dragSet = [];
+			orderBeforeDrag = [];
 			return;
 		}
 
@@ -134,6 +131,8 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		const snapY = snapGridY * hGrid;
 		const deltaX = snapX - primaryBlock.x;
 		const deltaY = snapY - primaryBlock.y;
+
+		const edits: { codeBlock: CodeBlockGraphicData; code: string[] }[] = [];
 
 		// Snap all blocks in drag set to grid using the same pixel delta
 		for (const block of dragSet) {
@@ -172,14 +171,19 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 
 			block.gridX = gridX;
 			block.gridY = gridY;
-			block.lastUpdated = Date.now();
-			block.code = upsertPos(block.code, gridX, gridY);
-			store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);
+			edits.push({ codeBlock: block, code: upsertPos(block.code, gridX, gridY) });
 		}
+
+		const orderAfterDrag = getCompilationOrder();
+		const orderChanged =
+			orderBeforeDrag.length !== orderAfterDrag.length ||
+			orderBeforeDrag.some((block, index) => block !== orderAfterDrag[index]);
+		applyCodeBlockSourceEdits(store, edits, { affectsCompilation: orderChanged });
 
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 		dragSet = [];
 		didDrag = false;
+		orderBeforeDrag = [];
 	}
 
 	events.on('mousedown', onMouseDown);

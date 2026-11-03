@@ -3,7 +3,7 @@ title: 'TODO: Decouple language-spec from WASM output contracts'
 priority: Medium
 effort: 1-2d
 created: 2026-06-16
-issue: https://github.com/andorthehood/8f4e/issues/951
+issue: https://github.com/8f4e/8f4e/issues/951
 status: Open
 completed: null
 ---

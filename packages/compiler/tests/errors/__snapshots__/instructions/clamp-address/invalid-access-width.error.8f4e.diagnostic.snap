@@ -1,0 +1,20 @@
+{
+  "code": 49,
+  "context": {
+    "codeBlockId": "invalidAccessWidth",
+    "codeBlockType": "module",
+    "projectBlockId": 4,
+  },
+  "line": {
+    "arguments": [
+      {
+        "isInteger": true,
+        "type": "literal",
+        "value": 3,
+      },
+    ],
+    "instruction": "clampAddress",
+    "lineNumber": 2,
+  },
+  "message": "Access width must be 1, 2, 4, 8 bytes. (49)",
+}

@@ -7,8 +7,8 @@
 			"executor": "nx:run-commands",
 			"outputs": ["{projectRoot}/dist"],
 			"inputs": [
-				"default",
-				"^default",
+				"production",
+				"^production",
 				"{workspaceRoot}/bundle-size.config.json",
 				"{workspaceRoot}/logs/bundle-sizes/**/*",
 				"{workspaceRoot}/logs/bytecode-size/**/*",

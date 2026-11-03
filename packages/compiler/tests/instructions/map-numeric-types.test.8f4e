@@ -113,7 +113,7 @@ constantsEnd
 
 note
 ; @pos 2 2
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Every numeric input/output pair
 preserves first-match precedence

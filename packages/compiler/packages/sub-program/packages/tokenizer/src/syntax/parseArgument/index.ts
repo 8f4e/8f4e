@@ -87,6 +87,16 @@ function parseCompileTimeRoundingExpression(argument: string): ArgumentCompileTi
  * @returns Parsed argument with type information.
  */
 export function parseArgument(argument: string): Argument {
+	// Quoted strings must be recognized before arithmetic parsing, because operators
+	// inside a string are content rather than numeric-expression syntax.
+	if (argument.startsWith('"') && argument.endsWith('"') && argument.length >= 2) {
+		const raw = argument.slice(1, -1);
+		return {
+			type: ArgumentType.STRING_LITERAL,
+			value: decodeStringLiteral(raw),
+		};
+	}
+
 	const roundingExpression = parseCompileTimeRoundingExpression(argument);
 	if (roundingExpression !== null) {
 		return roundingExpression;
@@ -104,14 +114,6 @@ export function parseArgument(argument: string): Argument {
 	}
 
 	switch (true) {
-		// Check for quoted string literals
-		case argument.startsWith('"') && argument.endsWith('"') && argument.length >= 2: {
-			const raw = argument.slice(1, -1);
-			return {
-				type: ArgumentType.STRING_LITERAL,
-				value: decodeStringLiteral(raw),
-			};
-		}
 		default: {
 			const numericLiteral = parseNumericLiteralToken(argument);
 			if (numericLiteral) {

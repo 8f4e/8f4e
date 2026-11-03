@@ -1,8 +1,8 @@
 import type { CompilerASTLine, MemoryAddressRange, PlannedMemoryModule } from '@8f4e/language-spec';
-import { ArgumentType, ErrorCode, GLOBAL_ALIGNMENT_BOUNDARY } from '@8f4e/language-spec';
+import { ALLOCATION_UNIT_BYTE_SIZE, ArgumentType, ErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
+import createStackAnalyzerTestContext from '../../tests/testUtils';
 import { analyzeInstruction } from '../analyzeInstruction';
-import createStackAnalyzerTestContext from '../testUtils';
 
 const range: MemoryAddressRange = {
 	source: 'memory-start',
@@ -13,15 +13,16 @@ const range: MemoryAddressRange = {
 
 function createPlannedModule(overrides: Partial<PlannedMemoryModule> = {}): PlannedMemoryModule {
 	const byteAddress = overrides.byteAddress ?? 0;
-	const wordAlignedSize = overrides.wordAlignedSize ?? 0;
+	const allocationUnitCount = overrides.allocationUnitCount ?? 0;
 	return {
 		id: overrides.id ?? 'test',
 		lineNumber: overrides.lineNumber ?? 0,
 		byteAddress,
-		wordAlignedSize,
-		wordAlignedByteLength: wordAlignedSize * GLOBAL_ALIGNMENT_BOUNDARY,
-		endByteAddress: wordAlignedSize > 0 ? byteAddress + (wordAlignedSize - 1) * GLOBAL_ALIGNMENT_BOUNDARY : byteAddress,
-		endAddressSafeByteLength: wordAlignedSize > 0 ? GLOBAL_ALIGNMENT_BOUNDARY : 0,
+		allocationUnitCount,
+		allocatedByteLength: allocationUnitCount * ALLOCATION_UNIT_BYTE_SIZE,
+		endByteAddress:
+			allocationUnitCount > 0 ? byteAddress + (allocationUnitCount - 1) * ALLOCATION_UNIT_BYTE_SIZE : byteAddress,
+		endAddressSafeByteLength: allocationUnitCount > 0 ? ALLOCATION_UNIT_BYTE_SIZE : 0,
 		memory: overrides.memory ?? {},
 		declarations: overrides.declarations ?? [],
 		declarationSources: overrides.declarationSources ?? [],
@@ -57,10 +58,10 @@ describe('clampAddress stack analysis', () => {
 				kind: 'address',
 				valueType: 'int',
 				isNonZero: true,
-				knownValue: 128 - GLOBAL_ALIGNMENT_BOUNDARY,
+				knownValue: 128 - ALLOCATION_UNIT_BYTE_SIZE,
 				address: {
 					clampRange: range,
-					safeAccessByteWidth: GLOBAL_ALIGNMENT_BOUNDARY,
+					safeAccessByteWidth: ALLOCATION_UNIT_BYTE_SIZE,
 				},
 			},
 		]);
@@ -118,7 +119,7 @@ describe('clampAddress stack analysis', () => {
 				knownValue: 64,
 				address: {
 					clampRange: shiftedRange,
-					safeAccessByteWidth: GLOBAL_ALIGNMENT_BOUNDARY,
+					safeAccessByteWidth: ALLOCATION_UNIT_BYTE_SIZE,
 				},
 			},
 		]);
@@ -137,7 +138,7 @@ describe('clampAddress stack analysis', () => {
 		const plannedModule = createPlannedModule({
 			id: 'osc',
 			byteAddress: 64,
-			wordAlignedSize: 8,
+			allocationUnitCount: 8,
 		});
 		const context = createStackAnalyzerTestContext({
 			currentPlannedModule: plannedModule,
@@ -163,7 +164,7 @@ describe('clampAddress stack analysis', () => {
 						safeByteLength: 32,
 						moduleId: 'osc',
 					},
-					safeAccessByteWidth: GLOBAL_ALIGNMENT_BOUNDARY,
+					safeAccessByteWidth: ALLOCATION_UNIT_BYTE_SIZE,
 				},
 			},
 		]);
@@ -181,7 +182,7 @@ describe('clampAddress stack analysis', () => {
 				valueType: 'int',
 				isNonZero: false,
 				address: {
-					safeAccessByteWidth: GLOBAL_ALIGNMENT_BOUNDARY,
+					safeAccessByteWidth: ALLOCATION_UNIT_BYTE_SIZE,
 				},
 			},
 		]);

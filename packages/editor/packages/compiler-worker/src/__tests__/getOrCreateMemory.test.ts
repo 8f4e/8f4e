@@ -7,21 +7,24 @@ describe('getOrCreateMemory', () => {
 	async function createProgramMemoryStructure(moduleIds = ['module1']): Promise<ProgramMemoryStructure> {
 		const result = await compileProject(
 			{
+				entries: ['main'],
 				code: [],
-				modules: moduleIds.map((id, projectBlockId) => ({
-					id: projectBlockId,
-					entry: 'main',
-					code: [`module ${id}`, 'int value 0', 'moduleEnd'],
-				})),
+				execution: [
+					...moduleIds.map((id, projectBlockId) => ({
+						type: 'module' as const,
+						id: projectBlockId,
+						entry: 'main',
+						code: [`module ${id}`, 'int value 0', 'moduleEnd'],
+					})),
+				],
 				functions: [],
 				constants: [],
 				prototypes: [],
 				includes: [],
 				notes: [],
 				unknown: [],
-				groups: [],
 			},
-			{ startingMemoryWordAddress: 0 }
+			{ startingMemoryAllocationUnitAddress: 0 }
 		);
 
 		return {

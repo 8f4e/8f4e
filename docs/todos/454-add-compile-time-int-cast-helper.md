@@ -3,7 +3,7 @@ title: 'TODO: Add compile-time int cast helper'
 priority: Medium
 effort: 4-8h
 created: 2026-06-11
-issue: https://github.com/andorthehood/8f4e/issues/948
+issue: https://github.com/8f4e/8f4e/issues/948
 status: Open
 completed: null
 ---
@@ -19,7 +19,7 @@ compile-time size arguments.
 Runtime instructions such as `castToInt` do not help here because declarations like `float[] buffer DELAY_SIZE` need the
 value before runtime code exists.
 
-The Clouds reverb example needs sample-rate-relative constants such as:
+The reverb example needs sample-rate-relative constants such as:
 
 ```8f4e
 const CLOUDS_RATIO SAMPLE_RATE/CLOUDS_SAMPLE_RATE

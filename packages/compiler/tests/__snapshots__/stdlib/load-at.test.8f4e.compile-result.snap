@@ -120,8 +120,14 @@
       "id": "loadAt__int_p__int",
       "signature": {
         "parameters": [
-          "int*",
-          "int",
+          {
+            "name": "buffer",
+            "type": "int*",
+          },
+          {
+            "name": "index",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -324,6 +330,8 @@
     "loadAtAssertions": {
       "memory": {
         "buffer": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 4,
           "byteAddress": 4,
           "default": {
             "0": 11,
@@ -339,8 +347,6 @@
           "numberOfElements": 4,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 4,
         },
       },
     },

@@ -1,19 +1,19 @@
-import type { ProjectObjectModel } from '@8f4e/language-spec';
+import type { ProjectModuleBlock, ProjectObjectModel } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
 import compileProjectModules from '../src/compile/compileProjectModules';
 
-function projectWithModules(modules: ProjectObjectModel['modules']): ProjectObjectModel {
+function projectWithModules(modules: Array<Omit<ProjectModuleBlock, 'type'>>): ProjectObjectModel {
 	return {
+		entries: [...new Set(modules.map(module => module.entry))],
 		code: [],
-		modules,
+		execution: modules.map(module => ({ ...module, type: 'module' })),
 		functions: [],
 		constants: [],
 		prototypes: [],
 		includes: [],
 		notes: [],
 		unknown: [],
-		groups: [],
 	};
 }
 
@@ -33,7 +33,7 @@ describe('compileProjectModules', () => {
 				},
 			]),
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 			}
 		);
 
@@ -59,7 +59,7 @@ describe('compileProjectModules', () => {
 				},
 			]),
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 			}
 		);
 
@@ -80,7 +80,7 @@ describe('compileProjectModules', () => {
 				},
 			]),
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 			}
 		);
 
@@ -102,7 +102,7 @@ describe('compileProjectModules', () => {
 				},
 			]),
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 			}
 		);
 
@@ -114,8 +114,11 @@ describe('compileProjectModules', () => {
 		const result = await compileProjectModules(
 			{
 				...projectWithModules([]),
-				groups: [
+				execution: [
 					{
+						entry: 'main',
+
+						type: 'group',
 						...projectWithModules([
 							{
 								id: 2,
@@ -125,13 +128,18 @@ describe('compileProjectModules', () => {
 						]),
 						id: 1,
 						name: 'nested',
+
 						code: ['group nested', 'groupEnd'],
 						exposures: [],
+
+						entries: ['main'],
 					},
 				],
+
+				entries: [],
 			},
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 			}
 		);
 
@@ -151,7 +159,7 @@ describe('compileProjectModules', () => {
 				includes: [{ id: 1, code: ['includes', 'include std/test/includedOne', 'includesEnd'] }],
 			},
 			{
-				compilerOptions: { startingMemoryWordAddress: 0 },
+				compilerOptions: { startingMemoryAllocationUnitAddress: 0 },
 				resolveInclude: includeId =>
 					includeId === 'std/test/includedOne'
 						? ['function includedOne', '#export', 'push 1', 'functionEnd int'].join('\n')

@@ -81,6 +81,12 @@ All packages in `packages/` (including nested directories) are automatically det
 - **package.json**: Updated scripts to use Nx commands
 - **Workspaces**: Still configured for package linking compatibility
 
+## Production and test inputs
+
+Builds use `production` and `^production`; tests use their own `default` files and dependency `production` files. Type checks keep their own test files. Test-only project imports still create graph edges even when declared as dev dependencies, so use local sample fixtures when the source package is not part of the behavior under test.
+
+Inspect resolved files with `npx nx show target inputs <project>:<target> --json` after changing dependencies, input conventions, generators, or shipped assets. Use `npx nx run <project>:<target> --graph` to inspect prerequisite tasks. The [workspace audit](build-input-audit.md) records confirmed cases, preserved shipped assets, verification and remaining package-boundary follow-ups.
+
 ## Migration Notes
 
 - Vite configuration optimized for performance

@@ -3,7 +3,7 @@ title: 'TODO: Add float64 support for greaterThan instruction'
 priority: High
 effort: 1-3h
 created: 2026-02-20
-issue: https://github.com/andorthehood/8f4e/issues/408
+issue: https://github.com/8f4e/8f4e/issues/408
 status: Completed
 completed: 2026-05-10
 ---

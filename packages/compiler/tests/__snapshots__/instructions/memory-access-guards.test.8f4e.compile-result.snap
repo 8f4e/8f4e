@@ -69,7 +69,10 @@
       "id": "readGuardedPointer__int_p",
       "signature": {
         "parameters": [
-          "int*",
+          {
+            "name": "ptr",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",
@@ -451,6 +454,8 @@
     "guardedLocalPointerDereferenceAssertions": {
       "memory": {
         "value": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
@@ -460,8 +465,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },

@@ -1258,11 +1258,498 @@
       ],
       "type": "module",
     },
+    "zzFloat64First": {
+      "id": "zzFloat64First",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zzFloat64First",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "prefix",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "padded",
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+          ],
+          "instruction": "float64",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "next",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 99,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "alignment",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "aligned",
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+          ],
+          "instruction": "float64",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "alignedNext",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 99,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": true,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "padded",
+              "type": "identifier",
+              "value": "padded&",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1072955392,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": true,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "aligned",
+              "type": "identifier",
+              "value": "aligned&",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1072955392,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "zzFloat64Second": {
+      "id": "zzFloat64Second",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zzFloat64Second",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "padded",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+          ],
+          "instruction": "float64[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "next",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 99,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "alignment",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "aligned",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+          ],
+          "instruction": "float64[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "alignedNext",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 99,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": true,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "padded",
+              "type": "identifier",
+              "value": "padded&",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1072955392,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": true,
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "aligned",
+              "type": "identifier",
+              "value": "aligned&",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1072955392,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "zzFloat64Third": {
+      "id": "zzFloat64Third",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zzFloat64Third",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": true,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "padded",
+              "targetModuleId": "zzFloat64First",
+              "type": "identifier",
+              "value": "zzFloat64First:padded&",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1072955392,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": true,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "aligned",
+              "targetModuleId": "zzFloat64First",
+              "type": "identifier",
+              "value": "zzFloat64First:aligned&",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1072955392,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": true,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "padded",
+              "targetModuleId": "zzFloat64Second",
+              "type": "identifier",
+              "value": "zzFloat64Second:padded&",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1072955392,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isEndAddress": true,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "aligned",
+              "targetModuleId": "zzFloat64Second",
+              "type": "identifier",
+              "value": "zzFloat64Second:aligned&",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1072955392,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
   },
   "moduleMemory": {
     "addressReferenceAssertions": {
       "memory": {
         "bufferEnd": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
           "byteAddress": 12,
           "default": 32,
           "elementWordSize": 4,
@@ -1274,10 +1761,10 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 1,
         },
         "bufferStart": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 24,
           "elementWordSize": 4,
@@ -1290,10 +1777,10 @@
           "pointeeElementCount": 3,
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
         "moduleEnd": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 1,
           "byteAddress": 20,
           "default": 40,
           "elementWordSize": 4,
@@ -1305,10 +1792,10 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 5,
-          "wordAlignedSize": 1,
         },
         "moduleStart": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 24,
           "elementWordSize": 4,
@@ -1320,10 +1807,10 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
         "scalarEnd": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": 36,
           "elementWordSize": 4,
@@ -1335,14 +1822,14 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
         },
       },
     },
     "addressSource": {
       "memory": {
         "buffer": {
+          "allocationUnitAddress": 6,
+          "allocationUnitCount": 3,
           "byteAddress": 24,
           "default": {
             "0": 11,
@@ -1357,10 +1844,10 @@
           "numberOfElements": 3,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 6,
-          "wordAlignedSize": 3,
         },
         "scalar": {
+          "allocationUnitAddress": 9,
+          "allocationUnitCount": 1,
           "byteAddress": 36,
           "default": 42,
           "elementWordSize": 4,
@@ -1371,10 +1858,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 9,
-          "wordAlignedSize": 1,
         },
         "tail": {
+          "allocationUnitAddress": 10,
+          "allocationUnitCount": 1,
           "byteAddress": 40,
           "default": 99,
           "elementWordSize": 4,
@@ -1385,14 +1872,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 10,
-          "wordAlignedSize": 1,
         },
       },
     },
     "currentModuleShorthandAssertions": {
       "memory": {
         "a": {
+          "allocationUnitAddress": 11,
+          "allocationUnitCount": 1,
           "byteAddress": 44,
           "default": 10,
           "elementWordSize": 4,
@@ -1403,10 +1890,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 11,
-          "wordAlignedSize": 1,
         },
         "b": {
+          "allocationUnitAddress": 12,
+          "allocationUnitCount": 1,
           "byteAddress": 48,
           "default": 20,
           "elementWordSize": 4,
@@ -1417,10 +1904,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 12,
-          "wordAlignedSize": 1,
         },
         "moduleEndPtr": {
+          "allocationUnitAddress": 16,
+          "allocationUnitCount": 1,
           "byteAddress": 64,
           "default": 68,
           "elementWordSize": 4,
@@ -1432,10 +1919,10 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 16,
-          "wordAlignedSize": 1,
         },
         "moduleStart": {
+          "allocationUnitAddress": 15,
+          "allocationUnitCount": 1,
           "byteAddress": 60,
           "default": 44,
           "elementWordSize": 4,
@@ -1447,10 +1934,10 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 15,
-          "wordAlignedSize": 1,
         },
         "second": {
+          "allocationUnitAddress": 17,
+          "allocationUnitCount": 1,
           "byteAddress": 68,
           "default": 48,
           "elementWordSize": 4,
@@ -1462,10 +1949,10 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 17,
-          "wordAlignedSize": 1,
         },
         "tail": {
+          "allocationUnitAddress": 13,
+          "allocationUnitCount": 2,
           "byteAddress": 52,
           "default": {
             "0": 30,
@@ -1479,14 +1966,14 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 13,
-          "wordAlignedSize": 2,
         },
       },
     },
     "lateAddressSource": {
       "memory": {
         "buffer": {
+          "allocationUnitAddress": 18,
+          "allocationUnitCount": 4,
           "byteAddress": 72,
           "default": {
             "0": 5,
@@ -1502,14 +1989,14 @@
           "numberOfElements": 4,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 18,
-          "wordAlignedSize": 4,
         },
       },
     },
     "nthAddressAssertions": {
       "memory": {
         "base": {
+          "allocationUnitAddress": 23,
+          "allocationUnitCount": 1,
           "byteAddress": 92,
           "default": 104,
           "elementWordSize": 4,
@@ -1521,10 +2008,10 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 23,
-          "wordAlignedSize": 1,
         },
         "first": {
+          "allocationUnitAddress": 22,
+          "allocationUnitCount": 1,
           "byteAddress": 88,
           "default": 104,
           "elementWordSize": 4,
@@ -1536,10 +2023,10 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 22,
-          "wordAlignedSize": 1,
         },
         "second": {
+          "allocationUnitAddress": 24,
+          "allocationUnitCount": 1,
           "byteAddress": 96,
           "default": 108,
           "elementWordSize": 4,
@@ -1551,10 +2038,10 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 24,
-          "wordAlignedSize": 1,
         },
         "third": {
+          "allocationUnitAddress": 25,
+          "allocationUnitCount": 1,
           "byteAddress": 100,
           "default": 112,
           "elementWordSize": 4,
@@ -1566,14 +2053,14 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 25,
-          "wordAlignedSize": 1,
         },
       },
     },
     "nthAddressSource": {
       "memory": {
         "a": {
+          "allocationUnitAddress": 26,
+          "allocationUnitCount": 1,
           "byteAddress": 104,
           "default": 10,
           "elementWordSize": 4,
@@ -1584,10 +2071,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 26,
-          "wordAlignedSize": 1,
         },
         "b": {
+          "allocationUnitAddress": 27,
+          "allocationUnitCount": 1,
           "byteAddress": 108,
           "default": 20,
           "elementWordSize": 4,
@@ -1598,10 +2085,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 27,
-          "wordAlignedSize": 1,
         },
         "c": {
+          "allocationUnitAddress": 28,
+          "allocationUnitCount": 1,
           "byteAddress": 112,
           "default": 30,
           "elementWordSize": 4,
@@ -1612,14 +2099,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 28,
-          "wordAlignedSize": 1,
         },
       },
     },
     "nthArrayAssertions": {
       "memory": {
         "scalar": {
+          "allocationUnitAddress": 29,
+          "allocationUnitCount": 1,
           "byteAddress": 116,
           "default": 160,
           "elementWordSize": 4,
@@ -1631,14 +2118,14 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 29,
-          "wordAlignedSize": 1,
         },
       },
     },
     "nthArraySource": {
       "memory": {
         "buffer": {
+          "allocationUnitAddress": 30,
+          "allocationUnitCount": 10,
           "byteAddress": 120,
           "default": {
             "0": 0,
@@ -1651,10 +2138,10 @@
           "numberOfElements": 10,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 30,
-          "wordAlignedSize": 10,
         },
         "scalar": {
+          "allocationUnitAddress": 40,
+          "allocationUnitCount": 1,
           "byteAddress": 160,
           "default": 60,
           "elementWordSize": 4,
@@ -1665,14 +2152,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 40,
-          "wordAlignedSize": 1,
         },
       },
     },
     "outOfOrderAddressAssertions": {
       "memory": {
         "end": {
+          "allocationUnitAddress": 42,
+          "allocationUnitCount": 1,
           "byteAddress": 168,
           "default": 84,
           "elementWordSize": 4,
@@ -1684,10 +2171,10 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 42,
-          "wordAlignedSize": 1,
         },
         "start": {
+          "allocationUnitAddress": 41,
+          "allocationUnitCount": 1,
           "byteAddress": 164,
           "default": 72,
           "elementWordSize": 4,
@@ -1700,14 +2187,14 @@
           "pointeeElementCount": 4,
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 41,
-          "wordAlignedSize": 1,
         },
       },
     },
     "sameModuleAddressAssertions": {
       "memory": {
         "buffer": {
+          "allocationUnitAddress": 43,
+          "allocationUnitCount": 5,
           "byteAddress": 172,
           "default": {
             "0": 1,
@@ -1724,10 +2211,10 @@
           "numberOfElements": 5,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 43,
-          "wordAlignedSize": 5,
         },
         "endPtr": {
+          "allocationUnitAddress": 49,
+          "allocationUnitCount": 1,
           "byteAddress": 196,
           "default": 188,
           "elementWordSize": 4,
@@ -1739,10 +2226,10 @@
           "pointeeBaseType": "int",
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 49,
-          "wordAlignedSize": 1,
         },
         "startPtr": {
+          "allocationUnitAddress": 48,
+          "allocationUnitCount": 1,
           "byteAddress": 192,
           "default": 172,
           "elementWordSize": 4,
@@ -1755,10 +2242,183 @@
           "pointeeElementCount": 5,
           "pointerDepth": 1,
           "type": "int*",
-          "wordAlignedAddress": 48,
-          "wordAlignedSize": 1,
         },
       },
+    },
+    "zzFloat64First": {
+      "memory": {
+        "aligned": {
+          "allocationUnitAddress": 56,
+          "allocationUnitCount": 2,
+          "byteAddress": 224,
+          "default": 1.25,
+          "elementWordSize": 8,
+          "hasExplicitDefault": true,
+          "id": "aligned",
+          "isFloat64": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "float64",
+        },
+        "alignedNext": {
+          "allocationUnitAddress": 58,
+          "allocationUnitCount": 1,
+          "byteAddress": 232,
+          "default": 99,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "alignedNext",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "alignment": {
+          "allocationUnitAddress": 55,
+          "allocationUnitCount": 1,
+          "byteAddress": 220,
+          "default": 0,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "alignment",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "next": {
+          "allocationUnitAddress": 54,
+          "allocationUnitCount": 1,
+          "byteAddress": 216,
+          "default": 99,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "next",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "padded": {
+          "allocationUnitAddress": 52,
+          "allocationUnitCount": 3,
+          "byteAddress": 208,
+          "default": 1.25,
+          "elementWordSize": 8,
+          "hasExplicitDefault": true,
+          "id": "padded",
+          "isFloat64": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "float64",
+        },
+        "prefix": {
+          "allocationUnitAddress": 50,
+          "allocationUnitCount": 1,
+          "byteAddress": 200,
+          "default": 0,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "prefix",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
+    "zzFloat64Second": {
+      "memory": {
+        "aligned": {
+          "allocationUnitAddress": 66,
+          "allocationUnitCount": 4,
+          "byteAddress": 264,
+          "default": {
+            "0": 1.25,
+            "1": 1.25,
+          },
+          "elementWordSize": 8,
+          "hasExplicitDefault": true,
+          "id": "aligned",
+          "isFloat64": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "float64",
+        },
+        "alignedNext": {
+          "allocationUnitAddress": 70,
+          "allocationUnitCount": 1,
+          "byteAddress": 280,
+          "default": 99,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "alignedNext",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "alignment": {
+          "allocationUnitAddress": 65,
+          "allocationUnitCount": 1,
+          "byteAddress": 260,
+          "default": 0,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "alignment",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "next": {
+          "allocationUnitAddress": 64,
+          "allocationUnitCount": 1,
+          "byteAddress": 256,
+          "default": 99,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": "next",
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "padded": {
+          "allocationUnitAddress": 60,
+          "allocationUnitCount": 5,
+          "byteAddress": 240,
+          "default": {
+            "0": 1.25,
+            "1": 1.25,
+          },
+          "elementWordSize": 8,
+          "hasExplicitDefault": true,
+          "id": "padded",
+          "isFloat64": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "float64",
+        },
+      },
+    },
+    "zzFloat64Third": {
+      "memory": {},
     },
   },
   "overview": {
@@ -1774,8 +2434,11 @@
       "nthArraySource",
       "outOfOrderAddressAssertions",
       "sameModuleAddressAssertions",
+      "zzFloat64First",
+      "zzFloat64Second",
+      "zzFloat64Third",
     ],
-    "requiredMemoryBytes": 200,
+    "requiredMemoryBytes": 284,
     "wasmExports": [
       "initDefaults",
       "main",

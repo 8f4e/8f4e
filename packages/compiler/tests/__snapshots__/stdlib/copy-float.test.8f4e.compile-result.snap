@@ -182,8 +182,14 @@
       "id": "copy__float_p__float_p",
       "signature": {
         "parameters": [
-          "float*",
-          "float*",
+          {
+            "name": "source",
+            "type": "float*",
+          },
+          {
+            "name": "dest",
+            "type": "float*",
+          },
         ],
         "returns": [],
       },
@@ -192,8 +198,14 @@
       "id": "copy__int_p__int_p",
       "signature": {
         "parameters": [
-          "int*",
-          "int*",
+          {
+            "name": "source",
+            "type": "int*",
+          },
+          {
+            "name": "dest",
+            "type": "int*",
+          },
         ],
         "returns": [],
       },
@@ -334,6 +346,8 @@
     "copyFloatAssertions": {
       "memory": {
         "dest": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 0,
           "elementWordSize": 4,
@@ -344,10 +358,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
         "source": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 12.5,
           "elementWordSize": 4,
@@ -358,8 +372,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },

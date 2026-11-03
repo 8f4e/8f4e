@@ -54,7 +54,19 @@ export function withDocsAndStack<TSpec extends Partial<InstructionSpec>>(
 	return {
 		...spec,
 		docs: { shortDescription },
-		stack: { inputs, outputs, ...(effect ? { effect } : {}) },
+		stack: {
+			inputs,
+			outputs,
+			...(effect ? { effect } : {}),
+			...('inlineOperand' in spec && spec.inlineOperand
+				? {
+						resolve: (line: { arguments: readonly unknown[] }) => ({
+							inputs: line.arguments.length ? inputs.slice(0, -1) : inputs,
+							outputs,
+						}),
+					}
+				: {}),
+		},
 	};
 }
 
@@ -144,14 +156,14 @@ export function loadInstruction<
  * active block type and optionally restore or validate the block result value.
  *
  * @param blockType - Block type closed by the instruction.
- * @param options - Result restoration and float validation behavior.
+ * @param options - Result restoration behavior.
  * @returns Block-close effect metadata for an instruction spec.
  */
 export function blockClose(
 	blockType: BlockTypeValue,
-	{ restoreResult = false, validateFloatResult = false } = {}
+	{ restoreResult = false } = {}
 ): { blockClose: BlockCloseEffectSpec } {
-	return { blockClose: { blockType, restoreResult, validateFloatResult } };
+	return { blockClose: { blockType, restoreResult } };
 }
 
 /**

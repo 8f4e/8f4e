@@ -8,8 +8,8 @@ import type {
 } from '@8f4e/language-spec';
 import { ArgumentType, createFunctionId, ErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
+import createStackAnalyzerTestContext from '../../tests/testUtils';
 import { analyzeInstruction } from '../analyzeInstruction';
-import createStackAnalyzerTestContext from '../testUtils';
 
 const { classifyIdentifier } = await import('@8f4e/tokenizer');
 
@@ -17,7 +17,10 @@ function registerFunction(context: CompilationContext, ...targetFunctions: Funct
 	context.namespace.functions = {
 		byId: Object.fromEntries(
 			targetFunctions.map(targetFunction => [
-				createFunctionId(targetFunction.name, targetFunction.signature.parameters),
+				createFunctionId(
+					targetFunction.name,
+					targetFunction.signature.parameters.map(parameter => parameter.type)
+				),
 				targetFunction,
 			])
 		),
@@ -33,7 +36,7 @@ describe('call stack analysis', () => {
 		const targetFunction = {
 			id: createFunctionId('foo64', ['float64']),
 			name: 'foo64',
-			signature: { parameters: ['float64'], returns: ['float64'] },
+			signature: { parameters: [{ name: 'value', type: 'float64' }], returns: ['float64'] },
 		} satisfies FunctionMetadata;
 		registerFunction(context, targetFunction);
 		context.stack.push({ kind: 'value', valueType: 'float64', isNonZero: false });
@@ -56,12 +59,12 @@ describe('call stack analysis', () => {
 		const intOverload = {
 			id: 'convert__int',
 			name: 'convert',
-			signature: { parameters: ['int'], returns: [] },
+			signature: { parameters: [{ name: 'value', type: 'int' }], returns: [] },
 		} satisfies FunctionMetadata;
 		const floatOverload = {
 			id: 'convert__float',
 			name: 'convert',
-			signature: { parameters: ['float'], returns: [] },
+			signature: { parameters: [{ name: 'value', type: 'float' }], returns: [] },
 		} satisfies FunctionMetadata;
 		registerFunction(context, intOverload, floatOverload);
 		context.stack.push({ kind: 'value', valueType: 'float', isNonZero: false });
@@ -87,12 +90,12 @@ describe('call stack analysis', () => {
 		const intOverload = {
 			id: 'wrap__int',
 			name: 'wrap',
-			signature: { parameters: ['int'], returns: [] },
+			signature: { parameters: [{ name: 'value', type: 'int' }], returns: [] },
 		} satisfies FunctionMetadata;
 		const pointerOverload = {
 			id: 'wrap__float_p',
 			name: 'wrap',
-			signature: { parameters: ['float*'], returns: [] },
+			signature: { parameters: [{ name: 'value', type: 'float*' }], returns: [] },
 		} satisfies FunctionMetadata;
 		registerFunction(context, intOverload, pointerOverload);
 		context.stack.push({
@@ -120,13 +123,13 @@ describe('call stack analysis', () => {
 		const previousTrigger: PlannedMemoryDeclaration = {
 			id: 'previousTrigger',
 			elementByteLength: 4,
-			wordAlignedByteLength: 4,
+			allocatedByteLength: 4,
 			endByteAddress: 0,
 			endAddressSafeByteLength: 4,
 			numberOfElements: 1,
 			elementWordSize: 4,
-			wordAlignedAddress: 0,
-			wordAlignedSize: 1,
+			allocationUnitAddress: 0,
+			allocationUnitCount: 1,
 			byteAddress: 0,
 			isInteger: true,
 			pointerDepth: 0,
@@ -138,8 +141,8 @@ describe('call stack analysis', () => {
 			id: 'test',
 			lineNumber: 0,
 			byteAddress: 0,
-			wordAlignedSize: 1,
-			wordAlignedByteLength: 4,
+			allocationUnitCount: 1,
+			allocatedByteLength: 4,
 			endByteAddress: 0,
 			endAddressSafeByteLength: 4,
 			memory: { previousTrigger },
@@ -156,7 +159,13 @@ describe('call stack analysis', () => {
 		const targetFunction = {
 			id: 'risingEdge__int__int_p',
 			name: 'risingEdge',
-			signature: { parameters: ['int', 'int*'], returns: [] },
+			signature: {
+				parameters: [
+					{ name: 'arg1', type: 'int' },
+					{ name: 'arg2', type: 'int*' },
+				],
+				returns: [],
+			},
 		} satisfies FunctionMetadata;
 		registerFunction(context, targetFunction);
 
@@ -210,7 +219,7 @@ describe('call stack analysis', () => {
 		const targetFunction = {
 			id: createFunctionId('foo64', ['float64']),
 			name: 'foo64',
-			signature: { parameters: ['float64'], returns: [] },
+			signature: { parameters: [{ name: 'value', type: 'float64' }], returns: [] },
 		} satisfies FunctionMetadata;
 		registerFunction(context, targetFunction);
 		context.stack.push({ kind: 'value', valueType: 'float', isNonZero: false });
@@ -232,12 +241,12 @@ describe('call stack analysis', () => {
 		const intOverload = {
 			id: 'convert__int',
 			name: 'convert',
-			signature: { parameters: ['int'], returns: [] },
+			signature: { parameters: [{ name: 'value', type: 'int' }], returns: [] },
 		} satisfies FunctionMetadata;
 		const floatOverload = {
 			id: 'convert__float',
 			name: 'convert',
-			signature: { parameters: ['float'], returns: [] },
+			signature: { parameters: [{ name: 'value', type: 'float' }], returns: [] },
 		} satisfies FunctionMetadata;
 		registerFunction(context, intOverload, floatOverload);
 		context.stack.push({ kind: 'value', valueType: 'float64', isNonZero: false });
@@ -265,12 +274,12 @@ describe('call stack analysis', () => {
 		const floatPointerOverload = {
 			id: 'wrap__float_p',
 			name: 'wrap',
-			signature: { parameters: ['float*'], returns: [] },
+			signature: { parameters: [{ name: 'value', type: 'float*' }], returns: [] },
 		} satisfies FunctionMetadata;
 		const intPointerOverload = {
 			id: 'wrap__int_p',
 			name: 'wrap',
-			signature: { parameters: ['int*'], returns: [] },
+			signature: { parameters: [{ name: 'value', type: 'int*' }], returns: [] },
 		} satisfies FunctionMetadata;
 		registerFunction(context, floatPointerOverload, intPointerOverload);
 		context.stack.push({ kind: 'value', valueType: 'int', isNonZero: false });

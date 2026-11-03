@@ -213,6 +213,26 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
+              "value": "oscAPhase",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "phase",
+              "targetModuleId": "oscA",
+              "type": "identifier",
+              "value": "&oscA:phase",
+            },
+          ],
+          "instruction": "float&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
               "value": "localB",
             },
             {
@@ -353,13 +373,10 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "phase",
-              "targetModuleId": "oscA",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&oscA:phase",
+              "value": "oscAPhase",
             },
           ],
           "instruction": "push",
@@ -390,6 +407,8 @@
     "oscA": {
       "memory": {
         "frequency": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 440,
           "elementWordSize": 4,
@@ -401,10 +420,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
         "localA": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
           "byteAddress": 12,
           "default": 11,
           "elementWordSize": 4,
@@ -415,10 +434,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 1,
         },
         "phase": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
@@ -429,14 +448,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },
     "oscB": {
       "memory": {
         "frequency": {
+          "allocationUnitAddress": 6,
+          "allocationUnitCount": 1,
           "byteAddress": 24,
           "default": 440,
           "elementWordSize": 4,
@@ -448,10 +467,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 6,
-          "wordAlignedSize": 1,
         },
         "localB": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
           "byteAddress": 16,
           "default": 22,
           "elementWordSize": 4,
@@ -462,10 +481,10 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 4,
-          "wordAlignedSize": 1,
         },
         "phase": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 1,
           "byteAddress": 20,
           "default": 0,
           "elementWordSize": 4,
@@ -476,8 +495,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "float",
-          "wordAlignedAddress": 5,
-          "wordAlignedSize": 1,
         },
       },
     },

@@ -3,7 +3,7 @@ title: 'TODO: Add row-align context-menu action with fixed spacing'
 priority: Medium
 effort: 4-8h
 created: 2026-02-18
-issue: https://github.com/andorthehood/8f4e/issues/411
+issue: https://github.com/8f4e/8f4e/issues/411
 status: Open
 completed: null
 ---

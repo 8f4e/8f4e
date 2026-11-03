@@ -3,7 +3,7 @@ title: 'TODO: Generalize instruction placement config'
 priority: Medium
 effort: 4-8h
 created: 2026-06-08
-issue: https://github.com/andorthehood/8f4e/issues/945
+issue: https://github.com/8f4e/8f4e/issues/945
 status: Open
 completed: null
 ---

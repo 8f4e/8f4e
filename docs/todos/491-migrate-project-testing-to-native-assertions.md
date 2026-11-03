@@ -3,7 +3,7 @@ title: 'TODO: Migrate Project Testing to Native Assertions'
 priority: Medium
 effort: 2-4d
 created: 2026-10-09
-issue: https://github.com/andorthehood/8f4e/issues/1023
+issue: https://github.com/8f4e/8f4e/issues/1023
 status: Open
 completed: null
 ---
@@ -148,7 +148,7 @@ remaining work.
 
 - [Shared runner and current contract](../../packages/test-runner/README.md).
 - [Runtime registry types](../../packages/editor/packages/editor-core/packages/editor-state-types/src/features/runtime/types.ts).
-- [Current shared-runner PR](https://github.com/andorthehood/8f4e/pull/1002).
+- [Current shared-runner PR](https://github.com/8f4e/8f4e/pull/1002).
 
 ## Notes
 

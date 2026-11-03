@@ -46,12 +46,12 @@ export default function resolveMemoryTarget(
 
 	const memory =
 		separator !== -1 || scope.kind === 'module'
-			? state.compiler.memoryPlan.modules[publicModuleId]?.memory[publicName]
+			? state.compiler.result.memoryPlan.modules[publicModuleId]?.memory[publicName]
 			: undefined;
 	const directTarget = memory ? { publicModuleId, publicName, moduleId: publicModuleId, memory } : undefined;
 	if (separator === -1 && scope.kind === 'module') return directTarget;
 
-	const exposures = state.compiler.projectMemoryExposuresByGroupPath[publicModuleId];
+	const exposures = state.compiler.result.projectMemoryExposuresByGroupPath[publicModuleId];
 	if (!exposures) return directTarget;
 	let byName = exposureIndexes.get(exposures);
 	if (!byName) {

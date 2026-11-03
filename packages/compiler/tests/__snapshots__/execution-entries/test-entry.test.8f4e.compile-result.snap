@@ -69,7 +69,10 @@
       "id": "readFirst__int_p",
       "signature": {
         "parameters": [
-          "int*",
+          {
+            "name": "pointer",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",
@@ -280,6 +283,8 @@
     "testEntrySupportsPointerArguments": {
       "memory": {
         "values": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 2,
           "byteAddress": 4,
           "default": {
             "0": 7,
@@ -293,8 +298,6 @@
           "numberOfElements": 2,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 2,
         },
       },
     },

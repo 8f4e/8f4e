@@ -1,0 +1,20 @@
+{
+  "code": 66,
+  "context": {
+    "codeBlockType": "function",
+    "projectBlockId": 11,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "__proto__",
+      },
+    ],
+    "instruction": "function",
+    "lineNumber": 0,
+  },
+  "message": "Duplicate function overload signature: __proto____void. Function overloads must have unique parameter signatures. (66)",
+}

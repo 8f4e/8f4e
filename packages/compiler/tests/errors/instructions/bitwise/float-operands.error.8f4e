@@ -1,0 +1,9 @@
+8f4e/v1
+
+entry main
+module floatBitwiseOperands
+push 1.0
+push 2.0
+and
+moduleEnd
+entryEnd

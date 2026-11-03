@@ -1,6 +1,6 @@
 {
   "functionAst": {
-    "test__void": {
+    "verifyEntries__int_p__int_p__int_p": {
       "lines": [
         {
           "arguments": [
@@ -8,15 +8,10 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "test",
+              "value": "verifyEntries",
             },
           ],
           "instruction": "function",
-        },
-        {
-          "arguments": [],
-          "instruction": "#export",
-          "isBlockPrologue": true,
         },
         {
           "arguments": [],
@@ -26,20 +21,66 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "value",
-              "targetModuleId": "userInitEntryCounter",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&userInitEntryCounter:value",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "mainValue",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "auxValue",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "initValue",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "initValue",
+              "type": "identifier",
+              "value": "*initValue",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -65,20 +106,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "value",
-              "targetModuleId": "mainEntryCounter",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "mainValue",
               "type": "identifier",
-              "value": "&mainEntryCounter:value",
+              "value": "*mainValue",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -104,20 +140,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "value",
-              "targetModuleId": "auxEntryCounter",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "auxValue",
               "type": "identifier",
-              "value": "&auxEntryCounter:value",
+              "value": "*auxValue",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -143,20 +174,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "value",
-              "targetModuleId": "userInitEntryCounter",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "initValue",
               "type": "identifier",
-              "value": "&userInitEntryCounter:value",
+              "value": "*initValue",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -173,21 +199,143 @@
           "instruction": "functionEnd",
         },
       ],
-      "name": "test",
+      "name": "verifyEntries",
       "type": "function",
     },
   },
   "functionOverview": {
-    "test__void": {
-      "exportName": "test",
-      "id": "test__void",
+    "verifyEntries__int_p__int_p__int_p": {
+      "id": "verifyEntries__int_p__int_p__int_p",
       "signature": {
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "mainValue",
+            "type": "int*",
+          },
+          {
+            "name": "auxValue",
+            "type": "int*",
+          },
+          {
+            "name": "initValue",
+            "type": "int*",
+          },
+        ],
         "returns": [],
       },
     },
   },
   "moduleAst": {
+    "assertions": {
+      "id": "assertions",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "assertions",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "mainValue",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "value",
+              "targetModuleId": "mainEntryCounter",
+              "type": "identifier",
+              "value": "&mainEntryCounter:value",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "auxValue",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "value",
+              "targetModuleId": "auxEntryCounter",
+              "type": "identifier",
+              "value": "&auxEntryCounter:value",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "initValue",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "value",
+              "targetModuleId": "userInitEntryCounter",
+              "type": "identifier",
+              "value": "&userInitEntryCounter:value",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "verifyEntries",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "mainValue",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "auxValue",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "initValue",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
     "auxEntryCounter": {
       "id": "auxEntryCounter",
       "lines": [
@@ -412,9 +560,14 @@
     },
   },
   "moduleMemory": {
+    "assertions": {
+      "memory": {},
+    },
     "auxEntryCounter": {
       "memory": {
         "value": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
@@ -425,14 +578,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },
     "mainEntryCounter": {
       "memory": {
         "value": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 0,
           "elementWordSize": 4,
@@ -443,14 +596,14 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
       },
     },
     "userInitEntryCounter": {
       "memory": {
         "value": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
           "byteAddress": 12,
           "default": 0,
           "elementWordSize": 4,
@@ -461,17 +614,16 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 3,
-          "wordAlignedSize": 1,
         },
       },
     },
   },
   "overview": {
     "compiledFunctions": [
-      "test__void",
+      "verifyEntries__int_p__int_p__int_p",
     ],
     "compiledModules": [
+      "assertions",
       "auxEntryCounter",
       "mainEntryCounter",
       "userInitEntryCounter",

@@ -1,5 +1,6 @@
 import type { ArgumentIdentifier } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
+import { SyntaxErrorCode, SyntaxRulesError } from '../syntaxError';
 import { classifyElementQuery } from './classifyElementQuery';
 import { classifyIntermodularReference } from './classifyIntermodularReference';
 import { getMemoryPointerTarget } from './getMemoryPointerTarget';
@@ -56,6 +57,12 @@ function isLowercaseAsciiLetter(charCode: number): boolean {
  * @returns Classified identifier argument.
  */
 export function classifyIdentifier(value: string): ArgumentIdentifier {
+	for (let index = 0; index < value.length; index++) {
+		if (value.charCodeAt(index) > 0x7f) {
+			throw new SyntaxRulesError(SyntaxErrorCode.INVALID_IDENTIFIER);
+		}
+	}
+
 	const firstChar = value[0];
 	const lastChar = value[value.length - 1];
 	const hasIntermoduleSeparator = value.includes(':');

@@ -9,9 +9,9 @@ The output contains:
 - immutable source ASTs for diagnostics and compiled output;
 - registered function metadata;
 - source bindings with types and parameter positions, without WebAssembly local indexes;
-- executable bodies containing resolved arguments, binding references, inline call pushes, and shape expansions;
+- executable bodies containing resolved arguments, binding references, ordinary operand pushes, and shape expansions;
 - module execution metadata such as `skipExecutionInCycle`.
 
-Declaration instructions are absent from executable bodies. Loop defaults and `#loopCap` are normalized into explicit loop caps. Each body line retains its original source-line index for stack facts and diagnostics. Memory IO restrictions on pure functions are checked here, after resolving pointer dereferences.
+Declaration instructions are absent from executable bodies. Loop defaults and `#loopCap` are normalized into explicit loop caps. Body array positions identify executable operations; each operation also retains its original source-line index as provenance. Arithmetic and call operands are expanded here into ordinary resolved pushes followed by a stack-only operation. Several operations may therefore share one source line. Unresolved push arguments cannot cross this handoff. Memory IO restrictions on pure functions are checked here, after resolving pointer dereferences.
 
 Stack analysis and codegen consume these bodies directly. They do not replay declarations or resolve source names. This pass does not parse source, validate syntax, construct constant namespaces, plan memory, validate execution stacks, or emit WebAssembly.

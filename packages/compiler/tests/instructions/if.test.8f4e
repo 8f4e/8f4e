@@ -27,7 +27,7 @@ constantsEnd
 
 note
 ; @pos 2 2
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 describe if
 noteEnd
@@ -105,6 +105,17 @@ else
 push -1.1
 ifEnd float
 assertEqual -1.1
+
+push truthyInput
+if
+push 1.5
+push 2
+else
+push -1.5
+push -2
+ifEnd float int
+assertEqual 2
+assertEqual 1.5
 moduleEnd
 module ifIntAssertions
 ; @pos 45 89

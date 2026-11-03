@@ -10,6 +10,46 @@ async function compileToWat(codeBuffer: Uint8Array): Promise<string> {
 }
 
 describe('compiler memory initialization', () => {
+	test.each(
+		[
+			{ instruction: 'int[]', value: 7, View: Int32Array },
+			{ instruction: 'int32[]', value: 7, View: Int32Array },
+			{ instruction: 'int8[]', value: -7, View: Int8Array },
+			{ instruction: 'int8u[]', value: 249, View: Uint8Array },
+			{ instruction: 'int16[]', value: -12345, View: Int16Array },
+			{ instruction: 'int16u[]', value: 54321, View: Uint16Array },
+			{ instruction: 'float[]', value: 1.25, View: Float32Array },
+			{ instruction: 'float64[]', value: 1.25, View: Float64Array },
+		].flatMap(({ instruction, value, View }) => [
+			{ instruction, initializer: String(value), expected: value, View },
+			{ instruction, initializer: '0', expected: 0, View },
+			{ instruction, initializer: '', expected: 0, View },
+		])
+	)(
+		'initializes and resets one-element $instruction with initializer "$initializer"',
+		async ({ instruction, initializer, expected, View }) => {
+			const fixture = await instantiateFixtureProgramSource(`
+8f4e/v1
+entry main
+module singleElementArray
+${instruction} values 1 ${initializer}
+moduleEnd
+entryEnd
+`);
+			const declaration = fixture.compileResult.memoryPlan.modules.singleElementArray!.memory.values!;
+			const values = new View((fixture.host.memory as WebAssembly.Memory).buffer, declaration.byteAddress, 1);
+			const initDefaults = getExportedFunction(fixture.instance.exports, 'initDefaults');
+
+			initDefaults();
+			expect(values[0]).toBe(expected);
+
+			values[0] = 99;
+			expect(values[0]).toBe(99);
+			initDefaults();
+			expect(values[0]).toBe(expected);
+		}
+	);
+
 	test.each([
 		'',
 		`entry main
@@ -56,16 +96,16 @@ entryEnd
 		const main = getExportedFunction(fixture.instance.exports, 'main');
 
 		initDefaults();
-		expect(memory[scratch.wordAlignedAddress]).toBe(0);
-		expect(memory[marker.wordAlignedAddress]).toBe(123);
+		expect(memory[scratch.allocationUnitAddress]).toBe(0);
+		expect(memory[marker.allocationUnitAddress]).toBe(123);
 
 		main();
-		expect(memory[scratch.wordAlignedAddress]).toBe(99);
-		expect(memory[marker.wordAlignedAddress]).toBe(456);
+		expect(memory[scratch.allocationUnitAddress]).toBe(99);
+		expect(memory[marker.allocationUnitAddress]).toBe(456);
 
 		initDefaults();
-		expect(memory[scratch.wordAlignedAddress]).toBe(0);
-		expect(memory[marker.wordAlignedAddress]).toBe(123);
+		expect(memory[scratch.allocationUnitAddress]).toBe(0);
+		expect(memory[marker.allocationUnitAddress]).toBe(123);
 	});
 
 	test('keeps sparse array initializers compact in the emitted wasm', async () => {

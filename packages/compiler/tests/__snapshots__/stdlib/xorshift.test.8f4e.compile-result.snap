@@ -246,7 +246,10 @@
       "id": "xorshift__int_p",
       "signature": {
         "parameters": [
-          "int*",
+          {
+            "name": "seed",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",
@@ -462,6 +465,8 @@
     "xorshiftAssertions": {
       "memory": {
         "seed": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 69420,
           "elementWordSize": 4,
@@ -472,8 +477,6 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
     },

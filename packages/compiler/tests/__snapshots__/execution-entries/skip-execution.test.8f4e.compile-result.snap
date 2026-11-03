@@ -1,6 +1,6 @@
 {
   "functionAst": {
-    "test__void": {
+    "verifySkippedEntry__int_p__int_p": {
       "lines": [
         {
           "arguments": [
@@ -8,20 +8,49 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "test",
+              "value": "verifySkippedEntry",
             },
           ],
           "instruction": "function",
         },
         {
           "arguments": [],
-          "instruction": "#export",
+          "instruction": "#impure",
           "isBlockPrologue": true,
         },
         {
-          "arguments": [],
-          "instruction": "#impure",
-          "isBlockPrologue": true,
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "active",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "skipped",
+            },
+          ],
+          "instruction": "param",
         },
         {
           "arguments": [
@@ -51,20 +80,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "counter",
-              "targetModuleId": "activeEntryModule",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "active",
               "type": "identifier",
-              "value": "&activeEntryModule:counter",
+              "value": "*active",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -79,20 +103,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "counter",
-              "targetModuleId": "skippedEntryModule",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "skipped",
               "type": "identifier",
-              "value": "&skippedEntryModule:counter",
+              "value": "*skipped",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [
@@ -109,16 +128,24 @@
           "instruction": "functionEnd",
         },
       ],
-      "name": "test",
+      "name": "verifySkippedEntry",
       "type": "function",
     },
   },
   "functionOverview": {
-    "test__void": {
-      "exportName": "test",
-      "id": "test__void",
+    "verifySkippedEntry__int_p__int_p": {
+      "id": "verifySkippedEntry__int_p__int_p",
       "signature": {
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "active",
+            "type": "int*",
+          },
+          {
+            "name": "skipped",
+            "type": "int*",
+          },
+        ],
         "returns": [],
       },
     },
@@ -195,6 +222,90 @@
         {
           "arguments": [],
           "instruction": "store",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "assertions": {
+      "id": "assertions",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "assertions",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "active",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "counter",
+              "targetModuleId": "activeEntryModule",
+              "type": "identifier",
+              "value": "&activeEntryModule:counter",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "skipped",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "counter",
+              "targetModuleId": "skippedEntryModule",
+              "type": "identifier",
+              "value": "&skippedEntryModule:counter",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "verifySkippedEntry",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "active",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "skipped",
+            },
+          ],
+          "instruction": "call",
         },
         {
           "arguments": [],
@@ -292,6 +403,8 @@
     "activeEntryModule": {
       "memory": {
         "counter": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
           "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
@@ -302,14 +415,17 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 1,
-          "wordAlignedSize": 1,
         },
       },
+    },
+    "assertions": {
+      "memory": {},
     },
     "skippedEntryModule": {
       "memory": {
         "counter": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
           "byteAddress": 8,
           "default": 3,
           "elementWordSize": 4,
@@ -320,18 +436,17 @@
           "numberOfElements": 1,
           "pointerDepth": 0,
           "type": "int",
-          "wordAlignedAddress": 2,
-          "wordAlignedSize": 1,
         },
       },
     },
   },
   "overview": {
     "compiledFunctions": [
-      "test__void",
+      "verifySkippedEntry__int_p__int_p",
     ],
     "compiledModules": [
       "activeEntryModule",
+      "assertions",
       "skippedEntryModule",
     ],
     "requiredMemoryBytes": 12,

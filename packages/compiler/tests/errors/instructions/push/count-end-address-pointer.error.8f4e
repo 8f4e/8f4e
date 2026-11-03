@@ -1,0 +1,9 @@
+8f4e/v1
+
+entry main
+module endAddressCount
+int[] values 2 7 8
+int* pointer values&
+push count(*pointer)
+moduleEnd
+entryEnd

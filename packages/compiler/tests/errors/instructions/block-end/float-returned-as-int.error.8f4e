@@ -1,0 +1,12 @@
+8f4e/v1
+
+entry main
+module blockFloatReturnedAsInt
+; blockEnd int should reject a
+; float32 stack value.
+block
+push 2.0
+blockEnd int
+drop
+moduleEnd
+entryEnd

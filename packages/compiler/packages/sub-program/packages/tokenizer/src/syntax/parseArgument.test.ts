@@ -254,6 +254,47 @@ describe('classifyIdentifier – check ordering regression', () => {
 });
 
 describe('parseArgument', () => {
+	it.each([
+		['SCALE*1e-3', false, 0.001, false],
+		['SCALE*1E+3', false, 1000, false],
+		['1e-3*SCALE', true, 0.001, false],
+		['SCALE*1e-3f64', false, 0.001, true],
+		['1E+3f64*SCALE', true, 1000, true],
+	] as const)('parses scientific operands in %s', (source, literalOnLeft, value, isFloat64) => {
+		const constant = {
+			type: ArgumentType.IDENTIFIER,
+			value: 'SCALE',
+			referenceKind: 'constant',
+			scope: 'local',
+		};
+		const literal = { type: ArgumentType.LITERAL, value, isInteger: false, ...(isFloat64 && { isFloat64: true }) };
+
+		expect(parseArgument(source)).toEqual({
+			type: ArgumentType.COMPILE_TIME_EXPRESSION,
+			left: literalOnLeft ? literal : constant,
+			operator: '*',
+			right: literalOnLeft ? constant : literal,
+		});
+	});
+
+	it('parses scientific literals on both sides of addition', () => {
+		expect(parseArgument('1e-3+2E-3f64')).toEqual({
+			type: ArgumentType.COMPILE_TIME_EXPRESSION,
+			left: { type: ArgumentType.LITERAL, value: 0.001, isInteger: false },
+			operator: '+',
+			right: { type: ArgumentType.LITERAL, value: 0.002, isInteger: false, isFloat64: true },
+		});
+	});
+
+	it('parses exponent signs inside a rounded expression', () => {
+		expect(parseArgument('floor(SCALE*1e-3)')).toMatchObject({
+			type: ArgumentType.COMPILE_TIME_EXPRESSION,
+			operator: '*',
+			right: { type: ArgumentType.LITERAL, value: 0.001, isInteger: false },
+			rounding: 'floor',
+		});
+	});
+
 	it('parses decimal integers', () => {
 		expect(parseArgument('0')).toEqual({
 			value: 0,
@@ -624,6 +665,38 @@ describe('parseArgument', () => {
 		expect(() => parseArgument('3.14ff64')).toThrow('Invalid numeric literal or expression');
 		// multiple dots are not valid
 		expect(parseArgument('..f64').type).toBe(ArgumentType.IDENTIFIER);
+	});
+
+	describe('arithmetic-looking string literals', () => {
+		it.each([
+			['"2*3.0"', '2*3.0'],
+			['"gain/1e3"', 'gain/1e3'],
+			['"a^0.5"', 'a^0.5'],
+		])('preserves %s as a string literal', (source, value) => {
+			expect(parseArgument(source)).toEqual({
+				type: ArgumentType.STRING_LITERAL,
+				value,
+			});
+		});
+
+		it('decodes escaped quotes and backslashes in arithmetic-looking strings', () => {
+			expect(parseArgument('"say \\"2*3.0\\""')).toEqual({
+				type: ArgumentType.STRING_LITERAL,
+				value: 'say "2*3.0"',
+			});
+			expect(parseArgument('"path\\\\name/1e3"')).toEqual({
+				type: ArgumentType.STRING_LITERAL,
+				value: 'path\\name/1e3',
+			});
+		});
+
+		it('continues folding unquoted arithmetic', () => {
+			expect(parseArgument('2*3.0')).toEqual({
+				type: ArgumentType.LITERAL,
+				value: 6,
+				isInteger: false,
+			});
+		});
 	});
 
 	describe('string literals', () => {

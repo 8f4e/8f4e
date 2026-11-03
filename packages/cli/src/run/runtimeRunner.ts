@@ -25,10 +25,10 @@ function getWebAssemblyApi(): WebAssemblyApiLike {
 function readScalar(view: DataView, data: PlannedMemoryDeclaration): number {
 	if (data.isInteger) {
 		if (data.elementWordSize === 1) {
-			return view.getInt8(data.byteAddress);
+			return data.isUnsigned ? view.getUint8(data.byteAddress) : view.getInt8(data.byteAddress);
 		}
 		if (data.elementWordSize === 2) {
-			return view.getInt16(data.byteAddress, true);
+			return data.isUnsigned ? view.getUint16(data.byteAddress, true) : view.getInt16(data.byteAddress, true);
 		}
 		if (data.elementWordSize === 4) {
 			return view.getInt32(data.byteAddress, true);

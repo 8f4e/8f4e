@@ -3,7 +3,7 @@ title: 'TODO: Add `&*name` pointee start address prefix for pointers'
 priority: Medium
 effort: 2-4h
 created: 2026-03-26
-issue: https://github.com/andorthehood/8f4e/issues/452
+issue: https://github.com/8f4e/8f4e/issues/452
 status: Open
 completed: null
 ---

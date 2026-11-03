@@ -1,0 +1,12 @@
+8f4e/v1
+
+entry main
+module duplicateFunctionHost
+moduleEnd
+entryEnd
+
+function __proto__
+functionEnd
+
+function __proto__
+functionEnd

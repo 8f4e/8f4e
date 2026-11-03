@@ -1,0 +1,6 @@
+8f4e/v1
+entry main
+module invalid
+float& slot 4
+moduleEnd
+entryEnd

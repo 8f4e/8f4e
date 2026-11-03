@@ -2,6 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { compileToAST } from '../src';
 
 describe('compileToAST integration', () => {
+	it('preserves arithmetic-looking strings through complete function compilation', () => {
+		const ast = compileToAST(['function demo', 'push "2*3.0"', 'functionEnd int']);
+
+		expect(ast.lines).toContainEqual(
+			expect.objectContaining({
+				instruction: 'push',
+				arguments: [{ type: 'string_literal', value: '2*3.0' }],
+			})
+		);
+	});
+
 	it('tokenizes source blocks into validated ASTs from source-shaped fixtures', () => {
 		expect({
 			module: compileToAST([
@@ -14,7 +25,8 @@ describe('compileToAST integration', () => {
 				'float* readHead &audio:samples',
 				'push "ready"',
 				'push count(buffer)',
-				'push sizeof(audio:samples)',
+				'float& samples &audio:samples',
+				'push sizeof(*samples)',
 				'push &buffer',
 				'push buffer&',
 				'push *readHead',

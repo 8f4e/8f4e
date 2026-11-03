@@ -3,7 +3,7 @@ title: 'TODO: Editor Command Queue Refactor'
 priority: Medium
 effort: 3-4 days
 created: 2025-10-09
-issue: https://github.com/andorthehood/8f4e/issues/544
+issue: https://github.com/8f4e/8f4e/issues/544
 status: Cancelled
 completed: 2026-06-14
 ---

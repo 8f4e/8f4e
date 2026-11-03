@@ -4,14 +4,14 @@ import type {
 	PointeeBaseType,
 	ScalarMemoryDeclarationInstruction,
 } from '@8f4e/language-spec';
-import { GLOBAL_ALIGNMENT_BOUNDARY } from '@8f4e/language-spec';
+import { ALLOCATION_UNIT_BYTE_SIZE } from '@8f4e/language-spec';
 import {
-	alignAbsoluteWordOffset,
-	getAbsoluteWordOffset,
-	getByteAddressFromWordOffset,
+	alignAbsoluteAllocationUnitOffset,
+	getAbsoluteAllocationUnitOffset,
+	getAllocatedByteLength,
+	getByteAddressFromAllocationUnitOffset,
 	getEndAddressSafeByteLength,
 	getEndByteAddress,
-	getWordAlignedByteLength,
 } from './layoutAddresses';
 import getMemoryFlags from './memoryFlags';
 
@@ -47,13 +47,13 @@ function getArrayPointeeBaseType(instruction: ArrayDeclarationInstruction): Poin
  * Plans address and size metadata for a scalar or pointer declaration.
  *
  * @param input - Declaration layout facts already resolved by the compiler.
- * @returns The planned declaration and updated local word offset.
+ * @returns The planned declaration and updated local allocation-unit offset.
  */
 export function planScalarDeclarationLayout(input: {
 	id: string;
 	lineNumber: number;
 	startingByteAddress: number;
-	localWordOffset: number;
+	localAllocationUnitOffset: number;
 	instruction: ScalarMemoryDeclarationInstruction;
 }) {
 	const pointerDepth = getPointerDepth(input.instruction);
@@ -64,52 +64,65 @@ export function planScalarDeclarationLayout(input: {
 	if (pointerDepth > 0 || nonPointerElementWordSize === 4) {
 		const numberOfElements = 1;
 		const elementWordSize = 4;
-		const wordAlignedSize = 1;
-		const byteAddress = getByteAddressFromWordOffset(input.startingByteAddress, input.localWordOffset);
+		const allocationUnitCount = 1;
+		const byteAddress = getByteAddressFromAllocationUnitOffset(
+			input.startingByteAddress,
+			input.localAllocationUnitOffset
+		);
 		return {
 			declaration: {
 				numberOfElements,
 				elementWordSize,
-				wordAlignedAddress: getAbsoluteWordOffset(input.startingByteAddress, input.localWordOffset),
-				wordAlignedSize,
-				wordAlignedByteLength: getWordAlignedByteLength(wordAlignedSize),
+				allocationUnitAddress: getAbsoluteAllocationUnitOffset(
+					input.startingByteAddress,
+					input.localAllocationUnitOffset
+				),
+				allocationUnitCount,
+				allocatedByteLength: getAllocatedByteLength(allocationUnitCount),
 				byteAddress,
 				elementByteLength: numberOfElements * elementWordSize,
-				endByteAddress: getEndByteAddress(byteAddress, wordAlignedSize),
-				endAddressSafeByteLength: getEndAddressSafeByteLength(wordAlignedSize),
+				endByteAddress: getEndByteAddress(byteAddress, allocationUnitCount),
+				endAddressSafeByteLength: getEndAddressSafeByteLength(allocationUnitCount),
 				id: input.id,
 				lineNumber: input.lineNumber,
 				type: input.instruction,
 				...flags,
 			},
-			nextLocalWordOffset: input.localWordOffset + wordAlignedSize,
+			nextLocalAllocationUnitOffset: input.localAllocationUnitOffset + allocationUnitCount,
 		};
 	}
 
 	const numberOfElements = 1;
-	const absoluteWordOffset = getAbsoluteWordOffset(input.startingByteAddress, input.localWordOffset);
-	const alignedAbsoluteWordOffset = alignAbsoluteWordOffset(absoluteWordOffset, nonPointerElementWordSize);
-	const alignmentPadding = alignedAbsoluteWordOffset - absoluteWordOffset;
-	const wordAlignedSize = alignmentPadding + 2;
-	const byteAddress = getByteAddressFromWordOffset(0, alignedAbsoluteWordOffset);
+	const absoluteAllocationUnitOffset = getAbsoluteAllocationUnitOffset(
+		input.startingByteAddress,
+		input.localAllocationUnitOffset
+	);
+	const alignedAbsoluteAllocationUnitOffset = alignAbsoluteAllocationUnitOffset(
+		absoluteAllocationUnitOffset,
+		nonPointerElementWordSize
+	);
+	const alignmentPaddingUnitCount = alignedAbsoluteAllocationUnitOffset - absoluteAllocationUnitOffset;
+	const occupiedAllocationUnitCount = nonPointerElementWordSize / ALLOCATION_UNIT_BYTE_SIZE;
+	const allocationUnitCount = alignmentPaddingUnitCount + occupiedAllocationUnitCount;
+	const byteAddress = getByteAddressFromAllocationUnitOffset(0, alignedAbsoluteAllocationUnitOffset);
 
 	return {
 		declaration: {
 			numberOfElements,
 			elementWordSize: nonPointerElementWordSize,
-			wordAlignedAddress: alignedAbsoluteWordOffset,
-			wordAlignedSize,
-			wordAlignedByteLength: getWordAlignedByteLength(wordAlignedSize),
+			allocationUnitAddress: alignedAbsoluteAllocationUnitOffset,
+			allocationUnitCount,
+			allocatedByteLength: getAllocatedByteLength(occupiedAllocationUnitCount),
 			byteAddress,
 			elementByteLength: numberOfElements * nonPointerElementWordSize,
-			endByteAddress: getEndByteAddress(byteAddress, wordAlignedSize),
-			endAddressSafeByteLength: getEndAddressSafeByteLength(wordAlignedSize),
+			endByteAddress: getEndByteAddress(byteAddress, occupiedAllocationUnitCount),
+			endAddressSafeByteLength: getEndAddressSafeByteLength(occupiedAllocationUnitCount),
 			id: input.id,
 			lineNumber: input.lineNumber,
 			type: input.instruction,
 			...flags,
 		},
-		nextLocalWordOffset: input.localWordOffset + wordAlignedSize,
+		nextLocalAllocationUnitOffset: input.localAllocationUnitOffset + allocationUnitCount,
 	};
 }
 
@@ -117,45 +130,52 @@ export function planScalarDeclarationLayout(input: {
  * Plans address and size metadata for an array declaration.
  *
  * @param input - Declaration layout facts already resolved by the compiler.
- * @returns The planned declaration and updated local word offset.
+ * @returns The planned declaration and updated local allocation-unit offset.
  */
 export function planArrayDeclarationLayout(input: {
 	id: string;
 	lineNumber: number;
 	startingByteAddress: number;
-	localWordOffset: number;
+	localAllocationUnitOffset: number;
 	instruction: ArrayDeclarationInstruction;
 	numberOfElements: number;
 }) {
 	const elementWordSize = getArrayElementWordSize(input.instruction);
 	const pointerDepth = getPointerDepth(input.instruction);
-	const absoluteWordOffset = getAbsoluteWordOffset(input.startingByteAddress, input.localWordOffset);
-	const alignedAbsoluteWordOffset = alignAbsoluteWordOffset(absoluteWordOffset, elementWordSize);
-	const alignmentPadding = alignedAbsoluteWordOffset - absoluteWordOffset;
-	const wordAlignedSize =
-		alignmentPadding + Math.ceil((input.numberOfElements * elementWordSize) / GLOBAL_ALIGNMENT_BOUNDARY);
+	const absoluteAllocationUnitOffset = getAbsoluteAllocationUnitOffset(
+		input.startingByteAddress,
+		input.localAllocationUnitOffset
+	);
+	const alignedAbsoluteAllocationUnitOffset = alignAbsoluteAllocationUnitOffset(
+		absoluteAllocationUnitOffset,
+		elementWordSize
+	);
+	const alignmentPaddingUnitCount = alignedAbsoluteAllocationUnitOffset - absoluteAllocationUnitOffset;
+	const occupiedAllocationUnitCount = Math.ceil((input.numberOfElements * elementWordSize) / ALLOCATION_UNIT_BYTE_SIZE);
+	const allocationUnitCount = alignmentPaddingUnitCount + occupiedAllocationUnitCount;
 	const pointeeBaseType = getArrayPointeeBaseType(input.instruction);
-	const byteAddress = getByteAddressFromWordOffset(0, alignedAbsoluteWordOffset);
+	const byteAddress = getByteAddressFromAllocationUnitOffset(0, alignedAbsoluteAllocationUnitOffset);
 
 	return {
 		declaration: {
 			numberOfElements: input.numberOfElements,
 			elementWordSize,
-			wordAlignedSize,
-			wordAlignedByteLength: getWordAlignedByteLength(wordAlignedSize),
-			wordAlignedAddress: alignedAbsoluteWordOffset,
+			allocationUnitCount,
+			allocatedByteLength: getAllocatedByteLength(occupiedAllocationUnitCount),
+			allocationUnitAddress: alignedAbsoluteAllocationUnitOffset,
 			id: input.id,
 			lineNumber: input.lineNumber,
 			byteAddress,
 			elementByteLength: input.numberOfElements * elementWordSize,
-			endByteAddress: getEndByteAddress(byteAddress, wordAlignedSize),
-			endAddressSafeByteLength: getEndAddressSafeByteLength(wordAlignedSize),
+			endByteAddress: getEndByteAddress(byteAddress, occupiedAllocationUnitCount),
+			endAddressSafeByteLength: getEndAddressSafeByteLength(occupiedAllocationUnitCount),
 			isInteger: input.instruction.startsWith('int') || input.instruction.includes('*'),
+			...(input.instruction === 'float64[]' ? { isFloat64: true } : {}),
 			pointerDepth,
 			...(pointeeBaseType ? { pointeeBaseType } : {}),
 			type: input.instruction.slice(0, -2) as MemoryType,
 			isUnsigned: input.instruction.endsWith('u[]'),
 		},
-		nextLocalWordOffset: input.localWordOffset + wordAlignedSize,
+		nextLocalAllocationUnitOffset: input.localAllocationUnitOffset + allocationUnitCount,
 	};
 }

@@ -4,6 +4,9 @@ includes
 ; @pos -18 1
 include std/events/risingEdge
 include std/events/hasChanged
+include std/bitwise/extractNibble
+include std/math/lerp
+include std/math/clamp
 includesEnd
 
 function buffer
@@ -23,26 +26,18 @@ function maskExtendedEffect
 ; sub-effect nibble.
 param int row
 
-push row
-call maskEffect
-push 4
-shiftLeft
-push row
-call maskParamHi
+call maskEffect row
+shiftLeft 4
+call maskParamHi row
 or
 
 functionEnd int
 
 function maskEffect
 ; @pos 333 -105
-use mod
 param int row
 
-push row
-push EFFECT_NIBBLE
-and
-push EFFECT_NIBBLE_SHIFT
-shiftRightUnsigned
+call extractNibble row 4
 
 functionEnd int
 
@@ -52,8 +47,7 @@ use mod
 param int row
 
 push row
-push EFFECT_PARAM
-and
+and EFFECT_PARAM
 push EFFECT_PARAM_SHIFT
 shiftRightUnsigned
 
@@ -65,13 +59,11 @@ use mod
 param int row
 
 push row
-push PERIOD_HI
-and
+and PERIOD_HI
 push PERIOD_SHIFT
 shiftLeft
 push row
-push PERIOD_LO
-and
+and PERIOD_LO
 push PERIOD_SHIFT
 shiftRightUnsigned
 or
@@ -83,8 +75,8 @@ function sampleNumberCanLoop
 use sampleMeta
 param int sampleNumber
 
-push sampleNumber
 call sampleNumberToRepeatLen
+- sampleNumber
 push 2
 greaterThan
 
@@ -120,11 +112,9 @@ use mod
 param int row
 
 push row
-push SAMPLE_HI_NIBBLE
-and
+and SAMPLE_HI_NIBBLE
 push row
-push SAMPLE_LO_NIBBLE
-and
+and SAMPLE_LO_NIBBLE
 push SAMPLE_LO_NIBBLE_SHIFT
 shiftRightUnsigned
 or
@@ -135,10 +125,7 @@ function maskParamHi
 ; @pos 401 -114
 param int row
 
-push row
-call maskParam
-push 4
-shiftRightUnsigned
+call extractNibble row 7
 
 functionEnd int
 
@@ -146,10 +133,7 @@ function maskParamLo
 ; @pos 401 -103
 param int row
 
-push row
-call maskParam
-push 0xF
-and
+call extractNibble row 6
 
 functionEnd int
 
@@ -421,12 +405,10 @@ function rowShouldReloadVolume
 use mod
 param int row
 
-push row
-call maskSampleNumber
+call maskSampleNumber row
 push 0
 greaterThan
-push row
-call maskEffect
+call maskEffect row
 push SET_VOLUME
 equal
 or
@@ -438,23 +420,19 @@ function loadRowVolume
 use mod
 param int row
 
-push row
-call maskEffect
+call maskEffect row
 push SET_VOLUME
 equal
 if
-push row
-call maskParam
+call maskParam row
 return
 ifEnd
 
-push row
-call maskSampleNumber
+call maskSampleNumber row
 push 0
 greaterThan
 if
-push row
-call maskSampleNumber
+call maskSampleNumber row
 call sampleNumberToVolume
 return
 ifEnd
@@ -468,8 +446,7 @@ function rowVolumeSlideDelta
 use mod
 param int row
 
-push row
-call maskEffect
+call maskEffect row
 push VOLUME_SLIDE
 equal
 equalToZero
@@ -478,24 +455,22 @@ push 0
 return
 ifEnd
 
-push row
-call maskParamHi
+call maskParamHi row
 push 0
 greaterThan
 if
-push row
-call maskParamHi
+call maskParamHi row
 return
 ifEnd
 
 push 0
-push row
-call maskParamLo
+call maskParamLo row
 sub
 
 functionEnd int
 
 function sampleNumberToAddr
+#impure
 ; @pos 623 -260
 ; @tab 8
 param int sampleNumber
@@ -582,30 +557,6 @@ mapEnd int
 
 functionEnd int
 
-function clampVolume
-; @pos 625 -137
-param int value
-
-push value
-push 64
-greaterThan
-if
-push 64
-return
-ifEnd
-
-push 0
-push value
-greaterThan
-if
-push 0
-return
-ifEnd
-
-push value
-
-functionEnd int
-
 function rowVolumeAtRowStart
 ; @pos 659 -140
 ; Apply any row-start volume
@@ -615,11 +566,10 @@ param int currentVolume
 param int row
 local int baseVolume
 
-push row
 call rowShouldReloadVolume
+- row
 if
-push row
-call loadRowVolume
+call loadRowVolume row
 localSet baseVolume
 else
 push currentVolume
@@ -627,8 +577,8 @@ localSet baseVolume
 ifEnd
 
 push baseVolume
-push row
 call rowFineVolumeSlideDelta
+- row
 add
 
 functionEnd int
@@ -641,24 +591,20 @@ function rowFineVolumeSlideDelta
 use mod
 param int row
 
-push row
-call maskExtendedEffect
+call maskExtendedEffect row
 push FINE_VOLUME_SLIDE_UP
 equal
 if
-push row
-call maskParamLo
+call maskParamLo row
 return
 ifEnd
 
-push row
-call maskExtendedEffect
+call maskExtendedEffect row
 push FINE_VOLUME_SLIDE_DOWN
 equal
 if
 push 0
-push row
-call maskParamLo
+call maskParamLo row
 sub
 return
 ifEnd
@@ -746,33 +692,18 @@ const ASSET_SAMPLE30_SIZE 31746
 
 constantsEnd
 
-constants math
+constants outputFilter
 ; @pos 180 -168
+use env
 
-const PI      3.141592653589793
-const NEG_PI -3.141592653589793
-const TAU     6.283185307179586
-const HALF_PI 1.570796326794896
-const INV_PI  0.318309886183790
-const INV_TAU 0.159154943091895
-const PHI     1.618033988749895
-const DEG2RAD 0.017453292519943
-const RAD2DEG 57.29577951308232
-const SQRT2   1.414213562373095
-const SQRT1_2 0.707106781186547
-; Useful in FFT twiddle factors.
-const HANN_A0 0.5
-; For common window functions before FFT.
-const HAMMING_A0 0.54
-const HAMMING_A1 0.46
-const BLACKMAN_A0 0.42
-const BLACKMAN_A1 0.5
-const BLACKMAN_A2 0.08
-const LN2     0.693147180559945
-const LN10    2.302585092994046
-const LOG2E   1.442695040888963
-const LOG10E  0.434294481903251
-const E       2.718281828459045
+const PI 3.141592653589793
+const E 2.718281828459045
+const FREQ 4400
+const MINUS_2_PI -2*PI
+const CUTOFF_TERM MINUS_2_PI*FREQ
+const EXPONENT CUTOFF_TERM/SAMPLE_RATE
+const DECAY E^EXPONENT
+const COEFFICIENT 1-DECAY
 
 constantsEnd
 
@@ -787,8 +718,6 @@ const PERIOD_LO	0x0000FF00
 const PERIOD_SHIFT	8
 const SAMPLE_LO_NIBBLE	0x00F00000
 const SAMPLE_LO_NIBBLE_SHIFT	20
-const EFFECT_NIBBLE	0x000F0000
-const EFFECT_NIBBLE_SHIFT	16
 const EFFECT_PARAM	0xFF000000
 const EFFECT_PARAM_SHIFT	24
 ; AMIGA magic const
@@ -963,7 +892,7 @@ constantsEnd
 note
 ; @pos 9 -126
 ; Project Config
-; @config runtime AudioWorkletRuntime
+; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audiooutL:buffer
 ; @config audioRuntime.audioOutBufferRAddress audiooutR:buffer
@@ -1037,17 +966,14 @@ push 0
 store
 
 push counter
-push 1
-add
+add 1
 
 push SAMPLE_RATE
-push 5
-mul
+mul 5
 
 push tempo
 ensureNonZero
-push 2
-mul
+mul 2
 ensureNonZero
 div
 
@@ -1064,15 +990,14 @@ ifEnd
 
 push &counter
 push counter
-push 1
-add
+add 1
 store
 
 moduleEnd
 module rowClock
 ; @pos -141 -28
 use env
-int* tick &tickClock:out
+int& tick &tickClock:out
 int previousTick
 int ticks 6 ; @w
 int out
@@ -1082,12 +1007,11 @@ push &out
 push 0
 store
 
-push *tick
-call risingEdge &previousTick
+call risingEdge
+- *tick &previousTick
 if
 push counter
-push 1
-add
+add 1
 push ticks
 ensureNonZero
 greaterOrEqual
@@ -1102,8 +1026,7 @@ store
 else
 push &counter
 push counter
-push 1
-add
+add 1
 store
 ifEnd
 ifEnd
@@ -1194,7 +1117,7 @@ moduleEnd
 module rowCounter
 ; @pos -68 -28
 use env
-int* trigger &rowClock:out
+int& trigger &rowClock:out
 int previousTrigger
 int rowCounter -1
 int* patternPointer &patternOrder:0
@@ -1250,7 +1173,7 @@ store
 moduleEnd
 module rowCount1
 ; @pos -10 20
-int* in &rowCounter:out
+int& in &rowCounter:out
 int out
 ; We can afford some reading
 ; and writing to memory
@@ -1261,7 +1184,7 @@ store
 moduleEnd
 module scope1
 ; @pos 28 -17
-float* in &amp1:out
+float& in &amp1:out
 float[] buffer 64
 ; @plot &buffer 64
 ; @hide
@@ -1331,7 +1254,7 @@ loopEnd
 moduleEnd
 module scope2
 ; @pos 65 -17
-float* in &amp2:out
+float& in &amp2:out
 float[] buffer 64
 ; @plot &buffer 64
 ; @hide
@@ -1402,7 +1325,7 @@ loopEnd
 moduleEnd
 module scope3
 ; @pos 103 -17
-float* in &amp3:out
+float& in &amp3:out
 float[] buffer 64
 ; @plot &buffer 64
 ; @hide
@@ -1473,7 +1396,7 @@ loopEnd
 moduleEnd
 module scope4
 ; @pos 141 -17
-float* in &amp4:out
+float& in &amp4:out
 float[] buffer 64
 ; @plot &buffer 64
 ; @hide
@@ -1544,7 +1467,7 @@ loopEnd
 moduleEnd
 module rowCount2
 ; @pos 152 -33
-int* in &rowCounter:out
+int& in &rowCounter:out
 int out
 
 push &out
@@ -1563,13 +1486,11 @@ push &out
 push 0
 store
 
-push *row
-call maskEffect
+call maskEffect *row
 push SAMPLE_OFFSET
 equal
 if
-push *row
-call maskParam
+call maskParam *row
 equalToZero
 if
 push &out
@@ -1577,17 +1498,13 @@ push memory
 store
 else
 push &memory
-push *row
-call maskParam
-push 256
-mul
+call maskParam *row
+mul 256
 store
 
 push &out
-push *row
-call maskParam
-push 256
-mul
+call maskParam *row
+mul 256
 store
 ifEnd
 ifEnd
@@ -1605,13 +1522,11 @@ push &out
 push 0
 store
 
-push *row
-call maskEffect
+call maskEffect *row
 push SAMPLE_OFFSET
 equal
 if
-push *row
-call maskParam
+call maskParam *row
 equalToZero
 if
 push &out
@@ -1619,17 +1534,13 @@ push memory
 store
 else
 push &memory
-push *row
-call maskParam
-push 256
-mul
+call maskParam *row
+mul 256
 store
 
 push &out
-push *row
-call maskParam
-push 256
-mul
+call maskParam *row
+mul 256
 store
 ifEnd
 ifEnd
@@ -1647,13 +1558,11 @@ push &out
 push 0
 store
 
-push *row
-call maskEffect
+call maskEffect *row
 push SAMPLE_OFFSET
 equal
 if
-push *row
-call maskParam
+call maskParam *row
 equalToZero
 if
 push &out
@@ -1661,17 +1570,13 @@ push memory
 store
 else
 push &memory
-push *row
-call maskParam
-push 256
-mul
+call maskParam *row
+mul 256
 store
 
 push &out
-push *row
-call maskParam
-push 256
-mul
+call maskParam *row
+mul 256
 store
 ifEnd
 ifEnd
@@ -1689,13 +1594,11 @@ push &out
 push 0
 store
 
-push *row
-call maskEffect
+call maskEffect *row
 push SAMPLE_OFFSET
 equal
 if
-push *row
-call maskParam
+call maskParam *row
 equalToZero
 if
 push &out
@@ -1703,17 +1606,13 @@ push memory
 store
 else
 push &memory
-push *row
-call maskParam
-push 256
-mul
+call maskParam *row
+mul 256
 store
 
 push &out
-push *row
-call maskParam
-push 256
-mul
+call maskParam *row
+mul 256
 store
 ifEnd
 ifEnd
@@ -1724,24 +1623,21 @@ module tempo1
 ; @group ch1
 use mod
 int* row &rowBuffer1:
-int* tempo &tickClock:tempo
-int* ticks &rowClock:ticks
-int* rowCounter &rowCount2:out
+int& tempo &tickClock:tempo
+int& ticks &rowClock:ticks
+int& rowCounter &rowCount2:out
 int prevRowCounter
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
-push *row
-call maskEffect
+call maskEffect *row
 push SET_SPEED
 notEqual
-push *row
-call maskParam
+call maskParam *row
 equalToZero
 or
 exitIfTrue
-push *row
-call maskParam
+call maskParam *row
 push 32
 greaterOrEqual
 if
@@ -1763,35 +1659,30 @@ module tempo2
 ; @group ch2
 use mod
 int* row &rowBuffer2:
-int* tempo &tickClock:tempo
-int* ticks &rowClock:ticks
-int* rowCounter &rowCount2:out
+int& tempo &tickClock:tempo
+int& ticks &rowClock:ticks
+int& rowCounter &rowCount2:out
 int prevRowCounter
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
-push *row
-call maskEffect
+call maskEffect *row
 push SET_SPEED
 notEqual
-push *row
-call maskParam
+call maskParam *row
 equalToZero
 or
 exitIfTrue
-push *row
-call maskParam
+call maskParam *row
 push 32
 greaterOrEqual
 if
 push tempo
-push *row
-call maskParam
+call maskParam *row
 store
 else
 push ticks
-push *row
-call maskParam
+call maskParam *row
 store
 ifEnd
 ifEnd
@@ -1802,35 +1693,30 @@ module tempo3
 ; @group ch3
 use mod
 int* row &rowBuffer3:
-int* tempo &tickClock:tempo
-int* ticks &rowClock:ticks
-int* rowCounter &rowCount2:out
+int& tempo &tickClock:tempo
+int& ticks &rowClock:ticks
+int& rowCounter &rowCount2:out
 int prevRowCounter
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
-push *row
-call maskEffect
+call maskEffect *row
 push SET_SPEED
 notEqual
-push *row
-call maskParam
+call maskParam *row
 equalToZero
 or
 exitIfTrue
-push *row
-call maskParam
+call maskParam *row
 push 32
 greaterOrEqual
 if
 push tempo
-push *row
-call maskParam
+call maskParam *row
 store
 else
 push ticks
-push *row
-call maskParam
+call maskParam *row
 store
 ifEnd
 ifEnd
@@ -1841,35 +1727,30 @@ module tempo4
 ; @group ch4
 use mod
 int* row &rowBuffer4:
-int* tempo &tickClock:tempo
-int* ticks &rowClock:ticks
-int* rowCounter &rowCount2:out
+int& tempo &tickClock:tempo
+int& ticks &rowClock:ticks
+int& rowCounter &rowCount2:out
 int prevRowCounter
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
-push *row
-call maskEffect
+call maskEffect *row
 push SET_SPEED
 notEqual
-push *row
-call maskParam
+call maskParam *row
 equalToZero
 or
 exitIfTrue
-push *row
-call maskParam
+call maskParam *row
 push 32
 greaterOrEqual
 if
 push tempo
-push *row
-call maskParam
+call maskParam *row
 store
 else
 push ticks
-push *row
-call maskParam
+call maskParam *row
 store
 ifEnd
 ifEnd
@@ -1884,14 +1765,14 @@ int param
 
 ; @watch out
 
-push *row
 call maskSampleNumber
+- *row
 push 0
 greaterThan
 if
 push &out
-push *row
 call maskSampleNumber
+- *row
 store
 ifEnd
 
@@ -1905,14 +1786,14 @@ int param
 
 ; @watch out
 
-push *row
 call maskSampleNumber
+- *row
 push 0
 greaterThan
 if
 push &out
-push *row
 call maskSampleNumber
+- *row
 store
 ifEnd
 
@@ -1926,14 +1807,14 @@ int param
 
 ; @watch out
 
-push *row
 call maskSampleNumber
+- *row
 push 0
 greaterThan
 if
 push &out
-push *row
 call maskSampleNumber
+- *row
 store
 ifEnd
 
@@ -1947,14 +1828,14 @@ int param
 
 ; @watch out
 
-push *row
 call maskSampleNumber
+- *row
 push 0
 greaterThan
 if
 push &out
-push *row
 call maskSampleNumber
+- *row
 store
 ifEnd
 
@@ -1963,22 +1844,20 @@ module period1
 ; @pos 308 -73
 ; @group ch1
 int* row &rowBuffer1:
-int* sampleNumber &sampleNumber1:out
+int& sampleNumber &sampleNumber1:out
 int out
 
 ; @watch out
 
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 castToFloat
-push *sampleNumber
 call sampleNumberToFinetune
+- *sampleNumber
 call modFinetune
 mul
 round
@@ -1991,22 +1870,20 @@ module period2
 ; @pos 308 -24
 ; @group ch2
 int* row &rowBuffer2:
-int* sampleNumber &sampleNumber2:out
+int& sampleNumber &sampleNumber2:out
 int out
 
 ; @watch out
 
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 castToFloat
-push *sampleNumber
 call sampleNumberToFinetune
+- *sampleNumber
 call modFinetune
 mul
 round
@@ -2019,22 +1896,20 @@ module period3
 ; @pos 308 24
 ; @group ch3
 int* row &rowBuffer3:
-int* sampleNumber &sampleNumber3:out
+int& sampleNumber &sampleNumber3:out
 int out
 
 ; @watch out
 
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 castToFloat
-push *sampleNumber
 call sampleNumberToFinetune
+- *sampleNumber
 call modFinetune
 mul
 round
@@ -2047,22 +1922,20 @@ module period4
 ; @pos 308 72
 ; @group ch4
 int* row &rowBuffer4:
-int* sampleNumber &sampleNumber4:out
+int& sampleNumber &sampleNumber4:out
 int out
 
 ; @watch out
 
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 castToFloat
-push *sampleNumber
 call sampleNumberToFinetune
+- *sampleNumber
 call modFinetune
 mul
 round
@@ -2075,8 +1948,8 @@ module trigger1
 ; @pos 355 -73
 ; @group ch1
 int* row &rowBuffer1:
-int* rowCounter &rowCount2:out
-int* period &period1:out
+int& rowCounter &rowCount2:out
+int& period &period1:out
 int out
 
 ; @watch out
@@ -2085,12 +1958,11 @@ int prevRowCounter
 push &out
 push 0
 store
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 store
@@ -2101,8 +1973,8 @@ module trigger2
 ; @pos 355 -24
 ; @group ch2
 int* row &rowBuffer2:
-int* rowCounter &rowCount2:out
-int* period &period2:out
+int& rowCounter &rowCount2:out
+int& period &period2:out
 int out
 
 ; @watch out
@@ -2111,12 +1983,11 @@ int prevRowCounter
 push &out
 push 0
 store
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 store
@@ -2127,8 +1998,8 @@ module trigger3
 ; @pos 355 24
 ; @group ch3
 int* row &rowBuffer3:
-int* rowCounter &rowCount2:out
-int* period &period3:out
+int& rowCounter &rowCount2:out
+int& period &period3:out
 int out
 
 ; @watch out
@@ -2137,12 +2008,11 @@ int prevRowCounter
 push &out
 push 0
 store
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 store
@@ -2153,20 +2023,19 @@ module trigger4
 ; @pos 355 72
 ; @group ch4
 int* row &rowBuffer4:
-int* rowCounter &rowCount2:out
-int* period &period4:out
+int& rowCounter &rowCount2:out
+int& period &period4:out
 int out
 
 int prevRowCounter
 push &out
 push 0
 store
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push *row
-call maskPeriod
+call maskPeriod *row
 push 0
 greaterThan
 store
@@ -2178,22 +2047,21 @@ module volume1
 ; @group ch1
 use mod
 int* row &rowBuffer1:
-int* tick &tickClock:out
+int& tick &tickClock:out
 int previousTick
-int* rowTrigger &rowClock:out
-int* rowCounter &rowCount2:out
+int& rowTrigger &rowClock:out
+int& rowCounter &rowCount2:out
 int out ; @w
 ; @meter out 0 80
 ; Reload base volume on
 ; tick 0 / row advance.
 int prevRowCounter
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push out
-push *row
 call rowVolumeAtRowStart
+- out *row
 store
 ifEnd
 
@@ -2202,21 +2070,19 @@ ifEnd
 push *rowTrigger
 equalToZero
 if
-push *tick
-call risingEdge &previousTick
+call risingEdge
+- *tick &previousTick
 if
 push &out
 push out
-push *row
-call rowVolumeSlideDelta
+call rowVolumeSlideDelta *row
 add
 store
 ifEnd
 ifEnd
 
 push &out
-push out
-call clampVolume
+call clamp out 0 64
 store
 
 moduleEnd
@@ -2225,21 +2091,20 @@ module volume2
 ; @group ch2
 use mod
 int* row &rowBuffer2:
-int* tick &tickClock:out
+int& tick &tickClock:out
 int previousTick
-int* rowTrigger &rowClock:out
-int* rowCounter &rowCount2:out
+int& rowTrigger &rowClock:out
+int& rowCounter &rowCount2:out
 int out ; @meter out 0 80
 ; Reload base volume on
 ; tick 0 / row advance.
 int prevRowCounter
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push out
-push *row
 call rowVolumeAtRowStart
+- out *row
 store
 ifEnd
 
@@ -2248,21 +2113,19 @@ ifEnd
 push *rowTrigger
 equalToZero
 if
-push *tick
-call risingEdge &previousTick
+call risingEdge
+- *tick &previousTick
 if
 push &out
 push out
-push *row
-call rowVolumeSlideDelta
+call rowVolumeSlideDelta *row
 add
 store
 ifEnd
 ifEnd
 
 push &out
-push out
-call clampVolume
+call clamp out 0 64
 store
 
 moduleEnd
@@ -2271,21 +2134,20 @@ module volume3
 ; @group ch3
 use mod
 int* row &rowBuffer3:
-int* tick &tickClock:out
+int& tick &tickClock:out
 int previousTick
-int* rowTrigger &rowClock:out
-int* rowCounter &rowCount2:out
+int& rowTrigger &rowClock:out
+int& rowCounter &rowCount2:out
 int out ; @meter out 0 80
 ; Reload base volume on
 ; tick 0 / row advance.
 int prevRowCounter
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push out
-push *row
 call rowVolumeAtRowStart
+- out *row
 store
 ifEnd
 
@@ -2294,21 +2156,19 @@ ifEnd
 push *rowTrigger
 equalToZero
 if
-push *tick
-call risingEdge &previousTick
+call risingEdge
+- *tick &previousTick
 if
 push &out
 push out
-push *row
-call rowVolumeSlideDelta
+call rowVolumeSlideDelta *row
 add
 store
 ifEnd
 ifEnd
 
 push &out
-push out
-call clampVolume
+call clamp out 0 64
 store
 
 moduleEnd
@@ -2317,21 +2177,20 @@ module volume4
 ; @group ch4
 use mod
 int* row &rowBuffer4:
-int* tick &tickClock:out
+int& tick &tickClock:out
 int previousTick
-int* rowTrigger &rowClock:out
-int* rowCounter &rowCount2:out
+int& rowTrigger &rowClock:out
+int& rowCounter &rowCount2:out
 int out ; @meter out 0 80
 ; Reload base volume on
 ; tick 0 / row advance.
 int prevRowCounter
-push *rowCounter
-call hasChanged &prevRowCounter
+call hasChanged
+- *rowCounter &prevRowCounter
 if
 push &out
-push out
-push *row
 call rowVolumeAtRowStart
+- out *row
 store
 ifEnd
 
@@ -2340,21 +2199,19 @@ ifEnd
 push *rowTrigger
 equalToZero
 if
-push *tick
-call risingEdge &previousTick
+call risingEdge
+- *tick &previousTick
 if
 push &out
 push out
-push *row
-call rowVolumeSlideDelta
+call rowVolumeSlideDelta *row
 add
 store
 ifEnd
 ifEnd
 
 push &out
-push out
-call clampVolume
+call clamp out 0 64
 store
 
 moduleEnd
@@ -2458,11 +2315,11 @@ module samplePlayer1
 ; @pos 545 -4
 use env
 ; @tab 6 20
-int*	period	&period1:out
-int*	offset	&sampleOffset1:out
-int*	trigger	&trigger1:out
+int&	period	&period1:out
+int&	offset	&sampleOffset1:out
+int&	trigger	&trigger1:out
 int	previousTrigger
-int*	sampleNumber	&sampleNumber1:out
+int&	sampleNumber	&sampleNumber1:out
 int8*	sampleAddress	; @w
 int8*	playhead	; @w
 int	sampleSize	; @w
@@ -2559,11 +2416,11 @@ module samplePlayer2
 ; @pos 545 17
 use env
 ; @tab 6 20
-int*	period	&period2:out
-int*	offset	&sampleOffset2:out
-int*	trigger	&trigger2:out
+int&	period	&period2:out
+int&	offset	&sampleOffset2:out
+int&	trigger	&trigger2:out
 int	previousTrigger
-int*	sampleNumber	&sampleNumber2:out
+int&	sampleNumber	&sampleNumber2:out
 int8*	sampleAddress	; @w
 int	sampleSize	; @w
 int8*	playhead	; @w
@@ -2660,11 +2517,11 @@ module samplePlayer3
 ; @pos 597 -4
 use env
 ; @tab 6 20
-int*	period	&period3:out
-int*	offset	&sampleOffset3:out
-int*	trigger	&trigger3:out
+int&	period	&period3:out
+int&	offset	&sampleOffset3:out
+int&	trigger	&trigger3:out
 int	previousTrigger
-int*	sampleNumber	&sampleNumber3:out
+int&	sampleNumber	&sampleNumber3:out
 int8*	sampleAddress	; @w
 int	sampleSize	; @w
 int8*	playhead	; @w
@@ -2761,11 +2618,11 @@ module samplePlayer4
 ; @pos 597 17
 use env
 ; @tab 6 20
-int*	period	&period4:out
-int*	offset	&sampleOffset4:out
-int*	trigger	&trigger4:out
+int&	period	&period4:out
+int&	offset	&sampleOffset4:out
+int&	trigger	&trigger4:out
 int	previousTrigger
-int*	sampleNumber	&sampleNumber4:out
+int&	sampleNumber	&sampleNumber4:out
 int8*	sampleAddress	; @w
 int	sampleSize	; @w
 int8*	playhead	; @w
@@ -2861,244 +2718,137 @@ moduleEnd
 module amp1
 ; @pos 661 -20
 
-float* in &samplePlayer1:out
-int* volume &volume1:out
+float& in &samplePlayer1:out
+int& volume &volume1:out
 float out ; @meter
 push &out
 push *in
 push *volume
 castToFloat
-push 72.0
-div
+div 72.0
 mul
 store
 
 moduleEnd
 module amp2
 ; @pos 661 -2
-float* in &samplePlayer2:out
-int* volume &volume2:out
+float& in &samplePlayer2:out
+int& volume &volume2:out
 float out; @meter
 push &out
 push *in
 push *volume
 castToFloat
-push 72.0
-div
+div 72.0
 mul
 store
 
 moduleEnd
 module amp3
 ; @pos 661 15
-float* in &samplePlayer3:out
-int* volume &volume3:out
+float& in &samplePlayer3:out
+int& volume &volume3:out
 float out ; @meter
 push &out
 push *in
 push *volume
 castToFloat
-push 72.0
-div
+div 72.0
 mul
 store
 
 moduleEnd
 module amp4
 ; @pos 661 32
-float* in &samplePlayer4:out
-int* volume &volume4:out
+float& in &samplePlayer4:out
+int& volume &volume4:out
 float out; @meter
 push &out
 push *in
 push *volume
 castToFloat
-push 72.0
-div
+div 72.0
 mul
 store
 
 moduleEnd
 module mixer
 ; @pos 705 6
-float* in1 &amp1:out
-float* in2 &amp2:out
-float* in3 &amp3:out
-float* in4 &amp4:out
+float& in1 &amp1:out
+float& in2 &amp2:out
+float& in3 &amp3:out
+float& in4 &amp4:out
 
 float outL ; @meter
 float outR ; @meter
 
 push &outL
 push *in1
-push *in3
-add
-push 2.0
-div
+add *in3
+div 2.0
 push *in2
-push *in4
-add
-push 3.5
-div
+add *in4
+div 3.5
 add
 store
 
 push &outR
 push *in2
-push *in4
-add
-push 2.0
-div
+add *in4
+div 2.0
 
 push *in1
-push *in3
-add
-push 3.5
-div
+add *in3
+div 3.5
 add
 store
 
 moduleEnd
 module lowpassL
 ; @pos 743 -15
-float* in &mixer:outL
-float state 0.0 ; @w
-float out ; @w
+float& in &mixer:outL
+float out 0.0 ; @w
 
-use math
-use env
-
-const FREQ 4400
-const MINUS_2_PI -2*PI
-const CUTOFF_TERM MINUS_2_PI*FREQ
-const EXPONENT CUTOFF_TERM/SAMPLE_RATE
-const DECAY E^EXPONENT
-const COEFFICIENT 1-DECAY
+use outputFilter
 
 push &out
-push state
-push *in
-push state
-sub
-push COEFFICIENT
-mul
-add
-store
-
-push &state
-push out
+call lerp out *in COEFFICIENT
 store
 
 moduleEnd
 module lowpassR
 ; @pos 743 17
-float* in &mixer:outR
-float state 0.0 ; @w
-float out ; @w
+float& in &mixer:outR
+float out 0.0 ; @w
 
-use math
-use env
-
-const FREQ 4400
-const MINUS_2_PI -2*PI
-const CUTOFF_TERM MINUS_2_PI*FREQ
-const EXPONENT CUTOFF_TERM/SAMPLE_RATE
-const DECAY E^EXPONENT
-const COEFFICIENT 1-DECAY
+use outputFilter
 
 push &out
-push state
-push *in
-push state
-sub
-push COEFFICIENT
-mul
-add
-store
-
-push &state
-push out
+call lerp out *in COEFFICIENT
 store
 
 moduleEnd
 module colors
 ; @pos 755 -70
-; @config color.text.lineNumber #6f8195
-; @config color.text.entryName #f4f7f9
-; @config color.text.debugInfo #8fa7bd
-; @config color.text.arrow #ff8c61
-; @config color.text.instruction #78d8f5
-; @config color.text.codeComment #9aa7b5
-; @config color.text.code #e7edf2
-; @config color.text.infoKey #70b9df
-; @config color.text.infoValue #ffd166
-; @config color.text.errorMessage #fff7f7
-; @config color.text.disabledCode #596574
-; @config color.text.numbers #ffd166
-; @config color.text.menuItemText #e7edf2
-; @config color.text.menuItemTextHighlighted #07090d
-; @config color.text.dialogTitle #ffd166
-; @config color.text.dialogText #e7edf2
-; @config color.text.binaryZero #667485
-; @config color.text.binaryOne #78d8f5
-; @config color.text.basePrefix #ff8c61
-; @config color.text.pianoKeyWhitePressedOverlay rgba(7,9,13,0.4)
-; @config color.text.pianoKeyBlackPressedOverlay rgba(120,216,245,0.7)
-; @config color.text.tooltipText #0b1018
-; @config color.text.tooltipHighlight #367ca5
-; @config color.fill.menuItemBackground #182231
-; @config color.fill.menuItemBackgroundHighlighted #ffd166
-; @config color.fill.background #07090d
-; @config color.fill.backgroundDots #121824
-; @config color.fill.backgroundDots2 #223044
-; @config color.fill.moduleBackground #111824
-; @config color.fill.debugInfoBackground #0b1018
-; @config color.fill.moduleBackgroundDragged #223754
-; @config color.fill.moduleBackgroundDisabled #0d1119
-; @config color.fill.wire rgba(120,216,245,0.24)
-; @config color.fill.wireHighlighted #9be7ff
-; @config color.fill.errorMessageBackground #a6293e
-; @config color.fill.assertionPassed #48c78e
-; @config color.fill.assertionFailed #ef5d6a
-; @config color.fill.dialogBackground #182231
-; @config color.fill.dialogDimmer rgba(0,0,0,0.78)
-; @config color.fill.highlightedCodeLine #24364b
-; @config color.fill.trace #9be7ff
-; @config color.fill.plotterBackground #04070b
-; @config color.fill.bars #4fa6d8
-; @config color.fill.waveform #ffd166
-; @config color.fill.meterGreen #48c78e
-; @config color.fill.meterYellow #ffd166
-; @config color.fill.meterRed #ef5d6a
-; @config color.fill.scanLine #ff8c61
-; @config color.fill.track #223044
-; @config color.fill.fill #4fa6d8
-; @config color.fill.handle #f4f7f9
-; @config color.fill.codeBlockHighlightLevel1 #172334
-; @config color.fill.codeBlockHighlightLevel2 #1d2f45
-; @config color.fill.codeBlockHighlightLevel3 #26405a
-; @config color.fill.pianoKeyWhite #e7edf2
-; @config color.fill.pianoKeyBlack #07090d
-; @config color.fill.tooltipBackground #f2eadf
-; @config color.fill.tooltipAddedHighlight #87d9ac
-; @config color.fill.tooltipConsumedHighlight #f29aa3
-; @config color.icons.inputConnector #78d8f5
-; @config color.icons.outputConnector #ffd166
-; @config color.icons.inputConnectorBackground #1a2d40
-; @config color.icons.outputConnectorBackground #1a2d40
-; @config color.icons.switchBackground #4fa6d8
-; @config color.icons.feedbackScale0 #183139
-; @config color.icons.feedbackScale1 #245463
-; @config color.icons.feedbackScale2 #337f8f
-; @config color.icons.feedbackScale3 #48c78e
-; @config color.icons.feedbackScale4 #ffd166
-; @config color.icons.feedbackScale5 #ef5d6a
+; @config color.canvas #07090d
+; @config color.surface #111824
+; @config color.ink #e7edf2
+; @config color.primary #78d8f5
+; @config color.secondary #ffd166
+; @config color.positive #48c78e
+; @config color.warning #ffd166
+; @config color.negative #ef5d6a
+; @config color.muted #6f8195
+; @config color.stroke rgba(120,216,245,0.24)
+; @config color.tertiary #9aa7b5
+; @config color.highlight #ffd166
+; @config color.detail #4fa6d8
 moduleEnd
 module audiooutL
 ; @pos 794 -6
 use env
 
-float* in &lowpassL:out
+float& in &lowpassL:out
 float[] buffer AUDIO_BUFFER_SIZE
 int pointer &buffer
 
@@ -3134,7 +2884,7 @@ module audiooutR
 ; @pos 835 -6
 use env
 
-float* in &lowpassR:out
+float& in &lowpassR:out
 float[] buffer AUDIO_BUFFER_SIZE
 int pointer &buffer
 

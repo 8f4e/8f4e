@@ -1,0 +1,23 @@
+{
+  "code": 79,
+  "context": {
+    "codeBlockId": "invalid",
+    "codeBlockType": "module",
+    "projectBlockId": 3,
+  },
+  "line": {
+    "arguments": [
+      {
+        "isEndAddress": true,
+        "referenceKind": "memory-reference",
+        "scope": "local",
+        "targetMemoryId": "slot",
+        "type": "identifier",
+        "value": "slot&",
+      },
+    ],
+    "instruction": "push",
+    "lineNumber": 3,
+  },
+  "message": "Fixed reference slot "slot" has no addressable storage. Push the slot name to use its target address. (79)",
+}

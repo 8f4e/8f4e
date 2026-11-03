@@ -3,7 +3,7 @@ title: 'TODO: Show const values in declaration tooltips'
 priority: Medium
 effort: 2-4h
 created: 2026-05-28
-issue: https://github.com/andorthehood/8f4e/issues/720
+issue: https://github.com/8f4e/8f4e/issues/720
 status: Open
 completed: null
 ---
@@ -26,7 +26,7 @@ Why this is a problem:
 
 ## Proposed Solution
 
-Expose enough resolved constant metadata from the compiler result for editor-state to display it in selected-line tooltips.
+Expose enough resolved constant metadata from the compiler result for the tooltips plugin to display it in selected-line tooltips.
 
 When the highlighted line is a `const` declaration and the compiled result contains metadata for that constant, append compact tooltip rows:
 
@@ -64,7 +64,7 @@ If the value or type is unavailable, omit the unavailable row entirely. Do not s
 ## Validation Checkpoints
 
 - `npx nx run @8f4e/compiler:test -- --run tests/instructions/constants.test.ts tests/instructions/constantExpressions.test.ts`
-- `npx nx run @8f4e/editor-state:test -- --run src/features/tooltip/sourceLine.test.ts src/features/tooltip/content.test.ts src/features/tooltip/effect.test.ts`
+- `npx nx run @8f4e/editor-plugin-tooltips:test -- --run src/helpers/sourceLine.test.ts src/helpers/content.test.ts src/state/effect.test.ts`
 - `npx nx run-many --target=typecheck --projects=@8f4e/language-spec,@8f4e/compiler,@8f4e/editor-state`
 
 ## Success Criteria
@@ -79,7 +79,7 @@ If the value or type is unavailable, omit the unavailable row entirely. Do not s
 
 - `packages/compiler/packages/language-spec/src/compiled.ts` - compiler result metadata contract.
 - `packages/compiler/src/compiler.ts` - resolved constant metadata returned to consumers.
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/tooltip/` - selected-line tooltip lookup and rendering.
+- `packages/editor/plugins/tooltips/src/` - selected-line tooltip lookup and rendering.
 
 ## Risks & Considerations
 

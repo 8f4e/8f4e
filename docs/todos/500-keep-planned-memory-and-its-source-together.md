@@ -3,7 +3,7 @@ title: 'TODO: Keep planned memory and its source together'
 priority: Medium
 effort: 4-8h
 created: 2026-10-14
-issue: https://github.com/andorthehood/8f4e/issues/1027
+issue: https://github.com/8f4e/8f4e/issues/1027
 status: Open
 completed: null
 ---
@@ -95,6 +95,6 @@ resolution facts, resolved defaults, and pointer provenance remain outputs of th
 
 ## Related Items
 
-- [PR #1019](https://github.com/andorthehood/8f4e/pull/1019) introduced group initializers, exposing the positional
+- [PR #1019](https://github.com/8f4e/8f4e/pull/1019) introduced group initializers, exposing the positional
   lookup needed to recover a resolved declaration's source.
 - [TODO 499](499-unify-project-instruction-syntax-parsing.md) separately addresses project instruction syntax ownership.

@@ -3,7 +3,7 @@ title: 'TODO: Add jump editor directive for code block navigation'
 priority: Medium
 effort: 4-8h
 created: 2026-03-14
-issue: https://github.com/andorthehood/8f4e/issues/400
+issue: https://github.com/8f4e/8f4e/issues/400
 status: Open
 completed: null
 ---
