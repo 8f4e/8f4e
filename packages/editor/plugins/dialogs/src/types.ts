@@ -6,5 +6,4 @@ export type DialogButtonLayout = DialogButton & Position & Size;
 export interface DialogLayout extends Omit<DialogContent, 'buttons'>, Position, Size {
 	wrappedText: string[];
 	buttons: DialogButtonLayout[];
-	highlightedButton: number;
 }

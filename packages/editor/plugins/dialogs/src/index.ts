@@ -25,10 +25,6 @@ export const dialogsPlugin: EditorPlugin = {
 				) ?? -1
 			);
 		};
-		const onPointerMove = (event: InternalPointerEvent) => {
-			const index = findButton(event);
-			if (layout) layout.highlightedButton = index === -1 ? Infinity : index;
-		};
 		const onPointerDown = (event: InternalPointerEvent) => {
 			const buttonIndex = findButton(event);
 			if (!layout || buttonIndex === -1) return;
@@ -40,7 +36,6 @@ export const dialogsPlugin: EditorPlugin = {
 		store.subscribe('dialogStack', updateLayout);
 		events.on('resize', updateLayout);
 		events.on('gridSizeChanged', updateLayout);
-		events.on('dialogPointerMove', onPointerMove);
 		events.on('dialogPointerDown', onPointerDown);
 		updateLayout();
 		return () => {
@@ -48,7 +43,6 @@ export const dialogsPlugin: EditorPlugin = {
 			store.unsubscribe('dialogStack', updateLayout);
 			events.off('resize', updateLayout);
 			events.off('gridSizeChanged', updateLayout);
-			events.off('dialogPointerMove', onPointerMove);
 			events.off('dialogPointerDown', onPointerDown);
 			layout = undefined;
 		};

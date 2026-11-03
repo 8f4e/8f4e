@@ -162,9 +162,9 @@ the visible dialog's content. Buttons specify `title`, optional `action`/`payloa
 The editor closes a dialog before dispatching its button action by default.
 
 Modal input is blocked by the editor even without a drawing plugin. The editor forwards completed presses through
-`dialogPointerDown` and pointer moves through `dialogPointerMove`. The dialogs plugin resolves its private button
-geometry and requests `activateDialogButton` with `{ id, buttonIndex }`; the editor validates the top dialog and
-runs the button action. Capture-only input probes do not activate dialogs. Default and minimal compositions
+`dialogPointerDown`. The dialogs plugin resolves its private button geometry and requests `activateDialogButton`
+with `{ id, buttonIndex }`; the editor checks the visible dialog and runs the button action. Capture-only input
+probes do not activate dialogs. Default and minimal compositions
 install the presentation plugin through their deferred registries. Custom compositions must install it to show dialogs.
 
 Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`

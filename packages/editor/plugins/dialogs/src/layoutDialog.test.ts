@@ -31,6 +31,10 @@ describe('dialog layout', () => {
 		expect(layout.title.length).toBeLessThanOrEqual(textWidth);
 		for (const line of layout.wrappedText) expect(line.length).toBeLessThanOrEqual(textWidth);
 		expect(new Set(layout.buttons.map(button => button.y)).size).toBeGreaterThan(1);
+		const rows = [...new Map(layout.buttons.map(button => [button.y, button])).values()];
+		for (let index = 1; index < rows.length; index++) {
+			expect(rows[index].y - (rows[index - 1].y + rows[index - 1].height)).toBe(16);
+		}
 		for (const button of layout.buttons) {
 			expect(button.x).toBeGreaterThanOrEqual(8);
 			expect(button.x + button.width).toBeLessThanOrEqual(layout.width - 8);

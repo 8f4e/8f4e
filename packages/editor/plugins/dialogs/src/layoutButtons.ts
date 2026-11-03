@@ -54,7 +54,7 @@ export default function layoutButtons(
 	const laidOutButtons = rows.flatMap((row, rowIndex) => {
 		const rowWidth = row.reduce((width, button) => width + button.width, 0) + (row.length - 1) * buttonGap;
 		let x = dialogWidth - vGrid - rowWidth;
-		const y = (textLineCount + 4 + rowIndex * BUTTON_HEIGHT_GRID_CELLS) * hGrid;
+		const y = (textLineCount + 4 + rowIndex * (BUTTON_HEIGHT_GRID_CELLS + BUTTON_GAP_GRID_CELLS)) * hGrid;
 
 		return row.map(button => {
 			const layout: DialogButtonLayout = {
@@ -68,5 +68,8 @@ export default function layoutButtons(
 		});
 	});
 
-	return { buttons: laidOutButtons, heightInGridRows: rows.length * BUTTON_HEIGHT_GRID_CELLS };
+	return {
+		buttons: laidOutButtons,
+		heightInGridRows: rows.length * BUTTON_HEIGHT_GRID_CELLS + (rows.length - 1) * BUTTON_GAP_GRID_CELLS,
+	};
 }

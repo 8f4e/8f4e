@@ -28,9 +28,10 @@ while a dialog is open. A dialog opened before plugin installation is presented 
 `state.dialogStack` contains original `DialogContent` values; `state.dialog` contains the original top dialog's
 content, or empty content when the stack is empty. Neither contains calculated geometry or clipped labels.
 The plugin caches presentation data per editor and refreshes it when the stack, viewport size, or font grid changes.
+Wrapped button rows have a one-cell vertical gap, which contributes to the dialog height.
 
-The editor forwards modal pointer input through `dialogPointerDown` and `dialogPointerMove`. The plugin finds a
-button using its cached geometry and dispatches `activateDialogButton` with `{ id, buttonIndex }`. The editor
+The editor forwards completed modal presses through `dialogPointerDown`. The plugin finds a button using its
+cached geometry and dispatches `activateDialogButton` with `{ id, buttonIndex }`. The editor
 validates that this identifies the visible dialog and handles closing and action dispatch. Capture-only touch
 probes never activate buttons.
 

@@ -24,7 +24,6 @@ export default function layoutDialog(dialog: DialogContent, viewport: Viewport):
 		title: dialog.title.slice(0, textWidth),
 		wrappedText,
 		buttons: buttonLayout.buttons,
-		highlightedButton: Infinity,
 		width,
 		height,
 		x: Math.round((viewport.width - width) / 2 / vGrid) * vGrid,

@@ -28,7 +28,7 @@
 
 ## Plugins
 - Keep dialog content, the stack, opening/closing, button actions, and modal input blocking in editor-state.
-  Forward completed modal presses/moves through `dialogPointerDown`/`dialogPointerMove`; validate
+  Forward completed modal presses through `dialogPointerDown`; check
   `activateDialogButton { id, buttonIndex }` against the visible dialog. `editor-plugin-dialogs` owns private
   presentation geometry, hit testing, and drawing. Web-ui provides `registerModalOverlay` after ordinary overlays,
   independently of `canvasOverlays`.

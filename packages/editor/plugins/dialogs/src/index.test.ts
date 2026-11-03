@@ -74,6 +74,34 @@ describe('dialogs plugin', () => {
 		expect(test.state.dialogStack).toEqual([]);
 	});
 
+	it('leaves gaps between wrapped rows inactive while preserving button actions', () => {
+		const test = setup();
+		const allow = vi.fn();
+		test.events.on('allowAudio', allow);
+		test.events.dispatch('resize', { canvasWidth: 320, canvasHeight: 768 });
+		test.events.dispatch('addDialog', {
+			...content,
+			buttons: [{ title: 'Cancel' }, { title: 'More information' }, { title: 'Allow audio', action: 'allowAudio' }],
+		});
+		test.render();
+		const [originX, originY] = test.draw.startGroup.mock.calls.at(-1)!;
+		const buttons = test.draw.drawFill.mock.calls.filter(([, , color]) => color === PALETTE_INDICES.selectionSurface);
+		const [first, second, third] = buttons;
+		expect(second[1] - first[1] - first[4]).toBe(16);
+		const gapPress = { x: originX + first[0] + 1, y: originY + first[1] + first[4] + 8, stopPropagation: false };
+		test.events.dispatch('pointerdown', gapPress);
+		expect(gapPress.stopPropagation).toBe(true);
+		expect(test.state.dialogStack).toHaveLength(1);
+		expect(allow).not.toHaveBeenCalled();
+		test.events.dispatch('pointerdown', {
+			x: originX + third[0] + 1,
+			y: originY + third[1] + 1,
+			stopPropagation: false,
+		});
+		expect(allow).toHaveBeenCalledOnce();
+		expect(test.state.dialogStack).toEqual([]);
+	});
+
 	it('uses only the visible dialog and ignores capture probes and clicks outside buttons', () => {
 		const test = setup(content);
 		const allow = vi.fn();

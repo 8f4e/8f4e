@@ -16,7 +16,7 @@ import type {
 	ProjectLevel,
 	TypedValueKind,
 } from './features/code-blocks/types';
-import type { ActivateDialogButtonEvent, DialogButton, DialogContent, DialogState } from './features/dialog/types';
+import type { ActivateDialogButtonEvent, DialogButton, DialogContent } from './features/dialog/types';
 import type {
 	EditorConfig,
 	EditorConfigSchemaContributionRegistry,
@@ -67,7 +67,6 @@ export type {
 	ContextMenuItem,
 	DialogButton,
 	DialogContent,
-	DialogState,
 	EventDispatcher,
 	EventDispatchOptions,
 	EventSubscriptionOptions,
@@ -186,7 +185,7 @@ export interface State {
 		compilationErrors: CodeError[];
 		editorDirectiveErrors: CodeError[];
 	};
-	dialog: DialogState;
+	dialog: DialogContent;
 	dialogStack: DialogContent[];
 	viewport: Viewport;
 	viewportAnimation: ViewportAnimation;

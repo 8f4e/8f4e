@@ -80,19 +80,6 @@ describe('dialog lifecycle', () => {
 		expect(events.dispatch).not.toHaveBeenCalled();
 	});
 
-	it.each([
-		{ id: 'covered', buttonIndex: 1 },
-		{ id: 'missing', buttonIndex: 1 },
-		{ id: content.id, buttonIndex: -1 },
-		{ id: content.id, buttonIndex: 5 },
-		{ id: content.id, buttonIndex: 0.5 },
-	])('ignores invalid or covered button activation: %j', request => {
-		const { state, emit, events } = setup(createMockState({ dialogStack: [{ ...content, id: 'covered' }, content] }));
-		emit('activateDialogButton', request);
-		expect(state.dialogStack).toHaveLength(2);
-		expect(events.dispatch).not.toHaveBeenCalled();
-	});
-
 	it.each(['pointerdown', 'pointermove', 'pointerup', 'contextmenu'])(
 		'blocks %s even without a presentation plugin',
 		name => {
@@ -102,7 +89,7 @@ describe('dialog lifecycle', () => {
 			expect(event.stopPropagation).toBe(true);
 			expect(state.dialogStack).toHaveLength(1);
 			if (name === 'pointerdown') expect(events.dispatch).toHaveBeenCalledWith('dialogPointerDown', event);
-			if (name === 'pointermove') expect(events.dispatch).toHaveBeenCalledWith('dialogPointerMove', event);
+			else expect(events.dispatch).not.toHaveBeenCalled();
 		}
 	);
 

@@ -1,12 +1,13 @@
 # Dialogs Plugin
 
-- Own dialog sizing, text wrapping/title clipping, button layout and hit testing, hover state, and drawing here.
-- Keep derived geometry private to each plugin installation. Editor-state owns `DialogContent`, `DialogState`,
-  the stack, add/remove/clear operations, button actions, and modal input blocking.
-- Use editor-forwarded `dialogPointerDown`/`dialogPointerMove` events. Request button activation through
+- Own dialog sizing, text wrapping/title clipping, button layout and hit testing, and drawing here.
+- Keep derived geometry private to each plugin installation. Editor-state owns `DialogContent`, the stack,
+  add/remove/clear operations, button actions, and modal input blocking.
+- Use editor-forwarded `dialogPointerDown` events. Request button activation through
   `activateDialogButton` with `{ id, buttonIndex }`; the editor resolves the active button and its close behavior.
   Do not activate buttons during capture-only touch probes or subscribe directly to DOM input.
 - Register through `registerModalOverlay`, above ordinary canvas overlays and independent of `canvasOverlays`.
+- Separate wrapped button rows by one vertical grid cell and include those gaps in the dialog height.
 - Read existing dialogs on setup and refresh cached layout after stack changes, resize, and `gridSizeChanged`.
   Keep layout calculation out of the frame path. Dispose all subscriptions, input listeners, and the drawer.
 - Both compositions import `dialogsPlugin` unconditionally through their deferred registries after core's `ready` event.

@@ -12,9 +12,6 @@ export interface DialogContent {
 	buttons: DialogButton[];
 }
 
-/** Content of the top dialog, independent of its presentation. */
-export type DialogState = DialogContent;
-
 export interface ActivateDialogButtonEvent {
 	id: string;
 	buttonIndex: number;
