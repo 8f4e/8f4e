@@ -1,16 +1,12 @@
+import type { CodeBlockDrawerContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { State } from '@8f4e/editor-state-types';
-import type { DrawContext } from '../../drawContext';
 
 const OUTLINE_STEP_DURATION_MS = 80;
 
-export default function drawSelectedOutline(
-	engine: DrawContext,
-	state: State,
-	codeBlockWidth: number,
-	codeBlockHeight: number,
-	now = performance.now()
-): void {
+export default function drawSelectionAnimation({ draw, state, codeBlock }: CodeBlockDrawerContext): void {
+	if (state.codeBlockRendering.selectedCodeBlock !== codeBlock) return;
+	const { width: codeBlockWidth, height: codeBlockHeight } = codeBlock;
+	const now = performance.now();
 	const { vGrid, hGrid } = state.viewport;
 	const leftX = -vGrid * 2;
 	const rightX = codeBlockWidth + vGrid;
@@ -66,6 +62,6 @@ export default function drawSelectedOutline(
 							: '-'
 					: '|';
 
-		engine.drawText(x, y, character, color);
+		draw.drawText(x, y, character, color);
 	}
 }

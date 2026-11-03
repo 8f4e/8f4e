@@ -25,7 +25,8 @@ releases reloadable GPU textures, dynamic buffers, and the canvas drawing buffer
 resources and applies any canvas resize that happened while they were released.
 `renderFrame()` immediately renders the current state, including while the animation loop is paused.
 
-The editor supports view and edit modes. Selected code blocks have a continuously animated outline in both modes.
+The editor supports view and edit modes. `@8f4e/editor-plugin-selection-animation` supplies the continuously circling
+segment around selected code blocks in both modes.
 Keyboard navigation, text editing, and mode switching are supplied by independent plugins composed by the host.
 Core retains project editing APIs, history, generic mode actions, and shared text/pointer geometry. The editing plugin
 owns edit-mode caret movement and drawing. Core installs no keyboard listeners.
@@ -129,13 +130,14 @@ Contribution changes preserve source, selection, project revision, and compiler 
 use their requests when opened. The lazy loader only imports and installs plugins; it has no layout refresh policy.
 
 Register foreground drawings with `drawers.registerCodeBlockForegroundDrawer(drawer)`. They run above content and
-shapes, before the selection outline and diagnostics, in block coordinates. The editing plugin uses this stage for
-its caret; core owns no caret glyph or keyboard direction policy.
+shapes, before diagnostics, in block coordinates. The editing plugin uses this stage for its caret, and
+`@8f4e/editor-plugin-selection-animation` draws the circling segment around the selected block. Core owns neither
+drawing and retains generic selection state and geometry.
 
 Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
 `{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
 the host applies viewport translation and visibility checks. Drawers run in registration order after foreground
-drawings, the selected-block outline, and diagnostics. Register overlays with
+drawings and diagnostics. Register overlays with
 `drawers.registerCodeBlockOverlay(drawer)` to draw after ordinary block drawers, using the same context and coordinates.
 Each slot preserves registration order. Use the drawing surface's text/fill primitives and shared numeric palette indices.
 `@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's

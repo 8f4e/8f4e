@@ -80,6 +80,7 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 `@8f4e/editor-plugin-switch` for the switch widget, `@8f4e/editor-plugin-button` for momentary buttons,
 `@8f4e/editor-plugin-wave` for waveform displays, `@8f4e/editor-plugin-piano` for piano keyboards,
 `@8f4e/editor-plugin-slider` for sliders,
+`@8f4e/editor-plugin-selection-animation` for the circling selected-block segment,
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
 `@8f4e/editor-plugin-project-open` for opening projects, `@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.

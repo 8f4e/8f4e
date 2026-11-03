@@ -68,10 +68,8 @@ entryEnd`),
 		expect(second.x).toBe(secondX + state.viewport.vGrid);
 		mouse('contextmenu', first.x - state.viewport.x + 8, first.y - state.viewport.y + 8);
 		await expect.poll(() => state.contextMenu.items.some(item => item.action === 'setGroupNonstick')).toBe(true);
-		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('grouping-menu');
-		now.mockRestore();
 		const index = state.contextMenu.items.findIndex(item => item.action === 'setGroupNonstick');
 		const menuX = state.contextMenu.x - state.viewport.x + 8;
 		const menuY = state.contextMenu.y - state.viewport.y + index * state.viewport.hGrid + 8;

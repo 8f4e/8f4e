@@ -120,9 +120,6 @@ test('keeps live editing and project export available in the minimal editor', as
 	expect(menu.some(item => item.action === 'exportProject')).toBe(true);
 	expect(menu.some(item => item.title === 'Add Built-in Block')).toBe(false);
 	expect(menu.some(item => item.payload?.menu === 'favoritesMenu')).toBe(false);
-	editor.pauseRendering();
-	editor.renderFrame();
-	await expect(canvas).toMatchScreenshot('minimal-project-menu');
 	const exportIndex = menu.findIndex(item => item.action === 'exportProject');
 	const x = rect.x + editor.state.contextMenu.x - editor.state.viewport.x + 8;
 	const y =

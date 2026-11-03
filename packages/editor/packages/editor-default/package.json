@@ -48,6 +48,7 @@
     "@8f4e/editor-plugin-remove-memory-connections": "*",
     "@8f4e/editor-plugin-binary-assets": "*",
     "@8f4e/editor-plugin-assertion-markers": "*",
+    "@8f4e/editor-plugin-selection-animation": "*",
     "@8f4e/editor-plugin-midi-input": "*",
     "@8f4e/editor-plugin-keyboard-memory": "*",
     "@8f4e/editor-plugin-example-modules": "*",

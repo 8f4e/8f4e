@@ -5,7 +5,6 @@ import type { MemoryViews } from '../../types';
 import type { EditorDrawerHost } from '../registry';
 import drawArrow from './drawArrow';
 import drawEntryOutlines from './drawEntryOutlines';
-import drawSelectedOutline from './drawSelectedOutline';
 import drawShapeDeclarations from './drawShapeDeclarations';
 import drawBlockHighlights from './widgets/blockHighlights';
 import drawErrorMessages from './widgets/errorMessages';
@@ -68,10 +67,6 @@ export default function drawModules(
 			drawShapeDeclarations(engine, codeBlock);
 
 			drawers?.drawCodeBlockForeground({ draw: engine, state, codeBlock, memoryViews });
-
-			if (state.codeBlockRendering.selectedCodeBlock === codeBlock) {
-				drawSelectedOutline(engine, state, codeBlock.width, codeBlock.height);
-			}
 
 			drawErrorMessages(engine, state, codeBlock);
 			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });

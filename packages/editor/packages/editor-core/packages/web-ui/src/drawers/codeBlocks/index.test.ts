@@ -1,6 +1,6 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { DrawContext as Engine } from '../../drawContext';
 import type { MemoryViews } from '../../types';
 import { createEditorDrawerRegistry } from '../registry';
@@ -71,45 +71,6 @@ describe('drawModules', () => {
 		drawModules(engine, state, memoryViews, drawers);
 		expect(calls).toEqual(['content', 'foreground', 'first', 'second', 'overlay', 'second']);
 		expect(first).toHaveBeenCalledOnce();
-	});
-
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
-
-	it.each(['view', 'edit'] as const)('draws an animated outline only for the selected block in %s mode', editorMode => {
-		const selectedBlock = createMockCodeBlock({ creationIndex: 0, width: 96, height: 64 });
-		const otherBlock = createMockCodeBlock({ creationIndex: 1, x: 160, width: 96, height: 64 });
-		const state = createMockState({
-			editorMode,
-			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [selectedBlock, otherBlock] },
-				selectedCodeBlock: selectedBlock,
-			},
-		});
-		const engine = createMockEngine();
-		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
-		const outlineCalls = () => vi.mocked(engine.drawText).mock.calls.filter(call => call[2] !== '+');
-
-		drawModules(engine, state, createMemoryViews());
-		const initialOutline = outlineCalls();
-		expect(initialOutline).toHaveLength(4);
-
-		vi.mocked(engine.drawText).mockClear();
-		now.mockReturnValue(80);
-		drawModules(engine, state, createMemoryViews());
-		expect(outlineCalls()).toHaveLength(4);
-		expect(outlineCalls()).not.toEqual(initialOutline);
-
-		vi.mocked(engine.drawText).mockClear();
-		state.codeBlockRendering.selectedCodeBlock = otherBlock;
-		drawModules(engine, state, createMemoryViews());
-		expect(outlineCalls()).toHaveLength(4);
-
-		vi.mocked(engine.drawText).mockClear();
-		state.codeBlockRendering.selectedCodeBlock = undefined;
-		drawModules(engine, state, createMemoryViews());
-		expect(outlineCalls()).toHaveLength(0);
 	});
 
 	it('draws content above highlights and below foreground drawings and diagnostics', () => {

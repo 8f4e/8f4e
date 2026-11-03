@@ -103,6 +103,7 @@ describe('default editor plugins', () => {
 				'font-preview',
 				'code-rendering',
 				'connectors',
+				'selection-animation',
 				'tooltips',
 				'favorites',
 				'project-file-session',
