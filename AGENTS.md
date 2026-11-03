@@ -63,6 +63,8 @@
   under the package root.
 - Builds: the website outputs to `packages/editor/packages/editor-website/dist/`. Package bundles are consumed via
   aliases like `@8f4e/editor-default` and `@8f4e/editor-core`.
+- The editor website owns PWA installation and offline caching. Precache the complete production build while keeping
+  plugin/font imports lazy. Register after mounting, retain COOP/COEP on cached pages, and apply updates on request.
 - Package builds clear their own `dist/` before emitting output. Plain TypeScript builds use `rm -rf dist && tsc`.
   Mixed builds clean once before the first emitter so later TypeScript or Vite steps preserve earlier assets and declarations.
 - Docs and assets: `docs/`, selected files copied via Vite static-copy.
@@ -82,6 +84,8 @@
 - `npx nx run @8f4e/editor-website:dev`: Builds packages (watch) and starts Vite on `http://localhost:3000`.
 - `npx nx run @8f4e/editor-website:serve`: Serves the production build via `vite preview`.
 - `npx nx run @8f4e/editor-website:build`: Builds the default composition and website production bundle.
+- `npx nx run @8f4e/editor-website:test:browser`: Tests the production PWA cache, offline startup/lazy loading, runtime
+  execution, session restoration, and updates in desktop Chromium and Android touch emulation on port 3103.
 - `npx nx run @8f4e/8f4e-website:dev`: Starts the example product website on `http://localhost:3001`.
 - `npx nx run @8f4e/8f4e-website:build`: Builds the example product website and its editor dependencies.
 - `npx nx run @8f4e/editor-default:test:screenshot`: Runs real-plugin browser composition tests for lazy loading,

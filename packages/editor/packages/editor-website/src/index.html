@@ -3,6 +3,7 @@
 
 <head>
 	<meta name="viewport" content="width=device-width, user-scalable=no">
+	<meta name="theme-color" content="#000000">
 	<link rel="icon" href="/favicon.ico">
 	<style>
 		* {
@@ -27,12 +28,40 @@
 			image-rendering: pixelated;
 			outline: none;
 		}
+
+		#pwa-notice {
+			position: fixed;
+			bottom: max(12px, env(safe-area-inset-bottom));
+			left: 12px;
+			right: 12px;
+			width: fit-content;
+			max-width: calc(100% - 48px);
+			padding: 12px;
+			border: 1px solid #ffffff;
+			color: #ffffff;
+			font: 14px/1.5 monospace;
+		}
+
+		#pwa-notice button {
+			margin-top: 8px;
+			margin-right: 8px;
+			padding: 8px 12px;
+			border: 1px solid #ffffff;
+			color: #ffffff;
+			font: inherit;
+			cursor: pointer;
+		}
 	</style>
 	<title>8f4e</title>
 </head>
 
 <body>
 	<canvas id="glcanvas" tabindex="0"></canvas>
+	<aside id="pwa-notice" aria-label="Offline support" hidden>
+		<p id="pwa-message" role="status"></p>
+		<button id="pwa-reload" type="button" hidden>Reload</button>
+		<button id="pwa-dismiss" type="button">Dismiss</button>
+	</aside>
 	<script src="./main.ts" type="module"></script>
 </body>
 

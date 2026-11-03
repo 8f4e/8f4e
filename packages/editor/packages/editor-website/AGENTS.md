@@ -9,6 +9,12 @@
   than building or watching every workspace project.
 - Bind the dev server to `0.0.0.0` so phones on the same network can access port 3000.
 - Run `npx nx run @8f4e/editor-website:build` after changing this package.
+- PWA installation, registration, notifications, and precaching belong in this host. Keep editor plugin/font imports
+  lazy; cache all emitted application assets without executing optional modules at startup. Register only after mounting
+  in production, preserve COOP/COEP headers offline, and wait for user-requested reloads before applying updates.
+- Run `npx nx run @8f4e/editor-website:test:browser` for production PWA checks with desktop Chromium and Android touch
+  emulation. Playwright uses port 3103 with strict binding. Keep browser artifacts in the ignored `.playwright-results/`.
+- Full `typecheck` includes browser tests. Builds depend on `typecheck:production`, which excludes tests.
 
 - Start mounting from an async function without top-level await. Production lazy chunks may import shared exports
   from the entry module; awaiting their imports during entry evaluation can deadlock startup.
