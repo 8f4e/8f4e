@@ -1,0 +1,65 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+Fixed references select typed memory declarations by index, independently of their byte size.
+noteEnd
+
+entry test
+module memories
+int[] integers 3 42 43 44
+float signal 1.5
+float64 precise 16777217.0f64
+int8[] signedBytes 3 -128 1 2
+int8u[] unsignedBytes 2 255 7
+int16[] signedWords 2 -32768 3
+int16u[] unsignedWords 2 65535 4
+moduleEnd
+
+module references
+int& start &memories:0
+int& namedStart &memories:integers
+float& signal &memories:1
+float64& precise &memories:2
+int8& signedByte &memories:3
+int8u& unsignedByte &memories:4
+int16& signedWord &memories:5
+int16u& unsignedWord &memories:6
+int& localValue &this:0
+int value 17
+
+push start
+assertEqual namedStart
+push *start
+assertEqual 42
+push *signal
+assertEqual 1.5
+push *precise
+assertEqual 16777217.0f64
+push *signedByte
+assertEqual -128
+push *unsignedByte
+assertEqual 255
+push *signedWord
+assertEqual -32768
+push *unsignedWord
+assertEqual 65535
+push *localValue
+assertEqual 17
+
+push count(*start)
+assertEqual 3
+push sizeof(*precise)
+assertEqual 8
+push min(*signedByte)
+assertEqual -128
+push max(*unsignedWord)
+assertEqual 65535
+
+push start
+push 99
+store
+push *start
+assertEqual 99
+moduleEnd
+entryEnd

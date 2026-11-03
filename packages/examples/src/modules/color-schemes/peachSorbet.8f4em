@@ -1,0 +1,18 @@
+8f4e/v1
+
+note peachSorbetColors
+; @public
+; @config color.canvas #ffe2cc
+; @config color.surface #fff7e6
+; @config color.ink #33324f
+; @config color.primary #ec6b91
+; @config color.secondary #3a93c9
+; @config color.positive #62a86c
+; @config color.warning #e5ac35
+; @config color.negative #dc4b5c
+; @config color.muted #9a7883
+; @config color.stroke rgba(74,79,125,0.65)
+; @config color.tertiary #a06a46
+; @config color.highlight #ffd05b
+; @config color.detail #81cbd5
+noteEnd

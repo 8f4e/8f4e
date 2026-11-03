@@ -182,8 +182,14 @@
       "id": "copy__float_p__float_p",
       "signature": {
         "parameters": [
-          "float*",
-          "float*",
+          {
+            "name": "source",
+            "type": "float*",
+          },
+          {
+            "name": "dest",
+            "type": "float*",
+          },
         ],
         "returns": [],
       },
@@ -192,8 +198,14 @@
       "id": "copy__int_p__int_p",
       "signature": {
         "parameters": [
-          "int*",
-          "int*",
+          {
+            "name": "source",
+            "type": "int*",
+          },
+          {
+            "name": "dest",
+            "type": "int*",
+          },
         ],
         "returns": [],
       },
@@ -220,6 +232,26 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
+              "value": "copySourceSource",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "source",
+              "targetModuleId": "copySource",
+              "type": "identifier",
+              "value": "&copySource:source",
+            },
+          ],
+          "instruction": "float&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
               "value": "dest",
             },
             {
@@ -239,13 +271,10 @@
               "value": "copy",
             },
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "source",
-              "targetModuleId": "copySource",
+              "referenceKind": "plain",
+              "scope": "local",
               "type": "identifier",
-              "value": "&copySource:source",
+              "value": "copySourceSource",
             },
             {
               "isEndAddress": false,

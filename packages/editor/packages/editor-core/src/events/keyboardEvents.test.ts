@@ -1,3 +1,4 @@
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -58,11 +59,11 @@ describe('keyboardEvents mode switching', () => {
 		inputTarget = createMockInputTarget();
 
 		featureFlags = {
+			...createMockState().featureFlags,
 			contextMenu: true,
 			moduleDragging: true,
 			codeLineSelection: false,
 			viewportDragging: true,
-			editing: false,
 			modeToggling: true,
 			historyTracking: true,
 		};
@@ -74,21 +75,8 @@ describe('keyboardEvents mode switching', () => {
 		};
 
 		store = {
-			getState: () => ({ featureFlags, editorMode }) as State,
+			getState: () => createMockState({ featureFlags, editorMode }),
 		} as unknown as StateManager<State>;
-	});
-
-	it.each(['ctrlKey', 'metaKey'] as const)('saves the project with %s+S', modifier => {
-		const cleanup = keyboardEvents(inputTarget as unknown as HTMLElement, events, store);
-		const event = createKeyboardEventLike('S');
-		Object.assign(event, { [modifier]: true });
-
-		inputTarget.emit('keydown', event);
-
-		expect(events.dispatch).toHaveBeenCalledWith('saveProject');
-		expect(events.dispatch).not.toHaveBeenCalledWith('saveSession');
-		expect(event.preventDefault).toHaveBeenCalledOnce();
-		cleanup();
 	});
 
 	it('enters edit mode when e is pressed in view mode', () => {

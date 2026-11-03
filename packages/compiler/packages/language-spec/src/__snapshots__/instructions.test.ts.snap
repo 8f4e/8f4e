@@ -105,9 +105,6 @@ exports[`instruction block classification > snapshots derived block tables 1`] =
     "notEqual",
     "sub",
   ],
-  "compiledModuleBlockTypes": [
-    "module",
-  ],
   "compilerBlockInstructionPairs": [
     {
       "end": "blockEnd",

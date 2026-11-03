@@ -114,7 +114,7 @@ constantsEnd
 
 note
 ; @pos 8 8
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 ; @home top
 Pure functions should compile,
 expose stable signatures in

@@ -1,14 +1,12 @@
+import type { EventDispatcher, EventSubscriptionOptions } from '@8f4e/editor-state-types';
+
 export type EventHandler<T> = (event: T) => void;
 
 export interface EventObject {
 	stopPropagation?: boolean;
 }
 
-export interface EventDispatcher {
-	on: <T>(eventName: string, callback: EventHandler<T>) => void;
-	off: <T>(eventName: string, callback: EventHandler<T>) => void;
-	dispatch: <T>(eventName: string, eventObject?: T) => void;
-}
+export type { EventDispatcher } from '@8f4e/editor-state-types';
 
 interface DisposableEventDispatcher extends EventDispatcher {
 	dispose: () => void;
@@ -18,37 +16,40 @@ interface DisposableEventDispatcher extends EventDispatcher {
 export type { InternalKeyboardEvent, InternalMouseEvent } from '@8f4e/editor-state-types';
 
 export default function events(): DisposableEventDispatcher {
-	const subscriptions: Record<string, EventHandler<unknown>[]> = {};
+	const subscriptions: Record<string, { capture: EventHandler<unknown>[]; normal: EventHandler<unknown>[] }> = {};
 
-	function on<T>(eventName: string, callback: EventHandler<T>): void {
+	function on<T>(eventName: string, callback: EventHandler<T>, options: EventSubscriptionOptions = {}): void {
 		if (!subscriptions[eventName]) {
-			subscriptions[eventName] = [];
+			subscriptions[eventName] = { capture: [], normal: [] };
 		}
-		subscriptions[eventName].push(callback as EventHandler<unknown>);
+		subscriptions[eventName][options.capture ? 'capture' : 'normal'].push(callback as EventHandler<unknown>);
 	}
 
 	function off<T>(eventName: string, callback: EventHandler<T>): void {
-		if (subscriptions[eventName]?.indexOf(callback as EventHandler<unknown>) === -1) {
-			return;
+		const listeners = subscriptions[eventName];
+		if (!listeners) return;
+		for (const handlers of [listeners.capture, listeners.normal]) {
+			const index = handlers.indexOf(callback as EventHandler<unknown>);
+			if (index !== -1) handlers.splice(index, 1);
 		}
-		subscriptions[eventName]?.splice(subscriptions[eventName].indexOf(callback as EventHandler<unknown>), 1);
 	}
 
 	function dispatch<T>(type: string, eventObject?: T): void {
 		if (!subscriptions[type]) {
 			return console.warn('No subscription to event type:', type);
 		}
-		for (let i = 0; i < subscriptions[type].length; i++) {
-			if (eventObject && (eventObject as EventObject).stopPropagation) {
-				return;
+		for (const handlers of [subscriptions[type].capture, subscriptions[type].normal]) {
+			for (const handler of [...handlers]) {
+				if (eventObject && (eventObject as EventObject).stopPropagation) return;
+				handler(eventObject);
 			}
-			subscriptions[type][i](eventObject);
 		}
 	}
 
 	function dispose(): void {
-		for (const handlers of Object.values(subscriptions)) {
-			handlers.length = 0;
+		for (const listeners of Object.values(subscriptions)) {
+			listeners.capture.length = 0;
+			listeners.normal.length = 0;
 		}
 	}
 

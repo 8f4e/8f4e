@@ -250,8 +250,14 @@
       "id": "gateToTrigger__float__float_p",
       "signature": {
         "parameters": [
-          "float",
-          "float*",
+          {
+            "name": "gate",
+            "type": "float",
+          },
+          {
+            "name": "previousGate",
+            "type": "float*",
+          },
         ],
         "returns": [
           "int",
@@ -262,8 +268,14 @@
       "id": "gateToTrigger__int__int_p",
       "signature": {
         "parameters": [
-          "int",
-          "int*",
+          {
+            "name": "gate",
+            "type": "int",
+          },
+          {
+            "name": "previousGate",
+            "type": "int*",
+          },
         ],
         "returns": [
           "int",

@@ -1,8 +1,6 @@
 import type { AssertionSite, CompileResult, ProjectObjectModel } from '@8f4e/language-spec';
 import { ASSERTION_IMPORT_NAMES, WASM_MEMORY_PAGE_SIZE } from '@8f4e/language-spec';
 
-export { IGNORED_ASSERTION_IMPORTS } from './ignoredAssertionImports';
-
 /** One invocation; loops can execute the same static site several times. */
 export type TestAssertionResult = {
 	assertIndex: number;
@@ -18,13 +16,8 @@ export type TestRunInput = TestProgram &
 
 /** Detects an enabled test entry or a root function exported as `test`. */
 export function hasTestEntry(project: ProjectObjectModel): boolean {
-	function hasTestModules(project: ProjectObjectModel): boolean {
-		return (
-			project.modules.some(block => !block.disabled && block.entry === 'test') || project.groups.some(hasTestModules)
-		);
-	}
 	return (
-		hasTestModules(project) ||
+		project.entries.includes('test') ||
 		project.functions.some(block => {
 			if (block.disabled) return false;
 			const [openingLine, ...body] = block.code.map(line => line.split(';')[0].trim());

@@ -721,8 +721,14 @@
       "id": "addParamsWithLocal__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
+          {
+            "name": "y",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -733,8 +739,14 @@
       "id": "addParams__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
+          {
+            "name": "y",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -745,8 +757,14 @@
       "id": "calculateArea__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "width",
+            "type": "int",
+          },
+          {
+            "name": "height",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -757,9 +775,18 @@
       "id": "mixedAll__int__float__float64",
       "signature": {
         "parameters": [
-          "int",
-          "float",
-          "float64",
+          {
+            "name": "intVal",
+            "type": "int",
+          },
+          {
+            "name": "floatVal",
+            "type": "float",
+          },
+          {
+            "name": "doubleVal",
+            "type": "float64",
+          },
         ],
         "returns": [
           "float64",
@@ -779,7 +806,10 @@
       "id": "squareParam__int",
       "signature": {
         "parameters": [
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -790,8 +820,14 @@
       "id": "subtractReverse__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
+          {
+            "name": "y",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",
@@ -802,8 +838,14 @@
       "id": "useFirst__int__int",
       "signature": {
         "parameters": [
-          "int",
-          "int",
+          {
+            "name": "x",
+            "type": "int",
+          },
+          {
+            "name": "unused",
+            "type": "int",
+          },
         ],
         "returns": [
           "int",

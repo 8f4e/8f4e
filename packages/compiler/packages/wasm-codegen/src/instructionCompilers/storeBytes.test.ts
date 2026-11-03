@@ -1,7 +1,10 @@
 import { WASM_MEMORY_SIZE } from '@8f4e/compiler-wasm-utils';
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import createInstructionCompilerTestContext, { compileInstructionForTest, createStackFacts } from '../testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	createStackFacts,
+} from '../../tests/testUtils';
 import storeBytes from './storeBytes';
 
 describe('storeBytes instruction compiler', () => {

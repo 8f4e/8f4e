@@ -16,8 +16,8 @@ float dRelease 0.001
 int* trigger
 int previousTrigger
 
-float* attackRate &dAttack
-float* releaseRate &dRelease
+float& attackRate &dAttack
+float& releaseRate &dRelease
 float out
 
 int attacking 0

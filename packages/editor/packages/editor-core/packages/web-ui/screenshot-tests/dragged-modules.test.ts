@@ -1,24 +1,38 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
-import init from '@8f4e/web-ui';
-import type { CodeBlockRenderData, WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
+import loadFontAtlas from '@8f4e/sprite-generator';
+import init, { createEditorDrawerRegistry, type SpriteCell } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
-import createMockSpriteData from './utils/createMockSpriteData';
 import createMockStateWithColors from './utils/createMockStateWithColors';
-import { resolveCodeWithAllColors } from './utils/generateColorMapMock';
+import resolveFixtureCodeCells from './utils/resolveFixtureCodeCells';
 
 test('dragged module', async () => {
 	const canvas = createCanvas();
 	const mockState = await createMockStateWithColors();
 	const memoryViews = createMockMemoryViews();
-	const spriteData = await createMockSpriteData(mockState);
-	const codeBlocks = new Map<number, CodeBlockRenderData>();
-	const renderData: WebUiRenderDataSource = { getSnapshot: () => ({ codeBlocks }) };
+	const spriteData = await loadFontAtlas(mockState.editorConfig.font);
+	const codeBlocks = new Map<number, Array<Array<SpriteCell | null>>>();
+	const drawers = createEditorDrawerRegistry();
+	drawers.registerCodeBlockContentDrawer(({ draw, state, codeBlock }) => {
+		codeBlocks
+			.get(codeBlock.creationIndex)!
+			.forEach((cells, row) => draw.drawResolvedText(state.viewport.vGrid, row * state.viewport.hGrid, cells));
+	});
 
-	await init(mockState, renderData, canvas, memoryViews, spriteData);
+	const renderer = await init(
+		mockState,
+		canvas,
+		memoryViews,
+		spriteData,
+		resolvePalette(mockState.editorConfig.color),
+		{ drawers }
+	);
 
-	if (mockState.spriteLookups) {
+	try {
+		renderer.pauseRendering();
+
 		const codeLines = [
 			'',
 			'lorem ipsum dolor sit amet',
@@ -28,7 +42,7 @@ test('dragged module', async () => {
 			'quis nostrud exercitation',
 			'',
 		];
-		const codeToRender = resolveCodeWithAllColors(codeLines, mockState.spriteLookups);
+		const codeToRender = resolveFixtureCodeCells(codeLines);
 
 		const codeBlockMock = createMockCodeBlock({
 			x: 16,
@@ -39,9 +53,11 @@ test('dragged module', async () => {
 
 		mockState.codeBlockRendering.draggedCodeBlock = codeBlockMock;
 
-		mockState.codeBlockRendering.codeBlocks.push(codeBlockMock);
-		codeBlocks.set(codeBlockMock.creationIndex, { codeCells: codeToRender });
+		mockState.codeBlockRendering.currentProject.blocks.push(codeBlockMock);
+		codeBlocks.set(codeBlockMock.creationIndex, codeToRender);
+		renderer.renderFrame();
+		await expect(canvas).toMatchScreenshot();
+	} finally {
+		renderer.destroy();
 	}
-
-	await expect(canvas).toMatchScreenshot();
 });

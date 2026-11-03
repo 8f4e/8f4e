@@ -3,8 +3,10 @@ entry main
 group synth
 expose input &processor:input
 init &input &missing:output
+entry main
 module processor
 int* input
 moduleEnd
+entryEnd
 groupEnd
 entryEnd

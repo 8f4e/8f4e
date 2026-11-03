@@ -9,12 +9,20 @@
 				"{projectRoot}/src/modules/lookup-tables/sineLookupTable.8f4em",
 				"{projectRoot}/src/modules/lookup-tables/expLookupTable.8f4em",
 				"{projectRoot}/src/modules/lookup-tables/midiFreqLUT_12TET.8f4em",
-				"{projectRoot}/src/modules/lookup-tables/minBLEPLUT.8f4em",
 				"{projectRoot}/src/modules/constants/amigaPeriodIncrement.8f4em"
 			],
 			"dependsOn": ["^build"],
 			"options": {
 				"command": "node ./src/module-generators/generateModules.ts",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"generate-minblep-lut": {
+			"executor": "nx:run-commands",
+			"cache": false,
+			"outputs": ["{projectRoot}/src/modules/lookup-tables/minBLEPLUT.8f4em"],
+			"options": {
+				"command": "node ./src/module-generators/generate-minblep-lut.ts",
 				"cwd": "{projectRoot}"
 			}
 		},

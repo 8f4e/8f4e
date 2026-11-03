@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/examples",
-  "version": "3.0.2",
+  "version": "3.12.0",
   "private": true,
   "description": "8f4e example modules and projects",
   "type": "module",
@@ -21,7 +21,6 @@
   },
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
-    "@8f4e/cli": "*",
-    "@8f4e/editor-state-types": "*"
+    "@8f4e/cli": "*"
   }
 }

@@ -1,0 +1,70 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+Impure functions may use intermodular addresses and target metadata directly.
+These cases remain supported when direct pushes are removed from modules.
+noteEnd
+
+function incrementSource
+#impure
+push &source:value
+push &source:value
+load
+add 1
+store
+push &source:0
+load
+functionEnd int
+
+function readBuffer
+#impure
+param int index
+push &source:buffer
+push index
+mul sizeof(source:buffer)
+add
+load
+functionEnd int
+
+function readModuleEdges
+#impure
+push &source:
+load
+push source:&
+load
+functionEnd int int
+
+function inspectSource
+#impure
+push count(source:buffer)
+push sizeof(source:buffer)
+push min(source:bytes)
+push max(source:bytes)
+functionEnd int int int int
+
+entry test
+module source
+int value 10
+int[] buffer 3 11 22 33
+int8u[] bytes 2 7 255
+int tail 99
+moduleEnd
+
+module assertions
+call incrementSource
+assertEqual 11
+call incrementSource
+assertEqual 12
+call readBuffer 1
+assertEqual 22
+call readModuleEdges
+assertEqual 99
+assertEqual 12
+call inspectSource
+assertEqual 255
+assertEqual 0
+assertEqual 4
+assertEqual 3
+moduleEnd
+entryEnd

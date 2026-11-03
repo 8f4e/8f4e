@@ -99,6 +99,7 @@ main > img {
 }
 
 .editor-frame {
+	position: relative;
 	grid-area: editor;
 	width: 100%;
 	height: clamp(500px, 70vh, 700px);
@@ -119,6 +120,16 @@ main > img {
 
 .editor-frame > canvas.editor-ready {
 	opacity: 1;
+}
+
+.editor-load-error {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-content: center;
+	padding: 1rem;
+	font-size: 28px;
+	line-height: 1.4;
 }
 
 .editor-copy {

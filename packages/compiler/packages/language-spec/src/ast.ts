@@ -5,9 +5,8 @@ import type {
 	ArgumentLiteral,
 	ArgumentStringLiteral,
 } from './arguments';
-import { ArgumentType } from './arguments';
 import type { SourceMetadata } from './compiled';
-import type { NoSourceArgumentInstructionName } from './instructionSpecTypes';
+import type { InlineOperandInstructionName, NoSourceArgumentInstructionName } from './instructionSpecTypes';
 import type { DocumentOnlyInstructionName, SemanticInstructionName } from './instructions';
 import { semanticInstructionNames } from './instructions';
 import {
@@ -17,7 +16,8 @@ import {
 	isScalarMemoryDeclarationInstructionName,
 	type ScalarMemoryDeclarationInstruction,
 } from './memory';
-import type { ProjectGroupPath } from './project';
+import type { ProjectBlockId, ProjectGroupPath } from './project';
+import { isReferenceSlotInstruction, type ReferenceSlotInstruction } from './referenceSlots';
 
 type ClampAddressInstructionName = 'clampAddress' | 'clampModuleAddress' | 'clampGlobalAddress';
 
@@ -30,6 +30,16 @@ export type ASTLineBase<Instruction extends string, Arguments extends Array<Argu
 export type CompileTimeValueArgument = ArgumentLiteral | ArgumentIdentifier | ArgumentCompileTimeExpression;
 export type PushArgument = ArgumentLiteral | ArgumentIdentifier | ArgumentCompileTimeExpression | ArgumentStringLiteral;
 export type PushLine = ASTLineBase<'push', [PushArgument]>;
+export type ReferenceSlotAddressArgument =
+	| (Extract<ArgumentIdentifier, { referenceKind: 'memory-reference' | 'intermodular-reference' }> & {
+			isEndAddress: false;
+	  })
+	| Extract<ArgumentIdentifier, { referenceKind: 'intermodular-module-nth-reference' }>;
+export type ReferenceSlotLine = ASTLineBase<
+	ReferenceSlotInstruction,
+	[Extract<ArgumentIdentifier, { referenceKind: 'plain' }>, ReferenceSlotAddressArgument]
+>;
+export type InlineOperandLine = ASTLineBase<InlineOperandInstructionName, [] | [PushArgument]>;
 export type AssertEqualLine = ASTLineBase<'assertEqual', [CompileTimeValueArgument]>;
 
 export const BLOCK_RESULT_TYPE_IDENTIFIERS = ['int', 'float'] as const;
@@ -172,6 +182,7 @@ export type SemanticInstructionLine =
 
 type ExplicitCompilerASTLineWithoutGenericNoSource =
 	| PushLine
+	| InlineOperandLine
 	| AssertEqualLine
 	| IfLine
 	| IfEndLine
@@ -215,7 +226,8 @@ type ExplicitCompilerASTLineWithoutGenericNoSource =
 	| ImportLine
 	| SkipExecutionLine
 	| ClampAddressLine
-	| MemoryDeclarationLine;
+	| MemoryDeclarationLine
+	| ReferenceSlotLine;
 
 type GenericNoSourceArgumentInstructionName = Exclude<
 	NoSourceArgumentInstructionName,
@@ -295,12 +307,21 @@ export interface SourceBlockIdentity {
 export type ComposedAST<TAST extends ValidatedAST = ValidatedAST> = TAST & {
 	sourceIdentity: SourceBlockIdentity;
 };
-export type ComposedModuleAST = ComposedAST<ValidatedModuleAST>;
+export type ComposedModuleAST = ComposedAST<ValidatedModuleAST> & {
+	/** Stable source-block identity supplied by project composition. */
+	projectBlockId: ProjectBlockId;
+	/** Canonical identity of the owning entry, established by composition. */
+	executionEntryName: string;
+};
 export type ComposedFunctionAST = ComposedAST<ValidatedFunctionAST>;
 export type ComposedConstantsAST = ComposedAST<ValidatedConstantsAST>;
 export type ComposedPrototypeAST = ComposedAST<ValidatedPrototypeAST>;
 
 const semanticInstructionSet = new Set<string>(semanticInstructionNames);
+
+export function isReferenceSlotLine(line: CompilerASTLine): line is ReferenceSlotLine {
+	return isReferenceSlotInstruction(line.instruction);
+}
 
 /**
  * Checks whether a parsed line is a semantic instruction handled before code generation.
@@ -354,18 +375,4 @@ export function isScalarMemoryDeclarationLine(line: CompilerASTLine | undefined)
  */
 export function isArrayMemoryDeclarationLine(line: CompilerASTLine | undefined): line is ArrayMemoryDeclarationLine {
 	return line !== undefined && isArrayMemoryDeclarationInstructionName(line.instruction);
-}
-
-/**
- * Checks whether a scalar memory declaration starts with an identifier name.
- * Scalar declarations may also be anonymous literal data, so code that needs a
- * named memory binding must use this narrower guard.
- *
- * @param line - Parsed compiler AST line to inspect.
- * @returns True when the line declares named scalar memory.
- */
-export function isNamedScalarMemoryDeclarationLine(
-	line: CompilerASTLine | undefined
-): line is NamedScalarMemoryDeclarationLine {
-	return isScalarMemoryDeclarationLine(line) && line.arguments[0]?.type === ArgumentType.IDENTIFIER;
 }

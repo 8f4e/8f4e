@@ -1,0 +1,9 @@
+8f4e/v1
+entry main
+module invalid
+float[] buffer 0
+float& slot &buffer
+push *slot
+drop
+moduleEnd
+entryEnd

@@ -23,7 +23,7 @@ constantsEnd
 
 note
 ; @pos 3 2
-; @config runtime TestRuntime
+; @config testRuntime.enabled true
 
 Directive prologues are
 accepted directly after block
@@ -43,10 +43,11 @@ store
 moduleEnd
 module directiveAssertions
 ; @pos 51 16
+int& skippedDirectiveModuleValue &skippedDirectiveModule:value
+
 int output 0
 
-push &skippedDirectiveModule:value
-load
+push *skippedDirectiveModuleValue
 assertEqual 123
 
 push &output

@@ -22,10 +22,6 @@ export const scalarMemoryDeclarationInstructions = [
 
 export type ScalarMemoryDeclarationInstruction = (typeof scalarMemoryDeclarationInstructions)[number];
 
-export const MemoryTypes = Object.fromEntries(
-	scalarMemoryDeclarationInstructions.map(instruction => [instruction, instruction])
-) as { readonly [Instruction in ScalarMemoryDeclarationInstruction]: Instruction };
-
 export type MemoryType = ScalarMemoryDeclarationInstruction;
 
 export const arrayMemoryDeclarationInstructions = [

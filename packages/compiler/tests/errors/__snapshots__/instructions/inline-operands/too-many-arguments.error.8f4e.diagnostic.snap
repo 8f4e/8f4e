@@ -1,0 +1,11 @@
+{
+  "code": 2,
+  "context": {
+    "projectBlockId": 4,
+  },
+  "line": {
+    "instruction": "add",
+    "lineNumber": 2,
+  },
+  "message": "Too many arguments for add.",
+}

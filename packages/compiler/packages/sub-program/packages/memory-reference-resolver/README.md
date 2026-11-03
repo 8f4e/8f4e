@@ -29,6 +29,12 @@ The pass receives:
 
 The memory layout plan remains the source of truth while references are resolved. This package should read planned modules and declarations directly from that plan rather than converting them into compiler namespace state.
 
+Within the pass, `resolveMemoryTarget` consumes the tokenizer's structured named or indexed selectors and returns
+the canonical planned module and memory declaration. Address expressions, metadata queries, fixed reference slots,
+and group initializer destinations share this lookup, including current-module aliases and exposed group names.
+Target selection does not parse token text. Fixed slots add their own name, element-type, and non-pointer checks
+after target resolution; address expressions retain their start/end address and safe-range rules.
+
 The resolver returns pointer metadata discovered from planned memory declaration sources so later passes can use the same pointer facts without re-running memory-reference resolution.
 
 Group initializers resolve exposed scalar destinations in their owning group. Numeric literals are used directly,
@@ -43,6 +49,7 @@ initializer diagnostics retain the group's path and the initializer's source lin
 The pass returns `references`, a report containing:
 
 - `prototypes`, `modules`, `constants`, and `functions`: per-line argument facts aligned with the input AST arrays.
+- Each module's `referenceSlots`: fixed bindings with source identity and canonical targets; empty when unused.
 - `declarationSourcesByModuleId`: per-line argument facts aligned with each planned module's effective declaration sources.
 - `pointerMetadataByModuleId`: pointer target facts derived from resolved declaration-source address defaults.
 

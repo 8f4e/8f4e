@@ -1,0 +1,21 @@
+{
+  "code": 18,
+  "context": {
+    "codeBlockId": "rawIntegerPointerReturn",
+    "codeBlockType": "function",
+    "projectBlockId": 3,
+  },
+  "line": {
+    "arguments": [
+      {
+        "referenceKind": "plain",
+        "scope": "local",
+        "type": "identifier",
+        "value": "float*",
+      },
+    ],
+    "instruction": "functionEnd",
+    "lineNumber": 2,
+  },
+  "message": "Stack elements do not match function return signature. (18)",
+}

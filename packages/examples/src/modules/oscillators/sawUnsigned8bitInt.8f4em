@@ -7,7 +7,7 @@ module saw
 use env
 
 float default 1 ;Hz
-float* frequency &default
+float& frequency &default
 int out
 int8[] range8 1
 

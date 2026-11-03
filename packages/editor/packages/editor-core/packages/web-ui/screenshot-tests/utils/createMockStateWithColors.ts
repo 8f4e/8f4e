@@ -12,7 +12,7 @@ import type { State } from '@8f4e/editor-state-types';
  * @example
  * ```typescript
  * const state = await createMockStateWithColors();
- * const state = await createMockStateWithColors({ featureFlags: { editing: false } });
+ * const state = await createMockStateWithColors({ editorMode: 'view' });
  * ```
  */
 export default function createMockStateWithColors(overrides: Partial<State> = {}): State {
@@ -22,7 +22,6 @@ export default function createMockStateWithColors(overrides: Partial<State> = {}
 			moduleDragging: false,
 			codeLineSelection: true,
 			viewportDragging: false,
-			editing: false,
 			modeToggling: true,
 			modeOverlay: true,
 			offscreenBlockArrows: true,

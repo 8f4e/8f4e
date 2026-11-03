@@ -1,0 +1,7 @@
+8f4e/v1
+entry main
+module invalid
+int8[] values 4
+int8u& slot &values
+moduleEnd
+entryEnd

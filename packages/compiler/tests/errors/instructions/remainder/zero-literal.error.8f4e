@@ -1,0 +1,10 @@
+8f4e/v1
+
+entry main
+module remainderWithZeroLiteral
+push 10
+push 0
+remainder
+drop
+moduleEnd
+entryEnd

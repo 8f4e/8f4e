@@ -2,7 +2,7 @@ import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import gapCalculator from '~/features/code-editing/gapCalculator';
 import parseCodeBlocks from './codeParser';
 
-const HIGHLIGHT_COLORS = ['codeBlockHighlightLevel1', 'codeBlockHighlightLevel2', 'codeBlockHighlightLevel3'] as const;
+const HIGHLIGHT_COLORS = ['surfaceRaised1', 'surfaceRaised2', 'surfaceRaised3'] as const;
 
 export default function (graphicData: CodeBlockGraphicData, state: State) {
 	graphicData.widgets.blockHighlights = [];

@@ -1,44 +1,5 @@
-/**
- * Runtime decoder for Base64-encoded font bitmaps.
- * Converts the compact Base64 format back to the number[] format expected by the rendering system.
- */
-
-import type { FontMetadata } from './ibmvga8x16/generated/ascii.ts';
-
-/**
- * Decodes a Base64-encoded font bitmap back to a number array.
- *
- * @param metadata - Font metadata containing the Base64 data and format information
- * @returns Array of numbers representing the bitmap in the same format as asciiGlyphsToFont output
- *
- * @example
- * ```ts
- * import { fontMetadata } from './fonts/ibmvga8x16/generated/ascii.ts';
- * import decodeFontBase64 from './fonts/font-decoder.ts';
- *
- * const bitmap = decodeFontBase64(fontMetadata);
- * // bitmap is now a number[] ready for rendering
- * ```
- */
-export default function decodeFontBase64(metadata: FontMetadata): number[] {
-	// Decode base64 to binary
-	const binaryString = atob(metadata.base64Data);
-
-	// Convert binary string to appropriate typed array based on bytesPerValue
-	if (metadata.bytesPerValue === 1) {
-		// 8-bit values (Uint8Array)
-		const uint8Array = new Uint8Array(binaryString.length);
-		for (let i = 0; i < binaryString.length; i++) {
-			uint8Array[i] = binaryString.charCodeAt(i);
-		}
-		return Array.from(uint8Array);
-	} else {
-		// 16-bit values (Uint16Array)
-		const uint8Array = new Uint8Array(binaryString.length);
-		for (let i = 0; i < binaryString.length; i++) {
-			uint8Array[i] = binaryString.charCodeAt(i);
-		}
-		const uint16Array = new Uint16Array(uint8Array.buffer);
-		return Array.from(uint16Array);
-	}
+/** Decodes packed glyph rows without copying them into ordinary number arrays. */
+export default function decodeFontBase64(base64: string, bytesPerValue: 1 | 2): Uint8Array | Uint16Array {
+	const bytes = Uint8Array.from(atob(base64), character => character.charCodeAt(0));
+	return bytesPerValue === 1 ? bytes : new Uint16Array(bytes.buffer);
 }

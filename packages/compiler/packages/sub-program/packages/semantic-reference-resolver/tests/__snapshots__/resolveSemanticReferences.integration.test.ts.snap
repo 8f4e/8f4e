@@ -91,7 +91,10 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
         "name": "increment",
         "signature": {
           "parameters": [
-            "int",
+            {
+              "name": "value",
+              "type": "int",
+            },
           ],
           "returns": [
             "int",
@@ -169,47 +172,42 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "referenceKind": "plain",
                 "scope": "local",
                 "type": "identifier",
-                "value": "increment",
+                "value": "value",
               },
+            ],
+            "instruction": "push",
+            "lineNumber": 5,
+            "resolvedTarget": {
+              "kind": "memory",
+              "memoryItem": {
+                "allocatedByteLength": 4,
+                "allocationUnitAddress": 1,
+                "allocationUnitCount": 1,
+                "byteAddress": 4,
+                "elementByteLength": 4,
+                "elementWordSize": 4,
+                "endAddressSafeByteLength": 4,
+                "endByteAddress": 4,
+                "id": "value",
+                "isInteger": true,
+                "isUnsigned": false,
+                "lineNumber": 2,
+                "numberOfElements": 1,
+                "pointerDepth": 0,
+                "type": "int",
+              },
+            },
+          },
+          "sourceLineIndex": 4,
+        },
+        {
+          "line": {
+            "arguments": [
               {
                 "referenceKind": "plain",
                 "scope": "local",
                 "type": "identifier",
-                "value": "value",
-              },
-            ],
-            "inlineArgumentPushes": [
-              {
-                "arguments": [
-                  {
-                    "referenceKind": "plain",
-                    "scope": "local",
-                    "type": "identifier",
-                    "value": "value",
-                  },
-                ],
-                "instruction": "push",
-                "lineNumber": 5,
-                "resolvedTarget": {
-                  "kind": "memory",
-                  "memoryItem": {
-                    "allocatedByteLength": 4,
-                    "allocationUnitAddress": 1,
-                    "allocationUnitCount": 1,
-                    "byteAddress": 4,
-                    "elementByteLength": 4,
-                    "elementWordSize": 4,
-                    "endAddressSafeByteLength": 4,
-                    "endByteAddress": 4,
-                    "id": "value",
-                    "isInteger": true,
-                    "isUnsigned": false,
-                    "lineNumber": 2,
-                    "numberOfElements": 1,
-                    "pointerDepth": 0,
-                    "type": "int",
-                  },
-                },
+                "value": "increment",
               },
             ],
             "instruction": "call",
@@ -258,6 +256,7 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
           "sourceLineIndex": 5,
         },
       ],
+      "referenceSlots": {},
       "skipExecutionInCycle": false,
     },
   },

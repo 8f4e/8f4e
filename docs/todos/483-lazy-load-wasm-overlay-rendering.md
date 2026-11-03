@@ -24,7 +24,7 @@ rendering resources owned by each editor instance.
 ## Implementation Plan
 
 1. Measure the production entry and its static dependencies before changing the import boundary. Check whether the
-   engine's package exports allow the RGBA implementation to stay outside the initial bundle.
+   web-ui's import boundaries allow the RGBA implementation to stay outside the initial bundle.
 2. Introduce an asynchronous loader triggered by resolved overlay configuration. Start drawing once the latest
    configuration, compiled code, and memory are ready; preserve topmost overlay ordering relative to other layers.
 3. Keep configuration changes event-driven while handling configuration changes and disposal during loading. Preserve
@@ -44,7 +44,7 @@ rendering resources owned by each editor instance.
 
 - `packages/editor/packages/editor-core/packages/web-ui/src/index.ts`
 - `packages/editor/packages/editor-core/packages/web-ui/src/drawers/wasmOverlayTexture.ts`
-- `packages/editor/packages/editor-core/packages/web-ui/packages/glugglugglug/src/plugins/rgba-texture-layer/`
+- `packages/editor/packages/editor-core/packages/web-ui/src/plugins/rgba-texture-layer/`
 
 ## Risks & Considerations
 

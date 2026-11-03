@@ -3,6 +3,7 @@ import type { InstructionSpecLookup, InstructionSpecName } from './instructionSp
 import { blockClose, loadInstruction, stack, stackMutation, withDocsAndStack } from './instructionSpecUtils';
 import type { MemoryDeclarationInstruction } from './memory';
 import { memoryDeclarationInstructions } from './memory';
+import { isReferenceSlotInstruction } from './referenceSlots';
 import type { BlockTypeValue, CompilationContext } from './semantic';
 import { BlockType } from './semantic';
 
@@ -243,6 +244,8 @@ export interface InstructionSpec<TLine = unknown> extends ValidationSpec<TLine> 
 	sourceInstruction?: false;
 	sourceArguments?: SourceArgumentsSpec;
 	functionDeclaration?: FunctionDeclarationInstructionSpec;
+	/** Pushes an optional source operand before the binary operation. */
+	inlineOperand?: true;
 	docs?: InstructionDocumentation;
 	stack?: StackEffectSpec<TLine>;
 	effects?: InstructionEffectsSpec;
@@ -256,13 +259,21 @@ const binaryMatchingSpec = {
 	operandTypes: 'matching',
 } satisfies InstructionSpec;
 
+/** Binary arithmetic may supply its right operand directly in source. */
+const binaryArithmeticSpec = {
+	...binaryMatchingSpec,
+	sourceArguments: { maxArguments: 1, argumentTypes: 'pushValue' },
+	inlineOperand: true,
+} as const satisfies InstructionSpec;
+
 /** Shared spec for binary operations that require two integer operands. */
 const binaryIntegerSpec = {
-	sourceArguments: noSourceArguments,
+	sourceArguments: { maxArguments: 1, argumentTypes: 'pushValue' },
+	inlineOperand: true,
 	placement: moduleOrFunctionPlacement,
 	minOperands: 2,
 	operandTypes: 'int',
-} satisfies InstructionSpec;
+} as const satisfies InstructionSpec;
 
 /** Shared validation spec for unary stack operations available in modules and functions. */
 const unaryModuleOrFunctionSpec = {
@@ -320,7 +331,7 @@ export const instructionSpecs = {
 			effect: stackMutation(1),
 		}
 	),
-	add: withDocsAndStack(binaryMatchingSpec, {
+	add: withDocsAndStack(binaryArithmeticSpec, {
 		shortDescription: 'Adds two numbers of the same type and pushes the result.',
 		inputs: ['T', 'T'],
 		outputs: ['T'],
@@ -476,7 +487,7 @@ export const instructionSpecs = {
 		docs: { shortDescription: 'Defines the fallback value for a map block.' },
 		stack: stack({ inputs: [], outputs: [] }),
 	},
-	div: withDocsAndStack(binaryMatchingSpec, {
+	div: withDocsAndStack(binaryArithmeticSpec, {
 		shortDescription: 'Divides the first value by the second value and pushes the quotient.',
 		inputs: ['T', 'T'],
 		outputs: ['T'],
@@ -655,7 +666,7 @@ export const instructionSpecs = {
 		loadVariant: 'f32',
 		accessByteWidth: WORD_MEMORY_ACCESS_WIDTH,
 		resultType: 'float',
-		shortDescription: 'Loads a float value from memory.',
+		shortDescription: 'Loads a float32 value, or a float64 value through a typed float64 pointer.',
 		output: 'float',
 		effect: stackMutation(1, [{ kind: 'float', isNonZero: false }]),
 	}),
@@ -796,19 +807,19 @@ export const instructionSpecs = {
 		stack: stack({ inputs: ['ptr', 'ptr'], outputs: [], effect: stackMutation(2) }),
 		effects: { memory: { kind: 'copy', addressOperandIndex: 0 } },
 	},
-	min: withDocsAndStack(binaryMatchingSpec, {
+	min: withDocsAndStack(binaryArithmeticSpec, {
 		shortDescription: 'Pushes the smaller of two values of the same type.',
 		inputs: ['T', 'T'],
 		outputs: ['T'],
 		effect: stackMutation(2, [{ kind: 'same', isNonZero: false }]),
 	}),
-	max: withDocsAndStack(binaryMatchingSpec, {
+	max: withDocsAndStack(binaryArithmeticSpec, {
 		shortDescription: 'Pushes the larger of two values of the same type.',
 		inputs: ['T', 'T'],
 		outputs: ['T'],
 		effect: stackMutation(2, [{ kind: 'same', isNonZero: false }]),
 	}),
-	mul: withDocsAndStack(binaryMatchingSpec, {
+	mul: withDocsAndStack(binaryArithmeticSpec, {
 		shortDescription: 'Multiplies two numbers of the same type and pushes the result.',
 		inputs: ['T', 'T'],
 		outputs: ['T'],
@@ -903,7 +914,7 @@ export const instructionSpecs = {
 		stack: stack({ inputs: [], outputs: [] }),
 	},
 	push: {
-		sourceArguments: { minArguments: 1, maxArguments: 1 },
+		sourceArguments: { minArguments: 1, maxArguments: 1, argumentTypes: 'pushValue' },
 		placement: moduleOrFunctionPlacement,
 		docs: { shortDescription: 'Pushes a literal, memory value, local value, address, or constant onto the stack.' },
 		stack: stack({ inputs: [], outputs: ['T'] }),
@@ -1006,8 +1017,8 @@ export const instructionSpecs = {
 		},
 		effects: { memory: { kind: 'storeBytes', accessByteWidth: BYTE_MEMORY_ACCESS_WIDTH } },
 	},
-	sub: withDocsAndStack(binaryMatchingSpec, {
-		shortDescription: 'Subtracts the second value from the first value and pushes the result.',
+	sub: withDocsAndStack(binaryArithmeticSpec, {
+		shortDescription: 'Subtracts matching numbers, an integer byte offset, or two addresses and pushes the result.',
 		inputs: ['T', 'T'],
 		outputs: ['T'],
 	}),
@@ -1028,6 +1039,14 @@ export const instructionSpecs = {
 		inputs: [],
 		outputs: [],
 	}),
+	referenceSlot: {
+		sourceInstruction: false,
+		codegen: false,
+		placement: modulePlacement,
+		sourceArguments: { minArguments: 2, maxArguments: 2, argumentTypes: ['identifier', 'identifier'] },
+		docs: { shortDescription: 'Binds a typed, fixed memory reference without allocating storage.' },
+		stack: { inputs: [], outputs: [] },
+	},
 } satisfies Record<string, InstructionSpec>;
 
 /**
@@ -1043,6 +1062,9 @@ export const instructionSpecs = {
 export function getInstructionSpec<TInstruction extends string>(
 	instruction: TInstruction
 ): InstructionSpecLookup<TInstruction> {
+	if (isReferenceSlotInstruction(instruction)) {
+		return instructionSpecs.referenceSlot as InstructionSpecLookup<TInstruction>;
+	}
 	if (memoryDeclarationInstructions.includes(instruction as MemoryDeclarationInstruction)) {
 		return instructionSpecs.memoryDeclaration as InstructionSpecLookup<TInstruction>;
 	}

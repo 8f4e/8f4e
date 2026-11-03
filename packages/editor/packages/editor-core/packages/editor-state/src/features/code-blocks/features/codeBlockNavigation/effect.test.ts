@@ -5,15 +5,10 @@ import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import codeBlockNavigation, { goHome, jumpToCodeBlock, navigateToCodeBlockInDirection } from './effect';
 
-interface JumpToFavoriteCodeBlockEvent {
-	creationIndex: number;
-}
-
 describe('codeBlockNavigation', () => {
 	let state: ReturnType<typeof createMockState>;
 	let events: ReturnType<typeof createMockEventDispatcherWithVitest>;
 	let onNavigateCodeBlockHandler: (event: NavigateCodeBlockEvent) => void;
-	let onJumpToFavoriteCodeBlockHandler: (event: JumpToFavoriteCodeBlockEvent) => void;
 	let onGoHomeHandler: () => void;
 	let selectedBlock: CodeBlockGraphicData;
 	let leftBlock: CodeBlockGraphicData;
@@ -57,21 +52,16 @@ describe('codeBlockNavigation', () => {
 		state = createMockState({
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
-				codeBlocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock],
+				currentProject: { entries: [], path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
 			},
 		});
 
 		// Create mock event dispatcher using shared utility
 		events = createMockEventDispatcherWithVitest();
 		(events.on as ReturnType<typeof vi.fn>).mockImplementation(
-			(
-				eventName: string,
-				callback: ((event: NavigateCodeBlockEvent | JumpToFavoriteCodeBlockEvent) => void) | (() => void)
-			) => {
+			(eventName: string, callback: ((event: NavigateCodeBlockEvent) => void) | (() => void)) => {
 				if (eventName === 'navigateCodeBlock') {
 					onNavigateCodeBlockHandler = callback as (event: NavigateCodeBlockEvent) => void;
-				} else if (eventName === 'jumpToFavoriteCodeBlock') {
-					onJumpToFavoriteCodeBlockHandler = callback as (event: JumpToFavoriteCodeBlockEvent) => void;
 				} else if (eventName === 'goHome') {
 					onGoHomeHandler = callback as () => void;
 				}
@@ -84,13 +74,6 @@ describe('codeBlockNavigation', () => {
 		codeBlockNavigation(createStateManager(state), events);
 
 		expect(events.on).toHaveBeenCalledWith('navigateCodeBlock', expect.any(Function));
-	});
-
-	it('should register a jumpToFavoriteCodeBlock event handler', () => {
-		// Initialize the effect
-		codeBlockNavigation(createStateManager(state), events);
-
-		expect(events.on).toHaveBeenCalledWith('jumpToFavoriteCodeBlock', expect.any(Function));
 	});
 
 	it('should register a goHome event handler', () => {
@@ -133,7 +116,7 @@ describe('codeBlockNavigation', () => {
 			name: 'anchored-right',
 			viewportAnchor: 'top-right',
 		});
-		state.codeBlockRendering.codeBlocks = [selectedBlock, anchoredRight, rightBlock];
+		state.codeBlockRendering.currentProject.blocks = [selectedBlock, anchoredRight, rightBlock];
 
 		codeBlockNavigation(createStateManager(state), events);
 
@@ -151,7 +134,7 @@ describe('codeBlockNavigation', () => {
 			viewportAnchor: 'top-left',
 		});
 		state.codeBlockRendering.selectedCodeBlock = anchoredSelected;
-		state.codeBlockRendering.codeBlocks = [anchoredSelected, rightBlock];
+		state.codeBlockRendering.currentProject.blocks = [anchoredSelected, rightBlock];
 
 		codeBlockNavigation(createStateManager(state), events);
 
@@ -328,7 +311,7 @@ describe('codeBlockNavigation', () => {
 			},
 			codeBlockRendering: {
 				selectedCodeBlock: selectedBlock,
-				codeBlocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock],
+				currentProject: { entries: [], path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
 			},
 			viewport: {
 				x: 0,
@@ -383,7 +366,7 @@ describe('codeBlockNavigation', () => {
 		codeBlockNavigation(createStateManager(state), events);
 
 		// Remove all blocks except selected
-		state.codeBlockRendering.codeBlocks = [selectedBlock];
+		state.codeBlockRendering.currentProject.blocks = [selectedBlock];
 
 		onNavigateCodeBlockHandler({ direction: 'right' });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
@@ -419,27 +402,6 @@ describe('codeBlockNavigation', () => {
 		});
 	});
 
-	describe('jumpToFavoriteCodeBlock event', () => {
-		it('should jump when jumpToFavoriteCodeBlock event is dispatched', () => {
-			// Initialize the effect
-			codeBlockNavigation(createStateManager(state), events);
-
-			onJumpToFavoriteCodeBlockHandler({ creationIndex: 2 });
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
-		});
-
-		it('should handle jumpToFavoriteCodeBlock with non-existent target gracefully', () => {
-			// Initialize the effect
-			codeBlockNavigation(createStateManager(state), events);
-
-			onJumpToFavoriteCodeBlockHandler({
-				creationIndex: 999,
-			});
-			// selectedCodeBlock should remain unchanged
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
-		});
-	});
-
 	describe('goHome', () => {
 		it('should center viewport on the first home block and select it', () => {
 			const firstHome = createMockCodeBlock({
@@ -457,7 +419,7 @@ describe('codeBlockNavigation', () => {
 			});
 
 			state = createMockState({
-				codeBlockRendering: { codeBlocks: [firstHome, secondHome] },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [firstHome, secondHome] } },
 				viewport: {
 					x: 10,
 					y: 20,
@@ -486,7 +448,7 @@ describe('codeBlockNavigation', () => {
 				homeAlignment: 'bottom',
 			});
 			state = createMockState({
-				codeBlockRendering: { codeBlocks: [homeBlock] },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [homeBlock] } },
 				viewport: {
 					x: 0,
 					y: 0,
@@ -513,7 +475,7 @@ describe('codeBlockNavigation', () => {
 				y: 100,
 			});
 			state = createMockState({
-				codeBlockRendering: { codeBlocks: [homeBlock] },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [homeBlock] } },
 			});
 
 			goHome(createStateManager(state), events);
@@ -536,7 +498,7 @@ describe('codeBlockNavigation', () => {
 			const otherHome = createMockCodeBlock({ name: 'home-other', isHome: true });
 
 			state = createMockState({
-				codeBlockRendering: { codeBlocks: [disabledHome, otherHome] },
+				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [disabledHome, otherHome] } },
 			});
 
 			goHome(createStateManager(state), events);
@@ -548,7 +510,7 @@ describe('codeBlockNavigation', () => {
 			state = createMockState({
 				viewport: { x: 25, y: -10 },
 				codeBlockRendering: {
-					codeBlocks: [selectedBlock],
+					currentProject: { entries: [], path: '', blocks: [selectedBlock] },
 					selectedCodeBlock: selectedBlock,
 				},
 			});
@@ -567,7 +529,7 @@ describe('codeBlockNavigation', () => {
 				x: 160,
 				y: 80,
 			});
-			state.codeBlockRendering.codeBlocks = [homeBlock, ...state.codeBlockRendering.codeBlocks];
+			state.codeBlockRendering.currentProject.blocks = [homeBlock, ...state.codeBlockRendering.currentProject.blocks];
 
 			codeBlockNavigation(createStateManager(state), events);
 

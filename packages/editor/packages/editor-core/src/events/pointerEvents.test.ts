@@ -1,3 +1,4 @@
+import { createMockState } from '@8f4e/editor-state-testing';
 import type { State } from '@8f4e/editor-state-types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EventDispatcher } from '.';
@@ -64,11 +65,11 @@ describe('pointerEvents', () => {
 			off: vi.fn(),
 			dispatch: vi.fn(),
 		};
-		state = {
+		state = createMockState({
 			featureFlags: {
 				viewportDragging: true,
 			},
-		} as State;
+		});
 	});
 
 	afterEach(() => {
@@ -76,7 +77,7 @@ describe('pointerEvents', () => {
 	});
 
 	it('dispatches mouseup after wheel scrolling has paused', () => {
-		const cleanup = pointerEvents(mockElement as HTMLElement, events, state);
+		const cleanup = pointerEvents(mockElement as unknown as HTMLElement, events, state);
 		const wheelEvent = createWheelEventLike();
 
 		mockElement.emit('wheel', wheelEvent);
@@ -107,7 +108,7 @@ describe('pointerEvents', () => {
 	});
 
 	it('resets the scroll-end timer on subsequent wheel events', () => {
-		const cleanup = pointerEvents(mockElement as HTMLElement, events, state);
+		const cleanup = pointerEvents(mockElement as unknown as HTMLElement, events, state);
 
 		mockElement.emit('wheel', createWheelEventLike());
 		vi.advanceTimersByTime(100);
@@ -127,7 +128,7 @@ describe('pointerEvents', () => {
 	});
 
 	it('leaves wheel events to the host when wheel capture is disabled', () => {
-		const cleanup = pointerEvents(mockElement as HTMLElement, events, state, false);
+		const cleanup = pointerEvents(mockElement as unknown as HTMLElement, events, state, false);
 		const wheelEvent = createWheelEventLike();
 
 		mockElement.emit('wheel', wheelEvent);
@@ -138,7 +139,7 @@ describe('pointerEvents', () => {
 	});
 
 	it('removes listeners and clears the pending timer during cleanup', () => {
-		const cleanup = pointerEvents(mockElement as HTMLElement, events, state);
+		const cleanup = pointerEvents(mockElement as unknown as HTMLElement, events, state);
 
 		mockElement.emit('wheel', createWheelEventLike());
 		cleanup();
@@ -151,7 +152,7 @@ describe('pointerEvents', () => {
 	});
 
 	it('focuses the owning canvas when it is pressed', () => {
-		const cleanup = pointerEvents(mockElement as HTMLElement, events, state);
+		const cleanup = pointerEvents(mockElement as unknown as HTMLElement, events, state);
 		const mouseEvent = {
 			type: 'mousedown',
 			offsetX: 10,

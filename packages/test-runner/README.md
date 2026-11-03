@@ -34,7 +34,7 @@ supplied shared memory must match the compiled Wasm imports. The editor test run
 already initialized by its compiler worker.
 
 Hosts that instantiate assertion-enabled Wasm without collecting results can import `IGNORED_ASSERTION_IMPORTS`
-and spread it into their `host` imports alongside memory. These callbacks ignore all assertion invocations.
+from `@8f4e/language-spec` and spread it into their `host` imports alongside memory. These callbacks ignore all assertion invocations.
 
 ## Assertions and reporting
 

@@ -1,11 +1,12 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
-import init from '@8f4e/web-ui';
-import { deriveCodeBlockCodeCells, type WebUiRenderDataSource } from '@8f4e/web-ui-render-projection';
+import loadFontAtlas from '@8f4e/sprite-generator';
+import init, { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { expect, test, vi } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
-import createMockSpriteData from './utils/createMockSpriteData';
 import createMockStateWithColors from './utils/createMockStateWithColors';
+import resolveFixtureCodeCells from './utils/resolveFixtureCodeCells';
 
 test.each(['view', 'edit'] as const)('selected outline in %s mode', async editorMode => {
 	const canvas = createCanvas();
@@ -13,7 +14,6 @@ test.each(['view', 'edit'] as const)('selected outline in %s mode', async editor
 	canvas.height = 240;
 	const state = createMockStateWithColors({ editorMode });
 	state.editorConfig.font = 'ibmvga8x16';
-	state.featureFlags.editing = editorMode === 'edit';
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
 	const block = createMockCodeBlock({
@@ -25,16 +25,21 @@ test.each(['view', 'edit'] as const)('selected outline in %s mode', async editor
 		height: 112,
 		code: ['module selected', 'int value 1', '', 'push value', 'drop', 'moduleEnd'],
 	});
-	state.codeBlockRendering.codeBlocks = [block];
+	state.codeBlockRendering.currentProject.blocks = [block];
 	state.codeBlockRendering.selectedCodeBlock = block;
-	const renderData: WebUiRenderDataSource = {
-		getSnapshot: () => ({
-			codeBlocks: new Map([
-				[block.creationIndex, { codeCells: deriveCodeBlockCodeCells(block, state.spriteLookups!) }],
-			]),
-		}),
-	};
-	const renderer = await init(state, renderData, canvas, createMockMemoryViews(), await createMockSpriteData(state));
+	const drawers = createEditorDrawerRegistry();
+	const rows = resolveFixtureCodeCells(block.code);
+	drawers.registerCodeBlockContentDrawer(({ draw, state }) => {
+		rows.forEach((cells, row) => draw.drawResolvedText(state.viewport.vGrid, row * state.viewport.hGrid, cells));
+	});
+	const renderer = await init(
+		state,
+		canvas,
+		createMockMemoryViews(),
+		await loadFontAtlas(state.editorConfig.font),
+		resolvePalette(state.editorConfig.color),
+		{ drawers }
+	);
 	renderer.pauseRendering();
 	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 	try {

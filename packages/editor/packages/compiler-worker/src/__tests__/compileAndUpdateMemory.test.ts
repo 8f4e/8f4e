@@ -1,11 +1,29 @@
 import type { CompileAndUpdateMemoryResult, ProjectObjectModel } from '@8f4e/language-spec';
+import { getProjectModules } from '@8f4e/language-spec';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type compileAndUpdateMemoryType from '../compileAndUpdateMemory';
 
-describe('compileAndUpdateMemory execution entries', () => {
-	const compilerOptions = { startingMemoryAllocationUnitAddress: 1 };
-	let compileAndUpdateMemory: typeof compileAndUpdateMemoryType;
+const compilerOptions = { startingMemoryAllocationUnitAddress: 1 };
+let compileAndUpdateMemory: typeof compileAndUpdateMemoryType;
 
+const createInput = (modules: Array<{ code: string[] }>, entry = 'main'): ProjectObjectModel => ({
+	entries: [entry],
+	code: [],
+	execution: [...modules.map((module, id) => ({ ...module, type: 'module' as const, id, entry }))],
+	constants: [],
+	functions: [],
+	prototypes: [],
+	includes: [],
+	notes: [],
+	unknown: [],
+});
+
+beforeEach(async () => {
+	vi.resetModules();
+	({ default: compileAndUpdateMemory } = await import('../compileAndUpdateMemory'));
+});
+
+describe('compileAndUpdateMemory execution entries', () => {
 	const createModules = (baseDefault: number): Array<{ code: string[] }> => [
 		{
 			code: `
@@ -24,30 +42,14 @@ moduleEnd
 				.split('\n'),
 		},
 	];
-	const createInput = (modules: Array<{ code: string[] }>): ProjectObjectModel => ({
-		code: [],
-		modules: modules.map((module, id) => ({ ...module, id, entry: 'init' })),
-		constants: [],
-		functions: [],
-		prototypes: [],
-		includes: [],
-		notes: [],
-		unknown: [],
-		groups: [],
-	});
 
 	const getAddresses = (result: CompileAndUpdateMemoryResult) => ({
 		base: result.memoryPlan.modules.setup!.memory.base!.byteAddress / 4,
 		derived: result.memoryPlan.modules.setup!.memory.derived!.byteAddress / 4,
 	});
 
-	beforeEach(async () => {
-		vi.resetModules();
-		({ default: compileAndUpdateMemory } = await import('../compileAndUpdateMemory'));
-	});
-
 	it('initializes defaults without running execution entries', async () => {
-		const firstResult = await compileAndUpdateMemory(createInput(createModules(1)), compilerOptions);
+		const firstResult = await compileAndUpdateMemory(createInput(createModules(1), 'init'), compilerOptions);
 		const addresses = getAddresses(firstResult);
 		const memoryView = new Int32Array(firstResult.memoryRef.buffer);
 
@@ -61,15 +63,13 @@ moduleEnd
 
 		expect(exportKeys).toContain('init');
 		expect(firstResult.compiledModules.setup.executionEntryName).toBe('init');
-		expect(firstResult.initOnlyReran).toBe(false);
 		expect(firstResult.astCacheStats).toEqual({ hits: 0, misses: 1 });
 		expect(memoryView[addresses.base]).toBe(1);
 		expect(memoryView[addresses.derived]).toBe(0);
 
-		const secondResult = await compileAndUpdateMemory(createInput(createModules(10)), compilerOptions);
+		const secondResult = await compileAndUpdateMemory(createInput(createModules(10), 'init'), compilerOptions);
 		const updatedMemory = new Int32Array(secondResult.memoryRef.buffer);
 
-		expect(secondResult.initOnlyReran).toBe(false);
 		expect(secondResult.astCacheStats).toEqual({ hits: 0, misses: 2 });
 		expect(updatedMemory[addresses.base]).toBe(10);
 		expect(updatedMemory[addresses.derived]).toBe(0);
@@ -94,7 +94,8 @@ store
 moduleEnd`.split('\n'),
 			},
 		]);
-		project.modules[0].entry = 'test';
+		getProjectModules(project)[0].entry = 'test';
+		project.entries = ['test'];
 		const result = await compileAndUpdateMemory(project, { ...compilerOptions, enableAssertions: true });
 		const imports = WebAssembly.Module.imports(new WebAssembly.Module(new Uint8Array(result.codeBuffer)));
 		expect(result.assertionSites).toMatchObject([
@@ -115,46 +116,85 @@ moduleEnd`.split('\n'),
 	});
 
 	it('does not run execution entries when defaults are unchanged', async () => {
-		const firstResult = await compileAndUpdateMemory(createInput(createModules(3)), compilerOptions);
+		const firstResult = await compileAndUpdateMemory(createInput(createModules(3), 'init'), compilerOptions);
 		const addresses = getAddresses(firstResult);
 		const memoryView = new Int32Array(firstResult.memoryRef.buffer);
 
-		expect(firstResult.initOnlyReran).toBe(false);
 		expect(memoryView[addresses.base]).toBe(3);
 		expect(memoryView[addresses.derived]).toBe(0);
 
 		memoryView[addresses.base] = 5;
 
-		const secondResult = await compileAndUpdateMemory(createInput(createModules(3)), compilerOptions);
+		const secondResult = await compileAndUpdateMemory(createInput(createModules(3), 'init'), compilerOptions);
 		const secondMemory = new Int32Array(secondResult.memoryRef.buffer);
 
-		expect(secondResult.initOnlyReran).toBe(false);
 		expect(secondResult.astCacheStats).toEqual({ hits: 1, misses: 1 });
 		expect(secondMemory[addresses.base]).toBe(5);
 		expect(secondMemory[addresses.derived]).toBe(0);
 	});
 });
 
+describe('compileAndUpdateMemory live code updates', () => {
+	it('preserves live memory when reordering replacements with different code lengths', async () => {
+		const project = createInput([
+			{ code: 'module voice\nint out\npush &out\npush out\nadd 1\nstore\nmoduleEnd'.split('\n') },
+			{ code: 'module sentinel\nint value 7\nmoduleEnd'.split('\n') },
+			{ code: 'module voice\nint out\npush &out\npush out\nmul 2\nadd 1\nstore\nmoduleEnd'.split('\n') },
+		]);
+		const run = async (result: CompileAndUpdateMemoryResult) => {
+			const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), {
+				host: { memory: result.memoryRef },
+			});
+			(instance.exports.main as CallableFunction)();
+		};
+		const first = await compileAndUpdateMemory(project, compilerOptions);
+		const out = first.memoryPlan.modules.voice!.memory.out!.byteAddress / 4;
+		const sentinel = first.memoryPlan.modules.sentinel!.memory.value!.byteAddress / 4;
+		const memory = new Int32Array(first.memoryRef.buffer);
+		memory[out] = 123;
+		memory[sentinel] = 456;
+		await run(first);
+		expect(memory[out]).toBe(247);
+
+		project.execution.reverse();
+		const second = await compileAndUpdateMemory(project, compilerOptions);
+		expect(second.compiledModules.voice.cycleFunction.length).not.toBe(
+			first.compiledModules.voice.cycleFunction.length
+		);
+		expect(second.memoryAction).toEqual({ action: 'reused' });
+		expect(second.memoryRef).toBe(first.memoryRef);
+		expect(memory[out]).toBe(247);
+		expect(memory[sentinel]).toBe(456);
+		await run(second);
+		expect(memory[out]).toBe(248);
+
+		project.execution.reverse();
+		const restored = await compileAndUpdateMemory(project, compilerOptions);
+		expect(restored.memoryAction).toEqual({ action: 'reused' });
+		expect(restored.memoryRef).toBe(first.memoryRef);
+		await run(restored);
+		expect(memory[out]).toBe(497);
+		expect(memory[sentinel]).toBe(456);
+	});
+
+	it('still resets memory when a declaration changes size', async () => {
+		const project = createInput([{ code: 'module voice\nint state\nmoduleEnd'.split('\n') }]);
+		const first = await compileAndUpdateMemory(project, compilerOptions);
+		const address = first.memoryPlan.modules.voice!.memory.state!.byteAddress / 4;
+		new Int32Array(first.memoryRef.buffer)[address] = 123;
+
+		getProjectModules(project)[0].code = 'module voice\nint[] state 2\nmoduleEnd'.split('\n');
+		const second = await compileAndUpdateMemory(project, compilerOptions);
+		expect(second.memoryAction).toEqual({ action: 'recreated', reason: { kind: 'memory-structure-changed' } });
+		expect(second.memoryRef).not.toBe(first.memoryRef);
+		const state = second.memoryPlan.modules.voice!.memory.state!;
+		expect(Array.from(new Int32Array(second.memoryRef.buffer, state.byteAddress, state.numberOfElements))).toEqual([
+			0, 0,
+		]);
+	});
+});
+
 describe('compileAndUpdateMemory float64 incremental patching', () => {
-	const compilerOptions = { startingMemoryAllocationUnitAddress: 1 };
-	let compileAndUpdateMemory: typeof compileAndUpdateMemoryType;
-	const createInput = (modules: Array<{ code: string[] }>): ProjectObjectModel => ({
-		code: [],
-		modules: modules.map((module, id) => ({ ...module, id, entry: 'main' })),
-		constants: [],
-		functions: [],
-		prototypes: [],
-		includes: [],
-		notes: [],
-		unknown: [],
-		groups: [],
-	});
-
-	beforeEach(async () => {
-		vi.resetModules();
-		({ default: compileAndUpdateMemory } = await import('../compileAndUpdateMemory'));
-	});
-
 	it('patches float64 scalar default correctly on incremental recompile', async () => {
 		const createModules = (val: number): Array<{ code: string[] }> => [
 			{ code: `module mymod\nfloat64 value ${val}\nmoduleEnd`.split('\n') },
@@ -194,4 +234,129 @@ describe('compileAndUpdateMemory float64 incremental patching', () => {
 		// Should NOT have been reset to 3.14 since the default didn't change
 		expect(secondView[float64Index]).toBeCloseTo(9.99);
 	});
+});
+
+describe('compileAndUpdateMemory narrow integer incremental patching', () => {
+	const compileModule = async (declaration: string) => {
+		const modules = [{ code: `module mymod\n${declaration}\nint marker 7\nmoduleEnd`.split('\n') }];
+
+		return compileAndUpdateMemory(createInput(modules), compilerOptions);
+	};
+
+	const writeMarker = (result: CompileAndUpdateMemoryResult) => {
+		const marker = result.memoryPlan.modules.mymod!.memory.marker!;
+		new Int32Array(result.memoryRef.buffer)[marker.byteAddress / 4] = 1234;
+		return marker;
+	};
+
+	const readMarker = (result: CompileAndUpdateMemoryResult, markerByteAddress: number) =>
+		new Int32Array(result.memoryRef.buffer)[markerByteAddress / 4];
+
+	it('patches int8 array defaults through a one-byte view', async () => {
+		const first = await compileModule('int8[] values 4 1 2 3 4');
+		const marker = writeMarker(first);
+
+		const second = await compileModule('int8[] values 4 -7 -128 127 5');
+		const values = second.memoryPlan.modules.mymod!.memory.values!;
+
+		expect(second.memoryAction).toEqual({ action: 'reused' });
+		expect(Array.from(new Uint8Array(second.memoryRef.buffer, values.byteAddress, values.elementByteLength))).toEqual([
+			0xf9, 0x80, 0x7f, 0x05,
+		]);
+		expect(readMarker(second, marker.byteAddress)).toBe(1234);
+	});
+
+	it('patches int16 array defaults through a two-byte view', async () => {
+		const first = await compileModule('int16[] values 4 1 2 3 4');
+		const marker = writeMarker(first);
+
+		const second = await compileModule('int16[] values 4 -12345 258 7 -2');
+		const values = second.memoryPlan.modules.mymod!.memory.values!;
+
+		expect(second.memoryAction).toEqual({ action: 'reused' });
+		expect(Array.from(new Int16Array(second.memoryRef.buffer, values.byteAddress, values.numberOfElements))).toEqual([
+			-12345, 258, 7, -2,
+		]);
+		expect(Array.from(new Uint8Array(second.memoryRef.buffer, values.byteAddress, values.elementByteLength))).toEqual([
+			0xc7, 0xcf, 0x02, 0x01, 0x07, 0x00, 0xfe, 0xff,
+		]);
+		expect(readMarker(second, marker.byteAddress)).toBe(1234);
+	});
+
+	it('keeps the raw byte representation of unsigned narrow arrays', async () => {
+		const createModules = (bytesInitializer: string, halvesInitializer: string) => [
+			{
+				code: `module mymod
+int8u[] bytes 3 ${bytesInitializer}
+int16u[] halves 3 ${halvesInitializer}
+moduleEnd`.split('\n'),
+			},
+		];
+
+		await compileAndUpdateMemory(createInput(createModules('1 2 3', '1 2 3')), compilerOptions);
+
+		const second = await compileAndUpdateMemory(
+			createInput(createModules('249 200 1', '54321 65535 1')),
+			compilerOptions
+		);
+		const { bytes, halves } = second.memoryPlan.modules.mymod!.memory;
+
+		expect(second.memoryAction).toEqual({ action: 'reused' });
+		expect(Array.from(new Uint8Array(second.memoryRef.buffer, bytes!.byteAddress, bytes!.elementByteLength))).toEqual([
+			0xf9, 0xc8, 0x01,
+		]);
+		expect(Array.from(new Uint8Array(second.memoryRef.buffer, halves!.byteAddress, halves!.elementByteLength))).toEqual(
+			[0x31, 0xd4, 0xff, 0xff, 0x01, 0x00]
+		);
+		expect(Array.from(new Uint16Array(second.memoryRef.buffer, halves!.byteAddress, halves!.numberOfElements))).toEqual(
+			[54321, 65535, 1]
+		);
+	});
+
+	it('does not overwrite narrow array memory when defaults are unchanged', async () => {
+		const first = await compileModule('int8[] values 4 1 2 3 4');
+
+		const values = first.memoryPlan.modules.mymod!.memory.values!;
+		const firstView = new Int8Array(first.memoryRef.buffer, values.byteAddress, values.numberOfElements);
+		expect(Array.from(firstView)).toEqual([1, 2, 3, 4]);
+		firstView[1] = 9;
+
+		const second = await compileModule('int8[] values 4 1 2 3 4');
+		const secondView = new Int8Array(second.memoryRef.buffer, values.byteAddress, values.numberOfElements);
+
+		expect(second.memoryAction).toEqual({ action: 'reused' });
+		expect(Array.from(secondView)).toEqual([1, 9, 3, 4]);
+	});
+
+	it.each([
+		{
+			instruction: 'int[]',
+			initializer: '1 2 3 4',
+			updatedInitializer: '-1 -2 -3 -4',
+			read: (buffer: ArrayBufferLike, byteAddress: number, length: number) =>
+				Array.from(new Int32Array(buffer, byteAddress, length)),
+			expected: [-1, -2, -3, -4],
+		},
+		{
+			instruction: 'float[]',
+			initializer: '1.5 2.5 3.5 4.5',
+			updatedInitializer: '-1.5 -2.5 -3.5 -4.5',
+			read: (buffer: ArrayBufferLike, byteAddress: number, length: number) =>
+				Array.from(new Float32Array(buffer, byteAddress, length)),
+			expected: [-1.5, -2.5, -3.5, -4.5],
+		},
+	])(
+		'keeps $instruction array patching unchanged',
+		async ({ instruction, initializer, updatedInitializer, read, expected }) => {
+			const first = await compileModule(`${instruction} values 4 ${initializer}`);
+			const marker = writeMarker(first);
+
+			const second = await compileModule(`${instruction} values 4 ${updatedInitializer}`);
+			const values = second.memoryPlan.modules.mymod!.memory.values!;
+
+			expect(second.memoryAction).toEqual({ action: 'reused' });
+			expect(read(second.memoryRef.buffer, values.byteAddress, values.numberOfElements)).toEqual(expected);
+			expect(readMarker(second, marker.byteAddress)).toBe(1234);
+		}
+	);
 });

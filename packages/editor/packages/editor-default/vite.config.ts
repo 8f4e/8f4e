@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 import { createLibConfig } from '@8f4e/config/vite';
 import { sourceFiles } from '@8f4e/vite-plugin-sources';
 import { defineConfig } from 'vite';
@@ -11,7 +11,7 @@ export default defineConfig({
 	base: './',
 	plugins: [
 		sourceFiles({ name: 'stdlib', root: stdlibRoot, include: ['std/**/*.8f4e'] }),
-		sourceFiles({ name: 'example-modules', root: exampleModulesRoot, include: ['src/modules/**/*.8f4em'] }),
+		sourceFiles({ name: 'example-modules', root: join(exampleModulesRoot, 'src/modules'), include: ['**/*.8f4em'] }),
 	],
 	...createLibConfig({
 		entry: './src/index.ts',

@@ -19,7 +19,7 @@ compile-time size arguments.
 Runtime instructions such as `castToInt` do not help here because declarations like `float[] buffer DELAY_SIZE` need the
 value before runtime code exists.
 
-The Clouds reverb example needs sample-rate-relative constants such as:
+The reverb example needs sample-rate-relative constants such as:
 
 ```8f4e
 const CLOUDS_RATIO SAMPLE_RATE/CLOUDS_SAMPLE_RATE

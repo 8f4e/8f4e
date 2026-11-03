@@ -1,30 +1,8 @@
 {
-  "code": 74,
-  "context": {
-    "projectGroupPath": "",
-  },
+  "code": -1,
+  "context": {},
   "line": {
-    "arguments": [
-      {
-        "isEndAddress": false,
-        "referenceKind": "memory-reference",
-        "scope": "local",
-        "targetMemoryId": "input",
-        "type": "identifier",
-        "value": "&input",
-      },
-      {
-        "isEndAddress": false,
-        "referenceKind": "intermodular-reference",
-        "scope": "intermodule",
-        "targetMemoryId": "output",
-        "targetModuleId": "source",
-        "type": "identifier",
-        "value": "&source:output",
-      },
-    ],
-    "instruction": "init",
     "lineNumber": 0,
   },
-  "message": "init can only be used at group level. (74)",
+  "message": "Parse error at line 3: entry "main" can only contain module or group blocks, got "init &input &source:output"",
 }

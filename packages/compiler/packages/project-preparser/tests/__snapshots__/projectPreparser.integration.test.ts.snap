@@ -70,36 +70,32 @@ exports[`project-preparser integration > parses project source into typed collec
         "id": 8,
       },
     ],
-    "functions": [
+    "entries": [
+      "main",
+    ],
+    "execution": [
       {
         "code": [
-          "function helper",
-          "functionEnd int",
+          "module main",
+          "shape state",
+          "int counter",
+          "moduleEnd",
         ],
-        "id": 12,
+        "entry": "main",
+        "id": 26,
+        "type": "module",
       },
-    ],
-    "groups": [
       {
         "code": [
           "group audio",
           "groupEnd",
         ],
         "constants": [],
-        "entry": "main",
-        "exposures": [],
-        "functions": [
-          {
-            "code": [
-              "function groupedHelper",
-              "functionEnd int",
-            ],
-            "id": 34,
-          },
+        "entries": [
+          "main",
         ],
-        "groups": [],
-        "includes": [],
-        "modules": [
+        "entry": "main",
+        "execution": [
           {
             "code": [
               "module grouped",
@@ -107,13 +103,36 @@ exports[`project-preparser integration > parses project source into typed collec
               "moduleEnd",
             ],
             "entry": "main",
-            "id": 31,
+            "id": 32,
+            "type": "module",
           },
         ],
+        "exposures": [],
+        "functions": [
+          {
+            "code": [
+              "function groupedHelper",
+              "functionEnd int",
+            ],
+            "id": 36,
+          },
+        ],
+        "id": 30,
+        "includes": [],
         "name": "audio",
         "notes": [],
         "prototypes": [],
+        "type": "group",
         "unknown": [],
+      },
+    ],
+    "functions": [
+      {
+        "code": [
+          "function helper",
+          "functionEnd int",
+        ],
+        "id": 12,
       },
     ],
     "includes": [
@@ -125,18 +144,6 @@ exports[`project-preparser integration > parses project source into typed collec
           "includesEnd",
         ],
         "id": 3,
-      },
-    ],
-    "modules": [
-      {
-        "code": [
-          "module main",
-          "shape state",
-          "int counter",
-          "moduleEnd",
-        ],
-        "entry": "main",
-        "id": 26,
       },
     ],
     "notes": [

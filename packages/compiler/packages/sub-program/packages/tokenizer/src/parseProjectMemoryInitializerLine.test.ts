@@ -40,12 +40,6 @@ describe('parseProjectMemoryInitializerLine', () => {
 		});
 	});
 
-	it('rejects the removed instruction name', () => {
-		expect(() => parseProjectMemoryInitializerLine('bind &input &source:output', 2)).toThrow(
-			expect.objectContaining({ code: SyntaxErrorCode.UNRECOGNISED_INSTRUCTION })
-		);
-	});
-
 	it.each([
 		'init',
 		'init &input',

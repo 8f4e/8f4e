@@ -14,8 +14,8 @@ export default function findCodeBlockAtViewportCoordinates(
 	searchX: number,
 	searchY: number
 ): CodeBlockGraphicData | undefined {
-	for (let index = state.codeBlockRendering.codeBlocks.length - 1; index >= 0; index -= 1) {
-		const graphicData = state.codeBlockRendering.codeBlocks[index];
+	for (let index = state.codeBlockRendering.currentProject.blocks.length - 1; index >= 0; index -= 1) {
+		const graphicData = state.codeBlockRendering.currentProject.blocks[index];
 		const { width, height, x, y } = graphicData;
 		if (
 			searchX >= x - state.viewport.x &&

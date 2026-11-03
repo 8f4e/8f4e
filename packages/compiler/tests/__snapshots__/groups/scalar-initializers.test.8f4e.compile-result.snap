@@ -22,6 +22,26 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
+              "value": "valuesAddress",
+            },
+            {
+              "isEndAddress": false,
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "address",
+              "targetModuleId": "values",
+              "type": "identifier",
+              "value": "&values:address",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
               "value": "output",
             },
             {
@@ -35,20 +55,15 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
-              "referenceKind": "intermodular-reference",
-              "scope": "intermodule",
-              "targetMemoryId": "address",
-              "targetModuleId": "values",
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "valuesAddress",
               "type": "identifier",
-              "value": "&values:address",
+              "value": "*valuesAddress",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "load",
         },
         {
           "arguments": [

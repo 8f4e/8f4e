@@ -528,9 +528,18 @@
       "id": "advancePointer__float_p_p__float_p__int",
       "signature": {
         "parameters": [
-          "float**",
-          "float*",
-          "int",
+          {
+            "name": "pointer",
+            "type": "float**",
+          },
+          {
+            "name": "buffer",
+            "type": "float*",
+          },
+          {
+            "name": "itemCount",
+            "type": "int",
+          },
         ],
         "returns": [],
       },
@@ -539,9 +548,18 @@
       "id": "advancePointer__int_p_p__int_p__int",
       "signature": {
         "parameters": [
-          "int**",
-          "int*",
-          "int",
+          {
+            "name": "pointer",
+            "type": "int**",
+          },
+          {
+            "name": "buffer",
+            "type": "int*",
+          },
+          {
+            "name": "itemCount",
+            "type": "int",
+          },
         ],
         "returns": [],
       },

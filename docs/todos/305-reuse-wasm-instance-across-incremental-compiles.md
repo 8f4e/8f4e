@@ -15,37 +15,32 @@ completed: null
 The compiler worker currently recreates the WebAssembly instance on every compile, even when memory can be reused and the runtime shape has not changed.
 
 Current behavior:
-- [packages/editor/packages/compiler-worker/src/compileAndUpdateMemory.ts](packages/editor/packages/compiler-worker/src/compileAndUpdateMemory.ts) has a reuse helper, `getOrCreateWasmInstanceRef(...)`
-- the call site passes `memoryWasRecreated || true`
-- that makes the non-reset path unreachable
-- the worker always reinstantiates the module even when only default values or compatible source changes occurred
+- `packages/editor/packages/compiler-worker/src/compileAndUpdateMemory.ts` calls `WebAssembly.instantiate(...)` for each compilation.
+- The worker can reuse memory and patch changed defaults, but it has no instance cache or executable-code invalidation check.
+- A new instance is created even when the compiled execution code is unchanged.
 
-Why this is a problem:
-- it defeats the intended incremental update flow
-- it adds unnecessary instantiation work on every compile
-- it increases the chance of glitches or state loss in live runtime scenarios
-- it makes the surrounding change-detection logic misleading because the reuse branch is effectively dead code
+This adds instantiation work to otherwise incremental updates. Memory reuse and instance reuse are separate decisions.
 
 ## Proposed Solution
 
-Restore real instance reuse semantics in the compiler worker.
+Implement instance reuse in the compiler worker with explicit executable-code and memory invalidation.
 
 High-level approach:
-- stop unconditionally forcing `memoryWasRecreated` to `true`
+- cache the active instance together with the code and memory identity used to create it
 - distinguish between:
   - memory recreation
   - program shape changes that require a new instance
   - default-value-only changes that can be patched into existing memory
-- keep initialization behavior explicit so `init` and `initOnly` still rerun only when needed
+- preserve the current rule: initialize defaults for new/recreated memory, otherwise patch changed defaults without running execution entries
 
 Likely implementation shape:
 - add or reuse a helper that detects whether the compiled bytecode or executable structure changed in a way that invalidates the current instance
-- pass the real reset condition into `getOrCreateWasmInstanceRef(...)`
+- instantiate only when the cached code or memory is incompatible with the new compilation
 - leave `getMemoryValueChanges(...)` as the fast path for default-value-only updates
 
 ## Anti-Patterns
 
-- Do not replace `memoryWasRecreated || true` with just `memoryWasRecreated` unless code-shape invalidation is also considered.
+- Do not use memory identity alone as the instance reuse condition; compiled code must also remain compatible.
 - Do not silently reuse an instance when exported function layout or compiled code buffer changed incompatibly.
 - Do not mix memory-patching logic with instance lifecycle decisions in one large branch.
 
@@ -56,14 +51,14 @@ Likely implementation shape:
 - Decide which changes require a fresh `WebAssembly.instantiate(...)`
 - Capture that in a dedicated helper or well-named boolean
 
-### Step 2: Restore the reuse path
-- Update `compileAndUpdateMemory(...)` to pass the real reset condition
-- Keep `getOrCreateWasmInstanceRef(...)` responsible only for reusing or recreating the instance
-- Ensure `hasWasmInstanceBeenReset` remains accurate
+### Step 2: Add the reuse path
+- Introduce an internal instance cache and explicit invalidation condition in `compileAndUpdateMemory(...)`
+- Keep instance lifecycle separate from memory patching
+- Verify reuse through actual instantiation behavior instead of adding unused result flags
 
 ### Step 3: Verify initialization and patching behavior
 - Confirm `initDefaults()` still runs when memory is recreated or first created
-- Confirm incremental default changes still patch memory and optionally rerun `initOnly`
+- Confirm incremental default changes still patch memory without running execution entries
 - Confirm stable compiles do not force a full instance reset
 
 ### Step 4: Add regression tests
@@ -75,9 +70,9 @@ Likely implementation shape:
 
 ## Validation Checkpoints
 
-- `rg -n "memoryWasRecreated \\|\\| true|hasWasmInstanceBeenReset|getOrCreateWasmInstanceRef" packages/editor/packages/compiler-worker/src`
-- `npx nx run compiler-worker:test`
-- `npx nx run compiler-worker:typecheck`
+- `npx nx run @8f4e/compiler-worker:test`
+- `npx nx run @8f4e/compiler-worker:typecheck`
+- Test unchanged-code reuse, changed-code invalidation, memory replacement, and default patching through compilation.
 
 ## Success Criteria
 
@@ -89,7 +84,7 @@ Likely implementation shape:
 
 ## Affected Components
 
-- `packages/editor/packages/compiler-worker/src/compileAndUpdateMemory.ts` - current forced reset path
+- `packages/editor/packages/compiler-worker/src/compileAndUpdateMemory.ts` - current per-compilation instantiation
 - `packages/editor/packages/compiler-worker/src/getOrCreateMemory.ts` - memory recreation logic
 - `packages/editor/packages/compiler-worker/src/didProgramOrMemoryStructureChange.ts` - existing structure checks
 - `packages/editor/packages/compiler-worker/src/getMemoryValueChanges.ts` - incremental patch path
@@ -98,7 +93,7 @@ Likely implementation shape:
 
 - **Incorrect reuse detection**: reusing an incompatible instance could produce stale exports or invalid runtime behavior.
 - **State semantics**: some callers may now observe preserved runtime state where they previously saw resets on every compile.
-- **Test coverage gap**: the current dead-code path suggests reuse behavior may not be covered adequately today.
+- **Test coverage**: verify actual instance reuse and code invalidation in addition to memory values.
 
 ## Related Items
 
@@ -108,5 +103,5 @@ Likely implementation shape:
 
 ## Notes
 
-- The current code already contains the intended abstraction for reuse; the main issue is that the call site bypasses it.
-- This is a good candidate for a small, high-leverage cleanup because it removes dead behavior and makes the worker lifecycle match its own API.
+The service-ownership cleanup removed an unreachable instance-reuse stub and unused reset-result fields. That cleanup
+preserves per-compilation instantiation. This task remains responsible for implementing and verifying real instance reuse.

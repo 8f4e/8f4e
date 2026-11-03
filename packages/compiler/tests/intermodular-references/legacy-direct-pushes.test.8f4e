@@ -1,0 +1,60 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+Legacy direct operands intentionally remain legal during the fixed-reference migration.
+When direct pushes are removed, convert these cases to rejection fixtures.
+See docs/intermodular-push-audit.md.
+noteEnd
+
+entry test
+module source
+int[] values 3 11 22 33
+int8u[] bytes 2 7 255
+int tail 99
+moduleEnd
+
+module legacyAssertions
+int& values &source:values
+int8u& bytes &source:bytes
+
+; Named and indexed starts, module bases, and both end-address forms.
+push &source:values
+assertEqual values
+push &source:0
+assertEqual values
+push &source:
+load
+assertEqual 11
+push source:values&
+assertEqual values+8
+push source:&
+load
+assertEqual 99
+
+; Inline operands, arithmetic expressions, and pushed continuations.
+push 0
+add &source:values
+assertEqual values
+push &source:values+4
+load
+assertEqual 22
+push
+- &source:values
+assertEqual values
+
+push count(source:values)
+assertEqual 3
+push sizeof(source:bytes)
+assertEqual 1
+push min(source:bytes)
+assertEqual 0
+push max(source:bytes)
+assertEqual 255
+push count(source:values)*sizeof(source:values)
+assertEqual 12
+push
+- max(source:bytes)-min(source:bytes)
+assertEqual 255
+moduleEnd
+entryEnd

@@ -1,0 +1,6 @@
+{
+	"extends": "@8f4e/config/tsconfig.base.json",
+	"compilerOptions": { "outDir": "dist", "rootDir": "src", "lib": ["es2023"], "types": [] },
+	"include": ["src/**/*.ts"],
+	"exclude": ["src/**/*.test.ts"]
+}

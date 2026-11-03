@@ -22,9 +22,10 @@ describe('getCodeBlockNameFromSource', () => {
 		expect(getCodeBlockNameFromSource(['group audio', '', 'groupEnd'])).toBe('audio');
 	});
 
-	it('returns empty string for note blocks', () => {
-		expect(getCodeBlockNameFromSource(['note', '', 'noteEnd'])).toBe('');
-		expect(getCodeBlockNameFromSource(['note custom', '', 'noteEnd'])).toBe('');
+	it('returns source names for notes and includes, and an empty name for unnamed blocks', () => {
+		expect(getCodeBlockNameFromSource(['note', 'module bodyText', 'noteEnd'])).toBe('');
+		expect(getCodeBlockNameFromSource(['note colors', '', 'noteEnd'])).toBe('colors');
+		expect(getCodeBlockNameFromSource(['includes utilities', '', 'includesEnd'])).toBe('utilities');
 	});
 
 	it('returns empty string when no block name is found', () => {

@@ -1,5 +1,6 @@
 import type { InstructionSpec, instructionSpecs, MemoryOperationEffectSpec } from './instructionSpecs';
 import type { MemoryDeclarationInstruction } from './memory';
+import type { ReferenceSlotInstruction } from './referenceSlots';
 
 /** Names of every instruction entry registered in the language spec table. */
 export type InstructionSpecName = keyof typeof instructionSpecs;
@@ -30,6 +31,13 @@ export type NoSourceArgumentInstructionName = {
 		: never;
 }[CodegenInstructionSpecName];
 
+/** Binary instructions that accept an optional push-style source operand. */
+export type InlineOperandInstructionName = {
+	[TInstruction in InstructionSpecName]: (typeof instructionSpecs)[TInstruction] extends { inlineOperand: true }
+		? TInstruction
+		: never;
+}[InstructionSpecName];
+
 /** Extracts memory-effect metadata from an instruction spec when present. */
 type MemoryOperationForSpec<TSpec> = TSpec extends { effects: { memory: infer TMemory } } ? TMemory : never;
 
@@ -59,4 +67,6 @@ export type InstructionSpecLookup<TInstruction extends string> = TInstruction ex
 	? (typeof instructionSpecs)[TInstruction]
 	: TInstruction extends MemoryDeclarationInstruction
 		? (typeof instructionSpecs)['memoryDeclaration']
-		: InstructionSpec | undefined;
+		: TInstruction extends ReferenceSlotInstruction
+			? (typeof instructionSpecs)['referenceSlot']
+			: InstructionSpec | undefined;

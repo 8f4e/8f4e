@@ -1,4 +1,4 @@
-import { parseDirectiveComments, serializeDirectiveComments } from '../directives/utils';
+import { parseDirectiveLineRecords, serializeDirectiveComments } from '../directives/utils';
 
 /**
  * Updates the arguments of all existing directive lines in code.
@@ -21,15 +21,14 @@ import { parseDirectiveComments, serializeDirectiveComments } from '../directive
  */
 export function updateDirectiveArgs(code: string[], name: string, updater: (args: string[]) => string[]): string[] {
 	return code.map(line => {
-		const directives = parseDirectiveComments(line);
+		const directives = parseDirectiveLineRecords(line);
 		if (directives.length === 0 || directives.every(directive => directive.name !== name)) {
 			return line;
 		}
 
-		return (
-			serializeDirectiveComments(
-				directives.map(directive => (directive.name === name ? { name, args: updater(directive.args) } : directive))
-			) ?? line
-		);
+		const serialized = serializeDirectiveComments(
+			directives.map(directive => (directive.name === name ? { name, args: updater(directive.args) } : directive))
+		)!;
+		return directives[0].isTrailing ? line.slice(0, line.indexOf(';')) + serialized : serialized;
 	});
 }

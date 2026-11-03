@@ -22,8 +22,10 @@ drop
 push value&
 drop
 moduleEnd
+; Legacy end-address coverage: fixed references do not support end initializers.
 module mReader
-push &aSource:value
+float64& start &aSource:value
+push start
 drop
 push aSource:value&
 drop

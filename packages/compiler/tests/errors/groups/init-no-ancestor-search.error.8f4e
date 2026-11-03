@@ -4,12 +4,16 @@ module source
 int output
 moduleEnd
 group outer
+entry main
 group inner
 expose input &processor:input
 init &input &source:output
+entry main
 module processor
 int* input
 moduleEnd
+entryEnd
 groupEnd
+entryEnd
 groupEnd
 entryEnd

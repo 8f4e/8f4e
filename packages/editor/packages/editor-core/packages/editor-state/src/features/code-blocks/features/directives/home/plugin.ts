@@ -1,7 +1,7 @@
 import { parseViewportBlockAlignment } from '../../../../viewport/blockAlignment';
-import { createDirectivePlugin } from '../utils';
+import { createDirectiveDefinition } from '../utils';
 
-export default createDirectivePlugin('home', (directive, draft) => {
+export default createDirectiveDefinition('home', (directive, draft) => {
 	if (directive.args.length > 1) {
 		return;
 	}

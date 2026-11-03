@@ -1,8 +1,8 @@
 import type { CompilerASTLine } from '@8f4e/language-spec';
 import { BlockType, ErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
+import createStackAnalyzerTestContext from '../../tests/testUtils';
 import { analyzeInstruction } from '../analyzeInstruction';
-import createStackAnalyzerTestContext from '../testUtils';
 
 describe('ifEnd stack analysis', () => {
 	it('accepts and restores a valid float32 else-branch result', () => {

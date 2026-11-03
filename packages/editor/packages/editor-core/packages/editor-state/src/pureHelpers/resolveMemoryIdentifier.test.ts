@@ -1,17 +1,7 @@
 import type { PlannedMemoryDeclaration, PlannedMemoryModule } from '@8f4e/language-spec';
-import { MemoryTypes } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import {
-	runAfterGraphicDataWidthCalculation,
-	runBeforeGraphicDataWidthCalculation,
-} from '../features/code-blocks/features/directives/registry';
 import resolveMemoryIdentifier, { getDeclarationsByByteAddress } from './resolveMemoryIdentifier';
-import {
-	createMockCodeBlock,
-	createMockState,
-	deriveDirectiveStateForMockCodeBlock,
-	findWidgetById,
-} from './testingUtils/testUtils';
+import { createMockState } from './testingUtils/testUtils';
 
 function createMemory(
 	id: string,
@@ -23,7 +13,7 @@ function createMemory(
 		numberOfElements: 1,
 		elementWordSize: 4,
 		elementByteLength: 4,
-		type: MemoryTypes.int,
+		type: 'int' as const,
 		byteAddress,
 		allocationUnitAddress: byteAddress / 4,
 		allocationUnitCount: 1,
@@ -57,7 +47,7 @@ describe('resolveMemoryIdentifier', () => {
 	it('resolves intermodule references relative to the current project path', () => {
 		const state = createMockState();
 		const memory = createMemory('value', 16);
-		state.compiler.memoryPlan.modules['audio/source'] = createModule('audio/source', [memory]);
+		state.compiler.result.memoryPlan.modules['audio/source'] = createModule('audio/source', [memory]);
 
 		expect(resolveMemoryIdentifier(state, { kind: 'module', moduleId: 'audio/consumer' }, 'source:value')?.memory).toBe(
 			memory
@@ -70,25 +60,24 @@ describe('resolveMemoryIdentifier', () => {
 	it('resolves a dereferenced pointer from the memory plan without rendered outputs', () => {
 		const state = createMockState();
 		const pointer = createMemory('pointer', 4, {
-			type: MemoryTypes['int*'],
+			type: 'int*' as const,
 			pointeeBaseType: 'int',
 			pointerDepth: 1,
 		});
 		const pointee = createMemory('value', 40);
 		const watcherModule = createModule('watcher', [pointer]);
 		const pointeeModule = createModule('pointee', [pointee]);
-		state.compiler.memoryPlan.modules = { watcher: watcherModule, pointee: pointeeModule };
-		state.compiler.memoryPlan.moduleList = [watcherModule, pointeeModule];
+		state.compiler.result.memoryPlan.modules = { watcher: watcherModule, pointee: pointeeModule };
+		state.compiler.result.memoryPlan.moduleList = [watcherModule, pointeeModule];
 		state.callbacks.getWordFromMemory = () => pointee.byteAddress;
 
-		expect(state.codeBlockRendering.outputsByWordAddress.size).toBe(0);
 		expect(resolveMemoryIdentifier(state, { kind: 'module', moduleId: 'watcher' }, '*pointer')?.memory).toBe(pointee);
 	});
 
 	it('builds the byteAddress index once per memory plan and reflects runtime pointer changes without rescanning', () => {
 		const state = createMockState();
 		const pointer = createMemory('pointer', 4, {
-			type: MemoryTypes['int*'],
+			type: 'int*' as const,
 			pointeeBaseType: 'int',
 			pointerDepth: 1,
 		});
@@ -107,8 +96,8 @@ describe('resolveMemoryIdentifier', () => {
 			},
 		});
 
-		state.compiler.memoryPlan.modules = { watcher: watcherModule, pointee: pointeeModule };
-		state.compiler.memoryPlan.moduleList = [watcherModule, pointeeModule];
+		state.compiler.result.memoryPlan.modules = { watcher: watcherModule, pointee: pointeeModule };
+		state.compiler.result.memoryPlan.moduleList = [watcherModule, pointeeModule];
 
 		let currentTargetAddress = pointeeA.byteAddress;
 		state.callbacks.getWordFromMemory = () => currentTargetAddress;
@@ -116,12 +105,12 @@ describe('resolveMemoryIdentifier', () => {
 		expect(resolveMemoryIdentifier(state, { kind: 'module', moduleId: 'watcher' }, '*pointer')?.memory).toBe(pointeeA);
 		expect(declarationReads).toBe(1);
 
-		const initialIndex = getDeclarationsByByteAddress(state.compiler.memoryPlan);
+		const initialIndex = getDeclarationsByByteAddress(state.compiler.result.memoryPlan);
 		currentTargetAddress = pointeeB.byteAddress;
 
 		expect(resolveMemoryIdentifier(state, { kind: 'module', moduleId: 'watcher' }, '*pointer')?.memory).toBe(pointeeB);
 		expect(declarationReads).toBe(1);
-		expect(getDeclarationsByByteAddress(state.compiler.memoryPlan)).toBe(initialIndex);
+		expect(getDeclarationsByByteAddress(state.compiler.result.memoryPlan)).toBe(initialIndex);
 
 		currentTargetAddress = 9999;
 		expect(resolveMemoryIdentifier(state, { kind: 'module', moduleId: 'watcher' }, '*pointer')).toBeUndefined();
@@ -131,7 +120,7 @@ describe('resolveMemoryIdentifier', () => {
 	it('preserves first-match declaration order when duplicate byte addresses exist', () => {
 		const state = createMockState();
 		const pointer = createMemory('pointer', 4, {
-			type: MemoryTypes['int*'],
+			type: 'int*' as const,
 			pointeeBaseType: 'int',
 			pointerDepth: 1,
 		});
@@ -143,8 +132,8 @@ describe('resolveMemoryIdentifier', () => {
 		const moduleA = createModule('moduleA', [firstMatch, sameModuleDuplicate]);
 		const moduleB = createModule('moduleB', [crossModuleDuplicate]);
 
-		state.compiler.memoryPlan.modules = { watcher: watcherModule, moduleA, moduleB };
-		state.compiler.memoryPlan.moduleList = [watcherModule, moduleA, moduleB];
+		state.compiler.result.memoryPlan.modules = { watcher: watcherModule, moduleA, moduleB };
+		state.compiler.result.memoryPlan.moduleList = [watcherModule, moduleA, moduleB];
 		state.callbacks.getWordFromMemory = () => 64;
 
 		expect(resolveMemoryIdentifier(state, { kind: 'module', moduleId: 'watcher' }, '*pointer')?.memory).toBe(
@@ -156,49 +145,38 @@ describe('resolveMemoryIdentifier', () => {
 		const state = createMockState();
 		const zeroTarget = createMemory('atZero', 0);
 		const pointer = createMemory('pointer', 4, {
-			type: MemoryTypes['int*'],
+			type: 'int*' as const,
 			pointeeBaseType: 'int',
 			pointerDepth: 1,
 		});
 		const initialTarget = createMemory('initialTarget', 32);
 		const watcherModule = createModule('watcher', [zeroTarget, pointer, initialTarget]);
 
-		state.compiler.memoryPlan.modules = { watcher: watcherModule };
-		state.compiler.memoryPlan.moduleList = [watcherModule];
+		state.compiler.result.memoryPlan.modules = { watcher: watcherModule };
+		state.compiler.result.memoryPlan.moduleList = [watcherModule];
 
 		let runtimeAddress = 0;
 		state.callbacks.getWordFromMemory = () => runtimeAddress;
 
-		const block = createMockCodeBlock({
-			name: 'watcher',
-			code: ['; @watch *pointer'],
-			lineNumberColumnWidth: 2,
-			gaps: new Map(),
-		});
-		const resolveWatchWidget = () => {
-			const directiveState = deriveDirectiveStateForMockCodeBlock(block);
-			runBeforeGraphicDataWidthCalculation(block, state, directiveState);
-			runAfterGraphicDataWidthCalculation(block, state, directiveState);
-			return findWidgetById(block.widgets.debuggers, '*pointer');
-		};
+		const resolvePointer = () => resolveMemoryIdentifier(state, { kind: 'module', moduleId: 'watcher' }, '*pointer');
 
-		expect(resolveWatchWidget()?.memory).toBe(zeroTarget);
+		expect(resolvePointer()?.memory).toBe(zeroTarget);
 
 		runtimeAddress = initialTarget.byteAddress;
-		expect(resolveWatchWidget()?.memory).toBe(initialTarget);
+		expect(resolvePointer()?.memory).toBe(initialTarget);
 
 		const recompiledTarget = createMemory('recompiledTarget', 48);
 		const recompiledModule = createModule('watcher', [pointer, recompiledTarget]);
-		state.compiler.memoryPlan = {
+		state.compiler.result.memoryPlan = {
 			modules: { watcher: recompiledModule },
 			moduleList: [recompiledModule],
 		};
 
 		// Previous target at byteAddress 32 is no longer in the replaced memoryPlan
-		expect(resolveWatchWidget()).toBeUndefined();
+		expect(resolvePointer()).toBeUndefined();
 
 		runtimeAddress = recompiledTarget.byteAddress;
-		expect(resolveWatchWidget()?.memory).toBe(recompiledTarget);
+		expect(resolvePointer()?.memory).toBe(recompiledTarget);
 		expect(getDeclarationsByByteAddress(undefined)).toBeUndefined();
 	});
 });
