@@ -18,14 +18,14 @@ describe('crossfade plugin', () => {
 		expect(test.memoryViews.float32[memory.dry.allocationUnitAddress]).toBe(1);
 		expect(test.memoryViews.float32[memory.wet.allocationUnitAddress]).toBe(0);
 		const drag = { x: x + test.block.width, y, movementX: 20, movementY: 20, stopPropagation: false };
-		test.events.dispatch('mousemove', drag);
+		test.events.dispatch('codeBlockPointerMove', drag);
 		expect(drag.stopPropagation).toBe(true);
 		expect(test.memoryViews.float32[memory.dry.allocationUnitAddress]).toBe(0);
 		expect(test.memoryViews.float32[memory.wet.allocationUnitAddress]).toBe(1);
 		expect([test.block.x, test.block.y]).toEqual([beforeX, beforeY]);
-		test.events.dispatch('mouseup');
+		test.events.dispatch('codeBlockPointerUp');
 		test.writeMemory.mockClear();
-		test.events.dispatch('mousemove', { ...drag, stopPropagation: false });
+		test.events.dispatch('codeBlockPointerMove', { ...drag, stopPropagation: false });
 		expect(test.writeMemory).not.toHaveBeenCalled();
 	});
 	it('consumes drag movement before ordinary listeners registered earlier', async () => {
@@ -33,11 +33,11 @@ describe('crossfade plugin', () => {
 		const plugin = (options: Parameters<typeof createCrossfadePlugin>[0]): EditorPlugin => ({
 			id: 'crossfade-with-ordinary-listener',
 			setup: context => {
-				context.events.on('mousemove', onMove);
+				context.events.on('codeBlockPointerMove', onMove);
 				const dispose = createCrossfadePlugin(options).setup(context);
 				return () => {
 					dispose();
-					context.events.off('mousemove', onMove);
+					context.events.off('codeBlockPointerMove', onMove);
 				};
 			},
 		});
@@ -47,10 +47,10 @@ describe('crossfade plugin', () => {
 		const x = test.block.x + localX - test.state.viewport.x;
 		const y = test.block.y + localY + 1 - test.state.viewport.y;
 		test.events.dispatch('mousedown', { x, y, stopPropagation: false });
-		test.events.dispatch('mousemove', { x: x + 20, y, movementX: 20, movementY: 0, stopPropagation: false });
+		test.events.dispatch('codeBlockPointerMove', { x: x + 20, y, movementX: 20, movementY: 0, stopPropagation: false });
 		expect(onMove).not.toHaveBeenCalled();
-		test.events.dispatch('mouseup');
-		test.events.dispatch('mousemove', { x: x + 40, y, movementX: 20, movementY: 0, stopPropagation: false });
+		test.events.dispatch('codeBlockPointerUp');
+		test.events.dispatch('codeBlockPointerMove', { x: x + 40, y, movementX: 20, movementY: 0, stopPropagation: false });
 		expect(onMove).toHaveBeenCalledOnce();
 	});
 	it('writes to the backing addresses of exposed project-group memory', async () => {
@@ -103,7 +103,7 @@ describe('crossfade plugin', () => {
 		});
 		first.dispose();
 		first.writeMemory.mockClear();
-		first.events.dispatch('mousemove', { x: 500, y: 50, stopPropagation: false });
+		first.events.dispatch('codeBlockPointerMove', { x: 500, y: 50, stopPropagation: false });
 		first.update(source);
 		first.render();
 		second.render();

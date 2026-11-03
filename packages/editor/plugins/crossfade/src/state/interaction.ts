@@ -1,4 +1,5 @@
-import type { CodeBlockGraphicData, EventDispatcher, InternalMouseEvent, State } from '@8f4e/editor-state-types';
+import type { CodeBlockPointerMoveEvent } from '@8f4e/editor-state';
+import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { Crossfade } from '../types';
 
 interface ActiveCrossfade {
@@ -29,7 +30,13 @@ export function registerCrossfadeInteraction(
 		writeMemory(crossfade.rightWordAddress, rightValue, false);
 	};
 
-	const onCodeBlockPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+	const onCodeBlockPointerDown = (event: {
+		x: number;
+		y: number;
+		codeBlock: CodeBlockGraphicData;
+		stopPropagation?: boolean;
+	}) => {
+		const { x, y, codeBlock } = event;
 		const crossfade = crossfadesByBlock
 			.get(codeBlock)
 			?.find(
@@ -44,12 +51,12 @@ export function registerCrossfadeInteraction(
 			return;
 		}
 
+		event.stopPropagation = true;
 		activeCrossfade = { crossfade, codeBlock };
-		state.codeBlockRendering.draggedCodeBlock = undefined;
 		updateCrossfadeValue(activeCrossfade, x);
 	};
 
-	const onMouseMove = (event: InternalMouseEvent) => {
+	const onPointerMove = (event: CodeBlockPointerMoveEvent) => {
 		if (!activeCrossfade) {
 			return;
 		}
@@ -58,17 +65,17 @@ export function registerCrossfadeInteraction(
 		event.stopPropagation = true;
 	};
 
-	const onMouseUp = () => {
+	const onPointerUp = () => {
 		activeCrossfade = null;
 	};
 
-	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
-	events.on('mousemove', onMouseMove, { capture: true });
-	events.on('mouseup', onMouseUp);
+	events.on('codeBlockPointerDown', onCodeBlockPointerDown, { capture: true });
+	events.on('codeBlockPointerMove', onPointerMove, { capture: true });
+	events.on('codeBlockPointerUp', onPointerUp);
 
 	return () => {
 		events.off('codeBlockPointerDown', onCodeBlockPointerDown);
-		events.off('mousemove', onMouseMove);
-		events.off('mouseup', onMouseUp);
+		events.off('codeBlockPointerMove', onPointerMove);
+		events.off('codeBlockPointerUp', onPointerUp);
 	};
 }

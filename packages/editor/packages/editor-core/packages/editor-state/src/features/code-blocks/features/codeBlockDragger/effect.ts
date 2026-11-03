@@ -16,11 +16,19 @@ export interface ResolveCodeBlockDragTargetsEvent {
 }
 
 export interface CodeBlockPointerDownEvent {
+	/** A control sets this when it takes ownership of the pointer. */
+	stopPropagation?: boolean;
 	x: number;
 	y: number;
 	relativeX: number;
 	relativeY: number;
 	codeBlock: CodeBlockGraphicData;
+}
+
+export interface CodeBlockPointerMoveEvent {
+	x: number;
+	y: number;
+	stopPropagation: boolean;
 }
 
 export default function codeBlockDragger(store: StateManager<State>, events: EventDispatcher): () => void {
@@ -68,13 +76,20 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		const relativeX = Math.abs(x - (draggedCodeBlock.x - state.viewport.x));
 		const relativeY = Math.abs(y - (draggedCodeBlock.y - state.viewport.y));
 
-		events.dispatch<CodeBlockPointerDownEvent>('codeBlockPointerDown', {
+		const pointerEvent: CodeBlockPointerDownEvent = {
 			x,
 			y,
 			relativeX,
 			relativeY,
 			codeBlock: draggedCodeBlock,
-		});
+		};
+		events.dispatch('codeBlockPointerDown', pointerEvent);
+		if (pointerEvent.stopPropagation) {
+			event.stopPropagation = true;
+			state.codeBlockRendering.draggedCodeBlock = undefined;
+			dragSet = [];
+			return;
+		}
 
 		// Bring dragged module forward within its z-order partition.
 		// Normal blocks move to the end of the normal segment (before always-on-top blocks).
@@ -93,6 +108,8 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 	}
 
 	function onMouseMove(event: InternalMouseEvent) {
+		events.dispatch('codeBlockPointerMove', event);
+		if (event.stopPropagation) return;
 		const { movementX, movementY } = event;
 		if (state.codeBlockRendering.draggedCodeBlock && dragSet.length > 0) {
 			if (movementX !== 0 || movementY !== 0) {
@@ -186,13 +203,16 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		orderBeforeDrag = [];
 	}
 
+	const releaseControlPointer = () => events.dispatch('codeBlockPointerUp');
 	events.on('mousedown', onMouseDown);
 	events.on('mousemove', onMouseMove);
 	events.on('mouseup', onMouseUp);
+	events.on('mouseup', releaseControlPointer, { capture: true });
 
 	return () => {
 		events.off('mousedown', onMouseDown);
 		events.off('mousemove', onMouseMove);
 		events.off('mouseup', onMouseUp);
+		events.off('mouseup', releaseControlPointer);
 	};
 }

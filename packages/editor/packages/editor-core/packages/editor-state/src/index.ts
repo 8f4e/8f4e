@@ -39,6 +39,11 @@ export type {
 } from './editing';
 
 export { createEditorEditingHandle, EditorEditingError, getEditorBlockId } from './editing';
+export type {
+	CodeBlockPointerDownEvent,
+	CodeBlockPointerMoveEvent,
+} from './features/code-blocks/features/codeBlockDragger/effect';
+export { default as findCodeBlockAtViewportCoordinates } from './features/code-blocks/utils/finders/findCodeBlockAtViewportCoordinates';
 export {
 	collectSchemaConfigPaths,
 	createSchemaEditorConfigValidator,

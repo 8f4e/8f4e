@@ -59,3 +59,6 @@
 
 - `includeKeyboardModeSwitching: false` omits the mode-switching factory import and plugin. This is composition
   policy; core has no mode-switching feature flag and the plugin has no runtime enable guard.
+
+- Forward `touchNavigation` (`fingerCount` and `axis`) to the touch input plugin without implementing gestures in
+  the composition. The default is two fingers on both axes; the product landing page selects one-finger horizontal panning.

@@ -1,23 +1,36 @@
 # Touch viewport navigation
 
-`@8f4e/editor-plugin-touch-viewport-navigation` pans the viewport with one finger. A 6-pixel movement threshold keeps
-taps available for existing controls. Panning follows the finger and snaps to the editor grid when the gesture ends
-or is cancelled. A second finger ends the gesture; movement resumes only after a new single-finger touch starts.
+`@8f4e/editor-plugin-touch-viewport-navigation` translates native touches into editor control interactions and viewport
+panning. Controls receive the same `codeBlockPointerDown`, `codeBlockPointerMove`, and `codeBlockPointerUp` events as
+mouse input, with no browser listeners or device checks in feature plugins. A control claims a pointer down by setting
+`stopPropagation`; the adapter then owns that touch until release, cancellation, an extra finger, or project replacement.
+Unclaimed taps remain available to the browser and the mouse-input adapter.
 
 ```ts
 import { createTouchViewportNavigationPlugin } from '@8f4e/editor-plugin-touch-viewport-navigation';
 
-const plugin = createTouchViewportNavigationPlugin({ inputTarget: canvas });
+const plugin = createTouchViewportNavigationPlugin({
+	inputTarget: canvas,
+	fingerCount: 1,
+	axis: 'horizontal',
+});
 ```
 
-Both default and minimal compositions import this plugin after their first render, only when `(pointer: coarse)`
-matches. The plugin itself has no capability checks. It uses the existing generic viewport helpers, without
-synthesizing mouse drags or modifying source, block positions, history, or project revisions.
+`fingerCount` accepts `1` or `2` and defaults to `2`. `axis` accepts `'both'`, `'horizontal'`, or `'vertical'` and defaults
+to `'both'`. Both editor compositions expose these settings through `touchNavigation`. The landing page uses one-finger
+horizontal panning, leaving vertical swipes available for native page scrolling.
 
-While viewport dragging is enabled it sets the canvas's `touch-action` to `none`; disabling dragging or disposing the
-plugin restores the original value. Completed drags cancel `touchend` so they do not click a control. Taps are left to
-the browser and the separate mouse-input plugin. Project replacement clears any active gesture. The touch-event target
-continues receiving a gesture after the finger leaves its bounds, as specified by [Touch Events](https://www.w3.org/TR/touch-events/#the-touchmove-event).
+A 6-pixel threshold distinguishes panning from a tap. Panning follows the finger position, or the midpoint of two
+fingers, and snaps only the enabled axes to the editor grid when finished. Changing the finger count ends the gesture.
+Axis-restricted gestures yield to page scrolling when the initial movement is primarily in the disabled direction;
+`touch-action: pan-y` or `pan-x` permits that native scrolling. Unrestricted panning uses `touch-action: none`.
+Disabling viewport dragging or disposing the plugin restores the original inline touch action. Controls remain usable
+when viewport dragging is disabled.
 
-Run the Nx `build`, `test`, `typecheck`, and `test:screenshot` targets. Unit tests cover gesture state and cleanup;
-native browser tests cover dragging and mouse-compatible taps. Combined plugin behavior is tested in editor-default.
+Both default and minimal compositions load this plugin after their first render on `(pointer: coarse)` devices.
+The plugin has no capability checks and synthesizes no DOM mouse events. It does not edit block positions, source,
+history, or project revisions. The touch target keeps receiving a gesture outside its bounds. Disposal removes all
+listeners and releases any held control.
+
+Run the Nx `build`, `test`, `typecheck`, and `test:screenshot` targets. Tests cover configurable gestures, native page
+scrolling, cancellation, cleanup, and taps. Combined control interactions are covered by editor-default browser tests.

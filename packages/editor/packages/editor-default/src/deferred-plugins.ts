@@ -54,7 +54,7 @@ export function createDeferredEditorPlugin(
 			matches: () => hasCoarsePointer,
 			load: () =>
 				import('@8f4e/editor-plugin-touch-viewport-navigation').then(module =>
-					module.createTouchViewportNavigationPlugin({ inputTarget: canvas })
+					module.createTouchViewportNavigationPlugin({ ...options.touchNavigation, inputTarget: canvas })
 				),
 		},
 		{

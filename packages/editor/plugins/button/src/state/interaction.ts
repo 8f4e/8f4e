@@ -14,7 +14,13 @@ export function registerButtonInteraction(
 		pressedButton = undefined;
 		writeMemory(button.allocationUnitAddress, button.offValue, button.isInteger);
 	};
-	const onPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+	const onPointerDown = (event: {
+		x: number;
+		y: number;
+		codeBlock: CodeBlockGraphicData;
+		stopPropagation?: boolean;
+	}) => {
+		const { x, y, codeBlock } = event;
 		pressedButton = buttonsByBlock
 			.get(codeBlock)
 			?.find(
@@ -25,13 +31,14 @@ export function registerButtonInteraction(
 					y <= codeBlock.y + button.y + button.height - state.viewport.y
 			);
 		if (!pressedButton) return;
+		event.stopPropagation = true;
 		writeMemory(pressedButton.allocationUnitAddress, pressedButton.onValue, pressedButton.isInteger);
 	};
-	events.on('codeBlockPointerDown', onPointerDown);
-	events.on('mouseup', release);
+	events.on('codeBlockPointerDown', onPointerDown, { capture: true });
+	events.on('codeBlockPointerUp', release);
 	return () => {
 		events.off('codeBlockPointerDown', onPointerDown);
-		events.off('mouseup', release);
+		events.off('codeBlockPointerUp', release);
 		release();
 	};
 }

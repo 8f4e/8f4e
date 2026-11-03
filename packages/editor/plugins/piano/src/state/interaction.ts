@@ -32,7 +32,13 @@ export function registerPianoInteraction(
 	keyboardsByBlock: WeakMap<CodeBlockGraphicData, PianoKeyboard[]>,
 	writeMemory: (address: number, value: number, isInteger: boolean) => void
 ): () => void {
-	const onCodeBlockPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+	const onCodeBlockPointerDown = (event: {
+		x: number;
+		y: number;
+		codeBlock: CodeBlockGraphicData;
+		stopPropagation?: boolean;
+	}) => {
+		const { x, y, codeBlock } = event;
 		const keyboard = keyboardsByBlock
 			.get(codeBlock)
 			?.find(
@@ -57,6 +63,7 @@ export function registerPianoInteraction(
 			return;
 		}
 
+		event.stopPropagation = true;
 		const noteNumber = keyboard.startingMidiNote + key;
 		const pressedKeys = readRuntimePressedKeys(keyboard, getWordFromMemory);
 		if (pressedKeys.has(noteNumber)) {
@@ -76,7 +83,7 @@ export function registerPianoInteraction(
 		writeMemory(keyboard.pressedKeyCountMemory.allocationUnitAddress, pressedKeys.size, true);
 	};
 
-	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
+	events.on('codeBlockPointerDown', onCodeBlockPointerDown, { capture: true });
 
 	return () => {
 		events.off('codeBlockPointerDown', onCodeBlockPointerDown);

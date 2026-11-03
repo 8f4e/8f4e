@@ -15,5 +15,8 @@ events from touch taps. `captureWheel: false` leaves wheel scrolling to the surr
 only while `viewportDragging` is enabled; after scrolling pauses for 120 ms, the plugin emits `viewportscrollend` and
 core snaps the viewport to the grid. Disposal removes listeners and cancels pending timer work.
 
+The plugin disables the browser's native tap highlight on its input target so touching or long-pressing the canvas
+does not tint the entire editor. Disposal restores the target's original inline highlight color and priority.
+
 Run the Nx `build`, `test`, `typecheck`, and `test:screenshot` targets. Unit tests cover translation and cleanup;
 native browser tests cover focusing, viewport panning, and page scrolling.

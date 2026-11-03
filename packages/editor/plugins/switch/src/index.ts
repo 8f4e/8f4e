@@ -28,7 +28,13 @@ export function createSwitchPlugin({
 					}
 				}
 			});
-			const onPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+			const onPointerDown = (event: {
+				x: number;
+				y: number;
+				codeBlock: CodeBlockGraphicData;
+				stopPropagation?: boolean;
+			}) => {
+				const { x, y, codeBlock } = event;
 				const control = widgets
 					.get(codeBlock)
 					?.find(
@@ -39,6 +45,7 @@ export function createSwitchPlugin({
 							y <= codeBlock.y + control.y + control.height - state.viewport.y
 					);
 				if (!control) return;
+				event.stopPropagation = true;
 				const value = state.callbacks.getWordFromMemory?.(control.allocationUnitAddress);
 				writeMemory(
 					control.allocationUnitAddress,
@@ -46,7 +53,7 @@ export function createSwitchPlugin({
 					control.isInteger
 				);
 			};
-			events.on('codeBlockPointerDown', onPointerDown);
+			events.on('codeBlockPointerDown', onPointerDown, { capture: true });
 			return () => {
 				events.off('codeBlockPointerDown', onPointerDown);
 				unregisterDrawer();

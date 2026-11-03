@@ -66,7 +66,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		y: codeBlock.y + row * state.viewport.hGrid - state.viewport.y + 1,
 	});
 	const press = (row = 2) => events.dispatch('codeBlockPointerDown', { codeBlock, ...point(row) });
-	const release = () => events.dispatch('mouseup');
+	const release = () => events.dispatch('codeBlockPointerUp');
 	return { store, state, codeBlock, events, memoryViews, draw, write, render, point, press, release, dispose };
 }
 

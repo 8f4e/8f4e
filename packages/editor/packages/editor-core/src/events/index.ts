@@ -37,7 +37,7 @@ export default function events(): DisposableEventDispatcher {
 
 	function dispatch<T>(type: string, eventObject?: T, pending?: Array<void | Promise<void>>): void {
 		if (!subscriptions[type]) {
-			return console.warn('No subscription to event type:', type);
+			return;
 		}
 		for (const handlers of [subscriptions[type].capture, subscriptions[type].normal]) {
 			for (const handler of [...handlers]) {

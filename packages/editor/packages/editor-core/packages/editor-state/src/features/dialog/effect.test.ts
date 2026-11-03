@@ -80,6 +80,42 @@ describe('dialog effect', () => {
 		expect(state.dialog.y).toBe(336);
 	});
 
+	it.each([320, 375, 390])('keeps dialog content and working buttons inside a %ipx portrait viewport', width => {
+		const state = createMockState({
+			dialogStack: [
+				{
+					id: 'audio',
+					title: 'Audio playback permission and device settings',
+					text: 'Audio playback requires permission. Tap Allow to start sound on this device.',
+					buttons: [{ title: 'Cancel' }, { title: 'More information' }, { title: 'Allow audio', action: 'allowAudio' }],
+				},
+			],
+			viewport: { width: 1280, height: 768, vGrid: 8, hGrid: 16 },
+		});
+		const { onResize, emit, events } = setup(state);
+		state.viewport.width = width;
+		onResize();
+		expect(state.dialog.x).toBeGreaterThanOrEqual(8);
+		expect(state.dialog.x + state.dialog.width).toBeLessThanOrEqual(width - 8);
+		const textWidth = state.dialog.width / state.viewport.vGrid - 2;
+		expect(state.dialog.title.length).toBeLessThanOrEqual(textWidth);
+		for (const line of state.dialog.wrappedText) expect(line.length).toBeLessThanOrEqual(textWidth);
+		expect(new Set(state.dialog.buttons.map(button => button.y)).size).toBeGreaterThan(1);
+		for (const button of state.dialog.buttons) {
+			expect(button.x).toBeGreaterThanOrEqual(8);
+			expect(button.x + button.width).toBeLessThanOrEqual(state.dialog.width - 8);
+			expect(button.y + button.height).toBeLessThanOrEqual(state.dialog.height - 16);
+		}
+		const button = state.dialog.buttons[2];
+		emit('mousedown', {
+			x: state.dialog.x + button.x + button.width / 2,
+			y: state.dialog.y + button.y + button.height / 2,
+			stopPropagation: false,
+		});
+		expect(events.dispatch).toHaveBeenCalledWith('allowAudio', undefined);
+		expect(state.dialogStack).toEqual([]);
+	});
+
 	it('caps the dialog width at 96 grid cells', () => {
 		const state = createMockState({
 			dialogStack: [

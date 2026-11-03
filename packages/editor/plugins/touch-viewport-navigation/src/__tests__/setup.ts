@@ -3,15 +3,20 @@ import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
-import { createTouchViewportNavigationPlugin } from '../index';
+import { createTouchViewportNavigationPlugin, type TouchViewportNavigationOptions } from '../index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-export function setup(viewportDragging = true) {
-	const inputTarget = Object.assign(new EventTarget(), { style: { touchAction: 'pan-y' } }) as unknown as HTMLElement;
+export function setup(viewportDragging = true, fingerCount?: 1 | 2, axis?: TouchViewportNavigationOptions['axis']) {
+	const inputTarget = Object.assign(new EventTarget(), {
+		style: { touchAction: 'pan-y' },
+		getBoundingClientRect: () => ({ left: 0, top: 0 }),
+		clientWidth: 640,
+		clientHeight: 480,
+	}) as unknown as HTMLElement;
 	const emitter = new EventEmitter();
 	const events: EventDispatcher = {
 		on: (name, callback, options) => {
@@ -25,7 +30,7 @@ export function setup(viewportDragging = true) {
 	events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 	const changed = vi.fn();
 	events.on('viewportChanged', changed);
-	const dispose = createTouchViewportNavigationPlugin({ inputTarget }).setup({
+	const dispose = createTouchViewportNavigationPlugin({ inputTarget, fingerCount, axis }).setup({
 		store,
 		events,
 		menus: store.menus,

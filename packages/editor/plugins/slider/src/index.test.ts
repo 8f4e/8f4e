@@ -85,10 +85,10 @@ async function setup(code = source, installed = true, name = 'controls') {
 			altKey: false,
 			stopPropagation: false,
 		};
-		events.dispatch('mousemove', event);
+		events.dispatch('codeBlockPointerMove', event);
 		return event;
 	};
-	const release = () => events.dispatch('mouseup');
+	const release = () => events.dispatch('codeBlockPointerUp');
 	const menuItems = async () => {
 		events.dispatch('openSubMenu', { menu: 'moduleMenu', payload: { codeBlock: block } });
 		await Promise.resolve();

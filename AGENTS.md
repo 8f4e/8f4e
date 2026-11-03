@@ -46,7 +46,7 @@
   navigation handles view-mode line selection and block navigation. `includeKeyboardModeSwitching: false` omits
   mode switching from default/minimal; its presence controls availability without a core feature flag.
 - DOM mouse/wheel forwarding belongs to `editor-plugin-mouse-input`, loaded on all devices. Coarse-pointer devices
-  additionally load `editor-plugin-touch-viewport-navigation` for one-finger viewport dragging with tap preservation.
+  additionally load `editor-plugin-touch-viewport-navigation` for two-finger viewport dragging with tap preservation.
   Both are independent entries in each composition's deferred registry. Core retains event dispatch, mouse-input
   state effects, viewport updates, and snapping; `captureWheel` is a mouse-plugin factory/host option.
 - The default editor also imports `editor-plugin-font-preview` for non-coarse pointers. F18/F19 cycle a temporary font

@@ -34,8 +34,13 @@ export default function dialog(store: StateManager<State>, events: EventDispatch
 			Math.max(state.viewport.width * 0.5, DIALOG_MIN_WIDTH_GRID_CELLS * state.viewport.vGrid),
 			DIALOG_MAX_WIDTH_GRID_CELLS * state.viewport.vGrid
 		);
-		const [roundedDialogWidth] = roundToGrid(dialogWidth, 0, state.viewport);
-		const wrappedText = wrapText(visibleDialog.text, Math.floor(roundedDialogWidth / state.viewport.vGrid) - 2);
+		const availableWidth = state.viewport.width - 2 * state.viewport.vGrid;
+		const roundedDialogWidth = Math.max(
+			state.viewport.vGrid,
+			Math.floor(Math.min(dialogWidth, availableWidth) / state.viewport.vGrid) * state.viewport.vGrid
+		);
+		const textWidth = Math.max(1, Math.floor(roundedDialogWidth / state.viewport.vGrid) - 2);
+		const wrappedText = wrapText(visibleDialog.text, textWidth);
 		const buttonLayout = layoutButtons(
 			visibleDialog.buttons,
 			roundedDialogWidth,
@@ -49,7 +54,7 @@ export default function dialog(store: StateManager<State>, events: EventDispatch
 
 		state.dialog.id = visibleDialog.id;
 		state.dialog.text = visibleDialog.text;
-		state.dialog.title = visibleDialog.title;
+		state.dialog.title = visibleDialog.title.slice(0, textWidth);
 		state.dialog.buttons = buttonLayout.buttons;
 		state.dialog.highlightedButton = Infinity;
 		state.dialog.width = roundedDialogWidth;
