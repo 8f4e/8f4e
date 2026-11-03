@@ -13,6 +13,10 @@ push 0
 notZero
 assertEqual 0
 
+push 1
+notZero
+assertEqual 1
+
 push 7
 notZero
 assertEqual 1
@@ -26,6 +30,10 @@ module notZeroFloatAssertions
 push 0.0
 notZero
 assertEqual 0
+
+push 1.0
+notZero
+assertEqual 1
 
 push -0.0
 notZero
@@ -44,6 +52,10 @@ module notZeroFloat64Assertions
 push 0.0f64
 notZero
 assertEqual 0
+
+push 1.0f64
+notZero
+assertEqual 1
 
 push -0.0f64
 notZero
