@@ -66,8 +66,8 @@
   `deleteCodeBlocks(store, blocks)` for removing blocks from the current slice. These helpers own refreshes,
   deleted-block reference cleanup, and one completed project/compiler notification. Callers own edit-mode policy;
   do not publish the same operation again or mutate the live source array before passing replacement code.
-- Editor `@group` behavior belongs to `editor-plugin-grouping`, including membership, dragging policy, clipboard
-  collision handling, and all group actions/menus. Keep only generic drag-target and paste-source events in core;
+- Editor `@group` behavior belongs to `editor-plugin-grouping`, including membership, dragging policy, copying,
+  and all group actions/menus. Keep only generic drag-target events and source insertion in core;
   nested language-level project groups, navigation, and memory scopes remain core-owned.
 - Create drawer registrations with `createEditorDrawerRegistry`; it covers code-block drawing, viewport overlays, and canvas-wide
   GPU layers. Keep renderer invocation on the internal `EditorDrawerHost` interface.
@@ -113,7 +113,7 @@
 
 - Keep accepted metadata in `state.compiler.result`, separate from `compiler.isCompiling` progress.
 - Core emits `compilationInputChanged` after its compiler input revision advances. Compilation scheduling and worker ownership belong to `editor-plugin-compiler`; do not restore a compile callback or built-in compiler effect.
-- `EditorOptions` has no public callbacks bag. Construct internal memory, clipboard, and animation callbacks in core.
+- `EditorOptions` has no public callbacks bag. Construct internal memory and animation callbacks in core. Clipboard access belongs to feature factories.
 - Consume accepted `compilationSucceeded` program artifacts (`memoryRef`) to update generic memory views before metadata consumers react. Dispose plugins in reverse installation order so execution plugins stop before compiler resources are released. Drain cleanup stacks even when a disposer throws.
 - Render environment-constant contributions uniformly; each plugin owns its contribution key.
 
@@ -144,3 +144,5 @@
 - Keyboard-editing owns edit-mode caret movement, mutation caret adjustments, and its foreground drawer. Core keeps
   source-position state and bounds/tab geometry; do not restore direction-based caret movement or a built-in glyph.
 - `registerCodeBlockForegroundDrawer` runs above content/shapes and below outlines/diagnostics. Keep this stage generic.
+
+- Export generic `insertCodeBlocks` and pure `serializeCodeBlocks`/`SerializedCodeBlock` helpers. Source batches retain their names, references, grouping directives and entries; insertion updates only placement directives and fresh editor identities. Do not restore name uniquifying, clipboard callbacks, clipboard format parsing, copy/paste menus, or paste-transform events in core.

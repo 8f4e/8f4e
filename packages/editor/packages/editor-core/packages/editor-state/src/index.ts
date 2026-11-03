@@ -130,9 +130,6 @@ export default function init(
 
 // Export helper functions
 export { deleteCodeBlocks } from './features/code-blocks/deleteCodeBlocks';
-export type { ClipboardCodeBlock } from './features/code-blocks/features/clipboard/clipboardUtils';
-export { serializeCodeBlocksToClipboard } from './features/code-blocks/features/clipboard/clipboardUtils';
-export type { TransformPastedCodeBlocksEvent } from './features/code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 export type { ResolveCodeBlockDragTargetsEvent } from './features/code-blocks/features/codeBlockDragger/effect';
 export {
 	jumpToCodeBlock,
@@ -145,6 +142,7 @@ export {
 } from './features/code-blocks/features/directiveEditing';
 export { matchEditorDirectives } from './features/code-blocks/features/directives/utils';
 export { default as getCodeBlockGridWidth } from './features/code-blocks/getCodeBlockGridWidth';
+export { insertCodeBlocks } from './features/code-blocks/insertCodeBlocks';
 export { applyCodeBlockSourceEdits } from './features/code-blocks/sourceEdits';
 export { default as getBlockType } from './features/code-blocks/utils/codeParsers/getBlockType';
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';
@@ -178,11 +176,11 @@ export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBl
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
 export { default as snapToGrid } from './features/viewport/snapToGrid';
 export { default as updateViewport } from './features/viewport/updateViewport';
+export { type SerializedCodeBlock, serializeCodeBlocks } from './pureHelpers/codeBlockSerialization';
 export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';
 // Export project serialization helpers
 export { default as getExportBaseName } from './pureHelpers/getExportBaseName';
 export { getMemoryDeclarationRows, type MemoryDeclarationRow } from './pureHelpers/getMemoryDeclarationRows';
-export { getUniqueName } from './pureHelpers/getUniqueName';
 export { default as serializeProjectLevel } from './pureHelpers/projectSerialization/serializeProjectLevel';
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
 export {

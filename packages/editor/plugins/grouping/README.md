@@ -1,9 +1,9 @@
 # Editor grouping plugin
 
 `@8f4e/editor-plugin-grouping` owns visual block grouping through `; @group <name> [nonstick]`.
-Install `groupingPlugin` in the editor's `plugins` array. The default editor includes it.
+Install `createGroupingPlugin({ writeClipboardText })` in the editor's `plugins` array. The default editor includes it.
 
-The plugin owns group membership, drag-target selection, paste collision renaming, and the block-menu actions:
+The plugin owns group membership, drag-target selection, copying, and the block-menu actions:
 Copy group, Delete group, Remove from group, Ungroup, Make Group Sticky/Nonstick, Align blocks in row, and Skip/Unskip
 group. Group execution toggling applies to modules. The single-module execution-toggle plugin is independent.
 
@@ -11,11 +11,10 @@ Blocks in a sticky group drag together; Alt drags only the clicked block. Nonsti
 Membership uses the first valid `@group` directive in a standalone or trailing comment, matched from core's cached records
 when an action runs. The plugin adds no membership fields or caches to core state.
 Actions operate on the currently visible project slice. Copy preserves creation order, relative positions, and
-recursively owned project blocks. Pasting gives each incoming group an available name while keeping its members
-together; child project slices retain their independent grouping names.
+recursively owned project blocks. Group names retain their literal membership meaning when copied and pasted; no paste-specific transformation is installed.
 
 The plugin registers menu items and event listeners and explicitly unregisters them when disposed.
-It receives no browser resources. Copy uses the editor's clipboard callback and its generic clipboard serializer.
+Its factory receives a browser clipboard writer. Copy uses the pure `serializeCodeBlocks` helper; clipboard ownership remains local to this plugin.
 Core handles generic source parsing, movement, snapping, insertion, history, and project changes.
 Group edits use core's source-edit and deletion helpers to refresh affected blocks and announce each operation once.
 The `setGroupNonstick` action receives `{ codeBlock, makeNonstick }` and applies that requested mode to the group.

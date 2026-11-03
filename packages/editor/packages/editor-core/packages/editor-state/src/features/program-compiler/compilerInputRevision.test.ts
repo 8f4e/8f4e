@@ -7,11 +7,11 @@ import createDefaultState from '../../pureHelpers/state/createDefaultState';
 import rendering from '../code-blocks/effect';
 import autoEnvConstants from '../code-blocks/features/auto-env-constants/effect';
 import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
-import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
 import projectGroupNavigation from '../code-blocks/features/projectGroupNavigation/effect';
+import { insertCodeBlocks } from '../code-blocks/insertCodeBlocks';
 import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import { applyCodeBlockSourceEdits } from '../code-blocks/sourceEdits';
 import historyTracking from '../edit-history/effect';
@@ -159,15 +159,15 @@ describe('compiler input revision', () => {
 		expect(onInputChanged).toHaveBeenCalledTimes(4);
 	});
 
-	it('advances once for pasting several blocks and ignores an empty paste', () => {
+	it('advances once for inserting a block batch and ignores an empty batch', () => {
 		const blocks = ['one', 'two'].map(name => ({
 			code: [`module ${name}`, 'moduleEnd'],
 			gridCoordinates: { x: 0, y: 0 },
 		}));
-		pasteMultipleBlocks(store, events, { x: 0, y: 0, blocks });
+		insertCodeBlocks(store, { x: 0, y: 0, blocks });
 		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(3);
 		expect(state.compilerInputRevision).toBe(1);
-		pasteMultipleBlocks(store, events, { x: 0, y: 0, blocks: [] });
+		insertCodeBlocks(store, { x: 0, y: 0, blocks: [] });
 		expect(state.compilerInputRevision).toBe(1);
 	});
 

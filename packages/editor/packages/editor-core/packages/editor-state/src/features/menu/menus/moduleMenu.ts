@@ -55,13 +55,6 @@ export const moduleMenu = (
 			: []),
 		...items,
 		{
-			title: `Copy ${blockLabel}`,
-			action: 'copyCodeBlock',
-			payload: { codeBlock },
-			close: true,
-			disabled: !state.callbacks.writeClipboardText,
-		},
-		{
 			title: `Log ${blockLabel} info to console`,
 			action: 'consoleLog',
 			payload: { codeBlock },

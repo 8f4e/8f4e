@@ -6,9 +6,9 @@ import { createMockCodeBlock, createMockState } from '../../pureHelpers/testingU
 import { createMockEventDispatcherWithVitest } from '../../pureHelpers/testingUtils/vitestTestUtils';
 import rendering from '../code-blocks/effect';
 import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
-import { pasteMultipleBlocks } from '../code-blocks/features/codeBlockCreator/pasteMultipleBlocks';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
+import { insertCodeBlocks } from '../code-blocks/insertCodeBlocks';
 import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import { applyCodeBlockSourceEdits } from '../code-blocks/sourceEdits';
 import projectImport from '../project-loading/effect';
@@ -214,8 +214,8 @@ describe('history tracking with real project mutations', () => {
 		expect(getProjectModules(state.historyStack[0])[0].code).toEqual(['module other', 'moduleEnd']);
 	});
 
-	it('records exactly one entry for pasting several blocks, and none for an empty paste', async () => {
-		pasteMultipleBlocks(store, events, {
+	it('records exactly one entry for inserting a block batch, and none for an empty batch', async () => {
+		insertCodeBlocks(store, {
 			x: 0,
 			y: 0,
 			blocks: ['one', 'two'].map(name => ({
@@ -226,7 +226,7 @@ describe('history tracking with real project mutations', () => {
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
 
-		pasteMultipleBlocks(store, events, { x: 0, y: 0, blocks: [] });
+		insertCodeBlocks(store, { x: 0, y: 0, blocks: [] });
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
 	});

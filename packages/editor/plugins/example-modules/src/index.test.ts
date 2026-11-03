@@ -112,7 +112,7 @@ describe('example modules plugin', () => {
 		expect(dep.gridY).toBe(target.gridY);
 	});
 
-	it('skips existing dependencies and lets core rename repeated module insertions', async () => {
+	it('skips existing dependencies while preserving repeated module names', async () => {
 		const test = setup();
 		await test.addModule();
 		await test.addModule();
@@ -120,7 +120,7 @@ describe('example modules plugin', () => {
 			'env',
 			'target',
 			'dep',
-			'target2',
+			'target',
 		]);
 	});
 

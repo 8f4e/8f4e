@@ -62,3 +62,5 @@
 
 - Forward `touchNavigation` (`fingerCount` and `axis`) to the touch input plugin without implementing gestures in
   the composition. The default is two fingers on both axes; the product landing page selects one-finger horizontal panning.
+
+- Load `code-block-copy-paste` as an unconditional deferred entry with injected browser clipboard read/write functions. Text paste is owned separately by keyboard-editing. Keep clipboard browser access out of core and the shared plugin context.

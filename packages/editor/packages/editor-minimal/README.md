@@ -54,7 +54,7 @@ layout, visibility management, and any WebMCP bridge.
 `captureWheel`, `touchNavigation`, `includeKeyboardModeSwitching`, and `featureFlags`. Project creation is disabled by default. A project selects its initial mode with
 `; @mode edit` or `; @mode view` in a project block; without a valid, unique declaration it starts in view mode.
 Set `includeKeyboardModeSwitching: false` to omit the mode-switching plugin and its hint; project mode still comes
-from the source declaration. Hosts can override generic feature flags. Core retains project editing APIs, shared navigation operations, clipboard operations, and history. Keyboard bindings belong to plugins.
+from the source declaration. Hosts can override generic feature flags. Core retains project editing APIs, shared navigation operations, and history. Keyboard bindings belong to plugins.
 
 Keyboard behavior comes from three independent plugins: `keyboard-mode-switching` for `e`/Escape,
 `keyboard-navigation` for view-mode line selection and block navigation, and `keyboard-editing` for caret movement,
@@ -89,3 +89,5 @@ npx nx run @8f4e/editor-minimal:test
 npx nx run @8f4e/editor-minimal:typecheck
 npx nx run @8f4e/8f4e-website:test:browser
 ```
+
+Block copy/paste is provided by `@8f4e/editor-plugin-code-block-copy-paste`, loaded independently in the deferred set. The host injects its browser clipboard reader/writer; grouping receives its own writer. Paste Code Block places sources at the menu location, changing only `@pos`. Declaration names, group names, and references stay intact. Ctrl/Cmd+V in keyboard editing inserts plain text at the caret, including multiple lines; paste is not buffered during loading.

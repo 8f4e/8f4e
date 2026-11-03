@@ -61,7 +61,6 @@ export function registerGroupMenus({ store, menus }: EditorPluginContext): () =>
 			action: 'copyGroupBlocks',
 			payload: { codeBlock },
 			close: true,
-			disabled: !state.callbacks.writeClipboardText,
 		};
 	});
 	return () => {
