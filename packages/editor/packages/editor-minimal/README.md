@@ -38,8 +38,8 @@ raw `@config midi.*` or `@config bin.*` directives appear. Control factories rec
 writer; MIDI receives its browser navigator and live compiler getters, binary assets receive a current-memory getter,
 and runtime factories receive compiler artifacts and an optional shared `AudioContext`.
 
-The independent `@8f4e/editor-plugin-selection-animation` loads in the deferred set and draws the circling segment
-around the selected block in both editor modes. Core retains selection state, corner colors, and line highlighting.
+The optional `@8f4e/editor-plugin-selection-animation` draws the circling segment around the selected block. Its entry
+is commented out in this composition. Core retains selection state, corner colors, and line highlighting.
 
 The loader checks cached directives automatically after project changes and group navigation. Visual/control plugins
 use `view` scope: signals in unopened groups wait until that level is visited. Texture views load for `@texture` as well as `textureRuntime` configuration, using the existing overlay pass.

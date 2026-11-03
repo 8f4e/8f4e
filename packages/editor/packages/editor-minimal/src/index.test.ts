@@ -51,12 +51,12 @@ it('starts without storage and reports empty-project readiness after initializat
 	const deferredPlugins = await loadDeferredPlugins();
 	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 	expect(deferredPlugins.map(plugin => plugin.id)).toContain('mouse-input');
+	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('selection-animation');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-viewport-navigation');
 	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).toEqual(
 		expect.arrayContaining([
 			'code-rendering',
 			'connectors',
-			'selection-animation',
 			'keyboard-navigation',
 			'keyboard-mode-switching',
 			'keyboard-editing',

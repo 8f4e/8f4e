@@ -1,7 +1,7 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import { afterEach, expect, test, vi } from 'vitest';
+import { afterEach, expect, test } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 const cleanups: Array<() => void> = [];
@@ -71,13 +71,8 @@ test('Ctrl/Cmd+V pastes plain text into the selected block through native clipbo
 	await userEvent.keyboard(`{${modifier}>}v{/${modifier}}`);
 	await expect.poll(() => target().code[row]).toBe(beforePaste.slice(0, pasteCol) + text + beforePaste.slice(pasteCol));
 	expect(state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'note')).toHaveLength(1);
-	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
-	try {
-		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('text-pasted');
-	} finally {
-		now.mockRestore();
-	}
+	editor.renderFrame();
+	await expect(canvas).toMatchScreenshot('text-pasted');
 });
 
 test('the block paste menu changes placement while preserving duplicate names, groups and references', async () => {

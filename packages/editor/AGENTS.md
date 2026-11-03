@@ -12,7 +12,7 @@
   `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
 - `@8f4e/editor-plugin-selection-animation` owns the selected block's circling segment and uses the generic foreground
-  drawing hook. Both compositions load it as an unconditional deferred plugin; core retains selection state and geometry.
+  drawing hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.
 - Web-ui contributes font/color configuration through `registerWebUiConfig(store)` and owns defaults, loading, and
   subscriptions. Editor-core calls it before plugins/project loading; renderer initialization receives the store and
   event dispatcher. Editor-state uses only grid dimensions and the generic `gridSizeChanged` event.

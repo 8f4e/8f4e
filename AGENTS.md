@@ -39,7 +39,7 @@
   prepared sprite cells. Both compositions install it eagerly. Core retains editing/layout geometry; web-ui exposes
   `registerCodeBlockContentDrawer` before foreground drawings and diagnostics and owns generic sprite-cell drawing primitives.
 - `@8f4e/editor-plugin-selection-animation` owns the circling segment around the selected block, using the generic
-  foreground drawer hook. Both compositions load it in their deferred sets; core retains selection state and geometry.
+  foreground drawer hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.
 - Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.
   Default/minimal import their factories after the first render only when `(pointer: coarse)` does not match. Editing keeps
   a small input bridge and loads text editing on first edit mode, buffering keystrokes during the import. Core retains

@@ -10,8 +10,9 @@ import { selectionAnimationPlugin } from '@8f4e/editor-plugin-selection-animatio
 const editor = await initEditor(canvas, { plugins: [selectionAnimationPlugin] });
 ```
 
-Default and minimal editors load it independently in their deferred plugin sets. The plugin registers a foreground
-drawer and unregisters it on disposal. It uses the editor's render loop without subscriptions, timers, or source changes.
+Its entries are commented out in the default and minimal editors. Add it to a custom composition or uncomment those
+entries to enable it. The plugin registers a foreground drawer and unregisters it on disposal. It uses the editor's
+render loop without subscriptions, timers, or source changes.
 Core retains selection state, selected corner colors, and line highlighting.
 
 Verify with the package's Nx `build`, `test`, `typecheck`, and `test:screenshot` targets.
