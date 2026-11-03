@@ -53,17 +53,9 @@ export function createMouseInputPlugin({
 				const movementX = event.deltaX * -1;
 				const movementY = event.deltaY * -1;
 
-				events.dispatch<InternalMouseEvent>('mousemove', {
-					x: event.offsetX,
-					y: event.offsetY,
-					movementX,
-					movementY,
-					buttons: 1,
-					stopPropagation: false,
-					canvasWidth: inputTarget.clientWidth,
-					canvasHeight: inputTarget.clientHeight,
-					altKey: event.altKey,
-				});
+				// Do not fake a pressed mousemove: that re-enters block-drag handlers
+				// while a button is held. Viewport panning has its own event (#1378).
+				events.dispatch('viewportscroll', { movementX, movementY });
 
 				if (wheelScrollEndTimeout) {
 					clearTimeout(wheelScrollEndTimeout);
