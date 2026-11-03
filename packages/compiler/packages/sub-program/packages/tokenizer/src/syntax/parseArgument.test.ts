@@ -388,6 +388,17 @@ describe('parseArgument', () => {
 		});
 	});
 
+	it('parses &*name before arithmetic expression parsing', () => {
+		expect(parseArgument('&*ptr')).toEqual({
+			type: ArgumentType.IDENTIFIER,
+			value: '&*ptr',
+			referenceKind: 'memory-pointer',
+			scope: 'local',
+			targetMemoryId: 'ptr',
+			dereferenceDepth: 0,
+		});
+	});
+
 	it('parses identifiers', () => {
 		expect(parseArgument('value')).toEqual({
 			value: 'value',
