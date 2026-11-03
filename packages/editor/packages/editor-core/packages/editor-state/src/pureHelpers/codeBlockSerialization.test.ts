@@ -18,50 +18,19 @@ describe('serializeCodeBlocks', () => {
 		});
 
 		const result = serializeCodeBlocks([anchor, block2], anchor);
-		const parsed = result;
 
-		expect(parsed).toHaveLength(2);
-		expect(parsed[0]).toEqual({
+		expect(result).toHaveLength(2);
+		expect(result[0]).toEqual({
 			code: ['module foo', 'moduleEnd'],
 			gridCoordinates: { x: 0, y: 0 },
 		});
-		expect(parsed[1]).toEqual({
+		expect(result[1]).toEqual({
 			code: ['module bar', 'moduleEnd'],
 			gridCoordinates: { x: 12, y: 4 },
 		});
 	});
 
-	it('should preserve disabled state in code via @disabled directive', () => {
-		const anchor = createMockCodeBlock({
-			code: ['module foo', '; @disabled', 'moduleEnd'],
-			gridX: 0,
-			gridY: 0,
-			disabled: true,
-		});
-
-		const result = serializeCodeBlocks([anchor], anchor);
-		const parsed = result;
-
-		expect(parsed[0].code).toContain('; @disabled');
-		expect(parsed[0]).not.toHaveProperty('disabled');
-	});
-
-	it('should not have disabled field when block is not disabled', () => {
-		const anchor = createMockCodeBlock({
-			code: ['module foo', 'moduleEnd'],
-			gridX: 0,
-			gridY: 0,
-			disabled: false,
-		});
-
-		const result = serializeCodeBlocks([anchor], anchor);
-		const parsed = result;
-
-		expect(parsed[0].code).not.toContain('; @disabled');
-		expect(parsed[0]).not.toHaveProperty('disabled');
-	});
-
-	it('should handle negative relative coordinates', () => {
+	it('handles negative relative coordinates', () => {
 		const anchor = createMockCodeBlock({
 			code: ['module anchor', 'moduleEnd'],
 			gridX: 10,
@@ -75,22 +44,22 @@ describe('serializeCodeBlocks', () => {
 		});
 
 		const result = serializeCodeBlocks([anchor, block2], anchor);
-		const parsed = result;
 
-		expect(parsed[1].gridCoordinates).toEqual({ x: -5, y: -2 });
+		expect(result[1].gridCoordinates).toEqual({ x: -5, y: -2 });
 	});
 
-	it('should preserve exact code lines including empty lines', () => {
+	it('preserves directives and empty lines in source without copying derived disabled state', () => {
 		const anchor = createMockCodeBlock({
-			code: ['module test', '', '; comment', '', 'moduleEnd'],
+			code: ['module test', '', '; @disabled', '; comment', '', 'moduleEnd'],
 			gridX: 0,
 			gridY: 0,
+			disabled: true,
 		});
 
 		const result = serializeCodeBlocks([anchor], anchor);
-		const parsed = result;
 
-		expect(parsed[0].code).toEqual(['module test', '', '; comment', '', 'moduleEnd']);
+		expect(result[0].code).toEqual(anchor.code);
+		expect(result[0]).not.toHaveProperty('disabled');
 	});
 
 	it('serializes project-group contents recursively', () => {
@@ -116,9 +85,9 @@ describe('serializeCodeBlocks', () => {
 		});
 
 		group.childProject!.viewport = { x: 256, y: -128 };
-		const parsed = serializeCodeBlocks([group], group);
+		const result = serializeCodeBlocks([group], group);
 
-		expect(parsed).toEqual([
+		expect(result).toEqual([
 			{
 				code: ['group audio', '; keep me', 'groupEnd'],
 				gridCoordinates: { x: 0, y: 0 },

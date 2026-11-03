@@ -2,18 +2,12 @@ import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-
 import type { DocumentBlockType } from '@8f4e/language-spec';
 import { documentBlockInstructionByType } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
-import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
-import { publishProjectChange } from '../../../project-changes';
 import { deleteCodeBlocks } from '../../deleteCodeBlocks';
-import { insertCodeBlockRespectingAlwaysOnTop } from '../../partitionCodeBlocksByAlwaysOnTop';
-import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
+import { insertCodeBlocks } from '../../insertCodeBlocks';
 import { applyCodeBlockSourceEdits } from '../../sourceEdits';
 import getBlockType from '../../utils/codeParsers/getBlockType';
-import { createCodeBlockGraphicData } from '../../utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from '../../utils/getCodeBlockNameFromSource';
 import upsertDisabled from '../directives/disabled/upsert';
-import upsertPos from '../directives/pos/upsert';
-import { hasDirective } from '../directives/utils';
 import findEntryNameAtPosition from '../entryOutlines/findEntryNameAtPosition';
 
 type NewCodeBlockType = Extract<DocumentBlockType, 'module' | 'function' | 'note' | 'prototype'>;
@@ -106,47 +100,16 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 		const sourceBlockType = getBlockType(code);
 		const blockName = getCodeBlockNameFromSource(code);
 
-		const projectPath = state.codeBlockRendering.currentProject.path;
-		const creationIndex = state.codeBlockRendering.nextCodeBlockCreationIndex++;
-		const gridX = Math.round((state.viewport.x + x) / state.viewport.vGrid);
-		const gridY = Math.round((state.viewport.y + y) / state.viewport.hGrid);
-		const pixelX = state.viewport.x + x;
-		const pixelY = state.viewport.y + y;
-
-		// Add canonical @pos directive to code
-		code = upsertPos(code, gridX, gridY);
 		const entry =
 			sourceBlockType === moduleBlock.type && blockName
-				? getEntryNameForInsertedModule(state, pixelX, pixelY)
+				? getEntryNameForInsertedModule(state, state.viewport.x + x, state.viewport.y + y)
 				: undefined;
 
-		const codeBlock: CodeBlockGraphicData = createCodeBlockGraphicData({
-			width: 0,
-			height: 0,
-			code,
-			cursor: { col: 0, row: 0, x: 0, y: 0 },
-			name: blockName,
-			gridX,
-			gridY,
-			x: pixelX,
-			y: pixelY,
-			lineNumberColumnWidth: 2,
-			lastUpdated: Date.now(),
-			creationIndex,
-			blockType: sourceBlockType,
-			entry,
-			projectPath,
-			disabled: false,
-			isHome: false,
-			alwaysOnTop: hasDirective(code, 'alwaysOnTop'),
+		insertCodeBlocks(store, {
+			x,
+			y,
+			blocks: [{ code, gridCoordinates: { x: 0, y: 0 }, entry }],
 		});
-
-		// Insert new block into its z-order partition (normal blocks first, always-on-top last).
-		const existingBlocks = state.codeBlockRendering.currentProject.blocks;
-		replaceCodeBlocksInPlace(existingBlocks, insertCodeBlockRespectingAlwaysOnTop(existingBlocks, codeBlock));
-		store.set('codeBlockRendering.currentProject.blocks', existingBlocks);
-		incrementCompilerInputRevision(store);
-		publishProjectChange(store);
 	}
 
 	function onDeleteCodeBlock({ codeBlock }: { codeBlock: CodeBlockGraphicData }): void {

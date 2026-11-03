@@ -19,15 +19,13 @@ function createSerializedCodeBlock(block: CodeBlockGraphicData, origin: { x: num
 			x: block.gridX - origin.x,
 			y: block.gridY - origin.y,
 		},
-		...(block.entry === undefined ? {} : { entry: block.entry }),
-		...(block.childProject === undefined
-			? {}
-			: {
-					childProject: {
-						entries: [...block.childProject.entries],
-						blocks: block.childProject.blocks.map(child => createSerializedCodeBlock(child, { x: 0, y: 0 })),
-					},
-				}),
+		entry: block.entry,
+		childProject: block.childProject
+			? {
+					entries: [...block.childProject.entries],
+					blocks: block.childProject.blocks.map(child => createSerializedCodeBlock(child, { x: 0, y: 0 })),
+				}
+			: undefined,
 	};
 }
 
@@ -43,9 +41,5 @@ export function serializeCodeBlocks(
 	codeBlocks: CodeBlockGraphicData[],
 	anchorBlock: CodeBlockGraphicData
 ): SerializedCodeBlock[] {
-	const blocks = codeBlocks.map(block =>
-		createSerializedCodeBlock(block, { x: anchorBlock.gridX, y: anchorBlock.gridY })
-	);
-
-	return blocks;
+	return codeBlocks.map(block => createSerializedCodeBlock(block, { x: anchorBlock.gridX, y: anchorBlock.gridY }));
 }

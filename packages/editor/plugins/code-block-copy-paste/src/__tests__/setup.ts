@@ -8,7 +8,7 @@ const cleanups: Array<() => void> = [];
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
-export function setup(installed = true) {
+export function setup() {
 	const emitter = new EventEmitter();
 	const events = {
 		on: emitter.on.bind(emitter),
@@ -38,16 +38,14 @@ export function setup(installed = true) {
 		},
 	});
 	store.set('editorMode', 'edit');
-	const dispose = installed
-		? createCodeBlockCopyPastePlugin({ readClipboardText, writeClipboardText }).setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				drawers: createEditorDrawerRegistry(),
-			})
-		: () => {};
+	const dispose = createCodeBlockCopyPastePlugin({ readClipboardText, writeClipboardText }).setup({
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		drawers: createEditorDrawerRegistry(),
+	});
 	cleanups.push(store.dispose, dispose);
 	const state = store.getState();
 	const paste = async (text: string, x = 80, y = 64) => {
