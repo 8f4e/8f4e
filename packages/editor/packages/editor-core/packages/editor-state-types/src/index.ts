@@ -105,8 +105,8 @@ export interface FeatureFlags {
 	/** Enable/disable keyboard switching into and out of edit mode. */
 	modeToggling: boolean;
 
-	/** Enable/disable the mode hint overlay at the top of the viewport */
-	modeOverlay: boolean;
+	/** Enable/disable plugin canvas overlays */
+	canvasOverlays: boolean;
 
 	/** Enable/disable history tracking for undo/redo functionality */
 	historyTracking?: boolean;

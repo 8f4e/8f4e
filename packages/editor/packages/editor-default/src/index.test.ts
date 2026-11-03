@@ -219,7 +219,6 @@ it('omits all keyboard plugins and keyboard guidance on coarse-pointer browsers'
 		const options = vi.mocked(initEditor).mock.calls.at(-1)![1];
 		for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing'])
 			expect(options.plugins!.some(plugin => plugin.id === id)).toBe(false);
-		expect(options.featureFlags!.modeOverlay).toBe(false);
 	} finally {
 		vi.unstubAllGlobals();
 	}

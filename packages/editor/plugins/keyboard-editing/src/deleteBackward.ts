@@ -7,7 +7,7 @@ import { moveCaret } from '@8f4e/editor-state';
  * @param col Caret column index within the row.
  * @returns Updated document and caret coordinates after the deletion attempt.
  */
-export default function backSpace(
+export default function deleteBackward(
 	code: string[],
 	row: number,
 	col: number
@@ -24,8 +24,9 @@ export default function backSpace(
 		const save = newCode[row];
 		const [newRow] = moveCaret(newCode, row, col, 'up');
 		newCode.splice(row, 1);
+		const joinColumn = newCode[newRow].length;
 		newCode[newRow] = newCode[newRow] + save;
-		return { code: newCode, row: newRow, col: newCode[newRow].length };
+		return { code: newCode, row: newRow, col: joinColumn };
 	}
 
 	return { code, row, col };

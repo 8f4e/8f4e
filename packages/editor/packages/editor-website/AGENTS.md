@@ -8,3 +8,6 @@
 - Keep the `dev` workflow scoped to the website dependency graph; use the `build-deps` and `watch-deps` targets rather
   than building or watching every workspace project.
 - Run `npx nx run @8f4e/editor-website:build` after changing this package.
+
+- Start mounting from an async function without top-level await. Production lazy chunks may import shared exports
+  from the entry module; awaiting their imports during entry evaluation can deadlock startup.

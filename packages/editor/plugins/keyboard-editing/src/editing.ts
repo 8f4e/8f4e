@@ -1,8 +1,8 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import backSpace from './backSpace';
-import enter from './enter';
-import type from './type';
+import deleteBackward from './deleteBackward';
+import insertCharacter from './insertCharacter';
+import insertNewLine from './insertNewLine';
 
 export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPluginContext): void {
 	const state = store.getState();
@@ -18,11 +18,11 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 	}
 	const block = state.codeBlockRendering.selectedCodeBlock;
 	if (!block) return;
-	let edit: ReturnType<typeof type>;
-	if (key === 'Backspace') edit = backSpace(block.code, block.cursor.row, block.cursor.col);
-	else if (key === 'Enter') edit = enter(block.code, block.cursor.row, block.cursor.col);
+	let edit: ReturnType<typeof insertCharacter>;
+	if (key === 'Backspace') edit = deleteBackward(block.code, block.cursor.row, block.cursor.col);
+	else if (key === 'Enter') edit = insertNewLine(block.code, block.cursor.row, block.cursor.col);
 	else if (key === 'Tab' || (key.length === 1 && !event.altKey)) {
-		edit = type(block.code, block.cursor.row, block.cursor.col, key === 'Tab' ? '\t' : key);
+		edit = insertCharacter(block.code, block.cursor.row, block.cursor.col, key === 'Tab' ? '\t' : key);
 	} else return;
 	event.preventDefault();
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', edit.row);

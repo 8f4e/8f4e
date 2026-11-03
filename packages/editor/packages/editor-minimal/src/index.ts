@@ -76,11 +76,7 @@ export async function mountMinimalEditor(
 			tooltipsPlugin,
 		],
 		captureWheel,
-		featureFlags: {
-			projectCreation: false,
-			modeOverlay: !browserWindow.matchMedia('(pointer: coarse)').matches,
-			...featureFlags,
-		},
+		featureFlags: { projectCreation: false, ...featureFlags },
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });

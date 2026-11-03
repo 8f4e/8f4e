@@ -13,6 +13,15 @@ export interface CodeBlockDrawerContext {
 
 export type CodeBlockDrawer = (context: CodeBlockDrawerContext) => void;
 
+export interface CanvasOverlayDrawerContext {
+	/** Drawing coordinates are relative to the viewport's top-left corner. */
+	draw: DrawContext;
+	state: State;
+	memoryViews: MemoryViews;
+}
+
+export type CanvasOverlayDrawer = (context: CanvasOverlayDrawerContext) => void;
+
 /** Registrations exposed to editor plugins. */
 export interface EditorDrawerRegistry {
 	/** Register a GPU layer whose resources are bound to the renderer lifecycle. */
@@ -23,6 +32,8 @@ export interface EditorDrawerRegistry {
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;
 	/** Draw after block drawers, inside the same block group. */
 	registerCodeBlockOverlay: (drawer: CodeBlockDrawer) => () => void;
+	/** Draw over editor content and menus, before dialogs, using viewport coordinates. */
+	registerCanvasOverlay: (drawer: CanvasOverlayDrawer) => () => void;
 }
 
 /** Renderer-owned invocation and lifecycle of registered drawers and layers. */
@@ -31,35 +42,39 @@ export interface EditorDrawerHost extends EditorDrawerRegistry {
 	drawCodeBlockContent: CodeBlockDrawer;
 	drawCodeBlock: CodeBlockDrawer;
 	drawCodeBlockOverlay: CodeBlockDrawer;
+	drawCanvasOverlays: CanvasOverlayDrawer;
 }
 
-function createDrawerSlot() {
-	const registrations = new Set<{ drawer: CodeBlockDrawer }>();
+function createDrawerSlot<Context>() {
+	const registrations = new Set<{ drawer: (context: Context) => void }>();
 	return {
-		register: (drawer: CodeBlockDrawer) => {
+		register: (drawer: (context: Context) => void) => {
 			const registration = { drawer };
 			registrations.add(registration);
 			return () => {
 				registrations.delete(registration);
 			};
 		},
-		draw: (context: CodeBlockDrawerContext) => {
+		draw: (context: Context) => {
 			for (const { drawer } of registrations) drawer(context);
 		},
 	};
 }
 
 export function createEditorDrawerRegistry(): EditorDrawerHost {
-	const content = createDrawerSlot();
-	const widgets = createDrawerSlot();
-	const overlays = createDrawerSlot();
+	const content = createDrawerSlot<CodeBlockDrawerContext>();
+	const widgets = createDrawerSlot<CodeBlockDrawerContext>();
+	const overlays = createDrawerSlot<CodeBlockDrawerContext>();
+	const canvasOverlays = createDrawerSlot<CanvasOverlayDrawerContext>();
 	return {
 		...createRenderLayerRegistry(),
 		registerCodeBlockContentDrawer: content.register,
 		registerCodeBlockDrawer: widgets.register,
 		registerCodeBlockOverlay: overlays.register,
+		registerCanvasOverlay: canvasOverlays.register,
 		drawCodeBlockContent: content.draw,
 		drawCodeBlock: widgets.draw,
 		drawCodeBlockOverlay: overlays.draw,
+		drawCanvasOverlays: canvasOverlays.draw,
 	};
 }

@@ -54,7 +54,13 @@ export type {
 	ProjectLevel,
 	State,
 } from '@8f4e/editor-state-types';
-export type { CodeBlockDrawer, CodeBlockDrawerContext, EditorDrawerRegistry } from '@8f4e/web-ui';
+export type {
+	CanvasOverlayDrawer,
+	CanvasOverlayDrawerContext,
+	CodeBlockDrawer,
+	CodeBlockDrawerContext,
+	EditorDrawerRegistry,
+} from '@8f4e/web-ui';
 export type { EventDispatcher } from './events';
 export type { EditorPlugin, EditorPluginContext } from './plugins';
 // Re-export helper functions

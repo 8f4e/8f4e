@@ -59,7 +59,7 @@ noteEnd`);
 		canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, bubbles: true }));
 		await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
 		expect(editor.state.contextMenu.open).toBe(false);
-		expect(editor.state.featureFlags.modeOverlay).toBe(true);
+		expect(editor.state.featureFlags.canvasOverlays).toBe(true);
 		expect(editor.state.featureFlags.offscreenBlockArrows).toBe(true);
 		expect(showSaveFilePicker).toHaveBeenCalledWith(expect.objectContaining({ suggestedName: 'project.png' }));
 		expect(exportedBlob.type).toBe('image/png');

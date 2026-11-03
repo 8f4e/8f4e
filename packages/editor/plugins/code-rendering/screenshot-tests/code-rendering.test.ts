@@ -10,7 +10,7 @@ test('renders code, notes, tabs, disabled blocks, folds, and diagnostic gaps', a
 	canvas.height = 480;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
-		featureFlags: { modeOverlay: false, offscreenBlockArrows: false },
+		featureFlags: { offscreenBlockArrows: false },
 		plugins: [
 			codeRenderingPlugin,
 			{

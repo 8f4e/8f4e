@@ -152,10 +152,7 @@ export async function mountDefaultEditor(
 				}))),
 		],
 		captureWheel,
-		featureFlags: {
-			modeOverlay: !canvas.ownerDocument.defaultView!.matchMedia('(pointer: coarse)').matches,
-			...featureFlags,
-		},
+		featureFlags,
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 

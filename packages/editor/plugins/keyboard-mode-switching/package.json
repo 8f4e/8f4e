@@ -16,7 +16,8 @@
   "author": "Andor Polgar",
   "license": "MIT",
   "dependencies": {
-    "@8f4e/editor-core": "*"
+    "@8f4e/editor-core": "*",
+    "@8f4e/editor-palette": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

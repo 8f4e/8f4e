@@ -30,7 +30,7 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 			getAssertionSites: () => undefined,
 		});
 		editor = await initEditor(canvas, {
-			initialProject: parseProjectSource('8f4e/v1\nnote test\n; @pos 3 3\nhello\nnoteEnd'),
+			initialProject: parseProjectSource('8f4e/v1\nnote test\n; @pos 3 3\nhello\nworld\nnoteEnd'),
 			featureFlags: { historyTracking: true },
 			plugins: [
 				...plugins,
@@ -57,9 +57,12 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 				},
 			],
 		});
+		editor.pauseRendering();
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('view-mode-hint');
 		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
 		context.store.set('codeBlockRendering.selectedCodeBlock', block);
-		block.cursor = { row: 2, col: 5, x: 0, y: 0 };
+		block.cursor = { row: 3, col: 0, x: 0, y: 0 };
 		const key = (key: string, modifiers: KeyboardEventInit = {}) => {
 			const event = new KeyboardEvent('keydown', { key, cancelable: true, bubbles: true, ...modifiers });
 			canvas.dispatchEvent(event);
@@ -70,13 +73,13 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		expect(key('e').defaultPrevented).toBe(true);
 		// These inputs arrive before the first editing import can finish.
 		canvas.dispatchEvent(new KeyboardEvent('keyup', { key: 'e' }));
-		for (const value of ['1', 'ArrowLeft', '2', 'Escape']) {
+		for (const value of ['Backspace', '1', 'ArrowLeft', '2', 'Escape']) {
 			key(value);
 			canvas.dispatchEvent(new KeyboardEvent('keyup', { key: value }));
 		}
 		canvas.dispatchEvent(new FocusEvent('blur'));
 		await vi.waitFor(() => expect(editor!.state.editorMode).toBe('view'));
-		expect(block.code[2]).toBe('hello21');
+		expect(block.code[2]).toBe('hello21world');
 		expect(pressed.size).toBe(0);
 		expect(key('z', { ctrlKey: true }).defaultPrevented).toBe(false);
 		expect(key('ArrowLeft').defaultPrevented).toBe(false);
@@ -89,7 +92,7 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		);
 		key('y', { ctrlKey: true });
 		expect(editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!.code).toContain(
-			'hello21'
+			'hello21world'
 		);
 		editor.dispose();
 		editor = undefined;

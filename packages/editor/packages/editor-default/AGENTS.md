@@ -91,6 +91,7 @@
   in its owning plugin; this package owns combinations of real plugins.
 
 - Keep keyboard navigation, editing, and mode switching independent. Dynamically import their factories only when
-  `(pointer: coarse)` does not match at mount time. Hide modeOverlay by default on coarse-pointer browsers.
+  `(pointer: coarse)` does not match at mount time. The mode-switching plugin owns keyboard hints, so omitting it
+  also removes those overlays.
   The keyboard-editing plugin owns its mode-triggered implementation import and input buffering; keep feature
   behavior and pending-input lifecycle out of the host and generic directive lazy loader.

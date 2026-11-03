@@ -135,6 +135,11 @@ drawing surface's text/fill primitives and shared numeric palette indices.
 `@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
 disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
 
+Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The drawer receives
+`{ draw, state, memoryViews }` after menus and before dialogs, with coordinates relative to the viewport's top-left.
+The renderer checks `featureFlags.canvasOverlays` before invoking this stage. Keyboard hints live in their
+mode-switching plugin; screenshot capture hides canvas overlays through this generic flag.
+
 Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`
 once the renderer is ready and returns `{ draw, destroy, loadPalette?, releaseMemory? }`. `draw` receives
 `{ state, memoryViews }` every frame after sprites in registration order, independently of block culling.

@@ -26,7 +26,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	const compiler = vi.mocked(createCompilerPlugin).mock.results[0].value;
 	const options = vi.mocked(initEditor).mock.calls[0][1];
 	expect(options.captureWheel).toBe(false);
-	expect(options.featureFlags).toEqual({ projectCreation: false, modeOverlay: true, modeToggling: false });
+	expect(options.featureFlags).toEqual({ projectCreation: false, modeToggling: false });
 	expect(options.plugins![0]).toBe(compiler.plugin);
 	expect(options.plugins!.map(plugin => plugin.id)).toEqual(
 		expect.arrayContaining([
@@ -54,5 +54,4 @@ it('omits all keyboard plugins on coarse-pointer browsers', async () => {
 	const options = vi.mocked(initEditor).mock.calls.at(-1)![1];
 	for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing'])
 		expect(options.plugins!.some(plugin => plugin.id === id)).toBe(false);
-	expect(options.featureFlags!.modeOverlay).toBe(false);
 });

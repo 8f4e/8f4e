@@ -16,7 +16,7 @@ All flags default to `true` in the core and default editor:
 - `codeLineSelection` — Allow selecting source lines and moving the caret, independently of editor mode.
 - `viewportDragging` — Allow panning the viewport.
 - `modeToggling` — Enable user controls for switching between edit and view modes.
-- `modeOverlay` — Show the mode hint at the top of the viewport.
+- `canvasOverlays` — Show plugin canvas overlays, such as the keyboard mode hint.
 - `historyTracking` — Track source changes for undo and redo.
 - `offscreenBlockArrows` — Show arrows pointing toward blocks outside the viewport.
 - `projectCreation` — Show the New Project action while in edit mode.
@@ -71,7 +71,7 @@ plugins from changing the mode programmatically. Leave `viewportDragging` enable
 ## Runtime State and Types
 
 Feature flags remain available in `state.featureFlags`. Trusted plugins can update them through their state manager.
-For example, the screenshot plugin temporarily disables `modeOverlay` and `offscreenBlockArrows` while capturing a
+For example, the screenshot plugin temporarily disables `canvasOverlays` and `offscreenBlockArrows` while capturing a
 frame, then restores their previous values. Mode changes do not overwrite those preferences.
 
 Use `FeatureFlagsConfig` for a typed partial configuration:

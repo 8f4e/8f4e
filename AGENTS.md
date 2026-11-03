@@ -34,7 +34,8 @@
 - Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.
   Default/minimal import their factories only when `(pointer: coarse)` does not match at mount time. Editing keeps
   a small input bridge and loads text editing on first edit mode, buffering input during the import. Core retains
-  history, project editing APIs, generic mode/navigation actions, and shared text/pointer geometry.
+  history, project editing APIs, generic mode/navigation actions, and shared text/pointer geometry. The mode-switching
+  plugin owns its hint through the generic canvas-overlay hook; `canvasOverlays` controls that drawing stage.
 - Rendering plugins: web-ui owns the procedural background and its font-specific dot settings under `src/plugins/`.
   `editor-plugin-connectors` owns input/output widgets, wire lookup, and the complete line renderer. Web-ui provides
   generic render-layer registration, palette updates, memory release, and disposal.

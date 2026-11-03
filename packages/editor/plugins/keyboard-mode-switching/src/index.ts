@@ -1,9 +1,11 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
+import drawModeHint from './drawModeHint';
 
 export function createKeyboardModeSwitchingPlugin({ inputTarget }: { inputTarget: HTMLElement }): EditorPlugin {
 	return {
 		id: 'keyboard-mode-switching',
-		setup: ({ store, events }) => {
+		setup: ({ store, events, drawers }) => {
+			const removeHint = drawers.registerCanvasOverlay(drawModeHint);
 			const onKeydown = (event: KeyboardEvent) => {
 				const state = store.getState();
 				if (event.defaultPrevented || !state.featureFlags.modeToggling) return;
@@ -22,7 +24,10 @@ export function createKeyboardModeSwitchingPlugin({ inputTarget }: { inputTarget
 				}
 			};
 			inputTarget.addEventListener('keydown', onKeydown);
-			return () => inputTarget.removeEventListener('keydown', onKeydown);
+			return () => {
+				inputTarget.removeEventListener('keydown', onKeydown);
+				removeHint();
+			};
 		},
 	};
 }

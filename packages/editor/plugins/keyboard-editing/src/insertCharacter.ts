@@ -8,7 +8,7 @@ import { moveCaret } from '@8f4e/editor-state';
  * @param char Character to insert.
  * @returns Updated code buffer plus the new caret coordinates.
  */
-export default function type(
+export default function insertCharacter(
 	code: string[],
 	row: number,
 	col: number,
