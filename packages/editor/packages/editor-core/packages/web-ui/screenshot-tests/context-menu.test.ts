@@ -14,7 +14,6 @@ test('context menu', async () => {
 
 	const renderer = await init(createStateManager(mockState), createMockEventDispatcher(), canvas, memoryViews);
 	try {
-		renderer.pauseRendering();
 		mockState.contextMenu = generateContextMenuMock();
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();

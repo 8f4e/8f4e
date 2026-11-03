@@ -21,11 +21,12 @@ native tap handling.
 
 Directional block navigation, jumping to a block, and going home request a 500 ms viewport animation. Editor-state
 stores the start and target positions and exposes `advanceViewportAnimation(state, frameTime, events)` for each
-rendered frame. Web-ui advances the animation before checking block visibility and drawing, updating the shared
+rendered frame. Editor-core advances the animation before asking web-ui to draw, updating the shared
 viewport coordinates, border geometry, and `viewportChanged` listeners throughout the pan.
 
-Frame scheduling belongs to the renderer. State has no animation-frame callbacks; other renderers and headless
-consumers advance animations explicitly. `renderFrame()` also advances an animation while automatic rendering is
+Editor-core owns frame scheduling and pause/resume coordination. State has no animation-frame callbacks, and
+web-ui draws the supplied viewport without advancing navigation state. Other hosts and headless consumers advance
+animations explicitly. The editor's `renderFrame()` also advances an animation while automatic rendering is
 paused. The next frame uses elapsed time, including any time spent paused.
 
 ## Touch panning

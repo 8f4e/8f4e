@@ -81,7 +81,6 @@ entryEnd`);
 	const renderer = await initView(store, events, canvas, memoryViews, {
 		drawers,
 	});
-	renderer.pauseRendering();
 	try {
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();

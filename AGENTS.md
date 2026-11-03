@@ -54,6 +54,8 @@
 - The default editor also imports `editor-plugin-font-preview` for non-coarse pointers. F18/F19 cycle a temporary font
   override without modifying source; project loading or plugin disposal restores source configuration. Minimal omits it.
 - Rendering plugins: web-ui owns the procedural background and its font-specific dot settings under `src/plugins/`.
+  Editor-core owns the single frame loop and advances viewport state before web-ui draws each frame. Web-ui owns
+  drawing and GPU resources, with no frame scheduler or navigation-state updates.
   `editor-plugin-connectors` owns input/output widgets, wire lookup, and the complete line renderer. Web-ui provides
   generic render-layer registration, palette updates, memory release, and disposal.
   Glugglugglug owns sprite rendering and generic render hooks. The sprite generator supplies only a uniform grid of
@@ -90,6 +92,7 @@
   execution, session restoration, and updates in desktop Chromium and Android touch emulation on port 3103.
 - `npx nx run @8f4e/8f4e-website:dev`: Starts the example product website on `http://localhost:3001`.
 - `npx nx run @8f4e/8f4e-website:build`: Builds the example product website and its editor dependencies.
+- `npx nx run @8f4e/editor-core:test:screenshot`: Tests viewport animation and culling through the real core/renderer.
 - `npx nx run @8f4e/editor-default:test:screenshot`: Runs real-plugin browser composition tests for lazy loading,
   project Open/Save, and compiler/texture rendering.
 - `npx nx run @8f4e/editor-minimal:build|test|typecheck`: Build or verify the embedded editor composition.

@@ -25,8 +25,6 @@ test('dragged module', async () => {
 	});
 
 	try {
-		renderer.pauseRendering();
-
 		const codeLines = [
 			'',
 			'lorem ipsum dolor sit amet',

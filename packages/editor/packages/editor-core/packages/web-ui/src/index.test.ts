@@ -179,6 +179,8 @@ describe('web-ui init', () => {
 		if (first === 'project') finishFont(atlas);
 		else finishProject();
 		const view = await mounting;
+		expect(mocks.engine.renderFrame).not.toHaveBeenCalled();
+		view.renderFrame();
 		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
 		view.destroy();
 	});
@@ -263,81 +265,48 @@ describe('web-ui init', () => {
 		drawers.registerRenderLayer(() => ({ draw: drawLayer, destroy: vi.fn() }));
 		const drawTopLayer = vi.fn();
 		drawers.registerRenderLayer(() => ({ draw: drawTopLayer, destroy: vi.fn() }));
-		await init(createStateManager(state), createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews, {
-			drawers,
-		});
-
-		expect(drawLayer).toHaveBeenCalledOnce();
-		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawLayer.mock.invocationCallOrder[0]);
-		expect(drawLayer.mock.invocationCallOrder[0]).toBeLessThan(drawTopLayer.mock.invocationCallOrder[0]);
-	});
-
-	it('pauses and resumes its animation frame loop idempotently', async () => {
-		const { default: init } = await import('./index');
-		const state = createMockState();
-		const memoryViews = createMemoryViews();
 		const view = await init(
 			createStateManager(state),
 			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
-			memoryViews
+			memoryViews,
+			{
+				drawers,
+			}
 		);
-		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
-		expect(mocks.requestAnimationFrame).toHaveBeenCalledOnce();
+		view.renderFrame();
 
-		view.pauseRendering();
-		view.pauseRendering();
-		expect(mocks.cancelAnimationFrame).toHaveBeenCalledOnce();
-		expect(mocks.cancelAnimationFrame).toHaveBeenCalledWith(23);
-
-		view.resumeRendering();
-		view.resumeRendering();
-		expect(mocks.engine.renderFrame).toHaveBeenCalledTimes(2);
-		expect(mocks.requestAnimationFrame).toHaveBeenCalledTimes(2);
-
+		expect(drawLayer).toHaveBeenCalledOnce();
+		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawLayer.mock.invocationCallOrder[0]);
+		expect(drawLayer.mock.invocationCallOrder[0]).toBeLessThan(drawTopLayer.mock.invocationCallOrder[0]);
 		view.destroy();
-		expect(mocks.cancelAnimationFrame).toHaveBeenCalledTimes(2);
-		expect(mocks.background.destroy).toHaveBeenCalledOnce();
-		expect(mocks.engine.destroy).toHaveBeenCalledOnce();
 	});
 
-	it('advances viewport coordinates before drawing each scheduled frame', async () => {
+	it('draws supplied viewport state without scheduling frames or advancing navigation', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState({
+			viewport: { x: 24, y: 32 },
 			viewportAnimation: { active: true, startX: 0, startY: 0, targetX: 100, targetY: 200 },
 		});
 		const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
-		const now = vi.spyOn(performance, 'now').mockReturnValue(1000);
 		const view = await init(createStateManager(state), events, {} as HTMLCanvasElement, createMemoryViews());
-		try {
-			expect(state.viewport).toMatchObject({ x: 0, y: 0 });
-			mocks.drawCodeBlocks.mockImplementationOnce(() => {
-				expect(state.viewport).toMatchObject({ x: 50, y: 100 });
-				expect(events.dispatch).toHaveBeenCalledWith('viewportChanged', {
-					previousX: 0,
-					previousY: 0,
-					x: 50,
-					y: 100,
-				});
-			});
-			mocks.requestAnimationFrame.mock.calls[0][0](1250);
-			expect(mocks.drawCodeBlocks).toHaveBeenCalledTimes(2);
-			expect(mocks.requestAnimationFrame).toHaveBeenCalledTimes(2);
-
-			view.pauseRendering();
-			now.mockReturnValue(1500);
-			expect(state.viewport).toMatchObject({ x: 50, y: 100 });
-			view.renderFrame();
-			expect(state.viewport).toMatchObject({ x: 100, y: 200 });
-			expect(state.viewportAnimation.active).toBe(false);
-			expect(mocks.requestAnimationFrame).toHaveBeenCalledTimes(2);
-		} finally {
-			view.destroy();
-			now.mockRestore();
-		}
+		expect(mocks.engine.renderFrame).not.toHaveBeenCalled();
+		const viewport = structuredClone(state.viewport);
+		const animation = { ...state.viewportAnimation };
+		events.dispatch.mockClear();
+		view.renderFrame();
+		view.renderFrame();
+		expect(mocks.drawCodeBlocks).toHaveBeenCalledTimes(2);
+		expect(mocks.drawCodeBlocks.mock.calls.at(-1)?.[1]).toBe(state);
+		expect(state.viewport).toEqual(viewport);
+		expect(state.viewportAnimation).toEqual(animation);
+		expect(events.dispatch).not.toHaveBeenCalled();
+		expect(mocks.requestAnimationFrame).not.toHaveBeenCalled();
+		view.destroy();
+		expect(mocks.cancelAnimationFrame).not.toHaveBeenCalled();
 	});
 
-	it('releases rendering resources and applies the latest deferred size when resumed', async () => {
+	it('releases rendering resources and restores the latest deferred size before drawing', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = createMemoryViews();
@@ -347,18 +316,18 @@ describe('web-ui init', () => {
 		view.releaseRenderingResources();
 		view.releaseRenderingResources();
 
-		expect(mocks.cancelAnimationFrame).toHaveBeenCalledOnce();
 		expect(mocks.engine.releaseRenderingMemory).toHaveBeenCalledOnce();
 		expect(canvas).toEqual(expect.objectContaining({ width: 1, height: 1 }));
 		expect(view.resize(800, 600)).toBe(false);
 		expect(mocks.engine.resize).not.toHaveBeenCalled();
 
-		view.resumeRendering();
+		view.renderFrame();
 
 		expect(mocks.engine.restoreRenderingMemory).toHaveBeenCalledOnce();
 		expect(mocks.engine.resize).toHaveBeenCalledOnce();
 		expect(mocks.engine.resize).toHaveBeenCalledWith(800, 600);
-		expect(mocks.engine.renderFrame).toHaveBeenCalledTimes(2);
+		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
+		view.destroy();
 	});
 
 	it('updates palette independently of font atlas replacement', async () => {
@@ -412,6 +381,32 @@ describe('web-ui init', () => {
 		store.dispose();
 	});
 
+	it('restarts FPS sampling when the host resumes after a pause without drawing', async () => {
+		let now = 0;
+		const performanceNow = vi.spyOn(performance, 'now').mockImplementation(() => now);
+		const { default: init } = await import('./index');
+		const onRenderStats = vi.fn();
+		const view = await init(
+			createStateManager(createMockState()),
+			createMockEventDispatcher(),
+			{} as HTMLCanvasElement,
+			createMemoryViews(),
+			{ onRenderStats, renderStatsIntervalFrames: 2 }
+		);
+		try {
+			view.renderFrame();
+			now = 1000;
+			view.resetRenderStats();
+			expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
+			now = 1010;
+			view.renderFrame();
+			expect(onRenderStats).toHaveBeenCalledWith(expect.objectContaining({ fps: 100, frameBudgetMs: 10 }));
+		} finally {
+			view.destroy();
+			performanceNow.mockRestore();
+		}
+	});
+
 	it('emits render stats at the configured frame interval', async () => {
 		let now = 0;
 		const performanceNow = vi.spyOn(performance, 'now').mockImplementation(() => now);
@@ -433,6 +428,7 @@ describe('web-ui init', () => {
 				renderStatsIntervalFrames: 2,
 			}
 		);
+		view.renderFrame();
 		expect(onRenderStats).not.toHaveBeenCalled();
 
 		now = 40;

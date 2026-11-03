@@ -50,8 +50,6 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 		drawers,
 	});
 	try {
-		renderer.pauseRendering();
-
 		const characterLines = Array.from({ length: 8 }, (_, row) =>
 			Array.from({ length: 16 }, (_, column) => String.fromCharCode(row * 16 + column)).join('')
 		);

@@ -32,12 +32,12 @@ Editor-state parses and resolves configuration generically; web-ui owns supporte
 
 ### `init(store, events, canvas, memoryViews, options?)`
 
-Initializes the web UI renderer.
+Initializes the web UI renderer without drawing or scheduling frames. Editor-core owns the frame loop.
 
 **Parameters:**
 
 - `store: StateManager<State>` - Editor state and configuration subscriptions
-- `events: EventDispatcher` - Announces layout grid size and animated viewport changes
+- `events: EventDispatcher` - Announces layout grid size changes
 - `canvas: HTMLCanvasElement` - The canvas element to render to
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
 - `options.onRenderStats` - Optional callback for sampled render statistics
@@ -46,7 +46,9 @@ Initializes the web UI renderer.
 **Returns:** An object with methods to control the renderer:
 
 - `resize(width, height)` - Resize the canvas
-- `renderFrame()` - Draw one frame on demand
+- `renderFrame()` - Restore released GPU resources as needed and draw one frame from the supplied state
+- `releaseRenderingResources()` - Release reloadable GPU resources and the canvas drawing buffer
+- `resetRenderStats()` - Restart the elapsed-time and frame-count sample when the host resumes its loop
 - `destroy()` - Unsubscribe from configuration and release renderer and plugin resources
 
 ### `RenderStats`
@@ -76,20 +78,20 @@ interface FontAtlas {
 
 ## State Usage
 
-The web-ui package reads editor state for drawing, installs font-derived grid dimensions, and advances viewport
-animations before drawing each frame. `@8f4e/editor-plugin-code-rendering` owns code text,
+The web-ui package reads editor state for drawing and installs font-derived grid dimensions.
+`@8f4e/editor-plugin-code-rendering` owns code text,
 syntax highlighting, and its private cache of prepared sprite cells. It registers a content drawer through
 `registerCodeBlockContentDrawer()`, which runs after block backgrounds and highlights, before the cursor,
 shape declarations, diagnostics, ordinary block drawers, and overlays. Without a content plugin, blocks retain
 their backgrounds and editing affordances while no source text is drawn.
 
 Editor-state stores viewport animation targets and exposes the synchronous
-`advanceViewportAnimation(state, frameTime, events)` helper. Web-ui calls it from its existing rendering loop and
-on-demand `renderFrame()` path before block visibility checks and drawing. Each step updates the shared viewport
+`advanceViewportAnimation(state, frameTime, events)` helper. Editor-core calls it before web-ui's `renderFrame()`
+from both its scheduled and on-demand frame paths. Each step updates the shared viewport
 through `updateViewport()`, including border geometry and `viewportChanged` events, so blocks enter and leave the
-visible area throughout the pan. Renderers for other platforms must advance animations with their own frame clock.
-Pausing rendering stops automatic viewport updates; an on-demand frame or resuming rendering advances the animation
-using elapsed time. Editor-state needs no frame scheduler or cancellation callbacks.
+visible area throughout the pan. Web-ui's draw path uses those supplied coordinates without advancing the animation.
+Hosts for other platforms advance animations with their own frame clock. Editor-state needs no frame scheduler or
+cancellation callbacks; web-ui owns no frame loop or pause/resume controls.
 
 The renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to font and color changes.
 Theme-only changes retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette.
