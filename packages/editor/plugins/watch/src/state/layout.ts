@@ -17,8 +17,11 @@ export function registerWatchLayout(
 		);
 		watchesByBlock.set(graphicData, []);
 		items.forEach(data => {
-			const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(graphicData), data.memoryId);
-			if (!memory) {
+			const scope = getCodeBlockMemoryScope(graphicData);
+			const resolveMemory = () => resolveMemoryIdentifier(state, scope, data.memoryId);
+			const dereferenced = data.memoryId.startsWith('*');
+			const memory = dereferenced ? undefined : resolveMemory();
+			if (!dereferenced && !memory) {
 				return;
 			}
 
@@ -32,11 +35,9 @@ export function registerWatchLayout(
 			watchesByBlock.get(graphicData)!.push({
 				x: state.viewport.vGrid * (3 + graphicData.lineNumberColumnWidth + visualLineWidth),
 				y: gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid,
-				memory: memory.memory,
-				showAddress: memory.showAddress,
+				resolveMemory: dereferenced ? resolveMemory : () => memory,
 				showEndAddress: data.showEndAddress,
 				displayFormat: data.displayFormat,
-				bufferPointer: memory.bufferPointer,
 			});
 		});
 	});

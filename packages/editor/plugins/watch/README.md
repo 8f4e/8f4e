@@ -22,6 +22,9 @@ Watch also accepts `@w`; inline directives can infer the memory declaration on t
 The plugin parses `0b`/`0x` display prefixes and the trailing `&` end-address form before asking core to resolve
 the memory reference. Formatting choices remain private to watch.
 
+Dereferenced watches such as `; @watch *pointer` follow the current pointer target and its value on every rendered frame,
+without requiring a selection change. Indexed and formatted forms such as `; @watch 0x*pointer[1]` update the same way.
+
 The browser host supplies `prefersReducedMotion: () => boolean` to the factory. The plugin reads it when drawing; it does not access browser globals.
 
 Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.

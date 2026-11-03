@@ -54,7 +54,10 @@ export default function drawWatch(
 		return;
 	}
 
-	for (const { x, y, memory, showAddress, showEndAddress, displayFormat, bufferPointer } of values) {
+	for (const { x, y, resolveMemory, showEndAddress, displayFormat } of values) {
+		const resolved = resolveMemory();
+		if (!resolved) continue;
+		const { memory, showAddress, bufferPointer } = resolved;
 		if (showAddress) {
 			// Elements are `elementWordSize` bytes wide, so narrow and float64 arrays do not step by 4.
 			const byteAddress = memory.byteAddress + bufferPointer * memory.elementWordSize;
