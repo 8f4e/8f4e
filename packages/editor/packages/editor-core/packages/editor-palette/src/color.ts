@@ -7,7 +7,13 @@ export const WHITE: Rgba = [1, 1, 1, 1];
 
 /** Match the atlas's eight-bit RGB channels while preserving the authored alpha. */
 export function normalizeColor(color: Rgba): Rgba {
-	return [...rgb(parseColor(toHex(rgb(color)))), color[3]];
+	const quantize = (value: number) => Math.round(Math.max(0, Math.min(1, value)) * 255) / 255;
+	return [
+		quantize(color[0]),
+		quantize(color[1]),
+		quantize(color[2]),
+		color[3],
+	];
 }
 
 export function formatColor(color: Rgba): string {
