@@ -52,6 +52,15 @@ test('installs a complete offline cache and cold-starts with lazy plugins and a 
 			expect.objectContaining({ sizes: '512x512', purpose: 'maskable' }),
 		])
 	);
+	const iconSizes = await page.evaluate(async (icons: Array<{ src: string }>) => {
+		return Promise.all(
+			icons.map(async icon => {
+				const bitmap = await createImageBitmap(await (await fetch(icon.src)).blob());
+				return `${bitmap.width}x${bitmap.height}`;
+			})
+		);
+	}, manifest.icons);
+	expect(iconSizes).toEqual(['192x192', '512x512', '512x512']);
 	const assets = (await readdir('dist/assets', { recursive: true })).filter(path => /\.(js|ico)$/.test(path));
 	const cached = await page.evaluate(async () => {
 		const names = await caches.keys();
