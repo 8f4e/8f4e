@@ -67,7 +67,7 @@ export function mountHomepageEditors(): () => void {
 		const mountPromise = mountMinimalEditor(canvas, {
 			sharedAudioContext,
 			captureWheel: false,
-			touchNavigation: { fingerCount: 1, axis: 'horizontal' },
+			touchNavigation: { axis: 'horizontal' },
 			includeKeyboardModeSwitching: false,
 			initialProjectUrl: canvas.dataset.projectPath ? getExampleProjectUrl(canvas.dataset.projectPath) : undefined,
 			onInitialProjectLoaded: () => revealEditorAfterProjectLoad(canvas),

@@ -206,6 +206,7 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 				const editor = await mountMinimalEditor(canvas, {
 					sharedAudioContext,
 					captureWheel: true,
+					touchNavigation: { axis: 'horizontal' },
 					includeKeyboardModeSwitching,
 					initialProjectUrl: item.projectUrl,
 					onInitialProjectLoaded: reveal,

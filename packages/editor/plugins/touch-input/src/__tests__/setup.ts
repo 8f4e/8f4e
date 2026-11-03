@@ -9,7 +9,7 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-export function setup(viewportDragging = true, fingerCount?: 1 | 2, axis?: TouchInputOptions['axis']) {
+export function setup(viewportDragging = true, axis?: TouchInputOptions['axis']) {
 	const inputTarget = Object.assign(new EventTarget(), {
 		style: { touchAction: 'pan-y' },
 		getBoundingClientRect: () => ({ left: 0, top: 0 }),
@@ -43,7 +43,7 @@ export function setup(viewportDragging = true, fingerCount?: 1 | 2, axis?: Touch
 	events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 	const changed = vi.fn();
 	events.on('viewportChanged', changed);
-	const dispose = createTouchInputPlugin({ inputTarget, fingerCount, axis }).setup({
+	const dispose = createTouchInputPlugin({ inputTarget, axis }).setup({
 		store,
 		events,
 		menus: store.menus,

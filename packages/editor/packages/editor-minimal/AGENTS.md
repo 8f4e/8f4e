@@ -64,7 +64,7 @@
 - `includeKeyboardModeSwitching: false` omits the mode-switching factory import and plugin. This is composition
   policy; core has no mode-switching feature flag and the plugin has no runtime enable guard.
 
-- Forward `touchNavigation` (`fingerCount` and `axis`) to the touch input plugin without implementing gestures in
-  the composition. The default is two fingers on both axes; the product landing page selects one-finger horizontal panning.
+- Forward `touchNavigation` (`axis`) to the touch input plugin without implementing gestures in
+  the composition. Panning uses one finger on both axes by default; the product landing page and galleries select horizontal panning.
 
 - Load `code-block-copy-paste` as an unconditional deferred entry with injected browser clipboard read/write functions. Text paste is owned separately by keyboard-editing. Keep clipboard browser access out of core and the shared plugin context.

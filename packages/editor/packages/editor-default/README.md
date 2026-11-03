@@ -45,9 +45,9 @@ is a capability check when the deferred registry is created; it does not identif
 Coarse-pointer devices load `touch-input` instead, supporting configurable touch panning and grid snapping
 without editing block positions. Taps remain available to controls.
 
-Touch panning defaults to two fingers in both directions. Set `touchNavigation: { fingerCount: 1, axis: 'horizontal' }`
-to allow one-finger horizontal panning while vertical swipes scroll the surrounding page. `fingerCount` accepts `1` or
-`2`; `axis` accepts `'both'`, `'horizontal'`, or `'vertical'`. Controls use one pointer through shared editor events
+Touch panning uses one finger in both directions by default. Set `touchNavigation: { axis: 'horizontal' }`
+to let horizontal drags pan the editor while vertical swipes scroll the surrounding page, as on the product landing
+page and galleries. `axis` accepts `'both'`, `'horizontal'`, or `'vertical'`. Controls use shared editor pointer events
 and keep their gestures separate from viewport panning.
 
 The independent `mouse-input` plugin loads on all devices and forwards DOM mouse/wheel events to core. It also forwards

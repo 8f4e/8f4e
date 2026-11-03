@@ -1,7 +1,9 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
 import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
 import type { WebMcpTool } from '@8f4e/editor-webmcp';
+import type {} from '@vitest/browser-playwright';
 import { afterEach, expect, test, vi } from 'vitest';
+import { cdp } from 'vitest/browser';
 import { mountGallery } from './gallery';
 
 vi.mock('@8f4e/editor-minimal', { spy: true });
@@ -85,6 +87,48 @@ test('reveals a successfully loaded empty project', async () => {
 	const canvas = view.panel().querySelector('canvas')!;
 	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
+});
+
+test('one-finger gallery drags pan horizontally while vertical swipes scroll the page', async () => {
+	const input = cdp();
+	await input.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 2 });
+	const originalMinHeight = document.body.style.minHeight;
+	document.body.style.minHeight = '2000px';
+	window.scrollTo(0, 0);
+	try {
+		const view = setup({ touch: async () => new Response(source) });
+		const editor = await view.mounted();
+		editor.pauseRendering();
+		const canvas = view.panel().querySelector('canvas')!;
+		canvas.style.width = '640px';
+		canvas.style.height = '400px';
+		await expect.poll(() => editor.state.viewport.width).toBe(640);
+		await expect.poll(() => canvas.style.touchAction).toBe('pan-y');
+		const rect = canvas.getBoundingClientRect();
+		const frame = window.frameElement!.getBoundingClientRect();
+		const point = (x: number, y: number) => ({ x: frame.left + rect.left + x, y: frame.top + rect.top + y, id: 1 });
+		const { x, y } = editor.state.viewport;
+		await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point(300, 200)] });
+		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(320, 202)] });
+		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(340, 204)] });
+		await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		expect(editor.state.viewport).toMatchObject({ x: x - 40, y });
+		expect(window.scrollY).toBe(0);
+		const scrollStart = point(400, 300);
+		await input.send('Input.synthesizeScrollGesture', {
+			x: scrollStart.x,
+			y: scrollStart.y,
+			yDistance: -130,
+			gestureSourceType: 'touch',
+			preventFling: true,
+		});
+		await expect.poll(() => window.scrollY).toBeGreaterThan(0);
+		expect(editor.state.viewport).toMatchObject({ x: x - 40, y });
+	} finally {
+		document.body.style.minHeight = originalMinHeight;
+		window.scrollTo(0, 0);
+		await input.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+	}
 });
 
 test('keeps live editing and project export available in the minimal editor', async () => {
