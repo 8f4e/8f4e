@@ -13,6 +13,9 @@
 - Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
   Load entries independently through the same loader; apply pointer capability and mode-switching availability as
   entry predicates. Keep project signals in `src/lazy-plugins.ts`. Do not create a separate keyboard loading group.
+- Load `mouse-input` on every device, forwarding the host's `captureWheel` to its factory. Load
+  `touch-viewport-navigation` only for `(pointer: coarse)`; keyboard navigation/editing/mode switching remain for fine pointers.
+  Mouse forwarding stays active on coarse devices so touch taps reach existing controls. Core owns no DOM input adapter.
 - Construct one `createProjectFileSession()` per default feature set and install its `plugin` before project loaders.
   Compose `createProjectOpenPlugin({ document: canvas.ownerDocument, fileSession, showOpenMenuItem })` for Open and
   `createProjectSavePlugin({ inputTarget: canvas, fileSession })` for Save/Export and Cmd/Ctrl+S. The session holds only

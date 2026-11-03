@@ -1,25 +1,24 @@
 # Editor Package
 
 This package is the glue that connects the platform-agnostic editor state machine from
-`@8f4e/editor-state` with browser APIs and the `@8f4e/web-ui` renderer. It wires browser events
-(mouse and wheel) into the state machine, then hands the resulting state object
-that describes the full application to a UI renderer that treats state as immutable input and
-derives the UI purely from it. The renderer is intended to be pluggable so other platform
-renderers can replace it.
+`@8f4e/editor-state` with browser APIs and the `@8f4e/web-ui` renderer. It supplies the event dispatcher,
+plugin services, and rendering lifecycle. Browser input is supplied by plugins; core owns the state effects
+that consume their events. Other platform renderers can replace web-ui.
 
 ## Responsibilities
 
 - Initialize the editor-state store and event dispatcher for the web runtime.
-- Make the canvas focusable and wire its mouse and wheel input into internal events, so each editor only
-  handles input directed at its own canvas.
-- Translate DOM input data into internal event payloads (coordinates, movement deltas, button state, canvas size).
+- Make the canvas focusable for installed input plugins.
 - Initialize the UI renderer with state and memory views, and forward resize events.
 - Observe the canvas's CSS dimensions and adapt the drawing buffer and editor viewport when its host resizes it.
 - Expose state access, memory view updates, rendering lifecycle controls, and state machine callbacks as extension
   points.
 
-Wheel input pans the editor viewport and prevents page scrolling by default. Embedded hosts can set
-`captureWheel: false` when initializing the editor to leave wheel input and scrolling to the surrounding page.
+`@8f4e/editor-plugin-mouse-input` forwards DOM mouse and wheel input to core events. Pass `captureWheel: false`
+to its factory to leave wheel scrolling to the page. The default and minimal compositions expose that option
+and install the mouse plugin on both fine- and coarse-pointer devices.
+`@8f4e/editor-plugin-touch-viewport-navigation` adds one-finger viewport dragging on coarse-pointer devices.
+Core installs no DOM mouse, wheel, touch, or keyboard listeners.
 
 Hosts can pause rendering without releasing memory through `pauseRendering()`. `releaseRenderingResources()` also
 releases reloadable GPU textures, dynamic buffers, and the canvas drawing buffer. `resumeRendering()` restores the
@@ -38,12 +37,13 @@ Pass a `plugins` array to initialization. `EditorPlugin` and `EditorPluginContex
 
 ```ts
 import initEditor from '@8f4e/editor-core';
+import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 import { createSwitchPlugin } from '@8f4e/editor-plugin-switch';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
 
 const editor = await initEditor(canvas, {
 	...options,
-	plugins: [toggleSkipExecutionPlugin, createSwitchPlugin({ writeMemory })],
+	plugins: [createMouseInputPlugin({ inputTarget: canvas }), toggleSkipExecutionPlugin, createSwitchPlugin({ writeMemory })],
 });
 ```
 

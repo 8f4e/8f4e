@@ -1,10 +1,12 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 import { afterEach, expect, it, vi } from 'vitest';
 import { mountMinimalEditor } from './index';
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('@8f4e/editor-plugin-mouse-input', { spy: true });
 vi.mock('@8f4e/editor-plugin-compiler', { spy: true });
 vi.mock('@8f4e/editor-plugin-lazy-loader', { spy: true });
 
@@ -34,7 +36,6 @@ it('starts without storage and reports empty-project readiness after initializat
 	await vi.waitFor(() => expect(initEditor).toHaveBeenCalledOnce());
 	const compiler = vi.mocked(createCompilerPlugin).mock.results[0].value;
 	const options = vi.mocked(initEditor).mock.calls[0][1];
-	expect(options.captureWheel).toBe(false);
 	expect(options.featureFlags).toEqual({ projectCreation: false, moduleDragging: false });
 	expect(options.plugins![0]).toBe(compiler.plugin);
 	expect(options.plugins!.map(plugin => plugin.id)).not.toContain('watch');
@@ -48,6 +49,9 @@ it('starts without storage and reports empty-project readiness after initializat
 	]);
 	expect(createLazyPluginLoaderPlugin).not.toHaveBeenCalled();
 	const deferredPlugins = await loadDeferredPlugins();
+	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
+	expect(deferredPlugins.map(plugin => plugin.id)).toContain('mouse-input');
+	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-viewport-navigation');
 	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).toEqual(
 		expect.arrayContaining([
 			'code-rendering',
@@ -72,6 +76,9 @@ it('omits all keyboard plugins on coarse-pointer browsers', async () => {
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 	await mountMinimalEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
 	const plugins = await loadDeferredPlugins();
+	expect(plugins.map(plugin => plugin.id)).toEqual(
+		expect.arrayContaining(['mouse-input', 'touch-viewport-navigation'])
+	);
 	for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing'])
 		expect(plugins.some(plugin => plugin.id === id)).toBe(false);
 });

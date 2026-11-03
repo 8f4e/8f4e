@@ -1,5 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initEditor, { type Editor } from '@8f4e/editor-core';
+import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
 import { expect, test, vi } from 'vitest';
 import { createScreenshotPlugin } from '../src/index';
 
@@ -31,12 +31,22 @@ noteEnd`);
 	const showSaveFilePicker = vi.fn().mockResolvedValue({ createWritable: async () => ({ write, close }) });
 	vi.stubGlobal('showSaveFilePicker', showSaveFilePicker);
 	let editor!: Editor;
+	let events!: EventDispatcher;
+	const featurePlugin = createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() });
 	let image: HTMLImageElement | undefined;
 	let imageUrl: string | undefined;
 	try {
 		editor = await initEditor(canvas, {
 			initialProject: project,
-			plugins: [createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })],
+			plugins: [
+				{
+					...featurePlugin,
+					setup: context => {
+						events = context.events;
+						return featurePlugin.setup(context);
+					},
+				},
+			],
 		});
 		editor.state.editorMode = 'edit';
 		await vi.waitFor(() =>
@@ -45,8 +55,21 @@ noteEnd`);
 			).toBe(true)
 		);
 		editor.pauseRendering();
+		const mouse = (type: string, x: number, y: number) => {
+			events.dispatch(type, {
+				x,
+				y,
+				movementX: 0,
+				movementY: 0,
+				altKey: false,
+				buttons: type === 'mouseup' ? 0 : 1,
+				stopPropagation: false,
+				canvasWidth: canvas.width,
+				canvasHeight: canvas.height,
+			});
+		};
 		editor.renderFrame();
-		canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: 520, clientY: 16, bubbles: true }));
+		mouse('contextmenu', 520, 16);
 		await vi.waitFor(() =>
 			expect(editor.state.contextMenu.items.some(item => item.action === 'exportCanvasScreenshot')).toBe(true)
 		);
@@ -55,8 +78,8 @@ noteEnd`);
 		const screenshotIndex = menu.items.findIndex(item => item.action === 'exportCanvasScreenshot');
 		const x = menu.x - editor.state.viewport.x + 8;
 		const y = menu.y - editor.state.viewport.y + screenshotIndex * editor.state.viewport.hGrid + 8;
-		canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true }));
-		canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, bubbles: true }));
+		mouse('mousemove', x, y);
+		mouse('mousedown', x, y);
 		await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
 		expect(editor.state.contextMenu.open).toBe(false);
 		expect(editor.state.featureFlags.canvasOverlays).toBe(true);

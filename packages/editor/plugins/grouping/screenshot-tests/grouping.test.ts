@@ -1,5 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initEditor, { type Editor } from '@8f4e/editor-core';
+import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
 import { expect, test, vi } from 'vitest';
 import { groupingPlugin } from '../src/index';
 
@@ -11,9 +11,18 @@ test('contributes group menus and drag behavior through the real editor', async 
 	canvas.style.height = '512px';
 	document.body.appendChild(canvas);
 	let editor: Editor | undefined;
+	let events!: EventDispatcher;
 	try {
 		editor = await initEditor(canvas, {
-			plugins: [groupingPlugin],
+			plugins: [
+				{
+					...groupingPlugin,
+					setup: context => {
+						events = context.events;
+						return groupingPlugin.setup(context);
+					},
+				},
+			],
 			initialProject: parseProjectSource(`8f4e/v1
 constants env
 ; @pos 120 60
@@ -36,23 +45,24 @@ entryEnd`),
 		const state = editor.state;
 		const first = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
 		const second = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'destination')!;
-		const mouse = (type: string, x: number, y: number, altKey = false) => {
-			const rect = canvas.getBoundingClientRect();
-			canvas.dispatchEvent(
-				new MouseEvent(type, {
-					clientX: rect.x + x,
-					clientY: rect.y + y,
-					bubbles: true,
-					altKey,
-					buttons: type === 'mouseup' ? 0 : 1,
-				})
-			);
+		const mouse = (type: string, x: number, y: number, movementX = 0) => {
+			events.dispatch(type, {
+				x,
+				y,
+				movementX,
+				movementY: 0,
+				altKey: false,
+				buttons: type === 'mouseup' ? 0 : 1,
+				stopPropagation: false,
+				canvasWidth: canvas.width,
+				canvasHeight: canvas.height,
+			});
 		};
 		const x = first.x - state.viewport.x + 8;
 		const y = first.y - state.viewport.y + 8;
 		const secondX = second.x;
 		mouse('mousedown', x, y);
-		mouse('mousemove', x + state.viewport.vGrid, y);
+		mouse('mousemove', x + state.viewport.vGrid, y, state.viewport.vGrid);
 		mouse('mouseup', x + state.viewport.vGrid, y);
 		expect(second.x).toBe(secondX + state.viewport.vGrid);
 		mouse('contextmenu', first.x - state.viewport.x + 8, first.y - state.viewport.y + 8);
@@ -73,7 +83,7 @@ entryEnd`),
 		const nextX = first.x - state.viewport.x + 8;
 		const nextY = first.y - state.viewport.y + 8;
 		mouse('mousedown', nextX, nextY);
-		mouse('mousemove', nextX + state.viewport.vGrid, nextY);
+		mouse('mousemove', nextX + state.viewport.vGrid, nextY, state.viewport.vGrid);
 		mouse('mouseup', nextX + state.viewport.vGrid, nextY);
 		expect(second.x).toBe(before);
 	} finally {

@@ -1,5 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initEditor, { type Editor } from '@8f4e/editor-core';
+import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
 import { expect, test, vi } from 'vitest';
 import { createExampleModulesPlugin } from '../src/index';
 
@@ -43,10 +43,20 @@ functionEnd float`,
 		],
 	]);
 	let editor: Editor | undefined;
+	let events!: EventDispatcher;
+	const featurePlugin = createExampleModulesPlugin({ sources });
 	try {
 		editor = await initEditor(canvas, {
 			initialProject: parseProjectSource(source),
-			plugins: [createExampleModulesPlugin({ sources })],
+			plugins: [
+				{
+					...featurePlugin,
+					setup: context => {
+						events = context.events;
+						return featurePlugin.setup(context);
+					},
+				},
+			],
 		});
 		editor.state.editorMode = 'edit';
 		const state = editor.state;
@@ -54,16 +64,29 @@ functionEnd float`,
 			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'env')).toBe(true)
 		);
 		editor.pauseRendering();
+		const mouse = (type: string, x: number, y: number) => {
+			events.dispatch(type, {
+				x,
+				y,
+				movementX: 0,
+				movementY: 0,
+				altKey: false,
+				buttons: type === 'mouseup' ? 0 : 1,
+				stopPropagation: false,
+				canvasWidth: canvas.width,
+				canvasHeight: canvas.height,
+			});
+		};
 		const click = async (title: string) => {
 			await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.title?.includes(title))).toBe(true));
 			const menu = state.contextMenu;
 			const index = menu.items.findIndex(item => item.title?.includes(title));
 			const x = menu.x - state.viewport.x + 8;
 			const y = menu.y - state.viewport.y + index * state.viewport.hGrid + 8;
-			canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true }));
-			canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, bubbles: true }));
+			mouse('mousemove', x, y);
+			mouse('mousedown', x, y);
 		};
-		canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: 80, clientY: 32, bubbles: true }));
+		mouse('contextmenu', 80, 32);
 		await click('Add Built-in Block');
 		await click('Audio');
 		await click('Effects');
