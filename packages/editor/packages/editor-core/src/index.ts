@@ -162,8 +162,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				getWordFromMemory: (allocationUnitAddress: number) => {
 					return memoryViews.int32[allocationUnitAddress] || 0;
 				},
-				requestAnimationFrame: callback => window.requestAnimationFrame(callback),
-				cancelAnimationFrame: id => window.cancelAnimationFrame(id),
 			},
 		});
 		cleanups.push(() => store.dispose());

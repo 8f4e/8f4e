@@ -37,7 +37,7 @@ Initializes the web UI renderer.
 **Parameters:**
 
 - `store: StateManager<State>` - Editor state and configuration subscriptions
-- `events: EventDispatcher` - Announces layout grid size changes
+- `events: EventDispatcher` - Announces layout grid size and animated viewport changes
 - `canvas: HTMLCanvasElement` - The canvas element to render to
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
 - `options.onRenderStats` - Optional callback for sampled render statistics
@@ -76,11 +76,20 @@ interface FontAtlas {
 
 ## State Usage
 
-The web-ui package reads editor state for drawing and writes only font-derived grid dimensions. `@8f4e/editor-plugin-code-rendering` owns code text,
+The web-ui package reads editor state for drawing, installs font-derived grid dimensions, and advances viewport
+animations before drawing each frame. `@8f4e/editor-plugin-code-rendering` owns code text,
 syntax highlighting, and its private cache of prepared sprite cells. It registers a content drawer through
 `registerCodeBlockContentDrawer()`, which runs after block backgrounds and highlights, before the cursor,
 shape declarations, diagnostics, ordinary block drawers, and overlays. Without a content plugin, blocks retain
 their backgrounds and editing affordances while no source text is drawn.
+
+Editor-state stores viewport animation targets and exposes the synchronous
+`advanceViewportAnimation(state, frameTime, events)` helper. Web-ui calls it from its existing rendering loop and
+on-demand `renderFrame()` path before block visibility checks and drawing. Each step updates the shared viewport
+through `updateViewport()`, including border geometry and `viewportChanged` events, so blocks enter and leave the
+visible area throughout the pan. Renderers for other platforms must advance animations with their own frame clock.
+Pausing rendering stops automatic viewport updates; an on-demand frame or resuming rendering advances the animation
+using elapsed time. Editor-state needs no frame scheduler or cancellation callbacks.
 
 The renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to font and color changes.
 Theme-only changes retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette.

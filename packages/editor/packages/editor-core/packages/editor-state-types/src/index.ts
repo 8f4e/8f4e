@@ -127,21 +127,10 @@ export type FeatureFlagsConfig = Partial<FeatureFlags>;
 
 export type EditorMode = 'view' | 'edit';
 
-// Core-provided memory and animation callbacks.
+// Core-provided memory callbacks.
 export interface Callbacks {
 	// Memory manipulation callback
 	getWordFromMemory?: (allocationUnitAddress: number) => number;
-
-	/**
-	 * Schedules a frame callback for editor-state driven animations.
-	 * Hosts can provide `window.requestAnimationFrame` or an equivalent scheduler.
-	 */
-	requestAnimationFrame?: (callback: (time: number) => void) => number;
-
-	/**
-	 * Cancels a previously scheduled animation frame callback.
-	 */
-	cancelAnimationFrame?: (id: number) => void;
 }
 
 // Options interface for editor initialization (top-level public API)

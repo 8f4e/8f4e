@@ -1,4 +1,5 @@
 import { toPaletteBytes } from '@8f4e/editor-palette';
+import { advanceViewportAnimation } from '@8f4e/editor-state';
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
 import loadFontAtlas, { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
@@ -163,14 +164,18 @@ export default async function init(
 	let rendering = false;
 	let renderingResourcesReleased = false;
 	let animationFrameRequest: number | null = null;
-	const renderNextFrame = () => {
+	const renderFrame = (frameTime = performance.now()) => {
+		advanceViewportAnimation(state, frameTime, events);
+		engine.renderFrame(drawFrame);
+	};
+	const renderNextFrame = (frameTime = performance.now()) => {
 		animationFrameRequest = null;
 		if (!rendering) {
 			return;
 		}
 
 		try {
-			engine.renderFrame(drawFrame);
+			renderFrame(frameTime);
 		} catch (error) {
 			rendering = false;
 			throw error;
@@ -241,7 +246,7 @@ export default async function init(
 		resumeRendering,
 		renderFrame: () => {
 			restoreRenderingResources();
-			engine.renderFrame(drawFrame);
+			renderFrame();
 		},
 		destroy: () => {
 			pauseRendering();

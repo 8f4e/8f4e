@@ -1,5 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initState from '@8f4e/editor-state';
+import initState, { advanceViewportAnimation } from '@8f4e/editor-state';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
@@ -207,6 +207,8 @@ describe('favorites plugin', () => {
 		);
 		test.events.dispatch('pointerdown', { x: 8, y: 8, stopPropagation: false });
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block);
+		advanceViewportAnimation(test.state, 0, test.events);
+		advanceViewportAnimation(test.state, 500, test.events);
 		expect(test.state.viewport.y).toBe(test.block.y + test.block.cursor.y - test.state.viewport.height / 2);
 		expect(test.state.projectChange.revision).toBe(revision);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision);

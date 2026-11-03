@@ -113,7 +113,9 @@
 
 - Keep accepted metadata in `state.compiler.result`, separate from `compiler.isCompiling` progress.
 - Core emits `compilationInputChanged` after its compiler input revision advances. Compilation scheduling and worker ownership belong to `editor-plugin-compiler`; do not restore a compile callback or built-in compiler effect.
-- `EditorOptions` has no public callbacks bag. Construct internal memory and animation callbacks in core. Clipboard access belongs to feature factories.
+- `EditorOptions` has no public callbacks bag. Construct the internal memory callback in core. Clipboard access belongs to feature factories.
+- Web-ui advances viewport animations through `advanceViewportAnimation` before visibility checks and drawing,
+  including on-demand frames. Keep animation data and synchronous coordinate updates in editor-state; it owns no frame scheduler.
 - Consume accepted `compilationSucceeded` program artifacts (`memoryRef`) to update generic memory views before metadata consumers react. Dispose plugins in reverse installation order so execution plugins stop before compiler resources are released. Drain cleanup stacks even when a disposer throws.
 - Render environment-constant contributions uniformly; each plugin owns its contribution key.
 
