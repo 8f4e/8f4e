@@ -162,12 +162,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				getWordFromMemory: (allocationUnitAddress: number) => {
 					return memoryViews.int32[allocationUnitAddress] || 0;
 				},
-				readClipboardText: async () => {
-					return await navigator.clipboard.readText();
-				},
-				writeClipboardText: async (text: string) => {
-					await navigator.clipboard.writeText(text);
-				},
 				requestAnimationFrame: callback => window.requestAnimationFrame(callback),
 				cancelAnimationFrame: id => window.cancelAnimationFrame(id),
 			},

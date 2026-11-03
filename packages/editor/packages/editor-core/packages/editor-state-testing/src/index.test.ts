@@ -128,14 +128,14 @@ describe('editor-state testing utilities', () => {
 	});
 
 	it('retains callback and collection overrides while preserving unrelated nested defaults', async () => {
-		const writeClipboardText = async (_text: string) => {};
+		const getWordFromMemory = (_address: number) => 1;
 		const blocks = [createMockCodeBlock()];
 		const state = createMockState({
-			callbacks: { writeClipboardText },
+			callbacks: { getWordFromMemory },
 			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: blocks } },
 			compiler: { isCompiling: true },
 		});
-		expect(state.callbacks.writeClipboardText).toBe(writeClipboardText);
+		expect(state.callbacks.getWordFromMemory).toBe(getWordFromMemory);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(blocks);
 		expect(state.compiler.isCompiling).toBe(true);
 		expect(state.compiler.result.memoryPlan).toEqual({ modules: {}, moduleList: [] });

@@ -86,10 +86,9 @@ The built-in block submenu also uses this request shape: `{ menu: 'moduleMenu', 
 Use explicit block actions through `events.dispatch`:
 
 - `createCodeBlock` receives `{ x, y, blockType }` and creates a module, function, prototype, or note template.
-- `pasteCodeBlocks` receives `{ x, y }` and reads the clipboard, including structured multi-block content.
 - `insertCodeBlock` receives `{ x, y, code }` and inserts those source lines without reading the clipboard.
 
-Coordinates are viewport pixels. Core applies unique naming, entry assignment, grid positioning, and persistence.
+Coordinates are viewport pixels. Core applies entry assignment, grid positioning, and persistence; declaration names remain unchanged.
 Newly inserted blocks already carry their source-derived type; core keeps it current as source changes.
 
 Directive handling and layout are independent services. `directives.register(definition)` contributes block or
@@ -166,9 +165,9 @@ Core registers menu movement in capture before plugins, so an open menu retains 
 
 Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets: [codeBlock] }` before a drag.
 Plugins may synchronously replace `targets`; core then moves and snaps those blocks and publishes one position edit.
-Before inserting a clipboard batch, core dispatches `transformPastedCodeBlocks` with `{ blocks }`. Plugins may
-replace that batch with transformed source, preserving the supplied input objects. Core resolves block names and
-positions afterward. `@8f4e/editor-state` exports both event payload types and the generic `ClipboardCodeBlock` type.
+Block copy/paste belongs to `@8f4e/editor-plugin-code-block-copy-paste`. Its factory receives browser read/write functions; core has no clipboard callbacks or copy/paste actions. Grouping receives its own writer for Copy Group. Keyboard-editing separately handles native text pastes at the caret.
+
+`insertCodeBlocks(store, { x, y, blocks })` inserts a source batch at a viewport position, preserving relative positions, source names, references, group membership, and nested entry tables. Only `@pos` is rewritten for placement. `serializeCodeBlocks(blocks, anchor)` returns detached `SerializedCodeBlock` sources with relative coordinates and recursively owned project slices. These helpers contain no browser or clipboard format handling.
 
 The switch and button plugins own their directives, memory resolution, interaction, and drawing. Each keeps widget
 data in a per-instance WeakMap. Buttons write their on value while pressed and their off value on release.
@@ -187,8 +186,8 @@ The execution-toggle plugin owns the Skip/Unskip menu item and its action. The t
 layout, animation, and overlay drawing, with its state private to each installation. Nested block shading remains
 built in. The core installs no plugins by default; `@8f4e/editor-default` selects the standard set.
 
-The grouping plugin owns `; @group <name> [nonstick]`, private group membership, grouped dragging, paste collision
-renaming, and all visual-group menu actions, including group execution toggling. Nested language-level project
+The grouping plugin owns `; @group <name> [nonstick]`, private group membership, grouped dragging, copying,
+and all visual-group menu actions, including group execution toggling. Nested language-level project
 groups (`group … groupEnd`), their navigation, and memory scopes remain in core.
 
 The favorites plugin owns `@favorite` detection, Favorite/Unfavorite editing, and Jump to navigation menus. Core

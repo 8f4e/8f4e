@@ -30,12 +30,6 @@ export const mainMenu = (state: State): ContextMenuItem[] => [
 					payload: { blockType: 'note' },
 					close: true,
 				},
-				{
-					title: 'Paste Code Block',
-					action: 'pasteCodeBlocks',
-					close: true,
-					disabled: !state.callbacks.readClipboardText,
-				},
 			]
 		: []),
 	...(state.editorMode === 'edit' ? [{ divider: true }] : []),

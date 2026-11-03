@@ -70,7 +70,9 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 				queued.push(event);
 				event.stopImmediatePropagation();
 			};
+			const onPaste = (event: ClipboardEvent) => editing?.handlePaste(event, context);
 			inputTarget.addEventListener('keydown', onKeydown, { capture: true });
+			inputTarget.addEventListener('paste', onPaste);
 			inputTarget.addEventListener('keyup', onPendingRelease, { capture: true });
 			inputTarget.addEventListener('blur', onPendingRelease, { capture: true });
 			store.subscribe('editorMode', onModeChanged);
@@ -81,6 +83,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 				discardInput();
 				removeCaret();
 				inputTarget.removeEventListener('keydown', onKeydown, { capture: true });
+				inputTarget.removeEventListener('paste', onPaste);
 				inputTarget.removeEventListener('keyup', onPendingRelease, { capture: true });
 				inputTarget.removeEventListener('blur', onPendingRelease, { capture: true });
 				store.unsubscribe('editorMode', onModeChanged);

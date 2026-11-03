@@ -8,11 +8,13 @@ let createKeyboardEditingPlugin: typeof import('./index')['createKeyboardEditing
 let finish: () => void;
 let importEditing: ReturnType<typeof vi.fn<() => void>>;
 let drawCaret: ReturnType<typeof vi.fn<typeof import('./editing')['drawCaret']>>;
+let handlePaste: ReturnType<typeof vi.fn<typeof import('./editing')['handlePaste']>>;
 let handleKeydown: ReturnType<typeof vi.fn<typeof import('./editing')['handleKeydown']>>;
 beforeEach(async () => {
 	vi.resetModules();
 	importEditing = vi.fn();
 	handleKeydown = vi.fn();
+	handlePaste = vi.fn();
 	drawCaret = vi.fn();
 	const pending = new Promise<void>(resolve => {
 		finish = resolve;
@@ -20,7 +22,7 @@ beforeEach(async () => {
 	vi.doMock('./editing', async () => {
 		importEditing();
 		await pending;
-		return { handleKeydown, drawCaret };
+		return { handleKeydown, handlePaste, drawCaret };
 	});
 	({ createKeyboardEditingPlugin } = await import('./index'));
 });
@@ -125,6 +127,15 @@ describe('lazy keyboard editing input bridge', () => {
 		test.disposePlugin();
 		test.drawForeground(context);
 		expect(drawCaret).toHaveBeenCalledOnce();
+	});
+	it('forwards native paste to loaded editing and removes its listener on disposal', async () => {
+		const test = setup(createKeyboardEditingPlugin);
+		await finishLoading();
+		test.paste('text');
+		expect(handlePaste).toHaveBeenCalledOnce();
+		test.disposePlugin();
+		test.paste('again');
+		expect(handlePaste).toHaveBeenCalledOnce();
 	});
 	it('removes its input listener after the implementation has loaded', async () => {
 		const test = setup(createKeyboardEditingPlugin);

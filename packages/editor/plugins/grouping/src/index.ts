@@ -1,31 +1,33 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { ResolveCodeBlockDragTargetsEvent, TransformPastedCodeBlocksEvent } from '@8f4e/editor-state';
+import type { ResolveCodeBlockDragTargetsEvent } from '@8f4e/editor-state';
 import { registerGroupActions } from './actions';
 import { getGroup, getGroupBlocks } from './groups';
 import { registerGroupMenus } from './menus';
-import { renamePastedGroups } from './paste';
 
-export const groupingPlugin: EditorPlugin = {
-	id: 'grouping',
-	setup: context => {
-		const { store, events } = context;
-		const state = store.getState();
-		const unregisterActions = registerGroupActions(context);
-		const unregisterMenu = registerGroupMenus(context);
-		const onDragTargets = (event: ResolveCodeBlockDragTargetsEvent) => {
-			const group = getGroup(event.codeBlock.parsedDirectives);
-			if (group && group.nonstick === Boolean(event.altKey)) {
-				event.targets = getGroupBlocks(state, event.codeBlock);
-			}
-		};
-		const onPaste = (incoming: TransformPastedCodeBlocksEvent) => renamePastedGroups(incoming, state);
-		events.on('resolveCodeBlockDragTargets', onDragTargets);
-		events.on('transformPastedCodeBlocks', onPaste);
-		return () => {
-			events.off('resolveCodeBlockDragTargets', onDragTargets);
-			events.off('transformPastedCodeBlocks', onPaste);
-			unregisterMenu();
-			unregisterActions();
-		};
-	},
-};
+export function createGroupingPlugin({
+	writeClipboardText,
+}: {
+	writeClipboardText: (text: string) => Promise<void>;
+}): EditorPlugin {
+	return {
+		id: 'grouping',
+		setup: context => {
+			const { store, events } = context;
+			const state = store.getState();
+			const unregisterActions = registerGroupActions(context, writeClipboardText);
+			const unregisterMenu = registerGroupMenus(context);
+			const onDragTargets = (event: ResolveCodeBlockDragTargetsEvent) => {
+				const group = getGroup(event.codeBlock.parsedDirectives);
+				if (group && group.nonstick === Boolean(event.altKey)) {
+					event.targets = getGroupBlocks(state, event.codeBlock);
+				}
+			};
+			events.on('resolveCodeBlockDragTargets', onDragTargets);
+			return () => {
+				events.off('resolveCodeBlockDragTargets', onDragTargets);
+				unregisterMenu();
+				unregisterActions();
+			};
+		},
+	};
+}

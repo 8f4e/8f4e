@@ -51,6 +51,18 @@ export function createDeferredEditorPlugin({
 				),
 		},
 		{
+			id: 'code-block-copy-paste',
+			scope: 'view',
+			matches: () => true,
+			load: () =>
+				import('@8f4e/editor-plugin-code-block-copy-paste').then(module =>
+					module.createCodeBlockCopyPastePlugin({
+						readClipboardText: () => browserWindow.navigator.clipboard.readText(),
+						writeClipboardText: text => browserWindow.navigator.clipboard.writeText(text),
+					})
+				),
+		},
+		{
 			id: 'mouse-input',
 			scope: 'view',
 			matches: () => true,

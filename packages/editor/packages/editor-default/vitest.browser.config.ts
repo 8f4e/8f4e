@@ -15,6 +15,7 @@ export default defineConfig({
 			provider: playwright({
 				contextOptions: {
 					viewport: { width: 1024, height: 768 },
+					permissions: ['clipboard-read', 'clipboard-write'],
 				},
 			}),
 			enabled: true,

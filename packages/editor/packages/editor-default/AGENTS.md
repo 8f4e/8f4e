@@ -48,8 +48,7 @@
 - Include `favoritesPlugin` and `removeMemoryConnectionsPlugin` after the execution-toggle plugin. Favorites stays
   unconditional in the deferred set so its editing action is available without a directive. The plugin owns favorite detection, both menus,
   navigation actions, and its env-source marker; core does not install favorite behavior.
-- Include `groupingPlugin` after the execution-toggle plugin. It owns editor `@group` behavior, including drag and
-  paste policies and group menus; it has no browser factory dependencies.
+- Construct `createGroupingPlugin({ writeClipboardText })` after the execution-toggle plugin. It owns editor `@group` membership, dragging, copying and group menus. It does not rename pasted groups.
 - Load `createBinaryAssetsPlugin({ getMemoryBytes })` from the lazy registry with a getter for current compiler memory.
   Fetching, caching, binary metadata, loading UI, and generated asset constants remain inside the plugin.
 - Include `assertionMarkersPlugin` and `createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory })` in the deferred
@@ -111,3 +110,5 @@
 
 - `includeKeyboardModeSwitching: false` omits the mode-switching factory import and plugin. This is composition
   policy; core has no mode-switching feature flag and the plugin has no runtime enable guard.
+
+- Load `code-block-copy-paste` as an unconditional deferred entry. Inject browser clipboard read/write functions into its factory and a writer into grouping independently. Text paste belongs to keyboard-editing; keep clipboard routing out of the host and shared context.

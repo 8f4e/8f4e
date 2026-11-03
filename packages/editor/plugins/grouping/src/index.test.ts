@@ -138,30 +138,20 @@ describe('grouping plugin', () => {
 		expect(serializeToProject(test.state)).toEqual(before);
 	});
 
-	it.each([false, true])(
-		'removes actions, drag rules, and paste transforms when omitted or disposed: %s',
-		async installed => {
-			const test = setup({ installed });
-			if (installed) test.disposePlugin();
-			expect((await test.openMenu()).some(item => item.action === 'copyGroupBlocks')).toBe(false);
-			test.events.dispatch('mousemove', { x: -1, y: -1 });
-			test.events.dispatch('mousedown', { x: -1, y: -1 });
-			const first = test.block('first');
-			const secondX = test.block('second').x;
-			test.drag(first);
-			expect(test.block('second').x).toBe(secondX);
-			const before = serializeToProject(test.state);
-			for (const action of editingActions) test.events.dispatch(action, { codeBlock: first, makeNonstick: true });
-			expect(serializeToProject(test.state)).toEqual(before);
-			await test.paste(
-				JSON.stringify([
-					{ entry: 'main', code: ['module pasted', '; @group audio', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } },
-					{ entry: 'main', code: ['module pasted2', '; @group audio', 'moduleEnd'], gridCoordinates: { x: 10, y: 0 } },
-				])
-			);
-			expect(test.block('pasted').code).toContain('; @group audio');
-		}
-	);
+	it.each([false, true])('removes actions and drag rules when omitted or disposed: %s', async installed => {
+		const test = setup({ installed });
+		if (installed) test.disposePlugin();
+		expect((await test.openMenu()).some(item => item.action === 'copyGroupBlocks')).toBe(false);
+		test.events.dispatch('mousemove', { x: -1, y: -1 });
+		test.events.dispatch('mousedown', { x: -1, y: -1 });
+		const first = test.block('first');
+		const secondX = test.block('second').x;
+		test.drag(first);
+		expect(test.block('second').x).toBe(secondX);
+		const before = serializeToProject(test.state);
+		for (const action of editingActions) test.events.dispatch(action, { codeBlock: first, makeNonstick: true });
+		expect(serializeToProject(test.state)).toEqual(before);
+	});
 
 	it('isolates group membership and disposal across editor instances', () => {
 		const first = setup();
@@ -184,9 +174,6 @@ describe('grouping plugin', () => {
 		expect(blocks.map((block: { code: string[] }) => block.code[0])).toEqual(['module first', 'module second']);
 		expect(blocks[0].gridCoordinates).toEqual({ x: first.gridX - second.gridX, y: first.gridY - second.gridY });
 		expect(blocks[1].gridCoordinates).toEqual({ x: 0, y: 0 });
-		await test.paste(text);
-		expect(test.block('first2').code).toContain('; @group audio1');
-		expect(test.block('second2').code).toContain('; @group audio1');
 	});
 
 	it('deletes the whole group in place and clears references to deleted blocks', () => {

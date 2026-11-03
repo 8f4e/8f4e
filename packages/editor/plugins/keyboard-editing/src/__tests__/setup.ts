@@ -61,6 +61,11 @@ export function setup(
 		return event;
 	};
 	const keyUp = (key: string) => inputTarget.dispatchEvent(new TestKeyboardEvent('keyup', { key }));
+	const paste = (text: string) => {
+		const event = Object.assign(new Event('paste', { cancelable: true }), { clipboardData: { getData: () => text } });
+		inputTarget.dispatchEvent(event);
+		return event;
+	};
 	const blur = () => inputTarget.dispatchEvent(new Event('blur'));
 	return {
 		inputTarget,
@@ -70,6 +75,7 @@ export function setup(
 		block,
 		key,
 		keyUp,
+		paste,
 		blur,
 		disposePlugin,
 		drawForeground: drawers.drawCodeBlockForeground,

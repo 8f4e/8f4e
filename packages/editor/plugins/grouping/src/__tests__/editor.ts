@@ -3,7 +3,7 @@ import initState from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { vi } from 'vitest';
-import { groupingPlugin } from '../index';
+import { createGroupingPlugin } from '../index';
 import { createEvents } from './events';
 
 export const source = `8f4e/v1
@@ -30,16 +30,12 @@ entryEnd`;
 
 export function setup({ code = source, installed = true, mode = 'edit' as 'edit' | 'view' } = {}) {
 	const events = createEvents();
-	let clipboard = '';
-	const writeClipboardText = vi.fn(async (text: string) => {
-		clipboard = text;
-	});
-	const store = initState(events, {
-		callbacks: { readClipboardText: async () => clipboard, writeClipboardText },
-	});
+	const writeClipboardText = vi.fn(async (_text: string) => {});
+	const store = initState(events, { callbacks: {} });
+
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const disposePlugin = installed
-		? groupingPlugin.setup({
+		? createGroupingPlugin({ writeClipboardText }).setup({
 				store,
 				events,
 				menus: store.menus,
@@ -74,11 +70,6 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 		events.dispatch('mousemove', { ...pointer, movementX: dx, movementY: dy });
 		events.dispatch('mouseup');
 	};
-	const paste = async (text: string) => {
-		clipboard = text;
-		events.dispatch('pasteCodeBlocks', { x: 20, y: 20 });
-		await Promise.resolve();
-	};
 	return {
 		store,
 		state,
@@ -86,7 +77,6 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 		block,
 		openMenu,
 		drag,
-		paste,
 		writeClipboardText,
 		disposePlugin,
 		dispose: () => {

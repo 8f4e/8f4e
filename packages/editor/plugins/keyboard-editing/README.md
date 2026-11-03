@@ -21,3 +21,5 @@ movement. Mutations calculate their resulting caret position directly. Shared so
 remain core services. The caret draws through `registerCodeBlockForegroundDrawer`, above content and shapes and
 before outlines and diagnostics. The input bridge owns this registration and removes it on disposal; it draws only
 once the implementation has loaded and only for the selected block in edit mode.
+
+The loaded implementation handles native `paste` events using `clipboardData` plain text. `insertText` splices single- or multiline text at the caret, preserving the current line prefix/suffix and placing the caret at the inserted text's end. Paste submits one source-edit batch, using the same history and compiler notifications as typing. Paste events are not buffered during loading.

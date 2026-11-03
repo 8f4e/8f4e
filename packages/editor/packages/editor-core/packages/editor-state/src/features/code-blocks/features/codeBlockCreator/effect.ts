@@ -1,8 +1,7 @@
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { CompilerSourceBlockType, DocumentBlockType } from '@8f4e/language-spec';
+import type { DocumentBlockType } from '@8f4e/language-spec';
 import { documentBlockInstructionByType } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
-import { instructionParser } from '@8f4e/tokenizer';
 import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
 import { publishProjectChange } from '../../../project-changes';
 import { deleteCodeBlocks } from '../../deleteCodeBlocks';
@@ -12,20 +11,15 @@ import { applyCodeBlockSourceEdits } from '../../sourceEdits';
 import getBlockType from '../../utils/codeParsers/getBlockType';
 import { createCodeBlockGraphicData } from '../../utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from '../../utils/getCodeBlockNameFromSource';
-import { parseClipboardData, serializeCodeBlocksToClipboard } from '../clipboard/clipboardUtils';
 import upsertDisabled from '../directives/disabled/upsert';
 import upsertPos from '../directives/pos/upsert';
 import { hasDirective } from '../directives/utils';
 import findEntryNameAtPosition from '../entryOutlines/findEntryNameAtPosition';
-import { pasteMultipleBlocks } from './pasteMultipleBlocks';
 
 type NewCodeBlockType = Extract<DocumentBlockType, 'module' | 'function' | 'note' | 'prototype'>;
-type RenameableCodeBlockType = Extract<CompilerSourceBlockType, 'module' | 'function' | 'prototype'>;
 
-const functionBlock = documentBlockInstructionByType.function;
 const moduleBlock = documentBlockInstructionByType.module;
 const noteBlock = documentBlockInstructionByType.note;
-const prototypeBlock = documentBlockInstructionByType.prototype;
 
 const nameList = [
 	'quark',
@@ -70,42 +64,13 @@ function getRandomCodeBlockName() {
 	return nameList[Math.floor(Math.random() * nameList.length)];
 }
 
-function changeCodeBlockNameInCode(code: string[], instruction: string, name: string) {
-	return code.map(line => {
-		const match = line.match(instructionParser) as RegExpMatchArray | null;
-		if (match && match[1] === instruction && match[2]) {
-			// Reconstruct line with new name, preserving spacing and everything after it.
-			const beforeInstruction = line.slice(0, match.index!);
-			const matchedInstruction = match[1];
-			const spacingAfterInstruction = line.slice(
-				match.index! + matchedInstruction.length,
-				line.indexOf(match[2], match.index!)
-			);
-			const afterOldId = line.slice(line.indexOf(match[2], match.index!) + match[2].length);
-			return beforeInstruction + matchedInstruction + spacingAfterInstruction + name + afterOldId;
-		}
-		return line;
-	});
-}
-
-function incrementCodeBlockName(name: string) {
+function incrementEntryName(name: string) {
 	if (/.*[0-9]+$/gm.test(name)) {
 		const [, trailingNumber] = name.match(/.*([0-9]+$)/) as [never, string];
 		return name.replace(new RegExp(trailingNumber + '$'), `${parseInt(trailingNumber, 10) + 1}`);
 	} else {
 		return name + '2';
 	}
-}
-
-function incrementCodeBlockNameUntilUnique(state: State, blockType: RenameableCodeBlockType, blockName: string) {
-	while (
-		state.codeBlockRendering.currentProject.blocks.some(
-			codeBlock => codeBlock.blockType === blockType && codeBlock.name === blockName
-		)
-	) {
-		blockName = incrementCodeBlockName(blockName);
-	}
-	return blockName;
 }
 
 function getUniqueEntryName(state: State): string {
@@ -117,7 +82,7 @@ function getUniqueEntryName(state: State): string {
 	let entryName = 'entry';
 
 	while (usedEntryNames.has(entryName)) {
-		entryName = incrementCodeBlockName(entryName);
+		entryName = incrementEntryName(entryName);
 	}
 
 	return entryName;
@@ -135,48 +100,12 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 		onInsertCodeBlock({ x, y, code: [block.start + name, '', '', block.end] });
 	}
 
-	async function onPasteCodeBlocks({ x, y }: { x: number; y: number }): Promise<void> {
-		if (state.editorMode !== 'edit' || !state.callbacks.readClipboardText) return;
-		let clipboardText: string;
-		try {
-			clipboardText = await state.callbacks.readClipboardText();
-		} catch {
-			return;
-		}
-		const parsedData = parseClipboardData(clipboardText);
-		if (parsedData.type === 'multi') {
-			pasteMultipleBlocks(store, events, { x, y, blocks: parsedData.blocks });
-		} else {
-			onInsertCodeBlock({ x, y, code: parsedData.text.split('\n') });
-		}
-	}
-
 	function onInsertCodeBlock({ x, y, code }: { x: number; y: number; code: string[] }): void {
 		if (state.editorMode !== 'edit') return;
 
 		const sourceBlockType = getBlockType(code);
 		const blockName = getCodeBlockNameFromSource(code);
 
-		if (sourceBlockType === functionBlock.type && blockName) {
-			code = changeCodeBlockNameInCode(
-				code,
-				functionBlock.start,
-				incrementCodeBlockNameUntilUnique(state, functionBlock.type, blockName)
-			);
-		} else if (sourceBlockType === prototypeBlock.type && blockName) {
-			code = changeCodeBlockNameInCode(
-				code,
-				prototypeBlock.start,
-				incrementCodeBlockNameUntilUnique(state, prototypeBlock.type, blockName)
-			);
-		} else if (sourceBlockType === moduleBlock.type && blockName) {
-			code = changeCodeBlockNameInCode(
-				code,
-				moduleBlock.start,
-				incrementCodeBlockNameUntilUnique(state, moduleBlock.type, blockName)
-			);
-		}
-		const updatedBlockName = getCodeBlockNameFromSource(code);
 		const projectPath = state.codeBlockRendering.currentProject.path;
 		const creationIndex = state.codeBlockRendering.nextCodeBlockCreationIndex++;
 		const gridX = Math.round((state.viewport.x + x) / state.viewport.vGrid);
@@ -196,7 +125,7 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 			height: 0,
 			code,
 			cursor: { col: 0, row: 0, x: 0, y: 0 },
-			name: updatedBlockName,
+			name: blockName,
 			gridX,
 			gridY,
 			x: pixelX,
@@ -228,20 +157,6 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 		deleteCodeBlocks(store, [codeBlock]);
 	}
 
-	function onCopyCodeBlock({ codeBlock }: { codeBlock: CodeBlockGraphicData }): void {
-		// Use callback if available, otherwise fail silently
-		if (state.callbacks.writeClipboardText) {
-			const clipboardText =
-				codeBlock.childProject === undefined
-					? codeBlock.code.join('\n')
-					: serializeCodeBlocksToClipboard([codeBlock], codeBlock);
-			state.callbacks.writeClipboardText(clipboardText).catch(() => {
-				// Fail silently if clipboard write fails
-				return undefined;
-			});
-		}
-	}
-
 	function onToggleCodeBlockDisabled({ codeBlock }: { codeBlock: CodeBlockGraphicData }): void {
 		if (state.editorMode !== 'edit') {
 			return;
@@ -255,9 +170,7 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 	}
 
 	events.on('createCodeBlock', onCreateCodeBlock);
-	events.on('pasteCodeBlocks', onPasteCodeBlocks);
 	events.on('insertCodeBlock', onInsertCodeBlock);
-	events.on('copyCodeBlock', onCopyCodeBlock);
 	events.on('deleteCodeBlock', onDeleteCodeBlock);
 	events.on('toggleCodeBlockDisabled', onToggleCodeBlockDisabled);
 }

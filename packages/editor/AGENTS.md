@@ -39,7 +39,7 @@
   Meter, plot, bars, crossfade, watch, and stack each live in their matching `editor-plugin-<name>` packages.
   Favorite detection, editing, and navigation live in `editor-plugin-favorites`, and memory-default disconnection in
   `editor-plugin-remove-memory-connections`. Core has no favorite-specific block state or menus.
-  Visual `@group` behavior lives in `editor-plugin-grouping`, including private membership, drag and paste policies,
+  Visual `@group` behavior lives in `editor-plugin-grouping`, including private membership, dragging, and group copying,
   and group action menus. Nested language-level project groups remain in core.
   `editor-plugin-binary-assets` owns binary fetching, caching, memory loading, dialogs, and size constants.
   Assertion marker drawing lives in `editor-plugin-assertion-markers`, keyboard-to-memory input in
@@ -147,3 +147,6 @@
   Feature-plugin tests dispatch core input events directly; native browser input belongs to input-plugin and composition tests.
 - The default editor additionally imports `font-preview` with the desktop keyboard set. F18/F19 cycle temporary fonts;
   source, history, and exports stay unchanged. Minimal omits it.
+
+- Block copy/paste belongs to `editor-plugin-code-block-copy-paste`, composed by default and minimal with injected clipboard read/write functions. Grouping receives its own writer. Core has no clipboard callbacks or copy/paste actions; it exports pure `serializeCodeBlocks` and generic `insertCodeBlocks`. Pasting changes only `@pos` for placement: preserve declaration names, group names, references, and entry metadata without numbering or transform hooks.
+- Keyboard-editing handles native plain-text paste at the caret through its loaded implementation. Do not buffer paste events or add loading-race handling.
