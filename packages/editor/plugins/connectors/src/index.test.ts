@@ -43,6 +43,11 @@ moduleEnd
 entryEnd`;
 
 const cleanups: Array<() => void> = [];
+function runCleanup(cleanup: () => void) {
+	cleanups.splice(cleanups.indexOf(cleanup), 1);
+	cleanup();
+}
+
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 	vi.restoreAllMocks();
@@ -75,7 +80,7 @@ async function setup(text = source, installed = true) {
 				layout: store.layout,
 				drawers,
 			})
-		: () => {};
+		: undefined;
 	const state = store.getState();
 	Object.assign(state.compiler.result, {
 		memoryPlan: compiled.memoryPlan,
@@ -97,11 +102,9 @@ async function setup(text = source, installed = true) {
 		drawers.drawCodeBlockContent({ draw: { drawText } as unknown as DrawContext, state, codeBlock, memoryViews });
 		return drawText.mock.calls.map(([x, y, text]) => ({ x, y, text }));
 	};
-	cleanups.push(() => {
-		layers.destroy();
-		dispose();
-		store.dispose();
-	});
+	cleanups.push(store.dispose);
+	if (dispose) cleanups.push(dispose);
+	cleanups.push(() => layers.destroy());
 	return { store, state, events, drawers, memoryViews, gl, layers, render, dispose, drawLabels };
 }
 
@@ -163,7 +166,7 @@ describe('connectors plugin', () => {
 			{ x: 24, y: 48, text: 'int** input' },
 			{ x: 24, y: 64, text: 'int* output' },
 		]);
-		dispose();
+		runCleanup(dispose);
 		expect(test.drawLabels(sink)).toEqual([]);
 		expect(test.drawLabels(func)).toEqual([]);
 		expect(sink.gaps.size).toBe(0);
@@ -445,8 +448,7 @@ entryEnd`);
 		const uploads = gl.bufferData.mock.calls.length;
 		render();
 		expect(gl.bufferData).toHaveBeenCalledTimes(uploads + 1);
-		dispose();
-		dispose();
+		runCleanup(dispose!);
 		events.dispatch('memoryValuesChanged');
 		state.codeBlockRendering.selectedCodeBlock = undefined;
 		render();

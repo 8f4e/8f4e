@@ -74,7 +74,7 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 	const background = createDrawerSlot<CodeBlockDrawerContext>();
 	const content = createDrawerSlot<CodeBlockDrawerContext>();
 	const foreground = createDrawerSlot<CodeBlockDrawerContext>();
-	const widgets = createDrawerSlot<CodeBlockDrawerContext>();
+	const blockDrawers = createDrawerSlot<CodeBlockDrawerContext>();
 	const overlays = createDrawerSlot<CodeBlockDrawerContext>();
 	const canvasOverlays = createDrawerSlot<CanvasOverlayDrawerContext>();
 	const modalOverlays = createDrawerSlot<CanvasOverlayDrawerContext>();
@@ -83,14 +83,14 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 		registerCodeBlockBackgroundDrawer: background.register,
 		registerCodeBlockContentDrawer: content.register,
 		registerCodeBlockForegroundDrawer: foreground.register,
-		registerCodeBlockDrawer: widgets.register,
+		registerCodeBlockDrawer: blockDrawers.register,
 		registerCodeBlockOverlay: overlays.register,
 		registerCanvasOverlay: canvasOverlays.register,
 		registerModalOverlay: modalOverlays.register,
 		drawCodeBlockBackground: background.draw,
 		drawCodeBlockContent: content.draw,
 		drawCodeBlockForeground: foreground.draw,
-		drawCodeBlock: widgets.draw,
+		drawCodeBlock: blockDrawers.draw,
 		drawCodeBlockOverlay: overlays.draw,
 		drawCanvasOverlays: canvasOverlays.draw,
 		drawModalOverlays: modalOverlays.draw,
