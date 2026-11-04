@@ -3,7 +3,7 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
-import codeBlockCreator from './effect';
+import codeBlockCreator, { type ResolveCodeBlockInsertionEntryEvent } from './effect';
 
 describe('codeBlockCreator - creation and insertion', () => {
 	let mockState: State;
@@ -90,80 +90,25 @@ describe('codeBlockCreator - creation and insertion', () => {
 			expect(mockState.codeBlockRendering.currentProject.blocks[1].entry).toBe('entry2');
 		});
 
-		it('assigns a regular new module to the containing non-main entry', async () => {
-			mockState.codeBlockRendering.entryOutlines = [
-				{
-					entryName: 'fx',
-					topLeft: { x: 0, y: 0 },
-					topRight: { x: 200, y: 0 },
-					bottomRight: { x: 200, y: 200 },
-					bottomLeft: { x: 0, y: 200 },
-				},
-			];
-
+		it('lets contributors choose an insertion entry using world coordinates', () => {
+			mockState.viewport.x = 24;
+			mockState.viewport.y = 48;
+			vi.mocked(mockEvents.dispatch).mockImplementation((type, event) => {
+				if (type === 'resolveCodeBlockInsertionEntry') {
+					const request = event as ResolveCodeBlockInsertionEntryEvent;
+					expect(request).toEqual({ x: 124, y: 148, entry: 'entry' });
+					request.entry = 'chosen';
+				}
+			});
 			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
-			const createCodeBlockCallback = createCodeBlockCall![1];
-
-			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
-
-			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(1);
-			expect(mockState.codeBlockRendering.currentProject.blocks[0].entry).toBe('fx');
-		});
-
-		it('uses the first overlapping entry outline at the new module position', async () => {
-			mockState.codeBlockRendering.entryOutlines = [
-				{
-					entryName: 'first',
-					topLeft: { x: 0, y: 0 },
-					topRight: { x: 200, y: 0 },
-					bottomRight: { x: 200, y: 200 },
-					bottomLeft: { x: 0, y: 200 },
-				},
-				{
-					entryName: 'second',
-					topLeft: { x: 0, y: 0 },
-					topRight: { x: 200, y: 0 },
-					bottomRight: { x: 200, y: 200 },
-					bottomLeft: { x: 0, y: 200 },
-				},
-			];
-
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
-			const createCodeBlockCallback = createCodeBlockCall![1];
-
-			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
-
-			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(1);
-			expect(mockState.codeBlockRendering.currentProject.blocks[0].entry).toBe('first');
-		});
-
-		it('stores the main entry explicitly', async () => {
-			mockState.codeBlockRendering.entryOutlines = [
-				{
-					entryName: 'main',
-					topLeft: { x: 0, y: 0 },
-					topRight: { x: 200, y: 0 },
-					bottomRight: { x: 200, y: 200 },
-					bottomLeft: { x: 0, y: 200 },
-				},
-			];
-
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
-			const createCodeBlockCallback = createCodeBlockCall![1];
-
-			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
-
-			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(1);
-			expect(mockState.codeBlockRendering.currentProject.blocks[0].entry).toBe('main');
+			const create = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'createCodeBlock')![1];
+			create({ x: 100, y: 100, blockType: 'module' });
+			expect(mockEvents.dispatch).toHaveBeenCalledWith('resolveCodeBlockInsertionEntry', {
+				x: 124,
+				y: 148,
+				entry: 'chosen',
+			});
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].entry).toBe('chosen');
 		});
 	});
 });

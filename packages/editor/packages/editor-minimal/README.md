@@ -102,3 +102,6 @@ Block copy/paste is provided by `@8f4e/editor-plugin-code-block-copy-paste`, loa
 Context-menu presentation comes from the deferred `@8f4e/editor-plugin-context-menu`. It owns decorated labels,
 geometry, hover/hit testing, and drawing. Core keeps raw menu contributions, navigation, input blocking, and action
 or selector dispatch. Menu geometry is private; consumers activate raw items through `activateContextMenuItem`.
+
+`@8f4e/editor-plugin-entry-outlines` is also deferred until `ready`. It owns entry bounds, labels, drawing below code
+blocks, and selecting a containing entry for module insertion. Core keeps entry definitions and membership.

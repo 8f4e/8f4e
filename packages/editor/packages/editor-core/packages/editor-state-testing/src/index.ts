@@ -126,7 +126,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		codeBlockRendering: {
 			rootProject,
 			currentProject: rootProject,
-			entryOutlines: [],
 			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,
 		},

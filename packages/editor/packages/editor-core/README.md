@@ -147,7 +147,7 @@ background, content, foreground, or overlay stages. Registration returns an unre
 Both compositions eagerly install `@8f4e/editor-plugin-code-block-background` before code rendering. It owns the
 normal, disabled, and dragged base surfaces and corner markers, including their selected colors. Code rendering
 draws nested highlights, the selected-line fill, and text in that order. Other plugins add their drawers after these.
-Entry outlines and offscreen arrows remain in web-ui.
+Offscreen arrows remain in web-ui.
 
 Use the drawing surface's text/fill primitives and shared numeric palette indices. `@8f4e/web-ui` exports drawing
 types. Plugins own their prepared data and disposal; core stores no widget presentation fields.
@@ -158,6 +158,13 @@ source line, a message, and the target block identity or project-group scope. Co
 `compiler` and `editor-directives`; test-runtime publishes failed source assertions under `test-runtime`.
 `@8f4e/editor-plugin-error-messages` owns wrapping, reserved rows, colors, and drawing coordinates through the existing
 layout/drawer APIs. Core stores no prepared error widgets and applies only generic row contributions.
+
+Register viewport-coordinate drawing below code blocks with `drawers.registerCanvasBackgroundDrawer(drawer)`.
+Callbacks receive `{ draw, state, memoryViews }` above the procedural background and independently of `canvasOverlays`.
+`@8f4e/editor-plugin-entry-outlines` owns padded entry bounds, labels, and drawing through this hook. Core retains entry
+definitions and block membership. Module insertion emits `resolveCodeBlockInsertionEntry { x, y, entry }` with world
+coordinates and a default fresh entry name; plugins may replace `entry` synchronously. The outlines plugin chooses
+the first containing outline. Core keeps no presentation geometry for entries.
 
 Register ordinary viewport-coordinate drawing with `drawers.registerCanvasDrawer(drawer)`. Callbacks receive
 `{ draw, state, memoryViews }` after code blocks and before overlays, independently of `canvasOverlays`. Context-menu

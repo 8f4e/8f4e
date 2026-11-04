@@ -76,3 +76,6 @@
 
 - Load `contextMenuPlugin` as an unconditional deferred entry. It owns menu formatting, geometry, hover/hit testing,
   and drawing through `registerCanvasDrawer`; core keeps raw menu items, contributions, navigation, and action dispatch.
+
+- Load `entryOutlinesPlugin` as an unconditional deferred entry. It owns entry bounds, drawing below blocks through
+  `registerCanvasBackgroundDrawer`, and spatial insertion entry selection. Core retains entry membership and allocation.

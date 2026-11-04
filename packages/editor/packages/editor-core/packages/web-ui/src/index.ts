@@ -151,6 +151,7 @@ export default async function init(
 	engine.hooks.postDraw.push(renderStatsHook);
 
 	const drawFrame = () => {
+		drawers.drawCanvasBackground({ draw, state, memoryViews });
 		drawCodeBlocks(draw, state, memoryViews, drawers);
 		drawers.drawCanvas({ draw, state, memoryViews });
 		if (state.featureFlags.canvasOverlays) drawers.drawCanvasOverlays({ draw, state, memoryViews });

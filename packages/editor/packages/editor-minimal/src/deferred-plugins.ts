@@ -27,6 +27,12 @@ export function createDeferredEditorPlugin({
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
 	return createLazyPluginLoaderPlugin([
 		{
+			id: 'entry-outlines',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-entry-outlines').then(module => module.entryOutlinesPlugin),
+		},
+		{
 			id: 'context-menu',
 			scope: 'view',
 			matches: () => true,

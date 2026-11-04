@@ -27,6 +27,11 @@
 - PRs: add screenshots/gifs for UI changes, include test notes, link issues.
 
 ## Plugins
+
+- Entry bounds, labels, drawing, and spatial insertion entry selection belong to `editor-plugin-entry-outlines`.
+  Core keeps entry definitions/membership and emits `resolveCodeBlockInsertionEntry` with world coordinates and a
+  default fresh entry name before insertion. Plugins can replace it synchronously. Keep outline geometry out of state.
+  Web-ui exposes generic `registerCanvasBackgroundDrawer` below blocks, using the existing canvas context types.
 - Context-menu presentation belongs to `editor-plugin-context-menu`. Keep only raw items, requested world anchors,
   menu requests/Back navigation, pointer blocking/forwarding, and action/selector dispatch in core. Forward completed
   presses through `contextMenuPointerDown`, movement through `contextMenuPointerMove`, and activate raw items through
@@ -163,7 +168,7 @@
 - All block plugins use `registerCodeBlockDrawer`, called once per visible block in registration order. Keep one
   registry, without stage aliases or priority sorting. Install block backgrounds before code rendering in both hosts.
   Code rendering draws nested highlights, selected-line fill, and text together. The background plugin owns corner
-  markers and their selected colors. Web-ui keeps traversal, visibility, entry outlines, and offscreen arrows. Connectors keeps expansion labels private through this same
+  markers and their selected colors. Web-ui keeps traversal, visibility, and offscreen arrows. Connectors keeps expansion labels private through this same
   registry and generic layout contributions.
 - The circling selected-block animation belongs to `editor-plugin-selection-animation`. Keep its timing, glyphs,
   and drawing out of core; retain selection state. The background plugin owns corner colors; code rendering owns line highlighting.

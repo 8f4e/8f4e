@@ -1,4 +1,3 @@
-import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import type { DrawContext } from '../../drawContext';
@@ -51,36 +50,6 @@ describe('drawCodeBlocks', () => {
 		removeSecond();
 		drawCodeBlocks(draw, state, memoryViews, drawers);
 		expect(calls).toEqual(['first', 'second', 'third', 'first', 'third']);
-	});
-
-	it('draws precomputed entry outlines before rendering code blocks', () => {
-		const state = createMockState({
-			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [] },
-				entryOutlines: [
-					{
-						entryName: 'main',
-						topLeft: { x: 8, y: 16 },
-						topRight: { x: 104, y: 16 },
-						bottomRight: { x: 104, y: 96 },
-						bottomLeft: { x: 8, y: 96 },
-					},
-				],
-			},
-			viewport: {
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const draw = createDrawContext();
-
-		drawCodeBlocks(draw, state, createMemoryViews(), createEditorDrawerRegistry());
-
-		expect(vi.mocked(draw.drawFill)).toHaveBeenNthCalledWith(1, 8, 16, PALETTE_INDICES.strokeBase, 96, 1);
-		expect(vi.mocked(draw.drawFill)).toHaveBeenNthCalledWith(2, 8, 95, PALETTE_INDICES.strokeBase, 96, 1);
-		expect(vi.mocked(draw.drawFill)).toHaveBeenNthCalledWith(3, 8, 16, PALETTE_INDICES.strokeBase, 1, 80);
-		expect(vi.mocked(draw.drawFill)).toHaveBeenNthCalledWith(4, 103, 16, PALETTE_INDICES.strokeBase, 1, 80);
-		expect(draw.drawText).toHaveBeenCalledWith(16, 16, 'main', PALETTE_INDICES.inkStrong);
 	});
 
 	it('can skip off-screen arrow indicators', () => {

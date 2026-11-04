@@ -202,12 +202,14 @@ describe('web-ui init', () => {
 		store.dispose();
 	});
 
-	it('renders canvas drawers, overlays, and modal overlays in order with the current frame state', async () => {
+	it('renders canvas backgrounds, blocks, canvas drawers, and overlays in order with the current frame state', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = createMemoryViews();
 
 		const drawers = createEditorDrawerRegistry();
+		const background = vi.fn();
+		const removeBackground = drawers.registerCanvasBackgroundDrawer(background);
 		const canvas = vi.fn();
 		const removeCanvas = drawers.registerCanvasDrawer(canvas);
 		const overlay = vi.fn();
@@ -223,6 +225,7 @@ describe('web-ui init', () => {
 		);
 
 		overlay.mockClear();
+		background.mockClear();
 		canvas.mockClear();
 		modal.mockClear();
 		view.renderFrame();
@@ -230,6 +233,8 @@ describe('web-ui init', () => {
 		const frameState = mocks.drawCodeBlocks.mock.calls.at(-1)?.[1];
 
 		expect(frameState).toBe(state);
+		expect(background).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
+		expect(background.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!);
 		expect(canvas).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
 		expect(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!).toBeLessThan(canvas.mock.invocationCallOrder[0]);
 		expect(overlay).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
@@ -239,13 +244,16 @@ describe('web-ui init', () => {
 		view.renderFrame();
 		expect(overlay).toHaveBeenCalledOnce();
 		expect(canvas).toHaveBeenCalledTimes(2);
+		expect(background).toHaveBeenCalledTimes(2);
 		expect(modal).toHaveBeenCalledTimes(2);
 		state.featureFlags.canvasOverlays = true;
+		removeBackground();
 		removeCanvas();
 		removeOverlay();
 		removeModal();
 		view.renderFrame();
 		expect(canvas).toHaveBeenCalledTimes(2);
+		expect(background).toHaveBeenCalledTimes(2);
 		expect(overlay).toHaveBeenCalledOnce();
 		expect(modal).toHaveBeenCalledTimes(2);
 		view.destroy();

@@ -2,8 +2,11 @@
 
 This package implements a platform-agnostic editor state machine. It owns the full application state shape and the logic that updates that state in response to internal events, without depending on platform specific APIs.
 
-## Execution Entry Outlines
+## Execution entries
 
-Entry outlines surround the module and project-group blocks belonging to each execution entry in the current view.
-Entries containing only groups also receive an outline, including empty groups. Opening a group recalculates the
-outlines from that group's visible blocks; child blocks do not affect the enclosing view's outline geometry.
+Core owns entry definitions and module/project-group membership at each project level. Before inserting a module
+through `createCodeBlock` or `insertCodeBlock`, it emits `resolveCodeBlockInsertionEntry { x, y, entry }` with world
+coordinates and a fresh default entry name. Plugins may replace `entry` synchronously before insertion.
+
+`@8f4e/editor-plugin-entry-outlines` owns padded entry bounds, labels, drawing, and selecting a containing entry
+for module insertion. Core keeps no outline geometry. Without that plugin, insertion uses the default entry.

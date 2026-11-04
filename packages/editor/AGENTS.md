@@ -15,6 +15,9 @@
   within its existing visible-block loop. The eager `code-block-background` plugin is installed before code rendering.
   Code rendering owns selected-line fill; code-block-background owns corner markers. Web-ui retains offscreen arrows.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
+- `@8f4e/editor-plugin-entry-outlines` owns entry bounds, labels, drawing, and spatial insertion entry selection.
+  Core retains entry membership and default entry allocation, with `resolveCodeBlockInsertionEntry` for synchronous
+  contributions. Web-ui supplies `registerCanvasBackgroundDrawer` below blocks. Both compositions defer it until `ready`.
 - `@8f4e/editor-plugin-context-menu` owns menu labels, sizing, grid snapping, viewport clamping, hover state, hit testing,
   and drawing. Core keeps raw items, requested world anchors, menu navigation, input blocking, and action/selector dispatch.
   Both compositions defer it until `ready`. Web-ui exposes generic `registerCanvasDrawer` before canvas/modal overlays.

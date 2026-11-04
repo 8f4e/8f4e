@@ -7,7 +7,6 @@ import type { MemoryAction as CompilerMemoryAction, ProjectObjectModel } from '@
 import type { AssertionResult } from './features/assertions/types';
 import type { NavigateCodeBlockEvent } from './features/code-blocks/navigation';
 import type {
-	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockRendering,
 	CodeBlockType,
@@ -61,7 +60,6 @@ export type {
 	ActivateContextMenuItemEvent,
 	ActivateDialogButtonEvent,
 	AssertionResult,
-	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockPointerDownEvent,
 	CodeBlockRendering,
