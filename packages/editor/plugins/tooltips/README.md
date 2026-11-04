@@ -12,9 +12,10 @@ const editor = await initEditor(canvas, { ...options, plugins: [tooltipsPlugin] 
 The default editor includes this plugin. Core installs no plugins by default. The `codeLineSelection` feature flag
 controls whether selected-line tooltips are visible.
 
-Each installation keeps its tooltip state private and registers a code-block overlay. It subscribes to selection,
+Each installation keeps its tooltip state private and registers a block drawer. Registration order determines its
+layering. It subscribes to selection,
 source, compiler, grid, and sprite changes. Live values are read from the current runtime memory during drawing.
-Disposal removes its subscriptions, sprite-reload listener, and overlay contribution.
+Disposal removes its subscriptions, sprite-reload listener, and drawer contribution.
 
 Module-specific stack analysis, execution order, and live-memory details belong only to the active source definition.
 Overridden blocks retain instruction documentation without displaying another definition's compiler metadata.

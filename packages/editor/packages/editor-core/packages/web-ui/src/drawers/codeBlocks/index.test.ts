@@ -31,90 +31,30 @@ function createMockEngine(): Engine {
 }
 
 describe('drawModules', () => {
-	it('runs plugin drawers inside each visible block group in registration order', () => {
+	it('runs the ordered registry once inside each visible block and removes only the requested drawer', () => {
 		const visible = createMockCodeBlock({ width: 96, height: 64, x: 16, y: 16 });
 		const offscreen = createMockCodeBlock({ creationIndex: 1, x: 10000 });
 		const state = createMockState({
 			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [visible, offscreen] } },
+			featureFlags: { offscreenBlockArrows: false },
 		});
 		const engine = createMockEngine();
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
 		const calls: string[] = [];
-		const unregisterBackground = drawers.registerCodeBlockBackgroundDrawer(context => {
-			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
-			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
-			calls.push('background');
-		});
-		drawers.registerCodeBlockBackgroundDrawer(() => calls.push('second background'));
-		const unregisterContent = drawers.registerCodeBlockContentDrawer(context => {
-			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
-			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
-			calls.push('content');
-		});
-		const unregisterForeground = drawers.registerCodeBlockForegroundDrawer(context => {
-			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
-			calls.push('foreground');
-		});
-		const first = vi.fn(context => {
+		drawers.registerCodeBlockDrawer(context => {
 			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
 			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
 			calls.push('first');
 		});
-		const unregister = drawers.registerCodeBlockDrawer(first);
-		drawers.registerCodeBlockDrawer(() => calls.push('second'));
-		const unregisterOverlay = drawers.registerCodeBlockOverlay(context => {
-			expect(context.codeBlock).toBe(visible);
-			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
-			calls.push('overlay');
-		});
+		const removeSecond = drawers.registerCodeBlockDrawer(() => calls.push('second'));
+		drawers.registerCodeBlockDrawer(() => calls.push('third'));
 		drawModules(engine, state, memoryViews, drawers);
-		expect(calls).toEqual(['background', 'second background', 'content', 'foreground', 'first', 'second', 'overlay']);
-		unregisterBackground();
-		unregisterContent();
-		unregisterForeground();
-		unregister();
-		unregisterOverlay();
+		expect(calls).toEqual(['first', 'second', 'third']);
+		expect(engine.drawFill).not.toHaveBeenCalled();
+		removeSecond();
 		drawModules(engine, state, memoryViews, drawers);
-		expect(calls).toEqual([
-			'background',
-			'second background',
-			'content',
-			'foreground',
-			'first',
-			'second',
-			'overlay',
-			'second background',
-			'second',
-		]);
-		expect(first).toHaveBeenCalledOnce();
-	});
-
-	it('draws plugin backgrounds below selection and content, and foreground drawings below block drawers', () => {
-		const block = createMockCodeBlock({
-			width: 96,
-			height: 64,
-		});
-		const state = createMockState({
-			editorMode: 'edit',
-			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [block] }, selectedCodeBlock: block },
-		});
-		const engine = createMockEngine();
-		const drawers = createEditorDrawerRegistry();
-		const background = vi.fn(() => engine.drawFill(24, 16, PALETTE_INDICES.surfaceRaised1, 72, 16));
-		drawers.registerCodeBlockBackgroundDrawer(background);
-		const content = vi.fn(() => engine.drawText(8, 0, 'Content', PALETTE_INDICES.inkBase));
-		drawers.registerCodeBlockContentDrawer(content);
-		drawers.registerCodeBlockForegroundDrawer(() => engine.drawText(8, 0, 'Foreground', PALETTE_INDICES.inkBase));
-		drawers.registerCodeBlockDrawer(() => engine.drawText(8, 32, 'Block', PALETTE_INDICES.inkBase));
-		drawModules(engine, state, createMemoryViews(), drawers);
-		const text = vi.mocked(engine.drawText).mock.calls.map(([, , text]) => text);
-		expect(text.indexOf('Content')).toBeLessThan(text.indexOf('Foreground'));
-		expect(text.indexOf('Foreground')).toBeLessThan(text.indexOf('Block'));
-		const fills = vi.mocked(engine.drawFill).mock.invocationCallOrder;
-		expect(fills[0]).toBeLessThan(background.mock.invocationCallOrder[0]);
-		expect(fills[1]).toBeLessThan(fills[2]);
-		expect(fills[2]).toBeLessThan(content.mock.invocationCallOrder[0]);
+		expect(calls).toEqual(['first', 'second', 'third', 'first', 'third']);
 	});
 
 	it('draws precomputed entry outlines before rendering code blocks', () => {

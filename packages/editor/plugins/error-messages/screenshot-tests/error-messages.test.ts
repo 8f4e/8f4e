@@ -30,7 +30,7 @@ test('draws wrapped contributor messages between source rows and clears their re
 				id: 'fixture-text',
 				setup: services => {
 					context = services;
-					return services.drawers.registerCodeBlockContentDrawer(({ draw, state, codeBlock }) => {
+					return services.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						codeBlock.displayModel.lines.forEach((line, row) =>
 							draw.drawText(
 								state.viewport.vGrid,

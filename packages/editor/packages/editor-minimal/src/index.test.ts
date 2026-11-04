@@ -43,6 +43,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(options.plugins!.map(plugin => plugin.id)).toEqual([
 		'compiler',
 		'project-file-session',
+		'code-block-background',
 		'code-rendering',
 		'project-url-loader',
 		'deferred-loader',
@@ -55,6 +56,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-input');
 	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).toEqual(
 		expect.arrayContaining([
+			'code-block-background',
 			'code-rendering',
 			'connectors',
 			'error-messages',

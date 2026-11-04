@@ -18,7 +18,7 @@ the `compiler` key, core directive validation uses `editor-directives`, and test
 assertions under `test-runtime`. Contributors clear or remove their own lists; display-plugin disposal preserves raw errors.
 
 The plugin owns wrapping, the `Error:` heading, colors, source-to-display mapping, and prepared pixel coordinates.
-It reserves space through `layout.createContribution` and draws after foreground content with `registerCodeBlockDrawer`.
+It reserves space through `layout.createContribution` and draws through the ordered `registerCodeBlockDrawer` registry.
 Messages on the same row stack after other contributed space. Hidden source lines reserve no rows and draw no message.
 Removing errors or disposing the plugin releases its layout requests and drawer. Layout changes do not change source
 or advance project/compiler revisions.

@@ -74,7 +74,8 @@
     "@8f4e/editor-plugin-font-preview": "*",
     "@8f4e/editor-plugin-touch-input": "*",
     "@8f4e/editor-plugin-mouse-input": "*",
-    "@8f4e/editor-plugin-pwa-updates": "*"
+    "@8f4e/editor-plugin-pwa-updates": "*",
+    "@8f4e/editor-plugin-code-block-background": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

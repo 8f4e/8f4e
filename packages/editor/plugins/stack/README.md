@@ -24,7 +24,7 @@ Only the active source definition of a module receives stack labels; overridden 
 The browser host supplies `prefersReducedMotion: () => boolean` to the factory. The plugin reads it when drawing; it does not access browser globals.
 
 Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.
-The block drawer runs before tooltip overlays, including when the plugin loads after tooltips.
+The block drawer runs in registration order with other code-block drawers, including plugins installed lazily.
 
 ```sh
 npx nx run @8f4e/editor-plugin-stack:build

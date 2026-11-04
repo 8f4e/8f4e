@@ -6,8 +6,8 @@ leaves the editor without connectors, expanded labels/rows, wire drawing, or lin
 memory resolution continue independently.
 
 The plugin expands compiler-reported `shape` declarations and `paramShape` function parameters for display, reserving
-rows through the generic layout contribution API. Labels stay private and draw in the content stage below foreground
-drawings. Inherited declaration labels and connector endpoints use the same ordered memory rows. Hidden source and
+rows through the generic layout contribution API. Labels stay private and draw with connectors through the ordered
+block drawer registry. Inherited declaration labels and connector endpoints use the same ordered memory rows. Hidden source and
 disabled blocks reserve no expansion rows. Source edits, recompilation, font changes, and group navigation refresh
 the layout; disposal removes its labels and reserved space. The compiler owns all language semantics.
 

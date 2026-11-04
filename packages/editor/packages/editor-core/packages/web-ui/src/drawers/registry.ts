@@ -26,16 +26,8 @@ export type CanvasOverlayDrawer = (context: CanvasOverlayDrawerContext) => void;
 export interface EditorDrawerRegistry {
 	/** Register a GPU layer whose resources are bound to the renderer lifecycle. */
 	registerRenderLayer: (factory: RenderLayerFactory) => () => void;
-	/** Draw above the block surface, below line selection, corners, and content. */
-	registerCodeBlockBackgroundDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw inside the block after backgrounds and selection, before foreground drawings. */
-	registerCodeBlockContentDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw above block content drawers. */
-	registerCodeBlockForegroundDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw after foreground drawings. */
+	/** Draw inside each visible block, in registration order. */
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw after block drawers, inside the same block group. */
-	registerCodeBlockOverlay: (drawer: CodeBlockDrawer) => () => void;
 	/** Draw over editor content and menus, before dialogs, using viewport coordinates. */
 	registerCanvasOverlay: (drawer: CanvasOverlayDrawer) => () => void;
 	/** Draw above ordinary canvas overlays, independently of the canvasOverlays flag. */
@@ -45,11 +37,7 @@ export interface EditorDrawerRegistry {
 /** Renderer-owned invocation and lifecycle of registered drawers and layers. */
 export interface EditorDrawerHost extends EditorDrawerRegistry {
 	attachRenderLayers: ReturnType<typeof createRenderLayerRegistry>['attachRenderLayers'];
-	drawCodeBlockBackground: CodeBlockDrawer;
-	drawCodeBlockContent: CodeBlockDrawer;
-	drawCodeBlockForeground: CodeBlockDrawer;
 	drawCodeBlock: CodeBlockDrawer;
-	drawCodeBlockOverlay: CodeBlockDrawer;
 	drawCanvasOverlays: CanvasOverlayDrawer;
 	drawModalOverlays: CanvasOverlayDrawer;
 }
@@ -71,27 +59,15 @@ function createDrawerSlot<Context>() {
 }
 
 export function createEditorDrawerRegistry(): EditorDrawerHost {
-	const background = createDrawerSlot<CodeBlockDrawerContext>();
-	const content = createDrawerSlot<CodeBlockDrawerContext>();
-	const foreground = createDrawerSlot<CodeBlockDrawerContext>();
 	const blockDrawers = createDrawerSlot<CodeBlockDrawerContext>();
-	const overlays = createDrawerSlot<CodeBlockDrawerContext>();
 	const canvasOverlays = createDrawerSlot<CanvasOverlayDrawerContext>();
 	const modalOverlays = createDrawerSlot<CanvasOverlayDrawerContext>();
 	return {
 		...createRenderLayerRegistry(),
-		registerCodeBlockBackgroundDrawer: background.register,
-		registerCodeBlockContentDrawer: content.register,
-		registerCodeBlockForegroundDrawer: foreground.register,
 		registerCodeBlockDrawer: blockDrawers.register,
-		registerCodeBlockOverlay: overlays.register,
 		registerCanvasOverlay: canvasOverlays.register,
 		registerModalOverlay: modalOverlays.register,
-		drawCodeBlockBackground: background.draw,
-		drawCodeBlockContent: content.draw,
-		drawCodeBlockForeground: foreground.draw,
 		drawCodeBlock: blockDrawers.draw,
-		drawCodeBlockOverlay: overlays.draw,
 		drawCanvasOverlays: canvasOverlays.draw,
 		drawModalOverlays: modalOverlays.draw,
 	};

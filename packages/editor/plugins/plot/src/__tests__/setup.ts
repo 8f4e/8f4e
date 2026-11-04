@@ -75,7 +75,6 @@ export async function setup(
 		vi.mocked(draw.drawCharacter).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
-		drawers.drawCodeBlockOverlay({ draw, state, codeBlock: block, memoryViews });
 	};
 	const update = (code: string[]) => {
 		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);

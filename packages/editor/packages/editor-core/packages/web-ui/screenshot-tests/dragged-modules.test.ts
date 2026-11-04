@@ -14,7 +14,7 @@ test('dragged module', async () => {
 
 	const codeBlocks = new Map<number, Array<Array<SpriteCell | null>>>();
 	const drawers = createEditorDrawerRegistry();
-	drawers.registerCodeBlockContentDrawer(({ draw, state, codeBlock }) => {
+	drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 		codeBlocks
 			.get(codeBlock.creationIndex)!
 			.forEach((cells, row) => draw.drawResolvedText(state.viewport.vGrid, row * state.viewport.hGrid, cells));

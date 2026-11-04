@@ -30,19 +30,7 @@ export default function drawModules(
 			codeBlock.y + offsetY < state.viewport.height
 		) {
 			engine.startGroup(codeBlock.x, codeBlock.y);
-			if (codeBlock === state.codeBlockRendering.draggedCodeBlock) {
-				engine.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
-			} else if (codeBlock.disabled) {
-				engine.drawFill(0, 0, PALETTE_INDICES.surfaceSubdued, codeBlock.width, codeBlock.height);
-			} else {
-				engine.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
-			}
-
-			drawers?.drawCodeBlockBackground({ draw: engine, state, codeBlock, memoryViews });
-
-			if (state.featureFlags.codeLineSelection && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
-				engine.drawFill(0, codeBlock.cursor.y, PALETTE_INDICES.primarySoft, codeBlock.width, state.viewport.hGrid);
-			}
+			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
 
 			const cornerColor =
 				state.codeBlockRendering.selectedCodeBlock === codeBlock
@@ -58,13 +46,6 @@ export default function drawModules(
 				corner,
 				cornerColor
 			);
-
-			drawers?.drawCodeBlockContent({ draw: engine, state, codeBlock, memoryViews });
-
-			drawers?.drawCodeBlockForeground({ draw: engine, state, codeBlock, memoryViews });
-
-			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
-			drawers?.drawCodeBlockOverlay({ draw: engine, state, codeBlock, memoryViews });
 
 			engine.endGroup();
 		} else if (state.featureFlags.offscreenBlockArrows) {

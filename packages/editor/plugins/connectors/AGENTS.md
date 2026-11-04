@@ -5,7 +5,7 @@
 - Own `shape` and `paramShape` presentation: expanded labels, row reservations, and private prepared coordinates.
   Keep their derivation separate internally. Compiler semantics stay in the compiler; core provides generic layout.
   Share inherited declaration ordering with connectors through the local `getMemoryDeclarationRows` helper.
-  Register labels in the content stage below foreground drawings, and dispose layout requests and drawers explicitly.
+  Register labels and connectors together through the ordered block drawer registry, and dispose layout requests and drawers explicitly.
 - Derive geometry through `layout.subscribe` and rebuild the byte-address index after `codeBlockLayoutsChanged` from
   the current project slice. Retain support for inherited declarations, private outputs, and project memory exposures.
 - Derive both connector lists in one pass and retain only fields consumed by drawing. Keep line width and initial

@@ -48,8 +48,7 @@ function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 	const render = (codeBlock: CodeBlockGraphicData = block) => {
 		drawRows.mockClear();
 		drawFills.mockClear();
-		drawers.drawCodeBlockBackground({ draw, state, codeBlock, memoryViews });
-		drawers.drawCodeBlockContent({ draw, state, codeBlock, memoryViews });
+		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 		return drawRows.mock.calls.map(([, , cells]) => cells);
 	};
 	return { store, events, emitter, state, block, render, drawRows, drawFills };
@@ -83,6 +82,19 @@ it('refreshes nested block highlights after edits, layout contributions, and gri
 	});
 	test.render();
 	expect(test.drawFills).not.toHaveBeenCalled();
+});
+
+it('draws line selection after nested highlights and before source text', () => {
+	const test = setup(['module audio', 'if', 'push 1', 'ifEnd', 'moduleEnd']);
+	test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
+	test.block.cursor.y = 32;
+	test.render();
+	expect(test.drawFills).toHaveBeenLastCalledWith(0, 32, PALETTE_INDICES.primarySoft, test.block.width, 16);
+	expect(test.drawFills.mock.invocationCallOrder[0]).toBeLessThan(test.drawFills.mock.invocationCallOrder[1]);
+	expect(test.drawFills.mock.invocationCallOrder[1]).toBeLessThan(test.drawRows.mock.invocationCallOrder[0]);
+	test.state.featureFlags.codeLineSelection = false;
+	test.render();
+	expect(test.drawFills).toHaveBeenCalledOnce();
 });
 
 it('clips folded block highlights and restores them when selected for editing', () => {
@@ -230,7 +242,7 @@ it('refreshes visible text when entering and leaving project groups', () => {
 	expect(test.drawFills).not.toHaveBeenCalled();
 });
 
-it('isolates prepared text and highlights between editors and removes both drawers on disposal', () => {
+it('isolates prepared text and highlights between editors and unregisters drawing on disposal', () => {
 	const first = setup(['module audio', 'if', 'push 1', 'ifEnd', 'moduleEnd']);
 	const second = setup(['module audio', 'if', 'push 9', 'push 2', 'ifEnd', 'moduleEnd']);
 	expect(first.render()[2]).not.toEqual(second.render()[2]);

@@ -78,6 +78,6 @@ export function setup(
 		paste,
 		blur,
 		disposePlugin,
-		drawForeground: drawers.drawCodeBlockForeground,
+		drawCodeBlock: drawers.drawCodeBlock,
 	};
 }

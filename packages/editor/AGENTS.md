@@ -11,14 +11,15 @@
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, nested block backgrounds,
   line-number drawing, and private prepared sprite cells and highlight rectangles. Both compositions install it eagerly.
-  Core retains editing/layout geometry; web-ui exposes `registerCodeBlockBackgroundDrawer` below line selection and
-  `registerCodeBlockContentDrawer` before foreground drawings and diagnostics, and owns generic sprite-cell drawing primitives.
+  Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order
+  within its existing visible-block loop. The eager `code-block-background` plugin is installed before code rendering.
+  Code rendering owns selected-line fill; web-ui retains corner markers and offscreen arrows.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
 - `@8f4e/editor-plugin-dialogs` owns dialog dimensions, wrapping/clipping, private button geometry/hit testing,
   and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
   Both compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
   `registerModalOverlay` after ordinary overlays, independently of `canvasOverlays`.
-- `@8f4e/editor-plugin-selection-animation` owns the selected block's circling segment and uses the generic foreground
+- `@8f4e/editor-plugin-selection-animation` owns the selected block's circling segment and uses the generic ordered block
   drawing hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.
 - Web-ui contributes font/color configuration through `registerWebUiConfig(store)` and owns defaults, loading, and
   subscriptions. Editor-core calls it before plugins/project loading; renderer initialization receives the store and

@@ -14,7 +14,7 @@ afterEach(() => {
 it.each([
 	['watch', 'stack'],
 	['w', 's'],
-])('lazily loads @%s and @%s on group navigation and draws them beneath existing overlays', async (watch, stack) => {
+])('lazily loads @%s and @%s on group navigation and draws them after existing drawers', async (watch, stack) => {
 	const project = parseProjectSource(`8f4e/v1
 entry main
 group nested
@@ -48,7 +48,7 @@ entryEnd`);
 	Object.assign(state.compiler.result, compiled);
 	const drawers = createEditorDrawerRegistry();
 	const drawn: string[] = [];
-	const removeOverlay = drawers.registerCodeBlockOverlay(() => drawn.push('overlay'));
+	const removeFirstDrawer = drawers.registerCodeBlockDrawer(() => drawn.push('first'));
 	let finishLoading!: () => void;
 	const pending = new Promise<void>(resolve => {
 		finishLoading = resolve;
@@ -72,7 +72,7 @@ entryEnd`);
 	cleanups.push(() => {
 		finishLoading();
 		disposeLoader();
-		removeOverlay();
+		removeFirstDrawer();
 		store.dispose();
 	});
 	events.dispatch('loadProject', { project });
@@ -95,14 +95,13 @@ entryEnd`);
 		drawn.length = 0;
 		const context = { draw, state, codeBlock, memoryViews };
 		drawers.drawCodeBlock(context);
-		drawers.drawCodeBlockOverlay(context);
 		return drawn;
 	};
-	expect(render()).toEqual(['overlay']);
+	expect(render()).toEqual(['first']);
 	finishLoading();
 	await vi.waitFor(() => {
-		expect(render().slice(0, -1).sort()).toEqual(['3', '7']);
-		expect(drawn.at(-1)).toBe('overlay');
+		expect(render().slice(1).sort()).toEqual(['3', '7']);
+		expect(drawn[0]).toBe('first');
 	});
 	events.dispatch('goToRootProjectGroup');
 	events.dispatch('openProjectGroup', { codeBlock: group });
@@ -110,5 +109,5 @@ entryEnd`);
 	for (const entry of entries.filter(entry => ['watch', 'stack'].includes(entry.id)))
 		expect(entry.load).toHaveBeenCalledOnce();
 	disposeLoader();
-	expect(render()).toEqual(['overlay']);
+	expect(render()).toEqual(['first']);
 });

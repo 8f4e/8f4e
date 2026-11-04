@@ -7,7 +7,7 @@
 - Run the build, test, and typecheck Nx targets for this package.
 
 - Keep caret direction policy and mutation caret adjustments private to this plugin. Use core tab/source geometry.
-- Register its caret with `registerCodeBlockForegroundDrawer`; the lazy bridge forwards drawing only after the
+- Register its caret with `registerCodeBlockDrawer`; the lazy bridge forwards drawing only after the
   implementation loads. Remove the registration explicitly on disposal. Keep generic source positions in core.
 
 - Handle native `paste` events only through the loaded editing implementation. Insert plain text with `insertText`, preserving multiline content and moving the caret to the insertion end. Apply one source batch. Never queue pasted text or add special loading-race handling.

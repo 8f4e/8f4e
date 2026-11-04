@@ -84,6 +84,7 @@ describe('default editor plugins', () => {
 			'project-file-session',
 			'project-url-loader',
 			'session-persistence',
+			'code-block-background',
 			'code-rendering',
 			'deferred-loader',
 		]);
@@ -102,6 +103,7 @@ describe('default editor plugins', () => {
 				'keyboard-navigation',
 				'keyboard-editing',
 				'font-preview',
+				'code-block-background',
 				'code-rendering',
 				'connectors',
 				'error-messages',
