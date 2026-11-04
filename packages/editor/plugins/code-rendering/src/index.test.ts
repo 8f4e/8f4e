@@ -157,13 +157,12 @@ it('refreshes text and reserved rows after source edits and late layout contribu
 	expect(after).not.toEqual(before);
 });
 
-it('draws the completed diagnostic layout before notifying other layout listeners', () => {
+it('draws contributed rows before notifying other layout listeners', () => {
 	const test = setup();
 	const completed: ReturnType<typeof test.render>[] = [];
 	test.events.on('codeBlockLayoutsChanged', () => completed.push(test.render()));
-	test.store.set('codeErrors.compilationErrors', [
-		{ codeBlockId: test.block.creationIndex, lineNumber: 1, message: 'Example' },
-	]);
+	const contribution = test.store.layout.createContribution();
+	contribution.update(test.block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
 	expect(completed).toHaveLength(1);
 	expect(completed[0]).toHaveLength(5);
 	expect(test.render()[0]).toBe(completed[0][0]);

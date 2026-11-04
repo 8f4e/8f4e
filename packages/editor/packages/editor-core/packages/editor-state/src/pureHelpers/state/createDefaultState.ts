@@ -58,10 +58,7 @@ export default function createDefaultState() {
 		historyStack: [],
 		redoStack: [],
 		envConstantContributions: {},
-		codeErrors: {
-			compilationErrors: [],
-			editorDirectiveErrors: [],
-		},
+		codeErrors: {},
 		console: {
 			logs: [],
 			maxLogs: 100,

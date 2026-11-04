@@ -53,7 +53,8 @@
   `editor-plugin-binary-assets` owns binary fetching, caching, memory loading, dialogs, and size constants.
   Assertion marker drawing lives in `editor-plugin-assertion-markers`, keyboard-to-memory input in
   `editor-plugin-keyboard-memory`, and MIDI discovery/input in `editor-plugin-midi-input`. These use the same plugin
-  contract; there is no separate environment-plugin manager. Assertion results and inline diagnostics remain core.
+  contract; there is no separate environment-plugin manager. Assertion results and raw error contributions remain
+  central. `editor-plugin-error-messages` owns inline message presentation and loads in both deferred compositions.
   Plugin contracts and installation live in `editor-core`,
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   `editor-plugin-lazy-loader` scans cached directives automatically after project changes and group navigation.

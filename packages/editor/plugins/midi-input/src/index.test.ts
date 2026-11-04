@@ -144,7 +144,7 @@ describe('MIDI input plugin', () => {
 		expect(
 			editor.store
 				.getState()
-				.codeErrors.editorDirectiveErrors.some(error => error.message.includes('midi.inputs.keys.port'))
+				.codeErrors['editor-directives'].some(error => error.message.includes('midi.inputs.keys.port'))
 		).toBe(true);
 	});
 });

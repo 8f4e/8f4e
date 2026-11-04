@@ -181,10 +181,8 @@ export interface State {
 	assertionResults: AssertionResult[];
 	/** Resolved global editor directives from `; @<name>` comments */
 	globalEditorDirectives: ResolvedGlobalEditorDirectives;
-	codeErrors: {
-		compilationErrors: CodeError[];
-		editorDirectiveErrors: CodeError[];
-	};
+	/** Raw source errors keyed by contributor. Each contributor replaces its own list. */
+	codeErrors: Record<string, CodeError[]>;
 	dialog: DialogContent;
 	dialogStack: DialogContent[];
 	viewport: Viewport;

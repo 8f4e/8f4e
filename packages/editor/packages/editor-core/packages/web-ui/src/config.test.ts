@@ -61,7 +61,7 @@ describe('web-ui configuration', () => {
 			notes: [{ id: 0, code: ['note settings', '; @config font 6x10', '; @config color.primary #123456', 'noteEnd'] }],
 		});
 		expect(state.editorConfig).toEqual({ font: '6x10', color: { primary: '#123456' } });
-		expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(state.codeErrors['editor-directives']).toEqual([]);
 		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
 		applyCodeBlockSourceEdits(
 			store,
@@ -69,9 +69,9 @@ describe('web-ui configuration', () => {
 			{ affectsCompilation: false }
 		);
 		expect(state.editorConfig).toEqual({});
-		expect(state.codeErrors.editorDirectiveErrors.map(error => error.lineNumber)).toEqual([1, 2]);
+		expect(state.codeErrors['editor-directives'].map(error => error.lineNumber)).toEqual([1, 2]);
 		store.set('initialProjectState', EMPTY_DEFAULT_PROJECT);
 		expect(state.editorConfig).toEqual({});
-		expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(state.codeErrors['editor-directives']).toEqual([]);
 	});
 });

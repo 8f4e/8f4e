@@ -51,6 +51,10 @@ during compilation coalesce into the latest snapshot once its debounce interval 
 successes and failures cannot replace handles, rendering artifacts, compiler metadata, or diagnostics. Failed current
 compilations retain the previous memory and bytecode and publish the diagnostic instead.
 
+The plugin replaces its raw errors through `codeErrors.compiler` and removes that contribution on disposal.
+Core directive validation owns `codeErrors['editor-directives']`; other plugins can publish their own lists.
+Inline message layout and drawing belong to `editor-plugin-error-messages`.
+
 ## Lifecycle
 
 Editor initialization installs plugins before loading initial content. On editor disposal, core sends `dispose` to

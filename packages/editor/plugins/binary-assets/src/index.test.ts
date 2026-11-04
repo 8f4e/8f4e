@@ -204,7 +204,7 @@ describe('binary assets plugin', () => {
 
 	it('validates bin config through its contributed schema', async () => {
 		const test = await setup({ source: SOURCE.replace('player:buffer', 'invalid-memory') });
-		expect(test.state.codeErrors.editorDirectiveErrors.length).toBeGreaterThan(0);
+		expect(test.state.codeErrors['editor-directives'].length).toBeGreaterThan(0);
 		expect(fetchMock).not.toHaveBeenCalled();
 	});
 

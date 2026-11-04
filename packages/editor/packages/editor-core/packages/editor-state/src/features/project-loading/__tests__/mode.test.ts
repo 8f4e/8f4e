@@ -39,7 +39,7 @@ describe('project initial mode', () => {
 			expect(state.editorMode).toBe('edit');
 			load(`8f4e/v1\nnote mode\n${declaration}\nnoteEnd`);
 			expect(state.editorMode).toBe('view');
-			expect(state.codeErrors.editorDirectiveErrors).toHaveLength(declaration ? 1 : 0);
+			expect(state.codeErrors['editor-directives']).toHaveLength(declaration ? 1 : 0);
 			events.dispatch('enterEditMode');
 			events.dispatch('new');
 			expect(state.initialProjectState).toMatchObject({ ...EMPTY_DEFAULT_PROJECT, constants: expect.any(Array) });

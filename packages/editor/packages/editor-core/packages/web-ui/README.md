@@ -90,7 +90,8 @@ The web-ui package reads editor state for drawing and installs font-derived grid
 cache of prepared sprite cells and highlight rectangles. It registers backgrounds through
 `registerCodeBlockBackgroundDrawer()`, which runs above block surfaces and below line selection, corners, and text.
 Its content drawer uses `registerCodeBlockContentDrawer()`, which runs after backgrounds and line selection, before the cursor,
-shape declarations, diagnostics, ordinary block drawers, and overlays. Without a content plugin, blocks retain
+shape declarations, ordinary block drawers, and overlays. Error-messages contributes its own ordinary block drawer.
+Without a content plugin, blocks retain
 their backgrounds and editing affordances while no source text is drawn.
 
 Editor-state stores viewport animation targets and exposes the synchronous

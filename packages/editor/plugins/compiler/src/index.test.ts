@@ -159,7 +159,7 @@ describe('compiler plugin', () => {
 			await vi.advanceTimersByTimeAsync(0);
 			expect(test.worker.postedMessages).toHaveLength(2);
 			expect(test.accepted).not.toHaveBeenCalled();
-			expect(test.store.getState().codeErrors.compilationErrors).toEqual([]);
+			expect(test.store.getState().codeErrors.compiler).toEqual([]);
 			const memory = new WebAssembly.Memory({ initial: 1 });
 			test.worker.emitMessage(createSuccessMessage(new Uint8Array([2]), memory, 1));
 			await vi.advanceTimersByTimeAsync(0);

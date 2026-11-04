@@ -41,6 +41,7 @@
     "@8f4e/editor-plugin-bars": "*",
     "@8f4e/editor-plugin-binary-assets": "*",
     "@8f4e/editor-plugin-assertion-markers": "*",
+    "@8f4e/editor-plugin-error-messages": "*",
     "@8f4e/editor-plugin-selection-animation": "*",
     "@8f4e/editor-plugin-midi-input": "*",
     "@8f4e/editor-plugin-keyboard-memory": "*",

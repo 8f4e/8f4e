@@ -332,7 +332,7 @@ describe('AudioWorklet context lifetime', () => {
 			'const AUDIO_RATE 44100',
 			'const BUFFER_LENGTH 128',
 		]);
-		expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 	});
 
 	it('sends stereo output and mono input routes resolved from project configuration', async () => {
@@ -357,7 +357,7 @@ describe('AudioWorklet context lifetime', () => {
 			projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
 		});
 		await editor.allow();
-		expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 		expect(worklets[0].port.postMessage).toHaveBeenCalledWith(
 			expect.objectContaining({
 				type: 'init',

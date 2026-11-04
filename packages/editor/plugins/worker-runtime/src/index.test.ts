@@ -84,7 +84,7 @@ it.each([
 	[['entry alternate'], 'alternate'],
 ])('initializes the worker with configured entry %s', (settings, entry) => {
 	const test = setup(['enabled true', 'sampleRate 25', ...settings]);
-	expect(test.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(test.state.codeErrors['editor-directives']).toEqual([]);
 	expect(test.workers[0].postMessage).toHaveBeenCalledExactlyOnceWith({
 		type: 'init',
 		payload: {
@@ -167,5 +167,5 @@ it('configures and replaces its contributed constant name', () => {
 	expect(test.workers[0].postMessage).toHaveBeenLastCalledWith(
 		expect.objectContaining({ payload: expect.objectContaining({ sampleRate: 25 }) })
 	);
-	expect(test.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(test.state.codeErrors['editor-directives']).toEqual([]);
 });

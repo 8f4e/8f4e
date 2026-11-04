@@ -105,8 +105,8 @@ test('installs a complete offline cache and cold-starts with lazy plugins and a 
 	await insert(offlinePage, 'module offlineAssertions\npush 0.0\ncall exp2\nassertEqual 1.0\nmoduleEnd', 'test');
 	await expect.poll(() => offlinePage.evaluate(() => window.state.info.testRuntime?.status)).toBe('passed');
 	expect(await offlinePage.evaluate(() => window.state.codeErrors)).toMatchObject({
-		compilationErrors: [],
-		editorDirectiveErrors: [],
+		compiler: [],
+		'editor-directives': [],
 	});
 	await offlinePage.reload();
 	await waitForEditor(offlinePage);

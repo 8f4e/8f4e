@@ -43,7 +43,7 @@ describe('cached directive records', () => {
 					block.gridX,
 					block.gridY,
 					state.editorConfig.export?.fileName,
-					state.codeErrors.editorDirectiveErrors[0]?.lineNumber,
+					state.codeErrors['editor-directives'][0]?.lineNumber,
 				]);
 			})
 		);
@@ -70,7 +70,7 @@ describe('cached directive records', () => {
 			affectsCompilation: false,
 		});
 		expect(state.editorConfig.export?.fileName).toBeUndefined();
-		expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(state.codeErrors['editor-directives']).toEqual([]);
 	});
 
 	it('delivers existing unknown records to late layout subscribers and reuses them during layout changes', () => {

@@ -39,9 +39,10 @@ the config ownership checked after extraction, for future architectural discussi
 - **Runtime lifecycle.** The audio, worker, and test runtime plugins subscribe to `compiler.isCompiling` and receive
   live memory/bytecode getters. Their readiness dependency is outside core's ordinary plugin installation.
 
-- **Diagnostics and assertions.** Core owns a `compilationErrors` bucket and assertion results containing compiler
-  assertion-site types. [Error-message derivation](../../packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/deriveErrorMessages.ts)
-  checks compilation status before displaying assertion failures.
+- **Diagnostics and assertions (presentation extracted).** Core retains contributor-owned raw error lists and assertion
+  results containing compiler assertion-site types. The compiler publishes its errors under `compiler`; test-runtime
+  publishes failed source assertions under `test-runtime`. The [error-messages plugin](../../packages/editor/plugins/error-messages/src/index.ts)
+  owns wrapping, reserved rows, and drawing, without interpreting compiler status or assertion results.
 
 - **Rendering refresh and WASM execution.** The [render projection](../../packages/editor/packages/editor-core/packages/web-ui/packages/render-projection/src/projection.ts)
   subscribes to compiler status. The [WASM overlay drawer](../../packages/editor/packages/editor-core/packages/web-ui/src/drawers/wasmOverlayTexture.ts)

@@ -34,6 +34,18 @@ note right
 ; @config export.fileName right
 noteEnd`;
 
+it('replaces only its own error contribution when source directives change', () => {
+	const test = setup('8f4e/v1\nnote valid\nnoteEnd');
+	const errors = [{ codeBlockId: 0, lineNumber: 0, message: 'Plugin error' }];
+	test.store.set('codeErrors.custom', errors);
+	test.load('8f4e/v1\nnote invalid\n; @config unknown.path value\nnoteEnd');
+	expect(test.state.codeErrors['editor-directives'].length).toBeGreaterThan(0);
+	expect(test.state.codeErrors.custom).toBe(errors);
+	test.load('8f4e/v1\nnote valid\nnoteEnd');
+	expect(test.state.codeErrors['editor-directives']).toEqual([]);
+	expect(test.state.codeErrors.custom).toBe(errors);
+});
+
 describe('spatial configuration precedence', () => {
 	it.each([
 		{ name: 'horizontal position before vertical position', first: '20 -10', second: '0 10', winner: 'first' },
@@ -92,7 +104,7 @@ note left
 noteEnd`);
 		expect(state.editorConfig.export?.fileName).toBe('last');
 		expect(state.editorConfig.testSetting).toBe('sample');
-		expect(state.codeErrors.editorDirectiveErrors).toEqual([
+		expect(state.codeErrors['editor-directives']).toEqual([
 			expect.objectContaining({ lineNumber: 4, message: expect.stringContaining("invalid value 'invalid'") }),
 		]);
 	});

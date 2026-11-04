@@ -137,18 +137,25 @@ surface and below line selection, corners, and content. `@8f4e/editor-plugin-cod
 nested block highlights, keeping its parser and cached rectangles private. Core retains shared layout geometry.
 
 Register foreground drawings with `drawers.registerCodeBlockForegroundDrawer(drawer)`. They run above content and
-shapes, before diagnostics, in block coordinates. The editing plugin uses this stage for its caret, and
+shapes, in block coordinates. The editing plugin uses this stage for its caret, and
 `@8f4e/editor-plugin-selection-animation` draws the circling segment around the selected block. Core owns neither
 drawing and retains generic selection state and geometry.
 
 Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
 `{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
 the host applies viewport translation and visibility checks. Drawers run in registration order after foreground
-drawings and diagnostics. Register overlays with
+drawings. Register overlays with
 `drawers.registerCodeBlockOverlay(drawer)` to draw after ordinary block drawers, using the same context and coordinates.
 Each slot preserves registration order. Use the drawing surface's text/fill primitives and shared numeric palette indices.
 `@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
 disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
+
+Raw source errors live in `state.codeErrors: Record<string, CodeError[]>`. Contributors replace their own lists through
+`store.set('codeErrors.my-plugin', errors)` and clear or remove them on disposal. `CodeError` carries a zero-based
+source line, a message, and the target block identity or project-group scope. Compiler and directive errors use
+`compiler` and `editor-directives`; test-runtime publishes failed source assertions under `test-runtime`.
+`@8f4e/editor-plugin-error-messages` owns wrapping, reserved rows, colors, and drawing coordinates through the existing
+layout/drawer APIs. Core stores no prepared error widgets and applies only generic row contributions.
 
 Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The drawer receives
 `{ draw, state, memoryViews }` after menus and before dialogs, with coordinates relative to the viewport's top-left.

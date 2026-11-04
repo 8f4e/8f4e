@@ -43,6 +43,9 @@
   and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
   Both compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
   `registerModalOverlay` after ordinary overlays, independently of `canvasOverlays`.
+- `@8f4e/editor-plugin-error-messages` owns inline error wrapping, layout reservations, coordinates, and drawing.
+  Core retains raw `CodeError` lists in `state.codeErrors`, keyed by contributor. Compiler, editor directives, and
+  test-runtime own their lists; both compositions defer the presentation plugin until `ready`.
 - `@8f4e/editor-plugin-selection-animation` owns the circling segment around the selected block, using the generic
   foreground drawer hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.
 - Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.

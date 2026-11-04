@@ -25,7 +25,6 @@ import { getRawIndexForVisualColumn, getTabStopsByLine, getVisualColumnForRawInd
 import { stopViewportAnimation } from '../viewport/animateViewport';
 import getProjectViewportPosition from '../viewport/getProjectViewportPosition';
 import updateViewport from '../viewport/updateViewport';
-import deriveErrorMessages from './deriveErrorMessages';
 import parsePos from './features/directives/pos/data';
 import { deriveDirectiveState } from './features/directives/registry';
 import gaps from './gaps';
@@ -118,12 +117,7 @@ export default function codeBlockRendering(
 		graphicData.minGridWidth = contribution.minGridWidth;
 		shape(graphicData, state, blockLayout);
 		paramShape(graphicData, state, blockLayout);
-		graphicData.widgets.errorMessages = deriveErrorMessages(graphicData, state);
 		gaps(graphicData, blockLayout);
-		for (const error of graphicData.widgets.errorMessages) {
-			const displayRow = displayModel.sourceLineIndexToDisplayRow[error.lineNumber] ?? error.lineNumber;
-			error.y = (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid;
-		}
 		updateShapeDeclarations(graphicData, state, blockLayout);
 		updateParamShapeDeclarations(graphicData, state, blockLayout);
 
@@ -409,8 +403,6 @@ export default function codeBlockRendering(
 		} else updateAllBlockDerivedState();
 	});
 	events.on('gridSizeChanged', recomputePixelCoordinatesAndBlockDerivedState);
-	store.subscribe('codeErrors', updateAllBlockDerivedState);
-	store.subscribe('assertionResults', updateAllBlockDerivedState);
 	store.subscribe('compiler.isCompiling', updateAllBlockDerivedState);
 	store.subscribe('initialProjectState', populateCodeBlocks);
 	store.subscribe('codeBlockRendering.currentProject.blocks', updateAllBlockSources);

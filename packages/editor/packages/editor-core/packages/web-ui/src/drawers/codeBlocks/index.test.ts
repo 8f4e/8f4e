@@ -90,14 +90,10 @@ describe('drawModules', () => {
 		expect(first).toHaveBeenCalledOnce();
 	});
 
-	it('draws plugin backgrounds below selection and content, and foreground drawings below diagnostics', () => {
+	it('draws plugin backgrounds below selection and content, and foreground drawings below block drawers', () => {
 		const block = createMockCodeBlock({
 			width: 96,
 			height: 64,
-			widgets: {
-				shapeDeclarations: [],
-				errorMessages: [{ x: 8, y: 32, message: ['Diagnostic'] }],
-			},
 		});
 		const state = createMockState({
 			editorMode: 'edit',
@@ -110,10 +106,11 @@ describe('drawModules', () => {
 		const content = vi.fn(() => engine.drawText(8, 0, 'Content', PALETTE_INDICES.inkBase));
 		drawers.registerCodeBlockContentDrawer(content);
 		drawers.registerCodeBlockForegroundDrawer(() => engine.drawText(8, 0, 'Foreground', PALETTE_INDICES.inkBase));
+		drawers.registerCodeBlockDrawer(() => engine.drawText(8, 32, 'Block', PALETTE_INDICES.inkBase));
 		drawModules(engine, state, createMemoryViews(), drawers);
 		const text = vi.mocked(engine.drawText).mock.calls.map(([, , text]) => text);
 		expect(text.indexOf('Content')).toBeLessThan(text.indexOf('Foreground'));
-		expect(text.indexOf('Foreground')).toBeLessThan(text.findIndex(text => text.includes('Diagnostic')));
+		expect(text.indexOf('Foreground')).toBeLessThan(text.indexOf('Block'));
 		const fills = vi.mocked(engine.drawFill).mock.invocationCallOrder;
 		expect(fills[0]).toBeLessThan(background.mock.invocationCallOrder[0]);
 		expect(fills[1]).toBeLessThan(fills[2]);
