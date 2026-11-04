@@ -3,7 +3,7 @@
  * These types do not belong to any single feature and are used by multiple subsystems.
  */
 
-import type { CompilerSourceBlockType, ProjectGroupPath } from '@8f4e/language-spec';
+import type { ProjectGroupPath } from '@8f4e/language-spec';
 import type { CodeBlockGraphicData } from '../features/code-blocks/types';
 
 /**
@@ -78,14 +78,13 @@ export interface CodeBlockPointerDownEvent {
 }
 
 /**
- * Shared code error shape used across compiler, directive, and config validation flows.
+ * A raw source error contributed to shared editor state.
  */
 export interface CodeError {
 	lineNumber: number;
 	message: string;
 	/** Creation index of the code block that owns the error. */
 	codeBlockId: number;
-	codeBlockType?: CompilerSourceBlockType;
 	/** Project scope that owns an error not associated with a document block id. */
 	projectGroupPath?: ProjectGroupPath;
 }

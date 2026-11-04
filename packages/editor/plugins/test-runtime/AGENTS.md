@@ -7,6 +7,8 @@
 - Keep execution-message handling tests here; worker/worklet algorithm tests stay in their execution packages.
 - Publish info only under `info.testRuntime` and use generic environment constant contributions.
 - Publish failed source assertions as raw `CodeError` records under `codeErrors.test-runtime`, deduplicated by site.
+  Format failure text directly from execution results and keep it only in raw errors; shared `assertionResults`
+  carries source sites and outcomes.
   Exclude included/unowned sites and disabled blocks. Refresh on compilation input changes and remove this bucket
   on disposal. Inline message layout and drawing belong to error-messages.
 - Run `npx nx run @8f4e/editor-plugin-test-runtime:build|test|typecheck`.

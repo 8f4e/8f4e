@@ -160,19 +160,6 @@ describe('compilation scheduling and publication', () => {
 		);
 	});
 
-	it('stores code block type for compiler errors', async () => {
-		await triggerCompile();
-
-		expect(mockState.codeErrors.compiler).toEqual([
-			{
-				lineNumber: 2,
-				codeBlockId: 0,
-				codeBlockType: 'function',
-				message: 'Memory access is not allowed in pure functions. (19)',
-			},
-		]);
-	});
-
 	it('reads line number from syntax errors that expose line directly (no longer defaults to 0)', async () => {
 		mockCompileCode.mockRejectedValue({
 			message: 'Too many arguments for if.',
@@ -186,7 +173,6 @@ describe('compilation scheduling and publication', () => {
 			{
 				lineNumber: 3,
 				codeBlockId: 0,
-				codeBlockType: undefined,
 				message: 'Too many arguments for if.',
 			},
 		]);
@@ -205,7 +191,6 @@ describe('compilation scheduling and publication', () => {
 			{
 				lineNumber: 1,
 				codeBlockId: -1,
-				codeBlockType: undefined,
 				projectGroupPath: 'audio',
 				message: 'Passed constant namespace env is undefined in the parent project scope.',
 			},

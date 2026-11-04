@@ -42,17 +42,17 @@ export const errorMessagesPlugin: EditorPlugin = {
 				})),
 			});
 
-			const heights = new Map<number, number>();
-			for (const message of messages) heights.set(message.row, (heights.get(message.row) ?? 0) + message.lines.length);
-			const offsets = new Map<number, number>();
+			const remainingRows = new Map<number, number>();
+			for (const message of messages)
+				remainingRows.set(message.row, (remainingRows.get(message.row) ?? 0) + message.lines.length);
 			messagesByBlock.set(
 				codeBlock,
 				messages.map(({ row, lines }) => {
-					const offset = offsets.get(row) ?? 0;
-					offsets.set(row, offset + lines.length);
+					const remaining = remainingRows.get(row)!;
 					// Place messages at the end of the row's gap, after other contributed content.
-					const start = gapCalculator(row + 1, codeBlock.gaps) - heights.get(row)!;
-					return { lines, y: (start + offset) * state.viewport.hGrid };
+					const y = (gapCalculator(row + 1, codeBlock.gaps) - remaining) * state.viewport.hGrid;
+					remainingRows.set(row, remaining - lines.length);
+					return { lines, y };
 				})
 			);
 		};

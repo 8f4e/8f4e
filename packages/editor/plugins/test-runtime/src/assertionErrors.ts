@@ -1,14 +1,14 @@
 import { walkProjectBlocks } from '@8f4e/editor-state';
-import type { CodeError, State } from '@8f4e/editor-state-types';
+import type { CodeError, ProjectLevel } from '@8f4e/editor-state-types';
+import { formatAssertionExpectation, type TestAssertionResult } from '@8f4e/test-runner';
 
-export default function assertionErrors(state: State): CodeError[] {
+export default function assertionErrors(assertions: TestAssertionResult[], rootProject: ProjectLevel): CodeError[] {
 	const disabledBlocks = new Set(
-		[...walkProjectBlocks(state.codeBlockRendering.rootProject)]
-			.filter(block => block.disabled)
-			.map(block => block.creationIndex)
+		[...walkProjectBlocks(rootProject)].filter(block => block.disabled).map(block => block.creationIndex)
 	);
 	const failedSites = new Set<number>();
-	return state.assertionResults.flatMap(({ site, passed, message }) => {
+	return assertions.flatMap(assertion => {
+		const { site, passed } = assertion;
 		if (
 			passed ||
 			site.source ||
@@ -21,9 +21,8 @@ export default function assertionErrors(state: State): CodeError[] {
 		return [
 			{
 				codeBlockId: site.projectBlockId,
-				codeBlockType: site.codeBlockType,
 				lineNumber: site.lineNumber,
-				message: message ?? 'Assertion failed',
+				message: `Assertion failed: ${formatAssertionExpectation(assertion)}`,
 			},
 		];
 	});

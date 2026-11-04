@@ -127,7 +127,6 @@ export default function installCompilation(
 				{
 					lineNumber: diagnostic?.line?.lineNumber ?? 0,
 					codeBlockId: diagnostic?.context?.projectBlockId ?? -1,
-					codeBlockType: diagnostic?.context?.codeBlockType,
 					...(diagnostic?.context?.projectGroupPath !== undefined
 						? { projectGroupPath: diagnostic?.context?.projectGroupPath }
 						: {}),

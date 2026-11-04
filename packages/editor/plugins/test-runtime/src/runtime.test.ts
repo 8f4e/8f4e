@@ -98,14 +98,11 @@ describe('TestRuntime lifecycle', () => {
 		const result: TestRunResult = { status: 'failed', assertions: [assertion], failures: [assertion] };
 		expect(state.assertionResults).toEqual([]);
 		FakeWorker.instances[0].emit(result);
-		expect(state.assertionResults).toEqual([
-			{ site: assertion.site, passed: false, message: 'Assertion failed: expected nonzero, received 0' },
-		]);
+		expect(state.assertionResults).toEqual([{ site: assertion.site, passed: false }]);
 		expect(state.info.testRuntime).toEqual({ status: 'failed', assertionCount: 1, failureCount: 1 });
 		expect(state.codeErrors['test-runtime']).toEqual([
 			{
 				codeBlockId: 7,
-				codeBlockType: 'module',
 				lineNumber: 2,
 				message: 'Assertion failed: expected nonzero, received 0',
 			},
@@ -155,9 +152,21 @@ entryEnd`),
 		const { state, dispose } = setup(program);
 		FakeWorker.instances[0].emit(await executeTests(program));
 		expect(state.assertionResults).toEqual([
-			{ site: compiled.assertionSites![0], passed: false, message: 'Assertion failed: expected 9, received 10' },
-			{ site: compiled.assertionSites![1], passed: false, message: 'Assertion failed: expected nonzero, received 0' },
+			{ site: compiled.assertionSites![0], passed: false },
+			{ site: compiled.assertionSites![1], passed: false },
 			{ site: compiled.assertionSites![2], passed: true },
+		]);
+		expect(state.codeErrors['test-runtime']).toEqual([
+			{
+				codeBlockId: compiled.assertionSites![0].projectBlockId,
+				lineNumber: 2,
+				message: 'Assertion failed: expected 9, received 10',
+			},
+			{
+				codeBlockId: compiled.assertionSites![1].projectBlockId,
+				lineNumber: 4,
+				message: 'Assertion failed: expected nonzero, received 0',
+			},
 		]);
 		dispose();
 	});
