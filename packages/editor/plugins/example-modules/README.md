@@ -33,5 +33,5 @@ blocks. Failed dependency chunks are reported to the browser console while other
 npx nx run @8f4e/editor-plugin-example-modules:build
 npx nx run @8f4e/editor-plugin-example-modules:test
 npx nx run @8f4e/editor-plugin-example-modules:typecheck
-npx nx run @8f4e/editor-plugin-example-modules:test:screenshot
+npx nx run @8f4e/editor-plugin-example-modules:test:browser
 ```

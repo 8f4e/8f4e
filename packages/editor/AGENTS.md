@@ -96,7 +96,7 @@
   Build/typecheck `@8f4e/editor-file-session` and build/test/typecheck `@8f4e/editor-plugin-project-save` through Nx.
   Composed file behavior is covered by editor-default tests and the minimal-editor gallery browser tests.
 - Verify example module browsing with `npx nx run @8f4e/editor-plugin-example-modules:build|test|typecheck` and
-  `npx nx run @8f4e/editor-plugin-example-modules:test:screenshot`.
+  `npx nx run @8f4e/editor-plugin-example-modules:test:browser`.
 - Verify startup plugins with
   `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-session-persistence,@8f4e/editor-plugin-project-url-loader`.
   Both have `test:screenshot` targets for their real editor startup paths.
@@ -109,11 +109,11 @@
   Assertion markers also have a `test:screenshot` target; MIDI tests require no hardware.
 - Verify the favorite and memory-connection actions with
   `npx nx run-many --targets=build,test,typecheck --projects=@8f4e/editor-plugin-favorites,@8f4e/editor-plugin-remove-memory-connections`.
-  Each also has a `test:screenshot` target for real-editor contribution/action integration, without sibling menu presentation.
+  Each also has a `test:browser` target for real-editor contribution/action integration, without sibling menu presentation.
 - Verify connectors and their line renderer with `npx nx run @8f4e/editor-plugin-connectors:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-connectors:test:screenshot`.
 - Verify visual grouping with `npx nx run @8f4e/editor-plugin-grouping:build|test|typecheck` and
-  `npx nx run @8f4e/editor-plugin-grouping:test:screenshot`.
+  `npx nx run @8f4e/editor-plugin-grouping:test:browser`.
 - Verify lazy plugin loading with `npx nx run @8f4e/editor-plugin-lazy-loader:build|test|typecheck`. Browser composition coverage runs through `npx nx run @8f4e/editor-default:test:screenshot`.
 - Build or preview it with `npx nx run @8f4e/editor-website:build|serve`.
 - Ensure dependency packages are built before relying on workspace aliases in the website.

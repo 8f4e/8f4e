@@ -8,4 +8,4 @@
 - Do not publish an edit or schedule compilation when there are no intermodular memory defaults to remove.
 - Dispose the action handler and menu registration.
 - Run `npx nx run @8f4e/editor-plugin-remove-memory-connections:build|test|typecheck` after changes.
-- Run `npx nx run @8f4e/editor-plugin-remove-memory-connections:test:screenshot` for real-editor contribution/action integration without a sibling menu presentation.
+- Run `npx nx run @8f4e/editor-plugin-remove-memory-connections:test:browser` for real-editor contribution/action integration without a sibling menu presentation.

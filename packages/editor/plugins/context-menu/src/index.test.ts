@@ -15,29 +15,39 @@ const items: ContextMenuItem[] = [
 	{ title: 'Pick', action: 'pick', payload: { value: 42 }, close: true },
 	{ title: 'More', action: 'more', close: false },
 ];
-async function setup(content = items, late = false, x = 24, y = 32) {
+async function setup({
+	content = items,
+	openBeforeInstall = false,
+	x = 24,
+	y = 32,
+}: {
+	content?: ContextMenuItem[];
+	openBeforeInstall?: boolean;
+	x?: number;
+	y?: number;
+} = {}) {
 	const events = createEvents();
 	const store = initState(events, { callbacks: {} });
 	events.dispatch('resize', { canvasWidth: 640, canvasHeight: 480 });
 	const state = store.getState();
 	const drawers = createEditorDrawerRegistry();
 	const unregister = store.menus.registerMenu('mainMenu', () => content);
-	const install = () =>
-		contextMenuPlugin.setup({
-			store,
-			events,
-			drawers,
-			menus: store.menus,
-			directives: store.directives,
-			layout: store.layout,
-		});
-	let dispose = late ? undefined : install();
-	events.dispatch('contextmenu', { x, y });
-	await vi.waitFor(() => expect(state.contextMenu.items).toEqual(content));
-	if (late) dispose = install();
-	const cleanup = dispose!;
+	const open = async () => {
+		events.dispatch('contextmenu', { x, y });
+		await vi.waitFor(() => expect(state.contextMenu.items).toEqual(content));
+	};
+	if (openBeforeInstall) await open();
+	const dispose = contextMenuPlugin.setup({
+		store,
+		events,
+		drawers,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+	});
+	if (!openBeforeInstall) await open();
 	cleanups.push(() => {
-		cleanup();
+		dispose();
 		unregister();
 		store.dispose();
 	});
@@ -46,10 +56,10 @@ async function setup(content = items, late = false, x = 24, y = 32) {
 		for (const fn of Object.values(draw)) fn.mockClear();
 		drawers.drawCanvas({ draw: draw as unknown as DrawContext, state, memoryViews: {} as MemoryViews });
 	};
-	return { events, store, state, draw, render, dispose: cleanup };
+	return { events, store, state, draw, render, dispose };
 }
 it('prepares labels privately and renders a menu opened before installation', async () => {
-	const test = await setup(items, true);
+	const test = await setup({ openBeforeInstall: true });
 	test.state.featureFlags.canvasOverlays = false;
 	test.render();
 	expect(test.draw.startGroup).toHaveBeenCalledWith(24, 32);
@@ -70,11 +80,13 @@ it('hit-tests a completed press without requiring a preceding pointer move', asy
 	expect(test.state.contextMenu.open).toBe(false);
 });
 it('keeps disabled items and dividers inactive and draws their own styles', async () => {
-	const test = await setup([
-		{ title: 'Unavailable', action: 'pick', disabled: true },
-		{ divider: true },
-		{ title: 'Pick', action: 'pick' },
-	]);
+	const test = await setup({
+		content: [
+			{ title: 'Unavailable', action: 'pick', disabled: true },
+			{ divider: true },
+			{ title: 'Pick', action: 'pick' },
+		],
+	});
 	const pick = vi.fn();
 	test.events.on('pick', pick);
 	for (const y of [40, 56]) {
@@ -118,7 +130,7 @@ it('closes on outside presses and keeps presses and movement away from blocks', 
 	expect(pick).not.toHaveBeenCalled();
 });
 it('reflows on resize, grid changes, and viewport movement without changing the anchor', async () => {
-	const test = await setup(items, false, 639, 479);
+	const test = await setup({ x: 639, y: 479 });
 	const anchor = { x: test.state.contextMenu.x, y: test.state.contextMenu.y };
 	test.render();
 	expect(test.draw.startGroup).toHaveBeenCalledWith(488, 432);
@@ -147,7 +159,7 @@ it('does not activate during capture probes or through modal dialogs', async () 
 });
 it('isolates editors and unregisters its presentation without clearing core menu content', async () => {
 	const first = await setup();
-	const second = await setup(items, false, 80, 96);
+	const second = await setup({ x: 80, y: 96 });
 	first.dispose();
 	first.render();
 	second.render();

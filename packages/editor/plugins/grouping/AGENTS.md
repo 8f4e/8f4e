@@ -13,4 +13,4 @@
 - Receive `writeClipboardText` through `createGroupingPlugin`; use the pure block serializer for group copying. Do not rename groups during paste or subscribe to paste transforms.
 - Keep every registration's disposal explicit. Do not introduce a dependency on the single-module execution plugin.
 - Verify with `npx nx run @8f4e/editor-plugin-grouping:build|test|typecheck` and
-  `npx nx run @8f4e/editor-plugin-grouping:test:screenshot`.
+  `npx nx run @8f4e/editor-plugin-grouping:test:browser`.

@@ -5,7 +5,7 @@
 import type { State } from '../../index';
 import type { Position } from '../../shared/types';
 
-interface ContextMenuButton {
+export interface ContextMenuItem {
 	action?: string;
 	selector?: string;
 	value?: unknown;
@@ -16,13 +16,6 @@ interface ContextMenuButton {
 	title?: string;
 	isSectionTitle?: boolean;
 }
-
-interface MenuItemDivider extends ContextMenuButton {
-	divider: true;
-	title: never;
-}
-
-export type ContextMenuItem = ContextMenuButton | MenuItemDivider;
 
 /** Generates a complete menu from current state and its caller-owned payload. */
 export type MenuGenerator<Payload = unknown> = (
