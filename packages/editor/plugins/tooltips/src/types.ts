@@ -67,10 +67,15 @@ export interface TooltipMemoryDereferenceLiveValueSource {
 	format: TooltipLiveValueMemoryFormat;
 }
 
+export type TooltipReferenceLiveValueSource =
+	| { kind: 'referenceValue'; moduleId: string; referenceId: string }
+	| { kind: 'referenceDereference'; moduleId: string; referenceId: string };
+
 export type TooltipLiveValueSource =
 	| TooltipMemoryAddressLiveValueSource
 	| TooltipMemoryValueLiveValueSource
-	| TooltipMemoryDereferenceLiveValueSource;
+	| TooltipMemoryDereferenceLiveValueSource
+	| TooltipReferenceLiveValueSource;
 
 export interface TooltipLiveValue {
 	x: number;

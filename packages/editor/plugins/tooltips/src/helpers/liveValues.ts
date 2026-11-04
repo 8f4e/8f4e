@@ -1,5 +1,5 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
-import { BASE_TYPE_METADATA, type PlannedMemoryDeclaration } from '@8f4e/language-spec';
+import { BASE_TYPE_METADATA, type PlannedMemoryDeclaration, type ResolvedReferenceSlot } from '@8f4e/language-spec';
 import type { TooltipLiveValueSource, TooltipLiveValueTarget } from '../types';
 import { getTooltipLineColors } from './colors';
 import { maxLiveMemoryAddressLength, maxLiveMemoryValueLength } from './constants';
@@ -51,7 +51,6 @@ export function getLiveTooltipContent(
 		return { text: [], colors: [], liveValueTargets: [], maxLineLength: 0 };
 	}
 
-	const valueColor = PALETTE_INDICES.inverseAccent;
 	const valueLabel = memory.numberOfElements > 1 ? 'value[0]: ' : 'value: ';
 	const lines: LiveTooltipLine[] = [
 		{
@@ -74,6 +73,38 @@ export function getLiveTooltipContent(
 		});
 	}
 
+	return getLiveLinesContent(lines, firstLineIndex);
+}
+
+/** Fixed references have a value and a dereferenced value, but no storage address of their own. */
+export function getLiveReferenceTooltipContent(
+	reference: ResolvedReferenceSlot | undefined,
+	moduleId: string | undefined,
+	referenceId: string,
+	firstLineIndex: number
+): LiveTooltipContent {
+	if (!reference || !moduleId) {
+		return { text: [], colors: [], liveValueTargets: [], maxLineLength: 0 };
+	}
+
+	return getLiveLinesContent(
+		[
+			{
+				label: 'value: ',
+				maxLineLength: 'value: '.length + maxLiveMemoryAddressLength,
+				source: { kind: 'referenceValue', moduleId, referenceId },
+			},
+			{
+				label: 'deref: ',
+				maxLineLength: 'deref: '.length + maxLiveMemoryValueLength,
+				source: { kind: 'referenceDereference', moduleId, referenceId },
+			},
+		],
+		firstLineIndex
+	);
+}
+
+function getLiveLinesContent(lines: LiveTooltipLine[], firstLineIndex: number): LiveTooltipContent {
 	return {
 		text: lines.map(liveLine => liveLine.label),
 		colors: lines.map(liveLine => getTooltipLineColors(liveLine.label)),
@@ -81,7 +112,7 @@ export function getLiveTooltipContent(
 			lineIndex: firstLineIndex + index,
 			column: liveLine.label.length,
 			source: liveLine.source,
-			color: valueColor,
+			color: PALETTE_INDICES.inverseAccent,
 		})),
 		maxLineLength: Math.max(...lines.map(line => line.maxLineLength)),
 	};

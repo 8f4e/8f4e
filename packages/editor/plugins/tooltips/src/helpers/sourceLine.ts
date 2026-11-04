@@ -1,4 +1,9 @@
-import { getInstructionSpec, type InstructionSpec, memoryDeclarationInstructions } from '@8f4e/language-spec';
+import {
+	getInstructionSpec,
+	type InstructionSpec,
+	isReferenceSlotInstruction,
+	memoryDeclarationInstructions,
+} from '@8f4e/language-spec';
 
 const memoryIdentifierRegExp = /^[a-z_]\w*$/i;
 const memoryDeclarationInstructionSet = new Set<string>(memoryDeclarationInstructions);
@@ -41,4 +46,12 @@ export function getMemoryDeclarationIdFromSourceLine(line: string | undefined): 
 	}
 
 	return id;
+}
+
+/** Extracts the identifier of a fixed reference declaration. */
+export function getReferenceDeclarationIdFromSourceLine(line: string | undefined): string | undefined {
+	const [instruction, id] = getSourceLineTokens(line);
+	return instruction && isReferenceSlotInstruction(instruction) && id && memoryIdentifierRegExp.test(id)
+		? id
+		: undefined;
 }
