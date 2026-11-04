@@ -39,9 +39,12 @@ export interface MenuStackEntry {
  * Context menu position is stored in editor/world coordinates so it tracks viewport movement.
  */
 export interface ContextMenu extends Position {
-	highlightedItem: number;
-	itemWidth: number;
 	items: ContextMenuItem[];
 	open: boolean;
 	menuStack: MenuStackEntry[];
+}
+
+/** Activate a raw item using an index resolved by a menu presentation. Coordinates are viewport-relative. */
+export interface ActivateContextMenuItemEvent extends Position {
+	index: number;
 }

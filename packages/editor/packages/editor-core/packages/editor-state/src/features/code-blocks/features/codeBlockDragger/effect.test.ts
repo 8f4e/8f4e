@@ -29,8 +29,6 @@ describe('codeBlockDragger', () => {
 				nextCodeBlockCreationIndex: 0,
 			},
 			contextMenu: {
-				highlightedItem: 0,
-				itemWidth: 200,
 				items: [],
 				open: false,
 				x: 0,

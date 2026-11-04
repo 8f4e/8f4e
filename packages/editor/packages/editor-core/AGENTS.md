@@ -27,6 +27,11 @@
 - PRs: add screenshots/gifs for UI changes, include test notes, link issues.
 
 ## Plugins
+- Context-menu presentation belongs to `editor-plugin-context-menu`. Keep only raw items, requested world anchors,
+  menu requests/Back navigation, pointer blocking/forwarding, and action/selector dispatch in core. Forward completed
+  presses through `contextMenuPointerDown`, movement through `contextMenuPointerMove`, and activate raw items through
+  `activateContextMenuItem { index, x, y }`. `closeContextMenu` closes without activating. Keep decorated titles,
+  geometry, and highlighted rows out of core state. Generic `registerCanvasDrawer` draws before canvas/modal overlays.
 - Keep dialog content, the stack, opening/closing, button actions, and modal input blocking in editor-state.
   Forward completed modal presses through `dialogPointerDown`; check
   `activateDialogButton { id, buttonIndex }` against the visible dialog. `editor-plugin-dialogs` owns private

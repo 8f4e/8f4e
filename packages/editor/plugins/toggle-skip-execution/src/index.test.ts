@@ -173,8 +173,7 @@ describe('toggle skip execution plugin', () => {
 			const index = state.contextMenu.items.findIndex(item => item.action === 'toggleModuleSkipExecutionDirective');
 			expect(index).toBeGreaterThanOrEqual(0);
 			expect(state.contextMenu.items[index].payload?.codeBlock).toBe(block);
-			state.contextMenu.highlightedItem = index;
-			events.dispatch('pointerdown', { x: 16, y: 16 });
+			events.dispatch('activateContextMenuItem', { x: 16, y: 16, index });
 			expect(state.contextMenu.open).toBe(false);
 			expect(block.code).toContain('#skipExecution');
 			expect(selected.code).not.toContain('#skipExecution');

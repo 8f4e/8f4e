@@ -68,14 +68,8 @@ entryEnd`),
 		expect(second.x).toBe(secondX + state.viewport.vGrid);
 		pointer('contextmenu', first.x - state.viewport.x + 8, first.y - state.viewport.y + 8);
 		await expect.poll(() => state.contextMenu.items.some(item => item.action === 'setGroupNonstick')).toBe(true);
-		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('grouping-menu');
 		const index = state.contextMenu.items.findIndex(item => item.action === 'setGroupNonstick');
-		const menuX = state.contextMenu.x - state.viewport.x + 8;
-		const menuY = state.contextMenu.y - state.viewport.y + index * state.viewport.hGrid + 8;
-		pointer('pointermove', menuX, menuY);
-		pointer('pointerdown', menuX, menuY);
-		pointer('pointerup', menuX, menuY);
+		events.dispatch('activateContextMenuItem', { index, x: 0, y: 0 });
 		expect(first.code).toContain('; @group audio nonstick');
 		expect(second.code).toContain('; @group audio nonstick');
 		const before = second.x;

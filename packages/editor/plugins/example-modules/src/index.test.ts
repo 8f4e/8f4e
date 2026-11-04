@@ -71,10 +71,8 @@ describe('example modules plugin', () => {
 			expect(test.state.contextMenu.items.some(item => item.title?.includes('Add Built-in Block'))).toBe(true)
 		);
 		const click = (title: string) => {
-			test.state.contextMenu.highlightedItem = test.state.contextMenu.items.findIndex(item =>
-				item.title?.includes(title)
-			);
-			test.events.dispatch('pointerdown', { x: 100, y: 112 });
+			const menuItemIndex = test.state.contextMenu.items.findIndex(item => item.title?.includes(title));
+			test.events.dispatch('activateContextMenuItem', { x: 100, y: 112, index: menuItemIndex });
 		};
 		click('Add Built-in Block');
 		await vi.waitFor(() => expect(test.state.contextMenu.items.some(item => item.title?.includes('Audio'))).toBe(true));
@@ -82,13 +80,13 @@ describe('example modules plugin', () => {
 		await vi.waitFor(() =>
 			expect(test.state.contextMenu.items.some(item => item.action === ADD_EXAMPLE_MODULE)).toBe(true)
 		);
-		click('< Back');
+		click('Back');
 		await vi.waitFor(() => expect(test.state.contextMenu.items.some(item => item.title?.includes('Audio'))).toBe(true));
 		click('Audio');
 		await vi.waitFor(() =>
 			expect(test.state.contextMenu.items.some(item => item.action === ADD_EXAMPLE_MODULE)).toBe(true)
 		);
-		click('< Back');
+		click('Back');
 		await vi.waitFor(() => expect(test.state.contextMenu.items.some(item => item.title?.includes('Audio'))).toBe(true));
 		click('Audio');
 		await vi.waitFor(() =>

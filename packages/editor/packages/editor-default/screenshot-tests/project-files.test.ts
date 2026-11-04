@@ -1,6 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
+import { contextMenuPlugin } from '@8f4e/editor-plugin-context-menu';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
@@ -40,6 +41,7 @@ noteEnd`;
 		editor = await initEditor(canvas, {
 			initialProject: parseProjectSource(source),
 			plugins: [
+				contextMenuPlugin,
 				createMouseInputPlugin({ inputTarget: canvas }),
 				fileSession.plugin,
 				createProjectOpenPlugin({ document, fileSession }),
@@ -53,11 +55,11 @@ noteEnd`;
 		);
 		editor.pauseRendering();
 		const original = state.initialProjectState;
-		canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: 600, clientY: 16, bubbles: true }));
+		canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: 16, clientY: 16, bubbles: true }));
 		await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.action === 'importProject')).toBe(true));
 		const openIndex = state.contextMenu.items.findIndex(item => item.action === 'importProject');
-		const openX = state.contextMenu.x - state.viewport.x + 8;
-		const openY = state.contextMenu.y - state.viewport.y + openIndex * state.viewport.hGrid + 8;
+		const openX = 24;
+		const openY = 24 + openIndex * state.viewport.hGrid;
 		canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: openX, clientY: openY, bubbles: true }));
 		canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: openX, clientY: openY, bubbles: true }));
 		await vi.waitFor(() => expect(state.initialProjectState).not.toBe(original));
@@ -72,14 +74,14 @@ noteEnd`;
 		expect(parseProjectSource(await writable.write.mock.calls[0][0].text()).notes[0].code).toContain(
 			'Save the current patch to a project file.'
 		);
-		canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: 600, clientY: 16, bubbles: true }));
+		canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: 16, clientY: 16, bubbles: true }));
 		await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.action === 'exportProject')).toBe(true));
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('project-file-menu');
 		const menu = state.contextMenu;
 		const index = menu.items.findIndex(item => item.action === 'exportProject');
-		const x = menu.x - state.viewport.x + 8;
-		const y = menu.y - state.viewport.y + index * state.viewport.hGrid + 8;
+		const x = 24;
+		const y = 24 + index * state.viewport.hGrid;
 		canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true }));
 		canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, bubbles: true }));
 		await vi.waitFor(() => expect(writable.close).toHaveBeenCalledTimes(2));

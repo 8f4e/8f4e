@@ -57,8 +57,8 @@ export type {
 	State,
 } from '@8f4e/editor-state-types';
 export type {
-	CanvasOverlayDrawer,
-	CanvasOverlayDrawerContext,
+	CanvasDrawer,
+	CanvasDrawerContext,
 	CodeBlockDrawer,
 	CodeBlockDrawerContext,
 	EditorDrawerRegistry,

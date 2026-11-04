@@ -55,13 +55,7 @@ describe('grouping plugin', () => {
 		const items = await test.openMenu();
 		const index = items.findIndex(item => item.action === 'copyGroupBlocks');
 		expect(index).toBeGreaterThanOrEqual(0);
-		const pointer = {
-			x: test.state.contextMenu.x - test.state.viewport.x + 8,
-			y: test.state.contextMenu.y - test.state.viewport.y + index * test.state.viewport.hGrid + 8,
-		};
-		test.events.dispatch('pointermove', { ...pointer });
-		test.events.dispatch('pointerdown', { ...pointer });
-		test.events.dispatch('pointerup', { ...pointer });
+		test.events.dispatch('activateContextMenuItem', { index, x: 0, y: 0 });
 		expect(test.state.contextMenu.open).toBe(false);
 		const copied = JSON.parse(test.writeClipboardText.mock.calls[0][0]);
 		expect(copied.map((block: { code: string[] }) => block.code[0])).toEqual(['module first', 'module second']);

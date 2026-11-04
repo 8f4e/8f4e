@@ -7,7 +7,6 @@ import { subscribeToAppearance, updateGridSize } from './appearance';
 import { getConfiguredFont, getConfiguredPalette } from './config';
 import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
-import drawContextMenu from './drawers/contextMenu';
 import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/registry';
 import BackgroundRenderer from './plugins/background';
 import type { MemoryViews } from './types';
@@ -15,8 +14,8 @@ import type { MemoryViews } from './types';
 export { registerWebUiConfig } from './config';
 export { DrawContext } from './drawContext';
 export type {
-	CanvasOverlayDrawer,
-	CanvasOverlayDrawerContext,
+	CanvasDrawer,
+	CanvasDrawerContext,
 	CodeBlockDrawer,
 	CodeBlockDrawerContext,
 	EditorDrawerRegistry,
@@ -153,7 +152,7 @@ export default async function init(
 
 	const drawFrame = () => {
 		drawCodeBlocks(draw, state, memoryViews, drawers);
-		drawContextMenu(draw, state);
+		drawers.drawCanvas({ draw, state, memoryViews });
 		if (state.featureFlags.canvasOverlays) drawers.drawCanvasOverlays({ draw, state, memoryViews });
 		drawers.drawModalOverlays({ draw, state, memoryViews });
 	};

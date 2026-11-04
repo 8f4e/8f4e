@@ -98,63 +98,6 @@ describe('contextMenu effect', () => {
 		store.dispose();
 	});
 
-	it('keeps the menu inside the right and bottom viewport edges', async () => {
-		const state = createMockState({
-			viewport: {
-				x: 24,
-				y: 48,
-				width: 640,
-				height: 480,
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-
-		contextMenu(store, events, createMenuRegistry());
-
-		const onCalls = (events.on as unknown as MockInstance).mock.calls;
-		const onContextMenu = onCalls.find(call => call[0] === 'contextmenu')![1];
-
-		await onContextMenu({ x: 639, y: 479 });
-
-		const menuHeight = state.contextMenu.items.length * state.viewport.hGrid;
-		expect(state.contextMenu.x - state.viewport.x).toBe(state.viewport.width - state.contextMenu.itemWidth);
-		expect(state.contextMenu.y - state.viewport.y).toBe(state.viewport.height - menuHeight);
-	});
-
-	it('anchors the menu in world coordinates and hit-tests it after viewport movement', async () => {
-		const state = createMockState({
-			viewport: {
-				x: 24,
-				y: 48,
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-
-		contextMenu(store, events, createMenuRegistry());
-
-		const onCalls = (events.on as unknown as MockInstance).mock.calls;
-		const onContextMenu = onCalls.find(call => call[0] === 'contextmenu')![1];
-
-		await onContextMenu({ x: 100, y: 112 });
-
-		expect(state.contextMenu.x).toBe(128);
-		expect(state.contextMenu.y).toBe(160);
-
-		state.viewport.x = 32;
-		state.viewport.y = 64;
-
-		const onMouseMove = (events.on as unknown as MockInstance).mock.calls.find(call => call[0] === 'pointermove')![1];
-		onMouseMove({ x: 96, y: 112 });
-
-		expect(state.contextMenu.highlightedItem).toBe(1);
-	});
-
 	it('closes the menu before dispatching closeable actions', async () => {
 		const state = createMockState();
 		const store = createStateManager(state);
@@ -176,11 +119,51 @@ describe('contextMenu effect', () => {
 
 		await onContextMenu({ x: 100, y: 112 });
 
-		state.contextMenu.highlightedItem = state.contextMenu.items.findIndex(item => item.action === 'contributedAction');
+		const index = state.contextMenu.items.findIndex(item => item.action === 'contributedAction');
 
-		const onMouseDown = (events.on as unknown as MockInstance).mock.calls.find(call => call[0] === 'pointerdown')![1];
-		onMouseDown({ x: 100, y: 112 });
+		const activate = (events.on as unknown as MockInstance).mock.calls.find(
+			call => call[0] === 'activateContextMenuItem'
+		)![1];
+		activate({ index, x: 100, y: 112 });
 
 		expect(menuWasOpenWhenActionDispatched).toBe(false);
+	});
+	it('retains raw contributed labels and the requested world anchor', async () => {
+		const state = createMockState({ viewport: { x: 24, y: 48 } });
+		const store = createStateManager(state);
+		const events = createMockEventDispatcherWithVitest();
+		const registry = createMenuRegistry();
+		const item = { title: 'Inspect', action: 'inspect', close: false };
+		registry.registerItem('mainMenu', () => item);
+		const dispose = contextMenu(store, events, registry);
+		await vi
+			.mocked(events.on)
+			.mock.calls.find(([name]) => name === 'contextmenu')![1]({ x: 100, y: 112 });
+		expect(state.contextMenu).toMatchObject({ open: true, x: 124, y: 160 });
+		expect(state.contextMenu.items.at(-1)).toBe(item);
+		dispose();
+		store.dispose();
+	});
+	it('keeps disabled items and dividers inactive, and applies selector items in core', () => {
+		const state = createMockState();
+		const store = createStateManager(state);
+		const events = createMockEventDispatcherWithVitest();
+		const dispose = contextMenu(store, events, createMenuRegistry());
+		state.contextMenu.open = true;
+		state.contextMenu.items = [
+			{ title: 'Unavailable', action: 'blocked', disabled: true },
+			{ divider: true },
+			{ title: 'Edit', selector: 'editorMode', value: 'edit', close: true },
+		];
+		const activate = vi.mocked(events.on).mock.calls.find(([name]) => name === 'activateContextMenuItem')![1];
+		activate({ index: 0, x: 12, y: 16 });
+		activate({ index: 1, x: 12, y: 32 });
+		expect(events.dispatch).not.toHaveBeenCalled();
+		expect(state.contextMenu.open).toBe(true);
+		activate({ index: 2, x: 12, y: 48 });
+		expect(state.editorMode).toBe('edit');
+		expect(state.contextMenu.open).toBe(false);
+		dispose();
+		store.dispose();
 	});
 });

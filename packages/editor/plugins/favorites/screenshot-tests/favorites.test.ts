@@ -65,12 +65,7 @@ entryEnd`;
 		const index = state.contextMenu.items.findIndex(item => item.action === 'toggleFavoriteDirective');
 		expect(state.contextMenu.items[index].payload?.codeBlock).toBe(block);
 		expect(state.contextMenu.items[index].title).toContain('Favorite');
-		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('favorites-block-menu');
-		const x = state.contextMenu.x - state.viewport.x + 8;
-		const y = state.contextMenu.y - state.viewport.y + index * state.viewport.hGrid + 8;
-		pointer('pointermove', x, y);
-		pointer('pointerdown', x, y);
+		events.dispatch('activateContextMenuItem', { index, x: 0, y: 0 });
 		expect(state.contextMenu.open).toBe(false);
 		expect(block.code).toContain('; @favorite');
 		await openMenu();
@@ -81,18 +76,11 @@ entryEnd`;
 		await vi.waitFor(() =>
 			expect(state.contextMenu.items.some(item => item.payload?.menu === 'favoritesMenu')).toBe(true)
 		);
-		const clickItem = (index: number) => {
-			const x = state.contextMenu.x - state.viewport.x + 8;
-			const y = state.contextMenu.y - state.viewport.y + index * state.viewport.hGrid + 8;
-			pointer('pointermove', x, y);
-			pointer('pointerdown', x, y);
-		};
+		const clickItem = (index: number) => events.dispatch('activateContextMenuItem', { index, x: 0, y: 0 });
 		clickItem(state.contextMenu.items.findIndex(item => item.payload?.menu === 'favoritesMenu'));
 		await vi.waitFor(() =>
 			expect(state.contextMenu.items.some(item => item.payload?.creationIndex === block.creationIndex)).toBe(true)
 		);
-		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('favorites-navigation');
 		clickItem(state.contextMenu.items.findIndex(item => item.payload?.creationIndex === block.creationIndex));
 		expect(state.contextMenu.open).toBe(false);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);

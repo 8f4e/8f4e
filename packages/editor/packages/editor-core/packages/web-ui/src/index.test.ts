@@ -45,7 +45,6 @@ const mocks = vi.hoisted(() => {
 			return background;
 		}),
 		drawCodeBlocks: vi.fn(),
-		drawContextMenu: vi.fn(),
 	};
 });
 
@@ -59,10 +58,6 @@ vi.mock('./plugins/background', () => ({
 
 vi.mock('./drawers/codeBlocks', () => ({
 	default: mocks.drawCodeBlocks,
-}));
-
-vi.mock('./drawers/contextMenu', () => ({
-	default: mocks.drawContextMenu,
 }));
 
 vi.mock('@8f4e/sprite-generator', async original => ({
@@ -207,12 +202,14 @@ describe('web-ui init', () => {
 		store.dispose();
 	});
 
-	it('renders viewport overlays after menus and before dialogs with the current frame state', async () => {
+	it('renders canvas drawers, overlays, and modal overlays in order with the current frame state', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = createMemoryViews();
 
 		const drawers = createEditorDrawerRegistry();
+		const canvas = vi.fn();
+		const removeCanvas = drawers.registerCanvasDrawer(canvas);
 		const overlay = vi.fn();
 		const removeOverlay = drawers.registerCanvasOverlay(overlay);
 		const modal = vi.fn();
@@ -226,24 +223,29 @@ describe('web-ui init', () => {
 		);
 
 		overlay.mockClear();
-		mocks.drawContextMenu.mockClear();
+		canvas.mockClear();
 		modal.mockClear();
 		view.renderFrame();
 
 		const frameState = mocks.drawCodeBlocks.mock.calls.at(-1)?.[1];
 
 		expect(frameState).toBe(state);
+		expect(canvas).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
+		expect(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!).toBeLessThan(canvas.mock.invocationCallOrder[0]);
 		expect(overlay).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
-		expect(mocks.drawContextMenu.mock.invocationCallOrder[0]).toBeLessThan(overlay.mock.invocationCallOrder[0]);
+		expect(canvas.mock.invocationCallOrder[0]).toBeLessThan(overlay.mock.invocationCallOrder[0]);
 		expect(overlay.mock.invocationCallOrder[0]).toBeLessThan(modal.mock.invocationCallOrder[0]);
 		state.featureFlags.canvasOverlays = false;
 		view.renderFrame();
 		expect(overlay).toHaveBeenCalledOnce();
+		expect(canvas).toHaveBeenCalledTimes(2);
 		expect(modal).toHaveBeenCalledTimes(2);
 		state.featureFlags.canvasOverlays = true;
+		removeCanvas();
 		removeOverlay();
 		removeModal();
 		view.renderFrame();
+		expect(canvas).toHaveBeenCalledTimes(2);
 		expect(overlay).toHaveBeenCalledOnce();
 		expect(modal).toHaveBeenCalledTimes(2);
 		view.destroy();

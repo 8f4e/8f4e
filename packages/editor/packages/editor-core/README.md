@@ -76,6 +76,12 @@ Register menu items with `menus.registerItem('moduleMenu', provider)`. Providers
 `{ state, codeBlock }` when the menu opens, and return a `ContextMenuItem` or `undefined` to omit it. The target block
 can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
 existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
+Menu items stay raw in `state.contextMenu`: `open`, requested world anchor `x`/`y`, `items`, and `menuStack`.
+`@8f4e/editor-plugin-context-menu` owns decorated labels, geometry, and hovered rows privately. Core forwards
+`contextMenuPointerMove` and completed `contextMenuPointerDown` events while blocking input below an open menu.
+Presentations request `activateContextMenuItem { index, x, y }` with viewport coordinates; core applies the item's
+close behavior and dispatches its action or selector. `closeContextMenu` closes without activation.
+
 Use `menus.registerItem('mainMenu', provider)` for the background menu. Its providers receive `{ state }`, and
 contributions appear in registration order after the built-in items. Main-menu contributions are rebuilt when the
 menu opens or is revisited, just like block-menu contributions. A divider separates the contributed items when present.
@@ -153,8 +159,12 @@ source line, a message, and the target block identity or project-group scope. Co
 `@8f4e/editor-plugin-error-messages` owns wrapping, reserved rows, colors, and drawing coordinates through the existing
 layout/drawer APIs. Core stores no prepared error widgets and applies only generic row contributions.
 
+Register ordinary viewport-coordinate drawing with `drawers.registerCanvasDrawer(drawer)`. Callbacks receive
+`{ draw, state, memoryViews }` after code blocks and before overlays, independently of `canvasOverlays`. Context-menu
+presentation uses this hook. Shared canvas drawing types are `CanvasDrawer` and `CanvasDrawerContext`.
+
 Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The drawer receives
-`{ draw, state, memoryViews }` after menus and before dialogs, with coordinates relative to the viewport's top-left.
+`{ draw, state, memoryViews }` after ordinary canvas drawers and before modal overlays, with coordinates relative to the viewport's top-left.
 The renderer checks `featureFlags.canvasOverlays` before invoking this stage. Keyboard hints live in their
 mode-switching plugin; screenshot capture hides canvas overlays through this generic flag.
 
@@ -173,6 +183,10 @@ Modal input is blocked by the editor even without a drawing plugin. The editor f
 with `{ id, buttonIndex }`; the editor checks the visible dialog and runs the button action. Capture-only input
 probes do not activate dialogs. Default and minimal compositions
 install the presentation plugin through their deferred registries. Custom compositions must install it to show dialogs.
+
+Register ordinary viewport-coordinate drawing with `drawers.registerCanvasDrawer(drawer)`. Callbacks receive
+`{ draw, state, memoryViews }` after code blocks and before overlays, independently of `canvasOverlays`. Context-menu
+presentation uses this hook. Canvas drawing types are `CanvasDrawer` and `CanvasDrawerContext`.
 
 Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`
 once the renderer is ready and returns `{ draw, destroy, loadPalette?, releaseMemory? }`. `draw` receives

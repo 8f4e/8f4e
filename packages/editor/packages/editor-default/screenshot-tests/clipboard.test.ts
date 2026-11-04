@@ -82,7 +82,7 @@ test('the block paste menu changes placement while preserving duplicate names, g
 	await expect
 		.poll(async () => {
 			const rect = canvas.getBoundingClientRect();
-			canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: rect.left + 600, clientY: rect.top + 300 }));
+			canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: rect.left + 24, clientY: rect.top + 16 }));
 			await Promise.resolve();
 			return state.contextMenu.items.some(item => item.action === 'pasteCodeBlocks');
 		})
@@ -90,8 +90,8 @@ test('the block paste menu changes placement while preserving duplicate names, g
 	const menu = state.contextMenu;
 	const index = menu.items.findIndex(item => item.action === 'pasteCodeBlocks');
 	const pastePosition = {
-		x: menu.x - state.viewport.x + 8,
-		y: menu.y - state.viewport.y + index * state.viewport.hGrid + 8,
+		x: 32,
+		y: 24 + index * state.viewport.hGrid,
 	};
 	const pos = `; @pos ${Math.round((state.viewport.x + pastePosition.x) / state.viewport.vGrid)} ${Math.round((state.viewport.y + pastePosition.y) / state.viewport.hGrid)}`;
 	await userEvent.click(canvas, { position: pastePosition });

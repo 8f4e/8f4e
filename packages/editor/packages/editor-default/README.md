@@ -211,3 +211,7 @@ Run `npx nx run @8f4e/editor-default:test:screenshot` for browser composition co
 project Open/Save, and compiler/texture-runtime rendering. Individual feature behavior stays in plugin tests.
 
 Block copy/paste is provided by `@8f4e/editor-plugin-code-block-copy-paste`, loaded independently in the deferred set. The host injects its browser clipboard reader/writer; grouping receives its own writer. Paste Code Block places sources at the menu location, changing only `@pos`. Declaration names, group names, and references stay intact. Ctrl/Cmd+V in keyboard editing inserts plain text at the caret, including multiple lines; paste is not buffered during loading.
+
+Context-menu presentation comes from the deferred `@8f4e/editor-plugin-context-menu`. It owns decorated labels,
+geometry, hover/hit testing, and drawing. Core keeps raw menu contributions, navigation, input blocking, and action
+or selector dispatch. Menu geometry is private; consumers activate raw items through `activateContextMenuItem`.

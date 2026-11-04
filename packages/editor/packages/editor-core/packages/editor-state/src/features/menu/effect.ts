@@ -1,67 +1,15 @@
 import type {
+	ActivateContextMenuItemEvent,
 	CodeBlockGraphicData,
-	ContextMenuItem,
 	EventDispatcher,
 	InternalPointerEvent,
 	MenuStackEntry,
 	State,
 } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import roundToGrid from '~/features/viewport/roundToGrid';
 import findCodeBlockAtViewportCoordinates from '../code-blocks/utils/finders/findCodeBlockAtViewportCoordinates';
 import * as menus from './menus';
 import type { MenuRegistry } from './registry';
-
-function getHighlightedMenuItem(x: number, y: number, width: number, height: number) {
-	if (x < 0 || x > width || y < 0) {
-		return Infinity;
-	}
-	return Math.floor(y / height);
-}
-
-function getLongestMenuItem(menuItems: ContextMenuItem[], min = 16) {
-	return menuItems.reduce((acc, curr) => {
-		if (!curr.title?.length) {
-			return acc;
-		}
-		return acc < curr.title.length ? curr.title.length : acc;
-	}, min);
-}
-
-function decorateMenu(menuItems: ContextMenuItem[]) {
-	const longest = getLongestMenuItem(menuItems);
-	return menuItems.map(item => {
-		if (item.divider) {
-			return item;
-		}
-
-		const title = item.close === false ? item.title + ' >' : item.title;
-
-		const pad = '.'.repeat(longest + 2 - (title?.length || 0));
-		return {
-			...item,
-			title: item.isSectionTitle ? title + ' ' + pad : pad + ' ' + title,
-		};
-	});
-}
-
-function getMenuViewportPosition(state: State): { x: number; y: number } {
-	const { x, y } = state.contextMenu;
-	return {
-		x: x - state.viewport.x,
-		y: y - state.viewport.y,
-	};
-}
-
-function keepMenuWithinViewport(state: State): void {
-	const { contextMenu, viewport } = state;
-	const { x, y } = getMenuViewportPosition(state);
-	const maxX = Math.max(viewport.width - contextMenu.itemWidth, 0);
-	const maxY = Math.max(viewport.height - contextMenu.items.length * viewport.hGrid, 0);
-
-	contextMenu.x = viewport.x + Math.min(Math.max(x, 0), maxX);
-	contextMenu.y = viewport.y + Math.min(Math.max(y, 0), maxY);
-}
 
 export default function contextMenu(
 	store: StateManager<State>,
@@ -81,57 +29,29 @@ export default function contextMenu(
 	const updateMenu = async () => {
 		const { menuStack } = state.contextMenu;
 		const items = await registry.generateMenu(menuStack.at(-1)!, state);
-		state.contextMenu.items = decorateMenu([
-			...(menuStack.length > 1 ? [{ title: '< Back', action: 'menuBack' }] : []),
+		store.set('contextMenu.items', [
+			...(menuStack.length > 1 ? [{ title: 'Back', action: 'menuBack' }] : []),
 			...items,
 		]);
-		state.contextMenu.itemWidth = getLongestMenuItem(state.contextMenu.items) * state.viewport.vGrid;
-		keepMenuWithinViewport(state);
+	};
+	const close = () => store.set('contextMenu.open', false);
+	const activateItem = ({ index, x, y }: ActivateContextMenuItemEvent) => {
+		if (!state.contextMenu.open) return;
+		const item = state.contextMenu.items[index];
+		if (item.disabled || item.divider) return;
+		if (item.close) close();
+		if (item.selector) store.set(item.selector, item.value);
+		else if (item.action) events.dispatch(item.action, { ...item.payload, x, y });
 	};
 	const onPointerMove = (event: InternalPointerEvent) => {
-		if (!state.contextMenu.open) {
-			return;
-		}
-		const { itemWidth } = state.contextMenu;
-		const { x, y } = getMenuViewportPosition(state);
-		state.contextMenu.highlightedItem = getHighlightedMenuItem(
-			event.x - x,
-			event.y - y,
-			itemWidth,
-			state.viewport.hGrid
-		);
+		if (!state.contextMenu.open) return;
+		events.dispatch('contextMenuPointerMove', event);
 		event.stopPropagation = true;
 	};
-
-	const close = () => {
-		state.contextMenu.open = false;
-	};
-
 	const onPointerDown = (event: InternalPointerEvent) => {
-		if (!state.contextMenu.open) {
-			return;
-		}
+		if (!state.contextMenu.open) return;
+		events.dispatch('contextMenuPointerDown', event);
 		event.stopPropagation = true;
-		const { highlightedItem, items } = state.contextMenu;
-		const item = items[highlightedItem];
-
-		if (item) {
-			if (item.close) {
-				close();
-			}
-
-			if (item.selector) {
-				store.set(item.selector, item.value);
-			} else if (item.action) {
-				events.dispatch(item.action, {
-					...item.payload,
-					x: event.x,
-					y: event.y,
-				});
-			}
-		} else {
-			close();
-		}
 	};
 
 	const onContextMenu = async (event: InternalPointerEvent) => {
@@ -140,18 +60,14 @@ export default function contextMenu(
 		}
 
 		const { x, y } = event;
-
-		state.contextMenu.highlightedItem = 0;
-
-		const [roundedX, roundedY] = roundToGrid(x + state.viewport.x, y + state.viewport.y, state.viewport);
-		state.contextMenu.x = roundedX;
-		state.contextMenu.y = roundedY;
-
-		state.contextMenu.open = true;
-
 		const codeBlock = findCodeBlockAtViewportCoordinates(state, x, y);
-
-		state.contextMenu.menuStack = [codeBlock ? { menu: 'moduleMenu', payload: { codeBlock } } : { menu: 'mainMenu' }];
+		store.set('contextMenu', {
+			open: true,
+			x: x + state.viewport.x,
+			y: y + state.viewport.y,
+			items: [],
+			menuStack: [codeBlock ? { menu: 'moduleMenu', payload: { codeBlock } } : { menu: 'mainMenu' }],
+		});
 		await updateMenu();
 	};
 
@@ -168,6 +84,8 @@ export default function contextMenu(
 	events.on('openSubMenu', onOpenSubMenu);
 	events.on('contextmenu', onContextMenu);
 	events.on('menuBack', onMenuBack);
+	events.on('activateContextMenuItem', activateItem);
+	events.on('closeContextMenu', close);
 	events.on('pointerdown', onPointerDown);
 	events.on('pointermove', onPointerMove, { capture: true });
 
@@ -176,6 +94,8 @@ export default function contextMenu(
 		events.off('contextmenu', onContextMenu);
 		events.off('openSubMenu', onOpenSubMenu);
 		events.off('menuBack', onMenuBack);
+		events.off('activateContextMenuItem', activateItem);
+		events.off('closeContextMenu', close);
 		events.off('pointerdown', onPointerDown);
 		events.off('pointermove', onPointerMove);
 	};

@@ -1,6 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
+import { contextMenuPlugin } from '@8f4e/editor-plugin-context-menu';
 import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
 import type {} from '@vitest/browser-playwright';
 import { expect, test, vi } from 'vitest';
@@ -119,6 +120,7 @@ entryEnd`);
 			initialProject: project,
 			featureFlags: { moduleDragging: false },
 			plugins: [
+				contextMenuPlugin,
 				{
 					id: 'test-artifacts',
 					setup: services => {
@@ -199,7 +201,7 @@ entryEnd`);
 		expect(state.contextMenu.open).toBe(true);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('portrait-context-menu');
-		state.contextMenu.open = false;
+		context.events.dispatch('closeContextMenu');
 		const allowAudio = vi.fn();
 		context.events.on('testAllowAudio', allowAudio);
 		context.events.dispatch('addDialog', {

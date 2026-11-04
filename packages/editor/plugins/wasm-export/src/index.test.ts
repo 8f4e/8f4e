@@ -66,10 +66,12 @@ describe('WebAssembly export plugin', () => {
 			expect(test.state.contextMenu.open).toBe(false);
 			return test.handle;
 		});
-		test.state.contextMenu.highlightedItem = test.state.contextMenu.items.findIndex(
-			item => item.action === 'exportWasm'
-		);
-		test.events.dispatch('pointerdown', { x: 80, y: 80, stopPropagation: false });
+		const menuItemIndex = test.state.contextMenu.items.findIndex(item => item.action === 'exportWasm');
+		test.events.dispatch('activateContextMenuItem', {
+			x: 80,
+			y: 80,
+			index: menuItemIndex,
+		});
 		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledWith({
 			suggestedName: 'project.wasm',
 			types: [{ description: 'WebAssembly Binary', accept: { 'application/wasm': ['.wasm'] } }],
