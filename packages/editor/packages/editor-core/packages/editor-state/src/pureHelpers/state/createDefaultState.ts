@@ -28,8 +28,6 @@ export default function createDefaultState() {
 			selectedCodeBlockForProgrammaticEdit: undefined,
 		},
 		contextMenu: {
-			highlightedItem: 0,
-			itemWidth: 200,
 			items: [],
 			open: false,
 			x: 0,

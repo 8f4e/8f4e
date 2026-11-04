@@ -1,10 +1,10 @@
-import type { CanvasOverlayDrawer } from '@8f4e/editor-core';
+import type { CanvasDrawer } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 
 const EDIT_MODE_HINT = "You're in edit mode, press ESC to enter view mode";
 const VIEW_MODE_HINT = "You're in view mode, press e to edit";
 
-const drawModeHint: CanvasOverlayDrawer = ({ draw, state }) => {
+const drawModeHint: CanvasDrawer = ({ draw, state }) => {
 	const modeHint = state.editorMode === 'edit' ? EDIT_MODE_HINT : VIEW_MODE_HINT;
 
 	draw.startGroup(0, 0);

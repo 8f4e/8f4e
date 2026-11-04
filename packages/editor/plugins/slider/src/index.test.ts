@@ -216,7 +216,6 @@ describe('slider plugin', () => {
 			stopPropagation: false,
 		};
 		test.events.dispatch('pointermove', move);
-		expect(test.state.contextMenu.highlightedItem).toBe(1);
 		expect(move.stopPropagation).toBe(true);
 		expect(test.write).not.toHaveBeenCalled();
 	});

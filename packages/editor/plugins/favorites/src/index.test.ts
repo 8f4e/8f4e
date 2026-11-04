@@ -119,8 +119,11 @@ describe('favorites plugin', () => {
 			title: expect.stringContaining('Favorite'),
 			payload: { codeBlock: test.block },
 		});
-		test.state.contextMenu.highlightedItem = index;
-		test.events.dispatch('pointerdown', { x: test.block.x + 8, y: test.block.y + 8, stopPropagation: false });
+		test.events.dispatch('activateContextMenuItem', {
+			x: test.block.x + 8,
+			y: test.block.y + 8,
+			index,
+		});
 		expect(test.state.contextMenu.open).toBe(false);
 		expect(test.block.code).toContain('; @favorite');
 		expect(other.code).toEqual(originalOtherCode);
@@ -202,10 +205,14 @@ describe('favorites plugin', () => {
 		await Promise.resolve();
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;
-		test.state.contextMenu.highlightedItem = test.state.contextMenu.items.findIndex(
+		const menuItemIndex = test.state.contextMenu.items.findIndex(
 			item => item.payload?.creationIndex === test.block.creationIndex
 		);
-		test.events.dispatch('pointerdown', { x: 8, y: 8, stopPropagation: false });
+		test.events.dispatch('activateContextMenuItem', {
+			x: 8,
+			y: 8,
+			index: menuItemIndex,
+		});
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block);
 		expect(test.state.projectChange.revision).toBe(revision);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision);

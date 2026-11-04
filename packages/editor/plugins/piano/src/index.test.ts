@@ -276,8 +276,10 @@ describe('piano plugin', () => {
 		test.press(2);
 		const item = (await test.menuItems())[0];
 		test.state.contextMenu.items = [item];
-		test.state.contextMenu.highlightedItem = 0;
 		test.state.contextMenu.open = true;
+		test.events.on('contextMenuPointerDown', () =>
+			test.events.dispatch('activateContextMenuItem', { index: 0, x: 0, y: 0 })
+		);
 		const click = { ...test.point(), buttons: 1, altKey: false, stopPropagation: false };
 		test.events.dispatch('pointerdown', click);
 		expect(click.stopPropagation).toBe(true);

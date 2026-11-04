@@ -13,6 +13,12 @@ export function createDeferredEditorPlugin(
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
 	return createLazyPluginLoaderPlugin([
 		{
+			id: 'context-menu',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-context-menu').then(module => module.contextMenuPlugin),
+		},
+		{
 			id: 'error-messages',
 			scope: 'view',
 			matches: () => true,

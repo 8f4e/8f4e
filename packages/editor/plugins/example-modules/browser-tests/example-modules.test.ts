@@ -3,7 +3,7 @@ import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core
 import { expect, test, vi } from 'vitest';
 import { createExampleModulesPlugin } from '../src/index';
 
-test('browses nested categories on canvas, navigates Back, and inserts public blocks with dependencies', async () => {
+test('navigates contributed categories, supports Back, and inserts public blocks with dependencies through the editor', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 1024;
 	canvas.height = 640;
@@ -81,24 +81,19 @@ functionEnd float`,
 			await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.title?.includes(title))).toBe(true));
 			const menu = state.contextMenu;
 			const index = menu.items.findIndex(item => item.title?.includes(title));
-			const x = menu.x - state.viewport.x + 8;
-			const y = menu.y - state.viewport.y + index * state.viewport.hGrid + 8;
-			pointer('pointermove', x, y);
-			pointer('pointerdown', x, y);
+			events.dispatch('activateContextMenuItem', { index, x: 80, y: 32 });
 		};
 		pointer('contextmenu', 80, 32);
 		await click('Add Built-in Block');
 		await click('Audio');
 		await click('Effects');
-		await click('< Back');
+		await click('Back');
 		await click('Effects');
-		await click('< Back');
-		await click('< Back');
+		await click('Back');
+		await click('Back');
 		await click('Audio');
 		await click('Effects');
 		await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.title?.includes('Gain'))).toBe(true));
-		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('example-modules-categories');
 		await click('Gain');
 		await vi.waitFor(() =>
 			expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
@@ -110,8 +105,6 @@ functionEnd float`,
 		);
 		expect(state.contextMenu.open).toBe(false);
 		for (const block of state.codeBlockRendering.currentProject.blocks) expect(block.code).not.toContain('; @public');
-		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('example-modules-inserted');
 	} finally {
 		editor?.dispose();
 		canvas.remove();

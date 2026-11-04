@@ -21,8 +21,14 @@ owns wires; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer v
 
 ## API
 
-`createEditorDrawerRegistry()` creates one ordered code-block drawer registry, alongside canvas/modal overlay
+`createEditorDrawerRegistry()` creates one ordered code-block drawer registry, ordinary canvas drawers, and canvas/modal overlay
 hooks and GPU render-layer registration. Pass that registry through `options.drawers` when initializing the renderer.
+
+### `registerCanvasDrawer(drawer)`
+
+Registers viewport-coordinate drawing after code blocks and before canvas/modal overlays, independently of
+`canvasOverlays`. Registrations draw in order and return unregister functions. The context-menu plugin uses this
+hook; web-ui contains no menu-specific drawing. The shared types are `CanvasDrawer` and `CanvasDrawerContext`.
 
 ### `registerModalOverlay(drawer)`
 
@@ -92,7 +98,7 @@ Web-ui retains traversal, culling, block-relative coordinates, entry outlines, a
 and is installed before code rendering.
 `@8f4e/editor-plugin-code-rendering` owns nested highlights, selected-line fill, text, and its private prepared data.
 Connectors and other plugins use the same registry. Registration order determines layering, including late installs;
-there are no separate block drawing phases. Viewport overlays, dialogs, and GPU render layers retain their own hooks.
+there are no separate block drawing phases. Ordinary canvas drawers, viewport overlays, modal overlays, and GPU render layers retain their own hooks.
 Without a background plugin, web-ui draws no block surface.
 
 Editor-state stores viewport animation targets and exposes the synchronous

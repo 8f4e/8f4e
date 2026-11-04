@@ -40,6 +40,9 @@
   Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order
   within its existing visible-block loop. The eager `code-block-background` plugin is installed before code rendering.
   Code rendering owns selected-line fill; code-block-background owns corner markers. Web-ui retains offscreen arrows.
+- `@8f4e/editor-plugin-context-menu` owns menu labels, sizing, grid snapping, viewport clamping, hover state, hit testing,
+  and drawing. Core keeps raw items, requested world anchors, menu navigation, input blocking, and action/selector dispatch.
+  Both compositions defer it until `ready`. Web-ui exposes generic `registerCanvasDrawer` before canvas/modal overlays.
 - `@8f4e/editor-plugin-dialogs` owns dialog dimensions, wrapping/clipping, private button geometry/hit testing,
   and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
   Both compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies

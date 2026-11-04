@@ -86,8 +86,11 @@ describe('remove memory connections plugin', () => {
 			payload: { codeBlock: test.block },
 			disabled: false,
 		});
-		test.state.contextMenu.highlightedItem = index;
-		test.events.dispatch('pointerdown', { x: test.block.x + 8, y: test.block.y + 8, stopPropagation: false });
+		test.events.dispatch('activateContextMenuItem', {
+			x: test.block.x + 8,
+			y: test.block.y + 8,
+			index,
+		});
 		expect(test.state.contextMenu.open).toBe(false);
 		expect(test.block.code[1]).toBe('float value');
 		expect(other.code).toEqual(originalOtherCode);

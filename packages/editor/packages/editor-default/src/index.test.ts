@@ -108,6 +108,7 @@ describe('default editor plugins', () => {
 				'connectors',
 				'error-messages',
 				'dialogs',
+				'context-menu',
 				'tooltips',
 				'favorites',
 				'project-file-session',

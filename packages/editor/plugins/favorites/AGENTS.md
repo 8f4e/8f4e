@@ -9,4 +9,4 @@
   mutating the live array; the helper refreshes the block and publishes the completed metadata edit.
 - Respect edit mode for toggling; navigation remains available in view mode. Dispose menus, listeners, and source contributions.
 - Run `npx nx run @8f4e/editor-plugin-favorites:build|test|typecheck` and
-  `npx nx run @8f4e/editor-plugin-favorites:test:screenshot` after changes.
+  `npx nx run @8f4e/editor-plugin-favorites:test:browser` after changes.

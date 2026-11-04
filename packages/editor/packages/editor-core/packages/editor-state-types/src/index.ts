@@ -25,7 +25,13 @@ import type {
 } from './features/editor-config/types';
 import type { ResolvedGlobalEditorDirectives } from './features/global-editor-directives/types';
 import type { ConsoleState, LogMessage } from './features/logger/types';
-import type { ContextMenu, ContextMenuItem, MenuGenerator, MenuStackEntry } from './features/menu/types';
+import type {
+	ActivateContextMenuItemEvent,
+	ContextMenu,
+	ContextMenuItem,
+	MenuGenerator,
+	MenuStackEntry,
+} from './features/menu/types';
 import type { Compiler } from './features/program-compiler/types';
 import type { ProjectViewport, Viewport, ViewportAnimation } from './features/viewport/types';
 import type {
@@ -52,6 +58,7 @@ import type {
 // Re-export navigation types
 // Re-export project types
 export type {
+	ActivateContextMenuItemEvent,
 	ActivateDialogButtonEvent,
 	AssertionResult,
 	CodeBlockEntryOutline,

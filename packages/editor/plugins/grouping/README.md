@@ -23,4 +23,4 @@ Nested language-level project groups (`group … groupEnd`) remain core project 
 and memory scopes. They can participate in visual grouping like other blocks.
 
 Run `npx nx run @8f4e/editor-plugin-grouping:build|test|typecheck` and
-`npx nx run @8f4e/editor-plugin-grouping:test:screenshot` to verify the plugin.
+`npx nx run @8f4e/editor-plugin-grouping:test:browser` to verify the plugin.
