@@ -41,6 +41,9 @@ and runtime factories receive compiler artifacts and an optional shared `AudioCo
 The optional `@8f4e/editor-plugin-selection-animation` draws the circling segment around the selected block. Its entry
 is commented out in this composition. Core retains selection state, corner colors, and line highlighting.
 
+`@8f4e/editor-plugin-error-messages` loads in the deferred set. It wraps and draws raw contributor-owned errors from
+core's `state.codeErrors`, reserving their source rows through the generic layout API.
+
 The loader checks cached directives automatically after project changes and group navigation. Visual/control plugins
 use `view` scope: signals in unopened groups wait until that level is visited. Texture views load for `@texture` as well as `textureRuntime` configuration, using the existing overlay pass.
 Runtime, MIDI, and asset plugins use

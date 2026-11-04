@@ -73,7 +73,6 @@ export function createMockCodeBlock(
 		parsedDirectives: [],
 		widgets: {
 			shapeDeclarations: [],
-			errorMessages: [],
 		},
 	};
 
@@ -173,10 +172,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		historyStack: [],
 		redoStack: [],
 		envConstantContributions: {},
-		codeErrors: {
-			compilationErrors: [],
-			editorDirectiveErrors: [],
-		},
+		codeErrors: {},
 		console: {
 			logs: [],
 			maxLogs: 100,

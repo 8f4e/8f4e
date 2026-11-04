@@ -1,18 +1,9 @@
-import type { CodeBlockGraphicData, CodeError, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import compareCodeBlocksByPosition from '../../pureHelpers/compareCodeBlocksByPosition';
 import deepEqual from '../../shared/utils/deepEqual';
 import { resolveEditorConfigEntries, validateEditorConfigEntries } from '../editor-config/validators';
 import { resolveGlobalEditorDirectives } from './registry';
-
-const GLOBAL_EDITOR_DIRECTIVES_ERROR_OWNER_ID = 'global-editor-directives';
-
-function withOwnerId(errors: CodeError[]): CodeError[] {
-	return errors.map(error => ({
-		...error,
-		ownerId: GLOBAL_EDITOR_DIRECTIVES_ERROR_OWNER_ID,
-	}));
-}
 
 function collectProjectCodeBlocks(codeBlocks: CodeBlockGraphicData[]): CodeBlockGraphicData[] {
 	return [...codeBlocks]
@@ -27,7 +18,7 @@ function collectProjectCodeBlocks(codeBlocks: CodeBlockGraphicData[]): CodeBlock
  * updates `state.globalEditorDirectives` with the resolved values. The rendered project slice
  * is intentionally ignored so navigating into a project group cannot change global state.
  *
- * Conflicting directive values are written to `state.codeErrors.editorDirectiveErrors`.
+ * Conflicting directive values are written to `state.codeErrors['editor-directives']`.
  */
 export default function resolveEditorConfig(store: Pick<StateManager<State>, 'getState' | 'set'>): void {
 	const state = store.getState();
@@ -45,17 +36,7 @@ export default function resolveEditorConfig(store: Pick<StateManager<State>, 'ge
 		store.set('editorConfig', nextEditorConfig);
 	}
 
-	const nextOwnedErrors = withOwnerId(nextErrors);
-	const currentOwnerErrors = state.codeErrors.editorDirectiveErrors.filter(
-		error => error.ownerId === GLOBAL_EDITOR_DIRECTIVES_ERROR_OWNER_ID
-	);
-
-	if (!deepEqual(nextOwnedErrors, currentOwnerErrors)) {
-		store.set(
-			'codeErrors.editorDirectiveErrors',
-			state.codeErrors.editorDirectiveErrors
-				.filter(error => error.ownerId !== GLOBAL_EDITOR_DIRECTIVES_ERROR_OWNER_ID)
-				.concat(nextOwnedErrors)
-		);
+	if (!deepEqual(nextErrors, state.codeErrors['editor-directives'])) {
+		store.set('codeErrors.editor-directives', nextErrors);
 	}
 }

@@ -219,8 +219,8 @@ entryEnd`),
 	);
 	const memory = editor.state.compiler.result.memoryPlan.modules.counter.memory.count;
 	await vi.waitFor(() => expect(editor.getMemoryViews().int32[memory.allocationUnitAddress]).toBeGreaterThan(2));
-	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(editor.state.codeErrors.compiler).toEqual([]);
+	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 	expect(editor.state.envConstantContributions.workerRuntime).toEqual(['const CONTROL_RATE 50']);
 });
 
@@ -235,8 +235,8 @@ test('compiles a loaded project through the compiler plugin and refreshes editor
 			),
 		{ timeout: 10000 }
 	);
-	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(editor.state.codeErrors.compiler).toEqual([]);
+	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 	expect(editor.state.editorConfig.recompileDebounceDelay).toBe(10);
 	expect(editor.state.compiler.isCompiling).toBe(false);
 	expect(editor.state.info.compiler?.wasmByteCodeBytes).toBeGreaterThan(0);
@@ -280,7 +280,7 @@ entryEnd`),
 		() => expect([10, 11, 12, 13, 14, 15].map(row => block.gaps.get(row)?.size)).toEqual([2, 1, 8, 6, 2, 2]),
 		{ timeout: 10000 }
 	);
-	expect(state.codeErrors.compilationErrors).toEqual([]);
+	expect(state.codeErrors.compiler).toEqual([]);
 	const canvas = view.panel().querySelector('canvas')!;
 	const address = state.compiler.result.memoryPlan.modules.controls.memory.value.allocationUnitAddress;
 	const press = (row: number) => {
@@ -520,6 +520,6 @@ entryEnd`;
 		{ timeout: 10000 }
 	);
 	expect(reopened.state.compiler.result.memoryDefaultsByModuleId['right/counter'].value.value).toBe(1);
-	expect(reopened.state.codeErrors.compilationErrors).toEqual([]);
-	expect(reopened.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(reopened.state.codeErrors.compiler).toEqual([]);
+	expect(reopened.state.codeErrors['editor-directives']).toEqual([]);
 });

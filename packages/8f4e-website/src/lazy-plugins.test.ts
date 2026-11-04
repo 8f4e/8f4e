@@ -59,8 +59,8 @@ entryEnd`);
 	editor.pauseRendering();
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot('lazy-watch-stack-after-group-navigation');
-	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(editor.state.codeErrors.compiler).toEqual([]);
+	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 });
 
 test('recompiles with asset size constants after a lazy asset fetch completes', async () => {
@@ -86,7 +86,7 @@ entryEnd`,
 		{ [assetUrl]: fetchAsset }
 	);
 	await vi.waitFor(() => expect(fetchAsset).toHaveBeenCalledOnce());
-	await vi.waitFor(() => expect(editor.state.codeErrors.compilationErrors.length).toBeGreaterThan(0), {
+	await vi.waitFor(() => expect(editor.state.codeErrors.compiler.length).toBeGreaterThan(0), {
 		timeout: 10000,
 	});
 	expect(editor.state.dialogStack.some(dialog => dialog.id === 'binary-assets-loading')).toBe(true);
@@ -100,8 +100,8 @@ entryEnd`,
 	expect([...editor.getMemoryViews().uint8.slice(memory.byteAddress, memory.byteAddress + 6)]).toEqual([
 		1, 2, 3, 4, 5, 6,
 	]);
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
-	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
+	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
+	expect(editor.state.codeErrors.compiler).toEqual([]);
 	expect(editor.state.dialogStack).toEqual([]);
 });
 
@@ -218,7 +218,7 @@ functionEnd`);
 	);
 	expect(requestAccess).toHaveBeenCalledOnce();
 	expect(editor.state.info.midi).toEqual({ '0': 'Keys (in)' });
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 	const memory = editor.getMemoryViews().int32;
 	const address = editor.state.compiler.result.memoryPlan.modules.received.memory.status.allocationUnitAddress;
 	editor.dispose();

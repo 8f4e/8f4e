@@ -28,11 +28,11 @@ export interface EditorDrawerRegistry {
 	registerRenderLayer: (factory: RenderLayerFactory) => () => void;
 	/** Draw above the block surface, below line selection, corners, and content. */
 	registerCodeBlockBackgroundDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw inside the block after backgrounds and selection, before foreground drawings and diagnostics. */
+	/** Draw inside the block after backgrounds and selection, before foreground drawings. */
 	registerCodeBlockContentDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw above content and shapes, before diagnostics. */
+	/** Draw above content and shapes. */
 	registerCodeBlockForegroundDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw after foreground drawings and diagnostics. */
+	/** Draw after foreground drawings. */
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;
 	/** Draw after block drawers, inside the same block group. */
 	registerCodeBlockOverlay: (drawer: CodeBlockDrawer) => () => void;

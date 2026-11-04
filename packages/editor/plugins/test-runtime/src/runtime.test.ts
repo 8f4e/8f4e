@@ -1,6 +1,7 @@
+import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { EventDispatcher } from '@8f4e/editor-core';
-import { createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { executeTests } from '@8f4e/runtime-test-runner/execute-tests';
 import type { TestRunResult, TestRuntimeProgram } from '@8f4e/runtime-test-runner/types';
 import createStateManager from '@8f4e/state-manager';
@@ -41,7 +42,12 @@ function setup(initialProgram?: TestRuntimeProgram, isCompiling = false) {
 		editorConfig: { testRuntime: { enabled: true } },
 	});
 	const store = createStateManager(state);
-	const events = { dispatch: vi.fn() } as unknown as EventDispatcher;
+	const emitter = new EventEmitter();
+	const events = {
+		on: emitter.on.bind(emitter),
+		off: emitter.off.bind(emitter),
+		dispatch: vi.fn(emitter.emit.bind(emitter)),
+	} satisfies EventDispatcher;
 	const dispose = createTestRuntimePlugin({
 		getCodeBuffer: () => program?.codeBuffer ?? new Uint8Array(),
 		getMemory: () => program?.memory ?? null,
@@ -72,7 +78,9 @@ describe('TestRuntime lifecycle', () => {
 
 	it('publishes source sites, outcomes, and failure details and clears them on restart and disposal', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
-		const { state, store, dispose } = setup(createProgram());
+		const { state, store, events, dispose } = setup(createProgram());
+		const otherErrors = [{ codeBlockId: 99, lineNumber: 0, message: 'Another contributor' }];
+		store.set('codeErrors.other', otherErrors);
 		const assertion = {
 			site: {
 				siteId: 0,
@@ -94,13 +102,33 @@ describe('TestRuntime lifecycle', () => {
 			{ site: assertion.site, passed: false, message: 'Assertion failed: expected nonzero, received 0' },
 		]);
 		expect(state.info.testRuntime).toEqual({ status: 'failed', assertionCount: 1, failureCount: 1 });
+		expect(state.codeErrors['test-runtime']).toEqual([
+			{
+				codeBlockId: 7,
+				codeBlockType: 'module',
+				lineNumber: 2,
+				message: 'Assertion failed: expected nonzero, received 0',
+			},
+		]);
+		const block = createMockCodeBlock({ creationIndex: 7, disabled: true });
+		state.codeBlockRendering.rootProject.blocks = [block];
+		events.dispatch('compilationInputChanged');
+		expect(state.codeErrors['test-runtime']).toEqual([]);
+		expect(state.assertionResults).toHaveLength(1);
+		block.disabled = false;
+		events.dispatch('compilationInputChanged');
+		expect(state.codeErrors['test-runtime']).toHaveLength(1);
 		store.set('compiler.isCompiling', true);
 		expect(state.assertionResults).toEqual([]);
+		expect(state.codeErrors['test-runtime']).toEqual([]);
 		store.set('compiler.isCompiling', false);
 		FakeWorker.instances[1].emit(result);
 		expect(state.assertionResults).toHaveLength(1);
 		dispose();
+		events.dispatch('compilationInputChanged');
 		expect(state.assertionResults).toEqual([]);
+		expect(state.codeErrors['test-runtime']).toBeUndefined();
+		expect(state.codeErrors.other).toBe(otherErrors);
 	});
 
 	it('publishes expected and received values from executed Wasm assertions to the editor', async () => {

@@ -96,12 +96,6 @@ export interface CodeBlockGraphicData {
 	y: number;
 	widgets: {
 		shapeDeclarations: ShapeDeclaration[];
-		errorMessages: Array<{
-			message: string[];
-			x: number;
-			y: number;
-			lineNumber: number;
-		}>;
 	};
 	lastUpdated: number;
 	/**

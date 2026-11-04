@@ -88,6 +88,4 @@ export interface CodeError {
 	codeBlockType?: CompilerSourceBlockType;
 	/** Project scope that owns an error not associated with a document block id. */
 	projectGroupPath?: ProjectGroupPath;
-	/** Optional producer id for shared error buckets that contain errors from multiple owners. */
-	ownerId?: string;
 }

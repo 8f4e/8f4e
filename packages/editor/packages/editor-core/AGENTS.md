@@ -102,8 +102,9 @@
 - Binary assets belong to `editor-plugin-binary-assets`, including their schema, fetching/cache, private state, dialog,
   and size constants. Keep only generic `envConstantContributions`, schema registration, dialogs, and memory resolution
   in core. Environment constants refresh when blocks are populated as well as when contributions change.
-- Assertion marker geometry and drawing belong to `editor-plugin-assertion-markers`; retain runtime results and
-  inline assertion error messages in core. Do not add marker fields to `CodeBlockGraphicData`.
+- Assertion marker geometry and drawing belong to `editor-plugin-assertion-markers`. Retain raw runtime results and
+  contributor-owned `CodeError` lists in core; test-runtime publishes assertion errors and error-messages owns
+  inline message layout/drawing. Keep prepared message and marker fields out of `CodeBlockGraphicData`.
 - Keyboard-to-memory and MIDI input belong to their plugin packages. The default host supplies their browser and
   compiler resources through factories; core owns no input-specific schemas, WASM export services, or environment-plugin manager.
 - Example module browsing and loading belong to `editor-plugin-example-modules`. Core exposes complete menu
@@ -156,7 +157,8 @@
   source-position state and bounds/tab geometry; do not restore direction-based caret movement or a built-in glyph.
 - `registerCodeBlockBackgroundDrawer` runs above the block surface and below line selection, corners, and content.
   Code-rendering owns nested block parsing, highlight geometry, colors, and its private cache. Keep highlight fields out of core state.
-- `registerCodeBlockForegroundDrawer` runs above content/shapes and below diagnostics. Keep these stages generic.
+- `registerCodeBlockForegroundDrawer` runs above content/shapes. Error-messages uses the ordinary block drawer;
+  keep the drawing stages and layout contributions generic, without built-in diagnostic rendering or gap rules.
 - The circling selected-block animation belongs to `editor-plugin-selection-animation`. Keep its timing, glyphs,
   and drawing out of core; retain selection state, corner colors, and line highlighting.
 

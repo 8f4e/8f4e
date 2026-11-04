@@ -57,6 +57,7 @@ it('starts without storage and reports empty-project readiness after initializat
 		expect.arrayContaining([
 			'code-rendering',
 			'connectors',
+			'error-messages',
 			'dialogs',
 			'keyboard-navigation',
 			'keyboard-mode-switching',

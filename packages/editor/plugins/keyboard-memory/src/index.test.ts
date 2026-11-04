@@ -159,7 +159,7 @@ entryEnd`);
 			keyCodeMemory: 'keys:code',
 			keyPressedMemory: 'keys:pressed',
 		});
-		expect(editor.store.getState().codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(editor.store.getState().codeErrors['editor-directives']).toEqual([]);
 		editor.dispose();
 	});
 });

@@ -6,7 +6,6 @@ import type { EditorDrawerHost } from '../registry';
 import drawArrow from './drawArrow';
 import drawEntryOutlines from './drawEntryOutlines';
 import drawShapeDeclarations from './drawShapeDeclarations';
-import drawErrorMessages from './widgets/errorMessages';
 
 const corner = '+';
 
@@ -67,7 +66,6 @@ export default function drawModules(
 
 			drawers?.drawCodeBlockForeground({ draw: engine, state, codeBlock, memoryViews });
 
-			drawErrorMessages(engine, state, codeBlock);
 			drawers?.drawCodeBlock({ draw: engine, state, codeBlock, memoryViews });
 			drawers?.drawCodeBlockOverlay({ draw: engine, state, codeBlock, memoryViews });
 

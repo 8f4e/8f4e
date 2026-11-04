@@ -19,4 +19,8 @@ entry once per successful compilation. It publishes `status`, `assertionCount`, 
 generic `assertionResults`. It terminates superseded workers and clears assertion markers on disable, recompilation,
 and disposal.
 
+Failed source assertions also become raw `CodeError` records in `state.codeErrors['test-runtime']`, one per failed
+site. Included source and disabled blocks produce no inline error contribution. Source input changes refresh this
+list; restart clears it and disposal removes it. `editor-plugin-error-messages` owns message wrapping, layout, and drawing.
+
 Validate with `npx nx run @8f4e/editor-plugin-test-runtime:build|test|typecheck`.

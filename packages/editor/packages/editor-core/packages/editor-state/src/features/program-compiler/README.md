@@ -29,7 +29,7 @@ plugin is installed.
 - `state.compiler.result.compiledModules` and `compiledFunctions` provide compiler lookups.
 - `state.compiler.result.memoryPlan`, `memoryDefaultsByModuleId`, and `projectMemoryExposuresByGroupPath` support memory consumers.
 - `state.info.compiler` contains compilation duration, bytecode size, memory usage, and cache statistics.
-- `state.codeErrors.compilationErrors` contains diagnostics mapped to project blocks and source lines.
+- `state.codeErrors.compiler` contains diagnostics mapped to project blocks and source lines.
 
 Source-specific views use `getCompiledModuleForCodeBlock` to match the selected definition's `projectBlockId` to the
 editor block's `creationIndex`. `getModuleCompilationForCodeBlock` resolves that module, its memory plan, and its defaults

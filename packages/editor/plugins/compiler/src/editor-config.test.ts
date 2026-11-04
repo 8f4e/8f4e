@@ -55,14 +55,14 @@ describe('compiler configuration directives', () => {
 		const test = setup();
 		test.load(String(value));
 		expect(test.store.getState().editorConfig.recompileDebounceDelay).toBe(value);
-		expect(test.store.getState().codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(test.store.getState().codeErrors['editor-directives']).toEqual([]);
 	});
 
 	it.each(['-1', '10.5', 'fast'])('reports invalid delay %s as a directive diagnostic', value => {
 		const test = setup();
 		test.load(value);
 		expect(test.store.getState().editorConfig.recompileDebounceDelay).toBeUndefined();
-		expect(test.store.getState().codeErrors.editorDirectiveErrors).toEqual([
+		expect(test.store.getState().codeErrors['editor-directives']).toEqual([
 			expect.objectContaining({ message: expect.stringContaining('recompileDebounceDelay') }),
 		]);
 	});
@@ -92,7 +92,7 @@ describe('compiler configuration directives', () => {
 	it('rejects the setting when the compiler plugin is omitted', () => {
 		const test = setup(false);
 		test.load('120');
-		expect(test.store.getState().codeErrors.editorDirectiveErrors).toEqual([
+		expect(test.store.getState().codeErrors['editor-directives']).toEqual([
 			expect.objectContaining({ message: expect.stringContaining("unknown config path 'recompileDebounceDelay'") }),
 		]);
 	});
@@ -103,7 +103,7 @@ describe('compiler configuration directives', () => {
 		test.dispose();
 		expect(test.store.getState().editorConfigSchemaContributions.compiler).toBeUndefined();
 		expect(test.store.getState().editorConfig.recompileDebounceDelay).toBeUndefined();
-		expect(test.store.getState().codeErrors.editorDirectiveErrors).toEqual([
+		expect(test.store.getState().codeErrors['editor-directives']).toEqual([
 			expect.objectContaining({ message: expect.stringContaining("unknown config path 'recompileDebounceDelay'") }),
 		]);
 	});

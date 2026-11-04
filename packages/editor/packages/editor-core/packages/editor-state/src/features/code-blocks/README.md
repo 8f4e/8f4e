@@ -10,7 +10,10 @@ Manages the lifecycle of code blocks in the editor: creation, selection, drag op
 - **Selection**: Tracks which block is currently selected for editing
 - **Drag Operations**: Handles repositioning blocks in the viewport
 - **Graphics Derivation**: Computes visual properties (position, size, color) from block data
-- **Block Widgets**: Derives inline error messages and shape declarations
+- **Shape Declarations**: Derives shape geometry from compiled metadata
+
+`@8f4e/editor-plugin-error-messages` owns inline message wrapping, row reservations, and drawing. Core stores raw
+errors in contributor-owned `state.codeErrors` lists and applies generic layout contributions.
 
 Nested language-block highlighting belongs to `@8f4e/editor-plugin-code-rendering`, including its tolerant parser,
 background colors, rectangle geometry, and private cache. Core supplies block/display bounds, grid dimensions, and gaps.
@@ -102,10 +105,10 @@ active viewport animations; navigating to the current level leaves its view and 
 It reads `state.assertionResults` and current block layout through the generic drawer hook. Core block state
 contains no marker rectangles.
 
-Failed assertions use the inline error-message widget independently of the marker plugin. The runtime can provide a formatted `message` with
-expected and received values; outcomes without a message display `Assertion failed`. One message is shown per
-source site, using its first failed invocation. Messages match compiler block IDs and project paths,
-clear with results or compilation start, and contribute space below the assertion through the existing error layout.
+Test-runtime publishes the first failed invocation of each source assertion as a raw error under
+`codeErrors.test-runtime`, including expected and received values. It excludes included/unowned sites and disabled
+blocks, and clears its errors when execution restarts. Error-messages displays those errors independently of the
+marker plugin through the same contribution path as other source errors.
 
 ## Integration Points
 

@@ -8,6 +8,8 @@
   imports. Do not add frame
   callbacks, visibility checks, or timing delays. Keep font payloads lazy.
 - Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
+- Load `errorMessagesPlugin` as an unconditional deferred entry. Raw contributor-owned error lists stay central;
+  the plugin owns wrapping, layout reservations, coordinates, and drawing.
   Load entries independently through the same loader; apply pointer capability and mode-switching availability as
   entry predicates. Keep project signals in `src/lazy-plugins.ts`. Do not create a separate keyboard loading group.
 - Load `mouse-input` on every device and forward `captureWheel` to its factory. Match `touch-input`

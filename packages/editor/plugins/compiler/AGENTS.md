@@ -5,6 +5,8 @@
 - Diagnostic reads are detached and identify the current input revision, completed revision, and readiness. Do not present previous-input compiler errors as current while a new compilation is pending.
 - Own scheduling, worker transport, include requests, accepted artifacts, diagnostics, statistics, memory-write views,
   and the recompile debounce schema contribution here. Core must not invoke a compiler callback or install a compilation effect.
+- Publish raw errors through the contributor-owned `codeErrors.compiler` list and remove it on disposal. Message
+  presentation belongs to error-messages; do not reserve layout or store drawing geometry here.
 - Listen to `compilationInputChanged`, emitted by core after its input revision advances. Read the latest project tree
   after debouncing, using public serialization helpers. Keep worker creation lazy.
 - Run only one worker compilation at a time; coalesce edits received in flight and respect the latest debounce interval.

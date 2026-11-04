@@ -55,7 +55,7 @@ test('applies project appearance settings and restores defaults after project re
 		await expect.poll(() => state.viewport.vGrid).toBe(6);
 		const block = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'sample')!;
 		expect({ x: block.x, y: block.y }).toEqual({ x: 24, y: 20 });
-		expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(state.codeErrors['editor-directives']).toEqual([]);
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot('configured-appearance');
 		const settings = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;

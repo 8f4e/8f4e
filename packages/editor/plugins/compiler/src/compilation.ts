@@ -21,6 +21,7 @@ export default function installCompilation(
 	compileCode: CompilerService['compileCode']
 ) {
 	const state = store.getState();
+	store.set('codeErrors.compiler', []);
 	store.set('editorConfigSchemaContributions.compiler', compilerEditorConfigSchemaContribution);
 	let disposed = false;
 	let inputGeneration = 0;
@@ -49,7 +50,7 @@ export default function installCompilation(
 		}
 		compiling = true;
 
-		store.set('codeErrors.compilationErrors', []);
+		store.set('codeErrors.compiler', []);
 
 		const generation = inputGeneration;
 		const revision = state.compilerInputRevision;
@@ -100,7 +101,7 @@ export default function installCompilation(
 				astCacheMisses: result.astCacheStats.misses,
 				memoryReinitialized,
 			});
-			store.set('codeErrors.compilationErrors', []);
+			store.set('codeErrors.compiler', []);
 			completedRevision = revision;
 			diagnosticsCurrent = true;
 
@@ -122,7 +123,7 @@ export default function installCompilation(
 			setCompilerInfo({ isCompiling: false });
 			const diagnostic = error as CompilerDiagnostic;
 
-			store.set('codeErrors.compilationErrors', [
+			store.set('codeErrors.compiler', [
 				{
 					lineNumber: diagnostic?.line?.lineNumber ?? 0,
 					codeBlockId: diagnostic?.context?.projectBlockId ?? -1,
@@ -162,6 +163,9 @@ export default function installCompilation(
 		const schemas = { ...state.editorConfigSchemaContributions };
 		delete schemas.compiler;
 		store.set('editorConfigSchemaContributions', schemas);
+		const errors = { ...state.codeErrors };
+		delete errors.compiler;
+		store.set('codeErrors', errors);
 	};
 	const getDiagnostics = (): CompilerDiagnostics => ({
 		inputRevision: state.compilerInputRevision,
@@ -174,10 +178,10 @@ export default function installCompilation(
 					? 'ready'
 					: 'pending',
 		compilationErrors:
-			diagnosticsCurrent && completedRevision === state.compilerInputRevision
-				? structuredClone(state.codeErrors.compilationErrors)
+			!disposed && diagnosticsCurrent && completedRevision === state.compilerInputRevision
+				? structuredClone(state.codeErrors.compiler)
 				: [],
-		editorDirectiveErrors: structuredClone(state.codeErrors.editorDirectiveErrors),
+		editorDirectiveErrors: structuredClone(state.codeErrors['editor-directives'] ?? []),
 	});
 	return { dispose, getDiagnostics };
 }

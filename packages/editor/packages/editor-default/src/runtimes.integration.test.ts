@@ -104,7 +104,7 @@ it('starts both runtimes after compilation and keeps their constants and info se
 		'const AUDIO_BUFFER_SIZE 128',
 	]);
 	expect(test.state.envConstantContributions.workerRuntime).toEqual(['const CONTROL_RATE 25']);
-	expect(test.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(test.state.codeErrors['editor-directives']).toEqual([]);
 	test.compile();
 	await vi.waitFor(() => expect(test.worklets).toHaveLength(1));
 	expect(test.workers).toHaveLength(1);
