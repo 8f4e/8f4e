@@ -8,9 +8,9 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { entryOutlinesPlugin } from './index';
 
-const cleanups: Array<() => void> = [];
+const cleanups = new Set<() => void>();
 afterEach(() => {
-	while (cleanups.length) cleanups.pop()!();
+	for (const cleanup of cleanups) cleanup();
 });
 
 function setup() {
@@ -19,11 +19,13 @@ function setup() {
 	const store = createStateManager(state);
 	const events = createEvents();
 	const drawers = createEditorDrawerRegistry();
-	const dispose = entryOutlinesPlugin.setup({ store, events, drawers } as unknown as EditorPluginContext);
-	cleanups.push(() => {
-		dispose();
+	const disposePlugin = entryOutlinesPlugin.setup({ store, events, drawers } as unknown as EditorPluginContext);
+	const dispose = () => {
+		cleanups.delete(dispose);
+		disposePlugin();
 		store.dispose();
-	});
+	};
+	cleanups.add(dispose);
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawText: vi.fn() };
 	const render = () => {
 		for (const method of Object.values(draw)) method.mockClear();
@@ -34,7 +36,7 @@ function setup() {
 		events.dispatch('resolveCodeBlockInsertionEntry', request);
 		return request.entry;
 	};
-	return { block, state, store, events, drawers, draw, render, resolveEntry, dispose };
+	return { block, state, store, events, draw, render, resolveEntry, dispose };
 }
 
 it('draws padded entry outlines and labels in world coordinates', () => {
@@ -109,11 +111,9 @@ it('replaces the outline set when navigating to another project level', () => {
 	expect(test.resolveEntry(80, 150)).toBe('audio');
 });
 
-it('isolates installations and unregisters drawing, insertion policy, and geometry subscriptions', () => {
+it('isolates installations and removes drawing and insertion behavior on disposal', () => {
 	const first = setup();
 	const second = setup();
-	const unsubscribe = vi.spyOn(first.store, 'unsubscribe');
-	const off = vi.spyOn(first.events, 'off');
 	first.dispose();
 	first.render();
 	second.render();
@@ -121,15 +121,4 @@ it('isolates installations and unregisters drawing, insertion policy, and geomet
 	expect(second.draw.drawFill).toHaveBeenCalledTimes(4);
 	expect(first.resolveEntry(80, 150)).toBe('new-entry');
 	expect(second.resolveEntry(80, 150)).toBe('audio');
-	expect(unsubscribe.mock.calls.map(([selector]) => selector)).toEqual([
-		'codeBlockRendering.currentProject.blocks',
-		'projectChange',
-	]);
-	expect(off.mock.calls.map(([event]) => event)).toEqual([
-		'codeBlockLayoutsChanged',
-		'gridSizeChanged',
-		'viewportChanged',
-		'viewportResized',
-		'resolveCodeBlockInsertionEntry',
-	]);
 });

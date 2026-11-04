@@ -64,15 +64,6 @@ function getRandomCodeBlockName() {
 	return nameList[Math.floor(Math.random() * nameList.length)];
 }
 
-function incrementEntryName(name: string) {
-	if (/.*[0-9]+$/gm.test(name)) {
-		const [, trailingNumber] = name.match(/.*([0-9]+$)/) as [never, string];
-		return name.replace(new RegExp(trailingNumber + '$'), `${parseInt(trailingNumber, 10) + 1}`);
-	} else {
-		return name + '2';
-	}
-}
-
 function getUniqueEntryName(state: State): string {
 	const usedEntryNames = new Set(
 		state.codeBlockRendering.currentProject.blocks
@@ -81,8 +72,8 @@ function getUniqueEntryName(state: State): string {
 	);
 	let entryName = 'entry';
 
-	while (usedEntryNames.has(entryName)) {
-		entryName = incrementEntryName(entryName);
+	for (let suffix = 2; usedEntryNames.has(entryName); suffix++) {
+		entryName = `entry${suffix}`;
 	}
 
 	return entryName;

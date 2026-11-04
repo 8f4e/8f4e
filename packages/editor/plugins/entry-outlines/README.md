@@ -16,5 +16,6 @@ Both editor compositions load this plugin unconditionally through their deferred
 Disposal removes drawing, insertion policy, listeners, and subscriptions. The plugin uses no browser APIs.
 
 Run Nx `build`, `test`, `typecheck`, and `test:screenshot` for this package. Unit tests cover private geometry,
-drawing, entry selection, refreshes, isolation, and disposal. Browser tests use core and a local block fixture
-to cover root/nested project views and insertion, without installing sibling presentation plugins.
+drawing, entry selection, refreshes, isolation, and disposal. A browser-free integration test covers insertion
+through core's state machine. Browser screenshots use core and a local block fixture for root/nested project views.
+Tests install no sibling presentation plugins.

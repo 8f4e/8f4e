@@ -1,7 +1,6 @@
-import initEditor from '@8f4e/editor-core';
+import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { EMPTY_DEFAULT_PROJECT, stopViewportAnimation, updateViewport } from '@8f4e/editor-state';
-import type { EventDispatcher } from '@8f4e/editor-state-types';
+import { EMPTY_DEFAULT_PROJECT, stopViewportAnimation } from '@8f4e/editor-state';
 import { expect, test } from 'vitest';
 import { entryOutlinesPlugin } from '../src/index';
 
@@ -10,7 +9,6 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 	canvas.width = 800;
 	canvas.height = 400;
 	document.body.append(canvas);
-	let events!: EventDispatcher;
 	const editor = await initEditor(canvas, {
 		featureFlags: { offscreenBlockArrows: false },
 		initialProject: {
@@ -37,7 +35,6 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 			{
 				id: 'fixture-blocks',
 				setup: context => {
-					events = context.events;
 					return context.drawers.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
 						if (!codeBlock.entry) return;
 						draw.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
@@ -51,23 +48,13 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 	try {
 		if (level === 'nested') {
 			const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'checks')!;
-			events.dispatch('openProjectGroup', { codeBlock: group });
+			editor.navigation.openGroup(getEditorBlockId(group));
 		}
 		stopViewportAnimation(editor.state);
-		updateViewport(editor.state, 0, 0, events);
+		editor.state.viewport.x = 0;
+		editor.state.viewport.y = 0;
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot(`entry-outlines-${level}`);
-		if (level === 'root') {
-			events.dispatch('enterEditMode');
-			events.dispatch('insertCodeBlock', { x: 40, y: 80, code: ['module added', 'moduleEnd'] });
-			expect(editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'added')!.entry).toBe(
-				'audio'
-			);
-			events.dispatch('insertCodeBlock', { x: 780, y: 390, code: ['module outside', 'moduleEnd'] });
-			expect(editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'outside')!.entry).toBe(
-				'entry'
-			);
-		}
 	} finally {
 		editor.dispose();
 		canvas.remove();

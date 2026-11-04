@@ -69,25 +69,24 @@ describe('codeBlockCreator - creation and insertion', () => {
 			expect(mockState.codeBlockRendering.currentProject.blocks[0].code.at(-1)).toBe('moduleEnd');
 		});
 
-		it('increments the entry name when creating outside entries and the default new entry name is already used', async () => {
-			mockState.codeBlockRendering.currentProject.blocks = [
+		it.each([
+			{ usedEntries: ['entry'], expected: 'entry2' },
+			{ usedEntries: ['entry', 'entry2', 'entry4'], expected: 'entry3' },
+			{ usedEntries: ['entry', ...Array.from({ length: 18 }, (_, index) => `entry${index + 2}`)], expected: 'entry20' },
+		])('chooses $expected as the first available fresh entry', ({ usedEntries, expected }) => {
+			mockState.codeBlockRendering.currentProject.blocks = usedEntries.map((entry, index) =>
 				createMockCodeBlock({
-					code: ['module existing', 'moduleEnd'],
+					code: [`module existing${index}`, 'moduleEnd'],
 					blockType: 'module',
-					entry: 'entry',
-				}),
-			];
-
+					creationIndex: index,
+					entry,
+				})
+			);
+			mockState.codeBlockRendering.nextCodeBlockCreationIndex = usedEntries.length;
 			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
-			const createCodeBlockCallback = createCodeBlockCall![1];
-
-			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
-
-			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(2);
-			expect(mockState.codeBlockRendering.currentProject.blocks[1].entry).toBe('entry2');
+			const create = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'createCodeBlock')![1];
+			create({ x: 100, y: 100, blockType: 'module' });
+			expect(mockState.codeBlockRendering.currentProject.blocks.at(-1)!.entry).toBe(expected);
 		});
 
 		it('lets contributors choose an insertion entry using world coordinates', () => {
