@@ -2,7 +2,7 @@
 
 - Own the embedded composition for the product homepage and example/test galleries. Build directly on editor-core;
   do not import editor-default or its built-in module catalog.
-- Keep file-session, project URL loading, compiler coordination, and code rendering eager. Import
+- Keep file-session, project URL loading, compiler coordination, block backgrounds, and code rendering eager. Import
   `src/deferred-plugins.ts` on core's `ready` event, after initial project loading/parsing, font-atlas loading, and
   rendering. This is the single gate for input, connectors, assertions, saving, tooltips, and directive-based lazy
   imports. Do not add frame
@@ -27,8 +27,8 @@
   asset plugins. Match cached directives; completed project changes and group navigation trigger automatic scans.
   Supply the browser navigator and live compiler getters to the registry for MIDI and binary assets.
 - Supply the canvas and browser navigator to input plugins, memory getters to binary assets, and the compiler memory
-  writer to interactive controls. Pass a live reduced-motion preference to lazy watch/stack factories. Their block
-  drawers run before tooltip overlays, independently of installation order.
+  writer to interactive controls. Pass a live reduced-motion preference to lazy watch/stack factories. All block
+  drawers run in registration order, including later lazy installations.
 - The project URL plugin owns fetching. Forward initial-project callbacks; mounting waits for fetching/parsing and the
   first render.
   Without a URL, start empty and announce readiness after initialization.
@@ -47,7 +47,7 @@
 - Install `connectorsPlugin` in the deferred plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
 - Keep the `selectionAnimationPlugin` entry commented out. The standalone plugin owns the circling selected-block
-  segment through the foreground drawer hook; core retains selection state and geometry.
+  segment through the ordered block drawer hook; core retains selection state and geometry.
 
 - Per-frame WASM execution and texture upload/view directives belong entirely to `editor-plugin-texture-runtime`.
   `textureRuntime` config owns `enabled` and `entry`. `@textureUpload <address> <format> <width> <height>` defines a source;
@@ -70,3 +70,6 @@
   the composition. Panning uses one finger on both axes by default; the product landing page and galleries select horizontal panning.
 
 - Load `code-block-copy-paste` as an unconditional deferred entry with injected browser clipboard read/write functions. Text paste is owned separately by keyboard-editing. Keep clipboard browser access out of core and the shared plugin context.
+
+- Install `codeBlockBackgroundPlugin` eagerly before `codeRenderingPlugin`. Every block drawer uses the same
+  ordered registration API, including deferred plugins. Do not restore separate drawing stages or aliases.

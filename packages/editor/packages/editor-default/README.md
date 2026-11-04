@@ -101,7 +101,8 @@ synchronously constructs the startup plugin set with resources for one editor. I
 plugin before project loaders, and supplies it to Open and Save. The session shares the current handle and clears it
 on project replacement. Open receives the canvas's document. Save receives the canvas and owns serialization, writing,
 and Cmd/Ctrl+S. WebAssembly export receives a document and a live compiler-byte getter. File handling stays outside core.
-Compiler coordination, source loading/session restoration, file-session tracking, and code rendering are eager.
+Compiler coordination, source loading/session restoration, file-session tracking, block backgrounds, and code rendering are eager.
+`code-block-background` registers before `code-rendering` so block surfaces sit below text and line highlighting.
 On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for connectors, assertion markers,
 keyboard input, tooltips, built-in module browsing, file actions, and the other authoring features. Core emits this
 event after initial project loading/parsing, font-atlas loading, and rendering. This is the single loading gate for
@@ -115,7 +116,7 @@ browser resources. This composition supplies resources tied to the host, while b
 browser API use.
 Meter, bars, crossfade, watch, and stack are also optional plugins in this standard set. Watch and stack receive a
 live reduced-motion preference from the browser host and keep their animation and data inside their installations.
-Their block drawers run before tooltip overlays, independently of when their imports finish.
+Block drawers run in registration order, including plugins installed later by the lazy loader.
 Plot, wave, meter, bars, watch, stack, switch, button, piano, slider, and crossfade load on demand through
 `@8f4e/editor-plugin-lazy-loader`. The per-editor registry in `src/lazy-plugins.ts` matches cached parsed directives
 and dynamically imports their implementations. Wave matches `@wave`, `@wave2`, and `@wave4`;

@@ -16,7 +16,7 @@
   for plot, wave, meter, bars, watch, stack, switch, button, piano, slider, crossfade, MIDI input, binary assets, and the
   audio/worker/test/texture runtimes. MIDI, assets, and texture execution match raw `midi`,
   `bin`, and `textureRuntime` config roots before their schemas load. Texture uploads and views also match `@textureUpload` and `@texture`. Both compositions defer optional UI, input, and authoring plugins until after the first render.
-  Compiler coordination, project loading/restoration, and code rendering remain eager.
+  Compiler coordination, project loading/restoration, block backgrounds, and code rendering remain eager.
   All optional imports, including directive-based lazy plugins, start on core's `ready` event, after initial project
   loading/parsing, font-atlas loading, and rendering. Font payloads remain separate lazy chunks; do not add frame
   callbacks or timing gates.
@@ -37,8 +37,9 @@
   State keeps config values generic and responds to `gridSizeChanged` for shared geometry, without font/atlas knowledge.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, nested block backgrounds,
   line-number drawing, and private prepared sprite cells and highlight rectangles. Both compositions install it eagerly.
-  Core retains editing/layout geometry; web-ui exposes `registerCodeBlockBackgroundDrawer` below line selection and
-  `registerCodeBlockContentDrawer` before foreground drawings and diagnostics, and owns generic sprite-cell drawing primitives.
+  Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order
+  within its existing visible-block loop. The eager `code-block-background` plugin is installed before code rendering.
+  Code rendering owns selected-line fill; code-block-background owns corner markers. Web-ui retains offscreen arrows.
 - `@8f4e/editor-plugin-dialogs` owns dialog dimensions, wrapping/clipping, private button geometry/hit testing,
   and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
   Both compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
@@ -47,7 +48,7 @@
   Core retains raw `CodeError` lists in `state.codeErrors`, keyed by contributor. Compiler, editor directives, and
   test-runtime own their lists; both compositions defer the presentation plugin until `ready`.
 - `@8f4e/editor-plugin-selection-animation` owns the circling segment around the selected block, using the generic
-  foreground drawer hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.
+  ordered block drawer hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.
 - Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.
   Default/minimal import their factories after the first render only when `(pointer: coarse)` does not match. Editing keeps
   a small input bridge and loads text editing on first edit mode, buffering keystrokes during the import. Core retains

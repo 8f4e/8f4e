@@ -28,7 +28,7 @@ test('applies project appearance settings and restores defaults after project re
 	// Use the same registration order as editor-core, before renderer and project initialization.
 	registerWebUiConfig(store);
 	const drawers = createEditorDrawerRegistry();
-	const removeDrawer = drawers.registerCodeBlockContentDrawer(({ draw, state }) => {
+	const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state }) => {
 		draw.drawText(state.viewport.vGrid, state.viewport.hGrid, 'Sample text', PALETTE_INDICES.inkBase);
 	});
 	const renderer = await init(store, events, canvas, createMockMemoryViews(), { drawers });

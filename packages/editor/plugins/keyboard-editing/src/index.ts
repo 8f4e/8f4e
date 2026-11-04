@@ -8,9 +8,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 		setup: context => {
 			const { store } = context;
 			let editing: typeof import('./editing') | undefined;
-			const removeCaret = context.drawers.registerCodeBlockForegroundDrawer(drawContext =>
-				editing?.drawCaret(drawContext)
-			);
+			const removeCaret = context.drawers.registerCodeBlockDrawer(drawContext => editing?.drawCaret(drawContext));
 			let loading = false;
 			let disposed = false;
 			let replaying = false;

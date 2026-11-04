@@ -21,8 +21,8 @@ owns wires; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer v
 
 ## API
 
-`createEditorDrawerRegistry()` creates the per-editor registry for code-block content drawers, drawers, overlays, and canvas-wide
-render layers. Pass that registry through `options.drawers` when initializing the renderer.
+`createEditorDrawerRegistry()` creates one ordered code-block drawer registry, alongside canvas/modal overlay
+hooks and GPU render-layer registration. Pass that registry through `options.drawers` when initializing the renderer.
 
 ### `registerModalOverlay(drawer)`
 
@@ -86,14 +86,14 @@ interface FontAtlas {
 ## State Usage
 
 The web-ui package reads editor state for drawing and installs font-derived grid dimensions.
-`@8f4e/editor-plugin-code-rendering` owns code text, syntax highlighting, nested block backgrounds, and its private
-cache of prepared sprite cells and highlight rectangles. It registers backgrounds through
-`registerCodeBlockBackgroundDrawer()`, which runs above block surfaces and below line selection, corners, and text.
-Its content drawer uses `registerCodeBlockContentDrawer()`, which runs after backgrounds and line selection, before
-foreground drawings, ordinary block drawers, and overlays. Connectors draws generated shape/paramShape labels in the
-content stage; error-messages contributes its own ordinary block drawer. Web-ui has no built-in widget drawers.
-Without a content plugin, blocks retain
-their backgrounds and editing affordances while no source text is drawn.
+Block plugins use one `registerCodeBlockDrawer()` registry, invoked in registration order once per visible block.
+Web-ui retains traversal, culling, block-relative coordinates, entry outlines, and offscreen arrows.
+`@8f4e/editor-plugin-code-block-background` supplies base rectangles and corner markers, including selected colors,
+and is installed before code rendering.
+`@8f4e/editor-plugin-code-rendering` owns nested highlights, selected-line fill, text, and its private prepared data.
+Connectors and other plugins use the same registry. Registration order determines layering, including late installs;
+there are no separate block drawing phases. Viewport overlays, dialogs, and GPU render layers retain their own hooks.
+Without a background plugin, web-ui draws no block surface.
 
 Editor-state stores viewport animation targets and exposes the synchronous
 `advanceViewportAnimation(state, frameTime, events)` helper. Editor-core calls it before web-ui's `renderFrame()`

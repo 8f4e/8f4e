@@ -62,7 +62,8 @@
     "@8f4e/editor-plugin-keyboard-navigation": "*",
     "@8f4e/editor-plugin-keyboard-mode-switching": "*",
     "@8f4e/editor-plugin-touch-input": "*",
-    "@8f4e/editor-plugin-mouse-input": "*"
+    "@8f4e/editor-plugin-mouse-input": "*",
+    "@8f4e/editor-plugin-code-block-background": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

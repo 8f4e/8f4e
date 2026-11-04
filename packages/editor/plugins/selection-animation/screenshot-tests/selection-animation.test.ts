@@ -23,16 +23,16 @@ test('renders two phases of the selection animation', async () => {
 			],
 		},
 		plugins: [
-			selectionAnimationPlugin,
 			{
 				id: 'fixture-text',
 				setup: ({ drawers }) =>
-					drawers.registerCodeBlockContentDrawer(({ draw, state, codeBlock }) => {
+					drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						codeBlock.code.forEach((line, row) =>
 							draw.drawText(state.viewport.vGrid, row * state.viewport.hGrid, line, PALETTE_INDICES.inkBase)
 						);
 					}),
 			},
+			selectionAnimationPlugin,
 		],
 	});
 	editor.pauseRendering();

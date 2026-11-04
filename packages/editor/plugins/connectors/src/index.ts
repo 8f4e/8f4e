@@ -74,11 +74,9 @@ export const connectorsPlugin: EditorPlugin = {
 			);
 			widgetsByBlock.set(codeBlock, deriveConnectors(codeBlock, state));
 		});
-		const unregisterLabels = drawers.registerCodeBlockContentDrawer(({ draw, codeBlock }) => {
+		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
 			for (const { x, y, text } of labelsByBlock.get(codeBlock) ?? [])
 				draw.drawText(x, y, text, PALETTE_INDICES.inkBase);
-		});
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
 			const widgets = widgetsByBlock.get(codeBlock);
 			if (widgets) drawConnectors(draw, state, widgets, memoryViews);
 		});
@@ -87,7 +85,6 @@ export const connectorsPlugin: EditorPlugin = {
 			unsubscribeLayout();
 			events.off('codeBlockLayoutsChanged', rebuildOutputIndex);
 			unregisterDrawer();
-			unregisterLabels();
 			contribution.dispose();
 			outputsByByteAddress.clear();
 			unregisterLayer();

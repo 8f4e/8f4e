@@ -1,5 +1,6 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
+import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
@@ -44,6 +45,7 @@ export async function mountMinimalEditor(
 		plugins: [
 			compiler.plugin,
 			fileSession.plugin,
+			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,
 			createProjectUrlLoaderPlugin({
 				fetch: globalThis.fetch,

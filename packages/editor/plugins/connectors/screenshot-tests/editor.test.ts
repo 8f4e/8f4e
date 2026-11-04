@@ -106,7 +106,7 @@ moduleEnd
 entryEnd`);
 	const plan = editor.state.compiler.result.memoryPlan.modules;
 	new Int32Array(memory.buffer)[plan.sink.memory.input.allocationUnitAddress] = plan.source.memory.output.byteAddress;
-	const removeText = context.drawers.registerCodeBlockContentDrawer(({ draw, state, codeBlock }) => {
+	const removeText = context.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 		codeBlock.displayModel.lines.forEach((line, row) =>
 			draw.drawText(
 				(codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,

@@ -19,8 +19,9 @@ editor.dispose();
 
 The composition installs the compiler first, with lazy standard-library include resolution. It includes project URL
 loading, project source saving/export, keyboard input, assertion markers, watch and stack annotations, and tooltips.
-Compiler coordination, file-session tracking, URL loading, and code rendering are eager. On core's `ready` event,
-a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, saving, tooltips, and
+Compiler coordination, file-session tracking, URL loading, block backgrounds, and code rendering are eager.
+`code-block-background` registers before `code-rendering` so block surfaces sit below text and line highlighting.
+On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, saving, tooltips, and
 the directive-based loader. Core emits this event after initial project loading/parsing, font-atlas loading, and
 rendering. This is the single loading gate, with no extra frame callback or timer. Optional features initialize from the
 current project and do not block the first render, mounting, or initial-project callbacks. Every optional feature is an individual entry in the
@@ -32,14 +33,14 @@ chooses a destination; Cmd/Ctrl+S reuses it. The composition supplies the canvas
 `@8f4e/editor-file-session`. Open From Disk belongs to the default composition.
 Plot, wave, meter, bars, watch, stack, switch, button, piano, slider, crossfade, and audio/worker/test/texture runtimes load through the
 project-signal registry in `src/lazy-plugins.ts`. Watch matches `@watch`/`@w`, and stack matches `@stack`/`@s`.
-Both receive a live reduced-motion preference and draw before tooltip overlays, independently of import order.
+Both receive a live reduced-motion preference. Block drawers run in registration order, including later lazy installations.
 MIDI input and binary assets also load through that registry when
 raw `@config midi.*` or `@config bin.*` directives appear. Control factories receive the current editor's live memory
 writer; MIDI receives its browser navigator and live compiler getters, binary assets receive a current-memory getter,
 and runtime factories receive compiler artifacts and an optional shared `AudioContext`.
 
 The optional `@8f4e/editor-plugin-selection-animation` draws the circling segment around the selected block. Its entry
-is commented out in this composition. Core retains selection state, corner colors, and line highlighting.
+is commented out in this composition. Core retains selection state; the background plugin owns corner markers and code rendering owns line highlighting.
 
 `@8f4e/editor-plugin-error-messages` loads in the deferred set. It wraps and draws raw contributor-owned errors from
 core's `state.codeErrors`, reserving their source rows through the generic layout API.

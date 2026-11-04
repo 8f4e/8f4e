@@ -28,7 +28,7 @@ function setup() {
 	const state = store.getState();
 	const block = createMockCodeBlock({ width: 96, height: 64 });
 	const render = (codeBlock = block) =>
-		drawers.drawCodeBlockForeground({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
+		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
 	return { state, block, drawText, render, dispose };
 }
 

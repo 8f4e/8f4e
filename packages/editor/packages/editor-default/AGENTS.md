@@ -6,8 +6,8 @@
 - Compose the standard plugin set here and expose host overrides through `plugins`; keep feature logic in its
   plugin package and generic plugin installation in editor-core.
 - Call `createDefaultEditorPlugins` to construct the startup set synchronously per mounted editor, supplying the canvas, render
-  callback, storage settings, Open menu visibility, and compiler getters. Keep file-session, URL/session loading, and
-  code rendering eager. The deferred loader imports `src/deferred-plugins.ts` on core's `ready` event, after initial
+  callback, storage settings, Open menu visibility, and compiler getters. Keep file-session, URL/session loading,
+  block backgrounds, and code rendering eager. The deferred loader imports `src/deferred-plugins.ts` on core's `ready` event, after initial
   project loading/parsing, font-atlas loading, and rendering. This is the single gate for every optional and
   directive-based lazy import; do not add frame callbacks, visibility checks, or timing delays. Keep font payloads lazy.
 - Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
@@ -38,8 +38,8 @@
 - Keep `@8f4e/examples` as a dependency so its generators run before discovery and its sources affect build caching.
 
 - Load watch and stack from the lazy registry for `@watch`/`@w` and `@stack`/`@s`. Supply their factories
-  with a live reduced-motion preference from the browser. Their block drawers run before tooltip overlays,
-  independently of installation order.
+  with a live reduced-motion preference from the browser. All block drawers run in registration order,
+  including later lazy installations.
 - Compose `createLazyPluginLoaderPlugin` with the per-editor `createLazyPluginRegistry` for optional signal-driven plugins.
   Keep its per-editor registry in `src/lazy-plugins.ts` for plot, wave, meter, bars, watch, stack, switch, button, piano, slider,
   crossfade, MIDI input, binary assets, and runtime plugins. Match all three wave directives: `wave`, `wave2`, and `wave4`, and raw
@@ -94,7 +94,7 @@
 - Install `connectorsPlugin` in the deferred plugin set. It owns all input/output widgets and GPU wire rendering;
   core owns only generic render-layer lifecycle.
 - Keep the `selectionAnimationPlugin` entry commented out. The standalone plugin owns the circling selected-block
-  segment through the foreground drawer hook; core retains selection state and geometry.
+  segment through the ordered block drawer hook; core retains selection state and geometry.
 
 - Per-frame WASM execution and texture upload/view directives belong entirely to `editor-plugin-texture-runtime`.
   `textureRuntime` config owns `enabled` and `entry`. `@textureUpload <address> <format> <width> <height>` defines a source;
@@ -123,3 +123,6 @@
   the composition. Panning uses one finger on both axes by default; the product landing page and galleries select horizontal panning.
 
 - Load `code-block-copy-paste` as an unconditional deferred entry. Inject browser clipboard read/write functions into its factory and a writer into grouping independently. Text paste belongs to keyboard-editing; keep clipboard routing out of the host and shared context.
+
+- Install `codeBlockBackgroundPlugin` eagerly before `codeRenderingPlugin`. Every block drawer uses the same
+  ordered registration API, including deferred plugins. Do not restore separate drawing stages or aliases.

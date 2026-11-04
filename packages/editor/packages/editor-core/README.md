@@ -132,23 +132,19 @@ Subscribe and dispose explicitly. Unsubscribe before disposing a contribution so
 Contribution changes preserve source, selection, project revision, and compiler input revision. Hidden project slices
 use their requests when opened. The lazy loader only imports and installs plugins; it has no layout refresh policy.
 
-Register block backgrounds with `drawers.registerCodeBlockBackgroundDrawer(drawer)`. They run above the block
-surface and below line selection, corners, and content. `@8f4e/editor-plugin-code-rendering` uses this stage for
-nested block highlights, keeping its parser and cached rectangles private. Core retains shared layout geometry.
+Register block drawing with `drawers.registerCodeBlockDrawer(drawer)`. Each callback receives
+`{ draw, state, codeBlock, memoryViews }` once per visible block per frame, in registration order. Coordinates are
+relative to the block; web-ui owns the single traversal, visibility checks, and viewport translation. Later
+registrations draw over earlier ones, including plugins installed asynchronously. There are no separate block
+background, content, foreground, or overlay stages. Registration returns an unregister function for plugin disposal.
 
-Register foreground drawings with `drawers.registerCodeBlockForegroundDrawer(drawer)`. They run above content and
-generated declaration labels, in block coordinates. The editing plugin uses this stage for its caret, and
-`@8f4e/editor-plugin-selection-animation` draws the circling segment around the selected block. Core owns neither
-drawing and retains generic selection state and geometry.
+Both compositions eagerly install `@8f4e/editor-plugin-code-block-background` before code rendering. It owns the
+normal, disabled, and dragged base surfaces and corner markers, including their selected colors. Code rendering
+draws nested highlights, the selected-line fill, and text in that order. Other plugins add their drawers after these.
+Entry outlines and offscreen arrows remain in web-ui.
 
-Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
-`{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
-the host applies viewport translation and visibility checks. Drawers run in registration order after foreground
-drawings. Register overlays with
-`drawers.registerCodeBlockOverlay(drawer)` to draw after ordinary block drawers, using the same context and coordinates.
-Each slot preserves registration order. Use the drawing surface's text/fill primitives and shared numeric palette indices.
-`@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
-disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
+Use the drawing surface's text/fill primitives and shared numeric palette indices. `@8f4e/web-ui` exports drawing
+types. Plugins own their prepared data and disposal; core stores no widget presentation fields.
 
 Raw source errors live in `state.codeErrors: Record<string, CodeError[]>`. Contributors replace their own lists through
 `store.set('codeErrors.my-plugin', errors)` and clear or remove them on disposal. `CodeError` carries a zero-based

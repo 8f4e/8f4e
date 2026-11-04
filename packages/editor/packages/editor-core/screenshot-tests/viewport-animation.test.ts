@@ -27,7 +27,7 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 				id: 'visible-blocks',
 				setup: services => {
 					context = services;
-					return services.drawers.registerCodeBlockContentDrawer(({ draw, codeBlock }) => {
+					return services.drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 						visible.push(codeBlock.name);
 						draw.drawText(8, 16, codeBlock.name, PALETTE_INDICES.inkBase);
 					});

@@ -116,16 +116,16 @@ describe('lazy keyboard editing input bridge', () => {
 		await finishLoading();
 		expect(handleKeydown.mock.calls.map(([event]) => event.key)).toEqual(['b']);
 	});
-	it('draws through its foreground registration only after loading and unregisters on disposal', async () => {
+	it('draws through its block registration only after loading and unregisters on disposal', async () => {
 		const test = setup(createKeyboardEditingPlugin);
 		const { context } = createDrawingContext(test.state, test.block);
-		test.drawForeground(context);
+		test.drawCodeBlock(context);
 		expect(drawCaret).not.toHaveBeenCalled();
 		await finishLoading();
-		test.drawForeground(context);
+		test.drawCodeBlock(context);
 		expect(drawCaret).toHaveBeenCalledWith(context);
 		test.disposePlugin();
-		test.drawForeground(context);
+		test.drawCodeBlock(context);
 		expect(drawCaret).toHaveBeenCalledOnce();
 	});
 	it('forwards native paste to loaded editing and removes its listener on disposal', async () => {

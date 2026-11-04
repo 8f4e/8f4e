@@ -153,16 +153,15 @@
 - Keyboard hints belong to keyboard-mode-switching. Expose only generic canvas overlay drawing and the
   `canvasOverlays` visibility flag in core; screenshots suppress this layer without knowing its contributors.
 
-- Keyboard-editing owns edit-mode caret movement, mutation caret adjustments, and its foreground drawer. Core keeps
+- Keyboard-editing owns edit-mode caret movement, mutation caret adjustments, and its block drawer. Core keeps
   source-position state and bounds/tab geometry; do not restore direction-based caret movement or a built-in glyph.
-- `registerCodeBlockBackgroundDrawer` runs above the block surface and below line selection, corners, and content.
-  Code-rendering owns nested block parsing, highlight geometry, colors, and its private cache. Keep highlight fields out of core state.
-- `registerCodeBlockForegroundDrawer` runs above content. Connectors owns shape/paramShape expansion rows and labels
-  through generic layout contributions and content drawing; keep presentation types and `widgets` out of core.
-  Error-messages uses the ordinary block drawer;
-  keep the drawing stages and layout contributions generic, without built-in diagnostic rendering or gap rules.
+- All block plugins use `registerCodeBlockDrawer`, called once per visible block in registration order. Keep one
+  registry, without stage aliases or priority sorting. Install block backgrounds before code rendering in both hosts.
+  Code rendering draws nested highlights, selected-line fill, and text together. The background plugin owns corner
+  markers and their selected colors. Web-ui keeps traversal, visibility, entry outlines, and offscreen arrows. Connectors keeps expansion labels private through this same
+  registry and generic layout contributions.
 - The circling selected-block animation belongs to `editor-plugin-selection-animation`. Keep its timing, glyphs,
-  and drawing out of core; retain selection state, corner colors, and line highlighting.
+  and drawing out of core; retain selection state. The background plugin owns corner colors; code rendering owns line highlighting.
 
 - Export generic `insertCodeBlocks` and pure `serializeCodeBlocks`/`SerializedCodeBlock` helpers. Source batches retain their names, references, grouping directives and entries; insertion updates only placement directives and fresh editor identities. Do not restore name uniquifying, clipboard callbacks, clipboard format parsing, copy/paste menus, or paste-transform events in core.
 

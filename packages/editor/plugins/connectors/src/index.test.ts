@@ -99,7 +99,12 @@ async function setup(text = source, installed = true) {
 	const drawText = vi.fn();
 	const drawLabels = (codeBlock: CodeBlockGraphicData) => {
 		drawText.mockClear();
-		drawers.drawCodeBlockContent({ draw: { drawText } as unknown as DrawContext, state, codeBlock, memoryViews });
+		drawers.drawCodeBlock({
+			draw: { drawText, drawFill: vi.fn(), drawCharacter: vi.fn() } as unknown as DrawContext,
+			state,
+			codeBlock,
+			memoryViews,
+		});
 		return drawText.mock.calls.map(([x, y, text]) => ({ x, y, text }));
 	};
 	cleanups.push(store.dispose);
