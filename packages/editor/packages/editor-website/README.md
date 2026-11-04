@@ -17,7 +17,9 @@ npx nx run @8f4e/editor-website:test:browser
 Cloudflare Pages should use `npx nx run @8f4e/editor-website:build` as its build command. The output directory is
 `packages/editor/packages/editor-website/dist`, which is also configured in the root `wrangler.toml`.
 
-The production website is an installable PWA. After the editor mounts, its service worker downloads all build
+The production website is an installable PWA. Its fullscreen manifest lets the installed Android app launch
+without system status/navigation bars in either orientation, with no orientation lock. After the editor mounts,
+its service worker downloads all build
 assets, including lazy plugins, fonts, workers, worklets, stdlib, and bundled example modules. Precaching does
 not import or execute those modules. First installation is silent. The `editor-plugin-pwa-updates` plugin shows
 waiting updates through an editor dialog with Reload and Later buttons, plus a main-menu action to reopen it.

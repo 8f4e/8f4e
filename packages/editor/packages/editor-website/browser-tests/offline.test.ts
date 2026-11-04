@@ -46,7 +46,8 @@ test.beforeEach(async ({ context, page }) => {
 
 test('installs a complete offline cache and cold-starts with lazy plugins and a runtime', async ({ context, page }) => {
 	const manifest = await page.evaluate(async () => (await fetch('/manifest.webmanifest')).json());
-	expect(manifest).toMatchObject({ id: '/', start_url: '/', scope: '/', display: 'standalone' });
+	expect(manifest).toMatchObject({ id: '/', start_url: '/', scope: '/', display: 'fullscreen' });
+	expect(manifest.orientation).toBeUndefined();
 	expect(manifest.icons).toEqual(
 		expect.arrayContaining([
 			expect.objectContaining({ sizes: '192x192' }),

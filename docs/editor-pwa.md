@@ -5,6 +5,10 @@ the background download finish before disconnecting. First installation is silen
 the browser's **Install app** option to add it to your launcher. Offline support also works in a regular browser tab
 after preparation finishes.
 
+Installed Android PWAs launch fullscreen automatically, hiding the system status and navigation bars in both
+portrait and landscape. The manifest does not lock the screen orientation. This display mode applies when
+launching the installed app; a regular browser tab keeps the browser's usual interface.
+
 ## What is available offline
 
 The app downloads the complete editor build: compiler, plugins, runtimes and their workers/worklets, fonts,
