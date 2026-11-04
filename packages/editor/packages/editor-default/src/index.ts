@@ -23,6 +23,7 @@ export function createDefaultEditorPlugins(options: {
 	showOpenMenuItem: boolean;
 	captureWheel?: boolean;
 	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
+	pwaUpdates?: Pick<ServiceWorkerContainer, 'ready'>;
 	includeKeyboardModeSwitching?: boolean;
 	getMemory: () => WebAssembly.Memory | null;
 	writeMemory: (address: number, value: number, isInteger: boolean) => void;
@@ -61,6 +62,8 @@ export interface DefaultEditorMountOptions {
 	captureWheel?: boolean;
 	/** Configure one-finger touch panning; defaults to both directions. */
 	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
+	/** Observe updates to a page-owned service worker through the editor's update-dialog plugin. */
+	pwaUpdates?: Pick<ServiceWorkerContainer, 'ready'>;
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
 	/** Initial source is installed; compilation and asset loading continue independently. */
@@ -82,6 +85,7 @@ export async function mountDefaultEditor(
 		sharedAudioContext,
 		captureWheel,
 		touchNavigation,
+		pwaUpdates,
 		featureFlags,
 		initialProjectUrl,
 		onInitialProjectLoaded,
@@ -109,6 +113,7 @@ export async function mountDefaultEditor(
 					showOpenMenuItem,
 					captureWheel,
 					touchNavigation,
+					pwaUpdates,
 					includeKeyboardModeSwitching,
 					getMemory: compiler.getMemory,
 					writeMemory: compiler.writeMemory,

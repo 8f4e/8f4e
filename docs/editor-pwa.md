@@ -1,8 +1,13 @@
 # Offline editor
 
-The default editor at editor.8f4e.com can be installed as a progressive web app (PWA). Open it online and wait
-for **8f4e is available offline** before disconnecting. In Chrome on Android, use the browser's **Install app**
-option to add it to your launcher. Offline support also works in a regular browser tab after preparation finishes.
+The default editor at editor.8f4e.com can be installed as a progressive web app (PWA). Open it online and let
+the background download finish before disconnecting. First installation is silent. In Chrome on Android, use
+the browser's **Install app** option to add it to your launcher. Offline support also works in a regular browser tab
+after preparation finishes.
+
+Installed Android PWAs launch fullscreen automatically, hiding the system status and navigation bars in both
+portrait and landscape. The manifest does not lock the screen orientation. This display mode applies when
+launching the installed app; a regular browser tab keeps the browser's usual interface.
 
 ## What is available offline
 
@@ -24,19 +29,20 @@ the app is backgrounded or the screen is locked.
 
 ## Updates and storage
 
-New versions download while online. The app shows an update notice and waits for **Reload**, or for the old app
-windows to close, before activating the new version. Reload updates all open editor windows. Dismiss the notice
-to continue the current session. Updates do not force an immediate reload when they finish downloading.
+New versions download while online. An **Update available** dialog appears inside the editor and waits for
+**Reload**, or for the old app windows to close, before activating the new version. Reload updates all open editor
+windows. Choose **Later** to continue the current session; **Reload to update** in the main menu reopens the dialog.
+Updates do not force an immediate reload when they finish downloading.
 Project autosaves remain separate from the versioned app cache.
-
-![The update notice with Reload and Dismiss buttons](images/editor-pwa-update.png)
 
 Offline availability depends on browser storage. Clearing site data removes the saved session and offline files;
 the browser can also reclaim storage under pressure. Keep exported copies of projects you want to retain.
 
 ## Hosting and verification
 
-PWA support belongs to `@8f4e/editor-website`; the reusable editor compositions retain their lazy-loading policy.
+The website owns PWA registration, caching, and controller-change reloads. `@8f4e/editor-plugin-pwa-updates`
+observes the page-owned service worker and owns the update dialog and menu action. The default composition
+loads it after the first render when the host supplies `pwaUpdates`; plugin/font imports stay lazy.
 The service worker is registered only in production builds after the editor mounts. Vite PWA/Workbox generates
 its precache list from build output and fails the build if an asset exceeds Workbox's precache size limit.
 

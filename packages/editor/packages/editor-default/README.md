@@ -69,6 +69,10 @@ The session-persistence plugin uses its storage namespace. The default namespace
 Hosts may also provide a custom `Storage` implementation or an
 `initialProjectUrl`; interpreting page URLs remains the host's responsibility.
 
+PWA hosts can pass `pwaUpdates: navigator.serviceWorker` to load the independent `pwa-updates` plugin after
+the first render. It shows an editor dialog for waiting updates and adds **Reload to update** to the main menu.
+First installation is silent. The host retains service-worker registration, caching, and controller-change reloads.
+
 Use `onInitialProjectLoaded()` to reveal installed initial content and `onInitialProjectLoadError(error)` to report
 a failed initial URL request or parse. With no URL, the success callback runs after editor initialization and synchronous
 session restoration. With a URL, the standard URL-loader plugin supplies the notification. A valid empty project counts

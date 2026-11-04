@@ -21,7 +21,7 @@ export default defineConfig(() => {
 					description: 'Create and run 8f4e projects, online or offline.',
 					start_url: '/',
 					scope: '/',
-					display: 'standalone',
+					display: 'fullscreen',
 					background_color: '#000000',
 					theme_color: '#000000',
 					icons: [

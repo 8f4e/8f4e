@@ -72,7 +72,8 @@
     "@8f4e/editor-plugin-keyboard-mode-switching": "*",
     "@8f4e/editor-plugin-font-preview": "*",
     "@8f4e/editor-plugin-touch-input": "*",
-    "@8f4e/editor-plugin-mouse-input": "*"
+    "@8f4e/editor-plugin-mouse-input": "*",
+    "@8f4e/editor-plugin-pwa-updates": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",

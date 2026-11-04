@@ -112,6 +112,7 @@ describe('default editor plugins', () => {
 		);
 		expect(pluginIds).not.toContain('watch');
 		expect(pluginIds).not.toContain('stack');
+		expect(pluginIds).not.toContain('pwa-updates');
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl: undefined,
@@ -140,6 +141,18 @@ describe('default editor plugins', () => {
 		options.renderFrame();
 		expect(renderFrame).toHaveBeenCalledOnce();
 		editor.dispose();
+	});
+
+	it('defers the PWA update plugin when the host supplies a service worker', async () => {
+		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
+		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
+		await mountDefaultEditor(canvas, {
+			storage: {} as Storage,
+			pwaUpdates: { ready: new Promise<ServiceWorkerRegistration>(() => {}) },
+		});
+		expect(createLazyPluginLoaderPlugin).not.toHaveBeenCalled();
+		const plugins = await loadDeferredPlugins();
+		expect(plugins.map(plugin => plugin.id)).toContain('pwa-updates');
 	});
 
 	it('gives an explicit initial URL priority over session restoration', async () => {
