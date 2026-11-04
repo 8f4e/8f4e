@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	getInstructionNameFromSourceLine,
 	getMemoryDeclarationIdFromSourceLine,
+	getReferenceDeclarationIdFromSourceLine,
 	getSourceInstruction,
 } from './sourceLine';
 
@@ -29,4 +30,18 @@ describe('tooltip source line helpers', () => {
 		expect(getMemoryDeclarationIdFromSourceLine('int 1')).toBeUndefined();
 		expect(getMemoryDeclarationIdFromSourceLine('add')).toBeUndefined();
 	});
+
+	it.each(['int&', 'int8&', 'int8u&', 'int16&', 'int16u&', 'float&', 'float64&'])(
+		'extracts %s identifiers without treating them as allocated memory',
+		instruction => {
+			const line = `  ${instruction} input &source:0 ; fixed target`;
+			expect(getReferenceDeclarationIdFromSourceLine(line)).toBe('input');
+			expect(getMemoryDeclarationIdFromSourceLine(line)).toBeUndefined();
+		}
+	);
+
+	it.each([undefined, '', '; float& input &source:output', 'int&', 'int& 1 &source:0', 'int* input', 'push input'])(
+		'ignores non-reference declarations: %s',
+		line => expect(getReferenceDeclarationIdFromSourceLine(line)).toBeUndefined()
+	);
 });

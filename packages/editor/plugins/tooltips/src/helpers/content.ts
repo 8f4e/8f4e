@@ -1,9 +1,18 @@
-import type { CompiledStackAnalysisLine, CompilerASTLine, PlannedMemoryDeclaration } from '@8f4e/language-spec';
+import type {
+	CompiledStackAnalysisLine,
+	CompilerASTLine,
+	PlannedMemoryDeclaration,
+	ResolvedReferenceSlot,
+} from '@8f4e/language-spec';
 import type { SelectedLineTooltipContent } from '../types';
 import { getSelectedLineTooltipColors } from './colors';
 import { TOOLTIP_WRAP_WIDTH } from './constants';
-import { getLiveTooltipContent } from './liveValues';
-import { getMemoryDeclarationIdFromSourceLine, getSourceInstruction } from './sourceLine';
+import { getLiveReferenceTooltipContent, getLiveTooltipContent } from './liveValues';
+import {
+	getMemoryDeclarationIdFromSourceLine,
+	getReferenceDeclarationIdFromSourceLine,
+	getSourceInstruction,
+} from './sourceLine';
 import { getStackAnalysisTooltipContent } from './stackAnalysisTooltip';
 import { formatStackSignature, formatStackSignatureLines, resolveStackSignature } from './stackSignature';
 import { getMaxLineLength, getTooltipTextCharacters, wrapTooltipText } from './text';
@@ -25,6 +34,7 @@ interface SelectedLineTooltipTextOptions {
 interface SelectedLineTooltipOptions extends SelectedLineTooltipTextOptions {
 	moduleId?: string;
 	memory?: PlannedMemoryDeclaration;
+	reference?: ResolvedReferenceSlot;
 }
 
 /**
@@ -92,8 +102,11 @@ export function getSelectedLineTooltipContent(options: SelectedLineTooltipOption
 	const textContent = getSelectedLineTooltipTextContent(options);
 	const text = textContent.text;
 	const memoryId = getMemoryDeclarationIdFromSourceLine(options.line);
+	const referenceId = getReferenceDeclarationIdFromSourceLine(options.line);
 	const colors = getSelectedLineTooltipColors(text, textContent.signatureLineCount);
-	const liveTooltipContent = getLiveTooltipContent(options.memory, options.moduleId, memoryId, text.length);
+	const liveTooltipContent = referenceId
+		? getLiveReferenceTooltipContent(options.reference, options.moduleId, referenceId, text.length)
+		: getLiveTooltipContent(options.memory, options.moduleId, memoryId, text.length);
 
 	text.push(...liveTooltipContent.text);
 	colors.push(...liveTooltipContent.colors);
