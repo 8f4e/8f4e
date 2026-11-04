@@ -34,7 +34,7 @@ plugin is installed.
 Source-specific views use `getCompiledModuleForCodeBlock` to match the selected definition's `projectBlockId` to the
 editor block's `creationIndex`. `getModuleCompilationForCodeBlock` resolves that module, its memory plan, and its defaults
 together, returning no result until all reports are available. Overridden source blocks receive no module artifacts.
-`getMemoryDeclarationRows` provides the shared declaration ordering and inherited-row offsets for shape labels and connectors.
+The connectors plugin owns inherited declaration ordering, shape/paramShape labels, and connector presentation.
 
 The plugin updates its live artifact handles and emits `compilationSucceeded` with `ProgramArtifacts` (`memoryRef`)
 before publishing metadata and runtime readiness. Core consumes that event to refresh memory views; bytecode stays

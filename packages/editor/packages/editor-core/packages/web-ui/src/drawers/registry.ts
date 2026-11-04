@@ -30,7 +30,7 @@ export interface EditorDrawerRegistry {
 	registerCodeBlockBackgroundDrawer: (drawer: CodeBlockDrawer) => () => void;
 	/** Draw inside the block after backgrounds and selection, before foreground drawings. */
 	registerCodeBlockContentDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw above content and shapes. */
+	/** Draw above block content drawers. */
 	registerCodeBlockForegroundDrawer: (drawer: CodeBlockDrawer) => () => void;
 	/** Draw after foreground drawings. */
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;

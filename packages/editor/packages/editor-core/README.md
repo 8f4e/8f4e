@@ -137,7 +137,7 @@ surface and below line selection, corners, and content. `@8f4e/editor-plugin-cod
 nested block highlights, keeping its parser and cached rectangles private. Core retains shared layout geometry.
 
 Register foreground drawings with `drawers.registerCodeBlockForegroundDrawer(drawer)`. They run above content and
-shapes, in block coordinates. The editing plugin uses this stage for its caret, and
+generated declaration labels, in block coordinates. The editing plugin uses this stage for its caret, and
 `@8f4e/editor-plugin-selection-animation` draws the circling segment around the selected block. Core owns neither
 drawing and retains generic selection state and geometry.
 
@@ -185,7 +185,9 @@ Palette changes and memory release are forwarded to the layer. Registration may 
 arrive later; unregistering destroys the active layer, and renderer disposal destroys all layers before its context.
 Types and generic WebGL resource helpers are exported by `@8f4e/web-ui`.
 
-`@8f4e/editor-plugin-connectors` owns input/output widgets and the complete wire renderer through these hooks.
+`@8f4e/editor-plugin-connectors` owns input/output connectors, expanded `shape`/`paramShape` declaration labels,
+their row reservations, and the complete wire renderer through these hooks. Prepared labels and endpoint data stay
+private to the plugin; core has no widget presentation fields. Compiler semantics remain independent of this plugin.
 Core keeps memory semantics independent of connector data and has no connector-specific fields or GPU resources.
 `@8f4e/editor-plugin-texture-runtime` owns editor-frame WASM execution and block-bound `@texture` framebuffer views through the same overlay hook.
 

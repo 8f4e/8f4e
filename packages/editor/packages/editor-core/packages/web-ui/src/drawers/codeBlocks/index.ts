@@ -5,7 +5,6 @@ import type { MemoryViews } from '../../types';
 import type { EditorDrawerHost } from '../registry';
 import drawArrow from './drawArrow';
 import drawEntryOutlines from './drawEntryOutlines';
-import drawShapeDeclarations from './drawShapeDeclarations';
 
 const corner = '+';
 
@@ -61,8 +60,6 @@ export default function drawModules(
 			);
 
 			drawers?.drawCodeBlockContent({ draw: engine, state, codeBlock, memoryViews });
-
-			drawShapeDeclarations(engine, codeBlock);
 
 			drawers?.drawCodeBlockForeground({ draw: engine, state, codeBlock, memoryViews });
 

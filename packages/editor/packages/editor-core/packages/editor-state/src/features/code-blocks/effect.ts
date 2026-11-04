@@ -31,10 +31,8 @@ import gaps from './gaps';
 import getCodeBlockGridWidth from './getCodeBlockGridWidth';
 import type { LayoutRegistry } from './layout/registry';
 import type { BlockLayoutDraft } from './layout/types';
-import paramShape, { updateParamShapeDeclarations } from './paramShape/updateGraphicData';
 import { partitionCodeBlocksByAlwaysOnTop } from './partitionCodeBlocksByAlwaysOnTop';
 import replaceCodeBlocksInPlace from './replaceCodeBlocksInPlace';
-import shape, { updateShapeDeclarations } from './shape/updateGraphicData';
 import { refreshBlockSources } from './sourceUpdates';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
@@ -115,11 +113,7 @@ export default function codeBlockRendering(
 			verticalSpaceAfterSourceLine: [...contribution.verticalSpaceAfterSourceLine],
 		};
 		graphicData.minGridWidth = contribution.minGridWidth;
-		shape(graphicData, state, blockLayout);
-		paramShape(graphicData, state, blockLayout);
 		gaps(graphicData, blockLayout);
-		updateShapeDeclarations(graphicData, state, blockLayout);
-		updateParamShapeDeclarations(graphicData, state, blockLayout);
 
 		graphicData.width = getCodeBlockGridWidth(graphicData.code, graphicData.minGridWidth) * state.viewport.vGrid;
 

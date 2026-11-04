@@ -1,5 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPlugin, type EditorPluginContext } from '@8f4e/editor-core';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { gapCalculator } from '@8f4e/editor-state';
 import { afterEach, expect, test } from 'vitest';
 import { connectorsPlugin } from '../src/index';
 
@@ -41,14 +43,18 @@ async function setup(text = source) {
 	canvas.style.height = '400px';
 	document.body.appendChild(canvas);
 	let editorEvents: EditorPluginContext['events'];
+	let context!: EditorPluginContext;
 	const installArtifacts: EditorPlugin = {
 		id: 'test-artifacts',
-		setup: ({ store, events }) => {
+		setup: services => {
+			context = services;
+			const { store, events } = services;
 			editorEvents = events;
 			Object.assign(store.getState().compiler.result, {
 				memoryPlan: compiled.memoryPlan,
 				memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
 				compiledModules: compiled.compiledModules,
+				compiledFunctions: compiled.compiledFunctions,
 				projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
 			});
 			events.dispatch('compilationSucceeded', { memoryRef: memory });
@@ -71,8 +77,49 @@ async function setup(text = source) {
 		editor.renderFrame();
 	};
 	render();
-	return { editor, canvas, render, events: editorEvents! };
+	return { editor, canvas, render, events: editorEvents!, context, memory };
 }
+
+test('renders expanded shape and paramShape declarations with aligned connectors', async () => {
+	const { editor, canvas, render, context, memory } = await setup(`8f4e/v1
+constants env
+; @pos 100 100
+constantsEnd
+prototype voiceState
+; @pos 100 100
+int* input
+int output
+prototypeEnd
+function process
+; @pos 48 12
+paramShape voiceState
+functionEnd
+entry main
+module source
+; @pos 48 2
+int output 1
+moduleEnd
+module sink
+; @pos 2 2
+shape voiceState
+moduleEnd
+entryEnd`);
+	const plan = editor.state.compiler.result.memoryPlan.modules;
+	new Int32Array(memory.buffer)[plan.sink.memory.input.allocationUnitAddress] = plan.source.memory.output.byteAddress;
+	const removeText = context.drawers.registerCodeBlockContentDrawer(({ draw, state, codeBlock }) => {
+		codeBlock.displayModel.lines.forEach((line, row) =>
+			draw.drawText(
+				(codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
+				gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
+				line.text,
+				PALETTE_INDICES.inkBase
+			)
+		);
+	});
+	cleanups.push(removeText);
+	render();
+	await expect(canvas).toMatchScreenshot('expanded-declarations');
+});
 
 test('renders connectors and wires through the editor and restores them after GPU memory release', async () => {
 	const { editor, canvas, render } = await setup();

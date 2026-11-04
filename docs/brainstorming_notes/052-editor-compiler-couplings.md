@@ -11,15 +11,15 @@ the config ownership checked after extraction, for future architectural discussi
   [Default editor state](../../packages/editor/packages/editor-core/packages/editor-state/src/pureHelpers/state/createDefaultState.ts)
   also initializes compiler-specific statistics, even when the compiler plugin is omitted.
 
-- **Block layout from compiled facts.** [Shape declarations](../../packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/shape/updateGraphicData.ts)
-  inspect compiled ASTs and inherited memory defaults. [Parameter shapes](../../packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/paramShape/updateGraphicData.ts)
-  inspect compiler expansion records to insert display rows.
+- **Block layout from compiled facts (presentation extracted).** The connectors plugin owns
+  [shape declarations](../../packages/editor/plugins/connectors/src/layout/shape.ts) and
+  [parameter shapes](../../packages/editor/plugins/connectors/src/layout/param-shape.ts), including row reservations
+  and private labels derived from compiler metadata. Core applies generic layout contributions.
 
-- **Connector geometry and editor types.** [Inputs](../../packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/inputs/updateGraphicData.ts)
-  and [outputs](../../packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/outputs/updateGraphicData.ts)
-  derive connectors from compiler memory plans and exposure targets. Core's
-  [Output and MemoryIdentifier types](../../packages/editor/packages/editor-core/packages/editor-state-types/src/features/code-blocks/types.ts)
-  embed compiler-owned planned memory declarations.
+- **Connector geometry (presentation extracted).** The [connectors plugin](../../packages/editor/plugins/connectors/src/layout/deriveConnectors.ts)
+  derives endpoints from compiler memory plans and exposure targets, sharing inherited rows with generated labels.
+  Core's [MemoryIdentifier type](../../packages/editor/packages/editor-core/packages/editor-state-types/src/features/code-blocks/types.ts)
+  still carries a compiler-owned planned declaration for generic memory lookup.
 
 - **Memory lookup services.** [Target resolution](../../packages/editor/packages/editor-core/packages/editor-state/src/pureHelpers/resolveMemoryTarget.ts)
   and [identifier/pointer resolution](../../packages/editor/packages/editor-core/packages/editor-state/src/pureHelpers/resolveMemoryIdentifier.ts)
