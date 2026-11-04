@@ -21,8 +21,8 @@ owns wires; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer v
 
 ## API
 
-`createEditorDrawerRegistry()` creates the per-editor registry for code-block content drawers, drawers, overlays, and canvas-wide
-render layers. Pass that registry through `options.drawers` when initializing the renderer.
+`createEditorDrawerRegistry()` creates one ordered code-block drawer registry, alongside canvas/modal overlay
+hooks and GPU render-layer registration. Pass that registry through `options.drawers` when initializing the renderer.
 
 ### `registerModalOverlay(drawer)`
 
@@ -87,8 +87,9 @@ interface FontAtlas {
 
 The web-ui package reads editor state for drawing and installs font-derived grid dimensions.
 Block plugins use one `registerCodeBlockDrawer()` registry, invoked in registration order once per visible block.
-Web-ui retains traversal, culling, block-relative coordinates, corner markers, entry outlines, and offscreen arrows.
-`@8f4e/editor-plugin-code-block-background` supplies base rectangles and is installed before code rendering.
+Web-ui retains traversal, culling, block-relative coordinates, entry outlines, and offscreen arrows.
+`@8f4e/editor-plugin-code-block-background` supplies base rectangles and corner markers, including selected colors,
+and is installed before code rendering.
 `@8f4e/editor-plugin-code-rendering` owns nested highlights, selected-line fill, text, and its private prepared data.
 Connectors and other plugins use the same registry. Registration order determines layering, including late installs;
 there are no separate block drawing phases. Viewport overlays, dialogs, and GPU render layers retain their own hooks.

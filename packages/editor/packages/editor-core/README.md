@@ -139,9 +139,9 @@ registrations draw over earlier ones, including plugins installed asynchronously
 background, content, foreground, or overlay stages. Registration returns an unregister function for plugin disposal.
 
 Both compositions eagerly install `@8f4e/editor-plugin-code-block-background` before code rendering. It owns the
-normal, disabled, and dragged base surfaces. Code rendering draws nested highlights, the selected-line fill, and
-text in that order. Other plugins add their drawers after these. Corner markers remain in web-ui and draw after
-registered block drawers; entry outlines and offscreen arrows also remain built in.
+normal, disabled, and dragged base surfaces and corner markers, including their selected colors. Code rendering
+draws nested highlights, the selected-line fill, and text in that order. Other plugins add their drawers after these.
+Entry outlines and offscreen arrows remain in web-ui.
 
 Use the drawing surface's text/fill primitives and shared numeric palette indices. `@8f4e/web-ui` exports drawing
 types. Plugins own their prepared data and disposal; core stores no widget presentation fields.

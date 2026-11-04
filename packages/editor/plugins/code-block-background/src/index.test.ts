@@ -10,15 +10,16 @@ function setup() {
 	const state = createMockState();
 	const drawers = createEditorDrawerRegistry();
 	const drawFill = vi.fn();
+	const drawText = vi.fn();
 	const dispose = codeBlockBackgroundPlugin.setup({ drawers } as unknown as EditorPluginContext);
 	const render = () =>
 		drawers.drawCodeBlock({
-			draw: { drawFill } as unknown as DrawContext,
+			draw: { drawFill, drawText } as unknown as DrawContext,
 			state,
 			codeBlock,
 			memoryViews: {} as MemoryViews,
 		});
-	return { codeBlock, state, render, drawFill, dispose };
+	return { codeBlock, state, render, drawFill, drawText, dispose };
 }
 
 it.each([
@@ -35,6 +36,23 @@ it.each([
 	test.dispose();
 });
 
+it.each([false, true])('draws corner markers using current geometry and selection (selected=%s)', selected => {
+	const test = setup();
+	test.state.viewport.vGrid = 6;
+	test.state.viewport.hGrid = 10;
+	if (selected) test.state.codeBlockRendering.selectedCodeBlock = test.codeBlock;
+	test.render();
+	const color = selected ? PALETTE_INDICES.secondaryBase : PALETTE_INDICES.inkBase;
+	expect(test.drawText.mock.calls).toEqual([
+		[0, 0, '+', color],
+		[90, 0, '+', color],
+		[0, 54, '+', color],
+		[90, 54, '+', color],
+	]);
+	expect(test.drawFill.mock.invocationCallOrder[0]).toBeLessThan(test.drawText.mock.invocationCallOrder[0]);
+	test.dispose();
+});
+
 it('uses current dimensions and state and unregisters its drawing on disposal', () => {
 	const test = setup();
 	test.render();
@@ -45,6 +63,8 @@ it('uses current dimensions and state and unregisters its drawing on disposal', 
 	expect(test.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.surfaceSubdued, 128, 80);
 	test.dispose();
 	test.drawFill.mockClear();
+	test.drawText.mockClear();
 	test.render();
 	expect(test.drawFill).not.toHaveBeenCalled();
+	expect(test.drawText).not.toHaveBeenCalled();
 });

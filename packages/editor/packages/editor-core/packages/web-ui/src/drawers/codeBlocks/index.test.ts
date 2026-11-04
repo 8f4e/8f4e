@@ -1,16 +1,16 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
-import type { DrawContext as Engine } from '../../drawContext';
+import type { DrawContext } from '../../drawContext';
 import type { MemoryViews } from '../../types';
 import { createEditorDrawerRegistry } from '../registry';
-import drawModules from './index';
+import drawCodeBlocks from './index';
 
-function createMemoryViews({ int32 = [] }: { int32?: number[] } = {}): MemoryViews {
+function createMemoryViews(): MemoryViews {
 	return {
 		int8: new Int8Array(0),
 		int16: new Int16Array(0),
-		int32: new Int32Array(int32),
+		int32: new Int32Array(0),
 		uint8: new Uint8Array(0),
 		uint16: new Uint16Array(0),
 		float32: new Float32Array(0),
@@ -18,19 +18,16 @@ function createMemoryViews({ int32 = [] }: { int32?: number[] } = {}): MemoryVie
 	};
 }
 
-function createMockEngine(): Engine {
+function createDrawContext(): DrawContext {
 	return {
 		startGroup: vi.fn(),
 		endGroup: vi.fn(),
-		drawSprite: vi.fn(),
 		drawFill: vi.fn(),
-		drawCharacter: vi.fn(),
 		drawText: vi.fn(),
-		drawResolvedText: vi.fn(),
-	} as unknown as Engine;
+	} as unknown as DrawContext;
 }
 
-describe('drawModules', () => {
+describe('drawCodeBlocks', () => {
 	it('runs the ordered registry once inside each visible block and removes only the requested drawer', () => {
 		const visible = createMockCodeBlock({ width: 96, height: 64, x: 16, y: 16 });
 		const offscreen = createMockCodeBlock({ creationIndex: 1, x: 10000 });
@@ -38,22 +35,21 @@ describe('drawModules', () => {
 			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [visible, offscreen] } },
 			featureFlags: { offscreenBlockArrows: false },
 		});
-		const engine = createMockEngine();
+		const draw = createDrawContext();
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
 		const calls: string[] = [];
 		drawers.registerCodeBlockDrawer(context => {
-			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
-			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
+			expect(context).toEqual({ draw, state, codeBlock: visible, memoryViews });
+			expect(draw.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
 			calls.push('first');
 		});
 		const removeSecond = drawers.registerCodeBlockDrawer(() => calls.push('second'));
 		drawers.registerCodeBlockDrawer(() => calls.push('third'));
-		drawModules(engine, state, memoryViews, drawers);
+		drawCodeBlocks(draw, state, memoryViews, drawers);
 		expect(calls).toEqual(['first', 'second', 'third']);
-		expect(engine.drawFill).not.toHaveBeenCalled();
 		removeSecond();
-		drawModules(engine, state, memoryViews, drawers);
+		drawCodeBlocks(draw, state, memoryViews, drawers);
 		expect(calls).toEqual(['first', 'second', 'third', 'first', 'third']);
 	});
 
@@ -76,20 +72,15 @@ describe('drawModules', () => {
 				hGrid: 16,
 			},
 		});
-		const engine = createMockEngine();
+		const draw = createDrawContext();
 
-		drawModules(engine, state, createMemoryViews());
+		drawCodeBlocks(draw, state, createMemoryViews(), createEditorDrawerRegistry());
 
-		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(1, 8, 16, PALETTE_INDICES.strokeBase, 96, 1);
-		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(2, 8, 95, PALETTE_INDICES.strokeBase, 96, 1);
-		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(3, 8, 16, PALETTE_INDICES.strokeBase, 1, 80);
-		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(4, 103, 16, PALETTE_INDICES.strokeBase, 1, 80);
-		expect((engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText).toHaveBeenCalledWith(
-			16,
-			16,
-			'main',
-			PALETTE_INDICES.inkStrong
-		);
+		expect(vi.mocked(draw.drawFill)).toHaveBeenNthCalledWith(1, 8, 16, PALETTE_INDICES.strokeBase, 96, 1);
+		expect(vi.mocked(draw.drawFill)).toHaveBeenNthCalledWith(2, 8, 95, PALETTE_INDICES.strokeBase, 96, 1);
+		expect(vi.mocked(draw.drawFill)).toHaveBeenNthCalledWith(3, 8, 16, PALETTE_INDICES.strokeBase, 1, 80);
+		expect(vi.mocked(draw.drawFill)).toHaveBeenNthCalledWith(4, 103, 16, PALETTE_INDICES.strokeBase, 1, 80);
+		expect(draw.drawText).toHaveBeenCalledWith(16, 16, 'main', PALETTE_INDICES.inkStrong);
 	});
 
 	it('can skip off-screen arrow indicators', () => {
@@ -120,10 +111,10 @@ describe('drawModules', () => {
 				offscreenBlockArrows: false,
 			},
 		});
-		const engine = createMockEngine();
+		const draw = createDrawContext();
 
-		drawModules(engine, state, createMemoryViews());
+		drawCodeBlocks(draw, state, createMemoryViews(), createEditorDrawerRegistry());
 
-		expect((engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText).not.toHaveBeenCalled();
+		expect(draw.drawText).not.toHaveBeenCalled();
 	});
 });
