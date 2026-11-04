@@ -38,9 +38,10 @@ test.beforeEach(async ({ context, page }) => {
 		});
 	});
 	await page.goto('/');
-	await expect(page.getByRole('status')).toHaveText('8f4e is available offline.');
 	await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
 	await waitForEditor(page);
+	await expect(page.locator('#pwa-notice')).toHaveCount(0);
+	expect(await page.evaluate(() => window.state.dialogStack)).toEqual([]);
 });
 
 test('installs a complete offline cache and cold-starts with lazy plugins and a runtime', async ({ context, page }) => {
@@ -116,7 +117,6 @@ test('installs a complete offline cache and cold-starts with lazy plugins and a 
 });
 
 test('waits for a requested update and preserves the saved project and binary cache', async ({ context, page }) => {
-	await page.getByRole('button', { name: 'Dismiss' }).click();
 	await insert(page, 'module savedBeforeUpdate\nint value 7\nmoduleEnd');
 	const otherPage = await context.newPage();
 	await otherPage.goto('/');
@@ -129,17 +129,24 @@ test('waits for a requested update and preserves the saved project and binary ca
 	try {
 		await writeFile('dist/sw.js', `${worker}\n// Update test ${Date.now()}\n`);
 		await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())!.update());
-		await expect(page.getByRole('button', { name: 'Reload', exact: true })).toBeVisible();
-		await page
-			.getByRole('complementary', { name: 'Offline support' })
-			.screenshot({ path: '.playwright-results/update-notice.png' });
+		await expect.poll(() => page.evaluate(() => window.state.dialog.id)).toBe('pwa-update');
+		expect(await page.evaluate(() => window.state.dialog.title)).toBe('Update available');
+		await page.locator('#glcanvas').screenshot({ path: '.playwright-results/update-dialog.png' });
 		expect(await page.evaluate(async () => !!(await navigator.serviceWorker.getRegistration())?.waiting)).toBe(true);
 		expect(await call(page, 'get_project')).toContain('module savedBeforeUpdate');
 		expect(await call(otherPage, 'get_project')).toContain('module savedBeforeUpdate');
+		// Click Later in the centered canvas dialog, then reopen with the update still waiting in the other window.
+		const viewport = page.viewportSize()!;
+		await page.locator('#glcanvas').click({ position: { x: viewport.width * 0.7, y: viewport.height * 0.55 } });
+		await expect.poll(() => page.evaluate(() => window.state.dialogStack.length)).toBe(0);
+		expect(await page.evaluate(async () => !!(await navigator.serviceWorker.getRegistration())?.waiting)).toBe(true);
+		await page.reload();
+		await waitForEditor(page);
+		await expect.poll(() => page.evaluate(() => window.state.dialog.id)).toBe('pwa-update');
 		await Promise.all([
 			page.waitForEvent('load'),
 			otherPage.waitForEvent('load'),
-			page.getByRole('button', { name: 'Reload', exact: true }).click(),
+			page.locator('#glcanvas').click({ position: { x: viewport.width * 0.62, y: viewport.height * 0.55 } }),
 		]);
 		await waitForEditor(page);
 		await waitForEditor(otherPage);

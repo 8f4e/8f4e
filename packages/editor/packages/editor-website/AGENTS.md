@@ -9,9 +9,11 @@
   than building or watching every workspace project.
 - Bind the dev server to `0.0.0.0` so phones on the same network can access port 3000.
 - Run `npx nx run @8f4e/editor-website:build` after changing this package.
-- PWA installation, registration, notifications, and precaching belong in this host. Keep editor plugin/font imports
+- PWA installation, registration, controller-change reloads, and precaching belong in this host. Keep editor plugin/font imports
   lazy; cache all emitted application assets without executing optional modules at startup. Register only after mounting
   in production, preserve COOP/COEP headers offline, and wait for user-requested reloads before applying updates.
+- Supply `pwaUpdates: navigator.serviceWorker` to the default composition in production. The PWA update plugin owns
+  the editor dialog/menu. Keep first installation silent and do not add separate DOM notification overlays.
 - Run `npx nx run @8f4e/editor-website:test:browser` for production PWA checks with desktop Chromium and Android touch
   emulation. Playwright uses port 3103 with strict binding. Keep browser artifacts in the ignored `.playwright-results/`.
 - Full `typecheck` includes browser tests. Builds depend on `typecheck:production`, which excludes tests.

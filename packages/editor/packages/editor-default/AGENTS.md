@@ -22,6 +22,8 @@
   the shared handle and reset lifecycle. Save owns serialization and all write coordination.
   Compose `createWasmExportPlugin({ document, getCodeBuffer })` for WASM files. Keep browser file handling out of core.
 - Keep generic editor behavior in `@8f4e/editor-core` and website/deployment concerns in `@8f4e/editor-website`.
+- When a host supplies `pwaUpdates`, load `editor-plugin-pwa-updates` through the deferred registry. It observes
+  the page-owned service worker and owns the update dialog/menu; registration and caching stay in the website.
 - Run `npx nx run @8f4e/editor-default:build|test|typecheck` after changing this package.
 - The Vite build uses standard TypeScript and asset handling; project-authored GLSL effects are not supported.
 - Stdlib and example module discovery use `@8f4e/vite-plugin-sources` in `vite.config.ts`. Resolve each source package

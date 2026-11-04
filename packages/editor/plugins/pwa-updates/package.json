@@ -1,0 +1,25 @@
+{
+  "name": "@8f4e/editor-plugin-pwa-updates",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Page-owned PWA update notifications through the 8f4e editor dialog system",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "dependencies": {
+    "@8f4e/editor-core": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "vitest": "4.1.7"
+  }
+}

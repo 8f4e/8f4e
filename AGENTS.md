@@ -74,6 +74,9 @@
   aliases like `@8f4e/editor-default` and `@8f4e/editor-core`.
 - The editor website owns PWA installation and offline caching. Precache the complete production build while keeping
   plugin/font imports lazy. Register after mounting, retain COOP/COEP on cached pages, and apply updates on request.
+- `editor-plugin-pwa-updates` observes a page-owned service worker and owns its update dialog and menu action.
+  The default composition loads it after the first render only when the host supplies `pwaUpdates`. First installation
+  is silent; registration, caching, and controller-change reloads remain website concerns.
 - Package builds clear their own `dist/` before emitting output. Plain TypeScript builds use `rm -rf dist && tsc`.
   Mixed builds clean once before the first emitter so later TypeScript or Vite steps preserve earlier assets and declarations.
 - Docs and assets: `docs/`, selected files copied via Vite static-copy.

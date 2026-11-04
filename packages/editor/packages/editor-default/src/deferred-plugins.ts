@@ -18,6 +18,15 @@ export function createDeferredEditorPlugin(
 			matches: () => true,
 			load: () => import('@8f4e/editor-plugin-dialogs').then(module => module.dialogsPlugin),
 		},
+		{
+			id: 'pwa-updates',
+			scope: 'view',
+			matches: () => options.pwaUpdates !== undefined,
+			load: () =>
+				import('@8f4e/editor-plugin-pwa-updates').then(module =>
+					module.createPwaUpdatesPlugin({ serviceWorker: options.pwaUpdates! })
+				),
+		},
 		// {
 		// 	id: 'selection-animation',
 		// 	scope: 'view',

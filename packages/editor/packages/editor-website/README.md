@@ -19,8 +19,9 @@ Cloudflare Pages should use `npx nx run @8f4e/editor-website:build` as its build
 
 The production website is an installable PWA. After the editor mounts, its service worker downloads all build
 assets, including lazy plugins, fonts, workers, worklets, stdlib, and bundled example modules. Precaching does
-not import or execute those modules. The website announces when it is available offline and offers a Reload
-button when an update is ready. Development mode does not register a service worker.
+not import or execute those modules. First installation is silent. The `editor-plugin-pwa-updates` plugin shows
+waiting updates through an editor dialog with Reload and Later buttons, plus a main-menu action to reopen it.
+Development mode does not register a service worker.
 
 The browser tests run against the production build on port 3103, using desktop Chromium and Android touch
 emulation. They verify complete precaching, an offline cold launch, first-use lazy loading and runtime execution,
