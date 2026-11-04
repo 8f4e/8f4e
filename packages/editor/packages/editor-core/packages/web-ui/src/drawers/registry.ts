@@ -30,7 +30,7 @@ export interface EditorDrawerRegistry {
 	registerCodeBlockBackgroundDrawer: (drawer: CodeBlockDrawer) => () => void;
 	/** Draw inside the block after backgrounds and selection, before foreground drawings. */
 	registerCodeBlockContentDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw above content and shapes. */
+	/** Draw above block content drawers. */
 	registerCodeBlockForegroundDrawer: (drawer: CodeBlockDrawer) => () => void;
 	/** Draw after foreground drawings. */
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;
@@ -74,7 +74,7 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 	const background = createDrawerSlot<CodeBlockDrawerContext>();
 	const content = createDrawerSlot<CodeBlockDrawerContext>();
 	const foreground = createDrawerSlot<CodeBlockDrawerContext>();
-	const widgets = createDrawerSlot<CodeBlockDrawerContext>();
+	const blockDrawers = createDrawerSlot<CodeBlockDrawerContext>();
 	const overlays = createDrawerSlot<CodeBlockDrawerContext>();
 	const canvasOverlays = createDrawerSlot<CanvasOverlayDrawerContext>();
 	const modalOverlays = createDrawerSlot<CanvasOverlayDrawerContext>();
@@ -83,14 +83,14 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 		registerCodeBlockBackgroundDrawer: background.register,
 		registerCodeBlockContentDrawer: content.register,
 		registerCodeBlockForegroundDrawer: foreground.register,
-		registerCodeBlockDrawer: widgets.register,
+		registerCodeBlockDrawer: blockDrawers.register,
 		registerCodeBlockOverlay: overlays.register,
 		registerCanvasOverlay: canvasOverlays.register,
 		registerModalOverlay: modalOverlays.register,
 		drawCodeBlockBackground: background.draw,
 		drawCodeBlockContent: content.draw,
 		drawCodeBlockForeground: foreground.draw,
-		drawCodeBlock: widgets.draw,
+		drawCodeBlock: blockDrawers.draw,
 		drawCodeBlockOverlay: overlays.draw,
 		drawCanvasOverlays: canvasOverlays.draw,
 		drawModalOverlays: modalOverlays.draw,

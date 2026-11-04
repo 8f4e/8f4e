@@ -64,7 +64,8 @@
 - Rendering plugins: web-ui owns the procedural background and its font-specific dot settings under `src/plugins/`.
   Editor-core owns the single frame loop and advances viewport state before web-ui draws each frame. Web-ui owns
   drawing and GPU resources, with no frame scheduler or navigation-state updates.
-  `editor-plugin-connectors` owns input/output widgets, wire lookup, and the complete line renderer. Web-ui provides
+  `editor-plugin-connectors` owns input/output widgets, shape/paramShape label layout and drawing, wire lookup, and
+  the complete line renderer. Core has no widget presentation fields. Web-ui provides
   generic render-layer registration, palette updates, memory release, and disposal.
   Glugglugglug owns sprite rendering and generic render hooks. The sprite generator supplies only a uniform grid of
   glyph/fill masks; background patterns do not occupy the sprite atlas. Glyph IDs are ASCII codes 0–127 and fill is 128;

@@ -10,7 +10,7 @@ Manages the lifecycle of code blocks in the editor: creation, selection, drag op
 - **Selection**: Tracks which block is currently selected for editing
 - **Drag Operations**: Handles repositioning blocks in the viewport
 - **Graphics Derivation**: Computes visual properties (position, size, color) from block data
-- **Shape Declarations**: Derives shape geometry from compiled metadata
+- **Layout Contributions**: Applies plugin requests for additional rows and minimum width
 
 `@8f4e/editor-plugin-error-messages` owns inline message wrapping, row reservations, and drawing. Core stores raw
 errors in contributor-owned `state.codeErrors` lists and applies generic layout contributions.
@@ -20,6 +20,8 @@ background colors, rectangle geometry, and private cache. Core supplies block/di
 
 Input/output connector geometry, private widget data, wire lookup, and the complete GPU line renderer belong to
 `@8f4e/editor-plugin-connectors`. Both editor compositions install it through the generic layout and drawing hooks.
+It also owns expanded `shape`/`paramShape` labels and their row reservations, sharing inherited row ordering with
+connector endpoints. Core retains no widget presentation data; language semantics stay in the compiler.
 
 Switch, button, and waveform features are provided by `@8f4e/editor-plugin-switch`, `@8f4e/editor-plugin-button`, and
 `@8f4e/editor-plugin-wave`, included in `@8f4e/editor-default`. Their plugins own derived data and drawing through the
@@ -82,7 +84,7 @@ path; ordinary layout invalidations do not reparse source.
 - `state.codeBlockRendering.rootProject` - Recursive root project level
 - `state.codeBlockRendering.currentProject` - Direct reference to the project level currently rendered
 - `state.codeBlockRendering.selectedCodeBlock` - Currently selected block reference
-- Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs)
+- Block-specific properties: position, size, blockType, code, cursor, display rows, and gaps
 
 Project-group blocks use the same `CodeBlockGraphicData` representation as other blocks. Their optional
 `childProject` field owns a `ProjectLevel` with its canonical `path`, `blocks`, local `entries`, optional remembered

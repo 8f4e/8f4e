@@ -71,9 +71,6 @@ export function createMockCodeBlock(
 		isHome: false,
 		alwaysOnTop: false,
 		parsedDirectives: [],
-		widgets: {
-			shapeDeclarations: [],
-		},
 	};
 
 	return { ...defaults, ...overrides };

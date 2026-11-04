@@ -177,7 +177,6 @@ export { type SerializedCodeBlock, serializeCodeBlocks } from './pureHelpers/cod
 export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';
 // Export project serialization helpers
 export { default as getExportBaseName } from './pureHelpers/getExportBaseName';
-export { getMemoryDeclarationRows, type MemoryDeclarationRow } from './pureHelpers/getMemoryDeclarationRows';
 export { default as serializeProjectLevel } from './pureHelpers/projectSerialization/serializeProjectLevel';
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
 export {

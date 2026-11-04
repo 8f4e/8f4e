@@ -87,7 +87,7 @@
 - Meter, plot, bars, crossfade, watch, and stack own their data and drawers in plugin packages. Keep memory scope,
   typed-value resolution, tab layout, and compiler lookups generic and available through public helper exports.
   Source-specific module views use `getCompiledModuleForCodeBlock` or `getModuleCompilationForCodeBlock`; logical names
-  may identify multiple source blocks. Share inherited declaration positioning through `getMemoryDeclarationRows`.
+  may identify multiple source blocks. Inherited declaration positioning belongs to the connectors plugin.
 - Preserve root and group entry tables through loading, editing/history, clipboard, and serialization, including empty
   entries and groups without `main`. Keep module entry membership local to its owning project scope.
 - Keep canonical project-model serialization under editor-state's `pureHelpers/projectSerialization`, filename
@@ -157,7 +157,9 @@
   source-position state and bounds/tab geometry; do not restore direction-based caret movement or a built-in glyph.
 - `registerCodeBlockBackgroundDrawer` runs above the block surface and below line selection, corners, and content.
   Code-rendering owns nested block parsing, highlight geometry, colors, and its private cache. Keep highlight fields out of core state.
-- `registerCodeBlockForegroundDrawer` runs above content/shapes. Error-messages uses the ordinary block drawer;
+- `registerCodeBlockForegroundDrawer` runs above content. Connectors owns shape/paramShape expansion rows and labels
+  through generic layout contributions and content drawing; keep presentation types and `widgets` out of core.
+  Error-messages uses the ordinary block drawer;
   keep the drawing stages and layout contributions generic, without built-in diagnostic rendering or gap rules.
 - The circling selected-block animation belongs to `editor-plugin-selection-animation`. Keep its timing, glyphs,
   and drawing out of core; retain selection state, corner colors, and line highlighting.

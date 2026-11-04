@@ -1,8 +1,15 @@
 # Connectors plugin
 
-`@8f4e/editor-plugin-connectors` owns input/output connectors and the complete wire renderer. Both default and minimal
-editor compositions install `connectorsPlugin` in their fixed plugin set. Omitting it leaves the editor without
-connector widgets, wire drawing, or line GPU allocations; compilation and memory resolution continue independently.
+`@8f4e/editor-plugin-connectors` owns input/output connectors, expanded declaration labels, and the complete wire
+renderer. Both default and minimal editor compositions load `connectorsPlugin` after the first render. Omitting it
+leaves the editor without connectors, expanded labels/rows, wire drawing, or line GPU allocations; compilation and
+memory resolution continue independently.
+
+The plugin expands compiler-reported `shape` declarations and `paramShape` function parameters for display, reserving
+rows through the generic layout contribution API. Labels stay private and draw in the content stage below foreground
+drawings. Inherited declaration labels and connector endpoints use the same ordered memory rows. Hidden source and
+disabled blocks reserve no expansion rows. Source edits, recompilation, font changes, and group navigation refresh
+the layout; disposal removes its labels and reserved space. The compiler owns all language semantics.
 
 The plugin derives pointer inputs and public non-pointer outputs from the compiler memory plan, including inherited
 shape declarations and exposed memory on nested project groups. One derivation pass produces both connector lists.

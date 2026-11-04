@@ -89,8 +89,9 @@ The web-ui package reads editor state for drawing and installs font-derived grid
 `@8f4e/editor-plugin-code-rendering` owns code text, syntax highlighting, nested block backgrounds, and its private
 cache of prepared sprite cells and highlight rectangles. It registers backgrounds through
 `registerCodeBlockBackgroundDrawer()`, which runs above block surfaces and below line selection, corners, and text.
-Its content drawer uses `registerCodeBlockContentDrawer()`, which runs after backgrounds and line selection, before the cursor,
-shape declarations, ordinary block drawers, and overlays. Error-messages contributes its own ordinary block drawer.
+Its content drawer uses `registerCodeBlockContentDrawer()`, which runs after backgrounds and line selection, before
+foreground drawings, ordinary block drawers, and overlays. Connectors draws generated shape/paramShape labels in the
+content stage; error-messages contributes its own ordinary block drawer. Web-ui has no built-in widget drawers.
 Without a content plugin, blocks retain
 their backgrounds and editing affordances while no source text is drawn.
 

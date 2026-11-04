@@ -63,7 +63,8 @@
   meter, bars, watch, stack, switch, button, piano, slider, and crossfade for their directives, plus MIDI, binary assets, and runtime
   plugins for their raw config roots.
   `editor-plugin-connectors` owns input/output geometry, private connector state, wire lookup, and all line GPU
-  resources. Both compositions install it in their deferred plugin set after the first render. Web-ui provides generic render-layer lifecycle.
+  resources, plus shape/paramShape labels and row reservations. Both compositions install it in their deferred plugin
+  set after the first render. Web-ui provides generic render-layer lifecycle. Core has no `widgets` state.
   Core provides independent layout contributions and subscriptions; directive parsing and layout remain separate.
   Session restoration/autosaving and project URL loading live in `editor-plugin-session-persistence` and
   `editor-plugin-project-url-loader`. The default host supplies storage/fetch and chooses initial URL priority.

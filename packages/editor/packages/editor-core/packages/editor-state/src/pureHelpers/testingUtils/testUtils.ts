@@ -35,20 +35,4 @@ export function deriveDirectiveStateForCode(
 	return deriveDirectiveStateForMockCodeBlock(createMockCodeBlock({ code, ...overrides }), options);
 }
 
-/**
- * Helper to find an item by id in a widgets array
- * Useful for test assertions on array-based widgets
- *
- * @param array - The widgets array to search
- * @param id - The id to find
- * @returns The item with the matching id, or undefined if not found
- *
- * @example
- * const output = findWidgetById(widgets, 'output1');
- * expect(output).toBeDefined();
- */
-export function findWidgetById<T extends { id: string }>(array: T[], id: string): T | undefined {
-	return array.find(item => item.id === id);
-}
-
 export { createMockEventDispatcher, createMockState, createMockViewport } from '@8f4e/editor-state-testing';

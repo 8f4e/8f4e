@@ -30,12 +30,6 @@ export interface MemoryIdentifier {
 
 export type TypedValueKind = 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'float32' | 'float64';
 
-export interface ShapeDeclaration {
-	x: number;
-	y: number;
-	text: string;
-}
-
 /**
  * A single parsed directive record found in a code block's raw lines.
  * Covers editor directives (`; @name`).
@@ -94,9 +88,6 @@ export interface CodeBlockGraphicData {
 	x: number;
 	/** Pixel-space Y coordinate, computed from gridY * hGrid (where hGrid = characterHeight) */
 	y: number;
-	widgets: {
-		shapeDeclarations: ShapeDeclaration[];
-	};
 	lastUpdated: number;
 	/**
 	 * True when the block is currently rendered in a collapsed form.
