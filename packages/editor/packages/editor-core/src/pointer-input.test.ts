@@ -107,6 +107,67 @@ it('leaves dialog activation to the completed press after a capture-only probe',
 	expect(test.state.dialogStack).toHaveLength(0);
 });
 
+it('blocks menu movement and closing presses from reaching blocks or moving the viewport', () => {
+	const test = setup();
+	const blockPressed = vi.fn();
+	const menuMoved = vi.fn();
+	const menuPressed = vi.fn(() => test.events.dispatch('closeContextMenu'));
+	test.events.on('codeBlockPointerDown', blockPressed, { capture: true });
+	test.events.on('codeBlockPointerDown', blockPressed);
+	test.events.on('contextMenuPointerMove', menuMoved);
+	test.events.on('contextMenuPointerDown', menuPressed);
+	test.events.dispatch('contextmenu', test.pointer);
+	const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
+	const revision = test.state.projectChange.revision;
+	const move = { ...test.pointer, x: 0, y: 0, movementX: 40, movementY: 30 };
+	test.events.dispatch('pointermove', move);
+	expect(menuMoved).toHaveBeenCalledExactlyOnceWith(move);
+	expect(move.stopPropagation).toBe(true);
+	expect(test.state.viewport).toMatchObject(viewport);
+	test.events.dispatch('pointerdown', test.pointer);
+	expect(menuPressed).toHaveBeenCalledExactlyOnceWith(test.pointer);
+	expect(test.pointer.stopPropagation).toBe(true);
+	expect(test.state.contextMenu.open).toBe(false);
+	expect(blockPressed).not.toHaveBeenCalled();
+	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+	expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+	expect(test.state.projectChange.revision).toBe(revision);
+});
+
+it('forwards menu presses only after capture-only probes complete', () => {
+	const test = setup();
+	const menuPressed = vi.fn();
+	const blockPressed = vi.fn();
+	test.events.on('contextMenuPointerDown', menuPressed);
+	test.events.on('codeBlockPointerDown', blockPressed, { capture: true });
+	test.events.dispatch('contextmenu', test.pointer);
+	test.events.dispatch('pointerdown', { ...test.pointer }, { phase: 'capture' });
+	expect(menuPressed).not.toHaveBeenCalled();
+	expect(blockPressed).not.toHaveBeenCalled();
+	expect(test.state.contextMenu.open).toBe(true);
+	test.events.dispatch('pointerdown', test.pointer);
+	expect(menuPressed).toHaveBeenCalledExactlyOnceWith(test.pointer);
+	expect(blockPressed).not.toHaveBeenCalled();
+});
+
+it('gives modal dialogs priority over menu pointer forwarding', () => {
+	const test = setup();
+	const menuPressed = vi.fn();
+	const menuMoved = vi.fn();
+	test.events.on('contextMenuPointerDown', menuPressed);
+	test.events.on('contextMenuPointerMove', menuMoved);
+	test.events.dispatch('contextmenu', test.pointer);
+	test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Please wait', buttons: [] });
+	const move = { ...test.pointer };
+	test.events.dispatch('pointermove', move);
+	test.events.dispatch('pointerdown', test.pointer);
+	expect(menuMoved).not.toHaveBeenCalled();
+	expect(menuPressed).not.toHaveBeenCalled();
+	expect(move.stopPropagation).toBe(true);
+	expect(test.pointer.stopPropagation).toBe(true);
+	expect(test.state.contextMenu.open).toBe(true);
+});
+
 it.each(['pointerup', 'pointercancel'])('releases a claimed control on %s', type => {
 	const test = setup();
 	const released = vi.fn();

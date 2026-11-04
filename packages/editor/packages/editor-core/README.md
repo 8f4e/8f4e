@@ -184,10 +184,6 @@ with `{ id, buttonIndex }`; the editor checks the visible dialog and runs the bu
 probes do not activate dialogs. Default and minimal compositions
 install the presentation plugin through their deferred registries. Custom compositions must install it to show dialogs.
 
-Register ordinary viewport-coordinate drawing with `drawers.registerCanvasDrawer(drawer)`. Callbacks receive
-`{ draw, state, memoryViews }` after code blocks and before overlays, independently of `canvasOverlays`. Context-menu
-presentation uses this hook. Canvas drawing types are `CanvasDrawer` and `CanvasDrawerContext`.
-
 Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`
 once the renderer is ready and returns `{ draw, destroy, loadPalette?, releaseMemory? }`. `draw` receives
 `{ state, memoryViews }` every frame after sprites in registration order, independently of block culling.
