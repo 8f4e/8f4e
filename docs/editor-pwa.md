@@ -35,8 +35,6 @@ windows. Choose **Later** to continue the current session; **Reload to update** 
 Updates do not force an immediate reload when they finish downloading.
 Project autosaves remain separate from the versioned app cache.
 
-![The editor update dialog with Reload and Later buttons](images/editor-pwa-update.png)
-
 Offline availability depends on browser storage. Clearing site data removes the saved session and offline files;
 the browser can also reclaim storage under pressure. Keep exported copies of projects you want to retain.
 

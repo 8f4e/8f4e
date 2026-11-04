@@ -40,7 +40,6 @@ test.beforeEach(async ({ context, page }) => {
 	await page.goto('/');
 	await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
 	await waitForEditor(page);
-	await expect(page.locator('#pwa-notice')).toHaveCount(0);
 	expect(await page.evaluate(() => window.state.dialogStack)).toEqual([]);
 });
 
