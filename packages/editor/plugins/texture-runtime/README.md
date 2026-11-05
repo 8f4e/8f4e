@@ -54,3 +54,7 @@ initial values can supply their pixels. Execution never reinitializes memory def
 Custom hosts install `createTextureRuntimePlugin({ getCodeBuffer, getMemory })` using live compiler getters. Install it
 after connectors for overlay ordering. Ready/pending instances survive presentation and entry edits; activation and
 accepted compilation create instances. Disable, recompilation, and disposal invalidate stale pending instantiations.
+
+`src/index.ts` owns configuration, subscriptions, and the WASM program lifecycle. It executes the current entry before
+delegating each frame to `src/render-layer.ts`, which owns the texture drawer, visible upload tracking, conflict
+reporting, and GPU resource release/destruction. Bindings and layout continue to be prepared outside the frame path.

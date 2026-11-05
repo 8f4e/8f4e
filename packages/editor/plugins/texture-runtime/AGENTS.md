@@ -17,6 +17,8 @@
 - Keep the overlay above editor content; block occlusion is outside this feature. Both compositions match either
   directive and raw runtime config with project scope.
 - Export `createTextureRuntimePlugin({ getCodeBuffer, getMemory })`. Preserve instance reuse and stale completion cleanup.
+- Keep program lifecycle and execution-before-draw coordination in `index.ts`. `render-layer.ts` owns the drawer,
+  visible uploads, conflict tracking, and GPU release/destroy callbacks; it uses the existing bindings and layout.
 - Verify build/test/typecheck and test:screenshot through Nx. Builds clean dist before compilation.
 - Keep GPU format/state tests local. Browser scenarios combining compiler, lazy-loader, and texture runtime belong
   to editor-default's test:screenshot target; keep sibling-plugin dependencies out of this package.
