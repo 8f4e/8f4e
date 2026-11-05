@@ -22,6 +22,10 @@ preserves original line numbers and treats document blocks as opaque; notes can 
 Preprocessors register their additional scope delimiters explicitly. Template transforms also share `mapSourceScope`,
 which follows entry wrappers within one owning scope and leaves child-group recursion to the caller.
 
+Model construction in `parseProjectSource.ts` traverses those source nodes with explicit root, group, and entry
+contexts. Source-line preservation and exposure collection are handled separately from block classification and
+recursive entry/group traversal. Each context writes directly into the canonical project model.
+
 This package owns:
 
 - Inlining group-scoped source templates and extracting them from expanded serialized source.

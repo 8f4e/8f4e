@@ -126,6 +126,66 @@ describe('parseProjectSource', () => {
 		expect(getProjectGroups(project)).toEqual([]);
 	});
 
+	it('preserves root declaration gaps while discarding comments around child blocks', () => {
+		const project = parseProjectSource(
+			[
+				'8f4e/v1',
+				'',
+				'   ',
+				'; first retained declaration',
+				'pass common',
+				'',
+				'// between declarations',
+				'pass shared',
+				'',
+				'; discarded before a child block',
+				'entry main',
+				'; discarded inside an entry',
+				'module first',
+				'moduleEnd',
+				'entryEnd',
+				'',
+				'; retained before another root declaration',
+				'pass last',
+				'',
+				'// retained at the end',
+			].join('\n')
+		);
+
+		expect(project.code).toEqual([
+			'; first retained declaration',
+			'pass common',
+			'',
+			'// between declarations',
+			'pass shared',
+			'',
+			'; retained before another root declaration',
+			'pass last',
+			'',
+			'// retained at the end',
+		]);
+		expect(getProjectModules(project)).toEqual([
+			{ type: 'module', id: 13, code: ['module first', 'moduleEnd'], entry: 'main' },
+		]);
+	});
+
+	it.each([
+		{
+			body: 'entry main\nentry nested\nentryEnd\nentryEnd',
+			message: 'Parse error at line 3: entry blocks cannot be nested inside entries',
+		},
+		{
+			body: 'entry main\npass common\nentryEnd',
+			message: 'Parse error at line 3: entry "main" can only contain module or group blocks, got "pass common"',
+		},
+		{
+			body: 'group audio\ngroupEnd',
+			message: 'Parse error at line 2: group blocks must be inside an entry block',
+		},
+	])('retains scope diagnostics: $message', ({ body, message }) => {
+		expect(() => parseProjectSource(`8f4e/v1\n${body}`)).toThrowError(new Error(message));
+	});
+
 	it.each(noteContentMarkers)('preserves %s as root note content', marker => {
 		const noteCode = ['  note', '; @pos 2 3', `\t${marker}  `, '', '  \t', '  noteEnd  '];
 		const project = parseProjectSource(

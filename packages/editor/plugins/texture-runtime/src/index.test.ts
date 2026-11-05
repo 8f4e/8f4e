@@ -145,6 +145,7 @@ async function setup({
 		block,
 		events,
 		frame,
+		releaseMemory: layers.releaseMemory,
 		settle,
 		dispose,
 		instantiate,
@@ -260,6 +261,35 @@ it('reuses the current instance for texture edits and releases removed or offscr
 	test.editTextures('');
 	test.frame();
 	expect(test.gl.deleteTexture).toHaveBeenCalledTimes(2);
+});
+
+it('executes the entry without allocating GPU resources when there are no texture views', async () => {
+	const test = await setup();
+	test.editTextures('');
+	await test.settle();
+	test.frame();
+	test.frame();
+	expect(test.frameCount()).toBe(2);
+	expect(test.instantiate).toHaveBeenCalledOnce();
+	expect(test.gl.createProgram).not.toHaveBeenCalled();
+	expect(test.gl.createTexture).not.toHaveBeenCalled();
+});
+
+it('recreates released texture storage while reusing the runtime instance and GPU program', async () => {
+	const test = await setup();
+	await test.settle();
+	test.frame();
+	test.releaseMemory();
+	expect(test.gl.deleteTexture).toHaveBeenCalledOnce();
+	expect(test.gl.deleteProgram).not.toHaveBeenCalled();
+	test.frame();
+	expect(test.frameCount()).toBe(2);
+	expect(test.instantiate).toHaveBeenCalledOnce();
+	expect(test.gl.createTexture).toHaveBeenCalledTimes(2);
+	expect(test.gl.createProgram).toHaveBeenCalledOnce();
+	test.dispose();
+	expect(test.gl.deleteTexture).toHaveBeenCalledTimes(2);
+	expect(test.gl.deleteProgram).toHaveBeenCalledOnce();
 });
 
 it('bounds uploads against current WASM memory', async () => {
