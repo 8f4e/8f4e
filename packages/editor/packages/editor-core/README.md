@@ -70,7 +70,7 @@ Plugins publish operations with `loading.add({ id, message })`, receiving `done(
 The first terminal call records a finish timestamp and retains the result in the unified `state.loadingIndicators`
 list. A repeated ID replaces its entry without allowing old handles to update it. State records epoch-millisecond
 start/finish times. The eager loading-indicators plugin owns elapsed-time/status drawing and removes the oldest
-expired result every 250 ms after a five-second grace period. Contributions work independently of the drawer.
+expired result every 100 ms after a five-second grace period. Contributions work independently of the drawer.
 
 Keep browser dependencies in plugin factories rather than the shared setup context. A browser host can create
 `createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })` before initializing the editor; the

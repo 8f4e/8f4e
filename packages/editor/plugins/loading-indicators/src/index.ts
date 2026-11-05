@@ -26,7 +26,7 @@ export const loadingIndicatorsPlugin: EditorPlugin = {
 			}
 			if (oldestIndex !== -1)
 				store.set('loadingIndicators', [...indicators.slice(0, oldestIndex), ...indicators.slice(oldestIndex + 1)]);
-		}, 250);
+		}, 100);
 		const removeDrawer = drawers.registerCanvasOverlay(({ draw, state }) => {
 			const { width, height, vGrid, hGrid } = state.viewport;
 			const columns = Math.max(0, Math.floor(width / vGrid) - 2);

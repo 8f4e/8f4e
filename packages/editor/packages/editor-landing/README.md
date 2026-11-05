@@ -35,7 +35,7 @@ saving/export, and block copy/paste.
 `@8f4e/editor-plugin-loading-indicators` is installed eagerly before deferred loading and draws the unified
 `state.loadingIndicators` list at the bottom left. Producers supply IDs and custom messages, such as `Compiling...`.
 The overlay shows elapsed time and retains done, failed, or cancelled results for at least five seconds, with
-green/red success/failure labels. Cleanup removes one expired result every 250 ms, oldest finish time first.
+green/red success/failure labels. Cleanup removes one expired result every 100 ms, oldest finish time first.
 Reusing an ID replaces its previous entry. This overlay does not block input.
 
 Verify from the workspace root:

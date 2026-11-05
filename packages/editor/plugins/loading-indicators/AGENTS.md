@@ -1,6 +1,6 @@
 # Loading Indicators Plugin
 
-- Own presentation of `state.loadingIndicators` through `registerCanvasOverlay`, plus a 250 ms cleanup timer.
+- Own presentation of `state.loadingIndicators` through `registerCanvasOverlay`, plus a 100 ms cleanup timer.
 - Contributors supply `{ id, message }` through `loading.add` and own `done()`, `fail()`, or `cancel()` outcomes.
   State records `status`, epoch-millisecond `startedAt`, and nullable `finishedAt`. Reusing an ID replaces its entry;
   stale handles cannot update the replacement. Do not concatenate a loading prefix or group by contributor.

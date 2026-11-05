@@ -50,33 +50,33 @@ it('draws custom messages and frozen terminal times, then expires results withou
 	test.store.loading.add({ id: 'pending', message: 'Still working...' });
 	vi.advanceTimersByTime(250);
 	asset.fail();
-	vi.advanceTimersByTime(100);
+	vi.advanceTimersByTime(10);
 	old.cancel();
-	vi.advanceTimersByTime(100);
+	vi.advanceTimersByTime(10);
 	compilation.done();
-	vi.advanceTimersByTime(800);
+	vi.advanceTimersByTime(980);
 	test.render();
 	expect(test.draw.startGroup).toHaveBeenCalledWith(0, 80);
 	expect(test.draw.drawText).toHaveBeenCalledWith(8, 0, 'Compiling...', PALETTE_INDICES.floatingInk);
 	expect(test.draw.drawText).toHaveBeenCalledWith(104, 0, ' done', PALETTE_INDICES.positiveBase);
-	expect(test.draw.drawText).toHaveBeenCalledWith(144, 0, ' 450 ms', PALETTE_INDICES.floatingMuted);
+	expect(test.draw.drawText).toHaveBeenCalledWith(144, 0, ' 270 ms', PALETTE_INDICES.floatingMuted);
 	expect(test.draw.drawText).toHaveBeenCalledWith(144, 16, ' failed', PALETTE_INDICES.negativeBase);
 	expect(test.draw.drawText).toHaveBeenCalledWith(96, 32, ' cancelled', PALETTE_INDICES.floatingMuted);
 	expect(test.draw.drawText).toHaveBeenCalledWith(136, 48, ' 1.3 s', PALETTE_INDICES.floatingMuted);
 	expect(test.store.getState().dialogStack).toEqual([]);
 	vi.advanceTimersByTime(4000);
 	expect(test.store.getState().loadingIndicators).toHaveLength(4);
-	vi.advanceTimersByTime(250);
+	vi.advanceTimersByTime(50);
 	expect(test.store.getState().loadingIndicators.map(indicator => indicator.id)).toEqual([
 		'compiler',
 		'old',
 		'pending',
 	]);
-	vi.advanceTimersByTime(249);
+	vi.advanceTimersByTime(99);
 	expect(test.store.getState().loadingIndicators).toHaveLength(3);
 	vi.advanceTimersByTime(1);
 	expect(test.store.getState().loadingIndicators.map(indicator => indicator.id)).toEqual(['compiler', 'pending']);
-	vi.advanceTimersByTime(250);
+	vi.advanceTimersByTime(100);
 	expect(test.store.getState().loadingIndicators).toMatchObject([{ id: 'pending', status: 'loading' }]);
 	test.dispose();
 	expect(vi.getTimerCount()).toBe(0);

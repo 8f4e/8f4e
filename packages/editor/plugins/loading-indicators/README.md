@@ -32,7 +32,7 @@ Each state record contains `id`, `message`, `status` (`loading`, `done`, `failed
 `finishedAt`. Timestamps are milliseconds since the Unix epoch; `finishedAt` is null while loading. The registry
 records timestamps and terminal results without removing entries.
 
-Every 250 ms, the plugin removes at most one entry whose finish time is more than five seconds old, choosing the
+Every 100 ms, the plugin removes at most one entry whose finish time is more than five seconds old, choosing the
 oldest finish timestamp first. Completed entries disappear gradually; pending operations remain. Cleanup runs
 independently of drawing, including while overlays or rendering are disabled.
 Disposal stops the timer and unregisters the drawer without clearing the list. Without this plugin, contributions
