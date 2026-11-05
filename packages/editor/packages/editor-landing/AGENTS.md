@@ -9,6 +9,7 @@
 - Keep compiler coordination, URL loading, block backgrounds, and code rendering eager.
   Install block backgrounds before code rendering. Gate every optional import on core's `ready` event through
   `src/deferred-plugins.ts`; add no frame callbacks, visibility gates, or timers. Keep font payloads lazy.
+- Omit `jump-to-error`; the landing editor has no error-navigation button.
 - Omit the loading-indicators plugin and its presentation/visibility timers. Hosts own loading UI; producers still
   publish operation status in state.
 - Keep optional plugins as individual deferred entries. Load mouse input on all devices, touch input on coarse

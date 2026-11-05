@@ -52,6 +52,12 @@ export function createDeferredEditorPlugin({
 			load: () => import('@8f4e/editor-plugin-error-messages').then(module => module.errorMessagesPlugin),
 		},
 		{
+			id: 'jump-to-error',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-jump-to-error').then(module => module.jumpToErrorPlugin),
+		},
+		{
 			id: 'dialogs',
 			scope: 'view',
 			matches: () => true,

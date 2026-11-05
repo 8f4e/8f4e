@@ -181,7 +181,10 @@ presentation uses this hook. Shared canvas drawing types are `CanvasDrawer` and 
 
 Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The drawer receives
 `{ draw, state, memoryViews }` after ordinary canvas drawers and before modal overlays, with coordinates relative to the viewport's top-left.
-The renderer checks `featureFlags.canvasOverlays` before invoking this stage. Keyboard hints live in their
+The renderer checks `featureFlags.canvasOverlays` before invoking this stage.
+Visible overlays receive `canvasOverlayPointerDown` before block controls are probed. Set `stopPropagation` on the
+normalized pointer event to claim a press; own capture-phase movement, release, and cancellation for that gesture.
+Open context menus and modal dialogs take priority, and disabled canvas overlays receive no presses. Keyboard hints live in their
 mode-switching plugin; screenshot capture hides canvas overlays through this generic flag.
 
 Register modal sprite overlays with `drawers.registerModalOverlay(drawer)`. This uses the same viewport context

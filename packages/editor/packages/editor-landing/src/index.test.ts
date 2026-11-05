@@ -52,6 +52,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	const entries = vi.mocked(createLazyPluginLoaderPlugin).mock.calls.at(-1)![0];
 	for (const id of [
 		'loading-indicators',
+		'jump-to-error',
 		'context-menu',
 		'entry-outlines',
 		'offscreen-block-arrows',

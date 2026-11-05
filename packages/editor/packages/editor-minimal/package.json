@@ -41,6 +41,7 @@
     "@8f4e/editor-plugin-dialogs": "*",
     "@8f4e/editor-plugin-entry-outlines": "*",
     "@8f4e/editor-plugin-error-messages": "*",
+    "@8f4e/editor-plugin-jump-to-error": "*",
     "@8f4e/editor-plugin-keyboard-editing": "*",
     "@8f4e/editor-plugin-keyboard-memory": "*",
     "@8f4e/editor-plugin-keyboard-mode-switching": "*",

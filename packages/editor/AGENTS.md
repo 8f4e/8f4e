@@ -77,6 +77,7 @@
   `editor-plugin-keyboard-memory`, and MIDI discovery/input in `editor-plugin-midi-input`. These use the same plugin
   contract; there is no separate environment-plugin manager. Assertion results and raw error contributions remain
   central. `editor-plugin-error-messages` owns inline message presentation and loads through composition deferred registries.
+  `editor-plugin-jump-to-error` owns the fixed error-navigation button; default/minimal defer it, and landing omits it.
   Plugin contracts and installation live in `editor-core`,
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   `editor-plugin-lazy-loader` scans cached directives automatically after project changes and group navigation.
@@ -138,6 +139,8 @@
 - Verify lazy plugin loading with `npx nx run @8f4e/editor-plugin-lazy-loader:build|test|typecheck`. Browser composition coverage runs through `npx nx run @8f4e/editor-default:test:screenshot`.
 - Build or preview it with `npx nx run @8f4e/editor-website:build|serve`.
 - Ensure dependency packages are built before relying on workspace aliases in the website.
+
+- Verify error navigation with `npx nx run @8f4e/editor-plugin-jump-to-error:build|test|typecheck` and editor-default's `test:screenshot` target.
 
 ## Coding Style
 

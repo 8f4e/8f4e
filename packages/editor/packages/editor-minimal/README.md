@@ -119,3 +119,7 @@ Web-ui calls its single replaceable drawer from the existing block traversal.
 
 `@8f4e/editor-plugin-entry-outlines` is also deferred until `ready`. It draws borders and labels below code blocks
 from core's entry bounds. Editor-state owns bounds, updates, and insertion assignment, independently of presentation.
+
+`@8f4e/editor-plugin-jump-to-error` loads after the first render and shows a bottom-right **Jump to error** button
+while contributed code errors exist. It selects the first error, opens its project group, and centers the displayed
+message. Selecting the block reveals folded source while preserving editor mode. The landing editor omits this plugin.

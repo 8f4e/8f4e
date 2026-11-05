@@ -108,6 +108,7 @@ describe('default editor plugins', () => {
 				'code-rendering',
 				'connectors',
 				'error-messages',
+				'jump-to-error',
 				'loading-indicators',
 				'dialogs',
 				'context-menu',

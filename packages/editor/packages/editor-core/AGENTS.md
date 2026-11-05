@@ -42,6 +42,8 @@
   `activateDialogButton { id, buttonIndex }` against the visible dialog. `editor-plugin-dialogs` owns private
   presentation geometry, hit testing, and drawing. Web-ui provides `registerModalOverlay` after ordinary overlays,
   independently of `canvasOverlays`.
+- Forward `canvasOverlayPointerDown` before block control capture for visible overlays. Honor claimed presses,
+  and keep dialogs/context menus ahead of overlays. Feature plugins own overlay hit testing and gesture cleanup.
 - DOM mouse/wheel adaptation belongs to `editor-plugin-mouse-input`; touch adaptation and panning belong to
   `editor-plugin-touch-input`. Core keeps the event dispatcher and state effects, with no DOM input
   listeners or `captureWheel` option. Export existing generic viewport update, animation-stop, and grid-snap helpers.

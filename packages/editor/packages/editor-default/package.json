@@ -45,6 +45,7 @@
     "@8f4e/editor-plugin-favorites": "*",
     "@8f4e/editor-plugin-font-preview": "*",
     "@8f4e/editor-plugin-grouping": "*",
+    "@8f4e/editor-plugin-jump-to-error": "*",
     "@8f4e/editor-plugin-keyboard-editing": "*",
     "@8f4e/editor-plugin-keyboard-memory": "*",
     "@8f4e/editor-plugin-keyboard-mode-switching": "*",
