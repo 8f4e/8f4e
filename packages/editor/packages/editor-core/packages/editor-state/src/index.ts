@@ -10,7 +10,7 @@ import type {
 import createStateManager, { type StateManager } from '@8f4e/state-manager';
 import codeBlockRendering from './features/code-blocks/effect';
 import autoEnvConstants from './features/code-blocks/features/auto-env-constants/effect';
-import codeBlockCreator from './features/code-blocks/features/codeBlockCreator/effect';
+import codeBlockActions from './features/code-blocks/features/codeBlockActions/effect';
 import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
@@ -98,9 +98,9 @@ export default function init(
 	registerEffect(pointerInput(store, events));
 	registerEffect(codeBlockNavigation(store, events));
 	registerEffect(viewport(store, events));
-	registerEffect(codeBlockCreator(store, events));
+	registerEffect(codeBlockActions(store, events));
 	registerEffect(projectGroupNavigation(store, events));
-	registerEffect(autoEnvConstants(store)); // Must run after codeBlockCreator to ensure env block is created
+	registerEffect(autoEnvConstants(store));
 	registerEffect(publishCompilationInputChanges(store, events));
 	registerEffect(codeBlockRendering(store, events, directives.definitions, layout));
 	registerEffect(viewportDirectiveEffect(store, events));

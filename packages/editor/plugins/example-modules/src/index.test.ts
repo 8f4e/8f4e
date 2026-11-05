@@ -202,9 +202,7 @@ describe('example modules plugin', () => {
 			const test = setup({ installed });
 			if (installed) test.disposePlugin();
 			test.events.dispatch('contextmenu', { x: 100, y: 112 });
-			await vi.waitFor(() =>
-				expect(test.state.contextMenu.items.some(item => item.action === 'createCodeBlock')).toBe(true)
-			);
+			await Promise.resolve();
 			expect(test.state.contextMenu.items.some(item => item.payload?.menu === EXAMPLE_MODULES_MENU)).toBe(false);
 			test.events.dispatch(ADD_EXAMPLE_MODULE, { slug: 'target', x: 100, y: 112 });
 			expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env']);

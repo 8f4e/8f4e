@@ -4,9 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import createDefaultState from '../../pureHelpers/state/createDefaultState';
+import { deleteCodeBlocks } from '../code-blocks/deleteCodeBlocks';
 import rendering from '../code-blocks/effect';
 import autoEnvConstants from '../code-blocks/features/auto-env-constants/effect';
-import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
+import codeBlockActions from '../code-blocks/features/codeBlockActions/effect';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
@@ -139,8 +140,8 @@ describe('compiler input revision', () => {
 	});
 
 	it('announces changes after adding, disabling, enabling, and deleting a block', async () => {
-		codeBlockCreator(store, events);
-		await dispatchAsync('createCodeBlock', { x: 100, y: 100, blockType: 'module' });
+		codeBlockActions(store, events);
+		await dispatchAsync('insertCodeBlock', { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
 		expect(state.compilerInputRevision).toBe(1);
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
@@ -151,10 +152,10 @@ describe('compiler input revision', () => {
 		expect(block.disabled).toBe(false);
 		expect(state.compilerInputRevision).toBe(3);
 		expect(onInputChanged).toHaveBeenCalledTimes(3);
-		dispatch('deleteCodeBlock', { codeBlock: block });
+		deleteCodeBlocks(store, [block]);
 		expect(state.compilerInputRevision).toBe(4);
 		expect(onInputChanged).toHaveBeenCalledTimes(4);
-		dispatch('deleteCodeBlock', { codeBlock: block });
+		deleteCodeBlocks(store, [block]);
 		expect(state.compilerInputRevision).toBe(4);
 		expect(onInputChanged).toHaveBeenCalledTimes(4);
 	});

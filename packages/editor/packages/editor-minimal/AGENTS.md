@@ -81,6 +81,9 @@
 - Install `codeBlockBackgroundPlugin` eagerly before `codeRenderingPlugin`. Every block drawer uses the same
   ordered registration API, including deferred plugins. Do not restore separate drawing stages or aliases.
 
+- Load `blockAuthoringPlugin` as an unconditional deferred entry for New Module/Function/Prototype/Note and Delete
+  menu commands. Core retains generic source operations and entry assignment. Landing omits this plugin.
+
 - Load `contextMenuPlugin` as an unconditional deferred entry. It owns menu formatting, geometry, hover/hit testing,
   and drawing through `registerCanvasDrawer`; core keeps raw menu items, contributions, navigation, and action dispatch.
 

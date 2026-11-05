@@ -40,12 +40,6 @@ export const moduleMenu = (
 		...(state.editorMode === 'edit'
 			? [
 					{
-						title: `Delete ${blockLabel}`,
-						action: 'deleteCodeBlock',
-						payload: { codeBlock },
-						close: true,
-					},
-					{
 						title: isDisabled ? `Enable ${blockLabel}` : `Disable ${blockLabel}`,
 						action: 'toggleCodeBlockDisabled',
 						payload: { codeBlock },

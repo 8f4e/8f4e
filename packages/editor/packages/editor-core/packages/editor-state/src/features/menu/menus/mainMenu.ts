@@ -7,35 +7,6 @@ export const mainMenu = (state: State): ContextMenuItem[] => [
 	...(state.editorMode === 'edit'
 		? [
 				{
-					title: 'New Module',
-					action: 'createCodeBlock',
-					payload: { blockType: 'module' },
-					close: true,
-				},
-				{
-					title: 'New Function',
-					action: 'createCodeBlock',
-					payload: { blockType: 'function' },
-					close: true,
-				},
-				{
-					title: 'New Prototype',
-					action: 'createCodeBlock',
-					payload: { blockType: 'prototype' },
-					close: true,
-				},
-				{
-					title: 'New Note',
-					action: 'createCodeBlock',
-					payload: { blockType: 'note' },
-					close: true,
-				},
-			]
-		: []),
-	...(state.editorMode === 'edit' ? [{ divider: true }] : []),
-	...(state.editorMode === 'edit'
-		? [
-				{
 					title: 'Go @home',
 					action: 'goHome',
 					close: true,

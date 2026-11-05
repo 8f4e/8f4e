@@ -4,9 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import createDefaultState from '../../pureHelpers/state/createDefaultState';
+import { deleteCodeBlocks } from '../code-blocks/deleteCodeBlocks';
 import rendering from '../code-blocks/effect';
 import autoEnvConstants from '../code-blocks/features/auto-env-constants/effect';
-import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
+import codeBlockActions from '../code-blocks/features/codeBlockActions/effect';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
@@ -114,16 +115,16 @@ describe('project revision', () => {
 	});
 
 	it('advances for adding, disabling, enabling, and deleting a block, but not for a repeated delete', async () => {
-		codeBlockCreator(store, events);
+		codeBlockActions(store, events);
 		await dispatchAsync('insertCodeBlock', { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
 		expect(state.projectChange.revision).toBe(1);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
 		expect(state.projectChange.revision).toBe(2);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
 		expect(state.projectChange.revision).toBe(3);
-		dispatch('deleteCodeBlock', { codeBlock: block });
+		deleteCodeBlocks(store, [block]);
 		expect(state.projectChange.revision).toBe(4);
-		dispatch('deleteCodeBlock', { codeBlock: block });
+		deleteCodeBlocks(store, [block]);
 		expect(state.projectChange.revision).toBe(4);
 	});
 
