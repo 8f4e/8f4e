@@ -27,6 +27,13 @@ export function createDeferredEditorPlugin({
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
 	return createLazyPluginLoaderPlugin([
 		{
+			id: 'offscreen-block-arrows',
+			scope: 'view',
+			matches: () => true,
+			load: () =>
+				import('@8f4e/editor-plugin-offscreen-block-arrows').then(module => module.offscreenBlockArrowsPlugin),
+		},
+		{
 			id: 'entry-outlines',
 			scope: 'view',
 			matches: () => true,

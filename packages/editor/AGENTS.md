@@ -13,7 +13,9 @@
   line-number drawing, and private prepared sprite cells and highlight rectangles. Both compositions install it eagerly.
   Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order
   within its existing visible-block loop. The eager `code-block-background` plugin is installed before code rendering.
-  Code rendering owns selected-line fill; code-block-background owns corner markers. Web-ui retains offscreen arrows.
+  Code rendering owns selected-line fill; code-block-background owns corner markers. The deferred
+  `offscreen-block-arrows` plugin owns arrow placement and drawing through a single replaceable
+  `registerOffscreenCodeBlockDrawer` callback in the same traversal. `canvasOverlays` also controls offscreen decorations.
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
 - Editor-state owns `codeBlockRendering.entryBounds`, including padding, updates, and insertion hit testing.
   `@8f4e/editor-plugin-entry-outlines` only draws borders and labels through `registerCanvasBackgroundDrawer` below blocks.

@@ -84,7 +84,6 @@ interface PreviewState {
 	dialogStack: Array<{ id: string }>;
 	featureFlags: {
 		canvasOverlays: boolean;
-		offscreenBlockArrows: boolean;
 	};
 	initialProjectState?: unknown;
 	viewport: {
@@ -337,7 +336,6 @@ export async function generateProjectPreview({
 			state.viewport.x = targetBlock.x - previewPosition.x;
 			state.viewport.y = targetBlock.y - previewPosition.y;
 			state.featureFlags.canvasOverlays = false;
-			state.featureFlags.offscreenBlockArrows = false;
 			state.codeBlockRendering.selectedCodeBlock = undefined;
 			state.dialogStack.length = 0;
 

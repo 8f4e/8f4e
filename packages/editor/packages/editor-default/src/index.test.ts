@@ -110,6 +110,7 @@ describe('default editor plugins', () => {
 				'dialogs',
 				'context-menu',
 				'entry-outlines',
+				'offscreen-block-arrows',
 				'tooltips',
 				'favorites',
 				'project-file-session',

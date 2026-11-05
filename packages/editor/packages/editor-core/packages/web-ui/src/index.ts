@@ -19,6 +19,7 @@ export type {
 	CodeBlockDrawer,
 	CodeBlockDrawerContext,
 	EditorDrawerRegistry,
+	OffscreenCodeBlockDrawer,
 } from './drawers/registry';
 export { createEditorDrawerRegistry } from './drawers/registry';
 export { createProgram, prepareRenderPass, requireResource, requireUniform } from './plugins/webgl';

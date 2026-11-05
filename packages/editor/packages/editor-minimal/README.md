@@ -103,5 +103,8 @@ Context-menu presentation comes from the deferred `@8f4e/editor-plugin-context-m
 geometry, hover/hit testing, and drawing. Core keeps raw menu contributions, navigation, input blocking, and action
 or selector dispatch. Menu geometry is private; consumers activate raw items through `activateContextMenuItem`.
 
+`@8f4e/editor-plugin-offscreen-block-arrows` loads after `ready` and owns viewport-edge arrow placement and drawing.
+Web-ui calls its single replaceable drawer from the existing block traversal.
+
 `@8f4e/editor-plugin-entry-outlines` is also deferred until `ready`. It draws borders and labels below code blocks
 from core's entry bounds. Editor-state owns bounds, updates, and insertion assignment, independently of presentation.

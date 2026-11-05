@@ -10,7 +10,6 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 	canvas.height = 400;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
-		featureFlags: { offscreenBlockArrows: false },
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			entries: ['audio', 'checks'],

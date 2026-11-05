@@ -71,7 +71,6 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 					},
 				]),
 			],
-			featureFlags: { offscreenBlockArrows: false },
 		});
 		editor.pauseRendering();
 		await vi.waitFor(

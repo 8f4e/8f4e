@@ -63,7 +63,6 @@ async function setup(text = source) {
 	};
 	const editor: Editor = await initEditor(canvas, {
 		initialProject: project,
-		featureFlags: { offscreenBlockArrows: false },
 		plugins: [connectorsPlugin, installArtifacts],
 	});
 	cleanups.push(() => {

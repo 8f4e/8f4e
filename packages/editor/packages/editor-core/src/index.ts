@@ -62,6 +62,7 @@ export type {
 	CodeBlockDrawer,
 	CodeBlockDrawerContext,
 	EditorDrawerRegistry,
+	OffscreenCodeBlockDrawer,
 } from '@8f4e/web-ui';
 export type { EventDispatcher } from './events';
 export type { EditorPlugin, EditorPluginContext } from './plugins';

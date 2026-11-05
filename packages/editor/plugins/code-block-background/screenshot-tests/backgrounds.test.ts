@@ -10,7 +10,6 @@ test('draws normal, disabled, and dragged block backgrounds below registered fix
 	canvas.height = 384;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
-		featureFlags: { offscreenBlockArrows: false },
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			constants: [{ id: 0, code: ['constants env', '; @pos 100 100', 'constantsEnd'] }],
