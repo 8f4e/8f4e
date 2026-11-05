@@ -31,6 +31,8 @@ This file extends the root and compiler package guidance for `packages/compiler/
 - `projectSource.ts` owns structural block boundaries, matching closers, and opaque note contents. Ordinary parsing,
   template transforms, and exported block validation share this reader. Preprocessors register additional scope
   delimiters explicitly; ordinary project-model construction does not know about template definitions.
+- `parseProjectSource.ts` constructs the canonical model using explicit root/group/entry contexts. Keep source-line
+  preservation and exposure collection separate from block-node dispatch and recursive scope traversal.
 - `mapSourceScope` visits immediate nodes through entry wrappers without entering child-group scopes. Template
   transforms share this traversal while retaining their own validation, expansion, and precedence rules.
 - Own `template` / `useTemplate` validation and inlining here before ordinary project parsing. Lookup uses the group's
