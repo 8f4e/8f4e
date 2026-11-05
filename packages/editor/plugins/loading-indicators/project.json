@@ -36,6 +36,16 @@
         "command": "biome check --write packages/editor/plugins/loading-indicators/src",
         "cwd": "{workspaceRoot}"
       }
+    },
+    "test:screenshot": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build"
+      ],
+      "options": {
+        "command": "vitest --config=vitest.browser.config.ts --run",
+        "cwd": "{projectRoot}"
+      }
     }
   },
   "tags": [

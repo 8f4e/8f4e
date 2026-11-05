@@ -7,4 +7,5 @@
 - Install eagerly before the deferred loader so its first imports are visible. Read the current list each frame.
   Disposal removes only the drawer.
 - Run `npx nx run @8f4e/editor-plugin-loading-indicators:build|test|typecheck`.
-  Real plugin combinations and screenshots belong in editor-default's `test:screenshot` target.
+  Run `npx nx run @8f4e/editor-plugin-loading-indicators:test:screenshot` for the loading-indicator browser cases
+  and their owned screenshot baselines, including concurrent producer contributions and the initial deferred import.

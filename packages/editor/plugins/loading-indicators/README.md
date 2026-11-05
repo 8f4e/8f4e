@@ -27,4 +27,5 @@ removers immediately when work is superseded or the producer is disposed, even i
 Loading failures are reported separately through the producer's existing error reporting.
 
 Verify with `npx nx run @8f4e/editor-plugin-loading-indicators:build|test|typecheck`.
-Real-editor overlay coverage belongs in the editor-default composition's `test:screenshot` target.
+Run real-editor overlay coverage with `npx nx run @8f4e/editor-plugin-loading-indicators:test:screenshot`.
+The browser cases and their baselines live in `screenshot-tests/` in this package.
