@@ -4,8 +4,8 @@ import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '../../pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '../../pureHelpers/testingUtils/vitestTestUtils';
+import { deleteCodeBlocks } from '../code-blocks/deleteCodeBlocks';
 import rendering from '../code-blocks/effect';
-import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
 import { insertCodeBlocks } from '../code-blocks/insertCodeBlocks';
@@ -272,9 +272,8 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('records nothing when deleting a block that is not in the project', async () => {
-		codeBlockCreator(store, events);
 		const stranger = createMockCodeBlock({ code: ['module stranger', 'moduleEnd'], blockType: 'module' });
-		dispatch('deleteCodeBlock', { codeBlock: stranger });
+		deleteCodeBlocks(store, [stranger]);
 		await vi.advanceTimersByTimeAsync(2000);
 
 		expect(state.projectChange.revision).toBe(0);

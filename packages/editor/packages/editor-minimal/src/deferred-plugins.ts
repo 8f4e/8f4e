@@ -27,6 +27,12 @@ export function createDeferredEditorPlugin({
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
 	return createLazyPluginLoaderPlugin([
 		{
+			id: 'block-authoring',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-block-authoring').then(module => module.blockAuthoringPlugin),
+		},
+		{
 			id: 'offscreen-block-arrows',
 			scope: 'view',
 			matches: () => true,

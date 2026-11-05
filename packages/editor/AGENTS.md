@@ -30,6 +30,10 @@
 - Editor-state owns `codeBlockRendering.entryBounds`, including padding, updates, and insertion hit testing.
   `@8f4e/editor-plugin-entry-outlines` only draws borders and labels through `registerCanvasBackgroundDrawer` below blocks.
   The default and minimal compositions defer drawing until `ready`; entry assignment works independently of the plugin.
+- `editor-plugin-block-authoring` owns New Module/Function/Prototype/Note templates, random names, Delete, and
+  their menu contributions. Default and minimal load it after `ready`; landing omits it. Generic insertion/deletion,
+  entry assignment, layout, revisions, and history stay in editor-state. Folding and shared source/display mappings
+  remain in editor-state.
 - `@8f4e/editor-plugin-context-menu` owns menu labels, sizing, grid snapping, viewport clamping, hover state, hit testing,
   and drawing. Core keeps raw items, requested world anchors, menu navigation, input blocking, and action/selector dispatch.
   The default and minimal compositions defer it until `ready`. Web-ui exposes generic `registerCanvasDrawer` before canvas/modal overlays.

@@ -111,6 +111,7 @@ describe('default editor plugins', () => {
 				'loading-indicators',
 				'dialogs',
 				'context-menu',
+				'block-authoring',
 				'entry-outlines',
 				'offscreen-block-arrows',
 				'tooltips',

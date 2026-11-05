@@ -54,12 +54,13 @@ Block types are automatically detected and updated based on code content.
 
 This feature contains several subfeatures under `features/` that handle specific aspects:
 
-- `codeBlockCreator` - Block creation logic
+- `codeBlockActions` - Generic source insertion and enable/disable action bindings
 - `codeBlockDragger` - Drag and drop operations
 - `codeBlockNavigation` - Keyboard navigation between blocks
 - `codeBlockRendering` - Visual properties computation
-- `inputs` - Audio input routing
-- `outputs` - Audio output routing
+
+New block templates, random names, Delete, and their menu contributions belong to `editor-plugin-block-authoring`.
+Core retains insertion/removal helpers, entry assignment, identity allocation, folding, layout, and history.
 
 Source changes use `sourceUpdates.ts` in an explicit sequence: parse directives and update block type and valid grid
 coordinates, regenerate environment source, resolve global configuration, then refresh layouts. An incomplete or
@@ -70,7 +71,6 @@ path; ordinary layout invalidations do not reparse source.
 
 ### Key Events
 
-- `createCodeBlock({ x, y, blockType })`: create a template of the requested type
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
 - `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal contribution invalidation; rederives affected visible blocks

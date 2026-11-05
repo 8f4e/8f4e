@@ -28,6 +28,10 @@
   All optional imports, including directive-based lazy plugins, start on core's `ready` event, after initial project
   loading/parsing, font-atlas loading, and rendering. Font payloads remain separate lazy chunks; do not add frame
   callbacks or timing gates.
+- `editor-plugin-block-authoring` owns New Module/Function/Prototype/Note templates, random names, Delete, and
+  their menu contributions. Default and minimal load it after `ready`; landing omits it. Generic insertion/deletion,
+  entry assignment, layout, revisions, and history stay in editor-state. Folding and shared source/display mappings
+  remain in editor-state.
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
   selection, and group copying. Nested language-level project groups remain core project structure.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage embedding the landing editor, plus an

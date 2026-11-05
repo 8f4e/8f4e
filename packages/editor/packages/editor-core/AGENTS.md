@@ -29,6 +29,10 @@
 
 ## Plugins
 
+- Block authoring templates, random names, New/Delete menu items, and create/delete action handlers belong to
+  `editor-plugin-block-authoring`. Keep `insertCodeBlock`, `insertCodeBlocks`, `deleteCodeBlocks`, entry assignment,
+  and revisions/history in core. `codeBlockActions` binds generic insertion and enable/disable actions.
+- Keep folding, source/display mappings, shared line geometry, and pointer hit testing in editor-state.
 - Editor-state owns entry bounds, their padding/updates, and insertion hit testing in `codeBlockRendering.entryBounds`.
   Entry assignment works without drawing plugins. `editor-plugin-entry-outlines` only draws borders and labels from
   those bounds through generic `registerCanvasBackgroundDrawer`, below blocks with the existing canvas context types.

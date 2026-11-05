@@ -3,9 +3,9 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
-import codeBlockCreator from './effect';
+import codeBlockActions from './effect';
 
-describe('codeBlockCreator - creation and insertion', () => {
+describe('codeBlockActions - insertion', () => {
 	let mockState: State;
 	let store: ReturnType<typeof createStateManager<State>>;
 	let mockEvents: ReturnType<typeof createMockEventDispatcherWithVitest>;
@@ -14,27 +14,13 @@ describe('codeBlockCreator - creation and insertion', () => {
 		store = createStateManager(mockState);
 		mockEvents = createMockEventDispatcherWithVitest();
 	});
-	it.each([
-		['module', 'moduleEnd'],
-		['function', 'functionEnd'],
-		['prototype', 'prototypeEnd'],
-		['note', 'noteEnd'],
-	])('creates a %s template', (blockType, end) => {
-		codeBlockCreator(store, mockEvents);
-		const create = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'createCodeBlock')![1];
-		create({ x: 100, y: 100, blockType });
-		const block = mockState.codeBlockRendering.currentProject.blocks[0];
-		expect(block.blockType).toBe(blockType);
-		expect(block.code[0]).toMatch(new RegExp(`^${blockType}(?: |$)`));
-		expect(block.code.at(-1)).toBe(end);
-	});
 	it.each(['module', 'function', 'prototype'])(
 		'inserts duplicate %s names without rewriting source references',
 		blockType => {
 			mockState.codeBlockRendering.currentProject.blocks.push(
 				createMockCodeBlock({ name: 'same', code: [`${blockType} same`, `${blockType}End`] })
 			);
-			codeBlockCreator(store, mockEvents);
+			codeBlockActions(store, mockEvents);
 			const insert = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'insertCodeBlock')![1];
 			insert({ x: 100, y: 100, code: [`${blockType} same`, 'push &same:value', `${blockType}End`] });
 			const block = mockState.codeBlockRendering.currentProject.blocks.at(-1)!;
@@ -43,28 +29,29 @@ describe('codeBlockCreator - creation and insertion', () => {
 			expect(block.code).toContain('push &same:value');
 		}
 	);
-	it.each([
-		['createCodeBlock', { x: 100, y: 100, blockType: 'module' }],
-		['insertCodeBlock', { x: 100, y: 100, code: ['module supplied', 'moduleEnd'] }],
-	])('ignores %s in view mode', (action, payload) => {
+	it('ignores insertion in view mode', () => {
 		mockState.editorMode = 'view';
-		codeBlockCreator(store, mockEvents);
-		vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === action)![1](payload);
+		codeBlockActions(store, mockEvents);
+		vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'insertCodeBlock')![1]({
+			x: 100,
+			y: 100,
+			code: ['module supplied', 'moduleEnd'],
+		});
 		expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(0);
 	});
-	describe('New Module entry assignment', () => {
+	describe('module insertion entry assignment', () => {
 		it('creates a new empty module assigned to a fresh execution entry outside existing entries', async () => {
-			codeBlockCreator(store, mockEvents);
+			codeBlockActions(store, mockEvents);
 
 			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
-			const createCodeBlockCallback = createCodeBlockCall![1];
+			const insertCodeBlockCall = onCalls.find(call => call[0] === 'insertCodeBlock');
+			const insertCodeBlockCallback = insertCodeBlockCall![1];
 
-			await createCodeBlockCallback({ x: 100, y: 100, blockType: 'module' });
+			await insertCodeBlockCallback({ x: 100, y: 100, code: ['module supplied', 'moduleEnd'] });
 
 			expect(mockState.codeBlockRendering.currentProject.blocks).toHaveLength(1);
 			expect(mockState.codeBlockRendering.currentProject.blocks[0].entry).toBe('entry');
-			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[0]).toMatch(/^module \w+$/);
+			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[0]).toBe('module supplied');
 			expect(mockState.codeBlockRendering.currentProject.blocks[0].code[1]).toMatch(/^; @pos \d+ \d+$/);
 			expect(mockState.codeBlockRendering.currentProject.blocks[0].code.at(-1)).toBe('moduleEnd');
 		});
@@ -83,15 +70,15 @@ describe('codeBlockCreator - creation and insertion', () => {
 				})
 			);
 			mockState.codeBlockRendering.nextCodeBlockCreationIndex = usedEntries.length;
-			codeBlockCreator(store, mockEvents);
-			const create = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'createCodeBlock')![1];
-			create({ x: 100, y: 100, blockType: 'module' });
+			codeBlockActions(store, mockEvents);
+			const insert = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'insertCodeBlock')![1];
+			insert({ x: 100, y: 100, code: ['module supplied', 'moduleEnd'] });
 			expect(mockState.codeBlockRendering.currentProject.blocks.at(-1)!.entry).toBe(expected);
 		});
 	});
 });
 
-describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
+describe('codeBlockActions - toggleCodeBlockDisabled', () => {
 	let mockState: State;
 	let store: ReturnType<typeof createStateManager<State>>;
 	let mockEvents: ReturnType<typeof createMockEventDispatcherWithVitest>;
@@ -106,7 +93,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 		const codeBlock = createMockCodeBlock({ disabled: false });
 		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
-		codeBlockCreator(store, mockEvents);
+		codeBlockActions(store, mockEvents);
 
 		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 		const toggleCall = onCalls.find(call => call[0] === 'toggleCodeBlockDisabled');
@@ -122,7 +109,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 		const codeBlock = createMockCodeBlock({ disabled: true });
 		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
-		codeBlockCreator(store, mockEvents);
+		codeBlockActions(store, mockEvents);
 
 		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 		const toggleCall = onCalls.find(call => call[0] === 'toggleCodeBlockDisabled');
@@ -137,7 +124,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 		const codeBlock = createMockCodeBlock({ disabled: false, lastUpdated: 1000 });
 		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
-		codeBlockCreator(store, mockEvents);
+		codeBlockActions(store, mockEvents);
 
 		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 		const toggleCall = onCalls.find(call => call[0] === 'toggleCodeBlockDisabled');
@@ -152,7 +139,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 		const codeBlock = createMockCodeBlock({ disabled: false });
 		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
-		codeBlockCreator(store, mockEvents);
+		codeBlockActions(store, mockEvents);
 
 		const setSpy = vi.spyOn(store, 'set');
 
@@ -170,7 +157,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 		mockState.editorMode = 'view';
 
-		codeBlockCreator(store, mockEvents);
+		codeBlockActions(store, mockEvents);
 
 		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 		const toggleCall = onCalls.find(call => call[0] === 'toggleCodeBlockDisabled');
@@ -185,7 +172,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 		const codeBlock = createMockCodeBlock({ code: ['module test', 'moduleEnd'], disabled: false });
 		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
-		codeBlockCreator(store, mockEvents);
+		codeBlockActions(store, mockEvents);
 
 		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 		const toggleCall = onCalls.find(call => call[0] === 'toggleCodeBlockDisabled');
@@ -201,7 +188,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 		const codeBlock = createMockCodeBlock({ code: ['module test', '; @disabled', 'moduleEnd'], disabled: true });
 		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
-		codeBlockCreator(store, mockEvents);
+		codeBlockActions(store, mockEvents);
 
 		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 		const toggleCall = onCalls.find(call => call[0] === 'toggleCodeBlockDisabled');
@@ -214,7 +201,7 @@ describe('codeBlockCreator - toggleCodeBlockDisabled', () => {
 	});
 });
 
-describe('codeBlockCreator - alwaysOnTop z-order partitioning', () => {
+describe('codeBlockActions - alwaysOnTop z-order partitioning', () => {
 	let mockState: State;
 	let store: ReturnType<typeof createStateManager<State>>;
 	let mockEvents: ReturnType<typeof createMockEventDispatcherWithVitest>;
@@ -230,7 +217,7 @@ describe('codeBlockCreator - alwaysOnTop z-order partitioning', () => {
 		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
 		mockState.codeBlockRendering.currentProject.blocks = [existingNormal, existingTop];
 
-		codeBlockCreator(store, mockEvents);
+		codeBlockActions(store, mockEvents);
 
 		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 		const insertCodeBlockCallback = onCalls.find(call => call[0] === 'insertCodeBlock')![1];
@@ -254,7 +241,7 @@ describe('codeBlockCreator - alwaysOnTop z-order partitioning', () => {
 		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
 		mockState.codeBlockRendering.currentProject.blocks = [existingNormal, existingTop];
 
-		codeBlockCreator(store, mockEvents);
+		codeBlockActions(store, mockEvents);
 
 		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 		const insertCodeBlockCallback = onCalls.find(call => call[0] === 'insertCodeBlock')![1];
