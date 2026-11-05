@@ -1,5 +1,6 @@
 import type { EditorPluginContext, LoadingIndicator } from '@8f4e/editor-core';
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
+import type { LoadingIndicatorsPluginOptions } from './options';
 import { installVisibility } from './visibility';
 
 type TextSpan = { x: number; text: string; color: PaletteIndex };
@@ -39,11 +40,10 @@ function prepareRow(indicator: LoadingIndicator, columns: number, grid: number, 
 }
 
 /** Prepare text on state/geometry changes; only visible pending rows need timed elapsed updates. */
-export function installPresentation({
-	store,
-	events,
-	drawers,
-}: Pick<EditorPluginContext, 'store' | 'events' | 'drawers'>): () => void {
+export function installPresentation(
+	{ store, events, drawers }: Pick<EditorPluginContext, 'store' | 'events' | 'drawers'>,
+	options: Required<LoadingIndicatorsPluginOptions>
+): () => void {
 	const state = store.getState();
 	let rows: Row[] = [];
 	let top = 0;
@@ -61,7 +61,7 @@ export function installPresentation({
 	const prepare = () => {
 		const { width, height, vGrid, hGrid } = state.viewport;
 		columns = Math.max(0, Math.floor(width / vGrid) - 2);
-		const count = Math.max(0, Math.floor(height / hGrid) - 1);
+		const count = Math.min(options.maxVisibleRows, Math.max(0, Math.floor(height / hGrid) - 1));
 		grid = vGrid;
 		rowHeight = hGrid;
 		const now = Date.now();
@@ -74,13 +74,13 @@ export function installPresentation({
 				: [];
 		top = height - (rows.length + 1) * rowHeight;
 		if (rows.some(row => row.indicator.status === 'loading')) {
-			elapsedTimer ??= setInterval(updateElapsed, 100);
+			elapsedTimer ??= setInterval(updateElapsed, options.elapsedUpdateIntervalMs);
 		} else {
 			clearInterval(elapsedTimer);
 			elapsedTimer = undefined;
 		}
 	};
-	const visibility = installVisibility(store, prepare);
+	const visibility = installVisibility(store, prepare, options);
 	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
 		if (!rows.length) return;
 		draw.startGroup(0, top);
