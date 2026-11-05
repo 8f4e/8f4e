@@ -8,7 +8,7 @@ Its primary target is the WebAssembly virtual machine, as I wanted an efficient 
 
 - [Self-Hosting The 8f4e Editor](self-hosting.md)
 - [Stack Oriented Execution Model](#stack-oriented-execution-model)
-- [Instruction Reference](#instruction-reference)
+- [Instruction Reference](../packages/compiler/docs/instructions.md)
 - [Memory Access and Pointers](#memory-access-and-pointers)
 - [Endless Execution Loop](#endless-execution-loop)
 - [Memory Layout and Allocation](#memory-layout-and-allocation)
