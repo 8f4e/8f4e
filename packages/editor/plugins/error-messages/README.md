@@ -1,6 +1,6 @@
 # Error Messages
 
-`@8f4e/editor-plugin-error-messages` reserves rows and draws inline source errors. Both editor compositions load
+`@8f4e/editor-plugin-error-messages` reserves rows and draws inline source errors. All three editor compositions load
 `errorMessagesPlugin` in their deferred sets.
 
 Raw errors remain in `state.codeErrors`, keyed by contributor. Each publisher replaces its own list:

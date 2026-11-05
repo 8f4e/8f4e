@@ -8,7 +8,7 @@ Editor-state owns entry membership, padded bounds, updates, and insertion hit te
 an entry assigns it to that entry; outside all bounds core allocates a fresh entry. Those semantics work without
 this drawing plugin.
 
-Both editor compositions load the plugin unconditionally through their deferred registries after `ready`.
+The default and minimal compositions load the plugin unconditionally through their deferred registries after `ready`.
 Disposal unregisters its drawer. It creates no state subscriptions or input handlers and uses no browser APIs.
 
 Run Nx `build`, `test`, `typecheck`, and `test:screenshot` for this package. Unit tests cover drawing from prepared

@@ -156,7 +156,7 @@
   `@texture <address> <magnification> <width> <height> [<x> <y>]` defines a full or cropped view. Both use pointer sources,
   resolved to byte addresses after entry execution each frame. Discover uploads throughout the project and share one
   upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
-  Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
+  All three compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
 
 - Ordinary keyboard input belongs to keyboard-navigation, keyboard-editing, and keyboard-mode-switching plugins.
@@ -169,7 +169,7 @@
 - Keyboard-editing owns edit-mode caret movement, mutation caret adjustments, and its block drawer. Core keeps
   source-position state and bounds/tab geometry; do not restore direction-based caret movement or a built-in glyph.
 - All block plugins use `registerCodeBlockDrawer`, called once per visible block in registration order. Keep one
-  registry, without stage aliases or priority sorting. Install block backgrounds before code rendering in both hosts.
+  registry, without stage aliases or priority sorting. Install block backgrounds before code rendering in all three compositions.
   Code rendering draws nested highlights, selected-line fill, and text together. The background plugin owns corner
   markers and their selected colors. Web-ui keeps traversal and visibility. Offscreen blocks use a single replaceable
   `registerOffscreenCodeBlockDrawer` callback with world coordinates, gated by `canvasOverlays`. Arrow geometry and

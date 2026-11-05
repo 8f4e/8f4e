@@ -1,7 +1,7 @@
 # Dialogs plugin
 
 `@8f4e/editor-plugin-dialogs` presents the editor's dialog stack. It owns sizing, positioning, text wrapping,
-button layout and hit testing, and canvas drawing. Both default and minimal compositions load it after the first render.
+button layout and hit testing, and canvas drawing. The default, minimal, and landing compositions load it after the first render.
 Custom editor compositions can install its exported `dialogsPlugin` through the ordinary `plugins` array.
 
 ## Opening and closing dialogs

@@ -2,7 +2,7 @@
 
 - Own `bin` configuration, fetching, CacheStorage access, private asset bytes/metadata, runtime memory writes,
   loading-dialog state, and generated `ASSET_<ID>_SIZE` source here.
-- Export `createBinaryAssetsPlugin({ getMemoryBytes })` with inline dependency types. Both editor compositions load
+- Export `createBinaryAssetsPlugin({ getMemoryBytes })` with inline dependency types. All three editor compositions load
   it lazily from raw `bin` configuration and supply current memory bytes; fetching and caching remain inside this plugin.
 - Keep browser resources out of the shared plugin context. Use public memory resolution and generic schema,
   dialog, and environment-constant contribution mechanisms.

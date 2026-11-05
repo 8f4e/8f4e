@@ -10,7 +10,7 @@
   scheduler or navigation-state updates; it owns drawing and GPU resources.
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, nested block backgrounds,
-  line-number drawing, and private prepared sprite cells and highlight rectangles. Both compositions install it eagerly.
+  line-number drawing, and private prepared sprite cells and highlight rectangles. All three compositions install it eagerly.
   Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order
   within its existing visible-block loop. The eager `code-block-background` plugin is installed before code rendering.
   Code rendering owns selected-line fill; code-block-background owns corner markers. The deferred
@@ -19,21 +19,21 @@
 - `@8f4e/editor-palette` owns pure palette validation and predefined shades; drawers use its shared tokens.
 - Editor-state owns `codeBlockRendering.entryBounds`, including padding, updates, and insertion hit testing.
   `@8f4e/editor-plugin-entry-outlines` only draws borders and labels through `registerCanvasBackgroundDrawer` below blocks.
-  Both compositions defer drawing until `ready`; entry assignment works independently of the plugin.
+  The default and minimal compositions defer drawing until `ready`; entry assignment works independently of the plugin.
 - `@8f4e/editor-plugin-context-menu` owns menu labels, sizing, grid snapping, viewport clamping, hover state, hit testing,
   and drawing. Core keeps raw items, requested world anchors, menu navigation, input blocking, and action/selector dispatch.
-  Both compositions defer it until `ready`. Web-ui exposes generic `registerCanvasDrawer` before canvas/modal overlays.
+  The default and minimal compositions defer it until `ready`. Web-ui exposes generic `registerCanvasDrawer` before canvas/modal overlays.
 - `@8f4e/editor-plugin-dialogs` owns dialog dimensions, wrapping/clipping, private button geometry/hit testing,
   and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
-  Both compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
+  All three compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
   `registerModalOverlay` after ordinary overlays, independently of `canvasOverlays`.
 - `@8f4e/editor-plugin-selection-animation` owns the selected block's circling segment and uses the generic ordered block
-  drawing hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.
+  drawing hook. Its deferred entries are commented out in default/minimal and omitted from landing; core retains selection state and geometry.
 - Web-ui contributes font/color configuration through `registerWebUiConfig(store)` and owns defaults, loading, and
   subscriptions. Editor-core calls it before plugins/project loading; renderer initialization receives the store and
   event dispatcher. Editor-state uses only grid dimensions and the generic `gridSizeChanged` event.
 - Keep `@8f4e/editor-palette` external in bundled editor libraries so the final composition can share one palette module.
-- Both compositions start every optional import, including directive-based plugins, on core's `ready` event after
+- All three compositions start every optional import, including directive-based plugins, on core's `ready` event after
   initial project loading/parsing, font-atlas loading, and rendering. Keep font payloads lazy; add no frame callbacks or
   timing gates.
 - External lists match exact import paths; include used dependency subpaths such as `glugglugglug/utils` explicitly.
@@ -66,16 +66,17 @@
   Assertion marker drawing lives in `editor-plugin-assertion-markers`, keyboard-to-memory input in
   `editor-plugin-keyboard-memory`, and MIDI discovery/input in `editor-plugin-midi-input`. These use the same plugin
   contract; there is no separate environment-plugin manager. Assertion results and raw error contributions remain
-  central. `editor-plugin-error-messages` owns inline message presentation and loads in both deferred compositions.
+  central. `editor-plugin-error-messages` owns inline message presentation and loads in all three deferred compositions.
   Plugin contracts and installation live in `editor-core`,
   generic directive processing in `editor-state`, and drawer hooks in `web-ui`.
   `editor-plugin-lazy-loader` scans cached directives automatically after project changes and group navigation.
-  Explicit registry scopes match visual/control plugins in the current project level and runtime/MIDI/asset plugins
-  across the project tree. Matching plugins stay installed until editor disposal. Both editor compositions' lightweight registries dynamically import plot, wave,
+  Explicit registry scopes match visual/control plugins in the current project level and runtime/keyboard-memory/MIDI/asset plugins
+  across the project tree. Matching plugins stay installed until editor disposal. All three editor compositions' lightweight registries dynamically import plot, wave,
   meter, bars, watch, stack, switch, button, piano, slider, and crossfade for their directives, plus MIDI, binary assets, and runtime
-  plugins for their raw config roots.
+  plugins for their raw config roots. Keyboard-memory also loads from raw `keyboard` configuration with project scope,
+  receiving the canvas and live compiler memory writer only when needed.
   `editor-plugin-connectors` owns input/output geometry, private connector state, wire lookup, and all line GPU
-  resources, plus shape/paramShape labels and row reservations. Both compositions install it in their deferred plugin
+  resources, plus shape/paramShape labels and row reservations. All three compositions install it in their deferred plugin
   set after the first render. Web-ui provides generic render-layer lifecycle. Core has no `widgets` state.
   Core provides independent layout contributions and subscriptions; directive parsing and layout remain separate.
   Session restoration/autosaving and project URL loading live in `editor-plugin-session-persistence` and
@@ -161,18 +162,18 @@
   `@texture <address> <magnification> <width> <height> [<x> <y>]` defines a full or cropped view. Both use pointer sources,
   resolved to byte addresses after entry execution each frame. Discover uploads throughout the project and share one
   upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
-  Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
+  All three compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
 
-- Keyboard navigation, text editing/history shortcuts, and mode switching are independent input plugins. Both hosts
+- Keyboard navigation, text editing/history shortcuts, and mode switching are independent input plugins. All three compositions
   import their factories after the first render, only for non-coarse primary pointers. Editing loads its implementation on edit mode and
   owns pending input replay; test real plugin combinations in editor-default, never in sibling-plugin tests.
-- Mouse/wheel DOM adaptation belongs to `mouse-input`, loaded on every device. Both hosts match
+- Mouse/wheel DOM adaptation belongs to `mouse-input`, loaded on every device. All three compositions match
   `touch-input` only for `(pointer: coarse)` in their deferred registries. Touch owns one-finger
   viewport gestures with configurable axes and restores canvas touch behavior on disposal. Core keeps event dispatch and input state effects.
   Feature-plugin tests dispatch core input events directly; native browser input belongs to input-plugin and composition tests.
 - The default editor additionally imports `font-preview` with the desktop keyboard set. F18/F19 cycle temporary fonts;
-  source, history, and exports stay unchanged. Minimal omits it.
+  source, history, and exports stay unchanged. Minimal and landing omit it.
 
 - Browser touch and mouse adaptation belongs to the input plugins. Core routes normalized pointer events before default selection and dragging. Controls consume device-independent
   `codeBlockPointerDown`/`codeBlockPointerMove`/`codeBlockPointerUp` events and claim pointer downs with

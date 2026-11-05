@@ -1,7 +1,7 @@
 # Watch Plugin
 
 `@8f4e/editor-plugin-watch` owns the `watch` directive's arguments, layout, derived data, and rendering.
-The default and minimal editors load it lazily for `@watch` or `@w` in the current project level;
+The default, minimal, and landing editors load it lazily for `@watch` or `@w` in the current project level;
 editor-core installs no plugins automatically.
 
 ```ts

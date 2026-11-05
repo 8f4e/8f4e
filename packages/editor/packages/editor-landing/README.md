@@ -26,6 +26,7 @@ and disposal follow the minimal editor's lifecycle. Each mount starts fresh with
 The compiler, URL loader, block backgrounds, and code rendering load eagerly. Core's `ready` event
 gates all optional imports through `src/deferred-plugins.ts`. `src/lazy-plugins.ts` matches visual/control plugins
 in the current view and runtimes, MIDI, and binary assets throughout the project. Font payloads remain lazy.
+Keyboard-to-memory input also loads with project scope, only when raw `@config keyboard.*` directives appear.
 Keyboard input follows pointer capabilities; the host owns scrolling, visibility, loading UI, and canvas layout.
 Plain-text paste at the caret remains available through keyboard editing. The composition does not intercept
 Cmd/Ctrl+S. The galleries continue to use `editor-minimal` with entry outlines, arrows, context menus, project

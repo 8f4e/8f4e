@@ -54,6 +54,7 @@ entryEnd`);
 		finishLoading = resolve;
 	});
 	const entries = createLazyPluginRegistry({
+		inputTarget: new EventTarget() as HTMLElement,
 		prefersReducedMotion: () => true,
 		navigator: {} as Navigator,
 		writeMemory: () => {},

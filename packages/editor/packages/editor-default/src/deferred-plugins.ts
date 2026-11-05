@@ -143,15 +143,6 @@ export function createDeferredEditorPlugin(
 				),
 		},
 		{
-			id: 'keyboard-memory',
-			scope: 'view',
-			matches: () => true,
-			load: () =>
-				import('@8f4e/editor-plugin-keyboard-memory').then(module =>
-					module.createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory: options.writeMemory })
-				),
-		},
-		{
 			id: 'font-preview',
 			scope: 'view',
 			matches: () => !hasCoarsePointer,
@@ -232,6 +223,7 @@ export function createDeferredEditorPlugin(
 				),
 		},
 		...createLazyPluginRegistry({
+			inputTarget: canvas,
 			prefersReducedMotion: () => motionPreference.matches,
 			navigator: browserWindow.navigator,
 			writeMemory: options.writeMemory,

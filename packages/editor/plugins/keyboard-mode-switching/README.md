@@ -7,7 +7,7 @@ Own `e` to enter editing, Escape to return to viewing, and their mode hint. Inst
 The hint uses `drawers.registerCanvasOverlay` in viewport coordinates. Core renders these overlays after menus and
 before dialogs; `canvasOverlays` controls their visibility, including during screenshot capture.
 
-Hosts can omit it through `includeKeyboardModeSwitching: false` in default/minimal. There is no mode-switching
+Hosts can omit it through `includeKeyboardModeSwitching: false` in default/minimal/landing. There is no mode-switching
 feature flag in core or a runtime enable switch inside this plugin.
 
 Each installation owns its listener and cleanup. This plugin does not install or depend on another keyboard plugin.

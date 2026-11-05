@@ -1,7 +1,7 @@
 # Stack Plugin
 
 `@8f4e/editor-plugin-stack` owns the `stack` directive's arguments, layout, derived data, and rendering.
-The default and minimal editors load it lazily for `@stack` or `@s` in the current project level;
+The default, minimal, and landing editors load it lazily for `@stack` or `@s` in the current project level;
 editor-core installs no plugins automatically.
 
 ```ts

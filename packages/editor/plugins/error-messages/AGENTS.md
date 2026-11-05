@@ -7,6 +7,6 @@
 - Consume every contributor uniformly. Assertion failures are published by test-runtime; do not interpret compiler
   or runtime results here.
 - Own subscription, contribution, and drawer disposal explicitly. Disposing the renderer preserves raw errors.
-- Both editor compositions load this as an unconditional deferred entry.
+- All three editor compositions load this as an unconditional deferred entry.
 - Test only this plugin against core services. Combined plugin rendering belongs in editor-default tests.
 - Run the package's Nx `build`, `test`, `typecheck`, and `test:screenshot` targets.

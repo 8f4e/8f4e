@@ -10,6 +10,11 @@ The plugin contributes these configuration paths:
 ; @config keyboard.keyPressedMemory keys:pressed
 ```
 
+The default, minimal, and landing compositions load this plugin only when raw `@config keyboard.*` directives
+appear anywhere in the project, including unopened groups and configuration added during editing. Projects without
+keyboard configuration do not import the plugin or install its schema/listeners. Once loaded, it stays installed
+until the editor is disposed, following the shared lazy-loader lifecycle.
+
 Key presses write USB HID usages, rather than character codes, to `keyCodeMemory`. `keyPressedMemory` is `1` while
 a key is held and `0` after the last key is released. Releasing the latest key restores the most recently pressed
 key that remains held. Unmapped keys use usage `0`. Blur and disposal clear the pressed state.

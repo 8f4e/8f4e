@@ -3,7 +3,7 @@
 `@8f4e/editor-plugin-code-rendering` draws source text inside code blocks, including notes, syntax highlighting,
 line numbers, nested block backgrounds, expanded tabs, folded placeholders, disabled colors, and rows reserved by
 layout contributions.
-Both default and minimal editors install it eagerly.
+The default, minimal, and landing editors install it eagerly.
 
 ```ts
 import initEditor from '@8f4e/editor-core';

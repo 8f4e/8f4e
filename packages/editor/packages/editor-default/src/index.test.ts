@@ -131,7 +131,7 @@ describe('default editor plugins', () => {
 			restoreOnStartup: true,
 		});
 		expect(createExampleModulesPlugin).toHaveBeenCalledWith({ sources: exampleModuleSources });
-		expect(createKeyboardMemoryPlugin).toHaveBeenCalledWith({ inputTarget: canvas, writeMemory });
+		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();
 		const options = vi.mocked(createScreenshotPlugin).mock.calls[0][0];
 		expect(options.canvas).toBe(canvas);
 		const { fileSession } = vi.mocked(createProjectOpenPlugin).mock.calls[0][0];

@@ -55,8 +55,9 @@
 - Construct `createGroupingPlugin({ writeClipboardText })` after the execution-toggle plugin. It owns editor `@group` membership, dragging, copying and group menus. It does not rename pasted groups.
 - Load `createBinaryAssetsPlugin({ getMemoryBytes })` from the lazy registry with a getter for current compiler memory.
   Fetching, caching, binary metadata, loading UI, and generated asset constants remain inside the plugin.
-- Include `assertionMarkersPlugin` and `createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory })` in the deferred
-  standard set. Load `createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })` from the lazy registry. Supply
+- Include `assertionMarkersPlugin` in the deferred standard set. Load keyboard-memory only when raw
+  `@config keyboard.*` directives match, with project scope in `src/lazy-plugins.ts`; pass the canvas and live memory writer.
+  Load `createMidiInputPlugin({ navigator, getMemory, getCodeBuffer })` from the lazy registry. Supply
   the canvas's browser navigator and live compiler getters to that registry. MIDI owns WASM instantiation and caching;
   core has no separate environment-plugin system.
 - Include `createProjectUrlLoaderPlugin({ fetch, initialProjectUrl })` and
@@ -101,7 +102,7 @@
   `@texture <address> <magnification> <width> <height> [<x> <y>]` defines a full or cropped view. Both use pointer sources,
   resolved to byte addresses after entry execution each frame. Discover uploads throughout the project and share one
   upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
-  Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
+  All three compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
 
 - Run `npx nx run @8f4e/editor-default:test:screenshot` for real-plugin browser composition coverage: lazy plot
@@ -114,7 +115,7 @@
   The keyboard-editing plugin owns its mode-triggered implementation import and input buffering; keep feature
   behavior and pending-input lifecycle out of the host and generic directive lazy loader.
 - Include `font-preview` in that desktop-only import set. F18/F19 preview fonts without editing source; keep its
-  keyboard handling and preview lifecycle inside the plugin. Minimal does not include this authoring utility.
+  keyboard handling and preview lifecycle inside the plugin. Minimal and landing omit this authoring utility.
 
 - `includeKeyboardModeSwitching: false` omits the mode-switching factory import and plugin. This is composition
   policy; core has no mode-switching feature flag and the plugin has no runtime enable guard.

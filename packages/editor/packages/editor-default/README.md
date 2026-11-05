@@ -6,9 +6,9 @@ plugin, runtime implementations, standard library, example source discovery, and
 The package exports `mountDefaultEditor(canvas, options)`. It does not mount itself when imported, so websites and
 other browser hosts control when and where the editor starts.
 
-For embedded examples, compiler tests, and landing-page demos, use
-[`@8f4e/editor-minimal`](../editor-minimal/README.md). It keeps live editing, runtime controls, and visualizations
-and starts each mount fresh, with a smaller feature set and no session storage.
+For homepage demos, use [`@8f4e/editor-landing`](../editor-landing/README.md). For example and compiler-test galleries,
+use [`@8f4e/editor-minimal`](../editor-minimal/README.md). Both embedded compositions keep live editing, runtime
+controls, and visualizations and start each mount fresh, with smaller feature sets and no session storage.
 
 ```ts
 import { mountDefaultEditor } from '@8f4e/editor-default';
@@ -94,7 +94,7 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
 `@8f4e/editor-plugin-project-open` for opening projects, `@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
 
-`@8f4e/editor-plugin-selection-animation` is available separately. Its entry is commented out in both editor compositions.
+`@8f4e/editor-plugin-selection-animation` is available separately. Its entry is commented out in the default and minimal compositions; the landing composition omits it.
 
 `createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
 synchronously constructs the startup plugin set with resources for one editor. It creates one `@8f4e/editor-file-session`, installs its
@@ -136,8 +136,9 @@ Each editor installs and disposes its own plugin effects. See the [plugin contra
 copies, loading UI, and generated size constants. The default editor supplies a getter for current compiler memory
 bytes, so memory replacement and growth are visible to the plugin without sharing browser-specific context fields.
 
-The deferred set includes `@8f4e/editor-plugin-assertion-markers` for executed assertion indicators and
-`@8f4e/editor-plugin-keyboard-memory` for keyboard-to-memory input. The lazy `@8f4e/editor-plugin-midi-input` owns MIDI
+The deferred set includes `@8f4e/editor-plugin-assertion-markers` for executed assertion indicators.
+`@8f4e/editor-plugin-keyboard-memory` loads lazily from raw `@config keyboard.*` directives anywhere in the project,
+including configuration added during editing. The lazy `@8f4e/editor-plugin-midi-input` owns MIDI
 discovery and callbacks. Keyboard input receives the mounted canvas and a live memory writer. MIDI receives that canvas's navigator and
 live compiler memory/bytecode getters, and owns its WASM instance and export cache. MIDI access is requested only
 when the project has MIDI configuration. Omitting these plugins also omits their schemas and input listeners.

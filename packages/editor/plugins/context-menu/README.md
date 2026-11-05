@@ -10,7 +10,7 @@ hit-tested directly, including taps without a preceding pointer move. Geometry a
 installation and refresh on menu, grid, viewport, and resize changes, outside the frame loop.
 
 Drawing uses generic `registerCanvasDrawer`, above code blocks and below canvas/modal overlays. Menus remain
-visible when `canvasOverlays` is false. Both editor compositions load the plugin through their unconditional
+visible when `canvasOverlays` is false. The default and minimal compositions load the plugin through their unconditional
 deferred registries after `ready`; the plugin needs no browser globals or injected browser resources.
 
 Test menu presentation here without sibling plugins. Feature plugins test their own menu contributions and request

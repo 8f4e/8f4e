@@ -14,6 +14,8 @@
   and mode-switching preferences without implementing input behavior in the composition.
 - Keep directive-based loading in `src/lazy-plugins.ts`, with visual/control plugins scoped to the view and
   runtime/MIDI/asset plugins scoped to the project. Pass live compiler handles into dependent factories.
+- Load keyboard-memory only for raw `@config keyboard.*` directives, with project scope. Supply the canvas and live
+  compiler memory writer; projects without keyboard configuration must not import it or install its listeners/schema.
 - Keep session storage, Open From Disk, built-in modules, and additional authoring actions in editor-default.
   Hosts own page URLs, loading UI, and visibility.
 - Verify with `npx nx run @8f4e/editor-landing:build|test|typecheck`; the product website's `test:browser` target

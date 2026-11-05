@@ -22,7 +22,7 @@ remain core services. Each installation prepares the caret's horizontal position
 line-number gutter, and grid width when its editing implementation loads and after `codeBlockLayoutsChanged`.
 The drawer reads that private coordinate and core's shared vertical source position for folds and contributed gaps;
 it performs no source parsing or coordinate calculation. Core stores no caret-only horizontal coordinate.
-The caret draws through `registerCodeBlockDrawer`, with layering determined by registration order. Both compositions install code rendering before the input plugins. The input bridge owns this registration
+The caret draws through `registerCodeBlockDrawer`, with layering determined by registration order. All three compositions install code rendering before the input plugins. The input bridge owns this registration
 and removes it together with the presentation layout listener on disposal; it draws only
 once the implementation has loaded and only for the selected block in edit mode.
 
