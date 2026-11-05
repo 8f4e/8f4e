@@ -4,9 +4,11 @@ This package implements a platform-agnostic editor state machine. It owns the fu
 
 ## Execution entries
 
-Core owns entry definitions and module/project-group membership at each project level. Before inserting a module
-through `createCodeBlock` or `insertCodeBlock`, it emits `resolveCodeBlockInsertionEntry { x, y, entry }` with world
-coordinates and a fresh default entry name. Plugins may replace `entry` synchronously before insertion.
+Core owns entry definitions, module/project-group membership, and the padded world-space regions in
+`state.codeBlockRendering.entryBounds`. Each region contains `entryName`, `x`, `y`, `width`, and `height` for the
+current project level. Hidden child-project geometry is excluded. Padding is eight horizontal and four vertical
+layout-grid cells; bounds refresh after layout, project, grid, and viewport changes.
 
-`@8f4e/editor-plugin-entry-outlines` owns padded entry bounds, labels, drawing, and selecting a containing entry
-for module insertion. Core keeps no outline geometry. Without that plugin, insertion uses the default entry.
+When creating or inserting a module, core uses the first entry containing the requested world position, including
+its edges. Outside all entry bounds it allocates a fresh entry name. Entry assignment works without presentation.
+`@8f4e/editor-plugin-entry-outlines` only draws borders and labels from these shared bounds.

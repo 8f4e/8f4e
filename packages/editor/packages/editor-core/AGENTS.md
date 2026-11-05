@@ -11,6 +11,7 @@
 - From package directory: use `npx nx run @8f4e/editor-core:<target>` (e.g., `npx nx run @8f4e/editor-core:dev`).
 - Ensure `dist/` exists before building the default editor composition after API changes.
 - The nested editor-state build clears `dist/` once before emitting declarations and then bundling with Vite.
+  Its TypeScript build excludes unit tests and `__tests__` helpers.
 
 ## Coding Style
 - TypeScript (ESM). Use Biome as the fixer (`npx biome check --write <files>`); it owns formatting and import organization.
@@ -28,10 +29,9 @@
 
 ## Plugins
 
-- Entry bounds, labels, drawing, and spatial insertion entry selection belong to `editor-plugin-entry-outlines`.
-  Core keeps entry definitions/membership and emits `resolveCodeBlockInsertionEntry` with world coordinates and a
-  default fresh entry name before insertion. Plugins can replace it synchronously. Keep outline geometry out of state.
-  Web-ui exposes generic `registerCanvasBackgroundDrawer` below blocks, using the existing canvas context types.
+- Editor-state owns entry bounds, their padding/updates, and insertion hit testing in `codeBlockRendering.entryBounds`.
+  Entry assignment works without drawing plugins. `editor-plugin-entry-outlines` only draws borders and labels from
+  those bounds through generic `registerCanvasBackgroundDrawer`, below blocks with the existing canvas context types.
 - Context-menu presentation belongs to `editor-plugin-context-menu`. Keep only raw items, requested world anchors,
   menu requests/Back navigation, pointer blocking/forwarding, and action/selector dispatch in core. Forward completed
   presses through `contextMenuPointerDown`, movement through `contextMenuPointerMove`, and activate raw items through

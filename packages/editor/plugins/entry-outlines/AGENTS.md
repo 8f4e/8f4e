@@ -1,10 +1,9 @@
 # Entry outlines
 
-- Own entry bounds, padding, labels, hit testing, and drawing in this package. Keep prepared outlines out of core state.
-- Draw through generic `registerCanvasBackgroundDrawer` in viewport coordinates, below code blocks.
-- Contribute spatial entry selection through `resolveCodeBlockInsertionEntry`. Core owns default entry allocation,
-  insertion, entry membership, and execution semantics; it must not read plugin geometry.
-- Prepare bounds on geometry/project notifications and installation, outside the drawing callback.
-- Dispose drawing, listeners, and subscriptions explicitly. Both compositions defer installation until `ready`.
-- Keep tests independent of sibling plugins. Use local drawing fixtures for browser screenshots.
+- Own borders, label offsets, palette selection, and drawing here. Editor-state owns entry bounds, padding, updates,
+  and insertion hit testing in `codeBlockRendering.entryBounds`.
+- Read current bounds from core and draw through generic `registerCanvasBackgroundDrawer` below code blocks.
+- Return drawer unregistration as disposal. Both compositions defer this drawing plugin until `ready`.
+- Keep tests focused on presentation with prepared bounds. Bounds and insertion belong to editor-state tests.
+- Use local block fixtures for browser screenshots; install no sibling presentation plugins.
 - Verify through Nx `build`, `test`, `typecheck`, and `test:screenshot` targets.

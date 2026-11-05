@@ -22,6 +22,7 @@ export default function createDefaultState() {
 		codeBlockRendering: {
 			rootProject,
 			currentProject: rootProject,
+			entryBounds: [],
 			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,
 			selectedCodeBlockForProgrammaticEdit: undefined,

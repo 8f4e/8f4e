@@ -8,13 +8,7 @@ import { applyCodeBlockSourceEdits } from '../../sourceEdits';
 import getBlockType from '../../utils/codeParsers/getBlockType';
 import getCodeBlockNameFromSource from '../../utils/getCodeBlockNameFromSource';
 import upsertDisabled from '../directives/disabled/upsert';
-
-/** Plugins may choose an insertion entry using the requested world-space position. */
-export interface ResolveCodeBlockInsertionEntryEvent {
-	x: number;
-	y: number;
-	entry: string;
-}
+import findEntryNameAtPosition from '../entryBounds/findEntryNameAtPosition';
 
 type NewCodeBlockType = Extract<DocumentBlockType, 'module' | 'function' | 'note' | 'prototype'>;
 
@@ -93,16 +87,11 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 		const sourceBlockType = getBlockType(code);
 		const blockName = getCodeBlockNameFromSource(code);
 
-		let entry: string | undefined;
-		if (sourceBlockType === moduleBlock.type && blockName) {
-			const request: ResolveCodeBlockInsertionEntryEvent = {
-				x: state.viewport.x + x,
-				y: state.viewport.y + y,
-				entry: getUniqueEntryName(state),
-			};
-			events.dispatch('resolveCodeBlockInsertionEntry', request);
-			entry = request.entry;
-		}
+		const entry =
+			sourceBlockType === moduleBlock.type && blockName
+				? (findEntryNameAtPosition(state.codeBlockRendering.entryBounds, state.viewport.x + x, state.viewport.y + y) ??
+					getUniqueEntryName(state))
+				: undefined;
 
 		insertCodeBlocks(store, {
 			x,

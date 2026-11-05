@@ -161,10 +161,10 @@ layout/drawer APIs. Core stores no prepared error widgets and applies only gener
 
 Register viewport-coordinate drawing below code blocks with `drawers.registerCanvasBackgroundDrawer(drawer)`.
 Callbacks receive `{ draw, state, memoryViews }` above the procedural background and independently of `canvasOverlays`.
-`@8f4e/editor-plugin-entry-outlines` owns padded entry bounds, labels, and drawing through this hook. Core retains entry
-definitions and block membership. Module insertion emits `resolveCodeBlockInsertionEntry { x, y, entry }` with world
-coordinates and a default fresh entry name; plugins may replace `entry` synchronously. The outlines plugin chooses
-the first containing outline. Core keeps no presentation geometry for entries.
+`@8f4e/editor-plugin-entry-outlines` draws borders and labels through this hook. Editor-state owns the padded
+world-space regions in `state.codeBlockRendering.entryBounds`, alongside entry definitions and block membership.
+Module insertion selects the first containing entry, including its edges, or allocates a fresh entry outside all
+bounds. Bounds update after layout, project, grid, and viewport changes. These semantics work without a drawing plugin.
 
 Register ordinary viewport-coordinate drawing with `drawers.registerCanvasDrawer(drawer)`. Callbacks receive
 `{ draw, state, memoryViews }` after code blocks and before overlays, independently of `canvasOverlays`. Context-menu

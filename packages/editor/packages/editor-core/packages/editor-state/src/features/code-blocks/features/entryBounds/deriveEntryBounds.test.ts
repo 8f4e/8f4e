@@ -1,6 +1,6 @@
-import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import { expect, it } from 'vitest';
-import deriveEntryOutlines from './deriveEntryOutlines';
+import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
+import deriveEntryBounds from './deriveEntryBounds';
 
 it('groups modules and project-group blocks by entry without including hidden children', () => {
 	const blocks = [
@@ -20,7 +20,7 @@ it('groups modules and project-group blocks by entry without including hidden ch
 		}),
 		createMockCodeBlock({ blockType: 'module', entry: 'checks', x: -80, y: 96, width: 64, height: 32 }),
 	];
-	expect(deriveEntryOutlines(blocks, 8, 16)).toEqual([
+	expect(deriveEntryBounds(blocks, 8, 16)).toEqual([
 		{ entryName: 'audio', x: 8, y: -32, width: 256, height: 120 },
 		{ entryName: 'checks', x: -88, y: 80, width: 80, height: 64 },
 	]);
@@ -31,12 +31,12 @@ it('expands existing bounds in every direction', () => {
 		createMockCodeBlock({ blockType: 'module', entry: 'main', x: 100, y: 120, width: 30, height: 40 }),
 		createMockCodeBlock({ blockType: 'module', entry: 'main', x: 10, y: 20, width: 30, height: 40 }),
 	];
-	expect(deriveEntryOutlines(blocks, 8, 16)).toEqual([{ entryName: 'main', x: 2, y: 4, width: 136, height: 172 }]);
+	expect(deriveEntryBounds(blocks, 8, 16)).toEqual([{ entryName: 'main', x: 2, y: 4, width: 136, height: 172 }]);
 });
 
 it.each(['note', 'function', 'constants', 'prototype', 'includes', 'unknown'] as const)(
 	'excludes ordinary %s blocks',
 	blockType => {
-		expect(deriveEntryOutlines([createMockCodeBlock({ blockType })], 8, 16)).toEqual([]);
+		expect(deriveEntryBounds([createMockCodeBlock({ blockType })], 8, 16)).toEqual([]);
 	}
 );

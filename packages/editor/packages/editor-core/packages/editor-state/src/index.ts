@@ -14,6 +14,7 @@ import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/e
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
 import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
+import entryBounds from './features/code-blocks/features/entryBounds/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './features/code-blocks/layout/registry';
 import dialog from './features/dialog/effect';
@@ -100,6 +101,7 @@ export default function init(
 	registerEffect(publishCompilationInputChanges(store, events));
 	registerEffect(codeBlockRendering(store, events, directives.definitions, layout));
 	registerEffect(viewportDirectiveEffect(store, events));
+	registerEffect(entryBounds(store, events));
 	registerEffect(projectOperations(store, events));
 	registerEffect(historyTracking(store, events));
 
@@ -125,7 +127,6 @@ export default function init(
 
 // Export helper functions
 export { deleteCodeBlocks } from './features/code-blocks/deleteCodeBlocks';
-export type { ResolveCodeBlockInsertionEntryEvent } from './features/code-blocks/features/codeBlockCreator/effect';
 export type { ResolveCodeBlockDragTargetsEvent } from './features/code-blocks/features/codeBlockDragger/effect';
 export {
 	jumpToCodeBlock,

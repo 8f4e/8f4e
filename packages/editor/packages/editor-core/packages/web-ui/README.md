@@ -28,7 +28,7 @@ hooks and GPU render-layer registration. Pass that registry through `options.dra
 
 Registers viewport-coordinate drawing below code blocks and above the procedural background, independently of
 `canvasOverlays`. Callbacks receive `{ draw, state, memoryViews }` and run in registration order. Registration returns an
-unregister function. The entry-outlines plugin owns entry geometry and draws through this hook. It uses the shared
+unregister function. The entry-outlines plugin draws borders and labels from core entry bounds through this hook. It uses the shared
 `CanvasDrawer` and `CanvasDrawerContext` types.
 
 ### `registerCanvasDrawer(drawer)`

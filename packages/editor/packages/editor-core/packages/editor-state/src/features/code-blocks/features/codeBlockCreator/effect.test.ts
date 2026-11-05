@@ -3,7 +3,7 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
-import codeBlockCreator, { type ResolveCodeBlockInsertionEntryEvent } from './effect';
+import codeBlockCreator from './effect';
 
 describe('codeBlockCreator - creation and insertion', () => {
 	let mockState: State;
@@ -87,27 +87,6 @@ describe('codeBlockCreator - creation and insertion', () => {
 			const create = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'createCodeBlock')![1];
 			create({ x: 100, y: 100, blockType: 'module' });
 			expect(mockState.codeBlockRendering.currentProject.blocks.at(-1)!.entry).toBe(expected);
-		});
-
-		it('lets contributors choose an insertion entry using world coordinates', () => {
-			mockState.viewport.x = 24;
-			mockState.viewport.y = 48;
-			vi.mocked(mockEvents.dispatch).mockImplementation((type, event) => {
-				if (type === 'resolveCodeBlockInsertionEntry') {
-					const request = event as ResolveCodeBlockInsertionEntryEvent;
-					expect(request).toEqual({ x: 124, y: 148, entry: 'entry' });
-					request.entry = 'chosen';
-				}
-			});
-			codeBlockCreator(store, mockEvents);
-			const create = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'createCodeBlock')![1];
-			create({ x: 100, y: 100, blockType: 'module' });
-			expect(mockEvents.dispatch).toHaveBeenCalledWith('resolveCodeBlockInsertionEntry', {
-				x: 124,
-				y: 148,
-				entry: 'chosen',
-			});
-			expect(mockState.codeBlockRendering.currentProject.blocks[0].entry).toBe('chosen');
 		});
 	});
 });

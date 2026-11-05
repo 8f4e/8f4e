@@ -150,6 +150,15 @@ export interface CodeBlockGraphicData {
 	alwaysOnTop: boolean;
 }
 
+/** World-space entry regions used for insertion and shared with presentation plugins. */
+export interface EntryBounds {
+	entryName: string;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+}
+
 /** An editor-owned project level. Remembered views and selections live only in browser memory. */
 export interface ProjectLevel {
 	/** Entry definitions local to this level, including empty entries. */
@@ -168,6 +177,8 @@ export type CodeBlockRendering = {
 	rootProject: ProjectLevel;
 	/** Direct reference to the project level currently rendered by the editor. */
 	currentProject: ProjectLevel;
+	/** Padded bounds of entries containing modules or project groups in the current level. */
+	entryBounds: EntryBounds[];
 	/**
 	 * Subset of codeBlocks that have a `@viewport` directive.
 	 * Maintained in sync with codeBlocks so that viewport move/resize handlers
