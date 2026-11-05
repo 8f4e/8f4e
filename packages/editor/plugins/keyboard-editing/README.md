@@ -18,11 +18,12 @@ mode before processing keys. Core history remains available to programmatic edit
 
 The loaded implementation handles all unmodified arrow keys, preserving visual columns across tabs on vertical
 movement. Mutations calculate their resulting caret position directly. Shared source positions and tab geometry
-remain core services. The drawer derives its horizontal position from the source column, tab stops, line-number gutter,
-and current grid width. It uses core's shared vertical source position for folds and contributed gaps; core stores no
-caret-only horizontal coordinate. The caret draws through `registerCodeBlockDrawer`, with layering determined by registration
-order. Both compositions install code rendering before the input plugins. The input bridge owns this registration
-and removes it on disposal; it draws only
+remain core services. Each installation prepares the caret's horizontal position from the source column, tab stops,
+line-number gutter, and grid width when its editing implementation loads and after `codeBlockLayoutsChanged`.
+The drawer reads that private coordinate and core's shared vertical source position for folds and contributed gaps;
+it performs no source parsing or coordinate calculation. Core stores no caret-only horizontal coordinate.
+The caret draws through `registerCodeBlockDrawer`, with layering determined by registration order. Both compositions install code rendering before the input plugins. The input bridge owns this registration
+and removes it together with the presentation layout listener on disposal; it draws only
 once the implementation has loaded and only for the selected block in edit mode.
 
 The loaded implementation handles native `paste` events using `clipboardData` plain text. `insertText` splices single- or multiline text at the caret, preserving the current line prefix/suffix and placing the caret at the inserted text's end. Paste submits one source-edit batch, using the same history and compiler notifications as typing. Paste events are not buffered during loading.
