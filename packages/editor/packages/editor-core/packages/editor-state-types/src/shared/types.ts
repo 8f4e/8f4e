@@ -32,8 +32,10 @@ export interface GridCoordinates {
 }
 
 export interface EventSubscriptionOptions {
-	/** Run before ordinary listeners, in capture registration order. */
+	/** Run before ordinary listeners. */
 	capture?: boolean;
+	/** Higher priorities run first within a phase. Equal priorities retain registration order. Default: 0. */
+	priority?: number;
 }
 
 /**

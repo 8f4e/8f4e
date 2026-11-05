@@ -1,10 +1,10 @@
 import { EventEmitter } from 'node:events';
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import type { InternalPointerEvent } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
-import { jumpToErrorPlugin } from './index';
+import { createJumpToErrorPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -27,7 +27,13 @@ function setup() {
 	const state = store.getState();
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
 	const drawers = createEditorDrawerRegistry();
-	const dispose = jumpToErrorPlugin.setup({
+	const getErrorBounds = vi.fn((_state: State, block: CodeBlockGraphicData) => ({
+		x: block.x + 24,
+		y: block.y + 80,
+		width: 120,
+		height: 48,
+	}));
+	const dispose = createJumpToErrorPlugin({ getErrorBounds }).setup({
 		store,
 		events,
 		menus: store.menus,
@@ -49,12 +55,12 @@ function setup() {
 			stopPropagation: false,
 			...overrides,
 		} as InternalPointerEvent;
-		events.dispatch('canvasOverlayPointerDown', event);
+		events.dispatch('pointerdown', event);
 		return event;
 	};
 	const addError = () =>
 		store.set('codeErrors.custom', [{ codeBlockId: block.creationIndex, lineNumber: 2, message: 'Error message' }]);
-	return { store, state, block, events, render, drawFill, drawText, press, addError, dispose };
+	return { store, state, block, events, render, drawFill, drawText, press, addError, dispose, getErrorBounds };
 }
 
 it('shows a viewport-fixed button only while a contributed source error exists', () => {
@@ -78,16 +84,15 @@ it('shows a viewport-fixed button only while a contributed source error exists',
 it('centers the message rectangle, selects the block, and preserves source revisions', () => {
 	const test = setup();
 	test.addError();
-	const contribution = test.store.layout.createContribution();
-	contribution.update(test.block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 2, heightInRows: 5 }] });
 	const revision = test.state.projectChange.revision;
 	const compilerRevision = test.state.compilerInputRevision;
 	test.state.viewportAnimation.active = true;
 	expect(test.press().stopPropagation).toBe(true);
 	expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block);
-	// Five reserved rows: three belong to another contributor, followed by the two message rows.
-	expect(test.state.viewport.x).toBe(Math.round(test.block.x + test.block.width / 2 - 320));
-	expect(test.state.viewport.y).toBe(Math.round(test.block.y + 7 * test.state.viewport.hGrid - 192));
+	// Navigation uses the supplied rectangle rather than deriving presentation geometry.
+	expect(test.getErrorBounds).toHaveBeenCalledWith(test.state, test.block, test.state.codeErrors.custom[0]);
+	expect(test.state.viewport.x).toBe(test.block.x + 24 + 60 - 320);
+	expect(test.state.viewport.y).toBe(test.block.y + 80 + 24 - 192);
 	expect(test.state.viewportAnimation.active).toBe(false);
 	expect(test.state.projectChange.revision).toBe(revision);
 	expect(test.state.compilerInputRevision).toBe(compilerRevision);
@@ -150,4 +155,15 @@ it('releases its drawer, subscriptions, and input handlers on disposal', () => {
 	expect(test.drawText).not.toHaveBeenCalled();
 	expect(test.press().stopPropagation).toBe(false);
 	expect(test.state.codeErrors.custom).toHaveLength(1);
+});
+
+it.each(['hidden', 'dialog', 'menu'])('leaves %s overlay input alone', blocked => {
+	const test = setup();
+	test.addError();
+	if (blocked === 'hidden') test.state.featureFlags.canvasOverlays = false;
+	if (blocked === 'dialog')
+		test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Wait', buttons: [] });
+	if (blocked === 'menu') test.state.contextMenu.open = true;
+	test.press();
+	expect(test.getErrorBounds).not.toHaveBeenCalled();
 });

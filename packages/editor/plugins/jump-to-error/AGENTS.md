@@ -1,9 +1,9 @@
 # Jump to error
 
 - Own the fixed button, target selection, pointer ownership, and navigation here. Keep raw errors in `state.codeErrors`.
-- Consume every contributor uniformly. Use error-messages' public matching and world-bounds queries; do not duplicate wrapping or gap placement.
-- Load as an unconditional deferred plugin. The plugin needs no browser objects or compiler handles.
-- Use `canvasOverlayPointerDown` for presses before block controls. Consume the claimed move/release; respect modal/menu input priority and `canvasOverlays`.
+- Use core's raw-error matching and a required `getErrorBounds` factory dependency; never import another feature plugin or derive message presentation geometry.
+- The host composition wires the bounds reader. Load the plugin as an unconditional deferred entry.
+- Subscribe to normalized pointer events in capture with priority 1. Own visibility/modal/menu guards and claimed move/release/cancel handling. Keep pointer routing feature-neutral.
 - Keep target lookup out of the frame path. Own subscriptions, input handlers, and drawer disposal explicitly.
-- Test against core services only; combined error presentation and browser input belong in composition tests.
-- Verify with the package's Nx `build`, `test`, and `typecheck` targets.
+- Feature tests live here and use core services with a local supplied-rectangle fixture. Real combinations belong in composition tests.
+- Verify with the package's Nx `build`, `test`, `typecheck`, and `test:screenshot` targets.

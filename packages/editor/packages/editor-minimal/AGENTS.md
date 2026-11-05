@@ -13,7 +13,8 @@
   `state.loadingIndicators` list while keeping visibility private; producers own terminal outcomes. Done results
   hide after 1/2/3 seconds for operations lasting up to 100 ms, over 100 ms through 500 ms, or over 500 ms
   respectively; failed/cancelled hide after five seconds, without deleting contributions.
-- Load `jumpToErrorPlugin` as an unconditional deferred entry for the fixed error-navigation button.
+- Load `createJumpToErrorPlugin({ getErrorBounds })` as an unconditional deferred entry. Supply error-messages' bounds
+  query here; feature plugins must not import each other.
 - Load `errorMessagesPlugin` as an unconditional deferred entry. Raw contributor-owned error lists stay central;
   the plugin owns wrapping, layout reservations, coordinates, and drawing.
   Load entries independently through the same loader; apply pointer capability and mode-switching availability as

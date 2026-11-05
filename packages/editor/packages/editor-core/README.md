@@ -181,10 +181,7 @@ presentation uses this hook. Shared canvas drawing types are `CanvasDrawer` and 
 
 Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The drawer receives
 `{ draw, state, memoryViews }` after ordinary canvas drawers and before modal overlays, with coordinates relative to the viewport's top-left.
-The renderer checks `featureFlags.canvasOverlays` before invoking this stage.
-Visible overlays receive `canvasOverlayPointerDown` before block controls are probed. Set `stopPropagation` on the
-normalized pointer event to claim a press; own capture-phase movement, release, and cancellation for that gesture.
-Open context menus and modal dialogs take priority, and disabled canvas overlays receive no presses. Keyboard hints live in their
+The renderer checks `featureFlags.canvasOverlays` before invoking this stage. Keyboard hints live in their
 mode-switching plugin; screenshot capture hides canvas overlays through this generic flag.
 
 Register modal sprite overlays with `drawers.registerModalOverlay(drawer)`. This uses the same viewport context
@@ -222,10 +219,16 @@ Core routes both adapters through the same block lookup and interaction phases, 
 
 Controls subscribe to `codeBlockPointerDown` in capture, set `stopPropagation` when claiming the press, handle
 `codeBlockPointerMove` for drags, and release on `codeBlockPointerUp`. Ordinary block press listeners run after
-default selection. Dialogs and menus retain priority over controls. Capture listeners run first in registration order;
-setting `stopPropagation` stops the remaining listeners. Event dispatch can select only the capture or normal phase
+default selection. Dialogs and menus retain priority over controls. Capture listeners run before normal listeners.
+Within each phase, higher `priority` values run first (default `0`), and equal values preserve registration order.
+This lets a late plugin capture an event before existing listeners without feature-specific hooks in pointer routing.
+Plugins own visibility checks, modal/menu guards, hit testing, and claimed movement/release handling.
+Setting `stopPropagation` stops the remaining listeners. Event dispatch can select only the capture or normal phase
 with `{ phase: 'capture' | 'normal' }`, which lets touch input probe interactions before starting a viewport gesture.
 Unregister with the same `events.off` call as other listeners.
+
+Raw diagnostics remain in `state.codeErrors`. `getCodeBlockErrors(state, block)` from `@8f4e/editor-state` matches
+contributor errors to document blocks or project scopes, independently of any presentation or navigation plugin.
 
 Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets: [codeBlock] }` before a drag.
 Plugins may synchronously replace `targets`; core then moves and snaps those blocks and publishes one position edit.

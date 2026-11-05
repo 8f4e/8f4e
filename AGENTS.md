@@ -72,7 +72,7 @@
   Core retains raw `CodeError` lists in `state.codeErrors`, keyed by contributor. Compiler, editor directives, and
   test-runtime own their lists; editor compositions defer the presentation plugin until `ready`.
 - `@8f4e/editor-plugin-jump-to-error` owns the fixed error-navigation button and centers the first source error using
-  error-messages' read-only bounds query. Default and minimal defer it until `ready`; landing omits it.
+  an injected bounds reader; compositions supply error-messages' read-only query. Default and minimal defer it until `ready`; landing omits it.
 - `@8f4e/editor-plugin-selection-animation` owns the circling segment around the selected block, using the generic
   ordered block drawer hook. Its deferred entries are commented out in default/minimal and omitted from landing; core retains selection state and geometry.
 - Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.

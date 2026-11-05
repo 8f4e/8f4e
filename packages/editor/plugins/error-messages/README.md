@@ -20,10 +20,10 @@ assertions under `test-runtime`. Contributors clear or remove their own lists; d
 The plugin owns wrapping, the `Error:` heading, colors, source-to-display mapping, and prepared pixel coordinates.
 It reserves space through `layout.createContribution` and draws through the ordered `registerCodeBlockDrawer` registry.
 Messages on the same row stack after other contributed space. Hidden source lines reserve no rows and draw no message.
-`getCodeBlockErrors(state, block)` applies the same document/project-scope matching as the renderer.
+Core's `getCodeBlockErrors(state, block)` from `@8f4e/editor-state` supplies document/project-scope matching.
 `getErrorMessageBounds(state, block)` returns read-only world-space rectangles with their raw `error` references
-for visible messages in the settled layout. Navigation plugins can use these queries without duplicating wrapping
-or gap placement. Prepared render data remains private; install the presentation plugin to reserve message rows.
+for visible messages in the settled layout. Host compositions can inject this query into navigation features without
+direct plugin imports or duplicated wrapping/gap placement. Prepared render data remains private; install the presentation plugin to reserve message rows.
 
 Removing errors or disposing the plugin releases its layout requests and drawer. Layout changes do not change source
 or advance project/compiler revisions.

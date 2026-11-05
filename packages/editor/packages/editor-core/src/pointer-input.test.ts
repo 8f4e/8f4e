@@ -175,31 +175,3 @@ it.each(['pointerup', 'pointercancel'])('releases a claimed control on %s', type
 	test.events.dispatch(type, test.pointer, { phase: 'capture' });
 	expect(released).toHaveBeenCalledOnce();
 });
-
-it('gives canvas overlays priority over block controls and selection', () => {
-	const test = setup();
-	const blockPressed = vi.fn();
-	test.events.on('codeBlockPointerDown', blockPressed, { capture: true });
-	test.events.on('canvasOverlayPointerDown', (event: InternalPointerEvent) => {
-		event.stopPropagation = true;
-	});
-	test.events.dispatch('pointerdown', test.pointer);
-	expect(blockPressed).not.toHaveBeenCalled();
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-	expect(test.pointer.stopPropagation).toBe(true);
-});
-
-it('does not forward presses to hidden overlays or through menus and dialogs', () => {
-	const test = setup();
-	const overlayPressed = vi.fn();
-	test.events.on('canvasOverlayPointerDown', overlayPressed);
-	test.state.featureFlags.canvasOverlays = false;
-	test.events.dispatch('pointerdown', { ...test.pointer });
-	test.state.featureFlags.canvasOverlays = true;
-	test.events.dispatch('contextmenu', { ...test.pointer });
-	test.events.dispatch('pointerdown', { ...test.pointer });
-	test.events.dispatch('closeContextMenu');
-	test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Wait', buttons: [] });
-	test.events.dispatch('pointerdown', { ...test.pointer });
-	expect(overlayPressed).not.toHaveBeenCalled();
-});

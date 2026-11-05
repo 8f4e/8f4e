@@ -17,10 +17,8 @@ export default function pointerInput(store: StateManager<State>, events: EventDi
 		};
 	};
 	const capturePointerDown = (event: InternalPointerEvent) => {
-		// Modal and menu presses wait for completed input; probes cannot reach controls beneath them.
+		// Probes must not activate overlays or reach controls beneath them.
 		if (state.dialogStack.length > 0 || state.contextMenu.open) return;
-		if (state.featureFlags.canvasOverlays) events.dispatch('canvasOverlayPointerDown', event);
-		if (event.stopPropagation) return;
 		const pointer = getBlockPointer(event);
 		if (!pointer) return;
 		events.dispatch('codeBlockPointerDown', pointer, { phase: 'capture' });

@@ -140,7 +140,8 @@
 - Build or preview it with `npx nx run @8f4e/editor-website:build|serve`.
 - Ensure dependency packages are built before relying on workspace aliases in the website.
 
-- Verify error navigation with `npx nx run @8f4e/editor-plugin-jump-to-error:build|test|typecheck` and editor-default's `test:screenshot` target.
+- Verify error navigation with `npx nx run @8f4e/editor-plugin-jump-to-error:build|test|typecheck|test:screenshot`.
+  The feature owns isolated browser tests; compositions cover injected bounds with real mouse/touch adapters.
 
 ## Coding Style
 

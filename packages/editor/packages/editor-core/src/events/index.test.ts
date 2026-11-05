@@ -51,6 +51,39 @@ describe('event dispatcher', () => {
 		events.dispatch('pointermove');
 		expect(calls).toEqual(['capture first', 'capture second', 'normal first', 'normal second']);
 	});
+	it('orders each phase by priority and retains registration order for ties', () => {
+		const events = createEventDispatcher();
+		const calls: string[] = [];
+		events.on('action', () => calls.push('default capture'), { capture: true });
+		events.on('action', () => calls.push('normal high'), { priority: 100 });
+		events.on('action', () => calls.push('capture high first'), { capture: true, priority: 1 });
+		events.on('action', () => calls.push('capture low'), { capture: true, priority: -1 });
+		events.on('action', () => calls.push('capture high second'), { capture: true, priority: 1 });
+		events.dispatch('action');
+		expect(calls).toEqual([
+			'capture high first',
+			'capture high second',
+			'default capture',
+			'capture low',
+			'normal high',
+		]);
+	});
+
+	it('lets a later high-priority listener stop earlier listeners and unregisters it normally', () => {
+		const events = createEventDispatcher();
+		const early = vi.fn();
+		const consume = (event: { stopPropagation: boolean }) => {
+			event.stopPropagation = true;
+		};
+		events.on('action', early, { capture: true });
+		events.on('action', consume, { capture: true, priority: 1 });
+		events.dispatch('action', { stopPropagation: false });
+		expect(early).not.toHaveBeenCalled();
+		events.off('action', consume);
+		events.dispatch('action', { stopPropagation: false });
+		expect(early).toHaveBeenCalledOnce();
+	});
+
 	it('lets a capture listener consume an event and unregister normally', () => {
 		const events = createEventDispatcher();
 		const normal = vi.fn();

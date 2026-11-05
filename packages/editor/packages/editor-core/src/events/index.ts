@@ -14,20 +14,23 @@ interface DisposableEventDispatcher extends EventDispatcher {
 }
 
 export default function events(): DisposableEventDispatcher {
-	const subscriptions: Record<string, { capture: EventHandler<unknown>[]; normal: EventHandler<unknown>[] }> = {};
+	type Subscription = { handler: EventHandler<unknown>; priority: number };
+	const subscriptions: Record<string, { capture: Subscription[]; normal: Subscription[] }> = {};
 
 	function on<T>(eventName: string, callback: EventHandler<T>, options: EventSubscriptionOptions = {}): void {
 		if (!subscriptions[eventName]) {
 			subscriptions[eventName] = { capture: [], normal: [] };
 		}
-		subscriptions[eventName][options.capture ? 'capture' : 'normal'].push(callback as EventHandler<unknown>);
+		const listeners = subscriptions[eventName][options.capture ? 'capture' : 'normal'];
+		listeners.push({ handler: callback as EventHandler<unknown>, priority: options.priority ?? 0 });
+		listeners.sort((a, b) => b.priority - a.priority);
 	}
 
 	function off<T>(eventName: string, callback: EventHandler<T>): void {
 		const listeners = subscriptions[eventName];
 		if (!listeners) return;
 		for (const handlers of [listeners.capture, listeners.normal]) {
-			const index = handlers.indexOf(callback as EventHandler<unknown>);
+			const index = handlers.findIndex(subscription => subscription.handler === callback);
 			if (index !== -1) handlers.splice(index, 1);
 		}
 	}
@@ -45,7 +48,7 @@ export default function events(): DisposableEventDispatcher {
 			? [subscriptions[type][options.phase]]
 			: [subscriptions[type].capture, subscriptions[type].normal];
 		for (const handlers of phases) {
-			for (const handler of [...handlers]) {
+			for (const { handler } of [...handlers]) {
 				if (eventObject && (eventObject as EventObject).stopPropagation) return;
 				const result = handler(eventObject);
 				pending?.push(result);

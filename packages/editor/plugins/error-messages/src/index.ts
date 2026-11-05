@@ -1,23 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { gapCalculator, wrapText } from '@8f4e/editor-state';
+import { gapCalculator, getCodeBlockErrors, wrapText } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, CodeBlockLayoutContext, State } from '@8f4e/editor-state-types';
-import { createChildProjectGroupPath } from '@8f4e/language-spec';
-
-export function getCodeBlockErrors(state: State, codeBlock: CodeBlockGraphicData) {
-	const projectScopePath = codeBlock.isProjectScope
-		? codeBlock.projectPath
-		: codeBlock.childProject
-			? createChildProjectGroupPath(codeBlock.projectPath, codeBlock.name)
-			: undefined;
-	return Object.values(state.codeErrors)
-		.flat()
-		.filter(
-			error =>
-				error.codeBlockId === codeBlock.creationIndex ||
-				(projectScopePath !== undefined && error.projectGroupPath === projectScopePath)
-		);
-}
 
 function prepareMessages(state: State, codeBlock: CodeBlockGraphicData) {
 	const wrapWidth = Math.floor(codeBlock.width / state.viewport.vGrid) - 1;
