@@ -46,7 +46,6 @@
     "@8f4e/editor-plugin-keyboard-mode-switching": "*",
     "@8f4e/editor-plugin-keyboard-navigation": "*",
     "@8f4e/editor-plugin-lazy-loader": "*",
-    "@8f4e/editor-plugin-loading-indicators": "*",
     "@8f4e/editor-plugin-meter": "*",
     "@8f4e/editor-plugin-midi-input": "*",
     "@8f4e/editor-plugin-mouse-input": "*",

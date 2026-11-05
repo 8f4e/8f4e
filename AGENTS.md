@@ -23,7 +23,8 @@
   audio/worker/test/texture runtimes. Keyboard-memory matches raw `keyboard` configuration before its schema loads.
   MIDI, assets, and texture execution match raw `midi`,
   `bin`, and `textureRuntime` config roots before their schemas load. Texture uploads and views also match `@textureUpload` and `@texture`. Editor compositions defer optional UI, input, and authoring plugins until after the first render.
-  Compiler coordination, project loading/restoration, block backgrounds, code rendering, and loading indicators remain eager.
+  Compiler coordination, project loading/restoration, block backgrounds, and code rendering remain eager.
+  Loading indicators are eager in default and landing; minimal omits their presentation/cleanup plugin.
   All optional imports, including directive-based lazy plugins, start on core's `ready` event, after initial project
   loading/parsing, font-atlas loading, and rendering. Font payloads remain separate lazy chunks; do not add frame
   callbacks or timing gates.

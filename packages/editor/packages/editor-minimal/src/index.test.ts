@@ -45,7 +45,6 @@ it('starts without storage and reports empty-project readiness after initializat
 		'project-file-session',
 		'code-block-background',
 		'code-rendering',
-		'loading-indicators',
 		'project-url-loader',
 		'deferred-loader',
 	]);
@@ -53,6 +52,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	const deferredPlugins = await loadDeferredPlugins();
 	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 	expect(deferredPlugins.map(plugin => plugin.id)).toContain('mouse-input');
+	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).not.toContain('loading-indicators');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('selection-animation');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-input');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('keyboard-memory');
@@ -62,7 +62,6 @@ it('starts without storage and reports empty-project readiness after initializat
 			'code-rendering',
 			'connectors',
 			'error-messages',
-			'loading-indicators',
 			'dialogs',
 			'context-menu',
 			'entry-outlines',

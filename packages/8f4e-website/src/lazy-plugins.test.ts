@@ -120,7 +120,6 @@ entryEnd`);
 	editor.navigation.openGroup(getEditorBlockId(group));
 	await vi.dynamicImportSettled();
 	editor.pauseRendering();
-	editor.state.loadingIndicators = [];
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot('lazy-watch-stack-after-group-navigation');
 	expect(editor.state.codeErrors.compiler).toEqual([]);
