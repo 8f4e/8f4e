@@ -24,6 +24,8 @@ This file extends the root and compiler package guidance for `packages/compiler/
   - `npx nx run @8f4e/project-preparser:typecheck`
   - `npx nx run @8f4e/project-preparser:lint`
   - `npx nx run @8f4e/project-preparser:build`
+- The test target builds workspace dependencies before Vitest starts, so imports resolve to built package exports
+  on a clean checkout without a separate build command.
 
 ## Architecture
 
