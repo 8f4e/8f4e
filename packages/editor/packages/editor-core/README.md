@@ -147,7 +147,10 @@ background, content, foreground, or overlay stages. Registration returns an unre
 Both compositions eagerly install `@8f4e/editor-plugin-code-block-background` before code rendering. It owns the
 normal, disabled, and dragged base surfaces and corner markers, including their selected colors. Code rendering
 draws nested highlights, the selected-line fill, and text in that order. Other plugins add their drawers after these.
-Offscreen arrows remain in web-ui.
+For offscreen blocks, `drawers.registerOffscreenCodeBlockDrawer((draw, codeBlock, state) => ...)` replaces a single
+callback in the same traversal. Coordinates are world coordinates. The latest registration wins; disposal clears
+its slot only if that callback is still registered, without restoring a previous callback. `canvasOverlays` hides
+these decorations during screenshot capture. `@8f4e/editor-plugin-offscreen-block-arrows` owns arrow placement and drawing.
 
 Use the drawing surface's text/fill primitives and shared numeric palette indices. `@8f4e/web-ui` exports drawing
 types. Plugins own their prepared data and disposal; core stores no widget presentation fields.

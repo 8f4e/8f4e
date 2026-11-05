@@ -21,8 +21,6 @@ function createDrawContext(): DrawContext {
 	return {
 		startGroup: vi.fn(),
 		endGroup: vi.fn(),
-		drawFill: vi.fn(),
-		drawText: vi.fn(),
 	} as unknown as DrawContext;
 }
 
@@ -32,7 +30,6 @@ describe('drawCodeBlocks', () => {
 		const offscreen = createMockCodeBlock({ creationIndex: 1, x: 10000 });
 		const state = createMockState({
 			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [visible, offscreen] } },
-			featureFlags: { offscreenBlockArrows: false },
 		});
 		const draw = createDrawContext();
 		const memoryViews = createMemoryViews();
@@ -52,38 +49,60 @@ describe('drawCodeBlocks', () => {
 		expect(calls).toEqual(['first', 'second', 'third', 'first', 'third']);
 	});
 
-	it('can skip off-screen arrow indicators', () => {
-		const offscreenBlock = createMockCodeBlock({
-			x: 1200,
-			y: 384,
-			width: 100,
-			height: 80,
-		});
+	it('calls visible and offscreen drawers in the same block traversal', () => {
+		const offscreen = createMockCodeBlock({ x: 1200 });
+		const visible = createMockCodeBlock({ creationIndex: 1, x: 24, y: 32 });
 		const state = createMockState({
 			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [offscreenBlock] },
-			},
-			viewport: {
-				width: 1024,
-				height: 768,
-				vGrid: 8,
-				hGrid: 16,
-				center: { x: 512, y: 384 },
-				borderLineCoordinates: {
-					top: { startX: 0, startY: 0, endX: 1024, endY: 0 },
-					right: { startX: 1024, startY: 0, endX: 1024, endY: 768 },
-					bottom: { startX: 0, startY: 768, endX: 1024, endY: 768 },
-					left: { startX: 0, startY: 0, endX: 0, endY: 768 },
-				},
-			},
-			featureFlags: {
-				offscreenBlockArrows: false,
+				currentProject: { entries: [], path: '', blocks: [offscreen, visible, offscreen] },
 			},
 		});
 		const draw = createDrawContext();
+		const drawers = createEditorDrawerRegistry();
+		const calls: string[] = [];
+		drawers.registerOffscreenCodeBlockDrawer((context, codeBlock, currentState) => {
+			expect([context, codeBlock, currentState]).toEqual([draw, offscreen, state]);
+			calls.push('offscreen');
+		});
+		drawers.registerCodeBlockDrawer(() => calls.push('visible'));
+		drawCodeBlocks(draw, state, createMemoryViews(), drawers);
+		expect(calls).toEqual(['offscreen', 'visible', 'offscreen']);
+		expect(draw.startGroup).toHaveBeenNthCalledWith(1, -state.viewport.x, -state.viewport.y);
+		expect(draw.startGroup).toHaveBeenCalledTimes(2);
 
-		drawCodeBlocks(draw, state, createMemoryViews(), createEditorDrawerRegistry());
+		state.featureFlags.canvasOverlays = false;
+		calls.length = 0;
+		drawCodeBlocks(draw, state, createMemoryViews(), drawers);
+		expect(calls).toEqual(['visible']);
+	});
 
-		expect(draw.drawText).not.toHaveBeenCalled();
+	it('replaces the offscreen drawer and clears only the current registration on disposal', () => {
+		const drawers = createEditorDrawerRegistry();
+		const draw = createDrawContext();
+		const state = createMockState();
+		const block = createMockCodeBlock({ x: 10000 });
+		const first = vi.fn();
+		const second = vi.fn();
+		drawers.drawOffscreenCodeBlock(draw, block, state);
+		const removeFirst = drawers.registerOffscreenCodeBlockDrawer(first);
+		const removeSecond = drawers.registerOffscreenCodeBlockDrawer(second);
+		removeFirst();
+		drawers.drawOffscreenCodeBlock(draw, block, state);
+		expect(first).not.toHaveBeenCalled();
+		expect(second).toHaveBeenCalledExactlyOnceWith(draw, block, state);
+		removeSecond();
+		drawers.drawOffscreenCodeBlock(draw, block, state);
+		expect(first).not.toHaveBeenCalled();
+		expect(second).toHaveBeenCalledOnce();
+	});
+
+	it('does not restore an overwritten offscreen drawer', () => {
+		const drawers = createEditorDrawerRegistry();
+		const first = vi.fn();
+		drawers.registerOffscreenCodeBlockDrawer(first);
+		const removeCurrent = drawers.registerOffscreenCodeBlockDrawer(vi.fn());
+		removeCurrent();
+		drawers.drawOffscreenCodeBlock(createDrawContext(), createMockCodeBlock(), createMockState());
+		expect(first).not.toHaveBeenCalled();
 	});
 });

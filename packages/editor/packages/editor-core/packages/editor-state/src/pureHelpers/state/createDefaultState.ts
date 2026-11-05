@@ -74,13 +74,6 @@ export default function createDefaultState() {
 			roundedWidth: 0,
 			vGrid: 8,
 			hGrid: 16,
-			borderLineCoordinates: {
-				top: { startX: 0, startY: 0, endX: 0, endY: 0 },
-				right: { startX: 0, startY: 0, endX: 0, endY: 0 },
-				bottom: { startX: 0, startY: 0, endX: 0, endY: 0 },
-				left: { startX: 0, startY: 0, endX: 0, endY: 0 },
-			},
-			center: { x: 0, y: 0 },
 		},
 		viewportAnimation: {
 			startX: 0,

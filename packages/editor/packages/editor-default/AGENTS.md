@@ -130,5 +130,8 @@
 - Load `contextMenuPlugin` as an unconditional deferred entry. It owns menu formatting, geometry, hover/hit testing,
   and drawing through `registerCanvasDrawer`; core keeps raw menu items, contributions, navigation, and action dispatch.
 
+- Load `offscreenBlockArrowsPlugin` as an unconditional deferred entry. It owns viewport-edge arrow geometry and
+  drawing through the single replaceable `registerOffscreenCodeBlockDrawer` callback. Core retains the block traversal.
+
 - Load `entryOutlinesPlugin` as an unconditional deferred entry. It draws borders and labels from core's entry bounds
   below blocks through `registerCanvasBackgroundDrawer`. Entry bounds and insertion assignment remain in editor-state.

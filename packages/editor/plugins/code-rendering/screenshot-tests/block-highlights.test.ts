@@ -9,7 +9,6 @@ test('renders nested block highlights below selection and text with disabled and
 	canvas.height = 480;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
-		featureFlags: { offscreenBlockArrows: false },
 		plugins: [codeRenderingPlugin],
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,

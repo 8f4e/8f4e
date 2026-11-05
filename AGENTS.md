@@ -39,7 +39,9 @@
   line-number drawing, and private prepared sprite cells and highlight rectangles. Both compositions install it eagerly.
   Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order
   within its existing visible-block loop. The eager `code-block-background` plugin is installed before code rendering.
-  Code rendering owns selected-line fill; code-block-background owns corner markers. Web-ui retains offscreen arrows.
+  Code rendering owns selected-line fill; code-block-background owns corner markers. The deferred
+  `offscreen-block-arrows` plugin owns arrow placement and drawing through a single replaceable
+  `registerOffscreenCodeBlockDrawer` callback in the same traversal. `canvasOverlays` also controls offscreen decorations.
 - Editor-state owns `codeBlockRendering.entryBounds`, including padding, updates, and insertion hit testing.
   `@8f4e/editor-plugin-entry-outlines` only draws borders and labels through `registerCanvasBackgroundDrawer` below blocks.
   Both compositions defer drawing until `ready`; entry assignment works independently of the plugin.
@@ -156,6 +158,8 @@
 - Framework: Vitest with built-in ESM support and first-class Vite integration.
 - Locations: `**/__tests__/**` or `*.test.ts` / `*.spec.ts` alongside sources.
 - Run: `npm test` (all) or `npx vitest` inside a package.
+- Failure artifacts in `.vitest-attachments/` are ignored by the root `.gitignore`; keep reference screenshots tracked
+  and avoid per-package attachment or obsolete screenshot-diff ignore rules.
 - Configuration: Shared Vitest helpers live in `@8f4e/config/vitest`; per-package configs live in `vitest.config.ts`.
 - Globals: Vitest globals enabled (`describe`, `it`, `expect`, `vi` for mocks/spies).
 - Aim for meaningful unit tests around compiler/editor logic; snapshot tests OK for view models. Keep tests fast; no browser required.

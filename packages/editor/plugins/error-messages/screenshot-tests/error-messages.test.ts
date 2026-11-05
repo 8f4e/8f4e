@@ -11,7 +11,6 @@ test('draws wrapped contributor messages between source rows and clears their re
 	document.body.append(canvas);
 	let context!: EditorPluginContext;
 	const editor = await initEditor(canvas, {
-		featureFlags: { offscreenBlockArrows: false },
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			constants: [{ id: 0, code: ['constants env', '; @pos 100 100', 'constantsEnd'] }],

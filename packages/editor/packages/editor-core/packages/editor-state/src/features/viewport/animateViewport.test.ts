@@ -19,7 +19,6 @@ describe('viewport animation', () => {
 
 		advanceViewportAnimation(state, 1250, events);
 		expect(state.viewport).toMatchObject({ x: 12, y: 20 });
-		expect(state.viewport.center).toEqual({ x: 524, y: 404 });
 		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('viewportChanged', {
 			previousX: 0,
 			previousY: 0,

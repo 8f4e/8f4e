@@ -168,7 +168,9 @@
 - All block plugins use `registerCodeBlockDrawer`, called once per visible block in registration order. Keep one
   registry, without stage aliases or priority sorting. Install block backgrounds before code rendering in both hosts.
   Code rendering draws nested highlights, selected-line fill, and text together. The background plugin owns corner
-  markers and their selected colors. Web-ui keeps traversal, visibility, and offscreen arrows. Connectors keeps expansion labels private through this same
+  markers and their selected colors. Web-ui keeps traversal and visibility. Offscreen blocks use a single replaceable
+  `registerOffscreenCodeBlockDrawer` callback with world coordinates, gated by `canvasOverlays`. Arrow geometry and
+  drawing belong to `editor-plugin-offscreen-block-arrows`. Connectors keeps expansion labels private through this same
   registry and generic layout contributions.
 - The circling selected-block animation belongs to `editor-plugin-selection-animation`. Keep its timing, glyphs,
   and drawing out of core; retain selection state. The background plugin owns corner colors; code rendering owns line highlighting.

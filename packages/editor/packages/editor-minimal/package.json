@@ -49,6 +49,7 @@
     "@8f4e/editor-plugin-meter": "*",
     "@8f4e/editor-plugin-midi-input": "*",
     "@8f4e/editor-plugin-mouse-input": "*",
+    "@8f4e/editor-plugin-offscreen-block-arrows": "*",
     "@8f4e/editor-plugin-piano": "*",
     "@8f4e/editor-plugin-plot": "*",
     "@8f4e/editor-plugin-project-save": "*",

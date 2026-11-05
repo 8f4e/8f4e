@@ -11,7 +11,6 @@ export const defaultFeatureFlags: FeatureFlags = {
 	viewportDragging: true,
 	canvasOverlays: true,
 	historyTracking: true,
-	offscreenBlockArrows: true,
 	projectCreation: true,
 };
 

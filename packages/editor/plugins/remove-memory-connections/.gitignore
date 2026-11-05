@@ -1,4 +1,2 @@
 dist/
 node_modules/
-screenshot-tests/**/__screenshots__/*-diff.png
-screenshot-tests/**/__screenshots__/*-actual.png

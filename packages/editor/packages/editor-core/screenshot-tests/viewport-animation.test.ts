@@ -21,7 +21,6 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 				{ id: 3, code: ['note destination', '; @pos 142 6', 'noteEnd'] },
 			],
 		},
-		featureFlags: { offscreenBlockArrows: false },
 		plugins: [
 			{
 				id: 'visible-blocks',

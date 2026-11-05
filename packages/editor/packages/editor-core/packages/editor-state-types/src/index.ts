@@ -112,14 +112,11 @@ export interface FeatureFlags {
 	/** Enable/disable panning/scrolling of the editor viewport */
 	viewportDragging: boolean;
 
-	/** Enable/disable plugin canvas overlays */
+	/** Enable/disable plugin canvas overlays and offscreen block decorations */
 	canvasOverlays: boolean;
 
 	/** Enable/disable history tracking for undo/redo functionality */
 	historyTracking?: boolean;
-
-	/** Enable/disable arrows that point toward off-screen code blocks */
-	offscreenBlockArrows: boolean;
 
 	/** Enable/disable the menu action that creates a new project */
 	projectCreation: boolean;

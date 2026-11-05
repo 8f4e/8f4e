@@ -15,9 +15,8 @@ All flags default to `true` in the core and default editor:
 - `moduleDragging` — Allow repositioning blocks while in edit mode.
 - `codeLineSelection` — Allow selecting source lines and moving the caret, independently of editor mode.
 - `viewportDragging` — Allow panning the viewport.
-- `canvasOverlays` — Show plugin canvas overlays, such as the keyboard mode hint.
+- `canvasOverlays` — Show plugin canvas overlays and offscreen block decorations, such as the keyboard mode hint and arrows.
 - `historyTracking` — Track source changes for undo and redo.
-- `offscreenBlockArrows` — Show arrows pointing toward blocks outside the viewport.
 - `projectCreation` — Show the New Project action while in edit mode.
 
 The minimal editor disables `projectCreation` by default. Its other flags use the core defaults.
@@ -71,8 +70,8 @@ mode, and trusted plugins can change the mode programmatically. Leave `viewportD
 ## Runtime State and Types
 
 Feature flags remain available in `state.featureFlags`. Trusted plugins can update them through their state manager.
-For example, the screenshot plugin temporarily disables `canvasOverlays` and `offscreenBlockArrows` while capturing a
-frame, then restores their previous values. Mode changes do not overwrite those preferences.
+For example, the screenshot plugin temporarily disables `canvasOverlays` while capturing a frame,
+then restores its previous value. Mode changes do not overwrite those preferences.
 
 Use `FeatureFlagsConfig` for a typed partial configuration:
 

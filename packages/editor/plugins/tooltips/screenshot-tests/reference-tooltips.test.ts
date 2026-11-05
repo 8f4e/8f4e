@@ -66,7 +66,6 @@ entryEnd`);
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
 	store.set('editorMode', 'edit');
-	store.set('featureFlags.offscreenBlockArrows', false);
 	store.set('compiler.result', compiled);
 	store.set('initialProjectState', project);
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'inspect')!;

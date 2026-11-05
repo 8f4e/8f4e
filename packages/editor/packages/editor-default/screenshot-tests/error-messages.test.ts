@@ -28,7 +28,6 @@ entryEnd`;
 		storage: { getItem: () => null, setItem: () => {} } as unknown as Storage,
 		includeKeyboardModeSwitching: false,
 		showOpenMenuItem: false,
-		featureFlags: { offscreenBlockArrows: false },
 	});
 	editor.pauseRendering();
 	try {

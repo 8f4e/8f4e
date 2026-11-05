@@ -86,13 +86,6 @@ export function createMockViewport(x = 0, y = 0, width = 800, height = 600): Vie
 		roundedHeight: height,
 		vGrid: 8,
 		hGrid: 16,
-		borderLineCoordinates: {
-			top: { startX: 0, startY: 0, endX: 0, endY: 0 },
-			right: { startX: 0, startY: 0, endX: 0, endY: 0 },
-			bottom: { startX: 0, startY: 0, endX: 0, endY: 0 },
-			left: { startX: 0, startY: 0, endX: 0, endY: 0 },
-		},
-		center: { x: 0, y: 0 },
 	};
 }
 
@@ -157,7 +150,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			codeLineSelection: true,
 			viewportDragging: true,
 			canvasOverlays: true,
-			offscreenBlockArrows: true,
 			projectCreation: true,
 		},
 		editorMode: 'edit',
@@ -185,13 +177,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			roundedHeight: 768,
 			vGrid: 8,
 			hGrid: 16,
-			borderLineCoordinates: {
-				top: { startX: 0, startY: 0, endX: 0, endY: 0 },
-				right: { startX: 0, startY: 0, endX: 0, endY: 0 },
-				bottom: { startX: 0, startY: 0, endX: 0, endY: 0 },
-				left: { startX: 0, startY: 0, endX: 0, endY: 0 },
-			},
-			center: { x: 0, y: 0 },
 		},
 		viewportAnimation: {
 			startX: 0,

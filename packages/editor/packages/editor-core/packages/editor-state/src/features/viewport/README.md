@@ -1,87 +1,54 @@
 # Viewport Feature
 
-## Purpose
+Editor-state owns viewport position, dimensions, grid snapping, and animation targets. Browser input plugins
+forward pointer, wheel, and touch movement; core updates the viewport before web-ui draws each frame.
 
-Manages viewport interactions and transformations: panning, resizing, snap-to-grid behavior, and centering operations. Provides the foundation for spatial navigation in the editor.
+## State and coordinates
 
-## Key Behaviors
+`state.viewport` contains pixel coordinates `x` and `y`, raw canvas dimensions `width` and `height`, grid sizes
+`vGrid` (column width) and `hGrid` (row height), and grid-rounded dimensions `roundedWidth` and `roundedHeight`.
+`state.viewportAnimation` contains the current pan's start, target, and timing data.
 
-- **Viewport Dragging**: Pan the viewport by dragging with mouse or touch
-- **Resize Operations**: Adjust viewport dimensions and zoom levels
-- **Snap-to-Grid**: Grid-aligned positioning for code blocks and viewport
-- **Centering Helpers**: Utilities to center viewport on specific code blocks or coordinates
-- **Coordinate Transformations**: Convert between screen space, viewport space, and grid space
+Block positions use world coordinates. Canvas coordinates are relative to the canvas's top-left corner; convert
+between them with the viewport offset:
 
-## Events & Callbacks
+```text
+worldX = canvasX + viewport.x
+worldY = canvasY + viewport.y
+canvasX = worldX - viewport.x
+canvasY = worldY - viewport.y
+gridX = Math.round(worldX / viewport.vGrid)
+gridY = Math.round(worldY / viewport.hGrid)
+```
 
-### Events Listened To
+Source positions use grid units. Live viewport and block geometry use pixels. Grid conversion can lose sub-grid
+precision; viewport updates round to whole pixels. Zoom is not implemented.
 
-- Viewport drag events (start, move, end)
-- Resize events
-- Center viewport events
+## Updates and navigation
 
-### State Touched
+- `updateViewport(state, x, y, events)` commits a rounded position and emits `viewportChanged` only when it changes.
+- `resize(state, width, height)` updates raw and grid-rounded dimensions. The resize handler emits `viewportResized`.
+- The viewport effect handles `pointermove`, `pointerup`, `resize`, and `viewportscrollend`. Movement respects
+  `viewportDragging`; release and scroll-end handlers snap the final position to the grid.
+- `centerViewportOnCodeBlock(viewport, block, options)` calculates a grid-aligned target with optional alignment.
+  `centerViewportOnCodeBlockCursor` calculates a target centered on the highlighted source line.
+- `animateViewport` sets a pan target. Editor-core calls `advanceViewportAnimation` before each scheduled or
+  on-demand render; `stopViewportAnimation` cancels an active pan. Editor-state owns no frame scheduler.
+- Each project level remembers its viewport in browser memory. `getProjectViewportPosition` uses that remembered
+  position, then the first home block's placement, or the origin. Project serializers omit remembered views.
 
-- `state.codeBlockRendering.viewport.x` - Viewport horizontal position (pixels)
-- `state.codeBlockRendering.viewport.y` - Viewport vertical position (pixels)
-- `state.codeBlockRendering.viewport.vGrid` - Vertical grid size (pixels)
-- `state.codeBlockRendering.viewport.hGrid` - Horizontal grid size (pixels)
-- `state.codeBlockRendering.viewport.width` - Viewport width (pixels)
-- `state.codeBlockRendering.viewport.height` - Viewport height (pixels)
+## Rendering ownership
 
-## Coordinate Systems
-
-### Screen Space
-- Pixel coordinates relative to browser window
-- Origin at top-left of viewport element
-
-### Viewport Space
-- Pixel coordinates relative to viewport origin
-- Affected by viewport pan/zoom
-- `viewportX = screenX + viewport.x`
-
-### Grid Space
-- Grid-aligned coordinates for persistence
-- `gridX = Math.round(viewportX / hGrid)`
-- Used in project serialization
-
-## Viewport Operations
-
-### Panning
-- Drag to move viewport position
-- Updates `viewport.x` and `viewport.y`
-
-### Snap-to-Grid
-- Aligns coordinates to grid boundaries
-- Used for clean block positioning
-
-### Centering
-- `centerViewportOnCodeBlock(block)` - Centers view on specific block
-- Adjusts viewport to bring target into view
-
-### Border Calculations
-- Computes visible viewport boundaries
-- Used for culling off-screen blocks
-
-## Integration Points
-
-- **Code Blocks**: Block positions are in viewport coordinates
-- **Code Block Dragger**: Uses viewport for drag operations
-- **Project Export**: Viewport position is converted to grid coordinates for saving
-- **Project Import**: Grid coordinates are converted back to viewport pixels
+Web-ui owns visibility checks using block bounds and raw viewport dimensions. Offscreen arrow projection and
+drawing belong to `@8f4e/editor-plugin-offscreen-block-arrows`, which reads the current viewport directly.
+Editor-state stores no border lines, cached center, or arrow presentation data.
 
 ## References
 
-- Border calculations: `calculateBorderLineCoordinates.ts`
-- Centering logic: `centerViewportOnCodeBlock.ts`
-- Grid snapping: `snapToGrid.ts`
-- Viewport updates: `updateViewport.ts`
-- Resize operations: `resize.ts`
-
-## Notes & Limitations
-
-- Viewport position is relative to an implicit canvas origin
-- Grid sizes are configurable but typically uniform
-- Zoom is not yet implemented (viewport size only)
-- Coordinate conversions may lose sub-grid precision
-- Viewport state is persisted in projects for consistency
+- Position updates: `updateViewport.ts`
+- Dimensions: `resize.ts`
+- Input effects: `effect.ts`
+- Animation: `animateViewport.ts`
+- Centering: `centerViewportOnCodeBlock.ts` and `centerViewportOnCodeBlockCursor.ts`
+- Grid snapping: `snapToGrid.ts`, `snapToGridConsideringDirection.ts`, and `roundToGrid.ts`
+- Remembered views and home placement: `getProjectViewportPosition.ts`

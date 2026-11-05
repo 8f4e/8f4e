@@ -100,7 +100,10 @@ interface FontAtlas {
 
 The web-ui package reads editor state for drawing and installs font-derived grid dimensions.
 Block plugins use one `registerCodeBlockDrawer()` registry, invoked in registration order once per visible block.
-Web-ui retains traversal, culling, block-relative coordinates, and offscreen arrows.
+Web-ui retains traversal, culling, and block-relative coordinates. A single replaceable
+`registerOffscreenCodeBlockDrawer(drawer)` callback handles offscreen blocks in the same traversal using world
+coordinates. Later registrations overwrite it; disposal clears only the current callback and restores nothing.
+`canvasOverlays` controls these decorations. `@8f4e/editor-plugin-offscreen-block-arrows` owns arrow geometry and drawing.
 `@8f4e/editor-plugin-code-block-background` supplies base rectangles and corner markers, including selected colors,
 and is installed before code rendering.
 `@8f4e/editor-plugin-code-rendering` owns nested highlights, selected-line fill, text, and its private prepared data.
@@ -111,7 +114,7 @@ Without a background plugin, web-ui draws no block surface.
 Editor-state stores viewport animation targets and exposes the synchronous
 `advanceViewportAnimation(state, frameTime, events)` helper. Editor-core calls it before web-ui's `renderFrame()`
 from both its scheduled and on-demand frame paths. Each step updates the shared viewport
-through `updateViewport()`, including border geometry and `viewportChanged` events, so blocks enter and leave the
+through `updateViewport()` and emits `viewportChanged` events, so blocks enter and leave the
 visible area throughout the pan. Web-ui's draw path uses those supplied coordinates without advancing the animation.
 Hosts for other platforms advance animations with their own frame clock. Editor-state needs no frame scheduler or
 cancellation callbacks; web-ui owns no frame loop or pause/resume controls.

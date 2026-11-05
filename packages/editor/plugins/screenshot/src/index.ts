@@ -22,18 +22,16 @@ export function createScreenshotPlugin({
 				close: true,
 			}));
 			const onScreenshot = async () => {
-				const { canvasOverlays, offscreenBlockArrows } = state.featureFlags;
+				const { canvasOverlays } = state.featureFlags;
 				const fileName = `${getExportBaseName(state)}.png`;
 				try {
 					store.set('featureFlags.canvasOverlays', false);
-					store.set('featureFlags.offscreenBlockArrows', false);
 					renderFrame();
 					await saveScreenshot(canvas, fileName);
 				} catch (error) {
 					console.error('Failed to export canvas screenshot:', error);
 				} finally {
 					store.set('featureFlags.canvasOverlays', canvasOverlays);
-					store.set('featureFlags.offscreenBlockArrows', offscreenBlockArrows);
 				}
 			};
 			events.on(action, onScreenshot);
