@@ -27,10 +27,10 @@
     "@8f4e/editor-state-testing": "*",
     "@8f4e/language-spec": "*",
     "@8f4e/state-manager": "*",
-    "vitest": "4.1.7",
+    "vitest": "4.1.12",
     "@8f4e/test-runner": "*",
     "@8f4e/web-ui": "*",
-    "@vitest/browser-playwright": "4.1.7",
-    "@vitest/browser": "4.1.7"
+    "@vitest/browser-playwright": "4.1.12",
+    "@vitest/browser": "4.1.12"
   }
 }
