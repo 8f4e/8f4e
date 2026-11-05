@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-code-block-background",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "Code block surface drawing for the 8f4e editor",
   "type": "module",
