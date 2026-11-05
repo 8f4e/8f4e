@@ -93,6 +93,11 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			const pointerArgument = argument as MemoryPointerIdentifier;
 			const slot = context.referenceSlots[pointerArgument.targetMemoryId];
 			if (slot) {
+				if (pointerArgument.dereferenceDepth === 0) {
+					throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, context, {
+						identifier: pointerArgument.targetMemoryId,
+					});
+				}
 				validateDereferenceDepth(pointerArgument, 1, line, context);
 				if (slot.targetMemory.allocatedByteLength < BASE_TYPE_METADATA[getMemoryBaseType(slot.targetMemory)].wordSize) {
 					throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, context);
