@@ -32,6 +32,10 @@ Plain-text paste at the caret remains available through keyboard editing. The co
 Cmd/Ctrl+S. The galleries continue to use `editor-minimal` with entry outlines, arrows, context menus, project
 saving/export, and block copy/paste.
 
+`@8f4e/editor-plugin-loading-indicators` loads as an unconditional deferred entry and draws the unified
+`state.loadingIndicators` list at the bottom left. Lazy plugin imports and binary assets contribute names while
+loading; binary assets remain listed until their bytes reach every configured target. This overlay does not block input.
+
 Verify from the workspace root:
 
 ```sh

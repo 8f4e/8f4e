@@ -94,6 +94,10 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
 `@8f4e/editor-plugin-project-open` for opening projects, `@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
 
+`@8f4e/editor-plugin-loading-indicators` loads as an unconditional deferred entry and draws the unified
+`state.loadingIndicators` list at the bottom left. Lazy plugin imports and binary assets contribute names while
+loading; binary assets remain listed until their bytes reach every configured target. This overlay does not block input.
+
 `@8f4e/editor-plugin-selection-animation` is available separately. Its entry is commented out in the default and minimal compositions; the landing composition omits it.
 
 `createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
@@ -133,7 +137,7 @@ The `plugins` option replaces the default feature set: pass `[]` to omit feature
 Each editor installs and disposes its own plugin effects. See the [plugin contract](../editor-core/README.md#plugins).
 
 `@8f4e/editor-plugin-binary-assets` loads on demand from `bin` configuration. It owns fetching, caching, memory
-copies, loading UI, and generated size constants. The default editor supplies a getter for current compiler memory
+copies, loading-indicator lifecycle, and generated size constants. The default editor supplies a getter for current compiler memory
 bytes, so memory replacement and growth are visible to the plugin without sharing browser-specific context fields.
 
 The deferred set includes `@8f4e/editor-plugin-assertion-markers` for executed assertion indicators.

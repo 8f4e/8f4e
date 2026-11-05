@@ -12,3 +12,11 @@ layout-grid cells; bounds refresh after layout, project, grid, and viewport chan
 When creating or inserting a module, core uses the first entry containing the requested world position, including
 its edges. Outside all entry bounds it allocates a fresh entry name. Entry assignment works without presentation.
 `@8f4e/editor-plugin-entry-outlines` only draws borders and labels from these shared bounds.
+
+## Loading indicators
+
+`state.loadingIndicators` is a unified list of `LoadingIndicator` objects containing `name: string`.
+`addLoadingIndicator(store, { name })` appends an object and returns an idempotent function that removes that
+exact object. Use a fresh object per operation and call its remover on success, failure, cancellation, and
+producer disposal. Equal names remain independent. Indicators are transient and do not change project history,
+serialization, or compiler inputs. The loading-indicators plugin owns their optional canvas presentation.

@@ -3,7 +3,7 @@ import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-
 import { expect, test, vi } from 'vitest';
 import { createBinaryAssetsPlugin } from '../src/index';
 
-test('requests a loading dialog, loads bytes, and publishes size constants', async () => {
+test('contributes a loading indicator, loads bytes, and publishes size constants', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
 	canvas.height = 384;
@@ -55,7 +55,7 @@ entryEnd`);
 			],
 		});
 		editor.state.editorMode = 'edit';
-		await vi.waitFor(() => expect(editor!.state.dialog.id).toBe('binary-assets-loading'));
+		await vi.waitFor(() => expect(editor!.state.loadingIndicators).toEqual([{ name: 'sound' }]));
 		editor.pauseRendering();
 		editor.renderFrame();
 		memory = new Uint8Array(65536);
@@ -63,7 +63,7 @@ entryEnd`);
 		store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
 		store.set('compiler.result.memoryPlan', compiled.memoryPlan);
 		finish(new Response(new Uint8Array([1, 2, 3, 4, 5, 6])));
-		await vi.waitFor(() => expect(editor!.state.dialogStack).toEqual([]));
+		await vi.waitFor(() => expect(editor!.state.loadingIndicators).toEqual([]));
 		const target = compiled.memoryPlan.modules.player.memory.buffer;
 		expect([...memory.slice(target.byteAddress, target.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
 		expect(editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')?.code).toContain(

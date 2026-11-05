@@ -9,6 +9,8 @@
 - Keep compiler coordination, URL loading, block backgrounds, and code rendering eager.
   Install block backgrounds before code rendering. Gate every optional import on core's `ready` event through
   `src/deferred-plugins.ts`; add no frame callbacks, visibility gates, or timers. Keep font payloads lazy.
+- Load `loadingIndicatorsPlugin` as an unconditional deferred entry. It draws the unified
+  `state.loadingIndicators` list; producers own each object and its cleanup.
 - Keep optional plugins as individual deferred entries. Load mouse input on all devices, touch input on coarse
   pointers, and keyboard navigation/editing/mode switching on non-coarse pointers. Forward host wheel, touch,
   and mode-switching preferences without implementing input behavior in the composition.

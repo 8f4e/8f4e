@@ -1,4 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
+import { addLoadingIndicator } from '@8f4e/editor-state';
 import { resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import { binaryAssetsEditorConfigSchemaContribution, resolveBinaryAssetLoadRequests } from './config';
 import fetchBinaryAsset from './fetchBinaryAsset';
@@ -12,8 +13,6 @@ type BinaryAsset = {
 	loaded: boolean;
 };
 
-const DIALOG_ID = 'binary-assets-loading';
-
 export function createBinaryAssetsPlugin({
 	getMemoryBytes,
 }: {
@@ -21,28 +20,34 @@ export function createBinaryAssetsPlugin({
 }): EditorPlugin {
 	return {
 		id: 'binary-assets',
-		setup: ({ store, events }) => {
+		setup: ({ store }) => {
 			let assets: BinaryAsset[] = [];
 			let generation = 0;
 			let disposed = false;
 			let fetching = false;
-			let dialogVisible = false;
+			const loading = new Map<string, () => void>();
 			let signature = '';
 
-			function syncDialog() {
-				const pending = fetching || assets.some(asset => !asset.loaded);
-				if (pending === dialogVisible) return;
-				dialogVisible = pending;
-				if (pending) {
-					events.dispatch('addDialog', {
-						id: DIALOG_ID,
-						title: 'Loading assets',
-						text: 'Loading binary assets...',
-						buttons: [],
-					});
-				} else {
-					events.dispatch('removeDialog', { id: DIALOG_ID });
+			function finishLoading(id: string) {
+				loading.get(id)?.();
+				loading.delete(id);
+			}
+
+			function clearLoadingIndicators() {
+				for (const id of loading.keys()) finishLoading(id);
+			}
+
+			function startLoading(id: string) {
+				if (!loading.has(id)) loading.set(id, addLoadingIndicator(store, { name: id }));
+			}
+
+			function syncLoadingIndicators() {
+				if (fetching) return;
+				const pending = new Set(assets.filter(asset => !asset.loaded).map(asset => asset.id));
+				for (const id of loading.keys()) {
+					if (!pending.has(id)) finishLoading(id);
 				}
+				for (const id of pending) startLoading(id);
 			}
 
 			function loadIntoMemory() {
@@ -62,7 +67,7 @@ export function createBinaryAssetsPlugin({
 						asset.loaded = true;
 					}
 				}
-				syncDialog();
+				syncLoadingIndicators();
 			}
 
 			function reloadMemory() {
@@ -93,8 +98,9 @@ export function createBinaryAssetsPlugin({
 				const currentGeneration = ++generation;
 				assets = [];
 				fetching = requests.length > 0;
+				clearLoadingIndicators();
+				for (const request of requests) startLoading(request.id);
 				publishConstants();
-				syncDialog();
 
 				const fetched = new Map<string, Awaited<ReturnType<typeof fetchBinaryAsset>>>();
 				for (const url of new Set(requests.map(request => request.url))) {
@@ -105,6 +111,9 @@ export function createBinaryAssetsPlugin({
 					} catch (error) {
 						if (disposed || currentGeneration !== generation) return;
 						console.error('Failed to fetch binary asset:', url, error);
+						for (const request of requests) {
+							if (request.url === url) finishLoading(request.id);
+						}
 					}
 				}
 				if (disposed || currentGeneration !== generation) return;
@@ -127,7 +136,7 @@ export function createBinaryAssetsPlugin({
 				store.unsubscribe('editorConfig.bin', syncConfig);
 				store.unsubscribe('compiler.result.memoryPlan', reloadMemory);
 				assets = [];
-				if (dialogVisible) events.dispatch('removeDialog', { id: DIALOG_ID });
+				clearLoadingIndicators();
 				const constants = { ...store.getState().envConstantContributions };
 				delete constants.binaryAssets;
 				store.set('envConstantContributions', constants);

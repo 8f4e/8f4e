@@ -112,9 +112,13 @@
 - Favorites belong entirely to `editor-plugin-favorites`: cached directive detection, toggling, navigation menus,
   and the generated env block's favorite marker. Keep favorite flags and event handlers out of core. Export generic
   block jumping and directive editing through public helpers. Memory-connection removal belongs to its plugin.
-- Binary assets belong to `editor-plugin-binary-assets`, including their schema, fetching/cache, private state, dialog,
-  and size constants. Keep only generic `envConstantContributions`, schema registration, dialogs, and memory resolution
+- Binary assets belong to `editor-plugin-binary-assets`, including their schema, fetching/cache, private state, loading lifecycle,
+  and size constants. Keep only generic `envConstantContributions`, schema registration, loading indicators, and memory resolution
   in core. Environment constants refresh when blocks are populated as well as when contributions change.
+- Loading operations contribute `{ name: string }` objects to the unified `state.loadingIndicators` list.
+  Editor-state exports `addLoadingIndicator` with an idempotent remover for the exact object; producers own cleanup
+  on completion, failure, supersession, and disposal. `editor-plugin-loading-indicators` owns nonblocking canvas
+  presentation and loads as an unconditional deferred entry in the editor compositions.
 - Assertion marker geometry and drawing belong to `editor-plugin-assertion-markers`. Retain raw runtime results and
   contributor-owned `CodeError` lists in core; test-runtime publishes assertion errors and error-messages owns
   inline message layout/drawing. Keep prepared message and marker fields out of `CodeBlockGraphicData`.

@@ -27,7 +27,9 @@ Configure assets in project source:
 
 Each URL is fetched once per configuration set and can load into several targets, including exposed project memory
 aliases. Copies respect the target's allocated byte length. The plugin reloads retained bytes when the compiler
-publishes a memory plan. It owns a loading dialog while fetching or waiting for configured targets to become ready.
+publishes a memory plan. It contributes one `{ name: assetId }` loading indicator per configured asset while fetching
+or waiting for all of that asset's targets to become ready. The loading-indicators plugin owns presentation;
+binary loading does not open a dialog or block input. Equal names from unrelated operations stay independent.
 Fetch failures are logged and excluded from the completed asset set.
 
 The plugin contributes `ASSET_<ID>_SIZE` constants and filename comments through the generic
@@ -35,6 +37,6 @@ The plugin contributes `ASSET_<ID>_SIZE` constants and filename comments through
 Asset sizes reflect the fetched file's complete length, even when the memory copy is truncated. Runtime payloads
 stay private and are not serialized into project/session models; the source config is retained.
 
-Installing the plugin registers its `bin` config schema. Omitting it leaves fetching, dialogs, and asset constants
-inactive. Disposal unsubscribes listeners, removes owned schema/constants/dialogs, releases retained bytes, and
+Installing the plugin registers its `bin` config schema. Omitting it leaves fetching, indicators, and asset constants
+inactive. Disposal unsubscribes listeners, removes owned schema/constants/indicators, releases retained bytes, and
 ignores in-flight results from the disposed installation. Configuration changes similarly reject stale fetch results.

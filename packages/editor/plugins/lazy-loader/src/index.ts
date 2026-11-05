@@ -1,5 +1,5 @@
 import type { CodeBlockGraphicData, EditorPlugin, ParsedDirectiveRecord } from '@8f4e/editor-core';
-import { logError } from '@8f4e/editor-state';
+import { addLoadingIndicator, logError } from '@8f4e/editor-state';
 
 export { createDeferredPluginLoaderPlugin } from './deferred';
 export { hasConfig, hasDirective } from './hasDirective';
@@ -25,12 +25,13 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 		setup: context => {
 			const { store } = context;
 			const installed = new Map<string, () => void>();
-			const pending = new Set<string>();
+			const pending = new Map<string, () => void>();
 			let disposed = false;
 			let scanQueued = false;
 
 			const activate = async (entry: LazyEditorPlugin) => {
-				pending.add(entry.id);
+				const finishLoading = addLoadingIndicator(store, { name: entry.id });
+				pending.set(entry.id, finishLoading);
 				try {
 					let plugin: EditorPlugin;
 					try {
@@ -43,6 +44,7 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 					installed.set(entry.id, plugin.setup(context));
 				} finally {
 					pending.delete(entry.id);
+					finishLoading();
 				}
 			};
 			const scan = () => {
@@ -74,6 +76,8 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 				disposed = true;
 				store.unsubscribe('projectChange', scheduleScan);
 				store.unsubscribe('codeBlockRendering.currentProject.blocks', scheduleScan);
+				for (const finishLoading of pending.values()) finishLoading();
+				pending.clear();
 				const errors: unknown[] = [];
 				for (const cleanup of [...installed.values()].reverse()) {
 					try {

@@ -25,6 +25,7 @@ describe('deferred plugin loader', () => {
 		const editor = install(load);
 		try {
 			expect(load).not.toHaveBeenCalled();
+			expect(editor.state.loadingIndicators).toEqual([]);
 			await Promise.resolve();
 			expect(load).not.toHaveBeenCalled();
 			editor.events.dispatch('init');
@@ -33,7 +34,9 @@ describe('deferred plugin loader', () => {
 			editor.events.dispatch('ready');
 			editor.events.dispatch('ready');
 			expect(load).toHaveBeenCalledOnce();
+			expect(editor.state.loadingIndicators).toEqual([{ name: 'editor plugins' }]);
 			await vi.waitFor(() => expect(setupPlugin).toHaveBeenCalledOnce());
+			expect(editor.state.loadingIndicators).toEqual([]);
 			expect(setupPlugin.mock.calls[0][0].store.getState().viewport.x).toBe(123);
 		} finally {
 			editor.dispose();
@@ -48,6 +51,7 @@ describe('deferred plugin loader', () => {
 		const editor = install(load);
 		if (when === 'during import') editor.events.dispatch('ready');
 		editor.dispose();
+		expect(editor.state.loadingIndicators).toEqual([]);
 		if (when === 'before readiness') editor.events.dispatch('ready');
 		pending.resolve({ id: 'optional', setup: setupPlugin });
 		await Promise.resolve();
@@ -67,6 +71,7 @@ describe('deferred plugin loader', () => {
 		});
 		editor.events.dispatch('ready');
 		await vi.waitFor(() => expect(editor.state.console.logs.at(-1)?.message).toContain(error.message));
+		expect(editor.state.loadingIndicators).toEqual([]);
 		editor.dispose();
 	});
 });
