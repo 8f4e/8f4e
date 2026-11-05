@@ -1,4 +1,4 @@
-import type { EditorPlugin } from '@8f4e/editor-core';
+import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import type { AssertionSite } from '@8f4e/language-spec';
 import type { TestRunResult } from '@8f4e/runtime-test-runner/types';
 import WorkerConstructor from '@8f4e/runtime-test-runner?worker';
@@ -19,7 +19,7 @@ export function createTestRuntimePlugin({
 		setup: ({ store, events, loading }) => {
 			const state = store.getState();
 			let worker: Worker | undefined;
-			let finishStartupLoading: (() => void) | undefined;
+			let runLoading: LoadingIndicatorHandle | undefined;
 			let assertions: TestAssertionResult[] = [];
 			const publishErrors = () =>
 				store.set('codeErrors.test-runtime', assertionErrors(assertions, state.codeBlockRendering.rootProject));
@@ -45,8 +45,8 @@ export function createTestRuntimePlugin({
 			}
 
 			function stopWorker() {
-				finishStartupLoading?.();
-				finishStartupLoading = undefined;
+				runLoading?.cancel();
+				runLoading = undefined;
 				worker?.terminate();
 				worker = undefined;
 			}
@@ -68,25 +68,28 @@ export function createTestRuntimePlugin({
 					return;
 				}
 				stopWorker();
-				const currentWorker = new WorkerConstructor();
-				worker = currentWorker;
-				finishStartupLoading = loading.add({ name: 'test runtime' });
-				publish({ status: 'running' });
-
-				const finish = (data: TestRunResult) => {
-					if (worker !== currentWorker) return;
-					stopWorker();
-					publish(data);
-					if (data.status === 'error') console.error('[TestRuntime]', data.error);
-					else if (data.status === 'failed') console.error('[TestRuntime]', formatTestFailures(data.failures));
-					else console.info(`[TestRuntime] ${data.assertions.length} assertions passed`);
-					events.dispatch('memoryValuesChanged');
-				};
-				currentWorker.onmessage = ({ data }: MessageEvent<TestRunResult>) => finish(data);
-				currentWorker.onerror = event => finish({ status: 'error', error: event.message });
+				runLoading = loading.add({ id: 'test-runtime', message: 'Running tests...' });
 				try {
+					const currentWorker = new WorkerConstructor();
+					worker = currentWorker;
+					publish({ status: 'running' });
+
+					const finish = (data: TestRunResult) => {
+						if (worker !== currentWorker) return;
+						if (data.status === 'passed') runLoading?.done();
+						else runLoading?.fail();
+						stopWorker();
+						publish(data);
+						if (data.status === 'error') console.error('[TestRuntime]', data.error);
+						else if (data.status === 'failed') console.error('[TestRuntime]', formatTestFailures(data.failures));
+						else console.info(`[TestRuntime] ${data.assertions.length} assertions passed`);
+						events.dispatch('memoryValuesChanged');
+					};
+					currentWorker.onmessage = ({ data }: MessageEvent<TestRunResult>) => finish(data);
+					currentWorker.onerror = event => finish({ status: 'error', error: event.message });
 					currentWorker.postMessage({ codeBuffer: getCodeBuffer(), memory, assertionSites });
 				} catch (error) {
+					runLoading?.fail();
 					stopWorker();
 					throw error;
 				}

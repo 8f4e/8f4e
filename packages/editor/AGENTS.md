@@ -11,10 +11,14 @@
 - Editor-core owns the single frame loop and advances viewport state before web-ui draws. Web-ui has no frame
   scheduler or navigation-state updates; it owns drawing and GPU resources.
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
-- Loading operations contribute `{ name: string }` objects to the unified `state.loadingIndicators` list.
-  Plugin setup exposes `loading.add({ name })`, returning an idempotent remover; producers own cleanup
-  on completion, failure, supersession, and disposal. `editor-plugin-loading-indicators` owns nonblocking canvas
-  presentation and is installed eagerly in the editor compositions before deferred loading starts.
+- Loading operations contribute `{ id, message }` through `loading.add` in the plugin setup context.
+  The returned handle exposes `done()`, `fail()`, and `cancel()`; the first terminal result records `finishedAt`.
+  State retains `status`, `startedAt`, and `finishedAt` in the unified `state.loadingIndicators` list. Reusing an ID
+  replaces its entry; old handles cannot update the replacement. The eager `editor-plugin-loading-indicators` owns
+  prepared elapsed-time/status drawing and private visibility bookkeeping; it never deletes state contributions.
+  Done results hide after 1/2/3 seconds for operations lasting up to 100 ms, over 100 ms through 500 ms, or over
+  500 ms respectively; failed/cancelled hide after five seconds. Expired items hide oldest finish first at 25 ms
+  intervals. Hiding sleeps until needed and runs independently of drawing; same-ID replacements become visible again.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, nested block backgrounds,
   line-number drawing, and private prepared sprite cells and highlight rectangles. Editor compositions install it eagerly.
   Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order
@@ -50,7 +54,7 @@
   storage, built-in modules, Open From Disk, WASM export, screenshots, and optional authoring actions in editor-default.
 - `@8f4e/editor-landing` independently composes the product homepage editor with the same embedded capabilities,
   omitting entry outlines, offscreen block arrows, context menus, project saving/export, file-session tracking,
-  and block copy/paste. Keep plain-text paste in keyboard editing and core's `contextMenu` feature disabled.
+  block copy/paste, and loading-indicator presentation. Keep plain-text paste in keyboard editing and core's `contextMenu` feature disabled.
 - `@8f4e/editor-website` is the thin deployable Vite host for the default composition.
 - `@8f4e/editor-webmcp` is an external, page-owned adapter bound to one editor's public editing handle. Hosts own its registration and dispose it before replacing the editor; it is not an editor plugin.
 - The bridge bundles its help, compiler/editor documentation, and example catalogs using `@8f4e/vite-plugin-sources` at build time. Its `generate-content` target prepares the search index and lazy content modules before build/test/typecheck; hosts need no content configuration.

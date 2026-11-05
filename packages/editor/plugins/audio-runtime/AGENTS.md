@@ -1,7 +1,8 @@
 # Audio Runtime Plugin
 
 - Track worklet-module loading and WASM initialization separately through `loading.add`. Exclude permission prompts.
-  Correlate initialization replies with `requestId` and clear owned entries on failure, replacement, or teardown.
+  Use IDs `audio-worklet`/`audio-runtime` with custom messages. Match replies by `requestId`, report done/failed,
+  and cancel pending attempts on replacement or teardown. Presentation owns private visibility.
 - Ordinary browser `EditorPlugin` factory; inject live compiler getters and an optional shared AudioContext from the host composition.
 - Import `@8f4e/runtime-audio-worklet/worklet?url` here and own browser API use, permissions, and resource cleanup. Keep worklet execution code in its separate package.
 - The TypeScript build preserves Vite asset imports for the consuming browser build; `src/source-files.d.ts` supplies their types.

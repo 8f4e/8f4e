@@ -1,4 +1,4 @@
-import type { EditorPluginContext } from '@8f4e/editor-core';
+import type { EditorPluginContext, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import { logMessage, serializeProjectLevel } from '@8f4e/editor-state';
 import type { CodeError, InfoRecord } from '@8f4e/editor-state-types';
 import type { CompilerDiagnostic } from '@8f4e/language-spec';
@@ -29,7 +29,7 @@ export default function installCompilation(
 	let compileQueued = false;
 	let completedRevision: number | null = null;
 	let diagnosticsCurrent = false;
-	let finishCompilationLoading: (() => void) | undefined;
+	let compilationLoading: LoadingIndicatorHandle | undefined;
 
 	const scheduleRecompile = debounceTrailing(compileProject, () => getRecompileDebounceDelay(state.editorConfig));
 
@@ -50,8 +50,8 @@ export default function installCompilation(
 			return;
 		}
 		compiling = true;
-		const finishLoading = loading.add({ name: 'compiler' });
-		finishCompilationLoading = finishLoading;
+		const indicator = loading.add({ id: 'compiler', message: 'Compiling...' });
+		compilationLoading = indicator;
 
 		store.set('codeErrors.compiler', []);
 
@@ -115,12 +115,14 @@ export default function installCompilation(
 
 			logMessage(state, 'Compilation succeeded in ' + compilationTimeMs.toFixed(2) + 'ms', 'Compiler');
 			console.log('[Compiler] Compilation succeeded with config:', compilerOptions);
+			indicator.done();
 		} catch (error) {
 			if (!isCurrent()) {
 				return;
 			}
 
 			logMessage(state, 'Compilation failed', 'Compiler');
+			indicator.fail();
 
 			store.set('compiler.isCompiling', false);
 			setCompilerInfo({ isCompiling: false });
@@ -139,8 +141,8 @@ export default function installCompilation(
 			completedRevision = revision;
 			diagnosticsCurrent = true;
 		} finally {
-			finishLoading();
-			finishCompilationLoading = undefined;
+			indicator.cancel();
+			compilationLoading = undefined;
 			compiling = false;
 			if (compileQueued && !disposed) {
 				compileQueued = false;
@@ -152,6 +154,7 @@ export default function installCompilation(
 	function onInputChanged(): void {
 		if (disposed) return;
 		++inputGeneration;
+		compilationLoading?.cancel();
 		diagnosticsCurrent = false;
 		compileQueued = false;
 		scheduleRecompile();
@@ -162,8 +165,8 @@ export default function installCompilation(
 	const dispose = () => {
 		if (disposed) return;
 		disposed = true;
-		finishCompilationLoading?.();
-		finishCompilationLoading = undefined;
+		compilationLoading?.cancel();
+		compilationLoading = undefined;
 		scheduleRecompile.cancel();
 		events.off('compilationInputChanged', onInputChanged);
 		const schemas = { ...state.editorConfigSchemaContributions };

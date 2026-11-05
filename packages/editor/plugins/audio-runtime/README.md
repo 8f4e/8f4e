@@ -33,7 +33,7 @@ Validate with `npx nx run @8f4e/editor-plugin-audio-runtime:build|test|typecheck
 
 ## Loading indicators
 
-Loading the worklet module contributes `audio worklet`; initializing its WASM program contributes
-`audio runtime` until the matching acknowledgment or failure. Each init message and response carries a `requestId` so
-superseded replies cannot clear a newer entry. Audio permission dialogs and microphone prompts are excluded.
-Teardown releases both entries immediately.
+Worklet-module loading contributes ID `audio-worklet` and message `Loading audio worklet...`; WASM startup
+contributes ID `audio-runtime` and message `Starting audio runtime...`. Matching initialization acknowledgments/errors settle
+their result. Request IDs reject superseded replies. Replacement, disable, and teardown cancel pending work;
+results remain in state independently of presentation. Audio permission dialogs and microphone prompts are excluded.

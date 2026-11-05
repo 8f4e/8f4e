@@ -3,6 +3,7 @@ import type {
 	EditorConfigSchemaContribution,
 	EditorPluginContext,
 	EventDispatcher,
+	LoadingIndicatorHandle,
 	State,
 } from '@8f4e/editor-core';
 import { resolveSchemaConfigRoot } from '@8f4e/editor-core';
@@ -131,11 +132,13 @@ export function startAudioRuntime(
 	let mediaStreamSource: MediaStreamAudioSourceNode | null = null;
 	let disposed = false;
 	let initializationId = 0;
-	let finishWorkletLoading: (() => void) | undefined;
-	let finishProgramLoading: (() => void) | undefined;
-	function finishProgram() {
-		finishProgramLoading?.();
-		finishProgramLoading = undefined;
+	let workletLoading: LoadingIndicatorHandle | undefined;
+	let programLoading: LoadingIndicatorHandle | undefined;
+	function finishProgram(status: 'done' | 'failed' | 'cancelled') {
+		if (status === 'done') programLoading?.done();
+		else if (status === 'failed') programLoading?.fail();
+		else programLoading?.cancel();
+		programLoading = undefined;
 	}
 	/**
 	 * Identifies the current audio initialization attempt. Incremented when initialization
@@ -185,8 +188,8 @@ export function startAudioRuntime(
 		}
 
 		const config = getAudioWorkletRuntimeConfig(state);
-		finishProgram();
-		finishProgramLoading = loading.add({ name: 'audio runtime' });
+		finishProgram('cancelled');
+		programLoading = loading.add({ id: 'audio-runtime', message: 'Starting audio runtime...' });
 		try {
 			audioWorklet.port.postMessage({
 				type: 'init',
@@ -198,7 +201,7 @@ export function startAudioRuntime(
 				audioInputBuffers: getAudioInputBuffers(config),
 			});
 		} catch (error) {
-			finishProgram();
+			finishProgram('failed');
 			throw error;
 		}
 	}
@@ -252,8 +255,8 @@ export function startAudioRuntime(
 		}
 		hideAudioPermissionDialog();
 		const currentGeneration = ++generation;
-		const finishLoading = loading.add({ name: 'audio worklet' });
-		finishWorkletLoading = finishLoading;
+		const indicator = loading.add({ id: 'audio-worklet', message: 'Loading audio worklet...' });
+		workletLoading = indicator;
 
 		try {
 			audioContext = getSharedAudioContext() ?? null;
@@ -284,7 +287,7 @@ export function startAudioRuntime(
 				switch (data.type) {
 					case 'initialized':
 						if (data.requestId !== initializationId) return;
-						finishProgram();
+						finishProgram('done');
 						store.set('info.audioRuntime', { ...state.info.audioRuntime, ...data.payload });
 						events.dispatch('memoryValuesChanged');
 						break;
@@ -293,14 +296,14 @@ export function startAudioRuntime(
 						break;
 					case 'initializationError':
 						if (data.requestId !== initializationId) return;
-						finishProgram();
+						finishProgram('failed');
 						console.error('Error initializing audio:', data.payload.message);
 						break;
 				}
 			};
-			audioWorklet.onprocessorerror = finishProgram;
-			finishLoading();
-			if (finishWorkletLoading === finishLoading) finishWorkletLoading = undefined;
+			audioWorklet.onprocessorerror = () => finishProgram('failed');
+			indicator.done();
+			if (workletLoading === indicator) workletLoading = undefined;
 
 			await syncAudioInputSource();
 			if (disposed || currentGeneration !== generation) {
@@ -314,12 +317,13 @@ export function startAudioRuntime(
 			if (disposed || currentGeneration !== generation) {
 				return;
 			}
+			indicator.fail();
 			tearDownAudioContext();
 			console.error('Error starting audio:', error);
 			showAudioPermissionDialog('Audio could not start. Select Allow to try again.');
 		} finally {
-			finishLoading();
-			if (finishWorkletLoading === finishLoading) finishWorkletLoading = undefined;
+			indicator.cancel();
+			if (workletLoading === indicator) workletLoading = undefined;
 		}
 	}
 
@@ -329,9 +333,9 @@ export function startAudioRuntime(
 	sharedAudioContext?.addEventListener('statechange', onSharedContextStateChanged);
 
 	function tearDownAudioContext() {
-		finishWorkletLoading?.();
-		finishWorkletLoading = undefined;
-		finishProgram();
+		workletLoading?.cancel();
+		workletLoading = undefined;
+		finishProgram('cancelled');
 		++initializationId;
 		++generation;
 		++inputRevision;

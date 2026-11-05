@@ -1,4 +1,9 @@
-import type { EditorConfig, EditorConfigSchemaContribution, EditorPlugin } from '@8f4e/editor-core';
+import type {
+	EditorConfig,
+	EditorConfigSchemaContribution,
+	EditorPlugin,
+	LoadingIndicatorHandle,
+} from '@8f4e/editor-core';
 import { resolveSchemaConfigRoot } from '@8f4e/editor-core';
 import type { WebWorkerHostMessage, WebWorkerRuntimeMessage } from '@8f4e/runtime-web-worker/messages';
 import WorkerConstructor from '@8f4e/runtime-web-worker?worker';
@@ -49,17 +54,19 @@ export function createWorkerRuntimePlugin({
 			const state = store.getState();
 			let worker: Worker | undefined;
 			let initializationId = 0;
-			let finishStartupLoading: (() => void) | undefined;
-			function finishStartup() {
-				finishStartupLoading?.();
-				finishStartupLoading = undefined;
+			let startupLoading: LoadingIndicatorHandle | undefined;
+			function finishStartup(status: 'done' | 'failed' | 'cancelled') {
+				if (status === 'done') startupLoading?.done();
+				else if (status === 'failed') startupLoading?.fail();
+				else startupLoading?.cancel();
+				startupLoading = undefined;
 			}
 
 			function onWorkerMessage({ data }: MessageEvent<WebWorkerRuntimeMessage>) {
 				switch (data.type) {
 					case 'initialized':
 						if (data.requestId !== initializationId) return;
-						finishStartup();
+						finishStartup('done');
 						events.dispatch('memoryValuesChanged');
 						break;
 					case 'stats':
@@ -67,14 +74,14 @@ export function createWorkerRuntimePlugin({
 						break;
 					case 'compilationError':
 						if (data.requestId !== initializationId) return;
-						finishStartup();
+						finishStartup('failed');
 						break;
 				}
 			}
 
 			function stopWorker() {
 				++initializationId;
-				finishStartup();
+				finishStartup('cancelled');
 				if (worker) worker.onerror = null;
 				worker?.removeEventListener('message', onWorkerMessage);
 				worker?.terminate();
@@ -95,32 +102,27 @@ export function createWorkerRuntimePlugin({
 				if (state.compiler.isCompiling) return;
 				const memory = getMemory();
 				if (!memory) return;
-				if (!worker) {
-					try {
+				finishStartup('cancelled');
+				startupLoading = loading.add({ id: 'worker-runtime', message: 'Starting worker runtime...' });
+				try {
+					if (!worker) {
 						worker = new WorkerConstructor();
 						worker.addEventListener('message', onWorkerMessage);
-						worker.onerror = finishStartup;
-					} catch (error) {
-						finishStartup();
-						throw error;
+						worker.onerror = () => finishStartup('failed');
 					}
-				}
-				const message: WebWorkerHostMessage = {
-					type: 'init',
-					requestId: ++initializationId,
-					payload: {
-						memoryRef: memory,
-						entry: config.entry,
-						sampleRate: config.sampleRate,
-						codeBuffer: getCodeBuffer(),
-					},
-				};
-				finishStartup();
-				finishStartupLoading = loading.add({ name: 'worker runtime' });
-				try {
+					const message: WebWorkerHostMessage = {
+						type: 'init',
+						requestId: ++initializationId,
+						payload: {
+							memoryRef: memory,
+							entry: config.entry,
+							sampleRate: config.sampleRate,
+							codeBuffer: getCodeBuffer(),
+						},
+					};
 					worker.postMessage(message);
 				} catch (error) {
-					finishStartup();
+					finishStartup('failed');
 					throw error;
 				}
 			}

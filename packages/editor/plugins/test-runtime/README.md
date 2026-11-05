@@ -27,6 +27,6 @@ Validate with `npx nx run @8f4e/editor-plugin-test-runtime:build|test|typecheck`
 
 ## Loading indicators
 
-The worker job contributes `test runtime` while its program is initialized and executed. The result/error,
-replacement run, disabling, and disposal release the entry. The worker returns a single terminal result, so
-that result marks completion of its loading contribution.
+The worker job contributes ID `test-runtime` and message `Running tests...`. Passing marks it done; assertion
+failures or worker errors mark it failed. Replacement, disable, and disposal cancel pending jobs. The worker returns
+one terminal result after program initialization and execution. Results remain in state independently of presentation.

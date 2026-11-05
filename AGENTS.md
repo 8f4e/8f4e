@@ -8,7 +8,7 @@
   or the default editor's other authoring plugins.
 - Landing composition: `packages/editor/packages/editor-landing/` supplies the same embedded capabilities for the
   product homepage, omitting entry outlines, offscreen block arrows, context menus, project saving/export,
-  file-session tracking, and block copy/paste. Plain-text paste remains in keyboard editing. It keeps core's
+  file-session tracking, block copy/paste, and loading-indicator presentation. Plain-text paste remains in keyboard editing. It keeps core's
   `contextMenu` feature disabled to prevent invisible menus from blocking input.
 - Compiler integration lives in `packages/editor/plugins/compiler/` (`@8f4e/editor-plugin-compiler`). The default editor constructs and installs it first and injects its live handles into dependent plugins, including runtimes. Core emits input-change events and consumes accepted artifacts.
 - WebMCP lives in `packages/editor/packages/editor-webmcp/` as an external page-owned adapter bound to one editor's public `editing` handle. The editor website and example/test galleries compose it; gallery project switches dispose and recreate the bridge.
@@ -23,7 +23,8 @@
   audio/worker/test/texture runtimes. Keyboard-memory matches raw `keyboard` configuration before its schema loads.
   MIDI, assets, and texture execution match raw `midi`,
   `bin`, and `textureRuntime` config roots before their schemas load. Texture uploads and views also match `@textureUpload` and `@texture`. Editor compositions defer optional UI, input, and authoring plugins until after the first render.
-  Compiler coordination, project loading/restoration, block backgrounds, code rendering, and loading indicators remain eager.
+  Compiler coordination, project loading/restoration, block backgrounds, and code rendering remain eager.
+  Loading indicators are eager in default and minimal; landing omits their presentation/visibility plugin.
   All optional imports, including directive-based lazy plugins, start on core's `ready` event, after initial project
   loading/parsing, font-atlas loading, and rendering. Font payloads remain separate lazy chunks; do not add frame
   callbacks or timing gates.
@@ -59,10 +60,14 @@
   and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
   Editor compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
   `registerModalOverlay` after ordinary overlays, independently of `canvasOverlays`.
-- Loading operations contribute `{ name: string }` objects to the unified `state.loadingIndicators` list.
-  Plugin setup exposes `loading.add({ name })`, returning an idempotent remover; producers own cleanup
-  on completion, failure, supersession, and disposal. `editor-plugin-loading-indicators` owns nonblocking canvas
-  presentation and is installed eagerly in the editor compositions before deferred loading starts.
+- Loading operations contribute `{ id, message }` through `loading.add` in the plugin setup context.
+  The returned handle exposes `done()`, `fail()`, and `cancel()`; the first terminal result records `finishedAt`.
+  State retains `status`, `startedAt`, and `finishedAt` in the unified `state.loadingIndicators` list. Reusing an ID
+  replaces its entry; old handles cannot update the replacement. The eager `editor-plugin-loading-indicators` owns
+  prepared elapsed-time/status drawing and private visibility bookkeeping; it never deletes state contributions.
+  Done results hide after 1/2/3 seconds for operations lasting up to 100 ms, over 100 ms through 500 ms, or over
+  500 ms respectively; failed/cancelled hide after five seconds. Expired items hide oldest finish first at 25 ms
+  intervals. Hiding sleeps until needed and runs independently of drawing; same-ID replacements become visible again.
 - `@8f4e/editor-plugin-error-messages` owns inline error wrapping, layout reservations, coordinates, and drawing.
   Core retains raw `CodeError` lists in `state.codeErrors`, keyed by contributor. Compiler, editor directives, and
   test-runtime own their lists; editor compositions defer the presentation plugin until `ready`.

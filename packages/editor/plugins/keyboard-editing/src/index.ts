@@ -1,4 +1,4 @@
-import type { EditorPlugin } from '@8f4e/editor-core';
+import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import { logError } from '@8f4e/editor-state';
 
 /** The input bridge is small; text editing loads on the first entry into edit mode. */
@@ -11,7 +11,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			let caret: ReturnType<typeof import('./editing')['createCaretPresentation']> | undefined;
 			const removeCaret = context.drawers.registerCodeBlockDrawer(drawContext => caret?.drawCaret(drawContext));
 			let loading = false;
-			let finishLoading: (() => void) | undefined;
+			let indicator: LoadingIndicatorHandle | undefined;
 			let disposed = false;
 			let replaying = false;
 			const queued: Array<KeyboardEvent | FocusEvent> = [];
@@ -35,7 +35,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			const load = async () => {
 				if (loading || editing) return;
 				loading = true;
-				finishLoading = context.loading.add({ name: 'text editing' });
+				indicator = context.loading.add({ id: 'text-editing', message: 'Loading text editing...' });
 				try {
 					const module = await import('./editing');
 					if (disposed) return;
@@ -43,13 +43,15 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 					editing = module;
 					// Replay through the input target so independent navigation and mode bindings retain their order.
 					for (const event of queued.splice(0)) replay(event);
+					indicator.done();
 				} catch (error) {
+					indicator.fail();
 					discardInput();
 					if (!disposed) logError(store.getState(), `Failed to load keyboard editing: ${String(error)}`);
 				} finally {
 					loading = false;
-					finishLoading?.();
-					finishLoading = undefined;
+					indicator.cancel();
+					indicator = undefined;
 				}
 			};
 			const onModeChanged = () => {
@@ -84,8 +86,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			onModeChanged();
 			return () => {
 				disposed = true;
-				finishLoading?.();
-				finishLoading = undefined;
+				indicator?.cancel();
 				discardInput();
 				removeCaret();
 				caret?.dispose();

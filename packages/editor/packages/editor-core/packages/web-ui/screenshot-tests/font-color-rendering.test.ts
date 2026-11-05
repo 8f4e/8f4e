@@ -52,7 +52,7 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 	});
 
 	const renderer = await init(createStateManager(state), createMockEventDispatcher(), canvas, createMockMemoryViews(), {
-		loading: { add: () => () => {} },
+		loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
 		drawers,
 	});
 	try {

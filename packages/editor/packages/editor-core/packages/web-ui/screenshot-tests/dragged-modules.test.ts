@@ -21,7 +21,7 @@ test('dragged module', async () => {
 	});
 
 	const renderer = await init(createStateManager(mockState), createMockEventDispatcher(), canvas, memoryViews, {
-		loading: { add: () => () => {} },
+		loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
 		drawers,
 	});
 

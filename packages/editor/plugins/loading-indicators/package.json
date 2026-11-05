@@ -25,11 +25,6 @@
     "vitest": "4.1.12",
     "@types/node": "24.13.2",
     "@8f4e/editor-state": "*",
-    "@8f4e/compiler": "*",
-    "@8f4e/editor-plugin-binary-assets": "*",
-    "@8f4e/editor-plugin-code-block-background": "*",
-    "@8f4e/editor-plugin-code-rendering": "*",
-    "@8f4e/editor-plugin-lazy-loader": "*",
     "@vitest/browser": "4.1.12",
     "@vitest/browser-playwright": "4.1.12"
   }

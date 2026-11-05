@@ -85,15 +85,24 @@ describe('binary assets plugin', () => {
 		);
 		const test = await setup({ source });
 		expect(fetchMock).toHaveBeenCalledTimes(2);
-		expect(test.state.loadingIndicators).toEqual([{ name: 'sound' }, { name: 'preview' }]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'asset:sound', message: 'Loading sound...', status: 'loading' },
+			{ id: 'asset:preview', message: 'Loading preview...', status: 'loading' },
+		]);
 		completions.get('https://example.com/preview.pcm')!(new Response(new Uint8Array([7, 8])));
-		await vi.waitFor(() => expect(test.state.loadingIndicators).toEqual([{ name: 'sound' }]));
+		await vi.waitFor(() =>
+			expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+				{ id: 'asset:sound', message: 'Loading sound...', status: 'loading' },
+			])
+		);
 		const target = test.state.compiler.result.memoryPlan.modules.preview.memory.buffer;
 		expect([...test.memory.slice(target.byteAddress, target.byteAddress + 2)]).toEqual([7, 8]);
 		expect(test.env().code).toContain('const ASSET_PREVIEW_SIZE 2');
 		expect(test.env().code).not.toContain('const ASSET_SOUND_SIZE 6');
 		completions.get('https://example.com/sample.pcm')!(new Response(new Uint8Array(6)));
-		await vi.waitFor(() => expect(test.state.loadingIndicators).toEqual([]));
+		await vi.waitFor(() =>
+			expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
+		);
 		expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6');
 	});
 
@@ -107,22 +116,24 @@ describe('binary assets plugin', () => {
 		const test = await setup({ source, withMemory: false });
 		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_PREVIEW_SIZE 6'));
 		expect(fetchMock).toHaveBeenCalledOnce();
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		test.getMemoryBytes.mockReturnValue(test.memory);
 		const fullPlan = test.state.compiler.result.memoryPlan;
 		test.store.set('compiler.result.memoryPlan', { ...fullPlan, modules: { player: fullPlan.modules.player } });
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		const player = fullPlan.modules.player.memory.buffer;
 		expect([...test.memory.slice(player.byteAddress, player.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
 		test.store.set('compiler.result.memoryPlan', fullPlan);
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		const preview = fullPlan.modules.preview.memory.buffer;
 		expect([...test.memory.slice(preview.byteAddress, preview.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
 	});
 
 	it('loads configured bytes and contributes their size to the environment constants', async () => {
 		const test = await setup();
-		await vi.waitFor(() => expect(test.state.loadingIndicators).toEqual([]));
+		await vi.waitFor(() =>
+			expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
+		);
 		const target = test.state.compiler.result.memoryPlan.modules.player.memory.buffer;
 		expect([...test.memory.slice(target.byteAddress, target.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
 		expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6');
@@ -136,7 +147,9 @@ describe('binary assets plugin', () => {
 			'; @config bin.sound.memory player:buffer\n; @config bin.sound.memories.preview preview:buffer'
 		);
 		const test = await setup({ source });
-		await vi.waitFor(() => expect(test.state.loadingIndicators).toEqual([]));
+		await vi.waitFor(() =>
+			expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
+		);
 		for (const name of ['player', 'preview']) {
 			const target = test.state.compiler.result.memoryPlan.modules[name].memory.buffer;
 			expect([...test.memory.slice(target.byteAddress, target.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
@@ -145,23 +158,25 @@ describe('binary assets plugin', () => {
 		expect(test.env().code.filter(line => line === 'const ASSET_SOUND_SIZE 6')).toHaveLength(1);
 	});
 
-	it('keeps a newer load with the same name when an older fetch completes', async () => {
+	it('keeps a newer load with the same ID when an older fetch completes', async () => {
 		const completions: Array<(response: Response) => void> = [];
 		fetchMock.mockImplementation(() => new Promise(resolve => completions.push(resolve)));
 		const test = await setup();
 		const oldIndicator = test.state.loadingIndicators[0];
 		test.events.dispatch('loadProject', { project: parseProjectSource(SOURCE.replaceAll('sample.pcm', 'new.pcm')) });
 		const newIndicator = test.state.loadingIndicators[0];
-		expect(newIndicator).toEqual({ name: 'sound' });
+		expect(newIndicator).toMatchObject({ id: 'asset:sound', message: 'Loading sound...', status: 'loading' });
 		expect(newIndicator).not.toBe(oldIndicator);
 		completions[0](new Response(new Uint8Array(20)));
 		await new Promise(resolve => setTimeout(resolve, 0));
-		expect(test.state.loadingIndicators).toEqual([newIndicator]);
-		test.store.set('loadingIndicators', [...test.state.loadingIndicators, { name: 'unrelated' }]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([newIndicator]);
+		test.store.loading.add({ id: 'asset:unrelated', message: 'Loading unrelated...' });
 		completions[1](new Response(new Uint8Array(6)));
 		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6'));
 		test.disposePlugin();
-		expect(test.state.loadingIndicators).toEqual([{ name: 'unrelated' }]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'asset:unrelated', message: 'Loading unrelated...', status: 'loading' },
+		]);
 	});
 
 	it('ends indicators on fetch completion and copies destinations independently afterward', async () => {
@@ -179,13 +194,13 @@ describe('binary assets plugin', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
 		const test = await setup({ source, withMemory: false });
 		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6'));
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		test.getMemoryBytes.mockReturnValue(test.memory);
 		const fullPlan = test.state.compiler.result.memoryPlan;
 		test.store.set('compiler.result.memoryPlan', { ...fullPlan, modules: { player: fullPlan.modules.player } });
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		test.store.set('compiler.result.memoryPlan', fullPlan);
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		const target = fullPlan.modules.preview.memory.buffer;
 		expect([...test.memory.slice(target.byteAddress, target.byteAddress + 6)]).toEqual(new Array(6).fill(7));
 		expect(test.state.dialogStack).toEqual([]);
@@ -194,12 +209,12 @@ describe('binary assets plugin', () => {
 	it('ends the download indicator before runtime memory is available and does not re-add it on recompilation', async () => {
 		const test = await setup({ withMemory: false });
 		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6'));
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		const indicatorsChanged = vi.fn();
 		test.store.subscribe('loadingIndicators', indicatorsChanged);
 		test.getMemoryBytes.mockReturnValue(test.memory);
 		test.store.set('compiler.result.memoryPlan', test.state.compiler.result.memoryPlan);
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		test.getMemoryBytes.mockReturnValue(undefined);
 		test.store.set('compiler.result.memoryPlan', test.state.compiler.result.memoryPlan);
 		expect(indicatorsChanged).not.toHaveBeenCalled();
@@ -208,12 +223,12 @@ describe('binary assets plugin', () => {
 	it('loads bytes after the target memory appears and reloads without fetching after recompilation', async () => {
 		const test = await setup({ compile: false });
 		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6'));
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		const compiled = await compileProject(parseProjectSource(SOURCE), { disableSharedMemory: true });
 		test.store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
 		test.store.set('compiler.result.compiledModules', compiled.compiledModules);
 		test.store.set('compiler.result.memoryPlan', compiled.memoryPlan);
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		const nextMemory = new Uint8Array(65536);
 		test.getMemoryBytes.mockReturnValue(nextMemory);
 		test.store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
@@ -231,7 +246,9 @@ describe('binary assets plugin', () => {
 			'module player\nint prefix 1\nfloat64 value 0f64\nint next 2'
 		);
 		const test = await setup({ source });
-		await vi.waitFor(() => expect(test.state.loadingIndicators).toEqual([]));
+		await vi.waitFor(() =>
+			expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
+		);
 		const target = test.state.compiler.result.memoryPlan.modules.player.memory.value;
 		expect([...test.memory.slice(target.byteAddress, target.byteAddress + target.allocatedByteLength)]).toEqual(
 			new Array(8).fill(7)
@@ -245,7 +262,9 @@ describe('binary assets plugin', () => {
 			'group audio\nexpose publicBuffer &player:buffer\nentry main\nmodule player\nint[] buffer 4\nmoduleEnd\nentryEnd\ngroupEnd'
 		);
 		const test = await setup({ source });
-		await vi.waitFor(() => expect(test.state.loadingIndicators).toEqual([]));
+		await vi.waitFor(() =>
+			expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
+		);
 		const target = test.state.compiler.result.memoryPlan.modules['audio/player'].memory.buffer;
 		expect(test.memory[target.byteAddress]).toBe(1);
 	});
@@ -283,20 +302,23 @@ describe('binary assets plugin', () => {
 		expect(fetchMock).toHaveBeenCalledOnce();
 	});
 
-	it('removes its constants and indicators when asset config is removed', async () => {
+	it('removes its constants and retains completed results when asset config is removed', async () => {
 		const test = await setup();
 		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6'));
 		test.events.dispatch('loadProject', { project: parseProjectSource(SOURCE.replace(/^; @config bin.*\n/gm, '')) });
 		await vi.waitFor(() => expect(test.env().code).not.toContain('const ASSET_SOUND_SIZE 6'));
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	});
 
-	it('logs failed fetches and closes its loading indicator', async () => {
+	it('logs failed fetches and marks its indicator failed', async () => {
 		fetchMock.mockRejectedValue(new Error('offline'));
 		const report = vi.spyOn(console, 'error').mockImplementation(() => {});
 		const test = await setup();
 		await vi.waitFor(() => expect(report).toHaveBeenCalled());
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
+		expect(test.state.loadingIndicators).toMatchObject([
+			{ id: 'asset:sound', status: 'failed', finishedAt: expect.any(Number) },
+		]);
 		expect(test.env().code.some(line => line.startsWith('const ASSET_'))).toBe(false);
 	});
 
@@ -310,7 +332,7 @@ describe('binary assets plugin', () => {
 		const test = await setup({ installed: false });
 		expect(fetchMock).not.toHaveBeenCalled();
 		expect(test.state.envConstantContributions).toEqual({});
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	});
 
 	it('unsubscribes, removes contributions and ignores fetches completing after disposal', async () => {
@@ -326,9 +348,10 @@ describe('binary assets plugin', () => {
 		test.disposePlugin();
 		finish(new Response(new Uint8Array(10)));
 		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(test.state.loadingIndicators).toMatchObject([{ id: 'asset:sound', status: 'cancelled' }]);
 		expect(test.state.envConstantContributions).toEqual({});
 		expect(test.state.editorConfigSchemaContributions).toEqual({});
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		test.store.set('compiler.result.memoryPlan', test.state.compiler.result.memoryPlan);
 		expect(test.memory.every(value => value === 0)).toBe(true);
 	});
@@ -343,16 +366,18 @@ describe('binary assets plugin', () => {
 				})
 		);
 		const second = await setup({ withMemory: false });
-		expect(first.state.loadingIndicators).toEqual([]);
+		expect(first.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		expect(second.state.loadingIndicators).toHaveLength(1);
 		first.disposePlugin();
-		expect(second.state.loadingIndicators).toEqual([{ name: 'sound' }]);
+		expect(second.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'asset:sound', message: 'Loading sound...', status: 'loading' },
+		]);
 		finishSecond(new Response(new Uint8Array(6)));
 		await vi.waitFor(() => expect(second.env().code).toContain('const ASSET_SOUND_SIZE 6'));
-		expect(second.state.loadingIndicators).toEqual([]);
+		expect(second.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		expect(second.state.envConstantContributions.binaryAssets).toContain('const ASSET_SOUND_SIZE 6');
 		second.getMemoryBytes.mockReturnValue(second.memory);
 		second.store.set('compiler.result.memoryPlan', second.state.compiler.result.memoryPlan);
-		expect(second.state.loadingIndicators).toEqual([]);
+		expect(second.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	});
 });

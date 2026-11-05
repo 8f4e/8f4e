@@ -3,7 +3,6 @@ import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-backgr
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
 import { resolveStdlibInclude } from './stdlib-resolver';
@@ -45,7 +44,6 @@ export async function mountLandingEditor(
 			compiler.plugin,
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,
-			loadingIndicatorsPlugin,
 			createProjectUrlLoaderPlugin({
 				fetch: globalThis.fetch,
 				initialProjectUrl,

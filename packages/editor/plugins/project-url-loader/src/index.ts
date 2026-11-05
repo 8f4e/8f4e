@@ -1,5 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import type { EditorPlugin } from '@8f4e/editor-core';
+import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import { EMPTY_DEFAULT_PROJECT, logError } from '@8f4e/editor-state';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 
@@ -18,11 +18,11 @@ export function createProjectUrlLoaderPlugin({
 		id: 'project-url-loader',
 		setup: ({ store, events, loading }) => {
 			let disposed = false;
-			const pendingLoads = new Set<() => void>();
+			const pendingLoads = new Set<LoadingIndicatorHandle>();
 			const loadInitialProject = async () => {
 				if (!initialProjectUrl || disposed) return;
-				const finishLoading = loading.add({ name: 'project' });
-				pendingLoads.add(finishLoading);
+				const indicator = loading.add({ id: 'project-url', message: 'Loading project...' });
+				pendingLoads.add(indicator);
 				try {
 					let project: ProjectObjectModel;
 					try {
@@ -33,6 +33,7 @@ export function createProjectUrlLoaderPlugin({
 						project = parseProjectSource(source);
 					} catch (error) {
 						if (disposed) return;
+						indicator.fail();
 						logError(store.getState(), `Failed to load project from ${initialProjectUrl}: ${String(error)}`);
 						events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 						onError?.(error);
@@ -40,16 +41,20 @@ export function createProjectUrlLoaderPlugin({
 					}
 					events.dispatch('loadProject', { project });
 					onLoaded?.();
+					indicator.done();
+				} catch (error) {
+					indicator.fail();
+					throw error;
 				} finally {
-					pendingLoads.delete(finishLoading);
-					finishLoading();
+					pendingLoads.delete(indicator);
+					indicator.cancel();
 				}
 			};
 			events.on('init', loadInitialProject);
 			return () => {
 				disposed = true;
 				events.off('init', loadInitialProject);
-				for (const finishLoading of pendingLoads) finishLoading();
+				for (const indicator of pendingLoads) indicator.cancel();
 				pendingLoads.clear();
 			};
 		},

@@ -5,7 +5,7 @@ It supports live compilation and interactive controls, loads project source from
 to select the initial mode (view by default).
 Each mount starts fresh; it does not restore or save browser sessions.
 The product landing page uses [`@8f4e/editor-landing`](../editor-landing/README.md), which omits entry outlines,
-offscreen block arrows, context menus, project saving/export, file-session tracking, and block copy/paste.
+offscreen block arrows, context menus, project saving/export, file-session tracking, block copy/paste, and loading-indicator presentation.
 
 ```ts
 import { mountMinimalEditor } from '@8f4e/editor-minimal';
@@ -48,9 +48,12 @@ is commented out in this composition. Core retains selection state; the backgrou
 core's `state.codeErrors`, reserving their source rows through the generic layout API.
 
 `@8f4e/editor-plugin-loading-indicators` is installed eagerly before deferred loading and draws the unified
-`state.loadingIndicators` list at the bottom left. Project loading, lazy plugin imports, and binary downloads contribute names while
-loading. Each asset disappears when its downloaded bytes are available; compilation contributes its own indicator
-while an attempt is active. This overlay does not block input.
+`state.loadingIndicators` list at the bottom left. Producers supply IDs and custom messages, such as `Compiling...`.
+The overlay shows elapsed time and green/red success/failure labels. Done results hide after 1/2/3 seconds for
+operations lasting up to 100 ms, over 100 ms through 500 ms, or over 500 ms respectively; failed/cancelled results
+hide after five seconds. Private bookkeeping hides one expired result every 25 ms, oldest finish
+first, without deleting state contributions. Reusing an ID replaces its record and makes it visible again.
+This overlay does not block input.
 
 The loader checks cached directives automatically after project changes and group navigation. Visual/control plugins
 use `view` scope: signals in unopened groups wait until that level is visited. Texture views load for `@texture` as well as `textureRuntime` configuration, using the existing overlay pass.

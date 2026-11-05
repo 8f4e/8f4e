@@ -44,7 +44,6 @@ it('starts without storage and reports empty-project readiness after initializat
 		'compiler',
 		'code-block-background',
 		'code-rendering',
-		'loading-indicators',
 		'project-url-loader',
 		'deferred-loader',
 	]);
@@ -52,6 +51,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	const deferredPlugins = await loadDeferredPlugins();
 	const entries = vi.mocked(createLazyPluginLoaderPlugin).mock.calls.at(-1)![0];
 	for (const id of [
+		'loading-indicators',
 		'context-menu',
 		'entry-outlines',
 		'offscreen-block-arrows',
@@ -62,6 +62,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	}
 	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 	expect(deferredPlugins.map(plugin => plugin.id)).toContain('mouse-input');
+	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).not.toContain('loading-indicators');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('selection-animation');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-input');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('keyboard-memory');
@@ -71,7 +72,6 @@ it('starts without storage and reports empty-project readiness after initializat
 			'code-rendering',
 			'connectors',
 			'error-messages',
-			'loading-indicators',
 			'dialogs',
 			'keyboard-navigation',
 			'keyboard-mode-switching',

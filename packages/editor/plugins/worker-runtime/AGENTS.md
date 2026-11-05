@@ -1,7 +1,7 @@
 # Worker Runtime Plugin
 
-- Contribute `worker runtime` for program initialization; match initialized/error replies by `requestId`.
-  Clear the entry on posting failure, worker error, disable, or disposal.
+- Contribute ID `worker-runtime` with message `Starting worker runtime...`; match replies by `requestId`.
+  Report done/failed, including posting/worker errors; cancel on replacement, disable, and disposal.
 - Ordinary browser `EditorPlugin` factory; inject only live compiler getters from the host composition.
 - Import `@8f4e/runtime-web-worker?worker` here and own worker creation and cleanup. Keep execution code in its separate package.
 - The TypeScript build preserves Vite asset imports for the consuming browser build; `src/source-files.d.ts` supplies their types.

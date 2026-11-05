@@ -30,6 +30,6 @@ Validate with `npx nx run @8f4e/editor-plugin-worker-runtime:build|test|typechec
 
 ## Loading indicators
 
-Each worker program initialization contributes `worker runtime` through `loading.add` until its matching
-initialized/error reply. Init messages and replies carry a `requestId`; stale replies do not complete a newer
-load. Worker errors, disabling, and disposal clear the owned entry.
+Program initialization contributes ID `worker-runtime` and message `Starting worker runtime...` until its matching
+initialized/error reply marks it done/failed. Request IDs prevent stale replies from changing newer attempts.
+Disable and disposal cancel pending work; results remain in state independently of presentation.

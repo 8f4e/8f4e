@@ -1,4 +1,4 @@
-import initEditor, { type Editor } from '@8f4e/editor-core';
+import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { afterEach, expect, test } from 'vitest';
@@ -15,6 +15,7 @@ async function setup() {
 	canvas.height = 384;
 	document.body.append(canvas);
 	let editor: Editor;
+	let context!: EditorPluginContext;
 	const plugins = createDefaultEditorPlugins({
 		canvas,
 		storage: { getItem: () => null, setItem: () => {} } as Storage,
@@ -36,18 +37,27 @@ async function setup() {
 				{ type: 'module', id: 2, entry: 'main', code: ['module same', '; @pos 40 3', '; @group audio', 'moduleEnd'] },
 			],
 		},
-		plugins,
+		plugins: [
+			...plugins,
+			{
+				id: 'test-context',
+				setup: services => {
+					context = services;
+					return () => {};
+				},
+			},
+		],
 	});
 	editor.pauseRendering();
 	cleanups.push(() => {
 		editor.dispose();
 		canvas.remove();
 	});
-	return { canvas, editor, state: editor.state };
+	return { canvas, editor, state: editor.state, context };
 }
 
 test('Ctrl/Cmd+V pastes plain text into the selected block through native clipboard input', async () => {
-	const { canvas, editor, state } = await setup();
+	const { canvas, editor, state, context } = await setup();
 	const target = () => state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
 	await expect
 		.poll(async () => {
@@ -71,6 +81,7 @@ test('Ctrl/Cmd+V pastes plain text into the selected block through native clipbo
 	await userEvent.keyboard(`{${modifier}>}v{/${modifier}}`);
 	await expect.poll(() => target().code[row]).toBe(beforePaste.slice(0, pasteCol) + text + beforePaste.slice(pasteCol));
 	expect(state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'note')).toHaveLength(1);
+	context.store.set('loadingIndicators', []);
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot('text-pasted');
 });

@@ -12,7 +12,9 @@
   directive-based lazy import; do not add frame callbacks, visibility checks, or timing delays. Keep font payloads lazy.
 - Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
 - Install `loadingIndicatorsPlugin` eagerly before the deferred loader. It draws the unified
-  `state.loadingIndicators` list; producers own each object and its cleanup.
+  `state.loadingIndicators` list while keeping visibility private; producers own terminal outcomes. Done results
+  hide after 1/2/3 seconds for operations lasting up to 100 ms, over 100 ms through 500 ms, or over 500 ms
+  respectively; failed/cancelled hide after five seconds, without deleting contributions.
 - Load `errorMessagesPlugin` as an unconditional deferred entry. Raw contributor-owned error lists stay central;
   the plugin owns wrapping, layout reservations, coordinates, and drawing.
   Load entries independently through the same loader; apply pointer capability and mode-switching availability as
@@ -108,7 +110,8 @@
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
 
 - Run `npx nx run @8f4e/editor-default:test:screenshot` for real-plugin browser composition coverage: lazy plot
-  activation/navigation, project Open/Save, and compiler/texture-runtime rendering. Keep individual feature behavior
+  activation/navigation, combined asset/lazy-loader loading indicators, initial deferred-import presentation,
+  project Open/Save, and compiler/texture-runtime rendering. Keep individual feature behavior
   in its owning plugin; this package owns combinations of real plugins.
 
 - Keep keyboard navigation, editing, and mode switching independent. Dynamically import their factories only when

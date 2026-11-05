@@ -61,6 +61,6 @@ reporting, and GPU resource release/destruction. Bindings and layout continue to
 
 ## Loading indicators
 
-Each WASM instantiation contributes `texture runtime` through `loading.add`. Completion, failure, replacement,
-disabling, and disposal remove only that attempt’s entry. Routine per-frame execution and texture uploads do
-not contribute loading indicators.
+WASM instantiation contributes ID `texture-runtime` and message `Starting texture runtime...`, replacing its previous
+attempt. Completion/failure settle the result; supersession, disable, and disposal cancel pending work. Results
+remain in state independently of presentation. Per-frame execution and texture uploads do not contribute indicators.

@@ -29,7 +29,7 @@ const store = {
 	menus: { registerItem: vi.fn(() => () => {}), registerMenu: vi.fn(() => () => {}) },
 	directives: { register: vi.fn(() => () => {}) },
 	layout: { createContribution: vi.fn(), subscribe: vi.fn(() => () => {}) },
-	loading: { add: vi.fn(() => () => {}) },
+	loading: { add: vi.fn(() => ({ done: vi.fn(), fail: vi.fn(), cancel: vi.fn() })) },
 	getState: vi.fn(() => storeState),
 	set: vi.fn((path: string, value: unknown) => {
 		if (path === 'info.graphics') {

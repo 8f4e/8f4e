@@ -60,7 +60,7 @@ Initializes the web UI renderer without drawing or scheduling frames. Editor-cor
 - `events: EventDispatcher` - Announces layout grid size changes
 - `canvas: HTMLCanvasElement` - The canvas element to render to
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
-- `options.loading` - Required per-editor loading service supplied by editor-core; font changes contribute `font <name>`
+- `options.loading` - Required per-editor loading service supplied by editor-core; font changes contribute ID `font` with message `Loading font <name>...`
 - `options.onRenderStats` - Optional callback for sampled render statistics
 - `options.renderStatsIntervalFrames` - Optional frame interval for `onRenderStats` (defaults to 60)
 
@@ -128,7 +128,8 @@ values in a 4 KiB uniform buffer.
 Web-ui installs font grid dimensions into `state.viewport.hGrid` and `state.viewport.vGrid` and dispatches
 `gridSizeChanged` when those dimensions change. Editor-state refreshes block geometry and viewport anchors without
 knowing about fonts or atlases. Pending font loads cannot replace a newer selection or update a destroyed renderer.
-Each font change owns a `font <name>` loading contribution, removed on completion, failure, supersession, or disposal.
+Each font change replaces the `font` contribution with a custom message and reports done/failed on completion.
+Supersession and disposal cancel pending attempts; results remain in state independently of indicator visibility.
 The startup rendering sequence and initial font readiness remain unchanged.
 Font changes replace the masks and update drawing metrics. Dot positions and sizes live beside the background plugin
 in `src/plugins/background/dot-settings.ts`; no background settings come from the font atlas.
