@@ -59,7 +59,7 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 		await started(index);
 		return await vi.mocked(mountMinimalEditor).mock.results[index].value;
 	};
-	return { gallery, panel, started, mounted };
+	return { gallery, panel, started, mounted, dispose };
 }
 
 test('keeps the loading canvas while mounting waits for the project and reveals it on completion', async () => {
@@ -335,6 +335,62 @@ test('disposes an editor when loading fails before its mount promise resolves', 
 	await vi.waitFor(() => expect(dispose).toHaveBeenCalledOnce());
 	expect(view.panel().querySelector('canvas')).toBeNull();
 	expect(view.panel().querySelector('[role="status"]')?.textContent).toContain('This project could not be loaded.');
+});
+
+test('disposes a pending selection and ignores callbacks after the gallery is disposed', async () => {
+	let finish!: (editor: MinimalEditorInstance) => void;
+	const pending = new Promise<MinimalEditorInstance>(resolve => {
+		finish = resolve;
+	});
+	const disposeEditor = vi.fn();
+	vi.mocked(mountMinimalEditor).mockImplementationOnce(() => pending);
+	const view = setup({ pending: async () => new Response(source) });
+	await view.started();
+	const canvas = view.panel().querySelector('canvas')!;
+	const options = vi.mocked(mountMinimalEditor).mock.calls[0][1]!;
+	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
+	view.dispose();
+	expect(canvas.isConnected).toBe(false);
+
+	options.onInitialProjectLoaded?.();
+	options.onInitialProjectLoadError?.(new Error('Late failure'));
+	finish({ dispose: disposeEditor } as unknown as MinimalEditorInstance);
+	await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
+	expect(canvas.classList.contains('editor-ready')).toBe(false);
+	expect(status.textContent).toBe('Loading project…');
+	expect(status.hidden).toBe(false);
+});
+
+test('retries a timed-out selection without reviving its late mount', async () => {
+	let finish!: (editor: MinimalEditorInstance) => void;
+	const pending = new Promise<MinimalEditorInstance>(resolve => {
+		finish = resolve;
+	});
+	const disposeEditor = vi.fn();
+	const timeouts = vi.spyOn(window, 'setTimeout');
+	const clearTimeout = vi.spyOn(window, 'clearTimeout');
+	vi.mocked(mountMinimalEditor).mockImplementationOnce(() => pending);
+	const view = setup({ timeout: async () => new Response(source) });
+	await view.started();
+	const options = vi.mocked(mountMinimalEditor).mock.calls[0][1]!;
+	const timeoutIndex = timeouts.mock.calls.findIndex(([, delay]) => delay === 30_000);
+	const timeout = timeouts.mock.calls[timeoutIndex][0] as () => void;
+	timeout();
+	expect(clearTimeout).toHaveBeenCalledWith(timeouts.mock.results[timeoutIndex].value);
+	expect(view.panel().querySelector('canvas')).toBeNull();
+	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
+	expect(status.textContent).toContain('This project could not be loaded.');
+	status.querySelector<HTMLButtonElement>('button')!.click();
+	await view.mounted(1);
+	await vi.waitFor(() => expect(view.panel().querySelector('canvas')?.classList.contains('editor-ready')).toBe(true));
+
+	options.onInitialProjectLoadError?.(new Error('Late failure'));
+	options.onInitialProjectLoaded?.();
+	finish({ dispose: disposeEditor } as unknown as MinimalEditorInstance);
+	await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
+	expect(status.hidden).toBe(true);
+	expect(view.panel().querySelector('button')).toBeNull();
+	expect(view.panel().querySelectorAll('canvas')).toHaveLength(1);
 });
 
 test('switches examples without waiting for the previous fetch and ignores its late completion', async () => {
