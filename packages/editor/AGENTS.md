@@ -15,8 +15,9 @@
   The returned handle exposes `done()`, `fail()`, and `cancel()`; the first terminal result records `finishedAt`.
   State retains `status`, `startedAt`, and `finishedAt` in the unified `state.loadingIndicators` list. Reusing an ID
   replaces its entry; old handles cannot update the replacement. The eager `editor-plugin-loading-indicators` owns
-  prepared elapsed-time/status drawing and on-demand cleanup. Cleanup sleeps until results expire after five
-  seconds, then removes them oldest finish first at 100 ms intervals; no finished entries means no cleanup timer.
+  prepared elapsed-time/status drawing and private visibility bookkeeping; it never deletes state contributions.
+  Done results hide after one second, failed/cancelled after five. Expired items hide oldest finish first at 50 ms
+  intervals. Hiding sleeps until needed and runs independently of drawing; same-ID replacements become visible again.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, nested block backgrounds,
   line-number drawing, and private prepared sprite cells and highlight rectangles. Editor compositions install it eagerly.
   Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order
@@ -52,7 +53,7 @@
   storage, built-in modules, Open From Disk, WASM export, screenshots, and optional authoring actions in editor-default.
 - `@8f4e/editor-landing` independently composes the product homepage editor with the same embedded capabilities,
   omitting entry outlines, offscreen block arrows, context menus, project saving/export, file-session tracking,
-  and block copy/paste. Keep plain-text paste in keyboard editing and core's `contextMenu` feature disabled.
+  block copy/paste, and loading-indicator presentation. Keep plain-text paste in keyboard editing and core's `contextMenu` feature disabled.
 - `@8f4e/editor-website` is the thin deployable Vite host for the default composition.
 - `@8f4e/editor-webmcp` is an external, page-owned adapter bound to one editor's public editing handle. Hosts own its registration and dispose it before replacing the editor; it is not an editor plugin.
 - The bridge bundles its help, compiler/editor documentation, and example catalogs using `@8f4e/vite-plugin-sources` at build time. Its `generate-content` target prepares the search index and lazy content modules before build/test/typecheck; hosts need no content configuration.

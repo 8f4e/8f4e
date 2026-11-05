@@ -129,7 +129,7 @@ Web-ui installs font grid dimensions into `state.viewport.hGrid` and `state.view
 `gridSizeChanged` when those dimensions change. Editor-state refreshes block geometry and viewport anchors without
 knowing about fonts or atlases. Pending font loads cannot replace a newer selection or update a destroyed renderer.
 Each font change replaces the `font` contribution with a custom message and reports done/failed on completion.
-Supersession and disposal cancel pending attempts; results remain until loading-indicator cleanup.
+Supersession and disposal cancel pending attempts; results remain in state independently of indicator visibility.
 The startup rendering sequence and initial font readiness remain unchanged.
 Font changes replace the masks and update drawing metrics. Dot positions and sizes live beside the background plugin
 in `src/plugins/background/dot-settings.ts`; no background settings come from the font atlas.

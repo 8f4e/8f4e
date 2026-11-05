@@ -32,7 +32,7 @@ of other downloads. Copies respect the target's allocated byte length. The plugi
 compiler publishes a memory plan. Each configured asset contributes ID `asset:<id>` and message `Loading <id>...`.
 Downloaded bytes mark it done; fetch errors mark it failed, even before runtime memory exists. Memory copying and
 recompilation do not re-add indicators. Configuration changes and disposal cancel pending downloads; new downloads
-replace the same ID. The loading-indicators plugin owns presentation and result expiration. Binary loading does not
+replace the same ID. The loading-indicators plugin owns presentation and private visibility. Binary loading does not
 open a dialog or block input.
 Fetch failures are logged and excluded from the completed asset set.
 

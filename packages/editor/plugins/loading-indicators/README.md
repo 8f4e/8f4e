@@ -36,12 +36,16 @@ Each state record contains `id`, `message`, `status` (`loading`, `done`, `failed
 `finishedAt`. Timestamps are milliseconds since the Unix epoch; `finishedAt` is null while loading. The registry
 records timestamps and terminal results without removing entries.
 
-Cleanup sleeps until the oldest finished entry becomes more than five seconds old. It then removes that entry
-and spaces further removals by at least 100 ms, oldest finish timestamp first. With no finished entries it schedules
-no cleanup work. Pending operations remain. Cleanup runs independently of drawing, including while overlays or
-rendering are disabled. Disposal stops both timers, releases subscriptions, and unregisters the drawer without
-clearing the list. Without this plugin, contributions and terminal results still work, but no scheduled cleanup
-or presentation runs.
+The plugin never deletes contributions. It tracks hidden attempts privately by object identity, so a new
+contribution with the same ID becomes visible again. Done results become eligible to hide after one second;
+failed and cancelled results after five seconds. Pending operations stay visible. Among eligible results, the
+oldest finish timestamp hides first, with at least 50 ms between hides. An older failure still in its grace period
+does not prevent a newer done result from hiding.
+
+The visibility timer sleeps until the next expiry and stops when no visible finished entries remain. Hiding works
+independently of drawing, including while overlays or rendering are disabled. Disposal stops both timers, releases
+subscriptions, and unregisters the drawer without changing contributions. Without this plugin, state and terminal
+results still work, with no automatic presentation or visibility timers.
 
 Verify with `npx nx run @8f4e/editor-plugin-loading-indicators:build|test|typecheck`.
 Run real-editor overlay coverage with `npx nx run @8f4e/editor-plugin-loading-indicators:test:screenshot`.

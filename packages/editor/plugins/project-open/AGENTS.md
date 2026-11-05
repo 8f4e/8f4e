@@ -8,7 +8,7 @@
 - Install the session plugin before project loaders. It holds only the shared handle and its reset lifecycle.
 - Contribute ID `project-file` and message `Loading project...` while reading, parsing, and installing source.
   Report done/failed outcomes, including callback/action failures; cancel pending work on disposal. Reusing the
-  same ID replaces the entry. The presentation plugin owns retention and cleanup.
+  same ID replaces the entry. The presentation plugin owns private visibility.
   Begin after file selection so the picker itself does not show a loading indicator.
 - Return cleanup for the action and menu. Keep Open tests independent of Save. Verify parsing, file association, cancellation, fallbacks, disposal,
   and menus here; composed Open/Save and shared-session lifecycle tests belong to editor-default. Keep test helpers local.

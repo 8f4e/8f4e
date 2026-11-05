@@ -20,4 +20,5 @@ its edges. Outside all entry bounds it allocates a fresh entry name. Entry assig
 `loading.add({ id, message })` returns `done()`, `fail()`, and `cancel()` methods; the first terminal result records
 its finish time and remains in state. Reusing an ID replaces its previous record in place, and previous handles
 cannot change the new attempt. Indicators do not affect project history, serialization, or compiler inputs.
-The loading-indicators plugin owns optional canvas presentation and periodically expires results older than five seconds.
+Contributions remain in state. The loading-indicators plugin owns optional canvas presentation and private
+visibility: done results hide after one second, failed/cancelled after five, without changing the list.

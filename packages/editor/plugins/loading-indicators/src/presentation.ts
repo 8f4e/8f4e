@@ -1,5 +1,6 @@
 import type { EditorPluginContext, LoadingIndicator } from '@8f4e/editor-core';
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
+import { installVisibility } from './visibility';
 
 type TextSpan = { x: number; text: string; color: PaletteIndex };
 type Row = { indicator: LoadingIndicator; y: number; width: number; spans: TextSpan[] };
@@ -67,6 +68,7 @@ export function installPresentation({
 		rows =
 			columns && state.featureFlags.canvasOverlays
 				? state.loadingIndicators
+						.filter(visibility.isVisible)
 						.slice(0, count)
 						.map((indicator, index) => prepareRow(indicator, columns, grid, index * rowHeight, now))
 				: [];
@@ -78,6 +80,7 @@ export function installPresentation({
 			elapsedTimer = undefined;
 		}
 	};
+	const visibility = installVisibility(store, prepare);
 	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
 		if (!rows.length || !state.loadingIndicators.length) return;
 		draw.startGroup(0, top);
@@ -100,6 +103,7 @@ export function installPresentation({
 	events.on('gridSizeChanged', prepare);
 	prepare();
 	return () => {
+		visibility.dispose();
 		for (const selector of selectors) store.unsubscribe(selector, prepare);
 		events.off('resize', prepare);
 		events.off('gridSizeChanged', prepare);

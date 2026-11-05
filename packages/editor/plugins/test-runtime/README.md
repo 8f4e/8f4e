@@ -29,4 +29,4 @@ Validate with `npx nx run @8f4e/editor-plugin-test-runtime:build|test|typecheck`
 
 The worker job contributes ID `test-runtime` and message `Running tests...`. Passing marks it done; assertion
 failures or worker errors mark it failed. Replacement, disable, and disposal cancel pending jobs. The worker returns
-one terminal result after program initialization and execution. Results remain for presentation cleanup.
+one terminal result after program initialization and execution. Results remain in state independently of presentation.

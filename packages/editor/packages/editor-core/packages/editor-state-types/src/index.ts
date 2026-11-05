@@ -157,7 +157,7 @@ export interface ProjectChange {
 	kind: 'edit' | 'checkpoint' | 'restore' | 'replace';
 }
 
-/** One contributed operation, retained after completion until presentation cleanup expires it. */
+/** One contributed operation, retained after completion independently of presentation. */
 export interface LoadingIndicator {
 	id: string;
 	message: string;
@@ -210,7 +210,7 @@ export interface State {
 	globalEditorDirectives: ResolvedGlobalEditorDirectives;
 	/** Raw source errors keyed by contributor. Each contributor replaces its own list. */
 	codeErrors: Record<string, CodeError[]>;
-	/** Contributed operations and their recent results, in insertion order. */
+	/** Contributed operations and their retained results, in insertion order. */
 	loadingIndicators: LoadingIndicator[];
 	dialog: DialogContent;
 	dialogStack: DialogContent[];

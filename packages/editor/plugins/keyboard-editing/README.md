@@ -31,5 +31,5 @@ The loaded implementation handles native `paste` events using `clipboardData` pl
 ## Loading indicators
 
 The first implementation import contributes ID `text-editing` and message `Loading text editing...`. Loading and
-setup report done/failed; disposal cancels pending work. Results remain for presentation cleanup. The implementation
+setup report done/failed; disposal cancels pending work. Results remain in state independently of presentation. The implementation
 is reused across later mode changes.

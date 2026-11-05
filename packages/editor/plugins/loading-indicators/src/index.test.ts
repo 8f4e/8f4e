@@ -38,7 +38,7 @@ function setup(width = 320, height = 160) {
 	return { store, events, draw, render, dispose };
 }
 
-it('draws custom messages and frozen terminal times, then expires results without rendering', () => {
+it('draws cached results, hides them by outcome, and retains every contribution', () => {
 	vi.useFakeTimers();
 	vi.setSystemTime(1000);
 	const test = setup();
@@ -56,7 +56,7 @@ it('draws custom messages and frozen terminal times, then expires results withou
 	old.cancel();
 	vi.advanceTimersByTime(10);
 	compilation.done();
-	vi.advanceTimersByTime(1030);
+	vi.advanceTimersByTime(930);
 	const clock = vi.spyOn(Date, 'now');
 	clock.mockClear();
 	test.render();
@@ -68,34 +68,47 @@ it('draws custom messages and frozen terminal times, then expires results withou
 	expect(test.draw.drawText).toHaveBeenCalledWith(144, 0, ' 270 ms', PALETTE_INDICES.floatingMuted);
 	expect(test.draw.drawText).toHaveBeenCalledWith(144, 16, ' failed', PALETTE_INDICES.negativeBase);
 	expect(test.draw.drawText).toHaveBeenCalledWith(96, 32, ' cancelled', PALETTE_INDICES.floatingMuted);
-	expect(test.draw.drawText).toHaveBeenCalledWith(136, 48, ' 1.3 s', PALETTE_INDICES.floatingMuted);
+	expect(test.draw.drawText).toHaveBeenCalledWith(136, 48, ' 1.2 s', PALETTE_INDICES.floatingMuted);
 	expect(test.store.getState().dialogStack).toEqual([]);
+	const changed = vi.fn();
+	test.store.subscribe('loadingIndicators', changed);
 	const readState = vi.spyOn(test.store, 'getState');
-	vi.advanceTimersByTime(3950);
+	vi.advanceTimersByTime(70);
 	expect(readState).not.toHaveBeenCalled();
+	const visibleMessages = () => {
+		test.draw.drawText.mockClear();
+		test.render();
+		return test.draw.drawText.mock.calls.filter(([x]) => x === 8).map(([, , text]) => text);
+	};
+	expect(visibleMessages()).toHaveLength(4);
+	vi.advanceTimersByTime(1);
+	expect(visibleMessages()).toEqual(['Fetching sound...', 'Old task...', 'Still working...']);
+	readState.mockClear();
+	vi.advanceTimersByTime(3979);
+	expect(readState).not.toHaveBeenCalled();
+	vi.advanceTimersByTime(1);
+	expect(visibleMessages()).toEqual(['Old task...', 'Still working...']);
+	vi.advanceTimersByTime(49);
+	expect(visibleMessages()).toHaveLength(2);
+	vi.advanceTimersByTime(1);
+	expect(visibleMessages()).toEqual(['Still working...']);
+	expect(changed).not.toHaveBeenCalled();
 	expect(test.store.getState().loadingIndicators).toHaveLength(4);
-	vi.advanceTimersByTime(1);
-	expect(test.store.getState().loadingIndicators.map(indicator => indicator.id)).toEqual([
-		'compiler',
-		'old',
-		'pending',
-	]);
-	vi.advanceTimersByTime(99);
-	expect(test.store.getState().loadingIndicators).toHaveLength(3);
-	vi.advanceTimersByTime(1);
-	expect(test.store.getState().loadingIndicators.map(indicator => indicator.id)).toEqual(['compiler', 'pending']);
-	vi.advanceTimersByTime(100);
-	expect(test.store.getState().loadingIndicators).toMatchObject([{ id: 'pending', status: 'loading' }]);
+	test.store.set('viewport.width', 400);
+	expect(visibleMessages()).toEqual(['Still working...']);
 	expect(vi.getTimerCount()).toBe(1);
 	test.store.set('featureFlags.canvasOverlays', false);
 	expect(vi.getTimerCount()).toBe(0);
 	test.store.set('featureFlags.canvasOverlays', true);
 	pending.cancel();
+	const retry = test.store.loading.add({ id: 'compiler', message: 'Compiling again...' });
+	expect(visibleMessages()).toEqual(['Compiling again...', 'Still working...']);
+	retry.done();
 	expect(vi.getTimerCount()).toBe(1);
 	test.dispose();
 	expect(vi.getTimerCount()).toBe(0);
 	vi.advanceTimersByTime(6000);
-	expect(test.store.getState().loadingIndicators).toHaveLength(1);
+	expect(test.store.getState().loadingIndicators).toHaveLength(4);
 	test.draw.drawText.mockClear();
 	test.render();
 	expect(test.draw.drawText).not.toHaveBeenCalled();

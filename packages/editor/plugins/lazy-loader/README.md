@@ -56,7 +56,7 @@ order-dependent plugins in the fixed list.
 
 Each import/setup contributes ID `plugin:<entry.id>` and message `Loading <entry.id>...`. Successful setup marks
 it done, import/setup errors mark it failed, and disposal cancels pending work. Retrying replaces the same ID.
-Results remain for loading-indicator cleanup; contributions work without the presentation plugin.
+Results remain in state independently of presentation; contributions work without the presentation plugin.
 
 Modules may be shared by JavaScript's import cache; setup and cleanup remain separate for every editor. The loader
 calls each plugin's ordinary `setup(context)` and owns its returned disposer. Editor disposal prevents queued scans

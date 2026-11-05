@@ -39,8 +39,7 @@ local; groups placed inside the root test entry run their own `main` as part of 
 
 Each active compilation contributes `{ id: 'compiler', message: 'Compiling...' }` through `loading.add` after
 debounce. Success and failure report their respective terminal status; superseded attempts and disposal cancel
-pending work. Sequential attempts replace the same ID. Results and finish timestamps remain until the presentation
-plugin expires them.
+pending work. Sequential attempts replace the same ID. Results and finish timestamps remain in state independently of presentation.
 
 For an accepted result, the plugin first updates its artifact handles and emits `compilationSucceeded` with the
 `ProgramArtifacts` needed for rendering: `memoryRef`. Core consumes that event to refresh memory views; bytecode stays

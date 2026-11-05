@@ -106,7 +106,7 @@ entryEnd`);
 			expect(editor!.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
 		);
 		const compilation = context.loading.add({ id: 'compiler', message: 'Compiling...' });
-		now.mockReturnValue(3650);
+		now.mockReturnValue(2400);
 		compilation.done();
 		context.loading.add({ id: 'cancelled', message: 'Starting old task...' }).cancel();
 		expect(editor.state.loadingIndicators.map(indicator => indicator.status)).toEqual([
@@ -120,7 +120,8 @@ entryEnd`);
 		await expect(canvas).toMatchScreenshot('loading-indicators-finished');
 		now.mockReturnValue(9000);
 		await vi.advanceTimersByTimeAsync(6000);
-		expect(editor.state.loadingIndicators).toEqual([]);
+		expect(editor.state.loadingIndicators).toHaveLength(5);
+		expect(editor.state.loadingIndicators.every(indicator => indicator.status !== 'loading')).toBe(true);
 	} finally {
 		editor?.dispose();
 		canvas.remove();

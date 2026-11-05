@@ -40,4 +40,4 @@ npx nx run @8f4e/editor-plugin-example-modules:test:browser
 
 Every requested module source and dependency contributes ID `module:<slug>` and message `Loading module <slug>...`.
 Source availability or failure settles its status; disposal cancels pending reads. Repeated requests replace the
-same ID, and results remain for presentation cleanup. Source caching and insertion order are unchanged.
+same ID, and results remain in state independently of presentation. Source caching and insertion order are unchanged.

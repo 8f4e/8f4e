@@ -12,7 +12,8 @@
   directive-based lazy import; do not add frame callbacks, visibility checks, or timing delays. Keep font payloads lazy.
 - Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
 - Install `loadingIndicatorsPlugin` eagerly before the deferred loader. It draws the unified
-  `state.loadingIndicators` list and expires finished results after five seconds; producers own terminal outcomes.
+  `state.loadingIndicators` list while keeping visibility private; producers own terminal outcomes. Done results
+  hide after one second, failed/cancelled after five, without deleting contributions.
 - Load `errorMessagesPlugin` as an unconditional deferred entry. Raw contributor-owned error lists stay central;
   the plugin owns wrapping, layout reservations, coordinates, and drawing.
   Load entries independently through the same loader; apply pointer capability and mode-switching availability as

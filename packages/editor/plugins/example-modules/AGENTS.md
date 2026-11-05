@@ -1,7 +1,7 @@
 # Example Modules Plugin
 
 - Track each source read with ID `module:<slug>` and message `Loading module <slug>...`. Report done/failed;
-  cancel pending reads on disposal. Repeated source reads replace the same ID; presentation owns result cleanup.
+  cancel pending reads on disposal. Repeated source reads replace the same ID; presentation owns private visibility.
 - Own the Add Built-in Block menu, category navigation, catalog metadata, loading/cache, public-block selection,
   and dependency insertion here.
 - Export `createExampleModulesPlugin({ sources })`; receive lazy source loaders from the host, keyed by paths

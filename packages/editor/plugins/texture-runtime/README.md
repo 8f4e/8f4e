@@ -63,4 +63,4 @@ reporting, and GPU resource release/destruction. Bindings and layout continue to
 
 WASM instantiation contributes ID `texture-runtime` and message `Starting texture runtime...`, replacing its previous
 attempt. Completion/failure settle the result; supersession, disable, and disposal cancel pending work. Results
-remain for presentation cleanup. Per-frame execution and texture uploads do not contribute indicators.
+remain in state independently of presentation. Per-frame execution and texture uploads do not contribute indicators.

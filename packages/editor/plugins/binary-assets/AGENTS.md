@@ -13,7 +13,7 @@
 - Ignore stale fetch results after configuration changes or disposal. Unsubscribe and remove owned contributions
   on disposal, cancelling pending download indicators. Contribute ID `asset:<id>` with message `Loading <id>...`.
   Mark done when downloaded bytes arrive and failed on fetch errors. Memory copies and recompilation never create
-  or prolong download indicators. New downloads replace the same asset ID; presentation owns result cleanup.
+  or prolong download indicators. New downloads replace the same asset ID; presentation owns private visibility.
 - Verify with `npx nx run @8f4e/editor-plugin-binary-assets:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-binary-assets:test:screenshot` for loading contributions and real editor integration.
   Indicator appearance belongs to `editor-plugin-loading-indicators`; do not install its drawer in binary asset tests.

@@ -11,7 +11,7 @@
   after debouncing, using public serialization helpers. Keep worker creation lazy.
 - Contribute `{ id: 'compiler', message: 'Compiling...' }` for each active attempt after debounce.
   Report done/failed results; cancel superseded attempts and pending work on disposal. New attempts replace the
-  same ID. Queued requests remain sequential; the presentation plugin owns retention and cleanup.
+  same ID. Queued requests remain sequential; the presentation plugin owns private visibility.
 - Run only one worker compilation at a time; coalesce edits received in flight and respect the latest debounce interval.
 - Contribute the integer `recompileDebounceDelay` config schema through `editorConfigSchemaContributions.compiler`.
   Keep its typing and default in this package; use the shared directive validation and parsing mechanism.

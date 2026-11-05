@@ -69,8 +69,9 @@ Initialization failures later in startup also dispose installed plugins.
 Plugins publish operations with `loading.add({ id, message })`, receiving `done()`, `fail()`, and `cancel()` methods.
 The first terminal call records a finish timestamp and retains the result in the unified `state.loadingIndicators`
 list. A repeated ID replaces its entry without allowing old handles to update it. State records epoch-millisecond
-start/finish times. The eager loading-indicators plugin owns elapsed-time/status drawing and removes the oldest
-expired result every 100 ms after a five-second grace period. Contributions work independently of the drawer.
+start/finish times. The loading-indicators plugin draws prepared elapsed-time/status rows and tracks visibility
+privately: done results hide after one second, failed/cancelled after five, oldest eligible finish first at 50 ms
+intervals. Contributions stay in state independently of presentation; same-ID replacements become visible again.
 
 Keep browser dependencies in plugin factories rather than the shared setup context. A browser host can create
 `createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })` before initializing the editor; the

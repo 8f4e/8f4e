@@ -19,7 +19,7 @@ fallback is installed; a failure does not call `onLoaded`. With no URL, neither 
 notifications for pending requests. Callback errors are not treated as fetch or parser failures.
 
 The plugin contributes ID `project-url` and message `Loading project...` while fetching, parsing, and installing
-source. Success/failure settle its status; disposal cancels pending work. Results remain until presentation cleanup.
+source. Success/failure settle its status; disposal cancels pending work. Results remain in state independently of presentation.
 No URL means no indicator.
 Initial URL loading still completes before the first canvas frame; its retained terminal result can be shown
 once rendering starts.
