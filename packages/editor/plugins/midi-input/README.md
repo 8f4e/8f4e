@@ -11,8 +11,8 @@ Configure input callbacks with separate directives:
 ; @config midi.inputs.keys.callback onMidiEvent
 ```
 
-The default and minimal editors automatically load the plugin when raw `@config midi.*` directives exist, including
-after editing and inside unopened groups. Detection reads cached parsed directives across the complete project tree.
+For lazy installation, match raw `@config midi.*` directives with project scope, including configuration added
+during editing and inside unopened groups. Detection reads cached parsed directives across the complete project tree.
 The plugin stays installed until editor disposal. Installation reads current configuration and compiler artifacts,
 including after compilation has already completed. The plugin requests MIDI access only when MIDI configuration
 exists. It publishes available input and output names under `state.info.midi`, using stable numeric indexes while discovery is active.

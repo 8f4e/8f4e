@@ -9,7 +9,7 @@ using world coordinates. This is one replaceable callback: later registrations w
 only if the registration still owns it, without restoring earlier registrations. `canvasOverlays` suppresses
 offscreen decorations during screenshot capture.
 
-Both editor compositions load this plugin after `ready`. It uses no browser APIs or state subscriptions.
+The plugin can load through a deferred registry after `ready`. It uses no browser APIs or state subscriptions.
 
 Verify with Nx `build`, `test`, `typecheck`, and `test:screenshot`. Tests cover directions, raw viewport edges,
 panning/resizing, and disposal. Browser screenshots install only this plugin with core. The typecheck target covers both source and browser tests.

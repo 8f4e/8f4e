@@ -54,6 +54,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(deferredPlugins.map(plugin => plugin.id)).toContain('mouse-input');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('selection-animation');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-input');
+	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('keyboard-memory');
 	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).toEqual(
 		expect.arrayContaining([
 			'code-block-background',

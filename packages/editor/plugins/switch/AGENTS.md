@@ -2,7 +2,7 @@
 
 - Own the switch directive's arguments, memory resolution, click behavior, and drawer here.
 - Keep generic directive parsing and layout in editor-state. Interpret cached directive records in this plugin.
-- Export an `EditorPlugin` without installing it as an import side effect. Editor-default selects the standard plugins.
+- Export an `EditorPlugin` without installing it as an import side effect.
 - Keep switch widget data inside setup, scoped to one editor instance. Use public workspace APIs.
 - Derive widget geometry through `layout.subscribe` and share it between the drawer and click hit-testing.
 - Own the widget type and drawing implementation here; do not share feature-specific types or drawers with core.

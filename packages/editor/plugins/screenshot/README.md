@@ -19,7 +19,6 @@ editor = await initEditor(canvas, {
 
 The factory binds the plugin to that canvas. Its render callback runs when the action is selected, after editor
 initialization. The shared `EditorPluginContext` needs no browser resources or screenshot services.
-`@8f4e/editor-default` creates this plugin for each mounted editor.
 
 The plugin uses the canvas's document and window for browser operations. It begins the file picker in the menu
 action before awaiting PNG encoding, renders a fresh frame, and restores the previous overlay flags after saving

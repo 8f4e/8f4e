@@ -14,7 +14,7 @@
 - Reserve view space from explicit source-pixel dimensions, with an optional source origin defaulting to zero. Layout
   uses only directives and viewport grid sizes; it has no compiler or memory dependencies. Pointer swaps and invalid
   sources never resize views. Keep rendering bindings separate from geometry and texture fields out of core.
-- Keep the overlay above editor content; block occlusion is outside this feature. Both compositions match either
+- Keep the overlay above editor content; block occlusion is outside this feature. For lazy installation, match either
   directive and raw runtime config with project scope.
 - Export `createTextureRuntimePlugin({ getCodeBuffer, getMemory })`. Preserve instance reuse and stale completion cleanup.
 - Keep program lifecycle and execution-before-draw coordination in `index.ts`. `render-layer.ts` owns the drawer,

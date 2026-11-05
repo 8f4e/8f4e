@@ -39,7 +39,6 @@ test('previews fonts through the default composition without changing saved sour
 				},
 			],
 		});
-		await expect.poll(() => editor!.state.editorConfigSchemaContributions.keyboard).toBeDefined();
 		await vi.dynamicImportSettled();
 		editor.pauseRendering();
 		const source = serializeToProject(editor.state);

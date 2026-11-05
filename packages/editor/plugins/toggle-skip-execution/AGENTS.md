@@ -1,7 +1,7 @@
 # Toggle Skip Execution Plugin
 
 - This package owns only the single-module execution toggle. Group toggling belongs to the grouping plugin.
-- Export an `EditorPlugin` from `@8f4e/editor-core` without installing it as an import side effect. It is included by editor-default.
+- Export an `EditorPlugin` from `@8f4e/editor-core` without installing it as an import side effect.
 - Own the Skip/Unskip menu label, visibility, and target payload here through `menus.registerItem`; keep editor-state's
   menu composition generic.
 - Use public workspace APIs; the source transformation is shared through `@8f4e/editor-state`.

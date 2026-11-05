@@ -9,7 +9,7 @@ import { createFontPreviewPlugin } from '@8f4e/editor-plugin-font-preview';
 const plugin = createFontPreviewPlugin({ inputTarget: canvas });
 ```
 
-The default editor imports and installs it on non-coarse-pointer browsers. The minimal editor omits it.
+The host chooses whether to install it based on keyboard and pointer capabilities.
 
 The selected font temporarily overrides the resolved `editorConfig.font`; web-ui loads the atlas and updates layout.
 Previewing changes neither project source nor history, revision, session content, or exported files. The preview stays

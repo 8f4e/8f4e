@@ -1,7 +1,7 @@
 # Plot Plugin
 
 `@8f4e/editor-plugin-plot` owns the `plot` directive's arguments, layout, derived data, and rendering.
-The default editor installs it; editor-core installs no plugins automatically.
+Install the plugin through the editor's plugin registry; editor-core installs no plugins automatically.
 
 ```ts
 import { plotPlugin } from '@8f4e/editor-plugin-plot';

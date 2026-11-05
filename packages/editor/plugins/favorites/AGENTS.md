@@ -1,7 +1,7 @@
 # Favorites Plugin
 
 - Own `@favorite` detection, Favorite/Unfavorite editing, the Jump to submenu, and its navigation action here.
-- Export `favoritesPlugin` as an `EditorPlugin`; editor-default installs it eagerly, and editor-minimal omits it.
+- Export `favoritesPlugin` as an `EditorPlugin`; install it without requiring an existing directive so the editing action is available.
 - Read cached `parsedDirectives` directly. Keep favorite state private; do not add flags or a metadata model to core.
 - Use the generic `jumpToCodeBlock` helper for selection and viewport movement in the current project level.
 - Preserve the generated env block's default favorite through the owned `envConstantContributions.favorites` source.

@@ -147,16 +147,8 @@ export function createDeferredEditorPlugin({
 					module.createKeyboardModeSwitchingPlugin({ inputTarget: canvas })
 				),
 		},
-		{
-			id: 'keyboard-memory',
-			scope: 'view',
-			matches: () => true,
-			load: () =>
-				import('@8f4e/editor-plugin-keyboard-memory').then(module =>
-					module.createKeyboardMemoryPlugin({ inputTarget: canvas, writeMemory: compiler.writeMemory })
-				),
-		},
 		...createLazyPluginRegistry({
+			inputTarget: canvas,
 			prefersReducedMotion: () => motionPreference.matches,
 			navigator: browserWindow.navigator,
 			writeMemory: compiler.writeMemory,

@@ -18,7 +18,7 @@ import { wavePlugin } from '@8f4e/editor-plugin-wave';
 const editor = await initEditor(canvas, { ...options, plugins: [wavePlugin] });
 ```
 
-The default editor includes this plugin. Each installation keeps its wave data in a private `wavesByBlock` map.
+Each installation keeps its wave data in a private `wavesByBlock` map.
 It contributes layout rows and callbacks through the generic directive API and draws through the code-block drawer
 hook. Disposal unregisters all three definitions and the drawer.
 

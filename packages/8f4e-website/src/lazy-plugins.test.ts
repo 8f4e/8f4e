@@ -1,4 +1,5 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
+import { mountLandingEditor } from '@8f4e/editor-landing';
 import { mountMinimalEditor } from '@8f4e/editor-minimal';
 import { afterEach, expect, test, vi } from 'vitest';
 
@@ -8,7 +9,11 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-async function setup(source: string, assets: Record<string, () => Promise<Response>> = {}) {
+async function setup(
+	source: string,
+	assets: Record<string, () => Promise<Response>> = {},
+	mountEditor = mountMinimalEditor
+) {
 	const projectUrl = '/lazy-plugins-project.8f4e';
 	const fetch = globalThis.fetch.bind(globalThis);
 	vi.spyOn(globalThis, 'fetch').mockImplementation((input, options) => {
@@ -23,13 +28,71 @@ async function setup(source: string, assets: Record<string, () => Promise<Respon
 	canvas.style.height = '512px';
 	document.body.append(canvas);
 	cleanups.push(() => canvas.remove());
-	const editor = await mountMinimalEditor(canvas, { initialProjectUrl: projectUrl });
+	const editor = await mountEditor(canvas, { initialProjectUrl: projectUrl });
 	cleanups.push(() => editor.dispose());
 	await vi.waitFor(() => expect(editor.state.viewport.width).toBe(768));
-	await vi.waitFor(() => expect(editor.state.editorConfigSchemaContributions.keyboard).toBeDefined());
 	await vi.dynamicImportSettled();
 	return { canvas, editor };
 }
+
+test.each([
+	['minimal', false, mountMinimalEditor],
+	['minimal', true, mountMinimalEditor],
+	['landing', false, mountLandingEditor],
+	['landing', true, mountLandingEditor],
+] as const)(
+	'%s editor loads keyboard-to-memory with initial configuration=%s',
+	async (_name, initialConfig, mountEditor) => {
+		const { canvas, editor } = await setup(
+			`8f4e/v1
+note settings ; @mode edit
+; @config recompileDebounceDelay 10
+${initialConfig ? '; @config keyboard.keyCodeMemory keys:code\n; @config keyboard.keyPressedMemory keys:pressed' : ''}
+noteEnd
+entry main
+module keys
+int code
+int pressed
+moduleEnd
+entryEnd`,
+			{},
+			mountEditor
+		);
+		await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'), { timeout: 10000 });
+		if (!initialConfig) {
+			expect(editor.state.editorConfigSchemaContributions.keyboard).toBeUndefined();
+			const config = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
+			editor.editing.applyEdits({
+				expectedRevision: editor.editing.getRevision(),
+				edits: [
+					{
+						type: 'update',
+						blockId: getEditorBlockId(config),
+						code: [
+							...config.code.slice(0, -1),
+							'; @config keyboard.keyCodeMemory keys:code',
+							'; @config keyboard.keyPressedMemory keys:pressed',
+							'noteEnd',
+						],
+					},
+				],
+			});
+		}
+		await vi.waitFor(() => expect(editor.state.editorConfigSchemaContributions.keyboard).toBeDefined());
+		await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
+		const memory = editor.getMemoryViews().int32;
+		const targets = editor.state.compiler.result.memoryPlan.modules.keys.memory;
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyA' }));
+		expect(memory[targets.code.allocationUnitAddress]).toBe(4);
+		expect(memory[targets.pressed.allocationUnitAddress]).toBe(1);
+		canvas.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyA' }));
+		expect(memory[targets.pressed.allocationUnitAddress]).toBe(0);
+		editor.dispose();
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyB' }));
+		expect(memory[targets.code.allocationUnitAddress]).toBe(4);
+		expect(memory[targets.pressed.allocationUnitAddress]).toBe(0);
+	}
+);
 
 test('loads watch and stack with their aliases after entering a group', async () => {
 	const { canvas, editor } = await setup(`8f4e/v1

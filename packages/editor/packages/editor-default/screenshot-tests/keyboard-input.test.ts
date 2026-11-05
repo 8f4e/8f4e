@@ -59,7 +59,6 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 				},
 			],
 		});
-		await expect.poll(() => editor!.state.editorConfigSchemaContributions.keyboard).toBeDefined();
 		await vi.dynamicImportSettled();
 		editor.pauseRendering();
 		editor.renderFrame();

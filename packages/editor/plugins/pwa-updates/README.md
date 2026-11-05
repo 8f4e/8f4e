@@ -5,8 +5,7 @@ the editor's dialog system. First installation is silent. A waiting update opens
 **Reload** and **Later** buttons. The **Reload to update** main-menu item reopens a postponed update.
 
 Create the plugin with `createPwaUpdatesPlugin({ serviceWorker: navigator.serviceWorker })` and install it
-alongside the dialog-rendering plugin. The default composition accepts this source as `pwaUpdates` and loads
-the plugin through its deferred registry after the first render. The editor website supplies it in production.
+alongside the dialog-rendering plugin. It can load through a deferred registry after the first render.
 
 The host owns registration, cache policy, and refreshing windows after a controller change. The plugin only
 observes `serviceWorker.ready`, registration/installing-worker events, and sends `SKIP_WAITING` after Reload.

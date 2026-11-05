@@ -10,6 +10,6 @@
 - Separate wrapped button rows by one vertical grid cell and include those gaps in the dialog height.
 - Read existing dialogs on setup and refresh cached layout after stack changes, resize, and `gridSizeChanged`.
   Keep layout calculation out of the frame path. Dispose all subscriptions, input listeners, and the drawer.
-- Both compositions import `dialogsPlugin` unconditionally through their deferred registries after core's `ready` event.
+- Import `dialogsPlugin` through an unconditional deferred registry after core's `ready` event.
 - Verify with `npx nx run @8f4e/editor-plugin-dialogs:build|test|typecheck` and
   `npx nx run @8f4e/editor-plugin-dialogs:test:screenshot` for desktop/portrait rendering.

@@ -3,7 +3,7 @@
 - Own button directive arguments, memory resolution, press/release state, hit-testing, and rendering here.
 - Keep rendering in `src/drawer/`, directive layout and interaction in `src/state/`, and argument helpers in
   `src/helpers/`. Keep tests beside their implementations.
-- Export an `EditorPlugin` without installing it as an import side effect. Editor-default selects the standard plugins.
+- Export an `EditorPlugin` without installing it as an import side effect.
 - Keep button widgets in a per-instance WeakMap, using public workspace APIs. Do not share button models or drawers
   with core or other plugins.
 - Leave generic directive parsing and layout in editor-state. Use `layout.subscribe` for shared drawing and hit-test geometry.

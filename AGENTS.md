@@ -4,26 +4,33 @@
 - Editor product: the reusable default composition lives in `packages/editor/packages/editor-default/`; the thin
   Vite website lives in `packages/editor/packages/editor-website/`.
 - Embedded composition: `packages/editor/packages/editor-minimal/` supplies live editing, project URL loading,
-  controls, visualizations, runtimes, and project source saving/export for the product homepage and galleries, without session storage
+  controls, visualizations, runtimes, and project source saving/export for the galleries, without session storage
   or the default editor's other authoring plugins.
+- Landing composition: `packages/editor/packages/editor-landing/` supplies the same embedded capabilities for the
+  product homepage, omitting entry outlines, offscreen block arrows, context menus, project saving/export,
+  file-session tracking, and block copy/paste. Plain-text paste remains in keyboard editing. It keeps core's
+  `contextMenu` feature disabled to prevent invisible menus from blocking input.
 - Compiler integration lives in `packages/editor/plugins/compiler/` (`@8f4e/editor-plugin-compiler`). The default editor constructs and installs it first and injects its live handles into dependent plugins, including runtimes. Core emits input-change events and consumes accepted artifacts.
 - WebMCP lives in `packages/editor/packages/editor-webmcp/` as an external page-owned adapter bound to one editor's public `editing` handle. The editor website and example/test galleries compose it; gallery project switches dispose and recreate the bridge.
 - Optional editor features live in `packages/editor/plugins/<feature>/` as independent npm/Nx packages named
   `@8f4e/editor-plugin-<feature>`.
+- Plugin documentation owns factory dependencies, loading signals, and lifecycle contracts. Keep editor counts and
+  lists of consuming compositions out of plugin docs; composition packages document which plugins they select.
 - `editor-plugin-lazy-loader` automatically matches cached editor directives after project changes and group navigation.
-  Visual/control plugins use the current project level; runtime, MIDI, and asset plugins use the entire project tree.
-  Both editor compositions keep explicit loading scopes, lazy signals, and dynamic imports in `src/lazy-plugins.ts`
-  for plot, wave, meter, bars, watch, stack, switch, button, piano, slider, crossfade, MIDI input, binary assets, and the
-  audio/worker/test/texture runtimes. MIDI, assets, and texture execution match raw `midi`,
-  `bin`, and `textureRuntime` config roots before their schemas load. Texture uploads and views also match `@textureUpload` and `@texture`. Both compositions defer optional UI, input, and authoring plugins until after the first render.
+  Visual/control plugins use the current project level; runtime, keyboard-memory, MIDI, and asset plugins use the entire project tree.
+  Editor compositions keep explicit loading scopes, lazy signals, and dynamic imports in `src/lazy-plugins.ts`
+  for plot, wave, meter, bars, watch, stack, switch, button, piano, slider, crossfade, keyboard-memory, MIDI input, binary assets, and the
+  audio/worker/test/texture runtimes. Keyboard-memory matches raw `keyboard` configuration before its schema loads.
+  MIDI, assets, and texture execution match raw `midi`,
+  `bin`, and `textureRuntime` config roots before their schemas load. Texture uploads and views also match `@textureUpload` and `@texture`. Editor compositions defer optional UI, input, and authoring plugins until after the first render.
   Compiler coordination, project loading/restoration, block backgrounds, and code rendering remain eager.
   All optional imports, including directive-based lazy plugins, start on core's `ready` event, after initial project
   loading/parsing, font-atlas loading, and rendering. Font payloads remain separate lazy chunks; do not add frame
   callbacks or timing gates.
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
   selection, and group copying. Nested language-level project groups remain core project structure.
-- Product website: `packages/8f4e-website/` is a Vite site with a homepage, an `/examples/` gallery, and a `/tests/`
-  compiler fixture gallery, all embedding the minimal editor. Its build includes `src/index.html`,
+- Product website: `packages/8f4e-website/` is a Vite site with a homepage embedding the landing editor, plus an
+  `/examples/` gallery and a `/tests/` compiler fixture gallery embedding the minimal editor. Its build includes `src/index.html`,
   `src/examples/index.html`, and `src/tests/index.html`. The test gallery bundles the compiler's `.test.8f4e`
   fixtures as assets; fixtures enable the test-runtime plugin with `@config testRuntime.enabled true` to run assertions
   after compilation.
@@ -36,7 +43,7 @@
   `registerWebUiConfig(store)` before plugin setup and initializes the renderer with the store and event dispatcher.
   State keeps config values generic and responds to `gridSizeChanged` for shared geometry, without font/atlas knowledge.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, nested block backgrounds,
-  line-number drawing, and private prepared sprite cells and highlight rectangles. Both compositions install it eagerly.
+  line-number drawing, and private prepared sprite cells and highlight rectangles. Editor compositions install it eagerly.
   Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order
   within its existing visible-block loop. The eager `code-block-background` plugin is installed before code rendering.
   Code rendering owns selected-line fill; code-block-background owns corner markers. The deferred
@@ -44,32 +51,32 @@
   `registerOffscreenCodeBlockDrawer` callback in the same traversal. `canvasOverlays` also controls offscreen decorations.
 - Editor-state owns `codeBlockRendering.entryBounds`, including padding, updates, and insertion hit testing.
   `@8f4e/editor-plugin-entry-outlines` only draws borders and labels through `registerCanvasBackgroundDrawer` below blocks.
-  Both compositions defer drawing until `ready`; entry assignment works independently of the plugin.
+  The default and minimal compositions defer drawing until `ready`; entry assignment works independently of the plugin.
 - `@8f4e/editor-plugin-context-menu` owns menu labels, sizing, grid snapping, viewport clamping, hover state, hit testing,
   and drawing. Core keeps raw items, requested world anchors, menu navigation, input blocking, and action/selector dispatch.
-  Both compositions defer it until `ready`. Web-ui exposes generic `registerCanvasDrawer` before canvas/modal overlays.
+  The default and minimal compositions defer it until `ready`. Web-ui exposes generic `registerCanvasDrawer` before canvas/modal overlays.
 - `@8f4e/editor-plugin-dialogs` owns dialog dimensions, wrapping/clipping, private button geometry/hit testing,
   and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
-  Both compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
+  Editor compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
   `registerModalOverlay` after ordinary overlays, independently of `canvasOverlays`.
 - `@8f4e/editor-plugin-error-messages` owns inline error wrapping, layout reservations, coordinates, and drawing.
   Core retains raw `CodeError` lists in `state.codeErrors`, keyed by contributor. Compiler, editor directives, and
-  test-runtime own their lists; both compositions defer the presentation plugin until `ready`.
+  test-runtime own their lists; editor compositions defer the presentation plugin until `ready`.
 - `@8f4e/editor-plugin-selection-animation` owns the circling segment around the selected block, using the generic
-  ordered block drawer hook. Its deferred entries are commented out in both compositions; core retains selection state and geometry.
+  ordered block drawer hook. Its deferred entries are commented out in default/minimal and omitted from landing; core retains selection state and geometry.
 - Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.
-  Default/minimal import their factories after the first render only when `(pointer: coarse)` does not match. Editing keeps
+  Default/minimal/landing import their factories after the first render only when `(pointer: coarse)` does not match. Editing keeps
   a small input bridge and loads text editing on first edit mode, buffering keystrokes during the import. Core retains
   history, project editing APIs, generic mode/navigation actions, and shared text/pointer geometry. The mode-switching
   plugin owns its hint through the generic canvas-overlay hook; `canvasOverlays` controls that drawing stage. The editing plugin owns caret movement, horizontal caret placement, and foreground drawing;
   navigation handles view-mode line selection and block navigation. `includeKeyboardModeSwitching: false` omits
-  mode switching from default/minimal; its presence controls availability without a core feature flag.
+  mode switching from default/minimal/landing; its presence controls availability without a core feature flag.
 - DOM mouse/wheel forwarding belongs to `editor-plugin-mouse-input`, loaded on all devices. Coarse-pointer devices
   additionally load `editor-plugin-touch-input` for one-finger viewport dragging with tap preservation.
   Both are independent entries in each composition's deferred registry. Core retains event dispatch, pointer-input
   state effects, viewport updates, and snapping; `captureWheel` is a mouse-plugin factory/host option.
 - The default editor also imports `editor-plugin-font-preview` for non-coarse pointers. F18/F19 cycle a temporary font
-  override without modifying source; project loading or plugin disposal restores source configuration. Minimal omits it.
+  override without modifying source; project loading or plugin disposal restores source configuration. Minimal and landing omit it.
 - Rendering plugins: web-ui owns the procedural background and its font-specific dot settings under `src/plugins/`.
   Editor-core owns the single frame loop and advances viewport state before web-ui draws each frame. Web-ui owns
   drawing and GPU resources, with no frame scheduler or navigation-state updates.
@@ -117,7 +124,8 @@
 - `npx nx run @8f4e/editor-default:test:screenshot`: Runs real-plugin browser composition tests for lazy loading,
   project Open/Save, and compiler/texture rendering.
 - `npx nx run @8f4e/editor-minimal:build|test|typecheck`: Build or verify the embedded editor composition.
-- `npx nx run @8f4e/8f4e-website:test:browser`: Runs homepage and gallery lifecycle integration tests with the minimal editor.
+- `npx nx run @8f4e/editor-landing:build|test|typecheck`: Build or verify the landing-page editor composition.
+- `npx nx run @8f4e/8f4e-website:test:browser`: Runs homepage and gallery lifecycle integration tests with the landing and minimal editors.
 - `npx nx run @8f4e/editor-webmcp:test:browser`: Runs real-editor WebMCP source, editing, revision, persistence, and history integration tests.
 - `npx nx run @8f4e/editor-webmcp:build|test|typecheck`: Verify the external single-editor WebMCP adapter.
 - `npx nx run @8f4e/editor-webmcp:generate-content`: Rebuild its bundled help/docs/example catalog through Vite source collections; build/test/typecheck run this automatically.
@@ -226,7 +234,7 @@ Choose errors by detection phase:
   `@texture <address> <magnification> <width> <height> [<x> <y>]` defines a full or cropped view. Both use pointer sources,
   resolved to byte addresses after entry execution each frame. Discover uploads throughout the project and share one
   upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
-  Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
+  Editor compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
 
 - Block copy/paste belongs to `editor-plugin-code-block-copy-paste`, composed by default and minimal with injected clipboard read/write functions. Grouping receives its own writer. Core has no clipboard callbacks or copy/paste actions; it exports pure `serializeCodeBlocks` and generic `insertCodeBlocks`. Pasting changes only `@pos` for placement: preserve declaration names, group names, references, and entry metadata without numbering or transform hooks.

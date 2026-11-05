@@ -2,7 +2,7 @@
 
 - Own code/notes highlighting, nested block parsing/backgrounds, visible text preparation, line-number/selection drawing, glyph
   resolution, and cached rows/rectangles here.
-- Export `codeRenderingPlugin`; default and minimal compositions install it eagerly.
+- Export `codeRenderingPlugin`; install it eagerly in the composition.
 - Keep source/display geometry, tab parsing/advance rules, gaps, cursor placement, and hit testing in editor-state.
 - Register one block drawer: nested highlights first, selected-line fill next, and cached text last. The host installs
   block backgrounds before this plugin. Keep generic sprite packing and drawing in web-ui.

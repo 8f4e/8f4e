@@ -1,6 +1,7 @@
 # Minimal Editor Package Guidelines
 
-- Own the embedded composition for the product homepage and example/test galleries. Build directly on editor-core;
+- Own the embedded composition for example/test galleries. The product homepage uses editor-landing without
+  entry outlines, offscreen arrows, or context menus. Build directly on editor-core;
   do not import editor-default or its built-in module catalog.
 - Keep file-session, project URL loading, compiler coordination, block backgrounds, and code rendering eager. Import
   `src/deferred-plugins.ts` on core's `ready` event, after initial project loading/parsing, font-atlas loading, and
@@ -29,6 +30,8 @@
 - Supply the canvas and browser navigator to input plugins, memory getters to binary assets, and the compiler memory
   writer to interactive controls. Pass a live reduced-motion preference to lazy watch/stack factories. All block
   drawers run in registration order, including later lazy installations.
+- Load keyboard-memory only for raw `@config keyboard.*` directives, with project scope in `src/lazy-plugins.ts`.
+  Supply its factory with the canvas and live compiler memory writer.
 - The project URL plugin owns fetching. Forward initial-project callbacks; mounting waits for fetching/parsing and the
   first render.
   Without a URL, start empty and announce readiness after initialization.
@@ -54,7 +57,7 @@
   `@texture <address> <magnification> <width> <height> [<x> <y>]` defines a full or cropped view. Both use pointer sources,
   resolved to byte addresses after entry execution each frame. Discover uploads throughout the project and share one
   upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
-  Both compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
+  Editor compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
 
 - Keep keyboard navigation, editing, and mode switching independent. Dynamically import their factories after the first render, only when

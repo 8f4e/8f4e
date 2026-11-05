@@ -50,6 +50,7 @@ function restoreSession(directive: string, nested = false) {
 		restoreOnStartup: true,
 	}).setup(context);
 	const entries = createLazyPluginRegistry({
+		inputTarget: new EventTarget() as HTMLElement,
 		prefersReducedMotion: () => true,
 		navigator: {} as Navigator,
 		writeMemory: () => {},
@@ -101,6 +102,14 @@ it('loads MIDI from restored raw configuration and registers its schema', async 
 	expect(state.editorConfig.midi).toEqual({ inputs: { keys: { port: 0, callback: 'onMidi' } } });
 	expect(state.codeErrors['editor-directives']).toEqual([]);
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['midi-input']);
+});
+
+it.each([false, true])('loads keyboard input from restored raw configuration in unopened groups=%s', async nested => {
+	const { state, entries } = restoreSession('config keyboard.keyCodeMemory audio:value', nested);
+	await vi.waitFor(() => expect(state.editorConfigSchemaContributions.keyboard).toBeDefined());
+	expect(state.editorConfig.keyboard).toEqual({ keyCodeMemory: 'audio:value' });
+	expect(state.codeErrors['editor-directives']).toEqual([]);
+	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['keyboard-memory']);
 });
 
 it('loads MIDI from unopened groups while deferring plot until its project level is visited', async () => {
