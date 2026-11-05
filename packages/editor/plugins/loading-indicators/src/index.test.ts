@@ -3,7 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
-import { loadingIndicatorsPlugin } from './index';
+import { createLoadingIndicatorsPlugin, loadingIndicatorsPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -12,13 +12,13 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-function setup(width = 320, height = 160) {
+function setup(width = 320, height = 160, plugin = loadingIndicatorsPlugin) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
 	Object.assign(store.getState().viewport, { width, height });
 	const drawers = createEditorDrawerRegistry();
-	const dispose = loadingIndicatorsPlugin.setup({
+	const dispose = plugin.setup({
 		store,
 		events,
 		drawers,
@@ -155,4 +155,83 @@ it('limits messages and lists to the viewport while reserving room for elapsed t
 	test.events.dispatch('gridSizeChanged');
 	test.render();
 	expect(test.draw.startGroup).toHaveBeenLastCalledWith(0, 32);
+	for (let index = 0; index < 19; index++)
+		test.store.loading.add({ id: `extra-${index}`, message: `Extra task ${index}` });
+	test.events.dispatch('resize', { canvasWidth: 256, canvasHeight: 512 });
+	test.draw.drawFill.mockClear();
+	test.render();
+	expect(test.draw.drawFill).toHaveBeenCalledTimes(20);
+	expect(test.store.getState().loadingIndicators).toHaveLength(22);
+});
+
+it('applies custom row limits, refresh intervals, and result visibility timings', () => {
+	vi.useFakeTimers();
+	vi.setSystemTime(1000);
+	const test = setup(
+		320,
+		160,
+		createLoadingIndicatorsPlugin({
+			maxVisibleRows: 2,
+			elapsedUpdateIntervalMs: 40,
+			hideIntervalMs: 15,
+			fastOperationThresholdMs: 40,
+			mediumOperationThresholdMs: 80,
+			fastDoneVisibleMs: 100,
+			mediumDoneVisibleMs: 120,
+			slowDoneVisibleMs: 140,
+			failedVisibleMs: 160,
+			cancelledVisibleMs: 180,
+		})
+	);
+	const visibleMessages = () => {
+		test.draw.drawText.mockClear();
+		test.render();
+		return test.draw.drawText.mock.calls.filter(([x]) => x === 8).map(([, , text]) => text);
+	};
+	const fast = test.store.loading.add({ id: 'fast', message: 'Fast' });
+	const alsoFast = test.store.loading.add({ id: 'also-fast', message: 'Also fast' });
+	const medium = test.store.loading.add({ id: 'medium', message: 'Medium' });
+	const slow = test.store.loading.add({ id: 'slow', message: 'Slow' });
+	const failed = test.store.loading.add({ id: 'failed', message: 'Failed' });
+	const cancelled = test.store.loading.add({ id: 'cancelled', message: 'Cancelled' });
+	vi.advanceTimersByTime(39);
+	expect(visibleMessages()).toEqual(['Fast', 'Also fast']);
+	expect(test.draw.drawText.mock.calls.map(([, , text]) => text)).toContain(' 0 ms');
+	vi.advanceTimersByTime(1);
+	visibleMessages();
+	expect(test.draw.drawText.mock.calls.map(([, , text]) => text)).toContain(' 40 ms');
+	fast.done();
+	alsoFast.done();
+	vi.advanceTimersByTime(40);
+	medium.done();
+	vi.advanceTimersByTime(1);
+	slow.done();
+	failed.fail();
+	cancelled.cancel();
+	vi.advanceTimersByTime(59);
+	expect(visibleMessages()).toEqual(['Fast', 'Also fast']);
+	vi.advanceTimersByTime(1);
+	expect(visibleMessages()).toEqual(['Also fast', 'Medium']);
+	vi.advanceTimersByTime(14);
+	expect(visibleMessages()).toEqual(['Also fast', 'Medium']);
+	vi.advanceTimersByTime(1);
+	expect(visibleMessages()).toEqual(['Medium', 'Slow']);
+	vi.advanceTimersByTime(44);
+	expect(visibleMessages()).toEqual(['Medium', 'Slow']);
+	vi.advanceTimersByTime(1);
+	expect(visibleMessages()).toEqual(['Slow', 'Failed']);
+	vi.advanceTimersByTime(20);
+	expect(visibleMessages()).toEqual(['Slow', 'Failed']);
+	vi.advanceTimersByTime(1);
+	expect(visibleMessages()).toEqual(['Failed', 'Cancelled']);
+	vi.advanceTimersByTime(19);
+	expect(visibleMessages()).toEqual(['Failed', 'Cancelled']);
+	vi.advanceTimersByTime(1);
+	expect(visibleMessages()).toEqual(['Cancelled']);
+	vi.advanceTimersByTime(19);
+	expect(visibleMessages()).toEqual(['Cancelled']);
+	vi.advanceTimersByTime(1);
+	expect(visibleMessages()).toEqual([]);
+	expect(test.store.getState().loadingIndicators).toHaveLength(6);
+	expect(vi.getTimerCount()).toBe(0);
 });
