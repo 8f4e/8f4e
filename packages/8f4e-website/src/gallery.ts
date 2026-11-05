@@ -1,7 +1,5 @@
-import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
-import type { EditorWebMcpBridge } from '@8f4e/editor-webmcp';
+import { mountGalleryEditorSession } from './gallery-editor-session';
 import { getProjectId, withProjectId } from './gallery-url';
-import { sharedAudioContext } from './shared-audio-context';
 
 export interface GalleryProject {
 	id: string;
@@ -29,11 +27,7 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 	const gallery = document.querySelector<HTMLDivElement>('#examples-gallery')!;
 	const mobileLayout = window.matchMedia('(max-width: 800px)');
 	let activeId: string | null = null;
-	let activeEditor: MinimalEditorInstance | undefined;
-	let activeBridge: EditorWebMcpBridge | undefined;
-	let revision = 0;
-	let revealFrame = 0;
-	let loadTimeout = 0;
+	let disposeSelection: (() => void) | undefined;
 	let disposed = false;
 
 	const items = categories.flatMap(category => {
@@ -116,25 +110,13 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 		});
 	});
 
-	function releaseEditor(): void {
-		window.cancelAnimationFrame(revealFrame);
-		window.clearTimeout(loadTimeout);
-		activeBridge?.dispose();
-		activeBridge = undefined;
-		activeEditor?.dispose();
-		activeEditor = undefined;
-		for (const item of items) {
-			item.frame.querySelector('canvas')?.remove();
-		}
-	}
-
 	function selectExample(id: string | null, retry = false): void {
 		if (disposed || (activeId === id && !retry)) {
 			return;
 		}
 		activeId = id;
-		const currentRevision = ++revision;
-		releaseEditor();
+		disposeSelection?.();
+		disposeSelection = undefined;
 		for (const item of items) {
 			const selected = item.project.id === id;
 			item.toggle.setAttribute('aria-expanded', String(selected));
@@ -145,85 +127,14 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 		if (!item) {
 			return;
 		}
-		item.status.hidden = false;
-		item.status.textContent = 'Loading project…';
-
-		// A pending project fetch must not block mounting a newer selection.
-		void (async () => {
-			const canvas = document.createElement('canvas');
-			canvas.tabIndex = 0;
-			canvas.setAttribute('aria-label', `${item.project.title} editor`);
-			item.frame.prepend(canvas);
-			let failed = false;
-			let loaded = false;
-			let mountedEditor: MinimalEditorInstance | undefined;
-			let bridgeStarted = false;
-			const connectBridge = async () => {
-				if (!loaded || !mountedEditor || bridgeStarted || disposed || failed || currentRevision !== revision) return;
-				bridgeStarted = true;
-				const editor = mountedEditor;
-				try {
-					const { createEditorWebMcp } = await import('@8f4e/editor-webmcp');
-					if (disposed || failed || currentRevision !== revision) return;
-					activeBridge = createEditorWebMcp({
-						document,
-						editor,
-						getCompilerDiagnostics: editor.getCompilerDiagnostics,
-					});
-					await activeBridge.ready;
-				} catch (error) {
-					console.error('Failed to load gallery site tools:', error);
-				}
-			};
-			const showError = (error: unknown) => {
-				if (disposed || currentRevision !== revision) {
-					return;
-				}
-				failed = true;
-				releaseEditor();
-				item.status.hidden = false;
-				item.status.textContent = 'This project could not be loaded.';
-				const retryButton = document.createElement('button');
-				retryButton.type = 'button';
-				retryButton.textContent = 'Try again';
-				retryButton.addEventListener('click', () => selectExample(id, true));
-				item.status.append(retryButton);
-				console.error('Failed to load gallery project:', error);
-			};
-			const reveal = () => {
-				if (disposed || failed || currentRevision !== revision) return;
-				loaded = true;
-				void connectBridge();
-				window.clearTimeout(loadTimeout);
-				revealFrame = window.requestAnimationFrame(() => {
-					if (disposed || failed || currentRevision !== revision) return;
-					canvas.classList.add('editor-ready');
-					item.status.hidden = true;
-				});
-			};
-			loadTimeout = window.setTimeout(() => showError(new Error('Project loading timed out')), 30_000);
-			try {
-				const editor = await mountMinimalEditor(canvas, {
-					sharedAudioContext,
-					captureWheel: true,
-					touchNavigation: { axis: 'horizontal' },
-					includeKeyboardModeSwitching,
-					initialProjectUrl: item.projectUrl,
-					onInitialProjectLoaded: reveal,
-					onInitialProjectLoadError: showError,
-				});
-				if (disposed || failed || currentRevision !== revision) {
-					editor.dispose();
-					canvas.remove();
-					return;
-				}
-				activeEditor = editor;
-				mountedEditor = editor;
-				void connectBridge();
-			} catch (error) {
-				showError(error);
-			}
-		})();
+		disposeSelection = mountGalleryEditorSession({
+			title: item.project.title,
+			projectUrl: item.projectUrl,
+			frame: item.frame,
+			status: item.status,
+			includeKeyboardModeSwitching,
+			onRetry: () => selectExample(id, true),
+		});
 	}
 
 	function onUrlChange(): void {
@@ -251,8 +162,8 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 
 	function dispose(): void {
 		disposed = true;
-		++revision;
-		releaseEditor();
+		disposeSelection?.();
+		disposeSelection = undefined;
 		mobileLayout.removeEventListener('change', onLayoutChange);
 		window.removeEventListener('popstate', onUrlChange);
 		window.removeEventListener('hashchange', onUrlChange);

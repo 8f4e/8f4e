@@ -51,8 +51,10 @@ updates the address and page title; Back and Forward restore selections. Direct 
 accordion and scroll it into view. Collapsing a mobile example removes the selection from the URL. Unknown IDs fall back
 to the default desktop selection or the collapsed mobile list.
 
-Selecting a different example creates a fresh editor and disposes the previous instance. Mounts are serialized to
-handle rapid selections. Returning to an example reloads its source; edits remain only for that editor's lifetime.
+Selecting a different example creates a fresh editor and disposes the previous selection. Each selection owns its
+editor, WebMCP bridge, canvas, loading timeout, and reveal callback through `src/gallery-editor-session.ts`. Pending
+mounts finish independently; a disposed selection releases any editor that arrives later and ignores late callbacks.
+Returning to an example reloads its source; edits remain only for that editor's lifetime.
 The gallery editor captures wheel gestures for panning; scrolling over the example list scrolls the document.
 A link opens the example in the full editor.
 The loading indicator stays visible until the initial-project completion callback arrives. Successful empty projects
