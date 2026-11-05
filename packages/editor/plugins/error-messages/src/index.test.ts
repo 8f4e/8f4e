@@ -34,6 +34,7 @@ function setup(errors: Record<string, CodeError[]> = {}) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers,
 	});
 	cleanups.push(store.dispose, dispose);

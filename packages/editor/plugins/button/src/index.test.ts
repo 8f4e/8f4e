@@ -40,6 +40,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers,
 			})
 		: () => {};

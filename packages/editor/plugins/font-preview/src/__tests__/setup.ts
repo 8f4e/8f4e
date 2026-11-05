@@ -42,6 +42,7 @@ export function setup() {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 	});
 	cleanups.push(store.dispose, disposePlugin);
 	const key = (key: string, options: KeyboardEventInit = {}, prevented = false) => {

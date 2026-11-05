@@ -1,16 +1,16 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { addLoadingIndicator } from '@8f4e/editor-state';
 import { resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import { binaryAssetsEditorConfigSchemaContribution, resolveBinaryAssetLoadRequests } from './config';
 import fetchBinaryAsset from './fetchBinaryAsset';
 
+type BinaryAssetSource = Awaited<ReturnType<typeof fetchBinaryAsset>>;
+
 type BinaryAsset = {
 	id: string;
 	url: string;
-	memoryId: string;
-	data: ArrayBuffer;
-	fileName: string;
-	loaded: boolean;
+	source?: BinaryAssetSource;
+	destinations: Array<{ memoryId: string; copiedToMemory: boolean }>;
+	finishLoading?: () => void;
 };
 
 export function createBinaryAssetsPlugin({
@@ -20,69 +20,59 @@ export function createBinaryAssetsPlugin({
 }): EditorPlugin {
 	return {
 		id: 'binary-assets',
-		setup: ({ store }) => {
+		setup: ({ store, loading }) => {
 			let assets: BinaryAsset[] = [];
 			let generation = 0;
 			let disposed = false;
-			let fetching = false;
-			const loading = new Map<string, () => void>();
 			let signature = '';
 
-			function finishLoading(id: string) {
-				loading.get(id)?.();
-				loading.delete(id);
+			function finishLoading(asset: BinaryAsset) {
+				const finish = asset.finishLoading;
+				asset.finishLoading = undefined;
+				finish?.();
 			}
 
-			function clearLoadingIndicators() {
-				for (const id of loading.keys()) finishLoading(id);
-			}
-
-			function startLoading(id: string) {
-				if (!loading.has(id)) loading.set(id, addLoadingIndicator(store, { name: id }));
-			}
-
-			function syncLoadingIndicators() {
-				if (fetching) return;
-				const pending = new Set(assets.filter(asset => !asset.loaded).map(asset => asset.id));
-				for (const id of loading.keys()) {
-					if (!pending.has(id)) finishLoading(id);
-				}
-				for (const id of pending) startLoading(id);
-			}
-
-			function loadIntoMemory() {
+			function copyAssetToMemory(asset: BinaryAsset) {
+				if (!asset.source) return;
 				const bytes = getMemoryBytes();
 				if (bytes) {
-					for (const asset of assets) {
-						if (asset.loaded) continue;
+					for (const destination of asset.destinations) {
+						if (destination.copiedToMemory) continue;
 						const memory = resolveMemoryTarget(
 							store.getState(),
 							{ kind: 'project', groupPath: '' },
-							asset.memoryId
+							destination.memoryId
 						)?.memory;
 						if (!memory) continue;
-						const length = Math.min(asset.data.byteLength, memory.allocatedByteLength);
+						const length = Math.min(asset.source.data.byteLength, memory.allocatedByteLength);
 						if (memory.byteAddress + length > bytes.byteLength) continue;
-						bytes.set(new Uint8Array(asset.data, 0, length), memory.byteAddress);
-						asset.loaded = true;
+						bytes.set(new Uint8Array(asset.source.data, 0, length), memory.byteAddress);
+						destination.copiedToMemory = true;
 					}
 				}
-				syncLoadingIndicators();
+				if (asset.destinations.every(destination => destination.copiedToMemory)) {
+					finishLoading(asset);
+				} else {
+					asset.finishLoading ??= loading.add({ name: asset.id });
+				}
 			}
 
-			function reloadMemory() {
-				for (const asset of assets) asset.loaded = false;
-				loadIntoMemory();
+			function recopyAssetsToMemory() {
+				for (const asset of assets) {
+					for (const destination of asset.destinations) destination.copiedToMemory = false;
+					copyAssetToMemory(asset);
+				}
 			}
 
 			function publishConstants() {
 				const lines: string[] = [];
 				const names = new Set<string>();
 				for (const asset of assets) {
+					if (!asset.source) continue;
 					const name = `ASSET_${asset.id.toUpperCase()}_SIZE`;
 					if (names.has(name)) continue;
 					names.add(name);
-					lines.push(`; '${asset.fileName}'`, `const ${name} ${asset.data.byteLength}`);
+					lines.push(`; '${asset.source.fileName}'`, `const ${name} ${asset.source.data.byteLength}`);
 				}
 				store.set(
 					'envConstantContributions.binaryAssets',
@@ -90,53 +80,59 @@ export function createBinaryAssetsPlugin({
 				);
 			}
 
-			async function syncConfig() {
+			async function fetchAssetsForUrl(url: string, matchingAssets: BinaryAsset[], currentGeneration: number) {
+				let source: BinaryAssetSource;
+				try {
+					source = await fetchBinaryAsset(url);
+				} catch (error) {
+					if (disposed || currentGeneration !== generation) return;
+					console.error('Failed to fetch binary asset:', url, error);
+					for (const asset of matchingAssets) finishLoading(asset);
+					return;
+				}
+				if (disposed || currentGeneration !== generation) return;
+				for (const asset of matchingAssets) asset.source = source;
+				publishConstants();
+				if (disposed || currentGeneration !== generation) return;
+				for (const asset of matchingAssets) copyAssetToMemory(asset);
+			}
+
+			function syncConfig() {
 				const requests = resolveBinaryAssetLoadRequests(store.getState().editorConfig.bin);
 				const nextSignature = JSON.stringify(requests);
 				if (nextSignature === signature) return;
 				signature = nextSignature;
 				const currentGeneration = ++generation;
-				assets = [];
-				fetching = requests.length > 0;
-				clearLoadingIndicators();
-				for (const request of requests) startLoading(request.id);
+				for (const asset of assets) finishLoading(asset);
+				assets = requests.map(request => ({
+					id: request.id,
+					url: request.url,
+					destinations: request.memoryIds.map(memoryId => ({ memoryId, copiedToMemory: false })),
+					finishLoading: loading.add({ name: request.id }),
+				}));
 				publishConstants();
-
-				const fetched = new Map<string, Awaited<ReturnType<typeof fetchBinaryAsset>>>();
-				for (const url of new Set(requests.map(request => request.url))) {
-					try {
-						const asset = await fetchBinaryAsset(url);
-						if (disposed || currentGeneration !== generation) return;
-						fetched.set(url, asset);
-					} catch (error) {
-						if (disposed || currentGeneration !== generation) return;
-						console.error('Failed to fetch binary asset:', url, error);
-						for (const request of requests) {
-							if (request.url === url) finishLoading(request.id);
-						}
-					}
+				const assetsByUrl = new Map<string, BinaryAsset[]>();
+				for (const asset of assets) {
+					const matchingAssets = assetsByUrl.get(asset.url) ?? [];
+					matchingAssets.push(asset);
+					assetsByUrl.set(asset.url, matchingAssets);
 				}
-				if (disposed || currentGeneration !== generation) return;
-				assets = requests.flatMap(request => {
-					const asset = fetched.get(request.url);
-					return asset ? [{ ...request, ...asset, loaded: false }] : [];
-				});
-				fetching = false;
-				publishConstants();
-				loadIntoMemory();
+				for (const [url, matchingAssets] of assetsByUrl) {
+					void fetchAssetsForUrl(url, matchingAssets, currentGeneration);
+				}
 			}
 
 			store.subscribe('editorConfig.bin', syncConfig);
-			store.subscribe('compiler.result.memoryPlan', reloadMemory);
+			store.subscribe('compiler.result.memoryPlan', recopyAssetsToMemory);
 			store.set('editorConfigSchemaContributions.binaryAssets', binaryAssetsEditorConfigSchemaContribution);
-			void syncConfig();
+			syncConfig();
 
 			return () => {
 				disposed = true;
 				store.unsubscribe('editorConfig.bin', syncConfig);
-				store.unsubscribe('compiler.result.memoryPlan', reloadMemory);
+				store.unsubscribe('compiler.result.memoryPlan', recopyAssetsToMemory);
+				for (const asset of assets) finishLoading(asset);
 				assets = [];
-				clearLoadingIndicators();
 				const constants = { ...store.getState().envConstantContributions };
 				delete constants.binaryAssets;
 				store.set('envConstantContributions', constants);

@@ -44,6 +44,7 @@ export function setup() {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	});
 	cleanups.push(store.dispose, dispose);

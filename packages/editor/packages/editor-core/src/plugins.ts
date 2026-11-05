@@ -1,6 +1,7 @@
 import type {
 	EditorDirectiveRegistry,
 	EditorLayoutRegistry,
+	EditorLoadingRegistry,
 	EditorMenuRegistry,
 	EventDispatcher,
 	State,
@@ -15,6 +16,7 @@ export interface EditorPluginContext {
 	menus: EditorMenuRegistry;
 	directives: EditorDirectiveRegistry;
 	layout: EditorLayoutRegistry;
+	loading: EditorLoadingRegistry;
 	drawers: EditorDrawerRegistry;
 }
 

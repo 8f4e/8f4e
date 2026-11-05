@@ -21,7 +21,7 @@ editor.dispose();
 
 The composition installs the compiler first, with lazy standard-library include resolution. It includes project URL
 loading, project source saving/export, keyboard input, assertion markers, watch and stack annotations, and tooltips.
-Compiler coordination, file-session tracking, URL loading, block backgrounds, and code rendering are eager.
+Compiler coordination, file-session tracking, URL loading, block backgrounds, code rendering, and loading indicators are eager.
 `code-block-background` registers before `code-rendering` so block surfaces sit below text and line highlighting.
 On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, saving, tooltips, and
 the directive-based loader. Core emits this event after initial project loading/parsing, font-atlas loading, and
@@ -47,7 +47,7 @@ is commented out in this composition. Core retains selection state; the backgrou
 `@8f4e/editor-plugin-error-messages` loads in the deferred set. It wraps and draws raw contributor-owned errors from
 core's `state.codeErrors`, reserving their source rows through the generic layout API.
 
-`@8f4e/editor-plugin-loading-indicators` loads as an unconditional deferred entry and draws the unified
+`@8f4e/editor-plugin-loading-indicators` is installed eagerly before deferred loading and draws the unified
 `state.loadingIndicators` list at the bottom left. Lazy plugin imports and binary assets contribute names while
 loading; binary assets remain listed until their bytes reach every configured target. This overlay does not block input.
 

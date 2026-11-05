@@ -23,7 +23,7 @@
   audio/worker/test/texture runtimes. Keyboard-memory matches raw `keyboard` configuration before its schema loads.
   MIDI, assets, and texture execution match raw `midi`,
   `bin`, and `textureRuntime` config roots before their schemas load. Texture uploads and views also match `@textureUpload` and `@texture`. Editor compositions defer optional UI, input, and authoring plugins until after the first render.
-  Compiler coordination, project loading/restoration, block backgrounds, and code rendering remain eager.
+  Compiler coordination, project loading/restoration, block backgrounds, code rendering, and loading indicators remain eager.
   All optional imports, including directive-based lazy plugins, start on core's `ready` event, after initial project
   loading/parsing, font-atlas loading, and rendering. Font payloads remain separate lazy chunks; do not add frame
   callbacks or timing gates.
@@ -60,9 +60,9 @@
   Editor compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
   `registerModalOverlay` after ordinary overlays, independently of `canvasOverlays`.
 - Loading operations contribute `{ name: string }` objects to the unified `state.loadingIndicators` list.
-  Editor-state exports `addLoadingIndicator` with an idempotent remover for the exact object; producers own cleanup
+  Plugin setup exposes `loading.add({ name })`, returning an idempotent remover; producers own cleanup
   on completion, failure, supersession, and disposal. `editor-plugin-loading-indicators` owns nonblocking canvas
-  presentation and loads as an unconditional deferred entry in the editor compositions.
+  presentation and is installed eagerly in the editor compositions before deferred loading starts.
 - `@8f4e/editor-plugin-error-messages` owns inline error wrapping, layout reservations, coordinates, and drawing.
   Core retains raw `CodeError` lists in `state.codeErrors`, keyed by contributor. Compiler, editor directives, and
   test-runtime own their lists; editor compositions defer the presentation plugin until `ready`.

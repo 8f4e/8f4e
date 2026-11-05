@@ -37,6 +37,7 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};
@@ -73,6 +74,48 @@ afterEach(() => {
 });
 
 describe('binary assets plugin', () => {
+	it('starts independent URLs together and copies completed assets while another fetch is pending', async () => {
+		const completions = new Map<string, (response: Response) => void>();
+		fetchMock.mockImplementation(url => new Promise(resolve => completions.set(String(url), resolve)));
+		const source = SOURCE.replace(
+			'; @config bin.sound.memory player:buffer',
+			`; @config bin.sound.memory player:buffer
+; @config bin.preview.url https://example.com/preview.pcm
+; @config bin.preview.memory preview:buffer`
+		);
+		const test = await setup({ source });
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(test.state.loadingIndicators).toEqual([{ name: 'sound' }, { name: 'preview' }]);
+		completions.get('https://example.com/preview.pcm')!(new Response(new Uint8Array([7, 8])));
+		await vi.waitFor(() => expect(test.state.loadingIndicators).toEqual([{ name: 'sound' }]));
+		const target = test.state.compiler.result.memoryPlan.modules.preview.memory.buffer;
+		expect([...test.memory.slice(target.byteAddress, target.byteAddress + 2)]).toEqual([7, 8]);
+		expect(test.env().code).toContain('const ASSET_PREVIEW_SIZE 2');
+		expect(test.env().code).not.toContain('const ASSET_SOUND_SIZE 6');
+		completions.get('https://example.com/sample.pcm')!(new Response(new Uint8Array(6)));
+		await vi.waitFor(() => expect(test.state.loadingIndicators).toEqual([]));
+		expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6');
+	});
+
+	it('shares a URL between distinct assets while tracking their destinations independently', async () => {
+		const source = SOURCE.replace(
+			'; @config bin.sound.memory player:buffer',
+			`; @config bin.sound.memory player:buffer
+; @config bin.preview.url https://example.com/sample.pcm
+; @config bin.preview.memory preview:buffer`
+		);
+		const test = await setup({ source, withMemory: false });
+		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_PREVIEW_SIZE 6'));
+		expect(fetchMock).toHaveBeenCalledOnce();
+		expect(test.state.loadingIndicators).toEqual([{ name: 'sound' }, { name: 'preview' }]);
+		test.getMemoryBytes.mockReturnValue(test.memory);
+		const fullPlan = test.state.compiler.result.memoryPlan;
+		test.store.set('compiler.result.memoryPlan', { ...fullPlan, modules: { player: fullPlan.modules.player } });
+		expect(test.state.loadingIndicators).toEqual([{ name: 'preview' }]);
+		test.store.set('compiler.result.memoryPlan', fullPlan);
+		expect(test.state.loadingIndicators).toEqual([]);
+	});
+
 	it('loads configured bytes and contributes their size to the environment constants', async () => {
 		const test = await setup();
 		await vi.waitFor(() => expect(test.state.loadingIndicators).toEqual([]));

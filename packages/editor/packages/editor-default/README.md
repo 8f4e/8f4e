@@ -94,7 +94,7 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
 `@8f4e/editor-plugin-project-open` for opening projects, `@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
 
-`@8f4e/editor-plugin-loading-indicators` loads as an unconditional deferred entry and draws the unified
+`@8f4e/editor-plugin-loading-indicators` is installed eagerly before deferred loading and draws the unified
 `state.loadingIndicators` list at the bottom left. Lazy plugin imports and binary assets contribute names while
 loading; binary assets remain listed until their bytes reach every configured target. This overlay does not block input.
 
@@ -105,7 +105,7 @@ synchronously constructs the startup plugin set with resources for one editor. I
 plugin before project loaders, and supplies it to Open and Save. The session shares the current handle and clears it
 on project replacement. Open receives the canvas's document. Save receives the canvas and owns serialization, writing,
 and Cmd/Ctrl+S. WebAssembly export receives a document and a live compiler-byte getter. File handling stays outside core.
-Compiler coordination, source loading/session restoration, file-session tracking, block backgrounds, and code rendering are eager.
+Compiler coordination, source loading/session restoration, file-session tracking, block backgrounds, code rendering, and loading indicators are eager.
 `code-block-background` registers before `code-rendering` so block surfaces sit below text and line highlighting.
 On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for connectors, assertion markers,
 keyboard input, tooltips, built-in module browsing, file actions, and the other authoring features. Core emits this

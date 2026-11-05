@@ -48,7 +48,7 @@
 - Font/color schemas, validators, defaults, and subscriptions belong to web-ui. Register them through
   `registerWebUiConfig(store)` before plugins/project loading. Initialize the view with the store and events; do not
   restore core font-atlas or palette management. State reacts only to `gridSizeChanged` and shared grid dimensions.
-- Install plugins in editor-core so one setup receives state, event, menu, directive, layout, and drawer services.
+- Install plugins in editor-core so one setup receives state, event, menu, directive, layout, loading, and drawer services.
 - Keep generic directive parsing and layout in editor-state, and generic drawing hooks in web-ui.
 - Keep project-tree reconstruction and same-project reconciliation in code-blocks/reconstructProject.ts; the block
   effect installs results and coordinates notifications. Shared source positions and vertical geometry remain in
@@ -116,9 +116,9 @@
   and size constants. Keep only generic `envConstantContributions`, schema registration, loading indicators, and memory resolution
   in core. Environment constants refresh when blocks are populated as well as when contributions change.
 - Loading operations contribute `{ name: string }` objects to the unified `state.loadingIndicators` list.
-  Editor-state exports `addLoadingIndicator` with an idempotent remover for the exact object; producers own cleanup
+  Plugin setup exposes `loading.add({ name })`, returning an idempotent remover; producers own cleanup
   on completion, failure, supersession, and disposal. `editor-plugin-loading-indicators` owns nonblocking canvas
-  presentation and loads as an unconditional deferred entry in the editor compositions.
+  presentation and is installed eagerly in the editor compositions before deferred loading starts.
 - Assertion marker geometry and drawing belong to `editor-plugin-assertion-markers`. Retain raw runtime results and
   contributor-owned `CodeError` lists in core; test-runtime publishes assertion errors and error-messages owns
   inline message layout/drawing. Keep prepared message and marker fields out of `CodeBlockGraphicData`.

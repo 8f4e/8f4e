@@ -47,6 +47,7 @@ entryEnd`);
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers,
 	});
 	const state = store.getState();

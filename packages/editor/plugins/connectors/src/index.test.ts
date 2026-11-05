@@ -78,6 +78,7 @@ async function setup(text = source, installed = true) {
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers,
 			})
 		: undefined;
@@ -161,6 +162,7 @@ describe('connectors plugin', () => {
 			events: test.events,
 			drawers: test.drawers,
 			layout: test.store.layout,
+			loading: test.store.loading,
 			menus: test.store.menus,
 			directives: test.store.directives,
 		});
@@ -435,6 +437,7 @@ entryEnd`);
 			menus: store.menus,
 			directives: store.directives,
 			layout: store.layout,
+			loading: store.loading,
 			drawers,
 		});
 		cleanups.push(dispose);

@@ -16,7 +16,6 @@ its edges. Outside all entry bounds it allocates a fresh entry name. Entry assig
 ## Loading indicators
 
 `state.loadingIndicators` is a unified list of `LoadingIndicator` objects containing `name: string`.
-`addLoadingIndicator(store, { name })` appends an object and returns an idempotent function that removes that
-exact object. Use a fresh object per operation and call its remover on success, failure, cancellation, and
-producer disposal. Equal names remain independent. Indicators are transient and do not change project history,
+`loading.add({ name })` in the plugin setup context appends a distinct object and returns its idempotent
+remover. Call it on success, failure, cancellation, supersession, and producer disposal. Equal names remain independent. Indicators are transient and do not change project history,
 serialization, or compiler inputs. The loading-indicators plugin owns their optional canvas presentation.

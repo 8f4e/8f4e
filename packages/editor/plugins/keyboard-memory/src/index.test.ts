@@ -52,6 +52,7 @@ entryEnd`
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	});
 	const prefix = exposed ? 'keyboard' : 'keys';

@@ -51,7 +51,15 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 		});
 		for (const plugin of plugins) {
 			disposers.push(
-				plugin.setup({ store, events, menus: store.menus, directives: store.directives, layout: store.layout, drawers })
+				plugin.setup({
+					store,
+					events,
+					menus: store.menus,
+					directives: store.directives,
+					layout: store.layout,
+					loading: store.loading,
+					drawers,
+				})
 			);
 		}
 		events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });

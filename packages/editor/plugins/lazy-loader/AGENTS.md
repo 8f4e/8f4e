@@ -18,7 +18,7 @@
   layout service, never to the loader or directive registry.
 - Plugins install in completion order. There is no dependency resolver, unloading policy, or async setup contract.
 - Contribute `{ name: entry.id }` to the unified loading list for each pending import/setup. The deferred wrapper
-  contributes `{ name: 'editor plugins' }`. Use `addLoadingIndicator` removers on completion, failure, and disposal;
+  contributes `{ name: 'editor plugins' }`. Use `loading.add` removers on completion, failure, and disposal;
   imports completing after disposal must not affect other indicators.
 - Log import failures and retry on the next matching automatic scan. Setup errors propagate through activation
   under the trusted-plugin contract.

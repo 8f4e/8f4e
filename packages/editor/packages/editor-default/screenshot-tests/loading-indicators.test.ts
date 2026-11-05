@@ -3,7 +3,7 @@ import initEditor, { type Editor, type EditorPlugin, type EditorPluginContext } 
 import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
-import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { expect, test, vi } from 'vitest';
 
@@ -94,5 +94,33 @@ entryEnd`);
 		canvas.remove();
 		vi.unstubAllGlobals();
 		vi.restoreAllMocks();
+	}
+});
+
+test('shows the initial deferred import through an eagerly installed loading drawer', async () => {
+	const canvas = document.createElement('canvas');
+	canvas.width = 512;
+	canvas.height = 160;
+	canvas.style.width = '512px';
+	canvas.style.height = '160px';
+	document.body.append(canvas);
+	let finish!: (plugin: EditorPlugin) => void;
+	const pending = new Promise<EditorPlugin>(resolve => {
+		finish = resolve;
+	});
+	let editor: Editor | undefined;
+	try {
+		editor = await initEditor(canvas, {
+			plugins: [loadingIndicatorsPlugin, createDeferredPluginLoaderPlugin({ load: () => pending })],
+		});
+		expect(editor.state.loadingIndicators).toEqual([{ name: 'editor plugins' }]);
+		editor.pauseRendering();
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('initial-editor-plugins-loading');
+		finish({ id: 'features', setup: () => () => {} });
+		await vi.waitFor(() => expect(editor!.state.loadingIndicators).toEqual([]));
+	} finally {
+		editor?.dispose();
+		canvas.remove();
 	}
 });

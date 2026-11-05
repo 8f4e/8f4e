@@ -12,9 +12,9 @@
   scheduler or navigation-state updates; it owns drawing and GPU resources.
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
 - Loading operations contribute `{ name: string }` objects to the unified `state.loadingIndicators` list.
-  Editor-state exports `addLoadingIndicator` with an idempotent remover for the exact object; producers own cleanup
+  Plugin setup exposes `loading.add({ name })`, returning an idempotent remover; producers own cleanup
   on completion, failure, supersession, and disposal. `editor-plugin-loading-indicators` owns nonblocking canvas
-  presentation and loads as an unconditional deferred entry in the editor compositions.
+  presentation and is installed eagerly in the editor compositions before deferred loading starts.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, nested block backgrounds,
   line-number drawing, and private prepared sprite cells and highlight rectangles. Editor compositions install it eagerly.
   Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order

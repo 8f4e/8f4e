@@ -37,6 +37,7 @@ function setupState(events: EventDispatcher, options: Options, installed = true)
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};

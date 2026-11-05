@@ -61,6 +61,7 @@ entryEnd`);
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 	});
 	const state = store.getState();
 	state.viewport.width = canvas.width;

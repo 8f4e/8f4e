@@ -4,6 +4,7 @@ import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-backgr
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
@@ -48,6 +49,7 @@ export function createDefaultEditorPlugins(options: {
 		}),
 		codeBlockBackgroundPlugin,
 		codeRenderingPlugin,
+		loadingIndicatorsPlugin,
 		createDeferredPluginLoaderPlugin({
 			load: () =>
 				import('./deferred-plugins').then(module => module.createDeferredEditorPlugin({ ...options, fileSession })),

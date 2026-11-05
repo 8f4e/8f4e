@@ -93,6 +93,7 @@ describe('AudioWorklet context lifetime', () => {
 			menus: store.menus,
 			directives: store.directives,
 			layout: store.layout,
+			loading: store.loading,
 			drawers: createEditorDrawerRegistry(),
 		});
 		const cleanup = () => {

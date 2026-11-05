@@ -5,16 +5,14 @@
 `canvasOverlays`, and does not block input. Text and row counts are limited to the available viewport.
 
 Install `loadingIndicatorsPlugin` through the ordinary plugin contract. It has no factory dependencies,
-configuration schema, or project directive. An unconditional deferred entry can load it after core's `ready`
-event; it reads the current list on each frame, including operations that started before installation.
+configuration schema, or project directive. Install it eagerly before the deferred loader so the initial
+feature imports can be shown. It reads the current list on each frame.
 Disposal unregisters its drawer without changing the list.
 
-Plugins contribute independently of presentation through the shared editor-state helper:
+Plugins contribute independently of presentation through `loading` in their setup context:
 
 ```ts
-import { addLoadingIndicator } from '@8f4e/editor-state';
-
-const finishLoading = addLoadingIndicator(store, { name: 'sound' });
+const finishLoading = loading.add({ name: 'sound' });
 try {
 	await loadSound();
 } finally {
@@ -23,7 +21,7 @@ try {
 ```
 
 The state is one unified `LoadingIndicator[]`; each object currently contains only `name: string`.
-Create a fresh object for each operation. The returned remover is idempotent and removes that exact object,
+Each call creates a separate entry, including when an input object is reused. The returned remover is idempotent,
 so equal names and late completions cannot remove another operation's indicator. Producers also call their
 removers immediately when work is superseded or the producer is disposed, even if its promise is still pending.
 Loading failures are reported separately through the producer's existing error reporting.

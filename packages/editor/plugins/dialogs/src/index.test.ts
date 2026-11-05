@@ -31,6 +31,7 @@ function setup(initialDialog?: DialogContent) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 	});
 	cleanups.push(() => {
 		dispose();

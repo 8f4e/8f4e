@@ -35,6 +35,7 @@ function setup(installed = true, mode: 'edit' | 'view' = 'edit') {
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};

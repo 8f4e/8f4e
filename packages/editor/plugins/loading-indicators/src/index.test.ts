@@ -22,6 +22,7 @@ function setup(width = 320, height = 160) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 	});
 	cleanups.push(store.dispose, dispose);
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawText: vi.fn() };

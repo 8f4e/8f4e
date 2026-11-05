@@ -33,6 +33,7 @@ function setup(installed = true, mode: 'view' | 'edit' = 'edit') {
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};

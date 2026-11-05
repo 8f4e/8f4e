@@ -7,11 +7,11 @@
   plugin package and generic plugin installation in editor-core.
 - Call `createDefaultEditorPlugins` to construct the startup set synchronously per mounted editor, supplying the canvas, render
   callback, storage settings, Open menu visibility, and compiler getters. Keep file-session, URL/session loading,
-  block backgrounds, and code rendering eager. The deferred loader imports `src/deferred-plugins.ts` on core's `ready` event, after initial
+  block backgrounds, code rendering, and loading indicators eager. The deferred loader imports `src/deferred-plugins.ts` on core's `ready` event, after initial
   project loading/parsing, font-atlas loading, and rendering. This is the single gate for every optional and
   directive-based lazy import; do not add frame callbacks, visibility checks, or timing delays. Keep font payloads lazy.
 - Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
-- Load `loadingIndicatorsPlugin` as an unconditional deferred entry. It draws the unified
+- Install `loadingIndicatorsPlugin` eagerly before the deferred loader. It draws the unified
   `state.loadingIndicators` list; producers own each object and its cleanup.
 - Load `errorMessagesPlugin` as an unconditional deferred entry. Raw contributor-owned error lists stay central;
   the plugin owns wrapping, layout reservations, coordinates, and drawing.

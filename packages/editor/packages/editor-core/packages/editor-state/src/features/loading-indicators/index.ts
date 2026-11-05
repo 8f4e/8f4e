@@ -1,19 +1,21 @@
-import type { LoadingIndicator, State } from '@8f4e/editor-state-types';
+import type { EditorLoadingRegistry, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 
-/** Adds one load and returns an idempotent remover for that exact indicator object. */
-export function addLoadingIndicator(
-	store: Pick<StateManager<State>, 'getState' | 'set'>,
-	indicator: LoadingIndicator
-): () => void {
-	store.set('loadingIndicators', [...store.getState().loadingIndicators, indicator]);
-	return () => {
-		const indicators = store.getState().loadingIndicators;
-		if (indicators.includes(indicator)) {
-			store.set(
-				'loadingIndicators',
-				indicators.filter(current => current !== indicator)
-			);
-		}
+/** Keeps contribution identity private, including when the same input object is reused. */
+export function createLoadingRegistry(store: Pick<StateManager<State>, 'getState' | 'set'>): EditorLoadingRegistry {
+	return {
+		add: indicator => {
+			const entry = { ...indicator };
+			store.set('loadingIndicators', [...store.getState().loadingIndicators, entry]);
+			let removed = false;
+			return () => {
+				if (removed) return;
+				removed = true;
+				store.set(
+					'loadingIndicators',
+					store.getState().loadingIndicators.filter(current => current !== entry)
+				);
+			};
+		},
 	};
 }

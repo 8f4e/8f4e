@@ -53,7 +53,15 @@ export async function setup(
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const dispose = installed
-		? plugin.setup({ store, events, menus: store.menus, directives: store.directives, layout: store.layout, drawers })
+		? plugin.setup({
+				store,
+				events,
+				menus: store.menus,
+				directives: store.directives,
+				layout: store.layout,
+				loading: store.loading,
+				drawers,
+			})
 		: () => {};
 	cleanups.push(() => {
 		dispose();

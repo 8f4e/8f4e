@@ -42,6 +42,7 @@ export type {
 	EditorConfig,
 	EditorConfigSchemaContribution,
 	EditorConfigSchemaContributionRegistry,
+	EditorLoadingRegistry,
 	EditorMenuItemContext,
 	EditorMenuItemProvider,
 	EditorMenuItemSlot,
@@ -179,6 +180,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers,
 			})
 		);

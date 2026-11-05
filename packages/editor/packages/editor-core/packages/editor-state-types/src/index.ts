@@ -162,6 +162,11 @@ export interface LoadingIndicator {
 	name: string;
 }
 
+/** Per-editor contributions to the unified loading list. Producers own the returned cleanup. */
+export interface EditorLoadingRegistry {
+	add: (indicator: LoadingIndicator) => () => void;
+}
+
 // State interface - complete editor state tree (top-level public API)
 export interface State {
 	/** Monotonic change signal for compiler inputs; selection and visual metadata do not advance it. */

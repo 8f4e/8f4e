@@ -13,6 +13,7 @@ function createContext() {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	};
 }
@@ -49,7 +50,9 @@ describe('editor plugins', () => {
 						received.store.subscribe('compilerInputRevision', onChange);
 						received.events.on('plugin-action', onEvent);
 						const unregisterMenu = received.menus.registerItem('moduleMenu', () => ({ title: 'Plugin action' }));
+						const finishLoading = received.loading.add({ name: 'plugin resource' });
 						return () => {
+							finishLoading();
 							unregisterMenu();
 							received.events.off('plugin-action', onEvent);
 							received.store.unsubscribe('compilerInputRevision', onChange);
@@ -60,8 +63,10 @@ describe('editor plugins', () => {
 			context
 		);
 		context.store.set('compilerInputRevision', 1);
+		expect(context.store.getState().loadingIndicators).toEqual([{ name: 'plugin resource' }]);
 		expect(onChange).toHaveBeenCalledOnce();
 		dispose();
+		expect(context.store.getState().loadingIndicators).toEqual([]);
 		context.store.set('compilerInputRevision', 2);
 		expect(onChange).toHaveBeenCalledOnce();
 		expect(off).toHaveBeenCalledWith('plugin-action', onEvent);

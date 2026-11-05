@@ -49,6 +49,7 @@ export function setup(viewportDragging = true, axis?: TouchInputOptions['axis'])
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	});
 	cleanups.push(store.dispose, dispose);

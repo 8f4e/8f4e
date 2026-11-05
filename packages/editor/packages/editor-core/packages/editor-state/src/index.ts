@@ -1,6 +1,7 @@
 import type {
 	EditorDirectiveRegistry,
 	EditorLayoutRegistry,
+	EditorLoadingRegistry,
 	EditorMenuRegistry,
 	EventDispatcher,
 	Options,
@@ -22,6 +23,7 @@ import historyTracking from './features/edit-history/effect';
 import { registerExportFileNameEditorConfigValidator } from './features/editor-config/exportFileName';
 import { registerEditorConfigSchemaContributionsValidator } from './features/editor-config/schemaContributions';
 import editorMode from './features/editor-mode/effect';
+import { createLoadingRegistry } from './features/loading-indicators';
 import contextMenu from './features/menu/effect';
 import createMenuRegistry from './features/menu/registry';
 import pointerInput from './features/pointer-input/effect';
@@ -57,6 +59,7 @@ export default function init(
 	menus: EditorMenuRegistry;
 	directives: EditorDirectiveRegistry;
 	layout: EditorLayoutRegistry;
+	loading: EditorLoadingRegistry;
 } {
 	const menus = createMenuRegistry();
 	const directives = createDirectiveRegistry();
@@ -121,6 +124,7 @@ export default function init(
 		menus,
 		directives,
 		layout,
+		loading: createLoadingRegistry(store),
 		dispose,
 	};
 }
@@ -154,7 +158,6 @@ export { parseBlockDirectives } from './features/code-blocks/utils/parseBlockDir
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
 export { default as resolveEditorConfig } from './features/global-editor-directives/resolve';
-export { addLoadingIndicator } from './features/loading-indicators';
 export { error as logError, log as logMessage } from './features/logger/logger';
 export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
 export { publishProjectChange } from './features/project-changes';

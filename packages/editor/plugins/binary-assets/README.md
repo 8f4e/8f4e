@@ -25,8 +25,10 @@ Configure assets in project source:
 ; @config bin.sound.memories.preview preview:buffer
 ```
 
-Each URL is fetched once per configuration set and can load into several targets, including exposed project memory
-aliases. Copies respect the target's allocated byte length. The plugin reloads retained bytes when the compiler
+Distinct URLs fetch concurrently, once per configuration set. Each configured asset keeps one source record and
+its memory destinations, including exposed project memory aliases. Assets sharing a URL reuse the same downloaded
+source. A completed source publishes its size constants and copies into available targets immediately, independently
+of other downloads. Copies respect the target's allocated byte length. The plugin reloads retained bytes when the compiler
 publishes a memory plan. It contributes one `{ name: assetId }` loading indicator per configured asset while fetching
 or waiting for all of that asset's targets to become ready. The loading-indicators plugin owns presentation;
 binary loading does not open a dialog or block input. Equal names from unrelated operations stay independent.

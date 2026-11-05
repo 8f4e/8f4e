@@ -42,6 +42,7 @@ function setup(config = ['enabled true'], ready = true) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	});
 	const cleanup = () => {

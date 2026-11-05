@@ -44,6 +44,7 @@ it('starts without storage and reports empty-project readiness after initializat
 		'compiler',
 		'code-block-background',
 		'code-rendering',
+		'loading-indicators',
 		'project-url-loader',
 		'deferred-loader',
 	]);

@@ -28,7 +28,7 @@ export const binaryAssetsEditorConfigSchemaContribution: EditorConfigSchemaContr
 
 export function resolveBinaryAssetLoadRequests(
 	config: EditorConfig['bin']
-): Array<{ id: string; url: string; memoryId: string }> {
+): Array<{ id: string; url: string; memoryIds: string[] }> {
 	const entries = (config ?? {}) as Record<
 		string,
 		{ url?: string; memory?: string; memories?: Record<string, string> }
@@ -37,6 +37,6 @@ export function resolveBinaryAssetLoadRequests(
 		const { url } = asset;
 		if (!url) return [];
 		const targets = [...(asset.memory ? [asset.memory] : []), ...Object.values(asset.memories ?? {})];
-		return targets.map(memoryId => ({ id, url, memoryId }));
+		return targets.length ? [{ id, url, memoryIds: [...new Set(targets)] }] : [];
 	});
 }

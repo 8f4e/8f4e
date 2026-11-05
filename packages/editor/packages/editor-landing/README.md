@@ -23,7 +23,7 @@ editor.dispose();
 to disabled; context menus are always disabled. Initial project callbacks, rendering controls, compiler diagnostics,
 and disposal follow the minimal editor's lifecycle. Each mount starts fresh without browser session persistence.
 
-The compiler, URL loader, block backgrounds, and code rendering load eagerly. Core's `ready` event
+The compiler, URL loader, block backgrounds, code rendering, and loading indicators load eagerly. Core's `ready` event
 gates all optional imports through `src/deferred-plugins.ts`. `src/lazy-plugins.ts` matches visual/control plugins
 in the current view and runtimes, MIDI, and binary assets throughout the project. Font payloads remain lazy.
 Keyboard-to-memory input also loads with project scope, only when raw `@config keyboard.*` directives appear.
@@ -32,7 +32,7 @@ Plain-text paste at the caret remains available through keyboard editing. The co
 Cmd/Ctrl+S. The galleries continue to use `editor-minimal` with entry outlines, arrows, context menus, project
 saving/export, and block copy/paste.
 
-`@8f4e/editor-plugin-loading-indicators` loads as an unconditional deferred entry and draws the unified
+`@8f4e/editor-plugin-loading-indicators` is installed eagerly before deferred loading and draws the unified
 `state.loadingIndicators` list at the bottom left. Lazy plugin imports and binary assets contribute names while
 loading; binary assets remain listed until their bytes reach every configured target. This overlay does not block input.
 
