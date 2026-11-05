@@ -48,7 +48,7 @@ is commented out in this composition. Core retains selection state; the backgrou
 core's `state.codeErrors`, reserving their source rows through the generic layout API.
 
 `@8f4e/editor-plugin-loading-indicators` is installed eagerly before deferred loading and draws the unified
-`state.loadingIndicators` list at the bottom left. Lazy plugin imports and binary downloads contribute names while
+`state.loadingIndicators` list at the bottom left. Project loading, lazy plugin imports, and binary downloads contribute names while
 loading. Each asset disappears when its downloaded bytes are available; compilation contributes its own indicator
 while an attempt is active. This overlay does not block input.
 

@@ -95,7 +95,7 @@ stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG
 `@8f4e/editor-plugin-project-open` for opening projects, `@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
 
 `@8f4e/editor-plugin-loading-indicators` is installed eagerly before deferred loading and draws the unified
-`state.loadingIndicators` list at the bottom left. Lazy plugin imports and binary downloads contribute names while
+`state.loadingIndicators` list at the bottom left. Project loading, lazy plugin imports, and binary downloads contribute names while
 loading. Each asset disappears when its downloaded bytes are available; compilation contributes its own indicator
 while an attempt is active. This overlay does not block input.
 

@@ -16,34 +16,48 @@ export function createProjectOpenPlugin({
 }): EditorPlugin {
 	return {
 		id: 'project-open',
-		setup: ({ store, events, menus }) => {
+		setup: ({ store, events, menus, loading }) => {
 			const state = store.getState();
 			let disposed = false;
+			const pendingLoads = new Set<() => void>();
 			const unregisterOpen = menus.registerItem('mainMenu', () =>
 				showOpenMenuItem ? { title: 'Open From Disk', action: 'importProject', close: true } : undefined
 			);
 			const onImport = async () => {
-				let project: ProjectObjectModel;
-				let handle: ProjectFileHandle | undefined;
-				try {
-					const opened = await openProjectFile(document);
-					if (!opened) return;
-					project = parseProjectSource(await opened.file.text());
-					handle = opened.handle;
-				} catch (error) {
-					if (disposed || (error instanceof Error && error.name === 'AbortError')) return;
-					logError(state, `Failed to open project: ${String(error)}`);
-					return;
-				}
 				if (disposed) return;
-				events.dispatch('loadProject', { project });
-				fileSession.handle = handle;
+				let finishLoading: (() => void) | undefined;
+				try {
+					let project: ProjectObjectModel;
+					let handle: ProjectFileHandle | undefined;
+					try {
+						const opened = await openProjectFile(document);
+						if (!opened || disposed) return;
+						finishLoading = loading.add({ name: 'project' });
+						pendingLoads.add(finishLoading);
+						project = parseProjectSource(await opened.file.text());
+						handle = opened.handle;
+					} catch (error) {
+						if (disposed || (error instanceof Error && error.name === 'AbortError')) return;
+						logError(state, `Failed to open project: ${String(error)}`);
+						return;
+					}
+					if (disposed) return;
+					events.dispatch('loadProject', { project });
+					fileSession.handle = handle;
+				} finally {
+					if (finishLoading) {
+						pendingLoads.delete(finishLoading);
+						finishLoading();
+					}
+				}
 			};
 			events.on('importProject', onImport);
 			return () => {
 				disposed = true;
 				events.off('importProject', onImport);
 				unregisterOpen();
+				for (const finishLoading of pendingLoads) finishLoading();
+				pendingLoads.clear();
 			};
 		},
 	};
