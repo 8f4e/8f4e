@@ -1,8 +1,8 @@
 # Texture Runtime
 
 `@8f4e/editor-plugin-texture-runtime` displays framebuffers below `@texture` directives and can execute one project
-entry per editor frame. The default, minimal, and landing editors load it when either a directive or `textureRuntime`
-configuration appears anywhere in the project tree.
+entry per editor frame. For lazy installation, match its directives or raw `textureRuntime`
+configuration with project scope.
 
 ```text
 ; @config textureRuntime.enabled true

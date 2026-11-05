@@ -7,7 +7,7 @@ The package exports `mountDefaultEditor(canvas, options)`. It does not mount its
 other browser hosts control when and where the editor starts.
 
 For homepage demos, use [`@8f4e/editor-landing`](../editor-landing/README.md). For example and compiler-test galleries,
-use [`@8f4e/editor-minimal`](../editor-minimal/README.md). Both embedded compositions keep live editing, runtime
+use [`@8f4e/editor-minimal`](../editor-minimal/README.md). These embedded compositions keep live editing, runtime
 controls, and visualizations and start each mount fresh, with smaller feature sets and no session storage.
 
 ```ts

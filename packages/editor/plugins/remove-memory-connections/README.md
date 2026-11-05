@@ -1,7 +1,7 @@
 # Remove Memory Connections Plugin
 
 `@8f4e/editor-plugin-remove-memory-connections` owns the Remove connections block-menu item, its enabled state, and
-the source edit. It is included in `@8f4e/editor-default`; custom hosts can install it through the core plugin list:
+the source edit. Install it through the core plugin list:
 
 ```ts
 import { removeMemoryConnectionsPlugin } from '@8f4e/editor-plugin-remove-memory-connections';

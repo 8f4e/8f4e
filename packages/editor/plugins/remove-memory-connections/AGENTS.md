@@ -1,7 +1,7 @@
 # Remove Memory Connections Plugin
 
 - Own the Remove connections block-menu contribution, `removeConnections` action, and source transformation here.
-- Export `removeMemoryConnectionsPlugin` as an `EditorPlugin`; editor-default includes it in the standard set.
+- Export `removeMemoryConnectionsPlugin` as an `EditorPlugin`.
 - Keep the removal algorithm private to this package. Core must not inspect source to decide this action's availability.
 - Require an explicit block target and respect edit mode. Apply replacement source through `applyCodeBlockSourceEdits`
   with `affectsCompilation: true` so refreshes precede the completed project and compiler-input notifications.

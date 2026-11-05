@@ -3,7 +3,7 @@
 - Own selected-line documentation, stack analysis, live values, layout, animation, and overlay drawing here.
 - Keep rendering in `src/drawer/`, synchronization and layout in `src/state/`, and content-building utilities in
   `src/helpers/`. Keep shared types and plugin setup at the source root, with tests beside their implementations.
-- Export an `EditorPlugin` without installing it as an import side effect. Editor-default selects the standard plugins.
+- Export an `EditorPlugin` without installing it as an import side effect.
 - Keep tooltip state inside setup, scoped to one editor instance, and use public workspace APIs.
 - Register drawing through `drawers.registerCodeBlockDrawer` with registration order controlling layering.
 - Return a disposer that removes every store subscription, event listener, and drawer registration.

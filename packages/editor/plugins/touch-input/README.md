@@ -17,8 +17,7 @@ const plugin = createTouchInputPlugin({
 ```
 
 Panning uses one finger. `axis` accepts `'both'`, `'horizontal'`, or `'vertical'` and defaults to `'both'`.
-All three editor compositions expose the setting through `touchNavigation`. The product landing page and galleries use
-horizontal panning, leaving vertical swipes available for native page scrolling.
+Use horizontal panning to leave vertical swipes available for native page scrolling.
 
 A 6-pixel threshold distinguishes panning from a tap. Panning follows the finger position and snaps only the enabled
 axes to the editor grid when finished. Adding another finger ends the gesture; removing it does not resume panning.
@@ -27,7 +26,7 @@ Axis-restricted gestures yield to page scrolling when the initial movement is pr
 Disabling viewport dragging or disposing the plugin restores the original inline touch action. Controls remain usable
 when viewport dragging is disabled.
 
-The default, minimal, and landing compositions load this plugin after their first render on `(pointer: coarse)` devices.
+Choose whether to install this plugin based on the host's pointer capabilities; it can load after the first render.
 The plugin has no capability checks and synthesizes no DOM mouse events. It does not edit block positions, source,
 history, or project revisions. The touch target keeps receiving a gesture outside its bounds. Disposal removes all
 listeners and releases any held control.

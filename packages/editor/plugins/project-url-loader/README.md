@@ -20,7 +20,7 @@ notifications for pending requests. Callback errors are not treated as fetch or 
 
 Completion means source installation. Compilation, runtime startup, and binary assets have their own lifecycle.
 
-The default editor gives an explicit initial URL priority by disabling the session plugin's restoration. The URL
+When composing with session persistence, the host can give an explicit initial URL priority by disabling session restoration. The URL
 loader does not know about session storage, and the session plugin does not know about URLs. Both use the same project
 replacement path, which also clears file associations appropriately. Disposal unregisters listeners and prevents a
 pending request from replacing the project after the editor closes.

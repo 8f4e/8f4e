@@ -1,7 +1,7 @@
 # Bars Plugin
 
 `@8f4e/editor-plugin-bars` owns the `bars` directive's arguments, layout, derived data, and rendering.
-The default editor installs it; editor-core installs no plugins automatically.
+Install the plugin through the editor's plugin registry; editor-core installs no plugins automatically.
 
 ```ts
 import { barsPlugin } from '@8f4e/editor-plugin-bars';

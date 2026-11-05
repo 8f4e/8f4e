@@ -18,7 +18,7 @@ import { createSliderPlugin } from '@8f4e/editor-plugin-slider';
 const editor = await initEditor(canvas, { ...options, plugins: [createSliderPlugin({ writeMemory })] });
 ```
 
-The default editor includes this plugin. Each installation owns its slider geometry and memory bindings in a private
+Each installation owns its slider geometry and memory bindings in a private
 `slidersByBlock` map, plus its active drag. A capture listener consumes slider movement before viewport panning.
 The **Save slider values to code** menu action updates the original declaration defaults, including references through
 group aliases, and preserves inline comments. Runtime dragging leaves source text unchanged.

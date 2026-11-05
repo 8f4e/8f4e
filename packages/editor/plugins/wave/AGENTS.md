@@ -3,7 +3,7 @@
 - Own `@wave`, `@wave2`, and `@wave4` arguments, typed sample resolution, vertical spacing, and drawing here.
 - Keep rendering in `src/drawer/`, layout subscriptions in `src/state/`, and argument helpers in `src/helpers/`.
   Keep tests beside their implementations.
-- Export an `EditorPlugin` without installation as an import side effect. Editor-default selects the standard plugins.
+- Export an `EditorPlugin` without installation as an import side effect.
 - Keep wave data in a per-instance `wavesByBlock` WeakMap. Do not attach it to core state or share wave models with core.
 - Leave generic directive parsing and layout in editor-state. Submit extra rows through an owned layout contribution and use `layout.subscribe` for geometry.
 - Use public memory APIs for module/group scopes, typed sample metadata, and element counts.

@@ -1,7 +1,7 @@
 # Crossfade Plugin
 
 `@8f4e/editor-plugin-crossfade` owns the `crossfade` directive's arguments, layout, derived data, and rendering.
-The default editor installs it; editor-core installs no plugins automatically.
+Install the plugin through the editor's plugin registry; editor-core installs no plugins automatically.
 
 ```ts
 import { createCrossfadePlugin } from '@8f4e/editor-plugin-crossfade';

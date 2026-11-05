@@ -102,7 +102,7 @@
   `@texture <address> <magnification> <width> <height> [<x> <y>]` defines a full or cropped view. Both use pointer sources,
   resolved to byte addresses after entry execution each frame. Discover uploads throughout the project and share one
   upload per visible address, with one GPU program for all formats. Views reserve fixed layout space from explicit dimensions, independent of compiler state and pointer changes.
-  All three compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
+  Editor compositions match raw runtime config and either directive with project scope. Keep parsing outside the frame
   path and release storage without visible views. The overlay remains above editor content without block occlusion.
 
 - Run `npx nx run @8f4e/editor-default:test:screenshot` for real-plugin browser composition coverage: lazy plot

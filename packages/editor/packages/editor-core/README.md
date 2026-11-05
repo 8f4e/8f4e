@@ -16,8 +16,7 @@ that consume their events. Other platform renderers can replace web-ui.
   points.
 
 `@8f4e/editor-plugin-mouse-input` forwards DOM mouse and wheel input to core events. Pass `captureWheel: false`
-to its factory to leave wheel scrolling to the page. The default, minimal, and landing compositions expose that option
-and install the mouse plugin on both fine- and coarse-pointer devices.
+to its factory to leave wheel scrolling to the page. The plugin supports fine- and coarse-pointer devices.
 `@8f4e/editor-plugin-touch-input` translates touches and adds configurable viewport gestures on coarse-pointer devices.
 Panning uses one finger on both axes by default; hosts can restrict the movement axis to preserve native page scrolling.
 Core installs no DOM mouse, wheel, touch, or keyboard listeners.
@@ -144,7 +143,7 @@ relative to the block; web-ui owns the single traversal, visibility checks, and 
 registrations draw over earlier ones, including plugins installed asynchronously. There are no separate block
 background, content, foreground, or overlay stages. Registration returns an unregister function for plugin disposal.
 
-All three compositions eagerly install `@8f4e/editor-plugin-code-block-background` before code rendering. It owns the
+Install `@8f4e/editor-plugin-code-block-background` before code rendering. It owns the
 normal, disabled, and dragged base surfaces and corner markers, including their selected colors. Code rendering
 draws nested highlights, the selected-line fill, and text in that order. Other plugins add their drawers after these.
 For offscreen blocks, `drawers.registerOffscreenCodeBlockDrawer((draw, codeBlock, state) => ...)` replaces a single

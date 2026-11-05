@@ -3,7 +3,7 @@
 - Own `@slider` arguments, memory resolution, layout, pointer dragging, drawing, and saving values to source here.
 - Keep layout and interaction in `src/state/`, drawing in `src/drawer/`, and argument and serialization helpers in
   `src/helpers/`. Keep tests beside their implementations.
-- Export an `EditorPlugin` without installation as an import side effect. Editor-default selects the standard plugins.
+- Export an `EditorPlugin` without installation as an import side effect.
 - Keep slider data in a per-instance `slidersByBlock` WeakMap; do not attach it to core state.
 - Use owned layout contributions, `layout.subscribe`, and public memory APIs. Generic parsing and declaration
   editing remain in core.

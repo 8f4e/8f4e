@@ -17,8 +17,8 @@ const loader = createLazyPluginLoaderPlugin([
 ]);
 ```
 
-Pass the loader alongside fixed plugins when constructing the editor. The default, minimal, and landing editors use `view`
-scope for plot, wave, meter, bars, watch, stack, switch, button, piano, slider, and crossfade. Their registries supply the editor's
+Pass the loader alongside fixed plugins when constructing the editor. Use `view`
+scope for plot, wave, meter, bars, watch, stack, switch, button, piano, slider, and crossfade. Supply the editor's
 live memory writer to control factories after their implementations load. Keyboard-to-memory input, MIDI input, binary assets, and
 audio/worker/test/texture runtime plugins use `project` scope. The texture runtime matches both `@texture` and its config root.
 Keyboard-to-memory input matches raw `@config keyboard.*` directives before its schema is installed.
@@ -67,7 +67,7 @@ chunks. Their directive-based loader is part of that deferred set, so its import
 earlier. Ordinary optional features use individual entries with unconditional or capability predicates, including
 input plugins. Entries load independently and have no keyboard-specific loading stage.
 
-`load()` resolves to one ordinary editor plugin. All three compositions return their lazy-loader plugin, which owns the
+`load()` resolves to one ordinary editor plugin. It can return a lazy-loader plugin that owns
 individual optional feature imports. The deferred loader installs it against current state and calls its disposer
 when the editor closes. Disposal removes the readiness listener and ignores pending imports. Load or setup failures
 are logged. Optional features must initialize from current state without relying on startup events being replayed.

@@ -3,7 +3,7 @@
 - Own `@piano` arguments, keyboard layout, runtime note toggling, drawing, and saving notes to source here.
 - Keep directive and interaction code in `src/state/`, drawing in `src/drawer/`, and argument and serialization helpers
   in `src/helpers/`. Keep tests beside their implementations.
-- Export an `EditorPlugin` without installation as an import side effect. Editor-default selects the standard plugins.
+- Export an `EditorPlugin` without installation as an import side effect.
 - Keep keyboard data in a per-instance `keyboardsByBlock` WeakMap. Do not attach piano models to core state.
 - Use owned layout contributions and `layout.subscribe`, with public memory APIs for resolution and
   generic declaration edits. Keep syntax parsing and source ownership routing in core.

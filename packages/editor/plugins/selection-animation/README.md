@@ -10,9 +10,8 @@ import { selectionAnimationPlugin } from '@8f4e/editor-plugin-selection-animatio
 const editor = await initEditor(canvas, { plugins: [selectionAnimationPlugin] });
 ```
 
-Its entries are commented out in the default and minimal editors. Add it to a custom composition or uncomment those
-entries to enable it. The plugin registers a block drawer and unregisters it on disposal. It uses the editor's
-render loop without subscriptions, timers, or source changes.
+Add it to a composition's plugin registry to enable it. The plugin registers a block drawer and unregisters it on
+disposal. It uses the editor's render loop without subscriptions, timers, or source changes.
 Core retains selection state. The background plugin owns selected corner colors; code rendering owns line highlighting.
 
 Verify with the package's Nx `build`, `test`, `typecheck`, and `test:screenshot` targets.

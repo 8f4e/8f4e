@@ -1,6 +1,6 @@
 # Worker Runtime Plugin
 
-- Ordinary browser `EditorPlugin` factory; inject only live compiler getters from the default editor.
+- Ordinary browser `EditorPlugin` factory; inject only live compiler getters from the host composition.
 - Import `@8f4e/runtime-web-worker?worker` here and own worker creation and cleanup. Keep execution code in its separate package.
 - The TypeScript build preserves Vite asset imports for the consuming browser build; `src/source-files.d.ts` supplies their types.
 - Own the `workerRuntime` schema, enabled lifecycle, subscriptions, and disposal. Other runtimes remain independent.

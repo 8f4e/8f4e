@@ -5,6 +5,6 @@
 - Keep preview changes out of source, history, project revisions, and serialization. Retain the preview across config
   resolution and clear it with a capture listener before `loadProject` handlers run.
 - Unsubscribe before calling generic `resolveEditorConfig` to restore source config on disposal. Add no core font fields or override registry.
-- Default editor imports this plugin with its desktop keyboard plugins; minimal omits it.
+- Keep keyboard/pointer capability checks and installation policy in the host composition.
 - Test with local core-service fixtures, without installing sibling plugins. Real rendering combinations belong to editor-default.
 - Run `npx nx run @8f4e/editor-plugin-font-preview:build|test|typecheck`.

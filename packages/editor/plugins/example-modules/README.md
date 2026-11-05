@@ -11,8 +11,8 @@ const plugin = createExampleModulesPlugin({ sources });
 
 `sources` is a `ReadonlyMap<string, () => Promise<string>>`. Keys are module-relative paths without `.8f4em`, such
 as `audio/effects/gain`. The final path segment is the module slug; preceding segments form its category. Slugs must
-be unique across the catalog. Titles and categories are derived without loading source text. The default editor
-supplies this map through `@8f4e/vite-plugin-sources`.
+be unique across the catalog. Titles and categories are derived without loading source text. The host can
+build this map with `@8f4e/vite-plugin-sources`.
 
 The `./catalog` subpath exports `createModuleCatalog`, and `./public-block` exports the default `extractPublicBlockFromModuleSource` helper. Other consumers, including the WebMCP package's content build, can reuse these pure operations without installing the editor plugin.
 

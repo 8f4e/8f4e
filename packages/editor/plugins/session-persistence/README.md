@@ -25,7 +25,7 @@ notifications and saves once after each edit, API batch, undo/redo, or project r
 Selection, caret movement, and navigation do not trigger saves.
 
 A pending project URL may leave an empty project saved until fetching succeeds. A failed fetch or closed editor can
-leave that empty session persisted. The default composition deliberately accepts this behavior without startup save
-coordination. Disposal releases all listeners and subscriptions.
+leave that empty session persisted. The plugin performs no coordination with pending URL fetches. Disposal releases
+all listeners and subscriptions.
 
 Run the package's `build`, `test`, `typecheck`, and `test:screenshot` Nx targets to verify it.

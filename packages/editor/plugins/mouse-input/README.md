@@ -10,7 +10,7 @@ import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 const plugin = createMouseInputPlugin({ inputTarget: canvas, captureWheel: true });
 ```
 
-All three editor compositions import it after their first render, on every device. It also forwards browser-generated mouse
+The plugin can load after the first render on fine- and coarse-pointer devices. It also forwards browser-generated mouse
 events from touch taps. `captureWheel: false` leaves wheel scrolling to the surrounding page. Wheel input is captured
 only while `viewportDragging` is enabled; after scrolling pauses for 120 ms, the plugin emits `viewportscrollend` and
 core snaps the viewport to the grid. Disposal removes listeners and cancels pending timer work.

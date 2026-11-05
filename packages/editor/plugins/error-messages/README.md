@@ -1,7 +1,7 @@
 # Error Messages
 
-`@8f4e/editor-plugin-error-messages` reserves rows and draws inline source errors. All three editor compositions load
-`errorMessagesPlugin` in their deferred sets.
+`@8f4e/editor-plugin-error-messages` reserves rows and draws inline source errors. Install
+`errorMessagesPlugin` through an unconditional deferred registry.
 
 Raw errors remain in `state.codeErrors`, keyed by contributor. Each publisher replaces its own list:
 

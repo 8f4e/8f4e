@@ -1,6 +1,6 @@
 # Code-block copy and paste
 
-`@8f4e/editor-plugin-code-block-copy-paste` contributes Copy Block and Paste Code Block menu actions. The default and minimal compositions load it in their deferred plugin set.
+`@8f4e/editor-plugin-code-block-copy-paste` contributes Copy Block and Paste Code Block menu actions. Install it through a deferred plugin registry.
 
 ```ts
 import { createCodeBlockCopyPastePlugin } from '@8f4e/editor-plugin-code-block-copy-paste';

@@ -19,7 +19,7 @@ Nested language-block highlighting belongs to `@8f4e/editor-plugin-code-renderin
 background colors, rectangle geometry, and private cache. Core supplies block/display bounds, grid dimensions, and gaps.
 
 Input/output connector geometry, private widget data, wire lookup, and the complete GPU line renderer belong to
-`@8f4e/editor-plugin-connectors`. All three editor compositions install it through the generic layout and drawing hooks.
+`@8f4e/editor-plugin-connectors`. The plugin uses the generic layout and drawing hooks.
 It also owns expanded `shape`/`paramShape` labels and their row reservations, sharing inherited row ordering with
 connector endpoints. Core retains no widget presentation data; language semantics stay in the compiler.
 

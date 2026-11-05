@@ -3,7 +3,7 @@
 - Own the Add Built-in Block menu, category navigation, catalog metadata, loading/cache, public-block selection,
   and dependency insertion here.
 - Export `createExampleModulesPlugin({ sources })`; receive lazy source loaders from the host, keyed by paths
-  relative to the module directory without the extension. Keep Vite discovery in the default editor.
+  relative to the module directory without the extension. Keep Vite discovery in the host composition.
 - Expose pure helpers through the `./catalog` and `./public-block` package subpaths so the WebMCP content build can reuse metadata, dependency discovery, and public-block extraction without installing the plugin.
 - Keep generic menu generation and navigation in core; presentation belongs to the context-menu plugin. Use `menus.registerMenu` for the plugin submenu.
 - Insert source through `insertCodeBlock`. Use public editor-state parsers and measurement helpers; keep ordinary

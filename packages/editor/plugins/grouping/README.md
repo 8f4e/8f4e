@@ -1,7 +1,7 @@
 # Editor grouping plugin
 
 `@8f4e/editor-plugin-grouping` owns visual block grouping through `; @group <name> [nonstick]`.
-Install `createGroupingPlugin({ writeClipboardText })` in the editor's `plugins` array. The default editor includes it.
+Install `createGroupingPlugin({ writeClipboardText })` in the editor's `plugins` array.
 
 The plugin owns group membership, drag-target selection, copying, and the block-menu actions:
 Copy group, Delete group, Remove from group, Ungroup, Make Group Sticky/Nonstick, Align blocks in row, and Skip/Unskip

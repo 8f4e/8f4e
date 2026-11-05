@@ -14,7 +14,7 @@
 - Reserve view space from explicit source-pixel dimensions, with an optional source origin defaulting to zero. Layout
   uses only directives and viewport grid sizes; it has no compiler or memory dependencies. Pointer swaps and invalid
   sources never resize views. Keep rendering bindings separate from geometry and texture fields out of core.
-- Keep the overlay above editor content; block occlusion is outside this feature. All three compositions match either
+- Keep the overlay above editor content; block occlusion is outside this feature. For lazy installation, match either
   directive and raw runtime config with project scope.
 - Export `createTextureRuntimePlugin({ getCodeBuffer, getMemory })`. Preserve instance reuse and stale completion cleanup.
 - Verify build/test/typecheck and test:screenshot through Nx. Builds clean dist before compilation.

@@ -1,6 +1,6 @@
 # Test Runtime Plugin
 
-`@8f4e/editor-plugin-test-runtime` is an ordinary editor plugin. The default composition imports it when the project contains
+`@8f4e/editor-plugin-test-runtime` is an ordinary editor plugin. Load it when the project contains
 `@config testRuntime` settings. Enable execution with:
 
 ```text
@@ -9,8 +9,8 @@
 
 The plugin registers its schema on setup and initializes from current configuration and compiler artifacts. It can
 run alongside other runtimes, sharing the compiler's memory. Disabling it stops its own execution. A loaded plugin
-stays installed until editor disposal. All three editor compositions automatically detect configuration after editing
-and across unopened groups, using cached parsed directives.
+stays installed until editor disposal. For lazy installation, match cached raw configuration with project scope
+so configuration added during editing or inside unopened groups can trigger loading.
 
 The host supplies live memory, bytecode, and assertion-site getters. The plugin imports the worker entry from the
 separate `@8f4e/runtime-test-runner` execution package using Vite's `?worker` asset handling. It runs the compiled test

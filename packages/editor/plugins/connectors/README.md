@@ -1,7 +1,7 @@
 # Connectors plugin
 
 `@8f4e/editor-plugin-connectors` owns input/output connectors, expanded declaration labels, and the complete wire
-renderer. The default, minimal, and landing compositions load `connectorsPlugin` after the first render. Omitting it
+renderer. The exported `connectorsPlugin` can load through a deferred registry after the first render. Omitting it
 leaves the editor without connectors, expanded labels/rows, wire drawing, or line GPU allocations; compilation and
 memory resolution continue independently.
 

@@ -1,8 +1,7 @@
 # Favorites Plugin
 
 `@8f4e/editor-plugin-favorites` owns `@favorite` detection, Favorite/Unfavorite block editing, and the Jump to navigation
-menu. The default editor installs it eagerly so blocks can be favorited before any directive exists. The minimal
-editor omits it.
+menu. Install it without requiring an existing `@favorite` directive so blocks can be favorited before any directive exists.
 
 ```ts
 import { favoritesPlugin } from '@8f4e/editor-plugin-favorites';
