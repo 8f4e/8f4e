@@ -1,4 +1,4 @@
-import type { EditorPlugin } from '@8f4e/editor-core';
+import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import { getBlockType, getCodeBlockGridWidth, getCodeBlockNameFromSource } from '@8f4e/editor-state';
 import { createModuleCatalog } from './catalog';
 import { ADD_EXAMPLE_MODULE, buildCategoryTree, EXAMPLE_MODULES_MENU, getCategoryMenuItems } from './categoryMenu';
@@ -17,15 +17,19 @@ export function createExampleModulesPlugin({
 			const catalog = createModuleCatalog(sources);
 			const categories = buildCategoryTree(catalog.modules);
 			let disposed = false;
-			const pendingLoads = new Set<() => void>();
+			const pendingLoads = new Set<LoadingIndicatorHandle>();
 			const loadSource = async (slug: string) => {
-				const finishLoading = loading.add({ name: `module ${slug}` });
-				pendingLoads.add(finishLoading);
+				const indicator = loading.add({ id: `module:${slug}`, message: `Loading module ${slug}...` });
+				pendingLoads.add(indicator);
 				try {
-					return await catalog.getModule(slug);
+					const source = await catalog.getModule(slug);
+					indicator.done();
+					return source;
+				} catch (error) {
+					indicator.fail();
+					throw error;
 				} finally {
-					pendingLoads.delete(finishLoading);
-					finishLoading();
+					pendingLoads.delete(indicator);
 				}
 			};
 			const unregisterMenu = menus.registerMenu(EXAMPLE_MODULES_MENU, (_state, { path }: { path: string[] }) =>
@@ -81,7 +85,7 @@ export function createExampleModulesPlugin({
 			events.on(ADD_EXAMPLE_MODULE, addModule);
 			return () => {
 				disposed = true;
-				for (const finishLoading of pendingLoads) finishLoading();
+				for (const indicator of pendingLoads) indicator.cancel();
 				pendingLoads.clear();
 				events.off(ADD_EXAMPLE_MODULE, addModule);
 				unregisterItem();

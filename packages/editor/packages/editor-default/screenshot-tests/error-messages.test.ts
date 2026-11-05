@@ -41,6 +41,7 @@ entryEnd`;
 		await expect.poll(() => block().gaps.get(3)?.size).toBeGreaterThan(0);
 		editor.state.viewport.x = 0;
 		editor.state.viewport.y = 0;
+		editor.state.loadingIndicators = [];
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('assertion-error');
 		editor.editing.applyEdits({

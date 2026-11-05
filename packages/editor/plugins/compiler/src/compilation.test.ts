@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { State } from '@8f4e/editor-state-types';
+import type { EditorLoadingRegistry, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { createSuccessMessage } from './__tests__/helpers';
@@ -14,12 +14,12 @@ describe('compilation scheduling and publication', () => {
 	let mockCompileCode: Mock<CompilerService['compileCode']>;
 	let events: { on: EventEmitter['on']; off: EventEmitter['off']; dispatch: EventEmitter['emit'] };
 	let cleanup: () => void;
-	let loading: { add: () => () => void };
+	let loading: EditorLoadingRegistry;
 
 	beforeEach(() => {
 		vi.useFakeTimers();
 		cleanup = () => {};
-		loading = { add: () => () => {} };
+		loading = { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) };
 
 		mockCompileCode = vi.fn<CompilerService['compileCode']>().mockRejectedValue({
 			message: 'Memory access is not allowed in pure functions. (19)',

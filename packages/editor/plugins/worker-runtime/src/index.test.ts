@@ -106,7 +106,9 @@ it('handles initialized and stats messages through its fixed info namespace', ()
 		timerDriftMs: 0.5,
 		timerExpectedIntervalTimeMs: 20,
 	};
-	expect(test.state.loadingIndicators).toEqual([{ name: 'worker runtime' }]);
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+		{ id: 'worker-runtime', message: 'Starting worker runtime...', status: 'loading' },
+	]);
 	test.events.dispatch.mockClear();
 	test.workers[0].onMessage({
 		data: { type: 'initialized', requestId: test.workers[0].postMessage.mock.calls.at(-1)![0].requestId, payload: {} },
@@ -114,7 +116,7 @@ it('handles initialized and stats messages through its fixed info namespace', ()
 	test.workers[0].onMessage({ data: { type: 'stats', payload: stats } });
 	expect(test.events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
 	expect(test.state.info.workerRuntime).toEqual(stats);
-	expect(test.state.loadingIndicators).toEqual([]);
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 });
 
 it('waits for compiler memory, then resends updated artifacts without creating another worker', () => {

@@ -1,46 +1,69 @@
 import type { State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
-import { expect, it, vi } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import createDefaultState from '../../pureHelpers/state/createDefaultState';
 import { createLoadingRegistry } from './index';
 
-it('removes only its own object, even when names overlap or cleanup runs twice', () => {
+afterEach(() => vi.restoreAllMocks());
+
+it('retains terminal results and timestamps, replacing the same ID without accepting old completions', () => {
+	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
 	const store = createStateManager<State>({ ...createDefaultState(), callbacks: {} });
 	const loading = createLoadingRegistry(store);
 	const changed = vi.fn();
 	store.subscribe('loadingIndicators', changed);
-	const first = { name: 'sample' };
-	const second = { name: 'sample' };
-	const finishFirst = loading.add(first);
-	const finishSecond = loading.add(second);
-	finishFirst();
-	expect(store.getState().loadingIndicators).toEqual([second]);
-	expect(store.getState().loadingIndicators[0]).not.toBe(second);
-	const replacement = { name: 'sample' };
-	const finishReplacement = loading.add(replacement);
+	const first = loading.add({ id: 'compiler', message: 'Compiling...' });
+	const other = loading.add({ id: 'asset', message: 'Fetching sound...' });
+	now.mockReturnValue(1250);
+	first.done();
+	expect(store.getState().loadingIndicators[0]).toEqual({
+		id: 'compiler',
+		message: 'Compiling...',
+		status: 'done',
+		startedAt: 1000,
+		finishedAt: 1250,
+	});
 	changed.mockClear();
-	finishFirst();
+	first.fail();
+	first.cancel();
 	expect(changed).not.toHaveBeenCalled();
-	expect(store.getState().loadingIndicators).toEqual([second, replacement]);
-	finishSecond();
-	finishReplacement();
-	expect(store.getState().loadingIndicators).toEqual([]);
+	now.mockReturnValue(2000);
+	const replacement = loading.add({ id: 'compiler', message: 'Compiling again...' });
+	changed.mockClear();
+	first.done();
+	first.fail();
+	expect(changed).not.toHaveBeenCalled();
+	expect(store.getState().loadingIndicators).toMatchObject([
+		{ id: 'compiler', message: 'Compiling again...', status: 'loading', startedAt: 2000, finishedAt: null },
+		{ id: 'asset', status: 'loading' },
+	]);
+	now.mockReturnValue(2300);
+	replacement.fail();
+	other.done();
+	expect(store.getState().loadingIndicators.map(({ status, finishedAt }) => ({ status, finishedAt }))).toEqual([
+		{ status: 'failed', finishedAt: 2300 },
+		{ status: 'done', finishedAt: 2300 },
+	]);
 	store.dispose();
 });
 
-it('keeps repeated registrations of the same input object independent and isolates editors', () => {
+it('copies input, replaces pending attempts by ID, and isolates cancellation between editors', () => {
+	vi.spyOn(Date, 'now').mockReturnValue(1000);
 	const first = createStateManager<State>({ ...createDefaultState(), callbacks: {} });
 	const second = createStateManager<State>({ ...createDefaultState(), callbacks: {} });
 	const loading = createLoadingRegistry(first);
-	const input = { name: 'sample' };
-	const finishFirst = loading.add(input);
-	const finishSecond = loading.add(input);
-	input.name = 'changed';
-	expect(first.getState().loadingIndicators).toEqual([{ name: 'sample' }, { name: 'sample' }]);
-	finishFirst();
-	expect(first.getState().loadingIndicators).toEqual([{ name: 'sample' }]);
+	const input = { id: 'sample', message: 'Fetching sample...' };
+	const old = loading.add(input);
+	const current = loading.add(input);
+	input.message = 'changed';
+	old.cancel();
+	expect(first.getState().loadingIndicators).toEqual([
+		{ id: 'sample', message: 'Fetching sample...', status: 'loading', startedAt: 1000, finishedAt: null },
+	]);
+	current.cancel();
+	current.done();
+	expect(first.getState().loadingIndicators[0]).toMatchObject({ status: 'cancelled', finishedAt: 1000 });
 	expect(second.getState().loadingIndicators).toEqual([]);
-	finishSecond();
 	first.dispose();
 	second.dispose();
 });

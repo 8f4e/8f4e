@@ -71,6 +71,7 @@ test('Ctrl/Cmd+V pastes plain text into the selected block through native clipbo
 	await userEvent.keyboard(`{${modifier}>}v{/${modifier}}`);
 	await expect.poll(() => target().code[row]).toBe(beforePaste.slice(0, pasteCol) + text + beforePaste.slice(pasteCol));
 	expect(state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'note')).toHaveLength(1);
+	editor.state.loadingIndicators = [];
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot('text-pasted');
 });

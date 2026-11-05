@@ -66,10 +66,11 @@ and dispatcher remain available. It does not track individual registrations. Set
 If setup throws, that plugin must unwind its partial allocations; the host disposes previously completed plugins.
 Initialization failures later in startup also dispose installed plugins.
 
-Plugins publish active loads with `loading.add({ name })`. Each call appends a distinct object to the unified
-`state.loadingIndicators` list and returns an idempotent remover. Producers call it on completion, failure,
-supersession, and disposal. Equal names and reused input objects stay independent. The eagerly installed
-loading-indicators plugin owns canvas presentation; contributions work independently of the drawer.
+Plugins publish operations with `loading.add({ id, message })`, receiving `done()`, `fail()`, and `cancel()` methods.
+The first terminal call records a finish timestamp and retains the result in the unified `state.loadingIndicators`
+list. A repeated ID replaces its entry without allowing old handles to update it. State records epoch-millisecond
+start/finish times. The eager loading-indicators plugin owns elapsed-time/status drawing and removes the oldest
+expired result every 250 ms after a five-second grace period. Contributions work independently of the drawer.
 
 Keep browser dependencies in plugin factories rather than the shared setup context. A browser host can create
 `createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })` before initializing the editor; the

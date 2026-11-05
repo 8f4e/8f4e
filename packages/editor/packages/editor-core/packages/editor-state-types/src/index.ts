@@ -157,14 +157,27 @@ export interface ProjectChange {
 	kind: 'edit' | 'checkpoint' | 'restore' | 'replace';
 }
 
-/** One active asynchronous load, removed when the operation finishes or is cancelled. */
+/** One contributed operation, retained after completion until presentation cleanup expires it. */
 export interface LoadingIndicator {
-	name: string;
+	id: string;
+	message: string;
+	status: 'loading' | 'done' | 'failed' | 'cancelled';
+	/** Milliseconds since the Unix epoch, recorded when the contribution is added. */
+	startedAt: number;
+	/** Milliseconds since the Unix epoch, or null while the operation is loading. */
+	finishedAt: number | null;
 }
 
-/** Per-editor contributions to the unified loading list. Producers own the returned cleanup. */
+/** The first terminal result wins; later calls have no effect. */
+export interface LoadingIndicatorHandle {
+	done: () => void;
+	fail: () => void;
+	cancel: () => void;
+}
+
+/** Per-editor contributions to the unified loading list. Producers own their terminal result. */
 export interface EditorLoadingRegistry {
-	add: (indicator: LoadingIndicator) => () => void;
+	add: (indicator: Pick<LoadingIndicator, 'id' | 'message'>) => LoadingIndicatorHandle;
 }
 
 // State interface - complete editor state tree (top-level public API)
@@ -197,7 +210,7 @@ export interface State {
 	globalEditorDirectives: ResolvedGlobalEditorDirectives;
 	/** Raw source errors keyed by contributor. Each contributor replaces its own list. */
 	codeErrors: Record<string, CodeError[]>;
-	/** Active loads contributed by plugins in insertion order. Entries retain their object identity. */
+	/** Contributed operations and their recent results, in insertion order. */
 	loadingIndicators: LoadingIndicator[];
 	dialog: DialogContent;
 	dialogStack: DialogContent[];

@@ -120,6 +120,7 @@ entryEnd`);
 	editor.navigation.openGroup(getEditorBlockId(group));
 	await vi.dynamicImportSettled();
 	editor.pauseRendering();
+	editor.state.loadingIndicators = [];
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot('lazy-watch-stack-after-group-navigation');
 	expect(editor.state.codeErrors.compiler).toEqual([]);
@@ -152,7 +153,9 @@ entryEnd`,
 	await vi.waitFor(() => expect(editor.state.codeErrors.compiler.length).toBeGreaterThan(0), {
 		timeout: 10000,
 	});
-	expect(editor.state.loadingIndicators).toContainEqual({ name: 'sound' });
+	expect(editor.state.loadingIndicators).toContainEqual(
+		expect.objectContaining({ id: 'asset:sound', message: 'Loading sound...', status: 'loading' })
+	);
 	finish(new Response(new Uint8Array([1, 2, 3, 4, 5, 6])));
 	await vi.waitFor(
 		() => expect(editor.state.compiler.result.memoryPlan.modules.player?.memory.buffer.numberOfElements).toBe(6),
@@ -165,6 +168,7 @@ entryEnd`,
 	]);
 	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 	expect(editor.state.codeErrors.compiler).toEqual([]);
+	expect(editor.state.loadingIndicators).toContainEqual(expect.objectContaining({ id: 'asset:sound', status: 'done' }));
 	expect(editor.state.dialogStack).toEqual([]);
 });
 

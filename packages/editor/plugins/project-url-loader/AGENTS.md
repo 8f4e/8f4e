@@ -6,8 +6,9 @@
   fetching and parsing alongside font loading. Keep project serialization and project replacement in core.
 - Accept optional onLoaded/onError factory callbacks. Notify after source installation, treat valid empty source as
   success, and suppress notifications after disposal. Keep callback and project-replacement errors outside the I/O catch.
-- Contribute `{ name: 'project' }` through `loading.add` while fetching/reading, parsing, and installing source.
-  Remove only owned indicators on success, failure, and disposal; callback/action errors must also release them.
+- Contribute ID `project-url` and message `Loading project...` while reading, parsing, and installing source.
+  Report done/failed outcomes, including callback/action failures; cancel pending work on disposal. Reusing the
+  same ID replaces the entry. The presentation plugin owns retention and cleanup.
   Initial URL loading still precedes the first canvas frame; the contribution does not change startup rendering.
 - Return explicit cleanup for all subscriptions/listeners. Ignore loads that complete after disposal. Keep initial URL priority in the host composition.
 - Verify with `npx nx run @8f4e/editor-plugin-project-url-loader:build|test|typecheck` and

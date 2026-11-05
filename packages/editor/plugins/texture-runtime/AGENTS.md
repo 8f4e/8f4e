@@ -1,7 +1,7 @@
 # Texture Runtime
 
-- Contribute `texture runtime` for each WASM instantiation. Remove owned indicators on completion, failure,
-  supersession, disable, and disposal; keep per-frame drawing free of loading contributions.
+- Contribute ID `texture-runtime` with message `Starting texture runtime...` for WASM instantiation. Report done/failed;
+  cancel on supersession, disable, and disposal. Keep per-frame drawing free of loading contributions.
 - Own runtime enabled/entry config and per-frame entry execution, independent of texture visibility.
 - Own `@textureUpload <pointerSource> <1bit|mono|rgb|rgba> <width> <height>` and
   `@texture <pointerSource> <magnification> <width> <height> [<x> <y>]`. Keep no compatibility syntax or aliases.

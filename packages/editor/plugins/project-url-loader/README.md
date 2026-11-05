@@ -18,10 +18,11 @@ when that source is an empty project. `onError(error)` receives the original fet
 fallback is installed; a failure does not call `onLoaded`. With no URL, neither callback runs. Disposal suppresses both
 notifications for pending requests. Callback errors are not treated as fetch or parser failures.
 
-The plugin contributes `{ name: 'project' }` through the setup context's `loading.add` while fetching, parsing,
-and installing source. Success, failure, and disposal remove the owned entry. No URL means no indicator.
-Initial URL loading still completes before the first canvas frame, so that startup contribution is not yet visible
-on the canvas; adding it does not change the startup rendering sequence.
+The plugin contributes ID `project-url` and message `Loading project...` while fetching, parsing, and installing
+source. Success/failure settle its status; disposal cancels pending work. Results remain until presentation cleanup.
+No URL means no indicator.
+Initial URL loading still completes before the first canvas frame; its retained terminal result can be shown
+once rendering starts.
 
 Completion means source installation. Compilation, runtime startup, and binary assets have their own lifecycle.
 

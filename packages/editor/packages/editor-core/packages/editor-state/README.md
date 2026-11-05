@@ -15,7 +15,9 @@ its edges. Outside all entry bounds it allocates a fresh entry name. Entry assig
 
 ## Loading indicators
 
-`state.loadingIndicators` is a unified list of `LoadingIndicator` objects containing `name: string`.
-`loading.add({ name })` in the plugin setup context appends a distinct object and returns its idempotent
-remover. Call it on success, failure, cancellation, supersession, and producer disposal. Equal names remain independent. Indicators are transient and do not change project history,
-serialization, or compiler inputs. The loading-indicators plugin owns their optional canvas presentation.
+`state.loadingIndicators` is a unified list of operations with `id`, contributor-supplied `message`, `status`
+(`loading`, `done`, `failed`, or `cancelled`), `startedAt`, and nullable `finishedAt`. Timestamps use epoch milliseconds.
+`loading.add({ id, message })` returns `done()`, `fail()`, and `cancel()` methods; the first terminal result records
+its finish time and remains in state. Reusing an ID replaces its previous record in place, and previous handles
+cannot change the new attempt. Indicators do not affect project history, serialization, or compiler inputs.
+The loading-indicators plugin owns optional canvas presentation and periodically expires results older than five seconds.

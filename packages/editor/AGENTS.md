@@ -11,10 +11,12 @@
 - Editor-core owns the single frame loop and advances viewport state before web-ui draws. Web-ui has no frame
   scheduler or navigation-state updates; it owns drawing and GPU resources.
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
-- Loading operations contribute `{ name: string }` objects to the unified `state.loadingIndicators` list.
-  Plugin setup exposes `loading.add({ name })`, returning an idempotent remover; producers own cleanup
-  on completion, failure, supersession, and disposal. `editor-plugin-loading-indicators` owns nonblocking canvas
-  presentation and is installed eagerly in the editor compositions before deferred loading starts.
+- Loading operations contribute `{ id, message }` through `loading.add` in the plugin setup context.
+  The returned handle exposes `done()`, `fail()`, and `cancel()`; the first terminal result records `finishedAt`.
+  State retains `status`, `startedAt`, and `finishedAt` in the unified `state.loadingIndicators` list. Reusing an ID
+  replaces its entry; old handles cannot update the replacement. The eager `editor-plugin-loading-indicators` owns
+  elapsed-time/status drawing and a 250 ms timer that removes one expired result at a time, oldest finish first,
+  after a five-second grace period.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, nested block backgrounds,
   line-number drawing, and private prepared sprite cells and highlight rectangles. Editor compositions install it eagerly.
   Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order

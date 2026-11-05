@@ -29,10 +29,11 @@ Distinct URLs fetch concurrently, once per configuration set. Each configured as
 its memory destinations, including exposed project memory aliases. Assets sharing a URL reuse the same downloaded
 source. A completed source publishes its size constants and copies into available targets immediately, independently
 of other downloads. Copies respect the target's allocated byte length. The plugin reloads retained bytes when the
-compiler publishes a memory plan. Each configured asset contributes one `{ name: assetId }` indicator until its
-downloaded bytes are available or fetching fails, including when runtime memory has not been allocated yet.
-Memory copying and recompilation do not re-add asset indicators. The loading-indicators plugin owns presentation;
-binary loading does not open a dialog or block input. Equal names from unrelated operations stay independent.
+compiler publishes a memory plan. Each configured asset contributes ID `asset:<id>` and message `Loading <id>...`.
+Downloaded bytes mark it done; fetch errors mark it failed, even before runtime memory exists. Memory copying and
+recompilation do not re-add indicators. Configuration changes and disposal cancel pending downloads; new downloads
+replace the same ID. The loading-indicators plugin owns presentation and result expiration. Binary loading does not
+open a dialog or block input.
 Fetch failures are logged and excluded from the completed asset set.
 
 The plugin contributes `ASSET_<ID>_SIZE` constants and filename comments through the generic
@@ -41,5 +42,5 @@ Asset sizes reflect the fetched file's complete length, even when the memory cop
 stay private and are not serialized into project/session models; the source config is retained.
 
 Installing the plugin registers its `bin` config schema. Omitting it leaves fetching, indicators, and asset constants
-inactive. Disposal unsubscribes listeners, removes owned schema/constants/indicators, releases retained bytes, and
+inactive. Disposal unsubscribes listeners, removes owned schema/constants, cancels pending indicators, releases retained bytes, and
 ignores in-flight results from the disposed installation. Configuration changes similarly reject stale fetch results.

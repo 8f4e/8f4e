@@ -59,10 +59,12 @@
   and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
   Editor compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
   `registerModalOverlay` after ordinary overlays, independently of `canvasOverlays`.
-- Loading operations contribute `{ name: string }` objects to the unified `state.loadingIndicators` list.
-  Plugin setup exposes `loading.add({ name })`, returning an idempotent remover; producers own cleanup
-  on completion, failure, supersession, and disposal. `editor-plugin-loading-indicators` owns nonblocking canvas
-  presentation and is installed eagerly in the editor compositions before deferred loading starts.
+- Loading operations contribute `{ id, message }` through `loading.add` in the plugin setup context.
+  The returned handle exposes `done()`, `fail()`, and `cancel()`; the first terminal result records `finishedAt`.
+  State retains `status`, `startedAt`, and `finishedAt` in the unified `state.loadingIndicators` list. Reusing an ID
+  replaces its entry; old handles cannot update the replacement. The eager `editor-plugin-loading-indicators` owns
+  elapsed-time/status drawing and a 250 ms timer that removes one expired result at a time, oldest finish first,
+  after a five-second grace period.
 - `@8f4e/editor-plugin-error-messages` owns inline error wrapping, layout reservations, coordinates, and drawing.
   Core retains raw `CodeError` lists in `state.codeErrors`, keyed by contributor. Compiler, editor directives, and
   test-runtime own their lists; editor compositions defer the presentation plugin until `ready`.

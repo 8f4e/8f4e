@@ -52,6 +52,7 @@ export type {
 	FeatureFlagsConfig,
 	JSONSchemaLike,
 	LoadingIndicator,
+	LoadingIndicatorHandle,
 	MenuGenerator,
 	Options,
 	ParsedDirectiveRecord,

@@ -55,7 +55,11 @@ entryEnd`);
 			],
 		});
 		editor.state.editorMode = 'edit';
-		await vi.waitFor(() => expect(editor!.state.loadingIndicators).toEqual([{ name: 'sound' }]));
+		await vi.waitFor(() =>
+			expect(editor!.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+				{ id: 'asset:sound', message: 'Loading sound...', status: 'loading' },
+			])
+		);
 		editor.pauseRendering();
 		editor.renderFrame();
 		memory = new Uint8Array(65536);
@@ -63,7 +67,9 @@ entryEnd`);
 		store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
 		store.set('compiler.result.memoryPlan', compiled.memoryPlan);
 		finish(new Response(new Uint8Array([1, 2, 3, 4, 5, 6])));
-		await vi.waitFor(() => expect(editor!.state.loadingIndicators).toEqual([]));
+		await vi.waitFor(() =>
+			expect(editor!.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
+		);
 		const target = compiled.memoryPlan.modules.player.memory.buffer;
 		expect([...memory.slice(target.byteAddress, target.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
 		expect(editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')?.code).toContain(

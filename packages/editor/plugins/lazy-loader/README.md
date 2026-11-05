@@ -54,9 +54,9 @@ if the project or current group changes while its import is pending, and remains
 Removing a signal or leaving a group does not unload it. Entries install in import-completion order; keep
 order-dependent plugins in the fixed list.
 
-Each pending entry contributes `{ name: entry.id }` to the unified `state.loadingIndicators` list until import
-and synchronous setup finish. Success, import/setup failure, and disposal remove only that operation's object.
-The loader owns these contributions independently of whether a loading-indicator drawer is installed.
+Each import/setup contributes ID `plugin:<entry.id>` and message `Loading <entry.id>...`. Successful setup marks
+it done, import/setup errors mark it failed, and disposal cancels pending work. Retrying replaces the same ID.
+Results remain for loading-indicator cleanup; contributions work without the presentation plugin.
 
 Modules may be shared by JavaScript's import cache; setup and cleanup remain separate for every editor. The loader
 calls each plugin's ordinary `setup(context)` and owns its returned disposer. Editor disposal prevents queued scans
@@ -75,8 +75,8 @@ input plugins. Entries load independently and have no keyboard-specific loading 
 individual optional feature imports. The deferred loader installs it against current state and calls its disposer
 when the editor closes. Disposal removes the readiness listener and ignores pending imports. Load or setup failures
 are logged. Optional features must initialize from current state without relying on startup events being replayed.
-The deferred import contributes `{ name: 'editor plugins' }` while loading and setting up its returned plugin,
-with the same cleanup on completion, failure, and disposal.
+The deferred import uses ID `editor-plugins` and message `Loading editor plugins...`, with the same terminal
+outcomes for completion, failure, and disposal.
 
 Verify from the workspace root:
 

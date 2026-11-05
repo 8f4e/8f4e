@@ -76,10 +76,12 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			if (trigger === 'group navigation') {
 				expect(load).not.toHaveBeenCalled();
 				context.events.dispatch('pointermove', { buttons: 1, movementX: 64, movementY: 96 });
+				editor.state.loadingIndicators = [];
 				editor.renderFrame();
 				await expect(canvas).toMatchScreenshot('parent-viewport-before-group');
 				const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audioGroup')!;
 				context.store.set('codeBlockRendering.selectedCodeBlock', group);
+				editor.state.loadingIndicators = [];
 				editor.renderFrame();
 				await expect(canvas).toMatchScreenshot('parent-selection-before-group');
 				editor.navigation.openGroup(getEditorBlockId(group));
@@ -93,12 +95,14 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			}
 			await expect.poll(() => block.gaps.get(3)?.size).toBe(8);
 			expect(load).toHaveBeenCalledOnce();
+			editor.state.loadingIndicators = [];
 			editor.renderFrame();
 			await expect(canvas).toMatchScreenshot(`plot-after-${trigger.replace(' ', '-')}`);
 			if (trigger === 'group navigation') {
 				context.events.dispatch('pointermove', { buttons: 1, movementX: 128, movementY: 160 });
 				editor.navigation.goToRoot();
 				expect(editor.state.viewport).toMatchObject({ x: -64, y: -96 });
+				editor.state.loadingIndicators = [];
 				editor.renderFrame();
 				const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audioGroup')!;
 				expect(editor.state.codeBlockRendering.selectedCodeBlock).toBe(group);

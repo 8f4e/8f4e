@@ -4,7 +4,7 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEditorDrawerRegistry } from './drawers/registry';
 
-const loading = { add: vi.fn(() => vi.fn()) };
+const loading = { add: vi.fn(() => ({ done: vi.fn(), fail: vi.fn(), cancel: vi.fn() })) };
 
 const mocks = vi.hoisted(() => {
 	const engine = {

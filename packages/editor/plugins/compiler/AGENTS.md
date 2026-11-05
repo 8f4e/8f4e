@@ -9,9 +9,9 @@
   presentation belongs to error-messages; do not reserve layout or store drawing geometry here.
 - Listen to `compilationInputChanged`, emitted by core after its input revision advances. Read the latest project tree
   after debouncing, using public serialization helpers. Keep worker creation lazy.
-- Contribute `{ name: 'compiler' }` through `loading.add` for each active compilation attempt, after debounce.
-  Remove the entry in `finally` for success, failure, and superseded results, and immediately on disposal.
-  Queued work shares the active attempt until it can start; never leave duplicate or stale indicators.
+- Contribute `{ id: 'compiler', message: 'Compiling...' }` for each active attempt after debounce.
+  Report done/failed results; cancel superseded attempts and pending work on disposal. New attempts replace the
+  same ID. Queued requests remain sequential; the presentation plugin owns retention and cleanup.
 - Run only one worker compilation at a time; coalesce edits received in flight and respect the latest debounce interval.
 - Contribute the integer `recompileDebounceDelay` config schema through `editorConfigSchemaContributions.compiler`.
   Keep its typing and default in this package; use the shared directive validation and parsing mechanism.

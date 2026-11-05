@@ -17,9 +17,9 @@
   and explicit cleanup. Ignore import completion after disposal. Layout recalculation belongs to the independent
   layout service, never to the loader or directive registry.
 - Plugins install in completion order. There is no dependency resolver, unloading policy, or async setup contract.
-- Contribute `{ name: entry.id }` to the unified loading list for each pending import/setup. The deferred wrapper
-  contributes `{ name: 'editor plugins' }`. Use `loading.add` removers on completion, failure, and disposal;
-  imports completing after disposal must not affect other indicators.
+- Contribute ID `plugin:<entry.id>` and message `Loading <entry.id>...` for import/setup. The deferred wrapper
+  uses ID `editor-plugins` and message `Loading editor plugins...`. Report done/failed and cancel on disposal.
+  Retries replace the same ID; late completions must not change a replacement or cancelled result.
 - Log import failures and retry on the next matching automatic scan. Setup errors propagate through activation
   under the trusted-plugin contract.
 - Run `npx nx run @8f4e/editor-plugin-lazy-loader:build|test|typecheck`.

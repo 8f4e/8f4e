@@ -95,9 +95,10 @@ stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG
 `@8f4e/editor-plugin-project-open` for opening projects, `@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
 
 `@8f4e/editor-plugin-loading-indicators` is installed eagerly before deferred loading and draws the unified
-`state.loadingIndicators` list at the bottom left. Project loading, lazy plugin imports, and binary downloads contribute names while
-loading. Each asset disappears when its downloaded bytes are available; compilation contributes its own indicator
-while an attempt is active. This overlay does not block input.
+`state.loadingIndicators` list at the bottom left. Producers supply IDs and custom messages, such as `Compiling...`.
+The overlay shows elapsed time and retains done, failed, or cancelled results for at least five seconds, with
+green/red success/failure labels. Cleanup removes one expired result every 250 ms, oldest finish time first.
+Reusing an ID replaces its previous entry. This overlay does not block input.
 
 `@8f4e/editor-plugin-selection-animation` is available separately. Its entry is commented out in the default and minimal compositions; the landing composition omits it.
 

@@ -49,9 +49,11 @@ describe('lazy keyboard editing input bridge', () => {
 		await Promise.resolve();
 		expect(importEditing).not.toHaveBeenCalled();
 		test.events.dispatch('enterEditMode');
-		expect(test.state.loadingIndicators).toEqual([{ name: 'text editing' }]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'text-editing', message: 'Loading text editing...', status: 'loading' },
+		]);
 		await finishLoading();
-		expect(test.state.loadingIndicators).toEqual([]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	});
 	it('loads when installed in edit mode', async () => {
 		setup(createKeyboardEditingPlugin);

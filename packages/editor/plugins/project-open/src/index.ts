@@ -1,5 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import type { EditorPlugin } from '@8f4e/editor-core';
+import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import type { ProjectFileHandle, ProjectFileSession } from '@8f4e/editor-file-session';
 import { logError } from '@8f4e/editor-state';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
@@ -19,35 +19,40 @@ export function createProjectOpenPlugin({
 		setup: ({ store, events, menus, loading }) => {
 			const state = store.getState();
 			let disposed = false;
-			const pendingLoads = new Set<() => void>();
+			const pendingLoads = new Set<LoadingIndicatorHandle>();
 			const unregisterOpen = menus.registerItem('mainMenu', () =>
 				showOpenMenuItem ? { title: 'Open From Disk', action: 'importProject', close: true } : undefined
 			);
 			const onImport = async () => {
 				if (disposed) return;
-				let finishLoading: (() => void) | undefined;
+				let indicator: LoadingIndicatorHandle | undefined;
 				try {
 					let project: ProjectObjectModel;
 					let handle: ProjectFileHandle | undefined;
 					try {
 						const opened = await openProjectFile(document);
 						if (!opened || disposed) return;
-						finishLoading = loading.add({ name: 'project' });
-						pendingLoads.add(finishLoading);
+						indicator = loading.add({ id: 'project-file', message: 'Loading project...' });
+						pendingLoads.add(indicator);
 						project = parseProjectSource(await opened.file.text());
 						handle = opened.handle;
 					} catch (error) {
 						if (disposed || (error instanceof Error && error.name === 'AbortError')) return;
+						indicator?.fail();
 						logError(state, `Failed to open project: ${String(error)}`);
 						return;
 					}
 					if (disposed) return;
 					events.dispatch('loadProject', { project });
 					fileSession.handle = handle;
+					indicator.done();
+				} catch (error) {
+					indicator?.fail();
+					throw error;
 				} finally {
-					if (finishLoading) {
-						pendingLoads.delete(finishLoading);
-						finishLoading();
+					if (indicator) {
+						pendingLoads.delete(indicator);
+						indicator.cancel();
 					}
 				}
 			};
@@ -56,7 +61,7 @@ export function createProjectOpenPlugin({
 				disposed = true;
 				events.off('importProject', onImport);
 				unregisterOpen();
-				for (const finishLoading of pendingLoads) finishLoading();
+				for (const indicator of pendingLoads) indicator.cancel();
 				pendingLoads.clear();
 			};
 		},

@@ -1,4 +1,4 @@
-import type { EditorPlugin } from '@8f4e/editor-core';
+import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import { IGNORED_ASSERTION_IMPORTS } from '@8f4e/language-spec';
 import { createTextureBindings } from './bindings';
 import { readTextureRuntimeConfig, TEXTURE_RUNTIME_CONFIG } from './config';
@@ -22,11 +22,11 @@ export function createTextureRuntimePlugin({
 			let entry: CallableFunction | undefined;
 			let generation = 0;
 			let pending = false;
-			let finishProgramLoading: (() => void) | undefined;
+			let programLoading: LoadingIndicatorHandle | undefined;
 
 			function clearProgram() {
-				finishProgramLoading?.();
-				finishProgramLoading = undefined;
+				programLoading?.cancel();
+				programLoading = undefined;
 				generation++;
 				program = undefined;
 				pending = false;
@@ -46,8 +46,8 @@ export function createTextureRuntimePlugin({
 				const code = getCodeBuffer();
 				if (!nextMemory || code.byteLength === 0) return;
 				pending = true;
-				const finishLoading = loading.add({ name: 'texture runtime' });
-				finishProgramLoading = finishLoading;
+				const indicator = loading.add({ id: 'texture-runtime', message: 'Starting texture runtime...' });
+				programLoading = indicator;
 				try {
 					const { instance } = await WebAssembly.instantiate(new Uint8Array(code), {
 						host: { memory: nextMemory, ...IGNORED_ASSERTION_IMPORTS },
@@ -56,14 +56,16 @@ export function createTextureRuntimePlugin({
 					program = instance.exports;
 					pending = false;
 					prepareEntry();
+					indicator.done();
 				} catch (error) {
+					indicator.fail();
 					if (version === generation) {
 						pending = false;
 						console.error('Failed to instantiate texture runtime:', error);
 					}
 				} finally {
-					finishLoading();
-					if (finishProgramLoading === finishLoading) finishProgramLoading = undefined;
+					indicator.cancel();
+					if (programLoading === indicator) programLoading = undefined;
 				}
 			}
 

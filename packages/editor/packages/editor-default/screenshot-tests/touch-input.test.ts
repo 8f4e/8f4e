@@ -67,6 +67,7 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 		await expect.poll(() => state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		const { x: blockX, y: blockY } = targetBlock();
 		const { x, y } = state.viewport;
+		editor.state.loadingIndicators = [];
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('before-touch-pan');
 		await expect
@@ -81,6 +82,7 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 		const block = targetBlock();
 		expect({ x: block.x, y: block.y }).toEqual({ x: blockX, y: blockY });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		editor.state.loadingIndicators = [];
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('after-touch-pan');
 		await tap(block.x - state.viewport.x + 8, block.y - state.viewport.y + 8);
@@ -199,6 +201,7 @@ entryEnd`);
 		context.events.dispatch('contextmenu', { x: 20, y: 20 });
 		await expect.poll(() => state.contextMenu.items.length).toBeGreaterThan(0);
 		expect(state.contextMenu.open).toBe(true);
+		editor.state.loadingIndicators = [];
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('portrait-context-menu');
 		context.events.dispatch('closeContextMenu');
@@ -210,6 +213,7 @@ entryEnd`);
 			text: 'This project plays audio. Tap Allow to enable sound on your device.',
 			buttons: [{ title: 'Allow', action: 'testAllowAudio' }],
 		});
+		editor.state.loadingIndicators = [];
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('portrait-audio-dialog');
 		// Tap the Allow button shown in the fixed portrait screenshot fixture.

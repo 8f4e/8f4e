@@ -67,7 +67,7 @@ it.each(['edit', 'view'] as const)('opens from the contributed menu in %s mode',
 		'int value 1'
 	);
 	expect(test.state.contextMenu.open).toBe(false);
-	expect(test.state.loadingIndicators).toEqual([]);
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 });
 
 it('hides the menu item without removing the import action', async () => {
@@ -109,7 +109,7 @@ it.each(['change', 'cancel'])('handles file input %s when the picker is unavaila
 	const pending = test.events.dispatchAsync('importProject');
 	expect(test.document.createElement).toHaveBeenCalledWith('input');
 	expect(test.input.click).toHaveBeenCalledOnce();
-	expect(test.state.loadingIndicators).toEqual([]);
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	test.input.dispatchEvent(new Event(action));
 	await pending;
 	expect(test.fileSession.handle).toBe(action === 'change' ? undefined : test.handle);
@@ -129,12 +129,16 @@ it('ignores an open that finishes after disposal', async () => {
 	test.handle.getFile.mockResolvedValueOnce(file);
 	const original = test.state.initialProjectState;
 	const pending = test.events.dispatchAsync('importProject');
-	await vi.waitFor(() => expect(test.state.loadingIndicators).toEqual([{ name: 'project' }]));
+	await vi.waitFor(() =>
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'project-file', message: 'Loading project...', status: 'loading' },
+		])
+	);
 	test.disposePlugin();
-	expect(test.state.loadingIndicators).toEqual([]);
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	finish(source);
 	await pending;
-	expect(test.state.loadingIndicators).toEqual([]);
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	expect(test.state.initialProjectState).toBe(original);
 	expect(test.fileSession.handle).toBeUndefined();
 });

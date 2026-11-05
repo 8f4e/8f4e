@@ -55,7 +55,7 @@ function setup(initialProgram?: TestRuntimeProgram, isCompiling = false) {
 	}).setup({
 		store,
 		events,
-		loading: { add: () => () => {} },
+		loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
 	} as unknown as import('@8f4e/editor-core').EditorPluginContext);
 	return {
 		state,

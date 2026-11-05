@@ -45,8 +45,8 @@
 - DOM mouse/wheel adaptation belongs to `editor-plugin-mouse-input`; touch adaptation and panning belong to
   `editor-plugin-touch-input`. Core keeps the event dispatcher and state effects, with no DOM input
   listeners or `captureWheel` option. Export existing generic viewport update, animation-stop, and grid-snap helpers.
-- Pass the per-editor `loading` service to web-ui options. Font-change subscriptions own their loading removers
-  and release them on completion, failure, supersession, or renderer disposal.
+- Pass the per-editor `loading` service to web-ui options. Font-change subscriptions report done/failed outcomes
+  and cancel superseded or disposed attempts through their owned handles.
 - Font/color schemas, validators, defaults, and subscriptions belong to web-ui. Register them through
   `registerWebUiConfig(store)` before plugins/project loading. Initialize the view with the store and events; do not
   restore core font-atlas or palette management. State reacts only to `gridSizeChanged` and shared grid dimensions.
@@ -117,10 +117,12 @@
 - Binary assets belong to `editor-plugin-binary-assets`, including their schema, fetching/cache, private state, loading lifecycle,
   and size constants. Keep only generic `envConstantContributions`, schema registration, loading indicators, and memory resolution
   in core. Environment constants refresh when blocks are populated as well as when contributions change.
-- Loading operations contribute `{ name: string }` objects to the unified `state.loadingIndicators` list.
-  Plugin setup exposes `loading.add({ name })`, returning an idempotent remover; producers own cleanup
-  on completion, failure, supersession, and disposal. `editor-plugin-loading-indicators` owns nonblocking canvas
-  presentation and is installed eagerly in the editor compositions before deferred loading starts.
+- Loading operations contribute `{ id, message }` through `loading.add` in the plugin setup context.
+  The returned handle exposes `done()`, `fail()`, and `cancel()`; the first terminal result records `finishedAt`.
+  State retains `status`, `startedAt`, and `finishedAt` in the unified `state.loadingIndicators` list. Reusing an ID
+  replaces its entry; old handles cannot update the replacement. The eager `editor-plugin-loading-indicators` owns
+  elapsed-time/status drawing and a 250 ms timer that removes one expired result at a time, oldest finish first,
+  after a five-second grace period.
 - Assertion marker geometry and drawing belong to `editor-plugin-assertion-markers`. Retain raw runtime results and
   contributor-owned `CodeError` lists in core; test-runtime publishes assertion errors and error-messages owns
   inline message layout/drawing. Keep prepared message and marker fields out of `CodeBlockGraphicData`.

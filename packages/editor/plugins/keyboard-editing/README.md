@@ -30,6 +30,6 @@ The loaded implementation handles native `paste` events using `clipboardData` pl
 
 ## Loading indicators
 
-The first editing-implementation import contributes `text editing` through the plugin context’s loading
-service. Completion, failure, and disposal remove it; the loaded implementation is reused across later mode
-changes.
+The first implementation import contributes ID `text-editing` and message `Loading text editing...`. Loading and
+setup report done/failed; disposal cancels pending work. Results remain for presentation cleanup. The implementation
+is reused across later mode changes.

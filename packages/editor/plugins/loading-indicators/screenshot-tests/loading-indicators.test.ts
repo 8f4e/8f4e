@@ -8,6 +8,7 @@ import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators'
 import { expect, test, vi } from 'vitest';
 
 test('shows concurrent plugin and asset loads without blocking the editor', async () => {
+	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
 	const canvas = document.createElement('canvas');
 	canvas.width = 512;
 	canvas.height = 320;
@@ -71,9 +72,14 @@ entryEnd`);
 				},
 			],
 		});
-		expect(editor.state.loadingIndicators).toEqual([{ name: 'plot plugin' }, { name: 'sound' }, { name: 'missing' }]);
+		expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'plugin:plot plugin', message: 'Loading plot plugin...', status: 'loading' },
+			{ id: 'asset:sound', message: 'Loading sound...', status: 'loading' },
+			{ id: 'asset:missing', message: 'Loading missing...', status: 'loading' },
+		]);
 		expect(editor.state.dialogStack).toEqual([]);
 		editor.pauseRendering();
+		now.mockReturnValue(1240);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-pending');
 		const previousX = editor.state.viewport.x;
@@ -81,14 +87,37 @@ entryEnd`);
 		expect(editor.state.viewport.x).toBe(previousX - 16);
 		context.store.set('compiler.result.compiledModules', compiled.compiledModules);
 		context.store.set('compiler.result.memoryPlan', compiled.memoryPlan);
+		now.mockReturnValue(1760);
 		finishAsset(new Response(new Uint8Array([1, 2, 3, 4])));
 		await vi.waitFor(() => expect(fetchAsset).toHaveBeenCalledTimes(2));
 		failAsset(new Error('offline'));
-		await vi.waitFor(() => expect(editor!.state.loadingIndicators).toEqual([{ name: 'plot plugin' }]));
+		await vi.waitFor(() =>
+			expect(editor!.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+				{ id: 'plugin:plot plugin', message: 'Loading plot plugin...', status: 'loading' },
+			])
+		);
 		const target = compiled.memoryPlan.modules.player.memory.buffer;
 		expect([...memory.slice(target.byteAddress, target.byteAddress + 4)]).toEqual([1, 2, 3, 4]);
+		now.mockReturnValue(2350);
 		finishPlugin({ id: 'plot plugin', setup: () => () => {} });
-		await vi.waitFor(() => expect(editor!.state.loadingIndicators).toEqual([]));
+		await vi.waitFor(() =>
+			expect(editor!.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
+		);
+		const compilation = context.loading.add({ id: 'compiler', message: 'Compiling...' });
+		now.mockReturnValue(3650);
+		compilation.done();
+		context.loading.add({ id: 'cancelled', message: 'Starting old task...' }).cancel();
+		expect(editor.state.loadingIndicators.map(indicator => indicator.status)).toEqual([
+			'done',
+			'done',
+			'failed',
+			'done',
+			'cancelled',
+		]);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('loading-indicators-finished');
+		now.mockReturnValue(9000);
+		await vi.waitFor(() => expect(editor!.state.loadingIndicators).toEqual([]), { timeout: 2000 });
 	} finally {
 		editor?.dispose();
 		canvas.remove();
@@ -98,6 +127,7 @@ entryEnd`);
 });
 
 test('shows the initial deferred import through an eagerly installed loading drawer', async () => {
+	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
 	const canvas = document.createElement('canvas');
 	canvas.width = 512;
 	canvas.height = 160;
@@ -113,14 +143,20 @@ test('shows the initial deferred import through an eagerly installed loading dra
 		editor = await initEditor(canvas, {
 			plugins: [loadingIndicatorsPlugin, createDeferredPluginLoaderPlugin({ load: () => pending })],
 		});
-		expect(editor.state.loadingIndicators).toEqual([{ name: 'editor plugins' }]);
+		expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'editor-plugins', message: 'Loading editor plugins...', status: 'loading' },
+		]);
 		editor.pauseRendering();
+		now.mockReturnValue(1240);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('initial-editor-plugins-loading');
 		finish({ id: 'features', setup: () => () => {} });
-		await vi.waitFor(() => expect(editor!.state.loadingIndicators).toEqual([]));
+		await vi.waitFor(() =>
+			expect(editor!.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
+		);
 	} finally {
 		editor?.dispose();
 		canvas.remove();
+		vi.restoreAllMocks();
 	}
 });

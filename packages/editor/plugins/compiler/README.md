@@ -37,10 +37,10 @@ projects. The default delay is 500ms; projects can set `; @config recompileDebou
 root project declares a `test` entry or an enabled function exported as `test`. Group entries named `test` remain
 local; groups placed inside the root test entry run their own `main` as part of that test.
 
-Each active compilation attempt contributes `{ name: 'compiler' }` through the plugin context's `loading.add`.
-The entry starts when compilation begins after debounce, and ends on success, failure, or completion of a
-superseded attempt. Disposal removes an active entry immediately. Queued attempts run sequentially and own
-separate entries; debounce waiting does not show a compiler indicator.
+Each active compilation contributes `{ id: 'compiler', message: 'Compiling...' }` through `loading.add` after
+debounce. Success and failure report their respective terminal status; superseded attempts and disposal cancel
+pending work. Sequential attempts replace the same ID. Results and finish timestamps remain until the presentation
+plugin expires them.
 
 For an accepted result, the plugin first updates its artifact handles and emits `compilationSucceeded` with the
 `ProgramArtifacts` needed for rendering: `memoryRef`. Core consumes that event to refresh memory views; bytecode stays

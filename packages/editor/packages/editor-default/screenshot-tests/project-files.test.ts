@@ -76,6 +76,7 @@ noteEnd`;
 		);
 		canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: 16, clientY: 16, bubbles: true }));
 		await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.action === 'exportProject')).toBe(true));
+		editor.state.loadingIndicators = [];
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('project-file-menu');
 		const menu = state.contextMenu;
