@@ -178,7 +178,7 @@ export { default as centerViewportOnCodeBlock } from './features/viewport/center
 export { default as snapToGrid } from './features/viewport/snapToGrid';
 export { default as updateViewport } from './features/viewport/updateViewport';
 export { type SerializedCodeBlock, serializeCodeBlocks } from './pureHelpers/codeBlockSerialization';
-export { default as getCodeBlockErrors } from './pureHelpers/getCodeBlockErrors';
+export { createCodeErrorBlockLookup, default as getCodeBlockErrors } from './pureHelpers/getCodeBlockErrors';
 export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';
 // Export project serialization helpers
 export { default as getExportBaseName } from './pureHelpers/getExportBaseName';

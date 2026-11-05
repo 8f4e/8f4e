@@ -168,3 +168,16 @@ it.each(['hidden', 'dialog', 'menu'])('leaves %s overlay input alone', blocked =
 	test.press();
 	expect(test.getErrorBounds).not.toHaveBeenCalled();
 });
+
+it('keeps contributor/list order while skipping stale locations and refreshing cleared contributions', () => {
+	const test = setup();
+	const first = { codeBlockId: test.block.creationIndex, lineNumber: 2, message: 'First' };
+	const second = { codeBlockId: test.block.creationIndex, lineNumber: 1, message: 'Second' };
+	test.store.set('codeErrors.first', [{ codeBlockId: 999, lineNumber: 0, message: 'Stale' }, first]);
+	test.store.set('codeErrors.second', [second]);
+	test.press();
+	expect(test.getErrorBounds).toHaveBeenLastCalledWith(test.state, test.block, first);
+	test.store.set('codeErrors.first', []);
+	test.press();
+	expect(test.getErrorBounds).toHaveBeenLastCalledWith(test.state, test.block, second);
+});

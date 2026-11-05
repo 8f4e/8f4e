@@ -237,10 +237,13 @@ forwarded block events; core already targets the foremost block using the revers
 Event dispatch can select only the capture or normal phase with `{ phase: 'capture' | 'normal' }`. Touch input uses
 capture-only probes before starting a viewport gesture. Modal/menu activation waits for a completed press; probing
 controls must respect visible modal/menu state. Claimed movement, release, and cancellation use the same input layer.
-Unregister with the same `events.off` call as other listeners.
+Unregister with the same `events.off` call as other listeners. Layer groups are prepared when listeners are added or
+removed; dispatch traverses those snapshots without sorting or filtering registrations.
 
 Raw diagnostics remain in `state.codeErrors`. `getCodeBlockErrors(state, block)` from `@8f4e/editor-state` matches
 contributor errors to document blocks or project scopes, independently of any presentation or navigation plugin.
+`createCodeErrorBlockLookup(rootProject)` indexes document identities and project scopes once for a batch of errors,
+retaining project-tree precedence when an error matches both. Rebuild the lookup after project changes.
 
 Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets: [codeBlock] }` before a drag.
 Plugins may synchronously replace `targets`; core then moves and snaps those blocks and publishes one position edit.

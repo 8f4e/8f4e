@@ -1,6 +1,11 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { getCodeBlockErrors, stopViewportAnimation, updateViewport, walkProjectBlocks } from '@8f4e/editor-state';
+import {
+	createCodeErrorBlockLookup,
+	stopViewportAnimation,
+	updateViewport,
+	walkProjectBlocks,
+} from '@8f4e/editor-state';
 import type {
 	CodeBlockGraphicData,
 	CodeError,
@@ -13,9 +18,11 @@ import type {
 const LABEL = 'Jump to error';
 
 function findTarget(state: State) {
-	const blocks = [...walkProjectBlocks(state.codeBlockRendering.rootProject)];
-	for (const error of Object.values(state.codeErrors).flat()) {
-		const codeBlock = blocks.find(block => getCodeBlockErrors(state, block).includes(error));
+	const errors = Object.values(state.codeErrors).flat();
+	if (!errors.length) return;
+	const findBlock = createCodeErrorBlockLookup(state.codeBlockRendering.rootProject);
+	for (const error of errors) {
+		const codeBlock = findBlock(error);
 		if (codeBlock && error.lineNumber >= 0 && error.lineNumber < codeBlock.code.length) return { error, codeBlock };
 	}
 }

@@ -115,6 +115,36 @@ describe('event dispatcher', () => {
 		expect(calls).toEqual(['existing', 'added']);
 	});
 
+	it('keeps the active UI snapshot while preparing registrations for the next event', () => {
+		const events = createEventDispatcher();
+		const calls: string[] = [];
+		const late = () => calls.push('late');
+		const replace = () => {
+			calls.push('replace');
+			events.off('input', replace);
+			events.on('input', late, { layer: 4 });
+		};
+		events.on('input', () => calls.push('block'), { layer: 0 });
+		events.on('input', replace, { layer: 2 });
+		events.dispatch('input');
+		expect(calls).toEqual(['replace', 'block']);
+		calls.length = 0;
+		events.dispatch('input');
+		expect(calls).toEqual(['late', 'block']);
+	});
+
+	it('removes the earliest matching subscription when a callback belongs to multiple layers', () => {
+		const events = createEventDispatcher();
+		const calls: string[] = [];
+		const shared = () => calls.push('shared');
+		events.on('input', shared, { capture: true, layer: 0 });
+		events.on('input', () => calls.push('middle'), { capture: true, layer: 2 });
+		events.on('input', shared, { capture: true, layer: 4 });
+		events.off('input', shared);
+		events.dispatch('input');
+		expect(calls).toEqual(['shared', 'middle']);
+	});
+
 	it('lets a capture listener consume an event and unregister normally', () => {
 		const events = createEventDispatcher();
 		const normal = vi.fn();
