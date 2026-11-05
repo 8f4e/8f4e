@@ -128,7 +128,7 @@ describe('text pasting', () => {
 		const test = setup(plugin);
 		const revision = test.state.projectChange.revision;
 		const compiler = test.state.compilerInputRevision;
-		test.block.cursor = { row: 1, col: 5, x: 0, y: 0 };
+		test.block.cursor = { row: 1, col: 5, y: 0 };
 		expect(test.paste('2\r\n\tpush 3').defaultPrevented).toBe(true);
 		expect(test.block.code).toEqual(['module main', 'push 2', '\tpush 31', 'drop', 'moduleEnd']);
 		expect(test.block.cursor).toMatchObject({ row: 2, col: 7 });

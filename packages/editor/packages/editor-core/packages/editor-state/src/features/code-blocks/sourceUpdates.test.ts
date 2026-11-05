@@ -101,7 +101,7 @@ describe('cached directive records', () => {
 		);
 		const block = audio();
 		store.set('codeBlockRendering.selectedCodeBlock', block);
-		block.cursor = { row: 1, col: block.code[1].length, x: 0, y: 0 };
+		block.cursor = { row: 1, col: block.code[1].length, y: 0 };
 		applyCodeBlockSourceEdits(
 			store,
 			[{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line} changed` : line)) }],

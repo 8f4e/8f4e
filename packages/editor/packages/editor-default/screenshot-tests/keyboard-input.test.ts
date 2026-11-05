@@ -66,7 +66,7 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		await expect(canvas).toMatchScreenshot('view-mode-hint');
 		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
 		context.store.set('codeBlockRendering.selectedCodeBlock', block);
-		block.cursor = { row: 3, col: 0, x: 0, y: 0 };
+		block.cursor = { row: 3, col: 0, y: 0 };
 		const key = (key: string, modifiers: KeyboardEventInit = {}) => {
 			const event = new KeyboardEvent('keydown', { key, cancelable: true, bubbles: true, ...modifiers });
 			canvas.dispatchEvent(event);

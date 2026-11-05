@@ -44,7 +44,7 @@ export function setup(
 	const state = store.getState();
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'main')!;
 	store.set('codeBlockRendering.selectedCodeBlock', block);
-	block.cursor = { row: 1, col: 6, x: 0, y: 0 };
+	block.cursor = { row: 1, col: 6, y: 0 };
 	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = createPlugin({ inputTarget }).setup({
 		store,

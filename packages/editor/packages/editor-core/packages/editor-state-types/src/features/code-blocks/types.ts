@@ -69,12 +69,10 @@ export interface CodeBlockGraphicData {
 	/** Optional minimum grid width contributed before block layout. */
 	minGridWidth?: number;
 	cursor: {
-		/** The column of the cursor */
+		/** Raw source column shared by editing and selection. */
 		col: number;
-		/** The row of the cursor */
+		/** Source line shared by editing and selection. */
 		row: number;
-		/** The x position of the cursor calculated considering the grid and the line numbers. */
-		x: number;
 		/** The y position of the cursor calculated considering the grid and the gaps between lines. */
 		y: number;
 	};

@@ -34,12 +34,10 @@ export function createMockCodeBlock(
 	const defaultHGrid = 16;
 	const gridX = overrides.gridX ?? Math.round(x / defaultVGrid);
 	const gridY = overrides.gridY ?? Math.round(y / defaultHGrid);
-	const cursorX = x + width / 2;
 	const cursorYValue = cursorY ?? height / 2;
 	const cursor = overrides.cursor ?? {
 		col: 0,
 		row: 0,
-		x: cursorX,
 		y: cursorYValue,
 	};
 	const displayModel = {

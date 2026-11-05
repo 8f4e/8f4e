@@ -162,7 +162,6 @@ describe('tooltip drawing', () => {
 			cursor: {
 				row: 1,
 				col: 0,
-				x: 16,
 				y: 16,
 			},
 		});
@@ -236,7 +235,6 @@ describe('tooltip drawing', () => {
 			cursor: {
 				row: 0,
 				col: 0,
-				x: 16,
 				y: 16,
 			},
 			code: ['add'],
