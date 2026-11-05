@@ -17,7 +17,7 @@ export interface CompilerDiagnostics {
 }
 
 export default function installCompilation(
-	{ store, events }: Pick<EditorPluginContext, 'store' | 'events'>,
+	{ store, events, loading }: Pick<EditorPluginContext, 'store' | 'events' | 'loading'>,
 	compileCode: CompilerService['compileCode']
 ) {
 	const state = store.getState();
@@ -29,6 +29,7 @@ export default function installCompilation(
 	let compileQueued = false;
 	let completedRevision: number | null = null;
 	let diagnosticsCurrent = false;
+	let finishCompilationLoading: (() => void) | undefined;
 
 	const scheduleRecompile = debounceTrailing(compileProject, () => getRecompileDebounceDelay(state.editorConfig));
 
@@ -49,6 +50,8 @@ export default function installCompilation(
 			return;
 		}
 		compiling = true;
+		const finishLoading = loading.add({ name: 'compiler' });
+		finishCompilationLoading = finishLoading;
 
 		store.set('codeErrors.compiler', []);
 
@@ -136,6 +139,8 @@ export default function installCompilation(
 			completedRevision = revision;
 			diagnosticsCurrent = true;
 		} finally {
+			finishLoading();
+			finishCompilationLoading = undefined;
 			compiling = false;
 			if (compileQueued && !disposed) {
 				compileQueued = false;
@@ -157,6 +162,8 @@ export default function installCompilation(
 	const dispose = () => {
 		if (disposed) return;
 		disposed = true;
+		finishCompilationLoading?.();
+		finishCompilationLoading = undefined;
 		scheduleRecompile.cancel();
 		events.off('compilationInputChanged', onInputChanged);
 		const schemas = { ...state.editorConfigSchemaContributions };

@@ -58,6 +58,7 @@ describe('compiler plugin', () => {
 		expect(test.compiler.getAssertionSites()).toBeUndefined();
 		test.compiler.writeMemory(0, 42, true);
 		await startCompilation(test);
+		expect(test.store.getState().loadingIndicators).toEqual([{ name: 'compiler' }]);
 		expect(test.createWorker).toHaveBeenCalledOnce();
 		expect(test.worker.postedMessages).toContainEqual(
 			expect.objectContaining({
@@ -94,6 +95,7 @@ describe('compiler plugin', () => {
 		test.worker.emitMessage(createSuccessMessage(codeBuffer, memory));
 		await vi.advanceTimersByTimeAsync(0);
 		expect(order).toEqual(['rendering', 'memory', 'runtime']);
+		expect(test.store.getState().loadingIndicators).toEqual([]);
 		expect(new Int32Array(memory.buffer)[1]).toBe(42);
 		expect(test.store.getState().info.compiler).toMatchObject({ wasmByteCodeBytes: 2, isCompiling: false });
 	});
@@ -108,6 +110,7 @@ describe('compiler plugin', () => {
 			payload: { message: 'Invalid source', line: { lineNumber: 1 }, context: {} },
 		});
 		await vi.advanceTimersByTimeAsync(0);
+		expect(test.store.getState().loadingIndicators).toEqual([]);
 		const current = test.compiler.getDiagnostics()!;
 		expect(current.status).toBe('ready');
 		expect(current.completedRevision).toBe(current.inputRevision);
@@ -133,13 +136,16 @@ describe('compiler plugin', () => {
 		expect(test.compiler.getAssertionSites()).toBeUndefined();
 		expect(test.accepted).not.toHaveBeenCalled();
 		expect(test.store.getState().compiler.isCompiling).toBe(true);
+		expect(test.store.getState().loadingIndicators).toEqual([]);
 		await vi.advanceTimersByTimeAsync(500);
+		expect(test.store.getState().loadingIndicators).toEqual([{ name: 'compiler' }]);
 		const memory = new WebAssembly.Memory({ initial: 1 });
 		test.worker.emitMessage(createSuccessMessage(new Uint8Array([2]), memory, 1));
 		await vi.advanceTimersByTimeAsync(0);
 		expect(test.compiler.getMemory()).toBe(memory);
 		expect(test.accepted).toHaveBeenCalledOnce();
 		expect(test.store.getState().compiler.isCompiling).toBe(false);
+		expect(test.store.getState().loadingIndicators).toEqual([]);
 	});
 
 	it.each(['success', 'compilationError'])(
@@ -159,6 +165,7 @@ describe('compiler plugin', () => {
 			);
 			await vi.advanceTimersByTimeAsync(0);
 			expect(test.worker.postedMessages).toHaveLength(2);
+			expect(test.store.getState().loadingIndicators).toEqual([{ name: 'compiler' }]);
 			expect(test.accepted).not.toHaveBeenCalled();
 			expect(test.store.getState().codeErrors.compiler).toEqual([]);
 			const memory = new WebAssembly.Memory({ initial: 1 });
@@ -167,6 +174,7 @@ describe('compiler plugin', () => {
 			expect(test.compiler.getMemory()).toBe(memory);
 			expect(test.compiler.getCodeBuffer()).toEqual(new Uint8Array([2]));
 			expect(test.accepted).toHaveBeenCalledOnce();
+			expect(test.store.getState().loadingIndicators).toEqual([]);
 		}
 	);
 
@@ -188,6 +196,7 @@ describe('compiler plugin', () => {
 		await startCompilation(test);
 		test.events.dispatch('compilationInputChanged');
 		test.dispose();
+		expect(test.store.getState().loadingIndicators).toEqual([]);
 		const set = vi.spyOn(test.store, 'set');
 		test.events.dispatch('compilationInputChanged');
 		test.worker.emitMessage(createSuccessMessage(new Uint8Array([1]), new WebAssembly.Memory({ initial: 1 })));

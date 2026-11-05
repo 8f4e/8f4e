@@ -152,7 +152,7 @@ entryEnd`,
 	await vi.waitFor(() => expect(editor.state.codeErrors.compiler.length).toBeGreaterThan(0), {
 		timeout: 10000,
 	});
-	expect(editor.state.dialogStack.some(dialog => dialog.id === 'binary-assets-loading')).toBe(true);
+	expect(editor.state.loadingIndicators).toContainEqual({ name: 'sound' });
 	finish(new Response(new Uint8Array([1, 2, 3, 4, 5, 6])));
 	await vi.waitFor(
 		() => expect(editor.state.compiler.result.memoryPlan.modules.player?.memory.buffer.numberOfElements).toBe(6),

@@ -28,9 +28,10 @@ Configure assets in project source:
 Distinct URLs fetch concurrently, once per configuration set. Each configured asset keeps one source record and
 its memory destinations, including exposed project memory aliases. Assets sharing a URL reuse the same downloaded
 source. A completed source publishes its size constants and copies into available targets immediately, independently
-of other downloads. Copies respect the target's allocated byte length. The plugin reloads retained bytes when the compiler
-publishes a memory plan. It contributes one `{ name: assetId }` loading indicator per configured asset while fetching
-or waiting for all of that asset's targets to become ready. The loading-indicators plugin owns presentation;
+of other downloads. Copies respect the target's allocated byte length. The plugin reloads retained bytes when the
+compiler publishes a memory plan. Each configured asset contributes one `{ name: assetId }` indicator until its
+downloaded bytes are available or fetching fails, including when runtime memory has not been allocated yet.
+Memory copying and recompilation do not re-add asset indicators. The loading-indicators plugin owns presentation;
 binary loading does not open a dialog or block input. Equal names from unrelated operations stay independent.
 Fetch failures are logged and excluded from the completed asset set.
 

@@ -33,8 +33,9 @@ Cmd/Ctrl+S. The galleries continue to use `editor-minimal` with entry outlines, 
 saving/export, and block copy/paste.
 
 `@8f4e/editor-plugin-loading-indicators` is installed eagerly before deferred loading and draws the unified
-`state.loadingIndicators` list at the bottom left. Lazy plugin imports and binary assets contribute names while
-loading; binary assets remain listed until their bytes reach every configured target. This overlay does not block input.
+`state.loadingIndicators` list at the bottom left. Lazy plugin imports and binary downloads contribute names while
+loading. Each asset disappears when its downloaded bytes are available; compilation contributes its own indicator
+while an attempt is active. This overlay does not block input.
 
 Verify from the workspace root:
 

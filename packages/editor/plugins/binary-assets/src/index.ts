@@ -10,7 +10,7 @@ type BinaryAsset = {
 	url: string;
 	source?: BinaryAssetSource;
 	destinations: Array<{ memoryId: string; copiedToMemory: boolean }>;
-	finishLoading?: () => void;
+	finishDownload?: () => void;
 };
 
 export function createBinaryAssetsPlugin({
@@ -26,9 +26,9 @@ export function createBinaryAssetsPlugin({
 			let disposed = false;
 			let signature = '';
 
-			function finishLoading(asset: BinaryAsset) {
-				const finish = asset.finishLoading;
-				asset.finishLoading = undefined;
+			function finishDownload(asset: BinaryAsset) {
+				const finish = asset.finishDownload;
+				asset.finishDownload = undefined;
 				finish?.();
 			}
 
@@ -49,11 +49,6 @@ export function createBinaryAssetsPlugin({
 						bytes.set(new Uint8Array(asset.source.data, 0, length), memory.byteAddress);
 						destination.copiedToMemory = true;
 					}
-				}
-				if (asset.destinations.every(destination => destination.copiedToMemory)) {
-					finishLoading(asset);
-				} else {
-					asset.finishLoading ??= loading.add({ name: asset.id });
 				}
 			}
 
@@ -87,11 +82,14 @@ export function createBinaryAssetsPlugin({
 				} catch (error) {
 					if (disposed || currentGeneration !== generation) return;
 					console.error('Failed to fetch binary asset:', url, error);
-					for (const asset of matchingAssets) finishLoading(asset);
+					for (const asset of matchingAssets) finishDownload(asset);
 					return;
 				}
 				if (disposed || currentGeneration !== generation) return;
-				for (const asset of matchingAssets) asset.source = source;
+				for (const asset of matchingAssets) {
+					asset.source = source;
+					finishDownload(asset);
+				}
 				publishConstants();
 				if (disposed || currentGeneration !== generation) return;
 				for (const asset of matchingAssets) copyAssetToMemory(asset);
@@ -103,12 +101,12 @@ export function createBinaryAssetsPlugin({
 				if (nextSignature === signature) return;
 				signature = nextSignature;
 				const currentGeneration = ++generation;
-				for (const asset of assets) finishLoading(asset);
+				for (const asset of assets) finishDownload(asset);
 				assets = requests.map(request => ({
 					id: request.id,
 					url: request.url,
 					destinations: request.memoryIds.map(memoryId => ({ memoryId, copiedToMemory: false })),
-					finishLoading: loading.add({ name: request.id }),
+					finishDownload: loading.add({ name: request.id }),
 				}));
 				publishConstants();
 				const assetsByUrl = new Map<string, BinaryAsset[]>();
@@ -131,7 +129,7 @@ export function createBinaryAssetsPlugin({
 				disposed = true;
 				store.unsubscribe('editorConfig.bin', syncConfig);
 				store.unsubscribe('compiler.result.memoryPlan', recopyAssetsToMemory);
-				for (const asset of assets) finishLoading(asset);
+				for (const asset of assets) finishDownload(asset);
 				assets = [];
 				const constants = { ...store.getState().envConstantContributions };
 				delete constants.binaryAssets;

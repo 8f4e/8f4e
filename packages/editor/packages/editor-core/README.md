@@ -262,7 +262,7 @@ owns its configuration schema and cleanup. MIDI also owns its WASM instance and 
 environment-plugin manager in core.
 
 The binary-assets plugin owns `bin` configuration, browser fetching and caching, private asset bytes/metadata,
-memory copies, loading-indicator lifecycle, and generated asset-size constants. Its factory receives a getter for current
+memory copies, download-indicator lifecycle, and generated asset-size constants. Its factory receives a getter for current
 runtime memory bytes; the shared plugin context carries no browser resources or binary asset fields.
 
 Plugins can contribute source to the generated `env` constants block with
