@@ -31,7 +31,7 @@ test('applies project appearance settings and restores defaults after project re
 	const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state }) => {
 		draw.drawText(state.viewport.vGrid, state.viewport.hGrid, 'Sample text', PALETTE_INDICES.inkBase);
 	});
-	const renderer = await init(store, events, canvas, createMockMemoryViews(), { drawers });
+	const renderer = await init(store, events, canvas, createMockMemoryViews(), { loading: store.loading, drawers });
 	const state = store.getState();
 	events.dispatch('resize', { canvasWidth: canvas.width, canvasHeight: canvas.height });
 	const module = {

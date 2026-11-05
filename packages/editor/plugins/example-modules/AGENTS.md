@@ -1,5 +1,7 @@
 # Example Modules Plugin
 
+- Track each module/dependency source read through `loading.add` with the name `module <slug>`; own pending removers
+  and clear them on completion, failure, and disposal.
 - Own the Add Built-in Block menu, category navigation, catalog metadata, loading/cache, public-block selection,
   and dependency insertion here.
 - Export `createExampleModulesPlugin({ sources })`; receive lazy source loaders from the host, keyed by paths

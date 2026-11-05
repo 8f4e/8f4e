@@ -41,6 +41,7 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};

@@ -53,6 +53,7 @@ function setup({ mode = 'edit' }: { mode?: 'edit' | 'view' } = {}) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	});
 	const disposePlugin = () => {

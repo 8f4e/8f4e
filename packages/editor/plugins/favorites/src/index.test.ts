@@ -20,6 +20,7 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers: createEditorDrawerRegistry(),
 			})
 		: undefined;

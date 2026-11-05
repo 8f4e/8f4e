@@ -42,6 +42,7 @@ export type {
 	EditorConfig,
 	EditorConfigSchemaContribution,
 	EditorConfigSchemaContributionRegistry,
+	EditorLoadingRegistry,
 	EditorMenuItemContext,
 	EditorMenuItemProvider,
 	EditorMenuItemSlot,
@@ -50,6 +51,7 @@ export type {
 	FeatureFlags,
 	FeatureFlagsConfig,
 	JSONSchemaLike,
+	LoadingIndicator,
 	MenuGenerator,
 	Options,
 	ParsedDirectiveRecord,
@@ -178,6 +180,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers,
 			})
 		);
@@ -192,6 +195,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		const initialProjectReady = events.dispatchAsync('init');
 
 		view = await initView(store, events, canvas, memoryViews, {
+			loading: store.loading,
 			initialProjectReady,
 			drawers,
 			renderStatsIntervalFrames: options.renderStatsIntervalFrames,

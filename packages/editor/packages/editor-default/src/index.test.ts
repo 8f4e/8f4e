@@ -86,6 +86,7 @@ describe('default editor plugins', () => {
 			'session-persistence',
 			'code-block-background',
 			'code-rendering',
+			'loading-indicators',
 			'deferred-loader',
 		]);
 		expect(createScreenshotPlugin).not.toHaveBeenCalled();
@@ -107,6 +108,7 @@ describe('default editor plugins', () => {
 				'code-rendering',
 				'connectors',
 				'error-messages',
+				'loading-indicators',
 				'dialogs',
 				'context-menu',
 				'entry-outlines',

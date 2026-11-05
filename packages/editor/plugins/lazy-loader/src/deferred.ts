@@ -8,14 +8,18 @@ export function createDeferredPluginLoaderPlugin({ load }: { load: () => Promise
 		setup: context => {
 			let disposed = false;
 			let cleanup: (() => void) | undefined;
+			let finishLoading: (() => void) | undefined;
 			const activate = async () => {
 				if (disposed) return;
+				finishLoading = context.loading.add({ name: 'editor plugins' });
 				try {
 					const plugin = await load();
 					if (disposed) return;
 					cleanup = plugin.setup(context);
 				} catch (error) {
 					if (!disposed) logError(context.store.getState(), `Failed to load deferred plugin: ${String(error)}`);
+				} finally {
+					finishLoading();
 				}
 			};
 			const initialize = () => {
@@ -27,6 +31,7 @@ export function createDeferredPluginLoaderPlugin({ load }: { load: () => Promise
 				if (disposed) return;
 				disposed = true;
 				context.events.off('ready', initialize);
+				finishLoading?.();
 				cleanup?.();
 			};
 		},

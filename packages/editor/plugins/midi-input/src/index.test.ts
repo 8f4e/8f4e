@@ -66,6 +66,7 @@ async function setup({ requestMIDIAccess = vi.fn(async () => createMidiFixture()
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	});
 	cleanups.push(() => {

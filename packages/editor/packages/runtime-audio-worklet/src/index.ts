@@ -24,7 +24,8 @@ class Main extends AudioWorkletProcessor {
 					data.codeBuffer,
 					data.bufferExportName,
 					data.audioOutputBuffers,
-					data.audioInputBuffers
+					data.audioInputBuffers,
+					data.requestId
 				);
 			}
 		};
@@ -35,31 +36,44 @@ class Main extends AudioWorkletProcessor {
 		codeBuffer: Uint8Array,
 		bufferExportName: string,
 		audioOutputBuffers: AudioOutputBufferRoute[],
-		audioInputBuffers: AudioInputBufferRoute[]
+		audioInputBuffers: AudioInputBufferRoute[],
+		requestId: number
 	) {
-		const { memoryBuffer, buffer } = await createModule(memoryRef, codeBuffer, bufferExportName);
-		if (this.disposed) {
-			return;
+		this.initializationId = requestId;
+		try {
+			const { memoryBuffer, buffer } = await createModule(memoryRef, codeBuffer, bufferExportName);
+			if (this.disposed || requestId !== this.initializationId) {
+				return;
+			}
+
+			this.audioOutputBuffers = audioOutputBuffers;
+			this.audioInputBuffers = audioInputBuffers;
+
+			this.buffer = buffer;
+			this.memoryBuffer = memoryBuffer;
+
+			this.postToHost({
+				type: 'initialized',
+				requestId,
+				payload: {
+					sampleRate,
+				},
+			});
+		} catch (error) {
+			if (this.disposed || requestId !== this.initializationId) return;
+			this.postToHost({
+				type: 'initializationError',
+				requestId,
+				payload: { message: error instanceof Error ? error.message : String(error) },
+			});
 		}
-
-		this.audioOutputBuffers = audioOutputBuffers;
-		this.audioInputBuffers = audioInputBuffers;
-
-		this.buffer = buffer;
-		this.memoryBuffer = memoryBuffer;
-
-		this.postToHost({
-			type: 'initialized',
-			payload: {
-				sampleRate,
-			},
-		});
 	}
 
 	buffer: CallableFunction = () => {
 		return;
 	};
 	private disposed = false;
+	private initializationId = 0;
 
 	memoryBuffer: Float32Array = new Float32Array(128).fill(0);
 	audioOutputBuffers: AudioOutputBufferRoute[] = [];

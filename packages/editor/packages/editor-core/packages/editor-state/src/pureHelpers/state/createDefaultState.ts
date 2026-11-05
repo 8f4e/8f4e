@@ -57,6 +57,7 @@ export default function createDefaultState() {
 		redoStack: [],
 		envConstantContributions: {},
 		codeErrors: {},
+		loadingIndicators: [],
 		console: {
 			logs: [],
 			maxLogs: 100,

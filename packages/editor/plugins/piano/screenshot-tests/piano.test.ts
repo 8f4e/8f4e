@@ -34,6 +34,7 @@ entryEnd`);
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers,
 	});
 	const state = store.getState();
@@ -63,6 +64,7 @@ entryEnd`);
 	memoryViews.int32[memory.count.allocationUnitAddress] = 6;
 
 	const renderer = await initView(store, events, canvas, memoryViews, {
+		loading: store.loading,
 		drawers,
 	});
 

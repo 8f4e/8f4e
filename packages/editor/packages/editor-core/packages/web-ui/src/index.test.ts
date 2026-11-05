@@ -4,6 +4,8 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEditorDrawerRegistry } from './drawers/registry';
 
+const loading = { add: vi.fn(() => vi.fn()) };
+
 const mocks = vi.hoisted(() => {
 	const engine = {
 		hooks: {
@@ -106,6 +108,7 @@ describe('web-ui init', () => {
 		drawers.registerRenderLayer(factory);
 		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas()).mockResolvedValueOnce(createFontAtlas(6, 10));
 		const view = await init(createStateManager(state), events, {} as HTMLCanvasElement, createMemoryViews(), {
+			loading,
 			drawers,
 		});
 		expect(loadFontAtlas).toHaveBeenNthCalledWith(1, 'ibmvga8x16');
@@ -125,7 +128,8 @@ describe('web-ui init', () => {
 				createStateManager(createMockState()),
 				createMockEventDispatcher(),
 				{} as HTMLCanvasElement,
-				createMemoryViews()
+				createMemoryViews(),
+				{ loading }
 			)
 		).rejects.toBe(error);
 		expect(mocks.Engine).not.toHaveBeenCalled();
@@ -151,7 +155,7 @@ describe('web-ui init', () => {
 			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
 			createMemoryViews(),
-			{ initialProjectReady }
+			{ loading, initialProjectReady }
 		);
 		expect(loadFontAtlas).toHaveBeenCalledOnce();
 		expect(mocks.Engine).not.toHaveBeenCalled();
@@ -188,6 +192,7 @@ describe('web-ui init', () => {
 					})
 			);
 		const mounting = init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, createMemoryViews(), {
+			loading,
 			initialProjectReady,
 		});
 		store.set('editorConfig.font', 'spleen5x8');
@@ -221,7 +226,7 @@ describe('web-ui init', () => {
 			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
 			memoryViews,
-			{ drawers }
+			{ loading, drawers }
 		);
 
 		overlay.mockClear();
@@ -273,9 +278,7 @@ describe('web-ui init', () => {
 			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
 			memoryViews,
-			{
-				drawers,
-			}
+			{ loading, drawers }
 		);
 		view.renderFrame();
 
@@ -292,7 +295,9 @@ describe('web-ui init', () => {
 			viewportAnimation: { active: true, startX: 0, startY: 0, targetX: 100, targetY: 200 },
 		});
 		const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
-		const view = await init(createStateManager(state), events, {} as HTMLCanvasElement, createMemoryViews());
+		const view = await init(createStateManager(state), events, {} as HTMLCanvasElement, createMemoryViews(), {
+			loading,
+		});
 		expect(mocks.engine.renderFrame).not.toHaveBeenCalled();
 		const viewport = structuredClone(state.viewport);
 		const animation = { ...state.viewportAnimation };
@@ -312,7 +317,7 @@ describe('web-ui init', () => {
 		const state = createMockState();
 		const memoryViews = createMemoryViews();
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
-		const view = await init(createStateManager(state), createMockEventDispatcher(), canvas, memoryViews);
+		const view = await init(createStateManager(state), createMockEventDispatcher(), canvas, memoryViews, { loading });
 
 		view.releaseRenderingResources();
 		view.releaseRenderingResources();
@@ -339,7 +344,10 @@ describe('web-ui init', () => {
 		const drawers = createEditorDrawerRegistry();
 		const loadPalette = vi.fn();
 		drawers.registerRenderLayer(() => ({ draw: vi.fn(), destroy: vi.fn(), loadPalette }));
-		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews, { drawers });
+		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews, {
+			loading,
+			drawers,
+		});
 		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
 		const backgroundPaletteUploads = mocks.background.setPalette.mock.calls.length;
 		const atlasUploads = mocks.engine.setSpriteAtlas.mock.calls.length;
@@ -366,7 +374,7 @@ describe('web-ui init', () => {
 		const store = createStateManager(state);
 		const memoryViews = createMemoryViews();
 
-		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews);
+		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews, { loading });
 
 		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas(10, 18));
 		store.set('editorConfig.font', 'terminus10x18');
@@ -392,7 +400,7 @@ describe('web-ui init', () => {
 			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
 			createMemoryViews(),
-			{ onRenderStats, renderStatsIntervalFrames: 2 }
+			{ loading, onRenderStats, renderStatsIntervalFrames: 2 }
 		);
 		try {
 			view.renderFrame();
@@ -424,10 +432,7 @@ describe('web-ui init', () => {
 			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
 			memoryViews,
-			{
-				onRenderStats,
-				renderStatsIntervalFrames: 2,
-			}
+			{ loading, onRenderStats, renderStatsIntervalFrames: 2 }
 		);
 		view.renderFrame();
 		expect(onRenderStats).not.toHaveBeenCalled();

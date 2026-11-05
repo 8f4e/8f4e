@@ -18,3 +18,5 @@
 - Commits: `runtime-web-worker: <change>`; PRs describe protocol changes.
 
 - Page-side editor integration and lifecycle tests live in `packages/editor/plugins/worker-runtime`. This package owns execution code and its message protocol.
+
+- Carry `requestId` through init and initialized/error replies. Ignore stale initialization completion; loading UI stays in the host plugin.

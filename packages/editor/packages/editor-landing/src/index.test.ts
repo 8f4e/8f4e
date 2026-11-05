@@ -44,6 +44,7 @@ it('starts without storage and reports empty-project readiness after initializat
 		'compiler',
 		'code-block-background',
 		'code-rendering',
+		'loading-indicators',
 		'project-url-loader',
 		'deferred-loader',
 	]);
@@ -70,6 +71,7 @@ it('starts without storage and reports empty-project readiness after initializat
 			'code-rendering',
 			'connectors',
 			'error-messages',
+			'loading-indicators',
 			'dialogs',
 			'keyboard-navigation',
 			'keyboard-mode-switching',

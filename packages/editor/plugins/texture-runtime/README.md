@@ -58,3 +58,9 @@ accepted compilation create instances. Disable, recompilation, and disposal inva
 `src/index.ts` owns configuration, subscriptions, and the WASM program lifecycle. It executes the current entry before
 delegating each frame to `src/render-layer.ts`, which owns the texture drawer, visible upload tracking, conflict
 reporting, and GPU resource release/destruction. Bindings and layout continue to be prepared outside the frame path.
+
+## Loading indicators
+
+Each WASM instantiation contributes `texture runtime` through `loading.add`. Completion, failure, replacement,
+disabling, and disposal remove only that attempt’s entry. Routine per-frame execution and texture uploads do
+not contribute loading indicators.

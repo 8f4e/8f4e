@@ -39,6 +39,7 @@ export function setup(plugins: readonly LazyEditorPlugin[], initialSource?: stri
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	};
 	const dispose = createLazyPluginLoaderPlugin(plugins).setup(context);

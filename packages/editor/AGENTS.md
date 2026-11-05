@@ -11,6 +11,10 @@
 - Editor-core owns the single frame loop and advances viewport state before web-ui draws. Web-ui has no frame
   scheduler or navigation-state updates; it owns drawing and GPU resources.
 - `@8f4e/editor-plugin-compiler` owns compilation scheduling, worker communication, current artifacts, diagnostics, and statistics. The default composition constructs and installs it first, passing stable handles to dependent feature and runtime plugins. Core announces compilation input changes and consumes accepted rendering artifacts; it has no compile callback.
+- Loading operations contribute `{ name: string }` objects to the unified `state.loadingIndicators` list.
+  Plugin setup exposes `loading.add({ name })`, returning an idempotent remover; producers own cleanup
+  on completion, failure, supersession, and disposal. `editor-plugin-loading-indicators` owns nonblocking canvas
+  presentation and is installed eagerly in the editor compositions before deferred loading starts.
 - `@8f4e/editor-plugin-code-rendering` owns code/notes text, syntax highlighting, nested block backgrounds,
   line-number drawing, and private prepared sprite cells and highlight rectangles. Editor compositions install it eagerly.
   Core retains editing/layout geometry. Web-ui invokes one `registerCodeBlockDrawer` registry in registration order
@@ -64,7 +68,7 @@
   `editor-plugin-remove-memory-connections`. Core has no favorite-specific block state or menus.
   Visual `@group` behavior lives in `editor-plugin-grouping`, including private membership, dragging, and group copying,
   and group action menus. Nested language-level project groups remain in core.
-  `editor-plugin-binary-assets` owns binary fetching, caching, memory loading, dialogs, and size constants.
+  `editor-plugin-binary-assets` owns binary fetching, caching, memory loading, loading indicators, and size constants.
   Assertion marker drawing lives in `editor-plugin-assertion-markers`, keyboard-to-memory input in
   `editor-plugin-keyboard-memory`, and MIDI discovery/input in `editor-plugin-midi-input`. These use the same plugin
   contract; there is no separate environment-plugin manager. Assertion results and raw error contributions remain

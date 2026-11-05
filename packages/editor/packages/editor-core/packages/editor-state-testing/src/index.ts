@@ -158,6 +158,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		redoStack: [],
 		envConstantContributions: {},
 		codeErrors: {},
+		loadingIndicators: [],
 		console: {
 			logs: [],
 			maxLogs: 100,

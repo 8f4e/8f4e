@@ -36,11 +36,18 @@ describe('lazy plugin loader', () => {
 		const fast = entry('view', 'fast');
 		const pending = deferred<EditorPlugin>();
 		slow.registration.load = vi.fn(() => pending.promise);
-		setup([slow.registration, fast.registration], emptySource.replace('moduleEnd', '; @slow\n; @fast\nmoduleEnd'));
+		const editor = setup(
+			[slow.registration, fast.registration],
+			emptySource.replace('moduleEnd', '; @slow\n; @fast\nmoduleEnd')
+		);
+		expect(editor.state.loadingIndicators).toEqual([{ name: 'slow' }, { name: 'fast' }]);
 		await vi.waitFor(() => expect(fast.plugin.setup).toHaveBeenCalledOnce());
+		expect(editor.state.loadingIndicators).toEqual([{ name: 'slow' }]);
 		expect(slow.plugin.setup).not.toHaveBeenCalled();
+		editor.store.set('loadingIndicators', [...editor.state.loadingIndicators, { name: 'another load' }]);
 		pending.resolve(slow.plugin);
 		await vi.waitFor(() => expect(slow.plugin.setup).toHaveBeenCalledOnce());
+		expect(editor.state.loadingIndicators).toEqual([{ name: 'another load' }]);
 	});
 
 	it('loads on project replacement only when a signal matches and keeps the plugin installed', async () => {
@@ -251,10 +258,13 @@ entryEnd`
 		const pending = deferred<EditorPlugin>();
 		registration.load = vi.fn(() => pending.promise);
 		const editor = setup([registration], matchingSource);
+		expect(editor.state.loadingIndicators).toEqual([{ name: 'custom' }]);
 		editor.dispose();
+		expect(editor.state.loadingIndicators).toEqual([]);
 		pending.resolve(plugin);
 		await pending.promise;
 		expect(plugin.setup).not.toHaveBeenCalled();
+		expect(editor.state.loadingIndicators).toEqual([]);
 	});
 
 	it('installs ready imports without waiting for earlier registry entries', async () => {
@@ -309,8 +319,10 @@ entryEnd`
 			expect(editor.state.console.logs.map(log => log.message).join('\n')).toContain('Failed to load plugin custom')
 		);
 		expect(plugin.setup).not.toHaveBeenCalled();
+		expect(editor.state.loadingIndicators).toEqual([]);
 		editor.load(matchingSource);
 		await vi.waitFor(() => expect(plugin.setup).toHaveBeenCalledOnce());
+		expect(editor.state.loadingIndicators).toEqual([]);
 	});
 
 	it('disposes every installed plugin in reverse installation order even if one cleanup fails', async () => {

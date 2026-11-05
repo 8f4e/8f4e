@@ -45,22 +45,37 @@ export function createWorkerRuntimePlugin({
 }): EditorPlugin {
 	return {
 		id: 'worker-runtime',
-		setup: ({ store, events }) => {
+		setup: ({ store, events, loading }) => {
 			const state = store.getState();
 			let worker: Worker | undefined;
+			let initializationId = 0;
+			let finishStartupLoading: (() => void) | undefined;
+			function finishStartup() {
+				finishStartupLoading?.();
+				finishStartupLoading = undefined;
+			}
 
 			function onWorkerMessage({ data }: MessageEvent<WebWorkerRuntimeMessage>) {
 				switch (data.type) {
 					case 'initialized':
+						if (data.requestId !== initializationId) return;
+						finishStartup();
 						events.dispatch('memoryValuesChanged');
 						break;
 					case 'stats':
 						store.set('info.workerRuntime', { ...data.payload });
 						break;
+					case 'compilationError':
+						if (data.requestId !== initializationId) return;
+						finishStartup();
+						break;
 				}
 			}
 
 			function stopWorker() {
+				++initializationId;
+				finishStartup();
+				if (worker) worker.onerror = null;
 				worker?.removeEventListener('message', onWorkerMessage);
 				worker?.terminate();
 				worker = undefined;
@@ -81,11 +96,18 @@ export function createWorkerRuntimePlugin({
 				const memory = getMemory();
 				if (!memory) return;
 				if (!worker) {
-					worker = new WorkerConstructor();
-					worker.addEventListener('message', onWorkerMessage);
+					try {
+						worker = new WorkerConstructor();
+						worker.addEventListener('message', onWorkerMessage);
+						worker.onerror = finishStartup;
+					} catch (error) {
+						finishStartup();
+						throw error;
+					}
 				}
 				const message: WebWorkerHostMessage = {
 					type: 'init',
+					requestId: ++initializationId,
 					payload: {
 						memoryRef: memory,
 						entry: config.entry,
@@ -93,7 +115,14 @@ export function createWorkerRuntimePlugin({
 						codeBuffer: getCodeBuffer(),
 					},
 				};
-				worker.postMessage(message);
+				finishStartup();
+				finishStartupLoading = loading.add({ name: 'worker runtime' });
+				try {
+					worker.postMessage(message);
+				} catch (error) {
+					finishStartup();
+					throw error;
+				}
 			}
 			store.set('editorConfigSchemaContributions.workerRuntime', WEB_WORKER_EDITOR_CONFIG);
 			store.subscribe('editorConfig.workerRuntime', sync);

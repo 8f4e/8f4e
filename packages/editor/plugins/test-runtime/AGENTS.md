@@ -1,5 +1,6 @@
 # Test Runtime Plugin
 
+- Contribute `test runtime` for the worker job and clear it on result/error, replacement, disable, and disposal.
 - Ordinary browser `EditorPlugin` factory; inject only live compiler getters from the host composition.
 - Import `@8f4e/runtime-test-runner?worker` here and own worker creation and cleanup. Keep execution code in its separate package.
 - The TypeScript build preserves Vite asset imports for the consuming browser build; `src/source-files.d.ts` supplies their types.

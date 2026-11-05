@@ -28,6 +28,7 @@ function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 	});
 	cleanups.push(() => {
 		disposePlugin();

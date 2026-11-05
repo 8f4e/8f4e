@@ -1,5 +1,6 @@
 # Keyboard editing
 
+- Contribute `text editing` while the implementation import is pending; remove it on completion, failure, or disposal.
 - Own edit-mode caret movement and drawing, typing, Tab, newline, backspace, and edit-only undo/redo shortcuts. The entry point buffers keyboard input while its mode-triggered implementation import is pending.
 - Browser dependencies enter through the factory. Own listeners and disposal explicitly.
 - Keep this plugin independent of other keyboard plugins; use core services and local fixtures in tests.

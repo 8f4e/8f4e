@@ -42,6 +42,7 @@ function restoreSession(directive: string, nested = false) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	};
 	const disposeSession = createSessionPersistencePlugin({

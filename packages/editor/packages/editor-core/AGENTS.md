@@ -45,10 +45,12 @@
 - DOM mouse/wheel adaptation belongs to `editor-plugin-mouse-input`; touch adaptation and panning belong to
   `editor-plugin-touch-input`. Core keeps the event dispatcher and state effects, with no DOM input
   listeners or `captureWheel` option. Export existing generic viewport update, animation-stop, and grid-snap helpers.
+- Pass the per-editor `loading` service to web-ui options. Font-change subscriptions own their loading removers
+  and release them on completion, failure, supersession, or renderer disposal.
 - Font/color schemas, validators, defaults, and subscriptions belong to web-ui. Register them through
   `registerWebUiConfig(store)` before plugins/project loading. Initialize the view with the store and events; do not
   restore core font-atlas or palette management. State reacts only to `gridSizeChanged` and shared grid dimensions.
-- Install plugins in editor-core so one setup receives state, event, menu, directive, layout, and drawer services.
+- Install plugins in editor-core so one setup receives state, event, menu, directive, layout, loading, and drawer services.
 - Keep generic directive parsing and layout in editor-state, and generic drawing hooks in web-ui.
 - Keep project-tree reconstruction and same-project reconciliation in code-blocks/reconstructProject.ts; the block
   effect installs results and coordinates notifications. Shared source positions and vertical geometry remain in
@@ -112,9 +114,13 @@
 - Favorites belong entirely to `editor-plugin-favorites`: cached directive detection, toggling, navigation menus,
   and the generated env block's favorite marker. Keep favorite flags and event handlers out of core. Export generic
   block jumping and directive editing through public helpers. Memory-connection removal belongs to its plugin.
-- Binary assets belong to `editor-plugin-binary-assets`, including their schema, fetching/cache, private state, dialog,
-  and size constants. Keep only generic `envConstantContributions`, schema registration, dialogs, and memory resolution
+- Binary assets belong to `editor-plugin-binary-assets`, including their schema, fetching/cache, private state, loading lifecycle,
+  and size constants. Keep only generic `envConstantContributions`, schema registration, loading indicators, and memory resolution
   in core. Environment constants refresh when blocks are populated as well as when contributions change.
+- Loading operations contribute `{ name: string }` objects to the unified `state.loadingIndicators` list.
+  Plugin setup exposes `loading.add({ name })`, returning an idempotent remover; producers own cleanup
+  on completion, failure, supersession, and disposal. `editor-plugin-loading-indicators` owns nonblocking canvas
+  presentation and is installed eagerly in the editor compositions before deferred loading starts.
 - Assertion marker geometry and drawing belong to `editor-plugin-assertion-markers`. Retain raw runtime results and
   contributor-owned `CodeError` lists in core; test-runtime publishes assertion errors and error-messages owns
   inline message layout/drawing. Keep prepared message and marker fields out of `CodeBlockGraphicData`.

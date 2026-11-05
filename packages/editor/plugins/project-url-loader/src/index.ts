@@ -16,31 +16,41 @@ export function createProjectUrlLoaderPlugin({
 }): EditorPlugin {
 	return {
 		id: 'project-url-loader',
-		setup: ({ store, events }) => {
+		setup: ({ store, events, loading }) => {
 			let disposed = false;
+			const pendingLoads = new Set<() => void>();
 			const loadInitialProject = async () => {
-				if (!initialProjectUrl) return;
-				let project: ProjectObjectModel;
+				if (!initialProjectUrl || disposed) return;
+				const finishLoading = loading.add({ name: 'project' });
+				pendingLoads.add(finishLoading);
 				try {
-					const response = await fetch(initialProjectUrl, { cache: 'no-store' });
-					if (!response.ok) throw new Error(`HTTP ${response.status}`);
-					const source = await response.text();
-					if (disposed) return;
-					project = parseProjectSource(source);
-				} catch (error) {
-					if (disposed) return;
-					logError(store.getState(), `Failed to load project from ${initialProjectUrl}: ${String(error)}`);
-					events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
-					onError?.(error);
-					return;
+					let project: ProjectObjectModel;
+					try {
+						const response = await fetch(initialProjectUrl, { cache: 'no-store' });
+						if (!response.ok) throw new Error(`HTTP ${response.status}`);
+						const source = await response.text();
+						if (disposed) return;
+						project = parseProjectSource(source);
+					} catch (error) {
+						if (disposed) return;
+						logError(store.getState(), `Failed to load project from ${initialProjectUrl}: ${String(error)}`);
+						events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
+						onError?.(error);
+						return;
+					}
+					events.dispatch('loadProject', { project });
+					onLoaded?.();
+				} finally {
+					pendingLoads.delete(finishLoading);
+					finishLoading();
 				}
-				events.dispatch('loadProject', { project });
-				onLoaded?.();
 			};
 			events.on('init', loadInitialProject);
 			return () => {
 				disposed = true;
 				events.off('init', loadInitialProject);
+				for (const finishLoading of pendingLoads) finishLoading();
+				pendingLoads.clear();
 			};
 		},
 	};

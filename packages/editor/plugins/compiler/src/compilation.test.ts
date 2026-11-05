@@ -14,10 +14,12 @@ describe('compilation scheduling and publication', () => {
 	let mockCompileCode: Mock<CompilerService['compileCode']>;
 	let events: { on: EventEmitter['on']; off: EventEmitter['off']; dispatch: EventEmitter['emit'] };
 	let cleanup: () => void;
+	let loading: { add: () => () => void };
 
 	beforeEach(() => {
 		vi.useFakeTimers();
 		cleanup = () => {};
+		loading = { add: () => () => {} };
 
 		mockCompileCode = vi.fn<CompilerService['compileCode']>().mockRejectedValue({
 			message: 'Memory access is not allowed in pure functions. (19)',
@@ -53,7 +55,7 @@ describe('compilation scheduling and publication', () => {
 	});
 
 	async function triggerCompile(delayMs = 500): Promise<void> {
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(delayMs);
 	}
@@ -61,13 +63,13 @@ describe('compilation scheduling and publication', () => {
 	it('listens for compilation input changes without subscribing to editing state', () => {
 		const subscribeSpy = vi.spyOn(store, 'subscribe');
 		const on = vi.spyOn(events, 'on');
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		expect(subscribeSpy).not.toHaveBeenCalled();
 		expect(on).toHaveBeenCalledWith('compilationInputChanged', expect.any(Function));
 	});
 
 	it('debounces multiple revisions and compiles the current project independently of selection', async () => {
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(300);
 		const block = mockState.codeBlockRendering.rootProject.blocks[0];
@@ -307,13 +309,13 @@ describe('compilation scheduling and publication', () => {
 	});
 
 	it('contributes the compiler config schema', () => {
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 
 		expect(mockState.editorConfigSchemaContributions.compiler).toBe(compilerEditorConfigSchemaContribution);
 	});
 
 	it('cancels a scheduled compilation when disposed', async () => {
-		const dispose = compilerEffect({ store, events }, mockCompileCode).dispose;
+		const dispose = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		dispose();
 		events.dispatch('compilationInputChanged');
@@ -339,7 +341,7 @@ describe('compilation scheduling and publication', () => {
 					rejectCompilation = reject;
 				})
 		);
-		const dispose = compilerEffect({ store, events }, mockCompileCode).dispose;
+		const dispose = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(500);
 		expect(mockCompileCode).toHaveBeenCalledTimes(1);
@@ -391,7 +393,7 @@ describe('compilation scheduling and publication', () => {
 
 	it('uses the configured recompile debounce delay', async () => {
 		mockState.editorConfig.recompileDebounceDelay = 120;
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(119);
 		expect(mockCompileCode).not.toHaveBeenCalled();
@@ -401,7 +403,7 @@ describe('compilation scheduling and publication', () => {
 	});
 
 	it('uses the default recompile debounce delay when the config value is absent', async () => {
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(499);
 		expect(mockCompileCode).not.toHaveBeenCalled();

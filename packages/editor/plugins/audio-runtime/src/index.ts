@@ -17,7 +17,7 @@ export function createAudioRuntimePlugin({
 }): EditorPlugin {
 	return {
 		id: 'audio-runtime',
-		setup: ({ store, events }) => {
+		setup: ({ store, events, loading }) => {
 			const state = store.getState();
 			let stop: (() => void) | undefined;
 			function sync() {
@@ -38,7 +38,7 @@ export function createAudioRuntimePlugin({
 					return;
 				}
 				if (!stop && !state.compiler.isCompiling && getMemory())
-					stop = startAudioRuntime(store, events, getCodeBuffer, getMemory, sharedAudioContext);
+					stop = startAudioRuntime(store, events, getCodeBuffer, getMemory, loading, sharedAudioContext);
 			}
 			store.subscribe('editorConfig.audioRuntime', sync);
 			store.subscribe('compiler.isCompiling', sync);

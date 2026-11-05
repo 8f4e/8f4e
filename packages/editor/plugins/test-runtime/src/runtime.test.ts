@@ -52,7 +52,11 @@ function setup(initialProgram?: TestRuntimeProgram, isCompiling = false) {
 		getCodeBuffer: () => program?.codeBuffer ?? new Uint8Array(),
 		getMemory: () => program?.memory ?? null,
 		getAssertionSites: () => program?.assertionSites,
-	}).setup({ store, events } as unknown as import('@8f4e/editor-core').EditorPluginContext);
+	}).setup({
+		store,
+		events,
+		loading: { add: () => () => {} },
+	} as unknown as import('@8f4e/editor-core').EditorPluginContext);
 	return {
 		state,
 		store,

@@ -121,6 +121,7 @@ export function startAudioRuntime(
 	events: EventDispatcher,
 	getCodeBuffer: () => Uint8Array,
 	getMemory: () => WebAssembly.Memory | null,
+	loading: EditorPluginContext['loading'],
 	sharedAudioContext?: AudioContext
 ) {
 	const state = store.getState();
@@ -129,6 +130,13 @@ export function startAudioRuntime(
 	let mediaStream: MediaStream | null = null;
 	let mediaStreamSource: MediaStreamAudioSourceNode | null = null;
 	let disposed = false;
+	let initializationId = 0;
+	let finishWorkletLoading: (() => void) | undefined;
+	let finishProgramLoading: (() => void) | undefined;
+	function finishProgram() {
+		finishProgramLoading?.();
+		finishProgramLoading = undefined;
+	}
 	/**
 	 * Identifies the current audio initialization attempt. Incremented when initialization
 	 * starts and when the audio setup is torn down. After each await, initialization checks
@@ -177,14 +185,22 @@ export function startAudioRuntime(
 		}
 
 		const config = getAudioWorkletRuntimeConfig(state);
-		audioWorklet.port.postMessage({
-			type: 'init',
-			memoryRef: memory,
-			codeBuffer: getCodeBuffer(),
-			bufferExportName: config.entry,
-			audioOutputBuffers: getAudioOutputBuffers(config),
-			audioInputBuffers: getAudioInputBuffers(config),
-		});
+		finishProgram();
+		finishProgramLoading = loading.add({ name: 'audio runtime' });
+		try {
+			audioWorklet.port.postMessage({
+				type: 'init',
+				requestId: ++initializationId,
+				memoryRef: memory,
+				codeBuffer: getCodeBuffer(),
+				bufferExportName: config.entry,
+				audioOutputBuffers: getAudioOutputBuffers(config),
+				audioInputBuffers: getAudioInputBuffers(config),
+			});
+		} catch (error) {
+			finishProgram();
+			throw error;
+		}
 	}
 
 	async function syncAudioInputSource() {
@@ -236,6 +252,8 @@ export function startAudioRuntime(
 		}
 		hideAudioPermissionDialog();
 		const currentGeneration = ++generation;
+		const finishLoading = loading.add({ name: 'audio worklet' });
+		finishWorkletLoading = finishLoading;
 
 		try {
 			audioContext = getSharedAudioContext() ?? null;
@@ -265,14 +283,24 @@ export function startAudioRuntime(
 			audioWorklet.port.onmessage = ({ data }: { data: AudioWorkletRuntimeMessage }) => {
 				switch (data.type) {
 					case 'initialized':
+						if (data.requestId !== initializationId) return;
+						finishProgram();
 						store.set('info.audioRuntime', { ...state.info.audioRuntime, ...data.payload });
 						events.dispatch('memoryValuesChanged');
 						break;
 					case 'runtimeValues':
 						store.set('info.audioRuntime', { ...state.info.audioRuntime, ...data.payload });
 						break;
+					case 'initializationError':
+						if (data.requestId !== initializationId) return;
+						finishProgram();
+						console.error('Error initializing audio:', data.payload.message);
+						break;
 				}
 			};
+			audioWorklet.onprocessorerror = finishProgram;
+			finishLoading();
+			if (finishWorkletLoading === finishLoading) finishWorkletLoading = undefined;
 
 			await syncAudioInputSource();
 			if (disposed || currentGeneration !== generation) {
@@ -289,6 +317,9 @@ export function startAudioRuntime(
 			tearDownAudioContext();
 			console.error('Error starting audio:', error);
 			showAudioPermissionDialog('Audio could not start. Select Allow to try again.');
+		} finally {
+			finishLoading();
+			if (finishWorkletLoading === finishLoading) finishWorkletLoading = undefined;
 		}
 	}
 
@@ -298,6 +329,10 @@ export function startAudioRuntime(
 	sharedAudioContext?.addEventListener('statechange', onSharedContextStateChanged);
 
 	function tearDownAudioContext() {
+		finishWorkletLoading?.();
+		finishWorkletLoading = undefined;
+		finishProgram();
+		++initializationId;
 		++generation;
 		++inputRevision;
 		if (mediaStreamSource) {
@@ -311,6 +346,7 @@ export function startAudioRuntime(
 		}
 
 		if (audioWorklet) {
+			audioWorklet.onprocessorerror = null;
 			audioWorklet.port.postMessage({ type: 'dispose' });
 			audioWorklet.port.onmessage = null;
 			audioWorklet.port.close();

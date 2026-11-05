@@ -50,7 +50,7 @@ const editor = await initEditor(canvas, {
 });
 ```
 
-A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, drawers })` function.
+A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, layout, loading, drawers })` function.
 Editor-core installs plugins in array order after core state effects, before rendering and initial project loading.
 Core first sizes the viewport and loads `options.initialProject` (or an empty project), then dispatches `init` and
 passes the returned promises to the renderer. Startup plugins fetch, parse, or restore their project while web-ui
@@ -65,6 +65,11 @@ contribution registrations, and timers. The host calls these disposers in revers
 and dispatcher remain available. It does not track individual registrations. Setup and cleanup errors propagate.
 If setup throws, that plugin must unwind its partial allocations; the host disposes previously completed plugins.
 Initialization failures later in startup also dispose installed plugins.
+
+Plugins publish active loads with `loading.add({ name })`. Each call appends a distinct object to the unified
+`state.loadingIndicators` list and returns an idempotent remover. Producers call it on completion, failure,
+supersession, and disposal. Equal names and reused input objects stay independent. The eagerly installed
+loading-indicators plugin owns canvas presentation; contributions work independently of the drawer.
 
 Keep browser dependencies in plugin factories rather than the shared setup context. A browser host can create
 `createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })` before initializing the editor; the
@@ -257,7 +262,7 @@ owns its configuration schema and cleanup. MIDI also owns its WASM instance and 
 environment-plugin manager in core.
 
 The binary-assets plugin owns `bin` configuration, browser fetching and caching, private asset bytes/metadata,
-memory loading, the loading dialog, and generated asset-size constants. Its factory receives a getter for current
+memory copies, download-indicator lifecycle, and generated asset-size constants. Its factory receives a getter for current
 runtime memory bytes; the shared plugin context carries no browser resources or binary asset fields.
 
 Plugins can contribute source to the generated `env` constants block with

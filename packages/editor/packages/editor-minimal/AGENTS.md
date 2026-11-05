@@ -3,12 +3,14 @@
 - Own the embedded composition for example/test galleries. The product homepage uses editor-landing without
   entry outlines, offscreen arrows, or context menus. Build directly on editor-core;
   do not import editor-default or its built-in module catalog.
-- Keep file-session, project URL loading, compiler coordination, block backgrounds, and code rendering eager. Import
+- Keep file-session, project URL loading, compiler coordination, block backgrounds, code rendering, and loading indicators eager. Import
   `src/deferred-plugins.ts` on core's `ready` event, after initial project loading/parsing, font-atlas loading, and
   rendering. This is the single gate for input, connectors, assertions, saving, tooltips, and directive-based lazy
   imports. Do not add frame
   callbacks, visibility checks, or timing delays. Keep font payloads lazy.
 - Keep all ordinary optional plugins as individual entries in `src/deferred-plugins.ts`, including input plugins.
+- Install `loadingIndicatorsPlugin` eagerly before the deferred loader. It draws the unified
+  `state.loadingIndicators` list; producers own each object and its cleanup.
 - Load `errorMessagesPlugin` as an unconditional deferred entry. Raw contributor-owned error lists stay central;
   the plugin owns wrapping, layout reservations, coordinates, and drawing.
   Load entries independently through the same loader; apply pointer capability and mode-switching availability as

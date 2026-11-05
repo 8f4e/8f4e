@@ -6,10 +6,19 @@ let statsInterval: ReturnType<typeof setInterval>;
 let timeToExecuteLoopMs: number;
 let lastIntervalTime: number;
 let timerDriftMs: number;
+let initializationId = 0;
 
-async function init(memoryRef: WebAssembly.Memory, sampleRate: number, codeBuffer: Uint8Array, entryName: string) {
+async function init(
+	memoryRef: WebAssembly.Memory,
+	sampleRate: number,
+	codeBuffer: Uint8Array,
+	entryName: string,
+	requestId: number
+) {
+	initializationId = requestId;
 	try {
 		const wasmApp = await createModule(memoryRef, codeBuffer, entryName);
+		if (requestId !== initializationId) return;
 
 		const intervalTime = Math.floor(1000 / sampleRate);
 
@@ -42,12 +51,15 @@ async function init(memoryRef: WebAssembly.Memory, sampleRate: number, codeBuffe
 
 		postToHost({
 			type: 'initialized',
+			requestId,
 			payload: {},
 		});
 	} catch (error) {
+		if (requestId !== initializationId) return;
 		console.log('compilationError', error);
 		postToHost({
 			type: 'compilationError',
+			requestId,
 			payload: error,
 		});
 	}
@@ -60,7 +72,13 @@ function postToHost(message: WebWorkerRuntimeMessage) {
 self.onmessage = ({ data }: MessageEvent<WebWorkerHostMessage>) => {
 	switch (data.type) {
 		case 'init':
-			init(data.payload.memoryRef, data.payload.sampleRate, data.payload.codeBuffer, data.payload.entry);
+			init(
+				data.payload.memoryRef,
+				data.payload.sampleRate,
+				data.payload.codeBuffer,
+				data.payload.entry,
+				data.requestId
+			);
 			break;
 	}
 };

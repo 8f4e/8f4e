@@ -157,6 +157,16 @@ export interface ProjectChange {
 	kind: 'edit' | 'checkpoint' | 'restore' | 'replace';
 }
 
+/** One active asynchronous load, removed when the operation finishes or is cancelled. */
+export interface LoadingIndicator {
+	name: string;
+}
+
+/** Per-editor contributions to the unified loading list. Producers own the returned cleanup. */
+export interface EditorLoadingRegistry {
+	add: (indicator: LoadingIndicator) => () => void;
+}
+
 // State interface - complete editor state tree (top-level public API)
 export interface State {
 	/** Monotonic change signal for compiler inputs; selection and visual metadata do not advance it. */
@@ -187,6 +197,8 @@ export interface State {
 	globalEditorDirectives: ResolvedGlobalEditorDirectives;
 	/** Raw source errors keyed by contributor. Each contributor replaces its own list. */
 	codeErrors: Record<string, CodeError[]>;
+	/** Active loads contributed by plugins in insertion order. Entries retain their object identity. */
+	loadingIndicators: LoadingIndicator[];
 	dialog: DialogContent;
 	dialogStack: DialogContent[];
 	viewport: Viewport;

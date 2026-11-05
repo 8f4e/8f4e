@@ -35,3 +35,9 @@ npx nx run @8f4e/editor-plugin-example-modules:test
 npx nx run @8f4e/editor-plugin-example-modules:typecheck
 npx nx run @8f4e/editor-plugin-example-modules:test:browser
 ```
+
+## Loading indicators
+
+Every requested module source and dependency contributes `module <slug>` through `loading.add` until its
+source is available or fails. Pending entries are removed immediately on disposal. Source caching and
+insertion order are unchanged.

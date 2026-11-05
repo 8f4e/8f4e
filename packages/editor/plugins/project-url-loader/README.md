@@ -18,6 +18,11 @@ when that source is an empty project. `onError(error)` receives the original fet
 fallback is installed; a failure does not call `onLoaded`. With no URL, neither callback runs. Disposal suppresses both
 notifications for pending requests. Callback errors are not treated as fetch or parser failures.
 
+The plugin contributes `{ name: 'project' }` through the setup context's `loading.add` while fetching, parsing,
+and installing source. Success, failure, and disposal remove the owned entry. No URL means no indicator.
+Initial URL loading still completes before the first canvas frame, so that startup contribution is not yet visible
+on the canvas; adding it does not change the startup rendering sequence.
+
 Completion means source installation. Compilation, runtime startup, and binary assets have their own lifecycle.
 
 When composing with session persistence, the host can give an explicit initial URL priority by disabling session restoration. The URL
