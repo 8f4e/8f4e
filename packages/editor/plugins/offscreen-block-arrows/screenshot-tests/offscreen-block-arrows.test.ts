@@ -11,7 +11,7 @@ test.each(['origin', 'panned'])('draws offscreen arrows at raw viewport edges: %
 	const editor = await initEditor(canvas, {
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
-			environment: [{ type: 'constants', id: 0, code: ['constants visible', '; @pos 0 0', 'constantsEnd'] }],
+			constants: [{ id: 0, code: ['constants visible', '; @pos 0 0', 'constantsEnd'] }],
 			execution: [
 				[40, -10],
 				[120, 12],

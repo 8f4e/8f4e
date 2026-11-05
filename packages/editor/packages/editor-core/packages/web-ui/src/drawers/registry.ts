@@ -54,7 +54,7 @@ export interface EditorDrawerHost extends EditorDrawerRegistry {
 	drawModalOverlays: CanvasDrawer;
 }
 
-function createDrawerSlot<Context>() {
+function createOrderedDrawerRegistry<Context>() {
 	const registrations = new Set<{ drawer: (context: Context) => void }>();
 	return {
 		register: (drawer: (context: Context) => void) => {
@@ -72,11 +72,11 @@ function createDrawerSlot<Context>() {
 
 export function createEditorDrawerRegistry(): EditorDrawerHost {
 	let offscreenDrawer: OffscreenCodeBlockDrawer | undefined;
-	const blockDrawers = createDrawerSlot<CodeBlockDrawerContext>();
-	const canvasBackground = createDrawerSlot<CanvasDrawerContext>();
-	const canvas = createDrawerSlot<CanvasDrawerContext>();
-	const canvasOverlays = createDrawerSlot<CanvasDrawerContext>();
-	const modalOverlays = createDrawerSlot<CanvasDrawerContext>();
+	const blockDrawers = createOrderedDrawerRegistry<CodeBlockDrawerContext>();
+	const canvasBackground = createOrderedDrawerRegistry<CanvasDrawerContext>();
+	const canvas = createOrderedDrawerRegistry<CanvasDrawerContext>();
+	const canvasOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
+	const modalOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	return {
 		...createRenderLayerRegistry(),
 		registerCodeBlockDrawer: blockDrawers.register,

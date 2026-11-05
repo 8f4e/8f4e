@@ -12,4 +12,4 @@ offscreen decorations during screenshot capture.
 Both editor compositions load this plugin after `ready`. It uses no browser APIs or state subscriptions.
 
 Verify with Nx `build`, `test`, `typecheck`, and `test:screenshot`. Tests cover directions, raw viewport edges,
-panning/resizing, and disposal. Browser screenshots install only this plugin with core.
+panning/resizing, and disposal. Browser screenshots install only this plugin with core. The typecheck target covers both source and browser tests.

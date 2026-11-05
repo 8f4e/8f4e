@@ -6,4 +6,5 @@
 - Return drawer unregistration as disposal. Do not add uniqueness validation or a callback restoration stack.
 - Both compositions load this plugin unconditionally after `ready`.
 - Keep arrow tests here; core tests only generic callback dispatch, replacement, and visibility.
+- The typecheck target covers both `src/` and `screenshot-tests/`; production builds compile only source.
 - Verify through Nx `build`, `test`, `typecheck`, and `test:screenshot`. Install no sibling plugins in tests.

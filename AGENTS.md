@@ -158,6 +158,8 @@
 - Framework: Vitest with built-in ESM support and first-class Vite integration.
 - Locations: `**/__tests__/**` or `*.test.ts` / `*.spec.ts` alongside sources.
 - Run: `npm test` (all) or `npx vitest` inside a package.
+- Failure artifacts in `.vitest-attachments/` are ignored by the root `.gitignore`; keep reference screenshots tracked
+  and avoid per-package attachment or obsolete screenshot-diff ignore rules.
 - Configuration: Shared Vitest helpers live in `@8f4e/config/vitest`; per-package configs live in `vitest.config.ts`.
 - Globals: Vitest globals enabled (`describe`, `it`, `expect`, `vi` for mocks/spies).
 - Aim for meaningful unit tests around compiler/editor logic; snapshot tests OK for view models. Keep tests fast; no browser required.
