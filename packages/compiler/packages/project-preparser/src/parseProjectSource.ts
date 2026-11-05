@@ -37,7 +37,6 @@ function addBlock(target: ProjectObjectModel, node: SourceBlock, type: DocumentB
 	if (type === 'module') {
 		if (!entry)
 			throw new Error(`Parse error at line ${node.start.lineNumber}: module blocks must be inside an entry block`);
-		if (!target.entries.includes(entry)) target.entries.push(entry);
 		target.execution.push({ ...block, type: 'module', entry });
 	} else {
 		const collections = {
@@ -111,7 +110,6 @@ function readScopeBlock(node: SourceBlock, context: ScopeContext): void {
 		const group = readGroup(node, context.name);
 		if (project.execution.some(block => block.type === 'group' && block.name === group.name))
 			throw new Error(`Parse error at line ${node.start.lineNumber}: duplicate sibling group "${group.name}"`);
-		if (!project.entries.includes(group.entry)) project.entries.push(group.entry);
 		project.execution.push(group);
 		return;
 	}
