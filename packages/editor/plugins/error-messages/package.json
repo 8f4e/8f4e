@@ -24,10 +24,10 @@
   },
   "devDependencies": {
     "@8f4e/config": "*",
-    "vitest": "4.1.7",
+    "vitest": "4.1.12",
     "@8f4e/web-ui": "*",
-    "@vitest/browser-playwright": "4.1.7",
-    "@vitest/browser": "4.1.7",
+    "@vitest/browser-playwright": "4.1.12",
+    "@vitest/browser": "4.1.12",
     "@8f4e/project-preparser": "*",
     "@types/node": "24.13.2"
   }
