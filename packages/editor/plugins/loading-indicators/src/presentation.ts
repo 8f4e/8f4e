@@ -82,7 +82,7 @@ export function installPresentation({
 	};
 	const visibility = installVisibility(store, prepare);
 	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
-		if (!rows.length || !state.loadingIndicators.length) return;
+		if (!rows.length) return;
 		draw.startGroup(0, top);
 		for (const row of rows) {
 			draw.drawFill(0, row.y, PALETTE_INDICES.floatingSurface, row.width, rowHeight);

@@ -109,7 +109,6 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 				expect(frames[framesAddress]).toBeGreaterThan(0);
 			});
 		const before = frames[framesAddress];
-		editor.state.loadingIndicators = [];
 		editor.renderFrame();
 		expect(frames[framesAddress]).toBe(before + (enabled ? 1 : 0));
 		const [bitsX, bitsY] = origin('bits');

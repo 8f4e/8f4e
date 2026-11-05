@@ -61,7 +61,7 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		});
 		await vi.dynamicImportSettled();
 		editor.pauseRendering();
-		editor.state.loadingIndicators = [];
+		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('view-mode-hint');
 		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
@@ -103,7 +103,7 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		context.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		context.store.set('codeBlockRendering.selectedCodeBlock.cursor.col', 5);
 		expect(editor.state.editorMode).toBe('edit');
-		editor.state.loadingIndicators = [];
+		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('edit-mode-caret');
 		editor.dispose();

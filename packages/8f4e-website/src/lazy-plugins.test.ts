@@ -120,7 +120,19 @@ entryEnd`);
 	editor.navigation.openGroup(getEditorBlockId(group));
 	await vi.dynamicImportSettled();
 	editor.pauseRendering();
-	editor.state.loadingIndicators = [];
+	// Keep startup indicators out of this watch/stack snapshot without mutating their state.
+	await expect
+		.poll(
+			() =>
+				editor.state.loadingIndicators.every(
+					indicator =>
+						indicator.finishedAt !== null &&
+						Date.now() - indicator.finishedAt >
+							(indicator.status === 'done' ? 3000 : 5000) + 25 * editor.state.loadingIndicators.length
+				),
+			{ timeout: 10000 }
+		)
+		.toBe(true);
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot('lazy-watch-stack-after-group-navigation');
 	expect(editor.state.codeErrors.compiler).toEqual([]);

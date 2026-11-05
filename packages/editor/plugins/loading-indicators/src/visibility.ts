@@ -1,12 +1,12 @@
 import type { EditorPluginContext, LoadingIndicator } from '@8f4e/editor-core';
 
-const DISPLAY_DURATION_MS = { done: 1000, failed: 5000, cancelled: 5000 };
 const HIDE_INTERVAL_MS = 25;
 
 function expiresAt(indicator: LoadingIndicator): number | undefined {
-	return indicator.status === 'loading' || indicator.finishedAt === null
-		? undefined
-		: indicator.finishedAt + DISPLAY_DURATION_MS[indicator.status] + 1;
+	if (indicator.status === 'loading' || indicator.finishedAt === null) return undefined;
+	const elapsed = indicator.finishedAt - indicator.startedAt;
+	const displayDuration = indicator.status === 'done' ? (elapsed <= 100 ? 1000 : elapsed <= 500 ? 2000 : 3000) : 5000;
+	return indicator.finishedAt + displayDuration + 1;
 }
 
 /** Retain contributions in state; hide expired attempts using private, identity-based bookkeeping. */

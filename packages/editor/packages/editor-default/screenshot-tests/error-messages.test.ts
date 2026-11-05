@@ -41,7 +41,19 @@ entryEnd`;
 		await expect.poll(() => block().gaps.get(3)?.size).toBeGreaterThan(0);
 		editor.state.viewport.x = 0;
 		editor.state.viewport.y = 0;
-		editor.state.loadingIndicators = [];
+		// Let completed startup indicators hide before capturing the assertion layout.
+		await expect
+			.poll(
+				() =>
+					editor.state.loadingIndicators.every(
+						indicator =>
+							indicator.finishedAt !== null &&
+							Date.now() - indicator.finishedAt >
+								(indicator.status === 'done' ? 3000 : 5000) + 25 * editor.state.loadingIndicators.length
+					),
+				{ timeout: 10000 }
+			)
+			.toBe(true);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('assertion-error');
 		editor.editing.applyEdits({
