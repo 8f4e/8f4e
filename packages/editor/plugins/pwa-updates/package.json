@@ -20,6 +20,6 @@
   },
   "devDependencies": {
     "@8f4e/config": "*",
-    "vitest": "4.1.7"
+    "vitest": "4.1.12"
   }
 }

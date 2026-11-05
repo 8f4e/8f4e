@@ -29,10 +29,10 @@
     "@types/audioworklet": "0.0.100",
     "@types/node": "24.13.2",
     "@types/offscreencanvas": "2019.7.3",
-    "@vitest/browser": "4.1.7",
-    "@vitest/browser-playwright": "4.1.7",
-    "@vitest/coverage-v8": "4.1.7",
-    "@vitest/ui": "4.1.7",
+    "@vitest/browser": "4.1.12",
+    "@vitest/browser-playwright": "4.1.12",
+    "@vitest/coverage-v8": "4.1.12",
+    "@vitest/ui": "4.1.12",
     "concurrently": "10.0.6",
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
@@ -40,7 +40,7 @@
     "typescript": "6.0.3",
     "vite": "7.3.7",
     "vite-plugin-static-copy": "4.1.1",
-    "vitest": "4.1.7",
+    "vitest": "4.1.12",
     "wabt": "1.0.39"
   },
   "workspaces": [
