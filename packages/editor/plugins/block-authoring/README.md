@@ -13,4 +13,4 @@ Core owns references, revisions, history, compiler notifications, and generic in
 The plugin uses no browser APIs. Disposal unregisters its menu items and action handlers.
 
 Run the package's Nx build, test, and typecheck targets. Tests use real core services for menu activation,
-templates, duplicate names, entry delegation, source revisions, deletion/history, mode policy, and disposal.
+template/coordinate forwarding, duplicate names, source revisions, deletion/history, mode policy, and disposal.

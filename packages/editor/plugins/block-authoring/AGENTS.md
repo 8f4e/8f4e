@@ -6,4 +6,5 @@
 - Keep enable/disable actions, folding, and generic menu dispatch in editor-state.
 - Use the existing menu registry and return explicit cleanup for each menu contribution and event handler.
 - Keep tests focused on authoring against real core services. Install no sibling plugins to preserve fixtures.
+- Keep spatial entry-assignment tests in editor-state; test the templates and menu coordinates forwarded to core here.
 - Verify with Nx build, test, and typecheck. Composition screenshot coverage belongs to editor-default.

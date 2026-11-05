@@ -42,9 +42,10 @@ it.each([
 	['function', 'New Function', 'function quark', 'functionEnd'],
 	['prototype', 'New Prototype', 'prototype quark', 'prototypeEnd'],
 	['note', 'New Note', 'note', 'noteEnd'],
-] as const)('creates a %s from its menu at the requested position', async (blockType, title, header, end) => {
+] as const)('forwards a %s template and menu coordinates to core', async (blockType, title, header, end) => {
 	const test = setup();
 	vi.spyOn(Math, 'random').mockReturnValue(0);
+	const dispatch = vi.spyOn(test.events, 'dispatch');
 	const revision = test.state.projectChange.revision;
 	const compilerRevision = test.state.compilerInputRevision;
 	await test.openMenu(96, 160);
@@ -52,8 +53,8 @@ it.each([
 	expect(index).toBeGreaterThanOrEqual(0);
 	expect(test.state.contextMenu.items[index].payload).toEqual({ blockType });
 	test.events.dispatch('activateContextMenuItem', { index, x: 96, y: 160 });
+	expect(dispatch).toHaveBeenCalledWith('insertCodeBlock', { x: 96, y: 160, code: [header, '', '', end] });
 	const block = test.state.codeBlockRendering.currentProject.blocks.at(-1)!;
-	expect(block.code).toEqual([header, '; @pos 12 10', '', '', end]);
 	expect(block.blockType).toBe(blockType);
 	expect(block.projectPath).toBe('');
 	expect(test.state.contextMenu.open).toBe(false);
@@ -68,20 +69,6 @@ it('allows duplicate generated names without numbering them', () => {
 	const blocks = test.state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'module');
 	expect(blocks.map(block => block.name)).toEqual(['quark', 'quark']);
 	expect(new Set(blocks.map(block => block.creationIndex)).size).toBe(2);
-});
-
-it('uses core entry assignment for new modules inside an existing entry', () => {
-	const test = setup();
-	test.events.dispatch('loadProject', {
-		project: {
-			...EMPTY_DEFAULT_PROJECT,
-			entries: ['audio'],
-			execution: [{ type: 'module', id: 0, entry: 'audio', code: ['module existing', '; @pos 12 8', 'moduleEnd'] }],
-		},
-	});
-	test.events.dispatch('enterEditMode');
-	test.events.dispatch('createCodeBlock', { x: 40, y: 80, blockType: 'module' });
-	expect(test.state.codeBlockRendering.currentProject.blocks.at(-1)!.entry).toBe('audio');
 });
 
 it('deletes the clicked block instead of the selected block and supports undo/redo', async () => {
