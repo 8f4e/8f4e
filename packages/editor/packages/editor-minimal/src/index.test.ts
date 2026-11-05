@@ -62,6 +62,7 @@ it('starts without storage and reports empty-project readiness after initializat
 			'error-messages',
 			'dialogs',
 			'context-menu',
+			'entry-outlines',
 			'keyboard-navigation',
 			'keyboard-mode-switching',
 			'keyboard-editing',

@@ -39,6 +39,7 @@
     "@8f4e/editor-plugin-context-menu": "*",
     "@8f4e/editor-plugin-crossfade": "*",
     "@8f4e/editor-plugin-dialogs": "*",
+    "@8f4e/editor-plugin-entry-outlines": "*",
     "@8f4e/editor-plugin-error-messages": "*",
     "@8f4e/editor-plugin-keyboard-editing": "*",
     "@8f4e/editor-plugin-keyboard-memory": "*",

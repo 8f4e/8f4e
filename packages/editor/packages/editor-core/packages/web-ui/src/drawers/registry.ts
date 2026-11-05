@@ -28,6 +28,8 @@ export interface EditorDrawerRegistry {
 	registerRenderLayer: (factory: RenderLayerFactory) => () => void;
 	/** Draw inside each visible block, in registration order. */
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;
+	/** Draw below code blocks, using viewport coordinates. */
+	registerCanvasBackgroundDrawer: (drawer: CanvasDrawer) => () => void;
 	/** Draw above code blocks and below overlays, using viewport coordinates. */
 	registerCanvasDrawer: (drawer: CanvasDrawer) => () => void;
 	/** Draw over ordinary canvas contents, before modal overlays, using viewport coordinates. */
@@ -40,6 +42,7 @@ export interface EditorDrawerRegistry {
 export interface EditorDrawerHost extends EditorDrawerRegistry {
 	attachRenderLayers: ReturnType<typeof createRenderLayerRegistry>['attachRenderLayers'];
 	drawCodeBlock: CodeBlockDrawer;
+	drawCanvasBackground: CanvasDrawer;
 	drawCanvas: CanvasDrawer;
 	drawCanvasOverlays: CanvasDrawer;
 	drawModalOverlays: CanvasDrawer;
@@ -63,16 +66,19 @@ function createDrawerSlot<Context>() {
 
 export function createEditorDrawerRegistry(): EditorDrawerHost {
 	const blockDrawers = createDrawerSlot<CodeBlockDrawerContext>();
+	const canvasBackground = createDrawerSlot<CanvasDrawerContext>();
 	const canvas = createDrawerSlot<CanvasDrawerContext>();
 	const canvasOverlays = createDrawerSlot<CanvasDrawerContext>();
 	const modalOverlays = createDrawerSlot<CanvasDrawerContext>();
 	return {
 		...createRenderLayerRegistry(),
 		registerCodeBlockDrawer: blockDrawers.register,
+		registerCanvasBackgroundDrawer: canvasBackground.register,
 		registerCanvasDrawer: canvas.register,
 		registerCanvasOverlay: canvasOverlays.register,
 		registerModalOverlay: modalOverlays.register,
 		drawCodeBlock: blockDrawers.draw,
+		drawCanvasBackground: canvasBackground.draw,
 		drawCanvas: canvas.draw,
 		drawCanvasOverlays: canvasOverlays.draw,
 		drawModalOverlays: modalOverlays.draw,

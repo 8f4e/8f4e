@@ -8,7 +8,7 @@ import { applyCodeBlockSourceEdits } from '../../sourceEdits';
 import getBlockType from '../../utils/codeParsers/getBlockType';
 import getCodeBlockNameFromSource from '../../utils/getCodeBlockNameFromSource';
 import upsertDisabled from '../directives/disabled/upsert';
-import findEntryNameAtPosition from '../entryOutlines/findEntryNameAtPosition';
+import findEntryNameAtPosition from '../entryBounds/findEntryNameAtPosition';
 
 type NewCodeBlockType = Extract<DocumentBlockType, 'module' | 'function' | 'note' | 'prototype'>;
 
@@ -58,15 +58,6 @@ function getRandomCodeBlockName() {
 	return nameList[Math.floor(Math.random() * nameList.length)];
 }
 
-function incrementEntryName(name: string) {
-	if (/.*[0-9]+$/gm.test(name)) {
-		const [, trailingNumber] = name.match(/.*([0-9]+$)/) as [never, string];
-		return name.replace(new RegExp(trailingNumber + '$'), `${parseInt(trailingNumber, 10) + 1}`);
-	} else {
-		return name + '2';
-	}
-}
-
 function getUniqueEntryName(state: State): string {
 	const usedEntryNames = new Set(
 		state.codeBlockRendering.currentProject.blocks
@@ -75,15 +66,11 @@ function getUniqueEntryName(state: State): string {
 	);
 	let entryName = 'entry';
 
-	while (usedEntryNames.has(entryName)) {
-		entryName = incrementEntryName(entryName);
+	for (let suffix = 2; usedEntryNames.has(entryName); suffix++) {
+		entryName = `entry${suffix}`;
 	}
 
 	return entryName;
-}
-
-function getEntryNameForInsertedModule(state: State, x: number, y: number): string {
-	return findEntryNameAtPosition(state.codeBlockRendering.entryOutlines, x, y) ?? getUniqueEntryName(state);
 }
 
 export default function codeBlockCreator(store: StateManager<State>, events: EventDispatcher): void {
@@ -102,7 +89,8 @@ export default function codeBlockCreator(store: StateManager<State>, events: Eve
 
 		const entry =
 			sourceBlockType === moduleBlock.type && blockName
-				? getEntryNameForInsertedModule(state, state.viewport.x + x, state.viewport.y + y)
+				? (findEntryNameAtPosition(state.codeBlockRendering.entryBounds, state.viewport.x + x, state.viewport.y + y) ??
+					getUniqueEntryName(state))
 				: undefined;
 
 		insertCodeBlocks(store, {

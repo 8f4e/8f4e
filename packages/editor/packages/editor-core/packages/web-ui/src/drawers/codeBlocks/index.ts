@@ -3,7 +3,6 @@ import type { DrawContext } from '../../drawContext';
 import type { MemoryViews } from '../../types';
 import type { EditorDrawerHost } from '../registry';
 import drawArrow from './drawArrow';
-import drawEntryOutlines from './drawEntryOutlines';
 
 export default function drawCodeBlocks(
 	draw: DrawContext,
@@ -17,7 +16,6 @@ export default function drawCodeBlocks(
 	const offsetY = -y;
 
 	draw.startGroup(offsetX, offsetY);
-	drawEntryOutlines(draw, state);
 
 	for (const codeBlock of state.codeBlockRendering.currentProject.blocks) {
 		if (

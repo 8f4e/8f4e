@@ -109,6 +109,7 @@ describe('default editor plugins', () => {
 				'error-messages',
 				'dialogs',
 				'context-menu',
+				'entry-outlines',
 				'tooltips',
 				'favorites',
 				'project-file-session',

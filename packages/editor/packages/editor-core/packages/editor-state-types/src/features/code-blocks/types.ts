@@ -150,12 +150,13 @@ export interface CodeBlockGraphicData {
 	alwaysOnTop: boolean;
 }
 
-export interface CodeBlockEntryOutline {
+/** World-space entry regions used for insertion and shared with presentation plugins. */
+export interface EntryBounds {
 	entryName: string;
-	topLeft: { x: number; y: number };
-	topRight: { x: number; y: number };
-	bottomRight: { x: number; y: number };
-	bottomLeft: { x: number; y: number };
+	x: number;
+	y: number;
+	width: number;
+	height: number;
 }
 
 /** An editor-owned project level. Remembered views and selections live only in browser memory. */
@@ -176,12 +177,8 @@ export type CodeBlockRendering = {
 	rootProject: ProjectLevel;
 	/** Direct reference to the project level currently rendered by the editor. */
 	currentProject: ProjectLevel;
-	/**
-	 * Derived outline corners for execution entries containing visible module or project-group blocks.
-	 * Maintained from code block geometry so renderers can draw entry grouping without
-	 * recomputing relationships every frame.
-	 */
-	entryOutlines: CodeBlockEntryOutline[];
+	/** Padded bounds of entries containing modules or project groups in the current level. */
+	entryBounds: EntryBounds[];
 	/**
 	 * Subset of codeBlocks that have a `@viewport` directive.
 	 * Maintained in sync with codeBlocks so that viewport move/resize handlers

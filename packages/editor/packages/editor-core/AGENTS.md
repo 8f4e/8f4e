@@ -11,6 +11,7 @@
 - From package directory: use `npx nx run @8f4e/editor-core:<target>` (e.g., `npx nx run @8f4e/editor-core:dev`).
 - Ensure `dist/` exists before building the default editor composition after API changes.
 - The nested editor-state build clears `dist/` once before emitting declarations and then bundling with Vite.
+  Its TypeScript build excludes unit tests and `__tests__` helpers.
 
 ## Coding Style
 - TypeScript (ESM). Use Biome as the fixer (`npx biome check --write <files>`); it owns formatting and import organization.
@@ -27,6 +28,10 @@
 - PRs: add screenshots/gifs for UI changes, include test notes, link issues.
 
 ## Plugins
+
+- Editor-state owns entry bounds, their padding/updates, and insertion hit testing in `codeBlockRendering.entryBounds`.
+  Entry assignment works without drawing plugins. `editor-plugin-entry-outlines` only draws borders and labels from
+  those bounds through generic `registerCanvasBackgroundDrawer`, below blocks with the existing canvas context types.
 - Context-menu presentation belongs to `editor-plugin-context-menu`. Keep only raw items, requested world anchors,
   menu requests/Back navigation, pointer blocking/forwarding, and action/selector dispatch in core. Forward completed
   presses through `contextMenuPointerDown`, movement through `contextMenuPointerMove`, and activate raw items through
@@ -163,7 +168,7 @@
 - All block plugins use `registerCodeBlockDrawer`, called once per visible block in registration order. Keep one
   registry, without stage aliases or priority sorting. Install block backgrounds before code rendering in both hosts.
   Code rendering draws nested highlights, selected-line fill, and text together. The background plugin owns corner
-  markers and their selected colors. Web-ui keeps traversal, visibility, entry outlines, and offscreen arrows. Connectors keeps expansion labels private through this same
+  markers and their selected colors. Web-ui keeps traversal, visibility, and offscreen arrows. Connectors keeps expansion labels private through this same
   registry and generic layout contributions.
 - The circling selected-block animation belongs to `editor-plugin-selection-animation`. Keep its timing, glyphs,
   and drawing out of core; retain selection state. The background plugin owns corner colors; code rendering owns line highlighting.
