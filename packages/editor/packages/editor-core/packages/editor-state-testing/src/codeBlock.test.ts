@@ -50,7 +50,6 @@ describe('createMockCodeBlock', () => {
 	describe('cursor calculation', () => {
 		it('should calculate cursor position correctly', () => {
 			const block = createMockCodeBlock({ x: 100, y: 200, width: 200, height: 150 });
-			// Cursor X = x + width/2 = 100 + 200/2 = 200
 			// Cursor Y (relative) = height/2 = 150/2 = 75
 			expect(normalizeBlock(block)).toMatchSnapshot();
 		});
@@ -65,7 +64,7 @@ describe('createMockCodeBlock', () => {
 				x: 100,
 				y: 200,
 				cursorY: 110,
-				cursor: { col: 5, row: 3, x: 999, y: 999 },
+				cursor: { col: 5, row: 3, y: 999 },
 			});
 			expect(normalizeBlock(block)).toMatchSnapshot();
 		});

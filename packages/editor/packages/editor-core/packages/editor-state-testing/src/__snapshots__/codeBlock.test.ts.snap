@@ -9,7 +9,6 @@ exports[`createMockCodeBlock > cursor calculation > should calculate cursor posi
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 200,
     "y": 75,
   },
   "disabled": false,
@@ -45,7 +44,6 @@ exports[`createMockCodeBlock > cursor calculation > should prefer explicit curso
   "cursor": {
     "col": 5,
     "row": 3,
-    "x": 999,
     "y": 999,
   },
   "disabled": false,
@@ -81,7 +79,6 @@ exports[`createMockCodeBlock > cursor calculation > should use cursorY convenien
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 200,
     "y": 110,
   },
   "disabled": false,
@@ -117,7 +114,6 @@ exports[`createMockCodeBlock > default values > should create a block with defau
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 50,
     "y": 50,
   },
   "disabled": false,
@@ -153,7 +149,6 @@ exports[`createMockCodeBlock > edge cases > should handle negative coordinates 1
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": -50,
     "y": 50,
   },
   "disabled": false,
@@ -189,7 +184,6 @@ exports[`createMockCodeBlock > edge cases > should handle zero dimensions 1`] = 
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 0,
     "y": 0,
   },
   "disabled": false,
@@ -225,7 +219,6 @@ exports[`createMockCodeBlock > override behavior > should allow independent over
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 150,
     "y": 50,
   },
   "disabled": false,
@@ -265,7 +258,6 @@ exports[`createMockCodeBlock > override behavior > should allow override of code
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 50,
     "y": 50,
   },
   "disabled": false,
@@ -316,7 +308,6 @@ exports[`createMockCodeBlock > override behavior > should override position and 
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 300,
     "y": 75,
   },
   "disabled": false,
@@ -352,7 +343,6 @@ exports[`createMockCodeBlock > override behavior > should override the block nam
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 50,
     "y": 50,
   },
   "disabled": false,

@@ -92,7 +92,7 @@ describe('history tracking with real project mutations', () => {
 			code: ['module main', 'push 1', 'drop', 'moduleEnd'],
 			blockType: 'module',
 			entry: 'main',
-			cursor: { row: 1, col: 6, x: 0, y: 16 },
+			cursor: { row: 1, col: 6, y: 16 },
 		});
 		state.codeBlockRendering.rootProject.blocks.push(block);
 		state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
@@ -158,7 +158,7 @@ describe('history tracking with real project mutations', () => {
 
 		const restored = state.codeBlockRendering.currentProject.blocks[0];
 		state.codeBlockRendering.selectedCodeBlock = restored;
-		restored.cursor = { row: 1, col: 6, x: 0, y: 16 };
+		restored.cursor = { row: 1, col: 6, y: 16 };
 		replaceLine(1, 'push 13');
 
 		// The redo stack is gone before the debounce timer fires.
@@ -207,7 +207,7 @@ describe('history tracking with real project mutations', () => {
 		// The next edit is measured against the loaded project as its baseline.
 		const loaded = state.codeBlockRendering.currentProject.blocks[0];
 		state.codeBlockRendering.selectedCodeBlock = loaded;
-		loaded.cursor = { row: 0, col: 11, x: 0, y: 0 };
+		loaded.cursor = { row: 0, col: 11, y: 0 };
 		replaceLine(0, 'module other;');
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);

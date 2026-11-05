@@ -55,7 +55,7 @@ describe('compiler input revision', () => {
 			name: 'main',
 			code: ['module main', 'push 1', 'drop', 'moduleEnd'],
 			blockType: 'module',
-			cursor: { row: 1, col: 6, x: 0, y: 16 },
+			cursor: { row: 1, col: 6, y: 16 },
 		});
 		state.codeBlockRendering.rootProject.blocks.push(block);
 		state.codeBlockRendering.selectedCodeBlock = block;

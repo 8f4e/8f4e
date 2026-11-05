@@ -61,7 +61,7 @@
   Default/minimal import their factories after the first render only when `(pointer: coarse)` does not match. Editing keeps
   a small input bridge and loads text editing on first edit mode, buffering keystrokes during the import. Core retains
   history, project editing APIs, generic mode/navigation actions, and shared text/pointer geometry. The mode-switching
-  plugin owns its hint through the generic canvas-overlay hook; `canvasOverlays` controls that drawing stage. The editing plugin owns caret movement and foreground drawing;
+  plugin owns its hint through the generic canvas-overlay hook; `canvasOverlays` controls that drawing stage. The editing plugin owns caret movement, horizontal caret placement, and foreground drawing;
   navigation handles view-mode line selection and block navigation. `includeKeyboardModeSwitching: false` omits
   mode switching from default/minimal; its presence controls availability without a core feature flag.
 - DOM mouse/wheel forwarding belongs to `editor-plugin-mouse-input`, loaded on all devices. Coarse-pointer devices

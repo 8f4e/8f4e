@@ -9,5 +9,8 @@
 - Keep caret direction policy and mutation caret adjustments private to this plugin. Use core tab/source geometry.
 - Register its caret with `registerCodeBlockDrawer`; the lazy bridge forwards drawing only after the
   implementation loads. Remove the registration explicitly on disposal. Keep generic source positions in core.
+- Prepare the caret's horizontal drawing position privately after lazy loading and on `codeBlockLayoutsChanged`,
+  using shared tab/source geometry; core retains shared vertical geometry. Drawing only consumes prepared
+  coordinates. Own and remove the layout listener on disposal.
 
 - Handle native `paste` events only through the loaded editing implementation. Insert plain text with `insertText`, preserving multiline content and moving the caret to the insertion end. Apply one source batch. Never queue pasted text or add special loading-race handling.

@@ -6,7 +6,7 @@ import insertNewLine from './insertNewLine';
 import insertText from './insertText';
 import { moveCaret } from './moveCaret';
 
-export { default as drawCaret } from './drawCaret';
+export { default as createCaretPresentation } from './drawCaret';
 
 const directions: Record<string, Direction> = {
 	ArrowLeft: 'left',

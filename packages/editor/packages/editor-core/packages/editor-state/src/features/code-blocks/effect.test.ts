@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type Mock, vi } from 'vitest';
@@ -11,12 +12,13 @@ import projectGroupNavigation from './features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './layout/registry';
 
 describe('code block rendering cursor selection', () => {
-	it('updates the selected code block cursor through the store when a line is clicked', () => {
+	it.each(['view', 'edit'] as const)('updates shared source selection through the store in %s mode', editorMode => {
 		const selectedBlock = createMockCodeBlock({
-			code: ['zero', 'one', 'two'],
+			code: ['; @tab 4', '\tvalue', 'two'],
 			lineNumberColumnWidth: 1,
 		});
 		const state = createMockState({
+			editorMode,
 			featureFlags: {
 				codeLineSelection: true,
 			},
@@ -46,13 +48,43 @@ describe('code block rendering cursor selection', () => {
 		)?.[1] as ((event: { relativeX: number; relativeY: number; codeBlock: typeof selectedBlock }) => void) | undefined;
 
 		codeBlockPointerDownHandler?.({
-			relativeX: 0,
+			relativeX: 8 * 8,
 			relativeY: state.viewport.hGrid,
 			codeBlock: selectedBlock,
 		});
 
-		expect(selectedBlock.cursor.row).toBe(1);
+		expect(selectedBlock.cursor).toEqual({ row: 1, col: 2, y: 16 });
 		expect(onSelectedRowChanged).toHaveBeenCalledWith(1);
+	});
+	it('keeps folded source selection and gap geometry available without an editing plugin', () => {
+		const block = createMockCodeBlock({ code: ['note test', '; @hide', '; @tab 4', '\tvalue', 'noteEnd'] });
+		const state = createMockState({
+			editorMode: 'view',
+			codeBlockRendering: { currentProject: { path: '', entries: [], blocks: [block] } },
+		});
+		const store = createStateManager(state);
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
+		const layout = createLayoutRegistry(codeBlock =>
+			events.dispatch('codeBlockLayoutContributionsChanged', { codeBlock })
+		);
+		codeBlockRenderingEffect(store, events, directiveDefinitions, layout);
+		expect(block.isCollapsed).toBe(true);
+		const contribution = layout.createContribution();
+		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 2, heightInRows: 2 }] });
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		expect(block.isCollapsed).toBe(false);
+		Object.assign(state.viewport, { vGrid: 12, hGrid: 24 });
+		events.dispatch('gridSizeChanged');
+		events.dispatch('codeBlockPointerDown', { codeBlock: block, relativeX: 96, relativeY: 132 });
+		expect(block.cursor).toEqual({ row: 3, col: 2, y: 120 });
+		expect(state.editorMode).toBe('view');
+		contribution.dispose();
+		store.dispose();
 	});
 });
 

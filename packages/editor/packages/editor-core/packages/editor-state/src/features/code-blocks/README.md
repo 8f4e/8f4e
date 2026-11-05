@@ -92,6 +92,14 @@ Project-group blocks use the same `CodeBlockGraphicData` representation as other
 `rootProject` owns the recursive tree; `currentProject` refers directly to the level being rendered. Shared tree helpers
 resolve levels and parents by path, without recovering identity from block arrays.
 
+`reconstructProject.ts` builds graphical project trees and reconciles remembered views, selections, and existing
+positions for same-project edits. The block effect installs the result and owns selection reset, layout/source
+refresh coordination, viewport updates, and compiler-input notifications.
+
+Core retains the selected source row/column, pointer-to-source mapping, and shared vertical coordinates for line
+highlighting, tooltips, viewport centering, and navigation. The keyboard-editing plugin owns caret movement and
+presentation, including horizontal placement derived from shared tab/source geometry.
+
 **Open group**, **Go back**, and root navigation save the departing level's position and restore the destination's
 remembered position and selected block. If the group block was selected before entry, returning reselects it.
 Reopening a group also restores its last selection. An explicitly cleared selection stays cleared, and deleted blocks

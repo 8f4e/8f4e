@@ -50,6 +50,9 @@
   restore core font-atlas or palette management. State reacts only to `gridSizeChanged` and shared grid dimensions.
 - Install plugins in editor-core so one setup receives state, event, menu, directive, layout, and drawer services.
 - Keep generic directive parsing and layout in editor-state, and generic drawing hooks in web-ui.
+- Keep project-tree reconstruction and same-project reconciliation in code-blocks/reconstructProject.ts; the block
+  effect installs results and coordinates notifications. Shared source positions and vertical geometry remain in
+  core; keyboard-editing privately derives horizontal caret placement.
 - Source updates use `features/code-blocks/sourceUpdates.ts`: refresh source metadata, regenerate environment source,
   resolve global configuration, then refresh layouts. Add source-derived work to that path instead of relying on
   effect subscription order. Same-project edits retain existing positions while `@pos` is incomplete or invalid;

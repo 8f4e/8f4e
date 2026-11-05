@@ -1,14 +1,27 @@
 import type { CodeBlockDrawer } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { getTabStopsByLine, getVisualColumnForRawIndex } from '@8f4e/editor-state';
+import type { EventDispatcher, State } from '@8f4e/editor-state-types';
 
-const drawCaret: CodeBlockDrawer = ({ draw, state, codeBlock }) => {
-	if (state.editorMode !== 'edit' || state.codeBlockRendering.selectedCodeBlock !== codeBlock) return;
-	draw.drawText(
-		codeBlock.cursor.x,
-		codeBlock.cursor.y,
-		'_',
-		codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase
-	);
-};
+export default function createCaretPresentation(state: State, events: EventDispatcher) {
+	let x = 0;
+	const prepare = () => {
+		const block = state.codeBlockRendering.selectedCodeBlock;
+		if (!block) return;
+		const { row, col } = block.cursor;
+		const tabStops = getTabStopsByLine(block.code)[row] || [];
+		const visualColumn = getVisualColumnForRawIndex(block.code[row] || '', col, tabStops);
+		x = (visualColumn + block.lineNumberColumnWidth + 2) * state.viewport.vGrid;
+	};
+	const drawCaret: CodeBlockDrawer = ({ draw, codeBlock }) => {
+		if (state.editorMode !== 'edit' || state.codeBlockRendering.selectedCodeBlock !== codeBlock) return;
+		draw.drawText(x, codeBlock.cursor.y, '_', codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase);
+	};
 
-export default drawCaret;
+	events.on('codeBlockLayoutsChanged', prepare);
+	prepare();
+	return {
+		drawCaret,
+		dispose: () => events.off('codeBlockLayoutsChanged', prepare),
+	};
+}

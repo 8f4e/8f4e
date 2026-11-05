@@ -73,7 +73,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 2,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -158,7 +157,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 3,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -260,7 +258,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 0,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -342,7 +339,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 0,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -377,7 +373,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 0,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -415,7 +410,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 0,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -532,7 +526,7 @@ functionEnd int`;
 			name: 'caller',
 			creationIndex: first.compiledModules.caller.ast.projectBlockId,
 			code: ['module caller', 'call identity 1', 'drop', 'moduleEnd'],
-			cursor: { row: 1, col: 0, x: 0, y: 0 },
+			cursor: { row: 1, col: 0, y: 0 },
 		});
 		const state = createMockState({ compiler: { result: first }, codeBlockRendering: { selectedCodeBlock: block } });
 		const store = createStateManager(state);
@@ -575,14 +569,14 @@ entryEnd`);
 			creationIndex: first.id,
 			code: first.code,
 			blockType: 'module',
-			cursor: { row: 2, col: 0, x: 0, y: 0 },
+			cursor: { row: 2, col: 0, y: 0 },
 		});
 		const active = createMockCodeBlock({
 			name: 'voice',
 			creationIndex: second.id,
 			code: second.code,
 			blockType: 'module',
-			cursor: { row: 2, col: 0, x: 0, y: 0 },
+			cursor: { row: 2, col: 0, y: 0 },
 		});
 		const state = createMockState({
 			compiler: { result: compiled },

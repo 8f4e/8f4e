@@ -8,7 +8,8 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 		setup: context => {
 			const { store } = context;
 			let editing: typeof import('./editing') | undefined;
-			const removeCaret = context.drawers.registerCodeBlockDrawer(drawContext => editing?.drawCaret(drawContext));
+			let caret: ReturnType<typeof import('./editing')['createCaretPresentation']> | undefined;
+			const removeCaret = context.drawers.registerCodeBlockDrawer(drawContext => caret?.drawCaret(drawContext));
 			let loading = false;
 			let disposed = false;
 			let replaying = false;
@@ -36,6 +37,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 				try {
 					const module = await import('./editing');
 					if (disposed) return;
+					caret = module.createCaretPresentation(store.getState(), context.events);
 					editing = module;
 					// Replay through the input target so independent navigation and mode bindings retain their order.
 					for (const event of queued.splice(0)) replay(event);
@@ -80,6 +82,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 				disposed = true;
 				discardInput();
 				removeCaret();
+				caret?.dispose();
 				inputTarget.removeEventListener('keydown', onKeydown, { capture: true });
 				inputTarget.removeEventListener('paste', onPaste);
 				inputTarget.removeEventListener('keyup', onPendingRelease, { capture: true });
