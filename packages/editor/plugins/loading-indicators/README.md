@@ -10,6 +10,10 @@ Install `loadingIndicatorsPlugin` through the ordinary plugin contract. It has n
 configuration schema, or project directive. Install it eagerly before the deferred loader so the initial feature
 imports can be shown. `canvasOverlays` controls drawing.
 
+Text, clipping, colors, and positions are prepared when indicators, viewport size, or font metrics change. Frames
+only draw those prepared rows. Visible pending rows refresh their elapsed labels every 100 ms outside rendering;
+completed rows retain their prepared text. The elapsed timer stops when no pending rows are visible.
+
 Plugins contribute through `loading` in their setup context:
 
 ```ts
@@ -32,11 +36,12 @@ Each state record contains `id`, `message`, `status` (`loading`, `done`, `failed
 `finishedAt`. Timestamps are milliseconds since the Unix epoch; `finishedAt` is null while loading. The registry
 records timestamps and terminal results without removing entries.
 
-Every 100 ms, the plugin removes at most one entry whose finish time is more than five seconds old, choosing the
-oldest finish timestamp first. Completed entries disappear gradually; pending operations remain. Cleanup runs
-independently of drawing, including while overlays or rendering are disabled.
-Disposal stops the timer and unregisters the drawer without clearing the list. Without this plugin, contributions
-and terminal results still work, but no periodic cleanup or presentation runs.
+Cleanup sleeps until the oldest finished entry becomes more than five seconds old. It then removes that entry
+and spaces further removals by at least 100 ms, oldest finish timestamp first. With no finished entries it schedules
+no cleanup work. Pending operations remain. Cleanup runs independently of drawing, including while overlays or
+rendering are disabled. Disposal stops both timers, releases subscriptions, and unregisters the drawer without
+clearing the list. Without this plugin, contributions and terminal results still work, but no scheduled cleanup
+or presentation runs.
 
 Verify with `npx nx run @8f4e/editor-plugin-loading-indicators:build|test|typecheck`.
 Run real-editor overlay coverage with `npx nx run @8f4e/editor-plugin-loading-indicators:test:screenshot`.

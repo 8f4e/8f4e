@@ -63,8 +63,8 @@
   The returned handle exposes `done()`, `fail()`, and `cancel()`; the first terminal result records `finishedAt`.
   State retains `status`, `startedAt`, and `finishedAt` in the unified `state.loadingIndicators` list. Reusing an ID
   replaces its entry; old handles cannot update the replacement. The eager `editor-plugin-loading-indicators` owns
-  elapsed-time/status drawing and a 100 ms timer that removes one expired result at a time, oldest finish first,
-  after a five-second grace period.
+  prepared elapsed-time/status drawing and on-demand cleanup. Cleanup sleeps until results expire after five
+  seconds, then removes them oldest finish first at 100 ms intervals; no finished entries means no cleanup timer.
 - `@8f4e/editor-plugin-error-messages` owns inline error wrapping, layout reservations, coordinates, and drawing.
   Core retains raw `CodeError` lists in `state.codeErrors`, keyed by contributor. Compiler, editor directives, and
   test-runtime own their lists; editor compositions defer the presentation plugin until `ready`.

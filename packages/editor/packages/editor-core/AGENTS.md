@@ -121,8 +121,8 @@
   The returned handle exposes `done()`, `fail()`, and `cancel()`; the first terminal result records `finishedAt`.
   State retains `status`, `startedAt`, and `finishedAt` in the unified `state.loadingIndicators` list. Reusing an ID
   replaces its entry; old handles cannot update the replacement. The eager `editor-plugin-loading-indicators` owns
-  elapsed-time/status drawing and a 100 ms timer that removes one expired result at a time, oldest finish first,
-  after a five-second grace period.
+  prepared elapsed-time/status drawing and on-demand cleanup. Cleanup sleeps until results expire after five
+  seconds, then removes them oldest finish first at 100 ms intervals; no finished entries means no cleanup timer.
 - Assertion marker geometry and drawing belong to `editor-plugin-assertion-markers`. Retain raw runtime results and
   contributor-owned `CodeError` lists in core; test-runtime publishes assertion errors and error-messages owns
   inline message layout/drawing. Keep prepared message and marker fields out of `CodeBlockGraphicData`.

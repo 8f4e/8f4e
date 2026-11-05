@@ -8,6 +8,7 @@ import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators'
 import { expect, test, vi } from 'vitest';
 
 test('shows concurrent plugin and asset loads without blocking the editor', async () => {
+	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
 	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
 	const canvas = document.createElement('canvas');
 	canvas.width = 512;
@@ -80,6 +81,7 @@ entryEnd`);
 		expect(editor.state.dialogStack).toEqual([]);
 		editor.pauseRendering();
 		now.mockReturnValue(1240);
+		vi.advanceTimersByTime(100);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-pending');
 		const previousX = editor.state.viewport.x;
@@ -117,16 +119,19 @@ entryEnd`);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-finished');
 		now.mockReturnValue(9000);
-		await vi.waitFor(() => expect(editor!.state.loadingIndicators).toEqual([]), { timeout: 2000 });
+		await vi.advanceTimersByTimeAsync(6000);
+		expect(editor.state.loadingIndicators).toEqual([]);
 	} finally {
 		editor?.dispose();
 		canvas.remove();
 		vi.unstubAllGlobals();
+		vi.useRealTimers();
 		vi.restoreAllMocks();
 	}
 });
 
 test('shows the initial deferred import through an eagerly installed loading drawer', async () => {
+	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
 	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
 	const canvas = document.createElement('canvas');
 	canvas.width = 512;
@@ -148,6 +153,7 @@ test('shows the initial deferred import through an eagerly installed loading dra
 		]);
 		editor.pauseRendering();
 		now.mockReturnValue(1240);
+		vi.advanceTimersByTime(100);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('initial-editor-plugins-loading');
 		finish({ id: 'features', setup: () => () => {} });
@@ -157,6 +163,7 @@ test('shows the initial deferred import through an eagerly installed loading dra
 	} finally {
 		editor?.dispose();
 		canvas.remove();
+		vi.useRealTimers();
 		vi.restoreAllMocks();
 	}
 });
