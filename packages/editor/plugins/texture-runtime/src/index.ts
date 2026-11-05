@@ -15,15 +15,18 @@ export function createTextureRuntimePlugin({
 }): EditorPlugin {
 	return {
 		id: 'texture-runtime',
-		setup: ({ store, events, drawers, layout }) => {
+		setup: ({ store, events, drawers, layout, loading }) => {
 			const state = store.getState();
 			let config = readTextureRuntimeConfig(state.editorConfig);
 			let program: WebAssembly.Exports | undefined;
 			let entry: CallableFunction | undefined;
 			let generation = 0;
 			let pending = false;
+			let finishProgramLoading: (() => void) | undefined;
 
 			function clearProgram() {
+				finishProgramLoading?.();
+				finishProgramLoading = undefined;
 				generation++;
 				program = undefined;
 				pending = false;
@@ -43,6 +46,8 @@ export function createTextureRuntimePlugin({
 				const code = getCodeBuffer();
 				if (!nextMemory || code.byteLength === 0) return;
 				pending = true;
+				const finishLoading = loading.add({ name: 'texture runtime' });
+				finishProgramLoading = finishLoading;
 				try {
 					const { instance } = await WebAssembly.instantiate(new Uint8Array(code), {
 						host: { memory: nextMemory, ...IGNORED_ASSERTION_IMPORTS },
@@ -56,6 +61,9 @@ export function createTextureRuntimePlugin({
 						pending = false;
 						console.error('Failed to instantiate texture runtime:', error);
 					}
+				} finally {
+					finishLoading();
+					if (finishProgramLoading === finishLoading) finishProgramLoading = undefined;
 				}
 			}
 

@@ -24,3 +24,9 @@ disabled blocks produce no inline error contribution. Source input changes refre
 disposal removes it. `editor-plugin-error-messages` owns message wrapping, layout, and drawing.
 
 Validate with `npx nx run @8f4e/editor-plugin-test-runtime:build|test|typecheck`.
+
+## Loading indicators
+
+The worker job contributes `test runtime` while its program is initialized and executed. The result/error,
+replacement run, disabling, and disposal release the entry. The worker returns a single terminal result, so
+that result marks completion of its loading contribution.

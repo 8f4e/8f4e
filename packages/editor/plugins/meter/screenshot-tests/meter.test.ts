@@ -30,7 +30,10 @@ test('meter plugin renders its directive', async () => {
 	test.state.viewport.width = canvas.width;
 	test.state.viewport.height = canvas.height;
 
-	const renderer = await initView(test.store, test.events, canvas, test.memoryViews, { drawers });
+	const renderer = await initView(test.store, test.events, canvas, test.memoryViews, {
+		loading: test.store.loading,
+		drawers,
+	});
 
 	try {
 		renderer.renderFrame();

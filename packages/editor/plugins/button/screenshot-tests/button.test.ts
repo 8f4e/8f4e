@@ -69,6 +69,7 @@ entryEnd`);
 	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.on.allocationUnitAddress] = 1;
 
 	const renderer = await initView(store, events, canvas, memoryViews, {
+		loading: store.loading,
 		drawers,
 	});
 

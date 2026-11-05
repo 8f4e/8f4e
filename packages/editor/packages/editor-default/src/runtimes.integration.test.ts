@@ -53,7 +53,7 @@ function setup() {
 	vi.stubGlobal('AudioContext', class {});
 	vi.stubGlobal('AudioWorkletNode', FakeWorklet);
 	vi.stubGlobal('navigator', {});
-	const context = { store, events } as EditorPluginContext;
+	const context = { store, events, loading: store.loading } as EditorPluginContext;
 	const disposeAudio = createAudioRuntimePlugin({
 		getMemory: () => memory,
 		getCodeBuffer: () => new Uint8Array([1]),

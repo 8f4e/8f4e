@@ -261,9 +261,17 @@ describe('AudioWorklet context lifetime', () => {
 		await editor.allow();
 		const port = worklets[0].port as unknown as { onmessage: (event: { data: unknown }) => void };
 
-		port.onmessage({ data: { type: 'initialized', payload: { sampleRate: 48000 } } });
+		expect(editor.state.loadingIndicators).toEqual([{ name: 'audio runtime' }]);
+		port.onmessage({
+			data: {
+				type: 'initialized',
+				requestId: worklets[0].port.postMessage.mock.calls.at(-1)![0].requestId,
+				payload: { sampleRate: 48000 },
+			},
+		});
 		port.onmessage({ data: { type: 'runtimeValues', payload: { audioBufferSize: 128 } } });
 
+		expect(editor.state.loadingIndicators).toEqual([]);
 		expect(editor.events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
 		expect(editor.store.getState().info.audioRuntime).toEqual({ audioBufferSize: 128, sampleRate: 48000 });
 	});

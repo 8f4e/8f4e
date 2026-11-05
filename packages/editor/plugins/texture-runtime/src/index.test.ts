@@ -305,10 +305,12 @@ it('bounds uploads against current WASM memory', async () => {
 
 it('keeps a pending instance through texture edits, and applies the current entry', async () => {
 	const test = await setup({ hold: true });
+	expect(test.state.loadingIndicators).toEqual([{ name: 'texture runtime' }]);
 	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @texture &rgba 16 1 1');
 	test.editConfig(settings + '\n; @config textureRuntime.entry missing');
 	await test.release();
 	await test.settle();
+	expect(test.state.loadingIndicators).toEqual([]);
 	test.frame();
 	expect(test.frameCount()).toBe(0);
 	test.editConfig(settings);

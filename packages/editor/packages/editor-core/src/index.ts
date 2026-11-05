@@ -195,6 +195,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		const initialProjectReady = events.dispatchAsync('init');
 
 		view = await initView(store, events, canvas, memoryViews, {
+			loading: store.loading,
 			initialProjectReady,
 			drawers,
 			renderStatsIntervalFrames: options.renderStatsIntervalFrames,

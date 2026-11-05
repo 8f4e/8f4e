@@ -91,7 +91,7 @@ entryEnd`);
 	memoryViews.float32[target.allocationUnitAddress] = 1.5;
 	memoryViews.float32[target.allocationUnitAddress + 1] = 2.5;
 	memoryViews.int32[compiled.memoryPlan.modules.inspect.memory.pointer.allocationUnitAddress] = target.byteAddress;
-	const renderer = await initView(store, events, canvas, memoryViews, { drawers });
+	const renderer = await initView(store, events, canvas, memoryViews, { loading: store.loading, drawers });
 	try {
 		now.mockReturnValue(1000);
 		renderer.renderFrame();

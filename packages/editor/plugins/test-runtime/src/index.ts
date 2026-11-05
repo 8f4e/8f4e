@@ -16,9 +16,10 @@ export function createTestRuntimePlugin({
 }): EditorPlugin {
 	return {
 		id: 'test-runtime',
-		setup: ({ store, events }) => {
+		setup: ({ store, events, loading }) => {
 			const state = store.getState();
 			let worker: Worker | undefined;
+			let finishStartupLoading: (() => void) | undefined;
 			let assertions: TestAssertionResult[] = [];
 			const publishErrors = () =>
 				store.set('codeErrors.test-runtime', assertionErrors(assertions, state.codeBlockRendering.rootProject));
@@ -44,6 +45,8 @@ export function createTestRuntimePlugin({
 			}
 
 			function stopWorker() {
+				finishStartupLoading?.();
+				finishStartupLoading = undefined;
 				worker?.terminate();
 				worker = undefined;
 			}
@@ -67,6 +70,7 @@ export function createTestRuntimePlugin({
 				stopWorker();
 				const currentWorker = new WorkerConstructor();
 				worker = currentWorker;
+				finishStartupLoading = loading.add({ name: 'test runtime' });
 				publish({ status: 'running' });
 
 				const finish = (data: TestRunResult) => {
@@ -80,7 +84,12 @@ export function createTestRuntimePlugin({
 				};
 				currentWorker.onmessage = ({ data }: MessageEvent<TestRunResult>) => finish(data);
 				currentWorker.onerror = event => finish({ status: 'error', error: event.message });
-				currentWorker.postMessage({ codeBuffer: getCodeBuffer(), memory, assertionSites });
+				try {
+					currentWorker.postMessage({ codeBuffer: getCodeBuffer(), memory, assertionSites });
+				} catch (error) {
+					stopWorker();
+					throw error;
+				}
 			}
 
 			store.set('editorConfigSchemaContributions.testRuntime', {

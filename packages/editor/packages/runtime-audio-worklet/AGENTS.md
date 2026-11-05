@@ -21,3 +21,5 @@
 - Commits: `runtime-audio-worklet: <change>`; PRs should describe audio thread implications.
 
 - Page-side editor integration and lifecycle tests live in `packages/editor/plugins/audio-runtime`. This package owns execution code and its message protocol.
+
+- Carry `requestId` through init and initialized/error replies. Ignore stale initialization completion; loading UI stays in the host plugin.

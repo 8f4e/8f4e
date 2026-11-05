@@ -28,11 +28,12 @@ function setup() {
 	const state = createMockState({ editorConfig: { font: 'ibmvga8x16', color: { primary: '#ffffff' } } });
 	const store = createStateManager(state);
 	const applyFont = vi.fn();
+	const loading = { add: vi.fn(() => vi.fn()) };
 	const applyPalette = vi.fn();
 	const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
-	const dispose = subscribeToAppearance(store, events, applyFont, applyPalette);
+	const dispose = subscribeToAppearance(store, events, loading, applyFont, applyPalette);
 	cleanups.push(store.dispose, dispose);
-	return { state, store, applyFont, applyPalette, events, dispose };
+	return { state, store, applyFont, applyPalette, events, dispose, loading };
 }
 
 describe('appearance subscriptions', () => {
@@ -54,6 +55,10 @@ describe('appearance subscriptions', () => {
 		loadFontAtlas.mockReturnValueOnce(older.promise).mockReturnValueOnce(newer.promise);
 		test.store.set('editorConfig.font', 'terminus8x16');
 		test.store.set('editorConfig.font', '6x10');
+		expect(test.loading.add).toHaveBeenNthCalledWith(1, { name: 'font terminus8x16' });
+		expect(test.loading.add).toHaveBeenNthCalledWith(2, { name: 'font 6x10' });
+		expect(test.loading.add.mock.results[0].value).toHaveBeenCalled();
+		expect(test.loading.add.mock.results[1].value).not.toHaveBeenCalled();
 		test.store.set('editorConfig.color', { primary: '#00ff00' });
 		const atlas = { grid: { cellWidth: 6, cellHeight: 10 } } as FontAtlas;
 		newer.resolve(atlas);
@@ -73,6 +78,7 @@ describe('appearance subscriptions', () => {
 		loadFontAtlas.mockReturnValueOnce(pending.promise);
 		test.store.set('editorConfig.font', 'terminus8x16');
 		test.dispose();
+		expect(test.loading.add.mock.results[0].value).toHaveBeenCalled();
 		test.store.set('editorConfig', { font: '6x10', color: { primary: '#00ff00' } });
 		pending.resolve({} as FontAtlas);
 		await pending.promise;

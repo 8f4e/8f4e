@@ -1,5 +1,5 @@
 import { toPaletteBytes } from '@8f4e/editor-palette';
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { EditorLoadingRegistry, EventDispatcher, State } from '@8f4e/editor-state-types';
 import loadFontAtlas, { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
 import { Engine } from 'glugglugglug';
@@ -44,6 +44,7 @@ export interface RenderStats {
 }
 
 export interface WebUiOptions {
+	loading: EditorLoadingRegistry;
 	/** Startup project preparation may run alongside the initial font download. */
 	initialProjectReady?: Promise<void>;
 	drawers?: EditorDrawerHost;
@@ -56,7 +57,7 @@ export default async function init(
 	events: EventDispatcher,
 	canvas: HTMLCanvasElement,
 	memoryViews: MemoryViews,
-	options: WebUiOptions = {}
+	options: WebUiOptions
 ): Promise<{
 	resize: (width: number, height: number) => boolean;
 	releaseRenderingResources: () => void;
@@ -103,7 +104,7 @@ export default async function init(
 		engine.destroy();
 		throw error;
 	}
-	const unsubscribeAppearance = subscribeToAppearance(store, events, installFontAtlas, palette => {
+	const unsubscribeAppearance = subscribeToAppearance(store, events, options.loading, installFontAtlas, palette => {
 		const bytes = toPaletteBytes(palette);
 		engine.setPalette(bytes);
 		background.setPalette(bytes);

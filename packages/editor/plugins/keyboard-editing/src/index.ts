@@ -11,6 +11,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			let caret: ReturnType<typeof import('./editing')['createCaretPresentation']> | undefined;
 			const removeCaret = context.drawers.registerCodeBlockDrawer(drawContext => caret?.drawCaret(drawContext));
 			let loading = false;
+			let finishLoading: (() => void) | undefined;
 			let disposed = false;
 			let replaying = false;
 			const queued: Array<KeyboardEvent | FocusEvent> = [];
@@ -34,6 +35,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			const load = async () => {
 				if (loading || editing) return;
 				loading = true;
+				finishLoading = context.loading.add({ name: 'text editing' });
 				try {
 					const module = await import('./editing');
 					if (disposed) return;
@@ -46,6 +48,8 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 					if (!disposed) logError(store.getState(), `Failed to load keyboard editing: ${String(error)}`);
 				} finally {
 					loading = false;
+					finishLoading?.();
+					finishLoading = undefined;
 				}
 			};
 			const onModeChanged = () => {
@@ -80,6 +84,8 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			onModeChanged();
 			return () => {
 				disposed = true;
+				finishLoading?.();
+				finishLoading = undefined;
 				discardInput();
 				removeCaret();
 				caret?.dispose();

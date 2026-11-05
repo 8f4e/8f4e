@@ -27,3 +27,9 @@ and removes it together with the presentation layout listener on disposal; it dr
 once the implementation has loaded and only for the selected block in edit mode.
 
 The loaded implementation handles native `paste` events using `clipboardData` plain text. `insertText` splices single- or multiline text at the caret, preserving the current line prefix/suffix and placing the caret at the inserted text's end. Paste submits one source-edit batch, using the same history and compiler notifications as typing. Paste events are not buffered during loading.
+
+## Loading indicators
+
+The first editing-implementation import contributes `text editing` through the plugin context’s loading
+service. Completion, failure, and disposal remove it; the loaded implementation is reused across later mode
+changes.

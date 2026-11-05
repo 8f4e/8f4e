@@ -12,11 +12,22 @@ export function createExampleModulesPlugin({
 }): EditorPlugin {
 	return {
 		id: 'example-modules',
-		setup: ({ store, events, menus }) => {
+		setup: ({ store, events, menus, loading }) => {
 			const state = store.getState();
 			const catalog = createModuleCatalog(sources);
 			const categories = buildCategoryTree(catalog.modules);
 			let disposed = false;
+			const pendingLoads = new Set<() => void>();
+			const loadSource = async (slug: string) => {
+				const finishLoading = loading.add({ name: `module ${slug}` });
+				pendingLoads.add(finishLoading);
+				try {
+					return await catalog.getModule(slug);
+				} finally {
+					pendingLoads.delete(finishLoading);
+					finishLoading();
+				}
+			};
 			const unregisterMenu = menus.registerMenu(EXAMPLE_MODULES_MENU, (_state, { path }: { path: string[] }) =>
 				getCategoryMenuItems(categories, path)
 			);
@@ -32,8 +43,8 @@ export function createExampleModulesPlugin({
 			);
 
 			const addModule = async ({ slug, x, y }: { slug: string; x: number; y: number }) => {
-				if (state.editorMode !== 'edit') return;
-				const source = await catalog.getModule(slug);
+				if (disposed || state.editorMode !== 'edit') return;
+				const source = await loadSource(slug);
 				if (disposed || state.editorMode !== 'edit') return;
 				const code = extractPublicBlockFromModuleSource(source);
 				events.dispatch('insertCodeBlock', { code, x, y });
@@ -41,9 +52,10 @@ export function createExampleModulesPlugin({
 				const vGrid = state.viewport.vGrid;
 				let gridX = Math.round((state.viewport.x + x) / vGrid) + getCodeBlockGridWidth(code) + gap;
 				for (const dependency of catalog.getDependenciesFromSource(slug, source)) {
+					if (disposed || state.editorMode !== 'edit') return;
 					let dependencySource: string;
 					try {
-						dependencySource = await catalog.getModule(dependency);
+						dependencySource = await loadSource(dependency);
 					} catch (error) {
 						console.warn(`Failed to load dependency: ${dependency}`, error);
 						continue;
@@ -69,6 +81,8 @@ export function createExampleModulesPlugin({
 			events.on(ADD_EXAMPLE_MODULE, addModule);
 			return () => {
 				disposed = true;
+				for (const finishLoading of pendingLoads) finishLoading();
+				pendingLoads.clear();
 				events.off(ADD_EXAMPLE_MODULE, addModule);
 				unregisterItem();
 				unregisterMenu();

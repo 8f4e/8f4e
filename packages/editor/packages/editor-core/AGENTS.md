@@ -45,6 +45,8 @@
 - DOM mouse/wheel adaptation belongs to `editor-plugin-mouse-input`; touch adaptation and panning belong to
   `editor-plugin-touch-input`. Core keeps the event dispatcher and state effects, with no DOM input
   listeners or `captureWheel` option. Export existing generic viewport update, animation-stop, and grid-snap helpers.
+- Pass the per-editor `loading` service to web-ui options. Font-change subscriptions own their loading removers
+  and release them on completion, failure, supersession, or renderer disposal.
 - Font/color schemas, validators, defaults, and subscriptions belong to web-ui. Register them through
   `registerWebUiConfig(store)` before plugins/project loading. Initialize the view with the store and events; do not
   restore core font-atlas or palette management. State reacts only to `gridSizeChanged` and shared grid dimensions.

@@ -218,7 +218,9 @@ describe('example modules plugin', () => {
 		});
 		const test = setup({ sources: new Map([['audio/target', () => pending]]) });
 		const insertion = test.addModule();
+		expect(test.state.loadingIndicators).toEqual([{ name: 'module target' }]);
 		test.disposePlugin();
+		expect(test.state.loadingIndicators).toEqual([]);
 		finish(publicSource(mainCode));
 		await insertion;
 		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env']);
@@ -238,7 +240,9 @@ describe('example modules plugin', () => {
 		});
 		const insertion = test.addModule();
 		await vi.waitFor(() => expect(loadDependency).toHaveBeenCalledOnce());
+		expect(test.state.loadingIndicators).toEqual([{ name: 'module dep' }]);
 		test.disposePlugin();
+		expect(test.state.loadingIndicators).toEqual([]);
 		finish(publicSource(dependencyCode, 'constants'));
 		await insertion;
 		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'target']);

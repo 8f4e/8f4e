@@ -64,6 +64,7 @@ entryEnd`);
 	memoryViews.int32[memory.playhead.allocationUnitAddress] = memory.samples.byteAddress + 40 * 4;
 
 	const renderer = await initView(store, events, canvas, memoryViews, {
+		loading: store.loading,
 		drawers,
 	});
 
