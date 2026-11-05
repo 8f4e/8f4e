@@ -122,7 +122,7 @@
   State retains `status`, `startedAt`, and `finishedAt` in the unified `state.loadingIndicators` list. Reusing an ID
   replaces its entry; old handles cannot update the replacement. The eager `editor-plugin-loading-indicators` owns
   prepared elapsed-time/status drawing and private visibility bookkeeping; it never deletes state contributions.
-  Done results hide after one second, failed/cancelled after five. Expired items hide oldest finish first at 50 ms
+  Done results hide after one second, failed/cancelled after five. Expired items hide oldest finish first at 25 ms
   intervals. Hiding sleeps until needed and runs independently of drawing; same-ID replacements become visible again.
 - Assertion marker geometry and drawing belong to `editor-plugin-assertion-markers`. Retain raw runtime results and
   contributor-owned `CodeError` lists in core; test-runtime publishes assertion errors and error-messages owns

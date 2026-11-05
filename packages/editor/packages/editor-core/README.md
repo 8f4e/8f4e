@@ -70,7 +70,7 @@ Plugins publish operations with `loading.add({ id, message })`, receiving `done(
 The first terminal call records a finish timestamp and retains the result in the unified `state.loadingIndicators`
 list. A repeated ID replaces its entry without allowing old handles to update it. State records epoch-millisecond
 start/finish times. The loading-indicators plugin draws prepared elapsed-time/status rows and tracks visibility
-privately: done results hide after one second, failed/cancelled after five, oldest eligible finish first at 50 ms
+privately: done results hide after one second, failed/cancelled after five, oldest eligible finish first at 25 ms
 intervals. Contributions stay in state independently of presentation; same-ID replacements become visible again.
 
 Keep browser dependencies in plugin factories rather than the shared setup context. A browser host can create

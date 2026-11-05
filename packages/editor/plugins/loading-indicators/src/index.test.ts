@@ -88,7 +88,7 @@ it('draws cached results, hides them by outcome, and retains every contribution'
 	expect(readState).not.toHaveBeenCalled();
 	vi.advanceTimersByTime(1);
 	expect(visibleMessages()).toEqual(['Old task...', 'Still working...']);
-	vi.advanceTimersByTime(49);
+	vi.advanceTimersByTime(24);
 	expect(visibleMessages()).toHaveLength(2);
 	vi.advanceTimersByTime(1);
 	expect(visibleMessages()).toEqual(['Still working...']);

@@ -65,7 +65,7 @@
   State retains `status`, `startedAt`, and `finishedAt` in the unified `state.loadingIndicators` list. Reusing an ID
   replaces its entry; old handles cannot update the replacement. The eager `editor-plugin-loading-indicators` owns
   prepared elapsed-time/status drawing and private visibility bookkeeping; it never deletes state contributions.
-  Done results hide after one second, failed/cancelled after five. Expired items hide oldest finish first at 50 ms
+  Done results hide after one second, failed/cancelled after five. Expired items hide oldest finish first at 25 ms
   intervals. Hiding sleeps until needed and runs independently of drawing; same-ID replacements become visible again.
 - `@8f4e/editor-plugin-error-messages` owns inline error wrapping, layout reservations, coordinates, and drawing.
   Core retains raw `CodeError` lists in `state.codeErrors`, keyed by contributor. Compiler, editor directives, and

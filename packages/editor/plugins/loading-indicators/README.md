@@ -39,7 +39,7 @@ records timestamps and terminal results without removing entries.
 The plugin never deletes contributions. It tracks hidden attempts privately by object identity, so a new
 contribution with the same ID becomes visible again. Done results become eligible to hide after one second;
 failed and cancelled results after five seconds. Pending operations stay visible. Among eligible results, the
-oldest finish timestamp hides first, with at least 50 ms between hides. An older failure still in its grace period
+oldest finish timestamp hides first, with at least 25 ms between hides. An older failure still in its grace period
 does not prevent a newer done result from hiding.
 
 The visibility timer sleeps until the next expiry and stops when no visible finished entries remain. Hiding works

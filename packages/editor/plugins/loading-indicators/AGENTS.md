@@ -11,7 +11,7 @@
 - Never delete or mutate contributions to hide them. Keep hidden attempts private by object identity, so same-ID
   replacements become visible again. Done results expire after one second; failed/cancelled after five seconds.
 - Install eagerly before deferred imports. Sleep until the next expiry, then hide the oldest eligible finish first,
-  spacing hides by at least 50 ms. Do not poll without visible finished entries. Pending operations stay visible.
+  spacing hides by at least 25 ms. Do not poll without visible finished entries. Pending operations stay visible.
   Hiding runs when drawing is disabled. Dispose timers, subscriptions, and the drawer.
 - Run `npx nx run @8f4e/editor-plugin-loading-indicators:build|test|typecheck`.
   Run `npx nx run @8f4e/editor-plugin-loading-indicators:test:screenshot` for the loading-indicator browser cases
