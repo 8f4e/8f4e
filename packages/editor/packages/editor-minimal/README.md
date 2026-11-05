@@ -1,9 +1,11 @@
 # Minimal Editor
 
-`@8f4e/editor-minimal` composes the core editor for embedded examples, compiler tests, and landing-page demos.
+`@8f4e/editor-minimal` composes the core editor for embedded examples and compiler tests.
 It supports live compilation and interactive controls, loads project source from a URL, and uses its `@mode` directive
 to select the initial mode (view by default).
 Each mount starts fresh; it does not restore or save browser sessions.
+The product landing page uses [`@8f4e/editor-landing`](../editor-landing/README.md), which omits entry outlines,
+offscreen block arrows, context menus, project saving/export, file-session tracking, and block copy/paste.
 
 ```ts
 import { mountMinimalEditor } from '@8f4e/editor-minimal';

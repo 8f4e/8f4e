@@ -1,6 +1,7 @@
 # Minimal Editor Package Guidelines
 
-- Own the embedded composition for the product homepage and example/test galleries. Build directly on editor-core;
+- Own the embedded composition for example/test galleries. The product homepage uses editor-landing without
+  entry outlines, offscreen arrows, or context menus. Build directly on editor-core;
   do not import editor-default or its built-in module catalog.
 - Keep file-session, project URL loading, compiler coordination, block backgrounds, and code rendering eager. Import
   `src/deferred-plugins.ts` on core's `ready` event, after initial project loading/parsing, font-atlas loading, and

@@ -16,6 +16,7 @@
 	"homepage": "https://github.com/8f4e/8f4e#readme",
 	"dependencies": {
 		"@8f4e/editor-minimal": "*",
+		"@8f4e/editor-landing": "*",
 		"@8f4e/editor-webmcp": "*"
 	},
 	"devDependencies": {

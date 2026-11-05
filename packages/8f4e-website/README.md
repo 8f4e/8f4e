@@ -1,14 +1,17 @@
 # 8f4e Website
 
-`@8f4e/8f4e-website` contains a product homepage, an examples gallery, and a compiler test gallery using
-[`@8f4e/editor-minimal`](../editor/packages/editor-minimal/README.md). The embedded composition keeps live editing,
-controls, visualizations, runtimes, and URL loading. Each mount starts fresh, with no browser session persistence,
-file/export/screenshot menus, built-in module browser, or optional authoring-action plugins. The website
+`@8f4e/8f4e-website` contains a product homepage using
+[`@8f4e/editor-landing`](../editor/packages/editor-landing/README.md), plus examples and compiler test galleries using
+[`@8f4e/editor-minimal`](../editor/packages/editor-minimal/README.md). Both embedded compositions keep live editing,
+controls, visualizations, runtimes, and URL loading. The landing editor omits entry outlines, offscreen block arrows,
+context menus, project saving/export, file-session tracking, and block copy/paste. Plain-text paste remains available
+through keyboard editing. Each mount starts fresh, with no browser session persistence,
+WASM export, screenshots, built-in module browser, or optional authoring-action plugins. The website
 controls the canvas size. Homepage editors leave wheel scrolling to the surrounding document and start in edit mode
 with mode switching disabled.
 
 `src/homepage.ts` exports `mountHomepageEditors`, which owns the homepage editors, visibility observers, and disposal;
-`src/main.ts` mounts it. The homepage reveals canvases through the minimal editor's initial-project completion callback
+`src/main.ts` mounts it. The homepage reveals canvases through the landing editor's initial-project completion callback
 and displays a reload message when URL loading fails.
 
 From the workspace root:

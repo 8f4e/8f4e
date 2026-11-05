@@ -1,4 +1,4 @@
-import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
+import { type LandingEditorInstance, mountLandingEditor } from '@8f4e/editor-landing';
 import { getExampleProjectUrl } from './example-projects';
 import { sharedAudioContext } from './shared-audio-context';
 
@@ -9,8 +9,8 @@ export function mountHomepageEditors(): () => void {
 	}
 
 	const renderingReleaseDelayMs = 2_000;
-	const editorByCanvas = new Map<HTMLCanvasElement, MinimalEditorInstance>();
-	const editorMountPromiseByCanvas = new Map<HTMLCanvasElement, Promise<MinimalEditorInstance>>();
+	const editorByCanvas = new Map<HTMLCanvasElement, LandingEditorInstance>();
+	const editorMountPromiseByCanvas = new Map<HTMLCanvasElement, Promise<LandingEditorInstance>>();
 	const renderingReleaseTimeoutByCanvas = new Map<HTMLCanvasElement, number>();
 	const revealAnimationFrameByCanvas = new Map<HTMLCanvasElement, number>();
 	let disposed = false;
@@ -58,13 +58,13 @@ export function mountHomepageEditors(): () => void {
 		}
 	});
 
-	function mountEditor(canvas: HTMLCanvasElement): Promise<MinimalEditorInstance> {
+	function mountEditor(canvas: HTMLCanvasElement): Promise<LandingEditorInstance> {
 		const pendingMount = editorMountPromiseByCanvas.get(canvas);
 		if (pendingMount) {
 			return pendingMount;
 		}
 
-		const mountPromise = mountMinimalEditor(canvas, {
+		const mountPromise = mountLandingEditor(canvas, {
 			sharedAudioContext,
 			captureWheel: false,
 			touchNavigation: { axis: 'horizontal' },
