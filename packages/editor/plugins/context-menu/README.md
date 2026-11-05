@@ -9,7 +9,7 @@ activation through `activateContextMenuItem { index, x, y }`, or closure through
 hit-tested directly, including taps without a preceding pointer move. Geometry and labels remain private to each
 installation and refresh on menu, grid, viewport, and resize changes, outside the frame loop.
 
-Drawing uses generic `registerCanvasDrawer`, above code blocks and below canvas/modal overlays. Menus remain
+Drawing uses `registerContextMenuOverlay`, above editor overlays and below modal dialogs. Menus remain
 visible when `canvasOverlays` is false. The plugin can load through an unconditional
 deferred entry after `ready`; the plugin needs no browser globals or injected browser resources.
 

@@ -14,7 +14,7 @@ interface DisposableEventDispatcher extends EventDispatcher {
 }
 
 export default function events(): DisposableEventDispatcher {
-	type Subscription = { handler: EventHandler<unknown>; priority: number };
+	type Subscription = { handler: EventHandler<unknown>; layer?: number };
 	const subscriptions: Record<string, { capture: Subscription[]; normal: Subscription[] }> = {};
 
 	function on<T>(eventName: string, callback: EventHandler<T>, options: EventSubscriptionOptions = {}): void {
@@ -22,8 +22,7 @@ export default function events(): DisposableEventDispatcher {
 			subscriptions[eventName] = { capture: [], normal: [] };
 		}
 		const listeners = subscriptions[eventName][options.capture ? 'capture' : 'normal'];
-		listeners.push({ handler: callback as EventHandler<unknown>, priority: options.priority ?? 0 });
-		listeners.sort((a, b) => b.priority - a.priority);
+		listeners.push({ handler: callback as EventHandler<unknown>, layer: options.layer });
 	}
 
 	function off<T>(eventName: string, callback: EventHandler<T>): void {
@@ -44,11 +43,24 @@ export default function events(): DisposableEventDispatcher {
 		if (!subscriptions[type]) {
 			return;
 		}
-		const phases = options.phase
-			? [subscriptions[type][options.phase]]
-			: [subscriptions[type].capture, subscriptions[type].normal];
-		for (const handlers of phases) {
-			for (const { handler } of [...handlers]) {
+		const listeners = subscriptions[type];
+		const phaseNames = options.phase ? [options.phase] : (['capture', 'normal'] as const);
+		// UI registrations are snapshotted together; ordinary listeners keep their existing phase-by-phase delivery.
+		const phases = phaseNames.map(phase => [...listeners[phase]]);
+		const layers = [...new Set(phases.flat().flatMap(({ layer }) => (layer === undefined ? [] : [layer])))].sort(
+			(a, b) => b - a
+		);
+		const ordered = layers.flatMap(layer =>
+			phases.flatMap(handlers => handlers.filter(subscription => subscription.layer === layer).reverse())
+		);
+		for (const { handler } of ordered) {
+			if (eventObject && (eventObject as EventObject).stopPropagation) return;
+			const result = handler(eventObject);
+			pending?.push(result);
+		}
+		for (const phase of phaseNames) {
+			for (const { handler, layer } of [...listeners[phase]]) {
+				if (layer !== undefined) continue;
 				if (eventObject && (eventObject as EventObject).stopPropagation) return;
 				const result = handler(eventObject);
 				pending?.push(result);

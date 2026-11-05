@@ -33,7 +33,9 @@ function buttonBounds(state: State) {
 
 export function createJumpToErrorPlugin({
 	getErrorBounds,
+	layer,
 }: {
+	layer: number;
 	getErrorBounds: (state: State, codeBlock: CodeBlockGraphicData, error: CodeError) => (Position & Size) | undefined;
 }): EditorPlugin {
 	return {
@@ -114,10 +116,10 @@ export function createJumpToErrorPlugin({
 				);
 				draw.endGroup();
 			});
-			events.on('pointerdown', onPointerDown, { capture: true, priority: 1 });
-			events.on('pointermove', onPointerMove, { capture: true, priority: 1 });
-			events.on('pointerup', release, { capture: true, priority: 1 });
-			events.on('pointercancel', release, { capture: true, priority: 1 });
+			events.on('pointerdown', onPointerDown, { capture: true, layer });
+			events.on('pointermove', onPointerMove, { capture: true, layer });
+			events.on('pointerup', release, { capture: true, layer });
+			events.on('pointercancel', release, { capture: true, layer });
 			events.on('loadProject', reset);
 			return () => {
 				removeDrawer();

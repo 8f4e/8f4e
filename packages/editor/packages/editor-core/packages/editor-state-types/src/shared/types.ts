@@ -32,10 +32,12 @@ export interface GridCoordinates {
 }
 
 export interface EventSubscriptionOptions {
-	/** Run before ordinary listeners. */
+	/** Run in the capture phase of this layer, or before unlayered normal listeners. */
 	capture?: boolean;
-	/** Higher priorities run first within a phase. Equal priorities retain registration order. Default: 0. */
-	priority?: number;
+	/** UI handlers run from higher layers to lower layers, newest registration first within each phase.
+	 * Unlayered listeners retain capture/normal registration order after the UI layers.
+	 */
+	layer?: number;
 }
 
 /**

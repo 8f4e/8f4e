@@ -1,5 +1,6 @@
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { CodeBlockPointerDownEvent, InternalPointerEvent } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { afterEach, expect, it, vi } from 'vitest';
 import createEvents from './events';
 
@@ -174,4 +175,33 @@ it.each(['pointerup', 'pointercancel'])('releases a claimed control on %s', type
 	test.events.on('codeBlockPointerUp', released);
 	test.events.dispatch(type, test.pointer, { phase: 'capture' });
 	expect(released).toHaveBeenCalledOnce();
+});
+
+it('gives dialogs and context menus precedence over a later overlay handler', () => {
+	const test = setup();
+	const overlay = vi.fn((event: InternalPointerEvent) => {
+		event.stopPropagation = true;
+	});
+	test.events.on('pointerdown', overlay, { capture: true, layer: INPUT_LAYERS.canvasOverlay });
+	test.events.dispatch('contextmenu', { ...test.pointer });
+	test.events.dispatch('pointerdown', { ...test.pointer });
+	expect(overlay).not.toHaveBeenCalled();
+	test.events.dispatch('closeContextMenu');
+	test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Wait', buttons: [] });
+	test.events.dispatch('pointerdown', { ...test.pointer });
+	expect(overlay).not.toHaveBeenCalled();
+});
+
+it('offers input to the most recently registered control inside the foremost block', () => {
+	const test = setup();
+	const lower = vi.fn();
+	const upper = vi.fn((event: CodeBlockPointerDownEvent) => {
+		event.stopPropagation = true;
+	});
+	test.events.on('codeBlockPointerDown', lower, { capture: true, layer: INPUT_LAYERS.codeBlock });
+	test.events.on('codeBlockPointerDown', upper, { capture: true, layer: INPUT_LAYERS.codeBlock });
+	test.events.dispatch('pointerdown', test.pointer);
+	expect(upper).toHaveBeenCalledOnce();
+	expect(lower).not.toHaveBeenCalled();
+	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 });

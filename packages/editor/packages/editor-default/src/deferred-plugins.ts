@@ -1,6 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import type { ProjectFileSession } from '@8f4e/editor-file-session';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { createDefaultEditorPlugins } from './index';
 import { createLazyPluginRegistry } from './lazy-plugins';
 
@@ -45,6 +46,7 @@ export function createDeferredEditorPlugin(
 				Promise.all([import('@8f4e/editor-plugin-jump-to-error'), import('@8f4e/editor-plugin-error-messages')]).then(
 					([navigation, messages]) =>
 						navigation.createJumpToErrorPlugin({
+							layer: INPUT_LAYERS.canvasOverlay,
 							getErrorBounds: (state, codeBlock, error) =>
 								messages.getErrorMessageBounds(state, codeBlock).find(bounds => bounds.error === error),
 						})

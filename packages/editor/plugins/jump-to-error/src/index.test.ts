@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, InternalPointerEvent, State } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -33,7 +34,7 @@ function setup() {
 		width: 120,
 		height: 48,
 	}));
-	const dispose = createJumpToErrorPlugin({ getErrorBounds }).setup({
+	const dispose = createJumpToErrorPlugin({ getErrorBounds, layer: INPUT_LAYERS.canvasOverlay }).setup({
 		store,
 		events,
 		menus: store.menus,

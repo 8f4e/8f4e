@@ -32,11 +32,11 @@
   The default and minimal compositions defer drawing until `ready`; entry assignment works independently of the plugin.
 - `@8f4e/editor-plugin-context-menu` owns menu labels, sizing, grid snapping, viewport clamping, hover state, hit testing,
   and drawing. Core keeps raw items, requested world anchors, menu navigation, input blocking, and action/selector dispatch.
-  The default and minimal compositions defer it until `ready`. Web-ui exposes generic `registerCanvasDrawer` before canvas/modal overlays.
+  The default and minimal compositions defer it until `ready`. Web-ui exposes `registerContextMenuOverlay` above editor overlays and below modal dialogs.
 - `@8f4e/editor-plugin-dialogs` owns dialog dimensions, wrapping/clipping, private button geometry/hit testing,
   and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
   Editor compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
-  `registerModalOverlay` after ordinary overlays, independently of `canvasOverlays`.
+  `registerModalOverlay` after context-menu overlays, independently of `canvasOverlays`.
 - `@8f4e/editor-plugin-selection-animation` owns the selected block's circling segment and uses the generic ordered block
   drawing hook. Its deferred entries are commented out in default/minimal and omitted from landing; core retains selection state and geometry.
 - Web-ui contributes font/color configuration through `registerWebUiConfig(store)` and owns defaults, loading, and
@@ -95,6 +95,11 @@
   The standard plugin set is composed in `editor-default`.
   `editor-plugin-example-modules` owns built-in block menus, catalog metadata, lazy source caching, public-block
   selection, and dependency insertion. The default editor supplies source loaders; core owns generic submenu registration.
+
+- UI event subscriptions use numeric layers matching drawer stages. Higher layers run first; capture/normal handlers
+  inside each layer run in reverse registration order. Unlayered notifications and default effects retain their ordering.
+  Plugins receive configurable layers at factory construction where needed. Drawing remains in registration order;
+  code-block targeting already follows the reverse of block stacking. `INPUT_LAYERS` lives in editor-state-types.
 
 ## Build, Test, Dev
 

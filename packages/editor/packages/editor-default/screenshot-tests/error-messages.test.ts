@@ -72,6 +72,25 @@ entryEnd`;
 		expect(editor.state.viewport.x).toBe(Math.round(bounds.x + bounds.width / 2 - 320));
 		expect(editor.state.viewport.y).toBe(Math.round(bounds.y + bounds.height / 2 - 192));
 
+		// Sample a solid part of the jump button: menu labels may arrive in different lazy-plugin orders.
+		const gl = canvas.getContext('webgl2')!;
+		const readButtonPixel = () => {
+			const pixel = new Uint8Array(4);
+			gl.readPixels(516, canvas.height - 1 - 328, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+			return [...pixel];
+		};
+		editor.renderFrame();
+		const buttonPixel = readButtonPixel();
+		// A context menu is drawn and hit-tested above the floating jump button.
+		await userEvent.click(canvas, { button: 'right', position: { x: 620, y: 344 } });
+		await expect.poll(() => editor.state.contextMenu.open && editor.state.contextMenu.items.length > 0).toBe(true);
+		editor.renderFrame();
+		expect(readButtonPixel()).not.toEqual(buttonPixel);
+		const menuViewport = { x: editor.state.viewport.x, y: editor.state.viewport.y };
+		await userEvent.click(canvas, { position: { x: 8, y: 8 } });
+		expect(editor.state.contextMenu.open).toBe(false);
+		expect(editor.state.viewport).toMatchObject(menuViewport);
+
 		editor.editing.applyEdits({
 			expectedRevision: editor.editing.getRevision(),
 			edits: [

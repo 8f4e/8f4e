@@ -2,6 +2,7 @@ import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { getCodeBlockErrors } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, CodeError, InternalPointerEvent, State } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { expect, test, vi } from 'vitest';
 import { createJumpToErrorPlugin } from '../src/index';
@@ -38,7 +39,7 @@ async function setup(source: string) {
 					};
 				},
 			},
-			createJumpToErrorPlugin({ getErrorBounds }),
+			createJumpToErrorPlugin({ getErrorBounds, layer: INPUT_LAYERS.canvasOverlay }),
 		],
 	});
 	editor.pauseRendering();
@@ -134,6 +135,33 @@ entryEnd`);
 		expect(state.viewport.x).toBe(bounds.x + bounds.width / 2 - 320);
 		expect(state.viewport.y).toBe(bounds.y + bounds.height / 2 - 192);
 		expect(editor.editing.getRevision()).toBe(revision);
+	} finally {
+		fixture.dispose();
+	}
+});
+
+test('a later overlay can consume a press before the jump button', async () => {
+	const fixture = await setup(`8f4e/v1
+entry main
+module target
+; @pos 60 20
+push 1
+moduleEnd
+entryEnd`);
+	try {
+		const { state, context } = fixture;
+		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+		context.store.set('codeErrors.fixture', [{ codeBlockId: block.creationIndex, lineNumber: 2, message: 'Fixture' }]);
+		const previous = { x: state.viewport.x, y: state.viewport.y };
+		const intercept = (event: InternalPointerEvent) => {
+			event.stopPropagation = true;
+		};
+		context.events.on('pointerdown', intercept, { capture: true, layer: INPUT_LAYERS.canvasOverlay });
+		fixture.press();
+		expect(state.viewport).toMatchObject(previous);
+		context.events.off('pointerdown', intercept);
+		fixture.press();
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
 	} finally {
 		fixture.dispose();
 	}

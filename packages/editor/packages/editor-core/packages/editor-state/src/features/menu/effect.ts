@@ -6,6 +6,7 @@ import type {
 	MenuStackEntry,
 	State,
 } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import findCodeBlockAtViewportCoordinates from '../code-blocks/utils/finders/findCodeBlockAtViewportCoordinates';
 import * as menus from './menus';
@@ -82,12 +83,12 @@ export default function contextMenu(
 	};
 
 	events.on('openSubMenu', onOpenSubMenu);
-	events.on('contextmenu', onContextMenu);
+	events.on('contextmenu', onContextMenu, { layer: INPUT_LAYERS.contextMenu });
 	events.on('menuBack', onMenuBack);
 	events.on('activateContextMenuItem', activateItem);
 	events.on('closeContextMenu', close);
-	events.on('pointerdown', onPointerDown);
-	events.on('pointermove', onPointerMove, { capture: true });
+	events.on('pointerdown', onPointerDown, { layer: INPUT_LAYERS.contextMenu });
+	events.on('pointermove', onPointerMove, { capture: true, layer: INPUT_LAYERS.contextMenu });
 
 	return () => {
 		for (const unregister of unregisterMenus) unregister();

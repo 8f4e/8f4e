@@ -5,6 +5,7 @@ import type {
 	InternalPointerEvent,
 	State,
 } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { ButtonWidget } from '../types';
 
 export function registerButtonInteraction(
@@ -35,8 +36,8 @@ export function registerButtonInteraction(
 		event.stopPropagation = true;
 		writeMemory(pressedButton.allocationUnitAddress, pressedButton.onValue, pressedButton.isInteger);
 	};
-	events.on('codeBlockPointerDown', onPointerDown, { capture: true });
-	events.on('codeBlockPointerUp', release);
+	events.on('codeBlockPointerDown', onPointerDown, { capture: true, layer: INPUT_LAYERS.codeBlock });
+	events.on('codeBlockPointerUp', release, { layer: INPUT_LAYERS.codeBlock });
 	return () => {
 		events.off('codeBlockPointerDown', onPointerDown);
 		events.off('codeBlockPointerUp', release);

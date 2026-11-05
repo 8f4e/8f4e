@@ -5,6 +5,7 @@ import type {
 	InternalPointerEvent,
 	State,
 } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 
 type RemoveDialogEvent = string | { id: string };
@@ -57,10 +58,10 @@ export default function dialog(store: StateManager<State>, events: EventDispatch
 	events.on('removeDialog', removeDialog);
 	events.on('clearDialogs', clearDialogs);
 	events.on('activateDialogButton', activateButton);
-	events.on('pointermove', blockPointerEvent, { capture: true });
-	events.on('pointerdown', onPointerDown);
-	events.on('pointerup', blockPointerEvent);
-	events.on('contextmenu', blockPointerEvent);
+	events.on('pointermove', blockPointerEvent, { capture: true, layer: INPUT_LAYERS.modalOverlay });
+	events.on('pointerdown', onPointerDown, { layer: INPUT_LAYERS.modalOverlay });
+	events.on('pointerup', blockPointerEvent, { layer: INPUT_LAYERS.modalOverlay });
+	events.on('contextmenu', blockPointerEvent, { layer: INPUT_LAYERS.modalOverlay });
 	syncVisibleDialog();
 
 	return () => {

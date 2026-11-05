@@ -32,7 +32,7 @@ export const contextMenuPlugin: EditorPlugin = {
 			if (index === -1) events.dispatch('closeContextMenu');
 			else events.dispatch<ActivateContextMenuItemEvent>('activateContextMenuItem', { index, x: event.x, y: event.y });
 		};
-		const unregisterDrawer = drawers.registerCanvasDrawer(({ draw }) => {
+		const unregisterDrawer = drawers.registerContextMenuOverlay(({ draw }) => {
 			if (layout) drawMenu(draw, state.contextMenu.items, layout, highlighted);
 		});
 		store.subscribe('contextMenu', updateMenu);

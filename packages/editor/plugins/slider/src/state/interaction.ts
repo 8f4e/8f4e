@@ -5,6 +5,7 @@ import type {
 	InternalPointerEvent,
 	State,
 } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { Slider } from '../types';
 
 interface ActiveSlider {
@@ -78,9 +79,9 @@ export function registerSliderInteraction(
 		activeSlider = null;
 	};
 
-	events.on('codeBlockPointerDown', onCodeBlockPointerDown, { capture: true });
-	events.on('codeBlockPointerMove', onPointerMove, { capture: true });
-	events.on('codeBlockPointerUp', onPointerUp);
+	events.on('codeBlockPointerDown', onCodeBlockPointerDown, { capture: true, layer: INPUT_LAYERS.codeBlock });
+	events.on('codeBlockPointerMove', onPointerMove, { capture: true, layer: INPUT_LAYERS.codeBlock });
+	events.on('codeBlockPointerUp', onPointerUp, { layer: INPUT_LAYERS.codeBlock });
 
 	return () => {
 		events.off('codeBlockPointerDown', onCodeBlockPointerDown);

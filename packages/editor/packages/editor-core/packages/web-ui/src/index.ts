@@ -157,6 +157,7 @@ export default async function init(
 		drawCodeBlocks(draw, state, memoryViews, drawers);
 		drawers.drawCanvas({ draw, state, memoryViews });
 		if (state.featureFlags.canvasOverlays) drawers.drawCanvasOverlays({ draw, state, memoryViews });
+		drawers.drawContextMenuOverlays({ draw, state, memoryViews });
 		drawers.drawModalOverlays({ draw, state, memoryViews });
 	};
 

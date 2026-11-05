@@ -51,37 +51,68 @@ describe('event dispatcher', () => {
 		events.dispatch('pointermove');
 		expect(calls).toEqual(['capture first', 'capture second', 'normal first', 'normal second']);
 	});
-	it('orders each phase by priority and retains registration order for ties', () => {
+	it('visits higher UI layers first and handlers within a layer in reverse registration order', () => {
 		const events = createEventDispatcher();
 		const calls: string[] = [];
-		events.on('action', () => calls.push('default capture'), { capture: true });
-		events.on('action', () => calls.push('normal high'), { priority: 100 });
-		events.on('action', () => calls.push('capture high first'), { capture: true, priority: 1 });
-		events.on('action', () => calls.push('capture low'), { capture: true, priority: -1 });
-		events.on('action', () => calls.push('capture high second'), { capture: true, priority: 1 });
-		events.dispatch('action');
+		events.on('input', () => calls.push('ordinary first'));
+		events.on('input', () => calls.push('overlay first'), { layer: 2, capture: true });
+		events.on('input', () => calls.push('dialog'), { layer: 4 });
+		events.on('input', () => calls.push('overlay last'), { layer: 2, capture: true });
+		events.on('input', () => calls.push('block'), { layer: 0, capture: true });
+		events.on('input', () => calls.push('menu'), { layer: 3 });
+		events.on('input', () => calls.push('ordinary last'));
+		events.dispatch('input');
 		expect(calls).toEqual([
-			'capture high first',
-			'capture high second',
-			'default capture',
-			'capture low',
-			'normal high',
+			'dialog',
+			'menu',
+			'overlay last',
+			'overlay first',
+			'block',
+			'ordinary first',
+			'ordinary last',
 		]);
 	});
 
-	it('lets a later high-priority listener stop earlier listeners and unregisters it normally', () => {
+	it('lets a late UI handler consume input and unregisters it without affecting other layers', () => {
 		const events = createEventDispatcher();
-		const early = vi.fn();
+		const lower = vi.fn();
+		const earlier = vi.fn();
+		const ordinary = vi.fn();
 		const consume = (event: { stopPropagation: boolean }) => {
 			event.stopPropagation = true;
 		};
-		events.on('action', early, { capture: true });
-		events.on('action', consume, { capture: true, priority: 1 });
-		events.dispatch('action', { stopPropagation: false });
-		expect(early).not.toHaveBeenCalled();
-		events.off('action', consume);
-		events.dispatch('action', { stopPropagation: false });
-		expect(early).toHaveBeenCalledOnce();
+		events.on('input', earlier, { capture: true, layer: 2 });
+		events.on('input', lower, { capture: true, layer: 0 });
+		events.on('input', ordinary);
+		events.on('input', consume, { capture: true, layer: 2 });
+		events.dispatch('input', { stopPropagation: false });
+		expect(earlier).not.toHaveBeenCalled();
+		expect(lower).not.toHaveBeenCalled();
+		expect(ordinary).not.toHaveBeenCalled();
+		events.off('input', consume);
+		events.dispatch('input', { stopPropagation: false });
+		expect(earlier).toHaveBeenCalledOnce();
+		expect(lower).toHaveBeenCalledOnce();
+		expect(ordinary).toHaveBeenCalledOnce();
+	});
+
+	it('honors capture-only probes inside UI layers without running normal activation handlers', () => {
+		const events = createEventDispatcher();
+		const calls: string[] = [];
+		events.on('input', () => calls.push('normal'), { layer: 3 });
+		events.on('input', () => calls.push('capture first'), { layer: 2, capture: true });
+		events.on('input', () => calls.push('capture last'), { layer: 2, capture: true });
+		events.dispatch('input', undefined, { phase: 'capture' });
+		expect(calls).toEqual(['capture last', 'capture first']);
+	});
+
+	it('retains ordinary notification registration order when capture adds a normal listener', () => {
+		const events = createEventDispatcher();
+		const calls: string[] = [];
+		events.on('notice', () => events.on('notice', () => calls.push('added')), { capture: true });
+		events.on('notice', () => calls.push('existing'));
+		events.dispatch('notice');
+		expect(calls).toEqual(['existing', 'added']);
 	});
 
 	it('lets a capture listener consume an event and unregister normally', () => {

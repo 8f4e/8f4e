@@ -39,6 +39,8 @@ export interface EditorDrawerRegistry {
 	registerCanvasDrawer: (drawer: CanvasDrawer) => () => void;
 	/** Draw over ordinary canvas contents, before modal overlays, using viewport coordinates. */
 	registerCanvasOverlay: (drawer: CanvasDrawer) => () => void;
+	/** Draw context menus above ordinary overlays and below dialogs, independently of canvasOverlays. */
+	registerContextMenuOverlay: (drawer: CanvasDrawer) => () => void;
 	/** Draw above ordinary canvas overlays, independently of the canvasOverlays flag. */
 	registerModalOverlay: (drawer: CanvasDrawer) => () => void;
 }
@@ -51,6 +53,7 @@ export interface EditorDrawerHost extends EditorDrawerRegistry {
 	drawCanvasBackground: CanvasDrawer;
 	drawCanvas: CanvasDrawer;
 	drawCanvasOverlays: CanvasDrawer;
+	drawContextMenuOverlays: CanvasDrawer;
 	drawModalOverlays: CanvasDrawer;
 }
 
@@ -76,6 +79,7 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 	const canvasBackground = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	const canvas = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	const canvasOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
+	const contextMenuOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	const modalOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	return {
 		...createRenderLayerRegistry(),
@@ -89,12 +93,14 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 		registerCanvasBackgroundDrawer: canvasBackground.register,
 		registerCanvasDrawer: canvas.register,
 		registerCanvasOverlay: canvasOverlays.register,
+		registerContextMenuOverlay: contextMenuOverlays.register,
 		registerModalOverlay: modalOverlays.register,
 		drawCodeBlock: blockDrawers.draw,
 		drawOffscreenCodeBlock: (draw, codeBlock, state) => offscreenDrawer?.(draw, codeBlock, state),
 		drawCanvasBackground: canvasBackground.draw,
 		drawCanvas: canvas.draw,
 		drawCanvasOverlays: canvasOverlays.draw,
+		drawContextMenuOverlays: contextMenuOverlays.draw,
 		drawModalOverlays: modalOverlays.draw,
 	};
 }
