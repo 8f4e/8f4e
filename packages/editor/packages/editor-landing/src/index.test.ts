@@ -38,8 +38,6 @@ it('starts without storage and reports empty-project readiness after initializat
 	const options = vi.mocked(initEditor).mock.calls[0][1];
 	expect(options.featureFlags).toEqual({ projectCreation: false, moduleDragging: false, contextMenu: false });
 	expect(options.plugins![0]).toBe(compiler.plugin);
-	expect(options.plugins!.map(plugin => plugin.id)).not.toContain('watch');
-	expect(options.plugins!.map(plugin => plugin.id)).not.toContain('stack');
 	expect(options.plugins!.map(plugin => plugin.id)).toEqual([
 		'compiler',
 		'code-block-background',
@@ -50,50 +48,30 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(createLazyPluginLoaderPlugin).not.toHaveBeenCalled();
 	const deferredPlugins = await loadDeferredPlugins();
 	const entries = vi.mocked(createLazyPluginLoaderPlugin).mock.calls.at(-1)![0];
-	for (const id of [
-		'loading-indicators',
-		'jump-to-error',
-		'context-menu',
-		'block-authoring',
-		'entry-outlines',
-		'offscreen-block-arrows',
-		'project-save',
-		'code-block-copy-paste',
-		'assertion-markers',
-		'keyboard-mode-switching',
-		'dialogs',
-		'test-runtime',
-		'audio-runtime',
-		'texture-runtime',
-		'binary-assets',
-		'midi-input',
-		'keyboard-memory',
-		'bars',
-		'meter',
-		'wave',
-		'crossfade',
-		'switch',
-		'button',
-		'piano',
-	]) {
-		expect(entries.some(entry => entry.id === id)).toBe(false);
-	}
+	expect(entries.map(entry => entry.id)).toEqual([
+		'error-messages',
+		'connectors',
+		'tooltips',
+		'mouse-input',
+		'touch-input',
+		'keyboard-navigation',
+		'keyboard-editing',
+		'watch',
+		'stack',
+		'plot',
+		'slider',
+		'worker-runtime',
+	]);
 	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
-	expect(deferredPlugins.map(plugin => plugin.id)).toContain('mouse-input');
-	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).not.toContain('loading-indicators');
-	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('selection-animation');
-	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-input');
-	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('keyboard-memory');
-	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).toEqual(
-		expect.arrayContaining([
-			'code-block-background',
-			'code-rendering',
-			'connectors',
-			'error-messages',
-			'keyboard-navigation',
-			'keyboard-editing',
-		])
-	);
+	expect(deferredPlugins.map(plugin => plugin.id)).toEqual([
+		'lazy-loader',
+		'error-messages',
+		'connectors',
+		'tooltips',
+		'mouse-input',
+		'keyboard-navigation',
+		'keyboard-editing',
+	]);
 	expect(onInitialProjectLoaded).not.toHaveBeenCalled();
 	const coreEditor = { dispose: vi.fn() } as unknown as Editor;
 	finish(coreEditor);
@@ -104,14 +82,19 @@ it('starts without storage and reports empty-project readiness after initializat
 	editor.dispose();
 });
 
-it('omits all keyboard plugins on coarse-pointer browsers', async () => {
+it('selects touch input on coarse-pointer browsers', async () => {
 	const browserWindow = { navigator: {}, matchMedia: (query: string) => ({ matches: query === '(pointer: coarse)' }) };
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 	await mountLandingEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
 	const plugins = await loadDeferredPlugins();
-	expect(plugins.map(plugin => plugin.id)).toEqual(expect.arrayContaining(['mouse-input', 'touch-input']));
-	for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing'])
-		expect(plugins.some(plugin => plugin.id === id)).toBe(false);
+	expect(plugins.map(plugin => plugin.id)).toEqual([
+		'lazy-loader',
+		'error-messages',
+		'connectors',
+		'tooltips',
+		'mouse-input',
+		'touch-input',
+	]);
 });
 
 it('keeps context-menu requests disabled when the host supplies feature flags', async () => {

@@ -6,7 +6,6 @@ The browser host supplies its canvas; the shared plugin context remains browser 
 Own edit-mode caret movement and drawing, typing, Tab, newline, backspace, and edit-only undo/redo shortcuts. The entry point buffers keyboard input while its mode-triggered implementation import is pending.
 
 Each installation owns its listener and cleanup. This plugin does not install or depend on another keyboard plugin.
-Default and gallery import its factory only for browsers whose primary pointer is not coarse.
 
 Verify with `npx nx run @8f4e/editor-plugin-keyboard-editing:build|test|typecheck`.
 
