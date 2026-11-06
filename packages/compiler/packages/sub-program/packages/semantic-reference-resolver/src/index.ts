@@ -19,6 +19,7 @@ import type {
 	ReferenceSlotMap,
 	RegisteredFunction,
 	ResolvedMapLine,
+	ResolvedPushLine,
 	SemanticReferenceLine,
 	SourceLocalBinding,
 	ValidatedConstantsAST,
