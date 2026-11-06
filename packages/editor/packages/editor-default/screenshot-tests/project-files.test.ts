@@ -1,11 +1,69 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initEditor, { type Editor } from '@8f4e/editor-core';
+import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { contextMenuPlugin } from '@8f4e/editor-plugin-context-menu';
+import { errorMessagesPlugin } from '@8f4e/editor-plugin-error-messages';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
 import { expect, test, vi } from 'vitest';
+
+test('opens a saved project while regenerating environment source and reserving error rows', async () => {
+	const canvas = document.createElement('canvas');
+	canvas.width = 768;
+	canvas.height = 384;
+	document.body.append(canvas);
+	const source = `8f4e/v1
+constants env
+; @pos 120 60
+${Array.from({ length: 20 }, (_, index) => `const SAVED_${index} ${index}`).join('\n')}
+constantsEnd
+note imported
+; @pos 4 3
+; @config audioRuntime.enabled true
+Imported project
+noteEnd`;
+	const handle = { getFile: vi.fn().mockResolvedValue(new File([source], 'imported.8f4e')) };
+	vi.stubGlobal('showOpenFilePicker', vi.fn().mockResolvedValue([handle]));
+	let editor: Editor | undefined;
+	let context!: EditorPluginContext;
+	try {
+		const fileSession = createProjectFileSession();
+		editor = await initEditor(canvas, {
+			plugins: [
+				fileSession.plugin,
+				codeRenderingPlugin,
+				errorMessagesPlugin,
+				createProjectOpenPlugin({ document, fileSession }),
+				{
+					id: 'test-context',
+					setup: services => {
+						context = services;
+						return () => {};
+					},
+				},
+			],
+		});
+		editor.pauseRendering();
+		context.events.dispatch('importProject');
+		await expect
+			.poll(() => editor!.state.loadingIndicators.find(item => item.id === 'project-file')?.status)
+			.toBe('done');
+		expect(fileSession.handle).toBe(handle);
+		const blocks = editor.state.codeBlockRendering.currentProject.blocks;
+		const env = blocks.find(block => block.name === 'env')!;
+		expect(env.code).not.toContain('const SAVED_0 0');
+		expect(env.displayModel.lines.map(line => line.text)).toEqual(env.code);
+		expect(blocks.find(block => block.name === 'imported')!.gaps.size).toBeGreaterThan(0);
+		expect(() => editor!.renderFrame()).not.toThrow();
+		await expect(canvas).toMatchScreenshot('project-import-with-diagnostic');
+	} finally {
+		editor?.dispose();
+		canvas.remove();
+		vi.unstubAllGlobals();
+	}
+});
 
 test('opens a file, saves from the canvas shortcut, and exports from the contributed menu', async () => {
 	const canvas = document.createElement('canvas');
