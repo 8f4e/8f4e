@@ -48,7 +48,7 @@ The 8f4e project is organized as an Nx monorepo with the following package hiera
     │   │   │               └── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/README.md">sprite-generator</a> (All UI graphics are generative)
     │   │   ├── <a href="./packages/editor/packages/editor-file-session/README.md">editor-file-session</a> (Shared project file handle for one editor's Open and Save plugins)
     │   │   ├── <a href="./packages/editor/packages/editor-landing/README.md">editor-landing</a> (Lightweight editor composition for interactive landing-page demos)
-    │   │   ├── <a href="./packages/editor/packages/editor-minimal/README.md">editor-minimal</a> (Embedded editor composition for examples and compiler tests)
+    │   │   ├── <a href="./packages/editor/packages/editor-gallery/README.md">editor-gallery</a> (Embedded editor composition for examples and compiler tests)
     │   │   ├── <a href="./packages/editor/packages/editor-webmcp/README.md">editor-webmcp</a> (Page-owned WebMCP adapter for one live editor)
     │   │   ├── <a href="./packages/editor/packages/editor-website/README.md">editor-website</a> (Thin deployable website for the default editor)
     │   │   ├── <a href="./packages/editor/packages/runtime-audio-worklet/README.md">runtime-audio-worklet</a> (AudioWorklet editor runtime)

@@ -343,7 +343,7 @@ Notes:
 ### `@wave`
 
 Provided by `@8f4e/editor-plugin-wave`, which also provides `@wave2` and `@wave4` and is included in
-`@8f4e/editor-default`. Hosts composing the minimal editor must include this plugin to enable these directives.
+`@8f4e/editor-default`. Hosts composing the gallery editor must include this plugin to enable these directives.
 
 Draw a waveform over a typed absolute pointer range. The first argument provides the start pointer and element size metadata, the second argument is the element count, and the optional third argument is an absolute pointer in the same address space.
 
@@ -971,7 +971,7 @@ Audio and worker runtimes contribute a sample-rate constant named `SAMPLE_RATE` 
 `sampleRateConstantName` settings
 when running them together. Audio also contributes `AUDIO_BUFFER_SIZE`, configurable through
 `audioRuntime.bufferSizeConstantName`. Info namespaces are fixed: `audioRuntime`, `workerRuntime`, and `testRuntime`.
-The default and minimal editors automatically import these plugins when their configuration roots appear, including
+The default and gallery editors automatically import these plugins when their configuration roots appear, including
 after editing. Runtime signals are checked across the complete project tree, including unopened groups, using cached
 parsed directives. Each plugin stays installed until editor disposal and owns its schema and cleanup.
 

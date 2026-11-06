@@ -1,7 +1,12 @@
 # Landing Editor Package Guidelines
 
-- Own the independent composition for product landing-page demos. Build directly on editor-core using the same
-  compiler, URL loading, standard-library resolution, live editing, controls, and runtimes as editor-minimal.
+- Own the independent composition for product landing-page demos. Build directly on editor-core with compiler
+  coordination, URL loading, live editing, slider controls, and the worker runtime.
+- Keep projects self-contained. Omit standard-library discovery, include resolution, the stdlib resolver and its
+  tests, virtual-source declarations, and source-collection dependencies from this composition.
+- Omit `assertion-markers`, `keyboard-mode-switching`, `dialogs`, `test-runtime`, `audio-runtime`, `texture-runtime`,
+  `binary-assets`, `midi-input`, `keyboard-memory`, `bars`, `meter`, `wave`, `crossfade`, `switch`, `button`, and `piano`
+  from imports, plugin registries, and dependencies. Keep audio-context and mode-switching options out of the mount API.
 - Omit `entry-outlines`, `offscreen-block-arrows`, and `context-menu` from imports, plugin registries, and dependencies.
   Keep core's `contextMenu` feature disabled even when hosts override other feature flags, so no invisible menu opens.
 - Omit `block-authoring`; this menu-free composition has no New/Delete block commands. Generic editing APIs remain available.
@@ -14,12 +19,11 @@
 - Omit the loading-indicators plugin and its presentation/visibility timers. Hosts own loading UI; producers still
   publish operation status in state.
 - Keep optional plugins as individual deferred entries. Load mouse input on all devices, touch input on coarse
-  pointers, and keyboard navigation/editing/mode switching on non-coarse pointers. Forward host wheel, touch,
-  and mode-switching preferences without implementing input behavior in the composition.
+  pointers, and keyboard navigation/editing on non-coarse pointers. Forward host wheel and touch preferences
+  without implementing input behavior in the composition. The source's `@mode` directive selects the initial mode.
 - Keep directive-based loading in `src/lazy-plugins.ts`, with visual/control plugins scoped to the view and
-  runtime/MIDI/asset plugins scoped to the project. Pass live compiler handles into dependent factories.
-- Load keyboard-memory only for raw `@config keyboard.*` directives, with project scope. Supply the canvas and live
-  compiler memory writer; projects without keyboard configuration must not import it or install its listeners/schema.
+  `worker-runtime` scoped to the project. Keep watch/stack aliases, plot, and slider in this
+  registry. Pass live compiler handles into dependent factories.
 - Keep session storage, Open From Disk, built-in modules, and additional authoring actions in editor-default.
   Hosts own page URLs, loading UI, and visibility.
 - Verify with `npx nx run @8f4e/editor-landing:build|test|typecheck`; the product website's `test:browser` target

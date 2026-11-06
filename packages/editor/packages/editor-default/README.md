@@ -7,7 +7,7 @@ The package exports `mountDefaultEditor(canvas, options)`. It does not mount its
 other browser hosts control when and where the editor starts.
 
 For homepage demos, use [`@8f4e/editor-landing`](../editor-landing/README.md). For example and compiler-test galleries,
-use [`@8f4e/editor-minimal`](../editor-minimal/README.md). These embedded compositions keep live editing, runtime
+use [`@8f4e/editor-gallery`](../editor-gallery/README.md). These embedded compositions keep live editing, runtime
 controls, and visualizations and start each mount fresh, with smaller feature sets and no session storage.
 
 ```ts
@@ -102,7 +102,7 @@ hide after five seconds. Private bookkeeping hides one expired result every 25 m
 first, without deleting state contributions. Reusing an ID replaces its record and makes it visible again.
 This overlay does not block input.
 
-`@8f4e/editor-plugin-selection-animation` is available separately. Its entry is commented out in the default and minimal compositions; the landing composition omits it.
+`@8f4e/editor-plugin-selection-animation` is available separately. Its entry is commented out in the default and gallery compositions; the landing composition omits it.
 
 `createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
 synchronously constructs the startup plugin set with resources for one editor. It creates one `@8f4e/editor-file-session`, installs its

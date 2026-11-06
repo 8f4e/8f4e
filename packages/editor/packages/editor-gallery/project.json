@@ -1,5 +1,5 @@
 {
-  "name": "@8f4e/editor-minimal",
+  "name": "@8f4e/editor-gallery",
   "sourceRoot": "src",
   "projectType": "library",
   "targets": {
@@ -15,7 +15,7 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "biome check --write packages/editor/packages/editor-minimal/src",
+        "command": "biome check --write packages/editor/packages/editor-gallery/src",
         "cwd": "{workspaceRoot}"
       }
     },

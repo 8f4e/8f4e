@@ -6,8 +6,11 @@ This directory owns the reusable editor core, embedded and full product composit
 
 - `packages/editor-default/` composes the core with the compiler worker, runtimes, standard library, examples, and
   browser storage.
-- `packages/editor-minimal/` supplies the embedded composition used by the product homepage and example/test
+- `packages/editor-gallery/` supplies the embedded composition used by the example/test
   galleries, with live editing, controls, runtimes, and URL loading. Each mount starts fresh.
+- `packages/editor-landing/` supplies the product homepage composition with live editing, slider controls, the worker
+  runtime, and URL loading for self-contained projects, while omitting standard-library discovery, gallery authoring
+  menus, and project saving/export.
 - `packages/editor-website/` contains the HTML page and thin Vite entry point that mounts the default composition.
 - `packages/editor-core/` contains the reusable core editor and its state and UI packages.
 - `packages/compiler-worker/` contains the editor-specific Web Worker wrapper around the compiler.
@@ -22,7 +25,7 @@ From the workspace root:
 npx nx run @8f4e/editor-website:dev
 npx nx run @8f4e/editor-website:build
 npx nx run @8f4e/editor-default:test
-npx nx run @8f4e/editor-minimal:test
+npx nx run @8f4e/editor-gallery:test
 ```
 
 The development server runs at <http://localhost:3000>.

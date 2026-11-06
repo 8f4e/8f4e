@@ -1,4 +1,4 @@
-import { mountMinimalEditor } from '@8f4e/editor-minimal';
+import { mountGalleryEditor } from '@8f4e/editor-gallery';
 import type { WebMcpTool } from '@8f4e/editor-webmcp';
 import { expect, test, vi } from 'vitest';
 import { mountGallery } from './gallery';
@@ -11,7 +11,7 @@ const bridgeLoading = vi.hoisted(() => {
 	return { promise, finish: () => finish() };
 });
 
-vi.mock('@8f4e/editor-minimal', { spy: true });
+vi.mock('@8f4e/editor-gallery', { spy: true });
 vi.mock('@8f4e/editor-webmcp', async importOriginal => {
 	await bridgeLoading.promise;
 	return importOriginal();
@@ -64,14 +64,14 @@ test('reveals and switches editors while the bridge loads, then connects only th
 		await vi.waitFor(() =>
 			expect(gallery.querySelector('#panel-first canvas')?.classList.contains('editor-ready')).toBe(true)
 		);
-		expect(mountMinimalEditor).toHaveBeenCalledOnce();
+		expect(mountGalleryEditor).toHaveBeenCalledOnce();
 		expect(tools.size).toBe(0);
 		const firstCanvas = gallery.querySelector('#panel-first canvas')!;
 		gallery.querySelector<HTMLButtonElement>('#example-second')!.click();
 		await vi.waitFor(() =>
 			expect(gallery.querySelector('#panel-second canvas')?.classList.contains('editor-ready')).toBe(true)
 		);
-		expect(mountMinimalEditor).toHaveBeenCalledTimes(2);
+		expect(mountGalleryEditor).toHaveBeenCalledTimes(2);
 		expect(firstCanvas.isConnected).toBe(false);
 		expect(tools.size).toBe(0);
 		bridgeLoading.finish();

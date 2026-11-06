@@ -26,5 +26,6 @@
   ignore late results and keep editor instances isolated. Cache typed memory-write views and refresh after growth.
 - Inject include resolution through the factory. The default Vite worker import belongs to this package; do not move
   stdlib discovery or runtime selection into it.
+- Keep `@8f4e/state-manager` in devDependencies; its direct import belongs to the compilation tests, not shipped code.
 - Run `npx nx run @8f4e/editor-plugin-compiler:build|test|typecheck` after changes. Keep tests for trigger scheduling,
   assertion selection, diagnostic mapping, current artifacts, stale successes/failures, worker isolation, and cleanup.

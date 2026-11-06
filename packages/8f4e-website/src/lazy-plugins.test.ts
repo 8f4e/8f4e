@@ -1,6 +1,5 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
-import { mountLandingEditor } from '@8f4e/editor-landing';
-import { mountMinimalEditor } from '@8f4e/editor-minimal';
+import { mountGalleryEditor } from '@8f4e/editor-gallery';
 import { afterEach, expect, test, vi } from 'vitest';
 
 const cleanups: Array<() => void> = [];
@@ -9,11 +8,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-async function setup(
-	source: string,
-	assets: Record<string, () => Promise<Response>> = {},
-	mountEditor = mountMinimalEditor
-) {
+async function setup(source: string, assets: Record<string, () => Promise<Response>> = {}) {
 	const projectUrl = '/lazy-plugins-project.8f4e';
 	const fetch = globalThis.fetch.bind(globalThis);
 	vi.spyOn(globalThis, 'fetch').mockImplementation((input, options) => {
@@ -28,21 +23,16 @@ async function setup(
 	canvas.style.height = '512px';
 	document.body.append(canvas);
 	cleanups.push(() => canvas.remove());
-	const editor = await mountEditor(canvas, { initialProjectUrl: projectUrl });
+	const editor = await mountGalleryEditor(canvas, { initialProjectUrl: projectUrl });
 	cleanups.push(() => editor.dispose());
 	await vi.waitFor(() => expect(editor.state.viewport.width).toBe(768));
 	await vi.dynamicImportSettled();
 	return { canvas, editor };
 }
 
-test.each([
-	['minimal', false, mountMinimalEditor],
-	['minimal', true, mountMinimalEditor],
-	['landing', false, mountLandingEditor],
-	['landing', true, mountLandingEditor],
-] as const)(
-	'%s editor loads keyboard-to-memory with initial configuration=%s',
-	async (_name, initialConfig, mountEditor) => {
+test.each([false, true])(
+	'gallery editor loads keyboard-to-memory with initial configuration=%s',
+	async initialConfig => {
 		const { canvas, editor } = await setup(
 			`8f4e/v1
 note settings ; @mode edit
@@ -54,9 +44,7 @@ module keys
 int code
 int pressed
 moduleEnd
-entryEnd`,
-			{},
-			mountEditor
+entryEnd`
 		);
 		await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'), { timeout: 10000 });
 		if (!initialConfig) {

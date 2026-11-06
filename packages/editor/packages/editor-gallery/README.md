@@ -1,16 +1,16 @@
-# Minimal Editor
+# Gallery Editor
 
-`@8f4e/editor-minimal` composes the core editor for embedded examples and compiler tests.
+`@8f4e/editor-gallery` composes the core editor for the example and compiler test galleries.
 It supports live compilation and interactive controls, loads project source from a URL, and uses its `@mode` directive
 to select the initial mode (view by default).
 Each mount starts fresh; it does not restore or save browser sessions.
-The product landing page uses [`@8f4e/editor-landing`](../editor-landing/README.md), which omits entry outlines,
-offscreen block arrows, context menus, project saving/export, file-session tracking, block copy/paste, and loading-indicator presentation.
+The product landing page uses [`@8f4e/editor-landing`](../editor-landing/README.md), a smaller composition with
+the worker runtime, selected controls and visualizations, and live editing. Its README documents the included plugins.
 
 ```ts
-import { mountMinimalEditor } from '@8f4e/editor-minimal';
+import { mountGalleryEditor } from '@8f4e/editor-gallery';
 
-const editor = await mountMinimalEditor(canvas, {
+const editor = await mountGalleryEditor(canvas, {
 	initialProjectUrl: '/examples/demo.8f4e',
 	captureWheel: false,
 	onInitialProjectLoaded: () => canvas.classList.add('editor-ready'),
@@ -67,7 +67,7 @@ Without `initialProjectUrl`, the editor starts with an empty project and calls `
 initialization. A URL failure calls `onInitialProjectLoadError`. The host owns page URLs, loading/error UI, canvas
 layout, visibility management, and any WebMCP bridge.
 
-`MinimalEditorMountOptions` supports `initialProjectUrl`, the initial-project callbacks, `sharedAudioContext`,
+`GalleryEditorMountOptions` supports `initialProjectUrl`, the initial-project callbacks, `sharedAudioContext`,
 `captureWheel`, `touchNavigation`, `includeKeyboardModeSwitching`, and `featureFlags`. Project creation is disabled by default. A project selects its initial mode with
 `; @mode edit` or `; @mode view` in a project block; without a valid, unique declaration it starts in view mode.
 Set `includeKeyboardModeSwitching: false` to omit the mode-switching plugin and its hint; project mode still comes
@@ -102,9 +102,9 @@ visual grouping, execution toggles, favorites navigation/editing, and memory dis
 Verify from the workspace root:
 
 ```sh
-npx nx run @8f4e/editor-minimal:build
-npx nx run @8f4e/editor-minimal:test
-npx nx run @8f4e/editor-minimal:typecheck
+npx nx run @8f4e/editor-gallery:build
+npx nx run @8f4e/editor-gallery:test
+npx nx run @8f4e/editor-gallery:typecheck
 npx nx run @8f4e/8f4e-website:test:browser
 ```
 

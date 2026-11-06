@@ -1,4 +1,4 @@
-import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
+import { type GalleryEditorInstance, mountGalleryEditor } from '@8f4e/editor-gallery';
 import type { EditorWebMcpBridge } from '@8f4e/editor-webmcp';
 import { sharedAudioContext } from './shared-audio-context';
 
@@ -27,7 +27,7 @@ export function mountGalleryEditorSession({
 	status.hidden = false;
 	status.textContent = 'Loading project…';
 
-	let editor: MinimalEditorInstance | undefined;
+	let editor: GalleryEditorInstance | undefined;
 	let bridge: EditorWebMcpBridge | undefined;
 	let loaded = false;
 	let bridgeStarted = false;
@@ -93,7 +93,7 @@ export function mountGalleryEditorSession({
 
 	async function mount(): Promise<void> {
 		try {
-			const mountedEditor = await mountMinimalEditor(canvas, {
+			const mountedEditor = await mountGalleryEditor(canvas, {
 				sharedAudioContext,
 				captureWheel: true,
 				touchNavigation: { axis: 'horizontal' },

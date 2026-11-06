@@ -204,7 +204,7 @@ The editor closes a dialog before dispatching its button action by default.
 Modal input is blocked by the editor even without a drawing plugin. The editor forwards completed presses through
 `dialogPointerDown`. The dialogs plugin resolves its private button geometry and requests `activateDialogButton`
 with `{ id, buttonIndex }`; the editor checks the visible dialog and runs the button action. Capture-only input
-probes do not activate dialogs. Default and minimal compositions
+probes do not activate dialogs. Default and gallery compositions
 install the presentation plugin through their deferred registries. Custom compositions must install it to show dialogs.
 
 Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`
@@ -393,7 +393,7 @@ configuration subscriptions. State uses the resulting grid dimensions for layout
 
 The supported catalog is `FONT_NAMES` from `@8f4e/sprite-generator`. In the default desktop editor, the independent
 font-preview plugin uses F18/F19 to cycle through that catalog temporarily. Previewing does not change source or saved
-files; loading a project restores its configured font. The minimal editor omits this plugin.
+files; loading a project restores its configured font. The gallery editor omits this plugin.
 
 Runtime execution belongs to ordinary browser plugins. Each receives compiler getters through its factory, imports its own worker/worklet assets, contributes schemas and constants, and publishes its own info namespace. The audio plugin can borrow a host-supplied AudioContext. Runtimes can run concurrently; core owns no execution registry or selector. Shared `state.info` records remain available as data; updates do not invalidate code-block layout or text render data. Memory-writing plugins receive a `writeMemory(address, value, isInteger)` function directly from their host.
 

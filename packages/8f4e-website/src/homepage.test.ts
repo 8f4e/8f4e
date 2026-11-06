@@ -116,6 +116,10 @@ entryEnd`)
 	);
 	await vi.dynamicImportSettled();
 	expect(editor.state.editorMode).toBe('edit');
+	const leaveEdit = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+	view.canvas.dispatchEvent(leaveEdit);
+	expect(leaveEdit.defaultPrevented).toBe(false);
+	expect(editor.state.editorMode).toBe('edit');
 	const contextMenu = new MouseEvent('contextmenu', { clientX: 30, clientY: 30, cancelable: true });
 	view.canvas.dispatchEvent(contextMenu);
 	expect(contextMenu.defaultPrevented).toBe(true);

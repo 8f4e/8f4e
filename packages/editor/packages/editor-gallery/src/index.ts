@@ -9,9 +9,9 @@ import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-lo
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
-export type MinimalEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
+export type GalleryEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
 
-export interface MinimalEditorMountOptions {
+export interface GalleryEditorMountOptions {
 	/** Borrow this context when its sample rate matches the project. The host owns its lifetime. */
 	sharedAudioContext?: AudioContext;
 	/** Capture wheel gestures for viewport panning. Disable this in scrolling pages. */
@@ -27,7 +27,7 @@ export interface MinimalEditorMountOptions {
 	onInitialProjectLoadError?: (error: unknown) => void;
 }
 
-export async function mountMinimalEditor(
+export async function mountGalleryEditor(
 	canvas: HTMLCanvasElement,
 	{
 		sharedAudioContext,
@@ -38,8 +38,8 @@ export async function mountMinimalEditor(
 		initialProjectUrl,
 		onInitialProjectLoaded,
 		onInitialProjectLoadError,
-	}: MinimalEditorMountOptions = {}
-): Promise<MinimalEditorInstance> {
+	}: GalleryEditorMountOptions = {}
+): Promise<GalleryEditorInstance> {
 	const compiler = createCompilerPlugin({ resolveInclude: resolveStdlibInclude });
 	const fileSession = createProjectFileSession();
 	const editor = await initEditor(canvas, {

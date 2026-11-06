@@ -7,15 +7,11 @@ import { createLazyPluginRegistry } from './lazy-plugins';
 export function createDeferredEditorPlugin({
 	canvas,
 	compiler,
-	sharedAudioContext,
-	includeKeyboardModeSwitching = true,
 	captureWheel,
 	touchNavigation,
 }: {
 	canvas: HTMLCanvasElement;
 	compiler: ReturnType<typeof createCompilerPlugin>;
-	sharedAudioContext?: AudioContext;
-	includeKeyboardModeSwitching?: boolean;
 	captureWheel?: boolean;
 	touchNavigation?: LandingEditorMountOptions['touchNavigation'];
 }): EditorPlugin {
@@ -30,22 +26,10 @@ export function createDeferredEditorPlugin({
 			load: () => import('@8f4e/editor-plugin-error-messages').then(module => module.errorMessagesPlugin),
 		},
 		{
-			id: 'dialogs',
-			scope: 'view',
-			matches: () => true,
-			load: () => import('@8f4e/editor-plugin-dialogs').then(module => module.dialogsPlugin),
-		},
-		{
 			id: 'connectors',
 			scope: 'view',
 			matches: () => true,
 			load: () => import('@8f4e/editor-plugin-connectors').then(module => module.connectorsPlugin),
-		},
-		{
-			id: 'assertion-markers',
-			scope: 'view',
-			matches: () => true,
-			load: () => import('@8f4e/editor-plugin-assertion-markers').then(module => module.assertionMarkersPlugin),
 		},
 		{
 			id: 'tooltips',
@@ -89,24 +73,11 @@ export function createDeferredEditorPlugin({
 					module.createKeyboardEditingPlugin({ inputTarget: canvas })
 				),
 		},
-		{
-			id: 'keyboard-mode-switching',
-			scope: 'view',
-			matches: () => !hasCoarsePointer && includeKeyboardModeSwitching,
-			load: () =>
-				import('@8f4e/editor-plugin-keyboard-mode-switching').then(module =>
-					module.createKeyboardModeSwitchingPlugin({ inputTarget: canvas })
-				),
-		},
 		...createLazyPluginRegistry({
-			inputTarget: canvas,
 			prefersReducedMotion: () => motionPreference.matches,
-			navigator: browserWindow.navigator,
 			writeMemory: compiler.writeMemory,
 			getMemory: compiler.getMemory,
 			getCodeBuffer: compiler.getCodeBuffer,
-			getAssertionSites: compiler.getAssertionSites,
-			sharedAudioContext,
 		}),
 	]);
 }

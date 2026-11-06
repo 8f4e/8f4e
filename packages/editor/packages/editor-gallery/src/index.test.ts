@@ -3,7 +3,7 @@ import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 import { afterEach, expect, it, vi } from 'vitest';
-import { mountMinimalEditor } from './index';
+import { mountGalleryEditor } from './index';
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
 vi.mock('@8f4e/editor-plugin-mouse-input', { spy: true });
@@ -28,7 +28,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	const browserWindow = { navigator: {}, matchMedia: () => ({ matches: false }) };
 	const canvas = { ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement;
 	const onInitialProjectLoaded = vi.fn();
-	const mounting = mountMinimalEditor(canvas, {
+	const mounting = mountGalleryEditor(canvas, {
 		captureWheel: false,
 		featureFlags: { moduleDragging: false },
 		onInitialProjectLoaded,
@@ -87,7 +87,7 @@ it('starts without storage and reports empty-project readiness after initializat
 it('omits all keyboard plugins on coarse-pointer browsers', async () => {
 	const browserWindow = { navigator: {}, matchMedia: (query: string) => ({ matches: query === '(pointer: coarse)' }) };
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
-	await mountMinimalEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
+	await mountGalleryEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
 	const plugins = await loadDeferredPlugins();
 	expect(plugins.map(plugin => plugin.id)).toEqual(expect.arrayContaining(['mouse-input', 'touch-input']));
 	for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing'])
@@ -97,7 +97,7 @@ it('omits all keyboard plugins on coarse-pointer browsers', async () => {
 it('omits mode switching while retaining navigation and editing', async () => {
 	const browserWindow = { navigator: {}, matchMedia: () => ({ matches: false }) };
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
-	await mountMinimalEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement, {
+	await mountGalleryEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement, {
 		includeKeyboardModeSwitching: false,
 	});
 	const ids = (await loadDeferredPlugins()).map(plugin => plugin.id);

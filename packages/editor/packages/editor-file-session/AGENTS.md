@@ -6,4 +6,4 @@
 - Open assigns a handle after successfully reading, parsing, and loading a project. Save owns serialization,
   browser writing, permissions, pending destination, write queue, and stale-completion generation handling.
 - Use clean TypeScript output. Verify build/typecheck through Nx; behavior is covered by editor-default's composed
-  unit/browser tests and the product website's minimal-editor browser tests.
+  unit/browser tests and the product website's gallery-editor browser tests.
