@@ -22,7 +22,7 @@ export function createBinaryAssetsPlugin({
 		id: 'binary-assets',
 		setup: ({ store, loading }) => {
 			let assets: BinaryAsset[] = [];
-			let generation = 0;
+			const pendingUrls = new Set<string>();
 			let disposed = false;
 			let signature = '';
 
@@ -77,24 +77,33 @@ export function createBinaryAssetsPlugin({
 				);
 			}
 
-			async function fetchAssetsForUrl(url: string, matchingAssets: BinaryAsset[], currentGeneration: number) {
+			async function fetchAssetsForUrl(url: string) {
+				pendingUrls.add(url);
 				let source: BinaryAssetSource;
 				try {
 					source = await fetchBinaryAsset(url);
 				} catch (error) {
-					if (disposed || currentGeneration !== generation) return;
+					if (disposed) return;
+					const matchingAssets = assets.filter(asset => asset.url === url);
+					if (!matchingAssets.length) return;
 					console.error('Failed to fetch binary asset:', url, error);
 					for (const asset of matchingAssets) finishDownload(asset, 'failed');
 					return;
+				} finally {
+					pendingUrls.delete(url);
 				}
-				if (disposed || currentGeneration !== generation) return;
+				if (disposed) return;
+				const matchingAssets = assets.filter(asset => asset.url === url);
+				if (!matchingAssets.length) return;
 				for (const asset of matchingAssets) {
 					asset.source = source;
 					finishDownload(asset, 'done');
 				}
 				publishConstants();
-				if (disposed || currentGeneration !== generation) return;
-				for (const asset of matchingAssets) copyAssetToMemory(asset);
+				if (disposed) return;
+				for (const asset of matchingAssets) {
+					if (assets.includes(asset)) copyAssetToMemory(asset);
+				}
 			}
 
 			function syncConfig() {
@@ -102,23 +111,32 @@ export function createBinaryAssetsPlugin({
 				const nextSignature = JSON.stringify(requests);
 				if (nextSignature === signature) return;
 				signature = nextSignature;
-				const currentGeneration = ++generation;
-				for (const asset of assets) finishDownload(asset, 'cancelled');
-				assets = requests.map(request => ({
-					id: request.id,
-					url: request.url,
-					destinations: request.memoryIds.map(memoryId => ({ memoryId, copiedToMemory: false })),
-					downloadLoading: loading.add({ id: `asset:${request.id}`, message: `Loading ${request.id}...` }),
-				}));
-				publishConstants();
-				const assetsByUrl = new Map<string, BinaryAsset[]>();
-				for (const asset of assets) {
-					const matchingAssets = assetsByUrl.get(asset.url) ?? [];
-					matchingAssets.push(asset);
-					assetsByUrl.set(asset.url, matchingAssets);
+				const previousAssets = new Map(assets.map(asset => [asset.id, asset]));
+				const sourcesByUrl = new Map(assets.filter(asset => asset.source).map(asset => [asset.url, asset.source]));
+				assets = requests.map(request => {
+					const previous = previousAssets.get(request.id);
+					const asset: BinaryAsset =
+						previous?.url === request.url
+							? previous
+							: { id: request.id, url: request.url, source: sourcesByUrl.get(request.url), destinations: [] };
+					const destinations = new Map(asset.destinations.map(destination => [destination.memoryId, destination]));
+					asset.destinations = request.memoryIds.map(
+						memoryId => destinations.get(memoryId) ?? { memoryId, copiedToMemory: false }
+					);
+					return asset;
+				});
+				for (const asset of previousAssets.values()) {
+					if (!assets.includes(asset)) finishDownload(asset, 'cancelled');
 				}
-				for (const [url, matchingAssets] of assetsByUrl) {
-					void fetchAssetsForUrl(url, matchingAssets, currentGeneration);
+				for (const asset of assets) {
+					if (!asset.source && previousAssets.get(asset.id) !== asset) {
+						asset.downloadLoading = loading.add({ id: `asset:${asset.id}`, message: `Loading ${asset.id}...` });
+					}
+				}
+				publishConstants();
+				for (const asset of assets) {
+					if (asset.source) copyAssetToMemory(asset);
+					else if (asset.downloadLoading && !pendingUrls.has(asset.url)) void fetchAssetsForUrl(asset.url);
 				}
 			}
 

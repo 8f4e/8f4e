@@ -25,15 +25,18 @@ Configure assets in project source:
 ; @config bin.sound.memories.preview preview:buffer
 ```
 
-Distinct URLs fetch concurrently, once per configuration set. Each configured asset keeps one source record and
-its memory destinations, including exposed project memory aliases. Assets sharing a URL reuse the same downloaded
-source. A completed source publishes its size constants and copies into available targets immediately, independently
-of other downloads. Copies respect the target's allocated byte length. The plugin reloads retained bytes when the
-compiler publishes a memory plan. Each configured asset contributes ID `asset:<id>` and message `Loading <id>...`.
+Distinct URLs fetch concurrently. Each configured asset keeps one source record and its memory destinations,
+including exposed project memory aliases. Configuration edits retain unchanged assets, their pending downloads,
+and their loading indicators. Editing one URL replaces only that asset; editing memory destinations copies the
+retained bytes into new targets without fetching again. Assets sharing a URL reuse the same downloaded source or
+pending fetch, including assets added during editing. A completed source publishes its size constants and copies
+into available targets immediately, independently of other downloads. Copies respect the target's allocated byte
+length. The plugin reloads retained bytes when the compiler publishes a memory plan. Each downloading asset
+contributes ID `asset:<id>` and message `Loading <id>...`.
 Downloaded bytes mark it done; fetch errors mark it failed, even before runtime memory exists. Memory copying and
-recompilation do not re-add indicators. Configuration changes and disposal cancel pending downloads; new downloads
-replace the same ID. The loading-indicators plugin owns presentation and private visibility. Binary loading does not
-open a dialog or block input.
+recompilation do not re-add indicators. Removing an asset or changing its URL cancels its pending indicator; disposal
+cancels all pending indicators. New downloads replace the same ID. The loading-indicators plugin owns presentation
+and private visibility. Binary loading does not open a dialog or block input.
 Fetch failures are logged and excluded from the completed asset set.
 
 The plugin contributes `ASSET_<ID>_SIZE` constants and filename comments through the generic
@@ -43,4 +46,4 @@ stay private and are not serialized into project/session models; the source conf
 
 Installing the plugin registers its `bin` config schema. Omitting it leaves fetching, indicators, and asset constants
 inactive. Disposal unsubscribes listeners, removes owned schema/constants, cancels pending indicators, releases retained bytes, and
-ignores in-flight results from the disposed installation. Configuration changes similarly reject stale fetch results.
+ignores in-flight results from the disposed installation. Download results apply only to assets still configured with that URL.
