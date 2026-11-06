@@ -42,7 +42,7 @@ push 5
 assertEqual 5
 functionEnd`);
 		const saved = structuredClone(original);
-		const compiled = await compileProject(original, { enableAssertions: true, disableSharedMemory: true });
+		const compiled = await compileProject(original, { enableAssertions: true });
 		const result = await runTests(compiled);
 		const assertionSites = compiled.assertionSites!;
 		const { assertions: events } = result;
@@ -93,7 +93,7 @@ groupEnd
 entryEnd
 groupEnd
 entryEnd`);
-		const compiled = await compileProject(project, { enableAssertions: true, disableSharedMemory: true });
+		const compiled = await compileProject(project, { enableAssertions: true });
 		const result = await runTests(compiled);
 		expect(result.failures.map(failure => failure.site)).toMatchObject([
 			{ projectGroupPath: 'parent', codeBlockId: 'helper', codeBlockType: 'function', lineNumber: 2, siteId: 1 },
@@ -111,7 +111,7 @@ push -1.0
 sqrt
 assertEqual 0.0
 functionEnd`);
-		const compiled = await compileProject(project, { enableAssertions: true, disableSharedMemory: true });
+		const compiled = await compileProject(project, { enableAssertions: true });
 		const result = await runTests(compiled);
 		expect(result.assertions.length).toBe(1);
 		expect(result.failures).toMatchObject([
@@ -168,7 +168,6 @@ moduleEnd
 entryEnd`),
 			{
 				enableAssertions: true,
-				disableSharedMemory: true,
 				resolveInclude: () => included,
 			}
 		);
@@ -191,7 +190,7 @@ push 1
 assert
 moduleEnd
 entryEnd`);
-		const compiled = await compileProject(project, { disableSharedMemory: true });
+		const compiled = await compileProject(project);
 		await expect(runTests(compiled)).rejects.toThrow('enableAssertions: true');
 	});
 });
@@ -217,7 +216,7 @@ push 11
 store
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { enableAssertions: true, disableSharedMemory: true });
+	const compiled = await compileProject(project, { enableAssertions: true });
 	const first = await runTests(compiled);
 	const second = await runTests(compiled);
 	const address = compiled.memoryPlan.modules.counter.memory.value.allocationUnitAddress;
@@ -267,7 +266,7 @@ assert
 ifEnd
 moduleEnd
 entryEnd`),
-		{ enableAssertions: true, disableSharedMemory: true }
+		{ enableAssertions: true }
 	);
 	const result = await runTests(compiled);
 	expect(result.assertions.map(assertion => assertion.passed)).toEqual([

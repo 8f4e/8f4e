@@ -3,7 +3,8 @@
 - This package is a native C++20 Linux ALSA host, independent of the editor and browser runtime packages.
 - Input is a `.wasm` file, numeric `--left`/`--right` byte offsets and `--buffer-size`. Read memory limits from the
   WASM import; keep compiler symbol lookup and metadata parsing in the separate `tools/runtime-command` tool.
-- Compile with `--no-shared-memory`. Keep MIDI and audio execution in one WASM instance on one thread.
+- Use the compiler's shared-memory output. Enable Wasmtime's threads/shared-memory features, import a
+  `wasmtime_sharedmemory_t`, and keep MIDI and audio execution in one WASM instance on one thread.
 - Avoid allocation, compilation, source parsing, and per-block logging in the playback loop.
 - `npx nx run @8f4e/runtime-linux:build` builds the executable under `dist/`; it requires Linux, CMake, a C++ compiler,
   ALSA development headers. The pinned Wasmtime C API is fetched and hash-verified by CMake. No JSON dependency.

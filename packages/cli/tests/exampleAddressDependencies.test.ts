@@ -17,11 +17,10 @@ const sampleProjects = [
 
 async function instantiate(source: string) {
 	const result = await compileProject(parseProjectSource(source), {
-		disableSharedMemory: true,
 		resolveInclude: resolveStdlibInclude,
 	});
 	const pages = Math.max(1, Math.ceil(result.requiredMemoryBytes / 65536));
-	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), { host: { memory } });
 	(instance.exports.initDefaults as CallableFunction)();
 	return { result, lookup: instance.exports.lookup as (...args: number[]) => number };

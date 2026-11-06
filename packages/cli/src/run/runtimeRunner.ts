@@ -131,7 +131,7 @@ function createWebAssemblyMemory(requiredMemoryBytes: number): WebAssemblyMemory
 	return new (getWebAssemblyApi().Memory)({
 		initial: memorySizePages,
 		maximum: memorySizePages,
-		shared: false,
+		shared: true,
 	});
 }
 

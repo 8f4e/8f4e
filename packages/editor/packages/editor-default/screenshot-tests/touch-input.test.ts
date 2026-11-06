@@ -132,7 +132,7 @@ float gain 0.25
 ; @slider &gain 0 1 0.01
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const writeMemory = vi.fn();
 	const canvas = document.createElement('canvas');
 	canvas.width = 390;

@@ -52,21 +52,13 @@ describe('cli', () => {
 		await expect(execCli(['compile', fixturePath])).rejects.toThrow('Command failed');
 	});
 
-	it('exports compiler memory information and executable non-shared WASM', async () => {
+	it('exports compiler memory information and executable shared-memory WASM', async () => {
 		const outputWasm = path.join(tmpDir, 'native.wasm');
 		const outputMemory = path.join(tmpDir, 'native-memory', 'memory.json');
-		await execCli([
-			'compile',
-			runtimeFixturePath,
-			'--wasm-output',
-			outputWasm,
-			'--memory-output',
-			outputMemory,
-			'--no-shared-memory',
-		]);
+		await execCli(['compile', runtimeFixturePath, '--wasm-output', outputWasm, '--memory-output', outputMemory]);
 		const info = JSON.parse(await fs.readFile(outputMemory, 'utf8'));
 		const pages = Math.max(1, Math.ceil(info.requiredMemoryBytes / 65536));
-		const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+		const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
 		const { instance } = await WebAssembly.instantiate(await fs.readFile(outputWasm), { host: { memory } });
 		(instance.exports.initDefaults as () => void)();
 		(instance.exports.main as () => void)();
@@ -75,17 +67,22 @@ describe('cli', () => {
 		expect(view.getFloat32(info.memoryPlan.modules.main.memory.gain.byteAddress, true)).toBe(0.5);
 	});
 
-	it('keeps shared memory as the default compile mode', async () => {
+	it('requires shared memory for compiled programs', async () => {
 		const sharedWasm = path.join(tmpDir, 'shared.wasm');
 		await execCli(['compile', fixturePath, '--wasm-output', sharedWasm]);
 		const { instance } = await WebAssembly.instantiate(await fs.readFile(sharedWasm), {
 			host: { memory: new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true }) },
 		});
 		expect(instance.exports.main).toBeTypeOf('function');
+		await expect(
+			WebAssembly.instantiate(await fs.readFile(sharedWasm), {
+				host: { memory: new WebAssembly.Memory({ initial: 1, maximum: 1 }) },
+			})
+		).rejects.toThrow(/shared/);
 	});
 
 	it('rejects missing output paths and output collisions', async () => {
-		await expect(execCli(['compile', fixturePath, '--wasm-output', '--no-shared-memory'])).rejects.toMatchObject({
+		await expect(execCli(['compile', fixturePath, '--wasm-output', '--memory-output'])).rejects.toMatchObject({
 			stderr: expect.stringContaining('Missing path for --wasm-output'),
 		});
 		await expect(

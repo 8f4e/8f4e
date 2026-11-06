@@ -25,7 +25,7 @@ module player
 int[] buffer 4
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	let finish!: (response: Response) => void;
 	vi.stubGlobal(
 		'fetch',

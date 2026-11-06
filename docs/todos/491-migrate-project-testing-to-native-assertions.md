@@ -62,8 +62,8 @@ that instance. The test execution instance supplies the runner's real callbacks.
 paths, including environment-plugin export instances, so enabled imports are always satisfied. Worker messages carry
 serializable options and results rather than callback functions.
 
-Resolve memory ownership explicitly. The current runner allocates non-shared memory, whereas editor runtimes receive
-memory from the compiler worker. Allow execution with compatible supplied memory and keep initialization and reset
+Resolve memory ownership explicitly. The runner allocates fresh shared memory, whereas editor runtimes receive
+shared memory from the compiler worker. Allow execution with compatible supplied memory and keep initialization and reset
 policy in the runner/runtime, independent of assertion emission. Document ownership so the compiler worker and test
 runner do not accidentally initialize the same memory twice.
 

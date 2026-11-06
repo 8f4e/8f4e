@@ -72,7 +72,7 @@ export async function collectFixtureProgramFiles(directory = testRoot): Promise<
 
 export function createMemory(requiredMemoryBytes: number): WebAssembly.Memory {
 	const memorySizePages = Math.max(1, Math.ceil(requiredMemoryBytes / WASM_MEMORY_PAGE_SIZE));
-	return new WebAssembly.Memory({ initial: memorySizePages, maximum: memorySizePages });
+	return new WebAssembly.Memory({ initial: memorySizePages, maximum: memorySizePages, shared: true });
 }
 
 export function getExportedFunction(
@@ -268,7 +268,6 @@ export async function compileFixtureProgramSource(
 		source: normalizedSource,
 		project,
 		compileResult: await compileProject(compileProjectModel, {
-			disableSharedMemory: true,
 			includeStackAnalysis: options.includeStackAnalysis,
 			resolveInclude: resolveTestInclude,
 			cache: options.cache,
@@ -310,7 +309,6 @@ export async function runFixtureProgramFile(filePath: string) {
 	try {
 		compiled = await compileProject(project, {
 			enableAssertions: true,
-			disableSharedMemory: true,
 			resolveInclude: resolveTestInclude,
 		});
 		result = await runTests(compiled);

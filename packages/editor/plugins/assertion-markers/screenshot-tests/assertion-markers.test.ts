@@ -41,7 +41,6 @@ async function setup(source: string) {
 	editor.pauseRendering();
 	const compiled = await compileProject(serializeToProject(editor.state), {
 		enableAssertions: true,
-		disableSharedMemory: true,
 	});
 	const result = await runTests(compiled);
 	store.set(

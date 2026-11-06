@@ -37,9 +37,9 @@ mul
 functionEnd int
 `);
 
-const firstResult = await compileProject(project, { disableSharedMemory: true });
+const firstResult = await compileProject(project);
 const pages = Math.max(1, Math.ceil(firstResult.requiredMemoryBytes / 65536));
-const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
 const { instance } = await WebAssembly.instantiate(new Uint8Array(firstResult.codeBuffer), {
 	host: { memory },
 });
@@ -52,7 +52,6 @@ console.log(new DataView(memory.buffer).getInt32(valueAddress, true)); // 42
 console.log(instance.exports.double(21)); // 42
 
 const secondResult = await compileProject(project, {
-	disableSharedMemory: true,
 	cache: firstResult.cache,
 });
 ```
@@ -61,8 +60,8 @@ Run it with `node quickstart.mjs`; it prints `42` twice. `requiredMemoryBytes` d
 WebAssembly pages to allocate. Call `initDefaults()` before invoking entries so declared defaults, such as `41`, are
 present. The `byteAddress` field is measured in bytes, and the `true` argument to `getInt32` selects little-endian reads.
 
-The example uses non-shared memory, so both compilations set `disableSharedMemory: true`. The compiler enables shared
-memory by default; hosts using that mode must supply matching memory created with `shared: true` and a maximum.
+The compiler always imports shared memory. Hosts supply matching memory created with `shared: true` and an explicit
+maximum; ordinary memory cannot satisfy the compiled import.
 
 The second compilation reuses the returned cache. It produces a new compilation result; to execute it, instantiate
 `secondResult.codeBuffer` with suitable memory and initialize that instance's defaults too.
@@ -165,10 +164,10 @@ moduleEnd
 entryEnd`;
 
 const project = parseProjectSource(source);
-const result = await compileProject(project, { disableSharedMemory: true });
+const result = await compileProject(project);
 
 const pages = Math.max(1, Math.ceil(result.requiredMemoryBytes / 65536));
-const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
 const { instance } = await WebAssembly.instantiate(result.codeBuffer, { host: { memory } });
 
 instance.exports.initDefaults();
@@ -189,15 +188,14 @@ Four details make the example work:
   from their own view of `memory.buffer`; 8f4e stores integers little-endian, so pass `true` to `getInt32`.
 - `#export` publishes the `double` function under its source name, which becomes `instance.exports.double`.
 
-`disableSharedMemory: true` matches the non-shared `WebAssembly.Memory` created above. The compiler enables shared
-memory by default, so hosts that want the default must supply shared memory instead of passing this option.
+All compiled programs import shared `host.memory`, so JavaScript hosts must provide memory created with
+`shared: true` and an explicit maximum. This applies to compiler fixtures, CLI execution, and editor runtimes.
 
 Recompiling the same project reuses the returned cache. Pass it back through the `cache` option; there is no need to
 construct stage inputs or cache internals yourself.
 
 ```js
 const recompiled = await compileProject(project, {
-	disableSharedMemory: true,
 	cache: result.cache,
 });
 

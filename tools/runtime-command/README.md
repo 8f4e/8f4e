@@ -4,7 +4,7 @@ A standalone Node.js development tool that reads the compiler's memory-layout JS
 launch command with numeric byte addresses. It has no npm dependencies and never executes the printed command.
 The target machine needs only the native runtime and the `.wasm` file.
 
-First compile a project with the main CLI's `--wasm-output`, `--memory-output`, and `--no-shared-memory` options.
+First compile a project with the main CLI's `--wasm-output` and `--memory-output` options. Programs use shared memory.
 Then, from the repository root:
 
 ```sh

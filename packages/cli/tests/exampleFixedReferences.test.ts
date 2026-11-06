@@ -23,7 +23,6 @@ describe('example fixed references', () => {
 			source = source.replace('const SAMPLE_RATE 48000', 'const SAMPLE_RATE 32000');
 		}
 		const result = await compileProject(parseProjectSource(source), {
-			disableSharedMemory: true,
 			resolveInclude: resolveStdlibInclude,
 		});
 		expect(Object.values(result.compiledModules).some(module => Object.keys(module.referenceSlots).length > 0)).toBe(

@@ -24,7 +24,7 @@
 			"inputs": ["default", "^production", { "projects": ["@8f4e/cli"], "input": "production" }],
 			"options": {
 				"commands": [{
-					"command": "node ../cli/bin/cli.js compile tests/instrument.8f4e --wasm-output dist/tests/instrument.wasm --memory-output dist/tests/instrument.json --no-shared-memory && node tests/prepare-commands.mjs && cmake -S . -B dist/build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON && cmake --build dist/build --parallel 2 && ctest --test-dir dist/build --output-on-failure",
+					"command": "node ../cli/bin/cli.js compile tests/instrument.8f4e --wasm-output dist/tests/instrument.wasm --memory-output dist/tests/instrument.json && node tests/prepare-commands.mjs && cmake -S . -B dist/build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON && cmake --build dist/build --parallel 2 && ctest --test-dir dist/build --output-on-failure",
 					"forwardAllArgs": false
 				}],
 				"cwd": "{projectRoot}"

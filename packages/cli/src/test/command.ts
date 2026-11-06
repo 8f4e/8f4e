@@ -162,7 +162,6 @@ async function runTestFile(inputPath: string): Promise<TestFileResult> {
 
 	const compiled = await compileProject(project, {
 		enableAssertions: true,
-		disableSharedMemory: true,
 		resolveInclude: resolveStdlibInclude,
 	});
 	const result = await runTests(compiled);

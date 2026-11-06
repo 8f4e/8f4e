@@ -15,5 +15,5 @@ export function compileProjectObjectModel(
 	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath = new Map()
 ): CompileResult {
 	const program = composeProgram(project, cache, includedFunctionsByProjectPath);
-	return emitWasmProgram(compileSubProgram(program, options), options);
+	return emitWasmProgram(compileSubProgram(program, options));
 }

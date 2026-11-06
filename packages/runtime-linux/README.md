@@ -37,8 +37,7 @@ Build the CLI and export the DX7 project on the development computer:
 npx nx run @8f4e/cli:build
 node packages/cli/bin/cli.js compile packages/examples/src/projects/midi/dx7Algorithm5EightVoices.8f4e \
   --wasm-output /tmp/dx7.wasm \
-  --memory-output /tmp/dx7.memory.json \
-  --no-shared-memory
+  --memory-output /tmp/dx7.memory.json
 ```
 
 The JSON is used only by the separate [runtime-command tool](../../tools/runtime-command/README.md) on the
@@ -56,8 +55,9 @@ Only the WASM file and executable are needed on the target. Regenerate the comma
 the memory layout. For separate buffers, give the command tool `--left output:left --right output:right` before `--`;
 full nested references such as `synth/voice/output:left` are supported.
 
-`--no-shared-memory` is required: this host owns one WASM instance and executes MIDI and audio sequentially.
-The CLI's normal shared-memory output remains available for other hosts.
+The compiler always emits shared memory. This host enables Wasmtime's shared-memory support and imports the
+memory declared by the WASM file. MIDI and audio still execute sequentially in one instance on one thread;
+shared memory does not introduce concurrent playback or automatic synchronization.
 
 ## Run with Pisound
 

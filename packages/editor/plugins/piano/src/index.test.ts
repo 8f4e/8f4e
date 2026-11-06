@@ -12,7 +12,7 @@ const source = ['module controls', 'int[] notes 4', 'int count 0', '; @piano &no
 
 async function setup(code = source, installed = true, name = 'controls') {
 	const project = parseProjectSource(['8f4e/v1', 'entry main', ...code, 'entryEnd'].join('\n'));
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const buffer = new ArrayBuffer(65536);
 	const memoryViews: MemoryViews = {
 		int8: new Int8Array(buffer),

@@ -59,7 +59,7 @@ describe('compile prototype validation', () => {
 						],
 					},
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -81,7 +81,7 @@ describe('compile prototype validation', () => {
 					entries: { main: [] },
 					prototypes: [{ code: ['prototype', 'prototypeEnd'] }],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -110,7 +110,7 @@ describe('compile prototype validation', () => {
 						],
 					},
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -133,7 +133,7 @@ describe('compile prototype validation', () => {
 				},
 				prototypes: [{ code: ['prototype state', 'int value 7', 'prototypeEnd'] }],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
 		expect(result.memoryDefaultsByModuleId.main!.value?.value).toBe(7);
@@ -159,7 +159,7 @@ describe('compile prototype validation', () => {
 					},
 				],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
 		const memory = result.memoryPlan.modules.filterA!.memory;
@@ -184,7 +184,7 @@ describe('compile prototype validation', () => {
 					entries: { main: [{ code: ['module main', 'moduleEnd'] }] },
 					functions: [{ code: ['function main', 'functionEnd'] }],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -205,7 +205,7 @@ describe('compile prototype validation', () => {
 					{ code: ['function double', 'param int value', 'push value', 'push value', 'add', 'functionEnd int'] },
 				],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
 		const functionId = createFunctionId('double', ['int']);
@@ -241,7 +241,7 @@ describe('compile prototype validation', () => {
 					},
 				],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
 		const functionId = createFunctionId('addOffset', ['int']);
@@ -260,7 +260,7 @@ describe('compile prototype validation', () => {
 					{ code: ['function convert', 'param float value', 'push value', 'functionEnd float'] },
 				],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
 		const intOverloadId = createFunctionId('convert', ['int']);
@@ -292,7 +292,7 @@ describe('compile prototype validation', () => {
 						{ code: ['function convert', 'param int input', 'push input', 'functionEnd int'] },
 					],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -327,7 +327,7 @@ describe('compile prototype validation', () => {
 						},
 					],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -352,7 +352,7 @@ describe('compile prototype validation', () => {
 						{ code: ['function tick', 'param int value', 'push value', 'functionEnd int'] },
 					],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -376,7 +376,7 @@ describe('compile prototype validation', () => {
 					{ code: ['function consume', 'param float value', 'functionEnd'] },
 				],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
 		const intOverloadId = createFunctionId('consume', ['int']);
@@ -399,7 +399,7 @@ describe('compile prototype validation', () => {
 						{ code: ['function second', '#export shared', 'functionEnd'], projectBlockId: 21 },
 					],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -425,7 +425,7 @@ describe('compile prototype validation', () => {
 						{ code: ['function convert', 'param float value', 'functionEnd'], projectBlockId: 21 },
 					],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -448,7 +448,7 @@ describe('compile prototype validation', () => {
 					entries: { main: [{ code: ['module main', 'moduleEnd'] }] },
 					functions: [{ code: ['function entryAlias', '#export main', 'functionEnd'] }],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -467,7 +467,7 @@ describe('compile prototype validation', () => {
 				entries: { main: [{ code: ['module main', 'moduleEnd'] }] },
 				functions: [{ code: ['function externallyCallable', '#export externallyCallable', 'functionEnd'] }],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
 		expect(result.compiledFunctions![createFunctionId('externallyCallable', [])].used).toBe(true);

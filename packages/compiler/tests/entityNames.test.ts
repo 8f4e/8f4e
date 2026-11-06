@@ -47,10 +47,10 @@ call compute!$ field!$
 store
 moduleEnd
 entryEnd`);
-		const result = await compileProject(project, { disableSharedMemory: true });
+		const result = await compileProject(project);
 		const bytes = new Uint8Array(result.codeBuffer);
 		expect(WebAssembly.validate(bytes)).toBe(true);
-		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 		const { instance } = await WebAssembly.instantiate(bytes, { host: { memory } });
 		getExportedFunction(instance.exports, 'initDefaults')();
 		getExportedFunction(instance.exports, 'main')();

@@ -14,7 +14,6 @@ const project = parseProjectSource(source);
 if (hasTestEntry(project)) {
   const compiled = await compileProject(project, {
     enableAssertions: true,
-    disableSharedMemory: true,
     resolveInclude,
   });
   const result = await runTests(compiled);
@@ -22,8 +21,8 @@ if (hasTestEntry(project)) {
 }
 ```
 
-Callers compile with assertions enabled and non-shared memory, adding an include resolver when needed.
-`runTests(compiled)` allocates fresh memory, calls `initDefaults()` once, and executes `test()`.
+Callers compile with assertions enabled, adding an include resolver when needed. All compiled programs use shared
+memory. `runTests(compiled)` allocates fresh shared memory, calls `initDefaults()` once, and executes `test()`.
 It returns `instance`, `memory`, `assertions`, and `failures`. Callers retain the compiler's source-site lookup and
 other output themselves. The runner has no compiler implementation dependency or source transformation step.
 

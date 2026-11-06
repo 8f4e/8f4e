@@ -40,8 +40,8 @@ store
 moduleEnd
 entryEnd`
 	);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
-	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+	const compiled = await compileProject(project);
+	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
 	(instance.exports.initDefaults as CallableFunction)();
 	return { project, compiled, memory };

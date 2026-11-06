@@ -21,7 +21,7 @@ int on 1
 ; @switch &on
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const listeners = new Map<string, Set<(event: unknown) => void>>();
 	const events: EventDispatcher = {
 		on: (name, callback) => {

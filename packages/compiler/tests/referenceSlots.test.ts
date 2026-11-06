@@ -17,8 +17,7 @@ float& input ${targetAddress}
 push *input
 drop
 moduleEnd
-entryEnd`),
-				{ disableSharedMemory: true }
+entryEnd`)
 			);
 			const target = result.memoryPlan.modules.source.memory.output;
 			expect(result.memoryPlan.modules.sink.memory).toEqual({});
@@ -51,10 +50,10 @@ push input
 drop
 moduleEnd
 entryEnd`);
-		const first = await compileProject(source(''), { disableSharedMemory: true });
+		const first = await compileProject(source(''));
 		const firstSlot = first.compiledModules.sink.referenceSlots.input;
 		const originalAddress = firstSlot.targetMemory.byteAddress;
-		const second = await compileProject(source('int padding'), { disableSharedMemory: true, cache: first.cache });
+		const second = await compileProject(source('int padding'), { cache: first.cache });
 		expect(second.compiledModules.sink.referenceSlots.input.targetMemory.byteAddress).toBe(originalAddress + 4);
 		expect(firstSlot.targetMemory.byteAddress).toBe(originalAddress);
 	});
@@ -73,10 +72,9 @@ push *input
 drop
 moduleEnd
 entryEnd`);
-		const first = await compileProject(source(''), { disableSharedMemory: true });
+		const first = await compileProject(source(''));
 		const firstSlot = first.compiledModules.sink.referenceSlots.input;
 		const second = await compileProject(source('float padding 2.5'), {
-			disableSharedMemory: true,
 			cache: first.cache,
 		});
 		expect(second.compiledModules.sink.referenceSlots.input.targetMemory).toBe(

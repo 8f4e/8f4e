@@ -8,10 +8,10 @@ CLI for compiling `.8f4e` project files into WebAssembly artifacts and runtime i
 cli compile path/to/project.8f4e --wasm-output path/to/module.wasm
 ```
 
-For a standalone host, also export the compiler memory layout and disable shared memory:
+For a standalone host, also export the compiler memory layout:
 
 ```bash
-cli compile path/to/project.8f4e --wasm-output path/to/module.wasm --memory-output path/to/memory.json --no-shared-memory
+cli compile path/to/project.8f4e --wasm-output path/to/module.wasm --memory-output path/to/memory.json
 ```
 
 ```bash
@@ -37,8 +37,8 @@ When `--wasm-output` is used, the CLI writes a decoded WebAssembly binary (`.was
 `--memory-output` writes JSON containing `requiredMemoryBytes` and the complete `memoryPlan` from the same
 compilation. The plan includes qualified module ids, byte addresses, types and element counts. It can be consumed
 by the [runtime command generator](../../tools/runtime-command/README.md) to print numeric launch arguments for the
-[Linux audio/MIDI runtime](../runtime-linux/README.md). `--no-shared-memory` makes the binary import ordinary
-memory; shared memory remains the default. Output paths must differ from each other and from the source project.
+[Linux audio/MIDI runtime](../runtime-linux/README.md). Compiled programs always import shared memory. Output paths
+must differ from each other and from the source project.
 
 When `format` is used, the CLI wraps long semicolon comments to the requested `--comment-width` or the default width
 of 32. It writes to stdout by default, writes to a separate file with `--out`, or updates the input file with `--write`.

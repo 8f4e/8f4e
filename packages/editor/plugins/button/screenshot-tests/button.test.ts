@@ -20,7 +20,7 @@ int on 1
 ; @button &on
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},

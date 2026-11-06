@@ -8,14 +8,12 @@ interface CompileCommandArgs {
 	inputPath?: string;
 	wasmOutputPath?: string;
 	memoryOutputPath?: string;
-	disableSharedMemory: boolean;
 }
 
 function parseCompileArgs(args: string[]): CompileCommandArgs {
 	let inputPath: string | undefined;
 	let wasmOutputPath: string | undefined;
 	let memoryOutputPath: string | undefined;
-	let disableSharedMemory = false;
 
 	for (let i = 0; i < args.length; i += 1) {
 		const arg = args[i];
@@ -32,10 +30,6 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 			i += 1;
 			continue;
 		}
-		if (arg === '--no-shared-memory') {
-			disableSharedMemory = true;
-			continue;
-		}
 		if (!inputPath && !arg.startsWith('-')) {
 			inputPath = arg;
 			continue;
@@ -43,15 +37,15 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 		throw new Error(`Unknown compile argument: ${arg}`);
 	}
 
-	return { inputPath, wasmOutputPath, memoryOutputPath, disableSharedMemory };
+	return { inputPath, wasmOutputPath, memoryOutputPath };
 }
 
 export function getCompileUsage(): string {
-	return 'Usage: cli compile <input.8f4e> --wasm-output <output.wasm> [--memory-output <memory.json>] [--no-shared-memory]';
+	return 'Usage: cli compile <input.8f4e> --wasm-output <output.wasm> [--memory-output <memory.json>]';
 }
 
 export async function runCompileCommand(args: string[]): Promise<void> {
-	const { inputPath, wasmOutputPath, memoryOutputPath, disableSharedMemory } = parseCompileArgs(args);
+	const { inputPath, wasmOutputPath, memoryOutputPath } = parseCompileArgs(args);
 
 	if (!inputPath) {
 		throw new Error(getCompileUsage());
@@ -78,9 +72,7 @@ export async function runCompileCommand(args: string[]): Promise<void> {
 	const inputRaw = await fs.readFile(resolvedInput, 'utf8');
 	const project = parseProjectSource(inputRaw);
 
-	const { compiledWasm, requiredMemoryBytes, memoryPlan } = await compileProject(project, {
-		compilerOptions: { disableSharedMemory },
-	});
+	const { compiledWasm, requiredMemoryBytes, memoryPlan } = await compileProject(project);
 
 	await fs.mkdir(path.dirname(resolvedWasmOutput), { recursive: true });
 	await fs.writeFile(resolvedWasmOutput, Buffer.from(compiledWasm, 'base64'));

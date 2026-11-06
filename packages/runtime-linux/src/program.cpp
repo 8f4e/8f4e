@@ -14,6 +14,13 @@ namespace {
 template <class T, void (*Destroy)(T *)>
 using Handle = std::unique_ptr<T, decltype(Destroy)>;
 
+wasm_engine_t *create_engine() {
+  auto *config = wasm_config_new();
+  wasmtime_config_wasm_threads_set(config, true);
+  wasmtime_config_shared_memory_set(config, true);
+  return wasm_engine_new_with_config(config);
+}
+
 void check(wasmtime_error_t *error, wasm_trap_t *trap = nullptr) {
   if (!error && !trap) return;
   wasm_name_t message;
@@ -29,13 +36,13 @@ void check(wasmtime_error_t *error, wasm_trap_t *trap = nullptr) {
 } // namespace
 
 struct Program::Impl {
-  Handle<wasm_engine_t, wasm_engine_delete> engine{wasm_engine_new(), wasm_engine_delete};
+  Handle<wasm_engine_t, wasm_engine_delete> engine{create_engine(), wasm_engine_delete};
   Handle<wasmtime_module_t, wasmtime_module_delete> module{nullptr, wasmtime_module_delete};
   Handle<wasmtime_store_t, wasmtime_store_delete> store{
       wasmtime_store_new(engine.get(), nullptr, nullptr), wasmtime_store_delete};
   wasmtime_context_t *context = wasmtime_store_context(store.get());
   wasmtime_instance_t instance{};
-  wasmtime_memory_t memory{};
+  Handle<wasmtime_sharedmemory_t, wasmtime_sharedmemory_delete> memory{nullptr, wasmtime_sharedmemory_delete};
   wasmtime_func_t buffer_function{};
   wasmtime_func_t midi_function{};
   std::size_t left = 0;
@@ -94,17 +101,21 @@ Program::Program(const std::string &wasm_path, std::size_t left, std::size_t rig
   Handle<wasm_memorytype_t, wasm_memorytype_delete> type{
       memory_type ? wasm_memorytype_copy(memory_type) : nullptr, wasm_memorytype_delete};
   wasm_importtype_vec_delete(&imports);
-  if (!type) throw std::runtime_error("Expected a single WASM memory import; compile with --no-shared-memory");
-  check(wasmtime_memory_new(impl_->context, type.get(), &impl_->memory));
-  const auto memory_size = wasmtime_memory_data_size(impl_->context, &impl_->memory);
+  if (!type || !wasmtime_memorytype_isshared(type.get())) {
+    throw std::runtime_error("Expected a single shared WASM memory import");
+  }
+  wasmtime_sharedmemory_t *memory = nullptr;
+  check(wasmtime_sharedmemory_new(impl_->engine.get(), type.get(), &memory));
+  impl_->memory.reset(memory);
+  const auto memory_size = wasmtime_sharedmemory_data_size(memory);
   const auto buffer_bytes = static_cast<uint64_t>(frames) * sizeof(float);
   if (frames == 0 || static_cast<uint64_t>(left) + buffer_bytes > memory_size ||
       static_cast<uint64_t>(right) + buffer_bytes > memory_size) {
     throw std::runtime_error("Audio buffer addresses and sample count must fit in WASM memory");
   }
   wasmtime_extern_t imported{};
-  imported.kind = WASMTIME_EXTERN_MEMORY;
-  imported.of.memory = impl_->memory;
+  imported.kind = WASMTIME_EXTERN_SHAREDMEMORY;
+  imported.of.sharedmemory = memory;
   wasm_trap_t *trap = nullptr;
   auto *error = wasmtime_instance_new(impl_->context, module, &imported, 1, &impl_->instance, &trap);
   check(error, trap);
@@ -128,7 +139,7 @@ void Program::midi(MidiMessage message) {
 
 void Program::render(std::span<float> stereo, float gain) {
   impl_->call(impl_->buffer_function);
-  const auto *memory = wasmtime_memory_data(impl_->context, &impl_->memory);
+  const auto *memory = wasmtime_sharedmemory_data(impl_->memory.get());
   for (std::size_t i = 0; i < frames(); ++i) {
     float left, right;
     std::memcpy(&left, memory + impl_->left + i * sizeof(float), sizeof(float));

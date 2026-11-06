@@ -63,10 +63,11 @@ compilation. Supply matching callbacks when instantiating the emitted Wasm. Call
 condition/equality checks and own their reporting policy. They can collect both successful and failed assertions:
 
 ```ts
-const compiled = await compileProject(project, { enableAssertions: true, disableSharedMemory: true });
+const compiled = await compileProject(project, { enableAssertions: true });
 const memory = new WebAssembly.Memory({
   initial: Math.max(1, Math.ceil(compiled.requiredMemoryBytes / 65536)),
   maximum: Math.max(1, Math.ceil(compiled.requiredMemoryBytes / 65536)),
+  shared: true,
 });
 const results = [];
 const equal = (received, expected, siteId) => {
@@ -85,7 +86,7 @@ const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeB
 });
 ```
 
-This example supplies the program's non-shared `host.memory`. Every emitted assertion import is required during
+This example supplies the program's shared `host.memory`. Every emitted assertion import is required during
 instantiation, even when its call is in a branch
 that is never executed. Callback exceptions propagate and interrupt the current invocation; collecting callbacks
 should return normally to run later assertions.

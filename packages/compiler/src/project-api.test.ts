@@ -61,15 +61,15 @@ describe('project compiler API', () => {
 	});
 
 	it('compiles directly from an object without a text round trip', async () => {
-		const result = await compileProject(directProject, { disableSharedMemory: true });
+		const result = await compileProject(directProject);
 		expect(result.compiledModules.counter).toBeDefined();
 		expect(Object.values(result.compiledFunctions ?? {}).some(func => func.name === 'one')).toBe(true);
 	});
 
 	it('produces equivalent output for parsed and directly constructed projects', async () => {
 		const [parsedResult, directResult] = await Promise.all([
-			compileProject(parseProjectSource(source), { disableSharedMemory: true }),
-			compileProject(directProject, { disableSharedMemory: true }),
+			compileProject(parseProjectSource(source)),
+			compileProject(directProject),
 		]);
 		expect(new Uint8Array(parsedResult.codeBuffer)).toEqual(new Uint8Array(directResult.codeBuffer));
 		expect(parsedResult.memoryPlan).toEqual(directResult.memoryPlan);
@@ -87,16 +87,16 @@ entry bar
 entryEnd
 groupEnd
 entryEnd`);
-		const result = await compileProject(project, { disableSharedMemory: true });
+		const result = await compileProject(project);
 		const exports = WebAssembly.Module.exports(new WebAssembly.Module(new Uint8Array(result.codeBuffer)));
 		expect(exports.map(item => item.name).sort()).toEqual(['foo', 'initDefaults', 'main']);
 	});
 
 	it('applies the configured starting memory word address to planned and emitted module memory', async () => {
 		const [defaultResult, zeroResult, relocatedResult] = await Promise.all([
-			compileProject(relocatedProject, { disableSharedMemory: true }),
-			compileProject(relocatedProject, { disableSharedMemory: true, startingMemoryAllocationUnitAddress: 0 }),
-			compileProject(relocatedProject, { disableSharedMemory: true, startingMemoryAllocationUnitAddress: 8 }),
+			compileProject(relocatedProject),
+			compileProject(relocatedProject, { startingMemoryAllocationUnitAddress: 0 }),
+			compileProject(relocatedProject, { startingMemoryAllocationUnitAddress: 8 }),
 		]);
 
 		expect(defaultResult.memoryPlan.modules.relocated.byteAddress).toBe(4);
@@ -109,6 +109,7 @@ entryEnd`);
 		const memory = new WebAssembly.Memory({
 			initial: Math.ceil(relocatedResult.requiredMemoryBytes / WASM_MEMORY_PAGE_SIZE),
 			maximum: Math.ceil(relocatedResult.requiredMemoryBytes / WASM_MEMORY_PAGE_SIZE),
+			shared: true,
 		});
 		const { instance } = await WebAssembly.instantiate(relocatedResult.codeBuffer, { host: { memory } });
 		(instance.exports.initDefaults as CallableFunction)();
@@ -130,7 +131,7 @@ entryEnd`);
 			entries: ['alternate', 'main'],
 		};
 
-		const result = await compileProject(project, { disableSharedMemory: true });
+		const result = await compileProject(project);
 		expect(Object.values(result.compiledModules).sort((a, b) => a.index - b.index)).toMatchObject([
 			{ id: 'firstAlternate', executionEntryName: 'alternate' },
 			{ id: 'mainModule', executionEntryName: 'main' },

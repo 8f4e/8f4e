@@ -44,7 +44,7 @@ describe('compileSubProgram', () => {
 		};
 		const program = composeProgram(project);
 		program.ast.modules.reverse();
-		const compiled = compileSubProgram(program, { disableSharedMemory: true });
+		const compiled = compileSubProgram(program, {});
 
 		expect(compiled.compiledModules.map(({ id, executionEntryName }) => [id, executionEntryName])).toEqual([
 			['rootLast', 'alternate'],
@@ -55,7 +55,7 @@ describe('compileSubProgram', () => {
 	});
 
 	it('compiles one closed source unit into emission-ready artifacts', () => {
-		const compiled = compileSubProgram(composeProgram(emptyProject), { disableSharedMemory: true });
+		const compiled = compileSubProgram(composeProgram(emptyProject), {});
 
 		expect(compiled.entries).toEqual([{ id: 'main', exportName: 'main', steps: [] }]);
 		expect(compiled.compiledModules).toEqual([]);

@@ -12,9 +12,9 @@ const source = ['module audio', 'float[] samples 4 -1 0 1 0', '; @wave &samples 
 
 async function setup(code = source, installed = true, name = 'audio') {
 	const project = parseProjectSource(['8f4e/v1', 'entry main', ...code, 'entryEnd'].join('\n'));
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const pages = Math.max(1, Math.ceil(compiled.requiredMemoryBytes / 65536));
-	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
 	(instance.exports.initDefaults as CallableFunction)();
 	const memoryViews: MemoryViews = {
