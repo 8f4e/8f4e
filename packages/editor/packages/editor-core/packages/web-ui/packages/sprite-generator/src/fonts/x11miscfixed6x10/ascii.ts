@@ -1,5 +1,5 @@
 // X11 Misc Fixed 6x10, public domain.
-// Converted from tools/font-sources/misc-fixed/6x10.bdf with tools/import-bdf.mjs.
+// Converted from 6x10.bdf in https://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz.
 const glyphs = [
 	['      ', '# # # ', '      ', '#   # ', '      ', '#   # ', '      ', '# # # ', '      ', '      '],
 	['      ', '      ', '      ', '      ', '      ', '      ', '      ', '      ', '      ', '      '],
