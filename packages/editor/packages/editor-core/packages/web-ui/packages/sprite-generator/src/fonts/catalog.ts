@@ -14,6 +14,9 @@ export const FONTS = {
 	terminus12x24: { width: 12, height: 24, load: () => import('../generated/terminus12x24.ts') },
 	terminus12x24bold: { width: 12, height: 24, load: () => import('../generated/terminus12x24bold.ts') },
 	spleen16x32: { width: 16, height: 32, load: () => import('../generated/spleen16x32.ts') },
+	startrek25th8x9: { width: 8, height: 9, load: () => import('../generated/startrek25th8x9.ts') },
+	dilithiumpixels7x10: { width: 7, height: 10, load: () => import('../generated/dilithiumpixels7x10.ts') },
+	departuremono7x14: { width: 7, height: 14, load: () => import('../generated/departuremono7x14.ts') },
 } as const;
 
 export type Font = keyof typeof FONTS;

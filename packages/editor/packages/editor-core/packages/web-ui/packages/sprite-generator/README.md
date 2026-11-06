@@ -44,6 +44,22 @@ import in the catalog. The importer maps Unicode BDF encodings to CP437 and acce
 Web-ui owns font-specific background dot settings in `src/plugins/background/dot-settings.ts`;
 configure those there. Backgrounds use a procedural pass, and connectors use ordinary glyphs and fill.
 
+Pixel-outline TTF/OTF fonts can first be converted to BDF with `tools/import-pixel-outline.py`. This optional
+import tool requires Python's `fontTools` package; production builds use only the committed ASCII sources.
+It samples the original design-pixel grid without antialiasing. The caller supplies that grid and the fixed-cell
+metrics. For the two Star Trek fonts, run from this package directory:
+
+```sh
+python3 tools/import-pixel-outline.py star-trek-25th-anniversary.otf startrek25th8x9.bdf --units-per-pixel 250 --width 8 --height 9 --ascent 7
+node tools/import-bdf.mjs startrek25th8x9.bdf startrek25th8x9
+python3 tools/import-pixel-outline.py DilithiumPixelsNbpRegular-B5jd.ttf dilithiumpixels7x10.bdf --units-per-pixel 64 --width 7 --height 10 --ascent 10
+node tools/import-bdf.mjs dilithiumpixels7x10.bdf dilithiumpixels7x10
+node tools/import-bdf.mjs DepartureMono14-Regular.bdf departuremono7x14
+```
+
+The font origins, download versions, checksums, and licenses are recorded in
+[Third-Party Fonts](../../../../THIRD_PARTY_FONTS.md). Missing CP437 glyphs in these fonts remain blank.
+
 Code text preparation and syntax palette selection belong to `@8f4e/editor-plugin-code-rendering`. Web-ui owns the
 generic packed sprite-cell format, separately from font loading.
 Themes are resolved through `@8f4e/editor-palette` and never change mask pixels.
