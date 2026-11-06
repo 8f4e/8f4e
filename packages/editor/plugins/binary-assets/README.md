@@ -15,7 +15,9 @@ const plugin = createBinaryAssetsPlugin({
 
 The memory getter reads the current buffer whenever bytes are copied, including after memory replacement or growth.
 The plugin itself owns browser `fetch`, CacheStorage (`8f4e-binary-assets`), filename extraction, and its private
-asset bytes and metadata. CacheStorage is optional; browsers without it fetch directly.
+asset bytes and metadata. CacheStorage is optional; browsers without it fetch directly. Failures opening,
+matching, or reading the cache fall back to the network. Failed cache writes still return the downloaded bytes;
+network and response-body failures remain asset-loading errors.
 
 Configure assets in project source:
 
@@ -38,6 +40,10 @@ recompilation do not re-add indicators. Removing an asset or changing its URL ca
 cancels all pending indicators. New downloads replace the same ID. The loading-indicators plugin owns presentation
 and private visibility. Binary loading does not open a dialog or block input.
 Fetch failures are logged and excluded from the completed asset set.
+
+Each pending URL has one shared cancellation handle. Downloads are aborted when no configured asset needs that
+URL, and all pending downloads are aborted on disposal. Removing one asset keeps a shared download running for
+the remaining assets. Cancellation does not log a download failure or mark a replacement download failed.
 
 The plugin contributes `ASSET_<ID>_SIZE` constants and filename comments through the generic
 `state.envConstantContributions` map. Core combines contributed source with runtime environment constants in `env`.

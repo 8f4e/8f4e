@@ -22,7 +22,7 @@ export function createBinaryAssetsPlugin({
 		id: 'binary-assets',
 		setup: ({ store, loading }) => {
 			let assets: BinaryAsset[] = [];
-			const pendingUrls = new Set<string>();
+			const pendingDownloads = new Map<string, AbortController>();
 			let disposed = false;
 			let signature = '';
 
@@ -78,21 +78,22 @@ export function createBinaryAssetsPlugin({
 			}
 
 			async function fetchAssetsForUrl(url: string) {
-				pendingUrls.add(url);
+				const controller = new AbortController();
+				pendingDownloads.set(url, controller);
 				let source: BinaryAssetSource;
 				try {
-					source = await fetchBinaryAsset(url);
+					source = await fetchBinaryAsset(url, controller.signal);
 				} catch (error) {
-					if (disposed) return;
+					if (disposed || controller.signal.aborted) return;
 					const matchingAssets = assets.filter(asset => asset.url === url);
 					if (!matchingAssets.length) return;
 					console.error('Failed to fetch binary asset:', url, error);
 					for (const asset of matchingAssets) finishDownload(asset, 'failed');
 					return;
 				} finally {
-					pendingUrls.delete(url);
+					if (pendingDownloads.get(url) === controller) pendingDownloads.delete(url);
 				}
-				if (disposed) return;
+				if (disposed || controller.signal.aborted) return;
 				const matchingAssets = assets.filter(asset => asset.url === url);
 				if (!matchingAssets.length) return;
 				for (const asset of matchingAssets) {
@@ -128,6 +129,12 @@ export function createBinaryAssetsPlugin({
 				for (const asset of previousAssets.values()) {
 					if (!assets.includes(asset)) finishDownload(asset, 'cancelled');
 				}
+				const activeUrls = new Set(assets.map(asset => asset.url));
+				for (const [url, controller] of pendingDownloads) {
+					if (activeUrls.has(url)) continue;
+					pendingDownloads.delete(url);
+					controller.abort();
+				}
 				for (const asset of assets) {
 					if (!asset.source && previousAssets.get(asset.id) !== asset) {
 						asset.downloadLoading = loading.add({ id: `asset:${asset.id}`, message: `Loading ${asset.id}...` });
@@ -136,7 +143,7 @@ export function createBinaryAssetsPlugin({
 				publishConstants();
 				for (const asset of assets) {
 					if (asset.source) copyAssetToMemory(asset);
-					else if (asset.downloadLoading && !pendingUrls.has(asset.url)) void fetchAssetsForUrl(asset.url);
+					else if (asset.downloadLoading && !pendingDownloads.has(asset.url)) void fetchAssetsForUrl(asset.url);
 				}
 			}
 
@@ -150,6 +157,8 @@ export function createBinaryAssetsPlugin({
 				store.unsubscribe('editorConfig.bin', syncConfig);
 				store.unsubscribe('compiler.result.memoryPlan', recopyAssetsToMemory);
 				for (const asset of assets) finishDownload(asset, 'cancelled');
+				for (const controller of pendingDownloads.values()) controller.abort();
+				pendingDownloads.clear();
 				assets = [];
 				const constants = { ...store.getState().envConstantContributions };
 				delete constants.binaryAssets;

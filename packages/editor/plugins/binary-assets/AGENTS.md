@@ -9,6 +9,11 @@
 - Keep one asset record per configured ID with its downloaded source, memory destinations, and download-indicator handle.
   Fetch distinct URLs concurrently, share one fetch per URL, and publish constants/copy completed sources independently.
   Track each destination with `copiedToMemory`; recopy retained bytes after memory-plan changes.
+- Treat CacheStorage as optional. Cache open, lookup, and body-read failures fall back to the network; cache write
+  failures must not discard downloaded bytes. Preserve network and response-body errors.
+- Share one AbortController per pending URL. Abort when the last configured asset using the URL is removed or
+  changed, and abort all pending downloads on disposal. Ignore aborted results and errors; an older request's
+  cleanup must not remove a newer request for the same URL.
 - Keep binary asset types and state private. Core must not reference binary assets or asset-generated constants.
 - Ignore stale fetch results after configuration changes or disposal. Unsubscribe and remove owned contributions
   on disposal, cancelling pending download indicators. Contribute ID `asset:<id>` with message `Loading <id>...`.
