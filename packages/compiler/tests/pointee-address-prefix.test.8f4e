@@ -1,0 +1,26 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+function address
+param int* ptr
+push &*ptr
+functionEnd int*
+
+entry test
+module allocatedPointer
+int value 123
+int* ptr &value
+push &*ptr
+assertEqual &value
+moduleEnd
+
+module pureFunctionPointerParameter
+int value 456
+push &value
+call address
+assertEqual &value
+moduleEnd
+entryEnd
