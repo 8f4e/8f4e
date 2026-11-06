@@ -2,6 +2,7 @@ import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
 import { serializeToProject } from '@8f4e/editor-state';
+import { FONT_NAMES } from '@8f4e/sprite-generator';
 import { expect, test, vi } from 'vitest';
 
 test('previews fonts through the default composition without changing saved source', async () => {
@@ -9,8 +10,9 @@ test('previews fonts through the default composition without changing saved sour
 	canvas.width = 640;
 	canvas.height = 256;
 	document.body.append(canvas);
+	const sourceFont = 'spleen16x32';
 	const project = parseProjectSource(
-		'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote settings\n; @mode edit\n; @pos 3 3\n; @config font spleen16x32\nSample text\nnoteEnd'
+		`8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote settings\n; @mode edit\n; @pos 3 3\n; @config font ${sourceFont}\nSample text\nnoteEnd`
 	);
 	let editor: Editor | undefined;
 	let context!: EditorPluginContext;
@@ -49,7 +51,9 @@ test('previews fonts through the default composition without changing saved sour
 			return event;
 		};
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
-		expect(key('F19').defaultPrevented).toBe(true);
+		for (let index = FONT_NAMES.indexOf(sourceFont); index < FONT_NAMES.length; index++) {
+			expect(key('F19').defaultPrevented).toBe(true);
+		}
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(6);
 		expect(editor.state.viewport.hGrid).toBe(10);
 		expect(serializeToProject(editor.state)).toEqual(source);
@@ -64,14 +68,14 @@ test('previews fonts through the default composition without changing saved sour
 				{
 					type: 'update',
 					blockId: getEditorBlockId(block),
-					code: block.code.map(line => line.replace('spleen16x32', 'terminus10x18')),
+					code: block.code.map(line => line.replace(sourceFont, 'terminus10x18')),
 				},
 			],
 		});
 		expect(editor.state.editorConfig.font).toBe('x11miscfixed6x10');
 		context.events.dispatch('loadProject', { project });
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
-		expect(editor.state.editorConfig.font).toBe('spleen16x32');
+		expect(editor.state.editorConfig.font).toBe(sourceFont);
 	} finally {
 		editor?.dispose();
 		canvas.remove();

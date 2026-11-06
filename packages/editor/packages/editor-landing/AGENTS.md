@@ -28,3 +28,6 @@
   Hosts own page URLs, loading UI, and visibility.
 - Verify with `npx nx run @8f4e/editor-landing:build|test|typecheck`; the product website's `test:browser` target
   covers real landing-editor startup, compilation, controls, context-menu suppression, and disposal.
+
+- Expose `defaultFont` as a mount option. When omitted, choose `pixelcode6x12` for `(pointer: coarse)` and let
+  core use IBM VGA otherwise. Forward the resolved default to core; explicit project font directives take priority.

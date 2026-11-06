@@ -36,6 +36,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	await vi.waitFor(() => expect(initEditor).toHaveBeenCalledOnce());
 	const compiler = vi.mocked(createCompilerPlugin).mock.results[0].value;
 	const options = vi.mocked(initEditor).mock.calls[0][1];
+	expect(options.defaultFont).toBeUndefined();
 	expect(options.featureFlags).toEqual({ projectCreation: false, moduleDragging: false });
 	expect(options.plugins![0]).toBe(compiler.plugin);
 	expect(options.plugins!.map(plugin => plugin.id)).not.toContain('watch');
@@ -88,6 +89,7 @@ it('omits all keyboard plugins on coarse-pointer browsers', async () => {
 	const browserWindow = { navigator: {}, matchMedia: (query: string) => ({ matches: query === '(pointer: coarse)' }) };
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 	await mountGalleryEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
+	expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('pixelcode6x12');
 	const plugins = await loadDeferredPlugins();
 	expect(plugins.map(plugin => plugin.id)).toEqual(expect.arrayContaining(['mouse-input', 'touch-input']));
 	for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing'])
@@ -103,4 +105,13 @@ it('omits mode switching while retaining navigation and editing', async () => {
 	const ids = (await loadDeferredPlugins()).map(plugin => plugin.id);
 	expect(ids).not.toContain('keyboard-mode-switching');
 	expect(ids).toEqual(expect.arrayContaining(['keyboard-navigation', 'keyboard-editing']));
+});
+
+it.each([false, true])('honors an explicit default font with coarse pointer %s', async coarse => {
+	const browserWindow = { matchMedia: () => ({ matches: coarse }) };
+	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
+	await mountGalleryEditor({ ownerDocument: { defaultView: browserWindow } } as unknown as HTMLCanvasElement, {
+		defaultFont: 'scientifica5x11',
+	});
+	expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('scientifica5x11');
 });

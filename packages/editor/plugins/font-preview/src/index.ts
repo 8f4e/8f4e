@@ -3,7 +3,14 @@ import { resolveEditorConfig } from '@8f4e/editor-state';
 import { DEFAULT_FONT, FONT_NAMES, type Font } from '@8f4e/sprite-generator';
 
 /** Preview fonts without modifying project source or history. */
-export function createFontPreviewPlugin({ inputTarget }: { inputTarget: HTMLElement }): EditorPlugin {
+export function createFontPreviewPlugin({
+	inputTarget,
+	defaultFont = DEFAULT_FONT,
+}: {
+	inputTarget: HTMLElement;
+	/** Match the renderer's per-editor default when source has no font directive. */
+	defaultFont?: Font;
+}): EditorPlugin {
 	return {
 		id: 'font-preview',
 		setup: ({ store, events }) => {
@@ -22,7 +29,7 @@ export function createFontPreviewPlugin({ inputTarget }: { inputTarget: HTMLElem
 				const direction = event.key === 'F18' ? -1 : event.key === 'F19' ? 1 : 0;
 				if (!direction) return;
 				event.preventDefault();
-				const currentFont = (state.editorConfig.font as Font | undefined) ?? DEFAULT_FONT;
+				const currentFont = (state.editorConfig.font as Font | undefined) ?? defaultFont;
 				previewFont = FONT_NAMES[(FONT_NAMES.indexOf(currentFont) + direction + FONT_NAMES.length) % FONT_NAMES.length];
 				store.set('editorConfig.font', previewFont);
 			};

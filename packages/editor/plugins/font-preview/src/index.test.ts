@@ -60,15 +60,18 @@ describe('font preview', () => {
 		expect(test.state.editorConfig.font).toBe(FONT_NAMES[0]);
 	});
 
-	it('starts from the renderer default when the project has no font setting and restores its absence', () => {
-		const test = setup();
-		test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
-		test.key('F19');
-		test.key('F18');
-		expect(test.state.editorConfig.font).toBe(DEFAULT_FONT);
-		test.disposePlugin();
-		expect(test.state.editorConfig.font).toBeUndefined();
-	});
+	it.each([DEFAULT_FONT, 'pixelcode6x12'] as const)(
+		'starts from the renderer default %s when source has no font setting and restores its absence',
+		defaultFont => {
+			const test = setup(defaultFont);
+			test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
+			test.key('F19');
+			test.key('F18');
+			expect(test.state.editorConfig.font).toBe(defaultFont);
+			test.disposePlugin();
+			expect(test.state.editorConfig.font).toBeUndefined();
+		}
+	);
 
 	it.each(['altKey', 'ctrlKey', 'metaKey', 'shiftKey'])('leaves modified function keys alone (%s)', modifier => {
 		const test = setup();

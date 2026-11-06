@@ -18,6 +18,8 @@ export interface GalleryEditorMountOptions {
 	captureWheel?: boolean;
 	/** Configure one-finger touch panning; defaults to both directions. */
 	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
+	/** Font for projects without a font directive; PixelCode on coarse pointers, IBM VGA otherwise. */
+	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	/** Include the keyboard mode-switching plugin and its hint. Defaults to true. */
 	includeKeyboardModeSwitching?: boolean;
@@ -33,6 +35,9 @@ export async function mountGalleryEditor(
 		sharedAudioContext,
 		captureWheel,
 		touchNavigation,
+		defaultFont = canvas.ownerDocument.defaultView!.matchMedia('(pointer: coarse)').matches
+			? 'pixelcode6x12'
+			: undefined,
 		featureFlags,
 		includeKeyboardModeSwitching,
 		initialProjectUrl,
@@ -70,6 +75,7 @@ export async function mountGalleryEditor(
 					),
 			}),
 		],
+		defaultFont,
 		featureFlags: { projectCreation: false, ...featureFlags },
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();

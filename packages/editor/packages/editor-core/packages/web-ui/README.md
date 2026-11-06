@@ -60,6 +60,7 @@ Initializes the web UI renderer without drawing or scheduling frames. Editor-cor
 - `events: EventDispatcher` - Announces layout grid size changes
 - `canvas: HTMLCanvasElement` - The canvas element to render to
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
+- `options.defaultFont` - Optional per-editor default (`ibmvga8x16` when omitted), used whenever project configuration has no font directive. It is preloaded alongside project preparation and remains the default for later configuration changes.
 - `options.loading` - Required per-editor loading service supplied by editor-core; font changes contribute ID `font` with message `Loading font <name>...`
 - `options.onRenderStats` - Optional callback for sampled render statistics
 - `options.renderStatsIntervalFrames` - Optional frame interval for `onRenderStats` (defaults to 60)

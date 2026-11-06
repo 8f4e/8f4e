@@ -19,6 +19,11 @@ const editor = await mountGalleryEditor(canvas, {
 editor.dispose();
 ```
 
+Pass `defaultFont` (for example, `defaultFont: 'pixelcode6x12'`) to choose the font used by projects without
+a `; @config font` directive. Otherwise, the composition chooses PixelCode 6×12 when `(pointer: coarse)` matches
+at mount time and IBM VGA 8×16 on other devices. A project font directive takes priority; removing it or loading
+a project without one restores the mount's default. This preference is kept outside project source and saved files.
+
 The composition installs the compiler first, with lazy standard-library include resolution. It includes project URL
 loading, project source saving/export, keyboard input, assertion markers, watch and stack annotations, and tooltips.
 Compiler coordination, file-session tracking, URL loading, block backgrounds, code rendering, and loading indicators are eager.
@@ -61,7 +66,7 @@ Runtime, MIDI, and asset plugins use
 `project` scope and match signals across the complete project tree. Loaded plugins stay installed until disposal.
 Imports and compilation finish independently of mounting and the initial-project callback. A callback may run before
 the mount promise resolves. Mounting waits for URL fetching/parsing, font-atlas loading, and the first render. Project
-fetching/parsing and the default ibmvga font download run in parallel.
+fetching/parsing and the selected default font download run in parallel.
 
 Without `initialProjectUrl`, the editor starts with an empty project and calls `onInitialProjectLoaded` after core
 initialization. A URL failure calls `onInitialProjectLoadError`. The host owns page URLs, loading/error UI, canvas

@@ -22,8 +22,13 @@ const editor = await mountLandingEditor(canvas, {
 editor.dispose();
 ```
 
+Pass `defaultFont` (for example, `defaultFont: 'pixelcode6x12'`) to choose the font used by projects without
+a `; @config font` directive. Otherwise, the composition chooses PixelCode 6×12 when `(pointer: coarse)` matches
+at mount time and IBM VGA 8×16 on other devices. A project font directive takes priority; removing it or loading
+a project without one restores the mount's default. This preference is kept outside project source and saved files.
+
 `LandingEditorMountOptions` accepts `initialProjectUrl`, `onInitialProjectLoaded`, `onInitialProjectLoadError`,
-`captureWheel`, `touchNavigation`, and `featureFlags`. Project creation defaults to disabled; context menus are always
+`captureWheel`, `touchNavigation`, `defaultFont`, and `featureFlags`. Project creation defaults to disabled; context menus are always
 disabled. The source's `@mode` directive selects the initial mode (view by default). Keyboard navigation and editing
 remain available on non-coarse pointers; no keyboard mode toggle or hint is installed. Initial project callbacks,
 rendering controls, compiler diagnostics, and disposal follow the

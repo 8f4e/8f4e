@@ -138,6 +138,7 @@ describe('editor init', () => {
 		];
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
 			plugins,
+			defaultFont: 'pixelcode6x12',
 		});
 		expect(plugins[0].setup).toHaveBeenCalledWith({
 			store,
@@ -161,6 +162,7 @@ describe('editor init', () => {
 			events.dispatch.mock.invocationCallOrder[initialized]
 		);
 		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![4]!.drawers!;
+		expect(vi.mocked(initView).mock.calls.at(-1)![4]!.defaultFont).toBe('pixelcode6x12');
 		expect(rendererDrawers).toBe(plugins[0].setup.mock.calls[0][0].drawers);
 		const drawContext = {} as Parameters<typeof rendererDrawers.drawCodeBlock>[0];
 		rendererDrawers.drawCodeBlock(drawContext);

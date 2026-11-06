@@ -94,3 +94,6 @@
 
 - Load `entryOutlinesPlugin` as an unconditional deferred entry. It draws borders and labels from core's entry bounds
   below blocks through `registerCanvasBackgroundDrawer`. Entry bounds and insertion assignment remain in editor-state.
+
+- Expose `defaultFont` as a mount option. When omitted, choose `pixelcode6x12` for `(pointer: coarse)` and let
+  core use IBM VGA otherwise. Forward the resolved default to core; explicit project font directives take priority.

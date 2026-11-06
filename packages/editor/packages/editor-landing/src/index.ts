@@ -13,6 +13,8 @@ export interface LandingEditorMountOptions {
 	captureWheel?: boolean;
 	/** Configure one-finger touch panning; defaults to both directions. */
 	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
+	/** Font for projects without a font directive; PixelCode on coarse pointers, IBM VGA otherwise. */
+	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
 	/** Initial source is installed; compilation and plugin loading continue independently. */
@@ -25,6 +27,9 @@ export async function mountLandingEditor(
 	{
 		captureWheel,
 		touchNavigation,
+		defaultFont = canvas.ownerDocument.defaultView!.matchMedia('(pointer: coarse)').matches
+			? 'pixelcode6x12'
+			: undefined,
 		featureFlags,
 		initialProjectUrl,
 		onInitialProjectLoaded,
@@ -55,6 +60,7 @@ export async function mountLandingEditor(
 					),
 			}),
 		],
+		defaultFont,
 		featureFlags: { projectCreation: false, ...featureFlags, contextMenu: false },
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
