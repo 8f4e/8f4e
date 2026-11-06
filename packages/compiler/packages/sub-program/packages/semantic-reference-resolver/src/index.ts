@@ -27,7 +27,6 @@ import type {
 	ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import {
-	ArgumentType,
 	BlockType,
 	compilerSourceBlockInstructionByType,
 	EMPTY_REFERENCE_SLOTS,
@@ -388,19 +387,15 @@ function createFunctionContext(
 	});
 }
 
-function isPointerMemoryIoPush(push: { resolvedTarget: { kind: string }; arguments: readonly unknown[] }): boolean {
-	if (push.resolvedTarget.kind === 'memory-pointer') return true;
-	if (push.resolvedTarget.kind !== 'local-pointer') return false;
-	const argument = push.arguments[0];
-	return (
-		typeof argument === 'object' &&
-		argument !== null &&
-		'type' in argument &&
-		argument.type === ArgumentType.IDENTIFIER &&
-		'dereferenceDepth' in argument &&
-		typeof argument.dereferenceDepth === 'number' &&
-		argument.dereferenceDepth > 0
-	);
+function isPointerMemoryIoPush(push: ResolvedPushLine): boolean {
+	switch (push.resolvedTarget.kind) {
+		case 'memory-pointer':
+			return true;
+		case 'local-pointer':
+			return push.arguments[0].dereferenceDepth > 0;
+		default:
+			return false;
+	}
 }
 
 function assertFunctionMemoryIoAllowed(line: SemanticReferenceLine, context: ReferenceResolutionContext): void {
