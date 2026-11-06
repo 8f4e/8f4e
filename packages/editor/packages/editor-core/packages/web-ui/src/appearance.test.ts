@@ -54,9 +54,9 @@ describe('appearance subscriptions', () => {
 		const newer = deferred<FontAtlas>();
 		loadFontAtlas.mockReturnValueOnce(older.promise).mockReturnValueOnce(newer.promise);
 		test.store.set('editorConfig.font', 'terminus8x16');
-		test.store.set('editorConfig.font', '6x10');
+		test.store.set('editorConfig.font', 'x11miscfixed6x10');
 		expect(test.loading.add).toHaveBeenNthCalledWith(1, { id: 'font', message: 'Loading font terminus8x16...' });
-		expect(test.loading.add).toHaveBeenNthCalledWith(2, { id: 'font', message: 'Loading font 6x10...' });
+		expect(test.loading.add).toHaveBeenNthCalledWith(2, { id: 'font', message: 'Loading font x11miscfixed6x10...' });
 		expect(test.loading.add.mock.results[0].value.cancel).toHaveBeenCalled();
 		expect(test.loading.add.mock.results[1].value.cancel).not.toHaveBeenCalled();
 		test.store.set('editorConfig.color', { primary: '#00ff00' });
@@ -65,10 +65,10 @@ describe('appearance subscriptions', () => {
 		await newer.promise;
 		older.resolve({} as FontAtlas);
 		await older.promise;
-		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, '6x10');
+		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, 'x11miscfixed6x10');
 		expect(test.state.viewport).toMatchObject({ hGrid: 10, vGrid: 6 });
 		expect(test.applyPalette).toHaveBeenCalledExactlyOnceWith(resolvePalette({ primary: '#00ff00' }));
-		expect(loadFontAtlas.mock.calls).toEqual([['terminus8x16'], ['6x10']]);
+		expect(loadFontAtlas.mock.calls).toEqual([['terminus8x16'], ['x11miscfixed6x10']]);
 		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('gridSizeChanged');
 	});
 
@@ -79,7 +79,7 @@ describe('appearance subscriptions', () => {
 		test.store.set('editorConfig.font', 'terminus8x16');
 		test.dispose();
 		expect(test.loading.add.mock.results[0].value.cancel).toHaveBeenCalled();
-		test.store.set('editorConfig', { font: '6x10', color: { primary: '#00ff00' } });
+		test.store.set('editorConfig', { font: 'x11miscfixed6x10', color: { primary: '#00ff00' } });
 		pending.resolve({} as FontAtlas);
 		await pending.promise;
 		expect(test.applyFont).not.toHaveBeenCalled();

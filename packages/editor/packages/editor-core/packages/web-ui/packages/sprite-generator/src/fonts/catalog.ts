@@ -1,6 +1,6 @@
 /** Bundled fixed-cell fonts. Build tooling reads dimensions without loading bitmap payloads. */
 export const FONTS = {
-	'6x10': { width: 6, height: 10, load: () => import('../generated/6x10.ts') },
+	x11miscfixed6x10: { width: 6, height: 10, load: () => import('../generated/x11miscfixed6x10.ts') },
 	olivettithin8x16: { width: 8, height: 16, load: () => import('../generated/olivettithin8x16.ts') },
 	spleen5x8: { width: 5, height: 8, load: () => import('../generated/spleen5x8.ts') },
 	spleen6x12: { width: 6, height: 12, load: () => import('../generated/spleen6x12.ts') },

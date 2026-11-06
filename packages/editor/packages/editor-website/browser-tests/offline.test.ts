@@ -100,7 +100,10 @@ test('installs a complete offline cache and cold-starts with lazy plugins and a 
 			)
 		)
 		.toBeGreaterThan(0);
-	await insert(offlinePage, 'note offlineSettings\n; @config font 6x10\n; @config testRuntime.enabled true\nnoteEnd');
+	await insert(
+		offlinePage,
+		'note offlineSettings\n; @config font x11miscfixed6x10\n; @config testRuntime.enabled true\nnoteEnd'
+	);
 	await insert(offlinePage, 'includes\ninclude std/math/exp2\nincludesEnd');
 	await insert(offlinePage, 'module offlineAssertions\npush 0.0\ncall exp2\nassertEqual 1.0\nmoduleEnd', 'test');
 	await expect.poll(() => offlinePage.evaluate(() => window.state.info.testRuntime?.status)).toBe('passed');

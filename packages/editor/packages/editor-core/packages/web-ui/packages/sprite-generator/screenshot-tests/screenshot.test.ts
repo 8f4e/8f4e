@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const testCases = ['sprite-sheet-with-6x10-font', 'sprite-sheet-with-8x16-font', 'sprite-atlas'];
+const testCases = ['sprite-sheet-with-x11miscfixed6x10-font', 'sprite-sheet-with-8x16-font', 'sprite-atlas'];
 
 test.describe('Sprite Generator Screenshot Tests', () => {
 	for (const testCase of testCases) {

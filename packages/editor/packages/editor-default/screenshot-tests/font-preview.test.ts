@@ -68,7 +68,7 @@ test('previews fonts through the default composition without changing saved sour
 				},
 			],
 		});
-		expect(editor.state.editorConfig.font).toBe('6x10');
+		expect(editor.state.editorConfig.font).toBe('x11miscfixed6x10');
 		context.events.dispatch('loadProject', { project });
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
 		expect(editor.state.editorConfig.font).toBe('spleen16x32');
