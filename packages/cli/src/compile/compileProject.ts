@@ -11,7 +11,6 @@ export async function compileProject(
 
 	const compilerOptions: CompileOptions = {
 		startingMemoryAllocationUnitAddress: options.compilerOptions?.startingMemoryAllocationUnitAddress ?? 0,
-		disableSharedMemory: options.compilerOptions?.disableSharedMemory,
 	};
 
 	const moduleResult = await compileProjectModules(project, {

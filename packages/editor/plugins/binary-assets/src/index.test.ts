@@ -49,7 +49,7 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 	events.dispatch('loadProject', { project });
 	events.dispatch('enterEditMode');
 	if (compile) {
-		const compiled = await compileProject(project, { disableSharedMemory: true });
+		const compiled = await compileProject(project);
 		store.set('compiler.result.compiledModules', compiled.compiledModules);
 		store.set('compiler.result.compiledFunctions', compiled.compiledFunctions);
 		store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
@@ -391,7 +391,7 @@ describe('binary assets plugin', () => {
 		const test = await setup({ compile: false });
 		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6'));
 		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
-		const compiled = await compileProject(parseProjectSource(SOURCE), { disableSharedMemory: true });
+		const compiled = await compileProject(parseProjectSource(SOURCE));
 		test.store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
 		test.store.set('compiler.result.compiledModules', compiled.compiledModules);
 		test.store.set('compiler.result.memoryPlan', compiled.memoryPlan);

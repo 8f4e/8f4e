@@ -75,7 +75,6 @@ describe('stack plugin', () => {
 		);
 
 		const recompiled = await compileProject(parseProjectSource(functionSource(9).join('\n')), {
-			disableSharedMemory: true,
 			includeStackAnalysis: true,
 		});
 		test.store.set('compiler.result', {

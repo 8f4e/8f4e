@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { compileProject, parseProjectSource } from '../src';
 
 async function instantiate(result: CompileResult, callbacks: Record<string, CallableFunction> = {}) {
-	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), {
 		host: { memory, ...callbacks },
 	});
@@ -11,7 +11,7 @@ async function instantiate(result: CompileResult, callbacks: Record<string, Call
 }
 
 function compile(source: string, enableAssertions?: boolean) {
-	return compileProject(parseProjectSource(`8f4e/v1\n${source}`), { disableSharedMemory: true, enableAssertions });
+	return compileProject(parseProjectSource(`8f4e/v1\n${source}`), { enableAssertions });
 }
 
 function imports(result: CompileResult) {
@@ -154,7 +154,7 @@ assertEqual &first
 moduleEnd
 entryEnd`);
 		const original = structuredClone(project);
-		const result = await compileProject(project, { enableAssertions: true, disableSharedMemory: true });
+		const result = await compileProject(project, { enableAssertions: true });
 		expect(project).toEqual(original);
 		expect(imports(result)).toEqual(['assertCondition', 'assertEqualI32', 'assertEqualF32', 'assertEqualF64']);
 		const events: Array<{ siteId: number; received: number; expected?: number; passed: boolean }> = [];
@@ -334,7 +334,7 @@ moduleEnd
 entryEnd
 groupEnd
 entryEnd`);
-		const options = { enableAssertions: true, disableSharedMemory: true };
+		const options = { enableAssertions: true };
 		const result = await compileProject(project, options);
 		const cached = await compileProject(project, { ...options, cache: result.cache });
 		expect(cached.codeBuffer).toEqual(result.codeBuffer);
@@ -370,7 +370,6 @@ groupEnd
 entryEnd`);
 		const result = await compileProject(project, {
 			enableAssertions: true,
-			disableSharedMemory: true,
 			resolveInclude: () => `function originalCheck
 #export includedCheck
 ; Source identity survives renaming and group qualification.
@@ -441,7 +440,7 @@ functionEnd`,
 		expect(result.assertionSites![0].functionId).toBe(Object.keys(result.compiledFunctions!)[0]);
 	});
 
-	it('supports the default shared-memory compilation mode', async () => {
+	it('supports shared-memory programs with assertions', async () => {
 		const result = await compileProject(
 			parseProjectSource(`8f4e/v1
 entry main

@@ -9,8 +9,6 @@ export interface CompileOptions {
 	startingMemoryAllocationUnitAddress?: number;
 	/** Whether to include per-instruction stack analysis in compiled modules and functions. Default is false. */
 	includeStackAnalysis?: boolean;
-	/** Disable shared memory for tests (wabt doesn't support shared memory). Default is false (shared enabled). */
-	disableSharedMemory?: boolean;
 }
 
 /** Public options for compiling a complete {@link ProjectObjectModel}. */

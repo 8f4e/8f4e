@@ -29,7 +29,7 @@ int pressed
 moduleEnd
 entryEnd`
 	);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const memory = new Int32Array(65536 / 4);
 	const events = createMockEventDispatcher();
 	const writeMemory = vi.fn((address: number, value: number) => {

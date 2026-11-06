@@ -15,6 +15,8 @@ This file extends the repository-level guidance for `packages/compiler`.
 - `@8f4e/tokenizer` owns syntax parsing and validation.
 - `@8f4e/sub-program` orchestrates semantic resolution, memory planning, stack analysis, and compilation.
 - `@8f4e/wasm-codegen` generates function and module bodies and emits the final WebAssembly binary.
+- Every compiled program imports one shared `host.memory` with explicit minimum/maximum limits. Hosts must
+  allocate matching shared memory; there is no non-shared compiler mode. WASM inspection tests enable WABT threads.
 - `@8f4e/stdlib` contains source-only standard-library functions. Include IDs are paths under `std/` without `.8f4e`.
 
 - Root and group scopes share an explicit local `entries` table, including empty entries. Group `main` joins the

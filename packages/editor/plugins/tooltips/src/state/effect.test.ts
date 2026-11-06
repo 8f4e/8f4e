@@ -41,7 +41,7 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 				? `8f4e/v1\nentry main\nmodule sample\n${body}\nmoduleEnd\nentryEnd`
 				: `8f4e/v1\nentry main\nmodule caller\ncall sample\nmoduleEnd\nentryEnd\nfunction sample\n${body}\nfunctionEnd`
 		);
-		const compiled = await compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+		const compiled = await compileProject(project, { includeStackAnalysis: true });
 		const events = createEvents();
 		const store = initState(events, { callbacks: {} });
 		const tooltip = createTooltip(store, events);
@@ -519,8 +519,7 @@ function identity
 param int value
 push value
 functionEnd int`;
-		const compile = (text: string) =>
-			compileProject(parseProjectSource(text), { disableSharedMemory: true, includeStackAnalysis: true });
+		const compile = (text: string) => compileProject(parseProjectSource(text), { includeStackAnalysis: true });
 		const first = await compile(source);
 		const block = createMockCodeBlock({
 			name: 'caller',
@@ -561,7 +560,7 @@ push 2
 drop
 moduleEnd
 entryEnd`);
-		const compile = () => compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+		const compile = () => compileProject(project, { includeStackAnalysis: true });
 		const compiled = await compile();
 		const [first, second] = project.execution;
 		const inactive = createMockCodeBlock({

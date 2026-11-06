@@ -8,7 +8,7 @@
 - Consume compiler-produced assertion sites. Do not rewrite source or inject assertion declarations.
 - Implement nonzero integer conditions and exact equality; approximate expectations belong in project source.
 - Distinguish static site IDs from runtime invocation indices and preserve included-source provenance.
-- Initialize fresh non-shared memory once before executing the test entry.
+- Initialize fresh shared memory once before executing the test entry.
   When callers supply memory, borrow it without initialization or reset; the caller owns its lifetime.
 - Return executed assertion results and failures as serializable data. Unexecuted static sites remain in the
   compiler's assertion-site lookup.

@@ -15,7 +15,7 @@ describe('Grids clock scheduling', () => {
 		const clock = project.execution.find(block => block.type === 'module' && block.code[0] === 'module clock')!;
 		clock.entry = 'control';
 		project.entries.push('control');
-		const result = await compileProject(project, { disableSharedMemory: true, resolveInclude: resolveStdlibInclude });
+		const result = await compileProject(project, { resolveInclude: resolveStdlibInclude });
 		const runner = await createRuntimeRunner({
 			compiledWasmBase64: Buffer.from(result.codeBuffer).toString('base64'),
 			memoryPlan: result.memoryPlan,

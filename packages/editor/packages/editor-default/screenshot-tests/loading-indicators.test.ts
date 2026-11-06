@@ -33,7 +33,7 @@ module player
 int[] buffer 4
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const memory = new Uint8Array(65536);
 	let finishAsset!: (response: Response) => void;
 	let failAsset!: (error: Error) => void;

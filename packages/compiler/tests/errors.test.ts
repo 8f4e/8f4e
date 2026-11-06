@@ -31,7 +31,6 @@ async function collectErrorFiles(directory: string): Promise<string[]> {
 async function compileErrorFixture(filePath: string) {
 	const source = await fs.readFile(filePath, 'utf8');
 	return compileProject(parseProjectSource(source), {
-		disableSharedMemory: true,
 		resolveInclude: resolveTestInclude,
 	});
 }

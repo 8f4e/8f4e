@@ -11,13 +11,11 @@ describe('large WebAssembly function indices', () => {
 				'functionEnd int',
 			].join('\n')
 		);
-		const result = await compileProject(parseProjectSource(`8f4e/v1\n${functions.join('\n\n')}`), {
-			disableSharedMemory: true,
-		});
+		const result = await compileProject(parseProjectSource(`8f4e/v1\n${functions.join('\n\n')}`));
 		const selected = Object.values(result.compiledFunctions).find(func => func.exportName === 'selected')!;
 		expect(selected.wasmIndex).toBe(functionIndex);
 
-		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 		const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), { host: { memory } });
 		expect((instance.exports.selected as CallableFunction)()).toBe(functionIndex - 2);
 	});
@@ -28,10 +26,10 @@ describe('large WebAssembly function indices', () => {
 			return [`function f${index}`, ...parameters, `push ${index}`, 'functionEnd int'].join('\n');
 		});
 		const source = `8f4e/v1\n${functions.join('\n\n')}\n\nfunction selected\n#export\npush 1234\nfunctionEnd int`;
-		const result = await compileProject(parseProjectSource(source), { disableSharedMemory: true });
+		const result = await compileProject(parseProjectSource(source));
 		expect(Math.max(...Object.values(result.compiledFunctions).map(func => func.typeIndex))).toBeGreaterThan(255);
 
-		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 		const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), { host: { memory } });
 		expect((instance.exports.selected as CallableFunction)()).toBe(1234);
 	});

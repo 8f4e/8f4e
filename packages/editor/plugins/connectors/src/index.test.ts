@@ -55,8 +55,8 @@ afterEach(() => {
 
 async function setup(text = source, installed = true) {
 	const project = parseProjectSource(text);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
-	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+	const compiled = await compileProject(project);
+	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
 	(instance.exports.initDefaults as CallableFunction)();
 	const memoryViews: MemoryViews = {
@@ -187,9 +187,7 @@ describe('connectors plugin', () => {
 		const func = blocks.find(block => block.name === 'process')!;
 		const recompile = async () => {
 			test.store.set('compiler.isCompiling', true);
-			const result = await compileProject(serializeProjectLevel(test.state.codeBlockRendering.rootProject), {
-				disableSharedMemory: true,
-			});
+			const result = await compileProject(serializeProjectLevel(test.state.codeBlockRendering.rootProject));
 			test.store.set('compiler.result', {
 				compiledModules: result.compiledModules,
 				compiledFunctions: result.compiledFunctions,

@@ -11,15 +11,14 @@ describe('MIDI WebAssembly exports', () => {
 function answer
 #export answer
 push 7
-functionEnd int`),
-			{ disableSharedMemory: true }
+functionEnd int`)
 		);
 		let memory: WebAssembly.Memory | null = null;
 		let code = new Uint8Array();
 		const instantiate = vi.spyOn(WebAssembly, 'instantiate');
 		const getExports = createWasmExports({ getMemory: () => memory, getCodeBuffer: () => code });
 		expect(await getExports()).toBeUndefined();
-		memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+		memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 		expect(await getExports()).toBeUndefined();
 		code = new Uint8Array(compiled.codeBuffer);
 		const [first, second] = await Promise.all([getExports(), getExports()]);
@@ -27,7 +26,7 @@ functionEnd int`),
 		expect((first!.answer as () => number)()).toBe(7);
 		expect(await getExports()).toBe(first);
 		expect(instantiate).toHaveBeenCalledOnce();
-		memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+		memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 		expect(await getExports()).not.toBe(first);
 		code = new Uint8Array(code);
 		await getExports();
@@ -36,7 +35,7 @@ functionEnd int`),
 
 	it('retries after a failed instantiation', async () => {
 		const instantiate = vi.spyOn(WebAssembly, 'instantiate');
-		const memory = new WebAssembly.Memory({ initial: 1 });
+		const memory = new WebAssembly.Memory({ initial: 1, shared: true, maximum: 1 });
 		const getExports = createWasmExports({ getMemory: () => memory, getCodeBuffer: () => code });
 		const code = new Uint8Array([1, 2, 3]);
 		await expect(getExports()).rejects.toThrow();

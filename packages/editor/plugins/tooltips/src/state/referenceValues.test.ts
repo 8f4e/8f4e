@@ -14,7 +14,7 @@ afterEach(() => {
 
 async function setup(source: string) {
 	const project = parseProjectSource(source);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const events = createEvents();
 	const store = initState(events, { callbacks: {} });
 	const tooltip = createTooltip(store, events);
@@ -130,7 +130,6 @@ entryEnd`);
 		memory.float32[originalAddress / 4] = 1.5;
 		expect(renderValues()).toEqual([String(originalAddress), '1.5000']);
 		const next = await compileProject(parseProjectSource(namedSource('int padding')), {
-			disableSharedMemory: true,
 			cache: compiled.cache,
 		});
 		const nextAddress = next.compiledModules.sink.referenceSlots.input.targetMemory.byteAddress;

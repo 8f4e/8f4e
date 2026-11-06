@@ -52,6 +52,33 @@ describe('cli', () => {
 		await expect(execCli(['compile', fixturePath])).rejects.toThrow('Command failed');
 	});
 
+	it('exports compiler memory information and executable shared-memory WASM', async () => {
+		const outputWasm = path.join(tmpDir, 'native.wasm');
+		const outputMemory = path.join(tmpDir, 'native-memory', 'memory.json');
+		await execCli(['compile', runtimeFixturePath, '--wasm-output', outputWasm, '--memory-output', outputMemory]);
+		const info = JSON.parse(await fs.readFile(outputMemory, 'utf8'));
+		const pages = Math.max(1, Math.ceil(info.requiredMemoryBytes / 65536));
+		const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
+		const { instance } = await WebAssembly.instantiate(await fs.readFile(outputWasm), { host: { memory } });
+		(instance.exports.initDefaults as () => void)();
+		(instance.exports.main as () => void)();
+		const view = new DataView(memory.buffer);
+		expect(view.getInt32(info.memoryPlan.modules.main.memory.counter.byteAddress, true)).toBe(1);
+		expect(view.getFloat32(info.memoryPlan.modules.main.memory.gain.byteAddress, true)).toBe(0.5);
+	});
+
+	it('rejects missing output paths and output collisions', async () => {
+		await expect(execCli(['compile', fixturePath, '--wasm-output', '--memory-output'])).rejects.toMatchObject({
+			stderr: expect.stringContaining('Missing path for --wasm-output'),
+		});
+		await expect(
+			execCli(['compile', fixturePath, '--wasm-output', wasmPath, '--memory-output', wasmPath])
+		).rejects.toMatchObject({ stderr: expect.stringContaining('must be different') });
+		await expect(execCli(['compile', fixturePath, '--wasm-output', fixturePath])).rejects.toMatchObject({
+			stderr: expect.stringContaining('must not overwrite'),
+		});
+	});
+
 	it('rejects non-.8f4e input files for compile', async () => {
 		await fs.mkdir(tmpDir, { recursive: true });
 		const invalidProjectPath = path.join(tmpDir, 'invalid-project.txt');

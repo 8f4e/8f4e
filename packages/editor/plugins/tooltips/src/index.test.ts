@@ -20,7 +20,7 @@ add
 drop
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+	const compiled = await compileProject(project, { includeStackAnalysis: true });
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},

@@ -26,9 +26,9 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 						.replace('moduleEnd\nentryEnd', 'moduleEnd\nentryEnd\ngroupEnd\nentryEnd')
 				: source
 		);
-		const compiled = await compileProject(project, { disableSharedMemory: true });
+		const compiled = await compileProject(project);
 		const pages = Math.max(1, Math.ceil(compiled.requiredMemoryBytes / 65536));
-		const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+		const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
 		const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
 		(instance.exports.initDefaults as CallableFunction)();
 		const load = vi.fn(() => import('@8f4e/editor-plugin-plot').then(module => module.plotPlugin));

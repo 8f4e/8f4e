@@ -25,7 +25,6 @@ import type {
 	AssertionSite,
 	CompiledFunction,
 	CompiledModule,
-	CompileOptions,
 	CompileResult,
 	CompilerCache,
 	ComposedEntry,
@@ -57,13 +56,9 @@ interface EmissionProgram {
  * Emits a complete WebAssembly binary from compiled modules, functions, and planned memory facts.
  *
  * @param program - Linkable compiler output for one source program.
- * @param options - Compiler options relevant to WebAssembly emission.
  * @returns Compiled WebAssembly program and related metadata.
  */
-export function emitWasmProgram(
-	program: EmissionProgram,
-	options: Pick<CompileOptions, 'disableSharedMemory'>
-): CompileResult {
+export function emitWasmProgram(program: EmissionProgram): CompileResult {
 	const {
 		functionLayout,
 		assertionSites,
@@ -114,13 +109,7 @@ export function emitWasmProgram(
 		]),
 	];
 	const memorySizePages = Math.max(1, Math.ceil(requiredMemoryBytes / WASM_MEMORY_PAGE_SIZE));
-	const memoryImport = createMemoryImport(
-		DEFAULT_HOST_IMPORT_MODULE_NAME,
-		'memory',
-		memorySizePages,
-		memorySizePages,
-		!options.disableSharedMemory
-	);
+	const memoryImport = createMemoryImport(DEFAULT_HOST_IMPORT_MODULE_NAME, 'memory', memorySizePages, memorySizePages);
 	const functionImports = functionLayout.imports.map(func =>
 		createFunctionImport(func.moduleName, func.fieldName, func.typeIndex)
 	);

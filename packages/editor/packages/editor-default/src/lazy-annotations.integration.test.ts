@@ -27,9 +27,9 @@ moduleEnd
 entryEnd
 groupEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+	const compiled = await compileProject(project, { includeStackAnalysis: true });
 	const pages = Math.max(1, Math.ceil(compiled.requiredMemoryBytes / 65536));
-	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
 	(instance.exports.initDefaults as CallableFunction)();
 	const memoryViews: MemoryViews = {

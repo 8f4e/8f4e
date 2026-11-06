@@ -21,7 +21,7 @@ int count 6
 ; @piano &notes &count 60
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},

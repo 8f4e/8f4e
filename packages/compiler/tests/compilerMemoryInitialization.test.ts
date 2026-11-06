@@ -5,7 +5,7 @@ import { compileFixtureProgramSource, getExportedFunction, instantiateFixturePro
 
 async function compileToWat(codeBuffer: Uint8Array): Promise<string> {
 	const wabtApi = await wabt();
-	const module = wabtApi.readWasm(codeBuffer, {});
+	const module = wabtApi.readWasm(codeBuffer, { threads: true });
 	return module.toText({});
 }
 

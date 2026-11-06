@@ -25,10 +25,9 @@ describe('resolveStdlibInclude', () => {
 			].join('\n')
 		);
 		const result = await compileProject(project, {
-			disableSharedMemory: true,
 			resolveInclude: resolveStdlibInclude,
 		});
-		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 		const { instance } = await WebAssembly.instantiate(result.codeBuffer, { host: { memory } });
 
 		(instance.exports.main as () => void)();

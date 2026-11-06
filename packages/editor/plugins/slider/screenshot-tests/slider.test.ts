@@ -23,7 +23,7 @@ float maximum 1.0
 ; @slider &maximum 0 1
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
