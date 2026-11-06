@@ -1,5 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import initState from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
@@ -58,7 +58,11 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 	}
 	const state = store.getState();
 	const env = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')!;
-	return { events, store, state, memory, getMemoryBytes, disposePlugin, env };
+	const editConfig = (update: (code: string[]) => string[]) => {
+		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'config')!;
+		applyCodeBlockSourceEdits(store, [{ codeBlock, code: update(codeBlock.code) }], { affectsCompilation: true });
+	};
+	return { events, store, state, memory, getMemoryBytes, disposePlugin, env, editConfig };
 }
 
 beforeEach(() => {
@@ -74,6 +78,165 @@ afterEach(() => {
 });
 
 describe('binary assets plugin', () => {
+	it('retains completed assets when only another asset URL is edited', async () => {
+		const source = SOURCE.replace(
+			'; @config bin.sound.memory player:buffer',
+			`; @config bin.sound.memory player:buffer
+; @config bin.preview.url https://example.com/preview.pcm
+; @config bin.preview.memory preview:buffer`
+		);
+		const test = await setup({ source });
+		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_PREVIEW_SIZE 6'));
+		const previewIndicator = test.state.loadingIndicators.find(indicator => indicator.id === 'asset:preview');
+		const preview = test.state.compiler.result.memoryPlan.modules.preview.memory.buffer;
+		test.memory[preview.byteAddress] = 42;
+		let finish!: (response: Response) => void;
+		fetchMock.mockImplementationOnce(() => new Promise(resolve => (finish = resolve)));
+		test.editConfig(code => code.map(line => line.replace('sample.pcm', 'new.pcm')));
+		expect(test.env().code).toContain('const ASSET_PREVIEW_SIZE 6');
+		expect(test.env().code).not.toContain('const ASSET_SOUND_SIZE 6');
+		expect(test.state.loadingIndicators.find(indicator => indicator.id === 'asset:preview')).toBe(previewIndicator);
+		expect(test.memory[preview.byteAddress]).toBe(42);
+		await vi.waitFor(() =>
+			expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+				'https://example.com/sample.pcm',
+				'https://example.com/preview.pcm',
+				'https://example.com/new.pcm',
+			])
+		);
+		finish(new Response(new Uint8Array([7, 8])));
+		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 2'));
+		const player = test.state.compiler.result.memoryPlan.modules.player.memory.buffer;
+		expect([...test.memory.slice(player.byteAddress, player.byteAddress + 2)]).toEqual([7, 8]);
+	});
+
+	it('retains unchanged pending downloads and rejects the edited URL result', async () => {
+		const completions = new Map<string, (response: Response) => void>();
+		fetchMock.mockImplementation(url => new Promise(resolve => completions.set(String(url), resolve)));
+		const source = SOURCE.replace(
+			'; @config bin.sound.memory player:buffer',
+			`; @config bin.sound.memory player:buffer
+; @config bin.preview.url https://example.com/preview.pcm
+; @config bin.preview.memory preview:buffer`
+		);
+		const test = await setup({ source });
+		const oldSoundIndicator = test.state.loadingIndicators.find(indicator => indicator.id === 'asset:sound');
+		const previewIndicator = test.state.loadingIndicators.find(indicator => indicator.id === 'asset:preview');
+		test.editConfig(code => code.map(line => line.replace('sample.pcm', 'new.pcm')));
+		await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+		expect(oldSoundIndicator?.status).toBe('cancelled');
+		expect(test.state.loadingIndicators.find(indicator => indicator.id === 'asset:preview')).toBe(previewIndicator);
+		completions.get('https://example.com/sample.pcm')!(new Response(new Uint8Array(20)));
+		completions.get('https://example.com/preview.pcm')!(new Response(new Uint8Array([9])));
+		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_PREVIEW_SIZE 1'));
+		expect(test.env().code.some(line => line.startsWith('const ASSET_SOUND_SIZE'))).toBe(false);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'asset:sound' },
+		]);
+		completions.get('https://example.com/new.pcm')!(new Response(new Uint8Array([7, 8])));
+		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 2'));
+		const preview = test.state.compiler.result.memoryPlan.modules.preview.memory.buffer;
+		expect(test.memory[preview.byteAddress]).toBe(9);
+	});
+
+	it('copies retained bytes into edited memory destinations without downloading again', async () => {
+		const test = await setup();
+		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6'));
+		const indicator = test.state.loadingIndicators[0];
+		test.editConfig(code => code.map(line => line.replace('player:buffer', 'preview:buffer')));
+		const preview = test.state.compiler.result.memoryPlan.modules.preview.memory.buffer;
+		await vi.waitFor(() =>
+			expect([...test.memory.slice(preview.byteAddress, preview.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6])
+		);
+		expect(fetchMock).toHaveBeenCalledOnce();
+		expect(test.state.loadingIndicators).toEqual([indicator]);
+		expect(test.state.loadingIndicators[0]).toBe(indicator);
+	});
+
+	it.each(['pending', 'completed'])('shares a %s download with an asset added during editing', async status => {
+		const completed = status === 'completed';
+		let finish!: (response: Response) => void;
+		fetchMock.mockImplementationOnce(() => new Promise(resolve => (finish = resolve)));
+		const test = await setup();
+		if (completed) {
+			finish(new Response(new Uint8Array([7, 8])));
+			await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 2'));
+		}
+		test.editConfig(code => [
+			...code.slice(0, -1),
+			'; @config bin.preview.url https://example.com/sample.pcm',
+			'; @config bin.preview.memory preview:buffer',
+			code.at(-1)!,
+		]);
+		await Promise.resolve();
+		expect(fetchMock).toHaveBeenCalledOnce();
+		if (!completed) {
+			test.editConfig(code => code.filter(line => !line.includes('@config bin.sound.')));
+			expect(fetchMock.mock.calls[0][1]?.signal?.aborted).toBe(false);
+			finish(new Response(new Uint8Array([7, 8])));
+		}
+		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_PREVIEW_SIZE 2'));
+		if (!completed) expect(test.env().code.some(line => line.startsWith('const ASSET_SOUND_SIZE'))).toBe(false);
+		const preview = test.state.compiler.result.memoryPlan.modules.preview.memory.buffer;
+		expect([...test.memory.slice(preview.byteAddress, preview.byteAddress + 2)]).toEqual([7, 8]);
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
+		expect(fetchMock).toHaveBeenCalledOnce();
+	});
+
+	it.each(['remove', 'replace'])('aborts an unused URL when config edits %s its last asset', async action => {
+		fetchMock.mockImplementation(
+			(_url, options) =>
+				new Promise((_resolve, reject) => {
+					options!.signal!.addEventListener('abort', () => reject(options!.signal!.reason), { once: true });
+				})
+		);
+		const report = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const test = await setup();
+		const signal = fetchMock.mock.calls[0][1]?.signal;
+		const indicator = test.state.loadingIndicators[0];
+		test.editConfig(code =>
+			action === 'remove'
+				? code.filter(line => !line.includes('@config bin.sound.'))
+				: code.map(line => line.replace('sample.pcm', 'new.pcm'))
+		);
+		expect(signal?.aborted).toBe(true);
+		expect(indicator.status).toBe('cancelled');
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(report).not.toHaveBeenCalled();
+		expect(test.state.loadingIndicators.some(indicator => indicator.status === 'failed')).toBe(false);
+		if (action === 'replace') {
+			expect(fetchMock).toHaveBeenCalledTimes(2);
+			expect(fetchMock.mock.calls[1][1]?.signal?.aborted).toBe(false);
+		}
+	});
+
+	it('keeps a new download when an aborted request for the same URL settles later', async () => {
+		const requests: Array<{ finish: (response: Response) => void; fail: (error: Error) => void }> = [];
+		fetchMock.mockImplementation(() => new Promise((finish, fail) => requests.push({ finish, fail })));
+		const report = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const test = await setup();
+		test.editConfig(code => code.map(line => line.replace('sample.pcm', 'new.pcm')));
+		await vi.waitFor(() => expect(requests).toHaveLength(2));
+		test.editConfig(code => code.map(line => line.replace('new.pcm', 'sample.pcm')));
+		await vi.waitFor(() => expect(requests).toHaveLength(3));
+		expect(fetchMock.mock.calls[0][1]?.signal?.aborted).toBe(true);
+		expect(fetchMock.mock.calls[1][1]?.signal?.aborted).toBe(true);
+		requests[0].fail(new Error('old request finished aborting'));
+		await new Promise(resolve => setTimeout(resolve, 0));
+		test.editConfig(code => [
+			...code.slice(0, -1),
+			'; @config bin.preview.url https://example.com/sample.pcm',
+			'; @config bin.preview.memory preview:buffer',
+			code.at(-1)!,
+		]);
+		requests[1].finish(new Response(new Uint8Array(20)));
+		requests[2].finish(new Response(new Uint8Array([7, 8])));
+		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_PREVIEW_SIZE 2'));
+		expect(test.env().code).toContain('const ASSET_SOUND_SIZE 2');
+		expect(fetchMock).toHaveBeenCalledTimes(3);
+		expect(report).not.toHaveBeenCalled();
+	});
+
 	it('starts independent URLs together and copies completed assets while another fetch is pending', async () => {
 		const completions = new Map<string, (response: Response) => void>();
 		fetchMock.mockImplementation(url => new Promise(resolve => completions.set(String(url), resolve)));
@@ -138,7 +301,9 @@ describe('binary assets plugin', () => {
 		expect([...test.memory.slice(target.byteAddress, target.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
 		expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6');
 		expect(test.env().code).toContain("; 'sample.pcm'");
-		expect(fetchMock).toHaveBeenCalledExactlyOnceWith('https://example.com/sample.pcm');
+		expect(fetchMock).toHaveBeenCalledExactlyOnceWith('https://example.com/sample.pcm', {
+			signal: expect.any(AbortSignal),
+		});
 	});
 
 	it('fetches a shared URL once and emits one constant for multiple memory targets', async () => {
@@ -346,6 +511,7 @@ describe('binary assets plugin', () => {
 		const test = await setup();
 		expect(test.state.loadingIndicators).toHaveLength(1);
 		test.disposePlugin();
+		expect(fetchMock.mock.calls[0][1]?.signal?.aborted).toBe(true);
 		finish(new Response(new Uint8Array(10)));
 		await new Promise(resolve => setTimeout(resolve, 0));
 		expect(test.state.loadingIndicators).toMatchObject([{ id: 'asset:sound', status: 'cancelled' }]);

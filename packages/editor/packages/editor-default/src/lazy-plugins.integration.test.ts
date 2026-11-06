@@ -148,7 +148,7 @@ it('loads binary assets from a restored session and announces their size as comp
 	);
 	expect(state.compilerInputRevision).toBeGreaterThan(revision);
 	expect(state.codeErrors['editor-directives']).toEqual([]);
-	expect(fetch).toHaveBeenCalledExactlyOnceWith('https://example.com/lazy.pcm');
+	expect(fetch).toHaveBeenCalledExactlyOnceWith('https://example.com/lazy.pcm', { signal: expect.any(AbortSignal) });
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['binary-assets']);
 });
 
