@@ -1,7 +1,7 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import type { DialogContent } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { dialogsPlugin } from './index';
@@ -37,7 +37,7 @@ function setup(initialDialog?: DialogContent) {
 		dispose();
 		store.dispose();
 	});
-	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawText: vi.fn() };
+	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
 	const render = () => {
 		for (const fn of Object.values(draw)) fn.mockClear();
 		drawers.drawModalOverlays({ draw: draw as unknown as DrawContext, state, memoryViews: {} as MemoryViews });
@@ -53,7 +53,7 @@ describe('dialogs plugin', () => {
 		expect(test.draw.startGroup).toHaveBeenCalledWith(64, 320);
 		expect(test.draw.drawFill).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.scrim, 640, 768);
 		expect(test.draw.drawFill).toHaveBeenCalledWith(400, 80, PALETTE_INDICES.selectionSurface, 104, 48);
-		expect(test.draw.drawText).toHaveBeenCalledWith(432, 96, 'Allow', PALETTE_INDICES.selectionInk);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(432, 96, textToGlyphIds('Allow'), PALETTE_INDICES.selectionInk);
 		expect(test.state.dialog).toEqual(content);
 	});
 
@@ -109,7 +109,7 @@ describe('dialogs plugin', () => {
 		test.events.on('allowAudio', allow);
 		test.events.dispatch('addDialog', { ...content, id: 'second', title: 'Second', buttons: [] });
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(8, 16, 'Second', PALETTE_INDICES.floatingAccent);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(8, 16, textToGlyphIds('Second'), PALETTE_INDICES.floatingAccent);
 		test.events.dispatch('pointerdown', { x: 500, y: 420, stopPropagation: false });
 		expect(allow).not.toHaveBeenCalled();
 		test.events.dispatch('removeDialog', 'second');
@@ -145,6 +145,6 @@ describe('dialogs plugin', () => {
 		first.dispose();
 		second.events.dispatch('addDialog', content);
 		second.render();
-		expect(second.draw.drawText).toHaveBeenCalledWith(432, 96, 'Allow', PALETTE_INDICES.selectionInk);
+		expect(second.draw.drawGlyphs).toHaveBeenCalledWith(432, 96, textToGlyphIds('Allow'), PALETTE_INDICES.selectionInk);
 	});
 });

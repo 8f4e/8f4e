@@ -1,4 +1,5 @@
 import type { ContextMenu, Viewport } from '@8f4e/editor-state-types';
+import { textToGlyphIds } from '@8f4e/web-ui';
 
 export default function layoutMenu(menu: ContextMenu, viewport: Viewport) {
 	const labels = menu.items.map(item => (item.divider ? '' : (item.title ?? '') + (item.close === false ? ' >' : '')));
@@ -19,7 +20,7 @@ export default function layoutMenu(menu: ContextMenu, viewport: Viewport) {
 		rowHeight: viewport.hGrid,
 		labels: labels.map((label, index) => {
 			const padding = '.'.repeat(longest + 2 - label.length);
-			return menu.items[index].isSectionTitle ? label + ' ' + padding : padding + ' ' + label;
+			return textToGlyphIds(menu.items[index].isSectionTitle ? label + ' ' + padding : padding + ' ' + label);
 		}),
 	};
 }

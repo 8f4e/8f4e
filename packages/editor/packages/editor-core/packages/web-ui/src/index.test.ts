@@ -20,7 +20,6 @@ const mocks = vi.hoisted(() => {
 		setSpriteAtlas: vi.fn(),
 		drawSprite: vi.fn(),
 		drawFill: vi.fn(),
-		drawCharacter: vi.fn(),
 		renderFrame: vi.fn((drawFrame: () => void) => {
 			for (const hook of engine.hooks.preDraw) hook();
 			drawFrame();

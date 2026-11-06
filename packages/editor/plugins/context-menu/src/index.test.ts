@@ -3,7 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockState, createMockViewport } from '@8f4e/editor-state-testing';
 import type { ContextMenuItem } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { contextMenuPlugin } from './index';
@@ -48,7 +48,7 @@ function setup({
 		dispose();
 		store.dispose();
 	});
-	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawText: vi.fn() };
+	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
 	const render = () => {
 		for (const fn of Object.values(draw)) fn.mockClear();
 		drawers.drawContextMenuOverlays({ draw: draw as unknown as DrawContext, state, memoryViews: {} as MemoryViews });
@@ -59,10 +59,10 @@ it('prepares labels privately and renders a menu opened before installation', ()
 	const test = setup({ openBeforeInstall: true });
 	test.render();
 	expect(test.draw.startGroup).toHaveBeenCalledWith(24, 32);
-	expect(test.draw.drawText.mock.calls.map(call => call[2])).toEqual([
-		'Actions ...........',
-		'.............. Pick',
-		'............ More >',
+	expect(test.draw.drawGlyphs.mock.calls.map(call => call[2])).toEqual([
+		textToGlyphIds('Actions ...........'),
+		textToGlyphIds('.............. Pick'),
+		textToGlyphIds('............ More >'),
 	]);
 	expect(test.state.contextMenu.items).toEqual(items);
 	expect(test.state.contextMenu.items[1]).toBe(items[1]);
@@ -85,19 +85,24 @@ it('draws disabled items and dividers without hover highlighting', () => {
 		test.render();
 		expect(test.draw.drawFill.mock.calls.every(call => call[2] === PALETTE_INDICES.floatingSurface)).toBe(true);
 	}
-	expect(test.draw.drawText).toHaveBeenCalledWith(
+	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
 		0,
 		0,
-		expect.stringContaining('Unavailable'),
+		expect.arrayContaining([...textToGlyphIds('Unavailable')]),
 		PALETTE_INDICES.floatingMuted
 	);
-	expect(test.draw.drawText).toHaveBeenCalledTimes(2);
+	expect(test.draw.drawGlyphs).toHaveBeenCalledTimes(2);
 });
 it('tracks hover privately and requests activation of the hit row', () => {
 	const test = setup();
 	test.events.dispatch('contextMenuPointerMove', { x: 32, y: 72 });
 	test.render();
-	expect(test.draw.drawText).toHaveBeenCalledWith(0, 0, '............ More >', PALETTE_INDICES.selectionInk);
+	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
+		0,
+		0,
+		textToGlyphIds('............ More >'),
+		PALETTE_INDICES.selectionInk
+	);
 	test.events.dispatch('contextMenuPointerDown', { x: 32, y: 72 });
 	expect(test.activate).toHaveBeenCalledExactlyOnceWith({ index: 2, x: 32, y: 72 });
 });

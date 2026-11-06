@@ -1,6 +1,7 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { DrawContext as Engine, MemoryViews } from '@8f4e/web-ui';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../__tests__/rendering';
 import type { PianoKeyboard } from '../types';
@@ -49,7 +50,7 @@ function createPianoKeyboardKeys(): PianoKeyboard['keys'] {
 		return {
 			offset,
 			x: offset * 2,
-			label: isBlack ? 'C#' : 'C',
+			glyphs: textToGlyphIds(isBlack ? 'C#' : 'C'),
 			kind: isBlack ? 'black' : 'white',
 			pressedOverlayRows: isBlack ? [4, 8, 12] : [4, 8, 12, 16, 20],
 		};
@@ -100,7 +101,7 @@ describe('drawPianoKeyboards', () => {
 		drawPianoKeyboards(engine, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 49] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
-		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
+		const drawGlyphs = (engine as unknown as { drawGlyphs: ReturnType<typeof vi.fn> }).drawGlyphs;
 
 		expect(engine.startGroup).toHaveBeenCalledWith(2, 3);
 		expect(drawSprite).toHaveBeenCalledWith(0, 4, PALETTE_INDICES.lightBase, 2, 20);
@@ -108,16 +109,16 @@ describe('drawPianoKeyboards', () => {
 		expect(drawSprite).toHaveBeenCalledWith(2, 16, PALETTE_INDICES.lightBase, 2, 8);
 		expect(drawSprite).toHaveBeenCalledWith(2.75, 16, PALETTE_INDICES.darkBase, 0.5, 8);
 		expect(drawSprite).toHaveBeenCalledWith(4, 4, PALETTE_INDICES.lightBase, 2, 20);
-		expect(drawText).toHaveBeenCalledWith(0, 4, ';;', PALETTE_INDICES.darkOverlaySoft);
-		expect(drawText).toHaveBeenCalledWith(0, 8, ';;', PALETTE_INDICES.darkOverlaySoft);
-		expect(drawText).toHaveBeenCalledWith(0, 12, ';;', PALETTE_INDICES.darkOverlaySoft);
-		expect(drawText).toHaveBeenCalledWith(0, 16, ';;', PALETTE_INDICES.darkOverlaySoft);
-		expect(drawText).toHaveBeenCalledWith(0, 20, ';;', PALETTE_INDICES.darkOverlaySoft);
-		expect(drawText).toHaveBeenCalledWith(2, 4, ';;', PALETTE_INDICES.primaryOverlay);
-		expect(drawText).toHaveBeenCalledWith(2, 8, ';;', PALETTE_INDICES.primaryOverlay);
-		expect(drawText).toHaveBeenCalledWith(2, 12, ';;', PALETTE_INDICES.primaryOverlay);
-		expect(drawText).not.toHaveBeenCalledWith(2, 16, ';;');
-		expect(drawText).not.toHaveBeenCalledWith(2, 20, ';;');
+		expect(drawGlyphs).toHaveBeenCalledWith(0, 4, textToGlyphIds(';;'), PALETTE_INDICES.darkOverlaySoft);
+		expect(drawGlyphs).toHaveBeenCalledWith(0, 8, textToGlyphIds(';;'), PALETTE_INDICES.darkOverlaySoft);
+		expect(drawGlyphs).toHaveBeenCalledWith(0, 12, textToGlyphIds(';;'), PALETTE_INDICES.darkOverlaySoft);
+		expect(drawGlyphs).toHaveBeenCalledWith(0, 16, textToGlyphIds(';;'), PALETTE_INDICES.darkOverlaySoft);
+		expect(drawGlyphs).toHaveBeenCalledWith(0, 20, textToGlyphIds(';;'), PALETTE_INDICES.darkOverlaySoft);
+		expect(drawGlyphs).toHaveBeenCalledWith(2, 4, textToGlyphIds(';;'), PALETTE_INDICES.primaryOverlay);
+		expect(drawGlyphs).toHaveBeenCalledWith(2, 8, textToGlyphIds(';;'), PALETTE_INDICES.primaryOverlay);
+		expect(drawGlyphs).toHaveBeenCalledWith(2, 12, textToGlyphIds(';;'), PALETTE_INDICES.primaryOverlay);
+		expect(drawGlyphs).not.toHaveBeenCalledWith(2, 16, textToGlyphIds(';;'));
+		expect(drawGlyphs).not.toHaveBeenCalledWith(2, 20, textToGlyphIds(';;'));
 	});
 
 	it('does not draw pressed overlays when runtime memory has no pressed count', () => {
@@ -127,10 +128,10 @@ describe('drawPianoKeyboards', () => {
 		drawPianoKeyboards(engine, keyboards, createMemoryViews({ int32: [0, 0, 0, 0, 0, 0] }));
 
 		const drawSprite = vi.mocked(engine.drawFill);
-		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
+		const drawGlyphs = (engine as unknown as { drawGlyphs: ReturnType<typeof vi.fn> }).drawGlyphs;
 
 		expect(drawSprite).toHaveBeenCalledWith(4, 4, PALETTE_INDICES.lightBase, 2, 20);
-		expect(drawText).not.toHaveBeenCalledWith(expect.any(Number), expect.any(Number), ';;');
+		expect(drawGlyphs).not.toHaveBeenCalledWith(expect.any(Number), expect.any(Number), textToGlyphIds(';;'));
 	});
 
 	it('draws duplicate runtime notes directly without normalizing pressed keys', () => {
@@ -139,8 +140,8 @@ describe('drawPianoKeyboards', () => {
 
 		drawPianoKeyboards(engine, keyboards, createMemoryViews({ int32: [0, 2, 0, 0, 48, 48] }));
 
-		const drawText = (engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText;
-		const overlayCalls = drawText.mock.calls.filter(call => call[2] === ';;');
+		const drawGlyphs = (engine as unknown as { drawGlyphs: ReturnType<typeof vi.fn> }).drawGlyphs;
+		const overlayCalls = drawGlyphs.mock.calls.filter(call => call[2][0] === 59);
 
 		expect(overlayCalls.filter(call => call[0] === 0)).toHaveLength(10);
 	});

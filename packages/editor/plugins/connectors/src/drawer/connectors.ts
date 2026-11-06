@@ -1,7 +1,10 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import type { ConnectorWidgets } from '../types';
+
+const [LEFT_BRACKET, MARKER, RIGHT_BRACKET] = textToGlyphIds('[*]');
 
 const OUTPUT_COLORS = [
 	'primaryDark3',
@@ -24,11 +27,11 @@ function drawConnector(
 	markerColor?: PaletteIndex
 ): void {
 	engine.drawFill(x, y, background, width * 3, height);
-	engine.drawCharacter(x, y, 91, bracketColor, width, height);
+	engine.drawSprite(x, y, LEFT_BRACKET, bracketColor, width, height);
 	if (markerColor !== undefined) {
-		engine.drawCharacter(x + width, y, 42, markerColor, width, height);
+		engine.drawSprite(x + width, y, MARKER, markerColor, width, height);
 	}
-	engine.drawCharacter(x + width * 2, y, 93, bracketColor, width, height);
+	engine.drawSprite(x + width * 2, y, RIGHT_BRACKET, bracketColor, width, height);
 }
 
 export default function drawConnectors(

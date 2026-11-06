@@ -1,5 +1,6 @@
 import { wrapText } from '@8f4e/editor-state';
 import type { DialogContent, Viewport } from '@8f4e/editor-state-types';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import layoutButtons from './layoutButtons';
 import type { DialogLayout } from './types';
 
@@ -21,8 +22,8 @@ export default function layoutDialog(dialog: DialogContent, viewport: Viewport):
 	const height = (wrappedText.length + buttonLayout.heightInGridRows + DIALOG_VERTICAL_GRID_CELLS_WITHOUT_TEXT) * hGrid;
 	return {
 		...dialog,
-		title: dialog.title.slice(0, textWidth),
-		wrappedText,
+		title: textToGlyphIds(dialog.title.slice(0, textWidth)),
+		wrappedText: wrappedText.map(textToGlyphIds),
 		buttons: buttonLayout.buttons,
 		width,
 		height,

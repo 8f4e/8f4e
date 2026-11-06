@@ -17,6 +17,16 @@ export function getGlyphSpriteId(character: number): SpriteId {
 	return glyphIds.get(character) ?? (63 as SpriteId);
 }
 
+export type GlyphIds = readonly SpriteId[];
+
+/**
+ * Converts text to glyph IDs.
+ * Only call during preparation; never from drawers or render callbacks.
+ */
+export function textToGlyphIds(text: string): GlyphIds {
+	return Array.from({ length: text.length }, (_, index) => getGlyphSpriteId(text.charCodeAt(index)));
+}
+
 export interface FontAtlas {
 	image: SpriteAtlasImage;
 	grid: SpriteAtlasGrid;

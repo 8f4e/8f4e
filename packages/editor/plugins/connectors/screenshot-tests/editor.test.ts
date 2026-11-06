@@ -2,6 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPlugin, type EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { gapCalculator } from '@8f4e/editor-state';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, test } from 'vitest';
 import { connectorsPlugin } from '../src/index';
 
@@ -105,17 +106,24 @@ moduleEnd
 entryEnd`);
 	const plan = editor.state.compiler.result.memoryPlan.modules;
 	new Int32Array(memory.buffer)[plan.sink.memory.input.allocationUnitAddress] = plan.source.memory.output.byteAddress;
+	const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
+	const removePreparation = context.layout.subscribe(({ codeBlock }) => {
+		glyphsByBlock.set(
+			codeBlock,
+			codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
+		);
+	});
 	const removeText = context.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 		codeBlock.displayModel.lines.forEach((line, row) =>
-			draw.drawText(
+			draw.drawGlyphs(
 				(codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
 				gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
-				line.text,
+				glyphsByBlock.get(codeBlock)![row],
 				PALETTE_INDICES.inkBase
 			)
 		);
 	});
-	cleanups.push(removeText);
+	cleanups.push(removeText, removePreparation);
 	render();
 	await expect(canvas).toMatchScreenshot('expanded-declarations');
 });

@@ -1,5 +1,8 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { textToGlyphIds } from '@8f4e/web-ui';
+
+const CORNER = textToGlyphIds('+');
 
 export const codeBlockBackgroundPlugin: EditorPlugin = {
 	id: 'code-block-background',
@@ -18,9 +21,9 @@ export const codeBlockBackgroundPlugin: EditorPlugin = {
 					: PALETTE_INDICES.inkBase;
 			const right = codeBlock.width - state.viewport.vGrid;
 			const bottom = codeBlock.height - state.viewport.hGrid;
-			draw.drawText(0, 0, '+', cornerColor);
-			draw.drawText(right, 0, '+', cornerColor);
-			draw.drawText(0, bottom, '+', cornerColor);
-			draw.drawText(right, bottom, '+', cornerColor);
+			draw.drawGlyphs(0, 0, CORNER, cornerColor);
+			draw.drawGlyphs(right, 0, CORNER, cornerColor);
+			draw.drawGlyphs(0, bottom, CORNER, cornerColor);
+			draw.drawGlyphs(right, bottom, CORNER, cornerColor);
 		}),
 };

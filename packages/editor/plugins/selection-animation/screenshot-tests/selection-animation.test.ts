@@ -1,6 +1,7 @@
 import initEditor from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, test, vi } from 'vitest';
 import { selectionAnimationPlugin } from '../src/index';
 
@@ -25,12 +26,29 @@ test('renders two phases of the selection animation', async () => {
 		plugins: [
 			{
 				id: 'fixture-text',
-				setup: ({ drawers }) =>
-					drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
-						codeBlock.code.forEach((line, row) =>
-							draw.drawText(state.viewport.vGrid, row * state.viewport.hGrid, line, PALETTE_INDICES.inkBase)
+				setup: ({ drawers, layout }) => {
+					const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
+					const removePreparation = layout.subscribe(({ codeBlock }) => {
+						glyphsByBlock.set(
+							codeBlock,
+							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 						);
-					}),
+					});
+					const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+						codeBlock.code.forEach((line, row) =>
+							draw.drawGlyphs(
+								state.viewport.vGrid,
+								row * state.viewport.hGrid,
+								glyphsByBlock.get(codeBlock)![row],
+								PALETTE_INDICES.inkBase
+							)
+						);
+					});
+					return () => {
+						removePreparation();
+						removeDrawer();
+					};
+				},
 			},
 			selectionAnimationPlugin,
 		],

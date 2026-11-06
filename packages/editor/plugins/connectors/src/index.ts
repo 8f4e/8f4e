@@ -2,6 +2,7 @@ import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { gapCalculator } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import drawConnections from './drawer/connections';
 import drawConnectors from './drawer/connectors';
 import deriveConnectors from './layout/deriveConnectors';
@@ -16,7 +17,7 @@ export const connectorsPlugin: EditorPlugin = {
 	id: 'connectors',
 	setup: ({ store, events, layout, drawers }) => {
 		const widgetsByBlock = new WeakMap<CodeBlockGraphicData, ConnectorWidgets>();
-		const labelsByBlock = new WeakMap<CodeBlockGraphicData, Array<{ x: number; y: number; text: string }>>();
+		const labelsByBlock = new WeakMap<CodeBlockGraphicData, Array<{ x: number; y: number; glyphs: GlyphIds }>>();
 		const contribution = layout.createContribution();
 		const outputsByByteAddress = new Map<number, Output>();
 		const rebuildOutputIndex = () => {
@@ -69,14 +70,14 @@ export const connectorsPlugin: EditorPlugin = {
 						(gapCalculator(codeBlock.displayModel.sourceLineIndexToDisplayRow[sourceLineIndex]!, codeBlock.gaps) +
 							rowOffset) *
 						state.viewport.hGrid,
-					text,
+					glyphs: textToGlyphIds(text),
 				}))
 			);
 			widgetsByBlock.set(codeBlock, deriveConnectors(codeBlock, state));
 		});
 		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
-			for (const { x, y, text } of labelsByBlock.get(codeBlock) ?? [])
-				draw.drawText(x, y, text, PALETTE_INDICES.inkBase);
+			for (const { x, y, glyphs } of labelsByBlock.get(codeBlock) ?? [])
+				draw.drawGlyphs(x, y, glyphs, PALETTE_INDICES.inkBase);
 			const widgets = widgetsByBlock.get(codeBlock);
 			if (widgets) drawConnectors(draw, state, widgets, memoryViews);
 		});

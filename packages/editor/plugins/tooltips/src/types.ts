@@ -1,4 +1,5 @@
 import type { PaletteIndex, PaletteToken } from '@8f4e/editor-palette';
+import type { GlyphIds } from '@8f4e/web-ui';
 
 /**
  * Character range that should switch to the tooltip highlight color.
@@ -33,7 +34,7 @@ export interface TooltipHighlightTarget {
  */
 export interface SelectedLineTooltipContent {
 	text: string[];
-	characters: Array<Array<number>>;
+	characters: GlyphIds[];
 	colors: Array<Array<PaletteIndex | undefined>>;
 	lineCount: number;
 	widthChars: number;
@@ -112,7 +113,7 @@ export interface TooltipAnimation {
 
 export interface TooltipState {
 	text: string[];
-	characters: Array<Array<number>>;
+	characters: GlyphIds[];
 	colors: Array<Array<PaletteIndex | undefined>>;
 	lineCount: number;
 	widthChars: number;

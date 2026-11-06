@@ -62,7 +62,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
-		vi.mocked(draw.drawText).mockClear();
+		vi.mocked(draw.drawGlyphs).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
 	};
@@ -131,7 +131,7 @@ describe('slider plugin', () => {
 		const x = (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
 		expect(test.draw.startGroup).toHaveBeenCalledWith(x, 48);
 		expect(test.draw.drawFill).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.surfaceRaised2, test.block.width - x, 32);
-		expect(vi.mocked(test.draw.drawText).mock.calls.map(call => call[1])).toEqual([0, 16]);
+		expect(vi.mocked(test.draw.drawGlyphs).mock.calls.map(call => call[1])).toEqual([0, 16]);
 	});
 	it.each([true, false])(
 		'drags through pointer events without moving blocks or viewport, editing=%s',

@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
@@ -59,7 +59,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
-		vi.mocked(draw.drawText).mockClear();
+		vi.mocked(draw.drawGlyphs).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	const point = (row = 2) => ({
@@ -81,16 +81,16 @@ describe('button plugin', () => {
 		test.render();
 		const x = test.codeBlock.width - 32;
 		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, x, 32, PALETTE_INDICES.accentSurface, 32, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', PALETTE_INDICES.darkBase);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(x, 32, textToGlyphIds('[| ]'), PALETTE_INDICES.darkBase);
 		test.press();
 		test.render();
 		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 16, 32, PALETTE_INDICES.lightBase, 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', PALETTE_INDICES.darkBase);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(x, 32, textToGlyphIds('[ |]'), PALETTE_INDICES.darkBase);
 		const address = test.state.compiler.result.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		test.memoryViews.int32[address] = 7;
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[__]', PALETTE_INDICES.secondaryBase);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(x, 32, textToGlyphIds('[__]'), PALETTE_INDICES.secondaryBase);
 	});
 
 	it.each([true, false])('presses and releases through pointer events with editing=%s', async editing => {
@@ -111,11 +111,21 @@ describe('button plugin', () => {
 		const address = test.state.compiler.result.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		test.memoryViews.float32[address] = 0.1;
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[| ]', PALETTE_INDICES.darkBase);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
+			expect.any(Number),
+			32,
+			textToGlyphIds('[| ]'),
+			PALETTE_INDICES.darkBase
+		);
 		test.press();
 		test.render();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0.9, false);
-		expect(test.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[ |]', PALETTE_INDICES.darkBase);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
+			expect.any(Number),
+			32,
+			textToGlyphIds('[ |]'),
+			PALETTE_INDICES.darkBase
+		);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0.1, false);
 	});
@@ -245,7 +255,12 @@ describe('button plugin', () => {
 		const test = await setup(['module controls', 'int gate 0', 'int extra 0 ; @button &gate', 'moduleEnd']);
 		const address = test.state.compiler.result.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(test.codeBlock.width - 32, 32, '[| ]', PALETTE_INDICES.darkBase);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
+			test.codeBlock.width - 32,
+			32,
+			textToGlyphIds('[| ]'),
+			PALETTE_INDICES.darkBase
+		);
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);
 		test.release();
@@ -297,6 +312,11 @@ describe('button plugin', () => {
 		first.dispose();
 		second.press();
 		second.render();
-		expect(second.draw.drawText).toHaveBeenCalledWith(expect.any(Number), 32, '[ |]', PALETTE_INDICES.darkBase);
+		expect(second.draw.drawGlyphs).toHaveBeenCalledWith(
+			expect.any(Number),
+			32,
+			textToGlyphIds('[ |]'),
+			PALETTE_INDICES.darkBase
+		);
 	});
 });

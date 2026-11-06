@@ -22,7 +22,7 @@ export default function drawMenu(
 			layout.rowHeight
 		);
 		if (!item.divider)
-			draw.drawText(
+			draw.drawGlyphs(
 				0,
 				0,
 				layout.labels[index],

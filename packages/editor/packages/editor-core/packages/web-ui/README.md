@@ -122,8 +122,12 @@ cancellation callbacks; web-ui owns no frame loop or pause/resume controls.
 
 The renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to font and color changes.
 Theme-only changes retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette.
-`DrawContext.drawFill()` uses the shared fill mask, `drawText()` resolves Unicode to shared CP437 glyph IDs,
-and both accept an explicit palette index. The renderer prepares up to 256 palette colors as premultiplied float32
+`DrawContext.drawFill()` uses the shared fill mask, and `drawGlyphs()` draws prepared CP437 glyph IDs.
+Use the pure `textToGlyphIds()` helper during state/layout preparation and keep its result in the owning plugin.
+Fixed symbols can be prepared once, and their IDs remain valid across font changes. `drawResolvedText()` consumes
+prepared glyph/color cells. `drawNumericText()` trusts formatted live readouts to contain ASCII numeric text and
+uses their character codes directly, without validation or Unicode mapping. All drawing methods accept explicit
+palette indices. The renderer prepares up to 256 palette colors as premultiplied float32
 values in a 4 KiB uniform buffer.
 Web-ui installs font grid dimensions into `state.viewport.hGrid` and `state.viewport.vGrid` and dispatches
 `gridSizeChanged` when those dimensions change. Editor-state refreshes block geometry and viewport anchors without

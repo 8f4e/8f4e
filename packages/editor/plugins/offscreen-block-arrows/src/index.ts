@@ -1,5 +1,8 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { textToGlyphIds } from '@8f4e/web-ui';
+
+const [RIGHT, LEFT, DOWN, UP] = ['>', '<', 'v', '^'].map(textToGlyphIds);
 
 export const offscreenBlockArrowsPlugin: EditorPlugin = {
 	id: 'offscreen-block-arrows',
@@ -18,17 +21,17 @@ export const offscreenBlockArrowsPlugin: EditorPlugin = {
 			const arrowX = Math.round(centerX + deltaX * scale);
 			const arrowY = Math.round(centerY + deltaY * scale);
 			if (horizontalScale < verticalScale) {
-				draw.drawText(
+				draw.drawGlyphs(
 					arrowX - (deltaX >= 0 ? vGrid : 0),
 					arrowY,
-					deltaX >= 0 ? '>' : '<',
+					deltaX >= 0 ? RIGHT : LEFT,
 					PALETTE_INDICES.secondaryBase
 				);
 			} else {
-				draw.drawText(
+				draw.drawGlyphs(
 					arrowX,
 					arrowY - (deltaY >= 0 ? hGrid : 0),
-					deltaY >= 0 ? 'v' : '^',
+					deltaY >= 0 ? DOWN : UP,
 					PALETTE_INDICES.secondaryBase
 				);
 			}

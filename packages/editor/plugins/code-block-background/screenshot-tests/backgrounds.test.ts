@@ -1,6 +1,7 @@
 import initEditor from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import { codeBlockBackgroundPlugin } from '../src/index';
 
@@ -23,17 +24,29 @@ test('draws normal, disabled, and dragged block backgrounds below registered fix
 			codeBlockBackgroundPlugin,
 			{
 				id: 'fixture-text',
-				setup: ({ drawers }) =>
-					drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+				setup: ({ drawers, layout }) => {
+					const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
+					const removePreparation = layout.subscribe(({ codeBlock }) => {
+						glyphsByBlock.set(
+							codeBlock,
+							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
+						);
+					});
+					const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						codeBlock.displayModel.lines.forEach((line, row) =>
-							draw.drawText(
+							draw.drawGlyphs(
 								state.viewport.vGrid * 3,
 								gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
-								line.text,
+								glyphsByBlock.get(codeBlock)![row],
 								PALETTE_INDICES.inkBase
 							)
 						);
-					}),
+					});
+					return () => {
+						removePreparation();
+						removeDrawer();
+					};
+				},
 			},
 		],
 	});

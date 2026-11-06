@@ -8,7 +8,7 @@ glyph, ID 63; characters missing from a particular font have blank cells. Every 
 a font requires no per-font glyph lookup tables or remapping of prepared text cells.
 
 ```ts
-import loadFontAtlas, { FILL_SPRITE_ID, getGlyphSpriteId } from '@8f4e/sprite-generator';
+import loadFontAtlas, { FILL_SPRITE_ID, textToGlyphIds } from '@8f4e/sprite-generator';
 import { resolvePalette, toPaletteBytes, PALETTE_INDICES } from '@8f4e/editor-palette';
 import { Engine } from 'glugglugglug';
 
@@ -16,11 +16,16 @@ const { image, grid } = await loadFontAtlas('ibmvga8x16');
 const engine = new Engine(canvas);
 engine.setSpriteAtlas(image, grid);
 engine.setPalette(toPaletteBytes(resolvePalette()));
+const [letterA] = textToGlyphIds('A');
 engine.renderFrame(() => {
 	engine.drawSprite(40, 20, FILL_SPRITE_ID, PALETTE_INDICES.surfaceBase, 200, 100);
-	engine.drawSprite(20, 20, getGlyphSpriteId(65), PALETTE_INDICES.inkBase);
+	engine.drawSprite(20, 20, letterA, PALETTE_INDICES.inkBase);
 });
 ```
+
+`textToGlyphIds()` is pure and has no cache. Call it only during preparation, outside drawers and render callbacks.
+The owning plugin's existing preparator retains the IDs until its text or layout changes. Glyph IDs are shared by
+all fonts, so font switches do not require remapping prepared text.
 
 `loadFontAtlas()` defaults to `DEFAULT_FONT`. Each font loads lazily and is decoded and expanded once;
 concurrent requests share the same promise. Returned atlases and pixel arrays are cached and shared: treat them

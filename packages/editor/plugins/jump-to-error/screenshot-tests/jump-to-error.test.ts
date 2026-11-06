@@ -4,6 +4,7 @@ import { gapCalculator, getCodeBlockErrors } from '@8f4e/editor-state';
 import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, test, vi } from 'vitest';
 import { createJumpToErrorPlugin } from '../src/index';
 
@@ -24,6 +25,13 @@ async function setup(source: string) {
 				setup: services => {
 					context = services;
 					services.events.on('codeBlockPointerDown', blockPressed, { capture: true });
+					const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
+					const removePreparation = services.layout.subscribe(({ codeBlock }) => {
+						glyphsByBlock.set(
+							codeBlock,
+							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
+						);
+					});
 					const removeDrawer = services.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						const errors = getCodeBlockErrors(state, codeBlock);
 						if (!errors.length) return;
@@ -32,15 +40,16 @@ async function setup(source: string) {
 							const y = gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid;
 							const isError = errors.some(error => error.lineNumber === line.sourceLineIndex);
 							if (isError) draw.drawFill(0, y, PALETTE_INDICES.negativeSurface, codeBlock.width, state.viewport.hGrid);
-							draw.drawText(
+							draw.drawGlyphs(
 								state.viewport.vGrid,
 								y,
-								line.text,
+								glyphsByBlock.get(codeBlock)![row],
 								isError ? PALETTE_INDICES.negativeOn : PALETTE_INDICES.inkBase
 							);
 						});
 					});
 					return () => {
+						removePreparation();
 						removeDrawer();
 						services.events.off('codeBlockPointerDown', blockPressed);
 					};

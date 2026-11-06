@@ -95,7 +95,9 @@ choose contrasting pairs for other shades. This does not replace a complete cont
 
 `PALETTE_INDICES` exposes stable numeric indices for every shade, opacity variant, and shared material. Drawers choose
 these indices directly: `draw.drawFill(x, y, PALETTE_INDICES.primaryDark2, width, height)` and
-`draw.drawText(x, y, text, PALETTE_INDICES.inkOn)` reuse the same fill mask and fixed glyph IDs across unrelated controls.
+`draw.drawGlyphs(x, y, glyphs, PALETTE_INDICES.inkOn)` reuse the same fill mask and prepared glyph IDs across unrelated controls.
+Prepare static text with `textToGlyphIds()` outside drawing; formatted live numbers use the trusted ASCII-only
+`drawNumericText()` path without validation or Unicode mapping.
 Local visual choices belong to drawers rather than theme configuration. Controls use `accentSurface` fills and
 `lightBase` handles with `darkBase` labels; disabled panels use `surfaceSubdued`. Equal resolved colors keep separate indices
 so a theme change can make them diverge without rebuilding projections.

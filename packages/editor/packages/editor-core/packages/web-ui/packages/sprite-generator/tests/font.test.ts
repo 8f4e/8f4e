@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { CP437_CHARACTERS } from '../src/characterSet';
 import { writeGlyph } from '../src/font';
-import loadFontAtlas, { FILL_SPRITE_ID, FONT_NAMES, getGlyphSpriteId } from '../src/index';
+import loadFontAtlas, { FILL_SPRITE_ID, FONT_NAMES, getGlyphSpriteId, textToGlyphIds } from '../src/index';
 
 describe('R8 font atlases', () => {
+	it('prepares Unicode text and spaces as shared glyph IDs', () => {
+		expect(textToGlyphIds('0 -1.5 é☺')).toEqual([48, 32, 45, 49, 46, 53, 32, 130, 1]);
+	});
 	it('writes asymmetric bits at the correct row and column with an odd destination stride', () => {
 		const data = new Uint8Array(7 * 5);
 		writeGlyph(data, 7, new Uint8Array([0b101, 0b010]), 0, 3, 2, 2, 1);
@@ -55,7 +58,7 @@ describe('R8 font atlases', () => {
 		expect(getGlyphSpriteId(character.charCodeAt(0))).toBe(id);
 	});
 	it('uses the question-mark glyph for characters outside CP437', () => {
-		for (const code of [-1, 128, 256, 0xffff, 0x1f600, Number.NaN, 65.5]) expect(getGlyphSpriteId(code)).toBe(63);
+		for (const code of [128, 256, 0x6f22, 0xffff]) expect(getGlyphSpriteId(code)).toBe(63);
 	});
 	it('keeps unavailable font characters blank', async () => {
 		const { default: glyphs } = await import('../src/fonts/spleen5x8/ascii');

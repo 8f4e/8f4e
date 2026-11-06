@@ -1,7 +1,7 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
 import { codeBlockBackgroundPlugin } from './index';
 
@@ -10,16 +10,16 @@ function setup() {
 	const state = createMockState();
 	const drawers = createEditorDrawerRegistry();
 	const drawFill = vi.fn();
-	const drawText = vi.fn();
+	const drawGlyphs = vi.fn();
 	const dispose = codeBlockBackgroundPlugin.setup({ drawers } as unknown as EditorPluginContext);
 	const render = () =>
 		drawers.drawCodeBlock({
-			draw: { drawFill, drawText } as unknown as DrawContext,
+			draw: { drawFill, drawGlyphs } as unknown as DrawContext,
 			state,
 			codeBlock,
 			memoryViews: {} as MemoryViews,
 		});
-	return { codeBlock, state, render, drawFill, drawText, dispose };
+	return { codeBlock, state, render, drawFill, drawGlyphs, dispose };
 }
 
 it.each([
@@ -43,13 +43,13 @@ it.each([false, true])('draws corner markers using current geometry and selectio
 	if (selected) test.state.codeBlockRendering.selectedCodeBlock = test.codeBlock;
 	test.render();
 	const color = selected ? PALETTE_INDICES.secondaryBase : PALETTE_INDICES.inkBase;
-	expect(test.drawText.mock.calls).toEqual([
-		[0, 0, '+', color],
-		[90, 0, '+', color],
-		[0, 54, '+', color],
-		[90, 54, '+', color],
+	expect(test.drawGlyphs.mock.calls).toEqual([
+		[0, 0, textToGlyphIds('+'), color],
+		[90, 0, textToGlyphIds('+'), color],
+		[0, 54, textToGlyphIds('+'), color],
+		[90, 54, textToGlyphIds('+'), color],
 	]);
-	expect(test.drawFill.mock.invocationCallOrder[0]).toBeLessThan(test.drawText.mock.invocationCallOrder[0]);
+	expect(test.drawFill.mock.invocationCallOrder[0]).toBeLessThan(test.drawGlyphs.mock.invocationCallOrder[0]);
 	test.dispose();
 });
 
@@ -63,8 +63,8 @@ it('uses current dimensions and state and unregisters its drawing on disposal', 
 	expect(test.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.surfaceSubdued, 128, 80);
 	test.dispose();
 	test.drawFill.mockClear();
-	test.drawText.mockClear();
+	test.drawGlyphs.mockClear();
 	test.render();
 	expect(test.drawFill).not.toHaveBeenCalled();
-	expect(test.drawText).not.toHaveBeenCalled();
+	expect(test.drawGlyphs).not.toHaveBeenCalled();
 });

@@ -90,8 +90,8 @@ entryEnd`);
 		startGroup: () => {},
 		endGroup: () => {},
 		drawFill: () => {},
-		drawCharacter: () => {},
-		drawText: (_x: number, _y: number, text: string) => drawn.push(text),
+		drawSprite: () => {},
+		drawGlyphs: (_x: number, _y: number, text: string) => drawn.push(text),
 	} as unknown as DrawContext;
 	const render = () => {
 		drawn.length = 0;

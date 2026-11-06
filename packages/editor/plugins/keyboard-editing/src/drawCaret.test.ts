@@ -2,6 +2,7 @@ import { EventEmitter } from 'node:events';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createDrawingContext } from './__tests__/drawing';
 import createCaretPresentation from './drawCaret';
@@ -28,7 +29,7 @@ describe('editing caret presentation', () => {
 		const state = createMockState({ editorMode: 'edit', codeBlockRendering: { selectedCodeBlock: block } });
 		const { draw, context, presentation } = setup(state, block);
 		presentation.drawCaret(context);
-		expect(draw.drawText).toHaveBeenCalledWith(40, 48, '_', color);
+		expect(draw.drawGlyphs).toHaveBeenCalledWith(40, 48, textToGlyphIds('_'), color);
 	});
 
 	it('updates prepared placement for source, cursor, gutter, and grid changes after layout', () => {
@@ -41,22 +42,22 @@ describe('editing caret presentation', () => {
 		const { draw, context, presentation, events } = setup(state, block);
 		presentation.drawCaret(context);
 		// A tab reaches column 4; the following character reaches 5, plus four gutter cells.
-		expect(draw.drawText).toHaveBeenLastCalledWith(72, 96, '_', PALETTE_INDICES.inkBase);
+		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(72, 96, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		state.viewport.vGrid = 12;
 		block.cursor.y = 144;
 		events.dispatch('codeBlockLayoutsChanged');
 		presentation.drawCaret(context);
-		expect(draw.drawText).toHaveBeenLastCalledWith(108, 144, '_', PALETTE_INDICES.inkBase);
+		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(108, 144, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		block.code = ['; @tab 8', '\tvalue'];
 		events.dispatch('codeBlockLayoutsChanged');
 		presentation.drawCaret(context);
-		expect(draw.drawText).toHaveBeenLastCalledWith(156, 144, '_', PALETTE_INDICES.inkBase);
+		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(156, 144, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		block.code[0] = '; @tab 16';
 		block.cursor.col = 1;
 		block.lineNumberColumnWidth = 3;
 		events.dispatch('codeBlockLayoutsChanged');
 		presentation.drawCaret(context);
-		expect(draw.drawText).toHaveBeenLastCalledWith(252, 144, '_', PALETTE_INDICES.inkBase);
+		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(252, 144, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 	});
 
 	it('draws repeated unchanged frames without reading source and removes preparation on disposal', () => {
@@ -69,15 +70,15 @@ describe('editing caret presentation', () => {
 		expect(readSource).toHaveBeenCalled();
 		readSource.mockClear();
 		for (let frame = 0; frame < 5; frame++) presentation.drawCaret(context);
-		expect(draw.drawText).toHaveBeenCalledTimes(5);
-		expect(draw.drawText).toHaveBeenLastCalledWith(64, 16, '_', PALETTE_INDICES.inkBase);
+		expect(draw.drawGlyphs).toHaveBeenCalledTimes(5);
+		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(64, 16, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		expect(readSource).not.toHaveBeenCalled();
 		block.cursor.col = 3;
 		events.dispatch('codeBlockLayoutsChanged');
 		expect(readSource).toHaveBeenCalled();
 		readSource.mockClear();
 		presentation.drawCaret(context);
-		expect(draw.drawText).toHaveBeenLastCalledWith(72, 16, '_', PALETTE_INDICES.inkBase);
+		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(72, 16, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		expect(readSource).not.toHaveBeenCalled();
 		presentation.dispose();
 		expect(emitter.listenerCount('codeBlockLayoutsChanged')).toBe(0);
@@ -97,14 +98,14 @@ describe('editing caret presentation', () => {
 			secondBlock
 		);
 		first.presentation.drawCaret(first.context);
-		expect(first.draw.drawText).toHaveBeenLastCalledWith(32, 0, '_', PALETTE_INDICES.inkBase);
+		expect(first.draw.drawGlyphs).toHaveBeenLastCalledWith(32, 0, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		second.presentation.drawCaret(second.context);
-		expect(second.draw.drawText).toHaveBeenLastCalledWith(56, 32, '_', PALETTE_INDICES.inkBase);
+		expect(second.draw.drawGlyphs).toHaveBeenLastCalledWith(56, 32, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		first.presentation.dispose();
 		secondBlock.cursor.col = 2;
 		second.events.dispatch('codeBlockLayoutsChanged');
 		second.presentation.drawCaret(second.context);
-		expect(second.draw.drawText).toHaveBeenLastCalledWith(40, 32, '_', PALETTE_INDICES.inkBase);
+		expect(second.draw.drawGlyphs).toHaveBeenLastCalledWith(40, 32, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 	});
 
 	it('does not draw in view mode', () => {
@@ -112,7 +113,7 @@ describe('editing caret presentation', () => {
 		const state = createMockState({ editorMode: 'view', codeBlockRendering: { selectedCodeBlock: block } });
 		const { draw, context, presentation } = setup(state, block);
 		presentation.drawCaret(context);
-		expect(draw.drawText).not.toHaveBeenCalled();
+		expect(draw.drawGlyphs).not.toHaveBeenCalled();
 	});
 
 	it('does not draw for an unselected block', () => {
@@ -120,6 +121,6 @@ describe('editing caret presentation', () => {
 		const state = createMockState({ editorMode: 'edit' });
 		const { draw, context, presentation } = setup(state, block);
 		presentation.drawCaret(context);
-		expect(draw.drawText).not.toHaveBeenCalled();
+		expect(draw.drawGlyphs).not.toHaveBeenCalled();
 	});
 });

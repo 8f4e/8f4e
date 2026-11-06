@@ -1,6 +1,7 @@
 import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT, jumpToCodeBlock } from '@8f4e/editor-state';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, test, vi } from 'vitest';
 
 test('draws blocks entering the viewport during navigation and culls blocks leaving it', async () => {
@@ -26,10 +27,18 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 				id: 'visible-blocks',
 				setup: services => {
 					context = services;
-					return services.drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
-						visible.push(codeBlock.name);
-						draw.drawText(8, 16, codeBlock.name, PALETTE_INDICES.inkBase);
+					const glyphsByBlock = new WeakMap<object, GlyphIds>();
+					const removePreparation = services.layout.subscribe(({ codeBlock }) => {
+						glyphsByBlock.set(codeBlock, textToGlyphIds(codeBlock.name));
 					});
+					const removeDrawer = services.drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
+						visible.push(codeBlock.name);
+						draw.drawGlyphs(8, 16, glyphsByBlock.get(codeBlock)!, PALETTE_INDICES.inkBase);
+					});
+					return () => {
+						removePreparation();
+						removeDrawer();
+					};
 				},
 			},
 		],

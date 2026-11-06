@@ -50,7 +50,7 @@ async function setup(source: string) {
 		drawTooltip(engine, state, block, memory, current);
 		return current.liveValues.map(liveValue =>
 			vi
-				.mocked(engine.drawCharacter)
+				.mocked(engine.drawSprite)
 				.mock.calls.filter(([x, y]) => y === liveValue.y && x >= liveValue.x)
 				.map(([, , character]) => String.fromCharCode(character))
 				.join('')
