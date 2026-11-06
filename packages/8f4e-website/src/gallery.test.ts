@@ -1,12 +1,12 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
-import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
+import { type GalleryEditorInstance, mountGalleryEditor } from '@8f4e/editor-gallery';
 import type { WebMcpTool } from '@8f4e/editor-webmcp';
 import type {} from '@vitest/browser-playwright';
 import { afterEach, expect, test, vi } from 'vitest';
 import { cdp } from 'vitest/browser';
 import { mountGallery } from './gallery';
 
-vi.mock('@8f4e/editor-minimal', { spy: true });
+vi.mock('@8f4e/editor-gallery', { spy: true });
 
 const source = '8f4e/v1\nentry main\nmodule galleryExample ; @mode edit\nint value 1\nmoduleEnd\nentryEnd';
 const cleanups: Array<() => void> = [];
@@ -53,11 +53,11 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 	});
 	const panel = (id = ids[0]) => gallery.querySelector<HTMLElement>(`#panel-${id}`)!;
 	const started = async (index = 0) => {
-		await vi.waitFor(() => expect(mountMinimalEditor).toHaveBeenCalledTimes(index + 1));
+		await vi.waitFor(() => expect(mountGalleryEditor).toHaveBeenCalledTimes(index + 1));
 	};
-	const mounted = async (index = 0): Promise<MinimalEditorInstance> => {
+	const mounted = async (index = 0): Promise<GalleryEditorInstance> => {
 		await started(index);
-		return await vi.mocked(mountMinimalEditor).mock.results[index].value;
+		return await vi.mocked(mountGalleryEditor).mock.results[index].value;
 	};
 	return { gallery, panel, started, mounted, dispose };
 }
@@ -131,7 +131,7 @@ test('one-finger gallery drags pan horizontally while vertical swipes scroll the
 	}
 });
 
-test('keeps live editing and project export available in the minimal editor', async () => {
+test('keeps live editing and project export available in the gallery editor', async () => {
 	const writable = {
 		write: vi.fn().mockResolvedValue(undefined),
 		close: vi.fn().mockResolvedValue(undefined),
@@ -141,7 +141,7 @@ test('keeps live editing and project export available in the minimal editor', as
 	const showSaveFilePicker = vi.fn().mockResolvedValue({ createWritable: async () => writable, requestPermission });
 	vi.stubGlobal('showSaveFilePicker', showSaveFilePicker);
 	const view = setup({
-		minimal: async () => new Response(source.replace('int value 1', '; @pos 4 10\n; @favorite\nint value 1')),
+		gallery: async () => new Response(source.replace('int value 1', '; @pos 4 10\n; @favorite\nint value 1')),
 	});
 	const editor = await view.mounted();
 	const canvas = view.panel().querySelector('canvas')!;
@@ -185,7 +185,7 @@ test('keeps live editing and project export available in the minimal editor', as
 	expect(showSaveFilePicker).toHaveBeenCalledOnce();
 });
 
-test('loads and runs worker and test runtime plugins together through the minimal composition', async () => {
+test('loads and runs worker and test runtime plugins together through the gallery composition', async () => {
 	const view = setup({
 		runtimes: async () =>
 			new Response(`8f4e/v1
@@ -326,9 +326,9 @@ test('reports a failed request immediately and loads the project when retried', 
 
 test('disposes an editor when loading fails before its mount promise resolves', async () => {
 	const dispose = vi.fn();
-	vi.mocked(mountMinimalEditor).mockImplementationOnce(async (_canvas, options) => {
+	vi.mocked(mountGalleryEditor).mockImplementationOnce(async (_canvas, options) => {
 		options?.onInitialProjectLoadError?.(new Error('Offline'));
-		return { dispose } as unknown as MinimalEditorInstance;
+		return { dispose } as unknown as GalleryEditorInstance;
 	});
 	const view = setup({ early: async () => new Response(source) });
 	await view.mounted();
@@ -338,23 +338,23 @@ test('disposes an editor when loading fails before its mount promise resolves', 
 });
 
 test('disposes a pending selection and ignores callbacks after the gallery is disposed', async () => {
-	let finish!: (editor: MinimalEditorInstance) => void;
-	const pending = new Promise<MinimalEditorInstance>(resolve => {
+	let finish!: (editor: GalleryEditorInstance) => void;
+	const pending = new Promise<GalleryEditorInstance>(resolve => {
 		finish = resolve;
 	});
 	const disposeEditor = vi.fn();
-	vi.mocked(mountMinimalEditor).mockImplementationOnce(() => pending);
+	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
 	const view = setup({ pending: async () => new Response(source) });
 	await view.started();
 	const canvas = view.panel().querySelector('canvas')!;
-	const options = vi.mocked(mountMinimalEditor).mock.calls[0][1]!;
+	const options = vi.mocked(mountGalleryEditor).mock.calls[0][1]!;
 	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
 	view.dispose();
 	expect(canvas.isConnected).toBe(false);
 
 	options.onInitialProjectLoaded?.();
 	options.onInitialProjectLoadError?.(new Error('Late failure'));
-	finish({ dispose: disposeEditor } as unknown as MinimalEditorInstance);
+	finish({ dispose: disposeEditor } as unknown as GalleryEditorInstance);
 	await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
 	expect(canvas.classList.contains('editor-ready')).toBe(false);
 	expect(status.textContent).toBe('Loading project…');
@@ -362,17 +362,17 @@ test('disposes a pending selection and ignores callbacks after the gallery is di
 });
 
 test('retries a timed-out selection without reviving its late mount', async () => {
-	let finish!: (editor: MinimalEditorInstance) => void;
-	const pending = new Promise<MinimalEditorInstance>(resolve => {
+	let finish!: (editor: GalleryEditorInstance) => void;
+	const pending = new Promise<GalleryEditorInstance>(resolve => {
 		finish = resolve;
 	});
 	const disposeEditor = vi.fn();
 	const timeouts = vi.spyOn(window, 'setTimeout');
 	const clearTimeout = vi.spyOn(window, 'clearTimeout');
-	vi.mocked(mountMinimalEditor).mockImplementationOnce(() => pending);
+	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
 	const view = setup({ timeout: async () => new Response(source) });
 	await view.started();
-	const options = vi.mocked(mountMinimalEditor).mock.calls[0][1]!;
+	const options = vi.mocked(mountGalleryEditor).mock.calls[0][1]!;
 	const timeoutIndex = timeouts.mock.calls.findIndex(([, delay]) => delay === 30_000);
 	const timeout = timeouts.mock.calls[timeoutIndex][0] as () => void;
 	timeout();
@@ -386,7 +386,7 @@ test('retries a timed-out selection without reviving its late mount', async () =
 
 	options.onInitialProjectLoadError?.(new Error('Late failure'));
 	options.onInitialProjectLoaded?.();
-	finish({ dispose: disposeEditor } as unknown as MinimalEditorInstance);
+	finish({ dispose: disposeEditor } as unknown as GalleryEditorInstance);
 	await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
 	expect(status.hidden).toBe(true);
 	expect(view.panel().querySelector('button')).toBeNull();
@@ -408,7 +408,7 @@ test('switches examples without waiting for the previous fetch and ignores its l
 	);
 	expect(firstCanvas.isConnected).toBe(false);
 	finish(new Response(source));
-	await vi.mocked(mountMinimalEditor).mock.results[0].value;
+	await vi.mocked(mountGalleryEditor).mock.results[0].value;
 	expect(view.panel('second').querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 	expect(view.panel('second').querySelector('canvas')?.classList.contains('editor-ready')).toBe(true);
 	expect(view.panel('first').querySelector('canvas')).toBeNull();

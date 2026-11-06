@@ -1,6 +1,5 @@
 import { type LandingEditorInstance, mountLandingEditor } from '@8f4e/editor-landing';
 import { getExampleProjectUrl } from './example-projects';
-import { sharedAudioContext } from './shared-audio-context';
 
 export function mountHomepageEditors(): () => void {
 	const canvases = Array.from(document.querySelectorAll<HTMLCanvasElement>('.editor-row canvas'));
@@ -65,10 +64,8 @@ export function mountHomepageEditors(): () => void {
 		}
 
 		const mountPromise = mountLandingEditor(canvas, {
-			sharedAudioContext,
 			captureWheel: false,
 			touchNavigation: { axis: 'horizontal' },
-			includeKeyboardModeSwitching: false,
 			initialProjectUrl: canvas.dataset.projectPath ? getExampleProjectUrl(canvas.dataset.projectPath) : undefined,
 			onInitialProjectLoaded: () => revealEditorAfterProjectLoad(canvas),
 			onInitialProjectLoadError: error => showProjectLoadError(canvas, error),

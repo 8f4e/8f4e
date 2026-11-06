@@ -10,7 +10,7 @@
   disposal, but cannot adopt an old destination afterward. Export selects the file used by later saves.
 - Return cleanup for actions, menu, and keyboard listener. Open/parsing belongs to project-open.
 - Use clean TypeScript output. Verify build/test/typecheck through Nx. Unit tests cover source formatting, saving, export, permissions, queued writes, and shortcuts without Open.
-  Composed file behavior belongs to editor-default tests and the product website's minimal-editor browser suite.
+  Composed file behavior belongs to editor-default tests and the product website's gallery-editor browser suite.
 
 - After ordinary source serialization, call `extractProjectTemplates` from `@8f4e/project-preparser`. Keep template
   expansion, validation, and source extraction in the compiler source front end; do not add editor template state.

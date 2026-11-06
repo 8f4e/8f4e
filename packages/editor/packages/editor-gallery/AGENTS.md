@@ -1,4 +1,4 @@
-# Minimal Editor Package Guidelines
+# Gallery Editor Package Guidelines
 
 - Own the embedded composition for example/test galleries. The product homepage uses editor-landing without
   entry outlines, offscreen arrows, or context menus. Build directly on editor-core;
@@ -46,7 +46,7 @@
 - Keep Open From Disk, session storage, WASM export/screenshot plugins, built-in module browsing, grouping, and optional editing
   actions, including favorite navigation and editing, in editor-default. Add no storage options, callbacks, or
   compatibility wrappers here.
-- Verify with `npx nx run @8f4e/editor-minimal:build|test|typecheck`. The product website's `test:browser` target covers
+- Verify with `npx nx run @8f4e/editor-gallery:build|test|typecheck`. The product website's `test:browser` target covers
   real compiler execution, URL loading, lazy controls/runtimes, editing, bridge lifecycle, and disposal.
 
 - Install `codeRenderingPlugin` eagerly for code/notes text, syntax highlighting, and nested block backgrounds. Keep

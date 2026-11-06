@@ -38,7 +38,7 @@ Adding another finger ends the gesture; removing it does not resume panning.
 Both editor compositions expose the axis through their mount options:
 
 ```ts
-await mountMinimalEditor(canvas, {
+await mountGalleryEditor(canvas, {
 	touchNavigation: { axis: 'horizontal' },
 });
 ```

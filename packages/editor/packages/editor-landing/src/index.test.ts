@@ -59,6 +59,22 @@ it('starts without storage and reports empty-project readiness after initializat
 		'offscreen-block-arrows',
 		'project-save',
 		'code-block-copy-paste',
+		'assertion-markers',
+		'keyboard-mode-switching',
+		'dialogs',
+		'test-runtime',
+		'audio-runtime',
+		'texture-runtime',
+		'binary-assets',
+		'midi-input',
+		'keyboard-memory',
+		'bars',
+		'meter',
+		'wave',
+		'crossfade',
+		'switch',
+		'button',
+		'piano',
 	]) {
 		expect(entries.some(entry => entry.id === id)).toBe(false);
 	}
@@ -74,9 +90,7 @@ it('starts without storage and reports empty-project readiness after initializat
 			'code-rendering',
 			'connectors',
 			'error-messages',
-			'dialogs',
 			'keyboard-navigation',
-			'keyboard-mode-switching',
 			'keyboard-editing',
 		])
 	);
@@ -100,12 +114,10 @@ it('omits all keyboard plugins on coarse-pointer browsers', async () => {
 		expect(plugins.some(plugin => plugin.id === id)).toBe(false);
 });
 
-it('omits mode switching while retaining navigation and editing', async () => {
+it('retains navigation and editing without mode switching', async () => {
 	const browserWindow = { navigator: {}, matchMedia: () => ({ matches: false }) };
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
-	await mountLandingEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement, {
-		includeKeyboardModeSwitching: false,
-	});
+	await mountLandingEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
 	const ids = (await loadDeferredPlugins()).map(plugin => plugin.id);
 	expect(ids).not.toContain('keyboard-mode-switching');
 	expect(ids).toEqual(expect.arrayContaining(['keyboard-navigation', 'keyboard-editing']));

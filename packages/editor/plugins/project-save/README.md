@@ -26,4 +26,4 @@ file session contains only the handle and reset lifecycle. Open handles file rea
 
 Validate with `npx nx run @8f4e/editor-plugin-project-save:build|test|typecheck`. Tests here cover source formatting,
 saving/export, permissions, queued writes, and shortcuts without Open. The default editor owns composed file tests;
-its `test:screenshot` target and the minimal-editor gallery suite cover the browser workflows.
+its `test:screenshot` target and the gallery editor's browser suite cover the browser workflows.

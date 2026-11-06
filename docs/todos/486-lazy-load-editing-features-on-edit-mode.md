@@ -55,7 +55,7 @@ that already work in view mode, such as project controls, available according to
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/`
 - `packages/editor/plugins/keyboard-navigation/`
 - `packages/editor/plugins/keyboard-mode-switching/`
-- Default/minimal browser composition
+- Default/gallery browser composition
 
 ## Risks & Considerations
 

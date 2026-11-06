@@ -1,8 +1,8 @@
 {
-  "name": "@8f4e/editor-minimal",
+  "name": "@8f4e/editor-gallery",
   "version": "0.1.22",
   "private": true,
-  "description": "8f4e editor composition for embedded examples and tests",
+  "description": "8f4e editor composition for example and compiler test galleries",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

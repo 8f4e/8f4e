@@ -2,13 +2,16 @@
 
 `@8f4e/8f4e-website` contains a product homepage using
 [`@8f4e/editor-landing`](../editor/packages/editor-landing/README.md), plus examples and compiler test galleries using
-[`@8f4e/editor-minimal`](../editor/packages/editor-minimal/README.md). Both embedded compositions keep live editing,
-controls, visualizations, runtimes, and URL loading. The landing editor omits entry outlines, offscreen block arrows,
-context menus, project saving/export, file-session tracking, and block copy/paste. Plain-text paste remains available
+[`@8f4e/editor-gallery`](../editor/packages/editor-gallery/README.md). Both embedded compositions keep live editing,
+controls, visualizations, and URL loading. The landing editor uses the worker runtime, watch/stack, plot, and slider;
+its projects must be self-contained because it has no standard-library include resolver. It omits switch, button,
+piano, assertion markers, keyboard mode switching, dialogs, test/audio/texture runtimes, binary
+assets, MIDI, keyboard-to-memory input, bars, meter, wave, and crossfade. It also omits entry outlines, offscreen block
+arrows, context menus, project saving/export, file-session tracking, and block copy/paste. Plain-text paste remains available
 through keyboard editing. Each mount starts fresh, with no browser session persistence,
 WASM export, screenshots, built-in module browser, or optional authoring-action plugins. The website
 controls the canvas size. Homepage editors leave wheel scrolling to the surrounding document and start in edit mode
-with mode switching disabled.
+without a mode-switching plugin. Audio contexts are supplied only to gallery editors.
 
 `src/homepage.ts` exports `mountHomepageEditors`, which owns the homepage editors, visibility observers, and disposal;
 `src/main.ts` mounts it. The homepage reveals canvases through the landing editor's initial-project completion callback
@@ -66,7 +69,7 @@ or fetching. Switching examples disposes the previous editor without waiting for
 project contents or poll editor state to infer completion.
 
 Browser integration tests cover both website views with delayed responses, empty projects, failure/retry, early
-callbacks, and switching examples while a fetch is pending. The minimal project-menu canvas baseline lives under
+callbacks, and switching examples while a fetch is pending. The gallery project-menu canvas baseline lives under
 `src/__screenshots__/gallery.test.ts/` and is shared across platforms because editor glyphs use bitmap masks.
 
 The galleries dynamically import their WebMCP bridge after the selected editor has mounted and its project source

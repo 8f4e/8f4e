@@ -129,7 +129,7 @@ of mode changes.
 Completed on 2026-10-29:
 
 - Registered and validated project-global `@mode edit` and `@mode view`, including duplicate diagnostics.
-- Removed `initialEditorMode` from the core, default, and minimal editor options without compatibility fallbacks.
+- Removed `initialEditorMode` from the core, default, and gallery editor options without compatibility fallbacks.
 - Applied the resolved mode at project replacement; later source edits and history restoration preserve the user's
   active mode. Removed redundant editing state and preserved line-selection preferences.
 - Updated composition documentation, test setup, browser fixtures, and verified screenshot references.
