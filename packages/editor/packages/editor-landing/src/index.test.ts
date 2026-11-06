@@ -54,6 +54,7 @@ it('starts without storage and reports empty-project readiness after initializat
 		'loading-indicators',
 		'jump-to-error',
 		'context-menu',
+		'block-authoring',
 		'entry-outlines',
 		'offscreen-block-arrows',
 		'project-save',

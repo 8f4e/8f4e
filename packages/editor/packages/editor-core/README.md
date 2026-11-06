@@ -101,8 +101,10 @@ The built-in block submenu also uses this request shape: `{ menu: 'moduleMenu', 
 
 Use explicit block actions through `events.dispatch`:
 
-- `createCodeBlock` receives `{ x, y, blockType }` and creates a module, function, prototype, or note template.
 - `insertCodeBlock` receives `{ x, y, code }` and inserts those source lines without reading the clipboard.
+
+`@8f4e/editor-plugin-block-authoring` supplies New/Delete menu commands and source templates. Generic insertion
+and deletion remain available independently of that plugin.
 
 Coordinates are viewport pixels. Core applies entry assignment, grid positioning, and persistence; declaration names remain unchanged.
 Newly inserted blocks already carry their source-derived type; core keeps it current as source changes.

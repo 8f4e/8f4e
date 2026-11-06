@@ -44,3 +44,5 @@ npx nx run @8f4e/editor-landing:test
 npx nx run @8f4e/editor-landing:typecheck
 npx nx run @8f4e/8f4e-website:test:browser
 ```
+
+Block authoring menu commands are omitted: this composition does not import or depend on `@8f4e/editor-plugin-block-authoring`. Core editing APIs remain available.

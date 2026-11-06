@@ -32,6 +32,10 @@
   inside each layer run in reverse registration order. Unlayered notifications and default effects retain their ordering.
   Plugins receive configurable layers at factory construction where needed. Drawing remains in registration order;
   code-block targeting already follows the reverse of block stacking. `INPUT_LAYERS` lives in editor-state-types.
+- `editor-plugin-block-authoring` owns New Module/Function/Prototype/Note templates, random names, Delete, and
+  their menu contributions. Default and minimal load it after `ready`; landing omits it. Generic insertion/deletion,
+  entry assignment, layout, revisions, and history stay in editor-state. Folding and shared source/display mappings
+  remain in editor-state.
 - Editor visual grouping (`; @group`) lives in `editor-plugin-grouping`, including menus, actions, drag-target
   selection, and group copying. Nested language-level project groups remain core project structure.
 - Product website: `packages/8f4e-website/` is a Vite site with a homepage embedding the landing editor, plus an

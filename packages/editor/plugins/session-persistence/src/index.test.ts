@@ -2,6 +2,7 @@ import { parseProjectSource } from '@8f4e/compiler';
 import {
 	applyCodeBlockSourceEdits,
 	createEditorEditingHandle,
+	deleteCodeBlocks,
 	EMPTY_DEFAULT_PROJECT,
 	getEditorBlockId,
 } from '@8f4e/editor-state';
@@ -106,9 +107,9 @@ describe('session persistence plugin', () => {
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 12');
 		test.events.dispatch('redo');
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 3');
-		test.events.dispatch('deleteCodeBlock', {
-			codeBlock: test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!,
-		});
+		deleteCodeBlocks(test.store, [
+			test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!,
+		]);
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))).toEqual([]);
 	});
 

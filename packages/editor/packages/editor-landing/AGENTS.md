@@ -4,6 +4,7 @@
   compiler, URL loading, standard-library resolution, live editing, controls, and runtimes as editor-minimal.
 - Omit `entry-outlines`, `offscreen-block-arrows`, and `context-menu` from imports, plugin registries, and dependencies.
   Keep core's `contextMenu` feature disabled even when hosts override other feature flags, so no invisible menu opens.
+- Omit `block-authoring`; this menu-free composition has no New/Delete block commands. Generic editing APIs remain available.
 - Omit `project-save`, `code-block-copy-paste`, and `editor-file-session` from the composition and dependencies.
   Plain-text paste at the caret belongs to keyboard editing; the landing composition does not intercept Cmd/Ctrl+S.
 - Keep compiler coordination, URL loading, block backgrounds, and code rendering eager.

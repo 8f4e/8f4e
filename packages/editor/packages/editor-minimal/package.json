@@ -30,6 +30,7 @@
     "@8f4e/editor-plugin-audio-runtime": "*",
     "@8f4e/editor-plugin-bars": "*",
     "@8f4e/editor-plugin-binary-assets": "*",
+    "@8f4e/editor-plugin-block-authoring": "*",
     "@8f4e/editor-plugin-button": "*",
     "@8f4e/editor-plugin-code-block-background": "*",
     "@8f4e/editor-plugin-code-block-copy-paste": "*",

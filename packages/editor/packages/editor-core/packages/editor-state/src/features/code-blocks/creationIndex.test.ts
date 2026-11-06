@@ -7,9 +7,10 @@ import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultPr
 import serializeProjectLevel from '~/pureHelpers/projectSerialization/serializeProjectLevel';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
+import { deleteCodeBlocks } from './deleteCodeBlocks';
 import codeBlockRendering from './effect';
-import codeBlockCreator from './features/codeBlockCreator/effect';
 import { directiveDefinitions } from './features/directives/registry';
+import { insertCodeBlocks } from './insertCodeBlocks';
 import { createLayoutRegistry } from './layout/registry';
 
 describe('creationIndex', () => {
@@ -23,78 +24,21 @@ describe('creationIndex', () => {
 		mockEvents = createMockEventDispatcherWithVitest();
 	});
 
-	describe('codeBlockCreator', () => {
-		it('should assign creationIndex to new code blocks', () => {
-			// Initialize the codeBlockCreator
-			codeBlockCreator(store, mockEvents);
-
-			// Find the createCodeBlock handler
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
-			expect(createCodeBlockCall).toBeDefined();
-
-			const createCodeBlockHandler = createCodeBlockCall![1];
-
-			// Initial state should have nextCodeBlockCreationIndex = 0
-			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(0);
-
-			// Add first code block
-			createCodeBlockHandler({ x: 0, y: 0, blockType: 'module' });
-
-			// Verify first code block got creationIndex 0
-			const codeBlocks = mockState.codeBlockRendering.currentProject.blocks;
-			expect(codeBlocks.length).toBe(1);
-			expect(codeBlocks[0].creationIndex).toBe(0);
-			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(1);
-		});
-
-		it('should increment creationIndex for each new code block', () => {
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
-			const createCodeBlockHandler = createCodeBlockCall![1];
-
-			// Add multiple code blocks
-			createCodeBlockHandler({ x: 0, y: 0, blockType: 'module' });
-			createCodeBlockHandler({ x: 100, y: 0, blockType: 'module' });
-			createCodeBlockHandler({ x: 200, y: 0, blockType: 'module' });
-
-			const codeBlocks = mockState.codeBlockRendering.currentProject.blocks;
-			expect(codeBlocks.length).toBe(3);
-
-			// Verify each block has a unique, incrementing creationIndex
-			const creationIndexes = codeBlocks.map(b => b.creationIndex).sort((a, b) => a - b);
-			expect(creationIndexes).toEqual([0, 1, 2]);
-			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(3);
-		});
-
-		it('should leave gaps in creationIndex when blocks are deleted', () => {
-			codeBlockCreator(store, mockEvents);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const createCodeBlockCall = onCalls.find(call => call[0] === 'createCodeBlock');
-			const deleteCodeBlockCall = onCalls.find(call => call[0] === 'deleteCodeBlock');
-			const createCodeBlockHandler = createCodeBlockCall![1];
-			const deleteCodeBlockHandler = deleteCodeBlockCall![1];
-
-			// Add three code blocks
-			createCodeBlockHandler({ x: 0, y: 0, blockType: 'module' });
-			createCodeBlockHandler({ x: 100, y: 0, blockType: 'module' });
-			createCodeBlockHandler({ x: 200, y: 0, blockType: 'module' });
-
-			// Delete the middle one (creationIndex 1)
-			const codeBlocks = mockState.codeBlockRendering.currentProject.blocks;
-			const middleBlock = codeBlocks.find(b => b.creationIndex === 1);
-			deleteCodeBlockHandler({ codeBlock: middleBlock });
-
-			// Add a new block
-			createCodeBlockHandler({ x: 300, y: 0, blockType: 'module' });
-
-			// Verify the new block gets creationIndex 3 (not 1, leaving a gap)
-			const updatedCodeBlocks = mockState.codeBlockRendering.currentProject.blocks;
-			const creationIndexes = updatedCodeBlocks.map(b => b.creationIndex).sort((a, b) => a - b);
-			expect(creationIndexes).toEqual([0, 2, 3]);
+	describe('source insertion', () => {
+		it('assigns increasing identities and does not reuse deleted identities', () => {
+			const insert = (name: string) =>
+				insertCodeBlocks(store, {
+					x: 0,
+					y: 0,
+					blocks: [{ code: [`module ${name}`, 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } }],
+				});
+			insert('first');
+			insert('second');
+			insert('third');
+			expect(mockState.codeBlockRendering.currentProject.blocks.map(block => block.creationIndex)).toEqual([0, 1, 2]);
+			deleteCodeBlocks(store, [mockState.codeBlockRendering.currentProject.blocks[1]]);
+			insert('fourth');
+			expect(mockState.codeBlockRendering.currentProject.blocks.map(block => block.creationIndex)).toEqual([0, 2, 3]);
 			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(4);
 		});
 	});
