@@ -88,6 +88,29 @@ it('reuses prepared glyphs between frames and prepares updated Unicode labels', 
 	test.dispose();
 });
 
+it('reuses glyphs when entry bounds change and entries are reordered during viewport movement', () => {
+	const test = setup();
+	test.store.set('codeBlockRendering.entryBounds', [
+		{ entryName: 'audio', x: 16, y: 64, width: 224, height: 192 },
+		{ entryName: 'control', x: 320, y: 64, width: 128, height: 96 },
+	]);
+	test.render();
+	const [audioGlyphs, controlGlyphs] = test.draw.drawGlyphs.mock.calls.map(call => call[2]);
+	for (const offset of [8, 16, 24]) {
+		test.store.set('viewport.x', offset);
+		test.store.set('codeBlockRendering.entryBounds', [
+			{ entryName: 'control', x: 320 + offset, y: 128, width: 256, height: 96 },
+			{ entryName: 'audio', x: 16 + offset, y: 128, width: 448, height: 192 },
+		]);
+		test.render();
+		expect(test.draw.startGroup).toHaveBeenCalledWith(-offset, -test.state.viewport.y);
+		expect(test.draw.drawGlyphs.mock.calls[0][2]).toBe(controlGlyphs);
+		expect(test.draw.drawGlyphs.mock.calls[1][2]).toBe(audioGlyphs);
+		expect(test.draw.drawFill).toHaveBeenCalledWith(16 + offset, 128, PALETTE_INDICES.strokeBase, 448, 1);
+	}
+	test.dispose();
+});
+
 it('isolates installations and removes only its drawing on disposal', () => {
 	const first = setup();
 	const second = setup();

@@ -1,16 +1,22 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { textToGlyphIds } from '@8f4e/web-ui';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 
 export const entryOutlinesPlugin: EditorPlugin = {
 	id: 'entry-outlines',
 	setup: ({ drawers, store }) => {
 		const state = store.getState();
-		const prepare = () =>
-			state.codeBlockRendering.entryBounds.map(bounds => ({
-				bounds,
-				glyphs: textToGlyphIds(bounds.entryName),
-			}));
+		let glyphsByName = new Map<string, GlyphIds>();
+		const prepare = () => {
+			const nextGlyphsByName = new Map<string, GlyphIds>();
+			const entries = state.codeBlockRendering.entryBounds.map(bounds => {
+				const glyphs = glyphsByName.get(bounds.entryName) ?? textToGlyphIds(bounds.entryName);
+				nextGlyphsByName.set(bounds.entryName, glyphs);
+				return { bounds, glyphs };
+			});
+			glyphsByName = nextGlyphsByName;
+			return entries;
+		};
 		let entries = prepare();
 		const update = () => {
 			entries = prepare();
