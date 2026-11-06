@@ -1,7 +1,7 @@
 import type { CodeBlockDrawer } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { getTabStopsByLine, getVisualColumnForRawIndex } from '@8f4e/editor-state';
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { CodeBlockLayoutsChangedEvent, EventDispatcher, State } from '@8f4e/editor-state-types';
 
 export default function createCaretPresentation(state: State, events: EventDispatcher) {
 	let x = 0;
@@ -18,10 +18,14 @@ export default function createCaretPresentation(state: State, events: EventDispa
 		draw.drawText(x, codeBlock.cursor.y, '_', codeBlock.disabled ? PALETTE_INDICES.inkFaint : PALETTE_INDICES.inkBase);
 	};
 
-	events.on('codeBlockLayoutsChanged', prepare);
+	const onLayoutsChanged = ({ codeBlocks }: CodeBlockLayoutsChangedEvent) => {
+		if (state.codeBlockRendering.selectedCodeBlock && codeBlocks.includes(state.codeBlockRendering.selectedCodeBlock))
+			prepare();
+	};
+	events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 	prepare();
 	return {
 		drawCaret,
-		dispose: () => events.off('codeBlockLayoutsChanged', prepare),
+		dispose: () => events.off('codeBlockLayoutsChanged', onLayoutsChanged),
 	};
 }

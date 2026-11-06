@@ -1,4 +1,9 @@
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockLayoutsChangedEvent,
+	EventDispatcher,
+	State,
+} from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { resolveViewportAnchoredPosition } from './resolve';
 
@@ -77,11 +82,18 @@ export default function viewportDirectiveEffect(store: StateManager<State>, even
 	const recomputeAnchoredPositions = () => {
 		recomputeViewportAnchoredPositions(state);
 	};
+	const onLayoutsChanged = ({ codeBlocks }: CodeBlockLayoutsChangedEvent) => {
+		for (const block of codeBlocks) {
+			if (!state.codeBlockRendering.currentProject.blocks.includes(block)) continue;
+			syncViewportAnchoredBlock(state, block);
+			recomputeViewportAnchoredPosition(state, block);
+		}
+	};
 
 	store.subscribe('codeBlockRendering.currentProject.blocks', syncAllBlocks);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.code', syncSelectedCodeBlock);
 	store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', syncProgrammaticSelectedCodeBlock);
-	events.on('codeBlockLayoutsChanged', syncAllBlocks);
+	events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 	events.on('gridSizeChanged', recomputeAnchoredPositions);
 	events.on('viewportChanged', recomputeAnchoredPositions);
 	events.on('viewportResized', recomputeAnchoredPositions);

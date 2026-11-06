@@ -65,7 +65,9 @@ Core retains insertion/removal helpers, entry assignment, identity allocation, f
 Source changes use `sourceUpdates.ts` in an explicit sequence: parse directives and update block type and valid grid
 coordinates, regenerate environment source, resolve global configuration, then refresh layouts. An incomplete or
 invalid position directive retains the existing block position. Interactive and programmatic edits use this same
-path; ordinary layout invalidations do not reparse source.
+path; ordinary layout invalidations do not reparse source. Nested layout contributions settle before publishing
+completion for the affected blocks. Other blocks can still be in the middle of a source update and must not be read
+as part of that notification.
 
 ## Events & Callbacks
 
@@ -74,7 +76,8 @@ path; ordinary layout invalidations do not reparse source.
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
 - `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal contribution invalidation; rederives affected visible blocks
-- `codeBlockLayoutsChanged()`: announces completed layout calculations to rendering and viewport anchoring
+- `codeBlockLayoutsChanged({ codeBlocks })`: identifies blocks with consistent source/display rows and completed layout
+  contributions; rendering and viewport anchoring update those blocks only
 - Block deletion and selection events
 - Drag start/update/end events
 - Block type update events

@@ -63,6 +63,8 @@
   Code rendering owns selected-line fill; code-block-background owns corner markers. The deferred
   `offscreen-block-arrows` plugin owns arrow placement and drawing through a single replaceable
   `registerOffscreenCodeBlockDrawer` callback in the same traversal. `canvasOverlays` also controls offscreen decorations.
+- Layout completion events carry `{ codeBlocks }` identifying only blocks whose source/display rows and pending
+  layout contributions have settled. Rendering consumers refresh those blocks only; unrelated blocks may still be updating.
 - Editor-state owns `codeBlockRendering.entryBounds`, including padding, updates, and insertion hit testing.
   `@8f4e/editor-plugin-entry-outlines` only draws borders and labels through `registerCanvasBackgroundDrawer` below blocks.
   The default and gallery compositions defer drawing until `ready`; entry assignment works independently of the plugin.

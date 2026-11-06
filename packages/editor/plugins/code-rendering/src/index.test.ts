@@ -198,6 +198,35 @@ it('retains prepared cells during info and dragging updates', () => {
 	expect(test.render()[0]).toBe(before[0]);
 });
 
+it('refreshes only the completed blocks and retains prepared text for unrelated blocks', () => {
+	const test = setup();
+	const env = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+	const envRows = test.render(env);
+	const before = test.render();
+	const contribution = test.store.layout.createContribution();
+	cleanups.push(contribution.dispose);
+	contribution.update(env, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 0, heightInRows: 2 }] });
+	const after = test.render(env);
+	expect(after).toHaveLength(envRows.length + 2);
+	expect(after[0]).not.toBe(envRows[0]);
+	expect(test.render()[0]).toBe(before[0]);
+});
+
+it('does not inspect a block whose source replacement has not completed', () => {
+	const test = setup();
+	const env = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+	const original = env.code;
+	const before = test.render(env);
+	// Another block can complete while generated source is being replaced in this block.
+	env.code = ['constants env', 'constantsEnd'];
+	try {
+		expect(() => test.events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [test.block] })).not.toThrow();
+		expect(test.render(env)[0]).toBe(before[0]);
+	} finally {
+		env.code = original;
+	}
+});
+
 it('refreshes disabled colors and folded placeholder rows from completed layouts', () => {
 	const test = setup();
 	applyCodeBlockSourceEdits(

@@ -44,17 +44,17 @@ describe('editing caret presentation', () => {
 		expect(draw.drawText).toHaveBeenLastCalledWith(72, 96, '_', PALETTE_INDICES.inkBase);
 		state.viewport.vGrid = 12;
 		block.cursor.y = 144;
-		events.dispatch('codeBlockLayoutsChanged');
+		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [block] });
 		presentation.drawCaret(context);
 		expect(draw.drawText).toHaveBeenLastCalledWith(108, 144, '_', PALETTE_INDICES.inkBase);
 		block.code = ['; @tab 8', '\tvalue'];
-		events.dispatch('codeBlockLayoutsChanged');
+		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [block] });
 		presentation.drawCaret(context);
 		expect(draw.drawText).toHaveBeenLastCalledWith(156, 144, '_', PALETTE_INDICES.inkBase);
 		block.code[0] = '; @tab 16';
 		block.cursor.col = 1;
 		block.lineNumberColumnWidth = 3;
-		events.dispatch('codeBlockLayoutsChanged');
+		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [block] });
 		presentation.drawCaret(context);
 		expect(draw.drawText).toHaveBeenLastCalledWith(252, 144, '_', PALETTE_INDICES.inkBase);
 	});
@@ -73,7 +73,7 @@ describe('editing caret presentation', () => {
 		expect(draw.drawText).toHaveBeenLastCalledWith(64, 16, '_', PALETTE_INDICES.inkBase);
 		expect(readSource).not.toHaveBeenCalled();
 		block.cursor.col = 3;
-		events.dispatch('codeBlockLayoutsChanged');
+		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [block] });
 		expect(readSource).toHaveBeenCalled();
 		readSource.mockClear();
 		presentation.drawCaret(context);
@@ -81,7 +81,7 @@ describe('editing caret presentation', () => {
 		expect(readSource).not.toHaveBeenCalled();
 		presentation.dispose();
 		expect(emitter.listenerCount('codeBlockLayoutsChanged')).toBe(0);
-		events.dispatch('codeBlockLayoutsChanged');
+		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [block] });
 		expect(readSource).not.toHaveBeenCalled();
 	});
 
@@ -102,9 +102,20 @@ describe('editing caret presentation', () => {
 		expect(second.draw.drawText).toHaveBeenLastCalledWith(56, 32, '_', PALETTE_INDICES.inkBase);
 		first.presentation.dispose();
 		secondBlock.cursor.col = 2;
-		second.events.dispatch('codeBlockLayoutsChanged');
+		second.events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [secondBlock] });
 		second.presentation.drawCaret(second.context);
 		expect(second.draw.drawText).toHaveBeenLastCalledWith(40, 32, '_', PALETTE_INDICES.inkBase);
+	});
+
+	it('does not reread the selected source after an unrelated block completes its layout', () => {
+		const block = createMockCodeBlock({ code: ['selected'], cursor: { row: 0, col: 1, y: 0 } });
+		const readSource = vi.fn(() => ['selected']);
+		Object.defineProperty(block, 'code', { get: readSource });
+		const state = createMockState({ editorMode: 'edit', codeBlockRendering: { selectedCodeBlock: block } });
+		const { events } = setup(state, block);
+		readSource.mockClear();
+		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [createMockCodeBlock()] });
+		expect(readSource).not.toHaveBeenCalled();
 	});
 
 	it('does not draw in view mode', () => {

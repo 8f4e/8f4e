@@ -21,6 +21,11 @@ export interface CodeBlockLayoutContext {
 	state: State;
 }
 
+/** Only these blocks have completed source/display derivation and all pending layout contributions. */
+export interface CodeBlockLayoutsChangedEvent {
+	codeBlocks: readonly CodeBlockGraphicData[];
+}
+
 export interface EditorLayoutRegistry {
 	createContribution: () => EditorLayoutContribution;
 	/** Subscribe to calculated block layout, including the current visible blocks immediately. */

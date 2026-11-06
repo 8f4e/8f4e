@@ -12,7 +12,10 @@ import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 const editor = await initEditor(canvas, { plugins: [codeRenderingPlugin] });
 ```
 
-Each installation prepares its own sprite cells and nested block highlight rectangles after `codeBlockLayoutsChanged`.
+Each installation prepares its own sprite cells and nested block highlight rectangles for the `{ codeBlocks }` supplied
+by `codeBlockLayoutsChanged`. Only those blocks have completed source/display derivation and pending layout contributions;
+other blocks can still be updating. Unaffected blocks retain their prepared cells. The per-editor cache uses weak block
+keys so removed projects are not retained.
 It registers one `drawers.registerCodeBlockDrawer` callback, drawing nested highlights, the selected-line fill, and
 cached text in that order. Hosts register their base block background before this plugin. Block parsing, highlighting, palette-index resolution, and glyph resolution happen
 outside the frame loop. Highlights cycle through three surface shades by nesting depth, clip at folded content, and

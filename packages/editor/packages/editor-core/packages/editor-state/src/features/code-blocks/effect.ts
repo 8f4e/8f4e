@@ -1,5 +1,6 @@
 import type {
 	CodeBlockGraphicData,
+	CodeBlockLayoutsChangedEvent,
 	CodeBlockPointerDownEvent,
 	EditorDirectiveDefinition,
 	EventDispatcher,
@@ -128,18 +129,20 @@ export default function codeBlockRendering(
 		if (calculatingLayouts) return;
 		calculatingLayouts = true;
 		let alwaysOnTopChanged = false;
+		const completedBlocks = new Set<CodeBlockGraphicData>();
 		try {
 			while (pendingLayouts.size) {
 				const block = pendingLayouts.values().next().value!;
 				pendingLayouts.delete(block);
 				alwaysOnTopChanged = calculateBlockLayout(block) || alwaysOnTopChanged;
 				layout.publish({ codeBlock: block, state });
+				completedBlocks.add(block);
 			}
 		} finally {
 			calculatingLayouts = false;
 		}
 		if (alwaysOnTopChanged) repartitionRenderedCodeBlocks();
-		events.dispatch('codeBlockLayoutsChanged');
+		events.dispatch<CodeBlockLayoutsChangedEvent>('codeBlockLayoutsChanged', { codeBlocks: [...completedBlocks] });
 	};
 
 	const updateAllBlockDerivedState = () => {
