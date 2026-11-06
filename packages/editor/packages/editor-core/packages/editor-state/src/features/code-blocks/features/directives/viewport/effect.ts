@@ -83,9 +83,8 @@ export default function viewportDirectiveEffect(store: StateManager<State>, even
 		recomputeViewportAnchoredPositions(state);
 	};
 	const onLayoutsChanged = ({ codeBlocks }: CodeBlockLayoutsChangedEvent) => {
-		const currentBlocks = new Set(state.codeBlockRendering.currentProject.blocks);
 		for (const block of codeBlocks) {
-			if (!currentBlocks.has(block)) continue;
+			if (block.projectPath !== state.codeBlockRendering.currentProject.path) continue;
 			syncViewportAnchoredBlock(state, block);
 			recomputeViewportAnchoredPosition(state, block);
 		}
