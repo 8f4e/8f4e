@@ -1,5 +1,5 @@
 import { type LandingEditorInstance, mountLandingEditor } from '@8f4e/editor-landing';
-import { getExampleProjectUrl } from './example-projects';
+import { getHomepageProjectUrl } from './homepage-projects';
 
 export function mountHomepageEditors(): () => void {
 	const canvases = Array.from(document.querySelectorAll<HTMLCanvasElement>('.editor-row canvas'));
@@ -66,7 +66,7 @@ export function mountHomepageEditors(): () => void {
 		const mountPromise = mountLandingEditor(canvas, {
 			captureWheel: false,
 			touchNavigation: { axis: 'horizontal' },
-			initialProjectUrl: canvas.dataset.projectPath ? getExampleProjectUrl(canvas.dataset.projectPath) : undefined,
+			initialProjectUrl: canvas.dataset.projectPath ? getHomepageProjectUrl(canvas.dataset.projectPath) : undefined,
 			onInitialProjectLoaded: () => revealEditorAfterProjectLoad(canvas),
 			onInitialProjectLoadError: error => showProjectLoadError(canvas, error),
 		})

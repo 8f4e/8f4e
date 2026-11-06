@@ -45,6 +45,9 @@
   `src/examples/index.html`, and `src/tests/index.html`. The test gallery bundles the compiler's `.test.8f4e`
   fixtures as assets; fixtures enable the test-runtime plugin with `@config testRuntime.enabled true` to run assertions
   after compilation.
+  The homepage imports only its four demo project URLs through `src/homepage-projects.ts`; keep the full example
+  project and preview catalogs in the examples gallery's import graph.
+  Keep homepage featured preview GIFs external with `?no-inline` so native image lazy loading can defer their bytes.
 - Reusable Vite source discovery lives in `packages/vite-plugin-sources/`. It exposes lazy text collections through
   `virtual:8f4e-sources/<name>`; the default editor uses it for stdlib includes and example modules.
 - Editor colors: `@8f4e/editor-palette` owns the pure base palette and predefined shades. Configure only shared base

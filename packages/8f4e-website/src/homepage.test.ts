@@ -1,7 +1,7 @@
 import { mountLandingEditor } from '@8f4e/editor-landing';
 import { afterEach, expect, test, vi } from 'vitest';
-import { getExampleProjectUrl } from './example-projects';
 import { mountHomepageEditors } from './homepage';
+import { getHomepageProjectUrl } from './homepage-projects';
 
 vi.mock('@8f4e/editor-landing', { spy: true });
 
@@ -25,7 +25,7 @@ function setup(response?: () => Promise<Response>) {
 	if (response) {
 		const path = 'misc/landingPageDemo1.8f4e';
 		canvas.dataset.projectPath = path;
-		const url = getExampleProjectUrl(path);
+		const url = getHomepageProjectUrl(path);
 		const fetch = globalThis.fetch.bind(globalThis);
 		vi.spyOn(globalThis, 'fetch').mockImplementation((input, options) =>
 			input === url ? response() : fetch(input, options)

@@ -30,8 +30,11 @@ npx nx run @8f4e/8f4e-website:serve
 The development server runs at `http://localhost:3001` so it can run alongside `@8f4e/editor-website`.
 
 Set the canvas's `data-project-path` attribute in `src/index.html` to a path relative to
-`packages/examples/src/projects/` to choose the project loaded when the editor mounts. `src/example-projects.ts`
-uses a Vite glob to emit the original `.8f4e` sources as downloadable assets shared by the homepage and examples gallery.
+`packages/examples/src/projects/` to choose the project loaded when the editor mounts. `src/homepage-projects.ts`
+imports only the four homepage demo URLs; update its explicit imports when changing the homepage's project selection.
+The full project and preview URL catalogs in `src/example-projects.ts` are used only by the examples gallery.
+The homepage fetches each demo's source when its editor becomes visible. Featured preview GIFs use `?no-inline`
+to remain external assets with native lazy loading, including images below Vite's default inline-size limit.
 The npm command refreshes the committed 64×64 GIF previews in `src/project-previews/` after gallery projects or
 their `@home` blocks change. The compiler gallery reuses one shared preview generated from a representative fixture.
 
