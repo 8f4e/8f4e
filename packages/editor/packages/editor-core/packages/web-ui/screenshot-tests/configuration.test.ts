@@ -48,7 +48,13 @@ test('applies project appearance settings and restores defaults after project re
 			notes: [
 				{
 					id: 1,
-					code: ['note settings', '; @pos 4 10', '; @config font 6x10', '; @config color.canvas #361845', 'noteEnd'],
+					code: [
+						'note settings',
+						'; @pos 4 10',
+						'; @config font x11miscfixed6x10',
+						'; @config color.canvas #361845',
+						'noteEnd',
+					],
 				},
 			],
 		});
@@ -64,7 +70,9 @@ test('applies project appearance settings and restores defaults after project re
 			[
 				{
 					codeBlock: settings,
-					code: settings.code.map(line => line.replace('6x10', 'terminus10x18').replace('#361845', '#102432')),
+					code: settings.code.map(line =>
+						line.replace('x11miscfixed6x10', 'terminus10x18').replace('#361845', '#102432')
+					),
 				},
 			],
 			{ affectsCompilation: false }

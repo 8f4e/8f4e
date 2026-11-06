@@ -175,7 +175,7 @@ Supported `font` values:
 - `ibmvga8x16`
 - `terminus8x16`
 - `terminus8x16bold`
-- `6x10`
+- `x11miscfixed6x10`
 - `terminus10x18`
 - `kana12x13`
 - `terminus12x24`

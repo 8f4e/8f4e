@@ -4,7 +4,7 @@ import { BACKGROUND_DOTS } from './dot-settings';
 
 // Pixel bounds captured from the former DOT bitmaps, including their off-center placement.
 const backgrounds = [
-	['6x10', 6, 10, 1, 4, 2],
+	['x11miscfixed6x10', 6, 10, 1, 4, 2],
 	['olivettithin8x16', 8, 16, 3, 7, 2],
 	['spleen5x8', 5, 8, 1, 4, 2],
 	['spleen6x12', 6, 12, 1, 5, 2],

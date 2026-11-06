@@ -58,9 +58,14 @@ describe('web-ui configuration', () => {
 		const state = store.getState();
 		store.set('initialProjectState', {
 			...EMPTY_DEFAULT_PROJECT,
-			notes: [{ id: 0, code: ['note settings', '; @config font 6x10', '; @config color.primary #123456', 'noteEnd'] }],
+			notes: [
+				{
+					id: 0,
+					code: ['note settings', '; @config font x11miscfixed6x10', '; @config color.primary #123456', 'noteEnd'],
+				},
+			],
 		});
-		expect(state.editorConfig).toEqual({ font: '6x10', color: { primary: '#123456' } });
+		expect(state.editorConfig).toEqual({ font: 'x11miscfixed6x10', color: { primary: '#123456' } });
 		expect(state.codeErrors['editor-directives']).toEqual([]);
 		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
 		applyCodeBlockSourceEdits(

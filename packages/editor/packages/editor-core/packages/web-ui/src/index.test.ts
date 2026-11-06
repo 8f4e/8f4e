@@ -98,7 +98,7 @@ describe('web-ui init', () => {
 	it('loads the configured font and installs its grid before initializing render layers', async () => {
 		const { default: init } = await import('./index');
 		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
-		const state = createMockState({ editorConfig: { font: '6x10' } });
+		const state = createMockState({ editorConfig: { font: 'x11miscfixed6x10' } });
 		const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
 		const drawers = createEditorDrawerRegistry();
 		const factory = vi.fn(() => {
@@ -112,7 +112,7 @@ describe('web-ui init', () => {
 			drawers,
 		});
 		expect(loadFontAtlas).toHaveBeenNthCalledWith(1, 'ibmvga8x16');
-		expect(loadFontAtlas).toHaveBeenNthCalledWith(2, '6x10');
+		expect(loadFontAtlas).toHaveBeenNthCalledWith(2, 'x11miscfixed6x10');
 		expect(factory).toHaveBeenCalledOnce();
 		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('gridSizeChanged');
 		view.destroy();

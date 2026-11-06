@@ -2,7 +2,7 @@ import type { Font } from '@8f4e/sprite-generator';
 
 /** Pixel-aligned dot bounds within each font cell. */
 export const BACKGROUND_DOTS = {
-	'6x10': { x: 1, y: 4, size: 2 },
+	x11miscfixed6x10: { x: 1, y: 4, size: 2 },
 	ibmvga8x16: { x: 3, y: 7, size: 2 },
 	olivettithin8x16: { x: 3, y: 7, size: 2 },
 	spleen5x8: { x: 1, y: 4, size: 2 },

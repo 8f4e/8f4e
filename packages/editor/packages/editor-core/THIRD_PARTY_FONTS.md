@@ -54,3 +54,13 @@ Notes:
 
 - `kana12x13` is a stylistic derivative built from glyphs extracted from Cozette.
 - Redistributions should keep the MIT license text with this derivative.
+
+## X11 Misc Fixed
+
+- Upstream project: [Markus Kuhn's Unicode fonts for X11](https://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html)
+- Local converted font: `x11miscfixed6x10`
+- Source bitmap: `6x10.bdf` from the upstream [X11 font archive](https://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz)
+- License: Public domain
+- Local notice: `packages/editor/packages/editor-core/licenses/x11-misc-fixed-public-domain.txt`
+
+The bundled ASCII glyphs are converted from the upstream 6×10 BDF font.

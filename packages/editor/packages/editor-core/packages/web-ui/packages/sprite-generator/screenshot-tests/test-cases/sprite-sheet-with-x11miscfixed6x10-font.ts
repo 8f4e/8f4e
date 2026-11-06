@@ -1,7 +1,7 @@
 import loadFontAtlas from '@8f4e/sprite-generator';
 
 const canvas = document.getElementById('test-canvas') as HTMLCanvasElement;
-const { image } = await loadFontAtlas('6x10');
+const { image } = await loadFontAtlas('x11miscfixed6x10');
 canvas.width = image.width;
 canvas.height = image.height;
 const pixels = new Uint8ClampedArray(image.width * image.height * 4);
