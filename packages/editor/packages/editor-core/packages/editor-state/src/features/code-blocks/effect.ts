@@ -69,17 +69,13 @@ export default function codeBlockRendering(
 		});
 	};
 
-	const updateAllBlockDerivedState = () => {
+	const refreshCurrentProjectLayout = () => {
 		coordinator.refreshProject(state.codeBlockRendering.currentProject);
 	};
 
-	const updateAllBlockSources = () => {
+	const refreshCurrentProjectSources = () => {
 		coordinator.syncProject(state.codeBlockRendering.currentProject);
-		refreshBlockSources(store, events, state.codeBlockRendering.currentProject.blocks, updateAllBlockDerivedState);
-	};
-
-	const recomputePixelCoordinatesAndBlockDerivedState = () => {
-		coordinator.refreshProject(state.codeBlockRendering.currentProject);
+		refreshBlockSources(store, events, state.codeBlockRendering.currentProject.blocks, refreshCurrentProjectLayout);
 	};
 
 	const updateEditedCodeBlock = (block: CodeBlockGraphicData | undefined) => {
@@ -141,24 +137,24 @@ export default function codeBlockRendering(
 		incrementCompilerInputRevision(store);
 	};
 
-	updateAllBlockSources();
+	refreshCurrentProjectSources();
 
 	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
 	events.on('codeBlockPointerDown', ({ codeBlock }: CodeBlockPointerDownEvent) => refreshBlockLayouts([codeBlock]));
-	events.on('memoryValuesChanged', updateAllBlockDerivedState);
+	events.on('memoryValuesChanged', refreshCurrentProjectLayout);
 	events.on('codeBlockSourcesChanged', onSourcesChanged);
 	events.on('codeBlockLayoutContributionsChanged', ({ codeBlock }: { codeBlock?: CodeBlockGraphicData }) => {
 		if (codeBlock) {
 			refreshBlockLayouts([codeBlock]);
-		} else updateAllBlockDerivedState();
+		} else refreshCurrentProjectLayout();
 	});
-	events.on('gridSizeChanged', recomputePixelCoordinatesAndBlockDerivedState);
-	store.subscribe('compiler.isCompiling', updateAllBlockDerivedState);
+	events.on('gridSizeChanged', refreshCurrentProjectLayout);
+	store.subscribe('compiler.isCompiling', refreshCurrentProjectLayout);
 	store.subscribe('initialProjectState', populateCodeBlocks);
-	store.subscribe('codeBlockRendering.currentProject.blocks', updateAllBlockSources);
+	store.subscribe('codeBlockRendering.currentProject.blocks', refreshCurrentProjectSources);
 	store.subscribe('editorConfigSchemaContributions', () => {
 		resolveEditorConfig(store);
-		updateAllBlockDerivedState();
+		refreshCurrentProjectLayout();
 	});
 	store.subscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.code', updateSelectedCodeBlockSource);
