@@ -77,6 +77,9 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 		await expect.poll(() => state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		const { x: blockX, y: blockY } = targetBlock();
 		const { x, y } = state.viewport;
+		await expect
+			.poll(() => state.loadingIndicators.find(item => item.id === 'plugin:jump-to-error')?.status)
+			.toBe('done');
 		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('before-touch-pan');
@@ -97,6 +100,17 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 		await expect(canvas).toMatchScreenshot('after-touch-pan');
 		await tap(block.x - state.viewport.x + 8, block.y - state.viewport.y + 8);
 		await expect.poll(() => state.codeBlockRendering.selectedCodeBlock?.name).toBe('target');
+		// Check source-line navigation and input layers through the real touch adapter.
+		context.store.set('codeErrors.fixture', [
+			{ codeBlockId: block.creationIndex, lineNumber: 2, message: 'Touch fixture error' },
+		]);
+		await tap(620, 344);
+		const errorRow = block.displayModel.sourceLineIndexToDisplayRow[2]!;
+		expect(state.viewport.x).toBe(Math.round(block.x + block.width / 2 - 320));
+		expect(state.viewport.y).toBe(
+			Math.round(block.y + (gapCalculator(errorRow, block.gaps) + 0.5) * state.viewport.hGrid - 192)
+		);
+		context.store.set('codeErrors.fixture', []);
 	} finally {
 		editor?.dispose();
 		canvas.remove();

@@ -40,12 +40,16 @@
   menu requests/Back navigation, pointer blocking/forwarding, and action/selector dispatch in core. Forward completed
   presses through `contextMenuPointerDown`, movement through `contextMenuPointerMove`, and activate raw items through
   `activateContextMenuItem { index, x, y }`. `closeContextMenu` closes without activating. Keep decorated titles,
-  geometry, and highlighted rows out of core state. Generic `registerCanvasDrawer` draws before canvas/modal overlays.
+  geometry, and highlighted rows out of core state. `registerContextMenuOverlay` draws menus above canvas overlays and below modal dialogs.
 - Keep dialog content, the stack, opening/closing, button actions, and modal input blocking in editor-state.
   Forward completed modal presses through `dialogPointerDown`; check
   `activateDialogButton { id, buttonIndex }` against the visible dialog. `editor-plugin-dialogs` owns private
-  presentation geometry, hit testing, and drawing. Web-ui provides `registerModalOverlay` after ordinary overlays,
+  presentation geometry, hit testing, and drawing. Web-ui provides `registerModalOverlay` after context-menu overlays,
   independently of `canvasOverlays`.
+- UI subscriptions use an optional numeric `layer` matching drawer stages (`INPUT_LAYERS` in editor-state-types).
+  Dispatch higher layers first, then capture/normal within each layer, each in reverse registration order. Unlayered
+  notifications/default effects retain FIFO capture/normal delivery. Keep hit testing and gesture ownership in plugins.
+- Drawing stays in registration order inside every stage. Context menus have their own stage between overlays and dialogs.
 - DOM mouse/wheel adaptation belongs to `editor-plugin-mouse-input`; touch adaptation and panning belong to
   `editor-plugin-touch-input`. Core keeps the event dispatcher and state effects, with no DOM input
   listeners or `captureWheel` option. Export existing generic viewport update, animation-stop, and grid-snap helpers.

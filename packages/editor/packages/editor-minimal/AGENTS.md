@@ -13,6 +13,8 @@
   `state.loadingIndicators` list while keeping visibility private; producers own terminal outcomes. Done results
   hide after 1/2/3 seconds for operations lasting up to 100 ms, over 100 ms through 500 ms, or over 500 ms
   respectively; failed/cancelled hide after five seconds, without deleting contributions.
+- Load `createJumpToErrorPlugin({ layer: INPUT_LAYERS.canvasOverlay })` as an unconditional deferred entry. It centers
+  the error's source line using core layout; it has no dependency on error-message presentation.
 - Load `errorMessagesPlugin` as an unconditional deferred entry. Raw contributor-owned error lists stay central;
   the plugin owns wrapping, layout reservations, coordinates, and drawing.
   Load entries independently through the same loader; apply pointer capability and mode-switching availability as
@@ -85,7 +87,7 @@
   menu commands. Core retains generic source operations and entry assignment. Landing omits this plugin.
 
 - Load `contextMenuPlugin` as an unconditional deferred entry. It owns menu formatting, geometry, hover/hit testing,
-  and drawing through `registerCanvasDrawer`; core keeps raw menu items, contributions, navigation, and action dispatch.
+  and drawing through `registerContextMenuOverlay`; core keeps raw menu items, contributions, navigation, and action dispatch.
 
 - Load `offscreenBlockArrowsPlugin` as an unconditional deferred entry. It owns viewport-edge arrow geometry and
   drawing through the single replaceable `registerOffscreenCodeBlockDrawer` callback. Core retains the block traversal.

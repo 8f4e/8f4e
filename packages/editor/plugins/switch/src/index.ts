@@ -1,6 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, CodeBlockPointerDownEvent } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { registerSwitchLayout, type SwitchWidget } from './layout';
 
 export function createSwitchPlugin({
@@ -48,7 +49,7 @@ export function createSwitchPlugin({
 					control.isInteger
 				);
 			};
-			events.on('codeBlockPointerDown', onPointerDown, { capture: true });
+			events.on('codeBlockPointerDown', onPointerDown, { capture: true, layer: INPUT_LAYERS.codeBlock });
 			return () => {
 				events.off('codeBlockPointerDown', onPointerDown);
 				unregisterDrawer();

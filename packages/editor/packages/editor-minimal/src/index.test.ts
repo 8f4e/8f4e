@@ -62,6 +62,7 @@ it('starts without storage and reports empty-project readiness after initializat
 			'code-rendering',
 			'connectors',
 			'error-messages',
+			'jump-to-error',
 			'loading-indicators',
 			'dialogs',
 			'context-menu',

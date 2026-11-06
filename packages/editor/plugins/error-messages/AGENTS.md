@@ -6,6 +6,7 @@
   source lines, stacking messages on the same display row after other reserved content.
 - Consume every contributor uniformly. Assertion failures are published by test-runtime; do not interpret compiler
   or runtime results here.
+- Consume core's raw-error matching. Keep prepared message geometry private to the presenter.
 - Own subscription, contribution, and drawer disposal explicitly. Disposing the renderer preserves raw errors.
 - Load this as an unconditional deferred entry.
 - Test only this plugin against core services. Combined plugin rendering belongs in editor-default tests.

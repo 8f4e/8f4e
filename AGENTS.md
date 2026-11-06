@@ -28,6 +28,10 @@
   All optional imports, including directive-based lazy plugins, start on core's `ready` event, after initial project
   loading/parsing, font-atlas loading, and rendering. Font payloads remain separate lazy chunks; do not add frame
   callbacks or timing gates.
+- UI event subscriptions use numeric layers matching drawer stages. Higher layers run first; capture/normal handlers
+  inside each layer run in reverse registration order. Unlayered notifications and default effects retain their ordering.
+  Plugins receive configurable layers at factory construction where needed. Drawing remains in registration order;
+  code-block targeting already follows the reverse of block stacking. `INPUT_LAYERS` lives in editor-state-types.
 - `editor-plugin-block-authoring` owns New Module/Function/Prototype/Note templates, random names, Delete, and
   their menu contributions. Default and minimal load it after `ready`; landing omits it. Generic insertion/deletion,
   entry assignment, layout, revisions, and history stay in editor-state. Folding and shared source/display mappings
@@ -59,11 +63,11 @@
   The default and minimal compositions defer drawing until `ready`; entry assignment works independently of the plugin.
 - `@8f4e/editor-plugin-context-menu` owns menu labels, sizing, grid snapping, viewport clamping, hover state, hit testing,
   and drawing. Core keeps raw items, requested world anchors, menu navigation, input blocking, and action/selector dispatch.
-  The default and minimal compositions defer it until `ready`. Web-ui exposes generic `registerCanvasDrawer` before canvas/modal overlays.
+  The default and minimal compositions defer it until `ready`. Web-ui exposes `registerContextMenuOverlay` above editor overlays and below modal dialogs.
 - `@8f4e/editor-plugin-dialogs` owns dialog dimensions, wrapping/clipping, private button geometry/hit testing,
   and drawing. Editor-state owns dialog content/stack, opening/closing, button actions, and modal input blocking.
   Editor compositions load dialogs through their unconditional deferred registries after `ready`. Web-ui supplies
-  `registerModalOverlay` after ordinary overlays, independently of `canvasOverlays`.
+  `registerModalOverlay` after context-menu overlays, independently of `canvasOverlays`.
 - Loading operations contribute `{ id, message }` through `loading.add` in the plugin setup context.
   The returned handle exposes `done()`, `fail()`, and `cancel()`; the first terminal result records `finishedAt`.
   State retains `status`, `startedAt`, and `finishedAt` in the unified `state.loadingIndicators` list. Reusing an ID
@@ -75,6 +79,9 @@
 - `@8f4e/editor-plugin-error-messages` owns inline error wrapping, layout reservations, coordinates, and drawing.
   Core retains raw `CodeError` lists in `state.codeErrors`, keyed by contributor. Compiler, editor directives, and
   test-runtime own their lists; editor compositions defer the presentation plugin until `ready`.
+- `@8f4e/editor-plugin-jump-to-error` owns the fixed error-navigation button and centers the first error's source line
+  using core display rows and gaps. It is independent of error-message presentation. Default and minimal defer it
+  until `ready`; landing omits it.
 - `@8f4e/editor-plugin-selection-animation` owns the circling segment around the selected block, using the generic
   ordered block drawer hook. Its deferred entries are commented out in default/minimal and omitted from landing; core retains selection state and geometry.
 - Ordinary keyboard input lives in `keyboard-navigation`, `keyboard-editing`, and `keyboard-mode-switching` plugins.

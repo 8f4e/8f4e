@@ -1,4 +1,5 @@
 import type { CodeBlockPointerDownEvent, EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import findCodeBlockAtViewportCoordinates from '../code-blocks/utils/finders/findCodeBlockAtViewportCoordinates';
 
@@ -32,11 +33,11 @@ export default function pointerInput(store: StateManager<State>, events: EventDi
 	const releasePointer = () => events.dispatch('codeBlockPointerUp');
 
 	// Controls claim input before default selection/dragging. Ordinary block listeners run after selection.
-	events.on('pointerdown', capturePointerDown, { capture: true });
+	events.on('pointerdown', capturePointerDown, { capture: true, layer: INPUT_LAYERS.codeBlock });
 	events.on('pointerdown', onPointerDown);
-	events.on('pointermove', onPointerMove, { capture: true });
-	events.on('pointerup', releasePointer, { capture: true });
-	events.on('pointercancel', releasePointer, { capture: true });
+	events.on('pointermove', onPointerMove, { capture: true, layer: INPUT_LAYERS.codeBlock });
+	events.on('pointerup', releasePointer, { capture: true, layer: INPUT_LAYERS.codeBlock });
+	events.on('pointercancel', releasePointer, { capture: true, layer: INPUT_LAYERS.codeBlock });
 	return () => {
 		events.off('pointerdown', capturePointerDown);
 		events.off('pointerdown', onPointerDown);

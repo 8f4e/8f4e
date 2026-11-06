@@ -237,4 +237,5 @@ export type * from './features/menu/types';
 export type * from './features/program-compiler/types';
 export type * from './features/viewport/blockAlignment';
 export type * from './features/viewport/types';
+export { INPUT_LAYERS } from './shared/inputLayers';
 export type * from './shared/types';

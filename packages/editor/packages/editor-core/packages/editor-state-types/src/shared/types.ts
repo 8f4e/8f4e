@@ -32,8 +32,12 @@ export interface GridCoordinates {
 }
 
 export interface EventSubscriptionOptions {
-	/** Run before ordinary listeners, in capture registration order. */
+	/** Run in the capture phase of this layer, or before unlayered normal listeners. */
 	capture?: boolean;
+	/** UI handlers run from higher layers to lower layers, newest registration first within each phase.
+	 * Unlayered listeners retain capture/normal registration order after the UI layers.
+	 */
+	layer?: number;
 }
 
 /**

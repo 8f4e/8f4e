@@ -178,16 +178,21 @@ Module insertion selects the first containing entry, including its edges, or all
 bounds. Bounds update after layout, project, grid, and viewport changes. These semantics work without a drawing plugin.
 
 Register ordinary viewport-coordinate drawing with `drawers.registerCanvasDrawer(drawer)`. Callbacks receive
-`{ draw, state, memoryViews }` after code blocks and before overlays, independently of `canvasOverlays`. Context-menu
-presentation uses this hook. Shared canvas drawing types are `CanvasDrawer` and `CanvasDrawerContext`.
+`{ draw, state, memoryViews }` after code blocks and before overlays, independently of `canvasOverlays`.
+Shared canvas drawing types are `CanvasDrawer` and `CanvasDrawerContext`.
 
 Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The drawer receives
 `{ draw, state, memoryViews }` after ordinary canvas drawers and before modal overlays, with coordinates relative to the viewport's top-left.
 The renderer checks `featureFlags.canvasOverlays` before invoking this stage. Keyboard hints live in their
 mode-switching plugin; screenshot capture hides canvas overlays through this generic flag.
 
+Register context-menu overlays with `drawers.registerContextMenuOverlay(drawer)`. This stage runs above ordinary
+canvas overlays and below modal dialogs, independently of `canvasOverlays`. `@8f4e/editor-plugin-context-menu` uses
+this hook for menu presentation. Every drawing stage retains registration order, including late plugin registrations;
+rendering does not sort callbacks by input layer numbers.
+
 Register modal sprite overlays with `drawers.registerModalOverlay(drawer)`. This uses the same viewport context
-as canvas overlays and runs after them, independently of `featureFlags.canvasOverlays`.
+as canvas overlays and runs after context-menu overlays, independently of `featureFlags.canvasOverlays`.
 `@8f4e/editor-plugin-dialogs` uses it for dialog drawing and keeps calculated geometry private.
 
 The editor owns dialog content and lifecycle. Plugins dispatch `addDialog` with `DialogContent`
@@ -221,10 +226,27 @@ Core routes both adapters through the same block lookup and interaction phases, 
 
 Controls subscribe to `codeBlockPointerDown` in capture, set `stopPropagation` when claiming the press, handle
 `codeBlockPointerMove` for drags, and release on `codeBlockPointerUp`. Ordinary block press listeners run after
-default selection. Dialogs and menus retain priority over controls. Capture listeners run first in registration order;
-setting `stopPropagation` stops the remaining listeners. Event dispatch can select only the capture or normal phase
-with `{ phase: 'capture' | 'normal' }`, which lets touch input probe interactions before starting a viewport gesture.
-Unregister with the same `events.off` call as other listeners.
+default selection. UI handlers opt into an input layer through `events.on(name, handler, { layer, capture })`.
+The `layer` is a plain number, chosen by the plugin's composition when applicable. `INPUT_LAYERS` from
+`@8f4e/editor-state-types` names the matching stages: code block, ordinary canvas, canvas overlay, context menu,
+and modal overlay. Higher layers receive input first. Within a layer, capture runs before normal, and each phase
+runs in reverse registration order. A late plugin therefore receives input before earlier registrations in its stage.
+The first handler setting `stopPropagation` prevents remaining handlers and lower layers from receiving the event.
+
+Unlayered listeners retain their existing capture/normal registration order after UI handling. Keep notifications,
+startup, disposal, and default state effects unlayered. Code-block controls use `INPUT_LAYERS.codeBlock` on the
+forwarded block events; core already targets the foremost block using the reverse of block drawing order.
+
+Event dispatch can select only the capture or normal phase with `{ phase: 'capture' | 'normal' }`. Touch input uses
+capture-only probes before starting a viewport gesture. Modal/menu activation waits for a completed press; probing
+controls must respect visible modal/menu state. Claimed movement, release, and cancellation use the same input layer.
+Unregister with the same `events.off` call as other listeners. Layer groups are prepared when listeners are added or
+removed; dispatch traverses those snapshots without sorting or filtering registrations.
+
+Raw diagnostics remain in `state.codeErrors`. `getCodeBlockErrors(state, block)` from `@8f4e/editor-state` matches
+contributor errors to document blocks or project scopes, independently of any presentation or navigation plugin.
+`createCodeErrorBlockLookup(rootProject)` indexes document identities and project scopes once for a batch of errors,
+retaining project-tree precedence when an error matches both. Rebuild the lookup after project changes.
 
 Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets: [codeBlock] }` before a drag.
 Plugins may synchronously replace `targets`; core then moves and snaps those blocks and publishes one position edit.

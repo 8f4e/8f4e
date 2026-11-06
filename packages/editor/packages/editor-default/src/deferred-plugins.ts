@@ -1,6 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import type { ProjectFileSession } from '@8f4e/editor-file-session';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { createDefaultEditorPlugins } from './index';
 import { createLazyPluginRegistry } from './lazy-plugins';
 
@@ -42,6 +43,15 @@ export function createDeferredEditorPlugin(
 			scope: 'view',
 			matches: () => true,
 			load: () => import('@8f4e/editor-plugin-error-messages').then(module => module.errorMessagesPlugin),
+		},
+		{
+			id: 'jump-to-error',
+			scope: 'view',
+			matches: () => true,
+			load: () =>
+				import('@8f4e/editor-plugin-jump-to-error').then(module =>
+					module.createJumpToErrorPlugin({ layer: INPUT_LAYERS.canvasOverlay })
+				),
 		},
 		{
 			id: 'dialogs',

@@ -221,6 +221,11 @@ describe('web-ui init', () => {
 		const removeOverlay = drawers.registerCanvasOverlay(overlay);
 		const modal = vi.fn();
 		const removeModal = drawers.registerModalOverlay(modal);
+		// Late registrations stay within their drawing stage, even when higher stages registered first.
+		const menu = vi.fn();
+		const removeMenu = drawers.registerContextMenuOverlay(menu);
+		const lastOverlay = vi.fn();
+		const removeLastOverlay = drawers.registerCanvasOverlay(lastOverlay);
 		const view = await init(
 			createStateManager(state),
 			createMockEventDispatcher(),
@@ -233,6 +238,8 @@ describe('web-ui init', () => {
 		background.mockClear();
 		canvas.mockClear();
 		modal.mockClear();
+		menu.mockClear();
+		lastOverlay.mockClear();
 		view.renderFrame();
 
 		const frameState = mocks.drawCodeBlocks.mock.calls.at(-1)?.[1];
@@ -244,10 +251,14 @@ describe('web-ui init', () => {
 		expect(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!).toBeLessThan(canvas.mock.invocationCallOrder[0]);
 		expect(overlay).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
 		expect(canvas.mock.invocationCallOrder[0]).toBeLessThan(overlay.mock.invocationCallOrder[0]);
-		expect(overlay.mock.invocationCallOrder[0]).toBeLessThan(modal.mock.invocationCallOrder[0]);
+		expect(overlay.mock.invocationCallOrder[0]).toBeLessThan(lastOverlay.mock.invocationCallOrder[0]);
+		expect(lastOverlay.mock.invocationCallOrder[0]).toBeLessThan(menu.mock.invocationCallOrder[0]);
+		expect(menu.mock.invocationCallOrder[0]).toBeLessThan(modal.mock.invocationCallOrder[0]);
 		state.featureFlags.canvasOverlays = false;
 		view.renderFrame();
 		expect(overlay).toHaveBeenCalledOnce();
+		expect(lastOverlay).toHaveBeenCalledOnce();
+		expect(menu).toHaveBeenCalledTimes(2);
 		expect(canvas).toHaveBeenCalledTimes(2);
 		expect(background).toHaveBeenCalledTimes(2);
 		expect(modal).toHaveBeenCalledTimes(2);
@@ -256,10 +267,14 @@ describe('web-ui init', () => {
 		removeCanvas();
 		removeOverlay();
 		removeModal();
+		removeMenu();
+		removeLastOverlay();
 		view.renderFrame();
 		expect(canvas).toHaveBeenCalledTimes(2);
 		expect(background).toHaveBeenCalledTimes(2);
 		expect(overlay).toHaveBeenCalledOnce();
+		expect(lastOverlay).toHaveBeenCalledOnce();
+		expect(menu).toHaveBeenCalledTimes(2);
 		expect(modal).toHaveBeenCalledTimes(2);
 		view.destroy();
 	});

@@ -51,7 +51,7 @@ function setup({
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawText: vi.fn() };
 	const render = () => {
 		for (const fn of Object.values(draw)) fn.mockClear();
-		drawers.drawCanvas({ draw: draw as unknown as DrawContext, state, memoryViews: {} as MemoryViews });
+		drawers.drawContextMenuOverlays({ draw: draw as unknown as DrawContext, state, memoryViews: {} as MemoryViews });
 	};
 	return { events, state, draw, render, dispose, activate, close };
 }

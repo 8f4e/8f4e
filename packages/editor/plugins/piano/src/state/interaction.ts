@@ -5,6 +5,7 @@ import type {
 	InternalPointerEvent,
 	State,
 } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { PianoKeyboard } from '../types';
 
 // Runtime memory is the source of truth for both clicks and pressed-note highlights.
@@ -84,7 +85,7 @@ export function registerPianoInteraction(
 		writeMemory(keyboard.pressedKeyCountMemory.allocationUnitAddress, pressedKeys.size, true);
 	};
 
-	events.on('codeBlockPointerDown', onCodeBlockPointerDown, { capture: true });
+	events.on('codeBlockPointerDown', onCodeBlockPointerDown, { capture: true, layer: INPUT_LAYERS.codeBlock });
 
 	return () => {
 		events.off('codeBlockPointerDown', onCodeBlockPointerDown);

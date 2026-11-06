@@ -6,7 +6,7 @@
 - Use editor-forwarded `dialogPointerDown` events. Request button activation through
   `activateDialogButton` with `{ id, buttonIndex }`; the editor resolves the active button and its close behavior.
   Do not activate buttons during capture-only touch probes or subscribe directly to DOM input.
-- Register through `registerModalOverlay`, above ordinary canvas overlays and independent of `canvasOverlays`.
+- Register through `registerModalOverlay`, above context-menu overlays and independent of `canvasOverlays`.
 - Separate wrapped button rows by one vertical grid cell and include those gaps in the dialog height.
 - Read existing dialogs on setup and refresh cached layout after stack changes, resize, and `gridSizeChanged`.
   Keep layout calculation out of the frame path. Dispose all subscriptions, input listeners, and the drawer.

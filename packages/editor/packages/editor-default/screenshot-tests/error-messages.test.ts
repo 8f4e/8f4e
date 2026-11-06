@@ -1,6 +1,8 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
 import { mountDefaultEditor } from '@8f4e/editor-default';
+import { gapCalculator } from '@8f4e/editor-state';
 import { expect, test } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
 test('shows assertion failures through shared errors and clears their layout after a successful edit', async () => {
 	const canvas = document.createElement('canvas');
@@ -56,6 +58,42 @@ entryEnd`;
 			.toBe(true);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('assertion-error');
+		// Navigate to a real runtime diagnostic through mouse input.
+		for (const id of ['jump-to-error', 'mouse-input']) {
+			await expect
+				.poll(() => editor.state.loadingIndicators.find(item => item.id === `plugin:${id}`)?.status)
+				.toBe('done');
+		}
+		editor.state.viewport.x = 1000;
+		editor.state.viewport.y = 1000;
+		await userEvent.click(canvas, { position: { x: 620, y: 344 } });
+		const row =
+			block().displayModel.sourceLineIndexToDisplayRow[editor.state.codeErrors['test-runtime'][0].lineNumber]!;
+		expect(editor.state.codeBlockRendering.selectedCodeBlock).toBe(block());
+		expect(editor.state.viewport.x).toBe(Math.round(block().x + block().width / 2 - 320));
+		expect(editor.state.viewport.y).toBe(
+			Math.round(block().y + (gapCalculator(row, block().gaps) + 0.5) * editor.state.viewport.hGrid - 192)
+		);
+
+		// Sample a solid part of the jump button: menu labels may arrive in different lazy-plugin orders.
+		const gl = canvas.getContext('webgl2')!;
+		const readButtonPixel = () => {
+			const pixel = new Uint8Array(4);
+			gl.readPixels(516, canvas.height - 1 - 328, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+			return [...pixel];
+		};
+		editor.renderFrame();
+		const buttonPixel = readButtonPixel();
+		// A context menu is drawn and hit-tested above the floating jump button.
+		await userEvent.click(canvas, { button: 'right', position: { x: 620, y: 344 } });
+		await expect.poll(() => editor.state.contextMenu.open && editor.state.contextMenu.items.length > 0).toBe(true);
+		editor.renderFrame();
+		expect(readButtonPixel()).not.toEqual(buttonPixel);
+		const menuViewport = { x: editor.state.viewport.x, y: editor.state.viewport.y };
+		await userEvent.click(canvas, { position: { x: 8, y: 8 } });
+		expect(editor.state.contextMenu.open).toBe(false);
+		expect(editor.state.viewport).toMatchObject(menuViewport);
+
 		editor.editing.applyEdits({
 			expectedRevision: editor.editing.getRevision(),
 			edits: [
