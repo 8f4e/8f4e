@@ -146,7 +146,7 @@
 - Ensure dependency packages are built before relying on workspace aliases in the website.
 
 - Verify error navigation with `npx nx run @8f4e/editor-plugin-jump-to-error:build|test|typecheck|test:screenshot`.
-  The feature owns isolated browser tests; compositions cover injected bounds with real mouse/touch adapters.
+  The feature owns isolated browser tests; compositions cover source-line navigation through real mouse/touch adapters.
 
 ## Coding Style
 

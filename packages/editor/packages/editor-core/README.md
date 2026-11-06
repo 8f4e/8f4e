@@ -176,8 +176,8 @@ Module insertion selects the first containing entry, including its edges, or all
 bounds. Bounds update after layout, project, grid, and viewport changes. These semantics work without a drawing plugin.
 
 Register ordinary viewport-coordinate drawing with `drawers.registerCanvasDrawer(drawer)`. Callbacks receive
-`{ draw, state, memoryViews }` after code blocks and before overlays, independently of `canvasOverlays`. Context-menu
-presentation uses this hook. Shared canvas drawing types are `CanvasDrawer` and `CanvasDrawerContext`.
+`{ draw, state, memoryViews }` after code blocks and before overlays, independently of `canvasOverlays`.
+Shared canvas drawing types are `CanvasDrawer` and `CanvasDrawerContext`.
 
 Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The drawer receives
 `{ draw, state, memoryViews }` after ordinary canvas drawers and before modal overlays, with coordinates relative to the viewport's top-left.
@@ -185,8 +185,9 @@ The renderer checks `featureFlags.canvasOverlays` before invoking this stage. Ke
 mode-switching plugin; screenshot capture hides canvas overlays through this generic flag.
 
 Register context-menu overlays with `drawers.registerContextMenuOverlay(drawer)`. This stage runs above ordinary
-canvas overlays and below modal dialogs, independently of `canvasOverlays`. Every drawing stage retains registration
-order, including late plugin registrations; rendering does not sort callbacks by input layer numbers.
+canvas overlays and below modal dialogs, independently of `canvasOverlays`. `@8f4e/editor-plugin-context-menu` uses
+this hook for menu presentation. Every drawing stage retains registration order, including late plugin registrations;
+rendering does not sort callbacks by input layer numbers.
 
 Register modal sprite overlays with `drawers.registerModalOverlay(drawer)`. This uses the same viewport context
 as canvas overlays and runs after context-menu overlays, independently of `featureFlags.canvasOverlays`.
