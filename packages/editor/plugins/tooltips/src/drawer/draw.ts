@@ -2,7 +2,7 @@ import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import { resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
-import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import type { DrawContext, GlyphIds, MemoryViews } from '@8f4e/web-ui';
 import type { TooltipLiveValue, TooltipState } from '../types';
 import { formatMemoryValue } from './memoryValue';
 
@@ -87,10 +87,10 @@ function getLiveValueText(state: State, memoryViews: MemoryViews, liveValue: Too
 	}
 }
 
-function drawCharactersWithColors(
+function drawSpritesWithColors(
 	engine: DrawContext,
 	state: State,
-	characters: Array<number>,
+	characters: GlyphIds,
 	colors: Array<PaletteIndex | undefined> | undefined,
 	x: number,
 	y: number
@@ -103,24 +103,7 @@ function drawCharactersWithColors(
 		currentColor = nextColor;
 
 		if (characters[index] !== 32) {
-			engine.drawCharacter(x + index * state.viewport.vGrid, y, characters[index], currentColor);
-		}
-	}
-}
-
-function drawTextCharacters(
-	engine: DrawContext,
-	state: State,
-	text: string,
-	x: number,
-	y: number,
-	color: PaletteIndex
-): void {
-	for (let index = 0; index < text.length; index++) {
-		const character = text.charCodeAt(index);
-
-		if (character !== 32) {
-			engine.drawCharacter(x + index * state.viewport.vGrid, y, character, color);
+			engine.drawSprite(x + index * state.viewport.vGrid, y, characters[index], currentColor);
 		}
 	}
 }
@@ -138,12 +121,10 @@ function drawLiveValue(
 		return;
 	}
 
-	drawTextCharacters(
-		engine,
-		state,
-		value,
+	engine.drawNumericText(
 		liveValue.x + offset.x,
 		liveValue.y + offset.y,
+		value,
 		liveValue.color ?? PALETTE_INDICES.inverseAccent
 	);
 }
@@ -179,7 +160,7 @@ export default function drawTooltip(
 	}
 
 	for (let index = 0; index < tooltip.characters.length; index++) {
-		drawCharactersWithColors(
+		drawSpritesWithColors(
 			engine,
 			state,
 			tooltip.characters[index],

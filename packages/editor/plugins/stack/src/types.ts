@@ -1,5 +1,7 @@
 export interface StackLabel {
 	x: number;
 	y: number;
-	text: string;
+	glyphs: GlyphIds;
 }
+
+import type { GlyphIds } from '@8f4e/web-ui';

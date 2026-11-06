@@ -1,4 +1,5 @@
 import { wrapText } from '@8f4e/editor-state';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { TOOLTIP_WRAP_WIDTH } from './constants';
 
 /**
@@ -9,17 +10,10 @@ export function wrapTooltipText(text: string, maxLength = TOOLTIP_WRAP_WIDTH): s
 }
 
 /**
- * Converts text into character codes for the drawer's sprite pipeline.
- */
-function getTextCharacters(text: string): Array<number> {
-	return [...text].map(char => char.charCodeAt(0));
-}
-
-/**
  * Converts tooltip lines into drawer character arrays.
  */
-export function getTooltipTextCharacters(text: string[]): Array<Array<number>> {
-	return text.map(getTextCharacters);
+export function getTooltipTextCharacters(text: string[]): GlyphIds[] {
+	return text.map(textToGlyphIds);
 }
 
 /**

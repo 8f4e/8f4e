@@ -2,7 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSwitchPlugin } from './index';
 
@@ -77,15 +77,14 @@ async function setup(code = source, installed = true) {
 	const draw = {
 		drawSprite: vi.fn(),
 		drawFill: vi.fn(),
-		drawCharacter: vi.fn(),
-		drawText: vi.fn(),
+		drawGlyphs: vi.fn(),
 		drawResolvedText: vi.fn(),
 		startGroup: vi.fn(),
 		endGroup: vi.fn(),
 	} as unknown as DrawContext;
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
-		vi.mocked(draw.drawText).mockClear();
+		vi.mocked(draw.drawGlyphs).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	const press = () =>
@@ -108,11 +107,11 @@ describe('switch plugin', () => {
 		const x = test.codeBlock.width - 32;
 		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, x, 32, PALETTE_INDICES.accentSurface, 32, 16);
 		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 8, 32, PALETTE_INDICES.lightBase, 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[| ]', PALETTE_INDICES.darkBase);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(x, 32, textToGlyphIds('[| ]'), PALETTE_INDICES.darkBase);
 		test.memoryViews.int32[test.address] = 1;
 		test.render();
 		expect(test.draw.drawFill).toHaveBeenNthCalledWith(2, x + 16, 32, PALETTE_INDICES.lightBase, 8, 16);
-		expect(test.draw.drawText).toHaveBeenCalledWith(x, 32, '[ |]', PALETTE_INDICES.darkBase);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(x, 32, textToGlyphIds('[ |]'), PALETTE_INDICES.darkBase);
 	});
 
 	it('toggles through the state event pipeline in view mode as well as edit mode', async () => {
@@ -134,10 +133,10 @@ describe('switch plugin', () => {
 		test.memoryViews.int32[test.address] = 42;
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
-		expect(test.draw.drawText).toHaveBeenCalledWith(
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
 			test.codeBlock.width - 32,
 			32,
-			'[__]',
+			textToGlyphIds('[__]'),
 			PALETTE_INDICES.secondaryBase
 		);
 		test.press();
@@ -219,7 +218,12 @@ describe('switch plugin', () => {
 	it('draws and toggles a switch in a trailing comment', async () => {
 		const test = await setup(['module controls', 'int gate 0', 'int extra 0 ; @switch &gate', 'moduleEnd']);
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(test.codeBlock.width - 32, 32, '[| ]', PALETTE_INDICES.darkBase);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
+			test.codeBlock.width - 32,
+			32,
+			textToGlyphIds('[| ]'),
+			PALETTE_INDICES.darkBase
+		);
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, 1, true);
 	});
@@ -231,7 +235,7 @@ describe('switch plugin', () => {
 			test.render();
 			test.press();
 			expect(test.draw.drawFill).not.toHaveBeenCalled();
-			expect(test.draw.drawText).not.toHaveBeenCalled();
+			expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
 			expect(test.write).not.toHaveBeenCalled();
 		}
 	);
@@ -266,10 +270,10 @@ describe('switch plugin', () => {
 		second.press();
 		second.render();
 		expect(second.memoryViews.int32[second.address]).toBe(1);
-		expect(second.draw.drawText).toHaveBeenCalledWith(
+		expect(second.draw.drawGlyphs).toHaveBeenCalledWith(
 			second.codeBlock.width - 32,
 			32,
-			'[ |]',
+			textToGlyphIds('[ |]'),
 			PALETTE_INDICES.darkBase
 		);
 	});

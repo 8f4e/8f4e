@@ -1,12 +1,14 @@
 # Font atlas generation
 
 `@8f4e/sprite-generator` supplies color-independent binary R8 font masks and one solid fill cell.
-It returns only `{ image, grid }`. Glyph IDs are ASCII character codes 0–127; the fill ID is 128.
-Unsupported characters use the question-mark glyph, ID 63. Every font uses the same IDs, so changing a font
-requires no glyph lookup tables or remapping of prepared text cells.
+It returns only `{ image, grid }`. Glyph IDs are Code page 437 slots 0–255; the fill ID is 256.
+`getGlyphSpriteId()` maps Unicode characters to those slots, including CP437's graphical C0 and DEL symbols.
+ASCII characters 32–126 keep their character codes as IDs. Unsupported Unicode characters use the question-mark
+glyph, ID 63; characters missing from a particular font have blank cells. Every font uses the same IDs, so changing
+a font requires no per-font glyph lookup tables or remapping of prepared text cells.
 
 ```ts
-import loadFontAtlas, { FILL_SPRITE_ID, getGlyphSpriteId } from '@8f4e/sprite-generator';
+import loadFontAtlas, { FILL_SPRITE_ID, textToGlyphIds } from '@8f4e/sprite-generator';
 import { resolvePalette, toPaletteBytes, PALETTE_INDICES } from '@8f4e/editor-palette';
 import { Engine } from 'glugglugglug';
 
@@ -14,24 +16,32 @@ const { image, grid } = await loadFontAtlas('ibmvga8x16');
 const engine = new Engine(canvas);
 engine.setSpriteAtlas(image, grid);
 engine.setPalette(toPaletteBytes(resolvePalette()));
+const [letterA] = textToGlyphIds('A');
 engine.renderFrame(() => {
 	engine.drawSprite(40, 20, FILL_SPRITE_ID, PALETTE_INDICES.surfaceBase, 200, 100);
-	engine.drawSprite(20, 20, getGlyphSpriteId(65), PALETTE_INDICES.inkBase);
+	engine.drawSprite(20, 20, letterA, PALETTE_INDICES.inkBase);
 });
 ```
 
+`textToGlyphIds()` is pure and has no cache. Call it only during preparation, outside drawers and render callbacks.
+The owning plugin's existing preparator retains the IDs until its text or layout changes. Glyph IDs are shared by
+all fonts, so font switches do not require remapping prepared text.
+
 `loadFontAtlas()` defaults to `DEFAULT_FONT`. Each font loads lazily and is decoded and expanded once;
 concurrent requests share the same promise. Returned atlases and pixel arrays are cached and shared: treat them
-as read-only. No canvas is needed. The default 8×16 font has a 128×144 atlas, with 129 cells on a 16-column grid.
+as read-only. No canvas is needed. The default 8×16 font has a 128×272 atlas, with 257 cells on a 16-column grid.
 The remaining cells in its last row are transparent.
 
 Font names, cell dimensions, and lazy imports are defined once in `src/fonts/catalog.ts`. `FONT_NAMES` and the
 `Font` type come from that catalog. Font sources are ASCII art in `src/fonts/<font>/ascii.ts`: `#` sets a pixel,
-and spaces leave it empty. The build packs glyph rows into compact Base64 payloads under `src/generated/`.
+and spaces leave it empty. Each source has 256 glyphs in the shared CP437 display order defined in
+`src/characterSet.ts`. The build packs glyph rows into compact Base64 payloads under `src/generated/`.
 These generated modules are ignored by Git. The runtime decoder retains typed arrays for the packed rows.
 
 Import a BDF font with `node tools/import-bdf.mjs <bdf-path> <font-name>`, then register its dimensions and payload
-import in the catalog. Web-ui owns font-specific background dot settings in `src/plugins/background/dot-settings.ts`;
+import in the catalog. The importer maps Unicode BDF encodings to CP437 and accepts BDFs explicitly marked
+`CHARSET_REGISTRY "ibm"` and `CHARSET_ENCODING "437"` in slot order. Missing characters and the NUL slot stay blank.
+Web-ui owns font-specific background dot settings in `src/plugins/background/dot-settings.ts`;
 configure those there. Backgrounds use a procedural pass, and connectors use ordinary glyphs and fill.
 
 Code text preparation and syntax palette selection belong to `@8f4e/editor-plugin-code-rendering`. Web-ui owns the

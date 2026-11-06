@@ -8,8 +8,9 @@ import {
 	walkProjectBlocks,
 } from '@8f4e/editor-state';
 import type { InternalPointerEvent, State } from '@8f4e/editor-state-types';
+import { textToGlyphIds } from '@8f4e/web-ui';
 
-const LABEL = 'Jump to error';
+const LABEL = textToGlyphIds('Jump to error');
 
 function findTarget(state: State) {
 	const errors = Object.values(state.codeErrors).flat();
@@ -104,7 +105,7 @@ export function createJumpToErrorPlugin({ layer }: { layer: number }): EditorPlu
 				const button = buttonBounds(state);
 				draw.startGroup(0, 0);
 				draw.drawFill(button.x, button.y, PALETTE_INDICES.negativeSurface, button.width, button.height);
-				draw.drawText(
+				draw.drawGlyphs(
 					button.x + state.viewport.vGrid,
 					button.y + state.viewport.hGrid,
 					LABEL,

@@ -84,8 +84,8 @@ export async function setup(
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
-		vi.mocked(draw.drawText).mockClear();
-		vi.mocked(draw.drawCharacter).mockClear();
+		vi.mocked(draw.drawGlyphs).mockClear();
+		vi.mocked(draw.drawSprite).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
 	};

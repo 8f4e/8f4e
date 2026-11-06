@@ -1,5 +1,8 @@
 import type { CodeBlockDrawerContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { textToGlyphIds } from '@8f4e/web-ui';
+
+const [VERTICAL, DOT, DASH, BACKTICK, APOSTROPHE] = ['|', '.', '-', '`', "'"].map(textToGlyphIds);
 
 const OUTLINE_STEP_DURATION_MS = 80;
 
@@ -49,15 +52,15 @@ export default function drawSelectionAnimation({ draw, state, codeBlock }: CodeB
 			y = codeBlockHeight - (step - topSteps - rightSteps - bottomSteps) * hGrid;
 		}
 
-		let character = '|';
+		let character = VERTICAL;
 		if (y === topY) {
-			character = x === leftX || x === rightX ? '.' : '-';
+			character = x === leftX || x === rightX ? DOT : DASH;
 		} else if (y === bottomY) {
-			character = '-';
-			if (x === leftX) character = '`';
-			else if (x === rightX) character = "'";
+			character = DASH;
+			if (x === leftX) character = BACKTICK;
+			else if (x === rightX) character = APOSTROPHE;
 		}
 
-		draw.drawText(x, y, character, color);
+		draw.drawGlyphs(x, y, character, color);
 	}
 }
