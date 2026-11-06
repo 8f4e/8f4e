@@ -36,6 +36,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	await vi.waitFor(() => expect(initEditor).toHaveBeenCalledOnce());
 	const compiler = vi.mocked(createCompilerPlugin).mock.results[0].value;
 	const options = vi.mocked(initEditor).mock.calls[0][1];
+	expect(options.defaultFont).toBeUndefined();
 	expect(options.featureFlags).toEqual({ projectCreation: false, moduleDragging: false, contextMenu: false });
 	expect(options.plugins![0]).toBe(compiler.plugin);
 	expect(options.plugins!.map(plugin => plugin.id)).toEqual([
@@ -86,6 +87,7 @@ it('selects touch input on coarse-pointer browsers', async () => {
 	const browserWindow = { navigator: {}, matchMedia: (query: string) => ({ matches: query === '(pointer: coarse)' }) };
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 	await mountLandingEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
+	expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('pixelcode6x12');
 	const plugins = await loadDeferredPlugins();
 	expect(plugins.map(plugin => plugin.id)).toEqual([
 		'lazy-loader',
@@ -99,6 +101,18 @@ it('selects touch input on coarse-pointer browsers', async () => {
 
 it('keeps context-menu requests disabled when the host supplies feature flags', async () => {
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
-	await mountLandingEditor({} as HTMLCanvasElement, { featureFlags: { contextMenu: true, projectCreation: true } });
+	await mountLandingEditor(
+		{ ownerDocument: { defaultView: { matchMedia: () => ({ matches: false }) } } } as unknown as HTMLCanvasElement,
+		{ featureFlags: { contextMenu: true, projectCreation: true } }
+	);
 	expect(vi.mocked(initEditor).mock.calls[0][1].featureFlags).toEqual({ projectCreation: true, contextMenu: false });
+});
+
+it.each([false, true])('honors an explicit default font with coarse pointer %s', async coarse => {
+	const browserWindow = { matchMedia: () => ({ matches: coarse }) };
+	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
+	await mountLandingEditor({ ownerDocument: { defaultView: browserWindow } } as unknown as HTMLCanvasElement, {
+		defaultFont: 'scientifica5x11',
+	});
+	expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('scientifica5x11');
 });

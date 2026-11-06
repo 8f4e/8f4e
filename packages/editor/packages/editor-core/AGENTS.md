@@ -58,7 +58,8 @@
   and cancel superseded or disposed attempts through their owned handles.
 - Font/color schemas, validators, defaults, and subscriptions belong to web-ui. Register them through
   `registerWebUiConfig(store)` before plugins/project loading. Initialize the view with the store and events; do not
-  restore core font-atlas or palette management. State reacts only to `gridSizeChanged` and shared grid dimensions.
+  restore core font-atlas or palette management. Forward `EditorOptions.defaultFont` to web-ui without putting it
+  into project configuration. State reacts only to `gridSizeChanged` and shared grid dimensions.
 - Install plugins in editor-core so one setup receives state, event, menu, directive, layout, loading, and drawer services.
 - Keep generic directive parsing and layout in editor-state, and generic drawing hooks in web-ui.
 - Keep project-tree reconstruction and same-project reconciliation in code-blocks/reconstructProject.ts; the block
@@ -153,7 +154,7 @@
   `editor-plugin-project-url-loader`. Core owns no storage, quota, session callbacks, or URL fetch callbacks.
 - `EditorOptions.initialProject` provides generic initial content. Load it (or an empty project) after sizing the
   viewport, then pass the `init` handlers' completion promise to web-ui for project fetching, parsing, and session
-  restoration alongside the default ibmvga font download. Render only after both are ready, using the project's
+  restoration alongside the per-editor default font download. Render only after both are ready, using the project's
   configured font. Emit `ready` after drawing; optional imports start there.
 
 - Memory writes belong to injected plugin factory dependencies. Keep `getWordFromMemory` for core pointer dereferencing; do not restore a state-level write callback.

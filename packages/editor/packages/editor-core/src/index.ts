@@ -17,6 +17,7 @@ import initView, {
 	type MemoryViews,
 	type RenderStats,
 	registerWebUiConfig,
+	type WebUiOptions,
 } from '@8f4e/web-ui';
 
 import { disposeAll } from './disposeAll';
@@ -95,6 +96,8 @@ export interface Editor {
 export interface EditorOptions {
 	/** Initial project content; defaults to an empty project. */
 	initialProject?: ProjectObjectModel;
+	/** Font used when the project does not select one. Defaults to ibmvga8x16. */
+	defaultFont?: WebUiOptions['defaultFont'];
 	/** Trusted plugins, installed before rendering, initialization, and initial project loading. */
 	plugins?: readonly EditorPlugin[];
 	featureFlags?: Partial<State['featureFlags']>;
@@ -198,6 +201,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 
 		view = await initView(store, events, canvas, memoryViews, {
 			loading: store.loading,
+			defaultFont: options.defaultFont,
 			initialProjectReady,
 			drawers,
 			renderStatsIntervalFrames: options.renderStatsIntervalFrames,

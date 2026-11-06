@@ -17,7 +17,8 @@ export function subscribeToAppearance(
 	events: EventDispatcher,
 	loading: EditorLoadingRegistry,
 	applyFont: (atlas: FontAtlas, font: Font) => void,
-	applyPalette: (palette: ResolvedPalette) => void
+	applyPalette: (palette: ResolvedPalette) => void,
+	defaultFont?: Font
 ): () => void {
 	const state = store.getState();
 	let disposed = false;
@@ -26,7 +27,7 @@ export function subscribeToAppearance(
 	const updateFont = async () => {
 		const currentGeneration = ++generation;
 		fontLoading?.cancel();
-		const font = getConfiguredFont(state.editorConfig);
+		const font = getConfiguredFont(state.editorConfig, defaultFont);
 		const indicator = loading.add({ id: 'font', message: `Loading font ${font}...` });
 		fontLoading = indicator;
 		try {

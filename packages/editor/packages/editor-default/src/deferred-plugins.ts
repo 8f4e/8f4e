@@ -164,7 +164,7 @@ export function createDeferredEditorPlugin(
 			matches: () => !hasCoarsePointer,
 			load: () =>
 				import('@8f4e/editor-plugin-font-preview').then(module =>
-					module.createFontPreviewPlugin({ inputTarget: canvas })
+					module.createFontPreviewPlugin({ inputTarget: canvas, defaultFont: options.defaultFont })
 				),
 		},
 		{

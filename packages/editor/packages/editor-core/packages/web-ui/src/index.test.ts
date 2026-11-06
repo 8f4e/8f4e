@@ -105,16 +105,46 @@ describe('web-ui init', () => {
 			return { draw: vi.fn(), destroy: vi.fn() };
 		});
 		drawers.registerRenderLayer(factory);
-		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas()).mockResolvedValueOnce(createFontAtlas(6, 10));
+		vi.mocked(loadFontAtlas)
+			.mockResolvedValueOnce(createFontAtlas(6, 12))
+			.mockResolvedValueOnce(createFontAtlas(6, 10));
 		const view = await init(createStateManager(state), events, {} as HTMLCanvasElement, createMemoryViews(), {
 			loading,
 			drawers,
+			defaultFont: 'pixelcode6x12',
 		});
-		expect(loadFontAtlas).toHaveBeenNthCalledWith(1, 'ibmvga8x16');
+		expect(loadFontAtlas).toHaveBeenNthCalledWith(1, 'pixelcode6x12');
 		expect(loadFontAtlas).toHaveBeenNthCalledWith(2, 'x11miscfixed6x10');
 		expect(factory).toHaveBeenCalledOnce();
 		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('gridSizeChanged');
 		view.destroy();
+	});
+
+	it('uses an instance default initially and restores it when project configuration is removed', async () => {
+		const { default: init } = await import('./index');
+		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
+		const state = createMockState();
+		const store = createStateManager(state);
+		const atlas = createFontAtlas(6, 12);
+		vi.mocked(loadFontAtlas).mockResolvedValueOnce(atlas);
+		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, createMemoryViews(), {
+			loading,
+			defaultFont: 'pixelcode6x12',
+		});
+		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('pixelcode6x12');
+		expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
+		expect(state.editorConfig).toEqual({});
+		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas(8, 16)).mockResolvedValueOnce(atlas);
+		store.set('editorConfig', { font: 'ibmvga8x16' });
+		await Promise.resolve();
+		expect(state.viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
+		store.set('editorConfig', {});
+		await Promise.resolve();
+		expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
+		expect(state.editorConfig).toEqual({});
+		expect(mocks.background.setFont).toHaveBeenLastCalledWith('pixelcode6x12', atlas.grid);
+		view.destroy();
+		store.dispose();
 	});
 
 	it('does not acquire GPU resources when the initial font fails to load', async () => {

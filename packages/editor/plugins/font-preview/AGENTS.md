@@ -1,7 +1,8 @@
 # Font preview
 
 - Own F18/F19 font cycling, temporary preview state, and cleanup in this plugin. Receive the keyboard target through the factory.
-- Use sprite-generator's catalog and default. Web-ui owns font validation, atlas loading, and grid updates.
+- Use sprite-generator's catalog and accept the renderer's `defaultFont` through the factory, falling back to the
+  sprite-generator default when omitted. Web-ui owns font validation, atlas loading, and grid updates.
 - Keep preview changes out of source, history, project revisions, and serialization. Retain the preview across config
   resolution and clear it with a capture listener before `loadProject` handlers run.
 - Unsubscribe before calling generic `resolveEditorConfig` to restore source config on disposal. Add no core font fields or override registry.

@@ -16,6 +16,7 @@ export type DefaultEditorInstance = Editor & { getCompilerDiagnostics: () => Com
 
 export function createDefaultEditorPlugins(options: {
 	canvas: HTMLCanvasElement;
+	defaultFont?: EditorOptions['defaultFont'];
 	storage: Storage;
 	storageKey: string;
 	initialProjectUrl?: string;
@@ -68,6 +69,8 @@ export interface DefaultEditorMountOptions {
 	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
 	/** Observe updates to a page-owned service worker through the editor's update-dialog plugin. */
 	pwaUpdates?: Pick<ServiceWorkerContainer, 'ready'>;
+	/** Font for projects without a font directive; PixelCode on coarse pointers, IBM VGA otherwise. */
+	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
 	/** Initial source is installed; compilation and asset loading continue independently. */
@@ -90,6 +93,9 @@ export async function mountDefaultEditor(
 		captureWheel,
 		touchNavigation,
 		pwaUpdates,
+		defaultFont = canvas.ownerDocument.defaultView!.matchMedia('(pointer: coarse)').matches
+			? 'pixelcode6x12'
+			: undefined,
 		featureFlags,
 		initialProjectUrl,
 		onInitialProjectLoaded,
@@ -108,6 +114,7 @@ export async function mountDefaultEditor(
 			...(plugins ??
 				createDefaultEditorPlugins({
 					canvas,
+					defaultFont,
 					storage,
 					storageKey: `project_${storageNamespace}`,
 					initialProjectUrl,
@@ -126,6 +133,7 @@ export async function mountDefaultEditor(
 					sharedAudioContext,
 				})),
 		],
+		defaultFont,
 		featureFlags,
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();

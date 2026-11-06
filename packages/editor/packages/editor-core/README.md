@@ -54,7 +54,7 @@ A plugin declares an `id` and a synchronous `setup({ store, events, menus, direc
 Editor-core installs plugins in array order after core state effects, before rendering and initial project loading.
 Core first sizes the viewport and loads `options.initialProject` (or an empty project), then dispatches `init` and
 passes the returned promises to the renderer. Startup plugins fetch, parse, or restore their project while web-ui
-loads the default ibmvga font atlas in parallel. The renderer waits for both and loads any different font selected by
+loads the per-editor default font atlas in parallel. The renderer waits for both and loads any different font selected by
 the project before drawing. Core then emits `ready`, which starts optional plugin imports. The mount promise resolves
 after this sequence. Setup runs separately for each editor instance; allocate instance data inside setup.
 Plugins receive the existing state manager and event dispatcher directly. Store disposal belongs to the editor and
@@ -389,6 +389,11 @@ Example color overrides:
 - `docs/color-paths.md` - Configurable color paths for `; @config color.<path> <value>`.
 
 ## Font
+
+`EditorOptions.defaultFont` selects the font used when project configuration has no font directive. It defaults
+to `ibmvga8x16` in core. Pass any sprite-generator font name, such as `pixelcode6x12`; web-ui uses it during startup
+and after a directive is removed or a project is replaced. This preference does not enter project configuration,
+history, or serialized source. Browser compositions choose their device-specific defaults before initializing core.
 
 Select the editor font with a global editor directive. Web-ui owns supported fonts, defaults, atlas loading, and
 configuration subscriptions. State uses the resulting grid dimensions for layout and hit testing:

@@ -46,6 +46,8 @@ export interface RenderStats {
 
 export interface WebUiOptions {
 	loading: EditorLoadingRegistry;
+	/** Per-editor font used when project configuration does not select one. Defaults to ibmvga8x16. */
+	defaultFont?: Font;
 	/** Startup project preparation may run alongside the initial font download. */
 	initialProjectReady?: Promise<void>;
 	drawers?: EditorDrawerHost;
@@ -67,9 +69,10 @@ export default async function init(
 	destroy: () => void;
 }> {
 	const state = store.getState();
-	const [initialFontAtlas] = await Promise.all([loadFontAtlas(DEFAULT_FONT), options.initialProjectReady]);
-	const font = getConfiguredFont(state.editorConfig);
-	const fontAtlas = font === DEFAULT_FONT ? initialFontAtlas : await loadFontAtlas(font);
+	const defaultFont = options.defaultFont ?? DEFAULT_FONT;
+	const [initialFontAtlas] = await Promise.all([loadFontAtlas(defaultFont), options.initialProjectReady]);
+	const font = getConfiguredFont(state.editorConfig, defaultFont);
+	const fontAtlas = font === defaultFont ? initialFontAtlas : await loadFontAtlas(font);
 	const palette = getConfiguredPalette(state.editorConfig);
 	updateGridSize(state, events, fontAtlas);
 	const engine = new Engine(canvas);
@@ -105,12 +108,19 @@ export default async function init(
 		engine.destroy();
 		throw error;
 	}
-	const unsubscribeAppearance = subscribeToAppearance(store, events, options.loading, installFontAtlas, palette => {
-		const bytes = toPaletteBytes(palette);
-		engine.setPalette(bytes);
-		background.setPalette(bytes);
-		renderLayers.loadPalette(palette);
-	});
+	const unsubscribeAppearance = subscribeToAppearance(
+		store,
+		events,
+		options.loading,
+		installFontAtlas,
+		palette => {
+			const bytes = toPaletteBytes(palette);
+			engine.setPalette(bytes);
+			background.setPalette(bytes);
+			renderLayers.loadPalette(palette);
+		},
+		defaultFont
+	);
 	const layerFrame = { state, memoryViews };
 	engine.hooks.postDraw.push(() => renderLayers.draw(layerFrame));
 

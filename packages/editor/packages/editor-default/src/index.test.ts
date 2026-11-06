@@ -78,6 +78,7 @@ describe('default editor plugins', () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn(), renderFrame } as Editor);
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const editor = await mountDefaultEditor(canvas, { storage: {} as Storage, captureWheel: false });
+		expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBeUndefined();
 		const initialPlugins = vi.mocked(initEditor).mock.calls.at(-1)![1].plugins!;
 		expect(initialPlugins.map(plugin => plugin.id)).toEqual([
 			'compiler',
@@ -275,6 +276,7 @@ it('omits all keyboard plugins and keyboard guidance on coarse-pointer browsers'
 		await mountDefaultEditor({ ownerDocument: { defaultView: window } } as HTMLCanvasElement, {
 			storage: {} as Storage,
 		});
+		expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('pixelcode6x12');
 		const plugins = await loadDeferredPlugins();
 		expect(plugins.map(plugin => plugin.id)).toEqual(expect.arrayContaining(['mouse-input', 'touch-input']));
 		for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing', 'font-preview'])
@@ -282,4 +284,14 @@ it('omits all keyboard plugins and keyboard guidance on coarse-pointer browsers'
 	} finally {
 		vi.unstubAllGlobals();
 	}
+});
+
+it.each([false, true])('honors an explicit default font with coarse pointer %s', async coarse => {
+	const browserWindow = { matchMedia: () => ({ matches: coarse }) };
+	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
+	await mountDefaultEditor({ ownerDocument: { defaultView: browserWindow } } as unknown as HTMLCanvasElement, {
+		defaultFont: 'scientifica5x11',
+		storage: {} as Storage,
+	});
+	expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('scientifica5x11');
 });

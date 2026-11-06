@@ -24,6 +24,11 @@ editor.resumeRendering();
 editor.dispose();
 ```
 
+Pass `defaultFont` (for example, `defaultFont: 'pixelcode6x12'`) to choose the font used by projects without
+a `; @config font` directive. Otherwise, the composition chooses PixelCode 6×12 when `(pointer: coarse)` matches
+at mount time and IBM VGA 8×16 on other devices. A project font directive takes priority; removing it or loading
+a project without one restores the mount's default. This preference is kept outside project source and saved files.
+
 Declare `; @mode edit` or `; @mode view` in a project block to select its mode when loaded. Projects without a valid,
 unique declaration start in view mode. Set `includeKeyboardModeSwitching: false` to omit the keyboard mode-switching
 plugin and its hint. This controls imports and installation, with no corresponding core feature flag. The directive
@@ -79,7 +84,7 @@ session restoration. With a URL, the standard URL-loader plugin supplies the not
 as success; compilation and asset loading continue independently.
 
 Callbacks can run before the mount promise resolves. Mounting waits for URL fetching/parsing, font-atlas loading, and
-the first render. Project fetching/parsing and the default ibmvga font download run in parallel. Custom plugin
+the first render. Project fetching/parsing and the selected default font download run in parallel. Custom plugin
 compositions provide their own asynchronous loading notifications.
 
 The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
@@ -109,6 +114,9 @@ synchronously constructs the startup plugin set with resources for one editor. I
 plugin before project loaders, and supplies it to Open and Save. The session shares the current handle and clears it
 on project replacement. Open receives the canvas's document. Save receives the canvas and owns serialization, writing,
 and Cmd/Ctrl+S. WebAssembly export receives a document and a live compiler-byte getter. File handling stays outside core.
+When initializing core directly with these plugins, pass the same `defaultFont` to this factory and core so the
+font-preview plugin cycles from the rendered default.
+
 Compiler coordination, source loading/session restoration, file-session tracking, block backgrounds, code rendering, and loading indicators are eager.
 `code-block-background` registers before `code-rendering` so block surfaces sit below text and line highlighting.
 On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for connectors, assertion markers,
