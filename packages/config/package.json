@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/config",
-  "version": "2.0.43",
+  "version": "2.0.44",
   "private": true,
   "description": "Shared tooling configuration for 8f4e workspace",
   "type": "module",
