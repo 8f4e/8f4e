@@ -22,7 +22,9 @@
   web-ui owns background dot settings and procedural rendering.
 - Font sources contain only `ascii.ts`; `generate-fonts` produces `src/generated/<font>.ts`. The BDF importer takes only
   a source path and font name. Register font dimensions and the lazy payload import once in `src/fonts/catalog.ts`.
-- Glyph IDs are character codes 0–127; fill is 128. Do not add per-font lookup tables or palette-dependent data.
+- Glyph IDs are CP437 slots 0–255; fill is 256. Keep the shared display character order in `src/characterSet.ts`.
+  Resolve Unicode through one shared mapping, including the graphical C0/DEL symbols; keep unavailable font slots blank.
+  Do not add per-font lookup tables or palette-dependent data.
 - Keep generated payloads compact and lazy. Cached atlas objects and their pixel arrays are shared; consumers must not mutate them.
 - Input and output connectors are composed by web-ui from fills and font glyphs; do not add prerendered connector sprites.
 - Tests build package dependencies before running.

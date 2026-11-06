@@ -1,7 +1,9 @@
 import { PALETTE_INDICES, PALETTE_TOKENS, resolvePalette } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockEventDispatcher } from '@8f4e/editor-state-testing';
+import { CP437_CHARACTERS } from '@8f4e/sprite-generator';
 import createStateManager from '@8f4e/state-manager';
 import init, { createEditorDrawerRegistry, type SpriteCell } from '@8f4e/web-ui';
+import { page as browserPage } from '@vitest/browser/context';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
@@ -9,6 +11,7 @@ import createScreenshotState from './utils/createScreenshotState';
 import resolveFixtureCodeCells from './utils/resolveFixtureCodeCells';
 
 const FONTS_PER_PAGE = 12;
+const SAMPLE_HEIGHT = 320;
 const pages = Array.from({ length: Math.ceil(PALETTE_TOKENS.length / FONTS_PER_PAGE) }, (_, index) => ({
 	page: index + 1,
 	tokens: PALETTE_TOKENS.slice(index * FONTS_PER_PAGE, (index + 1) * FONTS_PER_PAGE),
@@ -16,7 +19,8 @@ const pages = Array.from({ length: Math.ceil(PALETTE_TOKENS.length / FONTS_PER_P
 
 test.each(pages)('font color rendering page $page', async ({ page, tokens }) => {
 	const canvas = createCanvas();
-	canvas.height = Math.ceil(tokens.length / 4) * 192;
+	canvas.height = Math.ceil(tokens.length / 4) * SAMPLE_HEIGHT;
+	await browserPage.viewport(1024, Math.max(768, canvas.height));
 	const state = createScreenshotState();
 	state.editorConfig.font = 'ibmvga8x16';
 	const colors = {
@@ -56,16 +60,14 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 		drawers,
 	});
 	try {
-		const characterLines = Array.from({ length: 8 }, (_, row) =>
-			Array.from({ length: 16 }, (_, column) => String.fromCharCode(row * 16 + column)).join('')
-		);
+		const characterLines = Array.from({ length: 16 }, (_, row) => CP437_CHARACTERS.slice(row * 16, (row + 1) * 16));
 		for (const [index, token] of tokens.entries()) {
 			const fontName = `font${token[0].toUpperCase()}${token.slice(1)}` as `font${Capitalize<typeof token>}`;
 			const codeLines = ['', fontName, ...characterLines, ''];
 			const block = createMockCodeBlock({
 				creationIndex: index,
 				x: (index % 4) * 256,
-				y: Math.floor(index / 4) * 192,
+				y: Math.floor(index / 4) * SAMPLE_HEIGHT,
 				width: 256,
 				height: codeLines.length * 16,
 			});
@@ -76,5 +78,6 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 		await expect(canvas).toMatchScreenshot(`font-colors-${page}`);
 	} finally {
 		renderer.destroy();
+		await browserPage.viewport(1024, 768);
 	}
 });

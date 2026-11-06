@@ -110,8 +110,9 @@
   the complete line renderer. Core has no widget presentation fields. Web-ui provides
   generic render-layer registration, palette updates, memory release, and disposal.
   Glugglugglug owns sprite rendering and generic render hooks. The sprite generator supplies only a uniform grid of
-  glyph/fill masks; background patterns do not occupy the sprite atlas. Glyph IDs are ASCII codes 0–127 and fill is 128;
-  editor state carries no sprite lookup tables. The renderer derives source
+  glyph/fill masks; background patterns do not occupy the sprite atlas. Glyph IDs are CP437 slots 0–255 and fill is 256;
+  one shared Unicode-to-CP437 mapping resolves text; missing font glyphs remain blank.
+  Editor state carries no sprite lookup tables. The renderer derives source
   coordinates from grid dimensions without a rectangle lookup texture.
 - Packages (Nx workspaces): `packages/*` plus nested libs (e.g., `editor`, `compiler`,
   `editor/packages/editor-core/packages/web-ui/packages/glugglugglug`). Each builds to its own `dist/` directory

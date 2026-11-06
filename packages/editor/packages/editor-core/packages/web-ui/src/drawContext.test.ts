@@ -12,20 +12,20 @@ describe('DrawContext', () => {
 		draw.drawText(3, 4, 'AB', 5);
 		draw.endGroup();
 		expect(target.drawSprite.mock.calls).toEqual([
-			[11, 22, 128, 0, 30, 40],
+			[11, 22, 256, 0, 30, 40],
 			[13, 24, 65, 5, undefined, undefined],
 			[21, 24, 66, 5, undefined, undefined],
 		]);
 	});
-	it('skips spaces, uses fallback glyphs, and updates font metrics', () => {
+	it('skips spaces, resolves Unicode to CP437, and updates font metrics', () => {
 		const target = { drawSprite: vi.fn() };
 		const draw = new DrawContext(target, 8);
 		draw.setCharacterWidth(6);
 		draw.drawText(0, 0, 'A éΩ', 0);
 		expect(target.drawSprite.mock.calls).toEqual([
 			[0, 0, 65, 0, undefined, undefined],
-			[12, 0, 63, 0, undefined, undefined],
-			[18, 0, 63, 0, undefined, undefined],
+			[12, 0, 130, 0, undefined, undefined],
+			[18, 0, 234, 0, undefined, undefined],
 		]);
 	});
 	it('uses packed shape/color cells and the fixed fill ID', () => {
@@ -37,7 +37,7 @@ describe('DrawContext', () => {
 		expect(target.drawSprite.mock.calls).toEqual([
 			[2, 3, 0, 0, undefined, undefined],
 			[18, 3, 2, 4, undefined, undefined],
-			[0, 0, 128, 5, 10, 20],
+			[0, 0, 256, 5, 10, 20],
 		]);
 	});
 });

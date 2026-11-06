@@ -3,7 +3,7 @@ import { FONT_NAMES, FONTS } from '../src/fonts/catalog.ts';
 import decodeFontBase64 from '../src/fonts/font-decoder.ts';
 
 describe('packed font row decoding', () => {
-	it.each(FONT_NAMES)('preserves all 128 ordinary characters for %s', async font => {
+	it.each(FONT_NAMES)('preserves all 256 CP437 characters for %s', async font => {
 		const [{ default: glyphs }, { default: base64 }] = await Promise.all([
 			import(`../src/fonts/${font}/ascii.ts`),
 			FONTS[font].load(),
@@ -16,7 +16,7 @@ describe('packed font row decoding', () => {
 				Number.parseInt(row.slice(0, width).padEnd(width, ' ').replaceAll(' ', '0').replaceAll('#', '1'), 2)
 			)
 		);
-		expect(decoded).toHaveLength(128 * height);
+		expect(decoded).toHaveLength(256 * height);
 		expect(Array.from(decoded)).toEqual(expected);
 	});
 });

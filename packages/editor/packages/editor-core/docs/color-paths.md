@@ -104,7 +104,7 @@ Connector icons are composed at runtime: a `surfaceOverlay` fill sits behind inp
 brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`, `primaryDark1`, `primaryBase`,
 `warningBase`, or `negativeBase` from the calibrated value. There are no dedicated input or feedback-scale atlas entries.
 
-The sprite atlas contains color-independent R8 binary visibility masks: 128 glyphs and one fully covered fill cell,
+The sprite atlas contains color-independent R8 binary visibility masks: 256 CP437 glyphs and one fully covered fill cell,
 all on the same 16-column grid. Sprite IDs are their row-major cell positions; the vertex shader derives source
 coordinates from these IDs and shared cell dimensions without a rectangle lookup texture. All palette entries can color
 text, including `Alpha30/60/90` variants. Web-ui renders the

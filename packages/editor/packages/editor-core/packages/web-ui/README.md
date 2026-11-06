@@ -4,7 +4,7 @@ This package provides the browser renderer for the editor. It owns font and colo
 and palette updates. Drawing reads editor state and memory views; font changes update the shared layout grid.
 It is designed to be replaceable by renderers for other platforms.
 
-Rendering is backed by `glugglugglug`. Glyph IDs are ASCII character codes 0–127 and fill is 128, so
+Rendering is backed by `glugglugglug`. Glyph IDs are CP437 slots 0–255 and fill is 256, so
 per-frame drawers submit positions, sizes, shared shape IDs, and numeric palette indices. Plugins can register canvas-wide GPU passes above the sprites. A procedural dotted background runs before the sprite pass.
 
 The default framebuffer has no depth buffer; passes use explicit drawing order. Custom raw-context hooks requiring
@@ -122,7 +122,7 @@ cancellation callbacks; web-ui owns no frame loop or pause/resume controls.
 
 The renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to font and color changes.
 Theme-only changes retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette.
-`DrawContext.drawFill()` uses the shared fill mask, `drawText()` uses fixed ASCII glyph IDs,
+`DrawContext.drawFill()` uses the shared fill mask, `drawText()` resolves Unicode to shared CP437 glyph IDs,
 and both accept an explicit palette index. The renderer prepares up to 256 palette colors as premultiplied float32
 values in a 4 KiB uniform buffer.
 Web-ui installs font grid dimensions into `state.viewport.hGrid` and `state.viewport.vGrid` and dispatches
