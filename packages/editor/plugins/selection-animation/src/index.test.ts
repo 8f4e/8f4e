@@ -24,52 +24,52 @@ function setup() {
 		drawers,
 	});
 	cleanups.push(store.dispose, dispose);
-	const drawText = vi.fn();
-	const draw = { drawText } as unknown as DrawContext;
+	const drawGlyphs = vi.fn();
+	const draw = { drawGlyphs } as unknown as DrawContext;
 	const state = store.getState();
 	const block = createMockCodeBlock({ width: 96, height: 64 });
 	const render = (codeBlock = block) =>
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
-	return { state, block, drawText, render, dispose };
+	return { state, block, drawGlyphs, render, dispose };
 }
 
 describe('selection animation plugin', () => {
 	it.each(['view', 'edit'] as const)('follows selection in %s mode and unregisters on disposal', mode => {
-		const { state, block, drawText, render, dispose } = setup();
+		const { state, block, drawGlyphs, render, dispose } = setup();
 		state.editorMode = mode;
 		const other = createMockCodeBlock({ creationIndex: 1 });
 		render();
-		expect(drawText).not.toHaveBeenCalled();
+		expect(drawGlyphs).not.toHaveBeenCalled();
 
 		state.codeBlockRendering.selectedCodeBlock = block;
 		render();
 		render(other);
-		expect(drawText).toHaveBeenCalledTimes(4);
+		expect(drawGlyphs).toHaveBeenCalledTimes(4);
 
-		drawText.mockClear();
+		drawGlyphs.mockClear();
 		state.codeBlockRendering.selectedCodeBlock = other;
 		render();
-		expect(drawText).not.toHaveBeenCalled();
+		expect(drawGlyphs).not.toHaveBeenCalled();
 		render(other);
-		expect(drawText).toHaveBeenCalledTimes(4);
+		expect(drawGlyphs).toHaveBeenCalledTimes(4);
 
-		drawText.mockClear();
+		drawGlyphs.mockClear();
 		state.codeBlockRendering.selectedCodeBlock = undefined;
 		render();
 		render(other);
-		expect(drawText).not.toHaveBeenCalled();
+		expect(drawGlyphs).not.toHaveBeenCalled();
 
 		state.codeBlockRendering.selectedCodeBlock = block;
 		dispose();
 		render();
-		expect(drawText).not.toHaveBeenCalled();
+		expect(drawGlyphs).not.toHaveBeenCalled();
 	});
 
 	it.each([
 		{ width: 96, height: 64, vGrid: 8, hGrid: 16, loopDurationMs: 2160 },
 		{ width: 48, height: 24, vGrid: 6, hGrid: 12, loopDurationMs: 1520 },
 	])('loops around a $width by $height block with a $vGrid by $hGrid font grid', options => {
-		const { state, block, drawText, render } = setup();
+		const { state, block, drawGlyphs, render } = setup();
 		block.width = options.width;
 		block.height = options.height;
 		state.viewport.vGrid = options.vGrid;
@@ -77,17 +77,17 @@ describe('selection animation plugin', () => {
 		state.codeBlockRendering.selectedCodeBlock = block;
 		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 		render();
-		const initial = [...drawText.mock.calls];
+		const initial = [...drawGlyphs.mock.calls];
 		expect(initial).toHaveLength(4);
 
-		drawText.mockClear();
+		drawGlyphs.mockClear();
 		now.mockReturnValue(80);
 		render();
-		expect(drawText.mock.calls).not.toEqual(initial);
+		expect(drawGlyphs.mock.calls).not.toEqual(initial);
 
-		drawText.mockClear();
+		drawGlyphs.mockClear();
 		now.mockReturnValue(options.loopDurationMs);
 		render();
-		expect(drawText.mock.calls).toEqual(initial);
+		expect(drawGlyphs.mock.calls).toEqual(initial);
 	});
 });

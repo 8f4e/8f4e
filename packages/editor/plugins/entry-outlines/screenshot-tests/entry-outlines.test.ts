@@ -1,6 +1,7 @@
 import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT, stopViewportAnimation } from '@8f4e/editor-state';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import { entryOutlinesPlugin } from '../src/index';
 
@@ -34,11 +35,24 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 			{
 				id: 'fixture-blocks',
 				setup: context => {
-					return context.drawers.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
+					const glyphsByBlock = new WeakMap<object, GlyphIds>();
+					const removePreparation = context.layout.subscribe(({ codeBlock }) => {
+						glyphsByBlock.set(codeBlock, textToGlyphIds(codeBlock.name));
+					});
+					const removeDrawer = context.drawers.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
 						if (!codeBlock.entry) return;
 						draw.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
-						draw.drawText(state.viewport.vGrid, state.viewport.hGrid, codeBlock.name, PALETTE_INDICES.inkBase);
+						draw.drawGlyphs(
+							state.viewport.vGrid,
+							state.viewport.hGrid,
+							glyphsByBlock.get(codeBlock)!,
+							PALETTE_INDICES.inkBase
+						);
 					});
+					return () => {
+						removePreparation();
+						removeDrawer();
+					};
 				},
 			},
 		],

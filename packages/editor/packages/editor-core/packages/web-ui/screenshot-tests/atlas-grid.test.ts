@@ -1,4 +1,4 @@
-import loadFontAtlas, { FONT_NAMES, getGlyphSpriteId } from '@8f4e/sprite-generator';
+import loadFontAtlas, { FILL_SPRITE_ID, FONT_NAMES, getGlyphSpriteId } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 
@@ -33,10 +33,10 @@ for (const font of FONT_NAMES) {
 				]);
 			}
 			commands.push([-3, 2, 87, 1, grid.cellWidth * 2, grid.cellHeight * 2]);
-			commands.push([image.width - 2, 1, 128, 1, 13, 7]);
-			commands.push([3, image.height - 2, 128, 0, 9, 11]);
+			commands.push([image.width - 2, 1, FILL_SPRITE_ID, 1, 13, 7]);
+			commands.push([3, image.height - 2, FILL_SPRITE_ID, 0, 9, 11]);
 			commands.push([2, 3, getGlyphSpriteId(1000), 1, grid.cellWidth, grid.cellHeight]);
-			commands.push([0, 0, 128, 2, canvas.width, canvas.height]);
+			commands.push([0, 0, FILL_SPRITE_ID, 2, canvas.width, canvas.height]);
 			const expected = (destinationAlpha: number) => {
 				const pixels = new Uint8Array(canvas.width * canvas.height * 4);
 				for (let i = 0; i < pixels.length; i += 4) pixels.set([0, 0, 0, destinationAlpha], i);

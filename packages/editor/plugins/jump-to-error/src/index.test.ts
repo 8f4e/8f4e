@@ -3,7 +3,7 @@ import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createJumpToErrorPlugin } from './index';
 
@@ -40,8 +40,8 @@ function setup() {
 	});
 	cleanups.push(store.dispose, dispose);
 	const drawFill = vi.fn();
-	const drawText = vi.fn();
-	const draw = { drawFill, drawText, startGroup: vi.fn(), endGroup: vi.fn() } as unknown as DrawContext;
+	const drawGlyphs = vi.fn();
+	const draw = { drawFill, drawGlyphs, startGroup: vi.fn(), endGroup: vi.fn() } as unknown as DrawContext;
 	const render = () => drawers.drawCanvasOverlays({ draw, state, memoryViews: {} as MemoryViews });
 	const press = (overrides: Partial<InternalPointerEvent> = {}) => {
 		const event = {
@@ -56,25 +56,25 @@ function setup() {
 	};
 	const addError = () =>
 		store.set('codeErrors.custom', [{ codeBlockId: block.creationIndex, lineNumber: 2, message: 'Error message' }]);
-	return { store, state, block, events, render, drawFill, drawText, press, addError, dispose };
+	return { store, state, block, events, render, drawFill, drawGlyphs, press, addError, dispose };
 }
 
 it('shows a viewport-fixed button only while a contributed source error exists', () => {
 	const test = setup();
 	test.render();
-	expect(test.drawText).not.toHaveBeenCalled();
+	expect(test.drawGlyphs).not.toHaveBeenCalled();
 	test.addError();
 	test.render();
-	expect(test.drawText.mock.calls.at(-1)?.[2]).toBe('Jump to error');
+	expect(test.drawGlyphs.mock.calls.at(-1)?.[2]).toEqual(textToGlyphIds('Jump to error'));
 	const first = test.drawFill.mock.calls.at(-1);
 	test.state.viewport.x = 1000;
 	test.state.viewport.y = 2000;
 	test.render();
 	expect(test.drawFill.mock.calls.at(-1)).toEqual(first);
 	test.store.set('codeErrors.custom', []);
-	test.drawText.mockClear();
+	test.drawGlyphs.mockClear();
 	test.render();
-	expect(test.drawText).not.toHaveBeenCalled();
+	expect(test.drawGlyphs).not.toHaveBeenCalled();
 });
 
 it('centers the error source line with reserved rows above it and preserves source revisions', () => {
@@ -105,7 +105,7 @@ it('ignores outside presses, non-primary presses, and stale errors', () => {
 	test.store.set('codeErrors.custom', [{ codeBlockId: 999, lineNumber: 2, message: 'Stale' }]);
 	expect(test.press().stopPropagation).toBe(false);
 	test.render();
-	expect(test.drawText).not.toHaveBeenCalled();
+	expect(test.drawGlyphs).not.toHaveBeenCalled();
 });
 
 it('opens a nested project for document errors and returns to root for root-scope errors', () => {
@@ -148,7 +148,7 @@ it('releases its drawer, subscriptions, and input handlers on disposal', () => {
 	test.addError();
 	test.dispose();
 	test.render();
-	expect(test.drawText).not.toHaveBeenCalled();
+	expect(test.drawGlyphs).not.toHaveBeenCalled();
 	expect(test.press().stopPropagation).toBe(false);
 	expect(test.state.codeErrors.custom).toHaveLength(1);
 });

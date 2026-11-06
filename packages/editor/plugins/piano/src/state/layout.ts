@@ -1,12 +1,14 @@
 import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import type { PianoDirectiveData } from '../helpers/data';
 import { createPianoDirectiveData } from '../helpers/data';
 import type { PianoKeyboard, PianoKeyboardKey } from '../types';
 
 const BLACK_KEYS = new Set([1, 3, 6, 8, 10]);
 const NOTE_LABELS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const NOTE_GLYPHS = NOTE_LABELS.map(textToGlyphIds);
 const KEY_COUNT = 24;
 
 function getNoteIndex(noteNumber: number): number {
@@ -36,7 +38,7 @@ function createPianoKeyboardKeys(
 		return {
 			offset,
 			x: offset * keyWidth,
-			label: NOTE_LABELS[note],
+			glyphs: NOTE_GLYPHS[note],
 			kind: isBlack ? 'black' : 'white',
 			pressedOverlayRows: isBlack ? blackKeyPressedOverlayRows : whiteKeyPressedOverlayRows,
 		};

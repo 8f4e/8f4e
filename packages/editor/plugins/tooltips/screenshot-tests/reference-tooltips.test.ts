@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import initView, { createEditorDrawerRegistry, type GlyphIds, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, test, vi } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
 import { tooltipsPlugin } from '../src/index';
@@ -34,6 +34,13 @@ entryEnd`);
 	const events = createEvents();
 	const store = initState(events, { callbacks: {} });
 	const drawers = createEditorDrawerRegistry();
+	const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
+	const removePreparation = store.layout.subscribe(({ codeBlock }) => {
+		glyphsByBlock.set(
+			codeBlock,
+			codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
+		);
+	});
 	const disposeFixture = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 		codeBlock.code.forEach((line, row) => {
 			const selected = state.codeBlockRendering.selectedCodeBlock === codeBlock && row === codeBlock.cursor.row;
@@ -46,10 +53,10 @@ entryEnd`);
 					state.viewport.hGrid
 				);
 			}
-			draw.drawText(
+			draw.drawGlyphs(
 				state.viewport.vGrid,
 				row * state.viewport.hGrid,
-				line,
+				glyphsByBlock.get(codeBlock)![row],
 				selected ? PALETTE_INDICES.selectionInk : PALETTE_INDICES.inkBase
 			);
 		});
@@ -99,6 +106,7 @@ entryEnd`);
 	} finally {
 		renderer.destroy();
 		disposePlugin();
+		removePreparation();
 		disposeFixture();
 		store.dispose();
 		now.mockRestore();

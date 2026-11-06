@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, CodeError } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { errorMessagesPlugin } from './index';
 
@@ -39,11 +39,11 @@ function setup(errors: Record<string, CodeError[]> = {}) {
 	});
 	cleanups.push(store.dispose, dispose);
 	const drawFill = vi.fn();
-	const drawText = vi.fn();
-	const draw = { drawFill, drawText } as unknown as DrawContext;
+	const drawGlyphs = vi.fn();
+	const draw = { drawFill, drawGlyphs } as unknown as DrawContext;
 	const render = (codeBlock: CodeBlockGraphicData = block) =>
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
-	return { state, store, events, block, render, drawFill, drawText, dispose };
+	return { state, store, events, block, render, drawFill, drawGlyphs, dispose };
 }
 
 describe('error messages plugin', () => {
@@ -58,12 +58,12 @@ describe('error messages plugin', () => {
 		);
 		test.render();
 		expect(test.block.gaps.size).toBe(0);
-		expect(test.drawText).not.toHaveBeenCalled();
+		expect(test.drawGlyphs).not.toHaveBeenCalled();
 		expect(test.state.codeErrors.custom).toBe(errors);
 		applyCodeBlockSourceEdits(test.store, [{ codeBlock: test.block, code: original }], { affectsCompilation: false });
 		test.render();
 		expect(test.block.gaps.get(2)?.size).toBe(2);
-		expect(test.drawText).toHaveBeenLastCalledWith(0, 64, ' Hidden error', expect.any(Number));
+		expect(test.drawGlyphs).toHaveBeenLastCalledWith(0, 64, textToGlyphIds(' Hidden error'), expect.any(Number));
 	});
 
 	it('renders existing errors from independent contributors and stacks messages after other reserved rows', () => {
@@ -80,11 +80,11 @@ describe('error messages plugin', () => {
 			[96, 32],
 			[128, 32],
 		]);
-		expect(test.drawText.mock.calls.map(([, , text]) => text)).toEqual([
-			' Error:',
-			' Compiler error',
-			' Error:',
-			' Custom error',
+		expect(test.drawGlyphs.mock.calls.map(([, , text]) => text)).toEqual([
+			textToGlyphIds(' Error:'),
+			textToGlyphIds(' Compiler error'),
+			textToGlyphIds(' Error:'),
+			textToGlyphIds(' Custom error'),
 		]);
 		expect(test.state.codeErrors.compiler).toBe(compiler);
 		expect(test.state.codeErrors.custom).toBe(custom);
@@ -110,19 +110,19 @@ describe('error messages plugin', () => {
 		const test = setup({ custom: [{ codeBlockId: 7, lineNumber: 2, message: 'First error' }] });
 		test.store.set('codeErrors.custom', [{ codeBlockId: 7, lineNumber: 2, message: 'Changed error' }]);
 		test.render();
-		expect(test.drawText).toHaveBeenLastCalledWith(0, 64, ' Changed error', expect.any(Number));
+		expect(test.drawGlyphs).toHaveBeenLastCalledWith(0, 64, textToGlyphIds(' Changed error'), expect.any(Number));
 		test.store.set('codeErrors.custom', []);
 		expect(test.block.gaps.size).toBe(0);
-		test.drawText.mockClear();
+		test.drawGlyphs.mockClear();
 		test.render();
-		expect(test.drawText).not.toHaveBeenCalled();
+		expect(test.drawGlyphs).not.toHaveBeenCalled();
 		test.store.set('codeErrors.custom', [{ codeBlockId: 7, lineNumber: 2, message: 'Retained error' }]);
 		test.dispose();
 		expect(test.state.codeErrors.custom).toHaveLength(1);
 		expect(test.block.gaps.size).toBe(0);
 		test.store.set('codeErrors.custom', [{ codeBlockId: 7, lineNumber: 2, message: 'After disposal' }]);
 		test.render();
-		expect(test.drawText).not.toHaveBeenCalled();
+		expect(test.drawGlyphs).not.toHaveBeenCalled();
 		expect(test.block.gaps.size).toBe(0);
 	});
 
@@ -152,13 +152,28 @@ entryEnd`),
 			{ codeBlockId: child.creationIndex, lineNumber: 1, message: 'Child error' },
 		]);
 		test.render(scope);
-		expect(test.drawText).toHaveBeenLastCalledWith(0, expect.any(Number), ' Root error', expect.any(Number));
-		test.drawText.mockClear();
+		expect(test.drawGlyphs).toHaveBeenLastCalledWith(
+			0,
+			expect.any(Number),
+			textToGlyphIds(' Root error'),
+			expect.any(Number)
+		);
+		test.drawGlyphs.mockClear();
 		test.render(group);
-		expect(test.drawText).toHaveBeenLastCalledWith(0, expect.any(Number), ' Group error', expect.any(Number));
+		expect(test.drawGlyphs).toHaveBeenLastCalledWith(
+			0,
+			expect.any(Number),
+			textToGlyphIds(' Group error'),
+			expect.any(Number)
+		);
 		test.events.dispatch('openProjectGroup', { codeBlock: group });
-		test.drawText.mockClear();
+		test.drawGlyphs.mockClear();
 		test.render(child);
-		expect(test.drawText).toHaveBeenLastCalledWith(0, expect.any(Number), ' Child error', expect.any(Number));
+		expect(test.drawGlyphs).toHaveBeenLastCalledWith(
+			0,
+			expect.any(Number),
+			textToGlyphIds(' Child error'),
+			expect.any(Number)
+		);
 	});
 });

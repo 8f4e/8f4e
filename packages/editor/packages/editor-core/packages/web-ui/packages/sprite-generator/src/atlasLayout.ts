@@ -1,5 +1,6 @@
+import { GLYPH_COUNT } from './characterSet.ts';
+
 export const FONT_COLUMNS = 16;
-export const GLYPH_COUNT = 128;
 
 /** Shape-only layout; colors never affect atlas dimensions or source rectangles. */
 export function createAtlasLayout(characterWidth: number, characterHeight: number) {

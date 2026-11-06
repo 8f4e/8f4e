@@ -60,8 +60,16 @@ describe('deriveCodeBlockCodeCells', () => {
 		expect(cells[2]).toEqual([]);
 	});
 
+	it('resolves extended Unicode source text to CP437 sprites', () => {
+		const cells = deriveCodeBlockCodeCells(createSource(['éΩ┌'], { blockType: 'unknown' }));
+		expect(cells[0]?.slice(-3)).toEqual([
+			cell(130, PALETTE_INDICES.inkBase),
+			cell(234, PALETTE_INDICES.inkBase),
+			cell(218, PALETTE_INDICES.inkBase),
+		]);
+	});
 	it('uses the validated font fallback for unsupported characters', () => {
-		const cells = deriveCodeBlockCodeCells(createSource(['é'], { blockType: 'unknown' }));
+		const cells = deriveCodeBlockCodeCells(createSource(['漢'], { blockType: 'unknown' }));
 
 		expect(cells[0]?.at(-1)).toEqual(cell(63, PALETTE_INDICES.inkBase));
 	});

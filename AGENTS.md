@@ -110,8 +110,12 @@
   the complete line renderer. Core has no widget presentation fields. Web-ui provides
   generic render-layer registration, palette updates, memory release, and disposal.
   Glugglugglug owns sprite rendering and generic render hooks. The sprite generator supplies only a uniform grid of
-  glyph/fill masks; background patterns do not occupy the sprite atlas. Glyph IDs are ASCII codes 0–127 and fill is 128;
-  editor state carries no sprite lookup tables. The renderer derives source
+  glyph/fill masks; background patterns do not occupy the sprite atlas. Glyph IDs are CP437 slots 0–255 and fill is 256;
+  one shared Unicode-to-CP437 mapping resolves text; missing font glyphs remain blank.
+  Prepare static text with the pure `textToGlyphIds` helper outside drawers and render callbacks, keeping results in
+  the owning plugin's existing preparation data. Live numeric readouts use ASCII character codes directly as glyph IDs,
+  trusting the caller's numeric-text contract without validation or Unicode mapping.
+  Editor state carries no sprite lookup tables. The renderer derives source
   coordinates from grid dimensions without a rectangle lookup texture.
 - Packages (Nx workspaces): `packages/*` plus nested libs (e.g., `editor`, `compiler`,
   `editor/packages/editor-core/packages/web-ui/packages/glugglugglug`). Each builds to its own `dist/` directory
@@ -181,6 +185,8 @@
 - Language: TypeScript (ES modules). Target: modern browsers/node.
 - Formatting/linting: use Biome as the fixer (`npx biome check --write <files>`). Biome owns the repo JS/TS formatting rules (tabs, single quotes, semicolons, trailing commas, width 120, and import organization); do not run standalone formatters.
 - Imports: Prefer workspace aliases `@8f4e/<package>` for inter-package references.
+- Repository-owned APIs are trusted contracts. Do not add defensive runtime validation for caller misuse;
+  callers satisfy the documented inputs. Express those contracts with types and JSDoc.
 - Files/dirs: kebab-case for packages, `.ts` for sources; keep `src/` clean and cohesive by domain.
 
 ## Build Inputs and Test Dependencies
