@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/runtime-test-runner",
-  "version": "0.2.39",
+  "version": "0.2.40",
   "private": true,
   "description": "8f4e runtime that executes tests once after compilation",
   "type": "module",
