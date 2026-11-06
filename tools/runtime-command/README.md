@@ -11,7 +11,7 @@ Then, from the repository root:
 node tools/runtime-command/src/cli.mjs instrument.wasm memory.json \
   --runtime ./8f4e-runtime \
   --left synth/output:left --right synth/output:right -- \
-  --audio-device plughw:CARD=pisound --midi-device hw:CARD=pisound --sample-rate 48000
+  --connect-left system:playback_1 --connect-right system:playback_2 --sample-rate 48000
 ```
 
 The first path is the WASM path to use on the target machine; the second is the memory-map file on the development
@@ -22,7 +22,8 @@ to `audioout:buffer`, and the right symbol defaults to the left. Qualified names
 The printed command contains `--left <byte-address> --right <byte-address> --buffer-size <sample-count>` followed
 by the runtime options after `--`. Every argument is quoted for a POSIX shell, including filenames with spaces,
 single quotes and shell metacharacters. Sample rate remains an explicit runtime option; the memory map does not
-contain the instrument's compiled sample rate. Regenerate the command when rebuilding changes the memory layout.
+contain the instrument's compiled sample rate. JACK must already be running at that rate; see the
+[Linux runtime documentation](../../packages/runtime-linux/README.md) for MIDI ports and Patchbox setup. Regenerate the command when rebuilding changes the memory layout.
 
 Run the tests and Biome checks with:
 

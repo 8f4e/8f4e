@@ -1,18 +1,22 @@
-#include "midi.hpp"
 #include "program.hpp"
 
-#include <alsa/asoundlib.h>
-#include <array>
+#include <jack/jack.h>
+#include <jack/midiport.h>
+#include <algorithm>
+#include <atomic>
 #include <cerrno>
 #include <charconv>
+#include <chrono>
 #include <cmath>
 #include <csignal>
 #include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace {
@@ -24,8 +28,11 @@ struct Options {
   std::optional<unsigned int> left;
   std::optional<unsigned int> right;
   unsigned int buffer_size = 128;
-  std::string audio_device = "default";
-  std::string midi_device;
+  std::string client_name = "8f4e";
+  std::string connect_left;
+  std::string connect_right;
+  std::string midi_source;
+  bool midi = true;
   std::string entry = "buffer";
   std::string callback = "onMidiEvent";
   unsigned int sample_rate = 48000;
@@ -35,16 +42,19 @@ struct Options {
 
 const char *usage =
     "Usage: 8f4e-runtime <program.wasm> --left <byte-address> [options]\n"
-    "  --audio-device <name>  ALSA PCM output (default: default)\n"
-    "  --midi-device <name>   ALSA raw MIDI input (omitted: no MIDI)\n"
     "  --left <byte-address>  Float32 left output buffer (required, decimal bytes)\n"
     "  --right <byte-address> Right output buffer (default: same as left)\n"
-    "  --buffer-size <samples> Samples generated per block (default: 128)\n"
-    "  --sample-rate <hz>     Must match the compiled project (default: 48000)\n"
+    "  --buffer-size <samples> Samples generated per WASM block (default: 128)\n"
+    "  --sample-rate <hz>     Required JACK/project sample rate (default: 48000)\n"
+    "  --client-name <name>   JACK client name (default: 8f4e)\n"
+    "  --connect-left <port>  Connect left audio output to this JACK port\n"
+    "  --connect-right <port> Connect right audio output to this JACK port\n"
+    "  --midi-source <port>   Connect this JACK MIDI output to midi_in\n"
+    "  --no-midi             Disable MIDI input and its WASM callback\n"
     "  --gain <number>        Output gain before clipping (default: 0.25)\n"
     "  --entry <export>       Audio block function (default: buffer)\n"
     "  --midi-callback <export> MIDI function (default: onMidiEvent)\n"
-    "  --blocks <count>       Stop after this many blocks (default: run continuously)\n";
+    "  --blocks <count>       Stop after this many WASM blocks (default: continuous)\n";
 
 unsigned int integer(const std::string &value, bool allow_zero = false) {
   unsigned int result = 0;
@@ -59,12 +69,18 @@ Options options(int argc, char **argv) {
   if (argc < 2) throw std::runtime_error(usage);
   Options result;
   result.wasm = argv[1];
-  for (int i = 2; i < argc; i += 2) {
+  for (int i = 2; i < argc; ++i) {
     const std::string flag = argv[i];
+    if (flag == "--no-midi") {
+      result.midi = false;
+      continue;
+    }
     if (i + 1 == argc) throw std::runtime_error("Missing value for " + flag);
-    const std::string value = argv[i + 1];
-    if (flag == "--audio-device") result.audio_device = value;
-    else if (flag == "--midi-device") result.midi_device = value;
+    const std::string value = argv[++i];
+    if (flag == "--client-name") result.client_name = value;
+    else if (flag == "--connect-left") result.connect_left = value;
+    else if (flag == "--connect-right") result.connect_right = value;
+    else if (flag == "--midi-source") result.midi_source = value;
     else if (flag == "--left") result.left = integer(value, true);
     else if (flag == "--right") result.right = integer(value, true);
     else if (flag == "--buffer-size") result.buffer_size = integer(value);
@@ -82,12 +98,82 @@ Options options(int argc, char **argv) {
   }
   if (!result.left) throw std::runtime_error("--left <byte-address> is required");
   if (!result.right) result.right = result.left;
+  if (!result.midi && !result.midi_source.empty()) throw std::runtime_error("--midi-source requires MIDI input");
   return result;
 }
 
-void alsa_check(int result, const std::string &operation) {
-  if (result < 0) throw std::runtime_error(operation + ": " + snd_strerror(result));
+void jack_check(int result, const std::string &operation) {
+  if (result != 0) throw std::runtime_error(operation + " failed (JACK error " + std::to_string(result) + ")");
 }
+
+struct Playback {
+  Program &program;
+  const Options &config;
+  std::vector<float> stereo;
+  std::size_t cursor;
+  unsigned int blocks = 0;
+  jack_port_t *left = nullptr;
+  jack_port_t *right = nullptr;
+  jack_port_t *midi = nullptr;
+  std::atomic<bool> finished{false};
+  std::atomic<bool> server_stopped{false};
+  std::atomic<bool> rate_changed{false};
+  std::exception_ptr error;
+
+  Playback(Program &program, const Options &config)
+      : program(program), config(config), stereo(program.frames() * 2), cursor(program.frames()) {}
+
+  static void initialize(void *argument) noexcept {
+    auto &self = *static_cast<Playback *>(argument);
+    try {
+      // JACK allows initialization work here, before the real-time process callback.
+      self.program.initialize();
+    } catch (...) {
+      self.error = std::current_exception();
+      self.finished = true;
+    }
+  }
+
+  static int process(jack_nframes_t frames, void *argument) noexcept {
+    auto &self = *static_cast<Playback *>(argument);
+    auto *left = static_cast<float *>(jack_port_get_buffer(self.left, frames));
+    auto *right = static_cast<float *>(jack_port_get_buffer(self.right, frames));
+    std::fill_n(left, frames, 0.0f);
+    std::fill_n(right, frames, 0.0f);
+    if (self.finished || self.server_stopped || self.rate_changed) return 0;
+    try {
+      auto *midi = self.midi ? jack_port_get_buffer(self.midi, frames) : nullptr;
+      const auto event_count = midi ? jack_midi_get_event_count(midi) : 0;
+      uint32_t event_index = 0;
+      jack_midi_event_t event{};
+      if (event_count) jack_midi_event_get(&event, midi, 0);
+      for (jack_nframes_t frame = 0; frame < frames; ++frame) {
+        while (event_index < event_count && event.time <= frame) {
+          if (const auto message = midi_message({event.buffer, event.size})) self.program.midi(*message);
+          if (++event_index < event_count) jack_midi_event_get(&event, midi, event_index);
+        }
+        if (self.cursor == self.program.frames()) {
+          if (self.config.blocks && self.blocks == self.config.blocks) {
+            self.finished = true;
+            break;
+          }
+          self.program.render(self.stereo, self.config.gain);
+          self.cursor = 0;
+          ++self.blocks;
+        }
+        left[frame] = self.stereo[self.cursor * 2];
+        right[frame] = self.stereo[self.cursor * 2 + 1];
+        ++self.cursor;
+      }
+    } catch (...) {
+      self.error = std::current_exception();
+      self.finished = true;
+      std::fill_n(left, frames, 0.0f);
+      std::fill_n(right, frames, 0.0f);
+    }
+    return 0;
+  }
+};
 } // namespace
 
 int main(int argc, char **argv) {
@@ -98,64 +184,56 @@ int main(int argc, char **argv) {
   try {
     const auto config = options(argc, argv);
     Program program(config.wasm, *config.left, *config.right, config.buffer_size, config.entry,
-                    config.midi_device.empty() ? "" : config.callback);
-    std::vector<float> stereo(program.frames() * 2);
-
-    snd_pcm_t *pcm_handle = nullptr;
-    alsa_check(snd_pcm_open(&pcm_handle, config.audio_device.c_str(), SND_PCM_STREAM_PLAYBACK, 0),
-               "Open audio device " + config.audio_device);
-    const std::unique_ptr<snd_pcm_t, decltype(&snd_pcm_close)> pcm(pcm_handle, snd_pcm_close);
-    // ALSA plug devices convert float32 to the card's native sample format.
-    const auto latency_us = static_cast<unsigned int>(
-        (program.frames() * 3 * 1000000ULL + config.sample_rate - 1) / config.sample_rate);
-    alsa_check(snd_pcm_set_params(pcm.get(), SND_PCM_FORMAT_FLOAT_LE, SND_PCM_ACCESS_RW_INTERLEAVED,
-                                 2, config.sample_rate, 0, latency_us), "Configure audio output");
-
-    snd_rawmidi_t *midi_handle = nullptr;
-    if (!config.midi_device.empty()) {
-      alsa_check(snd_rawmidi_open(&midi_handle, nullptr, config.midi_device.c_str(), SND_RAWMIDI_NONBLOCK),
-                 "Open MIDI device " + config.midi_device);
+                    config.midi ? config.callback : "");
+    Playback playback(program, config);
+    jack_status_t status{};
+    const std::unique_ptr<jack_client_t, decltype(&jack_client_close)> client(
+        jack_client_open(config.client_name.c_str(), static_cast<jack_options_t>(JackNoStartServer | JackUseExactName),
+                         &status), jack_client_close);
+    if (!client) throw std::runtime_error("Cannot open JACK client; start JACK and choose an unused client name (status " +
+                                          std::to_string(status) + ")");
+    if (jack_get_sample_rate(client.get()) != config.sample_rate) {
+      throw std::runtime_error("JACK sample rate does not match --sample-rate/the compiled project");
     }
-    const std::unique_ptr<snd_rawmidi_t, decltype(&snd_rawmidi_close)> midi(midi_handle, snd_rawmidi_close);
-    MidiParser parser;
+    playback.left = jack_port_register(client.get(), "out_left", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+    playback.right = jack_port_register(client.get(), "out_right", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+    if (config.midi) {
+      playback.midi = jack_port_register(client.get(), "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+    }
+    if (!playback.left || !playback.right || (config.midi && !playback.midi)) {
+      throw std::runtime_error("Cannot register JACK ports");
+    }
+    jack_check(jack_set_thread_init_callback(client.get(), Playback::initialize, &playback), "Set JACK thread initializer");
+    jack_check(jack_set_process_callback(client.get(), Playback::process, &playback), "Set JACK process callback");
+    jack_check(jack_set_sample_rate_callback(client.get(), [](jack_nframes_t rate, void *argument) {
+      auto &playback = *static_cast<Playback *>(argument);
+      if (rate != playback.config.sample_rate) playback.rate_changed = true;
+      return 0;
+    }, &playback), "Set JACK sample-rate callback");
+    jack_on_shutdown(client.get(), [](void *argument) {
+      static_cast<Playback *>(argument)->server_stopped = true;
+    }, &playback);
     std::signal(SIGINT, stop);
     std::signal(SIGTERM, stop);
-    std::cerr << "Running " << config.sample_rate << " Hz, " << program.frames()
-              << " samples/block; MIDI " << (midi ? config.midi_device : "disabled") << '\n';
-
-    unsigned int recoveries = 0;
-    unsigned int blocks = 0;
-    while (!stopped && (!config.blocks || blocks < config.blocks)) {
-      if (midi) {
-        std::array<uint8_t, 256> bytes;
-        // Bound the amount of MIDI work so a continuous stream cannot starve audio.
-        for (int read = 0; read < 16; ++read) {
-          const auto count = snd_rawmidi_read(midi.get(), bytes.data(), bytes.size());
-          if (count == -EAGAIN || count == -EINTR || count == 0) break;
-          alsa_check(static_cast<int>(count), "Read MIDI input");
-          for (ssize_t i = 0; i < count; ++i) {
-            if (const auto message = parser.push(bytes[i])) program.midi(*message);
-          }
-        }
-      }
-      program.render(stereo, config.gain);
-      std::size_t written = 0;
-      while (written < program.frames() && !stopped) {
-        const auto count = snd_pcm_writei(pcm.get(), stereo.data() + written * 2, program.frames() - written);
-        if (count < 0) {
-          if (count == -EINTR) continue;
-          alsa_check(snd_pcm_recover(pcm.get(), static_cast<int>(count), 1), "Recover audio output");
-          ++recoveries;
-        } else if (count == 0) {
-          alsa_check(snd_pcm_wait(pcm.get(), 100), "Wait for audio output");
-        } else {
-          written += count;
-        }
-      }
-      ++blocks;
+    jack_check(jack_activate(client.get()), "Activate JACK client");
+    const auto connect = [&](const std::string &source, const std::string &destination) {
+      const auto result = jack_connect(client.get(), source.c_str(), destination.c_str());
+      if (result != EEXIST) jack_check(result, "Connect " + source + " to " + destination);
+    };
+    if (!config.connect_left.empty()) connect(jack_port_name(playback.left), config.connect_left);
+    if (!config.connect_right.empty()) connect(jack_port_name(playback.right), config.connect_right);
+    if (!config.midi_source.empty()) connect(config.midi_source, jack_port_name(playback.midi));
+    std::cerr << "Running JACK client " << config.client_name << ": " << config.sample_rate << " Hz, "
+              << program.frames() << " samples/WASM block, " << jack_get_buffer_size(client.get()) << " samples/JACK cycle\n";
+    while (!stopped && !playback.finished && !playback.server_stopped && !playback.rate_changed) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    alsa_check(stopped ? snd_pcm_drop(pcm.get()) : snd_pcm_drain(pcm.get()), "Stop audio output");
-    std::cerr << "Stopped; " << recoveries << " audio recoveries\n";
+    const auto deactivated = jack_deactivate(client.get());
+    if (playback.error) std::rethrow_exception(playback.error);
+    if (playback.server_stopped) throw std::runtime_error("JACK server shut down");
+    if (playback.rate_changed) throw std::runtime_error("JACK sample rate changed; recompile/restart with the matching rate");
+    jack_check(deactivated, "Deactivate JACK client");
+    std::cerr << "Stopped\n";
     return 0;
   } catch (const std::exception &error) {
     std::cerr << "8f4e-runtime: " << error.what() << '\n';

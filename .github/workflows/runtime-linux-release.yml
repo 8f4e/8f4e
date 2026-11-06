@@ -26,6 +26,12 @@ jobs:
           - arch: aarch64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
+    container:
+      image: debian:bookworm
+      options: --shm-size=256m
+    defaults:
+      run:
+        shell: bash
     timeout-minutes: 20
     outputs:
       version: ${{ steps.package.outputs.version }}
@@ -35,6 +41,12 @@ jobs:
         run: |
           echo "Linux runtime releases must run from main."
           exit 1
+
+      - name: Install native dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential cmake pkg-config libjack-jackd2-dev jackd2 jack-tools ca-certificates git
 
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -48,10 +60,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: |
-          npm ci --ignore-scripts
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake libasound2-dev
+        run: npm ci --ignore-scripts
 
       - name: Build native runtime
         run: npx nx run @8f4e/runtime-linux:build
@@ -78,6 +87,9 @@ jobs:
           cp packages/runtime-linux/dist/8f4e-runtime packages/runtime-linux/README.md LICENSE "$RUNNER_TEMP/$package/"
           cp packages/runtime-linux/dist/build/_deps/wasmtime_distribution-src/LICENSE "$RUNNER_TEMP/$package/LICENSE.wasmtime"
           tar -C "$RUNNER_TEMP" -czf "${package}.tar.gz" "$package"
+          mkdir -p "$RUNNER_TEMP/package-smoke"
+          tar -C "$RUNNER_TEMP/package-smoke" -xzf "${package}.tar.gz"
+          "$RUNNER_TEMP/package-smoke/$package/8f4e-runtime" --help
 
       - name: Upload native runtime archive
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -109,4 +121,4 @@ jobs:
           gh release create "@8f4e/runtime-linux@${RUNTIME_VERSION}" release-assets/*.tar.gz \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "8f4e Linux runtime ${RUNTIME_VERSION}" --latest=false \
-            --notes "Standalone ALSA audio/MIDI runtime for Linux x86-64 and ARM64, built from ${GITHUB_SHA}."
+            --notes "Standalone JACK audio/MIDI runtime for Linux x86-64 and ARM64, built from ${GITHUB_SHA}."

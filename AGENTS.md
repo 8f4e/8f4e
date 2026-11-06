@@ -13,12 +13,13 @@
   keyboard-memory, bars, meter, wave, and crossfade, plus gallery authoring/menu/file plugins and loading indicators.
   Plain-text paste remains in keyboard editing. It keeps core's `contextMenu` feature disabled to prevent invisible menus from blocking input.
 - Compiler integration lives in `packages/editor/plugins/compiler/` (`@8f4e/editor-plugin-compiler`). The default editor constructs and installs it first and injects its live handles into dependent plugins, including runtimes. Core emits input-change events and consumes accepted artifacts.
-- The standalone Linux audio/MIDI host lives in `packages/runtime-linux/`. It embeds Wasmtime and uses ALSA,
+- The standalone Linux audio/MIDI host lives in `packages/runtime-linux/`. It embeds Wasmtime and uses JACK,
   consuming shared-memory `.wasm` and numeric buffer byte addresses. The compiler always imports shared
   `host.memory`; JavaScript hosts create it with `shared: true` and an explicit maximum. The separate
   `tools/runtime-command` development tool reads CLI `--memory-output` JSON and generates numeric launch commands.
   The native host has no symbol/JSON parser or compiler build dependency. Native testing and releases belong to
-  `runtime-linux-test.yml` and `runtime-linux-release.yml`; web workflows and web Nx releases exclude both native projects.
+  `runtime-linux-test.yml` and `runtime-linux-release.yml`, using Debian Bookworm containers; web workflows and
+  web Nx releases exclude both native projects.
 - WebMCP lives in `packages/editor/packages/editor-webmcp/` as an external page-owned adapter bound to one editor's public `editing` handle. The editor website and example/test galleries compose it; gallery project switches dispose and recreate the bridge.
 - Optional editor features live in `packages/editor/plugins/<feature>/` as independent npm/Nx packages named
   `@8f4e/editor-plugin-<feature>`.
@@ -184,9 +185,10 @@
 - `npx nx run-many --target=test --all`: Run package tests, including Vitest and the Linux runtime's native CTest suite.
 - `npx nx run @8f4e/examples:test`: Run CLI example-project snapshot tests, then embedded `#test` modules in
   example `.8f4em` files through the CLI test runner.
-- `npx nx run @8f4e/runtime-linux:build|test`: Build or verify the native Linux ALSA host. Requires CMake, a C++20
-  compiler and ALSA development packages; CMake fetches a pinned Wasmtime C API. Tests compile a local
-  fixture through the CLI and use ALSA null output without hardware. See `packages/runtime-linux/README.md`.
+- `npx nx run @8f4e/runtime-linux:build|test`: Build or verify the native Linux JACK host. Requires CMake, pkg-config, a C++20
+  compiler and JACK development packages; CMake fetches a pinned Wasmtime C API. Tests compile a local
+  fixture through the CLI and route audio/MIDI through isolated JACK dummy servers without hardware.
+  See `packages/runtime-linux/README.md`.
 - `npx nx run @8f4e/runtime-command:test|lint`: Verify the standalone memory-map-to-command development tool.
 - `npx nx run-many --target=typecheck --all`: Type-check all packages; also run on pre-commit via Husky/lint-staged.
 - `npx nx run-many --target=lint --projects=@8f4e/editor-default,@8f4e/editor-website`: Biome check/fix for the

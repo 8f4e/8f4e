@@ -46,7 +46,7 @@ test('resolves nested symbols to byte addresses, including the declared buffer s
 				left: 'synth/voice/output:left',
 				right: 'synth/voice/output:right',
 			},
-			['--audio-device', 'null']
+			['--connect-left', 'system:playback_1']
 		),
 		[
 			'/opt/8f4e-runtime',
@@ -57,8 +57,8 @@ test('resolves nested symbols to byte addresses, including the declared buffer s
 			'80',
 			'--buffer-size',
 			'4',
-			'--audio-device',
-			'null',
+			'--connect-left',
+			'system:playback_1',
 		]
 	);
 });
@@ -88,7 +88,7 @@ test('shell quoting preserves arbitrary paths without executing substitutions', 
 	assert.deepEqual(JSON.parse(execFileSync('sh', ['-c', command], { encoding: 'utf8' })), values);
 });
 
-test('CLI prints a launch command and forwards device options', async () => {
+test('CLI prints a launch command and forwards JACK options', async () => {
 	const directory = await mkdtemp(path.join(tmpdir(), '8f4e-command-'));
 	try {
 		const metadata = path.join(directory, 'memory.json');
@@ -96,7 +96,7 @@ test('CLI prints a launch command and forwards device options', async () => {
 		const cli = fileURLToPath(new URL('../src/cli.mjs', import.meta.url));
 		const output = execFileSync(
 			process.execPath,
-			[cli, 'a b.wasm', metadata, '--', '--midi-device', 'hw:CARD=pisound'],
+			[cli, 'a b.wasm', metadata, '--', '--midi-source', 'pisound:midi/capture_1'],
 			{
 				encoding: 'utf8',
 			}
@@ -112,8 +112,8 @@ test('CLI prints a launch command and forwards device options', async () => {
 				'0',
 				'--buffer-size',
 				'128',
-				'--midi-device',
-				'hw:CARD=pisound',
+				'--midi-source',
+				'pisound:midi/capture_1',
 			])
 		);
 		assert.throws(() => execFileSync(process.execPath, [cli, 'a.wasm', metadata, '--left'], { stdio: 'pipe' }));

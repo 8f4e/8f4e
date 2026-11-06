@@ -1,7 +1,6 @@
 #include "midi.hpp"
 #include "program.hpp"
 
-#include <array>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -10,47 +9,23 @@ void require(bool condition, const char *message) {
   if (!condition) throw std::runtime_error(message);
 }
 
-void midi_tests() {
-  MidiParser parser;
-  std::vector<MidiMessage> messages;
-  for (const uint8_t byte : std::vector<uint8_t>{
-           0x90, 60, 0xf8, 100, 64, 0, // Interleaved clock and running status.
-           0xc0, 5, 6, 0xd1, 7,       // One-data-byte channel messages.
-           0xf0, 1, 2, 0xfa, 3, 0xf7, 60, 100, // SysEx and stray data ignored.
-           0xf2, 1, 0xfe, 2, 0xf1, 3, 0xf3, 4, 0xf6,
-           0x80, 60, 0, 0x90, 60, 0x81, 61, 2}) {
-    if (const auto message = parser.push(byte)) messages.push_back(*message);
-  }
-  const std::vector<MidiMessage> expected{
-      {0xf8}, {0x90, 60, 100}, {0x90, 64, 0}, {0xc0, 5}, {0xc0, 6}, {0xd1, 7},
-      {0xfa}, {0xfe}, {0xf2, 1, 2}, {0xf1, 3}, {0xf3, 4}, {0xf6}, {0x80, 60, 0}, {0x81, 61, 2}};
-  require(messages.size() == expected.size(), "MIDI message count");
-  for (std::size_t i = 0; i < expected.size(); ++i) {
-    require(messages[i].status == expected[i].status && messages[i].data1 == expected[i].data1 &&
-                messages[i].data2 == expected[i].data2, "MIDI message bytes");
-  }
-}
-
 int main(int argc, char **argv) {
   try {
     require(argc == 5, "Expected WASM path, left/right byte addresses and buffer size");
     const auto left = std::stoul(argv[2]);
     const auto right = std::stoul(argv[3]);
     const auto frames = std::stoul(argv[4]);
-    midi_tests();
     Program program(argv[1], left, right, frames, "buffer", "onMidiEvent");
-    require(program.frames() == 4, "Block size comes from the numeric launch argument");
-    std::array<float, 8> audio;
+    program.initialize();
+    require(program.frames() == 128, "Block size comes from the numeric launch argument");
+    std::vector<float> audio(frames * 2);
     program.render(audio, 1.0f);
     for (std::size_t i = 0; i < program.frames(); ++i) {
       require(audio[2 * i] == 0.125f && audio[2 * i + 1] == -0.25f,
               "initDefaults applies nonzero compiler defaults before audio execution");
     }
 
-    MidiParser parser;
-    for (const uint8_t byte : std::array<uint8_t, 3>{0x90, 64, 96}) {
-      if (const auto message = parser.push(byte)) program.midi(*message);
-    }
+    program.midi({0x90, 64, 96});
     program.render(audio, 1.0f);
     for (std::size_t i = 0; i < program.frames(); ++i) {
       require(audio[2 * i] == 0.5f && audio[2 * i + 1] == -0.75f,
@@ -62,6 +37,7 @@ int main(int argc, char **argv) {
     require(audio[0] == 0.25f && audio[1] == -0.375f, "Output gain preserves headroom");
 
     Program mono(argv[1], left, left, frames, "buffer", "onMidiEvent");
+    mono.initialize();
     mono.midi({0x90, 32, 0});
     mono.render(audio, 1.0f);
     require(audio[0] == 0.25f && audio[1] == 0.25f, "Mono buffer routes to both outputs");
@@ -71,7 +47,7 @@ int main(int argc, char **argv) {
       Program missing(argv[1], left, right, frames, "missing", "");
     } catch (const std::exception &) { failed = true; }
     require(failed, "Missing audio exports fail at startup");
-    std::cout << "MIDI parsing, compiled WASM execution, memory routing and gain passed\n";
+    std::cout << "Compiled WASM execution, memory routing, MIDI callbacks and gain passed\n";
     return 0;
   } catch (const std::exception &error) {
     std::cerr << error.what() << '\n';

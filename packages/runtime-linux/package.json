@@ -2,6 +2,6 @@
   "name": "@8f4e/runtime-linux",
   "version": "0.1.0",
   "private": true,
-  "description": "Standalone Linux ALSA audio and MIDI host for compiled 8f4e programs",
+  "description": "Standalone Linux JACK audio and MIDI host for compiled 8f4e programs",
   "license": "MIT"
 }

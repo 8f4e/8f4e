@@ -43,6 +43,7 @@ struct Program::Impl {
   wasmtime_context_t *context = wasmtime_store_context(store.get());
   wasmtime_instance_t instance{};
   Handle<wasmtime_sharedmemory_t, wasmtime_sharedmemory_delete> memory{nullptr, wasmtime_sharedmemory_delete};
+  wasmtime_func_t initialize_function{};
   wasmtime_func_t buffer_function{};
   wasmtime_func_t midi_function{};
   std::size_t left = 0;
@@ -119,14 +120,14 @@ Program::Program(const std::string &wasm_path, std::size_t left, std::size_t rig
   wasm_trap_t *trap = nullptr;
   auto *error = wasmtime_instance_new(impl_->context, module, &imported, 1, &impl_->instance, &trap);
   check(error, trap);
-  const auto initialize = impl_->function("initDefaults", 0);
+  impl_->initialize_function = impl_->function("initDefaults", 0);
   impl_->buffer_function = impl_->function(entry, 0);
   if (!midi_callback.empty()) impl_->midi_function = impl_->function(midi_callback, 3);
-  impl_->call(initialize);
 }
 
 Program::~Program() = default;
 std::size_t Program::frames() const { return impl_->frames; }
+void Program::initialize() { impl_->call(impl_->initialize_function); }
 
 void Program::midi(MidiMessage message) {
   std::array<wasmtime_val_t, 3> args{};

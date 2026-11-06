@@ -21,8 +21,8 @@ functionEnd
 
 entry main
 module output
-float[] left 4 0.125
-float[] right 4 -0.25
+float[] left 128 0.125
+float[] right 128 -0.25
 int note 16
 int velocity 32
 int pointer &left
@@ -30,7 +30,7 @@ int pointer &left
 push &pointer
 push &left
 store
-loop 4
+loop 128
 push pointer
 push note
 castToFloat
@@ -45,7 +45,7 @@ loopEnd
 push &pointer
 push &right
 store
-loop 4
+loop 128
 push pointer
 push velocity
 castToFloat
