@@ -14,7 +14,6 @@ import codeBlockActions from './features/code-blocks/features/codeBlockActions/e
 import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
-import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
 import entryBounds from './features/code-blocks/features/entryBounds/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './features/code-blocks/layout/registry';
@@ -100,10 +99,9 @@ export default function init(
 	registerEffect(viewport(store, events));
 	registerEffect(codeBlockActions(store, events));
 	registerEffect(projectGroupNavigation(store, events));
-	registerEffect(autoEnvConstants(store));
+	registerEffect(autoEnvConstants(store, events));
 	registerEffect(publishCompilationInputChanges(store, events));
 	registerEffect(codeBlockRendering(store, events, directives.definitions, layout));
-	registerEffect(viewportDirectiveEffect(store, events));
 	registerEffect(entryBounds(store, events));
 	registerEffect(projectOperations(store, events));
 	registerEffect(historyTracking(store, events));

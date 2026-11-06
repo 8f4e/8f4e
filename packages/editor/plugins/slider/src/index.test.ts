@@ -242,7 +242,7 @@ describe('slider plugin', () => {
 		test.press(1, 4);
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), 2, false);
 		test.block.code = test.block.code.filter(line => !line.includes('@slider'));
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.block);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.block] });
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.block.gaps.size).toBe(0);
@@ -411,7 +411,7 @@ describe('slider plugin', () => {
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(await test.menuItems()).toEqual([]);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.block);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.block] });
 		expect(test.block.gaps.size).toBe(0);
 	});
 });

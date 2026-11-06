@@ -32,7 +32,7 @@ entryEnd`);
 		off: (name, callback) => {
 			listeners.get(name)?.delete(callback as (event: unknown) => void);
 		},
-		dispatch: (name, event) => {
+		dispatch: (name, ...[event]) => {
 			for (const callback of listeners.get(name) ?? []) callback(event);
 		},
 	};
@@ -87,7 +87,7 @@ entryEnd`);
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[
 				{
 					codeBlock,

@@ -65,9 +65,16 @@ Core retains insertion/removal helpers, entry assignment, identity allocation, f
 Source changes use `sourceUpdates.ts` in an explicit sequence: parse directives and update block type and valid grid
 coordinates, regenerate environment source, resolve global configuration, then refresh layouts. An incomplete or
 invalid position directive retains the existing block position. Interactive and programmatic edits use this same
-path; ordinary layout invalidations do not reparse source. Nested layout contributions settle before publishing
-completion for the affected blocks. Other blocks can still be in the middle of a source update and must not be read
-as part of that notification.
+path; ordinary layout invalidations do not reparse source. `layout/coordinator.ts` tracks each block's owning
+`ProjectLevel` and maintains that group's viewport-anchored subset. Ownership is registered on project loading and
+block-collection changes, independently of source edits and layout notifications. Renaming a group retains its
+runtime identity while updating its source path.
+
+The coordinator queues changed blocks by owning group, settles nested plugin contributions, and finalizes grid and
+viewport-anchored positions before publishing completion for each affected group. Inactive groups use their
+remembered viewport. Viewport movement and resizing reposition only the active group's anchored subset without
+recalculating source/display layout. Other blocks can still be in the middle of a source update and must not be read
+as part of a completion notification.
 
 ## Events & Callbacks
 
@@ -75,9 +82,13 @@ as part of that notification.
 
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
-- `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal contribution invalidation; rederives affected visible blocks
-- `codeBlockLayoutsChanged({ codeBlocks })`: identifies blocks with consistent source/display rows and completed layout
-  contributions; rendering and viewport anchoring update those blocks only
+- `codeBlockSourcesChanged({ codeBlocks })`: refresh source metadata, configuration, and layouts for an edited batch
+  before publishing compiler/project revisions, independently of user selection
+- `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal invalidation; rederives a changed block in its owning
+  group, or the current group when no block is supplied
+- `codeBlockLayoutsChanged({ project, codeBlocks })`: identifies one owning group and its completed source/display rows,
+  contributions, and positions. Rendering prepares only the listed blocks; active-view consumers compare `project`
+  with `currentProject`. Empty groups still publish a completion when navigation replaces the visible slice.
 - Block deletion and selection events
 - Drag start/update/end events
 - Block type update events

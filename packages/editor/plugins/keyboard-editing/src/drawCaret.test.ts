@@ -17,7 +17,7 @@ function setup(state: State, block: CodeBlockGraphicData) {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const presentation = createCaretPresentation(state, events);
 	cleanups.push(presentation.dispose);
-	return { ...createDrawingContext(state, block), presentation, events, emitter };
+	return { state, ...createDrawingContext(state, block), presentation, events, emitter };
 }
 
 describe('editing caret presentation', () => {
@@ -45,17 +45,26 @@ describe('editing caret presentation', () => {
 		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(72, 96, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		state.viewport.vGrid = 12;
 		block.cursor.y = 144;
-		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [block] });
+		events.dispatch('codeBlockLayoutsChanged', {
+			project: state.codeBlockRendering.currentProject,
+			codeBlocks: [block],
+		});
 		presentation.drawCaret(context);
 		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(108, 144, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		block.code = ['; @tab 8', '\tvalue'];
-		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [block] });
+		events.dispatch('codeBlockLayoutsChanged', {
+			project: state.codeBlockRendering.currentProject,
+			codeBlocks: [block],
+		});
 		presentation.drawCaret(context);
 		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(156, 144, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		block.code[0] = '; @tab 16';
 		block.cursor.col = 1;
 		block.lineNumberColumnWidth = 3;
-		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [block] });
+		events.dispatch('codeBlockLayoutsChanged', {
+			project: state.codeBlockRendering.currentProject,
+			codeBlocks: [block],
+		});
 		presentation.drawCaret(context);
 		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(252, 144, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 	});
@@ -74,7 +83,10 @@ describe('editing caret presentation', () => {
 		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(64, 16, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		expect(readSource).not.toHaveBeenCalled();
 		block.cursor.col = 3;
-		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [block] });
+		events.dispatch('codeBlockLayoutsChanged', {
+			project: state.codeBlockRendering.currentProject,
+			codeBlocks: [block],
+		});
 		expect(readSource).toHaveBeenCalled();
 		readSource.mockClear();
 		presentation.drawCaret(context);
@@ -82,7 +94,10 @@ describe('editing caret presentation', () => {
 		expect(readSource).not.toHaveBeenCalled();
 		presentation.dispose();
 		expect(emitter.listenerCount('codeBlockLayoutsChanged')).toBe(0);
-		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [block] });
+		events.dispatch('codeBlockLayoutsChanged', {
+			project: state.codeBlockRendering.currentProject,
+			codeBlocks: [block],
+		});
 		expect(readSource).not.toHaveBeenCalled();
 	});
 
@@ -103,7 +118,10 @@ describe('editing caret presentation', () => {
 		expect(second.draw.drawGlyphs).toHaveBeenLastCalledWith(56, 32, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		first.presentation.dispose();
 		secondBlock.cursor.col = 2;
-		second.events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [secondBlock] });
+		second.events.dispatch('codeBlockLayoutsChanged', {
+			project: second.state.codeBlockRendering.currentProject,
+			codeBlocks: [secondBlock],
+		});
 		second.presentation.drawCaret(second.context);
 		expect(second.draw.drawGlyphs).toHaveBeenLastCalledWith(40, 32, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 	});
@@ -115,7 +133,10 @@ describe('editing caret presentation', () => {
 		const state = createMockState({ editorMode: 'edit', codeBlockRendering: { selectedCodeBlock: block } });
 		const { events } = setup(state, block);
 		readSource.mockClear();
-		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [createMockCodeBlock()] });
+		events.dispatch('codeBlockLayoutsChanged', {
+			project: state.codeBlockRendering.currentProject,
+			codeBlocks: [createMockCodeBlock()],
+		});
 		expect(readSource).not.toHaveBeenCalled();
 	});
 

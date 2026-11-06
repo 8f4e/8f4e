@@ -174,12 +174,12 @@ describe('wave plugin', () => {
 	it('replaces waves and layout gaps after source edits', async () => {
 		const test = await setup();
 		test.codeBlock.code[2] = '; @wave4 &samples count(samples)';
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		test.render();
 		expect(test.codeBlock.gaps.get(2)?.size).toBe(8);
 		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, 0, 0, PALETTE_INDICES.darkSurface, expect.any(Number), 128);
 		test.codeBlock.code[2] = '; no wave';
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		test.render();
 		expect(test.codeBlock.gaps.size).toBe(0);
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
@@ -245,7 +245,7 @@ describe('wave plugin', () => {
 	it('unregisters all definitions and the drawer on disposal', async () => {
 		const test = await setup();
 		test.dispose();
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		test.render();
 		expect(test.codeBlock.gaps.size).toBe(0);
 		expect(test.draw.drawFill).not.toHaveBeenCalled();

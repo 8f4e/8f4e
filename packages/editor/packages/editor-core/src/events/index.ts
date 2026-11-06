@@ -1,4 +1,9 @@
-import type { EventDispatcher, EventDispatchOptions, EventSubscriptionOptions } from '@8f4e/editor-state-types';
+import type {
+	EditorEventArguments,
+	EventDispatcher,
+	EventDispatchOptions,
+	EventSubscriptionOptions,
+} from '@8f4e/editor-state-types';
 
 export type EventHandler<T> = (event: T) => void;
 
@@ -9,7 +14,10 @@ export interface EventObject {
 export type { EventDispatcher } from '@8f4e/editor-state-types';
 
 interface DisposableEventDispatcher extends EventDispatcher {
-	dispatchAsync: <T>(type: string, eventObject?: T) => Promise<void>;
+	dispatchAsync: <Name extends string, Payload = unknown>(
+		type: Name,
+		...args: EditorEventArguments<Name, Payload>
+	) => Promise<void>;
 	dispose: () => void;
 }
 
@@ -73,9 +81,9 @@ export default function events(): DisposableEventDispatcher {
 		if (changed) prepareHandlers(listeners);
 	}
 
-	function dispatch<T>(
+	function dispatch(
 		type: string,
-		eventObject?: T,
+		eventObject?: unknown,
 		options: EventDispatchOptions = {},
 		pending?: Array<void | Promise<void>>
 	): void {
@@ -106,11 +114,11 @@ export default function events(): DisposableEventDispatcher {
 		}
 	}
 
-	async function dispatchAsync<T>(type: string, eventObject?: T): Promise<void> {
+	const dispatchAsync: DisposableEventDispatcher['dispatchAsync'] = async (type, ...args) => {
 		const pending: Array<void | Promise<void>> = [];
-		dispatch(type, eventObject, {}, pending);
+		dispatch(type, args[0], {}, pending);
 		await Promise.all(pending);
-	}
+	};
 
 	function dispose(): void {
 		for (const listeners of Object.values(subscriptions)) {

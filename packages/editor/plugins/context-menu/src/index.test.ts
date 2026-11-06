@@ -132,7 +132,7 @@ it('reflows on resize, grid changes, and viewport movement without changing the 
 	expect(test.draw.startGroup).toHaveBeenCalledWith(206, 210);
 	test.state.viewport.x = 600;
 	test.state.viewport.y = 450;
-	test.events.dispatch('viewportChanged');
+	test.events.dispatch('viewportChanged', { previousX: 0, previousY: 0, x: 600, y: 450 });
 	test.render();
 	expect(test.draw.startGroup).toHaveBeenCalledWith(42, 30);
 	expect(test.state.contextMenu).toMatchObject(anchor);

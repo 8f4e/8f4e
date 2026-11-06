@@ -88,7 +88,6 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 
 	const selectors = [
 		'codeBlockRendering.selectedCodeBlock',
-		'codeBlockRendering.selectedCodeBlockForProgrammaticEdit',
 		'codeBlockRendering.currentProject.blocks',
 		'featureFlags.codeLineSelection',
 		'compiler',
@@ -96,11 +95,17 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 		'viewport.hGrid',
 	] as const;
 	for (const selector of selectors) store.subscribe(selector, syncSelectedLineTooltip);
+	const onSourcesChanged = ({ codeBlocks }: { codeBlocks: readonly CodeBlockGraphicData[] }) => {
+		if (state.codeBlockRendering.selectedCodeBlock && codeBlocks.includes(state.codeBlockRendering.selectedCodeBlock))
+			syncSelectedLineTooltip();
+	};
+	events.on('codeBlockSourcesChanged', onSourcesChanged);
 	events.on('gridSizeChanged', syncSelectedLineTooltip);
 	syncSelectedLineTooltip();
 	return {
 		getState: () => tooltip,
 		dispose: () => {
+			events.off('codeBlockSourcesChanged', onSourcesChanged);
 			events.off('gridSizeChanged', syncSelectedLineTooltip);
 			for (const selector of selectors) store.unsubscribe(selector, syncSelectedLineTooltip);
 		},

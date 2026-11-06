@@ -36,7 +36,7 @@ describe('keyboard editing', () => {
 	it('moves the caret using visual tab columns without publishing a source change', () => {
 		const test = setup(plugin);
 		applyCodeBlockSourceEdits(
-			test.store,
+			test,
 			[{ codeBlock: test.block, code: ['module main', '; @tab 8', '\tx', '123456789', 'moduleEnd'] }],
 			{ affectsCompilation: true }
 		);

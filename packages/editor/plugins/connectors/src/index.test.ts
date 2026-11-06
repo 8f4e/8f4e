@@ -200,14 +200,14 @@ describe('connectors plugin', () => {
 			test.store.set('compiler.isCompiling', false);
 		};
 		applyCodeBlockSourceEdits(
-			test.store,
+			test,
 			[{ codeBlock: prototype, code: prototype.code.map(line => (line === 'int output' ? 'float output' : line)) }],
 			{ affectsCompilation: true }
 		);
 		await recompile();
 		expect(test.drawLabels(func).map(label => label.text)).toEqual(['int** input', 'float* output']);
 		applyCodeBlockSourceEdits(
-			test.store,
+			test,
 			[{ codeBlock: func, code: func.code.filter(line => !line.startsWith('paramShape')) }],
 			{ affectsCompilation: true }
 		);
@@ -223,7 +223,7 @@ describe('connectors plugin', () => {
 			const block = blocks.find(block => block.name === name)!;
 			const code = [...block.code];
 			for (const directive of ['; @disabled', '; @hide']) {
-				applyCodeBlockSourceEdits(test.store, [{ codeBlock: block, code: [code[0], directive, ...code.slice(1)] }], {
+				applyCodeBlockSourceEdits(test, [{ codeBlock: block, code: [code[0], directive, ...code.slice(1)] }], {
 					affectsCompilation: true,
 				});
 				expect(test.drawLabels(block)).toEqual([]);

@@ -20,7 +20,7 @@ export const favoritesPlugin: EditorPlugin = {
 				const headerIndex = codeBlock.code.findIndex(line => getProjectOpenerKeyword(line.trim()) !== null);
 				code.splice(headerIndex + 1, 0, '; @favorite');
 			}
-			applyCodeBlockSourceEdits(store, [{ codeBlock, code }], { affectsCompilation: false });
+			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code }], { affectsCompilation: false });
 		};
 
 		events.on('toggleFavoriteDirective', onToggle);

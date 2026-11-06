@@ -96,6 +96,10 @@
   resources, plus shape/paramShape labels and row reservations. Editor compositions install it in their deferred plugin
   set after the first render. Web-ui provides generic render-layer lifecycle. Core has no `widgets` state.
   Core provides independent layout contributions and subscriptions; directive parsing and layout remain separate.
+  Its layout coordinator tracks ownership and anchored blocks per `ProjectLevel`, finalizes positions, then emits
+  `codeBlockLayoutsChanged { project, codeBlocks }`. Active-view consumers compare project identity; rendering
+  consumers prepare only the listed blocks. Ordinary block source edits and viewport movement do not rebuild group
+  membership.
   Session restoration/autosaving and project URL loading live in `editor-plugin-session-persistence` and
   `editor-plugin-project-url-loader`. The default host supplies storage/fetch and chooses initial URL priority.
   The standard plugin set is composed in `editor-default`.

@@ -18,7 +18,8 @@ mode before processing keys. Core history remains available to programmatic edit
 The loaded implementation handles all unmodified arrow keys, preserving visual columns across tabs on vertical
 movement. Mutations calculate their resulting caret position directly. Shared source positions and tab geometry
 remain core services. Each installation prepares the caret's horizontal position from the source column, tab stops,
-line-number gutter, and grid width when its editing implementation loads and after `codeBlockLayoutsChanged`.
+line-number gutter, and grid width when its editing implementation loads and after `codeBlockLayoutsChanged`
+identifies the current project group and selected block.
 The drawer reads that private coordinate and core's shared vertical source position for folds and contributed gaps;
 it performs no source parsing or coordinate calculation. Core stores no caret-only horizontal coordinate.
 The caret draws through `registerCodeBlockDrawer`, with layering determined by registration order. Install code rendering before the input plugins to preserve that layering. The input bridge owns this registration

@@ -118,7 +118,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			rootProject,
 			currentProject: rootProject,
 			entryBounds: [],
-			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,
 		},
 		contextMenu: {

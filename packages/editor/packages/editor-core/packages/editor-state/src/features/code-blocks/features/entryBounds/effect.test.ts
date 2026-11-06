@@ -20,7 +20,10 @@ it('refreshes entry bounds after layout, grid, and completed project changes', (
 			{ entryName: 'audio', x: 16, y: 64, width: 224, height: 192 },
 		]);
 		test.block.width = 200;
-		test.events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [test.block] });
+		test.events.dispatch('codeBlockLayoutsChanged', {
+			project: test.state.codeBlockRendering.currentProject,
+			codeBlocks: [test.block],
+		});
 		expect(test.state.codeBlockRendering.entryBounds[0].width).toBe(328);
 		test.state.viewport.vGrid = 4;
 		test.state.viewport.hGrid = 8;
@@ -78,7 +81,10 @@ it('stops reacting to store and geometry notifications after disposal', () => {
 		test.block.x = 500;
 		test.store.set('projectChange', { revision: 1, kind: 'edit' });
 		test.store.set('codeBlockRendering.currentProject.blocks', []);
-		test.events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [test.block] });
+		test.events.dispatch('codeBlockLayoutsChanged', {
+			project: test.state.codeBlockRendering.currentProject,
+			codeBlocks: [test.block],
+		});
 		test.events.dispatch('gridSizeChanged');
 		test.events.dispatch('viewportChanged');
 		test.events.dispatch('viewportResized');

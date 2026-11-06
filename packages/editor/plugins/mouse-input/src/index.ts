@@ -39,7 +39,7 @@ export function createMouseInputPlugin({
 
 				event.preventDefault();
 
-				const eventObject = {
+				const eventObject: InternalPointerEvent = {
 					x: offsetX,
 					y: offsetY,
 					movementX,
@@ -51,7 +51,7 @@ export function createMouseInputPlugin({
 					altKey,
 				};
 
-				events.dispatch<InternalPointerEvent>(type, eventObject);
+				events.dispatch(type, eventObject);
 			}
 
 			function onWheelEvent(event: WheelEvent) {
@@ -60,7 +60,7 @@ export function createMouseInputPlugin({
 				const movementX = event.deltaX * -1;
 				const movementY = event.deltaY * -1;
 
-				events.dispatch<InternalPointerEvent>('pointermove', {
+				events.dispatch('pointermove', {
 					x: event.offsetX,
 					y: event.offsetY,
 					movementX,
@@ -70,7 +70,7 @@ export function createMouseInputPlugin({
 					canvasWidth: inputTarget.clientWidth,
 					canvasHeight: inputTarget.clientHeight,
 					altKey: event.altKey,
-				});
+				} satisfies InternalPointerEvent);
 
 				if (wheelScrollEndTimeout) {
 					clearTimeout(wheelScrollEndTimeout);

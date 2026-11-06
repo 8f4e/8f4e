@@ -30,7 +30,12 @@ export const contextMenuPlugin: EditorPlugin = {
 		const onPointerDown = (event: InternalPointerEvent) => {
 			const index = findItem(event);
 			if (index === -1) events.dispatch('closeContextMenu');
-			else events.dispatch<ActivateContextMenuItemEvent>('activateContextMenuItem', { index, x: event.x, y: event.y });
+			else
+				events.dispatch('activateContextMenuItem', {
+					index,
+					x: event.x,
+					y: event.y,
+				} satisfies ActivateContextMenuItemEvent);
 		};
 		const unregisterDrawer = drawers.registerContextMenuOverlay(({ draw }) => {
 			if (layout) drawMenu(draw, state.contextMenu.items, layout, highlighted);

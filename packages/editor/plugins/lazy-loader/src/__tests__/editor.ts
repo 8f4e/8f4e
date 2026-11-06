@@ -24,7 +24,7 @@ export function setup(plugins: readonly LazyEditorPlugin[], initialSource?: stri
 		off: (name, listener) => {
 			listeners.get(name)?.delete(listener as (event: unknown) => void);
 		},
-		dispatch: (name, event) => {
+		dispatch: (name, ...[event]) => {
 			for (const listener of listeners.get(name) ?? []) listener(event);
 		},
 	};

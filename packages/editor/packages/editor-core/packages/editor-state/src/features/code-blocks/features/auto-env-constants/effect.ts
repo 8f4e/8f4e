@@ -1,8 +1,7 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { ProjectBlock } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
-import incrementCompilerInputRevision from '../../../program-compiler/incrementCompilerInputRevision';
-import { publishProjectChange } from '../../../project-changes';
+import { applyCodeBlockSourceEdits } from '../../sourceEdits';
 
 const AUTO_ENV_CONSTANTS_BLOCK_NAME = 'env';
 
@@ -39,7 +38,7 @@ function generateEnvConstantsBlock(state: State, position: { x: number; y: numbe
 }
 
 /** Regenerate environment source using the block position established by source metadata refresh. */
-export function updateEnvConstantsBlock(store: StateManager<State>): void {
+export function updateEnvConstantsBlock(store: StateManager<State>, events: EventDispatcher): void {
 	const state = store.getState();
 	const targetBlock = state.codeBlockRendering.currentProject.blocks.find(block => isEnvBlock(block));
 
@@ -48,20 +47,13 @@ export function updateEnvConstantsBlock(store: StateManager<State>): void {
 	}
 	const newCode = generateEnvConstantsBlock(state, { x: targetBlock.gridX, y: targetBlock.gridY });
 
-	if (targetBlock.code.length === newCode.length && targetBlock.code.every((line, index) => line === newCode[index])) {
-		return;
-	}
-
-	targetBlock.code = newCode;
-	targetBlock.lastUpdated = performance.now();
-
-	store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', targetBlock);
-	incrementCompilerInputRevision(store);
-	publishProjectChange(store);
+	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: targetBlock, code: newCode }], {
+		affectsCompilation: true,
+	});
 }
 
 /** Ensure environment source exists on load and refresh it when its contributions change. */
-export default function autoEnvConstants(store: StateManager<State>): void {
+export default function autoEnvConstants(store: StateManager<State>, events: EventDispatcher): void {
 	/**
 	 * Ensures env block exists in project when loaded.
 	 * This only runs once when the project is loaded.
@@ -106,6 +98,5 @@ export default function autoEnvConstants(store: StateManager<State>): void {
 
 	// Update env block code in codeBlockRendering.currentProject.blocks when contributed environment constants change.
 	// This avoids the infinite loop caused by modifying initialProjectState.
-	store.subscribe('editorConfig', () => updateEnvConstantsBlock(store));
-	store.subscribe('envConstantContributions', () => updateEnvConstantsBlock(store));
+	store.subscribe('envConstantContributions', () => updateEnvConstantsBlock(store, events));
 }

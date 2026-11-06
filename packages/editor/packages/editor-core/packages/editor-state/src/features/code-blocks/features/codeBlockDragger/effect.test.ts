@@ -23,7 +23,6 @@ describe('codeBlockDragger', () => {
 			},
 			codeBlockRendering: {
 				currentProject: { entries: [], path: '', blocks: [] },
-				viewportAnchoredCodeBlocks: [],
 				draggedCodeBlock: undefined,
 				selectedCodeBlock: undefined,
 				nextCodeBlockCreationIndex: 0,

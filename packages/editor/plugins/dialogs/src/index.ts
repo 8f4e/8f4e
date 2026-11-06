@@ -28,7 +28,7 @@ export const dialogsPlugin: EditorPlugin = {
 		const onPointerDown = (event: InternalPointerEvent) => {
 			const buttonIndex = findButton(event);
 			if (!layout || buttonIndex === -1) return;
-			events.dispatch<ActivateDialogButtonEvent>('activateDialogButton', { id: layout.id, buttonIndex });
+			events.dispatch('activateDialogButton', { id: layout.id, buttonIndex } satisfies ActivateDialogButtonEvent);
 		};
 		const unregisterDrawer = drawers.registerModalOverlay(({ draw, state }) => {
 			if (layout) drawDialog(draw, state, layout);

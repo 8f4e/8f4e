@@ -5,7 +5,12 @@ import initState, {
 	type EditorNavigationHandle,
 	EMPTY_DEFAULT_PROJECT,
 } from '@8f4e/editor-state';
-import type { EditorConfigSchemaContributionRegistry, InfoRecord, State } from '@8f4e/editor-state-types';
+import type {
+	EditorConfigSchemaContributionRegistry,
+	InfoRecord,
+	ProgramArtifacts,
+	State,
+} from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import initView, {
 	createEditorDrawerRegistry,
@@ -56,6 +61,7 @@ export type {
 	MenuGenerator,
 	Options,
 	ParsedDirectiveRecord,
+	ProgramArtifacts,
 	ProjectLevel,
 	State,
 } from '@8f4e/editor-state-types';
@@ -70,11 +76,6 @@ export type {
 export type { EventDispatcher } from './events';
 export type { EditorPlugin, EditorPluginContext } from './plugins';
 // Re-export helper functions
-
-/** Accepted compiler memory used by generic editor views. */
-export interface ProgramArtifacts {
-	memoryRef: WebAssembly.Memory;
-}
 
 export interface Editor {
 	editing: EditorEditingHandle;

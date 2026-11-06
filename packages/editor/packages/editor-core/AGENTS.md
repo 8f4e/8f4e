@@ -22,6 +22,7 @@
 - Favor unit tests for view-models and utilities; snapshot tests acceptable.
 - Tests consume built dependency exports through workspace aliases; the test target builds dependencies first.
   Do not add source-file aliases to preserve test imports across package boundaries.
+- The `typecheck` target includes source and tests through `tsconfig.test.json`, including compile-time lifecycle event contracts.
 
 ## Commits & PRs
 - Commits: `editor: <change>` (e.g., `editor: fix drag selection`).
@@ -67,8 +68,11 @@
   resolve global configuration, then refresh layouts. Add source-derived work to that path instead of relying on
   effect subscription order. Same-project edits retain existing positions while `@pos` is incomplete or invalid;
   replacement projects and newly inserted blocks have no previous position to retain.
-  Publish `codeBlockLayoutsChanged` with `{ codeBlocks }` after those blocks' pending layout contributions settle.
-  Consumers may read completed source/display/layout data only for the listed blocks; unrelated blocks may still be updating.
+  The layout coordinator owns block-to-group identity and anchored-block sets, rebuilding ownership only on project
+  loading or block-collection changes. It settles contributions and positions before publishing
+  `codeBlockLayoutsChanged { project, codeBlocks }` once per affected group. Consumers may read completed
+  source/display/layout data only for the listed blocks; active-view consumers compare the `ProjectLevel` reference.
+  Viewport movement and resizing reposition the active group's anchors without rebuilding membership or source layout.
 - Expose revision tracking and validated commands through `Editor.editing`, and shared project view navigation through `Editor.navigation`. Consumers read the existing `Editor.state` directly and use `editing.getRevision()` to track source changes. Validate edit batches before applying them as one undo step, and retain revision checks across human edits, history changes, and project replacement. WebMCP remains in its external adapter package.
 - Keep API revisions, history, and session persistence on `state.projectChange`, with one revision and operation kind.
   Source and metadata actions call `publishProjectChange(store)` once after a completed change; no-ops and navigation
@@ -94,10 +98,13 @@
   revisions, or compilation. Unchanged values are no-ops; callbacks can update requests and settle synchronously.
   Keep all layout requests/callbacks out of directive drafts, and layout refresh policy out of the lazy loader.
   The code-rendering plugin refreshes prepared text and nested block backgrounds only after `codeBlockLayoutsChanged`; keep input invalidation owned by editor-state.
-- Use `applyCodeBlockSourceEdits(store, edits, { affectsCompilation })` for plugin source-edit batches and
+- Use `applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation })` for plugin source-edit batches and
   `deleteCodeBlocks(store, blocks)` for removing blocks from the current slice. These helpers own refreshes,
   deleted-block reference cleanup, and one completed project/compiler notification. Callers own edit-mode policy;
   do not publish the same operation again or mutate the live source array before passing replacement code.
+- Source edits publish one `codeBlockSourcesChanged { codeBlocks }` notification for the changed batch before
+  compiler/project revisions. Background edits do not set selection state. Lifecycle event names infer payloads from
+  `EditorLifecycleEvents`; plugin action handlers infer their custom payloads from parameter types.
 - Editor `@group` behavior belongs to `editor-plugin-grouping`, including membership, dragging policy, copying,
   and all group actions/menus. Keep only generic drag-target events and source insertion in core;
   nested language-level project groups, navigation, and memory scopes remain core-owned.

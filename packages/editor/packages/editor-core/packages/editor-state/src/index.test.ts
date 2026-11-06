@@ -75,7 +75,7 @@ describe('editor state lifecycle', () => {
 					(handlers.get(name) ?? []).filter(candidate => candidate !== handler)
 				);
 			},
-			dispatch: (name, event) => {
+			dispatch: (name, ...[event]) => {
 				for (const handler of handlers.get(name) ?? []) {
 					if ((event as { stopPropagation?: boolean } | undefined)?.stopPropagation) break;
 					handler(event);

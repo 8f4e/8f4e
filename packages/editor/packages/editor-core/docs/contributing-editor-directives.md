@@ -138,7 +138,7 @@ Apply replacement source through the public state helper once the action has che
 ```ts
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 
-applyCodeBlockSourceEdits(store, [{ codeBlock, code }], { affectsCompilation: false });
+applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code }], { affectsCompilation: false });
 ```
 
 Pass all changed owners in one batch. The helper refreshes blocks and publishes one completed project change;

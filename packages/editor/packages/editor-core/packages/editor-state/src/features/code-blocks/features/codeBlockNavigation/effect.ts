@@ -244,6 +244,6 @@ export default function codeBlockNavigation(store: StateManager<State>, events: 
 	};
 
 	// Register the abstract navigation event handler
-	events.on<NavigateCodeBlockEvent>('navigateCodeBlock', onNavigateCodeBlock);
+	events.on('navigateCodeBlock', onNavigateCodeBlock);
 	events.on('goHome', onGoHome);
 }

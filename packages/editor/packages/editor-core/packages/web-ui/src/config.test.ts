@@ -1,7 +1,7 @@
+import { EventEmitter } from 'node:events';
 import { BASE_COLORS, resolvePalette } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
-import type { EditorConfigEntry } from '@8f4e/editor-state-types';
+import type { EditorConfigEntry, EventDispatcher } from '@8f4e/editor-state-types';
 import { DEFAULT_FONT, FONT_NAMES } from '@8f4e/sprite-generator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { getConfiguredFont, getConfiguredPalette, registerWebUiConfig } from './config';
@@ -12,8 +12,11 @@ function entry(path: string, value: string): EditorConfigEntry {
 
 describe('web-ui configuration', () => {
 	let store: ReturnType<typeof initState>;
+	let events: EventDispatcher;
 	beforeEach(() => {
-		store = initState(createMockEventDispatcher(), { callbacks: {} });
+		const emitter = new EventEmitter();
+		events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+		store = initState(events, { callbacks: {} });
 		registerWebUiConfig(store);
 	});
 	afterEach(() => store.dispose());
@@ -69,7 +72,7 @@ describe('web-ui configuration', () => {
 		expect(state.codeErrors['editor-directives']).toEqual([]);
 		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[{ codeBlock, code: ['note settings', '; @config font tiny', '; @config color.primary ???', 'noteEnd'] }],
 			{ affectsCompilation: false }
 		);

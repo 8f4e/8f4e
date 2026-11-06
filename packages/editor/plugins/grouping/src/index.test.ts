@@ -82,7 +82,7 @@ describe('grouping plugin', () => {
 		expect(other.x).toBe(originalOtherX + test.state.viewport.vGrid);
 		const first = test.block('first');
 		first.code = upsertDirective(first.code, 'group', ['audio']);
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', first);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [first] });
 		test.drag(first);
 		expect(second.x).toBe(originalSecondX + test.state.viewport.vGrid);
 	});
@@ -176,7 +176,6 @@ describe('grouping plugin', () => {
 		const first = test.block('first');
 		test.state.codeBlockRendering.selectedCodeBlock = first;
 		test.state.codeBlockRendering.draggedCodeBlock = test.block('second');
-		test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit = first;
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;
 		test.events.dispatch('deleteGroup', { codeBlock: first });
@@ -185,7 +184,6 @@ describe('grouping plugin', () => {
 		expect(test.block('other')).toBeDefined();
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
-		expect(test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBeUndefined();
 		expect(test.state.projectChange.revision).toBe(revision + 1);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		test.events.dispatch('deleteGroup', { codeBlock: first });

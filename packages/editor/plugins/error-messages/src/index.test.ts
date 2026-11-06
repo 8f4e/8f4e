@@ -52,7 +52,7 @@ describe('error messages plugin', () => {
 		const test = setup({ custom: errors });
 		const original = [...test.block.code];
 		applyCodeBlockSourceEdits(
-			test.store,
+			test,
 			[{ codeBlock: test.block, code: ['module target', '; @hide', 'push 1', 'drop', 'moduleEnd'] }],
 			{ affectsCompilation: false }
 		);
@@ -60,7 +60,7 @@ describe('error messages plugin', () => {
 		expect(test.block.gaps.size).toBe(0);
 		expect(test.drawGlyphs).not.toHaveBeenCalled();
 		expect(test.state.codeErrors.custom).toBe(errors);
-		applyCodeBlockSourceEdits(test.store, [{ codeBlock: test.block, code: original }], { affectsCompilation: false });
+		applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code: original }], { affectsCompilation: false });
 		test.render();
 		expect(test.block.gaps.get(2)?.size).toBe(2);
 		expect(test.drawGlyphs).toHaveBeenLastCalledWith(0, 64, textToGlyphIds(' Hidden error'), expect.any(Number));

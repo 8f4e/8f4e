@@ -19,7 +19,7 @@ test('applies project appearance settings and restores defaults after project re
 		off: (name, callback) => {
 			handlers.get(name)?.delete(callback as (event: unknown) => void);
 		},
-		dispatch: (name, payload) => {
+		dispatch: (name, ...[payload]) => {
 			for (const callback of handlers.get(name) ?? []) callback(payload);
 		},
 	};
@@ -68,7 +68,7 @@ test('applies project appearance settings and restores defaults after project re
 		await expect(canvas).toMatchScreenshot('configured-appearance');
 		const settings = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[
 				{
 					codeBlock: settings,

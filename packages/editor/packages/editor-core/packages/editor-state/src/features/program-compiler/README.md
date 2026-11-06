@@ -16,7 +16,8 @@ project loads and is not stored in project files.
 Selection, caret movement, block/project navigation, dragging that preserves block order, note-only movement, favorites,
 and visual grouping metadata do not advance the revision. Call `incrementCompilerInputRevision(store)` after updating
 compiler inputs and their derived state.
-`selectedCodeBlockForProgrammaticEdit` refreshes programmatic edits independently of compilation scheduling.
+`codeBlockSourcesChanged { codeBlocks }` refreshes source-derived state independently of selection and compilation
+scheduling. Source-edit batches emit it before publishing compiler/project revisions.
 
 Core's input-change publisher observes the revision and emits `compilationInputChanged`. A compiler plugin can listen
 without understanding individual editing actions. The standard compiler plugin debounces those events, serializes the

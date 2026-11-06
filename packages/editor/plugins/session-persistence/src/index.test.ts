@@ -89,7 +89,7 @@ describe('session persistence plugin', () => {
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
 		applyCodeBlockSourceEdits(
-			test.store,
+			test,
 			[{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) }],
 			{ affectsCompilation: true }
 		);
@@ -143,7 +143,7 @@ describe('session persistence plugin', () => {
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
 		applyCodeBlockSourceEdits(
-			test.store,
+			test,
 			[{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) }],
 			{ affectsCompilation: true }
 		);
@@ -153,7 +153,7 @@ describe('session persistence plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
 		test.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
-		applyCodeBlockSourceEdits(test.store, [{ codeBlock: restored, code: [...restored.code] }], {
+		applyCodeBlockSourceEdits(test, [{ codeBlock: restored, code: [...restored.code] }], {
 			affectsCompilation: true,
 		});
 		await vi.advanceTimersByTimeAsync(2000);
