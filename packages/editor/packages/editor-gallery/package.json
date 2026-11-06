@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-gallery",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "private": true,
   "description": "8f4e editor composition for example and compiler test galleries",
   "type": "module",

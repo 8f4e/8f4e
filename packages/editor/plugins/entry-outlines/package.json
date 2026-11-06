@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-entry-outlines",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": true,
   "description": "Execution entry outline drawing for the 8f4e editor",
   "type": "module",
