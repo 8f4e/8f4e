@@ -35,7 +35,7 @@ function createMemoryViews(value: number): MemoryViews {
 }
 
 describe('drawSliders', () => {
-	it('draws a vertical bar on each row of the slider handle', () => {
+	it('draws light shade on each row of the slider handle', () => {
 		const engine = createDrawContextMock();
 		const state = createMockState({
 			viewport: { vGrid: 8, hGrid: 16 },
@@ -51,8 +51,8 @@ describe('drawSliders', () => {
 			[12, 0, PALETTE_INDICES.lightBase, 8, 32],
 		]);
 		expect(drawGlyphs.mock.calls).toEqual([
-			[12, 0, textToGlyphIds('|'), PALETTE_INDICES.darkBase],
-			[12, 16, textToGlyphIds('|'), PALETTE_INDICES.darkBase],
+			[12, 0, textToGlyphIds('░'), PALETTE_INDICES.darkBase],
+			[12, 16, textToGlyphIds('░'), PALETTE_INDICES.darkBase],
 		]);
 	});
 });

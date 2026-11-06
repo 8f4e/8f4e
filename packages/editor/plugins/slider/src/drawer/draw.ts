@@ -4,7 +4,7 @@ import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import { textToGlyphIds } from '@8f4e/web-ui';
 import type { Slider } from '../types';
 
-const HANDLE_LABEL = textToGlyphIds('|');
+const HANDLE_LABEL = textToGlyphIds('░');
 
 export function drawSliders(engine: DrawContext, state: State, sliders: Slider[], memoryViews: MemoryViews): void {
 	for (const { x, y, width, height, allocationUnitAddress, byteAddress, isInteger, isFloat64, min, max } of sliders) {
