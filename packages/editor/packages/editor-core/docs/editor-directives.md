@@ -186,6 +186,10 @@ Supported `font` values:
 - `templeos8x8`
 - `spleen16x32`
 
+All fonts use Code page 437 glyph slots. Enter characters as ordinary Unicode text, including accents, Greek letters,
+box drawing, and the graphical CP437 symbols. A character unavailable in the selected font appears blank;
+Unicode characters outside CP437 appear as question marks.
+
 ### `@watch`
 
 Provided by `@8f4e/editor-plugin-watch`.

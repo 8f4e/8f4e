@@ -1,4 +1,5 @@
 import type { DialogButton } from '@8f4e/editor-state-types';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import type { DialogButtonLayout } from './types';
 
 const BUTTON_HORIZONTAL_PADDING_GRID_CELLS = 4;
@@ -59,6 +60,7 @@ export default function layoutButtons(
 		return row.map(button => {
 			const layout: DialogButtonLayout = {
 				...button,
+				title: textToGlyphIds(button.title),
 				x,
 				y,
 				height: BUTTON_HEIGHT_GRID_CELLS * hGrid,

@@ -1,9 +1,10 @@
 import type { EditorPluginContext, LoadingIndicator } from '@8f4e/editor-core';
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import type { LoadingIndicatorsPluginOptions } from './options';
 import { installVisibility } from './visibility';
 
-type TextSpan = { x: number; text: string; color: PaletteIndex };
+type TextSpan = { x: number; glyphs: GlyphIds; color: PaletteIndex };
 type Row = { indicator: LoadingIndicator; y: number; width: number; spans: TextSpan[] };
 
 function formatElapsedTime(elapsed: number): string {
@@ -18,11 +19,11 @@ function prepareRow(indicator: LoadingIndicator, columns: number, grid: number, 
 	const statusText = status.slice(0, columns - message.length);
 	const durationText = duration.slice(0, columns - message.length - statusText.length);
 	const spans: TextSpan[] = [];
-	if (message) spans.push({ x: grid, text: message, color: PALETTE_INDICES.floatingInk });
+	if (message) spans.push({ x: grid, glyphs: textToGlyphIds(message), color: PALETTE_INDICES.floatingInk });
 	if (statusText)
 		spans.push({
 			x: (message.length + 1) * grid,
-			text: statusText,
+			glyphs: textToGlyphIds(statusText),
 			color:
 				indicator.status === 'done'
 					? PALETTE_INDICES.positiveBase
@@ -33,7 +34,7 @@ function prepareRow(indicator: LoadingIndicator, columns: number, grid: number, 
 	if (durationText)
 		spans.push({
 			x: (message.length + statusText.length + 1) * grid,
-			text: durationText,
+			glyphs: textToGlyphIds(durationText),
 			color: PALETTE_INDICES.floatingMuted,
 		});
 	return { indicator, y, width: (message.length + statusText.length + durationText.length + 2) * grid, spans };
@@ -86,7 +87,7 @@ export function installPresentation(
 		draw.startGroup(0, top);
 		for (const row of rows) {
 			draw.drawFill(0, row.y, PALETTE_INDICES.floatingSurface, row.width, rowHeight);
-			for (const span of row.spans) draw.drawText(span.x, row.y, span.text, span.color);
+			for (const span of row.spans) draw.drawGlyphs(span.x, row.y, span.glyphs, span.color);
 		}
 		draw.endGroup();
 	});

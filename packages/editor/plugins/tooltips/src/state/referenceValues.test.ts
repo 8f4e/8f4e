@@ -48,13 +48,7 @@ async function setup(source: string) {
 		current.animation.startedAt = undefined;
 		const engine = createDrawContextMock();
 		drawTooltip(engine, state, block, memory, current);
-		return current.liveValues.map(liveValue =>
-			vi
-				.mocked(engine.drawCharacter)
-				.mock.calls.filter(([x, y]) => y === liveValue.y && x >= liveValue.x)
-				.map(([, , character]) => String.fromCharCode(character))
-				.join('')
-		);
+		return vi.mocked(engine.drawNumericText).mock.calls.map(([, , text]) => text);
 	}
 
 	return { compiled, store, tooltip, block, memory, renderValues };

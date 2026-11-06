@@ -97,16 +97,16 @@ async function setup(text = source, installed = true) {
 		gl.drawArraysInstanced.mockClear();
 		layers.draw({ state, memoryViews });
 	};
-	const drawText = vi.fn();
+	const drawGlyphs = vi.fn();
 	const drawLabels = (codeBlock: CodeBlockGraphicData) => {
-		drawText.mockClear();
+		drawGlyphs.mockClear();
 		drawers.drawCodeBlock({
-			draw: { drawText, drawFill: vi.fn(), drawCharacter: vi.fn() } as unknown as DrawContext,
+			draw: { drawGlyphs, drawFill: vi.fn(), drawSprite: vi.fn() } as unknown as DrawContext,
 			state,
 			codeBlock,
 			memoryViews,
 		});
-		return drawText.mock.calls.map(([x, y, text]) => ({ x, y, text }));
+		return drawGlyphs.mock.calls.map(([x, y, glyphs]) => ({ x, y, text: String.fromCharCode(...glyphs) }));
 	};
 	cleanups.push(store.dispose);
 	if (dispose) cleanups.push(dispose);

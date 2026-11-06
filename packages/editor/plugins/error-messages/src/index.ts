@@ -2,11 +2,12 @@ import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { gapCalculator, getCodeBlockErrors, wrapText } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, CodeBlockLayoutContext } from '@8f4e/editor-state-types';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 
 export const errorMessagesPlugin: EditorPlugin = {
 	id: 'error-messages',
 	setup: ({ store, layout, drawers }) => {
-		const messagesByBlock = new WeakMap<CodeBlockGraphicData, Array<{ lines: string[]; y: number }>>();
+		const messagesByBlock = new WeakMap<CodeBlockGraphicData, Array<{ lines: GlyphIds[]; y: number }>>();
 		const contribution = layout.createContribution();
 		const prepare = ({ codeBlock, state }: CodeBlockLayoutContext) => {
 			const wrapWidth = Math.floor(codeBlock.width / state.viewport.vGrid) - 1;
@@ -38,7 +39,7 @@ export const errorMessagesPlugin: EditorPlugin = {
 					// Place messages at the end of the row's gap, after other contributed content.
 					const y = (gapCalculator(row + 1, codeBlock.gaps) - remaining) * state.viewport.hGrid;
 					remainingRows.set(row, remaining - lines.length);
-					return { lines, y };
+					return { lines: lines.map(textToGlyphIds), y };
 				})
 			);
 		};
@@ -52,7 +53,7 @@ export const errorMessagesPlugin: EditorPlugin = {
 			for (const { lines, y } of messagesByBlock.get(codeBlock) ?? []) {
 				draw.drawFill(0, y, PALETTE_INDICES.negativeSurface, codeBlock.width, lines.length * state.viewport.hGrid);
 				lines.forEach((line, row) =>
-					draw.drawText(0, y + row * state.viewport.hGrid, line, PALETTE_INDICES.negativeOn)
+					draw.drawGlyphs(0, y + row * state.viewport.hGrid, line, PALETTE_INDICES.negativeOn)
 				);
 			}
 		});

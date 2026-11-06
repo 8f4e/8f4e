@@ -3,7 +3,7 @@ import type { DrawContext } from '@8f4e/web-ui';
 import { vi } from 'vitest';
 
 export function createDrawingContext(state: State, codeBlock: CodeBlockGraphicData) {
-	const draw = { drawText: vi.fn() };
+	const draw = { drawGlyphs: vi.fn() };
 	const context: CodeBlockDrawerContext = {
 		draw: draw as unknown as DrawContext,
 		state,

@@ -1,8 +1,11 @@
 import initEditor from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import { expect, test, vi } from 'vitest';
 import { contextMenuPlugin } from '../src/index';
+
+const FLOATING_UI = textToGlyphIds('Floating UI');
 
 test.each([
 	{ width: 768, height: 384 },
@@ -22,7 +25,7 @@ test.each([
 					events = context.events;
 					const removeOverlay = context.drawers.registerCanvasOverlay(({ draw }) => {
 						draw.drawFill(width - 180, height - 96, PALETTE_INDICES.negativeSurface, 180, 96);
-						draw.drawText(width - 172, height - 80, 'Floating UI', PALETTE_INDICES.negativeOn);
+						draw.drawGlyphs(width - 172, height - 80, FLOATING_UI, PALETTE_INDICES.negativeOn);
 					});
 					const removeMenu = context.menus.registerMenu('mainMenu', () => [
 						{ title: 'Actions', isSectionTitle: true },

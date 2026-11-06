@@ -1,16 +1,30 @@
 import type { SpriteAtlasGrid, SpriteAtlasImage, SpriteId } from 'glugglugglug';
-import { createAtlasLayout, FONT_COLUMNS, GLYPH_COUNT } from './atlasLayout.ts';
+import { createAtlasLayout, FONT_COLUMNS } from './atlasLayout.ts';
+import { CP437_CHARACTERS, GLYPH_COUNT } from './characterSet.ts';
 import { writeGlyph } from './font.ts';
 import { DEFAULT_FONT, FONTS, type Font } from './fonts/catalog.ts';
 import decodeFontBase64 from './fonts/font-decoder.ts';
 
+export { CP437_CHARACTERS } from './characterSet.ts';
 export { DEFAULT_FONT, FONT_NAMES, type Font } from './fonts/catalog.ts';
 
 export const FILL_SPRITE_ID = GLYPH_COUNT as SpriteId;
 
-/** Bundled glyph IDs match ASCII character codes; unsupported characters use the question mark. */
+const glyphIds = new Map([...CP437_CHARACTERS].map((character, id) => [character.charCodeAt(0), id as SpriteId]));
+
+/** Resolve Unicode text to shared CP437 glyph IDs; unsupported characters use the question mark. */
 export function getGlyphSpriteId(character: number): SpriteId {
-	return (character >= 0 && character < GLYPH_COUNT ? character : 63) as SpriteId;
+	return glyphIds.get(character) ?? (63 as SpriteId);
+}
+
+export type GlyphIds = readonly SpriteId[];
+
+/**
+ * Converts text to glyph IDs.
+ * Only call during preparation; never from drawers or render callbacks.
+ */
+export function textToGlyphIds(text: string): GlyphIds {
+	return Array.from({ length: text.length }, (_, index) => getGlyphSpriteId(text.charCodeAt(index)));
 }
 
 export interface FontAtlas {

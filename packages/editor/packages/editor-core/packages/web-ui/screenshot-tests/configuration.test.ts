@@ -1,10 +1,12 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import init, { createEditorDrawerRegistry, registerWebUiConfig } from '@8f4e/web-ui';
+import init, { createEditorDrawerRegistry, registerWebUiConfig, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
+
+const SAMPLE_TEXT = textToGlyphIds('Sample text');
 
 test('applies project appearance settings and restores defaults after project replacement', async () => {
 	const handlers = new Map<string, Set<(event: unknown) => void>>();
@@ -29,7 +31,7 @@ test('applies project appearance settings and restores defaults after project re
 	registerWebUiConfig(store);
 	const drawers = createEditorDrawerRegistry();
 	const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state }) => {
-		draw.drawText(state.viewport.vGrid, state.viewport.hGrid, 'Sample text', PALETTE_INDICES.inkBase);
+		draw.drawGlyphs(state.viewport.vGrid, state.viewport.hGrid, SAMPLE_TEXT, PALETTE_INDICES.inkBase);
 	});
 	const renderer = await init(store, events, canvas, createMockMemoryViews(), { loading: store.loading, drawers });
 	const state = store.getState();

@@ -20,7 +20,6 @@ const mocks = vi.hoisted(() => {
 		setSpriteAtlas: vi.fn(),
 		drawSprite: vi.fn(),
 		drawFill: vi.fn(),
-		drawCharacter: vi.fn(),
 		renderFrame: vi.fn((drawFrame: () => void) => {
 			for (const hook of engine.hooks.preDraw) hook();
 			drawFrame();
@@ -71,10 +70,10 @@ function createFontAtlas(characterWidth = 8, characterHeight = 16) {
 	return {
 		image: {
 			width: characterWidth * 16,
-			height: characterHeight * 9,
-			data: new Uint8Array(characterWidth * 16 * characterHeight * 9),
+			height: characterHeight * 17,
+			data: new Uint8Array(characterWidth * 16 * characterHeight * 17),
 		},
-		grid: { cellWidth: characterWidth, cellHeight: characterHeight, columns: 16, cellCount: 129 },
+		grid: { cellWidth: characterWidth, cellHeight: characterHeight, columns: 16, cellCount: 257 },
 	};
 }
 

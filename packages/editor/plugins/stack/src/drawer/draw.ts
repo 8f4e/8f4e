@@ -1,6 +1,9 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { DrawContext } from '@8f4e/web-ui';
+import type { DrawContext, GlyphIds } from '@8f4e/web-ui';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import type { StackLabel } from '../types';
+
+const [LEFT_BRACKET, RIGHT_BRACKET] = textToGlyphIds('[]');
 
 const BRACKET_ANIMATION_DURATION_MS = 2200;
 const MAX_BRACKET_OFFSET_IN_CELLS = 0.375;
@@ -20,7 +23,7 @@ function drawBracketedValue(
 	hGrid: number,
 	x: number,
 	y: number,
-	value: string,
+	value: GlyphIds,
 	now: number,
 	reducedMotion: boolean
 ): void {
@@ -35,9 +38,9 @@ function drawBracketedValue(
 	const rightBracketX = rightBracketBaseX + bracketOffset + (vGrid - bracketWidth) / 2;
 	const color = PALETTE_INDICES.inkBase;
 
-	engine.drawCharacter(leftBracketX, bracketY, 91, color, bracketWidth, bracketHeight);
-	engine.drawText(x + vGrid, y, value, PALETTE_INDICES.secondaryBase);
-	engine.drawCharacter(rightBracketX, bracketY, 93, color, bracketWidth, bracketHeight);
+	engine.drawSprite(leftBracketX, bracketY, LEFT_BRACKET, color, bracketWidth, bracketHeight);
+	engine.drawGlyphs(x + vGrid, y, value, PALETTE_INDICES.secondaryBase);
+	engine.drawSprite(rightBracketX, bracketY, RIGHT_BRACKET, color, bracketWidth, bracketHeight);
 }
 
 export default function drawStack(
@@ -48,7 +51,7 @@ export default function drawStack(
 	now: number,
 	reducedMotion: boolean
 ): void {
-	for (const { x, y, text } of values) {
-		drawBracketedValue(engine, vGrid, hGrid, x, y, text, now, reducedMotion);
+	for (const { x, y, glyphs } of values) {
+		drawBracketedValue(engine, vGrid, hGrid, x, y, glyphs, now, reducedMotion);
 	}
 }

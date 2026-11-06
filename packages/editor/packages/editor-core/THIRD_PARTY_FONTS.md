@@ -63,4 +63,24 @@ Notes:
 - License: Public domain
 - Local notice: `packages/editor/packages/editor-core/licenses/x11-misc-fixed-public-domain.txt`
 
-The bundled ASCII glyphs are converted from the upstream 6×10 BDF font.
+The bundled glyphs are converted from the upstream 6×10 BDF font.
+
+## Oldschool PC fonts
+
+- Upstream project: [VileR's Ultimate Oldschool PC Font Pack v2.2](https://int10h.org/oldschool-pc-fonts/)
+- Local converted fonts: `ibmvga8x16`, `olivettithin8x16`
+- Source bitmaps: `Bm437_IBM_VGA_8x16.otb`, `Bm437_OlivettiThin_8x16.otb`
+- License: Creative Commons Attribution-ShareAlike 4.0 International
+- Local license text: `packages/editor/packages/editor-core/licenses/oldschool-pc-CC-BY-SA-4.0.txt`
+
+The CP437 glyphs are converted derivatives of VileR's bitmap reproductions. Existing printable ASCII designs are
+retained. Redistributions must preserve attribution and follow the upstream license.
+
+## CP437 conversion sources
+
+Each bundled font contains 256 CP437 slots. Extended glyphs come from the upstream BDF sources for Terminus,
+Spleen, Cozette, and X11 Misc Fixed, and the Oldschool PC bitmap fonts listed above. TempleOS uses
+[Rendello's bitmap conversion](https://github.com/rendello/templeos_font). The two larger bundled Spleen faces use
+the upstream CP437 BDFs, which include the graphical control-range symbols. Existing printable ASCII designs
+are retained, and unavailable glyphs are blank. Upstream font files are downloaded separately and are not bundled
+in this repository.

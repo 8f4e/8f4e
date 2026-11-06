@@ -6,7 +6,7 @@ export function expandLineToCells(line: string, tabStops: number[]): Array<numbe
 	for (let index = 0; index < line.length; index += 1) {
 		if (line[index] === '\t') {
 			const advance = getTabAdvance(visualColumn, tabStops);
-			cells.push(9, ...new Array(advance - 1).fill(32));
+			cells.push(0x2192, ...new Array(advance - 1).fill(32));
 			visualColumn += advance;
 		} else {
 			cells.push(line.charCodeAt(index));

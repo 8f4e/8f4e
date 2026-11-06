@@ -92,7 +92,7 @@ describe('selected line tooltip animation', () => {
 
 		drawTooltip(engine, state, codeBlock, memoryViews, tooltip);
 
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(8, 16, '?'.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawNumericText)).toHaveBeenCalledWith(8, 16, '?', highlightFont);
 	});
 });
 
@@ -219,12 +219,12 @@ describe('tooltip drawing', () => {
 
 		expect(vi.mocked(engine.drawFill)).toHaveBeenCalledWith(-192, 16, PALETTE_INDICES.inverseSurface, 184, 64);
 		expect(vi.mocked(engine.drawFill)).toHaveBeenCalledWith(-120, 48, PALETTE_INDICES.negativeSoft, 48, 16);
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-184, 16, 'a'.charCodeAt(0), expect.any(Number));
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-184, 32, 'A'.charCodeAt(0), expect.any(Number));
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-184, 48, 'b'.charCodeAt(0), expect.any(Number));
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-128, 48, '['.charCodeAt(0), expect.any(Number));
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-184, 64, 'a'.charCodeAt(0), expect.any(Number));
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(-128, 64, '['.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(-184, 16, 'a'.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(-184, 32, 'A'.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(-184, 48, 'b'.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(-128, 48, '['.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(-184, 64, 'a'.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(-128, 64, '['.charCodeAt(0), expect.any(Number));
 	});
 
 	it('draws live memory declaration values from tooltip metadata', () => {
@@ -328,35 +328,28 @@ describe('tooltip drawing', () => {
 
 		drawTooltip(engine, state, block, createMemoryViews({ int32: [0, 0, 20, 0, 0, 123] }), tooltip);
 
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(
+		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(
 			expect.any(Number),
 			expect.any(Number),
 			'a'.charCodeAt(0),
 			expect.any(Number)
 		);
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(
+		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(
 			expect.any(Number),
 			expect.any(Number),
 			'v'.charCodeAt(0),
 			expect.any(Number)
 		);
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(
-			expect.any(Number),
-			expect.any(Number),
-			'2'.charCodeAt(0),
-			expect.any(Number)
-		);
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(
+		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(
 			expect.any(Number),
 			expect.any(Number),
 			'd'.charCodeAt(0),
 			expect.any(Number)
 		);
-		expect(vi.mocked(engine.drawCharacter)).toHaveBeenCalledWith(
-			expect.any(Number),
-			expect.any(Number),
-			'1'.charCodeAt(0),
-			expect.any(Number)
-		);
+		expect(vi.mocked(engine.drawNumericText).mock.calls).toEqual([
+			[-96, 32, '8', PALETTE_INDICES.inverseAccent],
+			[-112, 48, '20', PALETTE_INDICES.inverseAccent],
+			[-112, 64, '123', PALETTE_INDICES.inverseAccent],
+		]);
 	});
 });

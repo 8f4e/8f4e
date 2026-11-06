@@ -1,6 +1,7 @@
 import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import { errorMessagesPlugin } from '../src/index';
 
@@ -29,16 +30,27 @@ test('draws wrapped contributor messages between source rows and clears their re
 				id: 'fixture-text',
 				setup: services => {
 					context = services;
-					return services.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+					const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
+					const removePreparation = services.layout.subscribe(({ codeBlock }) => {
+						glyphsByBlock.set(
+							codeBlock,
+							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
+						);
+					});
+					const removeDrawer = services.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						codeBlock.displayModel.lines.forEach((line, row) =>
-							draw.drawText(
+							draw.drawGlyphs(
 								state.viewport.vGrid,
 								gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
-								line.text,
+								glyphsByBlock.get(codeBlock)![row],
 								PALETTE_INDICES.inkBase
 							)
 						);
 					});
+					return () => {
+						removePreparation();
+						removeDrawer();
+					};
 				},
 			},
 		],

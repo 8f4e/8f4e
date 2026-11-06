@@ -1,5 +1,5 @@
 import type { PaletteIndex } from '@8f4e/editor-palette';
-import { FILL_SPRITE_ID, getGlyphSpriteId } from '@8f4e/sprite-generator';
+import { FILL_SPRITE_ID, type GlyphIds } from '@8f4e/sprite-generator';
 import type { SpriteId } from 'glugglugglug';
 import { DrawContext as SpriteDrawContext, type SpriteTarget } from 'glugglugglug/utils';
 import type { SpriteCell } from './spriteCell';
@@ -22,13 +22,21 @@ export class DrawContext {
 	drawFill(x: number, y: number, color: PaletteIndex, width: number, height: number): void {
 		this.drawSprite(x, y, FILL_SPRITE_ID, color, width, height);
 	}
-	drawCharacter(x: number, y: number, character: number, color: PaletteIndex, width?: number, height?: number): void {
-		this.drawSprite(x, y, getGlyphSpriteId(character), color, width, height);
+	/** Draw already prepared glyph IDs, preserving space cells without submitting them. */
+	drawGlyphs(x: number, y: number, glyphs: GlyphIds, color: PaletteIndex): void {
+		for (let index = 0; index < glyphs.length; index++) {
+			const glyph = glyphs[index];
+			if (glyph !== 32) this.drawSprite(x + index * this.characterWidth, y, glyph, color);
+		}
 	}
-	drawText(x: number, y: number, text: string, color: PaletteIndex): void {
+	/**
+	 * Draw formatted live numbers using their ASCII character codes as glyph IDs.
+	 * Trusts its inputs for performance: callers supply ASCII numeric text; no validation or Unicode mapping occurs.
+	 */
+	drawNumericText(x: number, y: number, text: string, color: PaletteIndex): void {
 		for (let index = 0; index < text.length; index++) {
 			const character = text.charCodeAt(index);
-			if (character !== 32) this.drawCharacter(x + index * this.characterWidth, y, character, color);
+			if (character !== 32) this.drawSprite(x + index * this.characterWidth, y, character as SpriteId, color);
 		}
 	}
 	drawResolvedText(x: number, y: number, cells: readonly (SpriteCell | null)[]): void {

@@ -64,7 +64,14 @@ test('renders code, notes, tabs, disabled blocks, folds, and contributed gaps', 
 			notes: [
 				{
 					id: 3,
-					code: ['note explanation', '; @pos 4 18', '# Code rendering', 'Text and *emphasis* with 123.', 'noteEnd'],
+					code: [
+						'note explanation',
+						'; @pos 4 18',
+						'# Code rendering',
+						'Text and *emphasis* with 123.',
+						'éΩ ┌─┐ │░▒▓│ └─┘',
+						'noteEnd',
+					],
 				},
 			],
 		},
