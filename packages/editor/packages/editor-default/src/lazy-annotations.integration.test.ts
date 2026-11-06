@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import initState from '@8f4e/editor-state';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type GlyphIds, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createLazyPluginRegistry } from './lazy-plugins';
 
@@ -91,7 +91,8 @@ entryEnd`);
 		endGroup: () => {},
 		drawFill: () => {},
 		drawSprite: () => {},
-		drawGlyphs: (_x: number, _y: number, text: string) => drawn.push(text),
+		drawGlyphs: (_x: number, _y: number, glyphs: GlyphIds) => drawn.push(String.fromCharCode(...glyphs)),
+		drawNumericText: (_x: number, _y: number, text: string) => drawn.push(text),
 	} as unknown as DrawContext;
 	const render = () => {
 		drawn.length = 0;
