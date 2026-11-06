@@ -8,10 +8,14 @@ const [runtime, ...args] = JSON.parse(await readFile('dist/tests/runtime-argumen
 for (const period of [64, 256]) {
 	const name = `8f4e-test-${process.pid}-${period}`;
 	const env = { ...process.env, JACK_DEFAULT_SERVER: name, JACK_NO_AUDIO_RESERVATION: '1' };
-	const server = spawn('jackd', ['--no-realtime', '--name', name, '-d', 'dummy', '-r', '48000', '-p', String(period)], {
-		env,
-		stdio: ['ignore', 'pipe', 'pipe'],
-	});
+	const server = spawn(
+		'jackd',
+		['--no-realtime', '--name', name, '-d', 'dummy', '-C', '0', '-P', '0', '-r', '48000', '-p', String(period)],
+		{
+			env,
+			stdio: ['ignore', 'pipe', 'pipe'],
+		}
+	);
 	let log = '';
 	server.stdout.on('data', data => {
 		log += data;
@@ -47,6 +51,7 @@ for (const period of [64, 256]) {
 		assert.equal(wrongRate.status, 1, wrongRate.stderr);
 		assert.match(wrongRate.stderr, /JACK sample rate does not match/);
 		const shutdown = spawn(runtime, [...args, '--no-midi'], { env, stdio: ['ignore', 'ignore', 'pipe'] });
+		const shutdownExit = once(shutdown, 'exit', { signal: AbortSignal.timeout(10000) });
 		let shutdownLog = '';
 		shutdown.stderr.on('data', data => {
 			shutdownLog += data;
@@ -56,9 +61,8 @@ for (const period of [64, 256]) {
 				await setTimeout(50);
 			}
 			assert.match(shutdownLog, /Running JACK client/);
-			const exited = once(shutdown, 'exit', { signal: AbortSignal.timeout(5000) });
 			server.kill('SIGTERM');
-			const [code] = await exited;
+			const [code] = await shutdownExit;
 			assert.equal(code, 1, shutdownLog);
 			assert.match(shutdownLog, /JACK server shut down/);
 		} finally {

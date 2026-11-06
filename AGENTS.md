@@ -14,7 +14,8 @@
   Plain-text paste remains in keyboard editing. It keeps core's `contextMenu` feature disabled to prevent invisible menus from blocking input.
 - Compiler integration lives in `packages/editor/plugins/compiler/` (`@8f4e/editor-plugin-compiler`). The default editor constructs and installs it first and injects its live handles into dependent plugins, including runtimes. Core emits input-change events and consumes accepted artifacts.
 - The standalone Linux audio/MIDI host lives in `packages/runtime-linux/`. It embeds Wasmtime and uses JACK,
-  consuming shared-memory `.wasm` and numeric buffer byte addresses. The compiler always imports shared
+  consuming shared-memory `.wasm` and numeric buffer byte addresses. It automatically connects hardware audio/MIDI
+  ports, including MIDI controllers attached during playback. The compiler always imports shared
   `host.memory`; JavaScript hosts create it with `shared: true` and an explicit maximum. The separate
   `tools/runtime-command` development tool reads CLI `--memory-output` JSON and generates numeric launch commands.
   The native host has no symbol/JSON parser or compiler build dependency. Native testing and releases belong to

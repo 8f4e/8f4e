@@ -1,7 +1,8 @@
 # @8f4e/runtime-linux
 
 A standalone C++20 Linux host for compiled 8f4e instruments. It embeds Wasmtime and connects to an existing JACK
-server for stereo audio output and MIDI input. It loads WebAssembly and accepts numeric audio-buffer byte addresses.
+server for stereo audio output and MIDI input, with automatic hardware connections. It loads WebAssembly and accepts
+numeric audio-buffer byte addresses.
 Memory limits come directly from the WASM import; the runtime needs no memory-map file, JSON parser, editor or Node.js.
 
 ## Build on Linux
@@ -51,7 +52,7 @@ numeric byte addresses and the declared audio-buffer size. Generate a launch com
 ```sh
 node tools/runtime-command/src/cli.mjs dx7.wasm /tmp/dx7.memory.json \
   --runtime ./8f4e-runtime -- \
-  --connect-left system:playback_1 --connect-right system:playback_2 --sample-rate 48000
+  --sample-rate 48000
 ```
 
 Copy `/tmp/dx7.wasm` to the Linux machine as `dx7.wasm`, alongside the executable, and run the printed command there.
@@ -60,8 +61,8 @@ whenever recompilation changes the memory layout. For separate buffers, give the
 `--left output:left --right output:right` before `--`; full nested references such as `synth/voice/output:left` are supported.
 
 The compiler always emits shared memory. This host enables Wasmtime's shared-memory support and imports the
-memory declared by the WASM file. Initialization, MIDI and audio execute sequentially in one instance on JACK's
-playback thread; shared memory does not introduce concurrent WASM execution.
+memory declared by the WASM file. Initialization completes before playback; MIDI and audio execute sequentially
+in one instance on JACK's playback thread. Shared memory does not introduce concurrent WASM execution.
 
 ## Run with Patchbox OS and Pisound
 
@@ -70,29 +71,37 @@ Configure and start Patchbox's JACK service through `patchbox`. Set its sample r
 directly. Patchbox shares its JACK server between users with `JACK_PROMISCUOUS_SERVER=jack`; keep that environment
 setting when launching from SSH, a button script or a service. See [Blokas's explanation](https://community.blokas.io/t/understanding-jack-audio/3662).
 
-Use `jack_lsp -tp` to list audio and MIDI ports. For an instrument whose 128-sample left/right buffers start at
-byte offsets 0 and 512, and a MIDI source named `pisound:midi/capture_1`, the numeric command is:
+For an instrument whose 128-sample left/right buffers start at byte offsets 0 and 512, the numeric command is:
 
 ```sh
 export JACK_PROMISCUOUS_SERVER=jack
-./8f4e-runtime instrument.wasm --left 0 --right 512 --buffer-size 128 \
-  --connect-left system:playback_1 --connect-right system:playback_2 \
-  --midi-source pisound:midi/capture_1 --sample-rate 48000
+./8f4e-runtime instrument.wasm --left 0 --right 512 --buffer-size 128 --sample-rate 48000
 ```
 
-Use the generated command for the actual DX7 addresses and the port names reported by your JACK server.
+Use the generated command for the actual DX7 addresses. The runtime automatically connects its left/right channels
+to JACK's first two hardware audio playback ports and connects every hardware MIDI source to its MIDI input.
+You can start the instrument before attaching a USB MIDI controller: as soon as JACK exposes the device, it is
+connected while playback continues. Unplugging and reconnecting a controller, including a changed port name,
+also works without restarting the instrument. Multiple hardware controllers can feed the same instrument.
+Software MIDI outputs are excluded from automatic connections.
+
 The client defaults to `8f4e` and exposes `8f4e:out_left`, `8f4e:out_right` and `8f4e:midi_in`.
-`--client-name` selects an unused name when running multiple instruments. Without connection options, ports remain
-available for routing through Patchage or `jack_connect`:
+`--client-name` selects an unused name when running multiple instruments. There are no routing options or
+controller names to configure. Port discovery and connection work run on the main thread; JACK's port notifications
+only flag changes, leaving MIDI and audio processing uninterrupted.
 
-```sh
-jack_connect 8f4e:out_left system:playback_1
-jack_connect 8f4e:out_right system:playback_2
-jack_connect 'your MIDI source port' 8f4e:midi_in
-```
+### Hardware MIDI bridge
 
-If your hardware MIDI input is only visible to ALSA, expose it to JACK using `a2jmidid -e`, then select its resulting
-JACK port. Blokas documents this setup in its [JACK MIDI guidance](https://community.blokas.io/t/getting-started-dramas-recognising-a-midi-controller/6002/6).
+Patchbox must expose hardware MIDI devices to JACK. Enable one hardware MIDI bridge: JACK's ALSA MIDI driver,
+or `a2jmidid -e`. The runtime recognizes the hardware-port flags used by both bridges. With a bridge running,
+USB controllers and Pisound's DIN input are discovered and connected automatically.
+
+If your devices are only visible to ALSA, install `a2jmidid` and configure it once as a boot service using
+[Blokas's setup instructions](https://community.blokas.io/t/getting-started-dramas-recognising-a-midi-controller/6002/6).
+After that, plugging in a controller while the instrument is running requires no routing commands.
+`jack_lsp -tp` can show which hardware ports JACK currently exposes.
+
+### Instrument configuration
 
 `--left` is required and accepts a decimal byte offset, including zero. `--right` defaults to the left address for
 dual-mono output. Audio samples are little-endian float32 values. `--buffer-size` defaults to 128 and must equal the
@@ -108,8 +117,8 @@ project without a MIDI callback. JACK supplies complete MIDI messages; SysEx is 
 next WASM block boundary at or after their JACK timestamp, rather than being applied early to the entire JACK cycle.
 
 Output gain defaults to `0.25`; use `--gain` to change it. Samples are clipped to `[-1, 1]` after gain. Compilation and
-host buffer allocation happen before activation; WASM initialization runs in JACK's thread initializer, outside the
-process callback. Ctrl-C and SIGTERM deactivate the client and close its ports. WASM traps stop playback and report
+host buffer allocation happen before activation. WASM initialization runs exactly once through JACK's thread
+initializer, outside the process callback; other JACK threads wait for initialization to complete. Ctrl-C and SIGTERM deactivate the client and close its ports. WASM traps stop playback and report
 the error on the main thread. `--blocks <count>` stops after a fixed number of WASM blocks for smoke tests.
 This first version supplies audio output and MIDI input only; audio input, MIDI output and hot reload are outside its scope.
 
@@ -124,7 +133,9 @@ npx nx run @8f4e/runtime-linux:test
 This compiles a local `.8f4e` fixture through the real CLI and verifies initialization, MIDI callbacks, numeric memory
 routing, stereo/mono output and gain. Integration tests start isolated JACK dummy servers with 64- and 256-sample cycles,
 launch the generated runtime command, send MIDI and capture stereo samples from its JACK ports. They also verify SysEx
-is ignored, bounded playback, sample-rate mismatch rejection, numeric argument errors and clean shutdown.
+is ignored, automatic hardware audio/MIDI connections, ignored software MIDI sources, live controller
+plug/unplug/replug, startup with an attached controller, bounded playback, sample-rate mismatch rejection,
+numeric argument errors and clean shutdown.
 No sound card, MIDI interface or existing JACK server is needed.
 
 The **Linux runtime / Test** workflow runs these checks in Bookworm containers on native x86-64 and ARM64 runners.

@@ -46,20 +46,9 @@ test('resolves nested symbols to byte addresses, including the declared buffer s
 				left: 'synth/voice/output:left',
 				right: 'synth/voice/output:right',
 			},
-			['--connect-left', 'system:playback_1']
+			['--gain', '0.5']
 		),
-		[
-			'/opt/8f4e-runtime',
-			'program.wasm',
-			'--left',
-			'64',
-			'--right',
-			'80',
-			'--buffer-size',
-			'4',
-			'--connect-left',
-			'system:playback_1',
-		]
+		['/opt/8f4e-runtime', 'program.wasm', '--left', '64', '--right', '80', '--buffer-size', '4', '--gain', '0.5']
 	);
 });
 
@@ -94,13 +83,9 @@ test('CLI prints a launch command and forwards JACK options', async () => {
 		const metadata = path.join(directory, 'memory.json');
 		await writeFile(metadata, JSON.stringify(info));
 		const cli = fileURLToPath(new URL('../src/cli.mjs', import.meta.url));
-		const output = execFileSync(
-			process.execPath,
-			[cli, 'a b.wasm', metadata, '--', '--midi-source', 'pisound:midi/capture_1'],
-			{
-				encoding: 'utf8',
-			}
-		);
+		const output = execFileSync(process.execPath, [cli, 'a b.wasm', metadata, '--', '--sample-rate', '48000'], {
+			encoding: 'utf8',
+		});
 		assert.equal(
 			output.trim(),
 			shellCommand([
@@ -112,8 +97,8 @@ test('CLI prints a launch command and forwards JACK options', async () => {
 				'0',
 				'--buffer-size',
 				'128',
-				'--midi-source',
-				'pisound:midi/capture_1',
+				'--sample-rate',
+				'48000',
 			])
 		);
 		assert.throws(() => execFileSync(process.execPath, [cli, 'a.wasm', metadata, '--left'], { stdio: 'pipe' }));

@@ -13,7 +13,7 @@ public:
           const std::string &entry, const std::string &midi_callback);
   ~Program();
   std::size_t frames() const;
-  // Call once on the playback thread before MIDI or rendering.
+  // Call once before MIDI or rendering.
   void initialize();
   void midi(MidiMessage message);
   // The caller supplies exactly frames() interleaved stereo frames.
