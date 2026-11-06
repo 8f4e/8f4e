@@ -13,6 +13,9 @@
   keyboard-memory, bars, meter, wave, and crossfade, plus gallery authoring/menu/file plugins and loading indicators.
   Plain-text paste remains in keyboard editing. It keeps core's `contextMenu` feature disabled to prevent invisible menus from blocking input.
 - Compiler integration lives in `packages/editor/plugins/compiler/` (`@8f4e/editor-plugin-compiler`). The default editor constructs and installs it first and injects its live handles into dependent plugins, including runtimes. Core emits input-change events and consumes accepted artifacts.
+- The standalone Linux audio/MIDI host lives in `packages/runtime-linux/`. It embeds Wasmtime and uses ALSA,
+  consuming CLI `.wasm` and `--memory-output` JSON artifacts compiled with `--no-shared-memory`. It is independent
+  of editor plugins; its native production build has no compiler dependency.
 - WebMCP lives in `packages/editor/packages/editor-webmcp/` as an external page-owned adapter bound to one editor's public `editing` handle. The editor website and example/test galleries compose it; gallery project switches dispose and recreate the bridge.
 - Optional editor features live in `packages/editor/plugins/<feature>/` as independent npm/Nx packages named
   `@8f4e/editor-plugin-<feature>`.
@@ -175,9 +178,12 @@
   tests and coverage on one runner.
 - `npx nx run @8f4e/vite-plugin-sources:build|test|typecheck`: Build or verify the reusable source collection plugin.
 - `npx nx run-many --target=build --all`: Build all packages/libs.
-- `npx nx run-many --target=test --all`: Run Vitest across all packages.
+- `npx nx run-many --target=test --all`: Run package tests, including Vitest and the Linux runtime's native CTest suite.
 - `npx nx run @8f4e/examples:test`: Run CLI example-project snapshot tests, then embedded `#test` modules in
   example `.8f4em` files through the CLI test runner.
+- `npx nx run @8f4e/runtime-linux:build|test`: Build or verify the native Linux ALSA host. Requires CMake, a C++20
+  compiler, ALSA and nlohmann-json development packages; CMake fetches a pinned Wasmtime C API. Tests compile a local
+  fixture through the CLI and use ALSA null output without hardware. See `packages/runtime-linux/README.md`.
 - `npx nx run-many --target=typecheck --all`: Type-check all packages; also run on pre-commit via Husky/lint-staged.
 - `npx nx run-many --target=lint --projects=@8f4e/editor-default,@8f4e/editor-website`: Biome check/fix for the
   composition and website. Use `run-many --target=lint --all` to lint every project if needed.

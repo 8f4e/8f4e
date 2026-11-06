@@ -1,0 +1,60 @@
+8f4e/v1
+
+function buffer
+#export buffer
+call main
+functionEnd
+
+function onMidiEvent
+#export onMidiEvent
+#impure
+param int status
+param int data1
+param int data2
+push &output:note
+push data1
+store
+push &output:velocity
+push data2
+store
+functionEnd
+
+entry main
+module output
+float[] left 4 0.125
+float[] right 4 -0.25
+int note 16
+int velocity 32
+int pointer &left
+
+push &pointer
+push &left
+store
+loop 4
+push pointer
+push note
+castToFloat
+div 128.0
+store
+push &pointer
+push pointer
+add 4
+store
+loopEnd
+
+push &pointer
+push &right
+store
+loop 4
+push pointer
+push velocity
+castToFloat
+div -128.0
+store
+push &pointer
+push pointer
+add 4
+store
+loopEnd
+moduleEnd
+entryEnd
