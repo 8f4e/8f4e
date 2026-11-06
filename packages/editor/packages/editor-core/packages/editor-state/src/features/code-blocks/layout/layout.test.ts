@@ -75,7 +75,7 @@ describe('independent layout contributions', () => {
 	});
 
 	it('lets subscribers recalculate requests from source changes and receive the resulting layout', () => {
-		const { store, state, block, layout } = setup();
+		const { store, state, block, layout, events } = setup();
 		const contribution = layout.createContribution();
 		const calculated = vi.fn();
 		const unsubscribe = layout.subscribe(({ codeBlock }) => {
@@ -90,7 +90,7 @@ describe('independent layout contributions', () => {
 		const calls = calculated.mock.calls.length;
 		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
 		expect(calculated).toHaveBeenCalledTimes(calls);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module audio', 'moduleEnd'] }], {
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: ['module audio', 'moduleEnd'] }], {
 			affectsCompilation: true,
 		});
 		expect(block.gaps.size).toBe(0);

@@ -74,11 +74,6 @@ export default function viewportDirectiveEffect(store: StateManager<State>, even
 		recomputeViewportAnchoredPosition(state, state.codeBlockRendering.selectedCodeBlock);
 	};
 
-	const syncProgrammaticSelectedCodeBlock = () => {
-		syncViewportAnchoredBlock(state, state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit);
-		recomputeViewportAnchoredPosition(state, state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit);
-	};
-
 	const recomputeAnchoredPositions = () => {
 		recomputeViewportAnchoredPositions(state);
 	};
@@ -92,7 +87,6 @@ export default function viewportDirectiveEffect(store: StateManager<State>, even
 
 	store.subscribe('codeBlockRendering.currentProject.blocks', syncAllBlocks);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.code', syncSelectedCodeBlock);
-	store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', syncProgrammaticSelectedCodeBlock);
 	events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 	events.on('gridSizeChanged', recomputeAnchoredPositions);
 	events.on('viewportChanged', recomputeAnchoredPositions);

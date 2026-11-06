@@ -5,6 +5,7 @@
 
 import type { ProjectGroupPath } from '@8f4e/language-spec';
 import type { CodeBlockGraphicData } from '../features/code-blocks/types';
+import type { EditorEventArguments, EditorEventPayload } from './events';
 
 /**
  * Generic size dimensions used across features.
@@ -45,9 +46,19 @@ export interface EventSubscriptionOptions {
  * Used throughout the editor for decoupled communication between features.
  */
 export interface EventDispatcher {
-	on: <T>(eventName: string, callback: (event: T) => void, options?: EventSubscriptionOptions) => void;
-	off: <T>(eventName: string, callback: (event: T) => void) => void;
-	dispatch: <T>(eventName: string, eventObject?: T, options?: EventDispatchOptions) => void;
+	on: <Name extends string, Payload = unknown>(
+		eventName: Name,
+		callback: (event: EditorEventPayload<Name, Payload>) => void,
+		options?: EventSubscriptionOptions
+	) => void;
+	off: <Name extends string, Payload = unknown>(
+		eventName: Name,
+		callback: (event: EditorEventPayload<Name, Payload>) => void
+	) => void;
+	dispatch: <Name extends string, Payload = unknown>(
+		eventName: Name,
+		...args: EditorEventArguments<Name, Payload, EventDispatchOptions>
+	) => void;
 }
 
 export interface EventDispatchOptions {

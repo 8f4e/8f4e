@@ -318,7 +318,7 @@ describe('public editor editing handle', () => {
 		block.cursor.row = 1;
 		block.cursor.col = block.code[1].length;
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line}9` : line)) }],
 			{ affectsCompilation: true }
 		);
@@ -476,13 +476,13 @@ describe('public editor editing handle', () => {
 	it('keeps pending source edits and an API batch as separate undo steps without delayed duplicates', async () => {
 		vi.useFakeTimers();
 		try {
-			const { editing, state, store } = setup();
+			const { editing, state, store, events } = setup();
 			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'original')!;
 			store.set('codeBlockRendering.selectedCodeBlock', block);
 			block.cursor.row = 1;
 			block.cursor.col = block.code[1].length;
 			applyCodeBlockSourceEdits(
-				store,
+				{ store, events },
 				[{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line}2` : line)) }],
 				{ affectsCompilation: true }
 			);

@@ -69,9 +69,9 @@ describe('project revision', () => {
 
 	it('announces changed source batches and ignores identical source', () => {
 		const code = ['module main', 'push 12', 'drop', 'moduleEnd'];
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
 		expect(state.projectChange.revision).toBe(1);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
 		expect(state.projectChange.revision).toBe(1);
 	});
 
@@ -141,7 +141,7 @@ describe('project revision', () => {
 	});
 
 	it('advances for regenerated environment constants and ignores identical regeneration', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 		const env = createMockCodeBlock({ name: 'env', blockType: 'constants', code: ['constants env', 'constantsEnd'] });
 		state.codeBlockRendering.currentProject.blocks.push(env);
 		store.set('envConstantContributions', { assets: ['const SOUND_SIZE 100'] });
@@ -157,9 +157,13 @@ describe('project revision', () => {
 		dispatch('openProjectGroup', { codeBlock: block });
 		store.set('codeBlockRendering.selectedCodeBlock', child);
 		expect(state.projectChange.revision).toBe(0);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }], {
-			affectsCompilation: true,
-		});
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }],
+			{
+				affectsCompilation: true,
+			}
+		);
 		expect(state.projectChange.revision).toBe(1);
 		dispatch('goToParentProjectGroup');
 		expect(state.projectChange.revision).toBe(1);

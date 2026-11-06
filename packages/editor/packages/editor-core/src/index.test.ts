@@ -276,7 +276,7 @@ describe('editor init', () => {
 		finishProject();
 		await vi.waitFor(() => expect(projectInstalled).toHaveBeenCalledOnce());
 		const loadedState = vi.mocked(initView).mock.calls[0][0].getState();
-		expect(loadedState.initialProjectState.notes).toEqual(project.notes);
+		expect(loadedState.initialProjectState!.notes).toEqual(project.notes);
 		expect(loadedState.editorConfig.font).toBe('spleen5x8');
 		expect(view.renderFrame).not.toHaveBeenCalled();
 		expect(ready).not.toHaveBeenCalled();

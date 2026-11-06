@@ -191,9 +191,4 @@ export type CodeBlockRendering = {
 	nextCodeBlockCreationIndex: number;
 	draggedCodeBlock?: CodeBlockGraphicData;
 	selectedCodeBlock?: CodeBlockGraphicData;
-	/**
-	 * Target for refreshing and saving a block after a programmatic update, including editor metadata.
-	 * Compiler input changes separately advance compilerInputRevision.
-	 */
-	selectedCodeBlockForProgrammaticEdit?: CodeBlockGraphicData;
 };

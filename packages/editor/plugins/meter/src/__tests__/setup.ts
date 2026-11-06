@@ -1,6 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { EditorPlugin } from '@8f4e/editor-core';
-import initState from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
 import { createEvents } from './events';
@@ -85,8 +85,7 @@ export async function setup(
 		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
 	};
 	const update = (code: string[]) => {
-		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);
-		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', code);
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
 	};
 	return {
 		store,

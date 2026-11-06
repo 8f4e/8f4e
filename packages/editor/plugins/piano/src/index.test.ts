@@ -217,11 +217,11 @@ describe('piano plugin', () => {
 	it('updates source positions and clears data and minimum width when a directive is removed', async () => {
 		const test = await setup();
 		test.codeBlock.code.splice(3, 0, '; note');
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		test.render();
 		expect(test.draw.startGroup).toHaveBeenCalledWith(0, 80);
 		test.codeBlock.code = test.codeBlock.code.filter(line => !line.includes('@piano'));
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.codeBlock.minGridWidth).toBeUndefined();
@@ -361,7 +361,7 @@ describe('piano plugin', () => {
 		expect(test.write).not.toHaveBeenCalled();
 		expect(await test.menuItems()).toEqual([]);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		expect(test.codeBlock.gaps.size).toBe(0);
 		expect(test.codeBlock.minGridWidth).toBeUndefined();
 	});

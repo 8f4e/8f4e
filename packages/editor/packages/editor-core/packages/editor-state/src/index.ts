@@ -100,7 +100,7 @@ export default function init(
 	registerEffect(viewport(store, events));
 	registerEffect(codeBlockActions(store, events));
 	registerEffect(projectGroupNavigation(store, events));
-	registerEffect(autoEnvConstants(store));
+	registerEffect(autoEnvConstants(store, events));
 	registerEffect(publishCompilationInputChanges(store, events));
 	registerEffect(codeBlockRendering(store, events, directives.definitions, layout));
 	registerEffect(viewportDirectiveEffect(store, events));

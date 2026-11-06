@@ -80,7 +80,7 @@ describe('lazy plugin loader', () => {
 		const { registration, plugin } = entry();
 		const editor = setup([registration], emptySource);
 		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
-		applyCodeBlockSourceEdits(editor.store, [{ codeBlock: block, code: ['module audio', '; @custom', 'moduleEnd'] }], {
+		applyCodeBlockSourceEdits(editor, [{ codeBlock: block, code: ['module audio', '; @custom', 'moduleEnd'] }], {
 			affectsCompilation: true,
 		});
 		await vi.waitFor(() => expect(plugin.setup).toHaveBeenCalledOnce());
@@ -93,7 +93,7 @@ describe('lazy plugin loader', () => {
 		const editor = setup([typed.registration, pasted.registration], emptySource);
 		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
 		editor.events.dispatch('enterEditMode');
-		applyCodeBlockSourceEdits(editor.store, [{ codeBlock: block, code: ['module audio', '; @typed', 'moduleEnd'] }], {
+		applyCodeBlockSourceEdits(editor, [{ codeBlock: block, code: ['module audio', '; @typed', 'moduleEnd'] }], {
 			affectsCompilation: true,
 		});
 		await vi.waitFor(() => expect(typed.plugin.setup).toHaveBeenCalledOnce());

@@ -26,7 +26,7 @@ export function createEvents(): EventDispatcher & { dispatchAsync: (name: string
 				(listeners.get(name) ?? []).filter(item => item.callback !== callback)
 			);
 		},
-		dispatch: (name, event) => {
+		dispatch: (name, ...[event]) => {
 			dispatch(name, event);
 		},
 		dispatchAsync: async (name, event) => {

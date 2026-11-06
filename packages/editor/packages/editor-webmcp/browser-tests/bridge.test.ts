@@ -38,6 +38,16 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 		const editor = await pending;
 		cleanups.push(() => editor.dispose());
 		await vi.waitFor(() => expect(loaded).toBe(true));
+		await vi.waitFor(() =>
+			expect(editor.state.loadingIndicators.find(indicator => indicator.id === 'editor-plugins')?.status).toBe('done')
+		);
+		await vi.waitFor(() =>
+			expect(
+				editor.state.loadingIndicators
+					.filter(indicator => indicator.id.startsWith('plugin:'))
+					.every(indicator => indicator.status === 'done')
+			).toBe(true)
+		);
 		const bridge = createEditorWebMcp({ document, editor, getCompilerDiagnostics: editor.getCompilerDiagnostics });
 		cleanups.push(() => bridge.dispose());
 		await bridge.ready;

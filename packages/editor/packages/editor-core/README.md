@@ -60,6 +60,11 @@ after this sequence. Setup runs separately for each editor instance; allocate in
 Plugins receive the existing state manager and event dispatcher directly. Store disposal belongs to the editor and
 is excluded from the plugin context type. This is a trusted extension interface.
 
+Core lifecycle notifications use the `EditorLifecycleEvents` map from `@8f4e/editor-state-types`. Event names infer
+their payloads for subscriptions and synchronous/asynchronous dispatch. Required payloads, such as the completed
+block list in `codeBlockLayoutsChanged`, cannot be omitted. Plugin action names remain open; annotate a custom
+handler's parameter to declare its payload instead of supplying an independent event-payload type argument.
+
 Setup must return a disposer that releases every resource the plugin creates, including subscriptions, listeners,
 contribution registrations, and timers. The host calls these disposers in reverse installation order while the state
 and dispatcher remain available. It does not track individual registrations. Setup and cleanup errors propagate.
@@ -315,9 +320,10 @@ API revisions, history, and session persistence share `state.projectChange`, a r
 editor-handle identity. Reading a revision does not serialize the project. Loads invalidate existing tokens even
 when the new source is identical, and undo/redo advance the revision when restoring earlier content.
 
-Source-mutating plugin actions use `applyCodeBlockSourceEdits(store, edits, { affectsCompilation })` from
+Source-mutating plugin actions use `applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation })` from
 `@8f4e/editor-state`. Each edit supplies `{ codeBlock, code }` with the replacement source array. The helper skips
-unchanged source, refreshes changed blocks, and publishes one project change after the whole batch. Set
+unchanged source, emits `codeBlockSourcesChanged { codeBlocks }` for the changed batch, and publishes one project change
+after core has refreshed its derived metadata and layout. Source changes do not modify the selected block. Set
 `affectsCompilation: false` for metadata such as positions, favorites, and grouping; use `true` for compiler inputs.
 `deleteCodeBlocks(store, blocks)` removes blocks from the visible project slice in place, clears references to
 deleted blocks, and publishes one project and compiler-input change. Both helpers return whether anything changed.

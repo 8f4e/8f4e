@@ -64,7 +64,6 @@ describe('remove memory connections plugin', () => {
 		test.events.dispatch('removeConnections', { codeBlock: test.block });
 		expect(test.block.code).toEqual(['module target', 'float value', 'moduleEnd']);
 		expect(test.block.lastUpdated).toBeGreaterThan(0);
-		expect(test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(test.block);
 		expect(test.state.compilerInputRevision).toBe(revision + 1);
 		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
 		expect(sources).toEqual([test.block.code]);

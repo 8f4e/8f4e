@@ -75,6 +75,8 @@ as part of that notification.
 
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
+- `codeBlockSourcesChanged({ codeBlocks })`: refresh source metadata, configuration, and layouts for an edited batch
+  before publishing compiler/project revisions, independently of user selection
 - `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal contribution invalidation; rederives affected visible blocks
 - `codeBlockLayoutsChanged({ codeBlocks })`: identifies blocks with consistent source/display rows and completed layout
   contributions; rendering and viewport anchoring update those blocks only

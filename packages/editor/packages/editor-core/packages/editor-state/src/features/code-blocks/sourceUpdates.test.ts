@@ -31,7 +31,7 @@ function matched(block: CodeBlockGraphicData) {
 
 describe('cached directive records', () => {
 	it('updates metadata and configuration before publishing layouts, including diagnostic row changes', () => {
-		const { store, state, audio } = setup(
+		const { store, events, state, audio } = setup(
 			'8f4e/v1\nnote audio\n; @config export.fileName initial\n; @config unknown value\nnoteEnd'
 		);
 		const block = audio();
@@ -49,7 +49,7 @@ describe('cached directive records', () => {
 		);
 		seen.length = 0;
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[
 				{
 					codeBlock: block,
@@ -66,9 +66,13 @@ describe('cached directive records', () => {
 		);
 		expect(seen.length).toBeGreaterThan(0);
 		for (const value of seen) expect(value).toEqual([20, 30, 'updated', 3]);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['note audio', '; @pos 20 30', 'noteEnd'] }], {
-			affectsCompilation: false,
-		});
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: block, code: ['note audio', '; @pos 20 30', 'noteEnd'] }],
+			{
+				affectsCompilation: false,
+			}
+		);
 		expect(state.editorConfig.export?.fileName).toBeUndefined();
 		expect(state.codeErrors['editor-directives']).toEqual([]);
 	});
@@ -103,7 +107,7 @@ describe('cached directive records', () => {
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor = { row: 1, col: block.code[1].length, y: 0 };
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line} changed` : line)) }],
 			{ affectsCompilation: true }
 		);
@@ -131,9 +135,13 @@ describe('cached directive records', () => {
 				if (codeBlock === block) seen.push(matched(codeBlock).flatMap(directive => directive.args));
 			})
 		);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module audio', '; @future edited', 'moduleEnd'] }], {
-			affectsCompilation: false,
-		});
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: block, code: ['module audio', '; @future edited', 'moduleEnd'] }],
+			{
+				affectsCompilation: false,
+			}
+		);
 		expect(seen.at(-1)).toEqual(['edited']);
 		events.dispatch('goToParentProjectGroup');
 		events.dispatch('openProjectGroup', { codeBlock: group });

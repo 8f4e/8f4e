@@ -71,7 +71,7 @@ describe('history tracking with real project mutations', () => {
 	function replaceLine(row: number, line: string) {
 		const codeBlock = state.codeBlockRendering.selectedCodeBlock!;
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[{ codeBlock, code: codeBlock.code.map((text, index) => (index === row ? line : text)) }],
 			{ affectsCompilation: true }
 		);

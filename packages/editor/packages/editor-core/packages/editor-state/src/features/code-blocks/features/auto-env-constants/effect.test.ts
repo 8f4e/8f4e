@@ -1,11 +1,12 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import { EventEmitter } from 'node:events';
+import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { getProjectModules } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, test } from 'vitest';
 import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
 import createDefaultState from '~/pureHelpers/state/createDefaultState';
-import { createMockCodeBlock, createMockEventDispatcher } from '~/pureHelpers/testingUtils/testUtils';
+import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
 import codeBlockRendering from '../../effect';
 import { createLayoutRegistry } from '../../layout/registry';
 import { directiveDefinitions } from '../directives/registry';
@@ -35,6 +36,7 @@ function createGraphicEnvBlock(code: string[], overrides: Partial<CodeBlockGraph
 describe('autoEnvConstants', () => {
 	let store: ReturnType<typeof createStateManager<State>>;
 	let state: State;
+	let events: EventDispatcher;
 
 	beforeEach(() => {
 		const baseState = {
@@ -46,16 +48,18 @@ describe('autoEnvConstants', () => {
 		};
 		store = createStateManager<State>(baseState);
 		state = store.getState();
+		const emitter = new EventEmitter();
+		events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 		codeBlockRendering(
 			store,
-			createMockEventDispatcher(),
+			events,
 			directiveDefinitions,
 			createLayoutRegistry(() => {})
 		);
 	});
 
 	test('should create env constants block when project is loaded', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 
 		// Trigger project load
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
@@ -72,7 +76,7 @@ describe('autoEnvConstants', () => {
 		};
 
 		store.set('initialProjectState', projectWithBlocks);
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 
 		// Trigger another project load to add env block
 		store.set('initialProjectState', { ...projectWithBlocks });
@@ -82,7 +86,7 @@ describe('autoEnvConstants', () => {
 	});
 
 	test('includes contributed constants when a project is loaded', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 		store.set('envConstantContributions.provider', ['const PROVIDED 123']);
 		store.set('initialProjectState', { ...PROJECT_WITH_CODE_BLOCK });
 		const env = state.initialProjectState?.constants.find(block => block.code[0] === 'constants env');
@@ -90,7 +94,7 @@ describe('autoEnvConstants', () => {
 	});
 
 	test('should include warning comment', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
 
 		const envBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
@@ -99,7 +103,7 @@ describe('autoEnvConstants', () => {
 	});
 
 	test('should update when contributed constants change', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
 
 		// Simulate codeBlockRendering populating codeBlocks from initialProjectState.
@@ -112,7 +116,7 @@ describe('autoEnvConstants', () => {
 	});
 
 	test('includes contributed source from multiple providers when creating env', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 		store.set('envConstantContributions', {
 			first: ['const FIRST 1'],
 			provider: state.envConstantContributions.provider,
@@ -132,7 +136,7 @@ describe('autoEnvConstants', () => {
 	});
 
 	test('refreshes contributed constants and removes contributions without changing the env position', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 		store.set('codeBlockRendering.currentProject.blocks', [
 			createGraphicEnvBlock(['constants env', '; @pos 7 9', 'constantsEnd']),
 		]);
@@ -146,7 +150,7 @@ describe('autoEnvConstants', () => {
 	});
 
 	test('should preserve existing @pos when regenerating env block', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
 
 		const envCodeBlock = state.initialProjectState!.constants.find(block => block.code[0] === 'constants env')!;
@@ -162,7 +166,7 @@ describe('autoEnvConstants', () => {
 	});
 
 	test('should default @pos to 0,0 when existing env block has no @pos', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
 
 		const envCodeBlock = state.initialProjectState!.constants.find(block => block.code[0] === 'constants env')!;
@@ -186,7 +190,7 @@ describe('autoEnvConstants', () => {
 		};
 
 		store.set('initialProjectState', projectWithEnv);
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 
 		// Trigger another load
 		store.set('initialProjectState', { ...projectWithEnv });

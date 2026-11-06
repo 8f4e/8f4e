@@ -41,7 +41,7 @@ export function createSliderPlugin({
 			} = {}) => {
 				if (state.editorMode !== 'edit' || !codeBlock) return;
 				const edits = getSliderDefaultEdits(state, slidersByBlock.get(codeBlock) ?? []);
-				applyCodeBlockSourceEdits(store, edits, { affectsCompilation: true });
+				applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation: true });
 			};
 			events.on(saveAction, onSave);
 			return () => {

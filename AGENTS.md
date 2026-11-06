@@ -65,6 +65,9 @@
   `registerOffscreenCodeBlockDrawer` callback in the same traversal. `canvasOverlays` also controls offscreen decorations.
 - Layout completion events carry `{ codeBlocks }` identifying only blocks whose source/display rows and pending
   layout contributions have settled. Rendering consumers refresh those blocks only; unrelated blocks may still be updating.
+- Lifecycle event payloads are inferred from `EditorLifecycleEvents` in editor-state-types. Source-edit helpers take
+  `{ store, events }` and emit `codeBlockSourcesChanged { codeBlocks }` for the changed batch before compiler/project
+  revisions. Programmatic edits have no selection state or selection-based notification path.
 - Editor-state owns `codeBlockRendering.entryBounds`, including padding, updates, and insertion hit testing.
   `@8f4e/editor-plugin-entry-outlines` only draws borders and labels through `registerCanvasBackgroundDrawer` below blocks.
   The default and gallery compositions defer drawing until `ready`; entry assignment works independently of the plugin.

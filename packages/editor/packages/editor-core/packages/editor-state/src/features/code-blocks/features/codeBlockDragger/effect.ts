@@ -159,7 +159,7 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		const orderChanged =
 			orderBeforeDrag.length !== orderAfterDrag.length ||
 			orderBeforeDrag.some((block, index) => block !== orderAfterDrag[index]);
-		applyCodeBlockSourceEdits(store, edits, { affectsCompilation: orderChanged });
+		applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation: orderChanged });
 
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 		dragSet = [];

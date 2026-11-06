@@ -17,7 +17,7 @@ function createEvents(): EventDispatcher {
 				(handlers.get(name) ?? []).filter(candidate => candidate !== handler)
 			);
 		},
-		dispatch: (name, payload) => {
+		dispatch: (name, ...[payload]) => {
 			for (const handler of handlers.get(name) ?? []) {
 				if ((payload as { stopPropagation?: boolean } | undefined)?.stopPropagation) break;
 				handler(payload);
@@ -74,7 +74,6 @@ describe('toggle skip execution plugin', () => {
 		events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock });
 		expect(codeBlock.code).toEqual(['module test', '#skipExecution', '', 'moduleEnd']);
 		expect(codeBlock.lastUpdated).toBeGreaterThan(1000);
-		expect(state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(codeBlock);
 		expect(state.compilerInputRevision).toBe(1);
 		expect(state.projectChange.revision).toBe(1);
 		expect(revisions).toEqual([codeBlock.code]);
@@ -108,7 +107,6 @@ describe('toggle skip execution plugin', () => {
 		const context = createContext(['invalid']);
 		context.events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: context.codeBlock });
 		expect(context.codeBlock.lastUpdated).toBe(1000);
-		expect(context.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBeUndefined();
 		expect(context.state.compilerInputRevision).toBe(0);
 		expect(context.state.projectChange.revision).toBe(0);
 	});

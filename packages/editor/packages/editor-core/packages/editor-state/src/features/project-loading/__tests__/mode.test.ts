@@ -74,9 +74,13 @@ describe('project initial mode', () => {
 		expect(state.editorMode).toBe('view');
 		expect(state.projectChange.revision).toBe(revision);
 		const block = state.codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['note mode', '; @mode view', 'noteEnd'] }], {
-			affectsCompilation: false,
-		});
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: block, code: ['note mode', '; @mode view', 'noteEnd'] }],
+			{
+				affectsCompilation: false,
+			}
+		);
 		store.set('editorConfigSchemaContributions', {});
 		expect(state.globalEditorDirectives.mode).toBe('view');
 		expect(state.editorMode).toBe('view');

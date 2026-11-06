@@ -25,7 +25,6 @@ export default function createDefaultState() {
 			entryBounds: [],
 			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,
-			selectedCodeBlockForProgrammaticEdit: undefined,
 		},
 		contextMenu: {
 			items: [],

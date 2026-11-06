@@ -19,7 +19,7 @@ function createEvents(): EventDispatcher {
 		off: (name, listener) => {
 			listeners.get(name)?.delete(listener as (event: unknown) => void);
 		},
-		dispatch: (name, event) => {
+		dispatch: (name, ...[event]) => {
 			for (const listener of listeners.get(name) ?? []) listener(event);
 		},
 	};
@@ -159,11 +159,11 @@ describe('switch plugin', () => {
 	it('replaces widgets after source edits and removes them when the directive is deleted', async () => {
 		const test = await setup();
 		test.codeBlock.code[2] = '; @switch &gate 0 7';
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, 7, true);
 		test.codeBlock.code[2] = '; no widget';
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		test.write.mockClear();

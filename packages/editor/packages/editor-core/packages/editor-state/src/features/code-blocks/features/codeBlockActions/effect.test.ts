@@ -135,13 +135,13 @@ describe('codeBlockActions - toggleCodeBlockDisabled', () => {
 		expect(codeBlock.lastUpdated).toBeGreaterThan(1000);
 	});
 
-	it('should trigger store update', () => {
+	it('notifies the explicit source-update path', () => {
 		const codeBlock = createMockCodeBlock({ disabled: false });
 		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
 		codeBlockActions(store, mockEvents);
 
-		const setSpy = vi.spyOn(store, 'set');
+		const dispatchSpy = vi.spyOn(mockEvents, 'dispatch');
 
 		const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
 		const toggleCall = onCalls.find(call => call[0] === 'toggleCodeBlockDisabled');
@@ -149,7 +149,7 @@ describe('codeBlockActions - toggleCodeBlockDisabled', () => {
 
 		toggleCallback({ codeBlock });
 
-		expect(setSpy).toHaveBeenCalledWith('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', codeBlock);
+		expect(dispatchSpy).toHaveBeenCalledWith('codeBlockSourcesChanged', { codeBlocks: [codeBlock] });
 	});
 
 	it('should not toggle when editing is disabled', () => {

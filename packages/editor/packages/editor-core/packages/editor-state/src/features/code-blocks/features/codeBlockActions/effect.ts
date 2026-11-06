@@ -55,7 +55,7 @@ export default function codeBlockActions(store: StateManager<State>, events: Eve
 		const newDisabledState = !codeBlock.disabled;
 		const code = upsertDisabled(codeBlock.code, newDisabledState);
 		codeBlock.disabled = newDisabledState;
-		applyCodeBlockSourceEdits(store, [{ codeBlock, code }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code }], { affectsCompilation: true });
 	}
 
 	events.on('insertCodeBlock', onInsertCodeBlock);

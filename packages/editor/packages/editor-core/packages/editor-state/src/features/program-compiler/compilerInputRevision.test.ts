@@ -77,10 +77,10 @@ describe('compiler input revision', () => {
 		const sources: string[][] = [];
 		store.subscribe('compilerInputRevision', () => sources.push([...block.code]));
 		const code = ['module main', 'push 12', 'drop', 'moduleEnd'];
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
 		expect(state.compilerInputRevision).toBe(1);
 		expect(sources).toEqual([code]);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
 		expect(state.compilerInputRevision).toBe(1);
 	});
 
@@ -106,9 +106,13 @@ describe('compiler input revision', () => {
 		expect(state.compilerInputRevision).toBe(0);
 		expect(onInputChanged).not.toHaveBeenCalled();
 
-		applyCodeBlockSourceEdits(store, [{ codeBlock: target, code: ['module target', '; edited', 'moduleEnd'] }], {
-			affectsCompilation: true,
-		});
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: target, code: ['module target', '; edited', 'moduleEnd'] }],
+			{
+				affectsCompilation: true,
+			}
+		);
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 	});
 
@@ -130,7 +134,6 @@ describe('compiler input revision', () => {
 		dispatch('pointermove', { movementX: 16, movementY: 32 });
 		dispatch('pointerup');
 		expect(block.code).toContain('; @pos 2 2');
-		expect(state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(block);
 		expect(block.parsedDirectives).toContainEqual(expect.objectContaining({ name: 'pos', args: ['2', '2'] }));
 		expect(block.gridX).toBe(2);
 		expect(block.gridY).toBe(2);
@@ -173,7 +176,7 @@ describe('compiler input revision', () => {
 	});
 
 	it('advances for regenerated environment constants and ignores identical regeneration', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 		const env = createMockCodeBlock({ name: 'env', blockType: 'constants', code: ['constants env', 'constantsEnd'] });
 		state.codeBlockRendering.currentProject.blocks.push(env);
 		store.set('envConstantContributions.test', ['const CONTRIBUTED_VALUE 100']);
@@ -190,9 +193,13 @@ describe('compiler input revision', () => {
 		dispatch('openProjectGroup', { codeBlock: block });
 		store.set('codeBlockRendering.selectedCodeBlock', child);
 		expect(state.compilerInputRevision).toBe(0);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }], {
-			affectsCompilation: true,
-		});
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }],
+			{
+				affectsCompilation: true,
+			}
+		);
 		expect(state.compilerInputRevision).toBe(1);
 		dispatch('goToParentProjectGroup');
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(state.codeBlockRendering.rootProject.blocks);

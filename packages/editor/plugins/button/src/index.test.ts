@@ -135,13 +135,13 @@ describe('button plugin', () => {
 	it('replaces button data after source edits and removes deleted directives', async () => {
 		const test = await setup();
 		test.codeBlock.code[2] = '; @button &gate -5 100';
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), 100, true);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), -5, true);
 		test.codeBlock.code[2] = '; no widget';
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		test.write.mockClear();
 		test.press();
 		test.render();
