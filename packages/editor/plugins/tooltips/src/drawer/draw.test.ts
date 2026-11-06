@@ -92,7 +92,7 @@ describe('selected line tooltip animation', () => {
 
 		drawTooltip(engine, state, codeBlock, memoryViews, tooltip);
 
-		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(8, 16, '?'.charCodeAt(0), expect.any(Number));
+		expect(vi.mocked(engine.drawNumericText)).toHaveBeenCalledWith(8, 16, '?', highlightFont);
 	});
 });
 
@@ -343,20 +343,13 @@ describe('tooltip drawing', () => {
 		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(
 			expect.any(Number),
 			expect.any(Number),
-			'2'.charCodeAt(0),
-			expect.any(Number)
-		);
-		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(
-			expect.any(Number),
-			expect.any(Number),
 			'd'.charCodeAt(0),
 			expect.any(Number)
 		);
-		expect(vi.mocked(engine.drawSprite)).toHaveBeenCalledWith(
-			expect.any(Number),
-			expect.any(Number),
-			'1'.charCodeAt(0),
-			expect.any(Number)
-		);
+		expect(vi.mocked(engine.drawNumericText).mock.calls).toEqual([
+			[-96, 32, '8', PALETTE_INDICES.inverseAccent],
+			[-112, 48, '20', PALETTE_INDICES.inverseAccent],
+			[-112, 64, '123', PALETTE_INDICES.inverseAccent],
+		]);
 	});
 });
