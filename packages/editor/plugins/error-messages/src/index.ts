@@ -1,48 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { gapCalculator, getCodeBlockErrors, wrapText } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, CodeBlockLayoutContext, State } from '@8f4e/editor-state-types';
-
-function prepareMessages(state: State, codeBlock: CodeBlockGraphicData) {
-	const wrapWidth = Math.floor(codeBlock.width / state.viewport.vGrid) - 1;
-	return getCodeBlockErrors(state, codeBlock).flatMap(error => {
-		const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[error.lineNumber];
-		return row === undefined
-			? []
-			: [
-					{
-						error,
-						sourceLineIndex: error.lineNumber,
-						row,
-						lines: [' Error:', ...wrapText(error.message, wrapWidth).map(line => ' ' + line)],
-					},
-				];
-	});
-}
-
-function positionMessages(state: State, codeBlock: CodeBlockGraphicData, messages = prepareMessages(state, codeBlock)) {
-	const remainingRows = new Map<number, number>();
-	for (const message of messages)
-		remainingRows.set(message.row, (remainingRows.get(message.row) ?? 0) + message.lines.length);
-	return messages.map(message => {
-		const remaining = remainingRows.get(message.row)!;
-		// Place messages at the end of the row's gap, after other contributed content.
-		const y = (gapCalculator(message.row + 1, codeBlock.gaps) - remaining) * state.viewport.hGrid;
-		remainingRows.set(message.row, remaining - message.lines.length);
-		return { ...message, y };
-	});
-}
-
-/** Read-only world-space rectangles for the messages in the block's settled layout. */
-export function getErrorMessageBounds(state: State, codeBlock: CodeBlockGraphicData) {
-	return positionMessages(state, codeBlock).map(({ error, lines, y }) => ({
-		error,
-		x: codeBlock.x,
-		y: codeBlock.y + y,
-		width: codeBlock.width,
-		height: lines.length * state.viewport.hGrid,
-	}));
-}
+import type { CodeBlockGraphicData, CodeBlockLayoutContext } from '@8f4e/editor-state-types';
 
 export const errorMessagesPlugin: EditorPlugin = {
 	id: 'error-messages',
@@ -50,15 +9,38 @@ export const errorMessagesPlugin: EditorPlugin = {
 		const messagesByBlock = new WeakMap<CodeBlockGraphicData, Array<{ lines: string[]; y: number }>>();
 		const contribution = layout.createContribution();
 		const prepare = ({ codeBlock, state }: CodeBlockLayoutContext) => {
-			const messages = prepareMessages(state, codeBlock);
+			const wrapWidth = Math.floor(codeBlock.width / state.viewport.vGrid) - 1;
+			const messages = getCodeBlockErrors(state, codeBlock).flatMap(error => {
+				const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[error.lineNumber];
+				return row === undefined
+					? []
+					: [
+							{
+								sourceLineIndex: error.lineNumber,
+								row,
+								lines: [' Error:', ...wrapText(error.message, wrapWidth).map(line => ' ' + line)],
+							},
+						];
+			});
 			contribution.update(codeBlock, {
 				verticalSpaceAfterSourceLine: messages.map(message => ({
 					sourceLineIndex: message.sourceLineIndex,
 					heightInRows: message.lines.length,
 				})),
 			});
-
-			messagesByBlock.set(codeBlock, positionMessages(state, codeBlock, messages));
+			const remainingRows = new Map<number, number>();
+			for (const message of messages)
+				remainingRows.set(message.row, (remainingRows.get(message.row) ?? 0) + message.lines.length);
+			messagesByBlock.set(
+				codeBlock,
+				messages.map(({ row, lines }) => {
+					const remaining = remainingRows.get(row)!;
+					// Place messages at the end of the row's gap, after other contributed content.
+					const y = (gapCalculator(row + 1, codeBlock.gaps) - remaining) * state.viewport.hGrid;
+					remainingRows.set(row, remaining - lines.length);
+					return { lines, y };
+				})
+			);
 		};
 		const refresh = () => {
 			const state = store.getState();

@@ -43,13 +43,8 @@ export function createDeferredEditorPlugin(
 			scope: 'view',
 			matches: () => true,
 			load: () =>
-				Promise.all([import('@8f4e/editor-plugin-jump-to-error'), import('@8f4e/editor-plugin-error-messages')]).then(
-					([navigation, messages]) =>
-						navigation.createJumpToErrorPlugin({
-							layer: INPUT_LAYERS.canvasOverlay,
-							getErrorBounds: (state, codeBlock, error) =>
-								messages.getErrorMessageBounds(state, codeBlock).find(bounds => bounds.error === error),
-						})
+				import('@8f4e/editor-plugin-jump-to-error').then(module =>
+					module.createJumpToErrorPlugin({ layer: INPUT_LAYERS.canvasOverlay })
 				),
 		},
 		{

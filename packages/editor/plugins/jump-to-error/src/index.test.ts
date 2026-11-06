@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, InternalPointerEvent, State } from '@8f4e/editor-state-types';
+import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
@@ -28,13 +28,8 @@ function setup() {
 	const state = store.getState();
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
 	const drawers = createEditorDrawerRegistry();
-	const getErrorBounds = vi.fn((_state: State, block: CodeBlockGraphicData) => ({
-		x: block.x + 24,
-		y: block.y + 80,
-		width: 120,
-		height: 48,
-	}));
-	const dispose = createJumpToErrorPlugin({ getErrorBounds, layer: INPUT_LAYERS.canvasOverlay }).setup({
+
+	const dispose = createJumpToErrorPlugin({ layer: INPUT_LAYERS.canvasOverlay }).setup({
 		store,
 		events,
 		menus: store.menus,
@@ -61,7 +56,7 @@ function setup() {
 	};
 	const addError = () =>
 		store.set('codeErrors.custom', [{ codeBlockId: block.creationIndex, lineNumber: 2, message: 'Error message' }]);
-	return { store, state, block, events, render, drawFill, drawText, press, addError, dispose, getErrorBounds };
+	return { store, state, block, events, render, drawFill, drawText, press, addError, dispose };
 }
 
 it('shows a viewport-fixed button only while a contributed source error exists', () => {
@@ -82,18 +77,18 @@ it('shows a viewport-fixed button only while a contributed source error exists',
 	expect(test.drawText).not.toHaveBeenCalled();
 });
 
-it('centers the message rectangle, selects the block, and preserves source revisions', () => {
+it('centers the error source line with reserved rows above it and preserves source revisions', () => {
 	const test = setup();
 	test.addError();
+	const contribution = test.store.layout.createContribution();
+	contribution.update(test.block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 0, heightInRows: 3 }] });
 	const revision = test.state.projectChange.revision;
 	const compilerRevision = test.state.compilerInputRevision;
 	test.state.viewportAnimation.active = true;
 	expect(test.press().stopPropagation).toBe(true);
 	expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block);
-	// Navigation uses the supplied rectangle rather than deriving presentation geometry.
-	expect(test.getErrorBounds).toHaveBeenCalledWith(test.state, test.block, test.state.codeErrors.custom[0]);
-	expect(test.state.viewport.x).toBe(test.block.x + 24 + 60 - 320);
-	expect(test.state.viewport.y).toBe(test.block.y + 80 + 24 - 192);
+	expect(test.state.viewport.x).toBe(test.block.x + test.block.width / 2 - 320);
+	expect(test.state.viewport.y).toBe(test.block.y + 5.5 * test.state.viewport.hGrid - 192);
 	expect(test.state.viewportAnimation.active).toBe(false);
 	expect(test.state.projectChange.revision).toBe(revision);
 	expect(test.state.compilerInputRevision).toBe(compilerRevision);
@@ -165,8 +160,9 @@ it.each(['hidden', 'dialog', 'menu'])('leaves %s overlay input alone', blocked =
 	if (blocked === 'dialog')
 		test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Wait', buttons: [] });
 	if (blocked === 'menu') test.state.contextMenu.open = true;
+	const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
 	test.press();
-	expect(test.getErrorBounds).not.toHaveBeenCalled();
+	expect(test.state.viewport).toMatchObject(viewport);
 });
 
 it('keeps contributor/list order while skipping stale locations and refreshing cleared contributions', () => {
@@ -176,8 +172,8 @@ it('keeps contributor/list order while skipping stale locations and refreshing c
 	test.store.set('codeErrors.first', [{ codeBlockId: 999, lineNumber: 0, message: 'Stale' }, first]);
 	test.store.set('codeErrors.second', [second]);
 	test.press();
-	expect(test.getErrorBounds).toHaveBeenLastCalledWith(test.state, test.block, first);
+	expect(test.state.viewport.y).toBe(test.block.y + (first.lineNumber + 0.5) * test.state.viewport.hGrid - 192);
 	test.store.set('codeErrors.first', []);
 	test.press();
-	expect(test.getErrorBounds).toHaveBeenLastCalledWith(test.state, test.block, second);
+	expect(test.state.viewport.y).toBe(test.block.y + (second.lineNumber + 0.5) * test.state.viewport.hGrid - 192);
 });

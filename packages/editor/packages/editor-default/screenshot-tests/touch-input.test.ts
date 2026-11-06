@@ -2,7 +2,6 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
 import { contextMenuPlugin } from '@8f4e/editor-plugin-context-menu';
-import { getErrorMessageBounds } from '@8f4e/editor-plugin-error-messages';
 import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
 import type {} from '@vitest/browser-playwright';
 import { expect, test, vi } from 'vitest';
@@ -101,14 +100,16 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 		await expect(canvas).toMatchScreenshot('after-touch-pan');
 		await tap(block.x - state.viewport.x + 8, block.y - state.viewport.y + 8);
 		await expect.poll(() => state.codeBlockRendering.selectedCodeBlock?.name).toBe('target');
-		// Check the composed bounds reader and capture priority through the real touch adapter.
+		// Check source-line navigation and input layers through the real touch adapter.
 		context.store.set('codeErrors.fixture', [
 			{ codeBlockId: block.creationIndex, lineNumber: 2, message: 'Touch fixture error' },
 		]);
 		await tap(620, 344);
-		const errorBounds = getErrorMessageBounds(state, block)[0];
-		expect(state.viewport.x).toBe(Math.round(errorBounds.x + errorBounds.width / 2 - 320));
-		expect(state.viewport.y).toBe(Math.round(errorBounds.y + errorBounds.height / 2 - 192));
+		const errorRow = block.displayModel.sourceLineIndexToDisplayRow[2]!;
+		expect(state.viewport.x).toBe(Math.round(block.x + block.width / 2 - 320));
+		expect(state.viewport.y).toBe(
+			Math.round(block.y + (gapCalculator(errorRow, block.gaps) + 0.5) * state.viewport.hGrid - 192)
+		);
 		context.store.set('codeErrors.fixture', []);
 	} finally {
 		editor?.dispose();

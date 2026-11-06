@@ -1,24 +1,20 @@
 import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { getCodeBlockErrors } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, CodeError, InternalPointerEvent, State } from '@8f4e/editor-state-types';
+import { gapCalculator, getCodeBlockErrors } from '@8f4e/editor-state';
+import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { expect, test, vi } from 'vitest';
 import { createJumpToErrorPlugin } from '../src/index';
 
-// A supplied presentation rectangle; this suite does not install another feature plugin.
-const target = { x: 16, y: 160, width: 128, height: 64 };
+// Plain source rows keep the suite independent of presentation plugins.
 async function setup(source: string) {
 	const canvas = document.createElement('canvas');
 	canvas.width = 640;
 	canvas.height = 384;
 	document.body.append(canvas);
 	let context!: EditorPluginContext;
-	const getErrorBounds = (_state: State, codeBlock: CodeBlockGraphicData, error: CodeError) => {
-		if (codeBlock.displayModel.sourceLineIndexToDisplayRow[error.lineNumber] === undefined) return;
-		return { ...target, x: codeBlock.x + target.x, y: codeBlock.y + target.y };
-	};
+
 	const blockPressed = vi.fn();
 	const editor = await initEditor(canvas, {
 		initialProject: parseProjectSource(source),
@@ -29,9 +25,20 @@ async function setup(source: string) {
 					context = services;
 					services.events.on('codeBlockPointerDown', blockPressed, { capture: true });
 					const removeDrawer = services.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
-						if (!getCodeBlockErrors(state, codeBlock).some(error => getErrorBounds(state, codeBlock, error))) return;
-						draw.drawFill(target.x, target.y, PALETTE_INDICES.negativeSurface, target.width, target.height);
-						draw.drawText(target.x + 8, target.y + 16, 'Error target', PALETTE_INDICES.negativeOn);
+						const errors = getCodeBlockErrors(state, codeBlock);
+						if (!errors.length) return;
+						draw.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
+						codeBlock.displayModel.lines.forEach((line, row) => {
+							const y = gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid;
+							const isError = errors.some(error => error.lineNumber === line.sourceLineIndex);
+							if (isError) draw.drawFill(0, y, PALETTE_INDICES.negativeSurface, codeBlock.width, state.viewport.hGrid);
+							draw.drawText(
+								state.viewport.vGrid,
+								y,
+								line.text,
+								isError ? PALETTE_INDICES.negativeOn : PALETTE_INDICES.inkBase
+							);
+						});
 					});
 					return () => {
 						removeDrawer();
@@ -39,7 +46,7 @@ async function setup(source: string) {
 					};
 				},
 			},
-			createJumpToErrorPlugin({ getErrorBounds, layer: INPUT_LAYERS.canvasOverlay }),
+			createJumpToErrorPlugin({ layer: INPUT_LAYERS.canvasOverlay }),
 		],
 	});
 	editor.pauseRendering();
@@ -66,10 +73,10 @@ async function setup(source: string) {
 		editor.dispose();
 		canvas.remove();
 	};
-	return { canvas, editor, context, state, press, dispose, getErrorBounds, blockPressed };
+	return { canvas, editor, context, state, press, dispose, blockPressed };
 }
 
-test('centers supplied error bounds and removes the button when errors clear', async () => {
+test('centers the source line independently of error presentation and hides after errors clear', async () => {
 	const fixture = await setup(`8f4e/v1
 entry main
 module problem
@@ -78,7 +85,7 @@ push 1
 drop
 moduleEnd
 entryEnd`);
-	const { state, context, editor, canvas, getErrorBounds } = fixture;
+	const { state, context, editor, canvas } = fixture;
 	try {
 		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'problem')!;
 		const error = { codeBlockId: block.creationIndex, lineNumber: 2, message: 'Fixture error' };
@@ -87,10 +94,9 @@ entryEnd`);
 		const compilerRevision = state.compilerInputRevision;
 		expect(fixture.press().stopPropagation).toBe(true);
 		expect(fixture.blockPressed).not.toHaveBeenCalled();
-		const bounds = getErrorBounds(state, block, error)!;
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
-		expect(state.viewport.x).toBe(bounds.x + bounds.width / 2 - 320);
-		expect(state.viewport.y).toBe(bounds.y + bounds.height / 2 - 192);
+		expect(state.viewport.x).toBe(block.x + block.width / 2 - 320);
+		expect(state.viewport.y).toBe(block.y + (error.lineNumber + 0.5) * state.viewport.hGrid - 192);
 		expect(editor.editing.getRevision()).toBe(revision);
 		expect(state.compilerInputRevision).toBe(compilerRevision);
 		editor.renderFrame();
@@ -131,9 +137,8 @@ entryEnd`);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
 		expect(block.isCollapsed).toBe(false);
 		expect(state.editorMode).toBe('view');
-		const bounds = fixture.getErrorBounds(state, block, error)!;
-		expect(state.viewport.x).toBe(bounds.x + bounds.width / 2 - 320);
-		expect(state.viewport.y).toBe(bounds.y + bounds.height / 2 - 192);
+		expect(state.viewport.x).toBe(block.x + block.width / 2 - 320);
+		expect(state.viewport.y).toBe(block.y + (error.lineNumber + 0.5) * state.viewport.hGrid - 192);
 		expect(editor.editing.getRevision()).toBe(revision);
 	} finally {
 		fixture.dispose();

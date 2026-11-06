@@ -1,6 +1,6 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
 import { mountDefaultEditor } from '@8f4e/editor-default';
-import { getErrorMessageBounds } from '@8f4e/editor-plugin-error-messages';
+import { gapCalculator } from '@8f4e/editor-state';
 import { expect, test } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
@@ -58,7 +58,7 @@ entryEnd`;
 			.toBe(true);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('assertion-error');
-		// Exercise the composition's injected bounds reader with real runtime diagnostics and mouse input.
+		// Navigate to a real runtime diagnostic through mouse input.
 		for (const id of ['jump-to-error', 'mouse-input']) {
 			await expect
 				.poll(() => editor.state.loadingIndicators.find(item => item.id === `plugin:${id}`)?.status)
@@ -67,10 +67,13 @@ entryEnd`;
 		editor.state.viewport.x = 1000;
 		editor.state.viewport.y = 1000;
 		await userEvent.click(canvas, { position: { x: 620, y: 344 } });
-		const bounds = getErrorMessageBounds(editor.state, block())[0];
+		const row =
+			block().displayModel.sourceLineIndexToDisplayRow[editor.state.codeErrors['test-runtime'][0].lineNumber]!;
 		expect(editor.state.codeBlockRendering.selectedCodeBlock).toBe(block());
-		expect(editor.state.viewport.x).toBe(Math.round(bounds.x + bounds.width / 2 - 320));
-		expect(editor.state.viewport.y).toBe(Math.round(bounds.y + bounds.height / 2 - 192));
+		expect(editor.state.viewport.x).toBe(Math.round(block().x + block().width / 2 - 320));
+		expect(editor.state.viewport.y).toBe(
+			Math.round(block().y + (gapCalculator(row, block().gaps) + 0.5) * editor.state.viewport.hGrid - 192)
+		);
 
 		// Sample a solid part of the jump button: menu labels may arrive in different lazy-plugin orders.
 		const gl = canvas.getContext('webgl2')!;

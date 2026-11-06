@@ -232,5 +232,6 @@ Web-ui calls its single replaceable drawer from the existing block traversal.
 from core's entry bounds. Editor-state owns bounds, updates, and insertion assignment, independently of presentation.
 
 `@8f4e/editor-plugin-jump-to-error` loads after the first render and shows a bottom-right **Jump to error** button
-while contributed code errors exist. The composition injects the error presenter's bounds reader and selects `INPUT_LAYERS.canvasOverlay` for input. It selects the first error, opens its project group, and centers the displayed
-message. Selecting the block reveals folded source while preserving editor mode. The landing editor omits this plugin.
+while contributed code errors exist. The composition selects `INPUT_LAYERS.canvasOverlay` for input. It selects the
+first error, opens its project group, and centers the block horizontally and the source line vertically using core
+layout. Selecting the block reveals folded source while preserving editor mode. The landing editor omits this plugin.

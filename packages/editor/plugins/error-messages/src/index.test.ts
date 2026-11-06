@@ -4,7 +4,7 @@ import type { CodeBlockGraphicData, CodeError } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { errorMessagesPlugin, getErrorMessageBounds } from './index';
+import { errorMessagesPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -161,23 +161,4 @@ entryEnd`),
 		test.render(child);
 		expect(test.drawText).toHaveBeenLastCalledWith(0, expect.any(Number), ' Child error', expect.any(Number));
 	});
-});
-
-it('exposes the same world bounds used to draw wrapped and stacked error messages', () => {
-	const test = setup({
-		custom: [
-			{ codeBlockId: 7, lineNumber: 2, message: 'a long message '.repeat(8) },
-			{ codeBlockId: 7, lineNumber: 2, message: 'Second' },
-		],
-	});
-	const other = test.store.layout.createContribution();
-	other.update(test.block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 2, heightInRows: 3 }] });
-	test.render();
-	const bounds = getErrorMessageBounds(test.state, test.block);
-	expect(bounds).toHaveLength(2);
-	for (const [index, bound] of bounds.entries()) {
-		const [x, y, , width, height] = test.drawFill.mock.calls[index];
-		expect(bound).toMatchObject({ x: test.block.x + x, y: test.block.y + y, width, height });
-		expect(bound.error).toBe(test.state.codeErrors.custom[index]);
-	}
 });

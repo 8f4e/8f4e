@@ -2,18 +2,12 @@ import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import {
 	createCodeErrorBlockLookup,
+	gapCalculator,
 	stopViewportAnimation,
 	updateViewport,
 	walkProjectBlocks,
 } from '@8f4e/editor-state';
-import type {
-	CodeBlockGraphicData,
-	CodeError,
-	InternalPointerEvent,
-	Position,
-	Size,
-	State,
-} from '@8f4e/editor-state-types';
+import type { InternalPointerEvent, State } from '@8f4e/editor-state-types';
 
 const LABEL = 'Jump to error';
 
@@ -38,13 +32,7 @@ function buttonBounds(state: State) {
 	};
 }
 
-export function createJumpToErrorPlugin({
-	getErrorBounds,
-	layer,
-}: {
-	layer: number;
-	getErrorBounds: (state: State, codeBlock: CodeBlockGraphicData, error: CodeError) => (Position & Size) | undefined;
-}): EditorPlugin {
+export function createJumpToErrorPlugin({ layer }: { layer: number }): EditorPlugin {
 	return {
 		id: 'jump-to-error',
 		setup: ({ store, events, drawers }) => {
@@ -88,14 +76,15 @@ export function createJumpToErrorPlugin({
 					else events.dispatch('goToRootProjectGroup');
 				}
 				store.set('codeBlockRendering.selectedCodeBlock', codeBlock);
-				// Selection reveals folded source before querying the settled message layout.
-				const bounds = getErrorBounds(state, codeBlock, error);
-				if (!bounds) return;
+				// Selection reveals folded source before resolving its displayed row.
+				const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[error.lineNumber];
+				if (row === undefined) return;
+				const lineY = codeBlock.y + (gapCalculator(row, codeBlock.gaps) + 0.5) * state.viewport.hGrid;
 				stopViewportAnimation(state);
 				updateViewport(
 					state,
-					bounds.x + bounds.width / 2 - state.viewport.width / 2,
-					bounds.y + bounds.height / 2 - state.viewport.height / 2,
+					codeBlock.x + codeBlock.width / 2 - state.viewport.width / 2,
+					lineY - state.viewport.height / 2,
 					events
 				);
 			};
