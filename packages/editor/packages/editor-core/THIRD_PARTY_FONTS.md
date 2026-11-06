@@ -68,13 +68,19 @@ The bundled glyphs are converted from the upstream 6×10 BDF font.
 ## Oldschool PC fonts
 
 - Upstream project: [VileR's Ultimate Oldschool PC Font Pack v2.2](https://int10h.org/oldschool-pc-fonts/)
-- Local converted fonts: `ibmvga8x16`, `olivettithin8x16`
-- Source bitmaps: `Bm437_IBM_VGA_8x16.otb`, `Bm437_OlivettiThin_8x16.otb`
+- Local converted fonts: `ibmvga8x16`, `olivettithin8x16`, `eaglespcgaalt38x8`
+- Source bitmaps: `Bm437_IBM_VGA_8x16.otb`, `Bm437_OlivettiThin_8x16.otb`, `Bm437_EagleSpCGA_Alt3.otb`
 - License: Creative Commons Attribution-ShareAlike 4.0 International
 - Local license text: `packages/editor/packages/editor-core/licenses/oldschool-pc-CC-BY-SA-4.0.txt`
 
 The CP437 glyphs are converted derivatives of VileR's bitmap reproductions. Existing printable ASCII designs are
 retained. Redistributions must preserve attribution and follow the upstream license.
+
+EagleSpCGA Alt3 uses the pack's original 8×8 bitmap strike. Its source SHA-256 is
+`27a6a80f72b0e541c655cd7085f255c258a0a7b655203afebd994bdc7ff8989f`.
+`tools/bitmap-sfnt-to-bdf.py` exports that strike with its Unicode cmap explicitly, preserving character identities
+despite the source also containing a Macintosh cmap. The converted pixels were compared against the independent
+Windows `.FON` strike from the same release.
 
 ## Star Trek 25th Anniversary
 
@@ -115,12 +121,54 @@ preserves its 64-unit pixel grid and seven-pixel advance in 7×10 cells.
 The conversion uses the corrected 7×14 BDF directly, retaining its glyph pixels and cell metrics. Unencoded
 OpenType alternates are not used by the editor's fixed CP437 glyph mapping.
 
+## PixelCode
+
+- Upstream: [Qwerasd's Pixel Code](https://github.com/qwerasd205/PixelCode)
+- Local converted font: `pixelcode6x12`
+- Source: regular `PixelCode.otf` from [v2.2](https://github.com/qwerasd205/PixelCode/releases/tag/v2.2), commit `c76d751bf0fe8a992f97ea2a3447b6ce25926406`
+- Source SHA-256: `940e8182f913be2f1f080848514515dbfd201c138cf40c4ca1f13d7914573342`
+- License: SIL Open Font License 1.1
+- Local license: `packages/editor/packages/editor-core/licenses/pixelcode-OFL-1.1.txt`
+
+The regular outline uses 112 font units per design pixel, six-pixel character advances, and a 6×12 cell with
+ten pixels above the baseline and two below. Conversion samples that original pixel grid without smoothing.
+The editor uses individual CP437 glyphs; OpenType ligatures, contextual substitutions, and other weights are not applied.
+
+## Sergamon
+
+- Upstream: [Sergamon Contributors](https://github.com/sgmonda/sergamon)
+- Local converted font: `sergamon8x16`
+- Source: `.glyph` grids and `font-config.json` from [v2.2.3](https://github.com/sgmonda/sergamon/releases/tag/v2.2.3), commit `d2ad073fb1718287696fc679eada481984edde48`
+- License: SIL Open Font License 1.1
+- Local license: `packages/editor/packages/editor-core/licenses/sergamon-OFL-1.1.txt`
+
+`tools/sergamon-to-bdf.mjs` preserves the native 8×16 grids and the configured baseline (13 pixels above, three below).
+The single upstream weight is used directly, with no synthetic bold or outline rasterization.
+
+## Scientifica
+
+- Upstream: [Akshay Oppiliappan's Scientifica](https://github.com/oppiliappan/scientifica)
+- Local converted font: `scientifica5x11`
+- Source: regular `scientifica-11.bdf` from [v2.3](https://github.com/oppiliappan/scientifica/releases/tag/v2.3), commit `6b31fa5d24df2949c7987f6fa349e6ef86e2fc00`
+- Source SHA-256: `d298f1fe8ce2234a1ecaeff7ab7c9db7cf47b74b658f4e8d614a7f4e8e702049`
+- License: SIL Open Font License 1.1
+- Local license: `packages/editor/packages/editor-core/licenses/scientifica-OFL-1.1.txt`
+
+The conversion uses the native five-pixel advance and eleven-pixel line metrics (ascent nine, descent two).
+Before import, the BDF's global `FONTBOUNDINGBOX 6 12 -1 -2` is normalized to `5 11 0 -2`; all imported CP437
+pixels fit within that cell, so no selected glyph pixels are clipped. Bold, italic, and editor-specific ligature
+substitutions are not used.
+
+Scientifica credits [romeovs's Creep](https://github.com/romeovs/creep) for most Basic Latin characters,
+[Raymond W. Ko's Creep2](https://github.com/raymond-w-ko/creep2) for terminal optimizations, and
+[Lemon/artwiz](https://artwizaleczapka.sourceforge.net/) as the basis of some characters.
+
 ## CP437 conversion sources
 
 Each bundled font contains 256 CP437 slots. Extended glyphs come from the upstream BDF sources for Terminus,
 Spleen, Cozette, and X11 Misc Fixed, and the Oldschool PC bitmap fonts listed above. TempleOS uses
 [Rendello's bitmap conversion](https://github.com/rendello/templeos_font). The two larger bundled Spleen faces use
 the upstream CP437 BDFs, which include the graphical control-range symbols. Existing printable ASCII designs
-are retained, and unavailable glyphs are blank. The Star Trek and Departure Mono sources listed above also map
-their available Unicode characters into those slots. Upstream font files are downloaded separately and are not bundled
-in this repository.
+are retained, and unavailable glyphs are blank. The Star Trek, Departure Mono, PixelCode, Sergamon, and Scientifica
+sources listed above also map their available Unicode characters into those slots. Upstream font files are downloaded
+separately and are not bundled in this repository.

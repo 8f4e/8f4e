@@ -4,11 +4,13 @@ priority: Low
 effort: 4-8h
 created: 2026-07-30
 issue: https://github.com/8f4e/8f4e/issues/952
-status: Open
-completed: null
+status: Completed
+completed: 2026-11-06
 ---
 
 # TODO: Add Sergamon font to the editor
+
+Completed on 2026-11-06 as `sergamon8x16`: Sergamon 8×16, imported directly from the pinned v2.2.3 `.glyph` grids. The font is registered in the shared lazy catalog with all 256 CP437 slots; missing source glyphs remain blank. Source pixels, atlas addressing, and background rendering were verified, and unit tests, type checks, and browser rendering checks pass. Attribution and the upstream license are recorded in `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md`. The plan below records the original proposal.
 
 ## Problem Description
 
@@ -23,7 +25,7 @@ Adding it should follow the existing sprite-generator font pipeline instead of i
 
 ## Proposed Solution
 
-Add Sergamon as a bundled sprite-generator font, using the local font id `sergamon`.
+Add Sergamon as a bundled sprite-generator font, using the local font id `sergamon8x16`.
 
 High-level approach:
 
@@ -44,25 +46,25 @@ High-level approach:
 
 ### Step 2: Add sprite-generator font sources
 
-- Add `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/sergamon/ascii.ts`.
+- Add `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/sergamon8x16/ascii.ts`.
 - Add or adapt an import tool that converts Sergamon's `.glyph` format deterministically.
 - Run the existing bitmap generation tool so `src/generated/<font>.ts` is created.
 
 ### Step 3: Register the font
 
-- Add `sergamon` to the font catalog; `Font` and `FONT_NAMES` are derived from it.
-- Add a `FONTS.sergamon` entry in `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/catalog.ts`.
+- Add `sergamon8x16` to the font catalog; `Font` and `FONT_NAMES` are derived from it.
+- Add a `FONTS.sergamon8x16` entry in `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/catalog.ts`.
 - Add test fixture coverage for selecting the font through editor configuration.
 
 ### Step 4: Document attribution
 
-- Add Sergamon to `packages/editor/THIRD_PARTY_FONTS.md`.
-- Add the upstream OFL text under `packages/editor/licenses/`, following the existing font license naming pattern.
+- Add Sergamon to `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md`.
+- Add the upstream OFL text under `packages/editor/packages/editor-core/licenses/`, following the existing font license naming pattern.
 - Record the pinned upstream source and note that the committed sprite-generator data is a converted derivative.
 
 ### Step 5: Validate rendering
 
-- Add or extend tests so `sergamon` loads without falling back to `ibmvga8x16`.
+- Add or extend tests so `sergamon8x16` loads without falling back to `ibmvga8x16`.
 - Add screenshot coverage or manually verify a generated atlas.
 - Confirm the glyph dimensions, baseline, atlas layout, and lookup coordinates remain stable.
 - Verify that the font is rendered without synthesized bold, matching Sergamon's single-weight design.
@@ -76,35 +78,35 @@ High-level approach:
 
 ## Success Criteria
 
-- [ ] `sergamon` is selectable as an editor sprite-generator font.
-- [ ] The font loads through the same lazy metadata path as existing bundled fonts.
-- [ ] ASCII code glyphs render from Sergamon-derived 8x16 data.
-- [ ] Connectors and the tiled background render correctly with the new font.
-- [ ] Sprite-generator tests, typecheck, and rendering checks pass.
-- [ ] Third-party attribution and OFL license text are committed.
+- [x] `sergamon8x16` is selectable as an editor sprite-generator font.
+- [x] The font loads through the same lazy metadata path as existing bundled fonts.
+- [x] ASCII code glyphs render from Sergamon-derived 8x16 data.
+- [x] Connectors and the tiled background render correctly with the new font.
+- [x] Sprite-generator tests, typecheck, and rendering checks pass.
+- [x] Third-party attribution and OFL license text are committed.
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/sergamon/` - new font source.
+- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/sergamon8x16/` - new font source.
 - `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/catalog.ts` - font dimensions, lazy payload import, and derived font-name types.
 - `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tools/` - deterministic Sergamon glyph importer.
 - `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tests/` - fixture, selection, and rendering coverage.
-- `packages/editor/THIRD_PARTY_FONTS.md` - upstream attribution.
-- `packages/editor/licenses/` - Sergamon OFL license text.
+- `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md` - upstream attribution.
+- `packages/editor/packages/editor-core/licenses/` - Sergamon OFL license text.
 
 ## Risks & Considerations
 
 - **Character coverage**: Confirm the editor-required character set and verify the ordinary bracket/star characters used by connectors.
 - **Font naming**: Respect any Reserved Font Name declarations when naming converted or modified assets.
 - **Single weight**: Do not synthesize a bold variant; Sergamon intentionally provides one weight.
-- **Generated-file churn**: Keep generated bitmap changes limited to the new `sergamon` font directory.
+- **Generated-file churn**: Keep generated bitmap changes limited to the new `sergamon8x16` font directory.
 - **Upstream drift**: Pin the source release or commit so regeneration is reproducible.
 
 ## Related Items
 
-- **Related**: `docs/todos/388-add-pixelcode-font-to-sprite-generator.md`
-- **Related**: `docs/todos/389-add-eaglespcga-alt3-8x8-font-to-sprite-generator.md`
-- **Related**: `packages/editor/THIRD_PARTY_FONTS.md`
+- **Related**: `docs/todos/archived/388-add-pixelcode-font-to-sprite-generator.md`
+- **Related**: `docs/todos/archived/389-add-eaglespcga-alt3-8x8-font-to-sprite-generator.md`
+- **Related**: `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md`
 - **Related**: `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tools/generate-font-bitmaps.mjs`
 
 ## References

@@ -15,7 +15,15 @@ const themes: Array<{ name: string; palette: PaletteConfig }> = [
 	{ name: 'translucent', palette: { surface: '#092a3580', primary: '#ffcc3380', secondary: '#ff66cc80' } },
 ];
 
-for (const font of ['x11miscfixed6x10', 'ibmvga8x16', 'spleen16x32'] satisfies Font[]) {
+for (const font of [
+	'x11miscfixed6x10',
+	'ibmvga8x16',
+	'spleen16x32',
+	'pixelcode6x12',
+	'eaglespcgaalt38x8',
+	'sergamon8x16',
+	'scientifica5x11',
+] satisfies Font[]) {
 	for (const { name, palette } of themes) {
 		test(`connectors with ${font} and ${name} colors`, async () => {
 			const spriteAtlas = await loadFontAtlas(font);

@@ -74,10 +74,6 @@ Active todo files are listed below.
 | ID | Title | Priority | Effort | Created | Summary |
 | ---- | ----- | -------- | ------ | ------- | ------- |
 | 364 | Centralize alwaysOnTop code block partition logic | 🟢 | 1-2 hours | 2026-04-03 | The `@alwaysOnTop` behavior is implemented through repeated ad hoc array partitioning of `graphicHelper.codeBlocks`. The same "normal blocks first, always-on-top blocks last" ru... |
-| 388 | Add PixelCode font to sprite-generator | 🟢 | 4-8h | 2026-05-02 | The editor sprite-generator has several bundled bitmap fonts, but it does not include PixelCode/Pixel Code. PixelCode is an upstream pixel font aimed at programming, which makes... |
-| 389 | Add EagleSpCGA Alt3 8x8 font to sprite-generator | 🟢 | 4-8h | 2026-05-04 | The editor sprite-generator has several bundled bitmap fonts, including a few compact 8-pixel-high options, but it does not include EagleSpCGA Alt3 8x8. That leaves the editor w... |
-| 465 | Add Sergamon font to the editor | 🟢 | 4-8h | 2026-07-30 | Add Sergamon's 8x16 programming-font glyphs to the sprite-generator pipeline and expose the font through editor configuration. |
-| 466 | Add Scientifica font to the editor | 🟢 | 4-8h | 2026-07-30 | Import Scientifica's regular 11-pixel BDF face into the sprite-generator pipeline and expose the condensed font through editor configuration. |
 | 515 | Share editor plugin test setup | 🟢 | TBD | 2026-10-27 | Explore shared setup for compiled projects, memory, editor lifecycle, and drawing; decide the scope and API later. |
 | 516 | Separate browser-dependent plugin lists | 🟢 | TBD | 2026-10-27 | Expose separate plugins and browserPlugins lists in browser composition while sharing the plugin contract and lifecycle. |
 | 518 | Investigate optional editing locks for agent sessions | 🟢 | TBD | 2026-10-28 | Evaluate whether temporary agent editing sessions improve on revision checks, including takeover, timeout, revocation, and project-switch behavior. |
@@ -86,6 +82,10 @@ Active todo files are listed below.
 
 | ID | Title | Completed | Notes |
 | ---- | ----- | --------- | ----- |
+| 388 | Add PixelCode font to sprite-generator | 2026-11-06 | Added `pixelcode6x12` from PixelCode v2.2 with native pixel conversion, lazy loading, attribution, and rendering checks. |
+| 389 | Add EagleSpCGA Alt3 8x8 font to sprite-generator | 2026-11-06 | Added `eaglespcgaalt38x8` from the Oldschool PC Font Pack v2.2 bitmap strike; verified Unicode mapping and original pixels. |
+| 465 | Add Sergamon font to the editor | 2026-11-06 | Added `sergamon8x16` directly from v2.2.3 source grids, with lazy loading, attribution, and rendering checks. |
+| 466 | Add Scientifica font to the editor | 2026-11-06 | Added regular `scientifica5x11` from the v2.3 BDF, preserving its condensed metrics and source pixels. |
 | 519 | Add group-scoped source templates | 2026-11-02 | Added isolated source inlining and silent rightmost-instance extraction, compiler-stage validation, automatic definition creation, and the shared four-voice DX7 template; verified compiler, editor, browser, and playback behavior. |
 | 505 | Add an initial editor mode directive | 2026-10-29 | Added load-only `@mode edit` and `@mode view`; removed the host initial-mode option and compatibility fallbacks. |
 | 508 | Design lazy loading for editor plugins | 2026-10-29 | Project-signal registry and ordinary loader plugin; plot imports on demand, with manual rescanning, late layout refresh, and per-editor cleanup. |

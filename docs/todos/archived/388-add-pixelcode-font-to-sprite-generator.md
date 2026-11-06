@@ -4,11 +4,13 @@ priority: Low
 effort: 4-8h
 created: 2026-05-02
 issue: https://github.com/8f4e/8f4e/issues/650
-status: Open
-completed: null
+status: Completed
+completed: 2026-11-06
 ---
 
 # TODO: Add PixelCode font to sprite-generator
+
+Completed on 2026-11-06 as `pixelcode6x12`: PixelCode 6×12, imported from the pinned regular v2.2 outline at its original 112-unit pixel grid. The font is registered in the shared lazy catalog with all 256 CP437 slots; missing source glyphs remain blank. Source pixels, atlas addressing, and background rendering were verified, and unit tests, type checks, and browser rendering checks pass. Attribution and the upstream license are recorded in `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md`. The plan below records the original proposal.
 
 ## Problem Description
 
@@ -17,13 +19,13 @@ The editor sprite-generator has several bundled bitmap fonts, but it does not in
 Adding it should follow the existing sprite-generator font pipeline instead of introducing a browser font dependency:
 
 - committed source glyph data under `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/`
-- generated base64 bitmap metadata under each font's `generated/` directory
+- generated Base64 bitmap metadata under `src/generated/`
 - a shared font catalog entry so editor config can select it
 - third-party font attribution and license tracking
 
 ## Proposed Solution
 
-Add PixelCode as a bundled sprite-generator font, using a local derived font id such as `pixelcode`.
+Add PixelCode as a bundled sprite-generator font, using a local derived font id such as `pixelcode6x12`.
 
 High-level approach:
 
@@ -45,24 +47,24 @@ High-level approach:
 
 ### Step 2: Add sprite-generator font sources
 
-- Add `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/pixelcode/ascii.ts`.
+- Add `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/pixelcode6x12/ascii.ts`.
 - Run the existing bitmap generation tool so `src/generated/<font>.ts` is created.
 
 ### Step 3: Register the font
 
-- Add `pixelcode` to the font catalog; `Font` and `FONT_NAMES` are derived from it.
-- Add a `FONTS.pixelcode` entry in `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/catalog.ts`.
+- Add `pixelcode6x12` to the font catalog; `Font` and `FONT_NAMES` are derived from it.
+- Add a `FONTS.pixelcode6x12` entry in `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/catalog.ts`.
 - Add test fixture coverage for the new font configuration.
 
 ### Step 4: Document attribution
 
-- Add PixelCode to `packages/editor/THIRD_PARTY_FONTS.md`.
-- Add the upstream OFL text under `packages/editor/licenses/`, following the existing font license file naming pattern.
+- Add PixelCode to `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md`.
+- Add the upstream OFL text under `packages/editor/packages/editor-core/licenses/`, following the existing font license file naming pattern.
 - Note that the committed sprite-generator font data is a converted derivative.
 
 ### Step 5: Validate rendering
 
-- Add or extend tests so `pixelcode` can be selected and loaded without falling back to `ibmvga8x16`.
+- Add or extend tests so `pixelcode6x12` can be selected and loaded without falling back to `ibmvga8x16`.
 - Add screenshot coverage or manually verify a generated atlas using the new font.
 - Check that glyph dimensions, atlas layout, and lookup coordinates stay stable.
 
@@ -75,31 +77,31 @@ High-level approach:
 
 ## Success Criteria
 
-- [ ] `pixelcode` is a selectable sprite-generator font.
-- [ ] The font loads through the same lazy metadata path as existing bundled fonts.
-- [ ] ASCII code glyphs render from PixelCode-derived data.
-- [ ] Connectors and the tiled background render correctly with the new font.
-- [ ] Sprite-generator tests and typecheck pass.
-- [ ] Third-party font attribution and OFL license text are committed.
+- [x] `pixelcode6x12` is a selectable sprite-generator font.
+- [x] The font loads through the same lazy metadata path as existing bundled fonts.
+- [x] ASCII code glyphs render from PixelCode-derived data.
+- [x] Connectors and the tiled background render correctly with the new font.
+- [x] Sprite-generator tests and typecheck pass.
+- [x] Third-party font attribution and OFL license text are committed.
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/pixelcode/` - new font source.
+- `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/pixelcode6x12/` - new font source.
 - `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/catalog.ts` - font dimensions, lazy payload import, and derived font-name types.
 - `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tests/` - fixture and font selection coverage.
-- `packages/editor/THIRD_PARTY_FONTS.md` - upstream attribution.
-- `packages/editor/licenses/` - PixelCode OFL license text.
+- `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md` - upstream attribution.
+- `packages/editor/packages/editor-core/licenses/` - PixelCode OFL license text.
 
 ## Risks & Considerations
 
 - **Source format mismatch**: PixelCode may not ship BDF directly, so conversion may require an extra deterministic step from TTF/OTF/source data.
 - **Glyph dimensions**: Variable glyph metrics or unexpected bounding boxes need to be normalized to the fixed-width sprite-generator model.
 - **Reserved font names**: OFL derivatives must respect any upstream Reserved Font Name declarations.
-- **Generated-file churn**: Keep generated bitmap updates limited to the new `pixelcode` font directory.
+- **Generated-file churn**: Keep generated bitmap updates limited to the new `pixelcode6x12` font directory.
 
 ## Related Items
 
-- **Related**: `packages/editor/THIRD_PARTY_FONTS.md`
+- **Related**: `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md`
 - **Related**: `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tools/import-bdf.mjs`
 - **Related**: `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tools/generate-font-bitmaps.mjs`
 
