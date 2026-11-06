@@ -68,8 +68,11 @@
   resolve global configuration, then refresh layouts. Add source-derived work to that path instead of relying on
   effect subscription order. Same-project edits retain existing positions while `@pos` is incomplete or invalid;
   replacement projects and newly inserted blocks have no previous position to retain.
-  Publish `codeBlockLayoutsChanged` with `{ codeBlocks }` after those blocks' pending layout contributions settle.
-  Consumers may read completed source/display/layout data only for the listed blocks; unrelated blocks may still be updating.
+  The layout coordinator owns block-to-group identity and anchored-block sets, rebuilding ownership only on project
+  loading or block-collection changes. It settles contributions and positions before publishing
+  `codeBlockLayoutsChanged { project, codeBlocks }` once per affected group. Consumers may read completed
+  source/display/layout data only for the listed blocks; active-view consumers compare the `ProjectLevel` reference.
+  Viewport movement and resizing reposition the active group's anchors without rebuilding membership or source layout.
 - Expose revision tracking and validated commands through `Editor.editing`, and shared project view navigation through `Editor.navigation`. Consumers read the existing `Editor.state` directly and use `editing.getRevision()` to track source changes. Validate edit batches before applying them as one undo step, and retain revision checks across human edits, history changes, and project replacement. WebMCP remains in its external adapter package.
 - Keep API revisions, history, and session persistence on `state.projectChange`, with one revision and operation kind.
   Source and metadata actions call `publishProjectChange(store)` once after a completed change; no-ops and navigation

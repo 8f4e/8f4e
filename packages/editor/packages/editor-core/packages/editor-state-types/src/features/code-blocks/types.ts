@@ -178,12 +178,6 @@ export type CodeBlockRendering = {
 	/** Padded bounds of entries containing modules or project groups in the current level. */
 	entryBounds: EntryBounds[];
 	/**
-	 * Subset of codeBlocks that have a `@viewport` directive.
-	 * Maintained in sync with codeBlocks so that viewport move/resize handlers
-	 * only iterate this smaller list instead of the full block array.
-	 */
-	viewportAnchoredCodeBlocks: CodeBlockGraphicData[];
-	/**
 	 * Monotonically increasing counter for assigning creationIndex to new code blocks.
 	 * Incremented each time a new code block is created.
 	 * This is a runtime-only value and is NOT persisted.

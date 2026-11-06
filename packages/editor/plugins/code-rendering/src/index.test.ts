@@ -216,7 +216,12 @@ it('does not inspect a block whose source replacement has not completed', () => 
 	// Another block can complete while generated source is being replaced in this block.
 	env.code = ['constants env', 'constantsEnd'];
 	try {
-		expect(() => test.events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [test.block] })).not.toThrow();
+		expect(() =>
+			test.events.dispatch('codeBlockLayoutsChanged', {
+				project: test.state.codeBlockRendering.currentProject,
+				codeBlocks: [test.block],
+			})
+		).not.toThrow();
 		expect(test.render(env)[0]).toBe(before[0]);
 	} finally {
 		env.code = original;

@@ -63,8 +63,10 @@
   Code rendering owns selected-line fill; code-block-background owns corner markers. The deferred
   `offscreen-block-arrows` plugin owns arrow placement and drawing through a single replaceable
   `registerOffscreenCodeBlockDrawer` callback in the same traversal. `canvasOverlays` also controls offscreen decorations.
-- Layout completion events carry `{ codeBlocks }` identifying only blocks whose source/display rows and pending
-  layout contributions have settled. Rendering consumers refresh those blocks only; unrelated blocks may still be updating.
+- Layout completion events carry `{ project, codeBlocks }` identifying the owning `ProjectLevel` and only blocks whose
+  source/display rows, layout contributions, and positions have settled. The editor-state layout coordinator owns
+  group membership and per-group anchored-block tracking; viewport movement repositions only the active group's anchors.
+  Rendering consumers refresh the listed blocks only; active-view consumers compare project identity directly.
 - Lifecycle event payloads are inferred from `EditorLifecycleEvents` in editor-state-types. Source-edit helpers take
   `{ store, events }` and emit `codeBlockSourcesChanged { codeBlocks }` for the changed batch before compiler/project
   revisions. Programmatic edits have no selection state or selection-based notification path.

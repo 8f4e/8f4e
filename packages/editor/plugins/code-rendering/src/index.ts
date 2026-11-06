@@ -21,7 +21,8 @@ export const codeRenderingPlugin: EditorPlugin = {
 			}
 		};
 		events.on('codeBlockLayoutsChanged', refresh);
-		refresh({ codeBlocks: store.getState().codeBlockRendering.currentProject.blocks });
+		const project = store.getState().codeBlockRendering.currentProject;
+		refresh({ project, codeBlocks: project.blocks });
 		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 			const rendering = renderingByBlock.get(codeBlock)!;
 			if (!codeBlock.disabled) {

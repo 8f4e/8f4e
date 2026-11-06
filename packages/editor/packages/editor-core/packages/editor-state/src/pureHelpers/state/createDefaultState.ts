@@ -23,7 +23,6 @@ export default function createDefaultState() {
 			rootProject,
 			currentProject: rootProject,
 			entryBounds: [],
-			viewportAnchoredCodeBlocks: [],
 			nextCodeBlockCreationIndex: 0,
 		},
 		contextMenu: {

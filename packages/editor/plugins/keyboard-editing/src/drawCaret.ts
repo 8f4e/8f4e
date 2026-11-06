@@ -26,7 +26,8 @@ export default function createCaretPresentation(state: State, events: EventDispa
 		);
 	};
 
-	const onLayoutsChanged = ({ codeBlocks }: CodeBlockLayoutsChangedEvent) => {
+	const onLayoutsChanged = ({ project, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
+		if (project !== state.codeBlockRendering.currentProject) return;
 		if (state.codeBlockRendering.selectedCodeBlock && codeBlocks.includes(state.codeBlockRendering.selectedCodeBlock))
 			prepare();
 	};

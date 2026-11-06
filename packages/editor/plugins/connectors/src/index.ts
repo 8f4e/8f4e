@@ -1,7 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { gapCalculator } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import drawConnections from './drawer/connections';
 import drawConnectors from './drawer/connectors';
@@ -20,9 +20,10 @@ export const connectorsPlugin: EditorPlugin = {
 		const labelsByBlock = new WeakMap<CodeBlockGraphicData, Array<{ x: number; y: number; glyphs: GlyphIds }>>();
 		const contribution = layout.createContribution();
 		const outputsByByteAddress = new Map<number, Output>();
-		const rebuildOutputIndex = () => {
+		const rebuildOutputIndex = ({ project }: CodeBlockLayoutsChangedEvent) => {
+			if (project !== store.getState().codeBlockRendering.currentProject) return;
 			outputsByByteAddress.clear();
-			for (const block of store.getState().codeBlockRendering.currentProject.blocks) {
+			for (const block of project.blocks) {
 				for (const output of widgetsByBlock.get(block)?.outputs ?? []) {
 					outputsByByteAddress.set(output.memory.byteAddress, output);
 				}
