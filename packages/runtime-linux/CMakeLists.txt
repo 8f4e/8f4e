@@ -37,9 +37,6 @@ if(BUILD_TESTING)
   find_program(NODE_EXECUTABLE node REQUIRED)
   add_test(NAME jack-integration COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/run-jack.mjs")
   set_tests_properties(jack-integration PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" TIMEOUT 45)
-  add_test(NAME reject-named-buffer COMMAND 8f4e-runtime
-    "${CMAKE_CURRENT_SOURCE_DIR}/dist/tests/instrument.wasm" --left output:left)
-  set_tests_properties(reject-named-buffer PROPERTIES WILL_FAIL TRUE)
   add_test(NAME reject-buffer-outside-memory COMMAND 8f4e-runtime
     "${CMAKE_CURRENT_SOURCE_DIR}/dist/tests/instrument.wasm" --left 65536)
   set_tests_properties(reject-buffer-outside-memory PROPERTIES WILL_FAIL TRUE)

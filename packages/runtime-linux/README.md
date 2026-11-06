@@ -101,6 +101,53 @@ If your devices are only visible to ALSA, install `a2jmidid` and configure it on
 After that, plugging in a controller while the instrument is running requires no routing commands.
 `jack_lsp -tp` can show which hardware ports JACK currently exposes.
 
+### Start the DX7 instrument on boot
+
+The tested Patchbox installation runs the runtime as user `patch`, using the shared JACK server and its existing
+`jack.service`. On a read-only system, install files in writable maintenance mode so the changes survive a reboot.
+With `8f4e-runtime` and the compiled `dx7.wasm` in the current directory on the Pi, install them with:
+
+```sh
+sudo install -Dm755 8f4e-runtime /opt/8f4e/bin/8f4e-runtime
+sudo install -Dm644 dx7.wasm /opt/8f4e/projects/dx7-epiano.wasm
+```
+
+Create `/etc/systemd/system/8f4e-dx7.service` with this unit. Its `ExecStart` uses the tested DX7 layout: a mono
+128-sample buffer at byte offset 4, routed to both outputs. Generate the command from your own compilation and
+use its numeric addresses and buffer size in `ExecStart`.
+
+```ini
+[Unit]
+Description=8f4e DX7 eight-voice electric piano
+Requires=jack.service
+After=jack.service
+
+[Service]
+Type=simple
+User=patch
+Group=jack
+Environment=JACK_PROMISCUOUS_SERVER=jack
+ExecStart=/opt/8f4e/bin/8f4e-runtime /opt/8f4e/projects/dx7-epiano.wasm --left 4 --right 4 --buffer-size 128 --sample-rate 48000
+LimitRTPRIO=95
+LimitMEMLOCK=infinity
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable the instrument and check its status:
+
+```sh
+sudo systemctl daemon-reload
+sudo systemctl enable --now 8f4e-dx7.service
+systemctl status 8f4e-dx7.service
+```
+
+Use `journalctl -u 8f4e-dx7.service -b` to inspect startup or playback errors. If the system uses a read-only mode,
+return to that mode after installation and verify the service starts after reboot.
+
 ### Instrument configuration
 
 `--left` is required and accepts a decimal byte offset, including zero. `--right` defaults to the left address for
@@ -141,6 +188,15 @@ No sound card, MIDI interface or existing JACK server is needed.
 The **Linux runtime / Test** workflow runs these checks in Bookworm containers on native x86-64 and ARM64 runners.
 Web workflows exclude the native runtime and its command tool. These checks do not measure hardware latency or prove
 glitch-free playback on a Pi; validate the actual interface and desired polyphony on the device.
+
+### Pisound hardware check
+
+The runtime was also tested on a 4 GB Raspberry Pi 5 with Pisound and Patchbox OS Bookworm ARM64. The eight-voice
+DX7 example with E.PIANO 1 selected ran at 48 kHz, with 128-sample JACK cycles and WASM blocks. A three-second
+eight-note chord check reported zero JACK underruns and about 62% JACK processing load. An Arturia KeyStep 32
+attached over USB after the runtime was already running connected automatically, and headphone listening confirmed
+audio quality and responsive playback. End-to-end latency was not measured. The systemd unit documented above
+also started the instrument successfully after reboot into a read-only system with a RAM overlay.
 
 ## Release
 
