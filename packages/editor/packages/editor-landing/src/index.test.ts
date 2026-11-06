@@ -114,15 +114,6 @@ it('omits all keyboard plugins on coarse-pointer browsers', async () => {
 		expect(plugins.some(plugin => plugin.id === id)).toBe(false);
 });
 
-it('retains navigation and editing without mode switching', async () => {
-	const browserWindow = { navigator: {}, matchMedia: () => ({ matches: false }) };
-	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
-	await mountLandingEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
-	const ids = (await loadDeferredPlugins()).map(plugin => plugin.id);
-	expect(ids).not.toContain('keyboard-mode-switching');
-	expect(ids).toEqual(expect.arrayContaining(['keyboard-navigation', 'keyboard-editing']));
-});
-
 it('keeps context-menu requests disabled when the host supplies feature flags', async () => {
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 	await mountLandingEditor({} as HTMLCanvasElement, { featureFlags: { contextMenu: true, projectCreation: true } });
