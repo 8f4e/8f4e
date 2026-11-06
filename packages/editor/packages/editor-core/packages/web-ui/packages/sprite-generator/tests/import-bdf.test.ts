@@ -19,7 +19,7 @@ beforeEach(() => {
 afterEach(() => rmSync(directory, { recursive: true, force: true }));
 
 describe('BDF importer', () => {
-	it('imports ASCII characters with their offsets', async () => {
+	it.each(['', ' \t'])('imports ASCII offsets with trailing BDF whitespace %j', trailingWhitespace => {
 		const bdf = join(directory, 'font.bdf');
 		writeFileSync(
 			bdf,
@@ -37,7 +37,7 @@ A0
 E0
 ENDCHAR
 ENDFONT
-`
+`.replaceAll('\n', trailingWhitespace + '\n')
 		);
 		execFileSync(process.execPath, [importer, bdf, 'fixture']);
 		const output = join(directory, 'src/fonts/fixture');

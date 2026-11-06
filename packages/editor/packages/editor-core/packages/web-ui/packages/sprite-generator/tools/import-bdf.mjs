@@ -98,7 +98,7 @@ function placeGlyphOnCanvas(bitmapRows, glyphBbx, canvasWidth, canvasHeight, fon
 }
 
 function parseBdfGlyphs(source) {
-	const lines = source.split(/\r?\n/);
+	const lines = source.split(/\r?\n/).map(line => line.trimEnd());
 	const globalBbx = parseGlobalBbx(lines);
 	const verticalMetrics = parseFontVerticalMetrics(lines);
 	const glyphs = new Map();

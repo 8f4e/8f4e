@@ -60,6 +60,23 @@ node tools/import-bdf.mjs DepartureMono14-Regular.bdf departuremono7x14
 The font origins, download versions, checksums, and licenses are recorded in
 [Third-Party Fonts](../../../../THIRD_PARTY_FONTS.md). Missing CP437 glyphs in these fonts remain blank.
 
+Additional font imports use the same BDF pipeline. The optional bitmap-SFNT export requires Python's `monobit`
+and `fontTools` packages and selects the source's Unicode cmap explicitly:
+
+```sh
+python3 tools/import-pixel-outline.py PixelCode.otf pixelcode6x12.bdf --units-per-pixel 112 --width 6 --height 12 --ascent 10
+node tools/import-bdf.mjs pixelcode6x12.bdf pixelcode6x12
+python3 tools/bitmap-sfnt-to-bdf.py Bm437_EagleSpCGA_Alt3.otb eagle.bdf
+node tools/import-bdf.mjs eagle.bdf eaglespcgaalt38x8
+node tools/sergamon-to-bdf.mjs /path/to/sergamon-v2.2.3 sergamon.bdf
+node tools/import-bdf.mjs sergamon.bdf sergamon8x16
+sed 's/^FONTBOUNDINGBOX 6 12 -1 -2$/FONTBOUNDINGBOX 5 11 0 -2/' scientifica-11.bdf > scientifica5x11.bdf
+node tools/import-bdf.mjs scientifica5x11.bdf scientifica5x11
+```
+
+The Scientifica normalization retains its five-pixel advance and eleven-pixel line height; all imported CP437
+glyph pixels fit those bounds. The BDF importer accepts trailing whitespace emitted by bitmap exporters.
+
 Code text preparation and syntax palette selection belong to `@8f4e/editor-plugin-code-rendering`. Web-ui owns the
 generic packed sprite-cell format, separately from font loading.
 Themes are resolved through `@8f4e/editor-palette` and never change mask pixels.

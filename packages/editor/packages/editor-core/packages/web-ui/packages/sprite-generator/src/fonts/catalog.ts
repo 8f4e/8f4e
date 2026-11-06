@@ -17,6 +17,10 @@ export const FONTS = {
 	startrek25th8x9: { width: 8, height: 9, load: () => import('../generated/startrek25th8x9.ts') },
 	dilithiumpixels7x10: { width: 7, height: 10, load: () => import('../generated/dilithiumpixels7x10.ts') },
 	departuremono7x14: { width: 7, height: 14, load: () => import('../generated/departuremono7x14.ts') },
+	pixelcode6x12: { width: 6, height: 12, load: () => import('../generated/pixelcode6x12.ts') },
+	eaglespcgaalt38x8: { width: 8, height: 8, load: () => import('../generated/eaglespcgaalt38x8.ts') },
+	sergamon8x16: { width: 8, height: 16, load: () => import('../generated/sergamon8x16.ts') },
+	scientifica5x11: { width: 5, height: 11, load: () => import('../generated/scientifica5x11.ts') },
 } as const;
 
 export type Font = keyof typeof FONTS;

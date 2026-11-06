@@ -4,11 +4,13 @@ priority: Low
 effort: 4-8h
 created: 2026-05-04
 issue: https://github.com/8f4e/8f4e/issues/651
-status: Open
-completed: null
+status: Completed
+completed: 2026-11-06
 ---
 
 # TODO: Add EagleSpCGA Alt3 8x8 font to sprite-generator
+
+Completed on 2026-11-06 as `eaglespcgaalt38x8`: EagleSpCGA Alt3 8×8, imported from the Oldschool PC Font Pack v2.2 native bitmap strike. The font is registered in the shared lazy catalog with all 256 CP437 slots; missing source glyphs remain blank. Source pixels, atlas addressing, and background rendering were verified, and unit tests, type checks, and browser rendering checks pass. Attribution and the upstream license are recorded in `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md`. The plan below records the original proposal.
 
 ## Problem Description
 
@@ -57,8 +59,8 @@ High-level approach:
 
 ### Step 4: Document attribution
 
-- Add EagleSpCGA Alt3 8x8 to `packages/editor/THIRD_PARTY_FONTS.md`.
-- Add the upstream license text under `packages/editor/licenses/`, following the existing font license file naming pattern.
+- Add EagleSpCGA Alt3 8x8 to `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md`.
+- Add the upstream license text under `packages/editor/packages/editor-core/licenses/`, following the existing font license file naming pattern.
 - Note that the committed sprite-generator font data is a converted derivative.
 
 ### Step 5: Validate rendering
@@ -76,20 +78,20 @@ High-level approach:
 
 ## Success Criteria
 
-- [ ] `eaglespcgaalt38x8` is a selectable sprite-generator font.
-- [ ] The font loads through the same lazy metadata path as existing bundled fonts.
-- [ ] ASCII code glyphs render from EagleSpCGA Alt3 8x8-derived data.
-- [ ] Connectors and the tiled background render correctly with the new font.
-- [ ] Sprite-generator tests and typecheck pass.
-- [ ] Third-party font attribution and license text are committed.
+- [x] `eaglespcgaalt38x8` is a selectable sprite-generator font.
+- [x] The font loads through the same lazy metadata path as existing bundled fonts.
+- [x] ASCII code glyphs render from EagleSpCGA Alt3 8x8-derived data.
+- [x] Connectors and the tiled background render correctly with the new font.
+- [x] Sprite-generator tests and typecheck pass.
+- [x] Third-party font attribution and license text are committed.
 
 ## Affected Components
 
 - `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/eaglespcgaalt38x8/` - new font source.
 - `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/src/fonts/catalog.ts` - font dimensions, lazy payload import, and derived font-name types.
 - `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tests/` - fixture and font selection coverage.
-- `packages/editor/THIRD_PARTY_FONTS.md` - upstream attribution.
-- `packages/editor/licenses/` - EagleSpCGA Alt3 8x8 license text.
+- `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md` - upstream attribution.
+- `packages/editor/packages/editor-core/licenses/` - EagleSpCGA Alt3 8x8 license text.
 
 ## Risks & Considerations
 
@@ -100,15 +102,15 @@ High-level approach:
 
 ## Related Items
 
-- **Related**: `docs/todos/388-add-pixelcode-font-to-sprite-generator.md`
-- **Related**: `packages/editor/THIRD_PARTY_FONTS.md`
+- **Related**: `docs/todos/archived/388-add-pixelcode-font-to-sprite-generator.md`
+- **Related**: `packages/editor/packages/editor-core/THIRD_PARTY_FONTS.md`
 - **Related**: `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tools/import-bdf.mjs`
 - **Related**: `packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/tools/generate-font-bitmaps.mjs`
 
 ## References
 
-- Add the authoritative EagleSpCGA Alt3 8x8 upstream source URL during implementation.
-- Add the authoritative license URL during implementation.
+- [VileR's Ultimate Oldschool PC Font Pack v2.2](https://int10h.org/oldschool-pc-fonts/)
+- License text: `packages/editor/packages/editor-core/licenses/oldschool-pc-CC-BY-SA-4.0.txt`
 
 ## Notes
 
