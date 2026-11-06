@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-keyboard-navigation",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "private": true,
   "description": "Keyboard navigation for the 8f4e editor",
   "type": "module",

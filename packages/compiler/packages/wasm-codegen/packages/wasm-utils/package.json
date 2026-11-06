@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/compiler-wasm-utils",
-  "version": "2.0.43",
+  "version": "2.0.44",
   "private": true,
   "description": "8f4e WASM encoding utilities package",
   "type": "module",
