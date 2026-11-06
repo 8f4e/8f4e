@@ -33,10 +33,13 @@ void midi_tests() {
 
 int main(int argc, char **argv) {
   try {
-    require(argc == 3, "Expected compiler WASM and memory information fixture paths");
+    require(argc == 5, "Expected WASM path, left/right byte addresses and buffer size");
+    const auto left = std::stoul(argv[2]);
+    const auto right = std::stoul(argv[3]);
+    const auto frames = std::stoul(argv[4]);
     midi_tests();
-    Program program(argv[1], argv[2], "output:left", "output:right", "buffer", "onMidiEvent");
-    require(program.frames() == 4, "Block size comes from compiler memory metadata");
+    Program program(argv[1], left, right, frames, "buffer", "onMidiEvent");
+    require(program.frames() == 4, "Block size comes from the numeric launch argument");
     std::array<float, 8> audio;
     program.render(audio, 1.0f);
     for (std::size_t i = 0; i < program.frames(); ++i) {
@@ -58,14 +61,14 @@ int main(int argc, char **argv) {
     program.render(audio, 0.5f);
     require(audio[0] == 0.25f && audio[1] == -0.375f, "Output gain preserves headroom");
 
-    Program mono(argv[1], argv[2], "output:left", "output:left", "buffer", "onMidiEvent");
+    Program mono(argv[1], left, left, frames, "buffer", "onMidiEvent");
     mono.midi({0x90, 32, 0});
     mono.render(audio, 1.0f);
     require(audio[0] == 0.25f && audio[1] == 0.25f, "Mono buffer routes to both outputs");
 
     bool failed = false;
     try {
-      Program missing(argv[1], argv[2], "output:left", "output:right", "missing", "");
+      Program missing(argv[1], left, right, frames, "missing", "");
     } catch (const std::exception &) { failed = true; }
     require(failed, "Missing audio exports fail at startup");
     std::cout << "MIDI parsing, compiled WASM execution, memory routing and gain passed\n";

@@ -8,8 +8,8 @@
 
 class Program {
 public:
-  Program(const std::string &wasm_path, const std::string &memory_path,
-          const std::string &left, const std::string &right,
+  // Addresses are byte offsets in the imported WASM memory; buffers contain float32 samples.
+  Program(const std::string &wasm_path, std::size_t left, std::size_t right, std::size_t frames,
           const std::string &entry, const std::string &midi_callback);
   ~Program();
   std::size_t frames() const;

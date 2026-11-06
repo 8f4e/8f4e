@@ -57,7 +57,7 @@
 			"cache": false,
 			"dependsOn": [
 				{
-					"projects": ["@8f4e/cli", "*", "!@8f4e/editor-website", "!glugglugglug"],
+					"projects": ["@8f4e/cli", "*", "!@8f4e/editor-website", "!glugglugglug", "!@8f4e/runtime-linux", "!@8f4e/runtime-command"],
 					"target": "test",
 					"options": "forward"
 				}

@@ -1,0 +1,77 @@
+---
+name: Linux runtime / Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, staging]
+    paths:
+      - '.github/workflows/runtime-linux-*.yml'
+      - 'packages/runtime-linux/**'
+      - 'tools/runtime-command/**'
+      - 'packages/cli/**'
+      - 'packages/compiler/**'
+      - 'packages/config/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'nx.json'
+      - '.nvmrc'
+  pull_request:
+    branches: [main, staging]
+    paths:
+      - '.github/workflows/runtime-linux-*.yml'
+      - 'packages/runtime-linux/**'
+      - 'tools/runtime-command/**'
+      - 'packages/cli/**'
+      - 'packages/compiler/**'
+      - 'packages/config/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'nx.json'
+      - '.nvmrc'
+
+permissions:
+  contents: read
+
+env:
+  NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD || 'true' }}
+
+jobs:
+  test:
+    name: Native tests (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm ci --ignore-scripts
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libasound2-dev
+
+      - name: Check command tool formatting
+        run: npx nx run @8f4e/runtime-command:lint
+
+      - name: Build native runtime
+        run: npx nx run @8f4e/runtime-linux:build
+
+      - name: Test native runtime and command tool
+        run: npx nx run @8f4e/runtime-linux:test

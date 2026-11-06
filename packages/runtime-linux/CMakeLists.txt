@@ -12,13 +12,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dist")
 option(BUILD_TESTING "Build hardware-independent runtime tests" OFF)
 
 find_package(ALSA REQUIRED)
-find_package(nlohmann_json 3.11 REQUIRED)
 find_package(Threads REQUIRED)
 include(cmake/Wasmtime.cmake)
 
 add_library(runtime-core src/program.cpp)
 target_include_directories(runtime-core PUBLIC src)
-target_link_libraries(runtime-core PUBLIC wasmtime nlohmann_json::nlohmann_json)
+target_link_libraries(runtime-core PUBLIC wasmtime)
 target_compile_options(runtime-core PRIVATE -Wall -Wextra -Wpedantic)
 
 add_executable(8f4e-runtime src/main.cpp)
@@ -30,11 +29,12 @@ if(BUILD_TESTING)
   add_executable(runtime-tests tests/runtime-tests.cpp)
   target_link_libraries(runtime-tests PRIVATE runtime-core)
   target_compile_options(runtime-tests PRIVATE -Wall -Wextra -Wpedantic)
-  add_test(NAME runtime-contract COMMAND runtime-tests
-    "${CMAKE_CURRENT_SOURCE_DIR}/dist/tests/instrument.wasm"
-    "${CMAKE_CURRENT_SOURCE_DIR}/dist/tests/instrument.json")
-  add_test(NAME alsa-null-output COMMAND 8f4e-runtime
-    "${CMAKE_CURRENT_SOURCE_DIR}/dist/tests/instrument.wasm"
-    "${CMAKE_CURRENT_SOURCE_DIR}/dist/tests/instrument.json"
-    --left output:left --right output:right --audio-device null --blocks 4)
+  add_test(NAME runtime-contract COMMAND sh "${CMAKE_CURRENT_SOURCE_DIR}/dist/tests/run-contract.sh")
+  add_test(NAME alsa-null-output COMMAND sh "${CMAKE_CURRENT_SOURCE_DIR}/dist/tests/run-instrument.sh")
+  add_test(NAME reject-named-buffer COMMAND 8f4e-runtime
+    "${CMAKE_CURRENT_SOURCE_DIR}/dist/tests/instrument.wasm" --left output:left --audio-device null)
+  set_tests_properties(reject-named-buffer PROPERTIES WILL_FAIL TRUE)
+  add_test(NAME reject-buffer-outside-memory COMMAND 8f4e-runtime
+    "${CMAKE_CURRENT_SOURCE_DIR}/dist/tests/instrument.wasm" --left 65536 --audio-device null)
+  set_tests_properties(reject-buffer-outside-memory PROPERTIES WILL_FAIL TRUE)
 endif()

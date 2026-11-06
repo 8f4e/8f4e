@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -20,9 +21,9 @@ void stop(int) { stopped = 1; }
 
 struct Options {
   std::string wasm;
-  std::string memory;
-  std::string left = "audioout:buffer";
-  std::string right;
+  std::optional<unsigned int> left;
+  std::optional<unsigned int> right;
+  unsigned int buffer_size = 128;
   std::string audio_device = "default";
   std::string midi_device;
   std::string entry = "buffer";
@@ -33,41 +34,42 @@ struct Options {
 };
 
 const char *usage =
-    "Usage: 8f4e-runtime <program.wasm> <memory.json> [options]\n"
+    "Usage: 8f4e-runtime <program.wasm> --left <byte-address> [options]\n"
     "  --audio-device <name>  ALSA PCM output (default: default)\n"
     "  --midi-device <name>   ALSA raw MIDI input (omitted: no MIDI)\n"
-    "  --left <module:memory>  Float32 output buffer (default: audioout:buffer)\n"
-    "  --right <module:memory> Right buffer (default: same as left)\n"
+    "  --left <byte-address>  Float32 left output buffer (required, decimal bytes)\n"
+    "  --right <byte-address> Right output buffer (default: same as left)\n"
+    "  --buffer-size <samples> Samples generated per block (default: 128)\n"
     "  --sample-rate <hz>     Must match the compiled project (default: 48000)\n"
     "  --gain <number>        Output gain before clipping (default: 0.25)\n"
     "  --entry <export>       Audio block function (default: buffer)\n"
     "  --midi-callback <export> MIDI function (default: onMidiEvent)\n"
     "  --blocks <count>       Stop after this many blocks (default: run continuously)\n";
 
-unsigned int positive_integer(const std::string &value) {
+unsigned int integer(const std::string &value, bool allow_zero = false) {
   unsigned int result = 0;
   const auto [end, error] = std::from_chars(value.data(), value.data() + value.size(), result);
-  if (error != std::errc{} || end != value.data() + value.size() || result == 0) {
-    throw std::runtime_error("Expected a positive integer, got: " + value);
+  if (error != std::errc{} || end != value.data() + value.size() || (!allow_zero && result == 0)) {
+    throw std::runtime_error("Expected a " + std::string(allow_zero ? "nonnegative" : "positive") + " integer, got: " + value);
   }
   return result;
 }
 
 Options options(int argc, char **argv) {
-  if (argc < 3) throw std::runtime_error(usage);
+  if (argc < 2) throw std::runtime_error(usage);
   Options result;
   result.wasm = argv[1];
-  result.memory = argv[2];
-  for (int i = 3; i < argc; i += 2) {
+  for (int i = 2; i < argc; i += 2) {
     const std::string flag = argv[i];
     if (i + 1 == argc) throw std::runtime_error("Missing value for " + flag);
     const std::string value = argv[i + 1];
     if (flag == "--audio-device") result.audio_device = value;
     else if (flag == "--midi-device") result.midi_device = value;
-    else if (flag == "--left") result.left = value;
-    else if (flag == "--right") result.right = value;
-    else if (flag == "--sample-rate") result.sample_rate = positive_integer(value);
-    else if (flag == "--blocks") result.blocks = positive_integer(value);
+    else if (flag == "--left") result.left = integer(value, true);
+    else if (flag == "--right") result.right = integer(value, true);
+    else if (flag == "--buffer-size") result.buffer_size = integer(value);
+    else if (flag == "--sample-rate") result.sample_rate = integer(value);
+    else if (flag == "--blocks") result.blocks = integer(value);
     else if (flag == "--entry") result.entry = value;
     else if (flag == "--midi-callback") result.callback = value;
     else if (flag == "--gain") {
@@ -78,7 +80,8 @@ Options options(int argc, char **argv) {
       }
     } else throw std::runtime_error("Unknown option: " + flag);
   }
-  if (result.right.empty()) result.right = result.left;
+  if (!result.left) throw std::runtime_error("--left <byte-address> is required");
+  if (!result.right) result.right = result.left;
   return result;
 }
 
@@ -94,7 +97,7 @@ int main(int argc, char **argv) {
   }
   try {
     const auto config = options(argc, argv);
-    Program program(config.wasm, config.memory, config.left, config.right, config.entry,
+    Program program(config.wasm, *config.left, *config.right, config.buffer_size, config.entry,
                     config.midi_device.empty() ? "" : config.callback);
     std::vector<float> stereo(program.frames() * 2);
 

@@ -36,7 +36,8 @@ When `--wasm-output` is used, the CLI writes a decoded WebAssembly binary (`.was
 
 `--memory-output` writes JSON containing `requiredMemoryBytes` and the complete `memoryPlan` from the same
 compilation. The plan includes qualified module ids, byte addresses, types and element counts. It can be consumed
-by the [Linux audio/MIDI runtime](../runtime-linux/README.md). `--no-shared-memory` makes the binary import ordinary
+by the [runtime command generator](../../tools/runtime-command/README.md) to print numeric launch arguments for the
+[Linux audio/MIDI runtime](../runtime-linux/README.md). `--no-shared-memory` makes the binary import ordinary
 memory; shared memory remains the default. Output paths must differ from each other and from the source project.
 
 When `format` is used, the CLI wraps long semicolon comments to the requested `--comment-width` or the default width

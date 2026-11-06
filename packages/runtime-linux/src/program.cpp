@@ -6,13 +6,11 @@
 #include <cstring>
 #include <fstream>
 #include <iterator>
-#include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <vector>
 #include <wasmtime.h>
 
 namespace {
-using Json = nlohmann::json;
 template <class T, void (*Destroy)(T *)>
 using Handle = std::unique_ptr<T, decltype(Destroy)>;
 
@@ -28,23 +26,6 @@ void check(wasmtime_error_t *error, wasm_trap_t *trap = nullptr) {
   throw std::runtime_error(text);
 }
 
-struct Buffer {
-  std::size_t address;
-  std::size_t frames;
-};
-
-Buffer resolve_buffer(const Json &info, const std::string &id) {
-  const auto separator = id.rfind(':');
-  if (separator == std::string::npos) {
-    throw std::runtime_error("Audio buffer must be a qualified module:memory reference: " + id);
-  }
-  const auto &memory = info.at("memoryPlan").at("modules").at(id.substr(0, separator))
-                          .at("memory").at(id.substr(separator + 1));
-  if (memory.at("type") != "float" || memory.at("pointerDepth") != 0) {
-    throw std::runtime_error("Audio buffer must contain float32 samples: " + id);
-  }
-  return {memory.at("byteAddress"), memory.at("numberOfElements")};
-}
 } // namespace
 
 struct Program::Impl {
@@ -57,8 +38,9 @@ struct Program::Impl {
   wasmtime_memory_t memory{};
   wasmtime_func_t buffer_function{};
   wasmtime_func_t midi_function{};
-  Buffer left{};
-  Buffer right{};
+  std::size_t left = 0;
+  std::size_t right = 0;
+  std::size_t frames = 0;
 
   wasmtime_func_t function(const std::string &name, std::size_t parameters) {
     wasmtime_extern_t item;
@@ -89,19 +71,13 @@ struct Program::Impl {
   }
 };
 
-Program::Program(const std::string &wasm_path, const std::string &memory_path,
-                 const std::string &left, const std::string &right,
+Program::Program(const std::string &wasm_path, std::size_t left, std::size_t right, std::size_t frames,
                  const std::string &entry, const std::string &midi_callback)
     : impl_(std::make_unique<Impl>()) {
   static_assert(std::endian::native == std::endian::little);
-  std::ifstream metadata(memory_path);
-  if (!metadata) throw std::runtime_error("Cannot open memory information: " + memory_path);
-  const auto info = Json::parse(metadata);
-  impl_->left = resolve_buffer(info, left);
-  impl_->right = resolve_buffer(info, right);
-  if (!impl_->left.frames || impl_->left.frames != impl_->right.frames) {
-    throw std::runtime_error("Left and right audio buffers must have the same nonzero sample count");
-  }
+  impl_->left = left;
+  impl_->right = right;
+  impl_->frames = frames;
 
   std::ifstream wasm(wasm_path, std::ios::binary);
   if (!wasm) throw std::runtime_error("Cannot open WASM: " + wasm_path);
@@ -110,12 +86,22 @@ Program::Program(const std::string &wasm_path, const std::string &memory_path,
   check(wasmtime_module_new(impl_->engine.get(), bytes.data(), bytes.size(), &module));
   impl_->module.reset(module);
 
-  const auto required = info.at("requiredMemoryBytes").get<uint64_t>();
-  const auto pages = static_cast<uint32_t>(std::max(uint64_t{1}, (required + 65535) / 65536));
-  const wasm_limits_t limits{pages, pages};
+  // The compiler already records the exact memory limits in the WASM import.
+  wasm_importtype_vec_t imports;
+  wasmtime_module_imports(module, &imports);
+  const auto *memory_type = imports.size == 1
+      ? wasm_externtype_as_memorytype_const(wasm_importtype_type(imports.data[0])) : nullptr;
   Handle<wasm_memorytype_t, wasm_memorytype_delete> type{
-      wasm_memorytype_new(&limits), wasm_memorytype_delete};
+      memory_type ? wasm_memorytype_copy(memory_type) : nullptr, wasm_memorytype_delete};
+  wasm_importtype_vec_delete(&imports);
+  if (!type) throw std::runtime_error("Expected a single WASM memory import; compile with --no-shared-memory");
   check(wasmtime_memory_new(impl_->context, type.get(), &impl_->memory));
+  const auto memory_size = wasmtime_memory_data_size(impl_->context, &impl_->memory);
+  const auto buffer_bytes = static_cast<uint64_t>(frames) * sizeof(float);
+  if (frames == 0 || static_cast<uint64_t>(left) + buffer_bytes > memory_size ||
+      static_cast<uint64_t>(right) + buffer_bytes > memory_size) {
+    throw std::runtime_error("Audio buffer addresses and sample count must fit in WASM memory");
+  }
   wasmtime_extern_t imported{};
   imported.kind = WASMTIME_EXTERN_MEMORY;
   imported.of.memory = impl_->memory;
@@ -129,7 +115,7 @@ Program::Program(const std::string &wasm_path, const std::string &memory_path,
 }
 
 Program::~Program() = default;
-std::size_t Program::frames() const { return impl_->left.frames; }
+std::size_t Program::frames() const { return impl_->frames; }
 
 void Program::midi(MidiMessage message) {
   std::array<wasmtime_val_t, 3> args{};
@@ -145,8 +131,8 @@ void Program::render(std::span<float> stereo, float gain) {
   const auto *memory = wasmtime_memory_data(impl_->context, &impl_->memory);
   for (std::size_t i = 0; i < frames(); ++i) {
     float left, right;
-    std::memcpy(&left, memory + impl_->left.address + i * sizeof(float), sizeof(float));
-    std::memcpy(&right, memory + impl_->right.address + i * sizeof(float), sizeof(float));
+    std::memcpy(&left, memory + impl_->left + i * sizeof(float), sizeof(float));
+    std::memcpy(&right, memory + impl_->right + i * sizeof(float), sizeof(float));
     stereo[2 * i] = std::clamp(left * gain, -1.0f, 1.0f);
     stereo[2 * i + 1] = std::clamp(right * gain, -1.0f, 1.0f);
   }
