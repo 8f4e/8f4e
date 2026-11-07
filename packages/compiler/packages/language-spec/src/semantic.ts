@@ -260,8 +260,8 @@ export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame>, 
 	assertionCalls?: AssertionCodegenSites;
 	byteCode: Array<WASMInstructionCode | WasmTypeValue | number>;
 	locals: LocalStorageMap;
-	/** Physical storage introduced by inline scopes, outside this body's source binding namespace. */
-	inlinedLocals?: LocalBinding[];
+	/** All physical locals in allocation order, independent of source binding namespaces. */
+	allocatedLocals: LocalBinding[];
 	nextLocalIndex: number;
 	functionLayout: WasmFunctionLayout;
 	functionTypeRegistry?: FunctionTypeRegistry;

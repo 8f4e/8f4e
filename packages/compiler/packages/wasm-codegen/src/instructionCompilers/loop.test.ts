@@ -20,7 +20,7 @@ describe('loop instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			locals: context.locals,
+			locals: context.allocatedLocals,
 			byteCode: context.byteCode,
 		}).toMatchSnapshot();
 	});
@@ -40,7 +40,7 @@ describe('loop instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			locals: context.locals,
+			locals: context.allocatedLocals,
 			byteCode: context.byteCode,
 		}).toMatchSnapshot();
 	});
@@ -60,7 +60,7 @@ describe('loop instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			locals: context.locals,
+			locals: context.allocatedLocals,
 			byteCode: context.byteCode,
 		}).toMatchSnapshot();
 	});

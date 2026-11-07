@@ -1,9 +1,9 @@
-import type { LocalStorageMap } from '@8f4e/language-spec';
+import type { LocalBinding, LocalStorageMap } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import { allocateLocal, allocateLocalFromType, getOrCreateLocal } from './localStorage';
+import { allocateLocal, allocateLocalFromType, allocateTemporaryLocal, getOrCreateLocal } from './localStorage';
 
 function createLocalContext(overrides: { locals?: LocalStorageMap; nextLocalIndex?: number } = {}) {
-	return { locals: {}, nextLocalIndex: 0, ...overrides };
+	return { locals: {}, allocatedLocals: [] as LocalBinding[], nextLocalIndex: 0, ...overrides };
 }
 
 describe('WebAssembly local storage', () => {
@@ -17,6 +17,16 @@ describe('WebAssembly local storage', () => {
 		expect(second.index).toBe(1);
 		expect(context.locals).toEqual({ first, second });
 		expect(context.nextLocalIndex).toBe(2);
+	});
+
+	it('retains physical allocations independently of overwritten source lookups', () => {
+		const context = createLocalContext();
+		const first = allocateLocal(context, 'binding', { isInteger: true });
+		const temporary = allocateTemporaryLocal(context, { isInteger: false });
+		const replacement = allocateLocal(context, 'binding', { isInteger: false, isFloat64: true });
+		expect(context.locals).toEqual({ binding: replacement });
+		expect(context.allocatedLocals).toEqual([first, temporary, replacement]);
+		expect(context.allocatedLocals.map(local => local.index)).toEqual([0, 1, 2]);
 	});
 
 	it('allocates language value types with their binding metadata', () => {

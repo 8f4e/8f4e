@@ -15,7 +15,7 @@ import {
 } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
-import { allocateLocal } from '../localStorage';
+import { allocateTemporaryLocal } from '../localStorage';
 
 import { saveByteCode } from './utils/saveByteCode';
 
@@ -34,10 +34,8 @@ const ensureNonZero: InstructionCompiler = (line, context, facts) => {
 		defaultNonZeroValue = line.arguments[0].value;
 	}
 
-	const tempVariableName = '__ensureNonZero_temp_' + line.lineNumber;
-
 	if (isInteger) {
-		const tempLocal = allocateLocal(context, tempVariableName, {
+		const tempLocal = allocateTemporaryLocal(context, {
 			isInteger: true,
 		});
 		const tempLocalIndex = tempLocal.index;
@@ -53,7 +51,7 @@ const ensureNonZero: InstructionCompiler = (line, context, facts) => {
 			WASM_END,
 		]);
 	} else {
-		const tempLocal = allocateLocal(context, tempVariableName, {
+		const tempLocal = allocateTemporaryLocal(context, {
 			isInteger: false,
 			...(isFloat64 ? { isFloat64: true } : {}),
 		});

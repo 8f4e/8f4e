@@ -1,6 +1,6 @@
 import { i32const, localGet, localSet, WASM_I32_GT_U, WASM_I32_LT_S, WASM_SELECT } from '@8f4e/compiler-wasm-utils';
-import type { CodegenContext, CompilerASTLine, MemoryAddressRange } from '@8f4e/language-spec';
-import { getOrCreateMemoryGuardLocal } from './memoryAccessGuard';
+import type { CodegenContext, MemoryAddressRange } from '@8f4e/language-spec';
+import { allocateMemoryGuardLocal } from './memoryAccessGuard';
 
 /**
  * Builds bytecode that clamps the top stack address between lower and upper bounds.
@@ -13,11 +13,10 @@ import { getOrCreateMemoryGuardLocal } from './memoryAccessGuard';
  */
 export function clampAddressByteCode(
 	context: CodegenContext,
-	line: CompilerASTLine,
 	lowerByteAddress: number,
 	upperByteAddressCode: number[]
 ): number[] {
-	const addressLocal = getOrCreateMemoryGuardLocal(context, `__clampAddress_${line.lineNumber}`, {
+	const addressLocal = allocateMemoryGuardLocal(context, {
 		valueType: 'int',
 	});
 

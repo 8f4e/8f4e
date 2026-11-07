@@ -20,7 +20,6 @@ import { compileCodegenLine } from './compileLine';
 import { createCodegenContext } from './createCodegenContext';
 import { functionValueTypeToWasmType } from './functionValueType';
 import { getOrRegisterFunctionType } from './instructionCompilers/utils/functionTypeRegistry';
-import { getCodegenLocals } from './localStorage';
 
 function compileInlineBody(body: InlineFunctionBody, parent: CodegenContext): void {
 	const context = createCodegenContext(
@@ -30,6 +29,7 @@ function compileInlineBody(body: InlineFunctionBody, parent: CodegenContext): vo
 			functionTypeRegistry: parent.functionTypeRegistry,
 			assertionCalls: body.assertionCalls,
 			nextLocalIndex: parent.nextLocalIndex,
+			allocatedLocals: parent.allocatedLocals,
 			blockStack: [{ blockType: BlockType.FUNCTION, expectedResultTypes: [] }],
 		},
 		body.bindings
@@ -57,7 +57,6 @@ function compileInlineBody(body: InlineFunctionBody, parent: CodegenContext): vo
 	// Reproduce the callee's implicit function label, keeping branches and operand-stack boundaries local.
 	parent.byteCode.push(WASM_BLOCK, ...blockType, ...context.byteCode, WASM_END);
 	parent.nextLocalIndex = context.nextLocalIndex;
-	(parent.inlinedLocals ??= []).push(...getCodegenLocals(context));
 }
 
 /** Emits original analyzed operations with selected calls expanded in isolated local/control scopes. */

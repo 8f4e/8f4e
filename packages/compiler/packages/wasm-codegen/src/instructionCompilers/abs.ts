@@ -12,7 +12,7 @@ import {
 	WASM_TYPE_I32,
 } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler } from '@8f4e/language-spec';
-import { allocateLocal } from '../localStorage';
+import { allocateTemporaryLocal } from '../localStorage';
 
 import { saveByteCode } from './utils/saveByteCode';
 
@@ -24,8 +24,7 @@ const abs: InstructionCompiler = (line, context, facts) => {
 	const [operand] = facts.stackAnalysis.consumedOperands;
 
 	if (operand.valueType === 'int') {
-		const valueName = '__absify_value' + line.lineNumber;
-		const valueLocal = allocateLocal(context, valueName, {
+		const valueLocal = allocateTemporaryLocal(context, {
 			isInteger: true,
 		});
 		const valueLocalIndex = valueLocal.index;

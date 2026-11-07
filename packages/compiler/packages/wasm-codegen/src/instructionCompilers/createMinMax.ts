@@ -13,7 +13,7 @@ import {
 	WASM_TYPE_I32,
 } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler } from '@8f4e/language-spec';
-import { allocateLocal } from '../localStorage';
+import { allocateTemporaryLocal } from '../localStorage';
 
 import { saveByteCode } from './utils/saveByteCode';
 
@@ -25,12 +25,10 @@ const createMinMax =
 		const isFloat64 = numericOperandKind === 'float64';
 
 		if (isInteger) {
-			const leftName = `__${instruction}_left${line.lineNumber}`;
-			const rightName = `__${instruction}_right${line.lineNumber}`;
-			const leftLocal = allocateLocal(context, leftName, {
+			const leftLocal = allocateTemporaryLocal(context, {
 				isInteger: true,
 			});
-			const rightLocal = allocateLocal(context, rightName, {
+			const rightLocal = allocateTemporaryLocal(context, {
 				isInteger: true,
 			});
 			const leftLocalIndex = leftLocal.index;

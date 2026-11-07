@@ -11,7 +11,7 @@ function clampToRange(
 ) {
 	return saveByteCode(
 		context,
-		clampAddressByteCode(context, line, range.byteAddress, rangeUpperByteAddressCode(range, accessByteWidth))
+		clampAddressByteCode(context, range.byteAddress, rangeUpperByteAddressCode(range, accessByteWidth))
 	);
 }
 
@@ -51,5 +51,5 @@ export const clampModuleAddress: InstructionCompiler = (line, context, facts) =>
 export const clampGlobalAddress: InstructionCompiler = (line, context, facts) => {
 	const { accessByteWidth } = facts.clamp!;
 
-	return saveByteCode(context, clampAddressByteCode(context, line, 0, linearLastValidStartAddress(accessByteWidth)));
+	return saveByteCode(context, clampAddressByteCode(context, 0, linearLastValidStartAddress(accessByteWidth)));
 };

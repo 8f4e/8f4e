@@ -42,7 +42,7 @@ describe('abs instruction compiler', () => {
 
 		expect({
 			byteCode: context.byteCode,
-			locals: context.locals,
+			locals: context.allocatedLocals,
 		}).toMatchSnapshot();
 	});
 

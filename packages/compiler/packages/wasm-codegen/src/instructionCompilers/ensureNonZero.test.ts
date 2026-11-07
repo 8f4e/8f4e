@@ -23,7 +23,7 @@ describe('ensureNonZero instruction compiler', () => {
 		);
 
 		expect({
-			locals: context.locals,
+			locals: context.allocatedLocals,
 			byteCode: context.byteCode,
 		}).toMatchSnapshot();
 	});
@@ -43,7 +43,7 @@ describe('ensureNonZero instruction compiler', () => {
 		);
 
 		expect({
-			locals: context.locals,
+			locals: context.allocatedLocals,
 			byteCode: context.byteCode,
 		}).toMatchSnapshot();
 	});
@@ -69,7 +69,7 @@ describe('ensureNonZero instruction compiler', () => {
 		);
 
 		expect({
-			locals: context.locals,
+			locals: context.allocatedLocals,
 			byteCode: context.byteCode,
 		}).toMatchSnapshot();
 	});

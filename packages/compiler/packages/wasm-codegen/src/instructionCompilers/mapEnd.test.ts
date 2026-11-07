@@ -40,9 +40,9 @@ describe('mapEnd instruction compiler', () => {
 			createStackFacts({ map: { inputKind: 'int32', outputKind: 'int32' } })
 		);
 
-		expect(Object.keys(context.locals)).toHaveLength(2);
+		expect(context.allocatedLocals).toHaveLength(2);
 		expect(rows).toEqual(originalRows);
-		expect({ byteCode: context.byteCode, locals: context.locals }).toMatchSnapshot();
+		expect({ byteCode: context.byteCode, locals: context.allocatedLocals }).toMatchSnapshot();
 	});
 
 	it('emits DROP + typed zero for zero rows', () => {
