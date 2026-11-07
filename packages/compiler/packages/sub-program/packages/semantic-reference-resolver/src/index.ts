@@ -28,6 +28,7 @@ import type {
 	ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import {
+	ArgumentType,
 	BlockType,
 	compilerSourceBlockInstructionByType,
 	EMPTY_REFERENCE_SLOTS,
@@ -393,7 +394,8 @@ function isPointerMemoryIoPush(push: ResolvedPushLine): boolean {
 		case 'memory-pointer':
 			return true;
 		case 'local-pointer':
-			return push.arguments[0].dereferenceDepth > 0;
+			const argument = push.arguments[0];
+			return argument.referenceKind === 'memory-pointer' && argument.dereferenceDepth > 0;
 		default:
 			return false;
 	}
