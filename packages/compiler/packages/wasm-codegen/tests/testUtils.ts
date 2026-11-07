@@ -11,6 +11,8 @@ import { expect } from 'vitest';
 import { createCodegenContext } from '../src/createCodegenContext';
 
 export default function createInstructionCompilerTestContext(overrides: Partial<CodegenContext> = {}): CodegenContext {
+	const allocatedLocals =
+		overrides.allocatedLocals ?? Object.values(overrides.locals ?? {}).sort((left, right) => left.index - right.index);
 	return createCodegenContext({
 		functionLayout: {
 			imports: [],
@@ -20,9 +22,9 @@ export default function createInstructionCompilerTestContext(overrides: Partial<
 			moduleFunctionIndices: {},
 		},
 		...overrides,
+		allocatedLocals,
 		nextLocalIndex:
-			overrides.nextLocalIndex ??
-			Object.values(overrides.locals ?? {}).reduce((next, local) => Math.max(next, local.index + 1), 0),
+			overrides.nextLocalIndex ?? allocatedLocals.reduce((next, local) => Math.max(next, local.index + 1), 0),
 		blockStack: overrides.blockStack ?? [{ blockType: BlockType.MODULE, expectedResultTypes: [] }],
 		codeBlockId: overrides.codeBlockId ?? 'test',
 		codeBlockType: overrides.codeBlockType ?? 'module',

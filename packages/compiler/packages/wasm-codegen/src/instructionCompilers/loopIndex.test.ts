@@ -9,9 +9,7 @@ describe('loopIndex instruction compiler', () => {
 	it('reads the nearest active loop counter as a zero-based index', () => {
 		const loopCounterLocal = { isInteger: true, index: 3 };
 		const context = createInstructionCompilerTestContext({
-			locals: {
-				__loopCounter2: loopCounterLocal,
-			},
+			allocatedLocals: [loopCounterLocal],
 			blockStack: [
 				{
 					blockType: BlockType.MODULE,
@@ -42,10 +40,7 @@ describe('loopIndex instruction compiler', () => {
 		const outerLoopCounterLocal = { isInteger: true, index: 1 };
 		const innerLoopCounterLocal = { isInteger: true, index: 2 };
 		const context = createInstructionCompilerTestContext({
-			locals: {
-				__outer: outerLoopCounterLocal,
-				__inner: innerLoopCounterLocal,
-			},
+			allocatedLocals: [outerLoopCounterLocal, innerLoopCounterLocal],
 			blockStack: [
 				{
 					blockType: BlockType.MODULE,

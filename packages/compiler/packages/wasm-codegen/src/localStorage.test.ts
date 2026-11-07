@@ -1,22 +1,25 @@
-import type { LocalStorageMap } from '@8f4e/language-spec';
+import type { CodegenContext } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import { allocateLocal, allocateLocalFromType, getOrCreateLocal } from './localStorage';
+import { allocateLocal, allocateLocalFromType, allocateTemporaryLocal } from './localStorage';
 
-function createLocalContext(overrides: { locals?: LocalStorageMap; nextLocalIndex?: number } = {}) {
-	return { locals: {}, nextLocalIndex: 0, ...overrides };
+function createLocalContext(): Pick<CodegenContext, 'locals' | 'allocatedLocals' | 'nextLocalIndex'> {
+	return { locals: {}, allocatedLocals: [], nextLocalIndex: 0 };
 }
 
 describe('WebAssembly local storage', () => {
-	it('allocates bindings in order and registers them by name', () => {
+	it('allocates source bindings and anonymous temporaries through the same counter', () => {
 		const context = createLocalContext();
 
-		const first = allocateLocal(context, 'first', { isInteger: true });
-		const second = allocateLocal(context, 'second', { isInteger: false, isFloat64: true });
+		const first = allocateLocal(context, '10', { isInteger: false });
+		const temporary = allocateTemporaryLocal(context, { isInteger: false, isFloat64: true });
+		const second = allocateLocal(context, '2', { isInteger: true });
 
 		expect(first.index).toBe(0);
-		expect(second.index).toBe(1);
-		expect(context.locals).toEqual({ first, second });
-		expect(context.nextLocalIndex).toBe(2);
+		expect(temporary.index).toBe(1);
+		expect(second.index).toBe(2);
+		expect(context.locals).toEqual({ '10': first, '2': second });
+		expect(context.allocatedLocals).toEqual([first, temporary, second]);
+		expect(context.nextLocalIndex).toBe(3);
 	});
 
 	it('allocates language value types with their binding metadata', () => {
@@ -32,40 +35,18 @@ describe('WebAssembly local storage', () => {
 			pointerDepth: 1,
 			index: 1,
 		});
+		expect(context.allocatedLocals).toEqual([integer, float64Pointer]);
 	});
 
-	it('continues from an explicitly seeded backend index', () => {
-		const context = createLocalContext({
-			nextLocalIndex: 6,
-			locals: {
-				first: { isInteger: true, index: 1 },
-				last: { isInteger: false, index: 5 },
-			},
-		});
-
-		const local = allocateLocal(context, 'next', { isInteger: true });
-
-		expect(local.index).toBe(6);
-		expect(context.nextLocalIndex).toBe(7);
-	});
-
-	it('reuses an existing binding without advancing the counter', () => {
+	it('retains every allocation independently of source lookup replacement', () => {
 		const context = createLocalContext();
-		const existing = allocateLocal(context, 'shared', { isInteger: true });
+		const original = allocateLocal(context, 'binding', { isInteger: true });
+		const replacement = allocateLocal(context, 'binding', { isInteger: false });
+		const temporary = allocateTemporaryLocal(context, { isInteger: false, isFloat64: true });
 
-		const reused = getOrCreateLocal(context, 'shared', { isInteger: false });
-
-		expect(reused).toBe(existing);
-		expect(context.nextLocalIndex).toBe(1);
-	});
-
-	it('allocates a missing get-or-create binding through the shared counter', () => {
-		const context = createLocalContext();
-
-		const created = getOrCreateLocal(context, 'created', { isInteger: false });
-
-		expect(created).toEqual({ isInteger: false, index: 0 });
-		expect(context.locals.created).toBe(created);
-		expect(context.nextLocalIndex).toBe(1);
+		expect(context.locals.binding).toBe(replacement);
+		expect(context.allocatedLocals).toEqual([original, replacement, temporary]);
+		expect(temporary.index).toBe(2);
+		expect(context.nextLocalIndex).toBe(3);
 	});
 });

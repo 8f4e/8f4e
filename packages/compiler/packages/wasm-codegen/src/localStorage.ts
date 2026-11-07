@@ -1,10 +1,12 @@
-import type { FunctionValueType, LocalBinding, LocalStorageMap, LocalValueMetadata } from '@8f4e/language-spec';
+import type { CodegenContext, FunctionValueType, LocalBinding, LocalValueMetadata } from '@8f4e/language-spec';
 import { functionValueTypeToLocalMetadata } from '@8f4e/language-spec';
 
-type LocalAllocationContext = { locals: LocalStorageMap; nextLocalIndex: number };
+type LocalAllocationContext = Pick<CodegenContext, 'locals' | 'allocatedLocals' | 'nextLocalIndex'>;
 
-function registerLocal(context: LocalAllocationContext, name: string, local: LocalBinding): LocalBinding {
-	context.locals[name] = local;
+/** Allocates anonymous storage; consumers retain the returned binding for its lifetime. */
+export function allocateTemporaryLocal(context: LocalAllocationContext, binding: LocalValueMetadata): LocalBinding {
+	const local = { ...binding, index: context.nextLocalIndex } as LocalBinding;
+	context.allocatedLocals.push(local);
 	context.nextLocalIndex += 1;
 	return local;
 }
@@ -15,7 +17,9 @@ export function allocateLocal(
 	name: string,
 	binding: LocalValueMetadata
 ): LocalBinding {
-	return registerLocal(context, name, { ...binding, index: context.nextLocalIndex } as LocalBinding);
+	const local = allocateTemporaryLocal(context, binding);
+	context.locals[name] = local;
+	return local;
 }
 
 /** Allocates a local binding from a source-language function value type. */
@@ -25,13 +29,4 @@ export function allocateLocalFromType(
 	type: FunctionValueType
 ): LocalBinding {
 	return allocateLocal(context, name, functionValueTypeToLocalMetadata(type));
-}
-
-/** Returns an existing named local binding or allocates it when absent. */
-export function getOrCreateLocal(
-	context: LocalAllocationContext,
-	name: string,
-	binding: LocalValueMetadata
-): LocalBinding {
-	return context.locals[name] ?? allocateLocal(context, name, binding);
 }

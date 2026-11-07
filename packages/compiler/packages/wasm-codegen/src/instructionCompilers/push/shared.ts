@@ -6,6 +6,7 @@ import {
 	getPointerDepthFromMetadata,
 	WORD_MEMORY_ACCESS_WIDTH,
 } from '@8f4e/language-spec';
+import { allocateTemporaryLocal } from '../../localStorage';
 import { type PushValueKind, valueKindToWasmType } from '../../pushValueKind';
 import { guardedAddressOperation } from '../utils/memoryAccessGuard';
 import { typedLoad } from './typedLoad';
@@ -25,17 +26,18 @@ export const constOpcode: Record<PushValueKind, (value: number) => number[]> = {
 
 function buildGuardedPointerLoadChain(
 	context: CodegenContext,
-	lineNumber: number,
 	kind: PushValueKind,
 	steps: PointerLoadStep[]
 ): number[] {
 	const resultType = valueKindToWasmType(kind);
+	// Each step consumes its address before entering the next; no earlier address stays live.
+	const addressLocal = allocateTemporaryLocal(context, { isInteger: true });
 
 	return steps.reduceRight<number[]>(
 		(continuation, step) =>
 			guardedAddressOperation(context, {
 				accessByteWidth: step.accessByteWidth,
-				lineNumber,
+				addressLocal,
 				resultType,
 				buildTrueBranch: addressLocalIndex => [...localGet(addressLocalIndex), ...step.loadByteCode, ...continuation],
 			}),
@@ -47,7 +49,6 @@ function buildGuardedPointerLoadChain(
  * Builds bytecode for loading through a pointer with optional guarded access checks.
  *
  * @param context - Compilation context used by the operation.
- * @param lineNumber - Source line number used for generated guard diagnostics.
  * @param pointerMetadata - Pointer metadata to inspect.
  * @param baseAddressByteCode - Bytecode that leaves the base pointer address on the stack.
  * @param pointerValueSource - Source of the pointer value being dereferenced.
@@ -56,7 +57,6 @@ function buildGuardedPointerLoadChain(
  */
 export function buildPointerDereferenceByteCode(
 	context: CodegenContext,
-	lineNumber: number,
 	pointerMetadata: PointerMetadata,
 	baseAddressByteCode: number[],
 	pointerValueSource: PointerValueSource,
@@ -92,6 +92,6 @@ export function buildPointerDereferenceByteCode(
 
 	return {
 		kind,
-		byteCode: [...baseAddressByteCode, ...buildGuardedPointerLoadChain(context, lineNumber, kind, guardedLoadSteps)],
+		byteCode: [...baseAddressByteCode, ...buildGuardedPointerLoadChain(context, kind, guardedLoadSteps)],
 	};
 }

@@ -3,6 +3,7 @@
 	"compilerOptions": {
 		"noEmit": true,
 		"rootDir": ".",
+		"lib": ["es2023", "webworker"],
 		"types": ["node", "vitest"]
 	},
 	"include": ["src/**/*.ts", "tests/**/*.ts"],

@@ -2,6 +2,12 @@
 
 exports[`loop instruction compiler > compiles a smaller resolved cap 1`] = `
 {
+  "allocatedLocals": [
+    {
+      "index": 0,
+      "isInteger": true,
+    },
+  ],
   "blockStack": [
     {
       "blockType": 0,
@@ -43,17 +49,17 @@ exports[`loop instruction compiler > compiles a smaller resolved cap 1`] = `
     33,
     0,
   ],
-  "locals": {
-    "__infiniteLoopProtectionCounter2": {
-      "index": 0,
-      "isInteger": true,
-    },
-  },
 }
 `;
 
 exports[`loop instruction compiler > compiles the loop segment with default cap 1`] = `
 {
+  "allocatedLocals": [
+    {
+      "index": 0,
+      "isInteger": true,
+    },
+  ],
   "blockStack": [
     {
       "blockType": 0,
@@ -96,17 +102,17 @@ exports[`loop instruction compiler > compiles the loop segment with default cap 
     33,
     0,
   ],
-  "locals": {
-    "__infiniteLoopProtectionCounter2": {
-      "index": 0,
-      "isInteger": true,
-    },
-  },
 }
 `;
 
 exports[`loop instruction compiler > compiles the loop segment with explicit cap argument 1`] = `
 {
+  "allocatedLocals": [
+    {
+      "index": 0,
+      "isInteger": true,
+    },
+  ],
   "blockStack": [
     {
       "blockType": 0,
@@ -148,11 +154,5 @@ exports[`loop instruction compiler > compiles the loop segment with explicit cap
     33,
     0,
   ],
-  "locals": {
-    "__infiniteLoopProtectionCounter2": {
-      "index": 0,
-      "isInteger": true,
-    },
-  },
 }
 `;

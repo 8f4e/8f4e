@@ -10,6 +10,7 @@ export function createCodegenContext(
 	const context: CodegenContext = {
 		byteCode: [],
 		locals: {},
+		allocatedLocals: [],
 		nextLocalIndex: 0,
 		...overrides,
 		...createBlockState(overrides.blockStack),

@@ -18,6 +18,16 @@ exports[`mapEnd instruction compiler > emits DROP + typed zero for zero rows 1`]
 
 exports[`mapEnd instruction compiler > uses only input and result locals without reordering the source rows 1`] = `
 {
+  "allocatedLocals": [
+    {
+      "index": 0,
+      "isInteger": true,
+    },
+    {
+      "index": 1,
+      "isInteger": true,
+    },
+  ],
   "byteCode": [
     33,
     0,
@@ -64,15 +74,5 @@ exports[`mapEnd instruction compiler > uses only input and result locals without
     32,
     1,
   ],
-  "locals": {
-    "__map_1_input": {
-      "index": 0,
-      "isInteger": true,
-    },
-    "__map_1_result": {
-      "index": 1,
-      "isInteger": true,
-    },
-  },
 }
 `;

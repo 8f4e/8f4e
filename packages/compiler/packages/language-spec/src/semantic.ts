@@ -259,7 +259,10 @@ export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame>, 
 	/** Planned native assertion calls keyed by physical source line; absent when disabled. */
 	assertionCalls?: AssertionCodegenSites;
 	byteCode: Array<WASMInstructionCode | WasmTypeValue | number>;
+	/** Source bindings keyed by their resolved binding identities. */
 	locals: LocalStorageMap;
+	/** All physical locals, including parameters and anonymous temporaries, in allocation order. */
+	allocatedLocals: LocalBinding[];
 	nextLocalIndex: number;
 	functionLayout: WasmFunctionLayout;
 	functionTypeRegistry?: FunctionTypeRegistry;
