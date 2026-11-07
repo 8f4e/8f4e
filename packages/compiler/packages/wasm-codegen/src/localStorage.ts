@@ -27,11 +27,7 @@ export function allocateLocalFromType(
 	return allocateLocal(context, name, functionValueTypeToLocalMetadata(type));
 }
 
-/** Returns an existing named local binding or allocates it when absent. */
-export function getOrCreateLocal(
-	context: LocalAllocationContext,
-	name: string,
-	binding: LocalValueMetadata
-): LocalBinding {
-	return context.locals[name] ?? allocateLocal(context, name, binding);
+/** Allocates a fresh temporary and retains its declaration independently of source locations. */
+export function allocateTemporaryLocal(context: LocalAllocationContext, binding: LocalValueMetadata): LocalBinding {
+	return allocateLocal(context, `__temporary_${context.nextLocalIndex}`, binding);
 }

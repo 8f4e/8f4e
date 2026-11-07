@@ -1,4 +1,5 @@
 import type {
+	AssertionCodegenCall,
 	CodegenContext,
 	ExecutableInstructionLine,
 	InstructionCompiler,
@@ -13,13 +14,16 @@ import instructions from './instructionCompilers';
  * @param line - Resolved executable instruction.
  * @param stackFacts - Stack-analysis facts for the same executable operation.
  * @param context - Compilation context used by the operation.
+ * @param assertionCall - Planned callback for this executable operation, when enabled.
  * @returns The computed result.
  */
 export function compileCodegenLine(
 	line: ExecutableInstructionLine,
 	stackFacts: StackAnalysisLineFacts,
-	context: CodegenContext
+	context: CodegenContext,
+	assertionCall?: AssertionCodegenCall
 ) {
+	context.assertionCall = assertionCall;
 	const instruction = line.instruction as Instruction;
 	const compileInstruction = instructions[instruction] as InstructionCompiler;
 	return compileInstruction(line, context, stackFacts);

@@ -15,7 +15,6 @@ export default function pushLocalPointer(line: ResolvedLocalPointerPushLine, con
 	const { dereferenceDepth } = line.arguments[0];
 	const dereference = buildPointerDereferenceByteCode(
 		context,
-		line.lineNumber,
 		local,
 		localGet(local.index),
 		'pointer-value',

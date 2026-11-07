@@ -45,7 +45,6 @@ export function compileFunction(
 	const context = createCodegenContext(
 		{
 			functionLayout,
-			assertionCalls,
 			byteCode: [],
 			blockStack: [{ blockType: BlockType.FUNCTION, expectedResultTypes: [] }],
 			codeBlockType: 'function',
@@ -58,7 +57,7 @@ export function compileFunction(
 	);
 
 	for (const [operationIndex, { line }] of body.entries())
-		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context);
+		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context, assertionCalls?.get(operationIndex));
 	const { wasmIndex, typeIndex } = functionLayout.functions[functionMetadata.id];
 
 	// Collect locals (excluding parameters)

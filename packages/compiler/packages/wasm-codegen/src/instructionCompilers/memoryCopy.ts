@@ -28,7 +28,6 @@ const memoryCopy: InstructionCompiler<ResolvedMemoryCopyLine> = (line, context, 
 		context,
 		guardedMemoryCopy(context, {
 			byteLength,
-			lineNumber: line.lineNumber,
 		})
 	);
 };

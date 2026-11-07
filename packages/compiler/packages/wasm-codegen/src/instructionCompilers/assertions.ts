@@ -5,10 +5,10 @@ import { saveByteCode } from './utils/saveByteCode';
 
 /** Emits a planned callback or discards the actual stack operand when assertions are disabled. */
 export const assert: InstructionCompiler = (line, context) => {
-	if (!context.assertionCalls) {
+	if (!context.assertionCall) {
 		return saveByteCode(context, [WASM_DROP]);
 	}
-	const site = context.assertionCalls.get(line.lineNumber)!;
+	const site = context.assertionCall;
 	return saveByteCode(context, [
 		...i32const(site.siteId),
 		...call(context.functionLayout.assertionCallbacks.get(site.fieldName)!),
@@ -16,7 +16,7 @@ export const assert: InstructionCompiler = (line, context) => {
 };
 
 export const assertEqual: InstructionCompiler<SemanticAssertEqualLine> = (line, context, facts) => {
-	if (context.assertionCalls) {
+	if (context.assertionCall) {
 		push(line.expectedPush, context, facts);
 	}
 	return assert(line, context, facts);

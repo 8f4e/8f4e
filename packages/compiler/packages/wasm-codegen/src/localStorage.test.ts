@@ -1,6 +1,6 @@
 import type { LocalStorageMap } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import { allocateLocal, allocateLocalFromType, getOrCreateLocal } from './localStorage';
+import { allocateLocal, allocateLocalFromType, allocateTemporaryLocal } from './localStorage';
 
 function createLocalContext(overrides: { locals?: LocalStorageMap; nextLocalIndex?: number } = {}) {
 	return { locals: {}, nextLocalIndex: 0, ...overrides };
@@ -49,23 +49,15 @@ describe('WebAssembly local storage', () => {
 		expect(context.nextLocalIndex).toBe(7);
 	});
 
-	it('reuses an existing binding without advancing the counter', () => {
+	it('retains distinct temporary declarations and types after source bindings', () => {
 		const context = createLocalContext();
-		const existing = allocateLocal(context, 'shared', { isInteger: true });
+		const source = allocateLocalFromType(context, '0', 'int');
+		const integer = allocateTemporaryLocal(context, { isInteger: true });
+		const float = allocateTemporaryLocal(context, { isInteger: false });
+		const double = allocateTemporaryLocal(context, { isInteger: false, isFloat64: true });
 
-		const reused = getOrCreateLocal(context, 'shared', { isInteger: false });
-
-		expect(reused).toBe(existing);
-		expect(context.nextLocalIndex).toBe(1);
-	});
-
-	it('allocates a missing get-or-create binding through the shared counter', () => {
-		const context = createLocalContext();
-
-		const created = getOrCreateLocal(context, 'created', { isInteger: false });
-
-		expect(created).toEqual({ isInteger: false, index: 0 });
-		expect(context.locals.created).toBe(created);
-		expect(context.nextLocalIndex).toBe(1);
+		expect(Object.values(context.locals)).toEqual([source, integer, float, double]);
+		expect(Object.values(context.locals).map(local => local.index)).toEqual([0, 1, 2, 3]);
+		expect(context.nextLocalIndex).toBe(4);
 	});
 });

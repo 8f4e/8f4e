@@ -65,11 +65,11 @@ exports[`mapEnd instruction compiler > uses only input and result locals without
     1,
   ],
   "locals": {
-    "__map_1_input": {
+    "__temporary_0": {
       "index": 0,
       "isInteger": true,
     },
-    "__map_1_result": {
+    "__temporary_1": {
       "index": 1,
       "isInteger": true,
     },

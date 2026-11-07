@@ -18,7 +18,6 @@ export default function pushMemoryPointer(
 	const { dereferenceDepth } = line.arguments[0];
 	const dereference = buildPointerDereferenceByteCode(
 		context,
-		line.lineNumber,
 		memoryItem,
 		i32const(memoryItem.byteAddress),
 		'pointer-slot',

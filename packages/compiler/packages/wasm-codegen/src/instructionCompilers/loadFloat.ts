@@ -26,7 +26,6 @@ const loadFloat: InstructionCompiler<LoadFloatLine> = (line, context, facts) => 
 		context,
 		guardedLoad(context, {
 			accessByteWidth,
-			lineNumber: line.lineNumber,
 			resultType: isFloat64 ? WASM_TYPE_F64 : WASM_TYPE_F32,
 			loadByteCode: instructions,
 		})

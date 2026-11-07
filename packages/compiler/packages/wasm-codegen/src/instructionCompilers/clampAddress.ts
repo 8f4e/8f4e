@@ -1,17 +1,12 @@
-import type { CompilerASTLine, InstructionCompiler, MemoryAddressRange } from '@8f4e/language-spec';
+import type { InstructionCompiler, MemoryAddressRange } from '@8f4e/language-spec';
 import { clampAddressByteCode, rangeUpperByteAddressCode } from './utils/addressClamp';
 import { linearLastValidStartAddress } from './utils/memoryAccessGuard';
 import { saveByteCode } from './utils/saveByteCode';
 
-function clampToRange(
-	line: CompilerASTLine,
-	context: Parameters<InstructionCompiler>[1],
-	range: MemoryAddressRange,
-	accessByteWidth: number
-) {
+function clampToRange(context: Parameters<InstructionCompiler>[1], range: MemoryAddressRange, accessByteWidth: number) {
 	return saveByteCode(
 		context,
-		clampAddressByteCode(context, line, range.byteAddress, rangeUpperByteAddressCode(range, accessByteWidth))
+		clampAddressByteCode(context, range.byteAddress, rangeUpperByteAddressCode(range, accessByteWidth))
 	);
 }
 
@@ -25,7 +20,7 @@ function clampToRange(
 export const clampAddress: InstructionCompiler = (line, context, facts) => {
 	const { accessByteWidth, range } = facts.clamp!;
 
-	return clampToRange(line, context, range!, accessByteWidth);
+	return clampToRange(context, range!, accessByteWidth);
 };
 
 /**
@@ -38,7 +33,7 @@ export const clampAddress: InstructionCompiler = (line, context, facts) => {
 export const clampModuleAddress: InstructionCompiler = (line, context, facts) => {
 	const { accessByteWidth, range } = facts.clamp!;
 
-	return clampToRange(line, context, range!, accessByteWidth);
+	return clampToRange(context, range!, accessByteWidth);
 };
 
 /**
@@ -51,5 +46,5 @@ export const clampModuleAddress: InstructionCompiler = (line, context, facts) =>
 export const clampGlobalAddress: InstructionCompiler = (line, context, facts) => {
 	const { accessByteWidth } = facts.clamp!;
 
-	return saveByteCode(context, clampAddressByteCode(context, line, 0, linearLastValidStartAddress(accessByteWidth)));
+	return saveByteCode(context, clampAddressByteCode(context, 0, linearLastValidStartAddress(accessByteWidth)));
 };
