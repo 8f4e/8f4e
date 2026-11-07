@@ -1,14 +1,39 @@
-import { mkdir, mkdtemp, readFile, rm, unlink, writeFile } from 'node:fs/promises';
+import fs from 'node:fs';
+import { mkdir, mkdtemp, readFile, realpath, rm, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { build, createServer, type InlineConfig, type Rollup } from 'vite';
-import { afterEach, describe, expect, it } from 'vitest';
+import type { InlineConfig, Rollup } from 'vite';
+import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { sourceFiles } from '../src/index';
 
 const cleanups: Array<() => Promise<unknown>> = [];
+let blockedDirectory: string | undefined;
+const pendingDirectoryStats: Array<() => void> = [];
+
+function releaseDirectoryScan() {
+	blockedDirectory = undefined;
+	for (const resume of pendingDirectoryStats.splice(0)) resume();
+}
+
+// Install before loading Vite/Rollup so their promisified filesystem calls can be gated.
+const statSpies = (['stat', 'lstat'] as const).map(method => {
+	const original = fs[method];
+	return vi.spyOn(fs, method).mockImplementation((...args) => {
+		const resume = () => Reflect.apply(original, fs, args);
+		if (blockedDirectory !== undefined && resolve(String(args[0])) === blockedDirectory)
+			pendingDirectoryStats.push(resume);
+		else resume();
+	});
+});
+const { build, createServer } = await import('vite');
+
+afterAll(() => {
+	for (const spy of statSpies) spy.mockRestore();
+});
 
 afterEach(async () => {
+	releaseDirectoryScan();
 	for (const cleanup of cleanups.reverse()) {
 		await cleanup();
 	}
@@ -182,10 +207,19 @@ describe('sourceFiles', () => {
 		expect(transformedSources()).toBe(1);
 	});
 
-	it('discovers new files in an existing empty directory during build watch', async () => {
+	it.each(['normal', 'blocked'] as const)('discovers source changes with %s build-watch startup', async startup => {
 		const project = await fixture({ 'before.8f4e': 'before' });
 		await mkdir(join(project.sources, 'empty'));
-		const result = await build({ ...project.config, build: { ...project.config.build, watch: {} } });
+		const sources = await realpath(project.sources);
+		const empty = join(sources, 'empty');
+		const nativeWatches = vi.spyOn(fs, 'watch');
+		cleanups.push(async () => nativeWatches.mockRestore());
+		if (startup === 'blocked') blockedDirectory = empty;
+		// Use the Node backend on every platform to observe actual directory-watch registration.
+		const result = await build({
+			...project.config,
+			build: { ...project.config.build, watch: { chokidar: { useFsEvents: false, usePolling: false } } },
+		});
 		if (Array.isArray(result) || !('on' in result)) throw new Error('Expected a build watcher');
 		const watcher: Rollup.RollupWatcher = result;
 		cleanups.push(() => watcher.close());
@@ -204,6 +238,18 @@ describe('sourceFiles', () => {
 			});
 		}
 		await nextBuild();
+		const watchedPaths = () => nativeWatches.mock.calls.map(([watched]) => resolve(String(watched)));
+		const ready = expect
+			.poll(watchedPaths, { timeout: 5000 })
+			.toEqual(expect.arrayContaining([sources, empty, join(sources, 'before.8f4e')]));
+		if (startup === 'blocked') {
+			// BUNDLE_END can precede the initial directory scan. Keep that ordering deterministic.
+			await expect.poll(() => pendingDirectoryStats.length, { timeout: 5000 }).toBeGreaterThan(0);
+			expect(watchedPaths()).not.toContain(empty);
+			releaseDirectoryScan();
+		}
+		// BUNDLE_END means output is written, not that Chokidar's initial scan has finished.
+		await ready;
 		const addition = nextBuild();
 		await project.write('empty/added.8f4e', 'new source');
 		await addition;

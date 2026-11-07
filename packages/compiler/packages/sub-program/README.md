@@ -12,7 +12,10 @@ addresses and function/type indexes are therefore assigned once for the complete
 relocation layer before final WebAssembly emission. Function registration resolves signatures and `paramShape` expansions
 once, including imports, exports, and impurity flags. Semantic resolution consumes these registered declarations and
 assigns source binding identities while producing executable bodies without declarations. Stack analysis consumes those
-bodies and produces execution facts. Codegen assigns WebAssembly local indexes and emits bytecode from resolved bodies
+bodies and produces execution facts. Function analysis then reports imports, explicit/early returns, and recursion
+using the resolved call graph, including entry/module execution paths. These facts remain independent of optimization
+policy and are exposed on every compiled function as `analysis`.
+Codegen assigns WebAssembly local indexes and emits bytecode from resolved bodies
 and stack facts. The original ASTs remain unchanged for diagnostics and compiled output; the registry remains available
 for matching calls.
 

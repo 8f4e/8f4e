@@ -1,4 +1,5 @@
 import { ConstantResolverError, type ResolveConstantsSubProgramAST, resolveConstants } from '@8f4e/constant-resolver';
+import { analyzeFunctions } from '@8f4e/function-analyzer';
 import type {
 	AssertionSite,
 	CompiledFunction,
@@ -281,6 +282,7 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	});
 
 	const assertionPlan = options.enableAssertions ? planAssertions(semanticReferences, stackReport) : undefined;
+	const functionAnalysis = analyzeFunctions({ semanticReferences, stackReport, entries });
 	const functionLayout = planFunctionLayout(
 		semanticReferences,
 		entryNames,
@@ -294,6 +296,7 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 			functionTypeRegistry,
 			functionLayout,
 			stackReport.functions[resolved.metadata.id],
+			functionAnalysis.functions[resolved.metadata.id],
 			options,
 			assertionPlan?.calls.get(resolved.ast)
 		)

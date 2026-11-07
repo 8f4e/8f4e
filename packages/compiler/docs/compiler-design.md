@@ -56,6 +56,17 @@ reference reports preserve that input type through their output.
 Source-only function structure rules, including parameter ordering, duplicate directives, and imported function bodies,
 are checked during tokenization. Duplicate symbols and resolved signature limits remain semantic checks.
 
+## Structural Function Analysis
+
+After stack analysis resolves concrete call overloads, `@8f4e/function-analyzer` reports structural facts keyed by
+canonical function ID. It records imports, explicit returns, early returns, and membership in recursive call cycles.
+The call graph includes source functions, composed entry dispatchers, and module bodies, with skipped module dispatches
+excluded. Return facts inspect executable body structure: a final top-level return is explicit but not early.
+
+The report does not change source bodies or generated WebAssembly. Codegen passes its facts through to the required
+`CompiledFunction.analysis` field, including when source stack analysis is not requested. The analyzer owns facts;
+future optimization passes own inlining eligibility, budgets, and transformations.
+
 ## Design Rule
 
 Compile-time expressions should have one owner.

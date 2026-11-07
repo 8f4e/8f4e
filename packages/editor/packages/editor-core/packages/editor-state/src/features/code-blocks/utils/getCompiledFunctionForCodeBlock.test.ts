@@ -16,6 +16,7 @@ function createTestCompiledFunction(name: string, projectBlockId: number): Compi
 		id: functionId,
 		name,
 		signature: { parameters: [{ name: 'value', type: paramType }], returns: [] },
+		analysis: { isImported: false, hasExplicitReturn: false, hasEarlyReturn: false, isRecursive: false },
 		wasmIndex: 0,
 		typeIndex: 0,
 		body: [],

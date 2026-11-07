@@ -14,6 +14,8 @@ This file extends the repository-level guidance for `packages/compiler`.
   original function scope and forward its complete overload set.
 - `@8f4e/tokenizer` owns syntax parsing and validation.
 - `@8f4e/sub-program` orchestrates semantic resolution, memory planning, stack analysis, and compilation.
+- `@8f4e/function-analyzer` reports structural function facts after stack analysis, including explicit/early returns,
+  imports, and recursion. Optimization passes own policy; compiled functions expose the facts as required `analysis`.
 - `@8f4e/wasm-codegen` generates function and module bodies and emits the final WebAssembly binary.
 - Every compiled program imports one shared `host.memory` with explicit minimum/maximum limits. Hosts must
   allocate matching shared memory; there is no non-shared compiler mode. WASM inspection tests enable WABT threads.

@@ -10,6 +10,7 @@ import type {
 	CompiledFunction,
 	CompileOptions,
 	ComposedFunctionAST,
+	FunctionAnalysis,
 	FunctionTypeRegistry,
 	WasmFunctionLayout,
 } from '@8f4e/language-spec';
@@ -27,6 +28,7 @@ import { createCodegenContext } from './createCodegenContext';
  * @param typeRegistry - Function type registry used for WASM block signatures.
  * @param functionLayout - Final function indices and signatures shared with binary emission.
  * @param stackReport - Stack-analysis report for this function.
+ * @param analysis - Structural function facts passed through to compiled output.
  * @param options - Compiler options for this compilation pass.
  * @returns The compiled function artifact.
  */
@@ -35,6 +37,7 @@ export function compileFunction(
 	typeRegistry: FunctionTypeRegistry,
 	functionLayout: WasmFunctionLayout,
 	stackReport: StackAnalyzedFunction,
+	analysis: FunctionAnalysis,
 	options: Pick<CompileOptions, 'includeStackAnalysis'> = {},
 	assertionCalls?: AssertionCodegenSites
 ): CompiledFunction {
@@ -71,6 +74,7 @@ export function compileFunction(
 		}));
 
 	return {
+		analysis,
 		id: functionMetadata.id,
 		name: functionMetadata.name,
 		signature: functionMetadata.signature,

@@ -19,6 +19,10 @@ The package is intentionally declarative. Other compiler packages import these f
 requested, call lines expose `CompiledStackAnalysisLine.resolvedCall` with the selected target ID and its complete
 function signature, including calls to generated entry dispatchers.
 
+`FunctionAnalysis` defines structural facts shared by the function analyzer and compiled output. Every
+`CompiledFunction.analysis` reports `isImported`, `hasExplicitReturn`, `hasEarlyReturn`, and `isRecursive`, independently
+of source stack-view options. These facts describe function structure; optimization passes choose eligibility and costs.
+
 This package does not own:
 
 - Parsing source text into ASTs. That belongs to `@8f4e/tokenizer`.

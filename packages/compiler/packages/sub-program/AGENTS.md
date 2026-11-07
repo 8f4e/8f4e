@@ -14,6 +14,8 @@ This file extends the root and `packages/compiler/AGENTS.md` guidance for
   memory layout.
 - Keep recursive traversal, source parsing, and symbol qualification in `@8f4e/program-composer`.
 - Pass packages used exclusively by this pipeline live under `packages/`.
+- Run `@8f4e/function-analyzer` after stack analysis and pass its per-function facts to codegen as output metadata.
+  Keep optimization eligibility and transformations out of function analysis.
 
 ## Commands
 
