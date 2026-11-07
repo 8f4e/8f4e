@@ -8,6 +8,7 @@ export * from './compilerError';
 export * from './constants';
 export * from './diagnostics';
 export * from './errors';
+export * from './functionAnalysis';
 export * from './functionLayout';
 export * from './functionTypes';
 export * from './ignoredAssertionImports';

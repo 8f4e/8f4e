@@ -186,6 +186,8 @@
 - `npx nx run-many --target=test --all`: Run package tests, including Vitest and the Linux runtime's native CTest suite.
 - `npx nx run @8f4e/examples:test`: Run CLI example-project snapshot tests, then embedded `#test` modules in
   example `.8f4em` files through the CLI test runner.
+- `npx nx run @8f4e/function-analyzer:build|test|typecheck|lint`: Verify structural function facts consumed by the
+  compiler after stack analysis. Analysis reports facts; optimization passes choose policy.
 - `npx nx run @8f4e/runtime-linux:build|test`: Build or verify the native Linux JACK host. Requires CMake, pkg-config, a C++20
   compiler and JACK development packages; CMake fetches a pinned Wasmtime C API. Tests compile a local
   fixture through the CLI and route audio/MIDI through isolated JACK dummy servers without hardware.
