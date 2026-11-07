@@ -1,0 +1,9 @@
+8f4e/v1
+
+entry main
+module invalidScalar
+int value 123
+push &*value
+drop
+moduleEnd
+entryEnd

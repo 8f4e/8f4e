@@ -1,0 +1,10 @@
+8f4e/v1
+
+entry main
+module invalidFixedReference
+int value 123
+int& slot &value
+push &*slot
+drop
+moduleEnd
+entryEnd

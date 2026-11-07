@@ -64,6 +64,7 @@ export const ErrorCode = {
 	UNDEFINED_TEMPLATE: 81,
 	DUPLICATE_TEMPLATE: 82,
 	RECURSIVE_TEMPLATE: 83,
+	POINTEE_ADDRESS_REQUIRES_POINTER: 84,
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];

@@ -93,6 +93,11 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			const pointerArgument = argument as MemoryPointerIdentifier;
 			const slot = context.referenceSlots[pointerArgument.targetMemoryId];
 			if (slot) {
+				if (pointerArgument.dereferenceDepth === 0) {
+					throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, context, {
+						identifier: pointerArgument.targetMemoryId,
+					});
+				}
 				validateDereferenceDepth(pointerArgument, 1, line, context);
 				if (slot.targetMemory.allocatedByteLength < BASE_TYPE_METADATA[getMemoryBaseType(slot.targetMemory)].wordSize) {
 					throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, context);
@@ -101,6 +106,11 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			}
 			const memoryItem = getResolvedMemoryDeclaration(context, pointerArgument.targetMemoryId);
 			if (memoryItem) {
+				if (pointerArgument.dereferenceDepth === 0 && !memoryItem.pointeeBaseType) {
+					throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, context, {
+						identifier: pointerArgument.targetMemoryId,
+					});
+				}
 				validateDereferenceDepth(pointerArgument, getPointerDepthFromMetadata(memoryItem), line, context);
 				const resolvedLine: Omit<ResolvedMemoryPointerPushLine, 'resolvedTarget'> = {
 					...line,
@@ -110,6 +120,11 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			}
 
 			const local = context.locals[pointerArgument.targetMemoryId];
+			if (pointerArgument.dereferenceDepth === 0 && local && !isResolvedPointerLocal(local)) {
+				throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, context, {
+					identifier: pointerArgument.targetMemoryId,
+				});
+			}
 			if (isResolvedPointerLocal(local)) {
 				validateDereferenceDepth(pointerArgument, getPointerDepthFromMetadata(local), line, context);
 				const resolvedLine: Omit<ResolvedLocalPointerPushLine, 'resolvedTarget'> = {

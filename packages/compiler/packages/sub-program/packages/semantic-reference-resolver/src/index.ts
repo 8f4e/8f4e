@@ -19,6 +19,7 @@ import type {
 	ReferenceSlotMap,
 	RegisteredFunction,
 	ResolvedMapLine,
+	ResolvedPushLine,
 	SemanticReferenceLine,
 	SourceLocalBinding,
 	ValidatedConstantsAST,
@@ -388,18 +389,24 @@ function createFunctionContext(
 	});
 }
 
+function isPointerMemoryIoPush(push: ResolvedPushLine): boolean {
+	switch (push.resolvedTarget.kind) {
+		case 'memory-pointer':
+			return true;
+		case 'local-pointer':
+			const argument = push.arguments[0];
+			return argument.referenceKind === 'memory-pointer' && argument.dereferenceDepth > 0;
+		default:
+			return false;
+	}
+}
+
 function assertFunctionMemoryIoAllowed(line: SemanticReferenceLine, context: ReferenceResolutionContext): void {
 	if (context.mode !== 'function' || context.currentFunctionMetadata!.isImpure) return;
 	const spec = getInstructionSpec(line.instruction) as InstructionSpec;
-	const pointerPush =
-		'resolvedTarget' in line &&
-		(line.resolvedTarget.kind === 'local-pointer' || line.resolvedTarget.kind === 'memory-pointer');
+	const pointerPush = 'resolvedTarget' in line && isPointerMemoryIoPush(line);
 	const inlinePushes = 'expectedPush' in line ? [line.expectedPush] : [];
-	const inlinePointerPush = inlinePushes.some(
-		push =>
-			'resolvedTarget' in push &&
-			(push.resolvedTarget.kind === 'local-pointer' || push.resolvedTarget.kind === 'memory-pointer')
-	);
+	const inlinePointerPush = inlinePushes.some(push => 'resolvedTarget' in push && isPointerMemoryIoPush(push));
 	if (spec.effects?.memory || pointerPush || inlinePointerPush) {
 		throw getError(ErrorCode.IMPURE_DIRECTIVE_REQUIRED_FOR_MEMORY_IO, line, context);
 	}

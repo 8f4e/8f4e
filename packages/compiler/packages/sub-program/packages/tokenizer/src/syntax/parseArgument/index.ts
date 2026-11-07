@@ -102,6 +102,12 @@ export function parseArgument(argument: string): Argument {
 		return roundingExpression;
 	}
 
+	// The &* prefix is a single memory-pointer identifier form, not multiplication.
+	// Classify it before literal and compile-time arithmetic parsing can split it at *.
+	if (argument.startsWith('&*')) {
+		return classifyIdentifier(argument);
+	}
+
 	// Try to fold literal-only mul/div expressions (handles *, /, and integer/integer fractions)
 	const mulDivResult = parseLiteralMulDivExpression(argument);
 	if (mulDivResult !== null) {
