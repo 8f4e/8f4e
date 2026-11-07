@@ -2,10 +2,10 @@
   "name": "8f4e",
   "version": "2.1.2",
   "description": "8f4e",
-  "packageManager": "npm@11.13.0",
+  "packageManager": "npm@11.21.1",
   "engines": {
-    "node": "24.16.0",
-    "npm": "11.13.0"
+    "node": "24.22.2",
+    "npm": "11.21.1"
   },
   "scripts": {
     "preinstall": "git submodule update --init --recursive",
@@ -27,7 +27,7 @@
     "@nx/vite": "23.3.1",
     "@playwright/test": "1.64.1",
     "@types/audioworklet": "0.0.100",
-    "@types/node": "24.13.2",
+    "@types/node": "24.19.2",
     "@types/offscreencanvas": "2019.7.3",
     "@vitest/browser": "4.1.12",
     "@vitest/browser-playwright": "4.1.12",
