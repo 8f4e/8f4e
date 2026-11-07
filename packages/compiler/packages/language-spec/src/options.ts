@@ -1,8 +1,11 @@
 import type { CompilerCache } from './compiled';
+import type { FunctionInliningOptions } from './inlining';
 import type { ProjectIncludeResolver } from './project';
 
 /** Optional settings that control compiler layout and emitted metadata. */
 export interface CompileOptions {
+	/** Inline small, non-recursive functions without early returns. Disabled by default; true uses default budgets. */
+	inlineFunctions?: boolean | FunctionInliningOptions;
 	/** Emit native assertion callbacks and source sites. Default is false; disabled assertions consume operands only. */
 	enableAssertions?: boolean;
 	/** Address in 4-byte allocation units where the first module allocation begins. Defaults to 1 (byte address 4). */

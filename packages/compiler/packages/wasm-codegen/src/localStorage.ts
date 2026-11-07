@@ -1,7 +1,20 @@
-import type { FunctionValueType, LocalBinding, LocalStorageMap, LocalValueMetadata } from '@8f4e/language-spec';
+import type {
+	CodegenContext,
+	FunctionValueType,
+	LocalBinding,
+	LocalStorageMap,
+	LocalValueMetadata,
+} from '@8f4e/language-spec';
 import { functionValueTypeToLocalMetadata } from '@8f4e/language-spec';
 
 type LocalAllocationContext = { locals: LocalStorageMap; nextLocalIndex: number };
+
+/** Physical locals in allocation order across the caller's source scope and any inline scopes. */
+export function getCodegenLocals(context: CodegenContext): LocalBinding[] {
+	return [...Object.values(context.locals), ...(context.inlinedLocals ?? [])].sort(
+		(left, right) => left.index - right.index
+	);
+}
 
 function registerLocal(context: LocalAllocationContext, name: string, local: LocalBinding): LocalBinding {
 	context.locals[name] = local;

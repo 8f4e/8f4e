@@ -12,6 +12,7 @@ export default defineConfig({
 				'@8f4e/compiler-wasm-utils',
 				'@8f4e/constant-resolver',
 				'@8f4e/function-analyzer',
+				'@8f4e/function-inliner',
 				'@8f4e/language-spec',
 				'@8f4e/memory-default-resolver',
 				'@8f4e/memory-planner',

@@ -23,6 +23,10 @@ function signature, including calls to generated entry dispatchers.
 `CompiledFunction.analysis` reports `isImported`, `hasExplicitReturn`, `hasEarlyReturn`, and `isRecursive`, independently
 of source stack-view options. These facts describe function structure; optimization passes choose eligibility and costs.
 
+`FunctionInliningPlan` describes optional single-level call-site expansions while retaining original operation facts
+and binding identities. `CompileOptions.inlineFunctions` enables the inliner with default or explicit operation budgets;
+it is disabled by default. Codegen owns the physical storage and result blocks used to emit the selected bodies.
+
 This package does not own:
 
 - Parsing source text into ASTs. That belongs to `@8f4e/tokenizer`.

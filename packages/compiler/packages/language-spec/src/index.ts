@@ -12,6 +12,7 @@ export * from './functionAnalysis';
 export * from './functionLayout';
 export * from './functionTypes';
 export * from './ignoredAssertionImports';
+export * from './inlining';
 export * from './instructionSpecs';
 export * from './instructionSpecTypes';
 export * from './instructionSpecUtils';

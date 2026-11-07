@@ -15,8 +15,10 @@ assigns source binding identities while producing executable bodies without decl
 bodies and produces execution facts. Function analysis then reports imports, explicit/early returns, and recursion
 using the resolved call graph, including entry/module execution paths. These facts remain independent of optimization
 policy and are exposed on every compiled function as `analysis`.
-Codegen assigns WebAssembly local indexes and emits bytecode from resolved bodies
-and stack facts. The original ASTs remain unchanged for diagnostics and compiled output; the registry remains available
+With `inlineFunctions` enabled, function inlining then selects bounded call-site expansions before final Wasm layout.
+Codegen assigns WebAssembly local indexes and emits bytecode from resolved bodies, stack facts, and optional inline
+plans. It isolates each copied callee's locals and control flow and resets source locals for every invocation.
+The original ASTs remain unchanged for diagnostics and compiled output; the registry remains available
 for matching calls.
 
 Source-name arity and overload-count dictionaries have no object prototype, so names such as `constructor`, `toString`, `hasOwnProperty`, and `__proto__` remain valid function identifiers through registration and registry merging. Function ids still include their parameter signature, and duplicate signatures and invalid overload sets keep their existing diagnostics.
