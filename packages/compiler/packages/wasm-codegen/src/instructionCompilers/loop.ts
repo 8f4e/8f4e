@@ -14,7 +14,7 @@ import {
 import type { CodegenLoopBlockStackFrame, InstructionCompiler, ResolvedLoopLine } from '@8f4e/language-spec';
 import { BlockType } from '@8f4e/language-spec';
 import { pushBlock } from '@8f4e/semantic-utils';
-import { allocateLocal } from '../localStorage';
+import { allocateTemporaryLocal } from '../localStorage';
 import { saveByteCode } from './utils/saveByteCode';
 
 /**
@@ -25,8 +25,7 @@ const loop: InstructionCompiler<ResolvedLoopLine> = (line, context) => {
 	const capArg = line.arguments[0];
 	const effectiveCap = capArg.value;
 
-	const infiniteLoopProtectionCounterName = '__infiniteLoopProtectionCounter' + line.lineNumber;
-	const loopCounterLocal = allocateLocal(context, infiniteLoopProtectionCounterName, {
+	const loopCounterLocal = allocateTemporaryLocal(context, {
 		isInteger: true,
 	});
 	const counterLocalIndex = loopCounterLocal.index;

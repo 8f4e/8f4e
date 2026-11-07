@@ -18,7 +18,7 @@ import type {
 	StackAnalysisNumericValueKind,
 } from '@8f4e/language-spec';
 import { popBlock } from '@8f4e/semantic-utils';
-import { allocateLocal } from '../localStorage';
+import { allocateTemporaryLocal } from '../localStorage';
 import { saveByteCode } from './utils/saveByteCode';
 
 const constOp: Record<StackAnalysisNumericValueKind, (v: number) => number[]> = {
@@ -68,11 +68,11 @@ const mapEnd: InstructionCompiler<MapEndLine> = (line: MapEndLine, context, fact
 		saveByteCode(context, [WASM_DROP, ...constOp[outputKind](defaultValue)]);
 	} else {
 		// Allocate only the input and accumulated result.
-		const inputLocal = allocateLocal(context, `__map_${line.lineNumber}_input`, {
+		const inputLocal = allocateTemporaryLocal(context, {
 			isInteger: inputIsInteger,
 			...(inputIsFloat64 ? { isFloat64: true } : {}),
 		});
-		const resultLocal = allocateLocal(context, `__map_${line.lineNumber}_result`, {
+		const resultLocal = allocateTemporaryLocal(context, {
 			isInteger: outputIsInteger,
 			...(outputIsFloat64 ? { isFloat64: true } : {}),
 		});

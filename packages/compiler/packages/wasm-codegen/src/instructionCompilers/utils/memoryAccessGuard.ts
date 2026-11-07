@@ -18,21 +18,21 @@ import {
 	type WASM_TYPE_I32,
 	WASM_TYPE_VOID,
 } from '@8f4e/compiler-wasm-utils';
-import type { CodegenContext, StackItem } from '@8f4e/language-spec';
-import { getOrCreateLocal } from '../../localStorage';
+import type { CodegenContext, LocalBinding, StackItem } from '@8f4e/language-spec';
+import { allocateTemporaryLocal } from '../../localStorage';
 
 type NumericWasmValueType = typeof WASM_TYPE_I32 | typeof WASM_TYPE_F32 | typeof WASM_TYPE_F64;
 
 type GuardedLoadOptions = {
 	accessByteWidth: number;
-	lineNumber: number;
 	resultType: NumericWasmValueType;
 	loadByteCode: number[];
 };
 
 type GuardedAddressOperationOptions = {
+	/** Explicitly shared address slot for a chained pointer dereference. */
+	addressLocal?: LocalBinding;
 	accessByteWidth: number;
-	lineNumber: number;
 	resultType: NumericWasmValueType;
 	buildTrueBranch: (addressLocalIndex: number) => number[];
 	falseByteCode?: number[];
@@ -41,32 +41,25 @@ type GuardedAddressOperationOptions = {
 type GuardedStoreOptions = {
 	value: StackItem;
 	accessByteWidth: number;
-	lineNumber: number;
 	storeByteCode: number[];
 };
 
 type GuardedMemoryCopyOptions = {
 	byteLength: number;
-	lineNumber: number;
 };
 
 type MemoryGuardContext = CodegenContext;
 
 /**
- * Allocates or reuses a hidden local used by emitted memory guard bytecode.
+ * Allocates a fresh hidden local used by emitted memory guard bytecode.
  *
  * @param context - Compilation context used by the operation.
- * @param name - Local name used for the generated guard slot.
  * @param item - Memory item that needs a guard local.
- * @returns Resolved or create memory guard local.
+ * @returns The allocated memory guard local.
  */
-export function getOrCreateMemoryGuardLocal(
-	context: MemoryGuardContext,
-	name: string,
-	item: Pick<StackItem, 'valueType'>
-) {
+export function allocateMemoryGuardLocal(context: MemoryGuardContext, item: Pick<StackItem, 'valueType'>) {
 	const valueType = item.valueType;
-	return getOrCreateLocal(context, name, {
+	return allocateTemporaryLocal(context, {
 		isInteger: valueType === 'int',
 		...(valueType === 'float64' ? { isFloat64: true } : {}),
 	});
@@ -164,9 +157,11 @@ export function guardedAddressOperation(
 	context: MemoryGuardContext,
 	options: GuardedAddressOperationOptions
 ): number[] {
-	const addressLocal = getOrCreateMemoryGuardLocal(context, `__memoryGuardAddr_${options.lineNumber}`, {
-		valueType: 'int',
-	});
+	const addressLocal =
+		options.addressLocal ??
+		allocateMemoryGuardLocal(context, {
+			valueType: 'int',
+		});
 
 	return [
 		...localSet(addressLocal.index),
@@ -187,10 +182,10 @@ export function guardedAddressOperation(
  * @returns The computed result.
  */
 export function guardedStore(context: MemoryGuardContext, options: GuardedStoreOptions): number[] {
-	const addressLocal = getOrCreateMemoryGuardLocal(context, `__memoryGuardAddr_${options.lineNumber}`, {
+	const addressLocal = allocateMemoryGuardLocal(context, {
 		valueType: 'int',
 	});
-	const valueLocal = getOrCreateMemoryGuardLocal(context, `__memoryGuardValue_${options.lineNumber}`, options.value);
+	const valueLocal = allocateMemoryGuardLocal(context, options.value);
 
 	return [
 		...localSet(valueLocal.index),
@@ -224,10 +219,10 @@ export function isSafeMemoryCopy(destination: StackItem, source: StackItem, byte
  * @returns The computed result.
  */
 export function guardedMemoryCopy(context: MemoryGuardContext, options: GuardedMemoryCopyOptions): number[] {
-	const destinationLocal = getOrCreateMemoryGuardLocal(context, `__memoryCopyDestination_${options.lineNumber}`, {
+	const destinationLocal = allocateMemoryGuardLocal(context, {
 		valueType: 'int',
 	});
-	const sourceLocal = getOrCreateMemoryGuardLocal(context, `__memoryCopySource_${options.lineNumber}`, {
+	const sourceLocal = allocateMemoryGuardLocal(context, {
 		valueType: 'int',
 	});
 

@@ -44,7 +44,6 @@ export function compileModule(
 	const context = createCodegenContext(
 		{
 			functionLayout,
-			assertionCalls,
 			byteCode: [],
 			blockStack: [{ blockType: BlockType.MODULE, expectedResultTypes: [] }],
 			functionTypeRegistry: typeRegistry,
@@ -57,7 +56,7 @@ export function compileModule(
 	);
 
 	for (const [operationIndex, { line }] of body.entries())
-		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context);
+		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context, assertionCalls?.get(operationIndex));
 
 	return {
 		referenceSlots: resolved.referenceSlots,

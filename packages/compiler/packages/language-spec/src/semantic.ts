@@ -6,7 +6,7 @@ import type {
 	ArgumentStringLiteral,
 	MemoryPointerIdentifier,
 } from './arguments';
-import type { AssertionCodegenSites } from './assertions';
+import type { AssertionCodegenCall } from './assertions';
 import type {
 	ArrayMemoryDeclarationLine,
 	AssertEqualLine,
@@ -256,8 +256,8 @@ export interface MemoryReferenceResolutionReport {
 
 /** Bytecode emission state, independent of semantic analysis and memory planning. */
 export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame>, CompilerDiagnosticContext {
-	/** Planned native assertion calls keyed by physical source line; absent when disabled. */
-	assertionCalls?: AssertionCodegenSites;
+	/** Planned callback for the current executable operation; absent when assertions are disabled. */
+	assertionCall?: AssertionCodegenCall;
 	byteCode: Array<WASMInstructionCode | WasmTypeValue | number>;
 	locals: LocalStorageMap;
 	nextLocalIndex: number;
