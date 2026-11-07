@@ -188,6 +188,8 @@
   example `.8f4em` files through the CLI test runner.
 - `npx nx run @8f4e/function-analyzer:build|test|typecheck|lint`: Verify structural function facts consumed by the
   compiler after stack analysis. Analysis reports facts; optimization passes choose policy.
+- `npx nx run @8f4e/function-inliner:build|test|typecheck|lint`: Verify bounded, single-level function expansion plans.
+  Compiler tests also execute all source fixtures with `inlineFunctions: true`.
 - `npx nx run @8f4e/runtime-linux:build|test`: Build or verify the native Linux JACK host. Requires CMake, pkg-config, a C++20
   compiler and JACK development packages; CMake fetches a pinned Wasmtime C API. Tests compile a local
   fixture through the CLI and route audio/MIDI through isolated JACK dummy servers without hardware.

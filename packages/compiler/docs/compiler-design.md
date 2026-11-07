@@ -67,6 +67,25 @@ The report does not change source bodies or generated WebAssembly. Codegen passe
 `CompiledFunction.analysis` field, including when source stack analysis is not requested. The analyzer owns facts;
 future optimization passes own inlining eligibility, budgets, and transformations.
 
+## Single-Level Function Inlining
+
+`@8f4e/function-inliner` runs after function and assertion analysis and before final Wasm layout when the compiler's
+`inlineFunctions` option is enabled. It selects source function calls whose targets are non-imported, non-recursive,
+and free of early returns. A terminal explicit return is removed from the copied body. Generated entry dispatchers
+remain calls. Default limits are 32 callee operations and 1,024 estimated caller operations, including parameter
+stores, source-local resets, and the surrounding result block. These limits bound expansion rather than predict
+encoded bytes or execution cost.
+
+The output plan is keyed by original caller operation index. Each expansion carries the original callee operations,
+stack facts, local bindings, diagnostic context, and assertion sites. Calls within those copied bodies remain ordinary
+calls. Source reports and caches are unchanged; standalone function definitions, exports, and indices remain present.
+
+Codegen maps each callee scope to fresh physical locals, saves already evaluated parameters in reverse order, and
+initializes declared source locals to zero on every invocation. A result block reproduces the callee's implicit
+function label, preserves multi-value returns, and isolates pending caller operands. Compiler-generated temporaries
+stay in the callee scope and retain their instruction-owned initialization. Final local declarations follow physical
+allocation order across caller and copied scopes. Disabling inlining retains the original bytecode path.
+
 ## Design Rule
 
 Compile-time expressions should have one owner.

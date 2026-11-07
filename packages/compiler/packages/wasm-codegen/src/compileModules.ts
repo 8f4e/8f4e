@@ -4,6 +4,7 @@ import type {
 	CompileOptions,
 	ComposedAST,
 	ComposedModuleAST,
+	FunctionInliningPlan,
 	FunctionTypeRegistry,
 	WasmFunctionLayout,
 } from '@8f4e/language-spec';
@@ -27,7 +28,8 @@ export function compileModules(
 	stackReport: StackAnalysisSubProgramReport,
 	functionLayout: WasmFunctionLayout,
 	typeRegistry?: FunctionTypeRegistry,
-	assertionCalls?: ReadonlyMap<ComposedAST, AssertionCodegenSites>
+	assertionCalls?: ReadonlyMap<ComposedAST, AssertionCodegenSites>,
+	inliningPlan?: FunctionInliningPlan
 ): CompiledModule[] {
 	return modules.map((resolved, index) =>
 		compileModule(
@@ -37,7 +39,8 @@ export function compileModules(
 			stackReport.modules[resolved.ast.id],
 			options,
 			typeRegistry,
-			assertionCalls?.get(resolved.ast)
+			assertionCalls?.get(resolved.ast),
+			inliningPlan?.modules[resolved.ast.id]
 		)
 	);
 }

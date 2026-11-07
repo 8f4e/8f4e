@@ -1,6 +1,7 @@
 import type {
 	AST,
 	CompiledFunction,
+	CompileOptions,
 	CompileResult,
 	CompilerASTLine,
 	MemoryDefault,
@@ -39,6 +40,7 @@ export interface InstantiatedFixtureProgram extends CompiledFixtureProgram {
 }
 
 export interface FixtureProgramCompileOptions {
+	inlineFunctions?: CompileOptions['inlineFunctions'];
 	extraPrototypes?: ProjectBlock[];
 	includeStackAnalysis?: boolean;
 	cache?: CompileResult['cache'];
@@ -268,6 +270,7 @@ export async function compileFixtureProgramSource(
 		source: normalizedSource,
 		project,
 		compileResult: await compileProject(compileProjectModel, {
+			inlineFunctions: options.inlineFunctions,
 			includeStackAnalysis: options.includeStackAnalysis,
 			resolveInclude: resolveTestInclude,
 			cache: options.cache,
@@ -295,7 +298,7 @@ export async function instantiateFixtureProgramSource(
 	};
 }
 
-export async function runFixtureProgramFile(filePath: string) {
+export async function runFixtureProgramFile(filePath: string, options: Pick<CompileOptions, 'inlineFunctions'> = {}) {
 	const relativePath = path.relative(testRoot, filePath);
 	const source = await fs.readFile(filePath, 'utf8');
 	const project = parseProjectSource(source);
@@ -308,6 +311,7 @@ export async function runFixtureProgramFile(filePath: string) {
 	let result: Awaited<ReturnType<typeof runTests>>;
 	try {
 		compiled = await compileProject(project, {
+			...options,
 			enableAssertions: true,
 			resolveInclude: resolveTestInclude,
 		});

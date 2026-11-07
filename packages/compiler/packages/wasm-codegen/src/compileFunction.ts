@@ -11,6 +11,7 @@ import type {
 	CompileOptions,
 	ComposedFunctionAST,
 	FunctionAnalysis,
+	FunctionInlineCalls,
 	FunctionTypeRegistry,
 	WasmFunctionLayout,
 } from '@8f4e/language-spec';
@@ -18,8 +19,9 @@ import type {
 import { BlockType } from '@8f4e/language-spec';
 import type { FunctionSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import type { StackAnalyzedFunction } from '@8f4e/stack-analyzer';
-import { compileCodegenLine } from './compileLine';
+import { compileBody } from './compileBody';
 import { createCodegenContext } from './createCodegenContext';
+import { getCodegenLocals } from './localStorage';
 
 /**
  * Compiles one resolved function into a WebAssembly function body or import metadata.
@@ -39,7 +41,8 @@ export function compileFunction(
 	stackReport: StackAnalyzedFunction,
 	analysis: FunctionAnalysis,
 	options: Pick<CompileOptions, 'includeStackAnalysis'> = {},
-	assertionCalls?: AssertionCodegenSites
+	assertionCalls?: AssertionCodegenSites,
+	inlineCalls?: FunctionInlineCalls
 ): CompiledFunction {
 	const { ast, metadata: functionMetadata, bindings, body } = resolved;
 	const context = createCodegenContext(
@@ -57,17 +60,16 @@ export function compileFunction(
 		bindings
 	);
 
-	for (const [operationIndex, { line }] of body.entries())
-		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context);
+	compileBody(body, stackReport.operationFacts, context, inlineCalls);
 	const { wasmIndex, typeIndex } = functionLayout.functions[functionMetadata.id];
 
 	// Collect locals (excluding parameters)
 	// Parameters are always at indices 0, 1, 2, ..., (parameterCount - 1)
 	// Regular locals declared with the 'local' instruction come after parameters
 	const parameterCount = functionMetadata.signature.parameters.length;
-	const localDeclarations = Object.entries(context.locals)
-		.filter(([, local]) => local.index >= parameterCount)
-		.map(([, local]) => ({
+	const localDeclarations = getCodegenLocals(context)
+		.filter(local => local.index >= parameterCount)
+		.map(local => ({
 			isInteger: local.isInteger,
 			isFloat64: local.isFloat64,
 			count: 1,

@@ -16,6 +16,8 @@ This file extends the root and `packages/compiler/AGENTS.md` guidance for
 - Pass packages used exclusively by this pipeline live under `packages/`.
 - Run `@8f4e/function-analyzer` after stack analysis and pass its per-function facts to codegen as output metadata.
   Keep optimization eligibility and transformations out of function analysis.
+- When `inlineFunctions` is enabled, run `@8f4e/function-inliner` after function/assertion analysis and before final
+  function layout. Pass its original-operation-indexed plans to codegen without changing analyzed source reports.
 
 ## Commands
 

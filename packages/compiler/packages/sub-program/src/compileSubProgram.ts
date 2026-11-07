@@ -1,5 +1,6 @@
 import { ConstantResolverError, type ResolveConstantsSubProgramAST, resolveConstants } from '@8f4e/constant-resolver';
 import { analyzeFunctions } from '@8f4e/function-analyzer';
+import { planFunctionInlining } from '@8f4e/function-inliner';
 import type {
 	AssertionSite,
 	CompiledFunction,
@@ -283,6 +284,12 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 
 	const assertionPlan = options.enableAssertions ? planAssertions(semanticReferences, stackReport) : undefined;
 	const functionAnalysis = analyzeFunctions({ semanticReferences, stackReport, entries });
+	const inliningPlan = options.inlineFunctions
+		? planFunctionInlining(
+				{ semanticReferences, stackReport, functionAnalysis, assertionCalls: assertionPlan?.calls },
+				typeof options.inlineFunctions === 'object' ? options.inlineFunctions : {}
+			)
+		: undefined;
 	const functionLayout = planFunctionLayout(
 		semanticReferences,
 		entryNames,
@@ -298,7 +305,8 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 			stackReport.functions[resolved.metadata.id],
 			functionAnalysis.functions[resolved.metadata.id],
 			options,
-			assertionPlan?.calls.get(resolved.ast)
+			assertionPlan?.calls.get(resolved.ast),
+			inliningPlan?.functions[resolved.metadata.id]
 		)
 	);
 	const compiledModules = compileModules(
@@ -307,7 +315,8 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		stackReport,
 		functionLayout,
 		functionTypeRegistry,
-		assertionPlan?.calls
+		assertionPlan?.calls,
+		inliningPlan
 	);
 
 	return {

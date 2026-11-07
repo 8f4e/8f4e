@@ -10,6 +10,7 @@ import type {
 	CompiledModule,
 	CompileOptions,
 	ComposedModuleAST,
+	FunctionInlineCalls,
 	FunctionTypeRegistry,
 	WasmFunctionLayout,
 } from '@8f4e/language-spec';
@@ -17,8 +18,9 @@ import type {
 import { BlockType } from '@8f4e/language-spec';
 import type { ModuleSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import type { StackAnalyzedModule } from '@8f4e/stack-analyzer';
-import { compileCodegenLine } from './compileLine';
+import { compileBody } from './compileBody';
 import { createCodegenContext } from './createCodegenContext';
+import { getCodegenLocals } from './localStorage';
 
 /**
  * Compiles one resolved module into its WebAssembly cycle function and memory metadata.
@@ -38,7 +40,8 @@ export function compileModule(
 	stackReport: StackAnalyzedModule,
 	options: Pick<CompileOptions, 'includeStackAnalysis'> = {},
 	typeRegistry?: FunctionTypeRegistry,
-	assertionCalls?: AssertionCodegenSites
+	assertionCalls?: AssertionCodegenSites,
+	inlineCalls?: FunctionInlineCalls
 ): CompiledModule {
 	const { ast, bindings, body } = resolved;
 	const context = createCodegenContext(
@@ -56,15 +59,14 @@ export function compileModule(
 		bindings
 	);
 
-	for (const [operationIndex, { line }] of body.entries())
-		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context);
+	compileBody(body, stackReport.operationFacts, context, inlineCalls);
 
 	return {
 		referenceSlots: resolved.referenceSlots,
 		id: ast.id,
 		executionEntryName: ast.executionEntryName,
 		cycleFunction: createFunction(
-			Object.values(context.locals).map(local => {
+			getCodegenLocals(context).map(local => {
 				return createLocalDeclaration(
 					local.isInteger ? WASM_TYPE_I32 : local.isFloat64 ? WASM_TYPE_F64 : WASM_TYPE_F32,
 					1
