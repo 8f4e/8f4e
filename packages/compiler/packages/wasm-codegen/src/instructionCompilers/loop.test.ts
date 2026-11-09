@@ -28,6 +28,8 @@ describe('loop instruction compiler', () => {
 
 		compileInstructionForTest(loop, open, context);
 		compileInstructionForTest(loop, { ...open }, context);
+		expect(context.activeLoopBlocks.map(block => block.loopCounterIndex)).toEqual([0, 1]);
+		expect(context.locals).toHaveLength(2);
 		compileInstructionForTest(loopEnd, close, context);
 		compileInstructionForTest(loopEnd, { ...close }, context);
 
@@ -39,7 +41,6 @@ describe('loop instruction compiler', () => {
 			...createFunctionSection([0]),
 			...createCodeSection([createFunction(declarations, context.byteCode)]),
 		]);
-		expect(context.locals.map(local => local.index)).toEqual([0, 1]);
 		expect(WebAssembly.validate(wasm)).toBe(true);
 	});
 

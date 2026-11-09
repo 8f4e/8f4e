@@ -9,7 +9,7 @@ const { classifyIdentifier } = await import('@8f4e/tokenizer');
 
 describe('pushLocalPointer', () => {
 	it('reuses a single address slot across a guarded pointer chain', () => {
-		const local = { isInteger: true as const, pointeeBaseType: 'float' as const, pointerDepth: 2, index: 0 };
+		const local = { isInteger: true as const, pointeeBaseType: 'float' as const, pointerDepth: 2 };
 		const context = createInstructionCompilerTestContext({ locals: [local] });
 
 		pushLocalPointer(
@@ -28,11 +28,11 @@ describe('pushLocalPointer', () => {
 			guardCount: 2,
 			resultType: WASM_TYPE_F32,
 		});
-		expect(context.locals).toEqual([local, { isInteger: true, index: 1 }]);
+		expect(context.locals).toEqual([local, { isInteger: true }]);
 	});
 
 	it('dereferences a local pointer via a guarded load', () => {
-		const local = { isInteger: true as const, pointeeBaseType: 'float' as const, pointerDepth: 1, index: 0 };
+		const local = { isInteger: true as const, pointeeBaseType: 'float' as const, pointerDepth: 1 };
 		const context = createInstructionCompilerTestContext({
 			locals: [local],
 		});
@@ -56,7 +56,7 @@ describe('pushLocalPointer', () => {
 	});
 
 	it('dereferences an unsigned int8 local pointer via an unsigned guarded load', () => {
-		const local = { isInteger: true as const, pointeeBaseType: 'int8u' as const, pointerDepth: 1, index: 0 };
+		const local = { isInteger: true as const, pointeeBaseType: 'int8u' as const, pointerDepth: 1 };
 		const context = createInstructionCompilerTestContext({
 			locals: [local],
 		});

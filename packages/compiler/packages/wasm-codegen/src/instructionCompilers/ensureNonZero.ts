@@ -34,7 +34,7 @@ const ensureNonZero: InstructionCompiler = (line, context, facts) => {
 		defaultNonZeroValue = line.arguments[0].value;
 	}
 
-	const { index: tempLocalIndex } = allocateLocal(context, functionValueTypeToLocalMetadata(operand.valueType));
+	const tempLocalIndex = allocateLocal(context, functionValueTypeToLocalMetadata(operand.valueType));
 
 	if (isInteger) {
 		return saveByteCode(context, [

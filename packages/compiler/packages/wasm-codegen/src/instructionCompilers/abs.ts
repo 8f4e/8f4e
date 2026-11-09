@@ -24,7 +24,7 @@ const abs: InstructionCompiler = (_line, context, facts) => {
 	const [operand] = facts.stackAnalysis.consumedOperands;
 
 	if (operand.valueType === 'int') {
-		const { index: valueLocalIndex } = allocateLocal(context, { isInteger: true });
+		const valueLocalIndex = allocateLocal(context, { isInteger: true });
 
 		return saveByteCode(context, [
 			...localSet(valueLocalIndex),

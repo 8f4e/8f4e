@@ -15,7 +15,7 @@ export function clampAddressByteCode(
 	lowerByteAddress: number,
 	upperByteAddressCode: number[]
 ): number[] {
-	const { index: addressLocalIndex } = allocateLocal(context, { isInteger: true });
+	const addressLocalIndex = allocateLocal(context, { isInteger: true });
 
 	return [
 		...localSet(addressLocalIndex),

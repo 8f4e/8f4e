@@ -1,5 +1,5 @@
 import { type ScalarMemoryDeclarationInstruction, scalarMemoryDeclarationInstructions } from './memory';
-import type { LocalBinding, LocalValueMetadata, StackItem } from './semantic';
+import type { LocalValueMetadata, PointerLocalMetadata, StackItem } from './semantic';
 
 export type ScalarTypeIdentifier = Exclude<ScalarMemoryDeclarationInstruction, `${string}*`>;
 export type PointerFunctionTypeIdentifier = Extract<ScalarMemoryDeclarationInstruction, `${string}*`>;
@@ -7,7 +7,7 @@ export type FunctionTypeIdentifier = ScalarTypeIdentifier | PointerFunctionTypeI
 export type FunctionValueType = FunctionTypeIdentifier;
 
 type PointerFunctionValueType = Extract<FunctionValueType, `${string}*`>;
-type PointerFunctionPointeeBaseType = NonNullable<LocalBinding['pointeeBaseType']>;
+type PointerFunctionPointeeBaseType = PointerLocalMetadata['pointeeBaseType'];
 
 function isPointerFunctionTypeIdentifier(
 	type: ScalarMemoryDeclarationInstruction

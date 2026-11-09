@@ -227,7 +227,7 @@ describe('analyzeStack integration', () => {
 			signatures: [],
 			baseTypeIndex: 3,
 		} as const;
-		const valueBinding: SourceLocalBinding = { id: 0, name: 'value', type: 'int', parameterIndex: 0 };
+		const valueBinding: SourceLocalBinding = { id: 0, name: 'value', type: 'int' };
 		const tempBinding: SourceLocalBinding = { id: 1, name: 'temp', type: 'int' };
 		const semanticReferences = {
 			modules: {

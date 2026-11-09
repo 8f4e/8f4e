@@ -66,11 +66,9 @@ exports[`mapEnd instruction compiler > uses only input and result locals without
   ],
   "locals": [
     {
-      "index": 0,
       "isInteger": true,
     },
     {
-      "index": 1,
       "isInteger": true,
     },
   ],

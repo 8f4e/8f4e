@@ -3,11 +3,10 @@ import type { InstructionCompiler, LoopIndexLine } from '@8f4e/language-spec';
 
 import { saveByteCode } from './utils/saveByteCode';
 
-const loopIndex: InstructionCompiler<LoopIndexLine> = (line, context) => {
-	const loopBlock = context.activeLoopBlocks[context.activeLoopBlocks.length - 1];
-	const { loopCounterLocal: local } = loopBlock;
+const loopIndex: InstructionCompiler<LoopIndexLine> = (_line, context) => {
+	const { loopCounterIndex } = context.activeLoopBlocks[context.activeLoopBlocks.length - 1];
 
-	return saveByteCode(context, [...localGet(local.index), ...i32const(1), WASM_I32_SUB]);
+	return saveByteCode(context, [...localGet(loopCounterIndex), ...i32const(1), WASM_I32_SUB]);
 };
 
 export default loopIndex;

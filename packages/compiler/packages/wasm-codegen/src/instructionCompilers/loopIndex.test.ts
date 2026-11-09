@@ -7,9 +7,8 @@ import loopIndex from './loopIndex';
 
 describe('loopIndex instruction compiler', () => {
 	it('reads the nearest active loop counter as a zero-based index', () => {
-		const loopCounterLocal = { isInteger: true, index: 0 };
 		const context = createInstructionCompilerTestContext({
-			locals: [loopCounterLocal],
+			locals: [{ isInteger: true }],
 			blockStack: [
 				{
 					blockType: BlockType.MODULE,
@@ -18,7 +17,7 @@ describe('loopIndex instruction compiler', () => {
 				{
 					blockType: BlockType.LOOP,
 					expectedResultTypes: [],
-					loopCounterLocal,
+					loopCounterIndex: 0,
 				},
 			],
 		});
@@ -37,10 +36,8 @@ describe('loopIndex instruction compiler', () => {
 	});
 
 	it('uses the innermost loop when nested', () => {
-		const outerLoopCounterLocal = { isInteger: true, index: 0 };
-		const innerLoopCounterLocal = { isInteger: true, index: 1 };
 		const context = createInstructionCompilerTestContext({
-			locals: [outerLoopCounterLocal, innerLoopCounterLocal],
+			locals: [{ isInteger: true }, { isInteger: true }],
 			blockStack: [
 				{
 					blockType: BlockType.MODULE,
@@ -49,12 +46,12 @@ describe('loopIndex instruction compiler', () => {
 				{
 					blockType: BlockType.LOOP,
 					expectedResultTypes: [],
-					loopCounterLocal: outerLoopCounterLocal,
+					loopCounterIndex: 0,
 				},
 				{
 					blockType: BlockType.LOOP,
 					expectedResultTypes: [],
-					loopCounterLocal: innerLoopCounterLocal,
+					loopCounterIndex: 1,
 				},
 			],
 		});

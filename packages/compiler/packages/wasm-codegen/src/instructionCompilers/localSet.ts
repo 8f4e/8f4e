@@ -8,9 +8,7 @@ import { saveByteCode } from './utils/saveByteCode';
  * @see [Instruction docs](../../docs/instructions/declarations-and-locals.md)
  */
 const _localSet: InstructionCompiler<ResolvedLocalSetLine> = (line, context) => {
-	const local = context.locals[line.binding.id]!;
-
-	return saveByteCode(context, localSet(local.index));
+	return saveByteCode(context, localSet(line.binding.id));
 };
 
 export default _localSet;

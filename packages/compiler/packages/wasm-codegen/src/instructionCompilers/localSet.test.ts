@@ -8,9 +8,8 @@ const { classifyIdentifier } = await import('@8f4e/tokenizer');
 
 describe('localSet instruction compiler', () => {
 	it('stores a local value', () => {
-		const local = { isInteger: true, index: 0 };
 		const context = createInstructionCompilerTestContext({
-			locals: [local],
+			locals: [{ isInteger: true }],
 		});
 
 		compileInstructionForTest(

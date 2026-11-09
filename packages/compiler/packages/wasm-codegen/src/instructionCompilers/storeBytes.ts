@@ -17,8 +17,8 @@ const storeBytes: InstructionCompiler<StoreBytesLine> = (line, context, facts) =
 	const address = facts.stackAnalysis.consumedOperands[facts.stackAnalysis.consumedOperands.length - 1];
 	const addressIsSafe = isSafeMemoryAccess(address, count);
 
-	const { index: addressLocalIndex } = allocateLocal(context, { isInteger: true });
-	const { index: byteLocalIndex } = allocateLocal(context, { isInteger: true });
+	const addressLocalIndex = allocateLocal(context, { isInteger: true });
+	const byteLocalIndex = allocateLocal(context, { isInteger: true });
 
 	const byteCode = [...localSet(addressLocalIndex)];
 	for (let i = 0; i < count; i++) {

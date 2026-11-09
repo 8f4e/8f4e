@@ -110,7 +110,7 @@ function zeroValue(type: NumericWasmValueType): number[] {
  * @returns The computed result.
  */
 export function guardedLoad(context: CodegenContext, options: GuardedLoadOptions): number[] {
-	const { index } = allocateLocal(context, { isInteger: true });
+	const index = allocateLocal(context, { isInteger: true });
 	return guardedLoadWithLocal(index, options);
 }
 
@@ -134,8 +134,8 @@ export function guardedLoadWithLocal(
  * @returns The computed result.
  */
 export function guardedStore(context: CodegenContext, options: GuardedStoreOptions): number[] {
-	const { index: addressLocalIndex } = allocateLocal(context, { isInteger: true });
-	const { index: valueLocalIndex } = allocateLocal(context, functionValueTypeToLocalMetadata(options.value.valueType));
+	const addressLocalIndex = allocateLocal(context, { isInteger: true });
+	const valueLocalIndex = allocateLocal(context, functionValueTypeToLocalMetadata(options.value.valueType));
 
 	return [
 		...localSet(valueLocalIndex),
@@ -164,8 +164,8 @@ export function isSafeMemoryCopy(destination: StackItem, source: StackItem, byte
  * @returns The computed result.
  */
 export function guardedMemoryCopy(context: CodegenContext, byteLength: number): number[] {
-	const { index: destinationLocalIndex } = allocateLocal(context, { isInteger: true });
-	const { index: sourceLocalIndex } = allocateLocal(context, { isInteger: true });
+	const destinationLocalIndex = allocateLocal(context, { isInteger: true });
+	const sourceLocalIndex = allocateLocal(context, { isInteger: true });
 
 	return [
 		...localSet(sourceLocalIndex),

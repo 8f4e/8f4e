@@ -31,7 +31,7 @@ function buildGuardedPointerLoadChain(
 ): number[] {
 	const resultType = valueKindToWasmType(kind);
 	// Each step consumes its address before the next step overwrites the same slot.
-	const { index: addressLocalIndex } = allocateLocal(context, { isInteger: true });
+	const addressLocalIndex = allocateLocal(context, { isInteger: true });
 
 	return steps.reduceRight<number[]>(
 		(continuation, step) =>

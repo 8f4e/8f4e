@@ -188,17 +188,11 @@ function getPlannedMemoryDeclaration(
 	return module?.memory[memoryId];
 }
 
-function bindLocal(
-	context: ReferenceResolutionContext,
-	name: string,
-	type: FunctionValueType,
-	parameterIndex?: number
-): void {
+function bindLocal(context: ReferenceResolutionContext, name: string, type: FunctionValueType): void {
 	const binding: SourceLocalBinding = {
 		id: context.bindings.length,
 		name,
 		type,
-		...(parameterIndex !== undefined ? { parameterIndex } : {}),
 	};
 	context.bindings.push(binding);
 	context.bindingsByName[name] = binding;
@@ -214,7 +208,7 @@ function registerFunctionParameter(
 	if (context.locals[paramName] !== undefined) {
 		throw getError(ErrorCode.DUPLICATE_PARAMETER_NAME, line, context);
 	}
-	bindLocal(context, paramName, paramType, context.bindings.length);
+	bindLocal(context, paramName, paramType);
 }
 
 function applyParamShapeLine(line: CompilerASTLine, context: ReferenceResolutionContext): void {

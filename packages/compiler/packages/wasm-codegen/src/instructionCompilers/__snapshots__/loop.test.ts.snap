@@ -10,10 +10,7 @@ exports[`loop instruction compiler > compiles a smaller resolved cap 1`] = `
     {
       "blockType": 1,
       "expectedResultTypes": [],
-      "loopCounterLocal": {
-        "index": 0,
-        "isInteger": true,
-      },
+      "loopCounterIndex": 0,
     },
   ],
   "byteCode": [
@@ -45,7 +42,6 @@ exports[`loop instruction compiler > compiles a smaller resolved cap 1`] = `
   ],
   "locals": [
     {
-      "index": 0,
       "isInteger": true,
     },
   ],
@@ -62,10 +58,7 @@ exports[`loop instruction compiler > compiles the loop segment with default cap 
     {
       "blockType": 1,
       "expectedResultTypes": [],
-      "loopCounterLocal": {
-        "index": 0,
-        "isInteger": true,
-      },
+      "loopCounterIndex": 0,
     },
   ],
   "byteCode": [
@@ -98,7 +91,6 @@ exports[`loop instruction compiler > compiles the loop segment with default cap 
   ],
   "locals": [
     {
-      "index": 0,
       "isInteger": true,
     },
   ],
@@ -115,10 +107,7 @@ exports[`loop instruction compiler > compiles the loop segment with explicit cap
     {
       "blockType": 1,
       "expectedResultTypes": [],
-      "loopCounterLocal": {
-        "index": 0,
-        "isInteger": true,
-      },
+      "loopCounterIndex": 0,
     },
   ],
   "byteCode": [
@@ -150,7 +139,6 @@ exports[`loop instruction compiler > compiles the loop segment with explicit cap
   ],
   "locals": [
     {
-      "index": 0,
       "isInteger": true,
     },
   ],

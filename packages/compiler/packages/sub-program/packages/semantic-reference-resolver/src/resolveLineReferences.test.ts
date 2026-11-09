@@ -558,7 +558,7 @@ describe('resolveSemanticReferences', () => {
 		expect(result.references.functions[functionId].body[0].line).toMatchObject({
 			resolvedTarget: {
 				kind: 'local',
-				binding: { id: 0, name: 'value', type: 'int', parameterIndex: 0 },
+				binding: { id: 0, name: 'value', type: 'int' },
 			},
 		});
 	});

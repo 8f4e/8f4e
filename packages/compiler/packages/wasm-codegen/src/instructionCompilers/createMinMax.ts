@@ -25,8 +25,8 @@ const createMinMax =
 		const isFloat64 = numericOperandKind === 'float64';
 
 		if (isInteger) {
-			const { index: leftLocalIndex } = allocateLocal(context, { isInteger: true });
-			const { index: rightLocalIndex } = allocateLocal(context, { isInteger: true });
+			const leftLocalIndex = allocateLocal(context, { isInteger: true });
+			const rightLocalIndex = allocateLocal(context, { isInteger: true });
 
 			return saveByteCode(context, [
 				...localSet(rightLocalIndex),

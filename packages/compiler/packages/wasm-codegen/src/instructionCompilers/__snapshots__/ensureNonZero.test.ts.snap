@@ -28,7 +28,6 @@ exports[`ensureNonZero instruction compiler > ensures float operand is non-zero 
   ],
   "locals": [
     {
-      "index": 0,
       "isInteger": false,
     },
   ],
@@ -71,7 +70,6 @@ exports[`ensureNonZero instruction compiler > ensures float64 operand is non-zer
   ],
   "locals": [
     {
-      "index": 0,
       "isFloat64": true,
       "isInteger": false,
     },
@@ -98,7 +96,6 @@ exports[`ensureNonZero instruction compiler > ensures integer operand is non-zer
   ],
   "locals": [
     {
-      "index": 0,
       "isInteger": true,
     },
   ],

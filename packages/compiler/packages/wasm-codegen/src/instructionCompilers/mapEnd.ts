@@ -68,16 +68,14 @@ const mapEnd: InstructionCompiler<MapEndLine> = (_line, context, facts) => {
 		saveByteCode(context, [WASM_DROP, ...constOp[outputKind](defaultValue)]);
 	} else {
 		// Allocate only the input and accumulated result.
-		const inputLocal = allocateLocal(context, {
+		const inputLocalIdx = allocateLocal(context, {
 			isInteger: inputIsInteger,
 			...(inputIsFloat64 ? { isFloat64: true } : {}),
 		});
-		const resultLocal = allocateLocal(context, {
+		const resultLocalIdx = allocateLocal(context, {
 			isInteger: outputIsInteger,
 			...(outputIsFloat64 ? { isFloat64: true } : {}),
 		});
-		const inputLocalIdx = inputLocal.index;
-		const resultLocalIdx = resultLocal.index;
 
 		// Save the input and initialize the result to the default.
 		saveByteCode(context, [

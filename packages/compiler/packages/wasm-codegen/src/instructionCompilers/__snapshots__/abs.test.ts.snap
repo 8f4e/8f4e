@@ -24,7 +24,6 @@ exports[`abs instruction compiler > compiles int abs via segment instructions 1`
   ],
   "locals": [
     {
-      "index": 0,
       "isInteger": true,
     },
   ],
