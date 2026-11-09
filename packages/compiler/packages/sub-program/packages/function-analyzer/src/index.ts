@@ -1,2 +1,2 @@
-export type { AnalyzeFunctionsInput, FunctionAnalysisReport } from './analyzeFunctions';
+export type { AnalyzeFunctionsInput, FunctionAnalysisReport, FunctionBodyFacts } from './analyzeFunctions';
 export { analyzeFunctions } from './analyzeFunctions';

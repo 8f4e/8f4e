@@ -1,5 +1,6 @@
 import { ConstantResolverError, type ResolveConstantsSubProgramAST, resolveConstants } from '@8f4e/constant-resolver';
 import { analyzeFunctions } from '@8f4e/function-analyzer';
+import { inlineFunctions } from '@8f4e/function-inliner';
 import type {
 	AssertionSite,
 	CompiledFunction,
@@ -16,6 +17,7 @@ import type {
 	MemoryLayoutPlan,
 	MemoryPointerMetadataMap,
 	ProjectMemoryExposuresByGroupPath,
+	StackAnalysisLineFacts,
 	ValidatedAST,
 	WasmFunctionLayout,
 } from '@8f4e/language-spec';
@@ -32,7 +34,13 @@ import { resolveMemoryReferences } from '@8f4e/memory-reference-resolver';
 import type { ComposedProgram } from '@8f4e/program-composer/internal';
 import { resolveSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import { analyzeStack } from '@8f4e/stack-analyzer';
-import { compileFunction, compileModules, planFunctionLayout } from '@8f4e/wasm-codegen';
+import {
+	compileFunction,
+	compileModules,
+	MAX_WASM_LOCAL_SLOTS,
+	planFunctionLayout,
+	reserveWasmScratchSlots,
+} from '@8f4e/wasm-codegen';
 import { planAssertions } from './assertions';
 import { registerFunctions } from './semantic/buildNamespace';
 
@@ -192,6 +200,15 @@ function wrapMemoryPlannerError(error: unknown, subProgramAst: ResolveConstantsS
 	return getError(error.compilerErrorCode, error.line, ast ? getAstDiagnosticContext(ast) : undefined, error.details);
 }
 
+function withUpdatedOperationFacts<T extends { operationFacts: StackAnalysisLineFacts[] }>(
+	source: Record<string, T>,
+	rewritten: Record<string, T>
+): Record<string, T> {
+	return Object.fromEntries(
+		Object.entries(source).map(([id, report]) => [id, { ...report, operationFacts: rewritten[id].operationFacts }])
+	);
+}
+
 /**
  * Compiles one composed program into emission-ready module, function, memory, and data-segment artifacts.
  *
@@ -273,36 +290,62 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		functionTypeRegistry,
 		prototypeShapes: prototypeShapesById,
 	}).references;
-	const stackReport = analyzeStack({
+	const stackAnalysisInput = {
 		semanticReferences,
 		memoryPlan,
 		pointerMetadataByModuleId,
 		functions: functionRegistry,
 		functionTypeRegistry,
-	});
+	};
+	const sourceStackReport = analyzeStack(stackAnalysisInput);
+	const functionAnalysis = analyzeFunctions({ semanticReferences, stackReport: sourceStackReport, entries });
+	const codegenReferences =
+		options.enableFunctionInlining === false
+			? semanticReferences
+			: inlineFunctions(
+					{
+						semanticReferences,
+						stackReport: sourceStackReport,
+						functionAnalysis,
+						localSlots: {
+							limit: MAX_WASM_LOCAL_SLOTS,
+							reserveScratchSlots: (body, facts) => reserveWasmScratchSlots(body, facts, options.enableAssertions),
+						},
+					},
+					options.functionInlining
+				);
 
-	const assertionPlan = options.enableAssertions ? planAssertions(semanticReferences, stackReport) : undefined;
-	const functionAnalysis = analyzeFunctions({ semanticReferences, stackReport, entries });
+	let stackReport = sourceStackReport;
+	if (codegenReferences !== semanticReferences) {
+		const rewritten = analyzeStack({ ...stackAnalysisInput, semanticReferences: codegenReferences });
+		// Keep the public stack view tied to the original source.
+		stackReport = {
+			modules: withUpdatedOperationFacts(sourceStackReport.modules, rewritten.modules),
+			functions: withUpdatedOperationFacts(sourceStackReport.functions, rewritten.functions),
+		};
+	}
+
+	const assertionPlan = options.enableAssertions ? planAssertions(codegenReferences, stackReport) : undefined;
 	const functionLayout = planFunctionLayout(
-		semanticReferences,
+		codegenReferences,
 		entryNames,
 		assertionPlan?.imports ?? [],
 		functionTypeRegistry
 	);
 
-	const compiledFunctions = Object.values(semanticReferences.functions).map(resolved =>
+	const compiledFunctions = Object.values(codegenReferences.functions).map(resolved =>
 		compileFunction(
 			resolved,
 			functionTypeRegistry,
 			functionLayout,
 			stackReport.functions[resolved.metadata.id],
-			functionAnalysis.functions[resolved.metadata.id],
+			functionAnalysis.functions[resolved.metadata.id].analysis,
 			options,
 			assertionPlan?.calls.get(resolved.ast)
 		)
 	);
 	const compiledModules = compileModules(
-		Object.values(semanticReferences.modules),
+		Object.values(codegenReferences.modules),
 		options,
 		stackReport,
 		functionLayout,

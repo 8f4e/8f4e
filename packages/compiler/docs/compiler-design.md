@@ -63,9 +63,28 @@ canonical function ID. It records imports, explicit returns, early returns, and 
 The call graph includes source functions, composed entry dispatchers, and module bodies, with skipped module dispatches
 excluded. Return facts inspect executable body structure: a final top-level return is explicit but not early.
 
-The report does not change source bodies or generated WebAssembly. Codegen passes its facts through to the required
-`CompiledFunction.analysis` field, including when source stack analysis is not requested. The analyzer owns facts;
-future optimization passes own inlining eligibility, budgets, and transformations.
+Codegen passes these facts through to the required `CompiledFunction.analysis` field independently of
+`includeStackAnalysis`. The analyzer also reports each body's operation count, distinct instruction and push operand
+kinds, and pointer bindings and returns for compiler passes.
+
+## Function Inlining
+
+`@8f4e/function-inliner` combines structural function facts with the canonical call targets from stack analysis and
+rewrites resolved bodies. Its allowlist selects straight-line scalar leaf functions with implicit returns. It expands
+all eligible calls by default. In `compileProject` options, `functionInlining.maxExpansionOperations` limits the
+size of a replacement, including argument stores and local initialization. `functionInlining.maxCallerGrowth` limits
+the additional operations in a caller.
+
+Each expansion assigns fresh caller-local binding IDs, stores the already evaluated arguments, and zeroes callee
+locals on every execution. The expanded operations use the caller's source location. The original function definitions
+and exports remain available.
+
+The inliner leaves a call in place if its expansion would exceed V8's 50,000-slot limit. This count includes
+parameters, source locals, and scratch slots reserved for lowering.
+
+Sub-program orchestration refreshes operation facts when a body changes, then plans assertion callbacks and Wasm
+function indices from the resulting bodies. The compiled metadata uses the original source stack view. To compile with
+ordinary calls, set `enableFunctionInlining: false` in `compileProject` options. Inlining is enabled by default.
 
 ## Design Rule
 

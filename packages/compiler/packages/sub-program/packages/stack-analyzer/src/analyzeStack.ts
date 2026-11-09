@@ -51,7 +51,6 @@ export interface StackAnalyzedFunction {
 	operationFacts: StackAnalysisLineFacts[];
 	stackAnalysis: CompiledStackAnalysisLine[];
 	finalStack: Stack;
-	used?: boolean;
 }
 
 export interface StackAnalysisSubProgramReport {
@@ -335,7 +334,7 @@ function analyzeFunction(
 }
 
 export function analyzeStack(input: AnalyzeStackSubProgramInput): StackAnalysisSubProgramReport {
-	const functionReports = Object.fromEntries(
+	const functions = Object.fromEntries(
 		Object.values(input.semanticReferences.functions).map(resolved => {
 			const report = analyzeFunction(input, resolved);
 			return [report.functionId, report];
@@ -344,33 +343,5 @@ export function analyzeStack(input: AnalyzeStackSubProgramInput): StackAnalysisS
 	const modules = Object.fromEntries(
 		Object.values(input.semanticReferences.modules).map(resolved => [resolved.ast.id, analyzeModule(input, resolved)])
 	);
-	const usedFunctionIdSet = new Set<string>();
-	for (const functionReport of Object.values(functionReports)) {
-		if (input.semanticReferences.functions[functionReport.functionId].metadata.exportName) {
-			usedFunctionIdSet.add(functionReport.functionId);
-		}
-		for (const facts of functionReport.operationFacts) {
-			if (facts?.targetFunctionId) {
-				usedFunctionIdSet.add(facts.targetFunctionId);
-			}
-		}
-	}
-	for (const moduleReport of Object.values(modules)) {
-		for (const facts of moduleReport.operationFacts) {
-			if (facts?.targetFunctionId) {
-				usedFunctionIdSet.add(facts.targetFunctionId);
-			}
-		}
-	}
-	const functions = Object.fromEntries(
-		Object.values(functionReports).map(functionReport => [
-			functionReport.functionId,
-			{
-				...functionReport,
-				...(usedFunctionIdSet.has(functionReport.functionId) ? { used: true } : {}),
-			},
-		])
-	);
-
 	return { modules, functions };
 }

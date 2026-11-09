@@ -460,16 +460,21 @@ describe('compile prototype validation', () => {
 		});
 	});
 
-	it('marks exported functions as used roots during metadata collection', () => {
+	it('can call an exported function without an internal caller', async () => {
 		const result = compile(
 			{
 				...emptyProjectFixture,
 				entries: { main: [{ code: ['module main', 'moduleEnd'] }] },
-				functions: [{ code: ['function externallyCallable', '#export externallyCallable', 'functionEnd'] }],
+				functions: [
+					{ code: ['function externallyCallable', '#export externallyCallable', 'push 42', 'functionEnd int'] },
+				],
 			},
 			{}
 		);
 
-		expect(result.compiledFunctions![createFunctionId('externallyCallable', [])].used).toBe(true);
+		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+		const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), { host: { memory } });
+		const externallyCallable = instance.exports.externallyCallable as () => number;
+		expect(externallyCallable()).toBe(42);
 	});
 });

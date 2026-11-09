@@ -16,6 +16,8 @@ This file extends the root and `packages/compiler/AGENTS.md` guidance for
 - Pass packages used exclusively by this pipeline live under `packages/`.
 - Run `@8f4e/function-analyzer` after stack analysis and pass its per-function facts to codegen as output metadata.
   Keep optimization eligibility and transformations out of function analysis.
+- Run `@8f4e/function-inliner` after function analysis when enabled. Refresh stack facts for rewritten bodies before
+  assertion planning and codegen. Retain the source stack report for compiled metadata.
 
 ## Commands
 
@@ -23,3 +25,4 @@ This file extends the root and `packages/compiler/AGENTS.md` guidance for
   - `npx nx run @8f4e/sub-program:build`
   - `npx nx run @8f4e/sub-program:typecheck`
   - `npx nx run @8f4e/sub-program:lint`
+  - `npx nx run @8f4e/function-inliner:build|test|typecheck|lint`
