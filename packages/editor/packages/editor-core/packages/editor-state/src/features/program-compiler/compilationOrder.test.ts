@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorConfigSchemaContributionRegistry } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import initState, { serializeProjectLevel } from '../../index';
@@ -30,10 +30,10 @@ int value VALUE
 moduleEnd
 entryEnd`;
 
-function setup(source: string) {
+function setup(source: string, editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { callbacks: {}, editorConfigSchemaContributions });
 	cleanups.push(store.dispose);
 	const withEnv = source.replace('8f4e/v1\n', '8f4e/v1\nconstants env\n; @pos -100 -100\nconstantsEnd\n');
 	events.dispatch('loadProject', { project: parseProjectSource(withEnv) });
@@ -113,6 +113,29 @@ describe('compilation after spatial order changes', () => {
 		test.drop();
 		expect(note.code).toContain('; @pos 300 30');
 		expect(test.onInputChanged).not.toHaveBeenCalled();
+	});
+
+	it('announces a note reorder when it changes compiler config', () => {
+		const test = setup(
+			`8f4e/v1
+note first
+; @pos 0 0
+; @config compileSetting 1
+noteEnd
+note second
+; @pos 80 0
+; @config compileSetting 2
+noteEnd`,
+			{ compileSetting: { root: 'compileSetting', schema: { type: 'integer' }, affectsCompilation: true } }
+		);
+		const first = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'first')!;
+		expect(test.state.editorConfig.compileSetting).toBe(2);
+		test.beginDrag(first);
+		test.move(100);
+		expect(test.onInputChanged).not.toHaveBeenCalled();
+		test.drop();
+		expect(test.state.editorConfig.compileSetting).toBe(1);
+		expect(test.onInputChanged).toHaveBeenCalledOnce();
 	});
 
 	it.each(['module', 'group'] as const)('announces changes to %s execution order', blockType => {

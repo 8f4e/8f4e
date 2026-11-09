@@ -16,7 +16,7 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 	let inputPath: string | undefined;
 	let wasmOutputPath: string | undefined;
 	let memoryOutputPath: string | undefined;
-	const compilerOptions: CompileOptions = {};
+	const compilerOptions: CompileOptions = { enableFunctionInlining: false };
 
 	for (let i = 0; i < args.length; i += 1) {
 		const arg = args[i];
@@ -33,8 +33,8 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 			i += 1;
 			continue;
 		}
-		if (arg === '--inline-functions' || arg === '--no-inline-functions') {
-			compilerOptions.enableFunctionInlining = arg === '--inline-functions';
+		if (arg === '--inline-functions') {
+			compilerOptions.enableFunctionInlining = true;
 			continue;
 		}
 		if (arg === '--max-inline-expansion-operations' || arg === '--max-inline-caller-growth') {
@@ -64,7 +64,7 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 export function getCompileUsage(): string {
 	return [
 		'Usage: cli compile <input.8f4e> --wasm-output <output.wasm> [--memory-output <memory.json>]',
-		'    [--inline-functions | --no-inline-functions]',
+		'    [--inline-functions]',
 		'    [--max-inline-expansion-operations <n>] [--max-inline-caller-growth <n>]',
 	].join('\n');
 }

@@ -32,16 +32,16 @@ cli test path/to/project.8f4e 'path/to/tests/*.8f4em'
 
 ### Function inlining
 
-`cli compile` inlines eligible functions by default. Use `--no-inline-functions` to disable inlining or
-`--inline-functions` to enable it explicitly. When both flags are present, the last one wins.
+Function inlining is off by default in `cli compile`. Use `--inline-functions` to inline eligible functions.
 
 - `--max-inline-expansion-operations <n>` caps the size of each replacement, including argument stores and local initialization.
 - `--max-inline-caller-growth <n>` caps the total additional operations from inlining in each caller.
 
-Both limits accept non-negative integers, including zero. Omit a limit to leave that budget uncapped.
+Both limits accept non-negative integers, including zero, and apply when `--inline-functions` is set.
+Omit a limit to leave that budget uncapped.
 
 ```bash
-cli compile path/to/project.8f4e --wasm-output path/to/module.wasm \
+cli compile path/to/project.8f4e --wasm-output path/to/module.wasm --inline-functions \
   --max-inline-expansion-operations 24 --max-inline-caller-growth 64
 ```
 

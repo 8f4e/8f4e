@@ -13,10 +13,10 @@
   Report done/failed results; cancel superseded attempts and pending work on disposal. New attempts replace the
   same ID. Queued requests remain sequential; the presentation plugin owns private visibility.
 - Run only one worker compilation at a time; coalesce edits received in flight and respect the latest debounce interval.
-- Contribute the integer `recompileDebounceDelay` config schema through `editorConfigSchemaContributions.compiler`.
+- Contribute the integer `recompileDebounceDelay` config schema through `editorConfigSchemaContributions.compilerDebounce`.
   Keep its typing and default in this package; use the shared directive validation and parsing mechanism.
-- Contribute the `functionInlining` schema through `editorConfigSchemaContributions.compilerFunctionInlining`.
-  Advance the compiler input revision when the resolved inlining settings change, including when notes are reordered.
+- Contribute the `compiler.functionInlining` settings through `editorConfigSchemaContributions.compiler` and mark the
+  root with `affectsCompilation`. Editor-state owns publishing the input revision after config and diagnostics settle.
 - The internal worker adapter requires an explicit current-input check and returns the canonical language-spec result.
   Core receives only `ProgramArtifacts` containing `memoryRef`; bytecode stays on the compiler getter.
   Do not reconstruct the old core compiler-result interface.

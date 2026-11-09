@@ -95,9 +95,9 @@ describe('compiler configuration directives', () => {
 		const { store, events, worker, load } = setup();
 		load(
 			'0',
-			'; @config functionInlining.enabled false',
-			'; @config functionInlining.maxExpansionOperations 12',
-			'; @config functionInlining.maxCallerGrowth 0'
+			'; @config compiler.functionInlining.enabled false',
+			'; @config compiler.functionInlining.maxExpansionOperations 12',
+			'; @config compiler.functionInlining.maxCallerGrowth 0'
 		);
 		await vi.advanceTimersByTimeAsync(0);
 		expect(store.getState().codeErrors['editor-directives']).toEqual([]);
@@ -127,16 +127,42 @@ describe('compiler configuration directives', () => {
 		expect(worker.postedMessages[1]).toHaveProperty('payload.compilerOptions', defaultOptions);
 	});
 
+	it.each([false, true])('announces a config edit once after its diagnostics settle (%s)', affectsCompilation => {
+		const { store, events, load } = setup();
+		load(
+			undefined,
+			'; @config compiler.functionInlining.enabled false',
+			'; @config compiler.functionInlining.maxCallerGrowth -1'
+		);
+		const state = store.getState();
+		expect(state.codeErrors['editor-directives']).toHaveLength(1);
+		const errorsAtRevision = vi.fn(() => state.codeErrors['editor-directives']);
+		events.on('compilationInputChanged', errorsAtRevision);
+		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: ['note config', 'noteEnd'] }], {
+			affectsCompilation,
+		});
+		expect(errorsAtRevision.mock.results.map(result => result.value)).toEqual([[]]);
+	});
+
+	it('uses the same input revisions for a project load with and without inlining settings', () => {
+		const baseline = setup();
+		baseline.load();
+		const configured = setup();
+		configured.load(undefined, '; @config compiler.functionInlining.enabled false');
+		expect(configured.store.getState().compilerInputRevision).toBe(baseline.store.getState().compilerInputRevision);
+	});
+
 	it.each([
 		['enabled', 'maybe'],
 		['maxExpansionOperations', '-1'],
 		['maxCallerGrowth', '2.5'],
-	])('reports invalid functionInlining.%s values as directive diagnostics', (field, value) => {
+	])('reports invalid compiler.functionInlining.%s values as directive diagnostics', (field, value) => {
 		const { store, load } = setup();
-		load(undefined, `; @config functionInlining.${field} ${value}`);
-		expect(store.getState().editorConfig.functionInlining).toBeUndefined();
+		load(undefined, `; @config compiler.functionInlining.${field} ${value}`);
+		expect(store.getState().editorConfig.compiler).toBeUndefined();
 		expect(store.getState().codeErrors['editor-directives']).toEqual([
-			expect.objectContaining({ message: expect.stringContaining(`functionInlining.${field}`) }),
+			expect.objectContaining({ message: expect.stringContaining(`compiler.functionInlining.${field}`) }),
 		]);
 	});
 
@@ -150,17 +176,19 @@ describe('compiler configuration directives', () => {
 
 	it('removes its schemas and revalidates the settings when disposed', () => {
 		const test = setup();
-		test.load('120', '; @config functionInlining.enabled false');
+		test.load('120', '; @config compiler.functionInlining.enabled false');
 		const revision = test.store.getState().compilerInputRevision;
 		test.dispose();
 		expect(test.store.getState().compilerInputRevision).toBe(revision);
 		expect(test.store.getState().editorConfigSchemaContributions.compiler).toBeUndefined();
-		expect(test.store.getState().editorConfigSchemaContributions.compilerFunctionInlining).toBeUndefined();
+		expect(test.store.getState().editorConfigSchemaContributions.compilerDebounce).toBeUndefined();
 		expect(test.store.getState().editorConfig.recompileDebounceDelay).toBeUndefined();
-		expect(test.store.getState().editorConfig.functionInlining).toBeUndefined();
+		expect(test.store.getState().editorConfig.compiler).toBeUndefined();
 		expect(test.store.getState().codeErrors['editor-directives']).toEqual([
 			expect.objectContaining({ message: expect.stringContaining("unknown config path 'recompileDebounceDelay'") }),
-			expect.objectContaining({ message: expect.stringContaining("unknown config path 'functionInlining.enabled'") }),
+			expect.objectContaining({
+				message: expect.stringContaining("unknown config path 'compiler.functionInlining.enabled'"),
+			}),
 		]);
 	});
 });

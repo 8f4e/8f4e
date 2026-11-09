@@ -29,6 +29,8 @@ export interface EditorConfigSchemaContribution {
 	root: string;
 	defaults?: Record<string, unknown>;
 	schema: JSONSchemaLike;
+	/** Resolved values under this root are compilation inputs. */
+	affectsCompilation?: boolean;
 }
 
 export interface EditorConfigSchemaContributionRegistry {

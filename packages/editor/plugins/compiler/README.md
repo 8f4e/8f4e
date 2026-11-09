@@ -29,11 +29,12 @@ plugin receives its worker and include dependencies directly.
 
 Core emits `compilationInputChanged` after `compilerInputRevision` advances. Source edits, project loading and
 undo/redo, block insertion/removal, execution changes, regenerated environment constants, and saved control defaults
-advance that revision after their derived state is updated. Visual edits and navigation do not advance it.
+advance that revision after their derived state is updated. Visual edits that preserve compilation inputs and
+navigation leave the revision unchanged.
 
 The plugin listens to that event, debounces it, and serializes the latest root code-block tree, including nested
 projects. The default delay is 500ms; projects can set `; @config recompileDebounceDelay 120`. The plugin contributes an integer schema with a minimum of zero through
-`editorConfigSchemaContributions.compiler`, and removes that contribution on disposal. Compilation always requests stack analysis and enables assertions when the
+`editorConfigSchemaContributions.compilerDebounce`, and removes that contribution on disposal. Compilation always requests stack analysis and enables assertions when the
 root project declares a `test` entry or an enabled function exported as `test`. Group entries named `test` remain
 local; groups placed inside the root test entry run their own `main` as part of that test.
 
@@ -61,12 +62,12 @@ Inline message layout and drawing belong to `editor-plugin-error-messages`.
 
 ## Function inlining
 
-The editor inlines eligible functions by default. Use `; @config functionInlining.enabled false` to disable inlining
-for the project, or set it to `true` to enable it explicitly. Changes to these settings trigger compilation.
+The editor inlines eligible functions by default. Use `; @config compiler.functionInlining.enabled false` to disable
+inlining for the project, or set it to `true` to enable it explicitly. Changes to these settings trigger compilation.
 
 ```8f4e
-; @config functionInlining.maxExpansionOperations 24
-; @config functionInlining.maxCallerGrowth 64
+; @config compiler.functionInlining.maxExpansionOperations 24
+; @config compiler.functionInlining.maxCallerGrowth 64
 ```
 
 Both limits accept non-negative integers, including zero. `maxExpansionOperations` caps each replacement, including
@@ -77,7 +78,7 @@ each caller. Omit a limit to leave that budget uncapped.
 
 Editor initialization installs plugins before loading initial content. On editor disposal, core sends `dispose` to
 dispose execution plugins before releasing compiler resources. Plugins are released in reverse installation order, so dependent
-feature plugins shut down before the compiler. Compiler cleanup removes its subscriptions and configuration schemas,
+feature plugins shut down before the compiler. Compiler cleanup removes its event listener and configuration schemas,
 cancels the debounce, ignores late results, rejects pending worker requests, and terminates its worker. Cleanup also
 runs after initialization failures and when another plugin's disposer throws.
 

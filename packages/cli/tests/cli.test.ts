@@ -82,16 +82,17 @@ entryEnd
 			return fs.readFile(output);
 		}
 
-		const inlined = await compile();
-		const calls = await compile('--no-inline-functions');
+		const calls = await compile();
+		const inlined = await compile('--inline-functions');
 		expect(inlined).not.toEqual(calls);
-		expect(await compile('--no-inline-functions', '--inline-functions')).toEqual(inlined);
-		expect(await compile('--inline-functions', '--no-inline-functions')).toEqual(calls);
-		expect(await compile('--max-inline-expansion-operations', '0')).toEqual(calls);
-		const oneCall = await compile('--max-inline-caller-growth', '2');
+		expect(await compile('--max-inline-caller-growth', '2')).toEqual(calls);
+		expect(await compile('--inline-functions', '--max-inline-expansion-operations', '0')).toEqual(calls);
+		const oneCall = await compile('--inline-functions', '--max-inline-caller-growth', '2');
 		expect(oneCall).not.toEqual(inlined);
 		expect(oneCall).not.toEqual(calls);
-		expect(await compile('--max-inline-expansion-operations', '0', '--max-inline-caller-growth', '2')).toEqual(calls);
+		expect(
+			await compile('--inline-functions', '--max-inline-expansion-operations', '0', '--max-inline-caller-growth', '2')
+		).toEqual(calls);
 	});
 
 	it.each([
