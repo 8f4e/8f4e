@@ -1,12 +1,6 @@
-# Context-menu presentation
+# Context Menu Presentation
 
-- Own decorated labels, submenu indicators, sizing, snapping/clamping, hover state, hit testing, and drawing here.
-- Keep all prepared data private to one installation. Core owns raw items, anchors, navigation, contributions, input
-  blocking, and action/selector dispatch. Do not put presentation fields back into core state.
-- Listen only to forwarded `contextMenuPointerMove` / `contextMenuPointerDown`; request activation with
-  `activateContextMenuItem { index, x, y }` or closure with `closeContextMenu`. Do not handle DOM events or capture probes.
-- Draw through `registerContextMenuOverlay`, above canvas overlays and below modal dialogs and independent of `canvasOverlays`.
-- Refresh on menu, resize, grid, and viewport changes. Do not calculate layout in the frame callback.
-- Dispose subscriptions, input listeners, and drawing explicitly. The plugin can be deferred until `ready`.
-- Keep feature-plugin tests independent; test presentation here and real combinations in editor composition tests.
-- Verify through Nx `build`, `test`, `typecheck`, and `test:screenshot` targets.
+- Own formatted labels, geometry, hover, hit testing and drawing. Core owns raw items, navigation and
+  dispatch.
+- Prepare layout outside the frame path. Draw through `registerContextMenuOverlay` and use forwarded
+  context-menu pointer events to request activation or closure.

@@ -1,29 +1,7 @@
-# Sub-program Package Guidelines
+# Sub-program Guidelines
 
-This file extends the root and `packages/compiler/AGENTS.md` guidance for
-`packages/compiler/packages/sub-program`.
-
-## Package Scope
-
-- Package name: `@8f4e/sub-program`.
-- Owns private orchestration of the global semantic, allocation, analysis, and code-generation passes that compile one
-  composed validated-AST program into `CompiledSubProgram`.
-- This package is an internal compiler stage. Consumers use `parseProjectSource` and `compileProject` from
-  `@8f4e/compiler`; do not expose a parallel source input contract from this package.
-- The input already contains all recursively composed source units. This package plans them together as one namespace and
-  memory layout.
-- Keep recursive traversal, source parsing, and symbol qualification in `@8f4e/program-composer`.
-- Pass packages used exclusively by this pipeline live under `packages/`.
-- Run `@8f4e/function-analyzer` after stack analysis and pass its per-function facts to codegen as output metadata.
-  Keep optimization eligibility and transformations out of function analysis.
-- Plan assertions and run `@8f4e/wasm-ir-lowering` using the source stack report. Run
-  `@8f4e/function-inliner` on the lowered bodies when enabled, before assigning indices and emitting bytes. Retain
-  the source stack report for compiled metadata.
-
-## Commands
-
-- From the repository root, prefer Nx:
-  - `npx nx run @8f4e/sub-program:build`
-  - `npx nx run @8f4e/sub-program:typecheck`
-  - `npx nx run @8f4e/sub-program:lint`
-  - `npx nx run @8f4e/function-inliner:build|test|typecheck|lint`
+- Compile one composed validated-AST program as a single namespace and memory layout. Keep traversal, parsing
+  and qualification upstream in program-composer.
+- Keep passes used only by this pipeline in its nested `packages/`.
+- Derive function facts, assertions and lowered bodies from source stack analysis. Inline lowered bodies before
+  assigning indices. Preserve source analysis and stack metadata in compiled results.

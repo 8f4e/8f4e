@@ -1,12 +1,4 @@
 # Watch Plugin
 
-- Own `@watch`, its arguments, layout, private derived data, and drawer in this package.
-- Export `createWatchPlugin`. Keep feature data in a per-installation WeakMap, outside core code-block state.
-- Use public editor-state helpers and editor-core plugin contracts; do not import core source files.
-- Return an explicit disposer for every layout, drawer, and interaction listener.
-- Use `registerCodeBlockDrawer`; block drawers run in registration order, including later lazy installations.
-- Receive the reduced-motion preference through the factory; keep browser globals in the host.
-- Run `npx nx run @8f4e/editor-plugin-watch:build|test|typecheck` and `npx nx run @8f4e/editor-plugin-watch:test:screenshot`.
-
-- Keep layout independent of directive registration. Match cached `codeBlock.parsedDirectives` through `matchEditorDirectives`; own contribution
-  updates and `layout.subscribe` geometry. Unsubscribe before disposing requests. Do not attach layout to directive drafts.
+- Own `@watch` directive interpretation, layout and drawing. Receive the live reduced-motion preference
+  from the composition.

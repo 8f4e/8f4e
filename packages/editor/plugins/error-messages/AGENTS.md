@@ -1,13 +1,5 @@
-# Error messages
+# Error Messages Plugin
 
-- Own error wrapping, heading/padding, palette choice, layout reservation, and drawing here. Keep prepared messages
-  private. Core retains only raw `CodeError` contributions in `state.codeErrors`, keyed by contributor.
-- Use existing layout subscriptions/contributions and the ordinary block drawer. Reserve and draw only visible
-  source lines, stacking messages on the same display row after other reserved content.
-- Consume every contributor uniformly. Assertion failures are published by test-runtime; do not interpret compiler
-  or runtime results here.
-- Consume core's raw-error matching. Keep prepared message geometry private to the presenter.
-- Own subscription, contribution, and drawer disposal explicitly. Disposing the renderer preserves raw errors.
-- Load this as an unconditional deferred entry.
-- Test only this plugin against core services. Combined plugin rendering belongs in editor-default tests.
-- Run the package's Nx `build`, `test`, `typecheck`, and `test:screenshot` targets.
+- Reserve layout and draw inline messages from core's raw error lists. Treat contributors uniformly and
+  use core's source matching. Keep wrapping and prepared geometry private.
+- Disposing presentation leaves raw errors available to other consumers.

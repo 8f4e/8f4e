@@ -1,13 +1,5 @@
 # Tooltips Plugin
 
-- Own selected-line documentation, stack analysis, live values, layout, animation, and overlay drawing here.
-- Keep rendering in `src/drawer/`, synchronization and layout in `src/state/`, and content-building utilities in
-  `src/helpers/`. Keep shared types and plugin setup at the source root, with tests beside their implementations.
-- Export an `EditorPlugin` without installing it as an import side effect.
-- Keep tooltip state inside setup, scoped to one editor instance, and use public workspace APIs.
-- Register drawing through `drawers.registerCodeBlockDrawer` with registration order controlling layering.
-- Return a disposer that removes every store subscription, event listener, and drawer registration.
-- Keep generic parsing, memory resolution, and compiler metadata in core.
-- Run `npx nx run @8f4e/editor-plugin-tooltips:build|test|typecheck` after changes.
-- Run `npx nx run @8f4e/editor-plugin-tooltips:test:screenshot` for browser rendering tests.
-- Cover content, compiler updates, selection changes, grid size changes, drawing, cleanup, and instance isolation.
+- Own selected-line tooltip content, live values, layout and drawing. Use generic memory resolution,
+  syntax and compiler metadata from shared packages.
+- Draw through the ordered block drawer. Keep prepared content and animation state private.

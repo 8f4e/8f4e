@@ -1,20 +1,7 @@
 # Project Save Plugin
 
-- Own Save, Export Project/Save As, Cmd/Ctrl+S, source serialization, filename selection, and error reporting here.
-- Export `createProjectSavePlugin({ inputTarget, fileSession })`. Derive browser resources from the input's ownerDocument.
-- Keep `serializeProjectTo8f4e` and browser save/download helpers private to this package. Core's `serializeToProject`
-  supplies the detached project model; its public filename and logging helpers remain shared with other features.
-- Own the pending destination, write queue, and generation in setup. Reset pending destination/generation on
-  `loadProject` and disposal. The shared file session holds only the handle and clears it on replacement/disposal.
-- Start pickers and permissions in the user gesture. Order writes; accepted writes may finish after replacement or
-  disposal, but cannot adopt an old destination afterward. Export selects the file used by later saves.
-- Return cleanup for actions, menu, and keyboard listener. Open/parsing belongs to project-open.
-- Use clean TypeScript output. Verify build/test/typecheck through Nx. Unit tests cover source formatting, saving, export, permissions, queued writes, and shortcuts without Open.
-  Composed file behavior belongs to editor-default tests and the product website's gallery-editor browser suite.
-
-- After ordinary source serialization, call `extractProjectTemplates` from `@8f4e/project-preparser`. Keep template
-  expansion, validation, and source extraction in the compiler source front end; do not add editor template state.
-  Existing spatial serialization order makes the rightmost using group supply each local template silently.
-
-- Delegate model-owned block/group-shell validation to `validateProjectCodeBlock` from `@8f4e/project-preparser`.
-  Keep structural delimiter and opaque-note rules in that shared source reader rather than duplicating them here.
+- Own text serialization, Save/Export actions, shortcuts, permissions and writes. Use the canonical project
+  model from editor-state. Delegate block validation and template extraction to project-preparser.
+- Begin browser pickers and permission requests in the user gesture. Serialize writes and keep destination
+  bookkeeping in this plugin. Work accepted before project replacement may finish without changing the new
+  project's file association.

@@ -1,58 +1,25 @@
-# Compiler Package Guidelines
+# Compiler Guidelines
 
-This file extends the repository-level guidance for `packages/compiler`.
+## Ownership
 
-## Scope and Architecture
+- `@8f4e/compiler` is the public facade through `parseProjectSource` and `compileProject`.
+- `@8f4e/language-spec` owns shared contracts and the canonical `ProjectObjectModel`.
+- Project-preparser reads project source and prepares includes. Tokenizer validates syntax and builds ASTs.
+  Program-composer traverses scopes, qualifies symbols and plans execution order.
+- Sub-program orchestrates global semantic resolution, memory planning, stack analysis and code generation.
+  Function-analyzer reports structural facts. Optimization passes choose policy. Wasm-ir-lowering expands
+  resolved instructions into IR, and wasm-codegen assigns indices and emits the binary.
+- Stdlib ships source functions. Include IDs are paths below `std/` without the source extension.
 
-- `@8f4e/compiler` is the public facade. Use `parseProjectSource(text)` and asynchronous
-  `compileProject(project, options)` rather than exposing internal pipeline inputs.
-- `@8f4e/language-spec` owns shared contracts, `ProjectObjectModel`, and semantic compiler errors.
-- `@8f4e/project-preparser` parses project source and resolves included functions.
-- `@8f4e/program-composer` parses blocks, traverses recursive groups, qualifies symbols, and establishes deterministic
-  module order. Modules and groups share the ordered `execution` sequence; child groups expand at their declaration positions.
-- Groups explicitly share parent functions and constant namespaces with `pass NAME`; function passes retain the
-  original function scope and forward its complete overload set.
-- `@8f4e/tokenizer` owns syntax parsing and validation.
-- `@8f4e/sub-program` orchestrates semantic resolution, memory planning, stack analysis, and compilation.
-- `@8f4e/function-analyzer` reports structural function facts after stack analysis, including explicit/early returns,
-  imports, and recursion. Optimization passes own policy; compiled functions expose the facts as required `analysis`.
-- `@8f4e/wasm-ir-lowering` expands resolved instructions into Wasm IR and allocates scratch locals.
-- `@8f4e/wasm-codegen` assigns indices, encodes lowered bodies, and assembles the final WebAssembly binary.
-- Every compiled program imports one shared `host.memory` with explicit minimum/maximum limits. Hosts must
-  allocate matching shared memory; there is no non-shared compiler mode. WASM inspection tests enable WABT threads.
-- `@8f4e/stdlib` contains source-only standard-library functions. Include IDs are paths under `std/` without `.8f4e`.
+## Contracts and Tests
 
-- Root and group scopes share an explicit local `entries` table, including empty entries. Group `main` joins the
-  enclosing entry at the group's position; group `init` joins parent `init`. Other entries require local calls.
-  Missing `main` is valid. Composition resolves dispatcher steps once; later stages consume those plans directly.
-
-## Commands and Style
-
-- Keep compiler stage dependencies external in library bundles so consumers share their implementations and error classes.
-- Use Nx from the repository root: `npx nx run @8f4e/compiler:build|test|typecheck|lint`.
-- TypeScript is strict. Use Biome for formatting, linting, and import organization.
-- Update intentional snapshots with `npx nx run @8f4e/compiler:test --update`.
-
-## Testing
-
-- Default to extending the relevant `tests/**/*.test.8f4e` fixture for language behavior, compiler regressions,
-  semantic behavior, and generated-program behavior. These fixtures run native assertions and capture compile-result
-  snapshots.
-- Use `tests/errors/**/*.error.8f4e` for compilation failures and diagnostic snapshots.
-- Use TypeScript tests only when coverage requires a programmatic API, JavaScript host callback, cache or mutation
-  behavior, generated stress input, fixture infrastructure, or direct inspection of an internal stage.
-- Keep narrow stage unit tests beside the owning source. Syntax and parser tests belong to `@8f4e/tokenizer`.
-
-## Error Domains
-
-Choose errors by detection phase:
-
-- Use `SyntaxRulesError` and `SyntaxErrorCode` from `@8f4e/tokenizer` when token or argument shape is sufficient.
-- Use `getError` and `ErrorCode` from `@8f4e/language-spec` when detection needs symbols, scope, memory, stack, types,
-  or other compiler state.
-- Default messages belong in the central registry. Add a throw-site message only for useful dynamic context.
-
-## Internal Contracts
-
-Tokenizer validation and semantic normalization establish internal invariants. Downstream stages should trust those
-invariants and use static types and tests instead of repeating defensive argument-shape checks.
+- Keep compiler stage dependencies external in library bundles so consumers share their error classes.
+- Choose errors by detection phase. Use tokenizer's `SyntaxRulesError` and `SyntaxErrorCode` for token or
+  argument shape. Use language-spec's `getError` and `ErrorCode` for semantic checks. Keep default messages
+  in the central registries and add throw-site text for dynamic context.
+- Downstream stages rely on tokenizer validation and semantic normalization. Keep diagnostics block-relative.
+- Extend `tests/**/*.test.8f4e` for language and generated-program behavior and
+  `tests/errors/**/*.error.8f4e` for diagnostics. Use TypeScript tests for host APIs, generated inputs and
+  internals that source fixtures cannot exercise. Keep narrow stage tests with the owner.
+- Enable threads for WABT inspection of shared-memory output. Update intentional fixture snapshots with
+  `npx nx run @8f4e/compiler:test --update`.
