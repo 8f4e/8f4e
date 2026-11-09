@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/sprite-generator",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "private": true,
   "description": "8f4e sprite generator package",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-keyboard-mode-switching",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "private": true,
   "description": "Keyboard mode switching for the 8f4e editor",
   "type": "module",
