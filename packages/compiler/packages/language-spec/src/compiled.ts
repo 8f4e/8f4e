@@ -100,7 +100,6 @@ export interface CompiledFunction extends FunctionMetadata {
 	body: number[];
 	locals: Array<{ isInteger: boolean; count: number }>;
 	exportName?: string;
-	used?: boolean;
 	typeIndex: number;
 	ast: ComposedFunctionAST;
 	stackAnalysis?: CompiledStackAnalysisLine[];

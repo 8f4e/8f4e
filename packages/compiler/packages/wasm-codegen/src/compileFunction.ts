@@ -93,7 +93,6 @@ export function compileFunction(
 		wasmIndex,
 		typeIndex: typeIndex,
 		ast,
-		...(stackReport.used ? { used: true } : {}),
 		...(functionMetadata.paramShapeExpansions ? { paramShapeExpansions: functionMetadata.paramShapeExpansions } : {}),
 		...(options.includeStackAnalysis ? { stackAnalysis: stackReport.stackAnalysis } : {}),
 	};

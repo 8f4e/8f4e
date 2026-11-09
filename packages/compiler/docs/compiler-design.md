@@ -64,13 +64,13 @@ The call graph includes source functions, composed entry dispatchers, and module
 excluded. Return facts inspect executable body structure: a final top-level return is explicit but not early.
 
 Codegen passes these facts through to the required `CompiledFunction.analysis` field independently of
-`includeStackAnalysis`. Optimization passes use the facts to choose their own eligibility rules and budgets.
+`includeStackAnalysis`.
 
 ## Function Inlining
 
-`@8f4e/function-inliner` uses resolved bodies, the canonical call targets from stack analysis, and structural function
-facts to expand eligible calls in modules and functions. Eligible callees are small, straight-line scalar leaf
-functions with implicit returns. Each replacement contains at most 12 operations including argument stores and local
+`@8f4e/function-inliner` uses resolved bodies and the canonical call targets from stack analysis to expand eligible
+calls in modules and functions. Eligible callees are small, straight-line scalar leaf functions with implicit returns.
+Each replacement contains at most 12 operations including argument stores and local
 initialization. Total growth is capped at 64 operations per caller.
 
 Each expansion assigns fresh caller-local binding IDs, stores the already evaluated arguments, and zeroes callee

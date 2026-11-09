@@ -296,12 +296,12 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	const codegenReferences =
 		options.enableFunctionInlining === false
 			? semanticReferences
-			: inlineFunctions({ semanticReferences, stackReport: sourceStackReport, functionAnalysis });
+			: inlineFunctions({ semanticReferences, stackReport: sourceStackReport });
 
 	let stackReport = sourceStackReport;
 	if (codegenReferences !== semanticReferences) {
 		const rewritten = analyzeStack({ ...stackAnalysisInput, semanticReferences: codegenReferences });
-		// Keep the public stack view and function usage tied to the original source.
+		// Keep the public stack view tied to the original source.
 		stackReport = {
 			modules: withUpdatedOperationFacts(sourceStackReport.modules, rewritten.modules),
 			functions: withUpdatedOperationFacts(sourceStackReport.functions, rewritten.functions),

@@ -1,4 +1,3 @@
-import type { FunctionAnalysisReport } from '@8f4e/function-analyzer';
 import type {
 	ArgumentIdentifier,
 	CodegenInstructionName,
@@ -55,7 +54,6 @@ const scalarInstructions: ReadonlySet<CodegenInstructionName> = new Set([
 interface InlineFunctionsInput<TModule extends ModuleAST, TFunction extends FunctionAST> {
 	semanticReferences: SemanticReferenceReport<TModule, TFunction>;
 	stackReport: StackAnalysisSubProgramReport;
-	functionAnalysis: FunctionAnalysisReport;
 }
 
 interface Candidate {
@@ -82,28 +80,24 @@ function isScalarInstruction({ line }: ResolvedOperation): boolean {
 	return scalarInstructions.has(line.instruction);
 }
 
-function getCandidates(
-	functions: SemanticReferenceReport['functions'],
-	analysis: FunctionAnalysisReport
-): ReadonlyMap<string, Candidate> {
+function hasScalarBody(callee: FunctionSemanticReferences): boolean {
+	return (
+		!callee.bindings.some(binding => isPointerFunctionValueType(binding.type)) &&
+		!callee.metadata.signature.returns.some(isPointerFunctionValueType) &&
+		callee.body.every(isScalarInstruction)
+	);
+}
+
+function getCandidates(functions: SemanticReferenceReport['functions']): ReadonlyMap<string, Candidate> {
 	const candidates = new Map<string, Candidate>();
 	for (const [id, callee] of Object.entries(functions)) {
-		const facts = analysis.functions[id];
-		const { parameters, returns } = callee.metadata.signature;
+		if (callee.metadata.import) continue;
+		const { parameters } = callee.metadata.signature;
 		const localCount = callee.bindings.length - parameters.length;
 		const expansionSize = callee.body.length + parameters.length + localCount * 2;
-		if (
-			facts.isImported ||
-			facts.isRecursive ||
-			facts.hasExplicitReturn ||
-			expansionSize > MAX_EXPANSION_OPERATIONS ||
-			callee.bindings.some(binding => isPointerFunctionValueType(binding.type)) ||
-			returns.some(isPointerFunctionValueType) ||
-			!callee.body.every(isScalarInstruction)
-		) {
-			continue;
+		if (expansionSize <= MAX_EXPANSION_OPERATIONS && hasScalarBody(callee)) {
+			candidates.set(id, { callee, growth: Math.max(0, expansionSize - 1) });
 		}
-		candidates.set(id, { callee, growth: Math.max(0, expansionSize - 1) });
 	}
 	return candidates;
 }
@@ -204,9 +198,8 @@ function rewriteBodies<T extends Body>(
 export function inlineFunctions<TModule extends ModuleAST, TFunction extends FunctionAST>({
 	semanticReferences,
 	stackReport,
-	functionAnalysis,
 }: InlineFunctionsInput<TModule, TFunction>): SemanticReferenceReport<TModule, TFunction> {
-	const candidates = getCandidates(semanticReferences.functions, functionAnalysis);
+	const candidates = getCandidates(semanticReferences.functions);
 	if (candidates.size === 0) return semanticReferences;
 	const modules = rewriteBodies(semanticReferences.modules, stackReport.modules, candidates);
 	const functions = rewriteBodies(semanticReferences.functions, stackReport.functions, candidates);

@@ -72,11 +72,7 @@ function createInput(leafBody: ExecutableInstructionLine[], callCount: number) {
 			},
 		},
 	};
-	const structuralFacts = { isImported: false, isRecursive: false, hasExplicitReturn: false, hasEarlyReturn: false };
-	const functionAnalysis = {
-		functions: { [leaf.metadata.id]: structuralFacts, [caller.metadata.id]: structuralFacts },
-	};
-	return { semanticReferences, stackReport, functionAnalysis, caller, leaf };
+	return { semanticReferences, stackReport, caller, leaf };
 }
 
 describe('inlineFunctions', () => {

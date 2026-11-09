@@ -317,7 +317,6 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
       ],
-      "used": true,
     },
   },
   "modules": {
