@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`clearStack instruction compiler > drops all stack values 1`] = `
+{
+  "instructions": [
+    26,
+    26,
+  ],
+}
+`;

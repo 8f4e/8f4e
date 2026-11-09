@@ -1,6 +1,6 @@
 import { call, localGet, localSet, signedLEB128 } from '@8f4e/compiler-wasm-utils';
 import type { FunctionTypeRegistry, WasmFunctionLayout, WasmIRInstruction } from '@8f4e/language-spec';
-import { getOrRegisterFunctionType } from './instructionCompilers/utils/functionTypeRegistry';
+import { getOrRegisterFunctionType } from './functionTypeRegistry';
 
 /** Encodes lowered instructions using the final body-local bindings and function layout. */
 export function emitWasmInstructions(

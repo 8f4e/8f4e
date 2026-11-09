@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`xor instruction compiler > emits I32_XOR for integer operands 1`] = `
-{
-  "byteCode": [
-    115,
-  ],
-}
-`;

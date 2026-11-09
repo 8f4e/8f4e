@@ -1,0 +1,53 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`load instruction compiler > loads from a safe memory address 1`] = `
+{
+  "instructions": [
+    40,
+    2,
+    0,
+  ],
+}
+`;
+
+exports[`load instruction compiler > loads from an unsafe memory address with a bounds guard 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    63,
+    0,
+    65,
+    1,
+    107,
+    65,
+    16,
+    116,
+    65,
+    255,
+    255,
+    3,
+    106,
+    77,
+    4,
+    127,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    45,
+    0,
+    0,
+    5,
+    65,
+    0,
+    11,
+  ],
+}
+`;

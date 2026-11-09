@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`localSet instruction compiler > stores a local value 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+  ],
+}
+`;

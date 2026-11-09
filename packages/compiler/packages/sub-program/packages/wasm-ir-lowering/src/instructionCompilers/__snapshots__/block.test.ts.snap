@@ -1,0 +1,62 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`block instruction compiler > emits a typed block for float 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 4,
+      "expectedResultTypes": [
+        "float",
+      ],
+    },
+  ],
+  "instructions": [
+    2,
+    125,
+  ],
+}
+`;
+
+exports[`block instruction compiler > emits a typed block for int 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 4,
+      "expectedResultTypes": [
+        "int",
+      ],
+    },
+  ],
+  "instructions": [
+    2,
+    127,
+  ],
+}
+`;
+
+exports[`block instruction compiler > emits a void block when no result type is declared 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 4,
+      "expectedResultTypes": [],
+    },
+  ],
+  "instructions": [
+    2,
+    64,
+  ],
+}
+`;

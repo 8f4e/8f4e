@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`notEqual instruction compiler > emits F32_NE for float operands 1`] = `
+{
+  "instructions": [
+    92,
+  ],
+}
+`;
+
+exports[`notEqual instruction compiler > emits F64_NE for float64 operands 1`] = `
+{
+  "instructions": [
+    98,
+  ],
+}
+`;
+
+exports[`notEqual instruction compiler > emits I32_NE for integer operands 1`] = `
+{
+  "instructions": [
+    71,
+  ],
+}
+`;

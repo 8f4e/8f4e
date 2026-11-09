@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`greaterThan instruction compiler > emits F32_GT for float operands 1`] = `
+{
+  "instructions": [
+    94,
+  ],
+}
+`;
+
+exports[`greaterThan instruction compiler > emits I32_GT_S for integer operands 1`] = `
+{
+  "instructions": [
+    74,
+  ],
+}
+`;

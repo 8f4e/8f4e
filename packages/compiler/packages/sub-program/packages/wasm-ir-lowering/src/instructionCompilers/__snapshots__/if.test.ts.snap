@@ -1,0 +1,109 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`if instruction compiler > emits a float if block 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 2,
+      "expectedResultTypes": [
+        "float",
+      ],
+    },
+  ],
+  "instructions": [
+    4,
+    125,
+  ],
+}
+`;
+
+exports[`if instruction compiler > emits a void if block when given no arguments 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 2,
+      "expectedResultTypes": [],
+    },
+  ],
+  "instructions": [
+    4,
+    64,
+  ],
+}
+`;
+
+exports[`if instruction compiler > emits a void if block when the matching ifEnd declares no result 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 2,
+      "expectedResultTypes": [],
+    },
+  ],
+  "instructions": [
+    4,
+    64,
+  ],
+}
+`;
+
+exports[`if instruction compiler > emits an int if block 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 2,
+      "expectedResultTypes": [
+        "int",
+      ],
+    },
+  ],
+  "instructions": [
+    4,
+    127,
+  ],
+}
+`;
+
+exports[`if instruction compiler > lowers a multi-result if with a symbolic block type 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 2,
+      "expectedResultTypes": [
+        "int",
+        "float",
+      ],
+    },
+  ],
+  "instructions": [
+    4,
+    {
+      "kind": "blockType",
+      "results": [
+        127,
+        125,
+      ],
+    },
+  ],
+}
+`;

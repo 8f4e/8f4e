@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`greaterOrEqualUnsigned instruction compiler > emits F32_GE for float operands 1`] = `
+{
+  "instructions": [
+    96,
+  ],
+}
+`;
+
+exports[`greaterOrEqualUnsigned instruction compiler > emits I32_GE_U for integer operands 1`] = `
+{
+  "instructions": [
+    79,
+  ],
+}
+`;

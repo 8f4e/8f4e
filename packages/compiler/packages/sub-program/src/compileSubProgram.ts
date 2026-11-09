@@ -33,7 +33,8 @@ import { resolveMemoryReferences } from '@8f4e/memory-reference-resolver';
 import type { ComposedProgram } from '@8f4e/program-composer/internal';
 import { resolveSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import { analyzeStack } from '@8f4e/stack-analyzer';
-import { compileFunction, compileModules, lowerToWasmIR, planFunctionLayout } from '@8f4e/wasm-codegen';
+import { compileFunction, compileModules, planFunctionLayout } from '@8f4e/wasm-codegen';
+import { lowerToWasmIR } from '@8f4e/wasm-ir-lowering';
 import { planAssertions } from './assertions';
 import { registerFunctions } from './semantic/buildNamespace';
 

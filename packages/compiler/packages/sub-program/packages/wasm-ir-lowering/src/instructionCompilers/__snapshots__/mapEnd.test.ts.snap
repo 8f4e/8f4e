@@ -1,0 +1,100 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`mapEnd instruction compiler > emits DROP + typed zero for zero rows 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+  ],
+  "instructions": [
+    26,
+    65,
+    0,
+  ],
+}
+`;
+
+exports[`mapEnd instruction compiler > uses only input and result locals without reordering the source rows 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    65,
+    121,
+    {
+      "binding": 1,
+      "kind": "local.set",
+    },
+    65,
+    30,
+    {
+      "binding": 1,
+      "kind": "local.get",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    65,
+    1,
+    70,
+    27,
+    {
+      "binding": 1,
+      "kind": "local.set",
+    },
+    65,
+    20,
+    {
+      "binding": 1,
+      "kind": "local.get",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    65,
+    2,
+    70,
+    27,
+    {
+      "binding": 1,
+      "kind": "local.set",
+    },
+    65,
+    10,
+    {
+      "binding": 1,
+      "kind": "local.get",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    65,
+    1,
+    70,
+    27,
+    {
+      "binding": 1,
+      "kind": "local.set",
+    },
+    {
+      "binding": 1,
+      "kind": "local.get",
+    },
+  ],
+  "locals": [
+    {
+      "isInteger": true,
+    },
+    {
+      "isInteger": true,
+    },
+  ],
+}
+`;

@@ -1,0 +1,63 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`push instruction compiler > float64 memory push > pushes a float64 memory identifier using f64.load 1`] = `
+{
+  "instructions": [
+    65,
+    0,
+    43,
+    3,
+    0,
+  ],
+}
+`;
+
+exports[`push instruction compiler > pushes a f64 literal value emitting f64.const 1`] = `
+{
+  "instructions": [
+    68,
+    31,
+    133,
+    235,
+    81,
+    184,
+    30,
+    9,
+    64,
+  ],
+}
+`;
+
+exports[`push instruction compiler > pushes a literal value 1`] = `
+{
+  "instructions": [
+    65,
+    5,
+  ],
+}
+`;
+
+exports[`push instruction compiler > pushes a resolved f64 literal emitting f64.const 1`] = `
+{
+  "instructions": [
+    68,
+    24,
+    45,
+    68,
+    84,
+    251,
+    33,
+    9,
+    64,
+  ],
+}
+`;
+
+exports[`push instruction compiler > pushes a resolved literal value 1`] = `
+{
+  "instructions": [
+    65,
+    42,
+  ],
+}
+`;

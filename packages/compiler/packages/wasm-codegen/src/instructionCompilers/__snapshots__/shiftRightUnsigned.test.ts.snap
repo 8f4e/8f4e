@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`shiftRightUnsigned instruction compiler > emits I32_SHR_U for integer operands 1`] = `
-{
-  "byteCode": [
-    118,
-  ],
-}
-`;

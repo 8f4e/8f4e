@@ -1,0 +1,1 @@
+export { lowerToWasmIR } from './lowerToWasmIR';

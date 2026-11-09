@@ -1,0 +1,125 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ensureNonZero instruction compiler > ensures float operand is non-zero with literal default 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    67,
+    0,
+    0,
+    0,
+    0,
+    91,
+    4,
+    64,
+    67,
+    0,
+    0,
+    32,
+    64,
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    11,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+  ],
+  "locals": [
+    {
+      "isInteger": false,
+    },
+  ],
+}
+`;
+
+exports[`ensureNonZero instruction compiler > ensures float64 operand is non-zero with float64 default 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    68,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    97,
+    4,
+    64,
+    68,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    4,
+    64,
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    11,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+  ],
+  "locals": [
+    {
+      "isFloat64": true,
+      "isInteger": false,
+    },
+  ],
+}
+`;
+
+exports[`ensureNonZero instruction compiler > ensures integer operand is non-zero 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    69,
+    4,
+    127,
+    65,
+    1,
+    5,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    11,
+  ],
+  "locals": [
+    {
+      "isInteger": true,
+    },
+  ],
+}
+`;

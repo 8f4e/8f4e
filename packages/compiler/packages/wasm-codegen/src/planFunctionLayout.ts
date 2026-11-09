@@ -9,8 +9,8 @@ import type {
 } from '@8f4e/language-spec';
 import { createFunctionId } from '@8f4e/language-spec';
 import type { SemanticReferenceReport } from '@8f4e/semantic-reference-resolver';
+import { getOrRegisterFunctionType } from './functionTypeRegistry';
 import { functionValueTypeToWasmType } from './functionValueType';
-import { getOrRegisterFunctionType } from './instructionCompilers/utils/functionTypeRegistry';
 
 /** Assigns all function indices once, after symbols, operands, and callback signatures are known. */
 export function planFunctionLayout(

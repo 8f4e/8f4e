@@ -1,15 +1,10 @@
 # @8f4e/wasm-codegen
 
-WebAssembly code generation for 8f4e.
+Assigns WebAssembly function and type indices, encodes lowered bodies, and assembles the final binary. It also owns
+initial memory data segments and memory-import sizing.
 
-This package owns bytecode emission, instruction compilers, WebAssembly local storage, function bodies, initial memory data segments, memory-import sizing, and final section assembly.
+Function and module emission consumes Wasm IR from the compilation pipeline. The IR already contains the body-local
+bindings and operations, including scratch locals. The emitter translates symbolic local, function, assertion, and
+block-type references into Wasm operands.
 
-Module and function emitters consume resolved executable bodies and stack-analysis facts. Function signatures, imports, exports, expanded parameters, and module execution directives arrive as metadata. Declaration instructions do not enter the instruction dispatcher. Arithmetic and call operand shorthand has already been lowered to ordinary resolved pushes; codegen neither expands source operands nor handles deferred references. Stack facts are aligned with executable body positions, not source-line indexes.
-
-Codegen stores locals in WebAssembly slot order, with parameters first, then source locals, then scratch locals.
-Source binding IDs select their slots directly. Codegen allocates scratch slots for operations such as loops, maps,
-clamps, and memory guards. When a lowering shares a scratch slot across steps, it passes the slot explicitly.
-
-Source ASTs remain attached to compiled output for tooling and diagnostics. Codegen does not replay those ASTs, resolve source references, validate syntax, repeat stack analysis, or decide compiler pass ordering.
-
-Target-independent semantic helpers belong in `@8f4e/semantic-utils`. Language constants and instruction metadata belong in `@8f4e/language-spec`.
+The source AST and stack metadata pass through to compiled artifacts for tooling and diagnostics.

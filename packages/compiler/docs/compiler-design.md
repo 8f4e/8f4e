@@ -70,7 +70,7 @@ kinds, and pointer bindings and returns for compiler passes.
 ## Wasm IR Lowering and Function Inlining
 
 After stack and function analysis, sub-program orchestration plans assertion sites against the source operations.
-Wasm IR lowering expands resolved operations and records every parameter, declared local, and temporary binding.
+`@8f4e/wasm-ir-lowering` expands resolved operations and records every parameter, declared local, and temporary binding.
 Local operands, function calls, assertion callbacks, and multi-value block types remain symbolic until emission.
 
 `@8f4e/function-inliner` applies its scalar leaf policy using the function analyzer's structural facts. It copies the
@@ -82,7 +82,7 @@ limit. The count includes the actual scratch locals allocated by lowering.
 stores and local initialization. `functionInlining.maxCallerGrowth` limits the additional operations in a caller.
 Both limits are optional. Set `enableFunctionInlining: false` to retain ordinary calls throughout the program.
 
-Wasm emission assigns function and type indices and encodes the lowered bodies. Compiled metadata uses the original
+`@8f4e/wasm-codegen` assigns function and type indices and encodes the lowered bodies. Compiled metadata uses the original
 source stack report.
 
 ## Design Rule

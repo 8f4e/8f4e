@@ -16,7 +16,8 @@ This file extends the repository-level guidance for `packages/compiler`.
 - `@8f4e/sub-program` orchestrates semantic resolution, memory planning, stack analysis, and compilation.
 - `@8f4e/function-analyzer` reports structural function facts after stack analysis, including explicit/early returns,
   imports, and recursion. Optimization passes own policy; compiled functions expose the facts as required `analysis`.
-- `@8f4e/wasm-codegen` generates function and module bodies and emits the final WebAssembly binary.
+- `@8f4e/wasm-ir-lowering` expands resolved instructions into Wasm IR and allocates scratch locals.
+- `@8f4e/wasm-codegen` assigns indices, encodes lowered bodies, and assembles the final WebAssembly binary.
 - Every compiled program imports one shared `host.memory` with explicit minimum/maximum limits. Hosts must
   allocate matching shared memory; there is no non-shared compiler mode. WASM inspection tests enable WABT threads.
 - `@8f4e/stdlib` contains source-only standard-library functions. Include IDs are paths under `std/` without `.8f4e`.
